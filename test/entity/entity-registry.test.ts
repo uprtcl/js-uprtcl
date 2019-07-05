@@ -1,4 +1,4 @@
-import EntityRegistry from '../../src/entity/entity-registry';
+import EntityRegistry from '../../src/js-uprtcl';
 import { Entity } from '../../src/entity/entity';
 import { LinkedEntity } from '../../src/entity/linked.entity';
 
