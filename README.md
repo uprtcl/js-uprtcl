@@ -1,6 +1,6 @@
 # Js-Uprtcl
 
-[![Build Status](https://travis-ci.com/uprtcl/js-uprtcl.svg?branch=develop)](https://travis-ci.com/uprtcl/js-uprtcl)
+[![Build Status](https://travis-ci.org/uprtcl/js-uprtcl.svg?branch=develop)](https://travis-ci.org/uprtcl/js-uprtcl)
 
 Library to help with _prtcl applications development.
 
