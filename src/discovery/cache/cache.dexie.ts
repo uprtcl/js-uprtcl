@@ -1,7 +1,7 @@
 import { CacheService } from './cache.service';
 import Dexie from 'dexie';
 
-export class CacheLocal extends Dexie implements CacheService {
+export class CacheDexie extends Dexie implements CacheService {
   cacheObjects: Dexie.Table<any, string>;
 
   constructor() {

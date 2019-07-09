@@ -1,7 +1,7 @@
 import { KnownSourcesService } from './known-sources.service';
 import Dexie from 'dexie';
 
-export class KnownSourcesLocal extends Dexie implements KnownSourcesService {
+export class KnownSourcesDexie extends Dexie implements KnownSourcesService {
   knownSources: Dexie.Table<string[], string>;
 
   constructor() {
