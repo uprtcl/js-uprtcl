@@ -1,6 +1,7 @@
 import { SocketConnection } from './socket.connection';
 import { connect } from '@holochain/hc-web-client';
 import WebSocket from 'ws';
+import { ConnectionOptions } from './connection';
 
 // Auxiliar type for Holochain's get_entry call
 export type EntryResult<T = any> = {
@@ -12,8 +13,13 @@ export class HolochainConnection extends SocketConnection {
   connection!: (funcName: string, params: any) => Promise<any>;
   onsignal!: (callback: (params: any) => void) => void;
 
-  constructor(private host: string, private instanceId: string, private zome: string) {
-    super();
+  constructor(
+    private host: string,
+    private instanceId: string,
+    private zome: string,
+    options: ConnectionOptions
+  ) {
+    super(options);
   }
 
   async createSocket(): Promise<WebSocket> {
@@ -28,7 +34,7 @@ export class HolochainConnection extends SocketConnection {
 
   public async call(funcName: string, params: any): Promise<any> {
     await this.ready();
-    console.log('[CALL ZOME FUNCTION]:', funcName, params);
+    this.logger.log('CALL ZOME:', funcName, params);
     const jsonString = await this.connection(funcName, params);
 
     const result = JSON.parse(jsonString);
@@ -38,7 +44,7 @@ export class HolochainConnection extends SocketConnection {
       throw new Error(JSON.stringify(result.SerializationError));
     }
 
-    console.log('[RESULT]:', funcName, params, result);
+    this.logger.log('ZOME RESULT:', funcName, params, result);
     if (result.Ok) return result.Ok;
     return result;
   }
