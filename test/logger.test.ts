@@ -18,16 +18,16 @@ describe('Logger test', () => {
     const logger = new Logger('test', LogLevel.INFO);
 
     logger.info('Hi1');
-    expect(global.console.info).toHaveBeenCalledWith('[test]', 'Hi1');
+    expect(global.console.info).toHaveBeenCalledWith('[test] ', 'Hi1');
 
     logger.log('Hi2');
-    expect(global.console.log).toHaveBeenCalledWith('[test]', 'Hi2');
+    expect(global.console.log).toHaveBeenCalledWith('[test] ', 'Hi2');
 
     logger.warn('Hi3');
-    expect(global.console.warn).toHaveBeenCalledWith('[test]', 'Hi3');
+    expect(global.console.warn).toHaveBeenCalledWith('[test] ', 'Hi3');
 
     logger.error('Hi4');
-    expect(global.console.error).toHaveBeenCalledWith('[test]', 'Hi4');
+    expect(global.console.error).toHaveBeenCalledWith('[test] ', 'Hi4');
   });
 
   it('logs on maximum level', async () => {
@@ -43,6 +43,6 @@ describe('Logger test', () => {
     expect(global.console.warn).toHaveBeenCalledTimes(0);
 
     logger.error('Hi4');
-    expect(global.console.error).toHaveBeenCalledWith('[test]', 'Hi4');
+    expect(global.console.error).toHaveBeenCalledWith('[test] ', 'Hi4');
   });
 });

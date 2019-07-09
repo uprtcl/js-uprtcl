@@ -1,13 +1,12 @@
 import { LinkedEntity } from './linked.entity';
 
-
 export class ContentAddressableEntity<T extends object> extends LinkedEntity<T> {
-
   /**
    * @override
    */
-  public getLinks(): string[] {
-    return this.getHardLinks().concat(this.getSoftLinks());
+  public async getLinks(): Promise<string[]> {
+    const softLinks = await this.getSoftLinks();
+    return this.getHardLinks().concat(softLinks);
   }
 
   /**
@@ -16,11 +15,11 @@ export class ContentAddressableEntity<T extends object> extends LinkedEntity<T> 
   public getHardLinks(): string[] {
     return [];
   }
-  
+
   /**
    * @returns the soft links that can change throughout the object lifecycle
    */
-  public getSoftLinks(): string[] {    
+  public async getSoftLinks(): Promise<string[]> {
     return [];
   }
 }

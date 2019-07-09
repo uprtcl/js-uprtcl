@@ -1,6 +1,7 @@
 import { Entity } from './entity';
-import { Dictionary } from '../types';
-import * as _ from 'lodash';
+import _ from 'lodash';
+// tslint:disable-next-line: no-duplicate-imports
+import { Dictionary } from 'lodash';
 
 export type EntityClass<T extends object> = new (object: T, options: any) => Entity<T>;
 

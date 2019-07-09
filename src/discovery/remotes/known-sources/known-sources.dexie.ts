@@ -22,7 +22,7 @@ export class KnownSourcesLocal extends Dexie implements KnownSourcesService {
   /**
    * @override
    */
-  public getKnownSources(hash: string): Promise<string[]> {
+  public getKnownSources(hash: string): Promise<string[] | undefined> {
     return this.knownSources.get(hash);
   }
 
@@ -34,8 +34,13 @@ export class KnownSourcesLocal extends Dexie implements KnownSourcesService {
       return;
     }
 
+    // Merge previous sources with new sources
     const knownSources = await this.getKnownSources(hash);
-    const newSources = new Set<string>([...sources, ...knownSources]);
+    if (knownSources) {
+      sources = [...sources, ...knownSources];
+    }
+
+    const newSources = new Set<string>(sources);
 
     await this.knownSources.put(Array.from(newSources).filter(d => d), hash);
   }

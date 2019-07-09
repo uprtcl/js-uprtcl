@@ -8,7 +8,7 @@ export interface KnownSourcesService {
    * Retrieves the list of knowns sources for the given hash
    * @param hash the identifier of the object
    */
-  getKnownSources(hash: string): Promise<string[]>;
+  getKnownSources(hash: string): Promise<string[] | undefined>;
 
   /**
    * Adds the given sources to the list of known sources for the given hash

@@ -1,9 +1,7 @@
 import { Entity } from './entity';
-import { Dictionary } from '../types';
-
+import { Dictionary } from 'lodash';
 
 export class LinkedEntity<T extends object> extends Entity<T> {
-
   /**
    * @returns the text contents that the object contains, by key
    */
@@ -14,7 +12,7 @@ export class LinkedEntity<T extends object> extends Entity<T> {
   /**
    * @returns the links that the object points to
    */
-  public getLinks(): string[] {
+  public async getLinks(): Promise<string[]> {
     return [];
   }
 }
