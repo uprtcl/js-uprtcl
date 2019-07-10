@@ -1,9 +1,6 @@
-export interface CacheService {
-  /**
-   * Gets the object with the given hash from the cache, if it existed
-   */
-  get<T extends object>(hash: string): Promise<T | undefined>;
+import { Source } from '../remotes/sources/source';
 
+export interface CacheService extends Source {
   /**
    * Puts the given object with the given hash in the cache
    */

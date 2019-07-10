@@ -1,12 +1,3 @@
-export interface Proof {
-  signature: string;
-}
-
-export interface Signed {
-  id: string;
-  proof: Proof;
-}
-
 export interface Context {
   creatorId: string;
   timestamp: number;
@@ -16,8 +7,8 @@ export interface Context {
 export interface Perspective {
   origin: string;
   creatorId: string;
-  timestamp: number;
   contextId: string;
+  timestamp: number;
   name: string;
 }
 

@@ -99,6 +99,7 @@
     "ipfs-http-client": "^32.0.1",
     "multihashing": "^0.3.3",
     "multihashing-async": "^0.7.0",
+    "pwa-helpers": "^0.9.1",
     "web3": "^1.0.0-beta.55",
     "ws": "7.0.1"
   }

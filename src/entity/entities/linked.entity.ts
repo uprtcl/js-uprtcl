@@ -1,4 +1,4 @@
-import { Entity } from './entity';
+import { Entity } from '../entity';
 import { Dictionary } from 'lodash';
 
 export class LinkedEntity<T extends object> extends Entity<T> {

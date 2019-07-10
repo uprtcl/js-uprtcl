@@ -1,9 +1,9 @@
-import { Entity } from './entity';
+import { Entity } from '../entity';
 import _ from 'lodash';
 // tslint:disable-next-line: no-duplicate-imports
 import { Dictionary } from 'lodash';
 
-export type EntityClass<T extends object> = new (object: T, options: any) => Entity<T>;
+export type EntityClass<T extends object> = new (options: any) => Entity<T>;
 
 export default class EntityRegistry {
   defaultOptions: object;
@@ -59,7 +59,7 @@ export default class EntityRegistry {
   public isEntity(entityName: string, object: object, specificOptions: any = {}): boolean {
     const entityOptions = this.buildOptions(entityName, specificOptions);
 
-    const entity = new this.entities[entityName](object, entityOptions);
+    const entity = new this.entities[entityName](entityOptions);
 
     const properties = entity.getProperties();
     let unseenProperties = properties.length;
@@ -91,6 +91,8 @@ export default class EntityRegistry {
 
     const entityOptions = this.buildOptions(entityName, specificOptions);
 
-    return new this.entities[entityName](object, entityOptions) as E;
+    const entity = new this.entities[entityName](entityOptions) as E;
+    entity.init(object);
+    return entity;
   }
 }

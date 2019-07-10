@@ -1,11 +1,7 @@
-import { ContentAddressableEntity } from '../../entity/content-addressable.entity';
+import { SecuredEntity } from '../../entity/entities/secured.entity';
 
-
-export class UprtclEntity<T extends object> extends ContentAddressableEntity<T> {
-
-  
-
-  constructor(object: T, options: any) {
-    super(object, options);
+export class UprtclEntity<T extends object> extends SecuredEntity<T> {
+  constructor(options: any) {
+    super(options);
   }
 }

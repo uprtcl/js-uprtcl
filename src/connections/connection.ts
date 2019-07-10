@@ -29,7 +29,8 @@ export class Connection {
 
   constructor(options: ConnectionOptions) {
     // Merge options
-    this.options = _.merge(defaultOptions, options);
+    if (options) this.options = _.merge(defaultOptions, options);
+    else this.options = defaultOptions;
 
     this.setupConnection();
 

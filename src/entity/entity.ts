@@ -4,10 +4,16 @@
  */
 export class Entity<T extends object> {
   // The object that this entity represents
-  object: T;
+  object!: T;
 
-  constructor(object: T, options: any = {}) {
-    this.object = object;
+  constructor(protected options: any = {}) {}
+
+  init(object: any): void {
+    this.object = this.setupObject(object);
+  }
+
+  setupObject(object: any): T {
+    return object as T;
   }
 
   /**

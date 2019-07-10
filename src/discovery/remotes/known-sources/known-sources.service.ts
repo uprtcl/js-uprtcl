@@ -1,6 +1,7 @@
 export interface KnownSourcesService {
   /**
    * @returns the name of the source of this service
+   * The source should never change for each instance of the service
    */
   getOwnSource(): Promise<string>;
 
