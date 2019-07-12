@@ -1,29 +1,10 @@
 import { HashedEntity } from './hashed.entity';
-import { Signed, Proof, Secured } from '../types';
+import { Signed, Proof, Secured, Hashed } from '../../types';
+import { Entity } from '../entity';
+import { DerivedEntity } from './derived.entity';
 
-export class SecuredEntity<T> extends HashedEntity<Signed<T>> {
-  setupObject(object: any): Secured<T> {
-    const signed: Signed<T> = {
-      payload: object,
-      proof: {
-        signature: this.sign(object)
-      }
-    };
-
-    return super.setupObject(signed);
-  }
-
-  sign<O>(object: any): string {
-    return '';
-  }
-
-  createProof(): Proof {
-    return { signature: '' };
-  }
-
-  validateProof(): boolean {
-    return true;
-  }
+export class SecuredEntity<T extends object> extends DerivedEntity<Secured<T>, T> {
+  deriveObject(object: T): Secured<T> {}
 
   /**
    * Asserts validation of hash and proof of the given object

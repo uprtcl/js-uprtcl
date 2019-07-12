@@ -8,12 +8,8 @@ export class Entity<T extends object> {
 
   constructor(protected options: any = {}) {}
 
-  init(object: any): void {
-    this.object = this.setupObject(object);
-  }
-
-  setupObject(object: any): T {
-    return object as T;
+  from(object: T): void {
+    this.object = object;
   }
 
   /**

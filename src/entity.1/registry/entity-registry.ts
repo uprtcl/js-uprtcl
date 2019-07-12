@@ -92,7 +92,9 @@ export default class EntityRegistry {
     const entityOptions = this.buildOptions(entityName, specificOptions);
 
     const entity = new this.entities[entityName](entityOptions) as E;
-    entity.init(object);
+    entity.from(object);
     return entity;
   }
+
+  public with() {}
 }

@@ -3,8 +3,8 @@ import { Dictionary } from 'lodash';
 import { Provider } from './providers/provider';
 import { KnownSourcesService } from './known-sources/known-sources.service';
 import { Source } from './sources/source';
-import EntityRegistry from '../../entity/registry/entity-registry';
-import { LinkedEntity } from '../../entity/entities/linked.entity';
+import EntityRegistry from '../../entity.1/registry/entity-registry';
+import { LinkedEntity } from '../../entity.1/entities/linked.entity';
 
 export class MultiRemoteService<T extends Source> implements Source {
   providers!: Dictionary<Provider<T>>;

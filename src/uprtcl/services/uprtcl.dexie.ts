@@ -3,11 +3,11 @@ import { UprtclService } from './uprtcl.service';
 import Dexie from 'dexie';
 import { CacheDexie } from '../../discovery/cache/cache.dexie';
 import { Perspective, Context, Commit } from '../types';
-import EntityRegistry from '../../entity/registry/entity-registry';
+import EntityRegistry from '../../entity.1/registry/entity-registry';
 import { ContextEntity } from '../entities/context.entity';
 import { PerspectiveEntity } from '../entities/perspective.entity';
 import { CommitEntity } from '../entities/commit.entity';
-import { Secured } from '../../entity/types';
+import { Secured } from '../../types';
 
 export class UprtclDexie extends Dexie implements CacheService, UprtclService {
   heads: Dexie.Table<string, string>;

@@ -1,18 +1,6 @@
-import { LinkedEntity } from './linked.entity';
-import { Hashed } from '../types';
+import { Entity } from '../entity';
 
-export class HashedEntity<T extends object> extends LinkedEntity<Hashed<T>> {
-  setupObject(object: any): Hashed<T> {
-    return {
-      id: this.hash(object),
-      object: object
-    };
-  }
-
-  hash(object: any): string {
-    return '';
-  }
-
+export class LinkedEntity<T extends object> extends Entity<T> {
   /**
    * @override
    */
@@ -33,9 +21,5 @@ export class HashedEntity<T extends object> extends LinkedEntity<Hashed<T>> {
    */
   public async getSoftLinks(): Promise<string[]> {
     return [];
-  }
-
-  public validateHash(): boolean {
-    return true;
   }
 }

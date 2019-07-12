@@ -1,6 +1,6 @@
 import { Source } from '../../discovery/remotes/sources/source';
 import { Perspective, Context, Commit } from '../types';
-import { Secured } from '../../entity/types';
+import { Secured } from '../../types';
 
 export interface UprtclService extends Source {
   /**
