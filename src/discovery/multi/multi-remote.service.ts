@@ -17,9 +17,6 @@ export class MultiRemoteService<T extends Source> extends MultiProviderService<T
     updater: (service: T) => Promise<S>,
     source: string
   ): Promise<S> {
-    // Wait for the sources to have been initialized
-    await this.ready();
-
     // Execute the updater callback in the source
     const provider = this.providers[source];
     const result = await updater(provider.source);

@@ -8,8 +8,8 @@ import { Source } from '../sources/source';
 export class MultiProviderService<T extends Source> {
   providers!: Dictionary<Provider<T>>;
 
-  initialization: Promise<void>;
-  initCompleted: boolean = false;
+  private initialization: Promise<void>;
+  private initCompleted: boolean = false;
 
   /**
    * @param patternRegistry the pattern registry to interact with the objects and their links
@@ -48,7 +48,7 @@ export class MultiProviderService<T extends Source> {
   /**
    * @returns a promise that resolves when all the sources have been initialized
    */
-  public ready(): Promise<void> {
+  protected ready(): Promise<void> {
     if (this.initCompleted) return Promise.resolve();
     else return this.initialization;
   }
