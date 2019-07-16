@@ -1,3 +1,3 @@
-import EntityRegistry from './entity.1/registry/entity-registry';
+import PatternRegistry from './patterns/registry/pattern.registry';
 
-export default EntityRegistry;
+export default PatternRegistry;

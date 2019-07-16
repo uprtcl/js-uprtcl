@@ -1,4 +1,4 @@
-import { Logger, LogLevel } from '../logger';
+import { Logger, LogLevel } from '../utils/logger';
 import * as _ from 'lodash';
 
 export interface ConnectionOptions {
@@ -27,7 +27,7 @@ export class Connection {
 
   logger = new Logger(this.constructor.name);
 
-  constructor(options: ConnectionOptions) {
+  constructor(options: ConnectionOptions = {}) {
     // Merge options
     if (options) this.options = _.merge(defaultOptions, options);
     else this.options = defaultOptions;

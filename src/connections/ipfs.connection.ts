@@ -1,11 +1,11 @@
 import { ConnectionOptions, Connection } from './connection';
-import { CidConfig } from '../cid.config';
+import { CidConfig } from '../utils/cid.config';
 const ipfsClient = require('ipfs-http-client');
 
 export class IpfsConnection extends Connection {
   client: any;
 
-  constructor(protected clientOptions: any, connectionOptions: ConnectionOptions) {
+  constructor(protected clientOptions: any, connectionOptions: ConnectionOptions = {}) {
     super(connectionOptions);
   }
 

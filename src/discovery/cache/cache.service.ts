@@ -1,4 +1,4 @@
-import { Source } from '../remotes/sources/source';
+import { Source } from '../sources/source';
 
 export interface CacheService extends Source {
   /**

@@ -1,19 +1,20 @@
-import { CacheService } from '../../discovery/cache/cache.service';
-import { UprtclService } from './uprtcl.service';
 import Dexie from 'dexie';
+
+import { CacheService } from '../../discovery/cache/cache.service';
 import { CacheDexie } from '../../discovery/cache/cache.dexie';
+
+import { UprtclService } from './uprtcl.service';
 import { Perspective, Context, Commit } from '../types';
-import EntityRegistry from '../../entity.1/registry/entity-registry';
-import { ContextEntity } from '../entities/context.entity';
-import { PerspectiveEntity } from '../entities/perspective.entity';
-import { CommitEntity } from '../entities/commit.entity';
-import { Secured } from '../../types';
+import PatternRegistry from '../../patterns/registry/pattern.registry';
+import { DerivePattern } from '../../patterns/derive/derive.pattern';
+import { SecuredPattern, Secured } from '../../patterns/derive/secured.pattern';
+import { ValidateProperties } from '../../patterns/validate.pattern';
 
 export class UprtclDexie extends Dexie implements CacheService, UprtclService {
   heads: Dexie.Table<string, string>;
 
   constructor(
-    protected entityRegistry: EntityRegistry,
+    protected patternRegistry: PatternRegistry,
     protected objectsCache: CacheService = new CacheDexie()
   ) {
     super('uprtcl');
@@ -37,51 +38,52 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclService {
     return this.objectsCache.cache(hash, object);
   }
 
+  private secure<T>(object: T): Secured<T> {
+    const pattern: SecuredPattern = this.patternRegistry.getPattern('secure') as SecuredPattern;
+    return pattern.derive<T>(object);
+  }
+
   /**
    * @override
    */
   async createContext(context: Context): Promise<string> {
-    // TODO: create proof
-    const entity: ContextEntity = this.entityRegistry.from(context);
-    const hash = entity.getId();
+    const secured = this.secure(context);
 
-    await this.cache(hash, context);
-    return hash;
+    await this.cache(secured.id, secured);
+    return secured.id;
   }
 
   /**
    * @override
    */
   async createPerspective(perspective: Perspective): Promise<string> {
-    // TODO: create proof
-    const entity: PerspectiveEntity = this.entityRegistry.from(perspective);
-    const hash = entity.getId();
+    const secured = this.secure(perspective);
 
-    await this.cache(hash, perspective);
-    return hash;
+    await this.cache(secured.id, secured);
+    return secured.id;
   }
 
   /**
    * @override
    */
   async createCommit(commit: Commit): Promise<string> {
-    // TODO: create proof
-    const entity: CommitEntity = this.entityRegistry.from(commit);
-    const hash = entity.getId();
+    const secured = this.secure(commit);
 
-    await this.cache(hash, commit);
-    return hash;
+    await this.cache(secured.id, secured);
+    return secured.id;
   }
 
   /**
    * @override
    */
   async cloneContext(context: Secured<Context>): Promise<string> {
-    const entity: ContextEntity = this.entityRegistry.from(context);
+    const properties: ValidateProperties = this.patternRegistry.from(context) as ValidateProperties;
 
-    entity.validate();
+    if (properties.validate()) {
+      throw new Error('Context is not valid');
+    }
 
-    await this.cache(context.id, context.object);
+    await this.cache(context.id, context);
     return context.id;
   }
 
@@ -89,11 +91,15 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclService {
    * @override
    */
   async clonePerspective(perspective: Secured<Perspective>): Promise<string> {
-    // TODO: create proof
-    const entity: PerspectiveEntity = this.entityRegistry.from(perspective);
-    entity.validate();
+    const properties: ValidateProperties = this.patternRegistry.from(
+      perspective
+    ) as ValidateProperties;
 
-    await this.cache(perspective.id, perspective.object);
+    if (properties.validate()) {
+      throw new Error('Perspective is not valid');
+    }
+
+    await this.cache(perspective.id, perspective);
     return perspective.id;
   }
 
@@ -101,11 +107,13 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclService {
    * @override
    */
   async cloneCommit(commit: Secured<Commit>): Promise<string> {
-    // TODO: check proof
-    const entity: CommitEntity = this.entityRegistry.from(commit);
-    entity.validate();
+    const properties: ValidateProperties = this.patternRegistry.from(commit) as ValidateProperties;
 
-    await this.cache(commit.id, commit.object);
+    if (properties.validate()) {
+      throw new Error('Commit is not valid');
+    }
+
+    await this.cache(commit.id, commit);
     return commit.id;
   }
 

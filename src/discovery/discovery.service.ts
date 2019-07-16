@@ -1,12 +1,22 @@
+import { Source } from './sources/source';
+import { CachedSourceService } from './cached-remotes/cached-source.service';
 import { CacheService } from './cache/cache.service';
-import { MultiRemoteService } from './remotes/multi-remote.service';
-import { Source } from './remotes/sources/source';
-import { CachedRemote } from './remotes/cached.remote';
+import { MultiSourceService } from './multi/multi-source.service';
 
-export class DiscoveryService<T extends Source, C extends CacheService & T> {
-  cachedRemote: CachedRemote<T, C, MultiRemoteService<T>>;
+export class DiscoveryService implements Source {
+  cachedRemote: CachedSourceService;
 
-  constructor(cache: C, multiRemote: MultiRemoteService<T>) {}
+  constructor(cache: CacheService, multiSource: MultiSourceService) {
+    this.cachedRemote = new CachedSourceService(cache, multiSource);
+  }
 
-  discover() {}
+  /**
+   * Discovers the object from the cache, or its known sources and all the remotes
+   *
+   * @param hash the hash of the object to get
+   * @returns the object if found, otherwise undefined
+   */
+  public async get<T extends object>(hash: string): Promise<T | undefined> {
+    return this.cachedRemote.get(hash);
+  }
 }

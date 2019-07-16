@@ -3,30 +3,31 @@ import { connect } from '@holochain/hc-web-client';
 import WebSocket from 'ws';
 import { ConnectionOptions } from './connection';
 
+export interface ZomeOptions {
+  host: string;
+  instanceId: string;
+  zome: string;
+}
+
 // Auxiliar type for Holochain's get_entry call
 export type EntryResult<T = any> = {
   entry: T;
   type: string;
-} | null;
+};
 
 export class HolochainConnection extends SocketConnection {
   connection!: (funcName: string, params: any) => Promise<any>;
   onsignal!: (callback: (params: any) => void) => void;
 
-  constructor(
-    private host: string,
-    private instanceId: string,
-    private zome: string,
-    options: ConnectionOptions
-  ) {
+  constructor(protected zomeOptions: ZomeOptions, options: ConnectionOptions = {}) {
     super(options);
   }
 
   async createSocket(): Promise<WebSocket> {
-    const { callZome, ws, onSignal } = await connect({ url: this.host });
+    const { callZome, ws, onSignal } = await connect({ url: this.zomeOptions.host });
 
     this.connection = async (funcName: string, params: any) =>
-      callZome(this.instanceId, this.zome, funcName)(params);
+      callZome(this.zomeOptions.instanceId, this.zomeOptions.zome, funcName)(params);
     this.onsignal = onSignal;
 
     return ws;
@@ -59,8 +60,8 @@ export class HolochainConnection extends SocketConnection {
     return JSON.parse(parseable.App[1]);
   }
 
-  public parseEntryResult<T extends object>(entry: any): EntryResult<T> {
-    if (!entry.result.Single.meta) return null;
+  public parseEntryResult<T extends object>(entry: any): EntryResult<T> | undefined {
+    if (!entry.result.Single.meta) return undefined;
     return {
       entry: {
         id: entry.result.Single.meta.address,
@@ -77,6 +78,6 @@ export class HolochainConnection extends SocketConnection {
   public parseEntriesResults<T extends object>(entryArray: Array<any>): Array<EntryResult<T>> {
     return entryArray
       .map(entry => this.parseEntryResult<T>(entry.Ok ? entry.Ok : entry))
-      .filter(entry => !!entry);
+      .filter(entry => entry !== undefined) as Array<EntryResult<T>>;
   }
 }

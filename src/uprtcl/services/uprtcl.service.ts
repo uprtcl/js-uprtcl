@@ -1,6 +1,6 @@
-import { Source } from '../../discovery/remotes/sources/source';
 import { Perspective, Context, Commit } from '../types';
-import { Secured } from '../../types';
+import { Source } from '../../discovery/sources/source';
+import { Secured } from '../../patterns/derive/secured.pattern';
 
 export interface UprtclService extends Source {
   /**
@@ -15,6 +15,7 @@ export interface UprtclService extends Source {
    * Create the given context in the service, returning the hash identifying the context
    *
    * @param context: the context to create
+   * @returns the id of the created context
    */
   createContext(context: Context): Promise<string>;
 
@@ -22,6 +23,7 @@ export interface UprtclService extends Source {
    * Create the given perspective in the service, returning the hash identifying the perspective
    *
    * @param perspective: the perspective to create
+   * @returns the id of the created perspective
    */
   createPerspective(perspective: Perspective): Promise<string>;
 
@@ -29,6 +31,7 @@ export interface UprtclService extends Source {
    * Create the given commit in the service, returning the hash identifying the commit
    *
    * @param commit: the commit to create
+   * @returns the id of the created commit
    */
   createCommit(commit: Commit): Promise<string>;
 
@@ -36,6 +39,7 @@ export interface UprtclService extends Source {
    * Clone the given context in the service, validating its hash and its proof
    *
    * @param context: the signed context to clone
+   * @returns the id of the cloned context
    */
   cloneContext(context: Secured<Context>): Promise<string>;
 
@@ -43,6 +47,7 @@ export interface UprtclService extends Source {
    * Clone the given perspective in the service, validating its hash and its proof
    *
    * @param perspective: the signed perspective to clone
+   * @returns the id of the cloned perspective
    */
   clonePerspective(perspective: Secured<Perspective>): Promise<string>;
 
@@ -50,6 +55,7 @@ export interface UprtclService extends Source {
    * Clone the given commit in the service, validating its hash and its proof
    *
    * @param commit: the signed commit to clone
+   * @returns the id of the cloned commit
    */
   cloneCommit(commit: Secured<Commit>): Promise<string>;
 
@@ -59,14 +65,15 @@ export interface UprtclService extends Source {
 
   /**
    * Set the head of a perspective to a given commitId
-   * @param perspectiveId: ID of the perspective. Cannot be empty and must exist on the platform.
-   * @param headId: ID of the commit. Cannot be empty but MAY not exist in the platform.
+   * @param perspectiveId id of the perspective of which to update the head
+   * @param headId id of the commit
    */
   updateHead(perspectiveId: string, headId: string): Promise<void>;
 
   /**
    * Get the head of a perspective
-   * @param perspectiveId: ID of the perspective. Cannot be empty and must exist on the platform.
+   * @param perspectiveId id of the perspective to get the head of
+   * @returns the id of the head commit of the perspective, if exists
    */
   getHead(perspectiveId: string): Promise<string | undefined>;
 }
