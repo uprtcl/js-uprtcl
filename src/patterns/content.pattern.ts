@@ -1,5 +1,3 @@
-import { Properties } from './pattern';
-
-export interface ContentProperties extends Properties {
-  getContent: () => Promise<any>;
+export interface ContentPattern<O extends object> {
+  getContent: (object: O) => Promise<any>;
 }

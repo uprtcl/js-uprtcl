@@ -1,5 +1,4 @@
-import { Properties } from '../pattern';
-import { ValidateProperties } from '../validate.pattern';
+import { ValidatePattern } from '../validate.pattern';
 import { DerivePattern } from './derive.pattern';
 
 export interface Proof {
@@ -11,14 +10,14 @@ export interface Signed<T = any> {
   proof: Proof;
 }
 
-export const signedPattern: DerivePattern<Signed, ValidateProperties> = {
-  recognize: (object: object) => object.hasOwnProperty('proof') && object.hasOwnProperty('object'),
+export class SignedPattern implements DerivePattern<Signed>, ValidatePattern<Signed> {
+  recognize(object: object) {
+    return object.hasOwnProperty('proof') && object.hasOwnProperty('object');
+  }
 
-  properties(object: object, properties: Properties): ValidateProperties {
-    return {
-      validate: () => true
-    };
-  },
+  validate<T>(signed: Signed<T>): boolean {
+    return true;
+  }
 
   derive<T>(object: T): Signed<T> {
     return {
@@ -28,4 +27,4 @@ export const signedPattern: DerivePattern<Signed, ValidateProperties> = {
       object: object
     };
   }
-};
+}

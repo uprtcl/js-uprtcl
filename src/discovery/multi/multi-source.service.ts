@@ -1,8 +1,58 @@
 import { Source } from '../sources/source';
-import { LinkedProperties } from '../../patterns/linked.pattern';
-import { MultiProviderService } from './multi-provider.service';
+import { LinkedPattern } from '../../patterns/linked.pattern';
+import { Dictionary } from 'lodash';
+import { DiscoverableSource } from '../sources/discoverable.source';
+import PatternRegistry from '../../js-uprtcl';
+import { KnownSourcesService } from '../known-sources/known-sources.service';
 
-export class MultiSourceService extends MultiProviderService<Source> implements Source {
+export class MultiSourceService<T extends Source = Source> implements Source {
+  sources!: Dictionary<DiscoverableSource<T>>;
+
+  private initialization: Promise<void>;
+  private initCompleted: boolean = false;
+
+  /**
+   * @param patternRegistry the pattern registry to interact with the objects and their links
+   * @param knownSources local service to store all known sources to be able to retrieve the object afterwards
+   * @param discoverableSources array of all discoverable sources from which to get objects
+   */
+  constructor(
+    protected patternRegistry: PatternRegistry,
+    protected localKnownSources: KnownSourcesService,
+    discoverableSources: Array<DiscoverableSource<T>>
+  ) {
+    this.initialization = this.initSources(discoverableSources);
+  }
+
+  /**
+   * Initialize the sources by calling getOwnSource() on each discoverable source
+   *
+   * @param discoverableSources
+   * @returns a promise that resolves when all the sources have been initialized
+   */
+  private async initSources(discoverableSources: Array<DiscoverableSource<T>>): Promise<void> {
+    // Get the name of each source
+    const promises = discoverableSources.map(source => source.knownSources.getOwnSource());
+    const sourcesNames = await Promise.all(promises);
+
+    // Build the sources dictionary from the resulting names
+    this.sources = sourcesNames.reduce(
+      (sources, sourceName, index) => ({ ...sources, [sourceName]: sources[index] }),
+      {}
+    );
+
+    // Set initialization completed
+    this.initCompleted = true;
+  }
+
+  /**
+   * @returns a promise that resolves when all the sources have been initialized
+   */
+  protected ready(): Promise<void> {
+    if (this.initCompleted) return Promise.resolve();
+    else return this.initialization;
+  }
+
   /**
    * Gets the source with the given name
    *
@@ -10,23 +60,23 @@ export class MultiSourceService extends MultiProviderService<Source> implements 
    * @returns the source identified with the given name
    */
   public getSource(sourceName: string): Source {
-    return this.providers[sourceName].source;
+    return this.sources[sourceName].source;
   }
 
   /**
    * @returns gets the names of all the sources
    */
   public getAllSources(): string[] {
-    return Object.keys(this.providers);
+    return Object.keys(this.sources);
   }
 
   /**
-   * Retrieves the known sources for the given hash from the given provider and stores them in the known sources service
+   * Retrieves the known sources for the given hash from the given source and stores them in the known sources service
    * @param hash the hash for which to discover the sources
-   * @param provider the provider to ask for the known sources
+   * @param source the source to ask for the known sources
    */
   protected async discoverKnownSources(hash: string, source: string): Promise<void> {
-    const knownSourcesService = this.providers[source].knownSources;
+    const knownSourcesService = this.sources[source].knownSources;
 
     const sources = await knownSourcesService.getKnownSources(hash);
 
@@ -51,10 +101,10 @@ export class MultiSourceService extends MultiProviderService<Source> implements 
 
     if (object) {
       // Object retrieved, discover the sources for its links
-      const properties = this.patternRegistry.from(object) as LinkedProperties;
+      const pattern = this.patternRegistry.from(object) as LinkedPattern<O>;
 
-      if (properties.hasOwnProperty('getLinks')) {
-        const links = await properties.getLinks();
+      if (pattern.hasOwnProperty('getLinks')) {
+        const links = await pattern.getLinks(object);
         const promises = links.map(link => this.discoverKnownSources(link, source));
 
         await Promise.all(promises);

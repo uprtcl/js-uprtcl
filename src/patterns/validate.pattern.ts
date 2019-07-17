@@ -1,5 +1,3 @@
-import { Properties } from './pattern';
-
-export interface ValidateProperties extends Properties {
-  validate: () => boolean;
+export interface ValidatePattern<O> {
+  validate: (object: O) => boolean;
 }

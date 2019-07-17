@@ -1,29 +1,25 @@
-import { Hashed, hashedPattern } from './hashed.pattern';
-import { Signed, signedPattern } from './signed.pattern';
+import { Hashed, HashedPattern } from './hashed.pattern';
+import { Signed, SignedPattern } from './signed.pattern';
 import { DerivePattern } from './derive.pattern';
-import { ValidateProperties } from '../validate.pattern';
-import { Properties } from '../pattern';
+import { ValidatePattern } from '../validate.pattern';
 
 export type Secured<T = any> = Hashed<Signed<T>>;
 
-export type SecuredPattern = DerivePattern<Secured, ValidateProperties>;
+export class SecuredPattern implements DerivePattern<Secured>, ValidatePattern<Secured> {
+  constructor(protected hashedPattern: HashedPattern, protected signedPattern: SignedPattern) {}
 
-export const securedPattern: SecuredPattern = {
-  recognize: (object: object) =>
-    hashedPattern.recognize(object) && signedPattern.recognize(object['object']),
+  recognize(object: object) {
+    return this.hashedPattern.recognize(object) && this.signedPattern.recognize(object['object']);
+  }
 
-  properties(object: Secured, properties: Properties): ValidateProperties {
-    return {
-      validate: () =>
-        hashedPattern.properties(object, properties).validate() &&
-        signedPattern.properties(object.object, properties).validate()
-    };
-  },
+  validate<T>(secured: Secured<T>): boolean {
+    return this.hashedPattern.validate(secured) && this.signedPattern.validate(secured.object);
+  }
 
   derive<T>(object: T): Secured<T> {
-    const signed: Signed<T> = signedPattern.derive<T>(object);
-    const hashed = hashedPattern.derive<Signed<T>>(signed);
+    const signed: Signed<T> = this.signedPattern.derive<T>(object);
+    const hashed = this.hashedPattern.derive<Signed<T>>(signed);
 
     return hashed;
   }
-};
+}

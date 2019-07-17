@@ -1,5 +1,5 @@
 import { Dictionary } from 'lodash';
-import { Pattern, Properties } from '../pattern';
+import { Pattern } from '../pattern';
 
 export default class PatternRegistry {
   patterns: Dictionary<Pattern> = {};
@@ -23,25 +23,27 @@ export default class PatternRegistry {
     return pattern as T;
   }
 
-  public from(object: object): Properties {
-    let properties: Properties = {};
+  public from<T>(object: object): Pattern & T {
+    let pattern: Pattern = {
+      recognize: () => false
+    };
 
     for (const patternName of this.patternList) {
       if (this.patterns[patternName].recognize(object)) {
-        properties = this.applyPattern(object, properties, patternName);
+        pattern = this.applyPattern(pattern, patternName);
       }
     }
 
-    return properties;
+    return pattern as Pattern & T;
   }
 
-  private applyPattern(object: object, properties: Properties, patternName: string): Properties {
-    const patternProperties = this.patterns[patternName].properties(object, properties);
+  private applyPattern(pattern: Pattern, newPatternName: string): Pattern {
+    const patternProperties = this.patterns[newPatternName];
 
     for (const key of Object.keys(patternProperties)) {
-      properties[key] = patternProperties;
+      pattern[key] = patternProperties;
     }
 
-    return properties;
+    return pattern;
   }
 }

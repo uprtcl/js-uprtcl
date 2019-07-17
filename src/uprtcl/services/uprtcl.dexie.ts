@@ -1,16 +1,18 @@
 import Dexie from 'dexie';
+import 'dexie-observable';
+import { Observable } from 'rxjs';
 
 import { CacheService } from '../../discovery/cache/cache.service';
 import { CacheDexie } from '../../discovery/cache/cache.dexie';
 
-import { UprtclService } from './uprtcl.service';
+import { UprtclProvider } from './uprtcl.provider';
 import { Perspective, Context, Commit } from '../types';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
-import { DerivePattern } from '../../patterns/derive/derive.pattern';
 import { SecuredPattern, Secured } from '../../patterns/derive/secured.pattern';
 import { ValidateProperties } from '../../patterns/validate.pattern';
+import { DatabaseChangeType } from 'dexie-observable/api';
 
-export class UprtclDexie extends Dexie implements CacheService, UprtclService {
+export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
   heads: Dexie.Table<string, string>;
 
   constructor(
@@ -46,31 +48,31 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclService {
   /**
    * @override
    */
-  async createContext(context: Context): Promise<string> {
+  async createContext(context: Context): Promise<Secured<Context>> {
     const secured = this.secure(context);
 
     await this.cache(secured.id, secured);
-    return secured.id;
+    return secured;
   }
 
   /**
    * @override
    */
-  async createPerspective(perspective: Perspective): Promise<string> {
+  async createPerspective(perspective: Perspective): Promise<Secured<Perspective>> {
     const secured = this.secure(perspective);
 
     await this.cache(secured.id, secured);
-    return secured.id;
+    return secured;
   }
 
   /**
    * @override
    */
-  async createCommit(commit: Commit): Promise<string> {
+  async createCommit(commit: Commit): Promise<Secured<Commit>> {
     const secured = this.secure(commit);
 
     await this.cache(secured.id, secured);
-    return secured.id;
+    return secured;
   }
 
   /**
@@ -127,7 +129,26 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclService {
   /**
    * @override
    */
-  getHead(perspectiveId: string): Promise<string | undefined> {
-    return this.heads.get(perspectiveId);
+  getHead(perspectiveId: string): Observable<string | undefined> {
+    return new Observable(subscriber => {
+      this.on('changes', changes => {
+        changes.forEach(change => {
+          switch (change.type) {
+            case DatabaseChangeType.Create:
+              if (change.key === perspectiveId) subscriber.next(change.obj);
+              break;
+            case DatabaseChangeType.Update:
+              if (change.key === perspectiveId) {
+                const headId = change.mods[Object.keys(change.mods)[0]];
+                subscriber.next(headId);
+              }
+              break;
+            case DatabaseChangeType.Delete:
+              if (change.key === perspectiveId) subscriber.next(undefined);
+              break;
+          }
+        });
+      });
+    });
   }
 }

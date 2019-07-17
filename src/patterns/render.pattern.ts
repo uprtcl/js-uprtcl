@@ -1,12 +1,13 @@
-import { Properties, Pattern } from './pattern';
+import { Pattern } from './pattern';
 
-export interface RenderProperties extends Properties {
-  render: () => Promise<any>;
+export interface RenderPattern<O> {
+  render: (object: O) => Promise<any>;
 }
 
-export const renderPattern: Pattern<any, RenderProperties> = {
-  recognize: () => true,
-  properties(object: any) {
-    return { render: () => Promise.resolve(object) };
+export class DataRenderPattern implements Pattern, RenderPattern<any> {
+  recognize() {
+    return true;
   }
-};
+
+  render = (object: object) => Promise.resolve(object);
+}

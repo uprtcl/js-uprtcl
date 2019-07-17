@@ -1,55 +1,73 @@
-import { Dictionary } from 'lodash';
-
-import { Provider } from '../sources/provider';
-import PatternRegistry from '../../patterns/registry/pattern.registry';
-import { KnownSourcesService } from '../known-sources/known-sources.service';
+import { LinkedPattern } from '../../patterns/linked.pattern';
 import { Source } from '../sources/source';
+import { MultiSourceService } from './multi-source.service';
 
-export class MultiProviderService<T extends Source> {
-  providers!: Dictionary<Provider<T>>;
-
-  private initialization: Promise<void>;
-  private initCompleted: boolean = false;
-
+export class MultiProviderService<T extends Source> extends MultiSourceService<T> {
   /**
-   * @param patternRegistry the pattern registry to interact with the objects and their links
-   * @param knownSources local service to store all known sources to be able to retrieve the object afterwards
-   * @param providers dictionary of all providers from which to get objects
-   */
-  constructor(
-    protected patternRegistry: PatternRegistry,
-    protected localKnownSources: KnownSourcesService,
-    providers: Array<Provider<T>>
-  ) {
-    this.initialization = this.initProviders(providers);
-  }
-
-  /**
-   * Initialize the providers' sources by calling getOwnSource() on each provider
+   * Executes the given update function on the given source,
+   * adding the known sources of the given object links to the source
    *
-   * @param providers
-   * @returns a promise that resolves when all the sources have been initialized
+   * @param sourceName the name of the source to execute the update function in
+   * @param updater the update function to execute in the source
+   * @param object the object to create
+   * @returns the result of the update function
    */
-  private async initProviders(providers: Array<Provider<T>>): Promise<void> {
-    // Get the name of each source
-    const promises = providers.map(provider => provider.knownSources.getOwnSource());
-    const sources = await Promise.all(promises);
+  public async updateIn<O extends object, S>(
+    sourceName: string,
+    updater: (service: T) => Promise<S>,
+    object: O
+  ): Promise<S> {
+    // Execute the updater callback in the source
+    const source = this.sources[sourceName];
+    const result = await updater(source.source);
 
-    // Build the provider dictionary from the resulting names
-    this.providers = sources.reduce(
-      (providers, source, index) => ({ ...providers, [source]: providers[index] }),
-      {}
-    );
+    // Add known sources of the object's links to the provider's known sources
+    if (source.knownSources) {
+      // Get the properties to get the object links from
+      const pattern = this.patternRegistry.from(object) as LinkedPattern<O>;
 
-    // Set initialization completed
-    this.initCompleted = true;
+      if (pattern.hasOwnProperty('getLinks')) {
+        const links = await pattern.getLinks(object);
+
+        const promises = links.map(async link => {
+          // We asume that we have stored the local known sources for the links from the object
+          const knownSources = await this.localKnownSources.getKnownSources(link);
+
+          // If the only known source is the name of the source itself, we don't need to tell the provider
+          const sameSource =
+            knownSources && knownSources.length === 1 && knownSources[0] === sourceName;
+
+          if (knownSources && !sameSource) {
+            await source.knownSources.addKnownSources(link, knownSources);
+          }
+        });
+
+        await Promise.all(promises);
+      }
+    }
+
+    return result;
   }
 
   /**
-   * @returns a promise that resolves when all the sources have been initialized
+   * Creates the given object on the given source executing the given creator function,
+   * adding the known sources of its links to the source
+   *
+   * @param source the source to create the object in
+   * @param creator the creator function to execute
+   * @param object the object to create
+   * @returns the hash of the newly created object
    */
-  protected ready(): Promise<void> {
-    if (this.initCompleted) return Promise.resolve();
-    else return this.initialization;
+  public async createIn<O extends object>(
+    source: string,
+    creator: (service: T) => Promise<string>,
+    object: O
+  ): Promise<string> {
+    const hash = await this.updateIn(source, creator, object);
+
+    // We successfully created the object in the source, add to local known sources
+    await this.localKnownSources.addKnownSources(hash, [source]);
+
+    return hash;
   }
 }

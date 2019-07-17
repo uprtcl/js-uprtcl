@@ -1,21 +1,22 @@
-import { UprtclService } from './uprtcl.service';
+import { UprtclProvider } from './uprtcl.provider';
 import { Context, Perspective, Commit } from '../types';
 import { HolochainConnection } from '../../connections/holochain.connection';
 import { Secured } from '../../patterns/derive/secured.pattern';
+import { Observable } from 'rxjs';
 
-export class UprtclHolochain implements UprtclService {
+export class UprtclHolochain implements UprtclProvider {
   constructor(
     protected uprtclZome: HolochainConnection,
     protected proxyZome: HolochainConnection
   ) {}
 
-  createContext(context: Context): Promise<string> {
+  createContext(context: Context): Promise<Secured<Context>> {
     throw new Error('Method not implemented.');
   }
-  createPerspective(perspective: Perspective): Promise<string> {
+  createPerspective(perspective: Perspective): Promise<Secured<Perspective>> {
     throw new Error('Method not implemented.');
   }
-  createCommit(commit: Commit): Promise<string> {
+  createCommit(commit: Commit): Promise<Secured<Commit>> {
     throw new Error('Method not implemented.');
   }
   cloneContext(context: Secured<Context>): Promise<string> {
@@ -30,7 +31,7 @@ export class UprtclHolochain implements UprtclService {
   updateHead(perspectiveId: string, headId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  getHead(perspectiveId: string): Promise<string | undefined> {
+  getHead(perspectiveId: string): Observable<string | undefined> {
     throw new Error('Method not implemented.');
   }
   get<T extends object>(hash: string): Promise<T | undefined> {
