@@ -3,8 +3,8 @@ import { Source } from '../sources/source';
 import { CachedSourceService } from './cached-source.service';
 import { CacheService } from '../cache/cache.service';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
-import { CreatePattern } from '../../patterns/create.pattern';
-import { ClonePattern } from '../../patterns/clone.pattern';
+import { CreatePattern } from '../../patterns/patterns/create.pattern';
+import { ClonePattern } from '../../patterns/patterns/clone.pattern';
 
 export class CachedProviderService<
   C extends CacheService,

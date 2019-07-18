@@ -1,9 +1,9 @@
 import { Pattern } from '../../patterns/pattern';
 import { Context, Perspective } from '../types';
-import { Secured } from '../../patterns/derive/secured.pattern';
-import { ClonePattern } from '../../patterns/clone.pattern';
+import { Secured } from '../../patterns/defaults/default-secured.pattern';
+import { ClonePattern } from '../../patterns/patterns/clone.pattern';
 import { UprtclProvider } from '../services/uprtcl.provider';
-import { CreatePattern } from '../../patterns/create.pattern';
+import { CreatePattern } from '../../patterns/patterns/create.pattern';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'nonce'];
 

@@ -8,9 +8,10 @@ import { CacheDexie } from '../../discovery/cache/cache.dexie';
 import { UprtclProvider } from './uprtcl.provider';
 import { Perspective, Context, Commit } from '../types';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
-import { SecuredPattern, Secured } from '../../patterns/derive/secured.pattern';
-import { ValidateProperties } from '../../patterns/validate.pattern';
+import { DefaultSecuredPattern, Secured } from '../../patterns/defaults/default-secured.pattern';
+import { ValidatePattern } from '../../patterns/patterns/validate.pattern';
 import { DatabaseChangeType } from 'dexie-observable/api';
+import { SecuredPattern } from '../../patterns/patterns/secured.pattern';
 
 export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
   heads: Dexie.Table<string, string>;
@@ -40,9 +41,9 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
     return this.objectsCache.cache(hash, object);
   }
 
-  private secure<T>(object: T): Secured<T> {
-    const pattern: SecuredPattern = this.patternRegistry.getPattern('secure') as SecuredPattern;
-    return pattern.derive<T>(object);
+  private secure<T extends object>(object: T): Secured<T> {
+    const pattern: SecuredPattern<Secured<T>> = this.patternRegistry.getPattern('secure');
+    return pattern.derive(object);
   }
 
   /**

@@ -1,5 +1,5 @@
 import { Source } from '../sources/source';
-import { LinkedPattern } from '../../patterns/linked.pattern';
+import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
 import { Dictionary } from 'lodash';
 import { DiscoverableSource } from '../sources/discoverable.source';
 import PatternRegistry from '../../js-uprtcl';

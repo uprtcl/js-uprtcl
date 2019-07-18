@@ -1,7 +1,7 @@
 import { UprtclProvider } from './uprtcl.provider';
 import { Context, Perspective, Commit } from '../types';
 import { HolochainConnection } from '../../connections/holochain.connection';
-import { Secured } from '../../patterns/derive/secured.pattern';
+import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import { Observable } from 'rxjs';
 
 export class UprtclHolochain implements UprtclProvider {

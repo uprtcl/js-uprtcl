@@ -1,4 +1,4 @@
-import { LinkedPattern } from '../../patterns/linked.pattern';
+import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
 import { Source } from '../sources/source';
 import { MultiSourceService } from './multi-source.service';
 

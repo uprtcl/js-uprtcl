@@ -1,5 +1,6 @@
 import PatternRegistry from '../../src/patterns/registry/pattern.registry';
-import { HashedPattern } from '../../src/patterns/derive/hashed.pattern';
+import { DefaultHashedPattern } from '../../src/patterns/defaults/default-hashed.pattern';
+import { HashedPattern } from '../../src/patterns/patterns/hashed.pattern';
 
 /**
  * Pattern registry test
@@ -12,11 +13,9 @@ describe('Pattern registry test', () => {
   });
 
   it('register default patterns', async () => {
-    const hashedPattern = new HashedPattern();
-    patternRegistry.registerPattern('hashed', hashedPattern);
-
-    const object = { id: '', object: {} };
-    const pattern: HashedPattern = patternRegistry.from(object) as HashedPattern;
+    const object = { id: '0', object: {} };
+    const pattern: HashedPattern<any> = patternRegistry.from(object);
+    console.log(pattern);
     pattern.validate(object);
   });
 });

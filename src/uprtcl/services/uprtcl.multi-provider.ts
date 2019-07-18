@@ -1,5 +1,5 @@
 import { Perspective, Context, Commit } from '../types';
-import { Secured } from '../../patterns/derive/secured.pattern';
+import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import { UprtclSource } from './uprctl.source';
 
 export interface UprtclMultiProvider extends UprtclSource {

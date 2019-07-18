@@ -1,12 +1,12 @@
 import { Perspective, Commit } from '../types';
-import { Secured } from '../../patterns/derive/secured.pattern';
+import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
 import { UprtclSource } from '../services/uprctl.source';
 import { UprtclProvider } from '../services/uprtcl.provider';
-import { LinkedPattern } from '../../patterns/linked.pattern';
-import { RenderPattern } from '../../patterns/render.pattern';
-import { ClonePattern } from '../../patterns/clone.pattern';
-import { CreatePattern } from '../../patterns/create.pattern';
+import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
+import { RenderPattern } from '../../patterns/patterns/render.pattern';
+import { ClonePattern } from '../../patterns/patterns/clone.pattern';
+import { CreatePattern } from '../../patterns/patterns/create.pattern';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp', 'contextId', 'name'];
 

@@ -1,8 +1,8 @@
-import { LinkedPattern } from '../../patterns/linked.pattern';
+import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
 import { Pattern } from '../../patterns/pattern';
 import { Commit } from '../types';
-import { Secured } from '../../patterns/derive/secured.pattern';
-import { RenderPattern } from '../../patterns/render.pattern';
+import { Secured } from '../../patterns/defaults/default-secured.pattern';
+import { RenderPattern } from '../../patterns/patterns/render.pattern';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
 import { UprtclSource } from '../services/uprctl.source';
 
