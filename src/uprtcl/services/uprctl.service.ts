@@ -5,7 +5,7 @@ import { MultiProviderService } from '../../discovery/multi/multi-provider.servi
 import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import { Context } from '../types';
 import { UprtclMultiProvider } from './uprtcl.multi-provider';
-import PatternRegistry from '../../js-uprtcl';
+import PatternRegistry from '../../patterns/registry/pattern.registry';
 
 export class UprtclService implements UprtclMultiProvider {
   cachedMultiProvider: CachedProviderService<

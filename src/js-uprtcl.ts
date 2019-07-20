@@ -1,3 +1,11 @@
 import PatternRegistry from './patterns/registry/pattern.registry';
 
-export default PatternRegistry;
+export {
+  Connection,
+  EthereumConnection,
+  HolochainConnection,
+  IpfsConnection,
+  SocketConnection
+} from './connections';
+
+export { PatternRegistry };

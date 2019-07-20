@@ -14,8 +14,8 @@ export class PerspectivePattern
   implements
     LinkedPattern<Secured<Perspective>>,
     RenderPattern<Secured<Perspective>>,
-    ClonePattern<UprtclProvider, Secured<Perspective>>,
-    CreatePattern<UprtclProvider, Perspective, Secured<Perspective>> {
+    ClonePattern<Secured<Perspective>, UprtclProvider>,
+    CreatePattern<Perspective, Secured<Perspective>, UprtclProvider> {
   constructor(protected patternRegistry: PatternRegistry, protected uprtcl: UprtclSource) {}
   recognize(object: Object) {
     return propertyOrder.every(p => object.hasOwnProperty(p));
@@ -40,11 +40,11 @@ export class PerspectivePattern
     return commitProps.render(commit as Commit);
   }
 
-  clone(service: UprtclProvider, perspective: Secured<Perspective>): Promise<string> {
+  clone(perspective: Secured<Perspective>, service: UprtclProvider): Promise<string> {
     return service.clonePerspective(perspective);
   }
 
-  create(service: UprtclProvider, perspective: Perspective): Promise<any> {
+  create(perspective: Perspective, service: UprtclProvider): Promise<Secured<Perspective>> {
     return service.createPerspective(perspective);
   }
 }

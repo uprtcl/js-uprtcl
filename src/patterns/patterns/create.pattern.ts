@@ -1,3 +1,3 @@
-export interface CreatePattern<T, O, R> {
-  create: (service: T, object: O) => Promise<R>;
+export interface CreatePattern<O, R, T> {
+  create: (object: O, service: T) => Promise<R>;
 }

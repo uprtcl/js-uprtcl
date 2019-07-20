@@ -2,8 +2,8 @@ import { Source } from '../sources/source';
 import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
 import { Dictionary } from 'lodash';
 import { DiscoverableSource } from '../sources/discoverable.source';
-import PatternRegistry from '../../js-uprtcl';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
+import PatternRegistry from '../../patterns/registry/pattern.registry';
 
 export class MultiSourceService<T extends Source = Source> implements Source {
   sources!: Dictionary<DiscoverableSource<T>>;
@@ -59,7 +59,7 @@ export class MultiSourceService<T extends Source = Source> implements Source {
    * @param sourceName the name of the source
    * @returns the source identified with the given name
    */
-  public getSource(sourceName: string): Source {
+  public getSource(sourceName: string): T {
     return this.sources[sourceName].source;
   }
 

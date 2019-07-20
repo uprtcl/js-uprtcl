@@ -1,3 +1,3 @@
-export interface ClonePattern<T, O> {
-  clone: (service: T, object: O) => Promise<string>;
+export interface ClonePattern<O, T> {
+  clone: (object: O, service: T) => Promise<string>;
 }
