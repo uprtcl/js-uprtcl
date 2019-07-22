@@ -4,14 +4,6 @@ import { UprtclSource } from './uprctl.source';
 
 export interface UprtclMultiProvider extends UprtclSource {
   /**
-   * Returns all the perspectives associated to a
-   * context.
-   *
-   * @param contextId The context id
-   */
-  //  getContextPerspectives(contextId: string): Promise<Perspective[]>;
-
-  /**
    * Create the given context in the service, returning the hash identifying the context
    *
    * @param context: the context to create

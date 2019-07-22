@@ -2,23 +2,28 @@ import { Perspective, Commit } from '../types';
 import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
 import { UprtclSource } from '../services/uprctl.source';
-import { UprtclProvider } from '../services/uprtcl.provider';
 import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
 import { RenderPattern } from '../../patterns/patterns/render.pattern';
-import { ClonePattern } from '../../patterns/patterns/clone.pattern';
-import { CreatePattern } from '../../patterns/patterns/create.pattern';
+import { Pattern } from '../../patterns/pattern';
+import { SecuredPattern } from '../../patterns/patterns/secured.pattern';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp', 'contextId', 'name'];
 
 export class PerspectivePattern
-  implements
-    LinkedPattern<Secured<Perspective>>,
-    RenderPattern<Secured<Perspective>>,
-    ClonePattern<Secured<Perspective>, UprtclProvider>,
-    CreatePattern<Perspective, Secured<Perspective>, UprtclProvider> {
-  constructor(protected patternRegistry: PatternRegistry, protected uprtcl: UprtclSource) {}
+  implements LinkedPattern<Secured<Perspective>>, RenderPattern<Secured<Perspective>> {
+  constructor(
+    protected patternRegistry: PatternRegistry,
+    protected securedPattern: Pattern & SecuredPattern<Secured<Perspective>>,
+    protected uprtcl: UprtclSource
+  ) {}
+
   recognize(object: Object) {
-    return propertyOrder.every(p => object.hasOwnProperty(p));
+    return (
+      this.securedPattern.recognize(object) &&
+      propertyOrder.every(p =>
+        this.securedPattern.getObject<Perspective>(object as Secured<Perspective>).hasOwnProperty(p)
+      )
+    );
   }
 
   getHardLinks = (perspective: Secured<Perspective>) => [perspective.object.object.contextId];
@@ -38,13 +43,5 @@ export class PerspectivePattern
     if (!commit) return null;
     const commitProps = this.patternRegistry.from(commit) as RenderPattern<Commit>;
     return commitProps.render(commit as Commit);
-  }
-
-  clone(perspective: Secured<Perspective>, service: UprtclProvider): Promise<string> {
-    return service.clonePerspective(perspective);
-  }
-
-  create(perspective: Perspective, service: UprtclProvider): Promise<Secured<Perspective>> {
-    return service.createPerspective(perspective);
   }
 }

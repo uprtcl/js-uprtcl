@@ -10,6 +10,9 @@ export class UprtclHolochain implements UprtclProvider {
     protected proxyZome: HolochainConnection
   ) {}
 
+  getContextPerspectives(contextId: string): Promise<Secured<Perspective>[]> {
+    throw new Error('Method not implemented.');
+  }
   createContext(context: Context): Promise<Secured<Context>> {
     throw new Error('Method not implemented.');
   }

@@ -8,7 +8,7 @@ import PatternRegistry from '../../patterns/registry/pattern.registry';
 export class MultiSourceService<T extends Source = Source> implements Source {
   sources!: Dictionary<DiscoverableSource<T>>;
 
-  private initialization: Promise<void>;
+  private initialization!: Promise<void>;
   private initCompleted: boolean = false;
 
   /**
@@ -21,6 +21,15 @@ export class MultiSourceService<T extends Source = Source> implements Source {
     protected localKnownSources: KnownSourcesService,
     discoverableSources: Array<DiscoverableSource<T>>
   ) {
+    this.addSources(discoverableSources);
+  }
+
+  /**
+   * Adds the given sources, discovering their name
+   * @param discoverableSources the sources to add
+   */
+  public async addSources(discoverableSources: Array<DiscoverableSource<T>>): Promise<void> {
+    this.initCompleted = false;
     this.initialization = this.initSources(discoverableSources);
   }
 
@@ -37,7 +46,7 @@ export class MultiSourceService<T extends Source = Source> implements Source {
 
     // Build the sources dictionary from the resulting names
     this.sources = sourcesNames.reduce(
-      (sources, sourceName, index) => ({ ...sources, [sourceName]: sources[index] }),
+      (sources, sourceName, index) => ({ ...sources, [sourceName]: discoverableSources[index] }),
       {}
     );
 
@@ -66,8 +75,15 @@ export class MultiSourceService<T extends Source = Source> implements Source {
   /**
    * @returns gets the names of all the sources
    */
-  public getAllSources(): string[] {
+  public getAllSourcesNames(): string[] {
     return Object.keys(this.sources);
+  }
+
+  /**
+   * @returns gets all the sources
+   */
+  public getAllSources(): T[] {
+    return Object.keys(this.sources).map(sourceName => this.sources[sourceName].source);
   }
 
   /**
@@ -92,7 +108,7 @@ export class MultiSourceService<T extends Source = Source> implements Source {
    * @param source the source from which to get the object from
    * @returns the object if found, otherwise undefined
    */
-  protected async getFromSource<O extends object>(
+  public async getFromSource<O extends object>(
     hash: string,
     source: string
   ): Promise<O | undefined> {
@@ -152,11 +168,10 @@ export class MultiSourceService<T extends Source = Source> implements Source {
     let promises: Array<Promise<O>>;
     if (knownSources) {
       // Try to retrieve the object from any of the known sources
-
       promises = knownSources.map(source => this.tryGetFromSource<O>(hash, source));
     } else {
       // We had no known sources for the hash, try to get the object from all the sources
-      const allSources = this.getAllSources();
+      const allSources = this.getAllSourcesNames();
 
       promises = allSources.map(async source => {
         const object = await this.tryGetFromSource<O>(hash, source);

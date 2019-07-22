@@ -3,12 +3,11 @@ import { Source } from '../sources/source';
 import { CachedSourceService } from './cached-source.service';
 import { CacheService } from '../cache/cache.service';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
-import { CreatePattern } from '../../patterns/patterns/create.pattern';
-import { ClonePattern } from '../../patterns/patterns/clone.pattern';
 
 export class CachedProviderService<
-  C extends CacheService,
-  REMOTE extends Source
+  T,
+  C extends CacheService & T,
+  REMOTE extends Source & T
 > extends CachedSourceService {
   constructor(
     protected patternRegistry: PatternRegistry,
@@ -26,22 +25,18 @@ export class CachedProviderService<
    * @param creator the creator function to execute
    * @returns the optimistic id of the newly created object
    */
-  public async optimisticCreate<O extends object, R>(object: O): Promise<R> {
+  public async optimisticCreate<O extends object, R>(
+    object: O,
+    creator: (service: T) => Promise<R>,
+    cloner: (service: T, object: R) => Promise<any>
+  ): Promise<R> {
     // First, create object in cache
-    const pattern: CreatePattern<C, O, R> & ClonePattern<REMOTE, R> = this.patternRegistry.from(
-      object
-    );
-
-    if (!pattern.hasOwnProperty('clone') || !pattern.hasOwnProperty('create')) {
-      throw new Error('Object data schema has not clone and create pattern implemented');
-    }
-
-    const createdObject = await pattern.create(this.cache, object);
+    const createdObject = await creator(this.cache);
 
     this.logger.info(`Optimistically created object: ${createdObject}`);
 
     // Then schedule the same creation in the remote
-    const task = async () => pattern.clone(this.remote, createdObject);
+    const task = async () => cloner(this.remote, createdObject);
     this.taskQueue.queueTask({ id: JSON.stringify(object), task: task });
 
     return createdObject;

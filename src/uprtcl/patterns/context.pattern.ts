@@ -1,26 +1,19 @@
 import { Pattern } from '../../patterns/pattern';
-import { Context, Perspective } from '../types';
+import { SecuredPattern } from '../../patterns/patterns/secured.pattern';
 import { Secured } from '../../patterns/defaults/default-secured.pattern';
-import { ClonePattern } from '../../patterns/patterns/clone.pattern';
-import { UprtclProvider } from '../services/uprtcl.provider';
-import { CreatePattern } from '../../patterns/patterns/create.pattern';
+import { Context } from '../types';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'nonce'];
 
-export class ContextPattern
-  implements
-    Pattern,
-    ClonePattern<Secured<Context>, UprtclProvider>,
-    CreatePattern<Context, Secured<Context>, UprtclProvider> {
+export class ContextPattern implements Pattern {
+  constructor(protected securedPattern: Pattern & SecuredPattern<Secured<Context>>) {}
+
   recognize(object: Object) {
-    return propertyOrder.every(p => object.hasOwnProperty(p));
-  }
-
-  clone(context: Secured<Context>, service: UprtclProvider): Promise<string> {
-    return service.cloneContext(context);
-  }
-
-  create(context: Context, service: UprtclProvider): Promise<Secured<Context>> {
-    return service.createContext(context);
+    return (
+      this.securedPattern.recognize(object) &&
+      propertyOrder.every(p =>
+        this.securedPattern.getObject<Context>(object as Secured<Context>).hasOwnProperty(p)
+      )
+    );
   }
 }

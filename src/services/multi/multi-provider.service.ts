@@ -18,13 +18,13 @@ export class MultiProviderService<T extends Source> extends MultiSourceService<T
     object: O
   ): Promise<S> {
     // Execute the updater callback in the source
-    const source = this.sources[sourceName];
-    const result = await updater(source.source);
+    const discoverableSource = this.sources[sourceName];
+    const result = await updater(discoverableSource.source);
 
     // Add known sources of the object's links to the provider's known sources
-    if (source.knownSources) {
+    if (discoverableSource.knownSources) {
       // Get the properties to get the object links from
-      const pattern = this.patternRegistry.from(object) as LinkedPattern<O>;
+      const pattern: LinkedPattern<O> = this.patternRegistry.from(object);
 
       if (pattern.hasOwnProperty('getLinks')) {
         const links = await pattern.getLinks(object);
@@ -38,7 +38,7 @@ export class MultiProviderService<T extends Source> extends MultiSourceService<T
             knownSources && knownSources.length === 1 && knownSources[0] === sourceName;
 
           if (knownSources && !sameSource) {
-            await source.knownSources.addKnownSources(link, knownSources);
+            await discoverableSource.knownSources.addKnownSources(link, knownSources);
           }
         });
 

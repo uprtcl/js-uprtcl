@@ -1,30 +1,127 @@
 import { UprtclProvider } from './uprtcl.provider';
-import { CacheService } from '../../discovery/cache/cache.service';
-import { CachedProviderService } from '../../discovery/cached-remotes/cached-provider.service';
-import { MultiProviderService } from '../../discovery/multi/multi-provider.service';
+import { CacheService } from '../../services/cache/cache.service';
+import { MultiProviderService } from '../../services/multi/multi-provider.service';
 import { Secured } from '../../patterns/defaults/default-secured.pattern';
-import { Context } from '../types';
-import { UprtclMultiProvider } from './uprtcl.multi-provider';
+import { Context, Perspective, Commit } from '../types';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
+import { CachedMultiProviderService } from '../../services/cached-remotes/cached-multi-provider.service';
+import { UprtclMultiProvider } from './uprtcl.multi-provider';
+import { Observable } from 'rxjs';
+import { Signed } from '../../patterns/patterns/signed.pattern';
 
 export class UprtclService implements UprtclMultiProvider {
-  cachedMultiProvider: CachedProviderService<
-    UprtclProvider & CacheService,
-    MultiProviderService<UprtclProvider>
-  >;
+  cachedMultiProvider: CachedMultiProviderService<UprtclProvider, UprtclProvider & CacheService>;
 
   constructor(
     patternRegistry: PatternRegistry,
     cache: UprtclProvider & CacheService,
     multiProvider: MultiProviderService<UprtclProvider>
   ) {
-    this.cachedMultiProvider = new CachedProviderService<
-      UprtclProvider & CacheService,
-      MultiProviderService<UprtclProvider>
+    this.cachedMultiProvider = new CachedMultiProviderService<
+      UprtclProvider,
+      UprtclProvider & CacheService
     >(patternRegistry, cache, multiProvider);
   }
 
   createContextIn(source: string, context: Context): Promise<Secured<Context>> {
-    return this.cachedMultiProvider.optimisticCreate(context);
+    return this.cachedMultiProvider.optimisticCreateIn(
+      source,
+      context,
+      service => service.createContext(context),
+      (service, securedContext) => service.cloneContext(securedContext)
+    );
+  }
+
+  createPerspectiveIn(source: string, perspective: Perspective): Promise<Secured<Perspective>> {
+    return this.cachedMultiProvider.optimisticCreateIn(
+      source,
+      perspective,
+      service => service.createPerspective(perspective),
+      (service, securedPerspective) => service.clonePerspective(securedPerspective)
+    );
+  }
+
+  createCommitIn(source: string, commit: Commit): Promise<Secured<Commit>> {
+    return this.cachedMultiProvider.optimisticCreateIn(
+      source,
+      commit,
+      service => service.createCommit(commit),
+      (service, securedCommit) => service.cloneCommit(securedCommit)
+    );
+  }
+
+  cloneContextIn(source: string, context: Secured<Context>): Promise<string> {
+    return this.cachedMultiProvider.multiRemote.createIn(
+      source,
+      service => service.cloneContext(context),
+      context
+    );
+  }
+
+  clonePerspectiveIn(source: string, perspective: Secured<Perspective>): Promise<string> {
+    return this.cachedMultiProvider.multiRemote.createIn(
+      source,
+      service => service.clonePerspective(perspective),
+      perspective
+    );
+  }
+
+  cloneCommitIn(source: string, commit: Secured<Commit>): Promise<string> {
+    return this.cachedMultiProvider.multiRemote.createIn(
+      source,
+      service => service.cloneCommit(commit),
+      commit
+    );
+  }
+
+  async updateHead(perspectiveId: string, headId: string): Promise<void> {
+    const perspective = await this.get<Signed<Perspective>>(perspectiveId);
+
+    if (!perspective) {
+      throw new Error(`Perspective with id ${perspectiveId} not found`);
+    }
+
+    const origin = perspective.object.origin;
+    this.cachedMultiProvider.optimisticUpdateIn(
+      origin,
+      perspective,
+      service => service.updateHead(perspectiveId, headId),
+      service => service.updateHead(perspectiveId, headId),
+      `update-head-of-${perspectiveId}`,
+      perspectiveId
+    );
+  }
+
+  getHead(perspectiveId: string): Observable<string | undefined> {
+    this.get<Signed<Perspective>>(perspectiveId).then(perspective => {
+      if (!perspective) {
+        throw new Error(`Perspective with id ${perspectiveId} not found`);
+      }
+
+      const origin = perspective.object.origin;
+      const originSource = this.cachedMultiProvider.multiRemote.getSource(origin);
+
+      originSource.getHead(perspectiveId).subscribe(headId => {
+        if (headId) this.cachedMultiProvider.cache.updateHead(perspectiveId, headId);
+      });
+    });
+
+    return this.cachedMultiProvider.cache.getHead(perspectiveId);
+  }
+
+  get<T extends object>(hash: string): Promise<T | undefined> {
+    return this.cachedMultiProvider.get<T>(hash);
+  }
+
+  async getContextPerspectives(contextId: string): Promise<Secured<Perspective>[]> {
+    let allPerspectives: Secured<Perspective>[] = [];
+    const promises = this.cachedMultiProvider.multiRemote.getAllSources().map(async source => {
+      const perspectives = await source.getContextPerspectives(contextId);
+      allPerspectives = allPerspectives.concat(perspectives);
+    });
+
+    await Promise.all(promises);
+
+    return allPerspectives;
   }
 }

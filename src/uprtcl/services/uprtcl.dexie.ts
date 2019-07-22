@@ -1,20 +1,22 @@
 import Dexie from 'dexie';
 import 'dexie-observable';
 import { Observable } from 'rxjs';
+import * as _ from 'lodash';
 
-import { CacheService } from '../../discovery/cache/cache.service';
-import { CacheDexie } from '../../discovery/cache/cache.dexie';
+import { CacheService } from '../../services/cache/cache.service';
+import { CacheDexie } from '../../services/cache/cache.dexie';
 
 import { UprtclProvider } from './uprtcl.provider';
 import { Perspective, Context, Commit } from '../types';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
-import { DefaultSecuredPattern, Secured } from '../../patterns/defaults/default-secured.pattern';
+import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import { ValidatePattern } from '../../patterns/patterns/validate.pattern';
 import { DatabaseChangeType } from 'dexie-observable/api';
 import { SecuredPattern } from '../../patterns/patterns/secured.pattern';
 
 export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
   heads: Dexie.Table<string, string>;
+  contextPerspectives: Dexie.Table<string[], string>;
 
   constructor(
     protected patternRegistry: PatternRegistry,
@@ -22,9 +24,11 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
   ) {
     super('uprtcl');
     this.version(0.1).stores({
-      heads: ''
+      heads: '',
+      contextPerspectives: ''
     });
     this.heads = this.table('heads');
+    this.contextPerspectives = this.table('contextPerspectives');
   }
 
   /**
@@ -41,8 +45,11 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
     return this.objectsCache.cache(hash, object);
   }
 
+  /**
+   * Creates a secured version of the given object
+   */
   private secure<T extends object>(object: T): Secured<T> {
-    const pattern: SecuredPattern<Secured<T>> = this.patternRegistry.getPattern('secure');
+    const pattern: SecuredPattern<Secured<T>> = this.patternRegistry.getPattern('secured');
     return pattern.derive(object);
   }
 
@@ -56,6 +63,17 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
     return secured;
   }
 
+  private async addContextPerspective(contextId: string, perspectiveId: string): Promise<void> {
+    const perspectives = await this.contextPerspectives.get(contextId);
+
+    if (!perspectives) {
+      await this.contextPerspectives.put([perspectiveId], contextId);
+    } else {
+      perspectives.push(perspectiveId);
+      await this.contextPerspectives.put(_.uniq(perspectives), contextId);
+    }
+  }
+
   /**
    * @override
    */
@@ -63,6 +81,8 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
     const secured = this.secure(perspective);
 
     await this.cache(secured.id, secured);
+    await this.addContextPerspective(perspective.contextId, secured.id);
+
     return secured;
   }
 
@@ -80,9 +100,9 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
    * @override
    */
   async cloneContext(context: Secured<Context>): Promise<string> {
-    const properties: ValidateProperties = this.patternRegistry.from(context) as ValidateProperties;
+    const pattern: ValidatePattern<Secured<Context>> = this.patternRegistry.from(context);
 
-    if (properties.validate()) {
+    if (pattern.validate(context)) {
       throw new Error('Context is not valid');
     }
 
@@ -94,15 +114,15 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
    * @override
    */
   async clonePerspective(perspective: Secured<Perspective>): Promise<string> {
-    const properties: ValidateProperties = this.patternRegistry.from(
-      perspective
-    ) as ValidateProperties;
+    const pattern: ValidatePattern<Secured<Perspective>> = this.patternRegistry.from(perspective);
 
-    if (properties.validate()) {
+    if (pattern.validate(perspective)) {
       throw new Error('Perspective is not valid');
     }
 
     await this.cache(perspective.id, perspective);
+    await this.addContextPerspective(perspective.object.object.contextId, perspective.id);
+
     return perspective.id;
   }
 
@@ -110,9 +130,9 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
    * @override
    */
   async cloneCommit(commit: Secured<Commit>): Promise<string> {
-    const properties: ValidateProperties = this.patternRegistry.from(commit) as ValidateProperties;
+    const pattern: ValidatePattern<Secured<Commit>> = this.patternRegistry.from(commit);
 
-    if (properties.validate()) {
+    if (pattern.validate(commit)) {
       throw new Error('Commit is not valid');
     }
 
@@ -151,5 +171,20 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
         });
       });
     });
+  }
+
+  /**
+   * @override
+   */
+  async getContextPerspectives(contextId: string): Promise<Secured<Perspective>[]> {
+    const perspectivesIds = await this.contextPerspectives.get(contextId);
+
+    if (!perspectivesIds) return [];
+
+    const promises = perspectivesIds.map(perspective =>
+      this.get<Secured<Perspective>>(perspective)
+    );
+    const perspectives = await Promise.all(promises);
+    return perspectives.filter(p => p !== undefined) as Secured<Perspective>[];
   }
 }

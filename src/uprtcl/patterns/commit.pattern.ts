@@ -4,44 +4,41 @@ import { Commit } from '../types';
 import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import { RenderPattern } from '../../patterns/patterns/render.pattern';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
-import { UprtclSource } from '../services/uprctl.source';
-import { ClonePattern } from '../../patterns/patterns/clone.pattern';
-import { UprtclProvider } from '../services/uprtcl.provider';
-import { CreatePattern } from '../../patterns/patterns/create.pattern';
+import { Source } from '../../services/sources/source';
+import { SecuredPattern } from '../../patterns/patterns/secured.pattern';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
 export class CommitPattern
-  implements
-    Pattern,
-    LinkedPattern<Commit>,
-    RenderPattern<Secured<Commit>>,
-    ClonePattern<Secured<Commit>, UprtclProvider>,
-    CreatePattern<Commit, Secured<Commit>, UprtclProvider> {
-  constructor(protected patternRegistry: PatternRegistry, protected uprtcl: UprtclSource) {}
+  implements Pattern, LinkedPattern<Secured<Commit>>, RenderPattern<Secured<Commit>> {
+  constructor(
+    protected patternRegistry: PatternRegistry,
+    protected securedPattern: Pattern & SecuredPattern<Secured<Commit>>,
+    protected source: Source
+  ) {}
 
-  recognize(object: Object) {
-    return propertyOrder.every(p => object.hasOwnProperty(p));
+  recognize(object: object) {
+    return (
+      this.securedPattern.recognize(object) &&
+      propertyOrder.every(p =>
+        this.securedPattern.getObject<Commit>(object as Secured<Commit>).hasOwnProperty(p)
+      )
+    );
   }
 
-  getHardLinks = (commit: Commit) => [commit.dataId, ...commit.parentsIds];
-  getSoftLinks = async (commit: Commit) => [] as string[];
-  getLinks = (commit: Commit) =>
+  getHardLinks = (commit: Secured<Commit>) => [
+    commit.object.object.dataId,
+    ...commit.object.object.parentsIds
+  ];
+  getSoftLinks = async (commit: Secured<Commit>) => [] as string[];
+  getLinks = (commit: Secured<Commit>) =>
     this.getSoftLinks(commit).then(links => links.concat(this.getHardLinks(commit)));
 
   async render(commit: Secured<Commit>) {
-    const data = await this.uprtcl.get(commit.object.object.dataId);
+    const data = await this.source.get(commit.object.object.dataId);
 
     if (!data) return null;
     const dataProps = this.patternRegistry.from(data) as RenderPattern<any>;
     return dataProps.render(data);
-  }
-
-  clone(commit: Secured<Commit>, service: UprtclProvider): Promise<string> {
-    return service.cloneCommit(commit);
-  }
-
-  create(commit: Commit, service: UprtclProvider): Promise<Secured<Commit>> {
-    return service.createCommit(commit);
   }
 }

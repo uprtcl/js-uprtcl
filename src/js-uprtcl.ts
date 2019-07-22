@@ -8,4 +8,6 @@ export {
   SocketConnection
 } from './connections';
 
+export { MultiSourceService } from './services/multi/multi-source.service';
+
 export { PatternRegistry };
