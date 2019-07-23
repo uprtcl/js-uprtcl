@@ -29,7 +29,6 @@ export class CachedProviderService<
   ): Promise<R> {
     // First, create object in cache
     const createdObject = await creator(this.cache);
-
     this.logger.info(`Optimistically created object: ${createdObject}`);
 
     // Then schedule the same creation in the remote

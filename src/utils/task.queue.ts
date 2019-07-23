@@ -1,5 +1,5 @@
 import { Logger } from './logger';
-import { installOfflineWatcher } from 'pwa-helpers/network.js';
+import { installOfflineWatcher } from './offline.watcher';
 
 type Dictionary<T> = { [key: string]: T };
 

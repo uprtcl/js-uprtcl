@@ -3,6 +3,7 @@ import { CachedProviderService } from '../../src/services/cached-remotes/cached-
 import { TaskQueueMock } from '../mocks/task.queue.mock';
 
 const object1 = {
+  id: 'object1',
   links: ['object2']
 };
 
@@ -10,12 +11,12 @@ const object1 = {
  * CachedProviderService test
  */
 describe('CachedProviderService test', () => {
-  let cachedProvider: CachedProviderService<CacheSourceMock, CacheSourceMock, CacheSourceMock>;
+  let cachedProvider: CachedProviderService<CacheSourceMock, CacheSourceMock>;
   let cache: CacheSourceMock;
   let remote: CacheSourceMock;
   let spyCacheGet: jest.SpyInstance;
   let spyCacheCreate: jest.SpyInstance;
-  let spyRemoteGet: jest.SpyInstance;
+  let spyRemoteCreate: jest.SpyInstance;
   let spyQueueTask: jest.SpyInstance;
 
   beforeEach(() => {
@@ -24,29 +25,54 @@ describe('CachedProviderService test', () => {
 
     spyCacheGet = jest.spyOn(cache, 'get');
     spyCacheCreate = jest.spyOn(cache, 'create');
-    spyRemoteGet = jest.spyOn(remote, 'get');
+    spyRemoteCreate = jest.spyOn(remote, 'create');
 
     const taskQueue = new TaskQueueMock();
     spyQueueTask = jest.spyOn(taskQueue, 'queueTask');
 
-    cachedProvider = new CachedProviderService<CacheSourceMock, CacheSourceMock, CacheSourceMock>(
+    cachedProvider = new CachedProviderService<CacheSourceMock, CacheSourceMock>(
       cache,
       remote,
       taskQueue as any
     );
   });
 
-  it('optimisticCreate executes in the cache and schedules task', async () => {
+  it('optimisticCreate executes in the cache and schedules task', async done => {
     expect(
-      cachedProvider.optimisticCreate(
+      await cachedProvider.optimisticCreate(
         object1,
         service => service.create('object1', object1),
-        service => service.create('object1', object1)
+        (service, createdObject) => service.create('object1', object1)
       )
     ).toBe('object1');
 
     expect(spyCacheCreate).toHaveBeenCalledTimes(1);
-    expect(spyRemoteGet).toHaveBeenCalledTimes(0);
+    expect(spyRemoteCreate).toHaveBeenCalledTimes(0);
     expect(spyQueueTask).toHaveBeenCalledTimes(1);
+
+    setTimeout(() => {
+      expect(spyRemoteCreate).toHaveBeenCalledTimes(1);
+      done();
+    }, 1000);
+  });
+
+  it('optimisticUpdate executes in the cache and schedules task', async done => {
+    expect(
+      await cachedProvider.optimisticUpdate(
+        service => service.create('object1', object1),
+        service => service.create('object1', object1),
+        'taskId',
+        undefined
+      )
+    ).toBe('object1');
+
+    expect(spyCacheCreate).toHaveBeenCalledTimes(1);
+    expect(spyRemoteCreate).toHaveBeenCalledTimes(0);
+    expect(spyQueueTask).toHaveBeenCalledTimes(1);
+
+    setTimeout(() => {
+      expect(spyRemoteCreate).toHaveBeenCalledTimes(1);
+      done();
+    }, 1000);
   });
 });
