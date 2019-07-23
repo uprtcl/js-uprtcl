@@ -13,7 +13,7 @@ export class CachedMultiProviderService<
     public multiRemote: MultiProviderService<REMOTE>,
     protected taskQueue: TaskQueue = new TaskQueue()
   ) {
-    super(cache, multiRemote);
+    super(cache, multiRemote, taskQueue);
   }
 
   /**

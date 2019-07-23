@@ -36,6 +36,10 @@ export default class PatternRegistry {
       recognize: () => false
     };
 
+    if (!object) {
+      throw new Error('The given object was not defined');
+    }
+
     for (const patternName of this.patternList) {
       const applyingPattern = this.patterns[patternName];
       if (applyingPattern.recognize(object)) {

@@ -3,7 +3,6 @@ import { CacheService } from '../../services/cache/cache.service';
 import { MultiProviderService } from '../../services/multi/multi-provider.service';
 import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import { Context, Perspective, Commit } from '../types';
-import PatternRegistry from '../../patterns/registry/pattern.registry';
 import { CachedMultiProviderService } from '../../services/cached-remotes/cached-multi-provider.service';
 import { UprtclMultiProvider } from './uprtcl.multi-provider';
 import { Observable } from 'rxjs';
@@ -22,6 +21,9 @@ export class UprtclService implements UprtclMultiProvider {
     >(cache, multiProvider);
   }
 
+  /**
+   * @override
+   */
   createContextIn(source: string, context: Context): Promise<Secured<Context>> {
     return this.cachedMultiProvider.optimisticCreateIn(
       source,
@@ -31,6 +33,9 @@ export class UprtclService implements UprtclMultiProvider {
     );
   }
 
+  /**
+   * @override
+   */
   createPerspectiveIn(source: string, perspective: Perspective): Promise<Secured<Perspective>> {
     return this.cachedMultiProvider.optimisticCreateIn(
       source,
@@ -40,6 +45,9 @@ export class UprtclService implements UprtclMultiProvider {
     );
   }
 
+  /**
+   * @override
+   */
   createCommitIn(source: string, commit: Commit): Promise<Secured<Commit>> {
     return this.cachedMultiProvider.optimisticCreateIn(
       source,
@@ -49,6 +57,9 @@ export class UprtclService implements UprtclMultiProvider {
     );
   }
 
+  /**
+   * @override
+   */
   cloneContextIn(source: string, context: Secured<Context>): Promise<string> {
     return this.cachedMultiProvider.multiRemote.createIn(
       source,
@@ -57,6 +68,9 @@ export class UprtclService implements UprtclMultiProvider {
     );
   }
 
+  /**
+   * @override
+   */
   clonePerspectiveIn(source: string, perspective: Secured<Perspective>): Promise<string> {
     return this.cachedMultiProvider.multiRemote.createIn(
       source,
@@ -65,6 +79,9 @@ export class UprtclService implements UprtclMultiProvider {
     );
   }
 
+  /**
+   * @override
+   */
   cloneCommitIn(source: string, commit: Secured<Commit>): Promise<string> {
     return this.cachedMultiProvider.multiRemote.createIn(
       source,
@@ -73,6 +90,9 @@ export class UprtclService implements UprtclMultiProvider {
     );
   }
 
+  /**
+   * @override
+   */
   async updateHead(perspectiveId: string, headId: string): Promise<void> {
     const perspective = await this.get<Signed<Perspective>>(perspectiveId);
 
@@ -91,6 +111,9 @@ export class UprtclService implements UprtclMultiProvider {
     );
   }
 
+  /**
+   * @override
+   */
   getHead(perspectiveId: string): Observable<string | undefined> {
     this.get<Signed<Perspective>>(perspectiveId).then(perspective => {
       if (!perspective) {
@@ -108,10 +131,16 @@ export class UprtclService implements UprtclMultiProvider {
     return this.cachedMultiProvider.cache.getHead(perspectiveId);
   }
 
+  /**
+   * @override
+   */
   get<T extends object>(hash: string): Promise<T | undefined> {
     return this.cachedMultiProvider.get<T>(hash);
   }
 
+  /**
+   * @override
+   */
   async getContextPerspectives(contextId: string): Promise<Secured<Perspective>[]> {
     let allPerspectives: Secured<Perspective>[] = [];
     const promises = this.cachedMultiProvider.multiRemote.getAllSources().map(async source => {
