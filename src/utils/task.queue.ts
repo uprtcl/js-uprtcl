@@ -1,4 +1,4 @@
-import { Logger } from '../utils/logger';
+import { Logger } from './logger';
 import { installOfflineWatcher } from 'pwa-helpers/network.js';
 
 type Dictionary<T> = { [key: string]: T };

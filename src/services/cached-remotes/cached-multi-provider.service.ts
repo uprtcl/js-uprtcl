@@ -3,7 +3,7 @@ import { Source } from '../sources/source';
 import { MultiProviderService } from '../multi/multi-provider.service';
 import { CachedSourceService } from './cached-source.service';
 import PatternRegistry from '../../patterns/registry/pattern.registry';
-import { TaskQueue } from '../task.queue';
+import { TaskQueue } from '../../utils/task.queue';
 
 export class CachedMultiProviderService<
   T extends Source,

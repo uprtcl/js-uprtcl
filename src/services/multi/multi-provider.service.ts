@@ -17,6 +17,8 @@ export class MultiProviderService<T extends Source> extends MultiSourceService<T
     updater: (service: T) => Promise<S>,
     object: O
   ): Promise<S> {
+    await this.ready();
+
     // Execute the updater callback in the source
     const discoverableSource = this.sources[sourceName];
     const result = await updater(discoverableSource.source);

@@ -1,4 +1,4 @@
-import { TaskQueue } from '../task.queue';
+import { TaskQueue } from '../../utils/task.queue';
 import { Source } from '../sources/source';
 import { CachedSourceService } from './cached-source.service';
 import { CacheService } from '../cache/cache.service';

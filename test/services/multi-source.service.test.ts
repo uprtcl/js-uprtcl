@@ -26,9 +26,9 @@ const initialSourceB = {
 };
 
 /**
- * Multi-Sources test
+ * MultiSourcesService test
  */
-describe('Multi-Sources test', () => {
+describe('MultiSourcesService test', () => {
   let multiSource: MultiSourceService;
   let localKnownSources: KnownSourcesMock;
   let sourceA: DiscoverableSource;
