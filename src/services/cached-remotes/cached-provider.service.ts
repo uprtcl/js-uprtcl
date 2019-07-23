@@ -2,7 +2,6 @@ import { TaskQueue } from '../../utils/task.queue';
 import { Source } from '../sources/source';
 import { CachedSourceService } from './cached-source.service';
 import { CacheService } from '../cache/cache.service';
-import PatternRegistry from '../../patterns/registry/pattern.registry';
 
 export class CachedProviderService<
   T,
@@ -10,7 +9,6 @@ export class CachedProviderService<
   REMOTE extends Source & T
 > extends CachedSourceService {
   constructor(
-    protected patternRegistry: PatternRegistry,
     public cache: C,
     public remote: REMOTE,
     protected taskQueue: TaskQueue = new TaskQueue()

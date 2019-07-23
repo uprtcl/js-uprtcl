@@ -1,4 +1,4 @@
-import { Logger, LogLevel } from '../src/utils/logger';
+import { Logger, LogLevel } from '../../src/utils/logger';
 
 /**
  * Logger test
