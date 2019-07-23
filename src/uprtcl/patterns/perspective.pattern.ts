@@ -21,12 +21,12 @@ export class PerspectivePattern
     return (
       this.securedPattern.recognize(object) &&
       propertyOrder.every(p =>
-        this.securedPattern.getObject<Perspective>(object as Secured<Perspective>).hasOwnProperty(p)
+        this.securedPattern.extract(object as Secured<Perspective>).hasOwnProperty(p)
       )
     );
   }
 
-  getHardLinks = (perspective: Secured<Perspective>) => [perspective.object.object.contextId];
+  getHardLinks = (perspective: Secured<Perspective>) => [perspective.object.payload.contextId];
   getSoftLinks = async (perspective: Secured<Perspective>) => {
     const head = await this.uprtcl.getHead(perspective.id).toPromise();
     return head ? [head] : [];

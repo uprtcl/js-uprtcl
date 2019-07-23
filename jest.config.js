@@ -5,7 +5,12 @@ module.exports = {
   testEnvironment: 'node',
   testRegex: '(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$',
   moduleFileExtensions: ['ts', 'tsx', 'js'],
-  coveragePathIgnorePatterns: ['/node_modules/', '/test/'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/test/',
+    '/src/connections/',
+    '<rootDir>/src/js-uprtcl.ts'
+  ],
   coverageThreshold: {
     global: {
       branches: 90,
@@ -14,5 +19,5 @@ module.exports = {
       statements: 95
     }
   },
-  collectCoverageFrom: ['src/*.{js,ts}']
+  collectCoverageFrom: ['src/**/*.{ts,js}']
 };

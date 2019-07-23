@@ -1,5 +1,5 @@
 import { CacheSourceMock } from '../mocks/cache-source.mock';
-import { CachedSourceService } from '../../src/services/cached-remotes/cached-source.service';
+import { CachedSourceService } from '../../src/js-uprtcl';
 
 const object1 = {
   links: ['object2']

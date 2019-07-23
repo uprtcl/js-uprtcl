@@ -121,7 +121,7 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
     }
 
     await this.cache(perspective.id, perspective);
-    await this.addContextPerspective(perspective.object.object.contextId, perspective.id);
+    await this.addContextPerspective(perspective.object.payload.contextId, perspective.id);
 
     return perspective.id;
   }

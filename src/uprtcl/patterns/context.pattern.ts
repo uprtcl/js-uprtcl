@@ -12,7 +12,7 @@ export class ContextPattern implements Pattern {
     return (
       this.securedPattern.recognize(object) &&
       propertyOrder.every(p =>
-        this.securedPattern.getObject<Context>(object as Secured<Context>).hasOwnProperty(p)
+        this.securedPattern.extract(object as Secured<Context>).hasOwnProperty(p)
       )
     );
   }

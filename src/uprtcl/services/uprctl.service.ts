@@ -10,17 +10,16 @@ import { Observable } from 'rxjs';
 import { Signed } from '../../patterns/patterns/signed.pattern';
 
 export class UprtclService implements UprtclMultiProvider {
-  cachedMultiProvider: CachedMultiProviderService<UprtclProvider, UprtclProvider & CacheService>;
+  cachedMultiProvider: CachedMultiProviderService<UprtclProvider & CacheService, UprtclProvider>;
 
   constructor(
-    patternRegistry: PatternRegistry,
     cache: UprtclProvider & CacheService,
     multiProvider: MultiProviderService<UprtclProvider>
   ) {
     this.cachedMultiProvider = new CachedMultiProviderService<
-      UprtclProvider,
-      UprtclProvider & CacheService
-    >(patternRegistry, cache, multiProvider);
+      UprtclProvider & CacheService,
+      UprtclProvider
+    >(cache, multiProvider);
   }
 
   createContextIn(source: string, context: Context): Promise<Secured<Context>> {
@@ -81,7 +80,7 @@ export class UprtclService implements UprtclMultiProvider {
       throw new Error(`Perspective with id ${perspectiveId} not found`);
     }
 
-    const origin = perspective.object.origin;
+    const origin = perspective.payload.origin;
     this.cachedMultiProvider.optimisticUpdateIn(
       origin,
       perspective,
@@ -98,7 +97,7 @@ export class UprtclService implements UprtclMultiProvider {
         throw new Error(`Perspective with id ${perspectiveId} not found`);
       }
 
-      const origin = perspective.object.origin;
+      const origin = perspective.payload.origin;
       const originSource = this.cachedMultiProvider.multiRemote.getSource(origin);
 
       originSource.getHead(perspectiveId).subscribe(headId => {

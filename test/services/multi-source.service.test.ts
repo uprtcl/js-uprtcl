@@ -34,9 +34,10 @@ describe('MultiSourcesService test', () => {
   let sourceA: DiscoverableSource;
   let sourceB: DiscoverableSource;
   let spyOwnSourceA: jest.SpyInstance;
+  let patternRegistry: PatternRegistry;
 
   beforeEach(() => {
-    const patternRegistry = new PatternRegistry();
+    patternRegistry = new PatternRegistry();
     patternRegistry.registerPattern('node', new DefaultNodePattern());
 
     localKnownSources = new KnownSourcesMock('local');
@@ -108,5 +109,20 @@ describe('MultiSourcesService test', () => {
     expect(await multiSource.get('object2')).toBeFalsy();
 
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('add sources works', async () => {
+    multiSource = new MultiSourceService(patternRegistry, localKnownSources, []);
+    spyOwnSourceA = jest.spyOn(sourceA.knownSources, 'getOwnSource');
+    jest.clearAllMocks();
+
+    multiSource.addSources([sourceA, sourceB]);
+
+    expect(spyOwnSourceA).toHaveBeenCalledTimes(1);
+    expect(multiSource.sources).toBeFalsy();
+
+    await multiSource.ready();
+
+    expect(multiSource.sources).toEqual({ sourceA: sourceA, sourceB: sourceB });
   });
 });

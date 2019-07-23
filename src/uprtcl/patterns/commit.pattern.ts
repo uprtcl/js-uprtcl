@@ -21,21 +21,21 @@ export class CommitPattern
     return (
       this.securedPattern.recognize(object) &&
       propertyOrder.every(p =>
-        this.securedPattern.getObject<Commit>(object as Secured<Commit>).hasOwnProperty(p)
+        this.securedPattern.extract(object as Secured<Commit>).hasOwnProperty(p)
       )
     );
   }
 
   getHardLinks = (commit: Secured<Commit>) => [
-    commit.object.object.dataId,
-    ...commit.object.object.parentsIds
+    commit.object.payload.dataId,
+    ...commit.object.payload.parentsIds
   ];
   getSoftLinks = async (commit: Secured<Commit>) => [] as string[];
   getLinks = (commit: Secured<Commit>) =>
     this.getSoftLinks(commit).then(links => links.concat(this.getHardLinks(commit)));
 
   async render(commit: Secured<Commit>) {
-    const data = await this.source.get(commit.object.object.dataId);
+    const data = await this.source.get(commit.object.payload.dataId);
 
     if (!data) return null;
     const dataProps = this.patternRegistry.from(data) as RenderPattern<any>;
