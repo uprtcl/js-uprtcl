@@ -25,4 +25,8 @@ export class DefaultSecuredPattern implements SecuredPattern<Secured<any>> {
 
     return hashed;
   }
+
+  extract<T extends object>(secured: Secured<T>): T {
+    return secured.object.payload;
+  }
 }

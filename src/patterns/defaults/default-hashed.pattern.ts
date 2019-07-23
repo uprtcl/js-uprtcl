@@ -6,15 +6,19 @@ export class DefaultHashedPattern implements HashedPattern<any> {
     return object.hasOwnProperty('id') && typeof object['id'] === 'string';
   }
 
-  validate<T>(object: Hashed<T>): boolean {
+  validate<T extends object>(object: Hashed<T>): boolean {
     return true;
   }
 
-  derive<T>(object: T): Hashed<T> {
+  derive<T extends object>(object: T): Hashed<T> {
     return {
       id: 'getHash()',
       object: object
     };
+  }
+
+  extract<T extends object>(hashed: Hashed<T>): T {
+    return hashed.object;
   }
 
   getCidConfig(hash: string): CidConfig {

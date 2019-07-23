@@ -6,7 +6,7 @@ export interface Proof {
 }
 
 export interface Signed<T = any> {
-  object: T;
+  payload: T;
   proof: Proof;
 }
 

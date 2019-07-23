@@ -33,6 +33,7 @@ describe('Multi-Sources test', () => {
   let localKnownSources: KnownSourcesMock;
   let sourceA: DiscoverableSource;
   let sourceB: DiscoverableSource;
+  let spyOwnSourceA: jest.SpyInstance;
 
   beforeEach(() => {
     const patternRegistry = new PatternRegistry();
@@ -48,7 +49,18 @@ describe('Multi-Sources test', () => {
       source: new CacheSourceMock(initialSourceB.objects)
     };
 
+    spyOwnSourceA = jest.spyOn(sourceA.knownSources, 'getOwnSource');
+
     multiSource = new MultiSourceService(patternRegistry, localKnownSources, [sourceA, sourceB]);
+  });
+
+  it('initialization of the sources', async () => {
+    expect(spyOwnSourceA).toHaveBeenCalledTimes(1);
+    expect(multiSource.sources).toBeFalsy();
+
+    await multiSource.ready();
+
+    expect(multiSource.sources).toEqual({ sourceA: sourceA, sourceB: sourceB });
   });
 
   it('get object from the appropiate source when we know it', async () => {
@@ -65,14 +77,19 @@ describe('Multi-Sources test', () => {
   it('get object from any source when we do not know it', async () => {
     const spyA = jest.spyOn(sourceA.source, 'get');
     const spyB = jest.spyOn(sourceB.source, 'get');
+    const spyLocal = jest.spyOn(localKnownSources, 'addKnownSources');
 
     expect(await multiSource.get('object2')).toEqual({ links: [] });
+
     expect(spyA).toHaveBeenCalledTimes(1);
     expect(spyB).toHaveBeenCalledTimes(1);
+    expect(spyLocal).toHaveBeenCalledWith('object2', ['sourceB']);
   });
 
-  it('get object adds the known sources to the local service', async () => {
+  it('get object adds the known sources of the links to the local service', async () => {
     expect(await multiSource.get('object1')).toEqual({ links: ['object2'] });
+
+    expect(localKnownSources.knownSources['object2']).toEqual(['sourceB']);
 
     const spyA = jest.spyOn(sourceA.source, 'get');
     const spyB = jest.spyOn(sourceB.source, 'get');

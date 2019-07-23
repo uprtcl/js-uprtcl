@@ -13,12 +13,16 @@ export class DefaultSignedPattern implements SignedPattern<any> {
     return this.sign(object);
   }
 
+  extract<T extends object>(signed: Signed<T>): T {
+    return signed.payload;
+  }
+
   sign<T>(object: T): Signed<T> {
     return {
       proof: {
         signature: ''
       },
-      object: object
+      payload: object
     };
   }
 

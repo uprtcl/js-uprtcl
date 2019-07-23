@@ -1,7 +1,5 @@
 import PatternRegistry from '../../src/patterns/registry/pattern.registry';
-import { DefaultHashedPattern } from '../../src/patterns/defaults/default-hashed.pattern';
 import { HashedPattern } from '../../src/patterns/patterns/hashed.pattern';
-import { equal } from 'assert';
 
 /**
  * Pattern registry test

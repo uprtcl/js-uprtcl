@@ -7,7 +7,7 @@ export class KnownSourcesMock implements KnownSourcesService {
   constructor(protected sourceName: string, public knownSources: Dictionary<string[]> = {}) {}
 
   getOwnSource(): Promise<string> {
-    return Promise.resolve(this.sourceName);
+    return new Promise(resolve => setTimeout(() => resolve(this.sourceName), 500));
   }
 
   getKnownSources(hash: string): Promise<string[]> {

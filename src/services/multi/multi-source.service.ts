@@ -57,7 +57,7 @@ export class MultiSourceService<T extends Source = Source> implements Source {
   /**
    * @returns a promise that resolves when all the sources have been initialized
    */
-  protected ready(): Promise<void> {
+  public ready(): Promise<void> {
     if (this.initCompleted) return Promise.resolve();
     else return this.initialization;
   }
