@@ -99,4 +99,14 @@ describe('MultiSourcesService test', () => {
     expect(spyA).toHaveBeenCalledTimes(0);
     expect(spyB).toHaveBeenCalledTimes(1);
   });
+
+  it('get from known source that returns undefined removes the known source from local service', async () => {
+    await localKnownSources.addKnownSources('object2', ['sourceA']);
+
+    const spy = jest.spyOn(localKnownSources, 'removeKnownSource');
+
+    expect(await multiSource.get('object2')).toBeFalsy();
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
 });

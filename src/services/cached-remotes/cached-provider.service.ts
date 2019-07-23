@@ -4,9 +4,8 @@ import { CachedSourceService } from './cached-source.service';
 import { CacheService } from '../cache/cache.service';
 
 export class CachedProviderService<
-  T,
-  C extends CacheService & T,
-  REMOTE extends Source & T
+  C extends CacheService,
+  REMOTE extends Source
 > extends CachedSourceService {
   constructor(
     public cache: C,
@@ -25,8 +24,8 @@ export class CachedProviderService<
    */
   public async optimisticCreate<O extends object, R>(
     object: O,
-    creator: (service: T) => Promise<R>,
-    cloner: (service: T, object: R) => Promise<any>
+    creator: (service: C) => Promise<R>,
+    cloner: (service: REMOTE, object: R) => Promise<any>
   ): Promise<R> {
     // First, create object in cache
     const createdObject = await creator(this.cache);
@@ -34,8 +33,9 @@ export class CachedProviderService<
     this.logger.info(`Optimistically created object: ${createdObject}`);
 
     // Then schedule the same creation in the remote
+    const taskId = object['id'] ? object['id'] : JSON.stringify(object);
     const task = async () => cloner(this.remote, createdObject);
-    this.taskQueue.queueTask({ id: JSON.stringify(object), task: task });
+    this.taskQueue.queueTask({ id: taskId, task: task });
 
     return createdObject;
   }
