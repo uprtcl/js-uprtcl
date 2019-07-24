@@ -3,7 +3,7 @@ import { Source } from '../sources/source';
 import { Logger } from '../../utils/logger';
 
 export class CachedSourceService implements Source {
-  protected logger = new Logger('CachedSource');
+  protected logger = new Logger('CachedSourceService');
 
   constructor(protected cache: CacheService, protected remote: Source) {}
 

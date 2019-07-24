@@ -64,8 +64,6 @@ describe('CachedMultiProviderService test', () => {
       taskQueue as any
     );
 
-    await cachedMultiProvider.multiRemote.ready();
-
     spyCacheCreate = jest.spyOn(cache, 'create');
     spySourceACreate = jest.spyOn(providerA, 'create');
     spySourceBCreate = jest.spyOn(providerB, 'create');

@@ -4,16 +4,19 @@ import { MultiProviderService } from '../multi/multi-provider.service';
 import { TaskQueue } from '../../utils/task.queue';
 import { CachedProviderService } from './cached-provider.service';
 
-export class CachedMultiProviderService<
-  CACHE extends CacheService,
-  REMOTE extends Source
-> extends CachedProviderService<CACHE, MultiProviderService<REMOTE>> {
+export class CachedMultiProviderService<CACHE extends CacheService, REMOTE extends Source> {
+  cachedProvider: CachedProviderService<CACHE, MultiProviderService<REMOTE>>;
+
   constructor(
     public cache: CACHE,
     public multiRemote: MultiProviderService<REMOTE>,
     protected taskQueue: TaskQueue = new TaskQueue()
   ) {
-    super(cache, multiRemote, taskQueue);
+    this.cachedProvider = new CachedProviderService<CACHE, MultiProviderService<REMOTE>>(
+      cache,
+      multiRemote,
+      taskQueue
+    );
   }
 
   /**
@@ -33,7 +36,7 @@ export class CachedMultiProviderService<
     const multiCloner = (service: MultiProviderService<REMOTE>, createdObject: R) =>
       service.createIn(source, service => cloner(service, createdObject), createdObject);
 
-    return this.optimisticCreate(object, creator, multiCloner);
+    return this.cachedProvider.optimisticCreate(object, creator, multiCloner);
   }
 
   /**
@@ -53,6 +56,6 @@ export class CachedMultiProviderService<
   ): Promise<O> {
     const multiRemoteUpdate = (service: MultiProviderService<REMOTE>) =>
       service.updateIn(source, remoteUpdater, object);
-    return this.optimisticUpdate(cacheUpdater, multiRemoteUpdate, taskId, dependsOn);
+    return this.cachedProvider.optimisticUpdate(cacheUpdater, multiRemoteUpdate, taskId, dependsOn);
   }
 }

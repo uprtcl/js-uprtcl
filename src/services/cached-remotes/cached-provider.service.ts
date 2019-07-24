@@ -1,19 +1,15 @@
 import { TaskQueue } from '../../utils/task.queue';
-import { Source } from '../sources/source';
-import { CachedSourceService } from './cached-source.service';
 import { CacheService } from '../cache/cache.service';
+import { Logger } from '../../utils/logger';
 
-export class CachedProviderService<
-  C extends CacheService,
-  REMOTE extends Source
-> extends CachedSourceService {
+export class CachedProviderService<C extends CacheService, REMOTE> {
+  protected logger = new Logger('CachedProviderService');
+
   constructor(
     public cache: C,
     public remote: REMOTE,
     protected taskQueue: TaskQueue = new TaskQueue()
-  ) {
-    super(cache, remote);
-  }
+  ) {}
 
   /**
    * Execute the creator function and wait for it in the cache,
