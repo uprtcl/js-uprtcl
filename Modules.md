@@ -1,8 +1,8 @@
-## Repositories: all begin with **@uprtcl/**
+## NPM packages: all begin with **@uprtcl/**
 
 ```mermaid
 graph BT
-  subgraph dependencies
+  subgraph packages
   common-->orchestrator
   common-->core
   lenses-->core
@@ -16,7 +16,7 @@ graph BT
   end
 ```
 
-- Micro-orchestrator: UI management layer
+- @uprctl/micro-orchestrator: UI management layer
   - StoreModule
   - ReduxModule
   - ComponentsModule
