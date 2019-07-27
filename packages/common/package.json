@@ -20,6 +20,13 @@
     "storybook:build": "npm run build && build-storybook -o _site -s storybook-static"
   },
   "dependencies": {
+    "@material/mwc-button": "^0.6.0",
+    "@material/mwc-checkbox": "^0.6.0",
+    "@material/mwc-fab": "^0.6.0",
+    "@material/mwc-icon": "^0.6.0",
+    "@material/mwc-radio": "^0.6.0",
+    "@material/mwc-ripple": "^0.6.0",
+    "@material/mwc-switch": "^0.6.0",
     "lit-element": "^2.0.1",
     "lit-html": "^1.0.0"
   },
