@@ -4,7 +4,7 @@ import { MicroModule } from '../../micro-orchestrator/src/modules/micro.module';
 import PatternRegistry from '../../core/src/patterns/registry/pattern.registry';
 
 export class PatternRegistryModule implements MicroModule {
-  patternRegistry: PatternRegistry;
+  patternRegistry!: PatternRegistry;
 
   async onLoad(dependencies: Dictionary<MicroModule>): Promise<void> {
     this.patternRegistry = new PatternRegistry();

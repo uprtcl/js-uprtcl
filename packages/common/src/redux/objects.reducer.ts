@@ -13,8 +13,11 @@ export function objectsReducer(state = initialState, action: ObjectActions): Obj
   switch (action.type) {
     case LOAD_OBJECT_SUCCESS: {
       return {
-        ...state.objects,
-        [action.payload.hash]: action.payload.object
+        ...state,
+        objects: {
+          ...state.objects,
+          [action.payload.hash]: action.payload.object
+        }
       };
     }
 

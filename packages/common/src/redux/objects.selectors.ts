@@ -4,14 +4,14 @@ import { Pattern } from '../../../core/src/patterns/pattern';
 
 export const reducerName = 'objects';
 
-export const selectObjects = (state): ObjectsState => state[reducerName];
+export const selectObjects = (state: any): ObjectsState => state[reducerName];
 
 export const selectAll = (state: ObjectsState) => {
   const objects = state.objects;
   return Object.keys(objects).map(key => objects[key]);
 };
 
-export const selectById = (state: ObjectsState) => (id: string) => state.objects[id];
+export const selectById = (id: string) => (state: ObjectsState) => state.objects[id];
 
 export const selectByPattern = (patternRegistry: PatternRegistry) => (patternName: string) => (
   state: ObjectsState

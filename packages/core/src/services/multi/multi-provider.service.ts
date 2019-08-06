@@ -5,25 +5,7 @@ import PatternRegistry from '../../patterns/registry/pattern.registry';
 import { DiscoverableSource } from '../sources/discoverable.source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 
-export class MultiProviderService<T extends Source> {
-  multiSource: MultiSourceService<T>;
-
-  /**
-   * @param patternRegistry the pattern registry to interact with the objects and their links
-   * @param knownSources local service to store all known sources to be able to retrieve the object afterwards
-   * @param discoverableSources array of all discoverable sources from which to get objects
-   */
-  constructor(
-    protected patternRegistry: PatternRegistry,
-    protected localKnownSources: KnownSourcesService,
-    discoverableSources: Array<DiscoverableSource<T>>
-  ) {
-    this.multiSource = new MultiSourceService<T>(
-      patternRegistry,
-      localKnownSources,
-      discoverableSources
-    );
-  }
+export class MultiProviderService<T extends Source> extends MultiSourceService<T> {
 
   /**
    * Executes the given update function on the given source,
@@ -39,10 +21,10 @@ export class MultiProviderService<T extends Source> {
     updater: (service: T) => Promise<S>,
     object: O
   ): Promise<S> {
-    await this.multiSource.ready();
+    await this.ready();
 
     // Execute the updater callback in the source
-    const discoverableSource = this.multiSource.sources[sourceName];
+    const discoverableSource = this.sources[sourceName];
     const result = await updater(discoverableSource.source);
 
     // Add known sources of the object's links to the provider's known sources

@@ -7,7 +7,11 @@ export const loadObject = (source: Source) => (hash: string) => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>
 ) => {
   const object = await source.get(hash);
-  dispatch(loadObjectSuccess(hash, object));
+
+  if (object) {
+    dispatch(loadObjectSuccess(hash, object));
+  }
+
   return object;
 };
 

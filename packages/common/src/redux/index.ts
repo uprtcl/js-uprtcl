@@ -3,7 +3,7 @@ import { objectsReducer, ObjectsState } from './objects.reducer';
 import { ObjectActions } from './objects.actions';
 import { reducerName } from './objects.selectors';
 
-export function objectsModule(): ReduxModule<ObjectsState, ObjectActions> {
+export function objectsReduxModule(): ReduxModule<ObjectsState, ObjectActions> {
   return new ReduxModule(reducerName, objectsReducer);
 }
 

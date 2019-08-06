@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "description": "",
   "keywords": [],
-  "main": "dist/js-uprtcl.umd.js",
-  "module": "dist/js-uprtcl.es5.js",
-  "typings": "dist/types/js-uprtcl.d.ts",
+  "main": "dist/uprtcl-core.umd.js",
+  "module": "dist/uprtcl-core.es5.js",
+  "typings": "dist/types/uprtcl-core.d.ts",
   "files": [
     "dist"
   ],
@@ -91,7 +91,7 @@
     "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.14.2",
     "typedoc-plugin-markdown": "^2.0.9",
-    "typescript": "3.5.2"
+    "typescript": "^3.5.3"
   },
   "dependencies": {
     "@holochain/hc-web-client": "^0.5.0",

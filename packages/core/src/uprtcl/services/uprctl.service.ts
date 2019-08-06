@@ -61,7 +61,7 @@ export class UprtclService implements UprtclMultiProvider {
    * @override
    */
   cloneContextIn(source: string, context: Secured<Context>): Promise<string> {
-    return this.cachedMultiProvider.multiRemote.createIn(
+    return this.cachedMultiProvider.remote.createIn(
       source,
       service => service.cloneContext(context),
       context
@@ -72,7 +72,7 @@ export class UprtclService implements UprtclMultiProvider {
    * @override
    */
   clonePerspectiveIn(source: string, perspective: Secured<Perspective>): Promise<string> {
-    return this.cachedMultiProvider.multiRemote.createIn(
+    return this.cachedMultiProvider.remote.createIn(
       source,
       service => service.clonePerspective(perspective),
       perspective
@@ -83,7 +83,7 @@ export class UprtclService implements UprtclMultiProvider {
    * @override
    */
   cloneCommitIn(source: string, commit: Secured<Commit>): Promise<string> {
-    return this.cachedMultiProvider.multiRemote.createIn(
+    return this.cachedMultiProvider.remote.createIn(
       source,
       service => service.cloneCommit(commit),
       commit
@@ -121,7 +121,7 @@ export class UprtclService implements UprtclMultiProvider {
       }
 
       const origin = perspective.payload.origin;
-      const originSource = this.cachedMultiProvider.multiRemote.getSource(origin);
+      const originSource = this.cachedMultiProvider.remote.getSource(origin);
 
       originSource.getHead(perspectiveId).subscribe(headId => {
         if (headId) this.cachedMultiProvider.cache.updateHead(perspectiveId, headId);
@@ -143,7 +143,7 @@ export class UprtclService implements UprtclMultiProvider {
    */
   async getContextPerspectives(contextId: string): Promise<Secured<Perspective>[]> {
     let allPerspectives: Secured<Perspective>[] = [];
-    const promises = this.cachedMultiProvider.multiRemote.getAllSources().map(async source => {
+    const promises = this.cachedMultiProvider.remote.getAllSources().map(async source => {
       const perspectives = await source.getContextPerspectives(contextId);
       allPerspectives = allPerspectives.concat(perspectives);
     });

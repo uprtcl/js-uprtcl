@@ -107,7 +107,7 @@ export function PatternRenderer<T>(
 
     stateChanged(state: T) {
       const objects = selectObjects(state);
-      const object = selectById(objects)(this.hash);
+      const object = selectById(this.hash)(objects);
 
       if (object) {
         const pattern: LensesPattern & MenuPattern & RenderPattern<any> = patternRegistry.from(

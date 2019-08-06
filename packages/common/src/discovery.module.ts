@@ -13,7 +13,7 @@ import { PatternRegistryModule } from './pattern-registry.module';
 export const DISCOVERY_MODULE = 'discovery-module';
 
 export class DiscoveryModule implements MicroModule {
-  discoveryService: DiscoveryService;
+  discoveryService!: DiscoveryService;
 
   constructor(
     protected cacheService: CacheService,

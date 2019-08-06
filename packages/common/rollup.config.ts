@@ -7,7 +7,7 @@ import json from 'rollup-plugin-json';
 
 const pkg = require('./package.json');
 
-const libraryName = 'uprtcl-core';
+const libraryName = 'uprtcl-common';
 
 export default {
   input: `src/${libraryName}.ts`,
