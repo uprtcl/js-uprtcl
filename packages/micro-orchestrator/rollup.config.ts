@@ -7,7 +7,7 @@ import json from 'rollup-plugin-json';
 
 const pkg = require('./package.json');
 
-const libraryName = 'micro-orchestrator.lib';
+const libraryName = 'uprtcl-micro-orchestrator';
 
 export default {
   input: `src/${libraryName}.ts`,
