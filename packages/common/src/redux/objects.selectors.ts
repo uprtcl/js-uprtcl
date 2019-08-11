@@ -1,6 +1,5 @@
 import { ObjectsState } from './objects.reducer';
-import PatternRegistry from '../../../core/src/patterns/registry/pattern.registry';
-import { Pattern } from '../../../core/src/patterns/pattern';
+import { Pattern, PatternRegistry } from '../../../core/dist/uprtcl-core.es5.js';
 
 export const reducerName = 'objects';
 

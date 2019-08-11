@@ -3,20 +3,17 @@ import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 import { connect } from 'pwa-helpers/connect-mixin';
 import { Store } from 'redux';
 
-import { loadObject } from '../../../common/src/redux/objects.actions';
-import { Source } from '../../../core/src/services';
-import { selectObjects, selectById } from '../../../common/src/redux/objects.selectors';
-import PatternRegistry from '../../../core/src/patterns/registry/pattern.registry';
+import { loadObject, selectObjects, selectById } from '../../../common/dist/uprtcl-common.es5.js';
+import { RenderPattern, PatternRegistry, Source } from '../../../core/dist/uprtcl-core.es5.js';
 import { LensesPattern } from '../patterns/lenses.pattern';
 import { Lens, MenuItem } from '../types';
 import { MenuPattern } from '../patterns/menu.pattern';
-import { RenderPattern } from '../../../core/src/patterns/patterns/render.pattern';
 
 export function PatternRenderer<T>(
   patternRegistry: PatternRegistry,
   source: Source,
   store: Store<T>
-) {
+): typeof HTMLElement {
   class PatternRenderer extends connect(store)(LitElement) {
     @property()
     public hash: string;
@@ -129,7 +126,6 @@ export function PatternRenderer<T>(
         }
       }
     }
-
   }
 
   return PatternRenderer;

@@ -1,8 +1,12 @@
-import { StoreModule } from '../packages/micro-orchestrator/dist/lib/modules/redux/store.module.js';
-import { PatternRegistryModule } from '../packages/common/dist/common/src/pattern-registry.module.js';
-import { DiscoveryModule } from '../packages/common/dist/common/src/pattern-registry.module.js';
-import { LensesModule } from '../packages/lenses/dist/lenses/src/lenses.module.js';
-import { MicroOrchestrator } from '../packages/micro-orchestrator/dist/lib/uprtcl-micro-orchestrator.js';
+import {
+  PatternRegistryModule,
+  DiscoveryModule
+} from '../packages/common/dist/uprtcl-common.es5.js';
+import { LensesModule } from '../packages/lenses/dist/uprtcl-lenses.es5.js';
+import {
+  MicroOrchestrator,
+  StoreModule
+} from '../packages/micro-orchestrator/dist/micro-orchestrator.es5.js';
 
 const storeModule = new StoreModule();
 const patternRegistryModule = new PatternRegistryModule();

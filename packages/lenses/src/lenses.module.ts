@@ -1,8 +1,7 @@
 import { Dictionary } from 'lodash';
 
 import { MicroModule } from '../../micro-orchestrator/src/modules/micro.module';
-import { PatternRegistryModule } from '../../common/src/pattern-registry.module';
-import { DiscoveryModule } from '../../common/src/discovery.module';
+import { PatternRegistryModule, DiscoveryModule } from '../../common/dist/uprtcl-common.es5';
 import { StoreModule } from '../../micro-orchestrator/src/modules/redux/store.module';
 import { PatternRenderer } from './elements/pattern-renderer';
 import { Store, AnyAction } from 'redux';

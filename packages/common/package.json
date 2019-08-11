@@ -17,7 +17,8 @@
     "test:compatibility": "karma start --compatibility all --coverage",
     "test:compatibility:watch": "karma start --compatibility all --auto-watch=true --single-run=false",
     "test:bs": "karma start karma.bs.config.js --legacy --coverage",
-    "build": "rimraf dist && tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out docs --target es6 --theme minimal --mode file src",
+    "build": "rimraf dist && tsc --module es6 && rollup -c rollup.config.ts",
+    "docs:build": "typedoc --out docs --target es6 --theme minimal --mode file src",
     "site:build": "npm run storybook:build",
     "storybook": "tsc && tsc -w & start-storybook -p 9001",
     "storybook:build": "npm run build && build-storybook -o _site -s storybook-static"

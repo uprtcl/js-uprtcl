@@ -1,7 +1,7 @@
 import { Dictionary } from 'lodash';
 
-import { MicroModule } from '../../micro-orchestrator/src/modules/micro.module';
-import PatternRegistry from '../../core/src/patterns/registry/pattern.registry';
+import { MicroModule } from '../../micro-orchestrator/dist/micro-orchestrator.es5.js';
+import PatternRegistry from '../../core/dist/uprtcl-core.es5.js';
 
 export class PatternRegistryModule implements MicroModule {
   patternRegistry!: PatternRegistry;
