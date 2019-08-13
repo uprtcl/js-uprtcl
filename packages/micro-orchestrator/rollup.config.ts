@@ -7,7 +7,7 @@ import json from 'rollup-plugin-json';
 
 const pkg = require('./package.json');
 
-const libraryName = 'uprtcl-micro-orchestrator';
+const libraryName = 'micro-orchestrator';
 
 export default {
   input: `src/${libraryName}.ts`,
@@ -24,7 +24,10 @@ export default {
     // Allow json resolution
     json(),
     // Compile TypeScript files
-    typescript({ useTsconfigDeclarationDir: true }),
+    typescript({
+      useTsconfigDeclarationDir: true,
+      cacheRoot: `${require('temp-dir')}/.rpt2_cache`
+    }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs(),
     // Allow node_modules resolution, so you can use 'external' to control

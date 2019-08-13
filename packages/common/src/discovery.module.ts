@@ -1,13 +1,13 @@
 import { Dictionary } from 'lodash';
 
-import { MicroModule } from '../../micro-orchestrator/src/modules/micro.module';
+import { MicroModule } from '@uprtcl/micro-orchestrator';
 import {
-  DiscoveryService,
   CacheService,
+  DiscoveryService,
   MultiSourceService,
   KnownSourcesService,
   DiscoverableSource
-} from '../../core/src/services';
+} from '@uprtcl/core';
 import { PatternRegistryModule } from './pattern-registry.module';
 
 export const DISCOVERY_MODULE = 'discovery-module';

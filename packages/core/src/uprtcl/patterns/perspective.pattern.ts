@@ -1,6 +1,6 @@
 import { Perspective, Commit } from '../types';
 import { Secured } from '../../patterns/defaults/default-secured.pattern';
-import PatternRegistry from '../../patterns/registry/pattern.registry';
+import  { PatternRegistry } from '../../patterns/registry/pattern.registry';
 import { UprtclSource } from '../services/uprctl.source';
 import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
 import { RenderPattern } from '../../patterns/patterns/render.pattern';

@@ -8,7 +8,7 @@ import { CacheDexie } from '../../services/cache/cache.dexie';
 
 import { UprtclProvider } from './uprtcl.provider';
 import { Perspective, Context, Commit } from '../types';
-import PatternRegistry from '../../patterns/registry/pattern.registry';
+import  { PatternRegistry } from '../../patterns/registry/pattern.registry';
 import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import { ValidatePattern } from '../../patterns/patterns/validate.pattern';
 import { DatabaseChangeType } from 'dexie-observable/api';

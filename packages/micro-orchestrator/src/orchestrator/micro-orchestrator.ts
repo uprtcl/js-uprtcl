@@ -1,7 +1,7 @@
 import { Dictionary } from 'lodash';
 import { MicroModule } from '../modules/micro.module';
 
-export default class MicroOrchestrator {
+export class MicroOrchestrator {
   modules: Dictionary<MicroModule> = {};
 
   loaded: Dictionary<boolean> = {};

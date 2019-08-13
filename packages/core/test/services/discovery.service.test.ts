@@ -1,6 +1,6 @@
 import { DiscoveryService, MultiSourceService } from '../../src/services';
 import { CacheSourceMock } from '../mocks/cache-source.mock';
-import PatternRegistry from '../../src/patterns/registry/pattern.registry';
+import  { PatternRegistry } from '../../src/patterns/registry/pattern.registry';
 import { KnownSourcesMock } from '../mocks/known-sources.mock';
 
 /**

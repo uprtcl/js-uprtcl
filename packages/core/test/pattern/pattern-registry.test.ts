@@ -1,4 +1,4 @@
-import PatternRegistry from '../../src/patterns/registry/pattern.registry';
+import  { PatternRegistry } from '../../src/patterns/registry/pattern.registry';
 import { HashedPattern } from '../../src/patterns/patterns/hashed.pattern';
 
 /**

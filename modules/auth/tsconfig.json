@@ -1,18 +1,8 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
-    "lib": ["es2017", "dom"],
-    "allowJs": true,
-    "checkJs": true,
-    "strict": false,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "esModuleInterop": true,
-    "outDir": "dist"
+    "declarationDir": "dist/types",
+    "outDir": "dist/lib"
   },
-  "include": ["src/**/*.ts", "node_modules/@open-wc/**/*.ts"],
-  "exclude": ["node_modules/!(@open-wc)"]
+  "include": ["src"]
 }

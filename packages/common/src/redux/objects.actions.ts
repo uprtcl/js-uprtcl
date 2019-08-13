@@ -1,7 +1,7 @@
 import { AnyAction } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 
-import { Source } from '../../../core/dist/uprtcl-core.es5.js';
+import { Source } from '@uprtcl/core';
 
 export const loadObject = (source: Source) => (hash: string) => async (
   dispatch: ThunkDispatch<{}, {}, AnyAction>

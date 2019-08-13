@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import { Pattern } from '../pattern';
 import { defaultPatterns } from './default.patterns';
 
-export default class PatternRegistry {
+export class PatternRegistry {
   patterns: Dictionary<Pattern> = {};
   patternList: string[] = [];
 

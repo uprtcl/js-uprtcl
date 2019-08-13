@@ -1,5 +1,5 @@
 import { MultiProviderService } from '../../src/services/multi/multi-provider.service';
-import PatternRegistry from '../../src/patterns/registry/pattern.registry';
+import  { PatternRegistry } from '../../src/patterns/registry/pattern.registry';
 import { DefaultNodePattern } from '../../src/patterns/defaults/default-node.pattern';
 import { KnownSourcesMock } from '../mocks/known-sources.mock';
 import { CacheSourceMock } from '../mocks/cache-source.mock';

@@ -3,7 +3,7 @@ import { Pattern } from '../../patterns/pattern';
 import { Commit } from '../types';
 import { Secured } from '../../patterns/defaults/default-secured.pattern';
 import { RenderPattern } from '../../patterns/patterns/render.pattern';
-import PatternRegistry from '../../patterns/registry/pattern.registry';
+import  { PatternRegistry } from '../../patterns/registry/pattern.registry';
 import { Source } from '../../services/sources/source';
 import { SecuredPattern } from '../../patterns/patterns/secured.pattern';
 

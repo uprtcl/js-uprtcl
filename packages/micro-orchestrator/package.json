@@ -1,5 +1,5 @@
 {
-  "name": "micro-orchestrator",
+  "name": "@uprtcl/micro-orchestrator",
   "version": "0.0.0",
   "description": "",
   "keywords": [],
@@ -12,16 +12,16 @@
   "author": "guillemcordoba <guillem.cordoba@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uprtcl/micro-orchestrator/"
+    "url": "https://github.com/uprtcl/js-uprtcl/"
   },
   "license": "MIT",
   "engines": {
     "node": ">=6.0.0"
   },
   "scripts": {
+    "clean": "rimraf dist docs",
+    "build": "npm run clean && tsc --module es6 && rollup -c rollup.config.ts",
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
-    "prebuild": "rimraf dist",
-    "build": "tsc --module es6 && rollup -c rollup.config.ts",
     "start": "rollup -c rollup.config.ts -w",
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watch",

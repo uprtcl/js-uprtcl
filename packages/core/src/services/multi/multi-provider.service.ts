@@ -1,9 +1,6 @@
 import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
 import { Source } from '../sources/source';
 import { MultiSourceService } from './multi-source.service';
-import PatternRegistry from '../../patterns/registry/pattern.registry';
-import { DiscoverableSource } from '../sources/discoverable.source';
-import { KnownSourcesService } from '../known-sources/known-sources.service';
 
 export class MultiProviderService<T extends Source> extends MultiSourceService<T> {
 

@@ -1,4 +1,4 @@
-import { ReduxModule } from '../../../micro-orchestrator/dist/micro-orchestrator.es5.js';
+import { ReduxModule } from '@uprtcl/micro-orchestrator';
 import { objectsReducer, ObjectsState } from './objects.reducer';
 import { ObjectActions } from './objects.actions';
 import { reducerName } from './objects.selectors';
