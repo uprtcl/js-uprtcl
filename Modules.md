@@ -20,7 +20,7 @@ graph BT
   - StoreModule
   - ReduxModule
   - ComponentsModule
-- @uprtcl/core: not UI
+- @uprtcl/cortex: not UI
   - Services: multi, cached, sources, providers, connection, discovery
   - Pattern registry, default and uprtcl patterns
   - Utils

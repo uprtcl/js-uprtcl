@@ -4,7 +4,7 @@ import { Action, Middleware, Reducer, Store } from 'redux';
 import thunk from 'redux-thunk';
 
 import { MicroModule } from '../micro.module';
-import { StoreModule } from './store.module';
+import { StoreModule, REDUX_STORE_ID } from './store.module';
 
 export class ReduxModule<S, A extends Action> implements MicroModule {
   store!: Store;
@@ -16,7 +16,7 @@ export class ReduxModule<S, A extends Action> implements MicroModule {
   ) {}
 
   async onLoad(dependencies: Dictionary<MicroModule>): Promise<void> {
-    const storeModule: StoreModule = dependencies['redux-store'] as StoreModule;
+    const storeModule: StoreModule = dependencies[REDUX_STORE_ID] as StoreModule;
     this.store = storeModule.getStore();
 
     const middlewares = this.getMiddlewares();
@@ -32,11 +32,11 @@ export class ReduxModule<S, A extends Action> implements MicroModule {
   }
 
   getDependencies(): Array<string> {
-    return ['redux-store'];
+    return [REDUX_STORE_ID];
   }
 
   getId(): string {
-    return `redux-reducer-${this.reducerName}`;
+    return this.reducerName;
   }
 
   async onUnload(): Promise<void> {}

@@ -1,0 +1,1 @@
+export { TypedText } from './types';

@@ -12,6 +12,8 @@ const { createDynamicMiddlewares } = require('redux-dynamic-middlewares');
 
 import { MicroModule } from '../micro.module';
 
+export const REDUX_STORE_ID = 'redux-store-module';
+
 export class StoreModule implements MicroModule {
   store!: Store & LazyStore;
   dynamicMiddlewareInstance: any;
@@ -43,7 +45,7 @@ export class StoreModule implements MicroModule {
   }
 
   getId(): string {
-    return 'redux-store';
+    return REDUX_STORE_ID;
   }
 
   getStore(): Store {

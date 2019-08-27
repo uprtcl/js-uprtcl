@@ -1,0 +1,19 @@
+{
+  "name": "simple",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "es-dev-server"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@uprtcl/common": "*",
+    "@uprtcl/cortex": "*",
+    "@uprtcl/micro-orchestrator": "*"
+  },
+  "devDependencies": {
+    "es-dev-server": "^1.12.0"
+  }
+}
