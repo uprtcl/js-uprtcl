@@ -1,6 +1,5 @@
 import { SocketConnection } from './socket.connection';
 import { connect } from '@holochain/hc-web-client';
-import WebSocket from 'ws';
 import { ConnectionOptions } from './connection';
 
 export interface ZomeOptions {

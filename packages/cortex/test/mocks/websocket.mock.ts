@@ -1,5 +1,5 @@
 import { SocketConnection } from '../../src/connections/socket.connection';
-import WebSocket from 'ws';
+import WebSocket from 'isomorphic-ws';
 import { ConnectionOptions } from '../../src/connections/connection';
 
 export class WebSocketMock extends SocketConnection {

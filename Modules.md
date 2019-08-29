@@ -3,16 +3,15 @@
 ```mermaid
 graph BT
   subgraph packages
-  common-->orchestrator
-  common-->core
-  lenses-->core
+  cortex-->orchestrator
+  common-->cortex
   end
   subgraph modules
   documents-->common
-  documents-->lenses
+  documents-->cortex
   tasks-->common
-  tasks-->lenses
-  chat-->lenses
+  tasks-->cortex
+  chat-->cortex
   end
 ```
 

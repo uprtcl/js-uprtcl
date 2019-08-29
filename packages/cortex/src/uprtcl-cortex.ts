@@ -35,6 +35,8 @@ export { RenderPattern } from './patterns/patterns/render.pattern';
 export { SecuredPattern } from './patterns/patterns/secured.pattern';
 export { SignedPattern, Signed } from './patterns/patterns/signed.pattern';
 export { ValidatePattern } from './patterns/patterns/validate.pattern';
+export { TypePattern } from './patterns/patterns/type.pattern';
+export { TextPattern } from './patterns/patterns/text.pattern';
 
 // Default patterns
 export { DefaultHashedPattern } from './patterns/defaults/default-hashed.pattern';

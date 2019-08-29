@@ -1,12 +1,10 @@
-import {
-  MicroOrchestrator,
-  StoreModule
-} from '@uprtcl/micro-orchestrator';
+import { MicroOrchestrator, StoreModule } from '@uprtcl/micro-orchestrator';
 import {
   PatternRegistryModule,
-  DiscoveryModule
-} from '@uprtcl/common';
-import { LensesModule } from '@uprtcl/lenses';
+  DiscoveryModule,
+  LensesModule,
+  LENSES_MODULE_ID
+} from '@uprtcl/cortex';
 
 const storeModule = new StoreModule();
 const patternRegistryModule = new PatternRegistryModule();
@@ -17,4 +15,4 @@ const orchestrator = MicroOrchestrator.get();
 
 orchestrator.addModules([storeModule, patternRegistryModule, discoveryModule, lensesModule]);
 
-orchestrator.loadModule('lenses-module');
+orchestrator.loadModule(LENSES_MODULE_ID);

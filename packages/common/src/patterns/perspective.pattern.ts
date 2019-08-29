@@ -1,14 +1,13 @@
 import {
-  Perspective,
-  Commit,
   Secured,
   PatternRegistry,
-  UprtclSource,
   LinkedPattern,
   RenderPattern,
   Pattern,
   SecuredPattern
 } from '@uprtcl/cortex';
+import { Perspective, Commit } from '../types';
+import { UprtclSource } from '../services/uprctl.source';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp', 'contextId', 'name'];
 

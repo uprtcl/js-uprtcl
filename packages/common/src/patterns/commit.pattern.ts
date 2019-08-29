@@ -1,13 +1,13 @@
 import {
   LinkedPattern,
   Pattern,
-  Commit,
   Secured,
   RenderPattern,
   PatternRegistry,
   Source,
   SecuredPattern
 } from '@uprtcl/cortex';
+import { Commit } from '../types';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'message', 'parentsIds', 'dataId'];
 

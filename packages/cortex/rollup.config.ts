@@ -9,6 +9,9 @@ const pkg = require('./package.json');
 
 const libraryName = 'uprtcl-cortex';
 
+const deps = pkg.dependencies;
+delete deps['@holochain/hc-web-client'];
+
 export default {
   input: `src/${libraryName}.ts`,
   output: [
@@ -16,7 +19,12 @@ export default {
     { file: pkg.module, format: 'es', sourcemap: true }
   ],
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
-  external: [],
+  external: [
+    ...Object.keys(deps || {}),
+    ...Object.keys(pkg.peerDependencies || {}),
+    ...Object.keys(pkg.devDependencies || {})
+  ],
+  //  external: [],
   watch: {
     include: 'src/**'
   },

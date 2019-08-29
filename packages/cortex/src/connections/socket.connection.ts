@@ -1,5 +1,5 @@
 import { Connection } from './connection';
-import WebSocket from 'ws';
+
 
 export class SocketConnection extends Connection {
   ws!: WebSocket;

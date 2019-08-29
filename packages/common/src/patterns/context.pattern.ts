@@ -1,4 +1,5 @@
-import { Pattern, SecuredPattern, Secured, Context } from '@uprtcl/cortex'
+import { Pattern, SecuredPattern, Secured } from '@uprtcl/cortex';
+import { Context } from '../types';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'nonce'];
 

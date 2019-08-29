@@ -4,12 +4,12 @@ import {
   MultiProviderService,
   Secured,
   CachedMultiProviderService,
-  UprtclMultiProvider,
   Signed
 } from '@uprtcl/cortex';
 
 import { UprtclProvider } from './uprtcl.provider';
 import { Context, Perspective, Commit } from '../types';
+import { UprtclMultiProvider } from './uprtcl.multi-provider';
 
 export class UprtclService implements UprtclMultiProvider {
   cachedMultiProvider: CachedMultiProviderService<UprtclProvider & CacheService, UprtclProvider>;

@@ -1,6 +1,4 @@
-import { Pattern } from '../../../../packages/core/src/patterns/pattern';
-import { TypePattern } from '../../../../packages/common/src/patterns/type.pattern';
-import { TextPattern } from '../../../../packages/common/src/patterns/text.pattern';
+import { TypePattern, TextPattern, Pattern } from '@uprtcl/cortex';
 import { TextType, TypedText } from '../types';
 
 export class TypedTextPattern implements Pattern, TextPattern, TypePattern<TextType> {

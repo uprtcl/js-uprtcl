@@ -1,5 +1,5 @@
 import { LitElement, property, html } from 'lit-element';
-import { LensElement } from '@uprtcl/lenses';
+import { LensElement } from '@uprtcl/cortex';
 import { TypedText } from '../types';
 
 export class TypedTextElement extends LitElement implements LensElement<TypedText> {
