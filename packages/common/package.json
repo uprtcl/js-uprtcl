@@ -10,7 +10,7 @@
   "typings": "dist/types/uprtcl-common.d.ts",
   "repository": "https://github.com/open-wc/open-wc/",
   "scripts": {
-    "build": "npm run clean && tsc --module es6 && rollup -c rollup.config.ts",
+    "build": "npm run clean && rollup -c rollup.config.ts",
     "clean": "rimraf dist docs",
     "test": "karma start --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false",

@@ -1,5 +1,5 @@
-import { KnownSourcesService } from './known-sources.service';
 import Dexie from 'dexie';
+import { KnownSourcesService } from './known-sources.service';
 
 export class KnownSourcesDexie extends Dexie implements KnownSourcesService {
   knownSources: Dexie.Table<string[], string>;

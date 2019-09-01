@@ -8,7 +8,7 @@ import {
   ReducersMapObject
 } from 'redux';
 import { LazyStore, lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
-const { createDynamicMiddlewares } = require('redux-dynamic-middlewares');
+import { createDynamicMiddlewares } from 'redux-dynamic-middlewares';
 
 import { MicroModule } from '../micro.module';
 
