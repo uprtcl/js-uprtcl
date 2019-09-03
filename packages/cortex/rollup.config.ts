@@ -8,6 +8,7 @@ import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
 
 const pkg = require('./package.json');
+delete pkg.dependencies['buffer'];
 delete pkg.dependencies['cids'];
 delete pkg.dependencies['multihashing-async'];
 

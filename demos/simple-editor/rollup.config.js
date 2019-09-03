@@ -18,7 +18,7 @@ export default {
       'process.env.NODE_ENV': JSON.stringify('production')
     }),
     ...config.plugins,
-    resolve({ browser: true, preferBuiltins: false }),
+    resolve({ browser: true }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs(),
     // Allow json resolution

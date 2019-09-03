@@ -16,3 +16,4 @@ const orchestrator = MicroOrchestrator.get();
 orchestrator.addModules([storeModule, patternRegistryModule, discoveryModule, lensesModule]);
 
 orchestrator.loadModule(LENSES_MODULE_ID);
+console.log(orchestrator)

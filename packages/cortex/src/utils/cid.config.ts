@@ -1,5 +1,5 @@
-import CID from 'cids';
 import multihashing from 'multihashing-async';
+import * as CID from 'cids';
 
 export class CidConfig {
   constructor(
