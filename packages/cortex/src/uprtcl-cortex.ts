@@ -1,8 +1,8 @@
 /** Services */
 export { Source } from './services/sources/source';
 export { DiscoverableSource } from './services/sources/discoverable.source';
-export { HolochainSource } from './services/sources/holochain.source';
-export { IpfsSource } from './services/sources/ipfs.source';
+// export { HolochainSource } from './services/sources/holochain.source';
+// export { IpfsSource } from './services/sources/ipfs.source';
 
 export { KnownSourcesService } from './services/known-sources/known-sources.service';
 export { KnownSourcesDexie } from './services/known-sources/known-sources.dexie';
@@ -23,7 +23,7 @@ export { DiscoveryService } from './services/discovery.service';
 export { DiscoveryModule } from './services/discovery.module';
 
 // Connections
-export { HolochainConnection } from './connections/holochain.connection';
+// export { HolochainConnection } from './connections/holochain.connection';
 
 /** Patterns */
 export { Pattern } from './patterns/pattern';

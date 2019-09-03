@@ -1,6 +1,6 @@
 import { ConnectionOptions, Connection } from './connection';
 import { CidConfig } from '../utils/cid.config';
-const ipfsClient = require('ipfs-http-client');
+import ipfsClient from 'ipfs-http-client';
 
 export class IpfsConnection extends Connection {
   client: any;

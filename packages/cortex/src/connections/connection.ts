@@ -1,5 +1,5 @@
-import { Logger, LogLevel } from '../utils/logger';
-import * as _ from 'lodash';
+import { Logger } from '../utils/logger';
+import merge from 'lodash/merge';
 
 export interface ConnectionOptions {
   retries?: number;
@@ -29,7 +29,7 @@ export class Connection {
 
   constructor(options: ConnectionOptions = {}) {
     // Merge options
-    if (options) this.options = _.merge(defaultOptions, options);
+    if (options) this.options = merge(defaultOptions, options);
     else this.options = defaultOptions;
 
     this.setupConnection();

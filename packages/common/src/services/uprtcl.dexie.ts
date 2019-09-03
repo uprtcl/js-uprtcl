@@ -1,7 +1,7 @@
 import Dexie from 'dexie';
 import 'dexie-observable';
 import { Observable } from 'rxjs';
-import * as _ from 'lodash';
+import uniq from 'lodash/uniq';
 
 import {
   CacheService,
@@ -72,7 +72,7 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
       await this.contextPerspectives.put([perspectiveId], contextId);
     } else {
       perspectives.push(perspectiveId);
-      await this.contextPerspectives.put(_.uniq(perspectives), contextId);
+      await this.contextPerspectives.put(uniq(perspectives), contextId);
     }
   }
 

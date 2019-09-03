@@ -1,5 +1,5 @@
-const CID = require('cids');
-const multihashing = require('multihashing-async');
+import CID from 'cids';
+import multihashing from 'multihashing-async';
 
 export class CidConfig {
   constructor(
@@ -14,8 +14,8 @@ export class CidConfig {
    */
   static fromCid(cidStr: string) {
     const cid = new CID(cidStr);
-    const multihash = multihashing.multihash.decode(cid.multihash);
+    const hash = multihashing.multihash.decode(cid.multihash);
 
-    return new CidConfig(cid.multibaseName, cid.version, cid.codec, multihash.name);
+    return new CidConfig(cid.multibaseName, cid.version, cid.codec, hash.name);
   }
 }

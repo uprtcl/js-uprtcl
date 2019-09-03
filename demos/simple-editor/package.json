@@ -1,0 +1,32 @@
+{
+  "scripts": {
+    "start:build": "cd dist && es-dev-server --open",
+    "build": "rimraf dist && rollup -c rollup.config.js",
+    "start": "es-dev-server",
+    "start:compatibility": "es-dev-server --app-index index.html --compatibility all --node-resolve --open --watch"
+  },
+  "devDependencies": {
+    "@open-wc/building-rollup": "^0.9.0",
+    "es-dev-server": "^1.5.0",
+    "rimraf": "^2.6.3",
+    "rollup": "^1.15.4",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-replace": "^2.2.0"
+  },
+  "name": "simple-editor",
+  "version": "0.0.0",
+  "description": "Webcomponent simple-editor following open-wc recommendations",
+  "author": "simple-editor",
+  "license": "MIT",
+  "dependencies": {
+    "@uprtcl/common": "*",
+    "@uprtcl/cortex": "*",
+    "@uprtcl/micro-orchestrator": "*",
+    "lit-element": "^2.0.1",
+    "lit-html": "^1.0.0"
+  }
+}

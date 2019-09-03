@@ -1,5 +1,5 @@
 import { KnownSourcesService } from '../../src/services/known-sources/known-sources.service';
-import * as _ from 'lodash';
+import uniq from 'lodash/uniq';
 
 type Dictionary<T> = { [key: string]: T };
 
@@ -21,7 +21,7 @@ export class KnownSourcesMock implements KnownSourcesService {
 
     const previousSources = await this.getKnownSources(hash);
     if (previousSources) {
-      this.knownSources[hash] = _.uniq([...sources, ...previousSources]);
+      this.knownSources[hash] = uniq([...sources, ...previousSources]);
     } else {
       this.knownSources[hash] = sources;
     }

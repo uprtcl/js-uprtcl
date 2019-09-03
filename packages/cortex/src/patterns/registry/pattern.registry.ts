@@ -1,5 +1,5 @@
 import { Dictionary } from 'lodash';
-import * as _ from 'lodash';
+import merge from 'lodash/merge';
 import { Pattern } from '../pattern';
 import { defaultPatterns } from './default.patterns';
 
@@ -43,7 +43,7 @@ export class PatternRegistry {
     for (const patternName of this.patternList) {
       const applyingPattern = this.patterns[patternName];
       if (applyingPattern.recognize(object)) {
-        _.merge(pattern, applyingPattern);
+        merge(pattern, applyingPattern);
       }
     }
 
