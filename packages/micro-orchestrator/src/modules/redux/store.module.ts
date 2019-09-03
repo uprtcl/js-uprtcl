@@ -25,7 +25,7 @@ export class StoreModule implements MicroModule {
       (state, action) => state,
       compose(
         lazyReducerEnhancer(combineReducers),
-        applyMiddleware(dynamicMiddlewaresInstance)
+        applyMiddleware(dynamicMiddlewaresInstance.enhancer)
       )
     ) as Store & LazyStore;
   }

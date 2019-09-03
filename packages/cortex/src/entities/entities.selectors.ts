@@ -2,7 +2,7 @@ import { EntitiesState } from './entities.reducer';
 import { PatternRegistry } from '../patterns/registry/pattern.registry';
 import { Pattern } from '../patterns/pattern';
 
-export const entitiesReducerName = 'entities';
+export const entitiesReducerName = 'entities-reducer';
 
 export const selectEntities = (state: any): EntitiesState => state[entitiesReducerName];
 

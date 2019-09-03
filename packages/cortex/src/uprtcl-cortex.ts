@@ -39,7 +39,7 @@ export { TypePattern } from './patterns/patterns/type.pattern';
 export { TextPattern } from './patterns/patterns/text.pattern';
 
 // Default patterns
-export { DefaultHashedPattern } from './patterns/defaults/default-hashed.pattern';
+// export { DefaultHashedPattern } from './patterns/defaults/default-hashed.pattern';
 export { DefaultSignedPattern } from './patterns/defaults/default-signed.pattern';
 export { DefaultSecuredPattern, Secured } from './patterns/defaults/default-secured.pattern';
 export { DefaultRenderPattern } from './patterns/defaults/default-render.pattern';

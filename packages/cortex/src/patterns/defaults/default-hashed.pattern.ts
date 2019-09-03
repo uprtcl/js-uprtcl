@@ -1,5 +1,4 @@
 import { HashedPattern, Hashed } from '../patterns/hashed.pattern';
-import { CidConfig } from '../../utils/cid.config';
 
 export class DefaultHashedPattern implements HashedPattern<any> {
   recognize(object: object) {
@@ -25,7 +24,7 @@ export class DefaultHashedPattern implements HashedPattern<any> {
     return hashed.object;
   }
 
-  getCidConfig(hash: string): CidConfig {
-    return CidConfig.fromCid(hash);
+  getCidConfig(hash: string): any {
+    return null; // TODO fix this
   }
 }

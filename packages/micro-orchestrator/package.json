@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "description": "",
   "keywords": [],
-  "main": "dist/micro-orchestrator.umd.js",
-  "module": "dist/micro-orchestrator.es5.js",
-  "typings": "dist/types/micro-orchestrator.d.ts",
+  "main": "dist/uprtcl-micro-orchestrator.umd.js",
+  "module": "dist/uprtcl-micro-orchestrator.es5.js",
+  "typings": "dist/types/uprtcl-micro-orchestrator.d.ts",
   "files": [
     "dist"
   ],
@@ -21,6 +21,7 @@
   "scripts": {
     "clean": "rimraf dist docs",
     "build": "npm run clean && rollup -c rollup.config.ts",
+    "dev": "rollup -c rollup.config.ts -w",
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "start": "rollup -c rollup.config.ts -w",
     "test": "jest --coverage",

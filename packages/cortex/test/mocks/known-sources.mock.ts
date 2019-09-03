@@ -1,7 +1,6 @@
 import { KnownSourcesService } from '../../src/services/known-sources/known-sources.service';
+import { Dictionary } from 'lodash';
 import uniq from 'lodash/uniq';
-
-type Dictionary<T> = { [key: string]: T };
 
 export class KnownSourcesMock implements KnownSourcesService {
   constructor(protected sourceName: string, public knownSources: Dictionary<string[]> = {}) {}
