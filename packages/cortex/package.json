@@ -20,6 +20,7 @@
   },
   "scripts": {
     "clean": "rimraf dist docs",
+    "dev": "rollup -c rollup.config.ts -w",
     "build": "npm run clean && rollup -c rollup.config.ts",
     "build:docs": "typedoc --out docs --target es6 --theme markdown --platform gitbook --mode file src",
     "start": "rollup -c rollup.config.ts -w",
@@ -79,11 +80,11 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "@material/mwc-linear-progress": "^0.8.0",
     "@types/lodash": "^4.14.138",
     "@uprtcl/micro-orchestrator": "*",
     "cids": "^0.7.1",
     "dexie": "^2.0.4",
-    "ipfs-http-client": "^32.0.1",
     "isomorphic-ws": "^4.0.1",
     "lit-element": "^2.2.1",
     "lit-html": "^1.1.2",

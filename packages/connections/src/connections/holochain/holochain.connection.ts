@@ -1,11 +1,10 @@
-import { SocketConnection } from './socket.connection';
 import { connect } from '@holochain/hc-web-client';
-import { ConnectionOptions } from './connection';
+import { ConnectionOptions } from '../connection';
+import { SocketConnection } from '../socket.connection';
 
-export interface ZomeOptions {
+export interface HolochainConnectionOptions {
   host: string;
-  instanceId: string;
-  zome: string;
+  instance: string;
 }
 
 // Auxiliar type for Holochain's get_entry call
@@ -18,15 +17,15 @@ export class HolochainConnection extends SocketConnection {
   connection!: (funcName: string, params: any) => Promise<any>;
   onsignal!: (callback: (params: any) => void) => void;
 
-  constructor(protected zomeOptions: ZomeOptions, options: ConnectionOptions = {}) {
+  constructor(protected zome:string, protected hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {
     super(options);
   }
 
   async createSocket(): Promise<WebSocket> {
-    const { callZome, ws, onSignal } = await connect({ url: this.zomeOptions.host });
+    const { callZome, ws, onSignal } = await connect({ url: this.hcOptions.host });
 
     this.connection = async (funcName: string, params: any) =>
-      callZome(this.zomeOptions.instanceId, this.zomeOptions.zome, funcName)(params);
+      callZome(this.hcOptions.instance, this.zome, funcName)(params);
     this.onsignal = onSignal;
 
     return ws;
@@ -77,6 +76,6 @@ export class HolochainConnection extends SocketConnection {
   public parseEntriesResults<T extends object>(entryArray: Array<any>): Array<EntryResult<T>> {
     return entryArray
       .map(entry => this.parseEntryResult<T>(entry.Ok ? entry.Ok : entry))
-      .filter(entry => entry !== undefined) as Array<EntryResult<T>>;
+      .filter(entry => entry !== undefined);
   }
 }

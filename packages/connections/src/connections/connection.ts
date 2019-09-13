@@ -1,4 +1,4 @@
-import { Logger } from '../utils/logger';
+import { Logger } from '@uprtcl/cortex';
 import merge from 'lodash/merge';
 
 export interface ConnectionOptions {

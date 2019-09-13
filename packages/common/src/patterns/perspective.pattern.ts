@@ -12,7 +12,7 @@ import { UprtclSource } from '../services/uprctl.source';
 export const propertyOrder = ['origin', 'creatorId', 'timestamp', 'contextId', 'name'];
 
 export class PerspectivePattern
-  implements LinkedPattern<Secured<Perspective>>, RenderPattern<Secured<Perspective>> {
+  implements Pattern, LinkedPattern<Secured<Perspective>>, RenderPattern<Secured<Perspective>> {
   constructor(
     protected patternRegistry: PatternRegistry,
     protected securedPattern: Pattern & SecuredPattern<Secured<Perspective>>,

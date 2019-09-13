@@ -1,15 +1,17 @@
 {
-  "name": "@uprtcl/documents",
+  "name": "@uprtcl/connections",
   "version": "0.0.0",
   "description": "Webcomponent uprtcl-common following open-wc recommendations",
-  "author": "uprtcl-common",
+  "author": "uprtcl-connections",
   "homepage": "https://github.com/open-wc/open-wc/",
   "license": "MIT",
-  "main": "dist/uprtcl-documents.umd.js",
-  "module": "dist/uprtcl-documents.es5.js",
-  "typings": "dist/types/uprtcl-documents.d.ts",
+  "main": "dist/uprtcl-connections.umd.js",
+  "module": "dist/uprtcl-connections.es5.js",
+  "typings": "dist/types/uprtcl-connections.d.ts",
   "repository": "https://github.com/open-wc/open-wc/",
   "scripts": {
+    "build": "npm run clean && rollup -c rollup.config.ts",
+    "clean": "rimraf dist docs",
     "test": "karma start --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false",
     "test:update-snapshots": "karma start --update-snapshots",
@@ -17,33 +19,19 @@
     "test:compatibility": "karma start --compatibility all --coverage",
     "test:compatibility:watch": "karma start --compatibility all --auto-watch=true --single-run=false",
     "test:bs": "karma start karma.bs.config.js --legacy --coverage",
-    "build": "npm run clean && rollup -c rollup.config.ts",
-    "clean": "rimraf dist docs",
-    "site:build": "npm run storybook:build",
-    "storybook": "tsc && tsc -w & start-storybook -p 9001",
-    "storybook:build": "npm run build && build-storybook -o _site -s storybook-static"
+    "docs:build": "typedoc --out docs --target es6 --theme minimal --mode file src",
+    "site:build": "npm run storybook:build"
   },
   "dependencies": {
-    "@material/mwc-button": "^0.6.0",
-    "@material/mwc-checkbox": "^0.6.0",
-    "@material/mwc-fab": "^0.6.0",
-    "@material/mwc-icon": "^0.6.0",
-    "@material/mwc-radio": "^0.6.0",
-    "@material/mwc-ripple": "^0.6.0",
-    "@material/mwc-switch": "^0.6.0",
-    "@uprtcl/common": "*",
-    "@uprtcl/connections": "*",
+    "@holochain/hc-web-client": "^0.5.0",
     "@uprtcl/cortex": "*",
-    "lit-element": "^2.0.1",
-    "lit-html": "^1.0.0"
+    "ipfs-http-client": "^32.0.1",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "@open-wc/demoing-storybook": "^0.3.0",
     "@open-wc/testing": "^0.11.1",
     "@open-wc/testing-karma": "^3.0.0",
     "@open-wc/testing-karma-bs": "^1.0.0",
-    "@types/storybook__react": "^4.0.2",
-    "es-dev-server": "^1.5.0",
     "rimraf": "^2.6.3",
     "rollup": "^0.67.0",
     "rollup-plugin-commonjs": "^9.1.8",
@@ -53,7 +41,7 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.18.0",
-    "typescript": "^3.5.3",
-    "webpack-merge": "^4.1.5"
+    "typedoc": "^0.14.2",
+    "typescript": "^3.5.3"
   }
 }

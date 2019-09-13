@@ -1,7 +1,7 @@
-import { Dictionary } from 'lodash';
 import { Action, Middleware, Reducer, Store } from 'redux';
-
 import thunk from 'redux-thunk';
+import { Dictionary } from 'lodash';
+import uniq from 'lodash/uniq';
 
 import { MicroModule } from '../micro.module';
 import { StoreModule, REDUX_STORE_ID } from './store.module';
@@ -12,7 +12,8 @@ export class ReduxModule<S, A extends Action> implements MicroModule {
   constructor(
     protected reducerName: string,
     protected reducer: Reducer<S, A>,
-    protected middlewares: Middleware<any, any, any>[] = []
+    protected middlewares: Middleware<any, any, any>[] = [],
+    protected dependencies: string[] = []
   ) {}
 
   async onLoad(dependencies: Dictionary<MicroModule>): Promise<void> {
@@ -32,7 +33,7 @@ export class ReduxModule<S, A extends Action> implements MicroModule {
   }
 
   getDependencies(): Array<string> {
-    return [REDUX_STORE_ID];
+    return uniq([REDUX_STORE_ID, ...this.dependencies]);
   }
 
   getId(): string {

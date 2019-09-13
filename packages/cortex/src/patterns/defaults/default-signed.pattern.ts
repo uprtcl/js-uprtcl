@@ -20,7 +20,8 @@ export class DefaultSignedPattern implements SignedPattern<any> {
   sign<T>(object: T): Signed<T> {
     return {
       proof: {
-        signature: ''
+        signature: '',
+        type: 'ecdsa'
       },
       payload: object
     };

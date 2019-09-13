@@ -2,6 +2,7 @@ import { html, LitElement, property } from 'lit-element';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 import { connect } from 'pwa-helpers/connect-mixin';
 import { Store } from 'redux';
+import '@material/mwc-linear-progress';
 
 import { Lens, MenuItem } from '../types';
 import { loadEntity, selectEntities, selectById } from '../entities';
@@ -92,7 +93,7 @@ export function PatternRenderer<T>(
       return html`
         ${!this.entity
           ? html`
-              Loading...
+              <mwc-linear-progress></mwc-linear-progress>
             `
           : html`
               ${this.renderLens()} ${this.renderLensSelector()} ${this.renderMenu()}

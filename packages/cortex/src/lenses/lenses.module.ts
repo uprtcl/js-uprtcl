@@ -37,7 +37,7 @@ export class LensesModule implements MicroModule {
   async onUnload(): Promise<void> {}
 
   getDependencies(): string[] {
-    return [PATTERN_REGISTRY_MODULE_ID, DISCOVERY_MODULE_ID, entitiesReducerName];
+    return [REDUX_STORE_ID, PATTERN_REGISTRY_MODULE_ID, DISCOVERY_MODULE_ID, entitiesReducerName];
   }
 
   getId(): string {

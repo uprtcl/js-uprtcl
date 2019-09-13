@@ -1,5 +1,5 @@
 module.exports = {
-  port: 8080,
+  port: 8000,
   watch: true,
   appIndex: './dist/index.html',
   rootDir: './dist',

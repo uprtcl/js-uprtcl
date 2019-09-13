@@ -12,6 +12,7 @@ const config = createDefaultConfig({ input: "./index.html" });
 export default {
   ...config,
   plugins: [
+//    globals(),
     builtins(),
     replace({
       "process.env.NODE_ENV": JSON.stringify("production")
@@ -25,6 +26,6 @@ export default {
   ],
   external: [],
   watch: {
-    include: ["src/**", "node_modules/@uprtcl/**"]
+    include: ["index.html", "src/**", "node_modules/@uprtcl/**"]
   }
 };

@@ -16,22 +16,22 @@ export const REDUX_STORE_ID = 'redux-store-module';
 
 export class StoreModule implements MicroModule {
   store!: Store & LazyStore;
-  dynamicMiddlewareInstance: any;
+  dynamicMiddlewaresInstance: any;
 
   async onLoad(): Promise<void> {
-    const dynamicMiddlewaresInstance = createDynamicMiddlewares();
+    this.dynamicMiddlewaresInstance = createDynamicMiddlewares();
 
     this.store = createStore(
       (state, action) => state,
       compose(
         lazyReducerEnhancer(combineReducers),
-        applyMiddleware(dynamicMiddlewaresInstance.enhancer)
+        applyMiddleware(this.dynamicMiddlewaresInstance.enhancer)
       )
     ) as Store & LazyStore;
   }
 
   addMiddlewares(middlewares: Middleware<any, any, any>[]): void {
-    this.dynamicMiddlewareInstance.addMiddleware(middlewares);
+    this.dynamicMiddlewaresInstance.addMiddleware(middlewares);
   }
 
   addReducer(reducers: ReducersMapObject): void {

@@ -1,5 +1,6 @@
 {
   "packages": [
+    "modules/*",
     "packages/*",
     "demos/*"
   ],

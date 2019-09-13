@@ -25,7 +25,7 @@ export class DiscoveryService implements Source {
    * Add the given sources to the existing ones
    * @param discoverableSources the array of new sources
    */
-  public addSources(discoverableSources: DiscoverableSource[]): Promise<void> {
+  public addSources(...discoverableSources: DiscoverableSource[]): Promise<void> {
     return this.multiSource.addSources(discoverableSources);
   }
 }

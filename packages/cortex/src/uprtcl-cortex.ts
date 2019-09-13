@@ -22,9 +22,6 @@ export {
 export { DiscoveryService } from './services/discovery.service';
 export { DiscoveryModule } from './services/discovery.module';
 
-// Connections
-// export { HolochainConnection } from './connections/holochain.connection';
-
 /** Patterns */
 export { Pattern } from './patterns/pattern';
 export { ContentPattern } from './patterns/patterns/content.pattern';
@@ -64,8 +61,11 @@ export {
   selectEntities,
   entitiesReducerName,
   entitiesReduxModule
-} from './entities/index';
+} from './entities';
 
 /** Lenses */
 export { LensesModule, LENSES_MODULE_ID } from './lenses/lenses.module';
 export { Lens, MenuItem, LensElement } from './types';
+
+/** Utils */
+export { Logger } from './utils/logger';
