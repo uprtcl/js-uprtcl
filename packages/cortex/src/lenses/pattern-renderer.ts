@@ -1,5 +1,7 @@
 import { html, LitElement, property } from 'lit-element';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
+import withCustomElement, {
+  unsafeStatic
+} from '@corpuscule/lit-html-renderer/lib/withCustomElement';
 import { connect } from 'pwa-helpers/connect-mixin';
 import { Store } from 'redux';
 import '@material/mwc-linear-progress';
@@ -11,6 +13,8 @@ import { MenuPattern } from '../patterns/patterns/menu.pattern';
 import { RenderPattern } from '../patterns/patterns/render.pattern';
 import { PatternRegistry } from '../patterns/registry/pattern.registry';
 import { Source } from '../services/sources/source';
+
+const shtml = withCustomElement(html);
 
 export function PatternRenderer<T>(
   patternRegistry: PatternRegistry,
@@ -29,6 +33,7 @@ export function PatternRenderer<T>(
     private lenses: Lens[];
 
     // Menu items
+    @property({ type: Array })
     private menuItems: MenuItem[][];
 
     /**
@@ -37,29 +42,34 @@ export function PatternRenderer<T>(
     renderLens() {
       const selectedLens = this.lenses[this.selectedLensIndex];
       const paramKeys = Object.keys(selectedLens.params);
-      return html`
-        ${unsafeHTML(
-          `<${selectedLens.lens}
-            ${paramKeys.map(
-              param =>
-                html`
-                  ${param}="${selectedLens.params[param]}"
-                `
-            )}
-            .data=${this.entity}
-          ></${selectedLens.lens}>`
-        )}
-      `;
+
+      const Lens = unsafeStatic(selectedLens.lens);
+
+      /**
+       * TODO: add parameters to the lens
+       *
+       *  ${paramKeys.map(
+       *     param =>
+       *       shtml`
+       *         ${param}="${selectedLens.params[param]}"
+       *       `
+       *   )}
+       */
+
+      return shtml`
+        <${Lens} .data=${this.entity}>
+        </${Lens}>`;
     }
 
     renderLensSelector() {
-      return html`
-        ${this.lenses
-          ? html`
+      return shtml`
+        ${
+          this.lenses
+            ? shtml`
               <select>
                 ${this.lenses.map(
                   (lens, index) =>
-                    html`
+                    shtml`
                       <option value=${lens.lens} @click=${() => (this.selectedLensIndex = index)}>
                         ${lens.lens}
                       </option>
@@ -67,37 +77,42 @@ export function PatternRenderer<T>(
                 )}
               </select>
             `
-          : html``}
+            : shtml``
+        }
       `;
     }
 
     renderMenu() {
-      return html`
-        ${this.menuItems
-          ? this.menuItems.map(
-              itemGroup =>
-                html`
+      return shtml`
+        ${
+          this.menuItems
+            ? this.menuItems.map(
+                itemGroup =>
+                  shtml`
                   ${itemGroup.map(
                     item =>
-                      html`
+                      shtml`
                         <button @click=${() => item.action()}>${item.title}</button>
                       `
                   )}
                 `
-            )
-          : html``}
+              )
+            : shtml``
+        }
       `;
     }
 
     render() {
-      return html`
-        ${!this.entity
-          ? html`
+      return shtml`
+        ${
+          !this.entity
+            ? shtml`
               <mwc-linear-progress></mwc-linear-progress>
             `
-          : html`
+            : shtml`
               ${this.renderLens()} ${this.renderLensSelector()} ${this.renderMenu()}
-            `}
+            `
+        }
       `;
     }
 
@@ -114,16 +129,17 @@ export function PatternRenderer<T>(
         const pattern: LensesPattern & MenuPattern & RenderPattern<any> = patternRegistry.from(
           entity
         );
-        if (pattern.hasOwnProperty('getLenses')) {
+        console.log(pattern);
+        if (pattern.getLenses) {
           // Reverse the lenses to maintain last lens priority
           this.lenses = pattern.getLenses().reverse();
         }
 
-        if (pattern.hasOwnProperty('getMenuItems')) {
-          this.menuItems = pattern.getMenuItems();
+        if (pattern.getMenuItems) {
+          this.menuItems = pattern.getMenuItems(entity);
         }
 
-        if (pattern.hasOwnProperty('render')) {
+        if (pattern.render) {
           pattern.render(this.entity).then(renderEntity => (this.entity = renderEntity));
         } else {
           this.entity = entity;

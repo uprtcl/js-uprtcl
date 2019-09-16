@@ -8,6 +8,8 @@ import { CacheService } from './cache/cache.service';
 import { KnownSourcesService } from './known-sources/known-sources.service';
 import { DiscoverableSource } from './sources/discoverable.source';
 import { MultiSourceService } from './multi/multi-source.service';
+import { CacheDexie } from './cache/cache.dexie';
+import { KnownSourcesDexie } from './known-sources/known-sources.dexie';
 
 export const DISCOVERY_MODULE_ID = 'discovery-module';
 
@@ -15,8 +17,8 @@ export class DiscoveryModule implements MicroModule {
   discoveryService!: DiscoveryService;
 
   constructor(
-    protected cacheService: CacheService,
-    protected localKnownSources: KnownSourcesService,
+    protected cacheService: CacheService = new CacheDexie(),
+    protected localKnownSources: KnownSourcesService = new KnownSourcesDexie(),
     protected discoverableSources: Array<DiscoverableSource> = []
   ) {}
 

@@ -11,6 +11,7 @@ const pkg = require('./package.json');
 delete pkg.dependencies['@holochain/hc-web-client'];
 pkg.dependencies['lodash/merge'] = '';
 pkg.dependencies['rpc-websockets'] = '';
+pkg.dependencies['isomorphic-fetch'] = '';
 
 const libraryName = 'uprtcl-connections';
 
@@ -27,7 +28,7 @@ export default {
   },
   plugins: [
     globals(),
-    builtins(),
+
     // Allow json resolution
     json(),
     // Compile TypeScript files
@@ -35,12 +36,13 @@ export default {
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
     }),
-    // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-    commonjs(),
     // Allow node_modules resolution, so you can use 'external' to control
     // which external modules to include in the bundle
     // https://github.com/rollup/rollup-plugin-node-resolve#usage
     resolve(),
+    // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
+    commonjs(),
+    builtins(),
 
     // Resolve source maps to the original source
     sourceMaps()

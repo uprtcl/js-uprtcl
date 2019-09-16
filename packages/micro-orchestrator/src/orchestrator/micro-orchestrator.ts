@@ -4,8 +4,6 @@ import { MicroModule } from '../modules/micro.module';
 export class MicroOrchestrator {
   modules: Dictionary<MicroModule> = {};
 
-  loaded: Dictionary<boolean> = {};
-
   static get(): MicroOrchestrator {
     let orchestrator: MicroOrchestrator = window['microorchestrator'];
     if (!orchestrator) {
@@ -17,46 +15,46 @@ export class MicroOrchestrator {
   }
 
   /**
-   * Adds the given modules to the available module list
-   * ATTENTION: this will not load the given modules, but only store them to be loaded later
+   * Loads the given modules to the available module list
    * @param modules
    */
-  addModules(modules: MicroModule[]): void {
-    modules.forEach(module => {
-      this.modules[module.getId()] = module;
-    });
+  async loadModules(...modules: MicroModule[]): Promise<void> {
+    for (const microModule of modules) {
+      await this.loadModule(microModule);
+    }
   }
 
   /**
    * Loads the module with the given id if it wasn't loaded yet, loading its dependencies first
    * @param moduleId the module to load
    */
-  async loadModule<T extends MicroModule>(moduleId: string): Promise<T> {
-    let module: MicroModule = this.modules[moduleId];
-
-    if (!module) {
-      throw new Error(
-        `Unknown module ${moduleId}, call addModules with this module and then loadModule`
-      );
+  async loadModule<T extends MicroModule>(microModule: MicroModule): Promise<T> {
+    if (!microModule) {
+      throw new Error(`Given module is undefined`);
     }
 
-    if (!this.loaded[moduleId]) {
+    const moduleId = microModule.getId();
+
+    if (!this.modules[moduleId]) {
       // The module has not been loaded yet, first load all its dependencies and then load the module
-      const dependenciesIds = module.getDependencies();
+      const dependenciesIds = microModule.getDependencies();
 
-      const promises = dependenciesIds.map(dependencyId => this.loadModule(dependencyId));
-      const dependencies = await Promise.all(promises);
+      for (const depId of dependenciesIds) {
+        if (!this.modules[depId]) {
+          throw new Error(`Attempting to load ${moduleId}: dependency ${depId} of given module has not yet been loaded`);
+        }
+      }
 
-      const depsDict: Dictionary<MicroModule> = dependencies.reduce(
-        (dict, dep) => ({ ...dict, [dep.getId()]: dep }),
+      const depsDict: Dictionary<MicroModule> = dependenciesIds.reduce(
+        (dict, depId) => ({ ...dict, [depId]: this.modules[depId] }),
         {}
       );
 
-      await module.onLoad(depsDict);
+      await microModule.onLoad(depsDict);
 
-      this.loaded[moduleId] = true;
+      this.modules[moduleId] = microModule;
     }
 
-    return module as T;
+    return microModule as T;
   }
 }

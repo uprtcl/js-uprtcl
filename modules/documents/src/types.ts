@@ -1,8 +1,8 @@
 import { Node } from '@uprtcl/cortex';
 
 export enum TextType {
-  title,
-  paragraph
+  Title = 'Title',
+  Paragraph = 'Paragraph'
 }
 
 export interface TypedText {

@@ -4,16 +4,13 @@ import {
   DiscoveryModule,
   LensesModule,
   LENSES_MODULE_ID,
-  entitiesReduxModule
+  entitiesReduxModule,
+  KnownSourcesDexie,
+  CacheDexie
 } from '@uprtcl/cortex';
-import { DocumentsHolochain } from '@uprtcl/documents';
+import { DocumentsHolochain, DocumentsModule } from '@uprtcl/documents';
 import { KnownSourcesHolochain } from '@uprtcl/connections';
-
-const storeModule = new StoreModule();
-const patternRegistryModule = new PatternRegistryModule();
-const discoveryModule = new DiscoveryModule();
-const lensesModule = new LensesModule();
-const entitiesReducerModule = entitiesReduxModule();
+import { SimpleEditor } from './simple-editor';
 
 const documentsProvider = new DocumentsHolochain({
   host: 'ws://localhost:8888',
@@ -25,19 +22,26 @@ const knownSources = new KnownSourcesHolochain({
   instance: 'test-instance'
 });
 
-discoveryModule.discoveryService.addSources({
-  source: documentsProvider,
-  knownSources: knownSources
-});
+const localKnownSources = new KnownSourcesDexie();
+const cacheService = new CacheDexie();
+
+const documentsModule = new DocumentsModule({ source: documentsProvider, knownSources: knownSources });
+const storeModule = new StoreModule();
+const patternRegistryModule = new PatternRegistryModule();
+const discoveryModule = new DiscoveryModule(cacheService, localKnownSources);
+const lensesModule = new LensesModule();
+const entitiesReducerModule = entitiesReduxModule();
 
 const orchestrator = MicroOrchestrator.get();
 
-orchestrator.addModules([
-  entitiesReducerModule,
+orchestrator.loadModules(
   storeModule,
+  entitiesReducerModule,
   patternRegistryModule,
   discoveryModule,
-  lensesModule
-]);
+  lensesModule,
+  documentsModule
+).then(()=> {
+  customElements.define('simple-editor', SimpleEditor(patternRegistryModule.patternRegistry));
+});
 
-orchestrator.loadModule(LENSES_MODULE_ID);

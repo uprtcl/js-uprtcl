@@ -29,7 +29,6 @@
     "@uprtcl/cortex": "*",
     "@uprtcl/documents": "*",
     "@uprtcl/micro-orchestrator": "*",
-    "lit-element": "^2.0.1",
-    "lit-html": "^1.0.0"
+    "lit-element": "^2.2.1"
   }
 }

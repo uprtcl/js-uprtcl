@@ -5,10 +5,13 @@ import {
   combineReducers,
   applyMiddleware,
   Middleware,
-  ReducersMapObject
+  ReducersMapObject,
+  AnyAction,
+  StoreEnhancer
 } from 'redux';
 import { LazyStore, lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
 import { createDynamicMiddlewares } from 'redux-dynamic-middlewares';
+import thunk, { ThunkMiddleware } from 'redux-thunk';
 
 import { MicroModule } from '../micro.module';
 
@@ -21,11 +24,18 @@ export class StoreModule implements MicroModule {
   async onLoad(): Promise<void> {
     this.dynamicMiddlewaresInstance = createDynamicMiddlewares();
 
+    const devCompose: <Ext0, Ext1, StateExt0, StateExt1>(
+      f1: StoreEnhancer<Ext0, StateExt0>,
+      f2: StoreEnhancer<Ext1, StateExt1>
+    ) => StoreEnhancer<Ext0 & Ext1, StateExt0 & StateExt1> =
+      window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose;
+
     this.store = createStore(
       (state, action) => state,
-      compose(
+      devCompose(
         lazyReducerEnhancer(combineReducers),
-        applyMiddleware(this.dynamicMiddlewaresInstance.enhancer)
+        // TODO: add dynamic middlewares
+        applyMiddleware(thunk as ThunkMiddleware<any, AnyAction>)
       )
     ) as Store & LazyStore;
   }

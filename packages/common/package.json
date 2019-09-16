@@ -35,8 +35,7 @@
     "@uprtcl/cortex": "*",
     "dexie": "^2.0.4",
     "dexie-observable": "^1.0.0-beta.5",
-    "lit-element": "^2.0.1",
-    "lit-html": "^1.0.0",
+    "lit-element": "^2.2.1",
     "lodash": "^4.17.15",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0"

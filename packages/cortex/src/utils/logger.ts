@@ -6,7 +6,7 @@ export enum LogLevel {
 }
 
 export class Logger {
-  constructor(protected name: string, protected level: LogLevel = LogLevel.ERROR) {}
+  constructor(protected name: string, protected level: LogLevel = process.env.NODE_ENV === 'production' ? LogLevel.ERROR : LogLevel.INFO) {}
 
   get prefix(): string {
     return `[${this.name}] `;

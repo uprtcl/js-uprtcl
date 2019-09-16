@@ -1,13 +1,12 @@
 import { Dictionary } from 'lodash';
 import merge from 'lodash/merge';
 import { Pattern } from '../pattern';
-import { defaultPatterns } from './default.patterns';
 
 export class PatternRegistry {
   patterns: Dictionary<Pattern> = {};
   patternList: string[] = [];
 
-  constructor(initialPatterns: Dictionary<Pattern> = defaultPatterns) {
+  constructor(initialPatterns: Dictionary<Pattern> = {}) {
     for (const name of Object.keys(initialPatterns)) {
       this.registerPattern(name, initialPatterns[name]);
     }

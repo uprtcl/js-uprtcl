@@ -1,3 +1,5 @@
+import '@corpuscule/lit-html-renderer/lib/init';
+
 /** Services */
 export { Source } from './services/sources/source';
 export { DiscoverableSource } from './services/sources/discoverable.source';
@@ -20,10 +22,11 @@ export {
 } from './services/cached-remotes/cached-multi-provider.service';
 
 export { DiscoveryService } from './services/discovery.service';
-export { DiscoveryModule } from './services/discovery.module';
+export { DiscoveryModule, DISCOVERY_MODULE_ID } from './services/discovery.module';
 
 /** Patterns */
 export { Pattern } from './patterns/pattern';
+export { CreatePattern } from './patterns/patterns/create.pattern';
 export { ContentPattern } from './patterns/patterns/content.pattern';
 export { DerivePattern } from './patterns/patterns/derive.pattern';
 export { HashedPattern, Hashed } from './patterns/patterns/hashed.pattern';
@@ -34,6 +37,8 @@ export { SignedPattern, Signed } from './patterns/patterns/signed.pattern';
 export { ValidatePattern } from './patterns/patterns/validate.pattern';
 export { TypePattern } from './patterns/patterns/type.pattern';
 export { TextPattern } from './patterns/patterns/text.pattern';
+export { LensesPattern } from './patterns/patterns/lenses.pattern';
+export { MenuPattern } from './patterns/patterns/menu.pattern';
 
 // Default patterns
 // export { DefaultHashedPattern } from './patterns/defaults/default-hashed.pattern';
@@ -68,4 +73,4 @@ export { LensesModule, LENSES_MODULE_ID } from './lenses/lenses.module';
 export { Lens, MenuItem, LensElement } from './types';
 
 /** Utils */
-export { Logger } from './utils/logger';
+export { Logger, LogLevel } from './utils/logger';
