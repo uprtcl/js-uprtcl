@@ -117,7 +117,7 @@ export class MultiSourceService<T extends Source = Source> implements Source {
 
     if (object) {
       // Object retrieved, discover the sources for its links
-      const pattern = this.patternRegistry.from(object) as LinkedPattern<O>;
+      const pattern = this.patternRegistry.recognizeMerge(object) as LinkedPattern<O>;
 
       if (pattern.hasOwnProperty('getLinks')) {
         const links = await pattern.getLinks(object);

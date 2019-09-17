@@ -3,8 +3,11 @@ import { Node } from '../../patterns/defaults/default-node.pattern';
 import { LensElement } from '../../types';
 
 export class NodeList extends LitElement implements LensElement<Node> {
-  @property()
+  @property({ type: Object })
   data: Node;
+
+  @property({ type: Boolean })
+  allowAdd: boolean = true;
 
   get styles() {
     return css`
@@ -19,6 +22,7 @@ export class NodeList extends LitElement implements LensElement<Node> {
     return html`
       <div class="column">
         <slot></slot>
+
         ${this.data.links.map(
           link => html`
             <pattern-renderer .hash=${link}></pattern-renderer>

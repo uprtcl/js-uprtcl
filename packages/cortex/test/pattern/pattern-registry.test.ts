@@ -17,14 +17,14 @@ describe('Pattern registry test', () => {
 
   it('recognize hashed default pattern', async () => {
     const object = { id: '0', object: {} };
-    const pattern: HashedPattern<any> = patternRegistry.from(object);
+    const pattern: HashedPattern<any> = patternRegistry.recognizeMerge(object);
 
     expect(pattern.validate(object)).toBeTruthy();
   });
 
   it("don't recognize hashed default pattern", async () => {
     const object = { object: {} };
-    const pattern: HashedPattern<any> = patternRegistry.from(object);
+    const pattern: HashedPattern<any> = patternRegistry.recognizeMerge(object);
 
     expect(pattern.hasOwnProperty('validate')).toBeFalsy();
   });

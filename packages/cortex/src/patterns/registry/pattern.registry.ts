@@ -30,22 +30,32 @@ export class PatternRegistry {
     return (pattern as unknown) as T;
   }
 
-  public from<T>(object: object): Pattern & T {
+  public recognizeMerge<T>(object: object): Pattern & T {
     let pattern: Pattern = {
       recognize: () => false
     };
 
+    const recognizedPatterns = this.recognize(object);
+
+    for (const recognizedPattern of recognizedPatterns) {
+      merge(pattern, recognizedPattern);
+    }
+
+    return pattern as Pattern & T;
+  }
+
+  public recognize<T extends Array<Pattern>>(object: object): T {
     if (!object) {
       throw new Error('The given object was not defined');
     }
 
-    for (const patternName of this.patternList) {
-      const applyingPattern = this.patterns[patternName];
-      if (applyingPattern.recognize(object)) {
-        merge(pattern, applyingPattern);
-      }
-    }
+    const recognizedPatterns = this.patternList
+      .filter(patternName => {
+        const applyingPattern = this.patterns[patternName];
+        return applyingPattern.recognize(object);
+      })
+      .map(patternName => this.patterns[patternName]);
 
-    return pattern as Pattern & T;
+    return recognizedPatterns as T;
   }
 }

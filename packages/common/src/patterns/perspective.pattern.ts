@@ -43,7 +43,7 @@ export class PerspectivePattern
     const commit = await this.uprtcl.get(head);
 
     if (!commit) return null;
-    const commitProps = this.patternRegistry.from(commit) as RenderPattern<Commit>;
+    const commitProps = this.patternRegistry.recognizeMerge(commit) as RenderPattern<Commit>;
     return commitProps.render(commit as Commit);
   }
 }

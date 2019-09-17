@@ -46,15 +46,13 @@ export class TextNodePattern
     ];
   };
 
-  getMenuItems = (): MenuItem[][] => {
+  getMenuItems = (): MenuItem[] => {
     return [
-      [
-        {
-          icon: '',
-          title: 'To paragraph',
-          action: () => {}
-        }
-      ]
+      {
+        icon: '',
+        title: 'To paragraph',
+        action: () => {}
+      }
     ];
   };
 }

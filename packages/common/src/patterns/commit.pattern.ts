@@ -40,7 +40,7 @@ export class CommitPattern
     const data = await this.source.get(commit.object.payload.dataId);
 
     if (!data) return null;
-    const dataProps = this.patternRegistry.from(data) as RenderPattern<any>;
+    const dataProps = this.patternRegistry.recognizeMerge(data) as RenderPattern<any>;
     return dataProps.render(data);
   }
 }

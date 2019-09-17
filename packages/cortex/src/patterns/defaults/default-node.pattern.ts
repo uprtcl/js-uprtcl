@@ -1,11 +1,16 @@
 import { Pattern } from '../pattern';
 import { LinkedPattern } from '../patterns/linked.pattern';
+import { MenuPattern } from '../patterns/menu.pattern';
+import { MenuItem } from '../../types';
+import { PatternRegistry } from '../registry/pattern.registry';
 
 export interface Node {
   links: string[];
 }
 
-export class DefaultNodePattern implements Pattern, LinkedPattern<Node> {
+export class DefaultNodePattern implements Pattern, LinkedPattern<Node>, MenuPattern {
+  constructor(protected patternRegistry: PatternRegistry) {}
+
   recognize(object: object) {
     return object.hasOwnProperty('links') && Array.isArray(object['links']);
   }
@@ -21,5 +26,15 @@ export class DefaultNodePattern implements Pattern, LinkedPattern<Node> {
 
   getHardLinks(object: Node): string[] {
     return object.links;
+  }
+
+  getMenuItems(): MenuItem[] {
+    return [{
+      icon: 'add',
+      title: 'Add child',
+      action: () => {
+        alert('Im clicked');
+      }
+    }];
   }
 }

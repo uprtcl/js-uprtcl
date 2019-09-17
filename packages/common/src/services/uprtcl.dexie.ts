@@ -102,7 +102,7 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
    * @override
    */
   async cloneContext(context: Secured<Context>): Promise<string> {
-    const pattern: ValidatePattern<Secured<Context>> = this.patternRegistry.from(context);
+    const pattern: ValidatePattern<Secured<Context>> = this.patternRegistry.recognizeMerge(context);
 
     if (pattern.validate(context)) {
       throw new Error('Context is not valid');
@@ -116,7 +116,7 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
    * @override
    */
   async clonePerspective(perspective: Secured<Perspective>): Promise<string> {
-    const pattern: ValidatePattern<Secured<Perspective>> = this.patternRegistry.from(perspective);
+    const pattern: ValidatePattern<Secured<Perspective>> = this.patternRegistry.recognizeMerge(perspective);
 
     if (pattern.validate(perspective)) {
       throw new Error('Perspective is not valid');
@@ -132,7 +132,7 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
    * @override
    */
   async cloneCommit(commit: Secured<Commit>): Promise<string> {
-    const pattern: ValidatePattern<Secured<Commit>> = this.patternRegistry.from(commit);
+    const pattern: ValidatePattern<Secured<Commit>> = this.patternRegistry.recognizeMerge(commit);
 
     if (pattern.validate(commit)) {
       throw new Error('Commit is not valid');

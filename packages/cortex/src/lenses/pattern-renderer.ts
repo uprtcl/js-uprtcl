@@ -13,6 +13,7 @@ import { MenuPattern } from '../patterns/patterns/menu.pattern';
 import { RenderPattern } from '../patterns/patterns/render.pattern';
 import { PatternRegistry } from '../patterns/registry/pattern.registry';
 import { Source } from '../services/sources/source';
+import { Pattern } from '../patterns/pattern';
 
 const shtml = withCustomElement(html);
 
@@ -29,8 +30,8 @@ export function PatternRenderer<T>(
 
     // Lenses
     @property()
-    private selectedLensIndex: number = 0;
-    private lenses: Lens[];
+    private selectedLensIndex: [number, number] = [0, 0];
+    private lenses: Lens[][];
 
     // Menu items
     @property({ type: Array })
@@ -40,7 +41,7 @@ export function PatternRenderer<T>(
      * @returns the rendered selected lens
      */
     renderLens() {
-      const selectedLens = this.lenses[this.selectedLensIndex];
+      const selectedLens = this.lenses[this.selectedLensIndex[0]][this.selectedLensIndex[1]];
       const paramKeys = Object.keys(selectedLens.params);
 
       const Lens = unsafeStatic(selectedLens.lens);
@@ -67,13 +68,16 @@ export function PatternRenderer<T>(
           this.lenses
             ? shtml`
               <select>
-                ${this.lenses.map(
-                  (lens, index) =>
-                    shtml`
-                      <option value=${lens.lens} @click=${() => (this.selectedLensIndex = index)}>
-                        ${lens.lens}
-                      </option>
-                    `
+                ${this.lenses.map((lensGroup, i) =>
+                  lensGroup.map(
+                    (lens, j) =>
+                      shtml`
+                        <option value=${lens.lens} @click=${() =>
+                        (this.selectedLensIndex = [i, j])}>
+                          ${lens.lens}
+                        </option>
+                      `
+                  )
                 )}
               </select>
             `
@@ -110,7 +114,14 @@ export function PatternRenderer<T>(
               <mwc-linear-progress></mwc-linear-progress>
             `
             : shtml`
-              ${this.renderLens()} ${this.renderLensSelector()} ${this.renderMenu()}
+              <div style="display: flex; flex-direction: row;">
+                <div style="flex: 1;">
+                  ${this.renderLens()}
+                </div>
+
+                ${this.renderLensSelector()}
+                ${this.renderMenu()}
+              </div>
             `
         }
       `;
@@ -126,18 +137,28 @@ export function PatternRenderer<T>(
       const entity = selectById(this.hash)(entities);
 
       if (entity) {
-        const pattern: LensesPattern & MenuPattern & RenderPattern<any> = patternRegistry.from(
+        const patterns: Array<Pattern | LensesPattern | MenuPattern> = patternRegistry.recognize(
           entity
         );
-        console.log(pattern);
-        if (pattern.getLenses) {
-          // Reverse the lenses to maintain last lens priority
-          this.lenses = pattern.getLenses().reverse();
+
+        const lenses = [];
+        const menuItems = [];
+
+        for (const pattern of patterns) {
+          if ((pattern as LensesPattern).getLenses) {
+            lenses.push((pattern as LensesPattern).getLenses());
+          }
+
+          if ((pattern as MenuPattern).getMenuItems) {
+            menuItems.push((pattern as MenuPattern).getMenuItems(entity));
+          }
         }
 
-        if (pattern.getMenuItems) {
-          this.menuItems = pattern.getMenuItems(entity);
-        }
+        // Reverse the lenses and menuItems to maintain last pattern priority
+        this.lenses = lenses.reverse();
+        this.menuItems = menuItems.reverse();
+
+        const pattern: RenderPattern<any> = patternRegistry.recognizeMerge(entity);
 
         if (pattern.render) {
           pattern.render(this.entity).then(renderEntity => (this.entity = renderEntity));
