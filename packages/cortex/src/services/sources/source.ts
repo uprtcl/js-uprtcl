@@ -1,3 +1,5 @@
+import { Hashed } from '../../patterns/patterns/hashed.pattern';
+
 export interface Source {
   /**
    * Get the object identified by the given hash,
@@ -6,5 +8,5 @@ export interface Source {
    * @param hash the hash identifying the object
    * @returns the object if found, otherwise undefined
    */
-  get<T extends object>(hash: string): Promise<T | undefined>;
+  get<T extends object>(hash: string): Promise<Hashed<T> | undefined>;
 }

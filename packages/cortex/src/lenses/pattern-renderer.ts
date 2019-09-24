@@ -6,14 +6,22 @@ import { connect } from 'pwa-helpers/connect-mixin';
 import { Store } from 'redux';
 import '@material/mwc-linear-progress';
 
-import { Lens, MenuItem } from '../types';
+import { Lens, PatternAction } from '../types';
 import { loadEntity, selectEntities, selectById } from '../entities';
 import { LensesPattern } from '../patterns/patterns/lenses.pattern';
-import { MenuPattern } from '../patterns/patterns/menu.pattern';
-import { RenderPattern } from '../patterns/patterns/render.pattern';
+import { ActionsPattern } from '../patterns/patterns/actions.pattern';
+import { RedirectPattern } from '../patterns/patterns/redirect.pattern';
 import { PatternRegistry } from '../patterns/registry/pattern.registry';
 import { Source } from '../services/sources/source';
 import { Pattern } from '../patterns/pattern';
+import { UpdatePattern } from '../patterns/patterns/update.pattern';
+import { TransformPattern } from '../patterns/patterns/transform.pattern';
+
+interface Isomorphism {
+  entity: object;
+  lenses: Lens[];
+  actions: PatternAction[];
+}
 
 const shtml = withCustomElement(html);
 
@@ -24,24 +32,23 @@ export function PatternRenderer<T>(
 ): typeof HTMLElement {
   class PatternRenderer extends connect(store)(LitElement) {
     @property()
-    public hash: string;
+    public hash!: string;
     @property()
-    private entity: object;
+    private entity!: object;
+
+    @property()
+    private isomorphisms!: Array<Isomorphism>;
 
     // Lenses
     @property()
-    private selectedLensIndex: [number, number] = [0, 0];
-    private lenses: Lens[][];
-
-    // Menu items
-    @property({ type: Array })
-    private menuItems: MenuItem[][];
+    private selectedLensIndex!: [number, number];
 
     /**
      * @returns the rendered selected lens
      */
     renderLens() {
-      const selectedLens = this.lenses[this.selectedLensIndex[0]][this.selectedLensIndex[1]];
+      const selectedIsomorphism = this.isomorphisms[this.selectedLensIndex[0]];
+      const selectedLens = selectedIsomorphism.lenses[this.selectedLensIndex[1]];
       const paramKeys = Object.keys(selectedLens.params);
 
       const Lens = unsafeStatic(selectedLens.lens);
@@ -58,18 +65,26 @@ export function PatternRenderer<T>(
        */
 
       return shtml`
-        <${Lens} .data=${this.entity}>
+        <${Lens}
+          .data=${selectedIsomorphism.entity}
+          @content-changed=${(e: CustomEvent) => this.updateContent(e.detail.newContent)}
+        >
         </${Lens}>`;
+    }
+
+    updateContent(newContent: any) {
+      const updatePattern: UpdatePattern = patternRegistry.recognizeMerge(this.entity);
+
+      if (updatePattern.update) {
+        updatePattern.update(this.entity, newContent);
+      }
     }
 
     renderLensSelector() {
       return shtml`
-        ${
-          this.lenses
-            ? shtml`
               <select>
-                ${this.lenses.map((lensGroup, i) =>
-                  lensGroup.map(
+                ${this.isomorphisms.map((isomorphism, i) =>
+                  isomorphism.lenses.map(
                     (lens, j) =>
                       shtml`
                         <option value=${lens.lens} @click=${() =>
@@ -80,36 +95,29 @@ export function PatternRenderer<T>(
                   )
                 )}
               </select>
-            `
-            : shtml``
-        }
       `;
     }
 
-    renderMenu() {
+    renderActions() {
       return shtml`
-        ${
-          this.menuItems
-            ? this.menuItems.map(
-                itemGroup =>
-                  shtml`
-                  ${itemGroup.map(
-                    item =>
+        ${this.isomorphisms.map(
+          isomorphism =>
+            shtml`
+                  ${isomorphism.actions.map(
+                    action =>
                       shtml`
-                        <button @click=${() => item.action()}>${item.title}</button>
+                        <button @click=${() => action.action()}>${action.title}</button>
                       `
                   )}
                 `
-              )
-            : shtml``
-        }
+        )}
       `;
     }
 
     render() {
       return shtml`
         ${
-          !this.entity
+          !this.entity || !this.selectedLensIndex
             ? shtml`
               <mwc-linear-progress></mwc-linear-progress>
             `
@@ -120,7 +128,7 @@ export function PatternRenderer<T>(
                 </div>
 
                 ${this.renderLensSelector()}
-                ${this.renderMenu()}
+                ${this.renderActions()}
               </div>
             `
         }
@@ -128,44 +136,107 @@ export function PatternRenderer<T>(
     }
 
     firstUpdated() {
+      this.loadEntity(this.hash);
+    }
+
+    loadEntity(hash: string): Promise<any> {
       // TODO: type redux store
-      store.dispatch(loadEntity(source)(this.hash) as any);
+      return store.dispatch(loadEntity(source)(hash) as any);
     }
 
     stateChanged(state: T) {
       const entities = selectEntities(state);
       const entity = selectById(this.hash)(entities);
 
-      if (entity) {
-        const patterns: Array<Pattern | LensesPattern | MenuPattern> = patternRegistry.recognize(
-          entity
-        );
+      if (entity && !this.entity) {
+        this.entity = entity;
+        this.isomorphisms = [];
 
-        const lenses = [];
-        const menuItems = [];
+        // Build first isomorphism: the proper entity
+        this.isomorphisms.push(this.buildIsomorphism(entity));
 
-        for (const pattern of patterns) {
-          if ((pattern as LensesPattern).getLenses) {
-            lenses.push((pattern as LensesPattern).getLenses());
+        // Transform the entity to build its isomorphisms
+        this.isomorphisms = this.isomorphisms.concat(this.transformEntity(entity));
+
+        // Redirect the entity
+        this.redirectEntity(entity).then(i => {
+          this.isomorphisms = this.isomorphisms.concat(i);
+          const renderIsomorphism = this.isomorphisms.findIndex(i => i.lenses.length > 0);
+          this.selectedLensIndex = [renderIsomorphism, 0];
+        });
+      }
+    }
+
+    async redirectEntity(entity: object): Promise<Array<Isomorphism>> {
+      const patterns: Array<Pattern | RedirectPattern<any>> = patternRegistry.recognize(entity);
+
+      let isomorphisms: Isomorphism[] = [];
+
+      for (const pattern of patterns) {
+        if ((pattern as RedirectPattern<any>).redirect) {
+          const redirectHash = await (pattern as RedirectPattern<any>).redirect(entity);
+
+          if (redirectHash) {
+            const redirectEntity = await this.loadEntity(redirectHash);
+
+            isomorphisms.push(this.buildIsomorphism(redirectEntity));
+
+            const transformIsomorphisms = this.transformEntity(redirectEntity);
+            isomorphisms = isomorphisms.concat(transformIsomorphisms);
+
+            // Recursive call to get all isomorphisms from redirected entities
+            const redirectedIsomorphisms = await this.redirectEntity(redirectEntity);
+            isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
           }
-
-          if ((pattern as MenuPattern).getMenuItems) {
-            menuItems.push((pattern as MenuPattern).getMenuItems(entity));
-          }
-        }
-
-        // Reverse the lenses and menuItems to maintain last pattern priority
-        this.lenses = lenses.reverse();
-        this.menuItems = menuItems.reverse();
-
-        const pattern: RenderPattern<any> = patternRegistry.recognizeMerge(entity);
-
-        if (pattern.render) {
-          pattern.render(this.entity).then(renderEntity => (this.entity = renderEntity));
-        } else {
-          this.entity = entity;
         }
       }
+
+      return isomorphisms;
+    }
+
+    buildIsomorphism<T extends object>(entity: T): Isomorphism {
+      const patterns: Array<Pattern | LensesPattern | ActionsPattern> = patternRegistry.recognize(
+        entity
+      );
+
+      let actions: PatternAction[] = [];
+      let lenses: Lens[] = [];
+
+      for (const pattern of patterns) {
+        if ((pattern as LensesPattern).getLenses) {
+          lenses = lenses.concat((pattern as LensesPattern).getLenses(entity));
+        }
+
+        if ((pattern as ActionsPattern).getActions) {
+          actions = actions.concat((pattern as ActionsPattern).getActions(entity));
+        }
+      }
+
+      return {
+        entity,
+        actions,
+        lenses
+      };
+    }
+
+    transformEntity<T extends object>(entity: T): Array<Isomorphism> {
+      const patterns: Array<Pattern | TransformPattern<T, any>> = patternRegistry.recognize(entity);
+
+      let isomorphisms: Array<Isomorphism> = [];
+
+      for (const pattern of patterns) {
+        if ((pattern as TransformPattern<any, any>).transform) {
+          const transformedEntities: Array<any> = (pattern as TransformPattern<T, any>).transform(
+            entity
+          );
+
+          isomorphisms = isomorphisms.concat(
+            transformedEntities.map(entity => this.buildIsomorphism(entity))
+          );
+        }
+      }
+
+      return isomorphisms;
     }
   }
 

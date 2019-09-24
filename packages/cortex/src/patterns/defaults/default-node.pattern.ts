@@ -1,18 +1,22 @@
 import { Pattern } from '../pattern';
 import { LinkedPattern } from '../patterns/linked.pattern';
-import { MenuPattern } from '../patterns/menu.pattern';
-import { MenuItem } from '../../types';
-import { PatternRegistry } from '../registry/pattern.registry';
+import { ActionsPattern } from '../patterns/actions.pattern';
+import { PatternAction } from '../../types';
+import { HashedPattern, Hashed } from '../patterns/hashed.pattern';
 
 export interface Node {
   links: string[];
 }
 
-export class DefaultNodePattern implements Pattern, LinkedPattern<Node>, MenuPattern {
-  constructor(protected patternRegistry: PatternRegistry) {}
+export class DefaultNodePattern implements Pattern, LinkedPattern<Node>, ActionsPattern {
+  constructor(protected hashedPattern: Pattern & HashedPattern<Node>) {}
 
   recognize(object: object) {
-    return object.hasOwnProperty('links') && Array.isArray(object['links']);
+    return (
+      this.hashedPattern.recognize(object) &&
+      this.hashedPattern.extract(object as Hashed<Node>) &&
+      Array.isArray(this.hashedPattern.extract(object as Hashed<Node>))
+    );
   }
 
   async getLinks(object: Node): Promise<string[]> {
@@ -28,13 +32,15 @@ export class DefaultNodePattern implements Pattern, LinkedPattern<Node>, MenuPat
     return object.links;
   }
 
-  getMenuItems(): MenuItem[] {
-    return [{
-      icon: 'add',
-      title: 'Add child',
-      action: () => {
-        alert('Im clicked');
+  getActions(): PatternAction[] {
+    return [
+      {
+        icon: 'add',
+        title: 'Add child',
+        action: () => {
+          alert('Im clicked');
+        }
       }
-    }];
+    ];
   }
 }

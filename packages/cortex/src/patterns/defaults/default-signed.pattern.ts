@@ -2,7 +2,7 @@ import { SignedPattern, Signed } from '../patterns/signed.pattern';
 
 export class DefaultSignedPattern implements SignedPattern<any> {
   recognize(object: object) {
-    return object.hasOwnProperty('proof') && object.hasOwnProperty('object');
+    return object.hasOwnProperty('proof') && object.hasOwnProperty('payload');
   }
 
   validate<T>(signed: Signed<T>): boolean {

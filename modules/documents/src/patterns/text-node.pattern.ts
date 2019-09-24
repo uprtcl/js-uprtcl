@@ -2,32 +2,34 @@ import {
   Pattern,
   CreatePattern,
   LensesPattern,
-  MenuPattern,
+  ActionsPattern,
+  PatternAction,
   Lens,
-  MenuItem,
-  Hashed
+  Hashed,
+  HashedPattern
 } from '@uprtcl/cortex';
 import { TextNode, TextType } from '../types';
 import { DocumentsProvider } from '../services/documents.provider';
 
+const propertyOrder = ['text', 'type', 'links'];
+
 export class TextNodePattern
-  implements Pattern, CreatePattern<[], TextNode>, LensesPattern, MenuPattern {
-  constructor(protected documentsProvider: DocumentsProvider) {}
+  implements Pattern, CreatePattern<Partial<TextNode>, TextNode>, LensesPattern, ActionsPattern {
+  constructor(
+    protected documentsProvider: DocumentsProvider,
+    protected hashedPattern: Pattern & HashedPattern<TextNode>
+  ) {}
 
   recognize(object: object): boolean {
-    return (
-      object.hasOwnProperty('text') &&
-      object.hasOwnProperty('type') &&
-      object.hasOwnProperty('links')
-    );
+    return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = async (): Promise<Hashed<TextNode>> => {
-    const newTextNode: TextNode = {
-      links: [],
-      text: '',
-      type: TextType.Paragraph
-    };
+  create = async (node?: Partial<TextNode>): Promise<Hashed<TextNode>> => {
+    const links = node && node.links ? node.links : [];
+    const text = node && node.text ? node.text : '';
+    const type = node && node.type ? node.type : TextType.Paragraph;
+
+    const newTextNode = { links, text, type };
 
     const hash = await this.documentsProvider.createTextNode(newTextNode);
 
@@ -46,7 +48,7 @@ export class TextNodePattern
     ];
   };
 
-  getMenuItems = (): MenuItem[] => {
+  getActions = (): PatternAction[] => {
     return [
       {
         icon: '',

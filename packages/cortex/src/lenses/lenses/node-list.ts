@@ -4,7 +4,7 @@ import { LensElement } from '../../types';
 
 export class NodeList extends LitElement implements LensElement<Node> {
   @property({ type: Object })
-  data: Node;
+  data!: Node;
 
   @property({ type: Boolean })
   allowAdd: boolean = true;

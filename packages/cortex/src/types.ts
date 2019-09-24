@@ -5,7 +5,7 @@ export interface Lens {
   params: Dictionary<any>;
 }
 
-export interface MenuItem {
+export interface PatternAction {
   icon: string;
   title: string;
   action: () => any;

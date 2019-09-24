@@ -24,7 +24,7 @@ export class PatternRegistry {
     const pattern = this.patterns[name];
 
     if (!pattern) {
-      throw new Error('Pattern was not found in the registry');
+      throw new Error(`Pattern ${name} was not found in the registry`);
     }
 
     return (pattern as unknown) as T;

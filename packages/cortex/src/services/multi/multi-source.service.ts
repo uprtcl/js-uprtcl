@@ -4,6 +4,7 @@ import { Dictionary } from 'lodash';
 import { DiscoverableSource } from '../sources/discoverable.source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import  { PatternRegistry } from '../../patterns/registry/pattern.registry';
+import { Hashed } from '../../patterns/patterns/hashed.pattern';
 
 export class MultiSourceService<T extends Source = Source> implements Source {
   sources!: Dictionary<DiscoverableSource<T>>;
@@ -111,15 +112,15 @@ export class MultiSourceService<T extends Source = Source> implements Source {
   public async getFromSource<O extends object>(
     hash: string,
     source: string
-  ): Promise<O | undefined> {
+  ): Promise<Hashed<O> | undefined> {
     // Get the object from source
     const object = await this.getSource(source).get<O>(hash);
 
     if (object) {
       // Object retrieved, discover the sources for its links
-      const pattern = this.patternRegistry.recognizeMerge(object) as LinkedPattern<O>;
+      const pattern = this.patternRegistry.recognizeMerge(object) as LinkedPattern<Hashed<O>>;
 
-      if (pattern.hasOwnProperty('getLinks')) {
+      if (pattern.getLinks) {
         const links = await pattern.getLinks(object);
         const promises = links.map(link => this.discoverKnownSources(link, source));
 
@@ -141,7 +142,7 @@ export class MultiSourceService<T extends Source = Source> implements Source {
    * @param source the source to get the object from
    * @returns the object if found, rejects if not found
    */
-  protected async tryGetFromSource<O extends object>(hash: string, source: string): Promise<O> {
+  protected async tryGetFromSource<O extends object>(hash: string, source: string): Promise<Hashed<O>> {
     const object = await this.getFromSource<O>(hash, source);
 
     // Reject if object is not found
@@ -158,14 +159,14 @@ export class MultiSourceService<T extends Source = Source> implements Source {
    * @param hash the hash of the object to retrieve
    * @returns the object if found, otherwise undefined
    */
-  public async get<O extends object>(hash: string): Promise<O | undefined> {
+  public async get<O extends object>(hash: string): Promise<Hashed<O> | undefined> {
     // Wait for the sources to have been initialized
     await this.ready();
 
     // Get the known sources for the object from the local
     const knownSources = await this.localKnownSources.getKnownSources(hash);
 
-    let promises: Array<Promise<O>>;
+    let promises: Array<Promise<Hashed<O>>>;
     if (knownSources) {
       // Try to retrieve the object from any of the known sources
       promises = knownSources.map(source => this.tryGetFromSource<O>(hash, source));
@@ -184,7 +185,7 @@ export class MultiSourceService<T extends Source = Source> implements Source {
 
     try {
       // Get first resolved object
-      const object = await this.raceToSuccess<O>(promises);
+      const object: Hashed<O> = await this.raceToSuccess<Hashed<O>>(promises);
       return object;
     } catch (e) {
       // All sources failed, return undefined

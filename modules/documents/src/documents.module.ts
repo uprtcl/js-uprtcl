@@ -27,10 +27,13 @@ export class DocumentsModule implements MicroModule {
 
     const patternRegistry = patternRegistryModule.patternRegistry;
 
-    patternRegistry.registerPattern('node', new DefaultNodePattern(patternRegistry));
+    patternRegistry.registerPattern(
+      'node',
+      new DefaultNodePattern(patternRegistry.getPattern('hashed'))
+    );
     patternRegistry.registerPattern(
       'text-node',
-      new TextNodePattern(this.discoverableDocuments.source)
+      new TextNodePattern(this.discoverableDocuments.source, patternRegistry.getPattern('hashed'))
     );
 
     customElements.define('text-node', TextNodeLens);

@@ -1,22 +1,35 @@
 import {
-  LinkedPattern,
   Pattern,
   Secured,
-  RenderPattern,
+  RedirectPattern,
   PatternRegistry,
   Source,
-  SecuredPattern
+  SecuredPattern,
+  LinkedPattern,
+  CreatePattern,
+  Signed
 } from '@uprtcl/cortex';
 import { Commit } from '../types';
+import { UprtclProvider } from '../services/uprtcl/uprtcl.provider';
+import { PerspectivePattern } from './perspective.pattern';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
 export class CommitPattern
-  implements Pattern, LinkedPattern<Secured<Commit>>, RenderPattern<Secured<Commit>> {
+  implements
+    Pattern,
+    LinkedPattern<Secured<Commit>>,
+    RedirectPattern<Secured<Commit>>,
+    CreatePattern<
+      { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
+      Signed<Commit>
+    > {
   constructor(
     protected patternRegistry: PatternRegistry,
     protected securedPattern: Pattern & SecuredPattern<Secured<Commit>>,
-    protected source: Source
+    protected perspectivePattern: PerspectivePattern,
+    protected source: Source,
+    protected uprtcl: UprtclProvider
   ) {}
 
   recognize(object: object) {
@@ -28,19 +41,35 @@ export class CommitPattern
     );
   }
 
-  getHardLinks = (commit: Secured<Commit>) => [
+  getHardLinks: (commit: Secured<Commit>) => string[] = (commit: Secured<Commit>): string[] => [
     commit.object.payload.dataId,
     ...commit.object.payload.parentsIds
   ];
-  getSoftLinks = async (commit: Secured<Commit>) => [] as string[];
-  getLinks = (commit: Secured<Commit>) =>
+  getSoftLinks: (commit: Secured<Commit>) => Promise<string[]> = async (commit: Secured<Commit>) =>
+    [] as string[];
+  getLinks: (commit: Secured<Commit>) => Promise<string[]> = (commit: Secured<Commit>) =>
     this.getSoftLinks(commit).then(links => links.concat(this.getHardLinks(commit)));
 
-  async render(commit: Secured<Commit>) {
-    const data = await this.source.get(commit.object.payload.dataId);
+  redirect: (commit: Secured<Commit>) => Promise<string> = async (commit: Secured<Commit>) =>
+    commit.object.payload.dataId;
 
-    if (!data) return null;
-    const dataProps = this.patternRegistry.recognizeMerge(data) as RenderPattern<any>;
-    return dataProps.render(data);
-  }
+  create: (args: {
+    dataId: string;
+    message: string;
+    parentsIds: string[];
+    timestamp?: number;
+  }) => Promise<Secured<Commit>> = async (args: {
+    dataId: string;
+    message: string;
+    parentsIds: string[];
+    timestamp?: number;
+  }) => {
+    args.timestamp = args.timestamp || Date.now();
+    return await this.uprtcl.createCommit(
+      args.dataId,
+      args.parentsIds,
+      args.message,
+      args.timestamp
+    );
+  };
 }

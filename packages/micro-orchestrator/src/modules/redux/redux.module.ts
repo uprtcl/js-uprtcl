@@ -25,7 +25,7 @@ export class ReduxModule<S, A extends Action> implements MicroModule {
     storeModule.addReducer({
       [this.reducerName]: this.reducer as Reducer<S, Action<any>>
     });
-    storeModule.addMiddlewares(middlewares);
+    // storeModule.addMiddlewares(middlewares);
   }
 
   getMiddlewares(): Middleware<any, any, any>[] {

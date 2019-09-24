@@ -7,7 +7,6 @@ export interface Context {
 export interface Perspective {
   origin: string;
   creatorId: string;
-  contextId: string;
   timestamp: number;
   name: string;
 }
@@ -19,3 +18,6 @@ export interface Commit {
   parentsIds: Array<string>;
   dataId: string;
 }
+
+/** Type reexport */
+export { LinkedPattern } from '@uprtcl/cortex';

@@ -3,6 +3,7 @@ import { CachedSourceService } from './cached-remotes/cached-source.service';
 import { CacheService } from './cache/cache.service';
 import { MultiSourceService } from './multi/multi-source.service';
 import { DiscoverableSource } from './sources/discoverable.source';
+import { Hashed } from '../patterns/patterns/hashed.pattern';
 
 export class DiscoveryService implements Source {
   cachedRemote: CachedSourceService;
@@ -17,7 +18,7 @@ export class DiscoveryService implements Source {
    * @param hash the hash of the object to get
    * @returns the object if found, otherwise undefined
    */
-  public async get<T extends object>(hash: string): Promise<T | undefined> {
+  public async get<T extends object>(hash: string): Promise<Hashed<T> | undefined> {
     return this.cachedRemote.get(hash);
   }
 

@@ -1,6 +1,7 @@
 import { CacheService } from '../cache/cache.service';
 import { Source } from '../sources/source';
 import { Logger } from '../../utils/logger';
+import { Hashed } from '../../patterns/patterns/hashed.pattern';
 
 export class CachedSourceService implements Source {
   protected logger = new Logger('CachedSourceService');
@@ -12,7 +13,7 @@ export class CachedSourceService implements Source {
    * @param hash the hash identifying the object
    * @returns the object if found, undefined otherwise
    */
-  public async get<O extends object>(hash: string): Promise<O | undefined> {
+  public async get<O extends object>(hash: string): Promise<Hashed<O> | undefined> {
     // If we have the object in the cache, return it
     let object = await this.cache.get<O>(hash);
     if (object) {
@@ -26,7 +27,7 @@ export class CachedSourceService implements Source {
     object = await this.remote.get<O>(hash);
     if (object) {
       this.logger.info(`Got object with hash ${hash} from remote: ${object}`);
-      await this.cache.cache<O>(hash, object);
+      await this.cache.cache<Hashed<O>>(hash, object);
     }
 
     return object;

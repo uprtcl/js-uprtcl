@@ -5,6 +5,6 @@ export interface EntityDetails {
   name: string;
 }
 
-export interface CreatePattern<A extends Array<any>, O extends object> {
-  create: (...args: A) => Promise<Hashed<O>>;
+export interface CreatePattern<A extends object, O extends object> {
+  create: (args: A) => Promise<Hashed<O>>;
 }

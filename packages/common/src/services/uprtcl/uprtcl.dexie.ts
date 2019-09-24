@@ -1,6 +1,5 @@
 import Dexie from 'dexie';
 import 'dexie-observable';
-import { Observable } from 'rxjs';
 import uniq from 'lodash/uniq';
 
 import {
@@ -13,12 +12,15 @@ import {
 } from '@uprtcl/cortex';
 
 import { UprtclProvider } from './uprtcl.provider';
-import { Perspective, Context, Commit } from '../types';
+import { Perspective, Context, Commit } from '../../types';
 import { DatabaseChangeType } from 'dexie-observable/api';
+
+const creatorId = 'did:hi:example';
+const origin = 'exampleOrigin';
 
 export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
   heads: Dexie.Table<string, string>;
-  contextPerspectives: Dexie.Table<string[], string>;
+  perspectivesContexts: Dexie.Table<string, string>;
 
   constructor(
     protected patternRegistry: PatternRegistry,
@@ -27,10 +29,10 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
     super('uprtcl');
     this.version(0.1).stores({
       heads: '',
-      contextPerspectives: ''
+      perspectivesContexts: ''
     });
     this.heads = this.table('heads');
-    this.contextPerspectives = this.table('contextPerspectives');
+    this.perspectivesContexts = this.table('perspectivesContexts');
   }
 
   /**
@@ -58,41 +60,49 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
   /**
    * @override
    */
-  async createContext(context: Context): Promise<Secured<Context>> {
-    const secured = this.secure(context);
+  async createContext(timestamp: number, nonce: number): Promise<Secured<Context>> {
+    const secured: Secured<Context> = this.secure({
+      creatorId: creatorId,
+      timestamp,
+      nonce
+    });
 
     await this.cache(secured.id, secured);
-    return secured;
-  }
-
-  private async addContextPerspective(contextId: string, perspectiveId: string): Promise<void> {
-    const perspectives = await this.contextPerspectives.get(contextId);
-
-    if (!perspectives) {
-      await this.contextPerspectives.put([perspectiveId], contextId);
-    } else {
-      perspectives.push(perspectiveId);
-      await this.contextPerspectives.put(uniq(perspectives), contextId);
-    }
-  }
-
-  /**
-   * @override
-   */
-  async createPerspective(perspective: Perspective): Promise<Secured<Perspective>> {
-    const secured = this.secure(perspective);
-
-    await this.cache(secured.id, secured);
-    await this.addContextPerspective(perspective.contextId, secured.id);
-
     return secured;
   }
 
   /**
    * @override
    */
-  async createCommit(commit: Commit): Promise<Secured<Commit>> {
-    const secured = this.secure(commit);
+  async createPerspective(name: string, timestamp: number): Promise<Secured<Perspective>> {
+    const secured: Secured<Perspective> = this.secure({
+      name,
+      timestamp,
+      creatorId,
+      origin
+    });
+
+    await this.cache(secured.id, secured);
+
+    return secured;
+  }
+
+  /**
+   * @override
+   */
+  async createCommit(
+    dataId: string,
+    parentsIds: Array<string>,
+    message: string,
+    timestamp: number
+  ): Promise<Secured<Commit>> {
+    const secured: Secured<Commit> = this.secure({
+      dataId,
+      parentsIds,
+      message,
+      timestamp,
+      creatorId
+    });
 
     await this.cache(secured.id, secured);
     return secured;
@@ -116,7 +126,9 @@ export class UprtclDexie extends Dexie implements CacheService, UprtclProvider {
    * @override
    */
   async clonePerspective(perspective: Secured<Perspective>): Promise<string> {
-    const pattern: ValidatePattern<Secured<Perspective>> = this.patternRegistry.recognizeMerge(perspective);
+    const pattern: ValidatePattern<Secured<Perspective>> = this.patternRegistry.recognizeMerge(
+      perspective
+    );
 
     if (pattern.validate(perspective)) {
       throw new Error('Perspective is not valid');

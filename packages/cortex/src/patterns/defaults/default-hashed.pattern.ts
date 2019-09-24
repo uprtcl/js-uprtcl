@@ -1,6 +1,8 @@
 import { HashedPattern, Hashed } from '../patterns/hashed.pattern';
+import { TransformPattern } from '../patterns/transform.pattern';
 
-export class DefaultHashedPattern implements HashedPattern<any> {
+export class DefaultHashedPattern
+  implements HashedPattern<any>, TransformPattern<Hashed<any>, [any]> {
   recognize(object: object) {
     return (
       object.hasOwnProperty('id') &&
@@ -26,5 +28,9 @@ export class DefaultHashedPattern implements HashedPattern<any> {
 
   getCidConfig(hash: string): any {
     return null; // TODO fix this
+  }
+
+  transform(hashed: Hashed<any>): [any] {
+    return [hashed.object];
   }
 }

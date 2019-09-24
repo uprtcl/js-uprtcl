@@ -1,6 +1,7 @@
 import { connect } from '@holochain/hc-web-client';
 import { ConnectionOptions } from '../connection';
 import { SocketConnection } from '../socket.connection';
+import { Hashed } from '@uprtcl/cortex';
 
 export interface HolochainConnectionOptions {
   host: string;
@@ -8,8 +9,8 @@ export interface HolochainConnectionOptions {
 }
 
 // Auxiliar type for Holochain's get_entry call
-export type EntryResult<T = any> = {
-  entry: T;
+export type EntryResult<T extends object = any> = {
+  entry: Hashed<T>;
   type: string;
 };
 
@@ -17,7 +18,11 @@ export class HolochainConnection extends SocketConnection {
   connection!: (funcName: string, params: any) => Promise<any>;
   onsignal!: (callback: (params: any) => void) => void;
 
-  constructor(protected zome:string, protected hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {
+  constructor(
+    protected zome: string,
+    protected hcOptions: HolochainConnectionOptions,
+    options: ConnectionOptions = {}
+  ) {
     super(options);
   }
 
@@ -63,7 +68,7 @@ export class HolochainConnection extends SocketConnection {
     return {
       entry: {
         id: entry.result.Single.meta.address,
-        ...this.parseEntry<T>(entry.result.Single.entry)
+        object: this.parseEntry<T>(entry.result.Single.entry)
       },
       type: entry.result.Single.meta.entry_type.App
     };
@@ -76,6 +81,6 @@ export class HolochainConnection extends SocketConnection {
   public parseEntriesResults<T extends object>(entryArray: Array<any>): Array<EntryResult<T>> {
     return entryArray
       .map(entry => this.parseEntryResult<T>(entry.Ok ? entry.Ok : entry))
-      .filter(entry => entry !== undefined);
+      .filter(entry => entry != undefined) as Array<EntryResult<T>>;
   }
 }
