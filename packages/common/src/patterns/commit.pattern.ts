@@ -7,6 +7,8 @@ import {
   SecuredPattern,
   LinkedPattern,
   CreatePattern,
+  LensesPattern,
+  Lens,
   Signed
 } from '@uprtcl/cortex';
 import { Commit } from '../types';
@@ -23,7 +25,8 @@ export class CommitPattern
     CreatePattern<
       { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
       Signed<Commit>
-    > {
+    >,
+    LensesPattern {
   constructor(
     protected patternRegistry: PatternRegistry,
     protected securedPattern: Pattern & SecuredPattern<Secured<Commit>>,
@@ -71,5 +74,14 @@ export class CommitPattern
       args.message,
       args.timestamp
     );
+  };
+
+  getLenses = (): Lens[] => {
+    return [
+      {
+        lens: 'commit-history',
+        params: {}
+      }
+    ];
   };
 }

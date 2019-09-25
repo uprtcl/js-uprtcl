@@ -3,8 +3,6 @@ import '@corpuscule/lit-html-renderer/lib/init';
 /** Services */
 export { Source } from './services/sources/source';
 export { DiscoverableSource } from './services/sources/discoverable.source';
-// export { HolochainSource } from './services/sources/holochain.source';
-// export { IpfsSource } from './services/sources/ipfs.source';
 
 export { KnownSourcesService } from './services/known-sources/known-sources.service';
 export { KnownSourcesDexie } from './services/known-sources/known-sources.dexie';

@@ -1,10 +1,13 @@
 import { html, LitElement, property } from 'lit-element';
-import withCustomElement, {
-  unsafeStatic
-} from '@corpuscule/lit-html-renderer/lib/withCustomElement';
 import { connect } from 'pwa-helpers/connect-mixin';
 import { Store } from 'redux';
 import '@material/mwc-linear-progress';
+import '@material/mwc-button';
+import '@authentic/mwc-icon';
+import '@authentic/mwc-list';
+import '@authentic/mwc-menu';
+
+import './lens-renderer';
 
 import { Lens, PatternAction } from '../types';
 import { loadEntity, selectEntities, selectById } from '../entities';
@@ -23,8 +26,6 @@ interface Isomorphism {
   actions: PatternAction[];
 }
 
-const shtml = withCustomElement(html);
-
 export function PatternRenderer<T>(
   patternRegistry: PatternRegistry,
   source: Source,
@@ -41,35 +42,42 @@ export function PatternRenderer<T>(
 
     // Lenses
     @property()
-    private selectedLensIndex!: [number, number];
+    private selectedLensIndex!: [number, number] | undefined;
+
+    @property()
+    private lensMenuOpen: boolean = false;
+    @property()
+    private actionsMenuOpen: boolean = false;
 
     /**
      * @returns the rendered selected lens
      */
     renderLens() {
+      if (!this.selectedLensIndex) return html``;
+
       const selectedIsomorphism = this.isomorphisms[this.selectedLensIndex[0]];
       const selectedLens = selectedIsomorphism.lenses[this.selectedLensIndex[1]];
       const paramKeys = Object.keys(selectedLens.params);
-
-      const Lens = unsafeStatic(selectedLens.lens);
 
       /**
        * TODO: add parameters to the lens
        *
        *  ${paramKeys.map(
        *     param =>
-       *       shtml`
+       *       html`
        *         ${param}="${selectedLens.params[param]}"
        *       `
        *   )}
        */
 
-      return shtml`
-        <${Lens}
+      return html`
+        <lens-renderer
+          .lens=${selectedLens}
           .data=${selectedIsomorphism.entity}
           @content-changed=${(e: CustomEvent) => this.updateContent(e.detail.newContent)}
         >
-        </${Lens}>`;
+        </lens-renderer>
+      `;
     }
 
     updateContent(newContent: any) {
@@ -81,57 +89,73 @@ export function PatternRenderer<T>(
     }
 
     renderLensSelector() {
-      return shtml`
-              <select>
-                ${this.isomorphisms.map((isomorphism, i) =>
-                  isomorphism.lenses.map(
-                    (lens, j) =>
-                      shtml`
-                        <option value=${lens.lens} @click=${() =>
-                        (this.selectedLensIndex = [i, j])}>
-                          ${lens.lens}
-                        </option>
-                      `
-                  )
-                )}
-              </select>
+      return html`
+        <mwc-button @click=${() => (this.lensMenuOpen = !this.lensMenuOpen)}>
+          <mwc-icon>remove_red_eye</mwc-icon>
+        </mwc-button>
+
+        <mwc-menu ?open=${this.lensMenuOpen}>
+          <mwc-list>
+            ${this.isomorphisms.map((isomorphism, i) =>
+              isomorphism.lenses.map(
+                (lens, j) =>
+                  html`
+                    <mwc-list-item
+                      @click=${() => {
+                        this.lensMenuOpen = false;
+                        this.selectedLensIndex = undefined;
+                        setTimeout(() => (this.selectedLensIndex = [i, j]), 1000);
+                      }}
+                    >
+                      ${lens.lens}
+                    </mwc-list-item>
+                  `
+              )
+            )}
+          </mwc-list>
+        </mwc-menu>
       `;
     }
 
     renderActions() {
-      return shtml`
-        ${this.isomorphisms.map(
-          isomorphism =>
-            shtml`
-                  ${isomorphism.actions.map(
-                    action =>
-                      shtml`
-                        <button @click=${() => action.action()}>${action.title}</button>
-                      `
-                  )}
-                `
-        )}
+      return html`
+        <mwc-button @click=${() => (this.actionsMenuOpen = !this.actionsMenuOpen)}>
+          <mwc-icon>more_vert</mwc-icon>
+        </mwc-button>
+
+        <mwc-menu ?open=${this.actionsMenuOpen}>
+          <mwc-list>
+            ${this.isomorphisms.map(isomorphism =>
+              isomorphism.actions.map(
+                action =>
+                  html`
+                    <mwc-list-item @click=${() => action.action()}>
+                      <mwc-icon>${action.icon}</mwc-icon>
+                      ${action.title}
+                    </mwc-list-item>
+                  `
+              )
+            )}
+          </mwc-list>
+        </mwc-menu>
       `;
     }
 
     render() {
-      return shtml`
-        ${
-          !this.entity || !this.selectedLensIndex
-            ? shtml`
+      return html`
+        ${!this.entity || !this.selectedLensIndex
+          ? html`
               <mwc-linear-progress></mwc-linear-progress>
             `
-            : shtml`
+          : html`
               <div style="display: flex; flex-direction: row;">
                 <div style="flex: 1;">
                   ${this.renderLens()}
                 </div>
 
-                ${this.renderLensSelector()}
-                ${this.renderActions()}
+                ${this.renderLensSelector()} ${this.renderActions()}
               </div>
-            `
-        }
+            `}
       `;
     }
 
@@ -150,17 +174,19 @@ export function PatternRenderer<T>(
 
       if (entity && !this.entity) {
         this.entity = entity;
-        this.isomorphisms = [];
+        let isomorphisms: Isomorphism[] = [];
 
         // Build first isomorphism: the proper entity
-        this.isomorphisms.push(this.buildIsomorphism(entity));
+        isomorphisms.push(this.buildIsomorphism(entity));
 
         // Transform the entity to build its isomorphisms
-        this.isomorphisms = this.isomorphisms.concat(this.transformEntity(entity));
+        isomorphisms = isomorphisms.concat(this.transformEntity(entity));
 
         // Redirect the entity
         this.redirectEntity(entity).then(i => {
-          this.isomorphisms = this.isomorphisms.concat(i);
+          isomorphisms = isomorphisms.concat(i);
+          this.isomorphisms = isomorphisms.reverse();
+
           const renderIsomorphism = this.isomorphisms.findIndex(i => i.lenses.length > 0);
           this.selectedLensIndex = [renderIsomorphism, 0];
         });

@@ -80,6 +80,10 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "@authentic/mwc-icon": "^0.9.0",
+    "@authentic/mwc-list": "^0.9.0",
+    "@authentic/mwc-menu": "^0.9.0",
+    "@authentic/mwc-ripple": "^0.9.0",
     "@corpuscule/lit-html-renderer": "^0.14.0",
     "@material/mwc-button": "^0.8.0",
     "@material/mwc-linear-progress": "^0.8.0",

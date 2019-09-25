@@ -7,9 +7,7 @@ import {
   LinkedPattern,
   CreatePattern,
   Signed,
-  Lens,
   ActionsPattern,
-  LensesPattern,
   PatternAction,
   UpdatePattern,
   Hashed

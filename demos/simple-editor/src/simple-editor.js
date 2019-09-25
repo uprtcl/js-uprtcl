@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit-element';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 
 export const SimpleEditor = patternRegistry =>
   class extends LitElement {
@@ -25,6 +26,7 @@ export const SimpleEditor = patternRegistry =>
 
     render() {
       return html`
+        ${unsafeHTML('<span>U</span>')}
         ${this.rootHash
           ? html`
               <pattern-renderer .hash=${this.rootHash}></pattern-renderer>

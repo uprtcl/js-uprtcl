@@ -1,5 +1,4 @@
-import { MicroModule } from '@uprtcl/micro-orchestrator';
-import { UprtclProvider } from './services/uprtcl/uprtcl.provider';
+import { MicroModule, REDUX_STORE_ID, StoreModule } from '@uprtcl/micro-orchestrator';
 import {
   PATTERN_REGISTRY_MODULE_ID,
   DISCOVERY_MODULE_ID,
@@ -11,9 +10,11 @@ import {
   DiscoveryModule
 } from '@uprtcl/cortex';
 import { Dictionary } from 'lodash';
+import { UprtclProvider } from './services/uprtcl/uprtcl.provider';
 import { PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern } from './patterns/commit.pattern';
 import { ContextPattern } from './patterns/context.pattern';
+import { CommitHistory } from './lenses/commit-history';
 
 export const UPRTCL_MODULE_ID = 'uprtcl-module';
 
@@ -50,12 +51,19 @@ export class UprtclModule implements MicroModule {
     patternRegistry.registerPattern('commit', commitPattern);
     patternRegistry.registerPattern('perspective', perspectivePattern);
     patternRegistry.registerPattern('context', contextPattern);
+
+    const storeModule: StoreModule = dependencies[REDUX_STORE_ID] as StoreModule;
+
+    customElements.define(
+      'commit-history',
+      CommitHistory(discoveryModule.discoveryService, storeModule.store)
+    );
   }
 
   async onUnload(): Promise<void> {}
 
   getDependencies(): string[] {
-    return [PATTERN_REGISTRY_MODULE_ID, DISCOVERY_MODULE_ID];
+    return [PATTERN_REGISTRY_MODULE_ID, DISCOVERY_MODULE_ID, REDUX_STORE_ID];
   }
 
   getId(): string {
