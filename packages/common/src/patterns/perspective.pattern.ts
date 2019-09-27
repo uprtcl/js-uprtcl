@@ -94,7 +94,7 @@ export class PerspectivePattern
   ): PatternAction[] => {
     return [
       {
-        icon: '',
+        icon: 'call_split',
         title: 'New perspective',
         action: async () => {
           const contextId = await this.uprtcl.getPerspectiveContext(object.id);
@@ -105,7 +105,7 @@ export class PerspectivePattern
     ];
   };
 
-  update: (perspective: Secured<Perspective>, newContent: any) => Promise<void> = async (
+  update: (perspective: Secured<Perspective>, newContent: any) => Promise<boolean> = async (
     perspective: Secured<Perspective>,
     newContent: any
   ) => {
@@ -128,5 +128,7 @@ export class PerspectivePattern
     });
 
     await this.uprtcl.updatePerspectiveHead(perspective.id, newHead.id);
+
+    return true;
   };
 }

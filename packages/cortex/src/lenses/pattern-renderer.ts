@@ -103,9 +103,9 @@ export function PatternRenderer<T>(
 
       if (updatePattern.update) {
         this.selectedLensIndex = undefined;
-        await updatePattern.update(this.entity, newContent);
+        const reloadNeeded = await updatePattern.update(this.entity, newContent);
 
-        await this.buildEntityIsomorphisms();
+        if (reloadNeeded) await this.buildEntityIsomorphisms();
       }
     }
 
@@ -149,8 +149,8 @@ export function PatternRenderer<T>(
               isomorphism.actions.map(
                 action =>
                   html`
-                    <mwc-list-item @click=${() => action.action()}>
-                      <mwc-icon>${action.icon}</mwc-icon>
+                    <mwc-list-item @click=${() => action.action(this)}>
+                      <mwc-icon slot="graphic">${action.icon}</mwc-icon>
                       ${action.title}
                     </mwc-list-item>
                   `

@@ -48,13 +48,39 @@ export class TextNodePattern
     ];
   };
 
-  getActions = (): PatternAction[] => {
-    return [
-      {
-        icon: '',
-        title: 'To paragraph',
-        action: () => {}
-      }
-    ];
+  getActions = (textNode: TextNode): PatternAction[] => {
+    if (textNode.type === TextType.Paragraph) {
+      return [
+        {
+          icon: 'title',
+          title: 'To title',
+          action: (element: HTMLElement) => {
+            element.dispatchEvent(
+              new CustomEvent('content-changed', {
+                bubbles: true,
+                composed: true,
+                detail: { newContent: { ...textNode, type: TextType.Title } }
+              })
+            );
+          }
+        }
+      ];
+    } else {
+      return [
+        {
+          icon: 'text_fields',
+          title: 'To paragraph',
+          action: (element: HTMLElement) => {
+            element.dispatchEvent(
+              new CustomEvent('content-changed', {
+                bubbles: true,
+                composed: true,
+                detail: { newContent: { ...textNode, type: TextType.Paragraph } }
+              })
+            );
+          }
+        }
+      ];
+    }
   };
 }

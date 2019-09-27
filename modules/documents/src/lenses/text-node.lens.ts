@@ -19,12 +19,12 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
               </div>
             `
           : html`
-              <h4
+              <h3
                 contenteditable="true"
                 @input=${(e: InputEvent) => e.target && this.updateContent(e.target['innerText'])}
               >
                 ${this.data.text}
-              </h4>
+              </h3>
             `}
       </node-list>
     `;

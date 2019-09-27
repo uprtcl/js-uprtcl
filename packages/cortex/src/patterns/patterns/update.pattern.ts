@@ -1,5 +1,8 @@
 
 
 export interface UpdatePattern<T extends object = any, C = any> {
-  update: (entity: T, newContent: C) => Promise<void>;
+  /**
+   * @returns whether the entity needs to be reloaded or not
+   */
+  update: (entity: T, newContent: C) => Promise<boolean>;
 }

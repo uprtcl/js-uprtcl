@@ -8,7 +8,7 @@ export interface Lens {
 export interface PatternAction {
   icon: string;
   title: string;
-  action: () => any;
+  action: (element: HTMLElement) => any;
 }
 
 export interface LensElement<P> {
