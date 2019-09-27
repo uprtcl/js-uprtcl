@@ -11,9 +11,13 @@ export function CommitHistory(source: Source, store: Store<any>): typeof HTMLEle
     data!: Secured<Commit>;
 
     @property({ type: Object })
-    commits!: Dictionary<Secured<Commit>>;
+    commits: Dictionary<Secured<Commit>> = {};
 
-    async firstUpdated() {
+    firstUpdated() {
+      this.initialLoad();
+    }
+
+    async initialLoad() {
       this.commits = await this.loadCommitParents(this.data);
       this.commits[this.data.id] = this.data;
     }
@@ -43,16 +47,17 @@ export function CommitHistory(source: Source, store: Store<any>): typeof HTMLEle
     renderCommit(commitHash: string): TemplateResult {
       const commit = this.commits[commitHash];
       return html`
-        <div class="column">
-          ${commit.id}
-          ${commit.object.payload.message}
-          ${commit.object.payload.timestamp}
+        ${commit
+          ? html`
+              <div class="column">
+                ${commit.id} ${commit.object.payload.message} ${commit.object.payload.timestamp}
 
-          <div class="row">
-            ${commit.object.payload.parentsIds.map(parentId => this.renderCommit(parentId))}
-          </div>
-
-        </div>
+                <div class="row">
+                  ${commit.object.payload.parentsIds.map(parentId => this.renderCommit(parentId))}
+                </div>
+              </div>
+            `
+          : html``}
       `;
     }
 

@@ -1,7 +1,6 @@
 import { LitElement, property, html } from 'lit-element';
 import { LensElement } from '@uprtcl/cortex';
 import { TextNode, TextType } from '../types';
-import { TextNodePattern } from '../patterns/text-node.pattern';
 
 export class TextNodeLens extends LitElement implements LensElement<TextNode> {
   @property({ type: Object })
@@ -34,7 +33,9 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
   updateContent(content: string) {
     this.dispatchEvent(
       new CustomEvent('content-changed', {
-        detail: { newContent: { ...this.data, text: content } }
+        detail: { newContent: { ...this.data, text: content } },
+        bubbles: true,
+        composed: true
       })
     );
   }

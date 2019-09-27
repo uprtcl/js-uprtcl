@@ -10,6 +10,7 @@ import globals from 'rollup-plugin-node-globals';
 const pkg = require('./package.json');
 pkg.dependencies['lodash/merge'] = '';
 pkg.dependencies['lodash/uniq'] = '';
+pkg.dependencies['lit-html/directives/unsafe-html'] = '';
 
 const libraryName = 'uprtcl-cortex';
 

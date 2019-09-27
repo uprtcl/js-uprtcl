@@ -26,7 +26,6 @@ export const SimpleEditor = patternRegistry =>
 
     render() {
       return html`
-        ${unsafeHTML('<span>U</span>')}
         ${this.rootHash
           ? html`
               <pattern-renderer .hash=${this.rootHash}></pattern-renderer>

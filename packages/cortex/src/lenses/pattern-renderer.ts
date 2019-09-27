@@ -1,4 +1,4 @@
-import { html, LitElement, property } from 'lit-element';
+import { html, LitElement, property, PropertyValues } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin';
 import { Store } from 'redux';
 import '@material/mwc-linear-progress';
@@ -7,9 +7,7 @@ import '@authentic/mwc-icon';
 import '@authentic/mwc-list';
 import '@authentic/mwc-menu';
 
-import './lens-renderer';
-
-import { Lens, PatternAction } from '../types';
+import { Lens, PatternAction, LensElement } from '../types';
 import { loadEntity, selectEntities, selectById } from '../entities';
 import { LensesPattern } from '../patterns/patterns/lenses.pattern';
 import { ActionsPattern } from '../patterns/patterns/actions.pattern';
@@ -19,6 +17,7 @@ import { Source } from '../services/sources/source';
 import { Pattern } from '../patterns/pattern';
 import { UpdatePattern } from '../patterns/patterns/update.pattern';
 import { TransformPattern } from '../patterns/patterns/transform.pattern';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 
 interface Isomorphism {
   entity: object;
@@ -71,20 +70,42 @@ export function PatternRenderer<T>(
        */
 
       return html`
-        <lens-renderer
-          .lens=${selectedLens}
-          .data=${selectedIsomorphism.entity}
-          @content-changed=${(e: CustomEvent) => this.updateContent(e.detail.newContent)}
-        >
-        </lens-renderer>
+        ${unsafeHTML(`
+          <${selectedLens.lens} id="lens-renderer">
+          </${selectedLens.lens}>
+      `)}
       `;
     }
 
-    updateContent(newContent: any) {
+    connectedCallback() {
+      super.connectedCallback();
+      this.addEventListener<any>('content-changed', (e: CustomEvent) => {
+        e.stopPropagation();
+        this.updateContent(e.detail.newContent);
+      });
+    }
+
+    update(changedProperties: PropertyValues) {
+      super.update(changedProperties);
+
+      if (this.shadowRoot && this.selectedLensIndex) {
+        const renderer = this.shadowRoot.getElementById('lens-renderer');
+
+        if (renderer) {
+          const selectedIsomorphism = this.isomorphisms[this.selectedLensIndex[0]];
+          ((renderer as unknown) as LensElement<any>).data = selectedIsomorphism.entity;
+        }
+      }
+    }
+
+    async updateContent(newContent: any) {
       const updatePattern: UpdatePattern = patternRegistry.recognizeMerge(this.entity);
 
       if (updatePattern.update) {
-        updatePattern.update(this.entity, newContent);
+        this.selectedLensIndex = undefined;
+        await updatePattern.update(this.entity, newContent);
+
+        await this.buildEntityIsomorphisms();
       }
     }
 
@@ -103,8 +124,7 @@ export function PatternRenderer<T>(
                     <mwc-list-item
                       @click=${() => {
                         this.lensMenuOpen = false;
-                        this.selectedLensIndex = undefined;
-                        setTimeout(() => (this.selectedLensIndex = [i, j]), 1000);
+                        this.selectedLensIndex = [i, j];
                       }}
                     >
                       ${lens.lens}
@@ -174,23 +194,27 @@ export function PatternRenderer<T>(
 
       if (entity && !this.entity) {
         this.entity = entity;
-        let isomorphisms: Isomorphism[] = [];
-
-        // Build first isomorphism: the proper entity
-        isomorphisms.push(this.buildIsomorphism(entity));
-
-        // Transform the entity to build its isomorphisms
-        isomorphisms = isomorphisms.concat(this.transformEntity(entity));
-
-        // Redirect the entity
-        this.redirectEntity(entity).then(i => {
-          isomorphisms = isomorphisms.concat(i);
-          this.isomorphisms = isomorphisms.reverse();
-
-          const renderIsomorphism = this.isomorphisms.findIndex(i => i.lenses.length > 0);
-          this.selectedLensIndex = [renderIsomorphism, 0];
-        });
+        this.buildEntityIsomorphisms();
       }
+    }
+
+    async buildEntityIsomorphisms() {
+      let isomorphisms: Isomorphism[] = [];
+
+      // Build first isomorphism: the proper entity
+      isomorphisms.push(this.buildIsomorphism(this.entity));
+
+      // Transform the entity to build its isomorphisms
+      isomorphisms = isomorphisms.concat(this.transformEntity(this.entity));
+
+      // Redirect the entity
+      await this.redirectEntity(this.entity).then(i => {
+        isomorphisms = isomorphisms.concat(i);
+        this.isomorphisms = isomorphisms.reverse();
+
+        const renderIsomorphism = this.isomorphisms.findIndex(i => i.lenses.length > 0);
+        this.selectedLensIndex = [renderIsomorphism, 0];
+      });
     }
 
     async redirectEntity(entity: object): Promise<Array<Isomorphism>> {

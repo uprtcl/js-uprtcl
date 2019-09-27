@@ -93,6 +93,7 @@
     "dexie": "^2.0.4",
     "isomorphic-ws": "^4.0.1",
     "lit-element": "^2.2.1",
+    "lit-html": "^1.1.2",
     "lodash": "^4.17.15",
     "multihashing": "^0.3.3",
     "multihashing-async": "^0.7.0",
