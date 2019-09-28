@@ -2,21 +2,14 @@ import { Pattern } from '../pattern';
 import { LinkedPattern } from '../patterns/linked.pattern';
 import { ActionsPattern } from '../patterns/actions.pattern';
 import { PatternAction } from '../../types';
-import { HashedPattern, Hashed } from '../patterns/hashed.pattern';
 
 export interface Node {
   links: string[];
 }
 
 export class DefaultNodePattern implements Pattern, LinkedPattern<Node>, ActionsPattern {
-  constructor(protected hashedPattern: Pattern & HashedPattern<Node>) {}
-
   recognize(object: object) {
-    return (
-      this.hashedPattern.recognize(object) &&
-      this.hashedPattern.extract(object as Hashed<Node>) &&
-      Array.isArray(this.hashedPattern.extract(object as Hashed<Node>))
-    );
+    return (object as Node).links && Array.isArray((object as Node).links);
   }
 
   async getLinks(object: Node): Promise<string[]> {

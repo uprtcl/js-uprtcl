@@ -1,29 +1,23 @@
 import { html, LitElement, property, PropertyValues } from 'lit-element';
 import { connect } from 'pwa-helpers/connect-mixin';
 import { Store } from 'redux';
-import '@material/mwc-linear-progress';
+import '@authentic/mwc-circular-progress';
 import '@material/mwc-button';
 import '@authentic/mwc-icon';
 import '@authentic/mwc-list';
 import '@authentic/mwc-menu';
 
-import { Lens, PatternAction, LensElement } from '../types';
-import { loadEntity, selectEntities, selectById } from '../entities';
-import { LensesPattern } from '../patterns/patterns/lenses.pattern';
-import { ActionsPattern } from '../patterns/patterns/actions.pattern';
-import { RedirectPattern } from '../patterns/patterns/redirect.pattern';
-import { PatternRegistry } from '../patterns/registry/pattern.registry';
-import { Source } from '../services/sources/source';
-import { Pattern } from '../patterns/pattern';
-import { UpdatePattern } from '../patterns/patterns/update.pattern';
-import { TransformPattern } from '../patterns/patterns/transform.pattern';
+import { Lens, PatternAction, LensElement, Isomorphism, SelectedLens } from '../../types';
+import { loadEntity, selectEntities, selectById } from '../../entities';
+import { LensesPattern } from '../../patterns/patterns/lenses.pattern';
+import { ActionsPattern } from '../../patterns/patterns/actions.pattern';
+import { RedirectPattern } from '../../patterns/patterns/redirect.pattern';
+import { PatternRegistry } from '../../patterns/registry/pattern.registry';
+import { Source } from '../../services/sources/source';
+import { Pattern } from '../../patterns/pattern';
+import { UpdatePattern } from '../../patterns/patterns/update.pattern';
+import { TransformPattern } from '../../patterns/patterns/transform.pattern';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
-
-interface Isomorphism {
-  entity: object;
-  lenses: Lens[];
-  actions: PatternAction[];
-}
 
 export function PatternRenderer<T>(
   patternRegistry: PatternRegistry,
@@ -41,10 +35,8 @@ export function PatternRenderer<T>(
 
     // Lenses
     @property()
-    private selectedLensIndex!: [number, number] | undefined;
+    private selectedLens!: SelectedLens | undefined;
 
-    @property()
-    private lensMenuOpen: boolean = false;
     @property()
     private actionsMenuOpen: boolean = false;
 
@@ -52,10 +44,10 @@ export function PatternRenderer<T>(
      * @returns the rendered selected lens
      */
     renderLens() {
-      if (!this.selectedLensIndex) return html``;
+      if (!this.selectedLens) return html``;
 
-      const selectedIsomorphism = this.isomorphisms[this.selectedLensIndex[0]];
-      const selectedLens = selectedIsomorphism.lenses[this.selectedLensIndex[1]];
+      const selectedIsomorphism = this.isomorphisms[this.selectedLens.isomorphism];
+      const selectedLens = selectedIsomorphism.lenses[this.selectedLens.lens];
       const paramKeys = Object.keys(selectedLens.params);
 
       /**
@@ -88,11 +80,11 @@ export function PatternRenderer<T>(
     update(changedProperties: PropertyValues) {
       super.update(changedProperties);
 
-      if (this.shadowRoot && this.selectedLensIndex) {
+      if (this.shadowRoot && this.selectedLens) {
         const renderer = this.shadowRoot.getElementById('lens-renderer');
 
         if (renderer) {
-          const selectedIsomorphism = this.isomorphisms[this.selectedLensIndex[0]];
+          const selectedIsomorphism = this.isomorphisms[this.selectedLens.isomorphism];
           ((renderer as unknown) as LensElement<any>).data = selectedIsomorphism.entity;
         }
       }
@@ -102,39 +94,11 @@ export function PatternRenderer<T>(
       const updatePattern: UpdatePattern = patternRegistry.recognizeMerge(this.entity);
 
       if (updatePattern.update) {
-        this.selectedLensIndex = undefined;
+        this.selectedLens = undefined;
         const reloadNeeded = await updatePattern.update(this.entity, newContent);
 
         if (reloadNeeded) await this.buildEntityIsomorphisms();
       }
-    }
-
-    renderLensSelector() {
-      return html`
-        <mwc-button @click=${() => (this.lensMenuOpen = !this.lensMenuOpen)}>
-          <mwc-icon>remove_red_eye</mwc-icon>
-        </mwc-button>
-
-        <mwc-menu ?open=${this.lensMenuOpen}>
-          <mwc-list>
-            ${this.isomorphisms.map((isomorphism, i) =>
-              isomorphism.lenses.map(
-                (lens, j) =>
-                  html`
-                    <mwc-list-item
-                      @click=${() => {
-                        this.lensMenuOpen = false;
-                        this.selectedLensIndex = [i, j];
-                      }}
-                    >
-                      ${lens.lens}
-                    </mwc-list-item>
-                  `
-              )
-            )}
-          </mwc-list>
-        </mwc-menu>
-      `;
     }
 
     renderActions() {
@@ -163,9 +127,9 @@ export function PatternRenderer<T>(
 
     render() {
       return html`
-        ${!this.entity || !this.selectedLensIndex
+        ${!this.entity || !this.selectedLens
           ? html`
-              <mwc-linear-progress></mwc-linear-progress>
+              <mwc-circular-progress></mwc-circular-progress>
             `
           : html`
               <div style="display: flex; flex-direction: row;">
@@ -173,7 +137,11 @@ export function PatternRenderer<T>(
                   ${this.renderLens()}
                 </div>
 
-                ${this.renderLensSelector()} ${this.renderActions()}
+                <lens-selector
+                  .isomorphisms=${this.isomorphisms}
+                  @lens-selected=${(e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)}
+                ></lens-selector>
+                ${this.renderActions()}
               </div>
             `}
       `;
@@ -213,7 +181,9 @@ export function PatternRenderer<T>(
         this.isomorphisms = isomorphisms.reverse();
 
         const renderIsomorphism = this.isomorphisms.findIndex(i => i.lenses.length > 0);
-        if (renderIsomorphism !== -1) this.selectedLensIndex = [renderIsomorphism, 0];
+        if (renderIsomorphism !== -1) {
+          this.selectedLens = { isomorphism: renderIsomorphism, lens: 0 };
+        }
       });
     }
 

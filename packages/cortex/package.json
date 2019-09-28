@@ -80,6 +80,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "@authentic/mwc-circular-progress": "^0.9.0",
     "@authentic/mwc-icon": "^0.9.0",
     "@authentic/mwc-list": "^0.9.0",
     "@authentic/mwc-menu": "^0.9.0",

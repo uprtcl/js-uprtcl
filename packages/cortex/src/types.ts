@@ -14,3 +14,14 @@ export interface PatternAction {
 export interface LensElement<P> {
   data: P;
 }
+
+export interface Isomorphism {
+  entity: object;
+  lenses: Lens[];
+  actions: PatternAction[];
+}
+
+export interface SelectedLens {
+  isomorphism: number;
+  lens: number;
+}

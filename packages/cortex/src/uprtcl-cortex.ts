@@ -40,7 +40,7 @@ export { ActionsPattern } from './patterns/patterns/actions.pattern';
 export { UpdatePattern } from './patterns/patterns/update.pattern';
 
 // Default patterns
-// export { DefaultHashedPattern } from './patterns/defaults/default-hashed.pattern';
+export { DefaultHashedPattern } from './patterns/defaults/default-hashed.pattern';
 export { DefaultSignedPattern } from './patterns/defaults/default-signed.pattern';
 export { DefaultSecuredPattern, Secured } from './patterns/defaults/default-secured.pattern';
 export { DefaultNodePattern, Node } from './patterns/defaults/default-node.pattern';
@@ -68,7 +68,7 @@ export {
 } from './entities';
 
 /** Lenses */
-export { LensesModule, LENSES_MODULE_ID } from './lenses/lenses.module';
+export { LensesModule, LENSES_MODULE_ID } from './elements/lenses.module';
 export { Lens, PatternAction, LensElement } from './types';
 
 /** Utils */

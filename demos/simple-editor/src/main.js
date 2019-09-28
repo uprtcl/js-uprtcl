@@ -38,7 +38,7 @@ const documentsModule = new DocumentsModule({
   knownSources: knownSources
 });
 const storeModule = new StoreModule();
-const patternRegistryModule = new PatternRegistryModule(getDefaultPatterns());
+const patternRegistryModule = new PatternRegistryModule();
 const discoveryModule = new DiscoveryModule(cacheService, localKnownSources);
 const lensesModule = new LensesModule();
 const entitiesReducerModule = entitiesReduxModule();
