@@ -213,7 +213,7 @@ export function PatternRenderer<T>(
         this.isomorphisms = isomorphisms.reverse();
 
         const renderIsomorphism = this.isomorphisms.findIndex(i => i.lenses.length > 0);
-        this.selectedLensIndex = [renderIsomorphism, 0];
+        if (renderIsomorphism !== -1) this.selectedLensIndex = [renderIsomorphism, 0];
       });
     }
 

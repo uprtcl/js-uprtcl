@@ -97,8 +97,11 @@ export class PerspectivePattern
         icon: 'call_split',
         title: 'New perspective',
         action: async () => {
-          const contextId = await this.uprtcl.getPerspectiveContext(object.id);
-          const perspective = await this.create({ headId: object.id, contextId });
+          const [contextId, headId] = await Promise.all([
+            this.uprtcl.getPerspectiveContext(object.id),
+            this.uprtcl.getPerspectiveHead(object.id)
+          ]);
+          const perspective = await this.create({ headId, contextId });
           window.location.href = `/?id=${perspective.id}`;
         }
       }
