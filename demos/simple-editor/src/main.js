@@ -5,8 +5,7 @@ import {
   LensesModule,
   entitiesReduxModule,
   KnownSourcesDexie,
-  CacheDexie,
-  getDefaultPatterns
+  CacheDexie
 } from '@uprtcl/cortex';
 import { DocumentsHolochain, DocumentsModule } from '@uprtcl/documents';
 import { KnownSourcesHolochain } from '@uprtcl/connections';
