@@ -1,22 +1,22 @@
+import { injectable, inject } from 'inversify';
 import {
   Pattern,
   Secured,
   RedirectPattern,
-  PatternRegistry,
-  Source,
   SecuredPattern,
   LinkedPattern,
   CreatePattern,
   LensesPattern,
   Lens,
-  Signed
+  Signed,
+  PatternTypes
 } from '@uprtcl/cortex';
-import { Commit } from '../types';
+import { Commit, UprtclTypes } from '../types';
 import { UprtclProvider } from '../services/uprtcl/uprtcl.provider';
-import { PerspectivePattern } from './perspective.pattern';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
+@injectable()
 export class CommitPattern
   implements
     Pattern,
@@ -28,11 +28,8 @@ export class CommitPattern
     >,
     LensesPattern {
   constructor(
-    protected patternRegistry: PatternRegistry,
-    protected securedPattern: Pattern & SecuredPattern<Secured<Commit>>,
-    protected perspectivePattern: PerspectivePattern,
-    protected source: Source,
-    protected uprtcl: UprtclProvider
+    @inject(PatternTypes.Secured) protected securedPattern: Pattern & SecuredPattern<Secured<Commit>>,
+    @inject(UprtclTypes.UprtclProvider) protected uprtcl: UprtclProvider
   ) {}
 
   recognize(object: object) {

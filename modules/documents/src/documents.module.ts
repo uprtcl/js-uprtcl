@@ -1,47 +1,33 @@
-import { Dictionary } from 'lodash';
+import { injectable, interfaces } from 'inversify';
 import { MicroModule } from '@uprtcl/micro-orchestrator';
-import {
-  PATTERN_REGISTRY_MODULE_ID,
-  PatternRegistryModule,
-  DiscoverableSource,
-  DISCOVERY_MODULE_ID,
-  DiscoveryModule,
-  DefaultNodePattern
-} from '@uprtcl/cortex';
 import { TextNodeLens } from './lenses/text-node.lens';
 import { TextNodePattern } from './patterns/text-node.pattern';
+import { DocumentsTypes } from './types';
+import { DiscoverableSource, CortexTypes } from '@uprtcl/cortex';
 import { DocumentsProvider } from './services/documents.provider';
 
-const DOCUMENTS_MODULE_ID = 'documents-module';
+export function documentsModule(documentsProvider: DiscoverableSource<DocumentsProvider>): any {
+  @injectable()
+  class DocumentsModule implements MicroModule {
+    async onLoad(
+      bind: interfaces.Bind,
+      unbind: interfaces.Unbind,
+      isBound: interfaces.IsBound,
+      rebind: interfaces.Rebind
+    ): Promise<void> {
+      bind<DiscoverableSource>(CortexTypes.DiscoverableSource).toConstantValue(documentsProvider);
+      bind<DocumentsProvider>(DocumentsTypes.DocumentsProvider).toConstantValue(
+        documentsProvider.source
+      );
 
-export class DocumentsModule implements MicroModule {
-  constructor(protected discoverableDocuments: DiscoverableSource<DocumentsProvider>) {}
+      bind<TextNodePattern>(DocumentsTypes.TextNodePattern).to(TextNodePattern);
+      bind<TextNodePattern>(CortexTypes.Pattern).to(TextNodePattern);
 
-  async onLoad(dependencies: Dictionary<MicroModule>): Promise<void> {
-    const patternRegistryModule: PatternRegistryModule = dependencies[
-      PATTERN_REGISTRY_MODULE_ID
-    ] as PatternRegistryModule;
-    const discoveryModule: DiscoveryModule = dependencies[DISCOVERY_MODULE_ID] as DiscoveryModule;
+      customElements.define('text-node', TextNodeLens);
+    }
 
-    discoveryModule.discoveryService.addSources(this.discoverableDocuments);
-
-    const patternRegistry = patternRegistryModule.patternRegistry;
-
-    patternRegistry.registerPattern(
-      'text-node',
-      new TextNodePattern(this.discoverableDocuments.source, patternRegistry.getPattern('hashed'))
-    );
-
-    customElements.define('text-node', TextNodeLens);
+    async onUnload(): Promise<void> {}
   }
 
-  async onUnload(): Promise<void> {}
-
-  getDependencies(): string[] {
-    return [PATTERN_REGISTRY_MODULE_ID, DISCOVERY_MODULE_ID];
-  }
-
-  getId(): string {
-    return DOCUMENTS_MODULE_ID;
-  }
+  return DocumentsModule;
 }

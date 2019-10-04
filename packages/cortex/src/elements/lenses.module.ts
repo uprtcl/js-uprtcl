@@ -1,35 +1,25 @@
-import { Dictionary } from 'lodash';
 import { Store, AnyAction } from 'redux';
+import { LazyStore } from 'pwa-helpers/lazy-reducer-enhancer.js';
 
-import { StoreModule, MicroModule, REDUX_STORE_ID } from '@uprtcl/micro-orchestrator';
-import { PatternRenderer } from './base/pattern-renderer';
+import { MicroModule, MicroOrchestratorTypes } from '@uprtcl/micro-orchestrator';
+import { CortexPattern } from './base/cortex-pattern';
 import { lenses } from './lenses';
-import { DiscoveryModule, DISCOVERY_MODULE_ID } from '../services/discovery.module';
-import {
-  PatternRegistryModule,
-  PATTERN_REGISTRY_MODULE_ID
-} from '../patterns/pattern-registry.module';
-import { entitiesReducerName } from '../entities/entities.selectors';
 import { LensSelector } from './base/lens-selector';
+import { interfaces, inject, injectable } from 'inversify';
+import { CortexTypes } from '../types';
+import { DiscoveryService } from '../services/discovery.service';
+import { PatternRecognizer } from '../patterns/recognizer/pattern.recognizer';
 
-export const LENSES_MODULE_ID = 'lenses-module';
-
+@injectable()
 export class LensesModule implements MicroModule {
-  async onLoad(dependencies: Dictionary<MicroModule>): Promise<void> {
-    const storeModule: StoreModule = dependencies[REDUX_STORE_ID] as StoreModule;
-    const patternRegistryModule: PatternRegistryModule = dependencies[
-      PATTERN_REGISTRY_MODULE_ID
-    ] as PatternRegistryModule;
-    const discoveryModule: DiscoveryModule = dependencies[DISCOVERY_MODULE_ID] as DiscoveryModule;
-
-    const patternRenderer = PatternRenderer(
-      patternRegistryModule.patternRegistry,
-      discoveryModule.discoveryService,
-      storeModule.store as Store<any, AnyAction>
-    );
-
+  async onLoad(
+    bind: interfaces.Bind,
+    unbind: interfaces.Unbind,
+    isBound: interfaces.IsBound,
+    rebind: interfaces.Rebind
+  ): Promise<void> {
     customElements.define('lens-selector', LensSelector);
-    customElements.define('pattern-renderer', patternRenderer);
+    customElements.define('cortex-pattern', CortexPattern);
 
     Object.entries(lenses).forEach(([tag, lens]) => {
       customElements.define(tag, lens);
@@ -37,12 +27,4 @@ export class LensesModule implements MicroModule {
   }
 
   async onUnload(): Promise<void> {}
-
-  getDependencies(): string[] {
-    return [REDUX_STORE_ID, PATTERN_REGISTRY_MODULE_ID, DISCOVERY_MODULE_ID, entitiesReducerName];
-  }
-
-  getId(): string {
-    return LENSES_MODULE_ID;
-  }
 }

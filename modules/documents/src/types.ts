@@ -11,3 +11,8 @@ export interface TypedText {
 }
 
 export type TextNode = TypedText & Node;
+
+export const DocumentsTypes = {
+  DocumentsProvider: Symbol('documents-provider'),
+  TextNodePattern: Symbol('text-node-pattern')
+};

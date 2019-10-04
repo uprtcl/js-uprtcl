@@ -25,3 +25,13 @@ export interface SelectedLens {
   isomorphism: number;
   lens: number;
 }
+
+export const CortexTypes = {
+  PatternRecognizer: Symbol('pattern-recognizer'),
+  Pattern: Symbol('pattern'),
+  PatternsModule: Symbol('pattern-module'),
+  DiscoveryService: Symbol('discovery-service'),
+  DiscoverableSource: Symbol('discoverable-source'),
+  EntitiesReducer: Symbol('entities-reducer'),
+  LensesModule: Symbol('lenses-module'),
+};

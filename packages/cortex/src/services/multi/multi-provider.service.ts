@@ -27,7 +27,7 @@ export class MultiProviderService<T extends Source> extends MultiSourceService<T
     // Add known sources of the object's links to the provider's known sources
     if (discoverableSource.knownSources) {
       // Get the properties to get the object links from
-      const pattern: LinkedPattern<O> = this.patternRegistry.recognizeMerge(object);
+      const pattern: LinkedPattern<O> = this.patternRecognizer.recognizeMerge(object);
 
       if (pattern.hasOwnProperty('getLinks')) {
         const links = await pattern.getLinks(object);

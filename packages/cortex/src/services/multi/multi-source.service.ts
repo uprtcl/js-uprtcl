@@ -3,7 +3,7 @@ import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
 import { Dictionary } from 'lodash';
 import { DiscoverableSource } from '../sources/discoverable.source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
-import  { PatternRegistry } from '../../patterns/registry/pattern.registry';
+import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Hashed } from '../../patterns/patterns/hashed.pattern';
 
 export class MultiSourceService<T extends Source = Source> implements Source {
@@ -13,12 +13,12 @@ export class MultiSourceService<T extends Source = Source> implements Source {
   private initCompleted: boolean = false;
 
   /**
-   * @param patternRegistry the pattern registry to interact with the objects and their links
+   * @param patternRecognizer the pattern recognizer to interact with the objects and their links
    * @param knownSources local service to store all known sources to be able to retrieve the object afterwards
    * @param discoverableSources array of all discoverable sources from which to get objects
    */
   constructor(
-    protected patternRegistry: PatternRegistry,
+    protected patternRecognizer: PatternRecognizer,
     protected localKnownSources: KnownSourcesService,
     discoverableSources: Array<DiscoverableSource<T>>
   ) {
@@ -118,7 +118,7 @@ export class MultiSourceService<T extends Source = Source> implements Source {
 
     if (object) {
       // Object retrieved, discover the sources for its links
-      const pattern = this.patternRegistry.recognizeMerge(object) as LinkedPattern<Hashed<O>>;
+      const pattern = this.patternRecognizer.recognizeMerge(object) as LinkedPattern<Hashed<O>>;
 
       if (pattern.getLinks) {
         const links = await pattern.getLinks(object);
@@ -142,7 +142,10 @@ export class MultiSourceService<T extends Source = Source> implements Source {
    * @param source the source to get the object from
    * @returns the object if found, rejects if not found
    */
-  protected async tryGetFromSource<O extends object>(hash: string, source: string): Promise<Hashed<O>> {
+  protected async tryGetFromSource<O extends object>(
+    hash: string,
+    source: string
+  ): Promise<Hashed<O>> {
     const object = await this.getFromSource<O>(hash, source);
 
     // Reject if object is not found

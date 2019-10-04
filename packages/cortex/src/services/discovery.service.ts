@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { Source } from './sources/source';
 import { CachedSourceService } from './cached-remotes/cached-source.service';
 import { CacheService } from './cache/cache.service';
@@ -5,6 +6,7 @@ import { MultiSourceService } from './multi/multi-source.service';
 import { DiscoverableSource } from './sources/discoverable.source';
 import { Hashed } from '../patterns/patterns/hashed.pattern';
 
+@injectable()
 export class DiscoveryService implements Source {
   cachedRemote: CachedSourceService;
 

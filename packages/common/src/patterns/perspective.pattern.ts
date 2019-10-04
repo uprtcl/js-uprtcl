@@ -1,6 +1,9 @@
+import { injectable, inject } from 'inversify';
 import {
   Secured,
-  PatternRegistry,
+  PatternRecognizer,
+  CortexTypes,
+  PatternTypes,
   RedirectPattern,
   Pattern,
   SecuredPattern,
@@ -12,23 +15,38 @@ import {
   UpdatePattern,
   Hashed
 } from '@uprtcl/cortex';
-import { Perspective, Commit } from '../types';
+import { Perspective, Commit, UprtclTypes } from '../types';
+
 import { UprtclProvider } from '../services/uprtcl/uprtcl.provider';
+import { CommitPattern } from './commit.pattern';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp', 'name'];
 
+export interface PerspectiveArgs {
+  name?: string;
+  contextId?: string;
+}
+
+export type CreatePerspectiveArgs =
+  | PerspectiveArgs
+  | (PerspectiveArgs & { headId: string })
+  | (PerspectiveArgs & { dataId: string })
+  | (PerspectiveArgs & { data: any });
+
+@injectable()
 export class PerspectivePattern
   implements
     Pattern,
     LinkedPattern<Secured<Perspective>>,
     RedirectPattern<Secured<Perspective>>,
-    CreatePattern<{ name?: string; contextId?: string }, Signed<Perspective>>,
+    CreatePattern<CreatePerspectiveArgs, Signed<Perspective>>,
     ActionsPattern,
     UpdatePattern {
   constructor(
-    protected patternRegistry: PatternRegistry,
-    protected securedPattern: Pattern & SecuredPattern<Secured<Perspective>>,
-    protected uprtcl: UprtclProvider
+    @inject(CortexTypes.PatternRecognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(PatternTypes.Secured) protected securedPattern: Pattern & SecuredPattern<any>,
+    @inject(UprtclTypes.UprtclProvider) protected uprtcl: UprtclProvider,
+    @inject(UprtclTypes.CommitPattern) protected commitPattern: CommitPattern
   ) {}
 
   recognize(object: Object) {
@@ -59,15 +77,9 @@ export class PerspectivePattern
     perspective: Secured<Perspective>
   ) => this.uprtcl.getPerspectiveHead(perspective.id);
 
-  create: (args: {
-    name?: string;
-    contextId?: string;
-    headId?: string;
-  }) => Promise<Secured<Perspective>> = async (args: {
-    name?: string;
-    contextId?: string;
-    headId?: string;
-  }) => {
+  create: (args: CreatePerspectiveArgs) => Promise<Secured<Perspective>> = async (
+    args: CreatePerspectiveArgs
+  ) => {
     args.name = args.name || 'master';
     const perspective: Secured<Perspective> = await this.uprtcl.createPerspective(
       args.name,
@@ -81,10 +93,26 @@ export class PerspectivePattern
     }
     await this.uprtcl.updatePerspectiveContext(perspective.id, args.contextId);
 
-    // Set the perspective head if given
-    if (args.headId) {
-      await this.uprtcl.updatePerspectiveHead(perspective.id, args.headId);
+    let data = (args as { data: any }).data;
+    let dataId = (args as { dataId: any }).dataId;
+    let headId = (args as { headId: string }).headId;
+
+    if (data) {
+      const createdData = await this.createData(data);
+      dataId = createdData.id;
     }
+
+    if (dataId) {
+      const head = await this.commitPattern.create({
+        dataId: data.id,
+        message: `Commit at ${Date.now() / 1000}`,
+        parentsIds: headId ? [headId] : []
+      });
+      headId = head.id;
+    }
+
+    // Set the perspective head if given
+    if (headId) await this.uprtcl.updatePerspectiveHead(perspective.id, headId);
 
     return perspective;
   };
@@ -112,19 +140,10 @@ export class PerspectivePattern
     perspective: Secured<Perspective>,
     newContent: any
   ) => {
-    const dataPattern: CreatePattern<any, any> = this.patternRegistry.recognizeMerge(newContent);
-
-    if (!dataPattern.create) throw new Error('Cannot create this type of data');
-
-    const data: Hashed<any> = await dataPattern.create(newContent);
-
-    const commitPattern: CreatePattern<
-      { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
-      Signed<Commit>
-    > = this.patternRegistry.getPattern('commit');
+    const data = await this.createData(newContent);
 
     const headId = await this.uprtcl.getPerspectiveHead(perspective.id);
-    const newHead = await commitPattern.create({
+    const newHead = await this.commitPattern.create({
       dataId: data.id,
       message: `Commit at ${Date.now() / 1000}`,
       parentsIds: headId ? [headId] : []
@@ -134,4 +153,12 @@ export class PerspectivePattern
 
     return true;
   };
+
+  async createData(data: any): Promise<Hashed<any>> {
+    const dataPattern: CreatePattern<any, any> = this.patternRecognizer.recognizeMerge(data);
+
+    if (!dataPattern.create) throw new Error('Cannot create this type of data');
+
+    return dataPattern.create(data);
+  }
 }

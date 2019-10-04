@@ -6,18 +6,21 @@ import {
   PatternAction,
   Lens,
   Hashed,
-  HashedPattern
+  HashedPattern,
+  PatternTypes
 } from '@uprtcl/cortex';
-import { TextNode, TextType } from '../types';
+import { TextNode, TextType, DocumentsTypes } from '../types';
 import { DocumentsProvider } from '../services/documents.provider';
+import { injectable, inject } from 'inversify';
 
 const propertyOrder = ['text', 'type', 'links'];
 
+@injectable()
 export class TextNodePattern
   implements Pattern, CreatePattern<Partial<TextNode>, TextNode>, LensesPattern, ActionsPattern {
   constructor(
-    protected documentsProvider: DocumentsProvider,
-    protected hashedPattern: Pattern & HashedPattern<TextNode>
+    @inject(DocumentsTypes.DocumentsProvider) protected documentsProvider: DocumentsProvider,
+    @inject(PatternTypes.Hashed) protected hashedPattern: Pattern & HashedPattern<TextNode>
   ) {}
 
   recognize(object: object): boolean {

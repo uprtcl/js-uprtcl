@@ -1,15 +1,15 @@
 import { MicroOrchestrator, StoreModule } from '@uprtcl/micro-orchestrator';
 import {
-  PatternRegistryModule,
-  DiscoveryModule,
+  PatternsModule,
+  discoveryModule,
   LensesModule,
   entitiesReduxModule,
   KnownSourcesDexie,
   CacheDexie
 } from '@uprtcl/cortex';
-import { DocumentsHolochain, DocumentsModule } from '@uprtcl/documents';
+import { DocumentsHolochain, documentsModule } from '@uprtcl/documents';
 import { KnownSourcesHolochain } from '@uprtcl/connections';
-import { UprtclModule, UprtclHolochain } from '@uprtcl/common';
+import { uprtclModule, UprtclHolochain } from '@uprtcl/common';
 import { SimpleEditor } from './simple-editor';
 
 const uprtclProvider = new UprtclHolochain({
@@ -30,30 +30,28 @@ const knownSources = new KnownSourcesHolochain({
 const localKnownSources = new KnownSourcesDexie();
 const cacheService = new CacheDexie();
 
-const uprtclModule = new UprtclModule({ source: uprtclProvider, knownSources: knownSources });
+const uprtcl = uprtclModule({ source: uprtclProvider, knownSources: knownSources });
 
-const documentsModule = new DocumentsModule({
+const documents = documentsModule({
   source: documentsProvider,
   knownSources: knownSources
 });
-const storeModule = new StoreModule();
-const patternRegistryModule = new PatternRegistryModule();
-const discoveryModule = new DiscoveryModule(cacheService, localKnownSources);
-const lensesModule = new LensesModule();
+const discovery = discoveryModule(cacheService, localKnownSources);
 const entitiesReducerModule = entitiesReduxModule();
 
-const orchestrator = MicroOrchestrator.get();
+const orchestrator = new MicroOrchestrator();
 
 orchestrator
   .loadModules(
-    storeModule,
+    StoreModule,
     entitiesReducerModule,
-    patternRegistryModule,
-    discoveryModule,
-    lensesModule,
-    uprtclModule,
-    documentsModule
+    documents,
+    PatternsModule,
+    LensesModule,
+    uprtcl,
+    discovery,
   )
   .then(() => {
-    customElements.define('simple-editor', SimpleEditor(patternRegistryModule.patternRegistry));
+    console.log(orchestrator);
+    customElements.define('simple-editor', SimpleEditor);
   });

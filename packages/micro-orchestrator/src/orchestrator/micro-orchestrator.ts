@@ -1,60 +1,49 @@
-import { Dictionary } from 'lodash';
+import { Container, AsyncContainerModule, interfaces } from 'inversify';
 import { MicroModule } from '../modules/micro.module';
+import { ModuleContainer } from '../elements/module-container';
 
 export class MicroOrchestrator {
-  modules: Dictionary<MicroModule> = {};
+  container = new Container({ defaultScope: 'Singleton' });
 
-  static get(): MicroOrchestrator {
-    let orchestrator: MicroOrchestrator = window['microorchestrator'];
-    if (!orchestrator) {
-      orchestrator = new MicroOrchestrator();
-      window['microorchestrator'] = orchestrator;
-    }
-
-    return orchestrator;
+  constructor() {
+    customElements.define('module-container', ModuleContainer(this.container));
   }
 
   /**
    * Loads the given modules to the available module list
    * @param modules
    */
-  async loadModules(...modules: MicroModule[]): Promise<void> {
+  async loadModules(...modules: Array<new (...args: any[]) => MicroModule>): Promise<void> {
     for (const microModule of modules) {
-      await this.loadModule(microModule);
+      this.container.bind(microModule).toSelf();
+    }
+    console.log('hi', this.container);
+    for (const microModule of modules) {
+      console.log('hi1', microModule);
+      const module: MicroModule = this.container.get(microModule);
+      console.log('hi2', module);
+
+      const asyncModule = new AsyncContainerModule(
+        (
+          bind: interfaces.Bind,
+          unbind: interfaces.Unbind,
+          isBound: interfaces.IsBound,
+          rebind: interfaces.Rebind
+        ) => module.onLoad(bind, unbind, isBound, rebind)
+      );
+      console.log('hi3', asyncModule);
+
+      await this.container.loadAsync(asyncModule);
+      console.log('hi4', this.container);
     }
   }
 
-  /**
-   * Loads the module with the given id if it wasn't loaded yet, loading its dependencies first
-   * @param moduleId the module to load
-   */
-  async loadModule<T extends MicroModule>(microModule: MicroModule): Promise<T> {
-    if (!microModule) {
-      throw new Error(`Given module is undefined`);
-    }
+  async loadModule<T extends MicroModule>(microModule: new (...args: any[]) => T): Promise<void> {
+    this.container.bind<T>(microModule).toSelf();
+    const module: T = this.container.get(microModule);
 
-    const moduleId = microModule.getId();
+    const asyncModule = new AsyncContainerModule(module.onLoad);
 
-    if (!this.modules[moduleId]) {
-      // The module has not been loaded yet, first load all its dependencies and then load the module
-      const dependenciesIds = microModule.getDependencies();
-
-      for (const depId of dependenciesIds) {
-        if (!this.modules[depId]) {
-          throw new Error(`Attempting to load ${moduleId}: dependency ${depId} of given module has not yet been loaded`);
-        }
-      }
-
-      const depsDict: Dictionary<MicroModule> = dependenciesIds.reduce(
-        (dict, depId) => ({ ...dict, [depId]: this.modules[depId] }),
-        {}
-      );
-
-      await microModule.onLoad(depsDict);
-
-      this.modules[moduleId] = microModule;
-    }
-
-    return microModule as T;
+    return this.container.loadAsync(asyncModule);
   }
 }

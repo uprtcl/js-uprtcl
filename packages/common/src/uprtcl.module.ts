@@ -1,72 +1,70 @@
-import { MicroModule, REDUX_STORE_ID, StoreModule } from '@uprtcl/micro-orchestrator';
+import { Store } from 'redux';
+import { injectable, interfaces, inject } from 'inversify';
+import { MicroModule, MicroOrchestratorTypes } from '@uprtcl/micro-orchestrator';
 import {
-  PATTERN_REGISTRY_MODULE_ID,
-  DISCOVERY_MODULE_ID,
-  PatternRegistryModule,
-  SecuredPattern,
-  Secured,
-  Pattern,
+  CortexTypes,
+  DiscoveryService,
   DiscoverableSource,
-  DiscoveryModule
+  ValidateHash,
+  TransformHash,
+  DefaultSignedPattern,
+  DefaultSecuredPattern,
+  ValidatePattern,
+  TransformPattern,
+  HashedPattern,
+  SecuredPattern,
+  PatternTypes,
+  SignedPattern,
+  Hashed,
+  Secured
 } from '@uprtcl/cortex';
-import { Dictionary } from 'lodash';
-import { UprtclProvider } from './services/uprtcl/uprtcl.provider';
+
 import { PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern } from './patterns/commit.pattern';
 import { ContextPattern } from './patterns/context.pattern';
 import { CommitHistory } from './lenses/commit-history';
+import { UprtclTypes } from './types';
+import { UprtclProvider } from './services/uprtcl/uprtcl.provider';
 
-export const UPRTCL_MODULE_ID = 'uprtcl-module';
+export function uprtclModule(discoverableUprtcl: DiscoverableSource<UprtclProvider>): any {
+  @injectable()
+  class UprtclModule implements MicroModule {
+    async onLoad(
+      bind: interfaces.Bind,
+      unbind: interfaces.Unbind,
+      isBound: interfaces.IsBound,
+      rebind: interfaces.Rebind
+    ): Promise<void> {
+      bind<DiscoverableSource>(CortexTypes.DiscoverableSource).toConstantValue(discoverableUprtcl);
+      bind<UprtclProvider>(UprtclTypes.UprtclProvider).toConstantValue(discoverableUprtcl.source);
 
-export class UprtclModule implements MicroModule {
-  constructor(protected discoverableUprtcl: DiscoverableSource<UprtclProvider>) {}
+      // Patterns
 
-  async onLoad(dependencies: Dictionary<MicroModule>): Promise<void> {
-    const patternRegistryModule: PatternRegistryModule = dependencies[
-      PATTERN_REGISTRY_MODULE_ID
-    ] as PatternRegistryModule;
+      bind<HashedPattern<any>>(PatternTypes.Hashed).to(ValidateHash);
+      bind<HashedPattern<any>>(CortexTypes.Pattern).to(ValidateHash);
 
-    const discoveryModule: DiscoveryModule = dependencies[DISCOVERY_MODULE_ID] as DiscoveryModule;
-    discoveryModule.discoveryService.addSources(this.discoverableUprtcl);
+      bind<TransformPattern<Hashed<any>, [any]>>(PatternTypes.Hashed).to(TransformHash);
+      bind<TransformPattern<Hashed<any>, [any]>>(CortexTypes.Pattern).to(TransformHash);
 
-    const patternRegistry = patternRegistryModule.patternRegistry;
-    const securedPattern: Pattern & SecuredPattern<Secured<any>> = patternRegistry.getPattern(
-      'secured'
-    );
+      bind<SignedPattern<any>>(PatternTypes.Signed).to(DefaultSignedPattern);
+      bind<SignedPattern<any>>(CortexTypes.Pattern).to(DefaultSignedPattern);
 
-    const perspectivePattern = new PerspectivePattern(
-      patternRegistry,
-      securedPattern,
-      this.discoverableUprtcl.source
-    );
-    const commitPattern = new CommitPattern(
-      patternRegistry,
-      securedPattern,
-      perspectivePattern,
-      discoveryModule.discoveryService,
-      this.discoverableUprtcl.source
-    );
-    const contextPattern = new ContextPattern(securedPattern, this.discoverableUprtcl.source);
+      bind<SecuredPattern<Secured<any>>>(PatternTypes.Secured).to(DefaultSecuredPattern);
+      bind<SecuredPattern<Secured<any>>>(CortexTypes.Pattern).to(DefaultSecuredPattern);
 
-    patternRegistry.registerPattern('commit', commitPattern);
-    patternRegistry.registerPattern('perspective', perspectivePattern);
-    patternRegistry.registerPattern('context', contextPattern);
+      bind<PerspectivePattern>(UprtclTypes.PerspectivePattern).to(PerspectivePattern);
+      bind<CommitPattern>(UprtclTypes.CommitPattern).to(CommitPattern);
+      bind<ContextPattern>(UprtclTypes.ContextPattern).to(ContextPattern);
 
-    const storeModule: StoreModule = dependencies[REDUX_STORE_ID] as StoreModule;
+      bind<PerspectivePattern>(CortexTypes.Pattern).to(PerspectivePattern);
+      bind<CommitPattern>(CortexTypes.Pattern).to(CommitPattern);
+      bind<ContextPattern>(CortexTypes.Pattern).to(ContextPattern);
 
-    customElements.define(
-      'commit-history',
-      CommitHistory(discoveryModule.discoveryService, storeModule.store)
-    );
+      customElements.define('commit-history', CommitHistory);
+    }
+
+    async onUnload(): Promise<void> {}
   }
 
-  async onUnload(): Promise<void> {}
-
-  getDependencies(): string[] {
-    return [PATTERN_REGISTRY_MODULE_ID, DISCOVERY_MODULE_ID, REDUX_STORE_ID];
-  }
-
-  getId(): string {
-    return UPRTCL_MODULE_ID;
-  }
+  return UprtclModule;
 }

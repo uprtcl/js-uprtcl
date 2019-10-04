@@ -10,3 +10,7 @@ export type ModuleConstructor<T extends MicroModule = MicroModule> = Constructor
   declareDependencies(): Array<ModuleConstructor>;
   getId(): string;
 };
+
+export const MicroOrchestratorTypes = {
+  ReduxStore: Symbol('redux-store')
+};

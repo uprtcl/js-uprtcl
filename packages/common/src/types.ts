@@ -19,5 +19,9 @@ export interface Commit {
   dataId: string;
 }
 
-/** Type reexport */
-export { LinkedPattern } from '@uprtcl/cortex';
+export const UprtclTypes = {
+  PerspectivePattern: Symbol('perspective-pattern'),
+  CommitPattern: Symbol('commit-pattern'),
+  ContextPattern: Symbol('context-pattern'),
+  UprtclProvider: Symbol('uprtcl-provider'),
+};
