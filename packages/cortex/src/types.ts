@@ -1,4 +1,5 @@
 import { Dictionary } from 'lodash';
+import { Pattern } from './patterns/pattern';
 
 export interface Lens {
   lens: string;
@@ -26,7 +27,10 @@ export interface SelectedLens {
   lens: number;
 }
 
+export type PatternFactory = () => Pattern[];
+
 export const CortexTypes = {
+  PatternFactory: Symbol('pattern-factory'),
   PatternRecognizer: Symbol('pattern-recognizer'),
   Pattern: Symbol('pattern'),
   PatternsModule: Symbol('pattern-module'),

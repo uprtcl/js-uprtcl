@@ -1,6 +1,6 @@
-import { Store } from 'redux';
-import { injectable, interfaces, inject } from 'inversify';
-import { MicroModule, MicroOrchestratorTypes } from '@uprtcl/micro-orchestrator';
+import merge from 'lodash/merge';
+import { injectable, interfaces } from 'inversify';
+import { MicroModule } from '@uprtcl/micro-orchestrator';
 import {
   CortexTypes,
   DiscoveryService,
@@ -39,12 +39,10 @@ export function uprtclModule(discoverableUprtcl: DiscoverableSource<UprtclProvid
       bind<UprtclProvider>(UprtclTypes.UprtclProvider).toConstantValue(discoverableUprtcl.source);
 
       // Patterns
+      const hash = merge(ValidateHash, TransformHash);
 
-      bind<HashedPattern<any>>(PatternTypes.Hashed).to(ValidateHash);
-      bind<HashedPattern<any>>(CortexTypes.Pattern).to(ValidateHash);
-
-      bind<TransformPattern<Hashed<any>, [any]>>(PatternTypes.Hashed).to(TransformHash);
-      bind<TransformPattern<Hashed<any>, [any]>>(CortexTypes.Pattern).to(TransformHash);
+      bind<HashedPattern<any> | TransformPattern<Hashed<any>, [any]>>(PatternTypes.Hashed).to(hash);
+      bind<HashedPattern<any> | TransformPattern<Hashed<any>, [any]>>(CortexTypes.Pattern).to(hash);
 
       bind<SignedPattern<any>>(PatternTypes.Signed).to(DefaultSignedPattern);
       bind<SignedPattern<any>>(CortexTypes.Pattern).to(DefaultSignedPattern);

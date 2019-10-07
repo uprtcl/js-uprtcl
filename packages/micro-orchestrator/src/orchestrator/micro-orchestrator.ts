@@ -3,7 +3,7 @@ import { MicroModule } from '../modules/micro.module';
 import { ModuleContainer } from '../elements/module-container';
 
 export class MicroOrchestrator {
-  container = new Container({ defaultScope: 'Singleton' });
+  container = new Container();
 
   constructor() {
     customElements.define('module-container', ModuleContainer(this.container));
@@ -17,24 +17,25 @@ export class MicroOrchestrator {
     for (const microModule of modules) {
       this.container.bind(microModule).toSelf();
     }
-    console.log('hi', this.container);
-    for (const microModule of modules) {
-      console.log('hi1', microModule);
-      const module: MicroModule = this.container.get(microModule);
-      console.log('hi2', module);
 
-      const asyncModule = new AsyncContainerModule(
-        (
-          bind: interfaces.Bind,
-          unbind: interfaces.Unbind,
-          isBound: interfaces.IsBound,
-          rebind: interfaces.Rebind
-        ) => module.onLoad(bind, unbind, isBound, rebind)
-      );
-      console.log('hi3', asyncModule);
+    let unloadedModules = modules;
+    let i = 0;
+    while (unloadedModules.length > 0 && i < 10) {
+      i++;
+      const modulesToLoad = unloadedModules.reverse();
+      unloadedModules = [];
 
-      await this.container.loadAsync(asyncModule);
-      console.log('hi4', this.container);
+      for (const microModule of modulesToLoad) {
+        try {
+          const module: MicroModule = this.container.get(microModule);
+
+          const asyncModule = new AsyncContainerModule(module.onLoad);
+
+          await this.container.loadAsync(asyncModule);
+        } catch (e) {
+          unloadedModules.push(microModule);
+        }
+      }
     }
   }
 

@@ -92,6 +92,7 @@
     "cids": "^0.7.1",
     "dexie": "^2.0.4",
     "inversify": "^5.0.1",
+    "inversify-inject-decorators": "^3.1.0",
     "isomorphic-ws": "^4.0.1",
     "lit-element": "^2.2.1",
     "lit-html": "^1.1.2",

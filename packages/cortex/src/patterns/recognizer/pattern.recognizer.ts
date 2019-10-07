@@ -1,11 +1,17 @@
 import merge from 'lodash/merge';
+import { injectable, multiInject, inject } from 'inversify';
 import { Pattern } from '../pattern';
-import { injectable, multiInject } from 'inversify';
-import { CortexTypes } from '../../types';
+import { CortexTypes, PatternFactory } from '../../types';
 
 @injectable()
 export class PatternRecognizer {
-  constructor(@multiInject(CortexTypes.Pattern) protected patterns: Pattern[]) {}
+  patterns: Pattern[];
+
+  constructor(@inject(CortexTypes.PatternFactory) patternFactory: PatternFactory) {
+    console.log('hi3');
+    this.patterns = patternFactory();
+    console.log('hi4');
+  }
 
   public recognizeMerge<T>(object: object): Pattern & T {
     let pattern: Pattern = {

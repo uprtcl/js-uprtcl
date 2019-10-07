@@ -18,7 +18,6 @@ export class SimpleEditor extends LitElement {
         bubbles: true
       })
     );
-    console.log(e);
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
