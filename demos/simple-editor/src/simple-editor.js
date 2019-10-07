@@ -1,43 +1,36 @@
 import { LitElement, html } from 'lit-element';
-import { RequestDependencyEvent } from '@uprtcl/micro-orchestrator';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { UprtclTypes } from '@uprtcl/common';
 import { DocumentsTypes } from '@uprtcl/documents';
 
-export class SimpleEditor extends LitElement {
+export class SimpleEditor extends moduleConnect(LitElement) {
   static get properties() {
     return {
       rootHash: { type: String }
     };
   }
 
-  async firstUpdated() {
-    const e = this.dispatchEvent(
-      new RequestDependencyEvent({
-        detail: { request: [UprtclTypes.PerspectivePattern, DocumentsTypes.TextNodePattern] },
-        composed: true,
-        bubbles: true
-      })
-    );
+  constructor() {
+    super();
+    this.perspectivePattern = this.request(UprtclTypes.PerspectivePattern);
+    this.textNodePattern = this.request(DocumentsTypes.TextNodePattern);
+  }
 
+  async firstUpdated() {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-/*       const hashed = await e.dependencies[0].create();
-      const commit = await patternRegistry
-        .getPattern('commit')
-        .create({ dataId: hashed.id, message: '', parentsIds: [] });
-      const perspective = await patternRegistry
-        .getPattern('perspective')
-        .create({ headId: commit.id });
+      const hashed = await this.textNodePattern.create();
+      const perspective = await this.perspectivePattern.create({ dataId: hashed.id });
       this.rootHash = perspective.id;
- */    }
+    }
   }
 
   render() {
     return html`
       ${this.rootHash
         ? html`
-            <pattern-renderer .hash=${this.rootHash}></pattern-renderer>
+            <cortex-pattern .hash=${this.rootHash}></cortex-pattern>
           `
         : html`
             Loading...

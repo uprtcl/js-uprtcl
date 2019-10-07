@@ -5,13 +5,7 @@ import { CortexTypes, PatternFactory } from '../../types';
 
 @injectable()
 export class PatternRecognizer {
-  patterns: Pattern[];
-
-  constructor(@inject(CortexTypes.PatternFactory) patternFactory: PatternFactory) {
-    console.log('hi3');
-    this.patterns = patternFactory();
-    console.log('hi4');
-  }
+  patterns!: Pattern[];
 
   public recognizeMerge<T>(object: object): Pattern & T {
     let pattern: Pattern = {

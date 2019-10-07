@@ -9,9 +9,9 @@ import {
 } from 'redux';
 import { LazyStore, lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
 import thunk, { ThunkMiddleware } from 'redux-thunk';
+import { injectable, interfaces } from 'inversify';
 
 import { MicroModule } from '../micro.module';
-import { injectable, interfaces } from 'inversify';
 import { MicroOrchestratorTypes } from '../../types';
 
 @injectable()
@@ -39,6 +39,7 @@ export class StoreModule implements MicroModule {
       )
     ) as Store & LazyStore;
 
+    console.log('historemodule', store);
     bind<Store & LazyStore>(MicroOrchestratorTypes.ReduxStore).toConstantValue(store);
   }
 

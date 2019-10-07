@@ -29,7 +29,7 @@ export class MicroOrchestrator {
         try {
           const module: MicroModule = this.container.get(microModule);
 
-          const asyncModule = new AsyncContainerModule(module.onLoad);
+          const asyncModule = new AsyncContainerModule((...args) => module.onLoad(...args));
 
           await this.container.loadAsync(asyncModule);
         } catch (e) {

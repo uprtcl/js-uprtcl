@@ -104,7 +104,7 @@ export class PerspectivePattern
 
     if (dataId) {
       const head = await this.commitPattern.create({
-        dataId: data.id,
+        dataId: dataId,
         message: `Commit at ${Date.now() / 1000}`,
         parentsIds: headId ? [headId] : []
       });

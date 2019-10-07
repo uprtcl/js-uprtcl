@@ -22,6 +22,9 @@ export function ModuleContainer(container: Container): typeof HTMLElement {
 
       this.addEventListener<any>('request-dependency', (e: RequestDependencyEvent) => {
         e.stopPropagation();
+        console.log('<module-container>', container);
+        console.log('<module-container> 1', e.detail);
+        console.log('<module-container> 2', container.get(e.detail.request[0]));
         e.dependencies = e.detail.request.map(dep => container.get(dep));
       });
     }

@@ -43,9 +43,9 @@ export class CortexPattern extends moduleConnect(LitElement) {
   @property()
   private actionsMenuOpen: boolean = false;
 
-  private store: Store<any> = this.request(MicroOrchestratorTypes.ReduxStore);
-  private discovery: Source = this.request(CortexTypes.DiscoveryService);
-  private patternRecognizer: PatternRecognizer = this.request(CortexTypes.PatternRecognizer);
+  private store!: Store<any>;
+  private discovery!: Source;
+  private patternRecognizer!: PatternRecognizer;
 
   /**
    * @returns the rendered selected lens
@@ -78,6 +78,11 @@ export class CortexPattern extends moduleConnect(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
+
+    this.store = this.request(MicroOrchestratorTypes.ReduxStore);
+    this.discovery = this.request(CortexTypes.DiscoveryService);
+    this.patternRecognizer = this.request(CortexTypes.PatternRecognizer);
+
     this.addEventListener<any>('content-changed', (e: CustomEvent) => {
       e.stopPropagation();
       this.updateContent(e.detail.newContent);

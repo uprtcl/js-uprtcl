@@ -1,8 +1,8 @@
 import { Store, ReducersMapObject, Action, Reducer } from 'redux';
-
-import { MicroModule } from '../micro.module';
 import { inject, interfaces, injectable } from 'inversify';
 import { LazyStore } from 'pwa-helpers/lazy-reducer-enhancer';
+
+import { MicroModule } from '../micro.module';
 import { MicroOrchestratorTypes } from '../../types';
 
 export function reduxModule<S, A extends Action>(reducersMap: ReducersMapObject<S, A>): any {
