@@ -30,13 +30,19 @@ const knownSources = new KnownSourcesHolochain({
 const localKnownSources = new KnownSourcesDexie();
 const cacheService = new CacheDexie();
 
-const uprtcl = uprtclModule({ source: uprtclProvider, knownSources: knownSources });
+const discoverableUprtcl = { source: uprtclProvider, knownSources: knownSources };
+const uprtcl = uprtclModule(discoverableUprtcl);
 
-const documents = documentsModule({
+const discoverableDocs = {
   source: documentsProvider,
   knownSources: knownSources
-});
-const discovery = discoveryModule(cacheService, localKnownSources);
+};
+const documents = documentsModule(discoverableDocs);
+
+const discovery = discoveryModule(cacheService, localKnownSources, [
+  discoverableUprtcl,
+  discoverableDocs
+]);
 const entitiesReducerModule = entitiesReduxModule();
 
 const orchestrator = new MicroOrchestrator();
@@ -49,7 +55,7 @@ orchestrator
     PatternsModule,
     LensesModule,
     uprtcl,
-    discovery,
+    discovery
   )
   .then(() => {
     console.log(orchestrator);
