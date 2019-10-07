@@ -21,10 +21,12 @@ export class CommitHistory extends moduleConnect(LitElement)
   @property({ type: Object })
   commits: Dictionary<Secured<Commit>> = {};
 
-  private store: Store<any> = this.request(MicroOrchestratorTypes.ReduxStore);
-  private source: DiscoveryService = this.request(CortexTypes.DiscoveryService);
+  private store!: Store<any>;
+  private source!: Source;
 
   firstUpdated() {
+    this.store = this.request(MicroOrchestratorTypes.ReduxStore);
+    this.source = this.request(CortexTypes.Source);
     this.initialLoad();
   }
 

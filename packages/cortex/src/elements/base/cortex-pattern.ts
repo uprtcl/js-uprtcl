@@ -44,7 +44,7 @@ export class CortexPattern extends moduleConnect(LitElement) {
   private actionsMenuOpen: boolean = false;
 
   private store!: Store<any>;
-  private discovery!: Source;
+  private source!: Source;
   private patternRecognizer!: PatternRecognizer;
 
   /**
@@ -80,7 +80,7 @@ export class CortexPattern extends moduleConnect(LitElement) {
     super.connectedCallback();
 
     this.store = this.request(MicroOrchestratorTypes.ReduxStore);
-    this.discovery = this.request(CortexTypes.DiscoveryService);
+    this.source = this.request(CortexTypes.Source);
     this.patternRecognizer = this.request(CortexTypes.PatternRecognizer);
 
     this.addEventListener<any>('content-changed', (e: CustomEvent) => {
@@ -167,7 +167,7 @@ export class CortexPattern extends moduleConnect(LitElement) {
   loadEntity(hash: string): Promise<any> {
     // TODO: type redux store
     console.log(this.store);
-    return this.store.dispatch(loadEntity(this.discovery)(hash) as any);
+    return this.store.dispatch(loadEntity(this.source)(hash) as any);
   }
 
   stateChanged(state: any) {

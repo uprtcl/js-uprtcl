@@ -10,6 +10,7 @@ import { KnownSourcesDexie } from './known-sources/known-sources.dexie';
 import { injectable, interfaces, inject } from 'inversify';
 import { PatternRecognizer } from '../patterns/recognizer/pattern.recognizer';
 import { CortexTypes } from '../types';
+import { Source } from './sources/source';
 
 export function discoveryModule(
   cacheService: CacheService = new CacheDexie(),
@@ -30,10 +31,12 @@ export function discoveryModule(
     ): Promise<void> {
       const discoveryService = new DiscoveryService(
         cacheService,
-        new MultiSourceService(this.patternRecognizer, localKnownSources, discoverableSources)
+        new MultiSourceService(this.patternRecognizer, localKnownSources, [])
       );
 
-      bind<DiscoveryService>(CortexTypes.DiscoveryService).toConstantValue(discoveryService);
+      discoveryService.addSources(...discoverableSources);
+
+      bind<Source>(CortexTypes.Source).toConstantValue(discoveryService);
     }
 
     async onUnload(): Promise<void> {}
