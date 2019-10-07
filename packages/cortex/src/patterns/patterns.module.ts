@@ -13,19 +13,17 @@ export class PatternsModule implements MicroModule {
     rebind: interfaces.Rebind
   ): Promise<void> {
     let recognizer: PatternRecognizer | undefined = undefined;
-    bind<PatternRecognizer>(CortexTypes.PatternRecognizer).toFactory<PatternRecognizer>(
+    bind<PatternRecognizer>(CortexTypes.PatternRecognizer).toDynamicValue(
       (ctx: interfaces.Context) => {
-        console.log('hi1');
-        return () => {
-          if (recognizer) return recognizer;
 
-          recognizer = new PatternRecognizer();
-          const patterns = ctx.container.getAll<Pattern>(CortexTypes.Pattern);
-          console.log('hi2', patterns);
-          recognizer.patterns = patterns;
+        if (recognizer) return recognizer;
 
-          return recognizer;
-        };
+        recognizer = new PatternRecognizer();
+
+        const patterns = ctx.container.getAll<Pattern>(CortexTypes.Pattern);
+        recognizer.patterns = patterns;
+
+        return recognizer;
       }
     );
   }

@@ -180,8 +180,11 @@ export class MultiSourceService<T extends Source = Source> implements Source {
       promises = allSources.map(async source => {
         const object = await this.tryGetFromSource<O>(hash, source);
 
-        // Luckily we found the object in one of the sources, store it in the known sources
-        await this.localKnownSources.addKnownSources(hash, [source]);
+        if (object) {
+          // Luckily we found the object in one of the sources, store it in the known sources
+          await this.localKnownSources.addKnownSources(hash, [source]);
+        }
+
         return object;
       });
     }

@@ -166,7 +166,6 @@ export class CortexPattern extends moduleConnect(LitElement) {
 
   loadEntity(hash: string): Promise<any> {
     // TODO: type redux store
-    console.log(this.store);
     return this.store.dispatch(loadEntity(this.source)(hash) as any);
   }
 

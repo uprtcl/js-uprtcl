@@ -12,7 +12,8 @@ export function recognizeHashed(object: object) {
 }
 
 @injectable()
-export class ValidateHash extends forPattern(recognizeHashed) implements HashedPattern<any> {
+export class DefaultHashedPattern extends forPattern(recognizeHashed)
+  implements HashedPattern<any>, TransformPattern<Hashed<any>, [any]> {
   validate<T extends object>(object: Hashed<T>): boolean {
     return true;
   }
@@ -31,11 +32,7 @@ export class ValidateHash extends forPattern(recognizeHashed) implements HashedP
   getCidConfig(hash: string): any {
     return null; // TODO fix this
   }
-}
 
-@injectable()
-export class TransformHash extends forPattern(recognizeHashed)
-  implements TransformPattern<Hashed<any>, [any]> {
   transform(hashed: Hashed<any>): [any] {
     return [hashed.object];
   }

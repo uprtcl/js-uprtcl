@@ -39,7 +39,6 @@ export class StoreModule implements MicroModule {
       )
     ) as Store & LazyStore;
 
-    console.log('historemodule', store);
     bind<Store & LazyStore>(MicroOrchestratorTypes.ReduxStore).toConstantValue(store);
   }
 

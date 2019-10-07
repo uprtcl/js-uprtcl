@@ -7,7 +7,6 @@ export const loadEntity = (source: Source) => (hash: string) => async (
 ) => {
   const object = await source.get(hash);
 
-  console.log('object', object, source);
   if (object) {
     dispatch(loadEntitySuccess(hash, object));
   }

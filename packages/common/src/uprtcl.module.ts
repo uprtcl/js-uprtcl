@@ -5,8 +5,7 @@ import {
   CortexTypes,
   DiscoveryService,
   DiscoverableSource,
-  ValidateHash,
-  TransformHash,
+  DefaultHashedPattern,
   DefaultSignedPattern,
   DefaultSecuredPattern,
   ValidatePattern,
@@ -39,10 +38,12 @@ export function uprtclModule(discoverableUprtcl: DiscoverableSource<UprtclProvid
       bind<UprtclProvider>(UprtclTypes.UprtclProvider).toConstantValue(discoverableUprtcl.source);
 
       // Patterns
-      const hash = merge(ValidateHash, TransformHash);
-
-      bind<HashedPattern<any> | TransformPattern<Hashed<any>, [any]>>(PatternTypes.Hashed).to(hash);
-      bind<HashedPattern<any> | TransformPattern<Hashed<any>, [any]>>(CortexTypes.Pattern).to(hash);
+      bind<HashedPattern<any> | TransformPattern<Hashed<any>, [any]>>(PatternTypes.Hashed).to(
+        DefaultHashedPattern
+      );
+      bind<HashedPattern<any> | TransformPattern<Hashed<any>, [any]>>(CortexTypes.Pattern).to(
+        DefaultHashedPattern
+      );
 
       bind<SignedPattern<any>>(PatternTypes.Signed).to(DefaultSignedPattern);
       bind<SignedPattern<any>>(CortexTypes.Pattern).to(DefaultSignedPattern);
