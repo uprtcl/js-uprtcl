@@ -14,7 +14,8 @@ import {
   LensElement,
   Isomorphism,
   SelectedLens,
-  CortexTypes
+  PatternTypes,
+  DiscoveryTypes
 } from '../../types';
 import { loadEntity, selectEntities, selectById } from '../../entities';
 import { LensesPattern } from '../../patterns/patterns/lenses.pattern';
@@ -80,8 +81,8 @@ export class CortexPattern extends moduleConnect(LitElement) {
     super.connectedCallback();
 
     this.store = this.request(MicroOrchestratorTypes.ReduxStore);
-    this.source = this.request(CortexTypes.Source);
-    this.patternRecognizer = this.request(CortexTypes.PatternRecognizer);
+    this.source = this.request(DiscoveryTypes.Source);
+    this.patternRecognizer = this.request(PatternTypes.Recognizer);
 
     this.addEventListener<any>('content-changed', (e: CustomEvent) => {
       e.stopPropagation();

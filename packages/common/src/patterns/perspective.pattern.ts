@@ -2,7 +2,6 @@ import { injectable, inject } from 'inversify';
 import {
   Secured,
   PatternRecognizer,
-  CortexTypes,
   PatternTypes,
   RedirectPattern,
   Pattern,
@@ -43,8 +42,8 @@ export class PerspectivePattern
     ActionsPattern,
     UpdatePattern {
   constructor(
-    @inject(CortexTypes.PatternRecognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(PatternTypes.Secured) protected securedPattern: Pattern & SecuredPattern<any>,
+    @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & SecuredPattern<any>,
     @inject(UprtclTypes.UprtclProvider) protected uprtcl: UprtclProvider,
     @inject(UprtclTypes.CommitPattern) protected commitPattern: CommitPattern
   ) {}

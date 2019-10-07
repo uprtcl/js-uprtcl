@@ -3,6 +3,7 @@ import 'reflect-metadata';
 
 /** Services */
 export { Source } from './services/sources/source';
+export { NamedSource } from './services/sources/named.source';
 export { DiscoverableSource } from './services/sources/discoverable.source';
 
 export { KnownSourcesService } from './services/known-sources/known-sources.service';
@@ -78,5 +79,4 @@ export { Lens, PatternAction, LensElement } from './types';
 export { Logger, LogLevel } from './utils/logger';
 
 /** Types */
-export { CortexTypes } from './types';
-export { PatternTypes } from './patterns/types';
+export { DiscoveryTypes, PatternTypes, EntitiesTypes, LensesTypes } from './types';

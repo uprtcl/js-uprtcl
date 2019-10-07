@@ -37,7 +37,6 @@ export class HolochainConnection extends SocketConnection {
   }
 
   public async call(funcName: string, params: any): Promise<any> {
-    await this.ready();
     this.logger.log('CALL ZOME:', funcName, params);
     const jsonString = await this.connection(funcName, params);
 

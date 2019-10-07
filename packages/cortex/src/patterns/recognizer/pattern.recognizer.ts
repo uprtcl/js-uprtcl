@@ -1,7 +1,6 @@
 import merge from 'lodash/merge';
-import { injectable, multiInject, inject } from 'inversify';
+import { injectable } from 'inversify';
 import { Pattern } from '../pattern';
-import { CortexTypes, PatternFactory } from '../../types';
 
 @injectable()
 export class PatternRecognizer {

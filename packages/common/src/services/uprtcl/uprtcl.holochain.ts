@@ -1,16 +1,20 @@
 import { Secured, Signed, Hashed } from '@uprtcl/cortex';
-import { HolochainConnection, HolochainConnectionOptions, EntryResult } from '@uprtcl/connections';
+import { HolochainConnectionOptions, EntryResult, HolochainSource } from '@uprtcl/connections';
 import { UprtclProvider } from './uprtcl.provider';
 import { Context, Perspective, Commit } from '../../types';
 import { ProxyProvider } from '../proxy/proxy.provider';
 
 export class UprtclHolochain implements UprtclProvider {
-  uprtclZome: HolochainConnection;
+  uprtclZome: HolochainSource;
   proxy: ProxyProvider;
 
   constructor(options: HolochainConnectionOptions) {
-    this.uprtclZome = new HolochainConnection('uprtcl', options);
+    this.uprtclZome = new HolochainSource('uprtcl', options);
     this.proxy = new ProxyProvider(options);
+  }
+
+  get name(): string {
+    return this.uprtclZome.name;
   }
 
   async createContext(timestamp: number, nonce: number): Promise<Secured<Context>> {

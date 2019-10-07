@@ -29,13 +29,30 @@ export interface SelectedLens {
 
 export type PatternFactory = () => Pattern[];
 
-export const CortexTypes = {
-  PatternFactory: Symbol('pattern-factory'),
-  PatternRecognizer: Symbol('pattern-recognizer'),
-  Pattern: Symbol('pattern'),
-  PatternsModule: Symbol('pattern-module'),
+export const DiscoveryTypes = {
   Source: Symbol('source'),
   DiscoverableSource: Symbol('discoverable-source'),
-  EntitiesReducer: Symbol('entities-reducer'),
-  LensesModule: Symbol('lenses-module'),
+  LocalMultiSource: Symbol('local-multi-source'),
+  LocalCache: Symbol('local-cache-service'),
+  LocalKnownSources: Symbol('local-known-sources')
+};
+
+export const PatternTypes = {
+  Module: Symbol('pattern-module'),
+  Factory: Symbol('pattern-factory'),
+  Recognizer: Symbol('pattern-recognizer'),
+  Pattern: Symbol('pattern'),
+  Core: {
+    Hashed: Symbol('hashed'),
+    Signed: Symbol('signed'),
+    Secured: Symbol('secured')
+  }
+};
+
+export const EntitiesTypes = {
+  Reducer: Symbol('entities-reducer')
+};
+
+export const LensesTypes = {
+  Module: Symbol('lenses-module')
 };

@@ -1,6 +1,8 @@
 import { CacheService } from './cache.service';
 import Dexie from 'dexie';
+import { injectable } from 'inversify';
 
+@injectable()
 export class CacheDexie extends Dexie implements CacheService {
   cacheObjects: Dexie.Table<any, string>;
 

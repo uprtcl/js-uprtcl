@@ -1,7 +1,8 @@
-import { Secured, Source } from '@uprtcl/cortex';
+import { Secured, NamedSource } from '@uprtcl/cortex';
+
 import { Perspective } from '../../types';
 
-export interface UprtclSource extends Source {
+export interface UprtclSource extends NamedSource {
   /**
    * Returns all the perspectives associated to a
    * context.

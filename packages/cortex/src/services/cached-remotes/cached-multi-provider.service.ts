@@ -1,11 +1,12 @@
 import { CacheService } from '../cache/cache.service';
-import { Source } from '../sources/source';
 import { MultiProviderService } from '../multi/multi-provider.service';
-import { TaskQueue } from '../../utils/task.queue';
 import { CachedProviderService } from './cached-provider.service';
+import { NamedSource } from '../sources/named.source';
 
-export class CachedMultiProviderService<CACHE extends CacheService, REMOTE extends Source> extends CachedProviderService<CACHE, MultiProviderService<REMOTE>>{
-
+export class CachedMultiProviderService<
+  CACHE extends CacheService,
+  REMOTE extends NamedSource
+> extends CachedProviderService<CACHE, MultiProviderService<REMOTE>> {
   /**
    * Execute the creator function and wait for it in the cache,
    * schedule its execution in the given remote

@@ -28,7 +28,7 @@ export class CommitPattern
     >,
     LensesPattern {
   constructor(
-    @inject(PatternTypes.Secured) protected securedPattern: Pattern & SecuredPattern<Secured<Commit>>,
+    @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & SecuredPattern<Secured<Commit>>,
     @inject(UprtclTypes.UprtclProvider) protected uprtcl: UprtclProvider
   ) {}
 

@@ -9,4 +9,5 @@ export interface Source {
    * @returns the object if found, otherwise undefined
    */
   get<T extends object>(hash: string): Promise<Hashed<T> | undefined>;
+
 }

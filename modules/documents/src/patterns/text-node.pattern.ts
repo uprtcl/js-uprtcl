@@ -20,7 +20,7 @@ export class TextNodePattern
   implements Pattern, CreatePattern<Partial<TextNode>, TextNode>, LensesPattern, ActionsPattern {
   constructor(
     @inject(DocumentsTypes.DocumentsProvider) protected documentsProvider: DocumentsProvider,
-    @inject(PatternTypes.Hashed) protected hashedPattern: Pattern & HashedPattern<TextNode>
+    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & HashedPattern<TextNode>
   ) {}
 
   recognize(object: object): boolean {

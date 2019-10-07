@@ -1,16 +1,20 @@
-import { HolochainConnection, HolochainConnectionOptions } from '@uprtcl/connections';
+import { HolochainConnection, HolochainConnectionOptions, HolochainSource } from '@uprtcl/connections';
 import { ProxyProvider } from '@uprtcl/common';
 import { DocumentsProvider } from './documents.provider';
 import { TextNode } from '../types';
-import { Hashed } from '@uprtcl/cortex';
+import { Hashed, NamedSource } from '@uprtcl/cortex';
 
 export class DocumentsHolochain implements DocumentsProvider {
-  documentsZome: HolochainConnection;
+  documentsSource: HolochainSource;
   proxyProvider: ProxyProvider;
 
   constructor(options: HolochainConnectionOptions) {
-    this.documentsZome = new HolochainConnection('documents', options);
+    this.documentsSource = new HolochainSource('documents', options);
     this.proxyProvider = new ProxyProvider(options);
+  }
+
+  get name() {
+    return this.documentsSource.name;
   }
 
   get<T extends object>(hash: string): Promise<Hashed<T> | undefined> {
@@ -18,7 +22,7 @@ export class DocumentsHolochain implements DocumentsProvider {
   }
 
   createTextNode(node: TextNode): Promise<string> {
-    return this.documentsZome.call('create_text_node', {
+    return this.documentsSource.call('create_text_node', {
       node: node
     });
   }

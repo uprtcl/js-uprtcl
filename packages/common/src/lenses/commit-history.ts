@@ -8,8 +8,7 @@ import {
   Source,
   loadEntity,
   Hashed,
-  CortexTypes,
-  DiscoveryService
+  DiscoveryTypes
 } from '@uprtcl/cortex';
 import { Commit } from '../types';
 
@@ -26,7 +25,7 @@ export class CommitHistory extends moduleConnect(LitElement)
 
   firstUpdated() {
     this.store = this.request(MicroOrchestratorTypes.ReduxStore);
-    this.source = this.request(CortexTypes.Source);
+    this.source = this.request(DiscoveryTypes.Source);
     this.initialLoad();
   }
 

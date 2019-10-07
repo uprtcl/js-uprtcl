@@ -12,43 +12,48 @@ import { KnownSourcesHolochain } from '@uprtcl/connections';
 import { uprtclModule, UprtclHolochain } from '@uprtcl/common';
 import { SimpleEditor } from './simple-editor';
 
-const uprtclProvider = new UprtclHolochain({
-  host: 'ws://localhost:8888',
-  instance: 'test-instance'
-});
+(async function() {
+  const uprtclProvider = new UprtclHolochain({
+    host: 'ws://localhost:8888',
+    instance: 'test-instance'
+  });
 
-const documentsProvider = new DocumentsHolochain({
-  host: 'ws://localhost:8888',
-  instance: 'test-instance'
-});
+  const documentsProvider = new DocumentsHolochain({
+    host: 'ws://localhost:8888',
+    instance: 'test-instance'
+  });
 
-const knownSources = new KnownSourcesHolochain({
-  host: 'ws://localhost:8888',
-  instance: 'test-instance'
-});
+  const knownSources = new KnownSourcesHolochain({
+    host: 'ws://localhost:8888',
+    instance: 'test-instance'
+  });
 
-const localKnownSources = new KnownSourcesDexie();
-const cacheService = new CacheDexie();
+  await Promise.all([
+    uprtclProvider.uprtclZome.ready(),
+    documentsProvider.documentsSource.ready()
+  ]);
 
-const discoverableUprtcl = { source: uprtclProvider, knownSources: knownSources };
-const uprtcl = uprtclModule(discoverableUprtcl);
+  const localKnownSources = new KnownSourcesDexie();
+  const cacheService = new CacheDexie();
 
-const discoverableDocs = {
-  source: documentsProvider,
-  knownSources: knownSources
-};
-const documents = documentsModule(discoverableDocs);
+  const discoverableUprtcl = { source: uprtclProvider, knownSources: knownSources };
+  const uprtcl = uprtclModule(discoverableUprtcl);
 
-const discovery = discoveryModule(cacheService, localKnownSources, [
-  discoverableUprtcl,
-  discoverableDocs
-]);
-const entitiesReducerModule = entitiesReduxModule();
+  const discoverableDocs = {
+    source: documentsProvider,
+    knownSources: knownSources
+  };
+  const documents = documentsModule(discoverableDocs);
 
-const orchestrator = new MicroOrchestrator();
+  const discovery = discoveryModule(cacheService, localKnownSources, [
+    discoverableUprtcl,
+    discoverableDocs
+  ]);
+  const entitiesReducerModule = entitiesReduxModule();
 
-orchestrator
-  .loadModules(
+  const orchestrator = new MicroOrchestrator();
+
+  await orchestrator.loadModules(
     StoreModule,
     entitiesReducerModule,
     documents,
@@ -56,8 +61,8 @@ orchestrator
     LensesModule,
     uprtcl,
     discovery
-  )
-  .then(() => {
-    console.log(orchestrator);
-    customElements.define('simple-editor', SimpleEditor);
-  });
+  );
+
+  console.log(orchestrator);
+  customElements.define('simple-editor', SimpleEditor);
+})();

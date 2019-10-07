@@ -1,8 +1,8 @@
 import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
-import { Source } from '../sources/source';
 import { MultiSourceService } from './multi-source.service';
+import { NamedSource } from '../sources/named.source';
 
-export class MultiProviderService<T extends Source> extends MultiSourceService<T> {
+export class MultiProviderService<T extends NamedSource> extends MultiSourceService<T> {
 
   /**
    * Executes the given update function on the given source,
@@ -18,7 +18,6 @@ export class MultiProviderService<T extends Source> extends MultiSourceService<T
     updater: (service: T) => Promise<S>,
     object: O
   ): Promise<S> {
-    await this.ready();
 
     // Execute the updater callback in the source
     const discoverableSource = this.sources[sourceName];
@@ -56,20 +55,20 @@ export class MultiProviderService<T extends Source> extends MultiSourceService<T
    * Creates the given object on the given source executing the given creator function,
    * adding the known sources of its links to the source
    *
-   * @param source the source to create the object in
+   * @param sourceName the source name to create the object in
    * @param creator the creator function to execute
    * @param object the object to create
    * @returns the hash of the newly created object
    */
   public async createIn<O extends object>(
-    source: string,
+    sourceName: string,
     creator: (service: T) => Promise<string>,
     object: O
   ): Promise<string> {
-    const hash = await this.updateIn(source, creator, object);
+    const hash = await this.updateIn(sourceName, creator, object);
 
     // We successfully created the object in the source, add to local known sources
-    await this.localKnownSources.addKnownSources(hash, [source]);
+    await this.localKnownSources.addKnownSources(hash, [sourceName]);
 
     return hash;
   }

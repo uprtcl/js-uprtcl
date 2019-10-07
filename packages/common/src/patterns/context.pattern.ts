@@ -16,7 +16,7 @@ export const propertyOrder = ['creatorId', 'timestamp', 'nonce'];
 export class ContextPattern
   implements Pattern, CreatePattern<{ timestamp: number; nonce: number }, Signed<Context>> {
   constructor(
-    @inject(PatternTypes.Secured)
+    @inject(PatternTypes.Core.Secured)
     protected securedPattern: Pattern & SecuredPattern<any>,
     @inject(UprtclTypes.UprtclProvider) protected uprtcl: UprtclProvider
   ) {}

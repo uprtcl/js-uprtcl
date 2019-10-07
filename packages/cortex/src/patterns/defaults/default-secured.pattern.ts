@@ -3,15 +3,15 @@ import { Signed, SignedPattern } from '../patterns/signed.pattern';
 import { Pattern } from '../pattern';
 import { SecuredPattern } from '../patterns/secured.pattern';
 import { injectable, inject } from 'inversify';
-import { PatternTypes } from '../types';
+import { PatternTypes } from '../../types';
 
 export type Secured<T = any> = Hashed<Signed<T>>;
 
 @injectable()
 export class DefaultSecuredPattern implements Pattern, SecuredPattern<Secured<any>> {
   constructor(
-    @inject(PatternTypes.Hashed) protected hashedPattern: Pattern & HashedPattern<any>,
-    @inject(PatternTypes.Signed) protected signedPattern: Pattern & SignedPattern<any>
+    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & HashedPattern<any>,
+    @inject(PatternTypes.Core.Signed) protected signedPattern: Pattern & SignedPattern<any>
   ) {}
 
   recognize(object: object) {

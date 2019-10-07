@@ -9,7 +9,7 @@ import { CacheDexie } from './cache/cache.dexie';
 import { KnownSourcesDexie } from './known-sources/known-sources.dexie';
 import { injectable, interfaces, inject } from 'inversify';
 import { PatternRecognizer } from '../patterns/recognizer/pattern.recognizer';
-import { CortexTypes } from '../types';
+import { PatternTypes, DiscoveryTypes } from '../types';
 import { Source } from './sources/source';
 
 export function discoveryModule(
@@ -20,7 +20,7 @@ export function discoveryModule(
   @injectable()
   class DiscoveryModule implements MicroModule {
     constructor(
-      @inject(CortexTypes.PatternRecognizer) protected patternRecognizer: PatternRecognizer
+      @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer
     ) {}
 
     async onLoad(
@@ -29,14 +29,13 @@ export function discoveryModule(
       isBound: interfaces.IsBound,
       rebind: interfaces.Rebind
     ): Promise<void> {
-      const discoveryService = new DiscoveryService(
-        cacheService,
-        new MultiSourceService(this.patternRecognizer, localKnownSources, [])
+
+      bind<MultiSourceService>(DiscoveryTypes.LocalMultiSource).to(MultiSourceService);
+      bind<CacheService>(DiscoveryTypes.LocalCache).toConstantValue(cacheService);
+      bind<KnownSourcesService>(DiscoveryTypes.LocalKnownSources).toConstantValue(
+        localKnownSources
       );
-
-      discoveryService.addSources(...discoverableSources);
-
-      bind<Source>(CortexTypes.Source).toConstantValue(discoveryService);
+      bind<Source>(DiscoveryTypes.Source).to(DiscoveryService);
     }
 
     async onUnload(): Promise<void> {}
