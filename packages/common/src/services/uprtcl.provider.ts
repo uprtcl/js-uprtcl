@@ -1,4 +1,4 @@
-import { Perspective, Context, Commit } from '../../types';
+import { Perspective, Context, Commit } from '../types';
 import { Secured } from '@uprtcl/cortex';
 import { UprtclSource } from './uprctl.source';
 

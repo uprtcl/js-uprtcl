@@ -12,7 +12,7 @@ import {
 } from '@uprtcl/cortex';
 
 import { UprtclProvider } from './uprtcl.provider';
-import { Perspective, Context, Commit } from '../../types';
+import { Perspective, Context, Commit } from '../types';
 import { DatabaseChangeType } from 'dexie-observable/api';
 
 const creatorId = 'did:hi:example';

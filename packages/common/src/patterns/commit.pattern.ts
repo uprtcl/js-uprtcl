@@ -12,7 +12,7 @@ import {
   PatternTypes
 } from '@uprtcl/cortex';
 import { Commit, UprtclTypes } from '../types';
-import { UprtclProvider } from '../services/uprtcl/uprtcl.provider';
+import { UprtclProvider } from '../services/uprtcl.provider';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'message', 'parentsIds', 'dataId'];
 

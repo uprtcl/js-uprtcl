@@ -8,7 +8,7 @@ import {
   Signed
 } from '@uprtcl/cortex';
 import { Context, Commit, UprtclTypes } from '../types';
-import { UprtclProvider } from '../services/uprtcl/uprtcl.provider';
+import { UprtclProvider } from '../services/uprtcl.provider';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'nonce'];
 

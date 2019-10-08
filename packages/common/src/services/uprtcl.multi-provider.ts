@@ -1,6 +1,6 @@
 import { Secured } from '@uprtcl/cortex';
 
-import { Perspective, Context, Commit } from '../../types';
+import { Perspective, Context, Commit } from '../types';
 import { UprtclSource } from './uprctl.source';
 
 export interface UprtclMultiProvider extends UprtclSource {

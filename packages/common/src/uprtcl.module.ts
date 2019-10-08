@@ -13,7 +13,7 @@ import { CommitPattern } from './patterns/commit.pattern';
 import { ContextPattern } from './patterns/context.pattern';
 import { CommitHistory } from './lenses/commit-history';
 import { UprtclTypes } from './types';
-import { UprtclProvider } from './services/uprtcl/uprtcl.provider';
+import { UprtclProvider } from './services/uprtcl.provider';
 
 export function uprtclModule(
   discoverableUprtcl: DiscoverableSource<UprtclProvider>

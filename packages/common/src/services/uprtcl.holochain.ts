@@ -6,7 +6,7 @@ import {
   HolochainSource
 } from '@uprtcl/connections';
 import { UprtclProvider } from './uprtcl.provider';
-import { Context, Perspective, Commit } from '../../types';
+import { Context, Perspective, Commit } from '../types';
 
 export class UprtclHolochain extends HolochainSource implements UprtclProvider {
   constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {

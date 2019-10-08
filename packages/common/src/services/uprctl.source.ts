@@ -1,6 +1,6 @@
 import { Secured, NamedSource } from '@uprtcl/cortex';
 
-import { Perspective } from '../../types';
+import { Perspective } from '../types';
 
 export interface UprtclSource extends NamedSource {
   /**

@@ -14,9 +14,9 @@ import {
   UpdatePattern,
   Hashed
 } from '@uprtcl/cortex';
-import { Perspective, Commit, UprtclTypes } from '../types';
+import { Perspective, UprtclTypes } from '../types';
 
-import { UprtclProvider } from '../services/uprtcl/uprtcl.provider';
+import { UprtclProvider } from '../services/uprtcl.provider';
 import { CommitPattern } from './commit.pattern';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp', 'name'];
