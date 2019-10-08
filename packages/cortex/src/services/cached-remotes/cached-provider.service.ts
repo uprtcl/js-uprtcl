@@ -1,6 +1,6 @@
+import { Logger } from '@uprtcl/micro-orchestrator';
 import { TaskQueue } from '../../utils/task.queue';
 import { CacheService } from '../cache/cache.service';
-import { Logger } from '../../utils/logger';
 import { CachedSourceService } from './cached-source.service';
 import { Source } from '../sources/source';
 
@@ -58,7 +58,7 @@ export class CachedProviderService<
     // First, execute the updater in the cache
     const result = await cacheUpdater(this.cache);
 
-    this.logger.info(`Optimistically updated object, result: ${result}`);
+    this.logger.info(`Optimistically updated object, result`, result);
 
     // Then schedule the same updater in the remote
     const task = async () => remoteUpdater(this.remote);

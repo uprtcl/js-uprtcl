@@ -16,12 +16,14 @@ import { MicroOrchestratorTypes } from '../../types';
 
 @injectable()
 export class StoreModule implements MicroModule {
-  async onLoad(
+  async onLoad() {}
+
+  onInit(
     bind: interfaces.Bind,
     unbind: interfaces.Unbind,
     isBound: interfaces.IsBound,
     rebind: interfaces.Rebind
-  ): Promise<void> {
+  ): void {
     if (isBound(MicroOrchestratorTypes.ReduxStore)) return;
 
     const devCompose: <Ext0, Ext1, StateExt0, StateExt1>(

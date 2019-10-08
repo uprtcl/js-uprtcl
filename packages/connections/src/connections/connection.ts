@@ -1,4 +1,5 @@
-import { Logger, LogLevel } from '@uprtcl/cortex';
+import { Ready } from '@uprtcl/cortex';
+import { Logger } from '@uprtcl/micro-orchestrator';
 import merge from 'lodash/merge';
 
 export interface ConnectionOptions {
@@ -17,7 +18,7 @@ const defaultOptions: ConnectionOptions = {
   retryInterval: 200
 };
 
-export class Connection {
+export class Connection implements Ready {
   state: ConnectionState = ConnectionState.PENDING;
   connectionReady!: Promise<void>;
   connectionResolve!: () => void;

@@ -2,7 +2,7 @@
 import 'reflect-metadata';
 
 /** Services */
-export { Source } from './services/sources/source';
+export { Source, Ready } from './services/sources/source';
 export { NamedSource } from './services/sources/named.source';
 export { DiscoverableSource } from './services/sources/discoverable.source';
 
@@ -75,8 +75,8 @@ export {
 export { LensesModule } from './elements/lenses.module';
 export { Lens, PatternAction, LensElement } from './types';
 
-/** Utils */
-export { Logger, LogLevel } from './utils/logger';
-
 /** Types */
 export { DiscoveryTypes, PatternTypes, EntitiesTypes, LensesTypes } from './types';
+
+/** Module */
+export { CortexModule } from './cortex.module';

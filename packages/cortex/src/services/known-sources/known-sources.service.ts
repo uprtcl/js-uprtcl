@@ -1,4 +1,6 @@
-export interface KnownSourcesService {
+import { Ready } from '../sources/source';
+
+export interface KnownSourcesService extends Ready {
 
   /**
    * Retrieves the list of knowns sources for the given hash

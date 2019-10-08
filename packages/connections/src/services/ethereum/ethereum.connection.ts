@@ -1,4 +1,4 @@
-import { Connection, ConnectionOptions } from './connection';
+import { Connection, ConnectionOptions } from '../../connections/connection';
 import Web3 from 'web3';
 import { provider } from 'web3-providers';
 import { Eth } from 'web3-eth';

@@ -1,6 +1,6 @@
 import { NamedSource } from '@uprtcl/cortex';
 
-import { IpfsConnection } from '../../connections/ipfs.connection';
+import { IpfsConnection } from './ipfs.connection';
 
 export class IpfsSource implements NamedSource {
 

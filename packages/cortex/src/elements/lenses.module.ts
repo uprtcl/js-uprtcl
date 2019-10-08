@@ -6,12 +6,12 @@ import { interfaces, inject, injectable } from 'inversify';
 
 @injectable()
 export class LensesModule implements MicroModule {
-  async onLoad(
+  onInit(
     bind: interfaces.Bind,
     unbind: interfaces.Unbind,
     isBound: interfaces.IsBound,
     rebind: interfaces.Rebind
-  ): Promise<void> {
+  ): void {
     customElements.define('lens-selector', LensSelector);
     customElements.define('cortex-pattern', CortexPattern);
 
@@ -20,5 +20,6 @@ export class LensesModule implements MicroModule {
     });
   }
 
+  async onLoad(): Promise<void> {}
   async onUnload(): Promise<void> {}
 }

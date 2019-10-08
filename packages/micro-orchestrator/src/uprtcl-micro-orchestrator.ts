@@ -6,9 +6,11 @@ export { StoreModule } from './modules/redux/store.module';
 export { reduxModule } from './modules/redux/redux.module';
 export { MicroModule } from './modules/micro.module';
 
-export { MicroOrchestratorTypes } from './types';
+export { MicroOrchestratorTypes, Constructor } from './types';
 
 /** Elements */
 export { ModuleContainer, RequestDependencyEvent } from './elements/module-container';
-
 export { moduleConnect } from './elements/mixins/module-connect-mixin';
+
+/** Utils */
+export { Logger, LogLevel } from './utils/logger';

@@ -23,7 +23,11 @@ export function discoveryModule(
       @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer
     ) {}
 
-    async onLoad(
+    async onLoad(): Promise<void> {
+      await Promise.all([cacheService.ready(), localKnownSources.ready()])
+    }
+
+    async onInit(
       bind: interfaces.Bind,
       unbind: interfaces.Unbind,
       isBound: interfaces.IsBound,

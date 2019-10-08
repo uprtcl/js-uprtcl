@@ -1,7 +1,8 @@
 import { connect } from '@holochain/hc-web-client';
-import { ConnectionOptions } from '../connection';
-import { SocketConnection } from '../socket.connection';
 import { Hashed } from '@uprtcl/cortex';
+
+import { SocketConnection } from '../../connections/socket.connection';
+import { ConnectionOptions } from '../../connections/connection';
 
 export interface HolochainConnectionOptions {
   host: string;

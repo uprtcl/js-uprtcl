@@ -6,27 +6,25 @@ import { PatternTypes } from '../types';
 
 @injectable()
 export class PatternsModule implements MicroModule {
-  async onLoad(
+  onInit(
     bind: interfaces.Bind,
     unbind: interfaces.Unbind,
     isBound: interfaces.IsBound,
     rebind: interfaces.Rebind
-  ): Promise<void> {
+  ): void {
     let recognizer: PatternRecognizer | undefined = undefined;
-    bind<PatternRecognizer>(PatternTypes.Recognizer).toDynamicValue(
-      (ctx: interfaces.Context) => {
+    bind<PatternRecognizer>(PatternTypes.Recognizer).toDynamicValue((ctx: interfaces.Context) => {
+      if (recognizer) return recognizer;
 
-        if (recognizer) return recognizer;
+      recognizer = new PatternRecognizer();
 
-        recognizer = new PatternRecognizer();
+      const patterns = ctx.container.getAll<Pattern>(PatternTypes.Pattern);
+      recognizer.patterns = patterns;
 
-        const patterns = ctx.container.getAll<Pattern>(PatternTypes.Pattern);
-        recognizer.patterns = patterns;
-
-        return recognizer;
-      }
-    );
+      return recognizer;
+    });
   }
 
+  async onLoad(): Promise<void> {}
   async onUnload(): Promise<void> {}
 }

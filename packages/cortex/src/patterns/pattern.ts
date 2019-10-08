@@ -4,7 +4,9 @@ export interface Pattern {
   recognize: (object: object) => boolean;
 }
 
-export const forPattern = (recognize: (object: object) => boolean): any => {
+export const forPattern = (
+  recognize: (object: object) => boolean
+): new (...args: any[]) => Pattern => {
   @injectable()
   class Base implements Pattern {
     recognize(object: object) {

@@ -9,13 +9,14 @@ export function reduxModule<S, A extends Action>(reducersMap: ReducersMapObject<
   @injectable()
   class ReduxModule implements MicroModule {
     constructor(@inject(MicroOrchestratorTypes.ReduxStore) protected store: Store & LazyStore) {}
+    async onLoad() {}
 
-    async onLoad(
+    onInit(
       bind: interfaces.Bind,
       unbind: interfaces.Unbind,
       isBound: interfaces.IsBound,
       rebind: interfaces.Rebind
-    ): Promise<void> {
+    ): void {
       this.store.addReducers(reducersMap as ReducersMapObject);
     }
 

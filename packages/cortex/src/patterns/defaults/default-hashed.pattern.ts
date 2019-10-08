@@ -1,7 +1,7 @@
 import { HashedPattern, Hashed } from '../patterns/hashed.pattern';
 import { TransformPattern } from '../patterns/transform.pattern';
 import { injectable } from 'inversify';
-import { forPattern } from '../pattern';
+import { Pattern } from '../pattern';
 
 export function recognizeHashed(object: object) {
   return (
@@ -12,8 +12,12 @@ export function recognizeHashed(object: object) {
 }
 
 @injectable()
-export class DefaultHashedPattern extends forPattern(recognizeHashed)
-  implements HashedPattern<any>, TransformPattern<Hashed<any>, [any]> {
+export class DefaultHashedPattern
+  implements Pattern, HashedPattern<any>, TransformPattern<Hashed<any>, [any]> {
+  recognize(object: object) {
+    return recognizeHashed(object);
+  }
+
   validate<T extends object>(object: Hashed<T>): boolean {
     return true;
   }

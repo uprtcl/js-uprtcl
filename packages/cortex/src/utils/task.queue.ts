@@ -1,4 +1,5 @@
-import { Logger } from './logger';
+import { Logger } from '@uprtcl/micro-orchestrator';
+
 import { installOfflineWatcher } from './offline.watcher';
 
 type Dictionary<T> = { [key: string]: T };

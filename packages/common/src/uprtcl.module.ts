@@ -1,20 +1,11 @@
-import merge from 'lodash/merge';
-import { injectable, interfaces } from 'inversify';
-import { MicroModule } from '@uprtcl/micro-orchestrator';
+import { injectable } from 'inversify';
 import {
-  DiscoveryTypes,
   DiscoverableSource,
   DefaultHashedPattern,
   DefaultSignedPattern,
   DefaultSecuredPattern,
-  ValidatePattern,
-  TransformPattern,
-  HashedPattern,
-  SecuredPattern,
   PatternTypes,
-  SignedPattern,
-  Hashed,
-  Secured
+  CortexModule
 } from '@uprtcl/cortex';
 
 import { PerspectivePattern } from './patterns/perspective.pattern';
@@ -24,45 +15,29 @@ import { CommitHistory } from './lenses/commit-history';
 import { UprtclTypes } from './types';
 import { UprtclProvider } from './services/uprtcl/uprtcl.provider';
 
-export function uprtclModule(discoverableUprtcl: DiscoverableSource<UprtclProvider>): any {
+export function uprtclModule(
+  discoverableUprtcl: DiscoverableSource<UprtclProvider>
+): new (...args: any[]) => CortexModule {
   @injectable()
-  class UprtclModule implements MicroModule {
-    async onLoad(
-      bind: interfaces.Bind,
-      unbind: interfaces.Unbind,
-      isBound: interfaces.IsBound,
-      rebind: interfaces.Rebind
-    ): Promise<void> {
-
-      bind<DiscoverableSource>(DiscoveryTypes.DiscoverableSource).toConstantValue(discoverableUprtcl);
-      bind<UprtclProvider>(UprtclTypes.UprtclProvider).toConstantValue(discoverableUprtcl.source);
-
-      // Patterns
-      bind<HashedPattern<any> | TransformPattern<Hashed<any>, [any]>>(PatternTypes.Core.Hashed).to(
-        DefaultHashedPattern
-      );
-      bind<HashedPattern<any> | TransformPattern<Hashed<any>, [any]>>(PatternTypes.Pattern).to(
-        DefaultHashedPattern
-      );
-
-      bind<SignedPattern<any>>(PatternTypes.Core.Signed).to(DefaultSignedPattern);
-      bind<SignedPattern<any>>(PatternTypes.Pattern).to(DefaultSignedPattern);
-
-      bind<SecuredPattern<Secured<any>>>(PatternTypes.Core.Secured).to(DefaultSecuredPattern);
-      bind<SecuredPattern<Secured<any>>>(PatternTypes.Pattern).to(DefaultSecuredPattern);
-
-      bind<PerspectivePattern>(UprtclTypes.PerspectivePattern).to(PerspectivePattern);
-      bind<CommitPattern>(UprtclTypes.CommitPattern).to(CommitPattern);
-      bind<ContextPattern>(UprtclTypes.ContextPattern).to(ContextPattern);
-
-      bind<PerspectivePattern>(PatternTypes.Pattern).to(PerspectivePattern);
-      bind<CommitPattern>(PatternTypes.Pattern).to(CommitPattern);
-      bind<ContextPattern>(PatternTypes.Pattern).to(ContextPattern);
-
-      customElements.define('commit-history', CommitHistory);
+  class UprtclModule extends CortexModule {
+    get elements() {
+      return [{ tag: 'commit-history', element: CommitHistory }];
     }
 
-    async onUnload(): Promise<void> {}
+    get sources() {
+      return [{ symbol: UprtclTypes.UprtclProvider, source: discoverableUprtcl }];
+    }
+
+    get patterns() {
+      return [
+        { symbol: PatternTypes.Core.Hashed, pattern: DefaultHashedPattern },
+        { symbol: PatternTypes.Core.Signed, pattern: DefaultSignedPattern },
+        { symbol: PatternTypes.Core.Secured, pattern: DefaultSecuredPattern },
+        { symbol: UprtclTypes.PerspectivePattern, pattern: PerspectivePattern },
+        { symbol: UprtclTypes.CommitPattern, pattern: CommitPattern },
+        { symbol: UprtclTypes.ContextPattern, pattern: ContextPattern }
+      ];
+    }
   }
 
   return UprtclModule;

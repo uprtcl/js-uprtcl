@@ -17,6 +17,11 @@ export class KnownSourcesDexie extends Dexie implements KnownSourcesService {
   /**
    * @override
    */
+  async ready(): Promise<void> {}
+
+  /**
+   * @override
+   */
   public getKnownSources(hash: string): Promise<string[] | undefined> {
     return this.knownSources.get(hash);
   }

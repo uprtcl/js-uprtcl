@@ -27,4 +27,11 @@ export class DiscoveryService implements Source {
   public async get<T extends object>(hash: string): Promise<Hashed<T> | undefined> {
     return this.cachedRemote.get(hash);
   }
+
+  /**
+   * @override
+   */
+  async ready(): Promise<void> {
+    return this.multiSource.ready();
+  }
 }

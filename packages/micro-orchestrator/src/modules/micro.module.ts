@@ -1,12 +1,14 @@
 import { interfaces } from 'inversify';
 
 export interface MicroModule {
-  onLoad(
+  onLoad(): Promise<void>;
+
+  onInit(
     bind: interfaces.Bind,
     unbind: interfaces.Unbind,
     isBound: interfaces.IsBound,
     rebind: interfaces.Rebind
-  ): Promise<void>;
+  ): void;
 
   onUnload(): Promise<void>;
 }

@@ -22,9 +22,6 @@ export default {
     include: 'src/**'
   },
   plugins: [
-    replace({
-      'process.env.NODE_ENV': JSON.stringify('production')
-    }),
     // Allow json resolution
     json(),
     // Compile TypeScript files

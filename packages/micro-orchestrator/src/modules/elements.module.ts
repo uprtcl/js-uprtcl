@@ -4,7 +4,6 @@ import { Dictionary } from 'lodash';
 
 export class ElementsModule implements MicroModule {
   constructor(
-    protected moduleName: string,
     protected elements: Dictionary<Constructor<HTMLElement>>
   ) {}
 
@@ -17,11 +16,7 @@ export class ElementsModule implements MicroModule {
     });
   }
 
+  async onInit() {}
+
   async onUnload(): Promise<void> {}
-  getDependencies(): string[] {
-    return [];
-  }
-  getId(): string {
-    return `elements-${this.moduleName}`;
-  }
 }

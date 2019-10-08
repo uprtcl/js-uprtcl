@@ -5,8 +5,13 @@ export enum LogLevel {
   ERROR = 3
 }
 
+// TODO change node_env behaviour
+function defaultLevel() {
+  return process.env.NODE_ENV === 'production' ? LogLevel.ERROR : LogLevel.INFO;
+}
+
 export class Logger {
-  constructor(protected name: string, protected level: LogLevel = process.env.NODE_ENV === 'production' ? LogLevel.ERROR : LogLevel.INFO) {}
+  constructor(protected name: string, protected level: LogLevel = defaultLevel()) {}
 
   get prefix(): string {
     return `[${this.name}] `;

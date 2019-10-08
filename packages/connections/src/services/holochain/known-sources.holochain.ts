@@ -2,13 +2,18 @@ import { KnownSourcesService } from '@uprtcl/cortex';
 import {
   HolochainConnection,
   HolochainConnectionOptions
-} from '../connections/holochain/holochain.connection';
+} from './holochain.connection';
+import { ConnectionOptions } from '../../connections/connection';
 
 export class KnownSourcesHolochain implements KnownSourcesService {
   discoveryZome: HolochainConnection;
 
-  constructor(options: HolochainConnectionOptions) {
-    this.discoveryZome = new HolochainConnection('discovery', options);
+  constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {
+    this.discoveryZome = new HolochainConnection('discovery', hcOptions, options);
+  }
+
+  ready() {
+    return this.discoveryZome.ready();
   }
 
   getOwnSource(): Promise<string> {

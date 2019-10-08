@@ -28,11 +28,6 @@ import { SimpleEditor } from './simple-editor';
     instance: 'test-instance'
   });
 
-  await Promise.all([
-    uprtclProvider.uprtclZome.ready(),
-    documentsProvider.documentsSource.ready()
-  ]);
-
   const localKnownSources = new KnownSourcesDexie();
   const cacheService = new CacheDexie();
 

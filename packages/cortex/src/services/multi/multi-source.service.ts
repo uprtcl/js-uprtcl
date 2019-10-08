@@ -37,6 +37,16 @@ export class MultiSourceService<T extends NamedSource = NamedSource> implements 
   }
 
   /**
+   * @override
+   */
+  public async ready(): Promise<void> {
+    const promises = Object.keys(this.sources).map(sourceName =>
+      this.sources[sourceName].source.ready()
+    );
+    await Promise.all(promises);
+  }
+
+  /**
    * Gets the source with the given name
    *
    * @param sourceName the name of the source

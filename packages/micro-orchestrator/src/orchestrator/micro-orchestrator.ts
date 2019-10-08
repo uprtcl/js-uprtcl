@@ -1,12 +1,22 @@
-import { Container, AsyncContainerModule, interfaces } from 'inversify';
+import { Container, AsyncContainerModule, interfaces, ContainerModule } from 'inversify';
 import { MicroModule } from '../modules/micro.module';
 import { ModuleContainer } from '../elements/module-container';
+import { Logger } from '../utils/logger';
+import { MicroOrchestratorTypes } from '../types';
 
 export class MicroOrchestrator {
-  container = new Container();
+  container = new Container({ skipBaseClassChecks: true });
 
   constructor() {
     customElements.define('module-container', ModuleContainer(this.container));
+
+    this.container
+      .bind<Logger>(MicroOrchestratorTypes.Logger)
+      .toDynamicValue((ctx: interfaces.Context) => {
+        const logger = new Logger(ctx.plan.rootRequest.serviceIdentifier['name']);
+
+        return logger;
+      });
   }
 
   /**
@@ -28,23 +38,15 @@ export class MicroOrchestrator {
       for (const microModule of modulesToLoad) {
         try {
           const module: MicroModule = this.container.get(microModule);
+          await module.onLoad();
 
-          const asyncModule = new AsyncContainerModule((...args) => module.onLoad(...args));
+          const containerModule = new ContainerModule((...args) => module.onInit(...args));
 
-          await this.container.loadAsync(asyncModule);
+          this.container.load(containerModule);
         } catch (e) {
           unloadedModules.push(microModule);
         }
       }
     }
-  }
-
-  async loadModule<T extends MicroModule>(microModule: new (...args: any[]) => T): Promise<void> {
-    this.container.bind<T>(microModule).toSelf();
-    const module: T = this.container.get(microModule);
-
-    const asyncModule = new AsyncContainerModule(module.onLoad);
-
-    return this.container.loadAsync(asyncModule);
   }
 }

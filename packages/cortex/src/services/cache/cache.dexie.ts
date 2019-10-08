@@ -24,6 +24,11 @@ export class CacheDexie extends Dexie implements CacheService {
   /**
    * @override
    */
+  async ready(): Promise<void> {}
+
+  /**
+   * @override
+   */
   async cache<T>(hash: string, object: T): Promise<void> {
     await this.cacheObjects.put(object, hash);
   }
