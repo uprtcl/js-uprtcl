@@ -38,9 +38,7 @@ export class MicroOrchestrator {
     }
 
     for (const microModule of modules) {
-      const provider: ModuleProvider = this.container.get(
-        MicroOrchestratorTypes.ModuleProvider
-      );
+      const provider: ModuleProvider = this.container.get(MicroOrchestratorTypes.ModuleProvider);
       await provider(microModule.id);
     }
   }

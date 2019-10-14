@@ -4,24 +4,35 @@ import { Logger } from '../utils/logger';
 
 export type ModuleProvider = (moduleId: symbol) => Promise<MicroModule>;
 
-export const moduleProvider = (logger: Logger) => (context: interfaces.Context): ModuleProvider => (
-  moduleId: symbol
-): Promise<MicroModule> =>
-  new Promise(async resolve => {
-    const microModule: MicroModule = context.container.get(moduleId);
-    logger.info(`Attempting to load module `, moduleId);
+export const moduleProvider = (logger: Logger) => {
+  const loadedModules = {};
+  return (context: interfaces.Context): ModuleProvider => (
+    moduleId: symbol
+  ): Promise<MicroModule> =>
+    new Promise(async resolve => {
+      const microModule: MicroModule = context.container.get(moduleId);
 
-    const containerModule = new AsyncContainerModule((...args) =>
-      microModule.onLoad(context, ...args)
-    );
+      if (loadedModules[moduleId]) {
+        resolve(microModule);
+        return;
+      }
 
-    try {
-      await context.container.loadAsync(containerModule);
+      logger.info(`Attempting to load module `, moduleId);
 
-      logger.info(`Module successfully initialized`, moduleId);
-    } catch (e) {
-      logger.error(`Module `, moduleId, ' failed to load with error ', e, ', retrying');
-    }
+      const containerModule = new AsyncContainerModule((...args) =>
+        microModule.onLoad(context, ...args)
+      );
 
-    resolve(microModule);
-  });
+      try {
+        await context.container.loadAsync(containerModule);
+
+        logger.info(`Module successfully initialized`, moduleId);
+
+        loadedModules[moduleId] = microModule;
+      } catch (e) {
+        logger.error(`Module `, moduleId, ' failed to load with error ', e, ', retrying');
+      }
+
+      resolve(microModule);
+    });
+};

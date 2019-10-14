@@ -17,12 +17,11 @@ export class PatternsModule implements MicroModule {
     bind<PatternRecognizer>(PatternTypes.Recognizer).toDynamicValue((ctx: interfaces.Context) => {
       if (recognizer) return recognizer;
 
-      const tmpRecognizer = new PatternRecognizer();
+      recognizer = new PatternRecognizer();
 
       const patterns = ctx.container.getAll<Pattern>(PatternTypes.Pattern);
-      tmpRecognizer.patterns = patterns;
+      recognizer.patterns = patterns;
 
-      recognizer = tmpRecognizer;
       return recognizer;
     });
   }
