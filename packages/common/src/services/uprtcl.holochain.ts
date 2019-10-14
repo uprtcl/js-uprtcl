@@ -47,10 +47,17 @@ export class UprtclHolochain extends HolochainSource implements UprtclProvider {
   }
 
   clonePerspective(perspective: Secured<Perspective>): Promise<string> {
-    throw new Error('Method not implemented.');
+    return this.call('clone_perspective', {
+      previous_addres: perspective.id,
+      perspective: perspective.object
+    });
   }
+
   cloneCommit(commit: Secured<Commit>): Promise<string> {
-    throw new Error('Method not implemented.');
+    return this.call('clone_commit', {
+      perspective_address: commit.id,
+      commit: commit.object
+    });
   }
 
   updatePerspectiveHead(perspectiveId: string, headId: string): Promise<void> {
@@ -63,12 +70,12 @@ export class UprtclHolochain extends HolochainSource implements UprtclProvider {
   updatePerspectiveContext(perspectiveId: string, context: string): Promise<void> {
     return this.call('update_perspective_context', {
       perspective_address: perspectiveId,
-      context_address: context
+      context: context
     });
   }
 
   async getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
-    const perspectivesResponse = await this.call('get_context_perspectives', {
+    const perspectivesResponse = await this.call('getperspectives', {
       context: context
     });
 

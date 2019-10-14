@@ -61,7 +61,7 @@ export class UprtclDexie extends Dexie implements UprtclCache {
   /**
    * Creates a secured version of the given object
    */
-  private secure<T extends object>(object: T): Secured<T> {
+  private secure<T extends object>(object: T): Promise<Secured<T>> {
     return this.securedPattern.derive(object);
   }
 
@@ -69,7 +69,7 @@ export class UprtclDexie extends Dexie implements UprtclCache {
    * @override
    */
   async createPerspective(name: string, timestamp: number): Promise<Secured<Perspective>> {
-    const secured: Secured<Perspective> = this.secure({
+    const secured: Secured<Perspective> = await this.secure({
       name,
       timestamp,
       creatorId,
@@ -90,7 +90,7 @@ export class UprtclDexie extends Dexie implements UprtclCache {
     message: string,
     timestamp: number
   ): Promise<Secured<Commit>> {
-    const secured: Secured<Commit> = this.secure({
+    const secured: Secured<Commit> = await this.secure({
       dataId,
       parentsIds,
       message,

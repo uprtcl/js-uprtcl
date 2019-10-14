@@ -1,6 +1,6 @@
+import { injectable } from 'inversify';
 import { HashedPattern, Hashed } from '../patterns/hashed.pattern';
 import { TransformPattern } from '../patterns/transform.pattern';
-import { injectable } from 'inversify';
 import { Pattern } from '../pattern';
 
 export function recognizeHashed(object: object) {
@@ -22,9 +22,13 @@ export class DefaultHashedPattern
     return true;
   }
 
-  derive<T>(object: T): Hashed<T> {
+  async derive<T>(object: T): Promise<Hashed<T>> {
+    const msgUint8 = new TextEncoder().encode(JSON.stringify(object)); // encode as (utf-8) Uint8Array
+    const hash = await crypto.subtle.digest('SHA-256', msgUint8);
+    const hashArray = Array.from(new Uint8Array(hash)); // convert buffer to byte array
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
     return {
-      id: 'getHash()',
+      id: hashHex,
       object: object
     };
   }

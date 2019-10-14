@@ -12,7 +12,7 @@ export class DefaultSignedPattern implements Pattern, SignedPattern<any> {
     return this.verifySignature(signed);
   }
 
-  derive<T>(object: T): Signed<T> {
+  async derive<T>(object: T): Promise<Signed<T>> {
     return this.sign(object);
   }
 
