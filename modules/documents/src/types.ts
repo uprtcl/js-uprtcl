@@ -13,6 +13,7 @@ export interface TypedText {
 export type TextNode = TypedText & Node;
 
 export const DocumentsTypes = {
+  Module: Symbol('documents-module'),
   DocumentsProvider: Symbol('documents-provider'),
   TextNodePattern: Symbol('text-node-pattern')
 };

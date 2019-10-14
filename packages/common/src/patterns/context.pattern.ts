@@ -2,38 +2,29 @@ import { inject, injectable } from 'inversify';
 import {
   Pattern,
   PatternTypes,
-  SecuredPattern,
-  Secured,
+  HashedPattern,
   CreatePattern,
-  Signed
+  Hashed
 } from '@uprtcl/cortex';
-import { Context, Commit, UprtclTypes } from '../types';
+import { Context, UprtclTypes } from '../types';
 import { UprtclProvider } from '../services/uprtcl.provider';
+import { UprtclMultiplatform } from '../services/uprtcl.multiplatform';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'nonce'];
 
+export type NewContextArgs = { timestamp: number; nonce: number } | { context: string };
+
 @injectable()
-export class ContextPattern
-  implements Pattern, CreatePattern<{ timestamp: number; nonce: number }, Signed<Context>> {
+export class ContextPattern implements Pattern {
   constructor(
-    @inject(PatternTypes.Core.Secured)
-    protected securedPattern: Pattern & SecuredPattern<any>,
-    @inject(UprtclTypes.UprtclProvider) protected uprtcl: UprtclProvider
+    @inject(PatternTypes.Core.Hashed)
+    protected hashedPattern: Pattern & HashedPattern<any>,
+    @inject(UprtclTypes.UprtclMultiplatform) protected uprtclMultiplatform: UprtclMultiplatform
   ) {}
 
-  recognize(object: Object) {
+  recognize(object: object) {
     return (
-      this.securedPattern.recognize(object) &&
-      propertyOrder.every(p =>
-        this.securedPattern.extract(object as Secured<Context>).hasOwnProperty(p)
-      )
+      this.hashedPattern.recognize(object) && typeof (this.hashedPattern.extract(object as Hashed<string>)) === 'string'
     );
   }
-
-  create: (args: { timestamp: number; nonce: number }) => Promise<Secured<Context>> = (args: {
-    timestamp: number;
-    nonce: number;
-  }): Promise<Secured<Context>> => {
-    return this.uprtcl.createContext(args.timestamp, args.nonce);
-  };
 }

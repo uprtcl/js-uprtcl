@@ -4,12 +4,11 @@ import { Perspective } from '../types';
 
 export interface UprtclSource extends NamedSource {
   /**
-   * Returns all the perspectives associated to a
-   * context.
+   * Returns all the perspectives associated to a context
    *
-   * @param contextId The context id
+   * @param context The context
    */
-  getContextPerspectives(contextId: string): Promise<Secured<Perspective>[]>;
+  getContextPerspectives(context: string): Promise<Secured<Perspective>[]>;
 
   /**
    * Get the head of a perspective

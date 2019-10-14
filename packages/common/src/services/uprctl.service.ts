@@ -9,7 +9,7 @@ import {
 
 import { UprtclProvider } from './uprtcl.provider';
 import { Context, Perspective, Commit } from '../types';
-import { UprtclMultiProvider } from './uprtcl.multi-provider';
+import { UprtclMultiProvider } from './uprtcl.multiplatform';
 
 export class UprtclService implements UprtclMultiProvider {
   cachedMultiProvider: CachedMultiProviderService<UprtclProvider & CacheService, UprtclProvider>;

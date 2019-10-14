@@ -5,8 +5,9 @@ export { MicroOrchestrator } from './orchestrator/micro-orchestrator';
 export { StoreModule } from './modules/redux/store.module';
 export { reduxModule } from './modules/redux/redux.module';
 export { MicroModule } from './modules/micro.module';
+export { ModuleProvider, moduleProvider } from './orchestrator/module-provider';
 
-export { MicroOrchestratorTypes, Constructor } from './types';
+export { MicroOrchestratorTypes, Constructor, ModuleToLoad, ReduxTypes } from './types';
 
 /** Elements */
 export { ModuleContainer, RequestDependencyEvent } from './elements/module-container';

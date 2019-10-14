@@ -30,10 +30,11 @@ export interface SelectedLens {
 export type PatternFactory = () => Pattern[];
 
 export const DiscoveryTypes = {
-  Source: Symbol('source'),
+  Module: Symbol('discovery-module'),
+  DiscoveryService: Symbol('discovery-service'),
   DiscoverableSource: Symbol('discoverable-source'),
-  LocalMultiSource: Symbol('local-multi-source'),
-  LocalCache: Symbol('local-cache-service'),
+  MultiSource: Symbol('multi-source'),
+  Cache: Symbol('cache-service'),
   LocalKnownSources: Symbol('local-known-sources')
 };
 
@@ -50,7 +51,7 @@ export const PatternTypes = {
 };
 
 export const EntitiesTypes = {
-  Reducer: Symbol('entities-reducer')
+  Module: Symbol('entities-reducer-module')
 };
 
 export const LensesTypes = {

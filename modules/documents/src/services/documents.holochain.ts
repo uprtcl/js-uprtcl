@@ -1,7 +1,6 @@
-import { HolochainConnectionOptions, HolochainSource } from '@uprtcl/connections';
+import { HolochainConnectionOptions, HolochainSource, ConnectionOptions } from '@uprtcl/connections';
 import { DocumentsProvider } from './documents.provider';
 import { TextNode } from '../types';
-import { ConnectionOptions } from '@uprtcl/connections/dist/types/connections/connection';
 
 export class DocumentsHolochain extends HolochainSource implements DocumentsProvider {
   constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {

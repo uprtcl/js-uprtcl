@@ -1,27 +1,17 @@
 import { Perspective, Context, Commit } from '../types';
-import { Secured } from '@uprtcl/cortex';
+import { Secured, Hashed } from '@uprtcl/cortex';
 import { UprtclSource } from './uprctl.source';
 
 export interface UprtclProvider extends UprtclSource {
 
   /**
-    * Create a new context in the service
-    *
-    * @param timestamp the time of the creation of the context
-    * @param nonce arbritrary nonce to differentiate contexts created at the same time
-    *
-    * @returns the created context, with its hashed id
-    */
-   createContext(timestamp: number, nonce: number): Promise<Secured<Context>>;
-
-   /**
-    * Create a new perspective in the service
-    *
-    * @param name the name of the perspective
-    * @param timestamp the time of creation of the perspective
-    *
-    * @returns the created perspective, with its hashed id
-    */
+   * Create a new perspective in the service
+   *
+   * @param name the name of the perspective
+   * @param timestamp the time of creation of the perspective
+   *
+   * @returns the created perspective, with its hashed id
+   */
   createPerspective(name: string, timestamp: number): Promise<Secured<Perspective>>;
 
   /**
@@ -34,15 +24,12 @@ export interface UprtclProvider extends UprtclSource {
    *
    * @returns the created commit, with its hashed id
    */
-  createCommit(dataId: string, parentsIds: Array<string>, message: string, timestamp: number): Promise<Secured<Commit>>;
-
-  /**
-   * Clone the given context in the service, validating its hash and its proof
-   *
-   * @param context: the signed context to clone
-   * @returns the id of the cloned context
-   */
-  cloneContext(context: Secured<Context>): Promise<string>;
+  createCommit(
+    dataId: string,
+    parentsIds: Array<string>,
+    message: string,
+    timestamp: number
+  ): Promise<Secured<Commit>>;
 
   /**
    * Clone the given perspective in the service, validating its hash and its proof
@@ -74,7 +61,7 @@ export interface UprtclProvider extends UprtclSource {
   /**
    * Set the context of a perspective
    * @param perspectiveId id of the perspective of which to update the head
-   * @param contextId id of the context to set the perspective to
+   * @param context the context to set the perspective to
    */
-  updatePerspectiveContext(perspectiveId: string, contextId: string): Promise<void>;
+  updatePerspectiveContext(perspectiveId: string, context: string): Promise<void>;
 }

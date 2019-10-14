@@ -22,14 +22,14 @@ export class DefaultHashedPattern
     return true;
   }
 
-  derive<T extends object>(object: T): Hashed<T> {
+  derive<T>(object: T): Hashed<T> {
     return {
       id: 'getHash()',
       object: object
     };
   }
 
-  extract<T extends object>(hashed: Hashed<T>): T {
+  extract<T>(hashed: Hashed<T>): T {
     return hashed.object;
   }
 

@@ -39,7 +39,7 @@ export class Connection implements Ready {
     setTimeout(() => {
       this.connect()
         .then(() => this.success())
-        .catch(() => this.retry());
+        .catch(e => this.retry(e));
     });
   }
 
@@ -88,7 +88,7 @@ export class Connection implements Ready {
   /**
    * Retries to connect
    */
-  protected retry(): void {
+  protected retry(cause: any): void {
     let retryCount = 0;
 
     // If retries is negative we disable the retry mechanism
@@ -96,12 +96,12 @@ export class Connection implements Ready {
       this.state = ConnectionState.FAILED;
       this.connectionReject();
 
-      this.logger.warn(`Connection failed, not retrying`);
+      this.logger.warn(`Connection failed with cause `, cause, `, not retrying`);
 
       return;
     }
 
-    this.logger.warn('Connection failed, retrying...');
+    this.logger.warn('Connection failed with cause ', cause, ' retrying...');
 
     // Reinitiate promise logic for ready function
     if (this.state !== ConnectionState.PENDING) {
@@ -129,7 +129,7 @@ export class Connection implements Ready {
             this.connectionReject();
 
             this.logger.warn(
-              `Retried to connect ${this.options.retryInterval} times and failed, stopping`
+              `Retried to connect ${this.options.retries} times and failed, stopping`
             );
           }
         });

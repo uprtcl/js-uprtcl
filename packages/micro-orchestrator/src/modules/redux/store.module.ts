@@ -12,19 +12,18 @@ import thunk, { ThunkMiddleware } from 'redux-thunk';
 import { injectable, interfaces } from 'inversify';
 
 import { MicroModule } from '../micro.module';
-import { MicroOrchestratorTypes } from '../../types';
+import { MicroOrchestratorTypes, ReduxTypes } from '../../types';
 
 @injectable()
 export class StoreModule implements MicroModule {
-  async onLoad() {}
-
-  onInit(
+  async onLoad(
+    context: interfaces.Context,
     bind: interfaces.Bind,
     unbind: interfaces.Unbind,
     isBound: interfaces.IsBound,
     rebind: interfaces.Rebind
-  ): void {
-    if (isBound(MicroOrchestratorTypes.ReduxStore)) return;
+  ): Promise<void> {
+    if (isBound(ReduxTypes.Store)) return;
 
     const devCompose: <Ext0, Ext1, StateExt0, StateExt1>(
       f1: StoreEnhancer<Ext0, StateExt0>,
@@ -41,7 +40,7 @@ export class StoreModule implements MicroModule {
       )
     ) as Store & LazyStore;
 
-    bind<Store & LazyStore>(MicroOrchestratorTypes.ReduxStore).toConstantValue(store);
+    bind<Store & LazyStore>(ReduxTypes.Store).toConstantValue(store);
   }
 
   async onUnload(): Promise<void> {}

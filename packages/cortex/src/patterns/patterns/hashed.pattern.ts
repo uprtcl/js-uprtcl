@@ -1,7 +1,7 @@
 import { DerivePattern } from './derive.pattern';
 import { ValidatePattern } from './validate.pattern';
 
-export interface Hashed<T extends object = object> {
+export interface Hashed<T> {
   // Hash
   id: string;
   object: T;

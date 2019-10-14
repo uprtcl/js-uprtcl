@@ -12,8 +12,8 @@ export class DiscoveryService implements Source {
   cachedRemote: CachedSourceService;
 
   constructor(
-    @inject(DiscoveryTypes.LocalCache) protected cache: CacheService,
-    @inject(DiscoveryTypes.LocalMultiSource) protected multiSource: MultiSourceService
+    @inject(DiscoveryTypes.Cache) protected cache: CacheService,
+    @inject(DiscoveryTypes.MultiSource) protected multiSource: MultiSourceService
   ) {
     this.cachedRemote = new CachedSourceService(cache, multiSource);
   }

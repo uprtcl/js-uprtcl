@@ -1,25 +1,25 @@
 import { MicroModule } from '@uprtcl/micro-orchestrator';
-import { CortexPattern } from './base/cortex-pattern';
+import { CortexEntity } from './base/cortex-entity';
 import { lenses } from './lenses';
 import { LensSelector } from './base/lens-selector';
 import { interfaces, inject, injectable } from 'inversify';
 
 @injectable()
 export class LensesModule implements MicroModule {
-  onInit(
+  async onLoad(
+    context: interfaces.Context,
     bind: interfaces.Bind,
     unbind: interfaces.Unbind,
     isBound: interfaces.IsBound,
     rebind: interfaces.Rebind
-  ): void {
+  ): Promise<void> {
     customElements.define('lens-selector', LensSelector);
-    customElements.define('cortex-pattern', CortexPattern);
+    customElements.define('cortex-entity', CortexEntity);
 
     Object.entries(lenses).forEach(([tag, lens]) => {
       customElements.define(tag, lens);
     });
   }
 
-  async onLoad(): Promise<void> {}
   async onUnload(): Promise<void> {}
 }

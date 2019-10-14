@@ -1,10 +1,12 @@
-import { Container, AsyncContainerModule, interfaces, ContainerModule } from 'inversify';
+import { Container, interfaces } from 'inversify';
 import { MicroModule } from '../modules/micro.module';
 import { ModuleContainer } from '../elements/module-container';
 import { Logger } from '../utils/logger';
-import { MicroOrchestratorTypes } from '../types';
+import { MicroOrchestratorTypes, ModuleToLoad } from '../types';
+import { ModuleProvider, moduleProvider } from './module-provider';
 
 export class MicroOrchestrator {
+  logger: Logger = new Logger('micro-orchestrator');
   container = new Container({ skipBaseClassChecks: true });
 
   constructor() {
@@ -17,36 +19,29 @@ export class MicroOrchestrator {
 
         return logger;
       });
+
+    this.container
+      .bind<ModuleProvider>(MicroOrchestratorTypes.ModuleProvider)
+      .toProvider<MicroModule>(moduleProvider(this.logger));
   }
 
   /**
-   * Loads the given modules to the available module list
+   * Loads the given modules
    * @param modules
    */
-  async loadModules(...modules: Array<new (...args: any[]) => MicroModule>): Promise<void> {
+  async loadModules(...modules: Array<ModuleToLoad>): Promise<void> {
     for (const microModule of modules) {
-      this.container.bind(microModule).toSelf();
+      this.container
+        .bind<MicroModule>(microModule.id)
+        .to(microModule.module)
+        .inSingletonScope();
     }
 
-    let unloadedModules = modules;
-    let i = 0;
-    while (unloadedModules.length > 0 && i < 10) {
-      i++;
-      const modulesToLoad = unloadedModules.reverse();
-      unloadedModules = [];
-
-      for (const microModule of modulesToLoad) {
-        try {
-          const module: MicroModule = this.container.get(microModule);
-          await module.onLoad();
-
-          const containerModule = new ContainerModule((...args) => module.onInit(...args));
-
-          this.container.load(containerModule);
-        } catch (e) {
-          unloadedModules.push(microModule);
-        }
-      }
+    for (const microModule of modules) {
+      const provider: ModuleProvider = this.container.get(
+        MicroOrchestratorTypes.ModuleProvider
+      );
+      await provider(microModule.id);
     }
   }
 }

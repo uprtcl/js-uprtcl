@@ -1,15 +1,10 @@
 import { Dictionary } from 'lodash';
-import { LitElement, property, html, css, TemplateResult } from 'lit-element';
-import { MicroOrchestratorTypes, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { Store } from 'redux';
-import {
-  LensElement,
-  Secured,
-  Source,
-  loadEntity,
-  Hashed,
-  DiscoveryTypes
-} from '@uprtcl/cortex';
+import { LitElement, property, html, css, TemplateResult } from 'lit-element';
+
+import { ReduxTypes, moduleConnect } from '@uprtcl/micro-orchestrator';
+import { LensElement, Secured, Source, loadEntity, Hashed, DiscoveryTypes } from '@uprtcl/cortex';
+
 import { Commit } from '../types';
 
 export class CommitHistory extends moduleConnect(LitElement)
@@ -24,8 +19,8 @@ export class CommitHistory extends moduleConnect(LitElement)
   private source!: Source;
 
   firstUpdated() {
-    this.store = this.request(MicroOrchestratorTypes.ReduxStore);
-    this.source = this.request(DiscoveryTypes.Source);
+    this.store = this.request(ReduxTypes.Store);
+    this.source = this.request(DiscoveryTypes.DiscoveryService);
     this.initialLoad();
   }
 

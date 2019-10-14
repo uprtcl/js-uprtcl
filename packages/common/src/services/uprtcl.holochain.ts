@@ -13,19 +13,6 @@ export class UprtclHolochain extends HolochainSource implements UprtclProvider {
     super('uprtcl', hcOptions, options);
   }
 
-  async createContext(timestamp: number, nonce: number): Promise<Secured<Context>> {
-    const contextId = await this.call('create_context', {
-      timestamp,
-      nonce
-    });
-
-    const context: Secured<Context> | undefined = await this.get(contextId);
-
-    if (!context) throw new Error('Error creating the context');
-
-    return context;
-  }
-
   async createPerspective(name: string, timestamp: number): Promise<Secured<Perspective>> {
     const perspectiveId = await this.call('create_perspective', {
       name,
@@ -59,9 +46,6 @@ export class UprtclHolochain extends HolochainSource implements UprtclProvider {
     return commit;
   }
 
-  cloneContext(context: Secured<Context>): Promise<string> {
-    throw new Error('Method not implemented.');
-  }
   clonePerspective(perspective: Secured<Perspective>): Promise<string> {
     throw new Error('Method not implemented.');
   }
@@ -76,16 +60,16 @@ export class UprtclHolochain extends HolochainSource implements UprtclProvider {
     });
   }
 
-  updatePerspectiveContext(perspectiveId: string, contextId: string): Promise<void> {
+  updatePerspectiveContext(perspectiveId: string, context: string): Promise<void> {
     return this.call('update_perspective_context', {
       perspective_address: perspectiveId,
-      context_address: contextId
+      context_address: context
     });
   }
 
-  async getContextPerspectives(contextId: string): Promise<Secured<Perspective>[]> {
+  async getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
     const perspectivesResponse = await this.call('get_context_perspectives', {
-      context_address: contextId
+      context: context
     });
 
     const perspectivesEntries: EntryResult<Signed<Perspective>>[] = this.parseEntriesResults(

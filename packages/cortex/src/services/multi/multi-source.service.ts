@@ -16,7 +16,7 @@ export class MultiSourceService<T extends NamedSource = NamedSource> implements 
 
   /**
    * @param patternRecognizer the pattern recognizer to interact with the objects and their links
-   * @param knownSources local service to store all known sources to be able to retrieve the object afterwards
+   * @param localKnownSources local service to store all known sources to be able to retrieve the object afterwards
    * @param discoverableSources array of all discoverable sources from which to get objects
    */
   constructor(
@@ -26,12 +26,9 @@ export class MultiSourceService<T extends NamedSource = NamedSource> implements 
     @multiInject(DiscoveryTypes.DiscoverableSource)
     discoverableSources: Array<DiscoverableSource<T>>
   ) {
-    // Get the name of each source
-    const sourcesNames = discoverableSources.map(source => source.source.name);
-
     // Build the sources dictionary from the resulting names
-    this.sources = sourcesNames.reduce(
-      (sources, sourceName, index) => ({ ...sources, [sourceName]: discoverableSources[index] }),
+    this.sources = discoverableSources.reduce(
+      (sources, source) => ({ ...sources, [source.source.name]: source }),
       {}
     );
   }

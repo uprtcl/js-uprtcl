@@ -1,13 +1,14 @@
 import {
   Pattern,
-  CreatePattern,
   LensesPattern,
   ActionsPattern,
   PatternAction,
   Lens,
   Hashed,
   HashedPattern,
-  PatternTypes
+  PatternTypes,
+  CreatePattern,
+  DiscoverableSource
 } from '@uprtcl/cortex';
 import { TextNode, TextType, DocumentsTypes } from '../types';
 import { DocumentsProvider } from '../services/documents.provider';
@@ -19,7 +20,8 @@ const propertyOrder = ['text', 'type', 'links'];
 export class TextNodePattern
   implements Pattern, CreatePattern<Partial<TextNode>, TextNode>, LensesPattern, ActionsPattern {
   constructor(
-    @inject(DocumentsTypes.DocumentsProvider) protected documentsProvider: DocumentsProvider,
+    @inject(DocumentsTypes.DocumentsProvider)
+    protected documentsProvider: DiscoverableSource<DocumentsProvider>,
     @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & HashedPattern<TextNode>
   ) {}
 
@@ -34,7 +36,7 @@ export class TextNodePattern
 
     const newTextNode = { links, text, type };
 
-    const hash = await this.documentsProvider.createTextNode(newTextNode);
+    const hash = await this.documentsProvider.source.createTextNode(newTextNode);
 
     return {
       id: hash,

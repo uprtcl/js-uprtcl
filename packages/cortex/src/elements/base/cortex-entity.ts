@@ -6,7 +6,7 @@ import '@authentic/mwc-icon';
 import '@authentic/mwc-list';
 import '@authentic/mwc-menu';
 
-import { moduleConnect, MicroOrchestratorTypes } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 import {
   Lens,
@@ -28,7 +28,7 @@ import { TransformPattern } from '../../patterns/patterns/transform.pattern';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { Source } from '../../services/sources/source';
 
-export class CortexPattern extends moduleConnect(LitElement) {
+export class CortexEntity extends moduleConnect(LitElement) {
   @property()
   public hash!: string;
   @property()
@@ -80,8 +80,8 @@ export class CortexPattern extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.store = this.request(MicroOrchestratorTypes.ReduxStore);
-    this.source = this.request(DiscoveryTypes.Source);
+    this.store = this.request(ReduxTypes.Store);
+    this.source = this.request(DiscoveryTypes.DiscoveryService);
     this.patternRecognizer = this.request(PatternTypes.Recognizer);
 
     this.addEventListener<any>('content-changed', (e: CustomEvent) => {

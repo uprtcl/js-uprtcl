@@ -15,7 +15,7 @@ export function documentsModule(documentsProvider: DiscoverableSource<DocumentsP
     }
 
     get elements() {
-      return [{ tag: 'text-node', element: TextNodeLens }];
+      return [{ name: 'text-node', element: TextNodeLens }];
     }
 
     get patterns() {

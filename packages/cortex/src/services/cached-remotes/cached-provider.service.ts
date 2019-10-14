@@ -3,15 +3,16 @@ import { TaskQueue } from '../../utils/task.queue';
 import { CacheService } from '../cache/cache.service';
 import { CachedSourceService } from './cached-source.service';
 import { Source } from '../sources/source';
+import { Hashed } from '../../patterns/patterns/hashed.pattern';
 
 export class CachedProviderService<
-  C extends CacheService,
+  CACHE extends CacheService,
   REMOTE extends Source
 > extends CachedSourceService {
   protected logger = new Logger('CachedProviderService');
 
   constructor(
-    public cache: C,
+    public cache: CACHE,
     public remote: REMOTE,
     protected taskQueue: TaskQueue = new TaskQueue()
   ) {
@@ -25,17 +26,16 @@ export class CachedProviderService<
    * @param creator the creator function to execute
    * @returns the optimistic id of the newly created object
    */
-  public async optimisticCreate<O extends object, R>(
-    object: O,
-    creator: (service: C) => Promise<R>,
-    cloner: (service: REMOTE, object: R) => Promise<any>
-  ): Promise<R> {
+  public async optimisticCreate<O>(
+    creator: (service: CACHE) => Promise<Hashed<O>>,
+    cloner: (service: REMOTE, object: Hashed<O>) => Promise<any>
+  ): Promise<Hashed<O>> {
     // First, create object in cache
-    const createdObject = await creator(this.cache);
-    this.logger.info(`Optimistically created object: ${createdObject}`);
+    const createdObject: Hashed<O> = await creator(this.cache);
+    this.logger.info(`Optimistically created object`, createdObject);
 
     // Then schedule the same creation in the remote
-    const taskId = object['id'] ? object['id'] : JSON.stringify(object);
+    const taskId = createdObject.id;
     const task = async () => cloner(this.remote, createdObject);
     this.taskQueue.queueTask({ id: taskId, task: task });
 
@@ -50,7 +50,7 @@ export class CachedProviderService<
    * @returns the result of the optimistic update execution
    */
   public async optimisticUpdate<O>(
-    cacheUpdater: (service: C) => Promise<O>,
+    cacheUpdater: (service: CACHE) => Promise<O>,
     remoteUpdater: (service: REMOTE) => Promise<O>,
     taskId: string,
     dependsOn: string | undefined

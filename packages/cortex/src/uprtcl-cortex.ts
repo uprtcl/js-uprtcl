@@ -26,6 +26,7 @@ export { discoveryModule } from './services/discovery.module';
 
 /** Patterns */
 export { Pattern, forPattern } from './patterns/pattern';
+export { ClonePattern } from './patterns/patterns/clone.pattern';
 export { CreatePattern } from './patterns/patterns/create.pattern';
 export { ContentPattern } from './patterns/patterns/content.pattern';
 export { DerivePattern } from './patterns/patterns/derive.pattern';

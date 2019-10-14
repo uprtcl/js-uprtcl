@@ -1,15 +1,19 @@
-import { MicroOrchestrator, StoreModule } from '@uprtcl/micro-orchestrator';
+import { ReduxTypes, MicroOrchestrator, StoreModule } from '@uprtcl/micro-orchestrator';
 import {
+  PatternTypes,
   PatternsModule,
   discoveryModule,
   LensesModule,
   entitiesReduxModule,
   KnownSourcesDexie,
-  CacheDexie
+  CacheDexie,
+  EntitiesTypes,
+  DiscoveryTypes,
+  LensesTypes
 } from '@uprtcl/cortex';
-import { DocumentsHolochain, documentsModule } from '@uprtcl/documents';
+import { DocumentsHolochain, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import { KnownSourcesHolochain } from '@uprtcl/connections';
-import { uprtclModule, UprtclHolochain } from '@uprtcl/common';
+import { uprtclModule, UprtclHolochain, UprtclTypes } from '@uprtcl/common';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
@@ -32,7 +36,7 @@ import { SimpleEditor } from './simple-editor';
   const cacheService = new CacheDexie();
 
   const discoverableUprtcl = { source: uprtclProvider, knownSources: knownSources };
-  const uprtcl = uprtclModule(discoverableUprtcl);
+  const uprtcl = uprtclModule([discoverableUprtcl]);
 
   const discoverableDocs = {
     source: documentsProvider,
@@ -40,22 +44,19 @@ import { SimpleEditor } from './simple-editor';
   };
   const documents = documentsModule(discoverableDocs);
 
-  const discovery = discoveryModule(cacheService, localKnownSources, [
-    discoverableUprtcl,
-    discoverableDocs
-  ]);
+  const discovery = discoveryModule(cacheService, localKnownSources);
   const entitiesReducerModule = entitiesReduxModule();
 
   const orchestrator = new MicroOrchestrator();
 
   await orchestrator.loadModules(
-    StoreModule,
-    entitiesReducerModule,
-    documents,
-    PatternsModule,
-    LensesModule,
-    uprtcl,
-    discovery
+    { id: ReduxTypes.Module, module: StoreModule },
+    { id: EntitiesTypes.Module, module: entitiesReducerModule },
+    { id: PatternTypes.Module, module: PatternsModule },
+    { id: DiscoveryTypes.Module, module: discovery },
+    { id: LensesTypes.Module, module: LensesModule },
+    { id: UprtclTypes.Module, module: uprtcl },
+    { id: DocumentsTypes.Module, module: documents }
   );
 
   console.log(orchestrator);
