@@ -32,9 +32,6 @@ import { SimpleEditor } from './simple-editor';
     instance: 'test-instance'
   });
 
-  const localKnownSources = new KnownSourcesDexie();
-  const cacheService = new CacheDexie();
-
   const discoverableUprtcl = { source: uprtclProvider, knownSources: knownSources };
   const uprtcl = uprtclModule([discoverableUprtcl]);
 
@@ -42,9 +39,9 @@ import { SimpleEditor } from './simple-editor';
     source: documentsProvider,
     knownSources: knownSources
   };
-  const documents = documentsModule(discoverableDocs);
+  const documents = documentsModule([discoverableDocs]);
 
-  const discovery = discoveryModule(cacheService, localKnownSources);
+  const discovery = discoveryModule();
   const entitiesReducerModule = entitiesReduxModule();
 
   const orchestrator = new MicroOrchestrator();

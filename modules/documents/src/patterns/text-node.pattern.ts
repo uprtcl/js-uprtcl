@@ -8,6 +8,7 @@ import {
   HashedPattern,
   PatternTypes,
   CreatePattern,
+  NamedSource,
   DiscoverableSource
 } from '@uprtcl/cortex';
 import { TextNode, TextType, DocumentsTypes } from '../types';
@@ -21,7 +22,7 @@ export class TextNodePattern
   implements Pattern, CreatePattern<Partial<TextNode>, TextNode>, LensesPattern, ActionsPattern {
   constructor(
     @inject(DocumentsTypes.DocumentsProvider)
-    protected documentsProvider: DiscoverableSource<DocumentsProvider>,
+    protected documentsProvider: DiscoverableSource<DocumentsProvider & NamedSource>,
     @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & HashedPattern<TextNode>
   ) {}
 
