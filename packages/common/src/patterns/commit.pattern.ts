@@ -12,8 +12,7 @@ import {
   PatternTypes
 } from '@uprtcl/cortex';
 import { Commit, UprtclTypes } from '../types';
-import { UprtclProvider } from '../services/uprtcl.provider';
-import { UprtclMultiplatform } from '../services/uprtcl.multiplatform';
+import { Uprtcl } from '../services/uprtcl';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
@@ -31,7 +30,7 @@ export class CommitPattern
   constructor(
     @inject(PatternTypes.Core.Secured)
     protected securedPattern: Pattern & SecuredPattern<Secured<Commit>>,
-    @inject(UprtclTypes.UprtclMultiplatform) protected uprtclMultiplatform: UprtclMultiplatform
+    @inject(UprtclTypes.Uprtcl) protected uprtcl: Uprtcl
   ) {}
 
   recognize(object: object) {
@@ -72,23 +71,7 @@ export class CommitPattern
     },
     providerName?: string
   ) => {
-    if (!providerName) {
-      const sourcesNames = this.uprtclMultiplatform.remote.getAllSourcesNames();
-      if (sourcesNames.length !== 1) {
-        throw new Error(
-          'Provider name cannot be empty, since we have more than one provider registered'
-        );
-      }
-
-      providerName = sourcesNames[0];
-    }
-
-    const timestamp = args.timestamp || Date.now();
-    const creator = (uprtcl: UprtclProvider) =>
-      uprtcl.createCommit(args.dataId, args.parentsIds, args.message, timestamp);
-    const cloner = (uprtcl: UprtclProvider, object: Secured<Commit>) => uprtcl.cloneCommit(object);
-
-    return this.uprtclMultiplatform.optimisticCreateIn(providerName, creator, cloner);
+    return this.uprtcl.createCommit(args, providerName);
   };
 
   getLenses = (): Lens[] => {

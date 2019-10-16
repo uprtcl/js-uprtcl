@@ -1,8 +1,5 @@
 import { Source, Hashed } from '@uprtcl/cortex';
-import {
-  HolochainConnection,
-  HolochainConnectionOptions
-} from './holochain.connection';
+import { HolochainConnection, HolochainConnectionOptions } from './holochain.connection';
 import { ConnectionOptions } from '../../connections/connection';
 
 export class HolochainProxy extends HolochainConnection implements Source {

@@ -25,6 +25,7 @@ export class CachedSourceService implements Source {
 
     // We don't have the object in cache, get from remote and cache it
     object = await this.remote.get<O>(hash);
+    console.warn('hey', object, this.remote);
     if (object) {
       this.logger.info(`Got object with hash ${hash} from remote`, object);
       await this.cache.cache<Hashed<O>>(hash, object);

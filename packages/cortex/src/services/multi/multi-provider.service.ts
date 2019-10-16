@@ -65,6 +65,15 @@ export class MultiProviderService<T extends NamedSource> extends MultiSourceServ
       if (pattern.getLinks) {
         const links = await pattern.getLinks(object);
 
+        this.logger.info(
+          'Updating known sources of the links ',
+          links,
+          ' from the object ',
+          object,
+          ' to the source ',
+          sourceName
+        );
+
         const promises = links.map(async link => {
           // We asume that we have stored the local known sources for the links from the object
           const knownSources = await this.localKnownSources.getKnownSources(link);

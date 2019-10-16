@@ -12,13 +12,10 @@ import {
   DiscoveryTypes
 } from '@uprtcl/cortex';
 
-import { Perspective, Commit, UprtclCache } from '../types';
-
-const creatorId = 'did:hi:example';
-const origin = 'exampleOrigin';
+import { Perspective, Commit, UprtclLocal } from '../../types';
 
 @injectable()
-export class UprtclDexie extends Dexie implements UprtclCache {
+export class UprtclDexie extends Dexie implements UprtclLocal {
   heads: Dexie.Table<string, string>;
   contexts: Dexie.Table<{ context: string }, string>;
 
@@ -59,71 +56,25 @@ export class UprtclDexie extends Dexie implements UprtclCache {
   }
 
   /**
-   * Creates a secured version of the given object
-   */
-  private secure<T extends object>(object: T): Promise<Secured<T>> {
-    return this.securedPattern.derive(object);
-  }
-
-  /**
    * @override
    */
-  async createPerspective(name: string, timestamp: number): Promise<Secured<Perspective>> {
-    const secured: Secured<Perspective> = await this.secure({
-      name,
-      timestamp,
-      creatorId,
-      origin
-    });
-
-    await this.cache(secured.id, secured);
-
-    return secured;
-  }
-
-  /**
-   * @override
-   */
-  async createCommit(
-    dataId: string,
-    parentsIds: Array<string>,
-    message: string,
-    timestamp: number
-  ): Promise<Secured<Commit>> {
-    const secured: Secured<Commit> = await this.secure({
-      dataId,
-      parentsIds,
-      message,
-      timestamp,
-      creatorId
-    });
-
-    await this.cache(secured.id, secured);
-    return secured;
-  }
-
-  /**
-   * @override
-   */
-  async clonePerspective(perspective: Secured<Perspective>): Promise<string> {
-    if (this.securedPattern.validate(perspective)) {
+  async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
+    if (!this.securedPattern.validate(perspective)) {
       throw new Error('Perspective is not valid');
     }
 
     await this.cache(perspective.id, perspective);
-    return perspective.id;
   }
 
   /**
    * @override
    */
-  async cloneCommit(commit: Secured<Commit>): Promise<string> {
-    if (this.securedPattern.validate(commit)) {
+  async cloneCommit(commit: Secured<Commit>): Promise<void> {
+    if (!this.securedPattern.validate(commit)) {
       throw new Error('Commit is not valid');
     }
 
     await this.cache(commit.id, commit);
-    return commit.id;
   }
 
   /**

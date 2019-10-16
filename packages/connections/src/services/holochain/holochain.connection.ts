@@ -58,12 +58,16 @@ export class HolochainConnection extends SocketConnection {
     return this.onSignal(callback);
   }
 
+  public parseResponse(response: { Ok: any } | any): any {
+    return response.hasOwnProperty('Ok') ? response.Ok : response;
+  }
+
   public parseEntry<T extends object>(entry: { Ok: any } | any): T {
-    let parseable = entry.Ok ? entry.Ok : entry;
-    return JSON.parse(parseable.App[1]);
+    return JSON.parse(this.parseResponse(entry).App[1]);
   }
 
   public parseEntryResult<T extends object>(entry: any): EntryResult<T> | undefined {
+    entry = this.parseResponse(entry);
     if (!entry.result.Single.meta) return undefined;
     return {
       entry: {
@@ -80,7 +84,7 @@ export class HolochainConnection extends SocketConnection {
 
   public parseEntriesResults<T extends object>(entryArray: Array<any>): Array<EntryResult<T>> {
     return entryArray
-      .map(entry => this.parseEntryResult<T>(entry.Ok ? entry.Ok : entry))
+      .map(entry => this.parseEntryResult<T>(this.parseResponse(entryArray)))
       .filter(entry => entry != undefined) as Array<EntryResult<T>>;
   }
 }

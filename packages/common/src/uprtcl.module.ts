@@ -12,14 +12,13 @@ import { PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern } from './patterns/commit.pattern';
 import { ContextPattern } from './patterns/context.pattern';
 import { CommitHistory } from './lenses/commit-history';
-import { UprtclTypes, UprtclCache } from './types';
-import { UprtclProvider } from './services/uprtcl.provider';
-import { UprtclDexie } from './services/uprtcl.dexie';
-import { UprtclMultiplatform } from './services/uprtcl.multiplatform';
+import { UprtclTypes, UprtclLocal, UprtclRemote } from './types';
+import { UprtclDexie } from './services/providers/uprtcl.dexie';
+import { Uprtcl } from './services/uprtcl';
 
 export function uprtclModule(
-  discoverableUprtcls: Array<DiscoverableSource<UprtclProvider>>,
-  localUprtcl: new (...args: any[]) => UprtclCache = UprtclDexie
+  discoverableUprtcls: Array<DiscoverableSource<UprtclRemote>>,
+  localUprtcl: new (...args: any[]) => UprtclLocal = UprtclDexie
 ): new (...args: any[]) => CortexModule {
   @injectable()
   class UprtclModule extends CortexModule {
@@ -29,15 +28,15 @@ export function uprtclModule(
 
     get sources() {
       return discoverableUprtcls.map(uprtcl => ({
-        symbol: UprtclTypes.UprtclProvider,
+        symbol: UprtclTypes.UprtclRemote,
         source: uprtcl
       }));
     }
 
     get services() {
       return [
-        { symbol: UprtclTypes.UprtclCache, service: localUprtcl },
-        { symbol: UprtclTypes.UprtclMultiplatform, service: UprtclMultiplatform }
+        { symbol: UprtclTypes.UprtclLocal, service: localUprtcl },
+        { symbol: UprtclTypes.Uprtcl, service: Uprtcl }
       ];
     }
 

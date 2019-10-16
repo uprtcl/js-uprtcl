@@ -1,3 +1,5 @@
+import { injectable, inject } from 'inversify';
+
 import {
   Pattern,
   LensesPattern,
@@ -11,9 +13,9 @@ import {
   NamedSource,
   DiscoverableSource
 } from '@uprtcl/cortex';
+
 import { TextNode, TextType, DocumentsTypes } from '../types';
 import { DocumentsProvider } from '../services/documents.provider';
-import { injectable, inject } from 'inversify';
 
 const propertyOrder = ['text', 'type', 'links'];
 

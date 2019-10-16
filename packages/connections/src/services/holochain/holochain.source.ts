@@ -1,8 +1,5 @@
 import { NamedSource, Hashed, Source } from '@uprtcl/cortex';
-import {
-  HolochainConnection,
-  HolochainConnectionOptions
-} from './holochain.connection';
+import { HolochainConnection, HolochainConnectionOptions } from './holochain.connection';
 import { ConnectionOptions } from '../../connections/connection';
 import { HolochainProxy } from './holochain.proxy';
 
@@ -25,6 +22,13 @@ export class HolochainSource extends HolochainConnection implements NamedSource 
     await super.connect();
 
     this.name = await this.call('get_source_name', {});
+  }
+
+  /**
+   * @override
+   */
+  public configure(sourceName: string): boolean {
+    return this.name === sourceName;
   }
 
   /**
