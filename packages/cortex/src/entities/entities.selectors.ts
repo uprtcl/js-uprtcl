@@ -1,5 +1,4 @@
 import { EntitiesState } from './entities.reducer';
-import { PatternRegistry } from '../patterns/registry/pattern.registry';
 import { Pattern } from '../patterns/pattern';
 
 export const entitiesReducerName = 'entities-reducer';
@@ -13,10 +12,6 @@ export const selectAll = (state: EntitiesState) => {
 
 export const selectById = (id: string) => (state: EntitiesState) => state.entities[id];
 
-export const selectByPattern = (patternRegistry: PatternRegistry) => (patternName: string) => (
-  state: EntitiesState
-) => {
-  const pattern: Pattern = patternRegistry.getPattern(patternName);
-
+export const selectByPattern = (pattern: Pattern) => (state: EntitiesState) => {
   return selectAll(state).filter(object => pattern.recognize(object));
 };

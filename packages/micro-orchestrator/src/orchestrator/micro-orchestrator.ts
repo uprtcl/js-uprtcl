@@ -1,60 +1,45 @@
-import { Dictionary } from 'lodash';
+import { Container, interfaces } from 'inversify';
 import { MicroModule } from '../modules/micro.module';
+import { ModuleContainer } from '../elements/module-container';
+import { Logger } from '../utils/logger';
+import { MicroOrchestratorTypes, ModuleToLoad } from '../types';
+import { ModuleProvider, moduleProvider } from './module-provider';
 
 export class MicroOrchestrator {
-  modules: Dictionary<MicroModule> = {};
+  logger: Logger = new Logger('micro-orchestrator');
+  container = new Container({ skipBaseClassChecks: true });
 
-  static get(): MicroOrchestrator {
-    let orchestrator: MicroOrchestrator = window['microorchestrator'];
-    if (!orchestrator) {
-      orchestrator = new MicroOrchestrator();
-      window['microorchestrator'] = orchestrator;
-    }
+  constructor() {
+    customElements.define('module-container', ModuleContainer(this.container));
 
-    return orchestrator;
+    this.container
+      .bind<Logger>(MicroOrchestratorTypes.Logger)
+      .toDynamicValue((ctx: interfaces.Context) => {
+        const logger = new Logger(ctx.plan.rootRequest.serviceIdentifier['name']);
+
+        return logger;
+      });
+
+    this.container
+      .bind<ModuleProvider>(MicroOrchestratorTypes.ModuleProvider)
+      .toProvider<MicroModule>(moduleProvider(this.logger));
   }
 
   /**
-   * Loads the given modules to the available module list
+   * Loads the given modules
    * @param modules
    */
-  async loadModules(...modules: MicroModule[]): Promise<void> {
+  async loadModules(...modules: Array<ModuleToLoad>): Promise<void> {
     for (const microModule of modules) {
-      await this.loadModule(microModule);
-    }
-  }
-
-  /**
-   * Loads the module with the given id if it wasn't loaded yet, loading its dependencies first
-   * @param moduleId the module to load
-   */
-  async loadModule<T extends MicroModule>(microModule: MicroModule): Promise<T> {
-    if (!microModule) {
-      throw new Error(`Given module is undefined`);
+      this.container
+        .bind<MicroModule>(microModule.id)
+        .to(microModule.module)
+        .inSingletonScope();
     }
 
-    const moduleId = microModule.getId();
-
-    if (!this.modules[moduleId]) {
-      // The module has not been loaded yet, first load all its dependencies and then load the module
-      const dependenciesIds = microModule.getDependencies();
-
-      for (const depId of dependenciesIds) {
-        if (!this.modules[depId]) {
-          throw new Error(`Attempting to load ${moduleId}: dependency ${depId} of given module has not yet been loaded`);
-        }
-      }
-
-      const depsDict: Dictionary<MicroModule> = dependenciesIds.reduce(
-        (dict, depId) => ({ ...dict, [depId]: this.modules[depId] }),
-        {}
-      );
-
-      await microModule.onLoad(depsDict);
-
-      this.modules[moduleId] = microModule;
+    for (const microModule of modules) {
+      const provider: ModuleProvider = this.container.get(MicroOrchestratorTypes.ModuleProvider);
+      await provider(microModule.id);
     }
-
-    return microModule as T;
   }
 }

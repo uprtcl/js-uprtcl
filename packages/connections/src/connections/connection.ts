@@ -1,4 +1,5 @@
-import { Logger, LogLevel } from '@uprtcl/cortex';
+import { Ready } from '@uprtcl/cortex';
+import { Logger } from '@uprtcl/micro-orchestrator';
 import merge from 'lodash/merge';
 
 export interface ConnectionOptions {
@@ -17,7 +18,7 @@ const defaultOptions: ConnectionOptions = {
   retryInterval: 200
 };
 
-export class Connection {
+export class Connection implements Ready {
   state: ConnectionState = ConnectionState.PENDING;
   connectionReady!: Promise<void>;
   connectionResolve!: () => void;
@@ -38,7 +39,7 @@ export class Connection {
     setTimeout(() => {
       this.connect()
         .then(() => this.success())
-        .catch(() => this.retry());
+        .catch(e => this.retry(e));
     });
   }
 
@@ -87,7 +88,7 @@ export class Connection {
   /**
    * Retries to connect
    */
-  protected retry(): void {
+  protected retry(cause: any): void {
     let retryCount = 0;
 
     // If retries is negative we disable the retry mechanism
@@ -95,12 +96,12 @@ export class Connection {
       this.state = ConnectionState.FAILED;
       this.connectionReject();
 
-      this.logger.warn(`Connection failed, not retrying`);
+      this.logger.warn(`Connection failed with cause `, cause, `, not retrying`);
 
       return;
     }
 
-    this.logger.warn('Connection failed, retrying...');
+    this.logger.warn('Connection failed with cause ', cause, ' retrying...');
 
     // Reinitiate promise logic for ready function
     if (this.state !== ConnectionState.PENDING) {
@@ -128,7 +129,7 @@ export class Connection {
             this.connectionReject();
 
             this.logger.warn(
-              `Retried to connect ${this.options.retryInterval} times and failed, stopping`
+              `Retried to connect ${this.options.retries} times and failed, stopping`
             );
           }
         });

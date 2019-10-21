@@ -1,10 +1,9 @@
+// Required by inversify
+import 'reflect-metadata';
+
 /** _Prtcl */
-export { Commit, Perspective, Context } from './types';
-export { UprtclProvider } from './services/uprtcl/uprtcl.provider';
-export { UprtclHolochain } from './services/uprtcl/uprtcl.holochain';
+export { Commit, Perspective, Context, UprtclTypes } from './types';
+export { UprtclProvider } from './services/providers/uprtcl.provider';
+export { UprtclHolochain } from './services/providers/uprtcl.holochain';
 
-export { UprtclModule } from './uprtcl.module';
-
-/** Services */
-export { ProxyProvider } from './services/proxy/proxy.provider';
-
+export { uprtclModule } from './uprtcl.module';

@@ -1,72 +1,56 @@
-import { MicroModule, REDUX_STORE_ID, StoreModule } from '@uprtcl/micro-orchestrator';
+import { injectable } from 'inversify';
 import {
-  PATTERN_REGISTRY_MODULE_ID,
-  DISCOVERY_MODULE_ID,
-  PatternRegistryModule,
-  SecuredPattern,
-  Secured,
-  Pattern,
   DiscoverableSource,
-  DiscoveryModule
+  CidHashedPattern,
+  DefaultSignedPattern,
+  DefaultSecuredPattern,
+  PatternTypes,
+  CortexModule
 } from '@uprtcl/cortex';
-import { Dictionary } from 'lodash';
-import { UprtclProvider } from './services/uprtcl/uprtcl.provider';
+
 import { PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern } from './patterns/commit.pattern';
 import { ContextPattern } from './patterns/context.pattern';
 import { CommitHistory } from './lenses/commit-history';
+import { UprtclTypes, UprtclLocal, UprtclRemote } from './types';
+import { UprtclDexie } from './services/providers/uprtcl.dexie';
+import { Uprtcl } from './services/uprtcl';
 
-export const UPRTCL_MODULE_ID = 'uprtcl-module';
+export function uprtclModule(
+  discoverableUprtcls: Array<DiscoverableSource<UprtclRemote>>,
+  localUprtcl: new (...args: any[]) => UprtclLocal = UprtclDexie
+): new (...args: any[]) => CortexModule {
+  @injectable()
+  class UprtclModule extends CortexModule {
+    get elements() {
+      return [{ name: 'commit-history', element: CommitHistory }];
+    }
 
-export class UprtclModule implements MicroModule {
-  constructor(protected discoverableUprtcl: DiscoverableSource<UprtclProvider>) {}
+    get sources() {
+      return discoverableUprtcls.map(uprtcl => ({
+        symbol: UprtclTypes.UprtclRemote,
+        source: uprtcl
+      }));
+    }
 
-  async onLoad(dependencies: Dictionary<MicroModule>): Promise<void> {
-    const patternRegistryModule: PatternRegistryModule = dependencies[
-      PATTERN_REGISTRY_MODULE_ID
-    ] as PatternRegistryModule;
+    get services() {
+      return [
+        { symbol: UprtclTypes.UprtclLocal, service: localUprtcl },
+        { symbol: UprtclTypes.Uprtcl, service: Uprtcl }
+      ];
+    }
 
-    const discoveryModule: DiscoveryModule = dependencies[DISCOVERY_MODULE_ID] as DiscoveryModule;
-    discoveryModule.discoveryService.addSources(this.discoverableUprtcl);
-
-    const patternRegistry = patternRegistryModule.patternRegistry;
-    const securedPattern: Pattern & SecuredPattern<Secured<any>> = patternRegistry.getPattern(
-      'secured'
-    );
-
-    const perspectivePattern = new PerspectivePattern(
-      patternRegistry,
-      securedPattern,
-      this.discoverableUprtcl.source
-    );
-    const commitPattern = new CommitPattern(
-      patternRegistry,
-      securedPattern,
-      perspectivePattern,
-      discoveryModule.discoveryService,
-      this.discoverableUprtcl.source
-    );
-    const contextPattern = new ContextPattern(securedPattern, this.discoverableUprtcl.source);
-
-    patternRegistry.registerPattern('commit', commitPattern);
-    patternRegistry.registerPattern('perspective', perspectivePattern);
-    patternRegistry.registerPattern('context', contextPattern);
-
-    const storeModule: StoreModule = dependencies[REDUX_STORE_ID] as StoreModule;
-
-    customElements.define(
-      'commit-history',
-      CommitHistory(discoveryModule.discoveryService, storeModule.store)
-    );
+    get patterns() {
+      return [
+        { symbol: PatternTypes.Core.Hashed, pattern: CidHashedPattern },
+        { symbol: PatternTypes.Core.Signed, pattern: DefaultSignedPattern },
+        { symbol: PatternTypes.Core.Secured, pattern: DefaultSecuredPattern },
+        { symbol: UprtclTypes.PerspectivePattern, pattern: PerspectivePattern },
+        { symbol: UprtclTypes.CommitPattern, pattern: CommitPattern },
+        { symbol: UprtclTypes.ContextPattern, pattern: ContextPattern }
+      ];
+    }
   }
 
-  async onUnload(): Promise<void> {}
-
-  getDependencies(): string[] {
-    return [PATTERN_REGISTRY_MODULE_ID, DISCOVERY_MODULE_ID, REDUX_STORE_ID];
-  }
-
-  getId(): string {
-    return UPRTCL_MODULE_ID;
-  }
+  return UprtclModule;
 }

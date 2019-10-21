@@ -1,4 +1,5 @@
-import { Logger } from './logger';
+import { Logger } from '@uprtcl/micro-orchestrator';
+
 import { installOfflineWatcher } from './offline.watcher';
 
 type Dictionary<T> = { [key: string]: T };
@@ -168,7 +169,7 @@ export class TaskQueue {
       }
     } catch (e) {
       if (this.retryInterval > 0 && this.offline) {
-        this.logger.warn(`Task failed, retrying when online`, task);
+        this.logger.warn('Task ', task, ' failed with error', e, ' retrying when online');
 
         // If there is a new task with the same id, don't retry this one since it has been overriden
         if (this.queue[task.id] && this.queue[task.id] !== task) {
@@ -180,7 +181,7 @@ export class TaskQueue {
 
         this.scheduleTasksRun();
       } else {
-        this.logger.warn(`Task failed, not retrying`, task);
+        this.logger.error('Task ', task, ' failed with error', e, ' not retrying');
 
         // Task failed, delete the task from the dictionary
         this.finishedTasks[task.id] = true;

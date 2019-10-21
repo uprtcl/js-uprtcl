@@ -1,48 +1,44 @@
-import { Dictionary } from 'lodash';
+import { MicroModule, MicroOrchestratorTypes, ModuleProvider } from '@uprtcl/micro-orchestrator';
 
-import { MicroModule } from '@uprtcl/micro-orchestrator';
-
-import { PatternRegistryModule, PATTERN_REGISTRY_MODULE_ID } from '../patterns/pattern-registry.module';
 import { DiscoveryService } from './discovery.service';
 import { CacheService } from './cache/cache.service';
 import { KnownSourcesService } from './known-sources/known-sources.service';
-import { DiscoverableSource } from './sources/discoverable.source';
 import { MultiSourceService } from './multi/multi-source.service';
 import { CacheDexie } from './cache/cache.dexie';
 import { KnownSourcesDexie } from './known-sources/known-sources.dexie';
+import { injectable, interfaces, inject } from 'inversify';
+import { PatternTypes, DiscoveryTypes } from '../types';
+import { Source } from './sources/source';
 
-export const DISCOVERY_MODULE_ID = 'discovery-module';
+export function discoveryModule(
+  cacheService: CacheService = new CacheDexie(),
+  localKnownSources: KnownSourcesService = new KnownSourcesDexie()
+): any {
+  @injectable()
+  class DiscoveryModule implements MicroModule {
+    constructor(
+      @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider
+    ) {}
 
-export class DiscoveryModule implements MicroModule {
-  discoveryService!: DiscoveryService;
+    async onLoad(
+      context: interfaces.Context,
+      bind: interfaces.Bind,
+      unbind: interfaces.Unbind,
+      isBound: interfaces.IsBound,
+      rebind: interfaces.Rebind
+    ): Promise<void> {
+      await this.moduleProvider(PatternTypes.Module);
+      await Promise.all([cacheService.ready(), localKnownSources.ready()]);
 
-  constructor(
-    protected cacheService: CacheService = new CacheDexie(),
-    protected localKnownSources: KnownSourcesService = new KnownSourcesDexie(),
-    protected discoverableSources: Array<DiscoverableSource> = []
-  ) {}
+      bind<MultiSourceService>(DiscoveryTypes.MultiSource).to(MultiSourceService);
+      bind<CacheService>(DiscoveryTypes.Cache).toConstantValue(cacheService);
+      bind<KnownSourcesService>(DiscoveryTypes.LocalKnownSources).toConstantValue(
+        localKnownSources
+      );
+      bind<Source>(DiscoveryTypes.DiscoveryService).to(DiscoveryService);
+    }
 
-  async onLoad(dependencies: Dictionary<MicroModule>): Promise<void> {
-    const patternRegistryModule: PatternRegistryModule = dependencies[
-      PATTERN_REGISTRY_MODULE_ID
-    ] as PatternRegistryModule;
-
-    this.discoveryService = new DiscoveryService(
-      this.cacheService,
-      new MultiSourceService(
-        patternRegistryModule.patternRegistry,
-        this.localKnownSources,
-        this.discoverableSources
-      )
-    );
+    async onUnload(): Promise<void> {}
   }
-
-  async onUnload(): Promise<void> {}
-
-  getDependencies(): string[] {
-    return [PATTERN_REGISTRY_MODULE_ID];
-  }
-  getId(): string {
-    return DISCOVERY_MODULE_ID;
-  }
+  return DiscoveryModule;
 }

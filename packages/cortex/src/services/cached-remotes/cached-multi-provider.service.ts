@@ -1,29 +1,31 @@
 import { CacheService } from '../cache/cache.service';
-import { Source } from '../sources/source';
 import { MultiProviderService } from '../multi/multi-provider.service';
-import { TaskQueue } from '../../utils/task.queue';
 import { CachedProviderService } from './cached-provider.service';
+import { NamedSource } from '../sources/named.source';
+import { Hashed } from '../../patterns/patterns/hashed.pattern';
 
-export class CachedMultiProviderService<CACHE extends CacheService, REMOTE extends Source> extends CachedProviderService<CACHE, MultiProviderService<REMOTE>>{
-
+export class CachedMultiProviderService<
+  CACHE extends CacheService,
+  REMOTE extends NamedSource
+> extends CachedProviderService<CACHE, MultiProviderService<REMOTE>> {
   /**
    * Execute the creator function and wait for it in the cache,
    * schedule its execution in the given remote
    *
+   * @param sourceName the source to execute the function in
    * @param creator the creator function to execute
-   * @param source the source to which to execute the function
-   * @returns the optimistic id of the newly created object
+   * @param cloner the cloner function create the object in the remote service
+   * @returns the newly created object, along with its hash
    */
-  public async optimisticCreateIn<O extends object, R extends object>(
-    source: string,
-    object: O,
-    creator: (service: CACHE) => Promise<R>,
-    cloner: (service: REMOTE, object: R) => Promise<any>
-  ): Promise<R> {
-    const multiCloner = (service: MultiProviderService<REMOTE>, createdObject: R) =>
-      service.createIn(source, service => cloner(service, createdObject), createdObject);
+  public async optimisticCreateIn<O>(
+    sourceName: string,
+    creator: (service: CACHE) => Promise<Hashed<O>>,
+    cloner: (service: REMOTE, object: Hashed<O>) => Promise<any>
+  ): Promise<Hashed<O>> {
+    const multiCloner = (service: MultiProviderService<REMOTE>, createdObject: Hashed<O>) =>
+      service.createIn(sourceName, service => cloner(service, createdObject));
 
-    return this.optimisticCreate(object, creator, multiCloner);
+    return this.optimisticCreate(creator, multiCloner);
   }
 
   /**
@@ -34,7 +36,7 @@ export class CachedMultiProviderService<CACHE extends CacheService, REMOTE exten
    * @returns the result of the optimistic update execution
    */
   public async optimisticUpdateIn<O>(
-    source: string,
+    sourceName: string,
     object: object,
     cacheUpdater: (service: CACHE) => Promise<O>,
     remoteUpdater: (service: REMOTE) => Promise<O>,
@@ -42,7 +44,7 @@ export class CachedMultiProviderService<CACHE extends CacheService, REMOTE exten
     dependsOn: string | undefined
   ): Promise<O> {
     const multiRemoteUpdate = (service: MultiProviderService<REMOTE>) =>
-      service.updateIn(source, remoteUpdater, object);
+      service.updateIn(sourceName, remoteUpdater, object);
     return this.optimisticUpdate(cacheUpdater, multiRemoteUpdate, taskId, dependsOn);
   }
 }

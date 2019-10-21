@@ -1,6 +1,9 @@
 import { SignedPattern, Signed } from '../patterns/signed.pattern';
+import { injectable } from 'inversify';
+import { Pattern } from '../pattern';
 
-export class DefaultSignedPattern implements SignedPattern<any> {
+@injectable()
+export class DefaultSignedPattern implements Pattern, SignedPattern<any> {
   recognize(object: object) {
     return object.hasOwnProperty('proof') && object.hasOwnProperty('payload');
   }
@@ -9,7 +12,7 @@ export class DefaultSignedPattern implements SignedPattern<any> {
     return this.verifySignature(signed);
   }
 
-  derive<T>(object: T): Signed<T> {
+  async derive<T>(object: T): Promise<Signed<T>> {
     return this.sign(object);
   }
 

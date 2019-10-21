@@ -1,7 +1,9 @@
-import '@corpuscule/lit-html-renderer/lib/init';
+// Required by inversify
+import 'reflect-metadata';
 
 /** Services */
-export { Source } from './services/sources/source';
+export { Source, Ready } from './services/sources/source';
+export { NamedSource } from './services/sources/named.source';
 export { DiscoverableSource } from './services/sources/discoverable.source';
 
 export { KnownSourcesService } from './services/known-sources/known-sources.service';
@@ -20,10 +22,11 @@ export {
 } from './services/cached-remotes/cached-multi-provider.service';
 
 export { DiscoveryService } from './services/discovery.service';
-export { DiscoveryModule, DISCOVERY_MODULE_ID } from './services/discovery.module';
+export { discoveryModule } from './services/discovery.module';
 
 /** Patterns */
-export { Pattern } from './patterns/pattern';
+export { Pattern, forPattern } from './patterns/pattern';
+export { ClonePattern } from './patterns/patterns/clone.pattern';
 export { CreatePattern } from './patterns/patterns/create.pattern';
 export { ContentPattern } from './patterns/patterns/content.pattern';
 export { DerivePattern } from './patterns/patterns/derive.pattern';
@@ -35,23 +38,25 @@ export { SignedPattern, Signed } from './patterns/patterns/signed.pattern';
 export { ValidatePattern } from './patterns/patterns/validate.pattern';
 export { TypePattern } from './patterns/patterns/type.pattern';
 export { TextPattern } from './patterns/patterns/text.pattern';
+export { TransformPattern } from './patterns/patterns/transform.pattern';
 export { LensesPattern } from './patterns/patterns/lenses.pattern';
 export { ActionsPattern } from './patterns/patterns/actions.pattern';
 export { UpdatePattern } from './patterns/patterns/update.pattern';
 
 // Default patterns
-export { DefaultHashedPattern } from './patterns/defaults/default-hashed.pattern';
+export { CidHashedPattern, recognizeHashed } from './patterns/defaults/cid-hashed.pattern';
 export { DefaultSignedPattern } from './patterns/defaults/default-signed.pattern';
 export { DefaultSecuredPattern, Secured } from './patterns/defaults/default-secured.pattern';
-export { DefaultNodePattern, Node } from './patterns/defaults/default-node.pattern';
-export { getDefaultPatterns } from './patterns/default.patterns';
+export {
+  NodeActions,
+  NodeLinksPattern,
+  Node,
+  nodePattern
+} from './patterns/defaults/default-node.pattern';
 
 // Pattern Registry
-export { PatternRegistry } from './patterns/registry/pattern.registry';
-export {
-  PatternRegistryModule,
-  PATTERN_REGISTRY_MODULE_ID
-} from './patterns/pattern-registry.module';
+export { PatternRecognizer } from './patterns/recognizer/pattern.recognizer';
+export { PatternsModule } from './patterns/patterns.module';
 
 /** Entities */
 export {
@@ -68,8 +73,11 @@ export {
 } from './entities';
 
 /** Lenses */
-export { LensesModule, LENSES_MODULE_ID } from './elements/lenses.module';
+export { LensesModule } from './elements/lenses.module';
 export { Lens, PatternAction, LensElement } from './types';
 
-/** Utils */
-export { Logger, LogLevel } from './utils/logger';
+/** Types */
+export { DiscoveryTypes, PatternTypes, EntitiesTypes, LensesTypes } from './types';
+
+/** Module */
+export { CortexModule } from './cortex.module';

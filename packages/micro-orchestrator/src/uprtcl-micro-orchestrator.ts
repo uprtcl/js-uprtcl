@@ -1,4 +1,17 @@
+// Required by inversify
+import 'reflect-metadata';
+
 export { MicroOrchestrator } from './orchestrator/micro-orchestrator';
-export { StoreModule, REDUX_STORE_ID } from './modules/redux/store.module';
-export { ReduxModule } from './modules/redux/redux.module';
+export { StoreModule } from './modules/redux/store.module';
+export { reduxModule } from './modules/redux/redux.module';
 export { MicroModule } from './modules/micro.module';
+export { ModuleProvider, moduleProvider } from './orchestrator/module-provider';
+
+export { MicroOrchestratorTypes, Constructor, ModuleToLoad, ReduxTypes } from './types';
+
+/** Elements */
+export { ModuleContainer, RequestDependencyEvent } from './elements/module-container';
+export { moduleConnect } from './elements/mixins/module-connect-mixin';
+
+/** Utils */
+export { Logger, LogLevel } from './utils/logger';

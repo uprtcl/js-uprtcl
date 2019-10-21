@@ -8,7 +8,6 @@ import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
 
 const pkg = require('./package.json');
-delete pkg.dependencies['@holochain/hc-web-client'];
 pkg.dependencies['lodash/merge'] = '';
 pkg.dependencies['rpc-websockets'] = '';
 pkg.dependencies['isomorphic-fetch'] = '';

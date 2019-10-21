@@ -1,6 +1,8 @@
+import { injectable } from 'inversify';
 import Dexie from 'dexie';
 import { KnownSourcesService } from './known-sources.service';
 
+@injectable()
 export class KnownSourcesDexie extends Dexie implements KnownSourcesService {
   knownSources: Dexie.Table<string[], string>;
 
@@ -15,9 +17,7 @@ export class KnownSourcesDexie extends Dexie implements KnownSourcesService {
   /**
    * @override
    */
-  public getOwnSource(): Promise<string> {
-    return Promise.resolve('local');
-  }
+  async ready(): Promise<void> {}
 
   /**
    * @override

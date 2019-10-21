@@ -1,6 +1,7 @@
+import { injectable, inject, multiInject, tagged } from 'inversify';
 import {
   Secured,
-  PatternRegistry,
+  PatternTypes,
   RedirectPattern,
   Pattern,
   SecuredPattern,
@@ -9,26 +10,26 @@ import {
   Signed,
   ActionsPattern,
   PatternAction,
-  UpdatePattern,
-  Hashed
+  UpdatePattern
 } from '@uprtcl/cortex';
-import { Perspective, Commit } from '../types';
-import { UprtclProvider } from '../services/uprtcl/uprtcl.provider';
+import { Perspective, UprtclTypes } from '../types';
+
+import { Uprtcl, NewPerspectiveArgs } from '../services/uprtcl';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp', 'name'];
 
+@injectable()
 export class PerspectivePattern
   implements
     Pattern,
     LinkedPattern<Secured<Perspective>>,
     RedirectPattern<Secured<Perspective>>,
-    CreatePattern<{ name?: string; contextId?: string }, Signed<Perspective>>,
+    CreatePattern<NewPerspectiveArgs, Signed<Perspective>>,
     ActionsPattern,
     UpdatePattern {
   constructor(
-    protected patternRegistry: PatternRegistry,
-    protected securedPattern: Pattern & SecuredPattern<Secured<Perspective>>,
-    protected uprtcl: UprtclProvider
+    @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & SecuredPattern<any>,
+    @inject(UprtclTypes.Uprtcl) protected uprtcl: Uprtcl
   ) {}
 
   recognize(object: Object) {
@@ -43,12 +44,12 @@ export class PerspectivePattern
   getHardLinks: (perspective: Secured<Perspective>) => string[] = (
     perspective: Secured<Perspective>
   ): string[] => [];
+
   getSoftLinks: (perspective: Secured<Perspective>) => Promise<string[]> = async (
     perspective: Secured<Perspective>
   ) => {
     const head = await this.uprtcl.getPerspectiveHead(perspective.id);
-    const contextId = await this.uprtcl.getPerspectiveContext(perspective.id);
-    return [head, contextId].filter(link => !!link) as string[];
+    return head ? [head] : [];
   };
 
   getLinks: (perspective: Secured<Perspective>) => Promise<string[]> = (
@@ -59,50 +60,27 @@ export class PerspectivePattern
     perspective: Secured<Perspective>
   ) => this.uprtcl.getPerspectiveHead(perspective.id);
 
-  create: (args: {
-    name?: string;
-    contextId?: string;
-    headId?: string;
-  }) => Promise<Secured<Perspective>> = async (args: {
-    name?: string;
-    contextId?: string;
-    headId?: string;
-  }) => {
-    args.name = args.name || 'master';
-    const perspective: Secured<Perspective> = await this.uprtcl.createPerspective(
-      args.name,
-      Date.now()
-    );
-
-    // Set the perspective context
-    if (!args.contextId) {
-      const context = await this.uprtcl.createContext(Date.now(), 0);
-      args.contextId = context.id;
-    }
-    await this.uprtcl.updatePerspectiveContext(perspective.id, args.contextId);
-
-    // Set the perspective head if given
-    if (args.headId) {
-      await this.uprtcl.updatePerspectiveHead(perspective.id, args.headId);
-    }
-
-    return perspective;
+  create: (
+    args: NewPerspectiveArgs,
+    providerName?: string
+  ) => Promise<Secured<Perspective>> = async (args: NewPerspectiveArgs, providerName?: string) => {
+    return this.uprtcl.createPerspective(args, providerName);
   };
 
-  getActions: (object: Secured<Perspective>) => PatternAction[] = (
-    object: Secured<Perspective>
+  getActions: (perspective: Secured<Perspective>) => PatternAction[] = (
+    perspective: Secured<Perspective>
   ): PatternAction[] => {
     return [
       {
         icon: 'call_split',
         title: 'New perspective',
         action: async () => {
-          const [contextId, headId] = await Promise.all([
-            this.uprtcl.getPerspectiveContext(object.id),
-            this.uprtcl.getPerspectiveHead(object.id)
+          const [context, headId] = await Promise.all([
+            this.uprtcl.getPerspectiveContext(perspective.id),
+            this.uprtcl.getPerspectiveHead(perspective.id)
           ]);
-          const perspective = await this.create({ headId, contextId });
-          window.location.href = `/?id=${perspective.id}`;
+          const newPerspective = await this.create({ headId, context }, perspective.object.payload.origin);
+          window.location.href = `/?id=${newPerspective.id}`;
         }
       }
     ];
@@ -112,23 +90,17 @@ export class PerspectivePattern
     perspective: Secured<Perspective>,
     newContent: any
   ) => {
-    const dataPattern: CreatePattern<any, any> = this.patternRegistry.recognizeMerge(newContent);
-
-    if (!dataPattern.create) throw new Error('Cannot create this type of data');
-
-    const data: Hashed<any> = await dataPattern.create(newContent);
-
-    const commitPattern: CreatePattern<
-      { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
-      Signed<Commit>
-    > = this.patternRegistry.getPattern('commit');
+    const data = await this.uprtcl.createData(newContent);
 
     const headId = await this.uprtcl.getPerspectiveHead(perspective.id);
-    const newHead = await commitPattern.create({
-      dataId: data.id,
-      message: `Commit at ${Date.now() / 1000}`,
-      parentsIds: headId ? [headId] : []
-    });
+    const newHead = await this.uprtcl.createCommit(
+      {
+        dataId: data.id,
+        message: `Commit at ${Date.now() / 1000}`,
+        parentsIds: headId ? [headId] : []
+      },
+      perspective.object.payload.origin
+    );
 
     await this.uprtcl.updatePerspectiveHead(perspective.id, newHead.id);
 

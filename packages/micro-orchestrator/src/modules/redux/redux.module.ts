@@ -1,48 +1,33 @@
-import { Action, Middleware, Reducer, Store } from 'redux';
-import thunk from 'redux-thunk';
-import { Dictionary } from 'lodash';
-import uniq from 'lodash/uniq';
+import { Store, ReducersMapObject, Action, Reducer } from 'redux';
+import { inject, interfaces, injectable } from 'inversify';
+import { LazyStore } from 'pwa-helpers/lazy-reducer-enhancer';
 
 import { MicroModule } from '../micro.module';
-import { StoreModule, REDUX_STORE_ID } from './store.module';
+import { MicroOrchestratorTypes, ReduxTypes } from '../../types';
+import { ModuleProvider } from '../../orchestrator/module-provider';
 
-export class ReduxModule<S, A extends Action> implements MicroModule {
-  store!: Store;
+export function reduxModule<S, A extends Action>(reducersMap: ReducersMapObject<S, A>): any {
+  @injectable()
+  class ReduxModule implements MicroModule {
+    constructor(
+      @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider
+    ) {}
 
-  constructor(
-    protected reducerName: string,
-    protected reducer: Reducer<S, A>,
-    protected middlewares: Middleware<any, any, any>[] = [],
-    protected dependencies: string[] = []
-  ) {}
+    async onLoad(
+      context: interfaces.Context,
+      bind: interfaces.Bind,
+      unbind: interfaces.Unbind,
+      isBound: interfaces.IsBound,
+      rebind: interfaces.Rebind
+    ): Promise<void> {
+      await this.moduleProvider(ReduxTypes.Module);
 
-  async onLoad(dependencies: Dictionary<MicroModule>): Promise<void> {
-    const storeModule: StoreModule = dependencies[REDUX_STORE_ID] as StoreModule;
-    this.store = storeModule.getStore();
+      const store: Store & LazyStore = context.container.get(ReduxTypes.Store);
+      store.addReducers(reducersMap as ReducersMapObject);
+    }
 
-    const middlewares = this.getMiddlewares();
-
-    storeModule.addReducer({
-      [this.reducerName]: this.reducer as Reducer<S, Action<any>>
-    });
-    // storeModule.addMiddlewares(middlewares);
+    async onUnload(): Promise<void> {}
   }
 
-  getMiddlewares(): Middleware<any, any, any>[] {
-    return [thunk];
-  }
-
-  getDependencies(): Array<string> {
-    return uniq([REDUX_STORE_ID, ...this.dependencies]);
-  }
-
-  getId(): string {
-    return this.reducerName;
-  }
-
-  async onUnload(): Promise<void> {}
-
-  getStore(): Store {
-    return this.store;
-  }
+  return ReduxModule;
 }

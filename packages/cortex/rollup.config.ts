@@ -6,11 +6,15 @@ import typescript from 'rollup-plugin-typescript2';
 import json from 'rollup-plugin-json';
 import builtins from 'rollup-plugin-node-builtins';
 import globals from 'rollup-plugin-node-globals';
+import babel from 'rollup-plugin-babel';
 
 const pkg = require('./package.json');
 pkg.dependencies['lodash/merge'] = '';
 pkg.dependencies['lodash/uniq'] = '';
 pkg.dependencies['lit-html/directives/unsafe-html'] = '';
+
+// delete pkg.dependencies['multihashing-async'];
+// delete pkg.dependencies['cids'];
 
 const libraryName = 'uprtcl-cortex';
 
@@ -27,7 +31,9 @@ export default {
   },
   plugins: [
     globals(),
-    builtins(),
+
+    // Resolve source maps to the original source
+    sourceMaps(),
     // Allow json resolution
     json(),
     // Compile TypeScript files
@@ -39,10 +45,8 @@ export default {
     // which external modules to include in the bundle
     // https://github.com/rollup/rollup-plugin-node-resolve#usage
     resolve({ browser: true, preferBuiltins: false }),
-    commonjs(),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-
-    // Resolve source maps to the original source
-    sourceMaps()
+    commonjs(),
+    builtins()
   ]
 };

@@ -4,22 +4,26 @@ import {
   compose,
   combineReducers,
   applyMiddleware,
-  Middleware,
-  ReducersMapObject,
   AnyAction,
   StoreEnhancer
 } from 'redux';
 import { LazyStore, lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
 import thunk, { ThunkMiddleware } from 'redux-thunk';
+import { injectable, interfaces } from 'inversify';
 
 import { MicroModule } from '../micro.module';
+import { MicroOrchestratorTypes, ReduxTypes } from '../../types';
 
-export const REDUX_STORE_ID = 'redux-store-module';
-
+@injectable()
 export class StoreModule implements MicroModule {
-  store!: Store & LazyStore;
-
-  async onLoad(): Promise<void> {
+  async onLoad(
+    context: interfaces.Context,
+    bind: interfaces.Bind,
+    unbind: interfaces.Unbind,
+    isBound: interfaces.IsBound,
+    rebind: interfaces.Rebind
+  ): Promise<void> {
+    if (isBound(ReduxTypes.Store)) return;
 
     const devCompose: <Ext0, Ext1, StateExt0, StateExt1>(
       f1: StoreEnhancer<Ext0, StateExt0>,
@@ -27,7 +31,7 @@ export class StoreModule implements MicroModule {
     ) => StoreEnhancer<Ext0 & Ext1, StateExt0 & StateExt1> =
       window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose;
 
-    this.store = createStore(
+    const store = createStore(
       (state, action) => state,
       devCompose(
         lazyReducerEnhancer(combineReducers),
@@ -35,23 +39,9 @@ export class StoreModule implements MicroModule {
         applyMiddleware(thunk as ThunkMiddleware<any, AnyAction>)
       )
     ) as Store & LazyStore;
-  }
 
-  addReducer(reducers: ReducersMapObject): void {
-    this.store.addReducers(reducers);
+    bind<Store & LazyStore>(ReduxTypes.Store).toConstantValue(store);
   }
 
   async onUnload(): Promise<void> {}
-
-  getDependencies(): string[] {
-    return [];
-  }
-
-  getId(): string {
-    return REDUX_STORE_ID;
-  }
-
-  getStore(): Store {
-    return this.store;
-  }
 }

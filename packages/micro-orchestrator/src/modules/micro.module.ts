@@ -1,11 +1,13 @@
-import { Dictionary } from 'lodash';
+import { interfaces } from 'inversify';
 
 export interface MicroModule {
-  onLoad(dependencies: Dictionary<MicroModule>): Promise<void>;
+  onLoad(
+    context: interfaces.Context,
+    bind: interfaces.Bind,
+    unbind: interfaces.Unbind,
+    isBound: interfaces.IsBound,
+    rebind: interfaces.Rebind
+  ): Promise<void>;
 
   onUnload(): Promise<void>;
-
-  getDependencies(): Array<string>;
-
-  getId(): string;
 }

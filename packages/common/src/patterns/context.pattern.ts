@@ -1,29 +1,21 @@
-import { Pattern, SecuredPattern, Secured, CreatePattern, Signed } from '@uprtcl/cortex';
-import { Context } from '../types';
-import { UprtclProvider } from '../services/uprtcl/uprtcl.provider';
+import { inject, injectable } from 'inversify';
+import { Pattern, PatternTypes, HashedPattern, CreatePattern, Hashed } from '@uprtcl/cortex';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'nonce'];
 
-export class ContextPattern
-  implements Pattern, CreatePattern<{ timestamp: number; nonce: number }, Signed<Context>> {
+export type NewContextArgs = { timestamp: number; nonce: number } | { context: string };
+
+@injectable()
+export class ContextPattern implements Pattern {
   constructor(
-    protected securedPattern: Pattern & SecuredPattern<Secured<Context>>,
-    protected uprtclProvider: UprtclProvider
+    @inject(PatternTypes.Core.Hashed)
+    protected hashedPattern: Pattern & HashedPattern<any>
   ) {}
 
-  recognize(object: Object) {
+  recognize(object: object) {
     return (
-      this.securedPattern.recognize(object) &&
-      propertyOrder.every(p =>
-        this.securedPattern.extract(object as Secured<Context>).hasOwnProperty(p)
-      )
+      this.hashedPattern.recognize(object) &&
+      typeof this.hashedPattern.extract(object as Hashed<string>) === 'string'
     );
   }
-
-  create: (args: { timestamp: number; nonce: number }) => Promise<Secured<Context>> = (args: {
-    timestamp: number;
-    nonce: number;
-  }): Promise<Secured<Context>> => {
-    return this.uprtclProvider.createContext(args.timestamp, args.nonce);
-  };
 }

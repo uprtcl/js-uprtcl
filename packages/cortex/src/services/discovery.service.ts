@@ -1,14 +1,20 @@
+import { injectable, inject } from 'inversify';
+
 import { Source } from './sources/source';
 import { CachedSourceService } from './cached-remotes/cached-source.service';
 import { CacheService } from './cache/cache.service';
 import { MultiSourceService } from './multi/multi-source.service';
-import { DiscoverableSource } from './sources/discoverable.source';
 import { Hashed } from '../patterns/patterns/hashed.pattern';
+import { DiscoveryTypes } from '../types';
 
+@injectable()
 export class DiscoveryService implements Source {
   cachedRemote: CachedSourceService;
 
-  constructor(protected cache: CacheService, protected multiSource: MultiSourceService) {
+  constructor(
+    @inject(DiscoveryTypes.Cache) protected cache: CacheService,
+    @inject(DiscoveryTypes.MultiSource) protected multiSource: MultiSourceService
+  ) {
     this.cachedRemote = new CachedSourceService(cache, multiSource);
   }
 
@@ -23,10 +29,9 @@ export class DiscoveryService implements Source {
   }
 
   /**
-   * Add the given sources to the existing ones
-   * @param discoverableSources the array of new sources
+   * @override
    */
-  public addSources(...discoverableSources: DiscoverableSource[]): Promise<void> {
-    return this.multiSource.addSources(discoverableSources);
+  async ready(): Promise<void> {
+    return this.multiSource.ready();
   }
 }

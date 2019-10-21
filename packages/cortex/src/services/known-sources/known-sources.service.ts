@@ -1,11 +1,6 @@
-export interface KnownSourcesService {
-  /**
-   * Gets the source name for this service
-   * The source should never change for each instance of the service
-   *
-   * @returns the name of the source of this service
-   */
-  getOwnSource(): Promise<string>;
+import { Ready } from '../sources/source';
+
+export interface KnownSourcesService extends Ready {
 
   /**
    * Retrieves the list of knowns sources for the given hash

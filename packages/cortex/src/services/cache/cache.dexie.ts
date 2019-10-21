@@ -1,6 +1,8 @@
 import { CacheService } from './cache.service';
 import Dexie from 'dexie';
+import { injectable } from 'inversify';
 
+@injectable()
 export class CacheDexie extends Dexie implements CacheService {
   cacheObjects: Dexie.Table<any, string>;
 
@@ -18,6 +20,11 @@ export class CacheDexie extends Dexie implements CacheService {
   async get<T extends object>(hash: string): Promise<T | undefined> {
     return this.cacheObjects.get(hash);
   }
+
+  /**
+   * @override
+   */
+  async ready(): Promise<void> {}
 
   /**
    * @override
