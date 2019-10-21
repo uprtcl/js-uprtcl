@@ -37,9 +37,9 @@ export class MicroOrchestrator {
         .inSingletonScope();
     }
 
-    for (const microModule of modules) {
-      const provider: ModuleProvider = this.container.get(MicroOrchestratorTypes.ModuleProvider);
-      await provider(microModule.id);
-    }
+    const provider: ModuleProvider = this.container.get(MicroOrchestratorTypes.ModuleProvider);
+    const promises = modules.map(async microModule => provider(microModule.id));
+
+    await Promise.all(promises);
   }
 }
