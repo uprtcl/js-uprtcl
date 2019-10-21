@@ -43,7 +43,7 @@ export class IpfsSource extends Connection implements NamedSource {
 
   private tryPut(buffer: Buffer, putConfig: object, wait: number, attempt: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.logger.log(`Try put. Attempt: ${attempt}`);
+      this.logger.log(`Try put`, buffer, `. Attempt: ${attempt}`);
 
       if (attempt > 10) {
         reject();
@@ -65,7 +65,6 @@ export class IpfsSource extends Connection implements NamedSource {
 
   private tryGet(hash: string, wait: number, attempt: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      console.log('test', typeof hash);
       this.logger.log(`Trying to get ${hash}. Attempt: ${attempt}`);
 
       if (attempt > 10) {
@@ -96,7 +95,7 @@ export class IpfsSource extends Connection implements NamedSource {
       cidVersion: cidConfig.version
     };
 
-    let buffer = this.getObjectBuffer(object);
+    const buffer = this.getObjectBuffer(object);
 
     /** recursively try */
     return this.tryPut(buffer, putConfig, 500, 0)
@@ -118,7 +117,6 @@ export class IpfsSource extends Connection implements NamedSource {
     /** recursively try */
     return this.tryGet(hash, 500, 0)
       .then(raw => {
-        console.log('raw', raw);
         let object = JSON.parse(Buffer.from(raw.value).toString());
         this.logger.log(`Object retrieved ${hash}`, object);
         return { id: hash, object: object };

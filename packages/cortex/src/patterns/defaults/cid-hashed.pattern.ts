@@ -16,7 +16,7 @@ export interface CidConfig {
 export const defaultCidConfig: CidConfig = {
   version: 1,
   type: 'sha2-256',
-  codec: 'dag-pb',
+  codec: 'raw',
   base: 'base58btc'
 };
 
