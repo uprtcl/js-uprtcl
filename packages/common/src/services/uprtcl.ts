@@ -80,7 +80,7 @@ export class Uprtcl implements UprtclSource {
 
       providerName = sourcesNames[0];
     }
-    return providerName;
+    return providerName as string;
   }
 
   /**
@@ -88,6 +88,7 @@ export class Uprtcl implements UprtclSource {
    * @returns the uprtcl remote
    */
   protected getPerspectiveProvider(perspective: Secured<Perspective>): UprtclRemote {
+    console.log('pers', perspective);
     const perspectiveOrigin = perspective.object.payload.origin;
 
     const provider = this.service.remote

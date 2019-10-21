@@ -1,20 +1,20 @@
 import { Connection, ConnectionOptions } from '../../connections/connection';
 import Web3 from 'web3';
 import { provider } from 'web3-providers';
-import { Eth } from 'web3-eth';
 import { Contract } from 'web3-eth-contract';
 import { AbiItem } from 'web3-utils';
+
+export interface EthereumConnectionOptions {
+  provider: provider;
+  contractAbi: AbiItem[] | AbiItem;
+  contractAddress: string;
+}
 
 export class EthereumConnection extends Connection {
   web3!: Web3;
   contractInstance!: Contract;
 
-  constructor(
-    protected provider: provider,
-    protected contractAbi: AbiItem[] | AbiItem,
-    protected contractAddress: string,
-    options: ConnectionOptions
-  ) {
+  constructor(protected ethOptions: EthereumConnectionOptions, options: ConnectionOptions) {
     super(options);
   }
 
@@ -22,9 +22,12 @@ export class EthereumConnection extends Connection {
    * @override
    */
   protected async connect(): Promise<void> {
-    this.web3 = new Web3(this.provider);
+    this.web3 = new Web3(this.ethOptions.provider);
     this.web3.transactionConfirmationBlocks = 1;
-    this.contractInstance = new this.web3.eth.Contract(this.contractAbi, this.contractAddress);
+    this.contractInstance = new this.web3.eth.Contract(
+      this.ethOptions.contractAbi,
+      this.ethOptions.contractAddress
+    );
   }
 
   /**

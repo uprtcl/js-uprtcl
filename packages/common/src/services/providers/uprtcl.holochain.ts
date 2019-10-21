@@ -5,10 +5,9 @@ import {
   EntryResult,
   HolochainSource
 } from '@uprtcl/connections';
-import { UprtclProvider } from './uprtcl.provider';
-import { Perspective, Commit } from '../../types';
+import { Perspective, Commit, UprtclRemote } from '../../types';
 
-export class UprtclHolochain extends HolochainSource implements UprtclProvider {
+export class UprtclHolochain extends HolochainSource implements UprtclRemote {
   constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {
     super('uprtcl', hcOptions, options);
   }

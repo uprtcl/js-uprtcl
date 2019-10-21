@@ -9,12 +9,10 @@ import {
   DiscoveryTypes,
   LensesTypes
 } from '@uprtcl/cortex';
-import { DocumentsHolochain, documentsModule, DocumentsTypes } from '@uprtcl/documents';
+import { DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import { KnownSourcesHolochain } from '@uprtcl/connections';
 import { uprtclModule, UprtclHolochain, UprtclTypes } from '@uprtcl/common';
 import { SimpleEditor } from './simple-editor';
-
-window.Buffer = window.Buffer || require('buffer').Buffer;
 
 (async function() {
   const uprtclProvider = new UprtclHolochain({
@@ -22,9 +20,10 @@ window.Buffer = window.Buffer || require('buffer').Buffer;
     instance: 'test-instance'
   });
 
-  const documentsProvider = new DocumentsHolochain({
-    host: 'ws://localhost:8888',
-    instance: 'test-instance'
+  const documentsProvider = new DocumentsIpfs({
+    host: 'ipfs.infura.io',
+    port: 5001,
+    protocol: 'https'
   });
 
   const knownSources = new KnownSourcesHolochain({

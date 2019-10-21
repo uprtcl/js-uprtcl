@@ -10,7 +10,7 @@ export class HolochainSource extends HolochainConnection implements NamedSource 
     protected zome: string,
     protected hcOptions: HolochainConnectionOptions,
     options: ConnectionOptions = {},
-    protected sourceZome: Source = new HolochainProxy(hcOptions, options)
+    protected sourceZome: HolochainProxy = new HolochainProxy(hcOptions, options)
   ) {
     super(zome, hcOptions, options);
   }
@@ -21,7 +21,7 @@ export class HolochainSource extends HolochainConnection implements NamedSource 
   protected async connect(): Promise<void> {
     await super.connect();
 
-    this.name = await this.call('get_source_name', {});
+    this.name = await this.sourceZome.getName();
   }
 
   /**

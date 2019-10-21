@@ -9,7 +9,4 @@ export interface Hashed<T> {
 
 export interface HashedPattern<T extends object>
   extends DerivePattern<Hashed<T>>,
-    ValidatePattern<Hashed<T>> {
-  // TODO return config
-  getCidConfig(hash: string): any;
-}
+    ValidatePattern<Hashed<T>> {}

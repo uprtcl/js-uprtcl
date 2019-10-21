@@ -6,6 +6,20 @@ import { HashedPattern, Hashed } from '../patterns/hashed.pattern';
 import { TransformPattern } from '../patterns/transform.pattern';
 import { Pattern } from '../pattern';
 
+export interface CidConfig {
+  base?: string;
+  version: number;
+  codec: string;
+  type: string;
+}
+
+export const defaultCidConfig: CidConfig = {
+  version: 1,
+  type: 'sha2-256',
+  codec: 'dag-pb',
+  base: 'base58btc'
+};
+
 export function recognizeHashed(object: object) {
   return (
     object.hasOwnProperty('id') &&
@@ -21,12 +35,27 @@ export class CidHashedPattern
     return recognizeHashed(object);
   }
 
+  async hashObject(object: object, config: CidConfig): Promise<string> {
+    const b = multihashing.Buffer.from(JSON.stringify(object, Object.keys(object).sort()));
+    const encoded = await multihashing(b, config.type);
+
+    const cid = new Cid(config.version, config.codec, encoded, config.base);
+    return cid.toString();
+  }
+
   validate<T extends object>(object: Hashed<T>): boolean {
     return true;
   }
 
   async derive<T>(object: T): Promise<Hashed<T>> {
-    const b = multihashing.Buffer.from(JSON.stringify(object));
+    const ordered = {};
+    Object.keys(object)
+      .sort()
+      .forEach(function(key) {
+        ordered[key] = object[key];
+      });
+
+    const b = multihashing.Buffer.from(JSON.stringify(ordered));
     const encoded = await multihashing(b, 'sha2-256');
 
     const cid = new Cid(encoded);
@@ -39,10 +68,6 @@ export class CidHashedPattern
 
   extract<T>(hashed: Hashed<T>): T {
     return hashed.object;
-  }
-
-  getCidConfig(hash: string): any {
-    return null; // TODO fix this
   }
 
   transform(hashed: Hashed<any>): [any] {
