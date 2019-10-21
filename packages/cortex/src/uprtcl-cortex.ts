@@ -44,7 +44,7 @@ export { ActionsPattern } from './patterns/patterns/actions.pattern';
 export { UpdatePattern } from './patterns/patterns/update.pattern';
 
 // Default patterns
-export { DefaultHashedPattern, recognizeHashed } from './patterns/defaults/default-hashed.pattern';
+export { CidHashedPattern, recognizeHashed } from './patterns/defaults/cid-hashed.pattern';
 export { DefaultSignedPattern } from './patterns/defaults/default-signed.pattern';
 export { DefaultSecuredPattern, Secured } from './patterns/defaults/default-secured.pattern';
 export {

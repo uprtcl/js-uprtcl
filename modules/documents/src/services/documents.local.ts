@@ -1,25 +1,22 @@
 import { inject } from 'inversify';
-import { Hashed, DiscoveryTypes, CacheService } from '@uprtcl/cortex';
+import { Hashed, DiscoveryTypes, CacheService, PatternTypes, HashedPattern } from '@uprtcl/cortex';
 import { DocumentsProvider } from './documents.provider';
 import { TextNode } from '../types';
 
 export class DocumentsLocal implements DocumentsProvider {
-  name: string = 'documents-local';
-
   constructor(
+    @inject(PatternTypes.Core.Hashed)
+    protected hashedPattern: HashedPattern<any>,
     @inject(DiscoveryTypes.Cache)
     protected objectsCache: CacheService
   ) {}
 
   async createTextNode(node: TextNode): Promise<string> {
-    const msgUint8 = new TextEncoder().encode(JSON.stringify(node)); // encode as (utf-8) Uint8Array
-    const hash = await crypto.subtle.digest('SHA-256', msgUint8);
-    const hashArray = Array.from(new Uint8Array(hash)); // convert buffer to byte array
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+    const hashed = await this.hashedPattern.derive(node);
 
-    await this.objectsCache.cache(hashHex, node);
+    await this.objectsCache.cache(hashed.id, node);
 
-    return hashHex;
+    return hashed.id;
   }
 
   async ready(): Promise<void> {}

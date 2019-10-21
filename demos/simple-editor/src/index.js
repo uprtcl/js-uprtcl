@@ -5,8 +5,6 @@ import {
   discoveryModule,
   LensesModule,
   entitiesReduxModule,
-  KnownSourcesDexie,
-  CacheDexie,
   EntitiesTypes,
   DiscoveryTypes,
   LensesTypes
@@ -15,6 +13,8 @@ import { DocumentsHolochain, documentsModule, DocumentsTypes } from '@uprtcl/doc
 import { KnownSourcesHolochain } from '@uprtcl/connections';
 import { uprtclModule, UprtclHolochain, UprtclTypes } from '@uprtcl/common';
 import { SimpleEditor } from './simple-editor';
+
+window.Buffer = window.Buffer || require('buffer').Buffer;
 
 (async function() {
   const uprtclProvider = new UprtclHolochain({

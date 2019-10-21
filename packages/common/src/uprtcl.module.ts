@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 import {
   DiscoverableSource,
-  DefaultHashedPattern,
+  CidHashedPattern,
   DefaultSignedPattern,
   DefaultSecuredPattern,
   PatternTypes,
@@ -42,7 +42,7 @@ export function uprtclModule(
 
     get patterns() {
       return [
-        { symbol: PatternTypes.Core.Hashed, pattern: DefaultHashedPattern },
+        { symbol: PatternTypes.Core.Hashed, pattern: CidHashedPattern },
         { symbol: PatternTypes.Core.Signed, pattern: DefaultSignedPattern },
         { symbol: PatternTypes.Core.Secured, pattern: DefaultSecuredPattern },
         { symbol: UprtclTypes.PerspectivePattern, pattern: PerspectivePattern },

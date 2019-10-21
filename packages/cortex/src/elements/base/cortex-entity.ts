@@ -1,4 +1,5 @@
 import { html, LitElement, property, PropertyValues } from 'lit-element';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { Store } from 'redux';
 import '@authentic/mwc-circular-progress';
 import '@material/mwc-button';
@@ -25,7 +26,6 @@ import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer'
 import { Pattern } from '../../patterns/pattern';
 import { UpdatePattern } from '../../patterns/patterns/update.pattern';
 import { TransformPattern } from '../../patterns/patterns/transform.pattern';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { Source } from '../../services/sources/source';
 
 export class CortexEntity extends moduleConnect(LitElement) {
@@ -183,26 +183,21 @@ export class CortexEntity extends moduleConnect(LitElement) {
   async buildEntityIsomorphisms() {
     let isomorphisms: Isomorphism[] = [];
 
-    console.log('hi1', isomorphisms);
     // Build first isomorphism: the proper entity
     isomorphisms.push(this.buildIsomorphism(this.entity));
-    console.log('hi2', isomorphisms);
 
     // Transform the entity to build its isomorphisms
     isomorphisms = isomorphisms.concat(this.transformEntity(this.entity));
-    console.log('hi3', isomorphisms);
 
     // Redirect the entity
     await this.redirectEntity(this.entity).then(i => {
       isomorphisms = isomorphisms.concat(i);
       this.isomorphisms = isomorphisms.reverse();
-      console.log('hi4', isomorphisms);
 
       const renderIsomorphism = this.isomorphisms.findIndex(i => i.lenses.length > 0);
       if (renderIsomorphism !== -1) {
         this.selectedLens = { isomorphism: renderIsomorphism, lens: 0 };
       }
-      console.log('hi5', this.isomorphisms);
     });
   }
 
