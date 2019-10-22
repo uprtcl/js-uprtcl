@@ -1,7 +1,11 @@
 import { Source, Secured } from '@uprtcl/cortex';
 import { Perspective } from '../../types';
+import { AccessControlService } from '../../access-control/access-control.service';
 
 export interface UprtclSource extends Source {
+
+  accessControlService: AccessControlService;
+
   /**
    * Returns all the perspectives associated to a context
    *
