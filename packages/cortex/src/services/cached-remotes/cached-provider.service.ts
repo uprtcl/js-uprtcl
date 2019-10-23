@@ -1,9 +1,10 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
+
 import { TaskQueue } from '../../utils/task.queue';
 import { CacheService } from '../cache/cache.service';
 import { CachedSourceService } from './cached-source.service';
 import { Source } from '../sources/source';
-import { Hashed } from '../../patterns/patterns/hashed.pattern';
+import { Hashed } from '../../patterns/properties/hashable';
 
 export class CachedProviderService<
   CACHE extends CacheService,

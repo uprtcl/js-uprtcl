@@ -2,8 +2,8 @@ import { injectable } from 'inversify';
 import multihashing from 'multihashing-async';
 import * as Cid from 'cids';
 
-import { HashedPattern, Hashed } from '../patterns/hashed.pattern';
-import { TransformPattern } from '../patterns/transform.pattern';
+import { Hashed, Hashable } from '../properties/hashable';
+import { Transformable } from '../properties/transformable';
 import { Pattern } from '../pattern';
 
 export interface CidConfig {
@@ -29,8 +29,7 @@ export function recognizeHashed(object: object) {
 }
 
 @injectable()
-export class CidHashedPattern
-  implements Pattern, HashedPattern<any>, TransformPattern<Hashed<any>, [any]> {
+export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[any]> {
   recognize(object: object) {
     return recognizeHashed(object);
   }
@@ -43,7 +42,7 @@ export class CidHashedPattern
     return cid.toString();
   }
 
-  validate<T extends object>(object: Hashed<T>): boolean {
+  async validate<T extends object>(object: Hashed<T>): Promise<boolean> {
     return true;
   }
 

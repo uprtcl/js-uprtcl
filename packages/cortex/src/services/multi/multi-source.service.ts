@@ -2,11 +2,11 @@ import { multiInject, inject, injectable } from 'inversify';
 import { Dictionary } from 'lodash';
 
 import { Source } from '../sources/source';
-import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
+import { HasLinks } from '../../patterns/properties/has-links';
 import { DiscoverableSource } from '../sources/discoverable.source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
-import { Hashed } from '../../patterns/patterns/hashed.pattern';
+import { Hashed } from '../../patterns/properties/hashable';
 import { NamedSource } from '../sources/named.source';
 import { PatternTypes, DiscoveryTypes } from '../../types';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -93,7 +93,7 @@ export class MultiSourceService<T extends NamedSource = NamedSource> implements 
 
   protected async linksFromObject<O extends object>(object: O): Promise<string[]> {
     // Object retrieved, discover the sources for its links
-    const pattern = this.patternRecognizer.recognizeMerge(object) as LinkedPattern<O>;
+    const pattern = this.patternRecognizer.recognizeMerge(object) as HasLinks;
 
     return pattern.getLinks ? pattern.getLinks(object) : [];
   }

@@ -1,7 +1,7 @@
-import { LinkedPattern } from '../../patterns/patterns/linked.pattern';
+import { HasLinks } from '../../patterns/properties/has-links';
 import { MultiSourceService } from './multi-source.service';
 import { NamedSource } from '../sources/named.source';
-import { Hashed } from '../../patterns/patterns/hashed.pattern';
+import { Hashed } from '../../patterns/properties/hashable';
 import { DiscoverableSource } from '../sources/discoverable.source';
 
 export class MultiProviderService<T extends NamedSource> extends MultiSourceService<T> {
@@ -60,7 +60,7 @@ export class MultiProviderService<T extends NamedSource> extends MultiSourceServ
     // Add known sources of the object's links to the provider's known sources
     if (discoverableSource.knownSources) {
       // Get the properties to get the object links from
-      const pattern: LinkedPattern<O> = this.patternRecognizer.recognizeMerge(object);
+      const pattern: HasLinks = this.patternRecognizer.recognizeMerge(object);
 
       if (pattern.getLinks) {
         const links = await pattern.getLinks(object);

@@ -1,4 +1,4 @@
-import { Hashed } from '../../patterns/patterns/hashed.pattern';
+import { Hashed } from '../../patterns/properties/hashable';
 
 export interface Ready {
   /**

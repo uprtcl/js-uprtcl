@@ -2,7 +2,7 @@ import { CacheService } from '../cache/cache.service';
 import { MultiProviderService } from '../multi/multi-provider.service';
 import { CachedProviderService } from './cached-provider.service';
 import { NamedSource } from '../sources/named.source';
-import { Hashed } from '../../patterns/patterns/hashed.pattern';
+import { Hashed } from '../../patterns/properties/hashable';
 
 export class CachedMultiProviderService<
   CACHE extends CacheService,

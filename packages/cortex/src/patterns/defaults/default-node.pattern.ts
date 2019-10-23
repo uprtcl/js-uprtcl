@@ -1,6 +1,6 @@
-import { Pattern, forPattern } from '../pattern';
-import { LinkedPattern } from '../patterns/linked.pattern';
-import { ActionsPattern } from '../patterns/actions.pattern';
+import { forPattern } from '../pattern';
+import { HasLinks } from '../properties/has-links';
+import { HasActions } from '../properties/has-actions';
 import { PatternAction } from '../../types';
 import { injectable } from 'inversify';
 
@@ -13,7 +13,7 @@ export function nodePattern(object: object) {
 }
 
 @injectable()
-export class NodeLinksPattern extends forPattern(nodePattern) implements LinkedPattern<Node> {
+export class NodeLinksPattern extends forPattern(nodePattern) implements HasLinks {
   async getLinks(object: Node): Promise<string[]> {
     const softLinks = await this.getSoftLinks(object);
     return softLinks.concat(this.getHardLinks(object));
@@ -29,7 +29,7 @@ export class NodeLinksPattern extends forPattern(nodePattern) implements LinkedP
 }
 
 @injectable()
-export class NodeActions extends forPattern(nodePattern) implements ActionsPattern {
+export class NodeActions extends forPattern(nodePattern) implements HasActions {
   getActions(): PatternAction[] {
     return [
       {

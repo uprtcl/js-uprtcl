@@ -19,13 +19,13 @@ import {
   DiscoveryTypes
 } from '../../types';
 import { loadEntity, selectEntities, selectById } from '../../entities';
-import { LensesPattern } from '../../patterns/patterns/lenses.pattern';
-import { ActionsPattern } from '../../patterns/patterns/actions.pattern';
-import { RedirectPattern } from '../../patterns/patterns/redirect.pattern';
+import { HasLenses } from '../../patterns/properties/has-lenses';
+import { HasActions } from '../../patterns/properties/has-actions';
+import { HasRedirect } from '../../patterns/properties/has-redirect';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Pattern } from '../../patterns/pattern';
-import { UpdatePattern } from '../../patterns/patterns/update.pattern';
-import { TransformPattern } from '../../patterns/patterns/transform.pattern';
+import { Updatable } from '../../patterns/properties/updatable';
+import { Transformable } from '../../patterns/properties/transformable';
 import { Source } from '../../services/sources/source';
 
 export class CortexEntity extends moduleConnect(LitElement) {
@@ -105,11 +105,11 @@ export class CortexEntity extends moduleConnect(LitElement) {
   }
 
   async updateContent(newContent: any) {
-    const updatePattern: UpdatePattern = this.patternRecognizer.recognizeMerge(this.entity);
+    const updatable: Updatable = this.patternRecognizer.recognizeMerge(this.entity);
 
-    if (updatePattern.update) {
+    if (updatable.update) {
       this.selectedLens = undefined;
-      const reloadNeeded = await updatePattern.update(this.entity, newContent);
+      const reloadNeeded = await updatable.update(this.entity, newContent);
 
       if (reloadNeeded) await this.buildEntityIsomorphisms();
     }
@@ -202,15 +202,13 @@ export class CortexEntity extends moduleConnect(LitElement) {
   }
 
   async redirectEntity(entity: object): Promise<Array<Isomorphism>> {
-    const patterns: Array<Pattern | RedirectPattern<any>> = this.patternRecognizer.recognize(
-      entity
-    );
+    const patterns: Array<Pattern | HasRedirect> = this.patternRecognizer.recognize(entity);
 
     let isomorphisms: Isomorphism[] = [];
 
     for (const pattern of patterns) {
-      if ((pattern as RedirectPattern<any>).redirect) {
-        const redirectHash = await (pattern as RedirectPattern<any>).redirect(entity);
+      if ((pattern as HasRedirect).redirect) {
+        const redirectHash = await (pattern as HasRedirect).redirect(entity);
 
         if (redirectHash) {
           const redirectEntity = await this.loadEntity(redirectHash);
@@ -231,20 +229,20 @@ export class CortexEntity extends moduleConnect(LitElement) {
   }
 
   buildIsomorphism<T extends object>(entity: T): Isomorphism {
-    const patterns: Array<
-      Pattern | LensesPattern | ActionsPattern
-    > = this.patternRecognizer.recognize(entity);
+    const patterns: Array<Pattern | HasLenses | HasActions> = this.patternRecognizer.recognize(
+      entity
+    );
 
     let actions: PatternAction[] = [];
     let lenses: Lens[] = [];
 
     for (const pattern of patterns) {
-      if ((pattern as LensesPattern).getLenses) {
-        lenses = lenses.concat((pattern as LensesPattern).getLenses(entity));
+      if ((pattern as HasLenses).getLenses) {
+        lenses = lenses.concat((pattern as HasLenses).getLenses(entity));
       }
 
-      if ((pattern as ActionsPattern).getActions) {
-        actions = actions.concat((pattern as ActionsPattern).getActions(entity));
+      if ((pattern as HasActions).getActions) {
+        actions = actions.concat((pattern as HasActions).getActions(entity));
       }
     }
 
@@ -256,17 +254,13 @@ export class CortexEntity extends moduleConnect(LitElement) {
   }
 
   transformEntity<T extends object>(entity: T): Array<Isomorphism> {
-    const patterns: Array<Pattern | TransformPattern<T, any>> = this.patternRecognizer.recognize(
-      entity
-    );
+    const patterns: Array<Pattern | Transformable<any>> = this.patternRecognizer.recognize(entity);
 
     let isomorphisms: Array<Isomorphism> = [];
 
     for (const pattern of patterns) {
-      if ((pattern as TransformPattern<any, any>).transform) {
-        const transformedEntities: Array<any> = (pattern as TransformPattern<T, any>).transform(
-          entity
-        );
+      if ((pattern as Transformable<any>).transform) {
+        const transformedEntities: Array<any> = (pattern as Transformable<any>).transform(entity);
 
         isomorphisms = isomorphisms.concat(
           transformedEntities.map(entity => this.buildIsomorphism(entity))

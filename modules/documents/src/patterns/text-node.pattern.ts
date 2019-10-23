@@ -2,14 +2,14 @@ import { injectable, inject } from 'inversify';
 
 import {
   Pattern,
-  LensesPattern,
-  ActionsPattern,
+  HasLenses,
+  HasActions,
   PatternAction,
   Lens,
   Hashed,
-  HashedPattern,
+  Hashable,
   PatternTypes,
-  CreatePattern,
+  Creatable,
   NamedSource,
   DiscoverableSource
 } from '@uprtcl/cortex';
@@ -21,11 +21,11 @@ const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
 export class TextNodePattern
-  implements Pattern, CreatePattern<Partial<TextNode>, TextNode>, LensesPattern, ActionsPattern {
+  implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasActions {
   constructor(
     @inject(DocumentsTypes.DocumentsProvider)
     protected documentsProvider: DiscoverableSource<DocumentsProvider & NamedSource>,
-    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & HashedPattern<TextNode>
+    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<TextNode>
   ) {}
 
   recognize(object: object): boolean {

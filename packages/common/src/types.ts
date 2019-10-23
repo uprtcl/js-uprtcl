@@ -1,5 +1,5 @@
-import { UprtclProvider } from './services/providers/uprtcl.provider';
-import { CacheService, NamedSource } from '@uprtcl/cortex';
+import { UprtclProvider } from './uprtcl/services/uprtcl.provider';
+import { CacheService } from '@uprtcl/cortex';
 
 export type Context = string;
 
@@ -29,4 +29,3 @@ export const UprtclTypes = {
 };
 
 export type UprtclLocal = CacheService & UprtclProvider;
-export type UprtclRemote = NamedSource & UprtclProvider;

@@ -3,5 +3,5 @@ export interface AccessControlService {
 
   canWrite(hash: string, userId: string): Promise<boolean>;
 
-  getAccessControlInformation(hash: string): Promise<object>;
+  getAccessControlInformation(hash: string): Promise<object | undefined>;
 }

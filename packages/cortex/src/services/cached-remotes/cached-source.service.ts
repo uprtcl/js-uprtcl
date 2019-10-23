@@ -2,7 +2,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { CacheService } from '../cache/cache.service';
 import { Source } from '../sources/source';
-import { Hashed } from '../../patterns/patterns/hashed.pattern';
+import { Hashed } from '../../patterns/properties/hashable';
 
 export class CachedSourceService implements Source {
   protected logger = new Logger('CachedSourceService');
