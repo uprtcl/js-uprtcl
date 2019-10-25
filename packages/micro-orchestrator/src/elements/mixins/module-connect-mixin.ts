@@ -1,10 +1,19 @@
 import { interfaces } from 'inversify';
-import { Constructor, CustomElement } from './types';
 import { RequestDependencyEvent } from '../module-container';
+import { Constructor, CustomElement } from '../../types';
 
-export const moduleConnect = <T extends Constructor<CustomElement>>(baseElement: T) =>
-  class extends baseElement {
-    request(dependency: interfaces.ServiceIdentifier<any>) {
+export interface ConnectedElement {
+  request<T>(dependency: interfaces.ServiceIdentifier<T>): T;
+}
+
+export const moduleConnect = <T extends Constructor<CustomElement>>(
+  baseElement: T
+): {
+  new (...args: any[]): ConnectedElement;
+  prototype: any;
+} & T =>
+  class extends baseElement implements ConnectedElement {
+    request<T>(dependency: interfaces.ServiceIdentifier<T>): T {
       const event = new RequestDependencyEvent({
         detail: { request: [dependency] },
         composed: true,

@@ -7,7 +7,7 @@ export class NodeList extends LitElement implements LensElement<Node> {
   data!: Node;
 
   @property({ type: Boolean })
-  allowAdd: boolean = true;
+  editable: boolean = true;
 
   get styles() {
     return css`

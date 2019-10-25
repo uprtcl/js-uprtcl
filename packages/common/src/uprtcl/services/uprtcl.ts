@@ -88,7 +88,7 @@ export class Uprtcl implements UprtclSource {
    * Returns the uprtcl remote that controls the given perspective, from its origin
    * @returns the uprtcl remote
    */
-  protected getPerspectiveProvider(perspective: Secured<Perspective>): UprtclRemote {
+  public getPerspectiveProvider(perspective: Secured<Perspective>): UprtclRemote {
     const perspectiveOrigin = perspective.object.payload.origin;
 
     const provider = this.service.remote

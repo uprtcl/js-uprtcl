@@ -1,11 +1,11 @@
 import { AccessControlService } from './access-control.service';
 
 export class AccessControlMock implements AccessControlService {
-  canRead(hash: string, userId: string): Promise<boolean> {
+  canRead(hash: string): Promise<boolean> {
     return Promise.resolve(true);
   }
 
-  canWrite(hash: string, userId: string): Promise<boolean> {
+  canWrite(hash: string): Promise<boolean> {
     return Promise.resolve(true);
   }
   getAccessControlInformation(hash: string): Promise<object | undefined> {

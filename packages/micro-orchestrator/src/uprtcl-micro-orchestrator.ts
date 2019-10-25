@@ -7,7 +7,13 @@ export { reduxModule } from './modules/redux/redux.module';
 export { MicroModule } from './modules/micro.module';
 export { ModuleProvider, moduleProvider } from './orchestrator/module-provider';
 
-export { MicroOrchestratorTypes, Constructor, ModuleToLoad, ReduxTypes } from './types';
+export {
+  MicroOrchestratorTypes,
+  Constructor,
+  CustomElement,
+  ModuleToLoad,
+  ReduxTypes
+} from './types';
 
 /** Elements */
 export { ModuleContainer, RequestDependencyEvent } from './elements/module-container';

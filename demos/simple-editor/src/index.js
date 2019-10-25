@@ -3,7 +3,7 @@ import {
   PatternTypes,
   PatternsModule,
   discoveryModule,
-  LensesModule,
+  lensesModule,
   entitiesReduxModule,
   EntitiesTypes,
   DiscoveryTypes,
@@ -11,7 +11,7 @@ import {
 } from '@uprtcl/cortex';
 import { DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import { KnownSourcesHolochain } from '@uprtcl/connections';
-import { uprtclModule, UprtclHolochain, UprtclTypes } from '@uprtcl/common';
+import { uprtclModule, UprtclHolochain, UprtclTypes, updatePlugin } from '@uprtcl/common';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
@@ -50,7 +50,7 @@ import { SimpleEditor } from './simple-editor';
     { id: EntitiesTypes.Module, module: entitiesReducerModule },
     { id: PatternTypes.Module, module: PatternsModule },
     { id: DiscoveryTypes.Module, module: discovery },
-    { id: LensesTypes.Module, module: LensesModule },
+    { id: LensesTypes.Module, module: lensesModule([updatePlugin()]) },
     { id: UprtclTypes.Module, module: uprtcl },
     { id: DocumentsTypes.Module, module: documents }
   );

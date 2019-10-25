@@ -10,3 +10,6 @@ export { UprtclRemote } from './uprtcl/services/uprtcl.remote';
 export { UprtclHolochain } from './uprtcl/services/providers/uprtcl.holochain';
 
 export { uprtclModule } from './uprtcl/uprtcl.module';
+
+/** Access Control */
+export { updatePlugin } from './access-control/plugins/update.plugin';

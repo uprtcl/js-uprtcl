@@ -14,6 +14,7 @@ export interface PatternAction {
 
 export interface LensElement<P> {
   data: P;
+  editable?: boolean;
 }
 
 export interface Isomorphism {

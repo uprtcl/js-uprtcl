@@ -78,11 +78,13 @@ export {
 } from './entities';
 
 /** Lenses */
-export { LensesModule } from './elements/lenses.module';
+export { lensesModule } from './elements/lenses.module';
 export { Lens, PatternAction, LensElement } from './types';
+export { Plugin } from './elements/base/plugin';
 
 /** Types */
 export { DiscoveryTypes, PatternTypes, EntitiesTypes, LensesTypes } from './types';
 
 /** Module */
 export { CortexModule } from './cortex.module';
+export { CortexEntityBase } from './elements/base/cortex-entity-base';

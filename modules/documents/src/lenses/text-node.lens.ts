@@ -6,13 +6,16 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
   @property({ type: Object })
   data!: TextNode;
 
+  @property()
+  editable!: boolean;
+
   render() {
     return html`
       <node-list .data=${this.data}>
         ${this.data.type === TextType.Paragraph
           ? html`
               <div
-                contenteditable="true"
+                contenteditable=${this.editable ? 'true' : 'false'}
                 @input=${(e: InputEvent) => e.target && this.updateContent(e.target['innerText'])}
               >
                 ${this.data.text}
@@ -20,7 +23,7 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
             `
           : html`
               <h3
-                contenteditable="true"
+                contenteditable=${this.editable ? 'true' : 'false'}
                 @input=${(e: InputEvent) => e.target && this.updateContent(e.target['innerText'])}
               >
                 ${this.data.text}

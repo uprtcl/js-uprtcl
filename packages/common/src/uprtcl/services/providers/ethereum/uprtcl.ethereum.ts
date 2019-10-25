@@ -11,7 +11,7 @@ import * as UprtclContractArtifact from './uprtcl-contract.json';
 
 import { Commit, Perspective } from '../../../../types';
 import { UprtclRemote } from '../../uprtcl.remote';
-import { AccessControlMock } from '../../../../access-control/access-control.mock';
+import { AccessControlMock } from '../../../../access-control/services/access-control.mock';
 
 export class UprtclEthereum extends IpfsSource implements UprtclRemote {
   ethConnection!: EthereumConnection;
