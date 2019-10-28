@@ -21,6 +21,7 @@ export class SimpleEditor extends moduleConnect(LitElement) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
       const hashed = await this.textNodePattern.create();
+
       const perspective = await this.perspectivePattern.create({ dataId: hashed.id });
       this.rootHash = perspective.id;
     }

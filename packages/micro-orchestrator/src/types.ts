@@ -31,11 +31,6 @@ export interface CustomElement {
   connectedCallback(): void;
   disconnectedCallback?(): void;
   dispatchEvent(event: Event): boolean;
-  addEventListener<K extends keyof HTMLElementEventMap>(
-    type: K,
-    listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
-    options?: boolean | AddEventListenerOptions
-  ): void;
   addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,

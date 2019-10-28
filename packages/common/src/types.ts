@@ -1,5 +1,5 @@
 import { UprtclProvider } from './uprtcl/services/uprtcl.provider';
-import { CacheService } from '@uprtcl/cortex';
+import { CacheService, Hashed } from '@uprtcl/cortex';
 
 export type Context = string;
 
@@ -16,6 +16,19 @@ export interface Commit {
   message: string;
   parentsIds: Array<string>;
   dataId: string;
+}
+
+export interface UpdateRequest {
+  fromPerspectiveId: string | undefined;
+  perspectiveId: string;
+  oldHeadId: string;
+  newHeadId: string;
+}
+
+export interface Proposal {
+  creatorId: string;
+  requests: Array<Hashed<UpdateRequest>>;
+  description: string | undefined;
 }
 
 export const UprtclTypes = {

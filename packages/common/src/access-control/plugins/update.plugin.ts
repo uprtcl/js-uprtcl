@@ -12,10 +12,10 @@ export const updatePlugin = <T extends CortexEntityBase>(): Plugin<T> => (
     connectedCallback() {
       super.connectedCallback();
 
-      this.addEventListener('content-changed', (e: CustomEvent) => {
+      this.addEventListener('content-changed', ((e: CustomEvent) => {
         e.stopPropagation();
         this.updateContent(e.detail.newContent);
-      });
+      }) as EventListener);
     }
 
     async loadEntity(hash: string) {

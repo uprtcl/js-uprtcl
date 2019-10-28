@@ -88,3 +88,6 @@ export { DiscoveryTypes, PatternTypes, EntitiesTypes, LensesTypes } from './type
 /** Module */
 export { CortexModule } from './cortex.module';
 export { CortexEntityBase } from './elements/base/cortex-entity-base';
+
+/** Utils */
+export { sortObject } from './utils/utils';

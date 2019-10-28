@@ -5,6 +5,7 @@ import * as Cid from 'cids';
 import { Hashed, Hashable } from '../properties/hashable';
 import { Transformable } from '../properties/transformable';
 import { Pattern } from '../pattern';
+import { sortObject } from '../../utils/utils';
 
 export interface CidConfig {
   base?: string;
@@ -35,7 +36,10 @@ export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[
   }
 
   async hashObject(object: object, config: CidConfig): Promise<string> {
-    const b = multihashing.Buffer.from(JSON.stringify(object, Object.keys(object).sort()));
+    const ordered = sortObject(object);
+    console.log('myman', ordered);
+
+    const b = multihashing.Buffer.from(JSON.stringify(ordered));
     const encoded = await multihashing(b, config.type);
 
     const cid = new Cid(config.version, config.codec, encoded, config.base);
@@ -46,21 +50,11 @@ export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[
     return true;
   }
 
-  async derive<T>(object: T): Promise<Hashed<T>> {
-    const ordered = {};
-    Object.keys(object)
-      .sort()
-      .forEach(function(key) {
-        ordered[key] = object[key];
-      });
-
-    const b = multihashing.Buffer.from(JSON.stringify(ordered));
-    const encoded = await multihashing(b, 'sha2-256');
-
-    const cid = new Cid(encoded);
+  async derive<T extends object>(object: T): Promise<Hashed<T>> {
+    const hash = await this.hashObject(object, defaultCidConfig);
 
     return {
-      id: cid.toString(),
+      id: hash,
       object: object
     };
   }

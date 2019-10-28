@@ -7,12 +7,14 @@ import { AbiItem } from 'web3-utils';
 export interface EthereumConnectionOptions {
   provider: provider;
   contractAbi: AbiItem[] | AbiItem;
-  contractAddress: string;
+  contractAddress?: string;
 }
 
 export class EthereumConnection extends Connection {
   web3!: Web3;
   contractInstance!: Contract;
+  accounts!: string[];
+  networkId!: string;
 
   constructor(protected ethOptions: EthereumConnectionOptions, options: ConnectionOptions) {
     super(options);
@@ -24,9 +26,17 @@ export class EthereumConnection extends Connection {
   protected async connect(): Promise<void> {
     this.web3 = new Web3(this.ethOptions.provider);
     this.web3.transactionConfirmationBlocks = 1;
+
+    this.accounts = await this.web3.eth.getAccounts();
+    this.networkId = await this.web3.eth.net.getId();
+
+    const contractAddress =
+      this.ethOptions.contractAddress ||
+      this.ethOptions.contractAbi.networks[this.networkId].address;
+
     this.contractInstance = new this.web3.eth.Contract(
-      this.ethOptions.contractAbi,
-      this.ethOptions.contractAddress
+      this.ethOptions.contractAbi.abi,
+      contractAddress
     );
   }
 
@@ -70,7 +80,7 @@ export class EthereumConnection extends Connection {
   /**
    * Simple call function for the holding contract
    */
-  public call(funcName: string, pars: any[]): Promise<any> {
+  public async call(funcName: string, pars: any[]): Promise<any> {
     return this.contractInstance.methods[funcName](...pars).call({
       from: this.getDefaultAccount()
     });
@@ -79,8 +89,7 @@ export class EthereumConnection extends Connection {
   /**
    * @returns the default account for this ethereum connection
    */
-  public async getDefaultAccount(): Promise<string> {
-    const accounts = await this.web3.eth.getAccounts();
-    return accounts[0];
+  public getDefaultAccount(): string {
+    return this.accounts[0];
   }
 }

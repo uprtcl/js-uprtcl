@@ -6,9 +6,9 @@ import {
   HolochainSource
 } from '@uprtcl/connections';
 
-import { Perspective, Commit } from '../../../types';
-import { AccessControlMock } from '../../../access-control/services/access-control.mock';
-import { UprtclRemote } from '../uprtcl.remote';
+import { Perspective, Commit } from '../../../../types';
+import { AccessControlMock } from '../../../../access-control/services/access-control.mock';
+import { UprtclRemote } from '../../uprtcl.remote';
 
 export class UprtclHolochain extends HolochainSource implements UprtclRemote {
   constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {

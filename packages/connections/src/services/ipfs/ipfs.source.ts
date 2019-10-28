@@ -43,7 +43,7 @@ export class IpfsSource extends Connection implements NamedSource {
 
   private tryPut(buffer: Buffer, putConfig: object, wait: number, attempt: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.logger.log(`Try put`, buffer, `. Attempt: ${attempt}`);
+      this.logger.log(`Try put. Attempt: ${attempt}`);
 
       if (attempt > 10) {
         reject();

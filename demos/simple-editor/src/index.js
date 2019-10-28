@@ -11,20 +11,22 @@ import {
 } from '@uprtcl/cortex';
 import { DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import { KnownSourcesHolochain } from '@uprtcl/connections';
-import { uprtclModule, UprtclHolochain, UprtclTypes, updatePlugin } from '@uprtcl/common';
+import { uprtclModule, UprtclEthereum, UprtclTypes, updatePlugin } from '@uprtcl/common';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
-  const uprtclProvider = new UprtclHolochain({
-    host: 'ws://localhost:8888',
-    instance: 'test-instance'
-  });
-
-  const documentsProvider = new DocumentsIpfs({
+  const ipfsConfig = {
     host: 'ipfs.infura.io',
     port: 5001,
     protocol: 'https'
-  });
+  };
+
+  const uprtclProvider = new UprtclEthereum(
+    'ws://127.0.0.1:8545',
+    ipfsConfig
+  );
+
+  const documentsProvider = new DocumentsIpfs(ipfsConfig);
 
   const knownSources = new KnownSourcesHolochain({
     host: 'ws://localhost:8888',
@@ -32,6 +34,7 @@ import { SimpleEditor } from './simple-editor';
   });
 
   const discoverableUprtcl = { source: uprtclProvider, knownSources: knownSources };
+
   const uprtcl = uprtclModule([discoverableUprtcl]);
 
   const discoverableDocs = {
