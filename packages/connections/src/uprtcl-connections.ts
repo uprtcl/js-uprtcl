@@ -16,4 +16,4 @@ export { IpfsSource, IpfsConnectionOptions } from './services/ipfs/ipfs.source';
 
 // Ethereum
 export { EthereumConnection } from './services/ethereum/ethereum.connection';
-export { provider } from 'web3-providers';
+export { provider } from 'web3-core';

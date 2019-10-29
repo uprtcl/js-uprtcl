@@ -51,7 +51,7 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
   constructor(provider: provider, ipfsOptions: IpfsConnectionOptions, options: ConnectionOptions) {
     super(ipfsOptions, options);
     this.ethConnection = new EthereumConnection(
-      { provider: provider, contractAbi: UprtclContractArtifact },
+      { provider: provider, contractAbi: UprtclContractArtifact as any },
       options
     );
   }

@@ -23,8 +23,7 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
 
     let actions: PatternAction[] = [];
 
-    const entitiesToRecognize = [this.isomorphisms.entity, ...this.isomorphisms.isomorphisms];
-    for (const isomorphism of entitiesToRecognize) {
+    for (const isomorphism of this.isomorphisms.isomorphisms) {
       const patterns: Array<Pattern | HasActions> = patternRecognizer.recognize(isomorphism);
       for (const pattern of patterns) {
         if ((pattern as HasActions).getActions) {

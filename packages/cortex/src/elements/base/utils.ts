@@ -9,8 +9,7 @@ export function getLenses(
 ): Lens[] {
   let lenses: Lens[] = [];
 
-  const entitiesToRecognize = [isomorphisms.entity, ...isomorphisms.isomorphisms];
-  for (const isomorphism of entitiesToRecognize) {
+  for (const isomorphism of isomorphisms.isomorphisms) {
     const patterns: Array<Pattern | HasLenses> = patternRecognizer.recognize(isomorphism);
     for (const pattern of patterns) {
       if ((pattern as HasLenses).getLenses) {
