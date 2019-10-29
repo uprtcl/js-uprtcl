@@ -1,49 +1,49 @@
-import { LitElement, property, PropertyValues } from 'lit-element';
+import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
+
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import {
-  Isomorphism,
-  Lens,
-  PatternAction,
-  SelectedLens,
-  PatternTypes,
-  LensElement
-} from '../../types';
+
+import { Isomorphisms, Lens, PatternTypes } from '../../types';
 import { Pattern } from '../../patterns/pattern';
-import { HasLenses } from '../../patterns/properties/has-lenses';
-import { HasActions } from '../../patterns/properties/has-actions';
 import { Transformable } from '../../patterns/properties/transformable';
 import { HasRedirect } from '../../patterns/properties/has-redirect';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
+import { getLenses } from './utils';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
   public hash!: string;
+
   @property()
   protected entity!: object;
 
   @property()
-  protected isomorphisms!: Array<Isomorphism>;
-
-  @property()
-  protected entityEditable: boolean = false;
+  protected isomorphisms!: Isomorphisms;
 
   // Lenses
   @property()
-  protected selectedLens!: SelectedLens | undefined;
+  protected selectedLens!: Lens | undefined;
 
   protected patternRecognizer!: PatternRecognizer;
 
   loadEntity(hash: string): Promise<any> {
     throw new Error('Method not implemented');
   }
-  getLensElement(): HTMLElement | null {
+  getLensElement(): Element | null {
     return null;
+  }
+  renderPlugins(): TemplateResult[] {
+    return [];
   }
 
   connectedCallback() {
     super.connectedCallback();
 
     this.patternRecognizer = this.request(PatternTypes.Recognizer);
+
+    this.addEventListener<any>(
+      'lens-selected',
+      (e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)
+    );
   }
 
   async firstUpdated(changedProperties: PropertyValues) {
@@ -55,32 +55,26 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   update(changedProperties: PropertyValues) {
     super.update(changedProperties);
 
-    const renderer = this.getLensElement();
-    if (renderer && this.selectedLens) {
-      if (renderer) {
-        const selectedIsomorphism = this.isomorphisms[this.selectedLens.isomorphism];
-        const lensElement = (renderer as unknown) as LensElement<any>;
-        lensElement.data = selectedIsomorphism.entity;
-
-        lensElement.editable = this.entityEditable;
-      }
+    if (changedProperties.get('hash')) {
+      this.loadEntity(this.hash).then(entity => {
+        this.entity = entity;
+        this.entityUpdated();
+      });
     }
   }
 
   async entityUpdated() {
     const isomorphisms = await this.loadIsomorphisms(this.entity);
-    this.isomorphisms = isomorphisms.reverse();
+    this.isomorphisms = {
+      entity: this.entity,
+      isomorphisms: isomorphisms.reverse()
+    };
 
-    const renderIsomorphism = this.isomorphisms.findIndex(i => i.lenses.length > 0);
-    if (renderIsomorphism !== -1) {
-      this.selectedLens = { isomorphism: renderIsomorphism, lens: 0 };
-    }
+    this.selectedLens = getLenses(this.patternRecognizer, this.isomorphisms)[0];
   }
 
-  async loadIsomorphisms(entity: any): Promise<Isomorphism[]> {
-    let isomorphisms: Isomorphism[] = [];
-
-    isomorphisms.push(this.buildIsomorphism(entity));
+  async loadIsomorphisms(entity: any): Promise<Array<any>> {
+    let isomorphisms: any[] = [entity];
 
     const transformIsomorphisms = this.transformEntity(entity);
     isomorphisms = isomorphisms.concat(transformIsomorphisms);
@@ -91,10 +85,10 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     return isomorphisms;
   }
 
-  async redirectEntity(entity: object): Promise<Array<Isomorphism>> {
+  async redirectEntity(entity: object): Promise<Array<any>> {
     const patterns: Array<Pattern | HasRedirect> = this.patternRecognizer.recognize(entity);
 
-    let isomorphisms: Isomorphism[] = [];
+    let isomorphisms: any[] = [];
 
     for (const pattern of patterns) {
       if ((pattern as HasRedirect).redirect) {
@@ -112,46 +106,19 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     return isomorphisms;
   }
 
-  transformEntity<T extends object>(entity: T): Array<Isomorphism> {
+  transformEntity<T extends object>(entity: T): Array<any> {
     const patterns: Array<Pattern | Transformable<any>> = this.patternRecognizer.recognize(entity);
 
-    let isomorphisms: Array<Isomorphism> = [];
+    let isomorphisms: Array<any> = [];
 
     for (const pattern of patterns) {
       if ((pattern as Transformable<any>).transform) {
         const transformedEntities: Array<any> = (pattern as Transformable<any>).transform(entity);
 
-        isomorphisms = isomorphisms.concat(
-          transformedEntities.map(entity => this.buildIsomorphism(entity))
-        );
+        isomorphisms = isomorphisms.concat(transformedEntities);
       }
     }
 
     return isomorphisms;
-  }
-
-  buildIsomorphism<T extends object>(entity: T): Isomorphism {
-    const patterns: Array<Pattern | HasLenses | HasActions> = this.patternRecognizer.recognize(
-      entity
-    );
-
-    let actions: PatternAction[] = [];
-    let lenses: Lens[] = [];
-
-    for (const pattern of patterns) {
-      if ((pattern as HasLenses).getLenses) {
-        lenses = lenses.concat((pattern as HasLenses).getLenses(entity));
-      }
-
-      if ((pattern as HasActions).getActions) {
-        actions = actions.concat((pattern as HasActions).getActions(entity));
-      }
-    }
-
-    return {
-      entity,
-      actions,
-      lenses
-    };
   }
 }

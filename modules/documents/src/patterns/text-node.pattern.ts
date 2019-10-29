@@ -1,3 +1,4 @@
+import { html } from 'lit-element';
 import { injectable, inject } from 'inversify';
 
 import {
@@ -11,7 +12,9 @@ import {
   PatternTypes,
   Creatable,
   NamedSource,
-  DiscoverableSource
+  DiscoverableSource,
+  PatternRecognizer,
+  Updatable
 } from '@uprtcl/cortex';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';
@@ -23,6 +26,8 @@ const propertyOrder = ['text', 'type', 'links'];
 export class TextNodePattern
   implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasActions {
   constructor(
+    @inject(PatternTypes.Recognizer)
+    protected recognizer: PatternRecognizer,
     @inject(DocumentsTypes.DocumentsProvider)
     protected documentsProvider: DiscoverableSource<DocumentsProvider & NamedSource>,
     @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<TextNode>
@@ -47,16 +52,22 @@ export class TextNodePattern
     };
   };
 
-  getLenses = (): Lens[] => {
+  getLenses = (node: TextNode): Lens[] => {
     return [
       {
-        lens: 'text-node',
-        params: {}
+        name: 'Document',
+        render: html`
+          <text-node .data=${node}></text-node>
+        `
       }
     ];
   };
 
-  getActions = (textNode: TextNode): PatternAction[] => {
+  getActions = (textNode: TextNode, entity: any): PatternAction[] => {
+    const updatable: Updatable = this.recognizer.recognizeMerge(entity);
+
+    if (updatable.canUpdate && !updatable.canUpdate(entity)) return [];
+
     if (textNode.type === TextType.Paragraph) {
       return [
         {

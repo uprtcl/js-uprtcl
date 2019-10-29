@@ -1,5 +1,4 @@
-import { html, property } from 'lit-element';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html';
+import { html } from 'lit-element';
 import { Store } from 'redux';
 import '@authentic/mwc-circular-progress';
 import '@material/mwc-button';
@@ -15,11 +14,12 @@ import { Source } from '../../services/sources/source';
 import { CortexEntityBase } from './cortex-entity-base';
 
 export class CortexEntity extends CortexEntityBase {
-  @property()
-  private actionsMenuOpen: boolean = false;
-
-  private store!: Store<any>;
-  private source!: Source;
+  private get store(): Store<any> {
+    return this.request(ReduxTypes.Store);
+  }
+  private get source(): Source {
+    return this.request(DiscoveryTypes.DiscoveryService);
+  }
 
   /**
    * @returns the rendered selected lens
@@ -27,62 +27,18 @@ export class CortexEntity extends CortexEntityBase {
   renderLens() {
     if (!this.selectedLens) return html``;
 
-    const selectedIsomorphism = this.isomorphisms[this.selectedLens.isomorphism];
-    const selectedLens = selectedIsomorphism.lenses[this.selectedLens.lens];
-    const paramKeys = Object.keys(selectedLens.params);
-
-    /**
-     * TODO: add parameters to the lens
-     *
-     *  ${paramKeys.map(
-     *     param =>
-     *       html`
-     *         ${param}="${selectedLens.params[param]}"
-     *       `
-     *   )}
-     */
-
     return html`
-      ${unsafeHTML(`
-          <${selectedLens.lens} id="lens-renderer">
-          </${selectedLens.lens}>
-      `)}
+      <div id="lens-renderer">
+        ${this.selectedLens.render}
+      </div>
     `;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
+  getLensElement(): Element | null {
+    const element = this.shadowRoot ? this.shadowRoot.getElementById('lens-renderer') : null;
+    if (!element) return null;
 
-    this.store = this.request(ReduxTypes.Store);
-    this.source = this.request(DiscoveryTypes.DiscoveryService);
-  }
-
-  getLensElement(): HTMLElement | null {
-    return this.shadowRoot ? this.shadowRoot.getElementById('lens-renderer') : null;
-  }
-
-  renderActions() {
-    return html`
-      <mwc-button @click=${() => (this.actionsMenuOpen = !this.actionsMenuOpen)}>
-        <mwc-icon>more_vert</mwc-icon>
-      </mwc-button>
-
-      <mwc-menu ?open=${this.actionsMenuOpen}>
-        <mwc-list>
-          ${this.isomorphisms.map(isomorphism =>
-            isomorphism.actions.map(
-              action =>
-                html`
-                  <mwc-list-item @click=${() => action.action(this)}>
-                    <mwc-icon slot="graphic">${action.icon}</mwc-icon>
-                    ${action.title}
-                  </mwc-list-item>
-                `
-            )
-          )}
-        </mwc-list>
-      </mwc-menu>
-    `;
+    return element.firstElementChild;
   }
 
   render() {
@@ -97,11 +53,12 @@ export class CortexEntity extends CortexEntityBase {
                 ${this.renderLens()}
               </div>
 
-              <lens-selector
-                .isomorphisms=${this.isomorphisms}
-                @lens-selected=${(e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)}
-              ></lens-selector>
-              ${this.renderActions()}
+              ${this.renderPlugins().map(
+                plugin =>
+                  html`
+                    ${plugin}
+                  `
+              )}
             </div>
           `}
     `;

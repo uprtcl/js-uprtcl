@@ -37,7 +37,6 @@ export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[
 
   async hashObject(object: object, config: CidConfig): Promise<string> {
     const ordered = sortObject(object);
-    console.log('myman', ordered);
 
     const b = multihashing.Buffer.from(JSON.stringify(ordered));
     const encoded = await multihashing(b, config.type);

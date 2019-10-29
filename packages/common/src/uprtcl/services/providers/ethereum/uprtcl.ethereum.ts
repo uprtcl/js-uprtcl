@@ -16,6 +16,7 @@ import * as UprtclContractArtifact from './uprtcl-contract.json';
 import { Commit, Perspective } from '../../../../types';
 import { UprtclRemote } from '../../uprtcl.remote';
 import { AccessControlMock } from '../../../../access-control/services/access-control.mock';
+import { ProposalMock } from '../../proposal.mock.js';
 
 /** Function signatures */
 const ADD_PERSP = 'addPerspective(bytes32,bytes32,string,address,string)';
@@ -57,6 +58,10 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
 
   get accessControlService() {
     return new AccessControlMock();
+  }
+
+  get proposals() {
+    return new ProposalMock();
   }
 
   /**

@@ -1,3 +1,3 @@
-export interface MergePattern<T> {
+export interface Merge<T> {
   merge: (from: T, to: T) => Promise<T>;
 }

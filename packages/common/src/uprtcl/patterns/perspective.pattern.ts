@@ -83,7 +83,7 @@ export class PerspectivePattern
             { headId, context },
             perspective.object.payload.origin
           );
-          window.location.href = `/?id=${newPerspective.id}`;
+          window.history.pushState('', '', `/?id=${newPerspective.id}`);
         }
       }
     ];
@@ -110,10 +110,9 @@ export class PerspectivePattern
     return true;
   };
 
-  canUpdate: (perspective: Secured<Perspective>) => Promise<boolean> = (
+  canUpdate: (perspective: Secured<Perspective>) => boolean = (
     perspective: Secured<Perspective>
   ) => {
-    const remote = this.uprtcl.getPerspectiveProvider(perspective);
-    return remote.accessControlService.canWrite(perspective.id);
+    return true;
   };
 }

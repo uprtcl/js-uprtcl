@@ -1,10 +1,11 @@
 import { MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 import { CortexEntity } from './base/cortex-entity';
 import { lenses } from './lenses';
-import { LensSelector } from './base/lens-selector';
+import { CortexLensSelector } from './base/cortex-lens-selector';
 import { interfaces, injectable } from 'inversify';
 import { Plugin } from './base/plugin';
 import { CortexEntityBase } from './base/cortex-entity-base';
+import { CortexPatternActions } from './base/cortex-pattern-actions';
 
 export function lensesModule(plugins: Array<Plugin<any>>): any {
   @injectable()
@@ -21,7 +22,8 @@ export function lensesModule(plugins: Array<Plugin<any>>): any {
         cortexEntity = plugin(cortexEntity);
       }
 
-      customElements.define('lens-selector', LensSelector);
+      customElements.define('cortex-pattern-actions', CortexPatternActions);
+      customElements.define('cortex-lens-selector', CortexLensSelector);
       customElements.define('cortex-entity', cortexEntity);
 
       Object.entries(lenses).forEach(([tag, lens]) => {

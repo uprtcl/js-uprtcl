@@ -1,4 +1,6 @@
 import { injectable, inject } from 'inversify';
+import { html } from 'lit-element';
+
 import {
   Pattern,
   Secured,
@@ -75,11 +77,13 @@ export class CommitPattern
     return this.uprtcl.createCommit(args, providerName);
   };
 
-  getLenses = (): Lens[] => {
+  getLenses: (commit: Secured<Commit>) => Lens[] = (commit: Secured<Commit>): Lens[] => {
     return [
       {
-        lens: 'commit-history',
-        params: {}
+        name: 'commit-history',
+        render: html`
+          <commit-history .data=${commit}></commit-history>
+        `
       }
     ];
   };

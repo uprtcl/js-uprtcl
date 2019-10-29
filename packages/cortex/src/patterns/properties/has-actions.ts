@@ -4,5 +4,5 @@ export interface HasActions {
   /**
    * @returns the actions available for the given object
    */
-  getActions(object: object): PatternAction[];
+  getActions(object: object, entity: object): PatternAction[];
 }

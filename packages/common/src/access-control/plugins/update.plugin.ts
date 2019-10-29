@@ -1,14 +1,17 @@
 import { Store } from 'redux';
 
-import { Plugin, Updatable, CortexEntityBase } from '@uprtcl/cortex';
+import { Plugin, Updatable, CortexEntityBase, LensElement } from '@uprtcl/cortex';
 import { Constructor, ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 import { loadAccessControl } from '../state/access-control.actions';
+import { PropertyValues } from 'lit-element';
 
 export const updatePlugin = <T extends CortexEntityBase>(): Plugin<T> => (
   baseElement: Constructor<CortexEntityBase>
 ): Constructor<CortexEntityBase> =>
   class extends baseElement {
+    entityEditable: boolean = false;
+
     connectedCallback() {
       super.connectedCallback();
 
@@ -16,6 +19,17 @@ export const updatePlugin = <T extends CortexEntityBase>(): Plugin<T> => (
         e.stopPropagation();
         this.updateContent(e.detail.newContent);
       }) as EventListener);
+    }
+
+    update(changedProperties: PropertyValues) {
+      super.update(changedProperties);
+
+      const renderer = this.getLensElement();
+      if (renderer) {
+        const lensElement = (renderer as unknown) as LensElement<any>;
+
+        lensElement.editable = this.entityEditable;
+      }
     }
 
     async loadEntity(hash: string) {

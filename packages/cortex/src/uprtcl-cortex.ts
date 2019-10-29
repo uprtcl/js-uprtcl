@@ -81,6 +81,8 @@ export {
 export { lensesModule } from './elements/lenses.module';
 export { Lens, PatternAction, LensElement } from './types';
 export { Plugin } from './elements/base/plugin';
+export { lensSelectorPlugin } from './elements/plugins/lens-selector.plugin';
+export { actionsPlugin } from './elements/plugins/actions.plugin';
 
 /** Types */
 export { DiscoveryTypes, PatternTypes, EntitiesTypes, LensesTypes } from './types';

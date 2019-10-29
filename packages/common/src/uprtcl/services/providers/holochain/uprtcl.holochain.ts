@@ -9,6 +9,7 @@ import {
 import { Perspective, Commit } from '../../../../types';
 import { AccessControlMock } from '../../../../access-control/services/access-control.mock';
 import { UprtclRemote } from '../../uprtcl.remote';
+import { ProposalMock } from '../../proposal.mock';
 
 export class UprtclHolochain extends HolochainSource implements UprtclRemote {
   constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {
@@ -17,6 +18,10 @@ export class UprtclHolochain extends HolochainSource implements UprtclRemote {
 
   get accessControlService() {
     return new AccessControlMock();
+  }
+
+  get proposals() {
+    return new ProposalMock();
   }
 
   /**

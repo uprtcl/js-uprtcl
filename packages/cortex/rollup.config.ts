@@ -48,5 +48,6 @@ export default {
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs(),
     builtins()
-  ]
+  ],
+  preserveSymlinks: true
 };

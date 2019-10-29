@@ -7,11 +7,19 @@ import {
   entitiesReduxModule,
   EntitiesTypes,
   DiscoveryTypes,
-  LensesTypes
+  LensesTypes,
+  actionsPlugin,
+  lensSelectorPlugin
 } from '@uprtcl/cortex';
 import { DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import { KnownSourcesHolochain } from '@uprtcl/connections';
-import { uprtclModule, UprtclEthereum, UprtclTypes, updatePlugin } from '@uprtcl/common';
+import {
+  uprtclModule,
+  UprtclEthereum,
+  UprtclHolochain,
+  UprtclTypes,
+  updatePlugin
+} from '@uprtcl/common';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
@@ -21,10 +29,10 @@ import { SimpleEditor } from './simple-editor';
     protocol: 'https'
   };
 
-  const uprtclProvider = new UprtclEthereum(
-    'ws://127.0.0.1:8545',
-    ipfsConfig
-  );
+  const uprtclProvider = new UprtclHolochain({
+    host: 'ws://localhost:8888',
+    instance: 'test-instance'
+  });
 
   const documentsProvider = new DocumentsIpfs(ipfsConfig);
 
@@ -53,7 +61,10 @@ import { SimpleEditor } from './simple-editor';
     { id: EntitiesTypes.Module, module: entitiesReducerModule },
     { id: PatternTypes.Module, module: PatternsModule },
     { id: DiscoveryTypes.Module, module: discovery },
-    { id: LensesTypes.Module, module: lensesModule([updatePlugin()]) },
+    {
+      id: LensesTypes.Module,
+      module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])
+    },
     { id: UprtclTypes.Module, module: uprtcl },
     { id: DocumentsTypes.Module, module: documents }
   );

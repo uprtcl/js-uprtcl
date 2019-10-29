@@ -4,9 +4,6 @@ import { UprtclSource } from './uprtcl.source';
 import { ProposalProvider } from './proposal.provider';
 
 export interface UprtclProvider extends UprtclSource {
-  /** Proposals */
-
-  // proposals: ProposalProvider;
 
   /** Cloners */
 

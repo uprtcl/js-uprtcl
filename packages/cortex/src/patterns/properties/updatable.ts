@@ -4,5 +4,5 @@ export interface Updatable<T = any> {
    */
   update: (entity: any, newContent: T) => Promise<boolean>;
 
-  canUpdate: (entity: any) => Promise<boolean>;
+  canUpdate: (entity: any) => boolean;
 }

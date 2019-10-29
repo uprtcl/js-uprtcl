@@ -1,5 +1,5 @@
 import { Lens } from '../../types';
 
 export interface HasLenses {
-  getLenses(object?: any): Lens[];
+  getLenses(object: any, entity: object): Lens[];
 }
