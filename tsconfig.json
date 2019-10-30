@@ -4,7 +4,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "lib": ["es2015", "es2016", "es2017", "dom"],
-    "types": ["reflect-metadata", "node"],
+    "types": ["node"],
     "strict": true,
     "sourceMap": true,
     "declaration": true,

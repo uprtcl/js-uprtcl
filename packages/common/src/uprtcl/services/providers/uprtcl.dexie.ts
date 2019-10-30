@@ -13,7 +13,6 @@ import {
 } from '@uprtcl/cortex';
 
 import { Perspective, Commit, UprtclLocal } from '../../../types';
-import { ProposalMock } from '../proposal.mock';
 
 @injectable()
 export class UprtclDexie extends Dexie implements UprtclLocal {

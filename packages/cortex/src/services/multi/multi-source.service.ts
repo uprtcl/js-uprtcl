@@ -1,6 +1,8 @@
 import { multiInject, inject, injectable } from 'inversify';
 import { Dictionary } from 'lodash';
 
+import { Logger } from '@uprtcl/micro-orchestrator';
+
 import { Source } from '../sources/source';
 import { HasLinks } from '../../patterns/properties/has-links';
 import { DiscoverableSource } from '../sources/discoverable.source';
@@ -9,14 +11,11 @@ import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer'
 import { Hashed } from '../../patterns/properties/hashable';
 import { NamedSource } from '../sources/named.source';
 import { PatternTypes, DiscoveryTypes } from '../../types';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { MultiService } from './multi.service';
 
 @injectable()
-export class MultiSourceService<T extends NamedSource = NamedSource> implements Source {
-  protected logger = new Logger('MultiSourceService');
-
-  sources: Dictionary<DiscoverableSource<T>>;
-
+export class MultiSourceService<T extends NamedSource = NamedSource> extends MultiService<T>
+  implements Source {
   /**
    * @param patternRecognizer the pattern recognizer to interact with the objects and their links
    * @param localKnownSources local service to store all known sources to be able to retrieve the object afterwards
@@ -29,121 +28,7 @@ export class MultiSourceService<T extends NamedSource = NamedSource> implements 
     @multiInject(DiscoveryTypes.DiscoverableSource)
     discoverableSources: Array<DiscoverableSource<T>>
   ) {
-    // Build the sources dictionary from the resulting names
-    this.sources = discoverableSources.reduce(
-      (sources, source) => ({ ...sources, [source.source.name]: source }),
-      {}
-    );
-  }
-
-  /**
-   * @override
-   */
-  public async ready(): Promise<void> {
-    const promises = Object.keys(this.sources).map(sourceName =>
-      this.sources[sourceName].source.ready()
-    );
-    await Promise.all(promises);
-  }
-
-  /**
-   * Gets the source with the given name
-   *
-   * @param sourceName the name of the source
-   * @returns the source identified with the given name
-   */
-  public getSource(sourceName: string): DiscoverableSource<T> | undefined {
-    const namedSourceName = Object.keys(this.sources).find(name =>
-      this.sources[name].source.configure(sourceName)
-    );
-
-    if (!namedSourceName) {
-      return undefined;
-    }
-
-    return this.sources[namedSourceName];
-  }
-
-  /**
-   * @returns gets the names of all the sources
-   */
-  public getAllSourcesNames(): string[] {
-    return Object.keys(this.sources);
-  }
-
-  /**
-   * @returns gets all the sources
-   */
-  public getAllSources(): T[] {
-    return Object.keys(this.sources).map(sourceName => this.sources[sourceName].source);
-  }
-
-  /**
-   * Retrieves the known sources for the given hash from the given source and stores them in the known sources service
-   * @param hash the hash for which to discover the sources
-   * @param source the source to ask for the known sources
-   */
-  protected async discoverKnownSources(hash: string, source: DiscoverableSource<T>): Promise<void> {
-    const knownSourcesNames = await source.knownSources.getKnownSources(hash);
-
-    if (knownSourcesNames) {
-      await this.localKnownSources.addKnownSources(hash, knownSourcesNames);
-    }
-  }
-
-  protected async linksFromObject<O extends object>(object: O): Promise<string[]> {
-    // Object retrieved, discover the sources for its links
-    const pattern = this.patternRecognizer.recognizeMerge(object) as HasLinks;
-
-    return pattern.getLinks ? pattern.getLinks(object) : [];
-  }
-
-  public async getGenericFromSource<R>(
-    sourceName: string,
-    getter: (service: T) => Promise<R | undefined>,
-    linksSelector: (object: R) => Promise<string[]>
-  ): Promise<R | undefined> {
-    const source = this.getSource(sourceName);
-
-    if (!source) {
-      this.logger.warn(`No source was found for name ${sourceName}`);
-      return;
-    }
-
-    // Execute the getter
-    const result = await getter(source.source);
-
-    if (!result) {
-      return;
-    }
-
-    // Get the links
-    const links = await linksSelector(result);
-
-    // Discover the known sources from the links
-    const linksPromises = links.map(link => this.discoverKnownSources(link, source));
-    await Promise.all(linksPromises);
-
-    return result;
-  }
-
-  /**
-   * Executes the getter function from all the service providers
-   *
-   * @param getter: function that executes the call to get the result
-   * @param linksSelector: function that gets the links from the retrieved result to ask for their sources
-   * @returns the array of results retrieved
-   */
-  public async getGenericFromAllSources<R>(
-    getter: (service: T) => Promise<R>,
-    linksSelector: (object: R) => Promise<string[]>
-  ): Promise<Array<R>> {
-    const promises = this.getAllSourcesNames().map(async sourceName =>
-      this.getGenericFromSource(sourceName, getter, linksSelector)
-    );
-
-    const results = await Promise.all(promises);
-    return results.filter(result => !!result) as R[];
+    super(patternRecognizer, localKnownSources, discoverableSources);
   }
 
   /**
@@ -160,7 +45,7 @@ export class MultiSourceService<T extends NamedSource = NamedSource> implements 
     const getter = (source: T) => source.get<O>(hash);
 
     // Get the object from source
-    const object = await this.getGenericFromSource(sourceName, getter, (object: Hashed<O>) =>
+    const object = await this.getGenericFromService(sourceName, getter, (object: Hashed<O>) =>
       this.linksFromObject(object)
     );
 
@@ -171,20 +56,6 @@ export class MultiSourceService<T extends NamedSource = NamedSource> implements 
     }
 
     return object;
-  }
-
-  public async getArrayFromAllSources<O>(
-    getter: (service: T) => Promise<Array<Hashed<O>>>
-  ): Promise<Array<Hashed<O>>> {
-    const linksSelector = async (array: Array<Hashed<O>>) => {
-      const promises = array.map(object => this.linksFromObject<Hashed<O>>(object));
-      const links = await Promise.all(promises);
-      return Array.prototype.concat.apply([], links);
-    };
-
-    const objects = await this.getGenericFromAllSources(getter, linksSelector);
-
-    return Array.prototype.concat.apply([], objects);
   }
 
   /**
@@ -208,7 +79,7 @@ export class MultiSourceService<T extends NamedSource = NamedSource> implements 
       promises = knownSources.map(tryGetFromSource);
     } else {
       // We had no known sources for the hash, try to get the object from all the sources
-      const sourcesNames = this.getAllSourcesNames();
+      const sourcesNames = this.getAllServicesNames();
 
       promises = sourcesNames.map(async sourceName => {
         const object = await tryGetFromSource(sourceName);

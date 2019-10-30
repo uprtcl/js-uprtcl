@@ -7,6 +7,10 @@ export interface Ready {
   ready(): Promise<void>;
 }
 
+/**
+ * A source is a service that implements a standard function `get`,
+ * which receives the hash of the object and returns it
+ */
 export interface Source extends Ready {
   /**
    * Get the object identified by the given hash,

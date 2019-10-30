@@ -44,7 +44,7 @@ export class TextNodePattern
 
     const newTextNode = { links, text, type };
 
-    const hash = await this.documentsProvider.source.createTextNode(newTextNode);
+    const hash = await this.documentsProvider.service.createTextNode(newTextNode);
 
     return {
       id: hash,

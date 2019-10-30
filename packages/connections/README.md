@@ -1,37 +1,35 @@
-# \<uprtcl-common>
+# @uprtcl/connections
 
-This webcomponent follows the [open-wc](https://github.com/open-wc/open-wc) recommendation.
+This node package includes basic connections services to help connect to different backend platforms. These services include standard funcionality like a retry mechanism, or a `ready()` function to wait for them to be ready.
 
-## Installation
+List of supported connections:
+
+- **Ethereum**: small wrapper around `Web3`
+- **Ipfs**: small wrapper around `ipfs-http-client`
+- **Holochain**: small wrapper around `@holochain/hc-web-client`
+- **Web server** (via http or websockets)
+
+## Dependencies
+
+This package depends on `@uprtcl/micro-orchestrator` and `@uprtcl/cortex` to import basic types, but doesn't import funcionality from them.
+
+## Install
+
 ```bash
-npm i uprtcl-common
+npm i @uprtcl/connections
 ```
 
 ## Usage
-```html
-<script type="module">
-  import 'uprtcl-common/uprtcl-common.js';
-</script>
 
-<uprtcl-common></uprtcl-common>
-```
+Import the appropriate connection you would like to use, and make a new instance of it by passing its configuration:
 
-## Testing using karma (if applied by author)
-```bash
-npm run test
-```
+```javascript
+import { EthereumConnection } from '@uprtcl/connections';
 
-## Testing using karma via browserstack (if applied by author)
-```bash
-npm run test:bs
-```
+const ethConnection = new EthereumConnection({
+  provider: provider,
+  contractAbi: myContractAbi
+});
 
-## Demoing using storybook (if applied by author)
-```bash
-npm run storybook
-```
-
-## Linting (if applied by author)
-```bash
-npm run lint
+await ethConnection.ready();
 ```

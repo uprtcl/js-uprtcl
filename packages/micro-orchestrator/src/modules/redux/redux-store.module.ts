@@ -12,10 +12,10 @@ import thunk, { ThunkMiddleware } from 'redux-thunk';
 import { injectable, interfaces } from 'inversify';
 
 import { MicroModule } from '../micro.module';
-import { MicroOrchestratorTypes, ReduxTypes } from '../../types';
+import { ReduxTypes } from '../../types';
 
 @injectable()
-export class StoreModule implements MicroModule {
+export class ReduxStoreModule implements MicroModule {
   async onLoad(
     context: interfaces.Context,
     bind: interfaces.Bind,

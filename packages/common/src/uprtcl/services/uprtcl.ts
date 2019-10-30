@@ -1,22 +1,23 @@
 import { multiInject, injectable, inject } from 'inversify';
+
 import {
   DiscoverableSource,
-  MultiProviderService,
-  CachedMultiProviderService,
   KnownSourcesService,
   DiscoveryTypes,
   PatternTypes,
   PatternRecognizer,
   Secured,
   Creatable,
+  CachedMultiSourceService,
   Hashed,
-  IsSecure
+  IsSecure,
+  MultiSourceService,
+  CachedSourceService
 } from '@uprtcl/cortex';
 import { MicroOrchestratorTypes, Logger } from '@uprtcl/micro-orchestrator';
 
 import { UprtclTypes, UprtclLocal, Perspective, Commit } from '../../types';
 import { UprtclProvider } from './uprtcl.provider';
-import { UprtclSource } from './uprtcl.source';
 import { UprtclRemote } from './uprtcl.remote';
 
 export interface PerspectiveArgs {
@@ -34,11 +35,11 @@ const creatorId = 'did:hi:ho';
 const DEFAULT_PERSPECTIVE_NAME = 'master';
 
 @injectable()
-export class Uprtcl implements UprtclSource {
+export class Uprtcl {
   @inject(MicroOrchestratorTypes.Logger)
   logger!: Logger;
 
-  service: CachedMultiProviderService<UprtclLocal, UprtclRemote>;
+  service: CachedMultiSourceService<UprtclLocal, UprtclRemote>;
 
   constructor(
     @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
@@ -50,9 +51,9 @@ export class Uprtcl implements UprtclSource {
     @multiInject(UprtclTypes.UprtclRemote)
     protected uprtclRemotes: DiscoverableSource<UprtclRemote>[]
   ) {
-    this.service = new CachedMultiProviderService<UprtclLocal, UprtclRemote>(
+    this.service = new CachedMultiSourceService<UprtclLocal, UprtclRemote>(
       uprtclLocal,
-      new MultiProviderService<UprtclRemote>(patternRecognizer, knownSources, uprtclRemotes)
+      new MultiSourceService<UprtclRemote>(patternRecognizer, knownSources, uprtclRemotes)
     );
   }
 
@@ -72,7 +73,7 @@ export class Uprtcl implements UprtclSource {
    */
   private validateProviderName(providerName?: string): string {
     if (!providerName) {
-      const sourcesNames = this.service.remote.getAllSourcesNames();
+      const sourcesNames = this.service.remote.getAllServicesNames();
       if (sourcesNames.length > 1) {
         throw new Error(
           'Provider name cannot be empty, since we have more than one provider registered'
@@ -92,7 +93,7 @@ export class Uprtcl implements UprtclSource {
     const perspectiveOrigin = perspective.object.payload.origin;
 
     const provider = this.service.remote
-      .getAllSources()
+      .getAllServices()
       .find(provider => provider.name === perspectiveOrigin);
 
     if (!provider)
@@ -116,7 +117,7 @@ export class Uprtcl implements UprtclSource {
    * @override
    */
   public async getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
-    return this.service.remote.getArrayFromAllSources(uprtcl =>
+    return this.service.remote.getArrayFromAllServices(uprtcl =>
       uprtcl.getContextPerspectives(context)
     );
   }

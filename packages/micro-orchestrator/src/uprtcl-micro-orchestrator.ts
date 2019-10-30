@@ -2,7 +2,7 @@
 import 'reflect-metadata';
 
 export { MicroOrchestrator } from './orchestrator/micro-orchestrator';
-export { StoreModule } from './modules/redux/store.module';
+export { ReduxStoreModule } from './modules/redux/redux-store.module';
 export { reduxModule } from './modules/redux/redux.module';
 export { MicroModule } from './modules/micro.module';
 export { ModuleProvider, moduleProvider } from './orchestrator/module-provider';

@@ -23,7 +23,7 @@ export class CortexModule implements MicroModule {
     return undefined;
   }
 
-  get sources(): Array<{ symbol: symbol; source: DiscoverableSource }> | undefined {
+  get sources(): Array<{ symbol: symbol; source: DiscoverableSource<any> }> | undefined {
     return undefined;
   }
 
@@ -52,7 +52,7 @@ export class CortexModule implements MicroModule {
       await Promise.all(
         this.sources.map(discoverableSource =>
           Promise.all([
-            discoverableSource.source.source.ready(),
+            discoverableSource.source.service.ready(),
             discoverableSource.source.knownSources.ready()
           ])
         )
@@ -64,10 +64,10 @@ export class CortexModule implements MicroModule {
       for (const symbolSource of this.sources) {
         const discoverableSource = symbolSource.source;
 
-        bind<DiscoverableSource>(DiscoveryTypes.DiscoverableSource).toConstantValue(
+        bind<DiscoverableSource<any>>(DiscoveryTypes.DiscoverableSource).toConstantValue(
           discoverableSource
         );
-        bind<DiscoverableSource>(symbolSource.symbol).toConstantValue(discoverableSource);
+        bind<DiscoverableSource<any>>(symbolSource.symbol).toConstantValue(discoverableSource);
       }
     }
 

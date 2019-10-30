@@ -1,4 +1,4 @@
-import { ReduxTypes, MicroOrchestrator, StoreModule } from '@uprtcl/micro-orchestrator';
+import { ReduxTypes, MicroOrchestrator, ReduxStoreModule } from '@uprtcl/micro-orchestrator';
 import {
   PatternTypes,
   PatternsModule,
@@ -41,12 +41,12 @@ import { SimpleEditor } from './simple-editor';
     instance: 'test-instance'
   });
 
-  const discoverableUprtcl = { source: uprtclProvider, knownSources: knownSources };
+  const discoverableUprtcl = { service: uprtclProvider, knownSources: knownSources };
 
   const uprtcl = uprtclModule([discoverableUprtcl]);
 
   const discoverableDocs = {
-    source: documentsProvider,
+    service: documentsProvider,
     knownSources: knownSources
   };
   const documents = documentsModule([discoverableDocs]);
@@ -57,7 +57,7 @@ import { SimpleEditor } from './simple-editor';
   const orchestrator = new MicroOrchestrator();
 
   await orchestrator.loadModules(
-    { id: ReduxTypes.Module, module: StoreModule },
+    { id: ReduxTypes.Module, module: ReduxStoreModule },
     { id: EntitiesTypes.Module, module: entitiesReducerModule },
     { id: PatternTypes.Module, module: PatternsModule },
     { id: DiscoveryTypes.Module, module: discovery },

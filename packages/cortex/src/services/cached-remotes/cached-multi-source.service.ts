@@ -1,14 +1,13 @@
-import { Logger } from '@uprtcl/micro-orchestrator';
-
+import { CachedMultiService } from './cached-multi.service';
 import { CacheService } from '../cache/cache.service';
+import { NamedSource } from '../sources/named.source';
+import { MultiSourceService } from '../multi/multi-source.service';
 import { Source } from '../sources/source';
 import { Hashed } from '../../patterns/properties/hashable';
 
-export class CachedSourceService<CACHE extends CacheService, REMOTE extends Source> implements Source {
-  protected logger = new Logger('CachedSourceService');
-
-  constructor(public cache: CACHE, public remote: REMOTE) {}
-
+export class CachedMultiSourceService<CACHE extends CacheService, REMOTE extends NamedSource>
+  extends CachedMultiService<CACHE, REMOTE, MultiSourceService<REMOTE>>
+  implements Source {
   /**
    * Get the object identified by the given hash from cache or from remote
    * @param hash the hash identifying the object
@@ -33,12 +32,5 @@ export class CachedSourceService<CACHE extends CacheService, REMOTE extends Sour
     }
 
     return object;
-  }
-
-  /**
-   * @override
-   */
-  public async ready(): Promise<void> {
-    await Promise.all([this.remote.ready(), this.cache.ready()]);
   }
 }

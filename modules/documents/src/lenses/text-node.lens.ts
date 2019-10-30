@@ -1,5 +1,7 @@
 import { LitElement, property, html } from 'lit-element';
+
 import { LensElement } from '@uprtcl/cortex';
+
 import { TextNode, TextType } from '../types';
 
 export class TextNodeLens extends LitElement implements LensElement<TextNode> {

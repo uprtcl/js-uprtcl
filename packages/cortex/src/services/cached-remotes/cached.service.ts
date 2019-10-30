@@ -1,23 +1,24 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { TaskQueue } from '../../utils/task.queue';
-import { CacheService } from '../cache/cache.service';
-import { CachedSourceService } from './cached-source.service';
-import { Source } from '../sources/source';
 import { Hashed } from '../../patterns/properties/hashable';
+import { Ready } from '../sources/source';
 
-export class CachedProviderService<
-  CACHE extends CacheService,
-  REMOTE extends Source
-> extends CachedSourceService {
+export class CachedService<CACHE extends Ready, REMOTE extends Ready = CACHE>
+  implements Ready {
   protected logger = new Logger('CachedProviderService');
 
   constructor(
     public cache: CACHE,
     public remote: REMOTE,
     protected taskQueue: TaskQueue = new TaskQueue()
-  ) {
-    super(cache, remote);
+  ) {}
+
+  /**
+   * @override
+   */
+  public async ready(): Promise<void> {
+    await Promise.all([this.remote.ready(), this.cache.ready()]);
   }
 
   /**
