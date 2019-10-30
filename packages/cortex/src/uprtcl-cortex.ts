@@ -24,7 +24,7 @@ export { DiscoveryService } from './services/discovery.service';
 export { discoveryModule } from './services/discovery.module';
 
 /** Patterns */
-export { Pattern, forPattern } from './patterns/pattern';
+export { Pattern } from './patterns/pattern';
 export { Cloneable } from './patterns/properties/cloneable';
 export { Creatable } from './patterns/properties/creatable';
 export { HasContent } from './patterns/properties/has-content';
@@ -51,12 +51,6 @@ export {
 } from './patterns/defaults/cid-hashed.pattern';
 export { DefaultSignedPattern } from './patterns/defaults/default-signed.pattern';
 export { DefaultSecuredPattern, Secured } from './patterns/defaults/default-secured.pattern';
-export {
-  NodeActions,
-  NodeLinksPattern,
-  Node,
-  nodePattern
-} from './patterns/defaults/default-node.pattern';
 
 // Pattern Registry
 export { PatternRecognizer } from './patterns/recognizer/pattern.recognizer';
