@@ -1,7 +1,6 @@
 module.exports = {
   mode: 'modules',
   out: 'docs',
-  includes: 'guides/',
   exclude: [
     '**/node_modules/**',
     '**/*.spec.ts',

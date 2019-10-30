@@ -14,10 +14,13 @@
   "scripts": {
     "build": "lerna run build",
     "clean": "lerna run clean",
-    "build:docs": "rimraf docs && typedoc",
-    "deploy-docs": "ts-node tools/gh-pages-publish",
+    "docs:build": "rimraf docs && typedoc",
+    "docs:deploy": "ts-node tools/gh-pages-publish",
     "semantic-release": "semantic-release",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "travis-deploy-once": "travis-deploy-once"
+  },
+  "repository": {
+    "url": "https://github.com/uprtcl/js-uprtcl"
   }
 }
