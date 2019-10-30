@@ -1,8 +1,12 @@
 # _Prtcl web client monorepo
 
+[![CircleCI](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop.svg?style=shield)](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop)
+
 > Important: these packages are under heavy development, not yet released. Expect breaking changes.
 
 This repo contains a set of tools and libraries to help develop _Prtcl compatible web-applications. 
+
+Please refer to the [wiki](https://github.com/uprtcl/js-uprtcl/wiki) and the [API reference](https://uprtcl.github.io/js-uprtcl/) for documentation.
 
 ## Packages
 
