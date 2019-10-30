@@ -1,0 +1,18 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/node:10-browsers
+    steps:
+      - checkout
+      - run:
+          name: Bootstrap
+          command: |
+            echo 'Bootstraping modules'
+            npm i
+            lerna bootstrap
+      - run:
+          name: Build
+          command: |
+            echo 'Build'
+            npm run build

@@ -1,14 +1,14 @@
-import { SignedPattern, Signed } from '../patterns/signed.pattern';
+import { Signable, Signed } from '../properties/signable';
 import { injectable } from 'inversify';
 import { Pattern } from '../pattern';
 
 @injectable()
-export class DefaultSignedPattern implements Pattern, SignedPattern<any> {
+export class DefaultSignedPattern implements Pattern, Signable<any> {
   recognize(object: object) {
     return object.hasOwnProperty('proof') && object.hasOwnProperty('payload');
   }
 
-  validate<T>(signed: Signed<T>): boolean {
+  async validate<T>(signed: Signed<T>): Promise<boolean> {
     return this.verifySignature(signed);
   }
 

@@ -1,17 +1,20 @@
+import { html } from 'lit-element';
 import { injectable, inject } from 'inversify';
 
 import {
   Pattern,
-  LensesPattern,
-  ActionsPattern,
+  HasLenses,
+  HasActions,
   PatternAction,
   Lens,
   Hashed,
-  HashedPattern,
+  Hashable,
   PatternTypes,
-  CreatePattern,
+  Creatable,
   NamedSource,
-  DiscoverableSource
+  DiscoverableSource,
+  PatternRecognizer,
+  Updatable
 } from '@uprtcl/cortex';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';
@@ -21,11 +24,13 @@ const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
 export class TextNodePattern
-  implements Pattern, CreatePattern<Partial<TextNode>, TextNode>, LensesPattern, ActionsPattern {
+  implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasActions {
   constructor(
+    @inject(PatternTypes.Recognizer)
+    protected recognizer: PatternRecognizer,
     @inject(DocumentsTypes.DocumentsProvider)
     protected documentsProvider: DiscoverableSource<DocumentsProvider & NamedSource>,
-    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & HashedPattern<TextNode>
+    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<TextNode>
   ) {}
 
   recognize(object: object): boolean {
@@ -39,7 +44,7 @@ export class TextNodePattern
 
     const newTextNode = { links, text, type };
 
-    const hash = await this.documentsProvider.source.createTextNode(newTextNode);
+    const hash = await this.documentsProvider.service.createTextNode(newTextNode);
 
     return {
       id: hash,
@@ -47,16 +52,22 @@ export class TextNodePattern
     };
   };
 
-  getLenses = (): Lens[] => {
+  getLenses = (node: TextNode): Lens[] => {
     return [
       {
-        lens: 'text-node',
-        params: {}
+        name: 'Document',
+        render: html`
+          <text-node .data=${node}></text-node>
+        `
       }
     ];
   };
 
-  getActions = (textNode: TextNode): PatternAction[] => {
+  getActions = (textNode: TextNode, entity: any): PatternAction[] => {
+    const updatable: Updatable = this.recognizer.recognizeMerge(entity);
+
+    if (updatable.canUpdate && !updatable.canUpdate(entity)) return [];
+
     if (textNode.type === TextType.Paragraph) {
       return [
         {

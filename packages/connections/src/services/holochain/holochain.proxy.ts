@@ -7,6 +7,11 @@ export class HolochainProxy extends HolochainConnection implements Source {
     super('proxy', hcOptions, options);
   }
 
+  async getName(): Promise<string> {
+    const response = await this.call('get_source_name', {});
+    return this.parseResponse(response);
+  }
+
   async get<T extends object>(hash: string): Promise<Hashed<T> | undefined> {
     const response = await this.call('get_proxied_entry', {
       address: hash

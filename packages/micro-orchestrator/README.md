@@ -1,0 +1,90 @@
+# @uprtcl/micro-orchestrator
+
+`Micro-orchestrator` is a new library to help coordinate different frontend modules, to build entire applications from small building blocks. This micro-modules can depend on one another,
+
+It's inspired by the `micro-frontends` pattern, and wants to extend it to enable modules that can interact from one another
+
+It uses `InversifyJs` for all dependency management.
+
+## Install
+
+```bash
+npm i @uprtcl/micro-orchestrator
+```
+
+## Usage
+
+### Usage from the application
+
+#### Instantiate `micro-orchestrator`
+
+A single instance of `micro-orchestrator` should be created on the top level of the consuming application.
+
+```javascript
+import { MicroOrchestrator, ReduxStoreModule } from '@uprtcl/micro-orchestrator';
+import { MyModule } from 'third-party-library';
+
+const orchestrator = new MicroOrchestrator();
+
+await orchestrator.loadModules(
+  {
+    id: 'myModule',
+    module: MyModule
+  },
+  {
+    id: ReduxTypes.Module,
+    module: ReduxStoreModule
+  }
+);
+
+// Module functionality ready to be used here
+```
+
+#### Requesting a dependency from an element
+
+In your `html` code, include the `<module-container>` element as the top level element where you want to use the `micro-orchestrator` funcionality.
+
+```html
+<body>
+  <module-container>
+    <!-- The rest of the application goes here  -->
+  </module-container>
+</body>
+```
+
+The `<module-container>` element expects for the `RequestDependencyEvent` (native Dom event). You simply need to dispatch it from an element contained inside the `<module-container>`.
+
+In its detail, you need to specify the identifier of the dependencies you want to request.
+
+```javascript
+import { RequestDependencyEvent } from '@uprtcl/micro-orchestrator';
+
+const event = new RequestDependencyEvent({
+  detail: { request: [ReduxTypes.Store] },
+  composed: true,
+  bubbles: true
+});
+
+const resolved = this.dispatchEvent(event);
+const reduxStore = event.dependencies[0];
+// Do things with reduxStore...
+```
+
+Or if you are building a native HTMLElement (or any subtype) you can use the simple `moduleConnect()` mixin, which provides a helper `request()` function.
+
+```javascript
+import { moduleConnect, ReduxTypes } from '@uprtcl/micro-orchestrator';
+
+export class MyCustomElement extends moduleConnect(HTMLElement) {
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.reduxStore = this.request(ReduxTypes.Store);
+
+    // Do things with reduxStore...
+  }
+}
+```
+
+### Building your own module
+

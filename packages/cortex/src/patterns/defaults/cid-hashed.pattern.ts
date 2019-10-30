@@ -2,9 +2,24 @@ import { injectable } from 'inversify';
 import multihashing from 'multihashing-async';
 import * as Cid from 'cids';
 
-import { HashedPattern, Hashed } from '../patterns/hashed.pattern';
-import { TransformPattern } from '../patterns/transform.pattern';
+import { Hashed, Hashable } from '../properties/hashable';
+import { Transformable } from '../properties/transformable';
 import { Pattern } from '../pattern';
+import { sortObject } from '../../utils/utils';
+
+export interface CidConfig {
+  base?: string;
+  version: number;
+  codec: string;
+  type: string;
+}
+
+export const defaultCidConfig: CidConfig = {
+  version: 1,
+  type: 'sha2-256',
+  codec: 'raw',
+  base: 'base58btc'
+};
 
 export function recognizeHashed(object: object) {
   return (
@@ -15,34 +30,36 @@ export function recognizeHashed(object: object) {
 }
 
 @injectable()
-export class CidHashedPattern
-  implements Pattern, HashedPattern<any>, TransformPattern<Hashed<any>, [any]> {
+export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[any]> {
   recognize(object: object) {
     return recognizeHashed(object);
   }
 
-  validate<T extends object>(object: Hashed<T>): boolean {
+  async hashObject(object: object, config: CidConfig): Promise<string> {
+    const ordered = sortObject(object);
+
+    const b = multihashing.Buffer.from(JSON.stringify(ordered));
+    const encoded = await multihashing(b, config.type);
+
+    const cid = new Cid(config.version, config.codec, encoded, config.base);
+    return cid.toString();
+  }
+
+  async validate<T extends object>(object: Hashed<T>): Promise<boolean> {
     return true;
   }
 
-  async derive<T>(object: T): Promise<Hashed<T>> {
-    const b = multihashing.Buffer.from(JSON.stringify(object));
-    const encoded = await multihashing(b, 'sha2-256');
-
-    const cid = new Cid(encoded);
+  async derive<T extends object>(object: T): Promise<Hashed<T>> {
+    const hash = await this.hashObject(object, defaultCidConfig);
 
     return {
-      id: cid.toString(),
+      id: hash,
       object: object
     };
   }
 
   extract<T>(hashed: Hashed<T>): T {
     return hashed.object;
-  }
-
-  getCidConfig(hash: string): any {
-    return null; // TODO fix this
   }
 
   transform(hashed: Hashed<any>): [any] {

@@ -4,18 +4,18 @@ import { Source } from './sources/source';
 import { CachedSourceService } from './cached-remotes/cached-source.service';
 import { CacheService } from './cache/cache.service';
 import { MultiSourceService } from './multi/multi-source.service';
-import { Hashed } from '../patterns/patterns/hashed.pattern';
+import { Hashed } from '../patterns/properties/hashable';
 import { DiscoveryTypes } from '../types';
 
 @injectable()
 export class DiscoveryService implements Source {
-  cachedRemote: CachedSourceService;
+  cachedRemote: CachedSourceService<CacheService, Source>;
 
   constructor(
     @inject(DiscoveryTypes.Cache) protected cache: CacheService,
     @inject(DiscoveryTypes.MultiSource) protected multiSource: MultiSourceService
   ) {
-    this.cachedRemote = new CachedSourceService(cache, multiSource);
+    this.cachedRemote = new CachedSourceService<CacheService, Source>(cache, multiSource);
   }
 
   /**

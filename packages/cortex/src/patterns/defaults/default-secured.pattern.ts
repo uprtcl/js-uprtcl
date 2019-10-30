@@ -1,17 +1,17 @@
-import { Hashed, HashedPattern } from '../patterns/hashed.pattern';
-import { Signed, SignedPattern } from '../patterns/signed.pattern';
+import { Hashed, Hashable } from '../properties/hashable';
+import { Signed, Signable } from '../properties/signable';
 import { Pattern } from '../pattern';
-import { SecuredPattern } from '../patterns/secured.pattern';
+import { IsSecure } from '../properties/is-secure';
 import { injectable, inject } from 'inversify';
 import { PatternTypes } from '../../types';
 
 export type Secured<T = any> = Hashed<Signed<T>>;
 
 @injectable()
-export class DefaultSecuredPattern implements Pattern, SecuredPattern<Secured<any>> {
+export class DefaultSecuredPattern implements Pattern, IsSecure<Secured<any>> {
   constructor(
-    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & HashedPattern<any>,
-    @inject(PatternTypes.Core.Signed) protected signedPattern: Pattern & SignedPattern<any>
+    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(PatternTypes.Core.Signed) protected signedPattern: Pattern & Signable<any>
   ) {}
 
   recognize(object: object) {
@@ -21,7 +21,7 @@ export class DefaultSecuredPattern implements Pattern, SecuredPattern<Secured<an
     );
   }
 
-  validate<T>(object: Secured<T>): boolean {
+  validate<T>(object: Secured<T>): Promise<boolean> {
     return this.hashedPattern.validate(object) && this.signedPattern.validate(object.object);
   }
 

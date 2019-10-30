@@ -1,13 +1,16 @@
 import { LitElement, html, property, css } from 'lit-element';
-import { Node } from '../../patterns/defaults/default-node.pattern';
 import { LensElement } from '../../types';
+
+export interface Node {
+  links: string[];
+}
 
 export class NodeList extends LitElement implements LensElement<Node> {
   @property({ type: Object })
   data!: Node;
 
   @property({ type: Boolean })
-  allowAdd: boolean = true;
+  editable: boolean = true;
 
   get styles() {
     return css`
@@ -25,7 +28,7 @@ export class NodeList extends LitElement implements LensElement<Node> {
 
         ${this.data.links.map(
           link => html`
-            <pattern-renderer .hash=${link}></pattern-renderer>
+            <cortex-entity .hash=${link}></cortex-entity>
           `
         )}
       </div>

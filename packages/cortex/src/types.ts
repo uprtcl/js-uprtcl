@@ -1,9 +1,10 @@
-import { Dictionary } from 'lodash';
+import { TemplateResult } from 'lit-element';
+
 import { Pattern } from './patterns/pattern';
 
 export interface Lens {
-  lens: string;
-  params: Dictionary<any>;
+  name: string;
+  render: TemplateResult;
 }
 
 export interface PatternAction {
@@ -14,17 +15,12 @@ export interface PatternAction {
 
 export interface LensElement<P> {
   data: P;
+  editable?: boolean;
 }
 
-export interface Isomorphism {
+export interface Isomorphisms {
   entity: object;
-  lenses: Lens[];
-  actions: PatternAction[];
-}
-
-export interface SelectedLens {
-  isomorphism: number;
-  lens: number;
+  isomorphisms: Array<any>;
 }
 
 export type PatternFactory = () => Pattern[];

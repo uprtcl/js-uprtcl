@@ -1,0 +1,14 @@
+import { IpfsSource } from '@uprtcl/connections';
+
+import { DocumentsProvider } from './documents.provider';
+import { TextNode } from '../types';
+
+export class DocumentsIpfs extends IpfsSource implements DocumentsProvider {
+
+  /**
+   * @override
+   */
+  createTextNode(node: TextNode): Promise<string> {
+    return this.addObject(node);
+  }
+}

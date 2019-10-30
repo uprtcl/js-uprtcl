@@ -40,10 +40,13 @@ export default {
     // https://github.com/rollup/rollup-plugin-node-resolve#usage
     resolve(),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-    commonjs(),
+    commonjs({
+      include: /node_modules/
+    }),
     builtins(),
 
     // Resolve source maps to the original source
     sourceMaps()
-  ]
+  ],
+  preserveSymlinks: true
 };

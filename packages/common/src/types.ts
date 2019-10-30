@@ -1,5 +1,5 @@
-import { UprtclProvider } from './services/providers/uprtcl.provider';
-import { CacheService, NamedSource } from '@uprtcl/cortex';
+import { UprtclProvider } from './uprtcl/services/uprtcl.provider';
+import { CacheService, Hashed } from '@uprtcl/cortex';
 
 export type Context = string;
 
@@ -18,6 +18,19 @@ export interface Commit {
   dataId: string;
 }
 
+export interface UpdateRequest {
+  fromPerspectiveId: string | undefined;
+  perspectiveId: string;
+  oldHeadId: string;
+  newHeadId: string;
+}
+
+export interface Proposal {
+  creatorId: string;
+  requests: Array<Hashed<UpdateRequest>>;
+  description: string | undefined;
+}
+
 export const UprtclTypes = {
   Module: Symbol('uprtcl-module'),
   PerspectivePattern: Symbol('perspective-pattern'),
@@ -29,4 +42,3 @@ export const UprtclTypes = {
 };
 
 export type UprtclLocal = CacheService & UprtclProvider;
-export type UprtclRemote = NamedSource & UprtclProvider;

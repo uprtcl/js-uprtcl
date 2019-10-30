@@ -1,10 +1,15 @@
 import { LitElement, property, html } from 'lit-element';
+
 import { LensElement } from '@uprtcl/cortex';
+
 import { TextNode, TextType } from '../types';
 
 export class TextNodeLens extends LitElement implements LensElement<TextNode> {
   @property({ type: Object })
   data!: TextNode;
+
+  @property()
+  editable!: boolean;
 
   render() {
     return html`
@@ -12,16 +17,16 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
         ${this.data.type === TextType.Paragraph
           ? html`
               <div
-                contenteditable="true"
-                @input=${(e: InputEvent) => e.target && this.updateContent(e.target['innerText'])}
+                contenteditable=${this.editable ? 'true' : 'false'}
+                @input=${e => e.target && this.updateContent(e.target['innerText'])}
               >
                 ${this.data.text}
               </div>
             `
           : html`
               <h3
-                contenteditable="true"
-                @input=${(e: InputEvent) => e.target && this.updateContent(e.target['innerText'])}
+                contenteditable=${this.editable ? 'true' : 'false'}
+                @input=${e => e.target && this.updateContent(e.target['innerText'])}
               >
                 ${this.data.text}
               </h3>

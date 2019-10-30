@@ -2,12 +2,12 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { CacheService } from '../cache/cache.service';
 import { Source } from '../sources/source';
-import { Hashed } from '../../patterns/patterns/hashed.pattern';
+import { Hashed } from '../../patterns/properties/hashable';
 
-export class CachedSourceService implements Source {
+export class CachedSourceService<CACHE extends CacheService, REMOTE extends Source> implements Source {
   protected logger = new Logger('CachedSourceService');
 
-  constructor(protected cache: CacheService, protected remote: Source) {}
+  constructor(public cache: CACHE, public remote: REMOTE) {}
 
   /**
    * Get the object identified by the given hash from cache or from remote
@@ -39,6 +39,6 @@ export class CachedSourceService implements Source {
    * @override
    */
   public async ready(): Promise<void> {
-    return this.remote.ready();
+    await Promise.all([this.remote.ready(), this.cache.ready()]);
   }
 }
