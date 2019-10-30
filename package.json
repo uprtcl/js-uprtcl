@@ -12,6 +12,7 @@
     "typescript": "^3.5.3"
   },
   "scripts": {
+    "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "clean": "lerna run clean",
     "docs:build": "rimraf docs && typedoc",

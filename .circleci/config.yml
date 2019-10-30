@@ -10,7 +10,7 @@ jobs:
           command: |
             echo 'Bootstraping modules'
             npm i
-            lerna bootstrap
+            npm run bootstrap
       - run:
           name: Build
           command: |
