@@ -68,7 +68,7 @@ export class Uprtcl {
   /** Private functions */
 
   /**
-   * If the provider name is undefined and there are more than one provider, throws error
+   * If the provider name is undefined and there is more than one provider, throws error
    * Else, return the provider name that should be used
    * @param providerName optional provider name to validate
    */
@@ -157,7 +157,7 @@ export class Uprtcl {
    * creating the context, data and commit if necessary
    *
    * @param args the properties of the perspectives
-   * @param providerName provider to which to create the perspective, needed if there are more than one provider
+   * @param providerName provider to which to create the perspective, needed if there is more than one provider
    */
   public async createPerspective(
     args: NewPerspectiveArgs,
@@ -221,7 +221,7 @@ export class Uprtcl {
    * Create a new commit with the given properties
    *
    * @param args the properties of the commit
-   * @param providerName the provider to which to create the commit, needed if there are more than one provider
+   * @param providerName the provider to which to create the commit, needed if there is more than one provider
    */
   public async createCommit(
     args: {
@@ -258,7 +258,7 @@ export class Uprtcl {
    * Clones the given perspective in the given provider
    *
    * @param perspective the perspective to clone
-   * @param providerName the provider to which to clone the perspective to, needed if there are more than one provider
+   * @param providerName the provider to which to clone the perspective to, needed if there is more than one provider
    */
   public async clonePerspective(
     perspective: Secured<Perspective>,
@@ -283,7 +283,7 @@ export class Uprtcl {
    * Clones the given commit in the given provider
    *
    * @param commit the commit to clone
-   * @param providerName the provider to which to clone the commit to, needed if there are more than one provider
+   * @param providerName the provider to which to clone the commit to, needed if there is more than one provider
    */
   public async cloneCommit(commit: Secured<Commit>, providerName?: string): Promise<void> {
     providerName = this.validateProviderName(providerName);
@@ -303,6 +303,12 @@ export class Uprtcl {
 
   /** Modifiers */
 
+  /**
+   * Update the head of the given perspective to the given headId
+   *
+   * @param perspectiveId perspective to update
+   * @param headId new head of the perspective
+   */
   public async updatePerspectiveHead(perspectiveId: string, headId: string): Promise<void> {
     const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
     if (!perspective) return undefined;
@@ -321,6 +327,12 @@ export class Uprtcl {
     );
   }
 
+  /**
+   * Update the context of the given perspective
+   *
+   * @param perspectiveId perspective to update
+   * @param headId new context of the perspective
+   */
   public async updatePerspectiveContext(perspectiveId: string, context: string): Promise<void> {
     const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
     if (!perspective) return undefined;
@@ -341,7 +353,13 @@ export class Uprtcl {
 
   /** Helper functions */
 
-  public async createData<O extends object>(data: O): Promise<Hashed<O>> {
+  /**
+   * Generically create the given data and retrieve its hashed it
+   *
+   * @param data the data to create
+   * @returns the created hashed data
+   */
+  protected async createData<O extends object>(data: O): Promise<Hashed<O>> {
     const dataPattern: Creatable<O, any> = this.patternRecognizer.recognizeMerge(data);
 
     if (!dataPattern.create) throw new Error('Cannot create this type of data');
