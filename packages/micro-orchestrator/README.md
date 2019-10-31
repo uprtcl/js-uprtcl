@@ -9,7 +9,7 @@ It uses `InversifyJs` for all dependency management.
 ## Install
 
 ```bash
-npm i @uprtcl/micro-orchestrator
+npm install @uprtcl/micro-orchestrator
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ npm i @uprtcl/micro-orchestrator
 
 A single instance of `micro-orchestrator` should be created on the top level of the consuming application.
 
-```javascript
+```ts
 import { MicroOrchestrator, ReduxStoreModule } from '@uprtcl/micro-orchestrator';
 import { MyModule } from 'third-party-library';
 
@@ -56,7 +56,7 @@ The `<module-container>` element expects for the `RequestDependencyEvent` (nativ
 
 In its detail, you need to specify the identifier of the dependencies you want to request.
 
-```javascript
+```ts
 import { RequestDependencyEvent } from '@uprtcl/micro-orchestrator';
 
 const event = new RequestDependencyEvent({
@@ -72,7 +72,7 @@ const reduxStore = event.dependencies[0];
 
 Or if you are building a native HTMLElement (or any subtype) you can use the simple `moduleConnect()` mixin, which provides a helper `request()` function.
 
-```javascript
+```ts
 import { moduleConnect, ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 export class MyCustomElement extends moduleConnect(HTMLElement) {

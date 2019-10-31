@@ -8,6 +8,30 @@ import { DocumentsTypes } from './types';
 import { DocumentsProvider } from './services/documents.provider';
 import { DocumentsLocal } from './services/documents.local';
 
+/**
+ * Configure a documents module with the given providers
+ *
+ * Example usage:
+ *
+ * ```ts
+ * import { documentsModule, DocumentsIpfs } from '@uprtcl/documents';
+ *
+ * const documentsProvider = new DocumentsIpfs({
+ *   host: 'ipfs.infura.io',
+ *   port: 5001,
+ *   protocol: 'https'
+ * });
+ *
+ * const docs = documentsModule([documentsProvider]);
+ * await orchestrator.loadModules(docs);
+ * ```
+ *
+ * @category CortexModule
+ *
+ * @param documentsProviders an array of providers of documents
+ * @param documentsLocal the local cache service to
+ * @returns a configured documents module ready to be loaded
+ */
 export function documentsModule(
   documentsProviders: DiscoverableSource<DocumentsProvider & NamedSource>[],
   documentsLocal: new (...args: any[]) => DocumentsProvider = DocumentsLocal

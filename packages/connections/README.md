@@ -16,14 +16,14 @@ This package depends on `@uprtcl/micro-orchestrator` and `@uprtcl/cortex` to imp
 ## Install
 
 ```bash
-npm i @uprtcl/connections
+npm install @uprtcl/connections
 ```
 
 ## Usage
 
 Import the appropriate connection you would like to use, and make a new instance of it by passing its configuration:
 
-```javascript
+```ts
 import { EthereumConnection } from '@uprtcl/connections';
 
 const ethConnection = new EthereumConnection({

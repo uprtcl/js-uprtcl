@@ -1,37 +1,44 @@
-# \<uprtcl-common>
+# @uprtcl/common
 
-This webcomponent follows the [open-wc](https://github.com/open-wc/open-wc) recommendation.
+This is a collection of common Cortex modules, developed as the starting point of many applications:
 
-## Installation
+- [\_Prtcl](https://github.com/uprtcl/spec) module: generic version control, allowing different perspectives of any content-addressable content to diverge and merge, and allowing anyone to make proposals to update any content they see
+- Access Control: generic access control
+- Draft: generic providers to store drafts for any kind of content
+
+## Install
+
 ```bash
-npm i uprtcl-common
+npm install @uprtcl/common
 ```
 
-## Usage
-```html
-<script type="module">
-  import 'uprtcl-common/uprtcl-common.js';
-</script>
+## \_Prtcl module usage
 
-<uprtcl-common></uprtcl-common>
-```
+Example
 
-## Testing using karma (if applied by author)
-```bash
-npm run test
-```
+```ts
+import { uprtclModule, UprtclEthereum, UprtclHolochain } from '@uprtcl/common';
 
-## Testing using karma via browserstack (if applied by author)
-```bash
-npm run test:bs
-```
+const uprtclHolochain = new UprtclHolochain({
+  host: 'ws://localhost:8888',
+  instance: 'test-instance'
+});
 
-## Demoing using storybook (if applied by author)
-```bash
-npm run storybook
-```
+const uprtclEth = new UprtclEthereum('ws://localhost:8545', {
+  host: 'ipfs.infura.io',
+  port: 5001,
+  protocol: 'https'
+});
 
-## Linting (if applied by author)
-```bash
-npm run lint
+const knownSources = new KnownSourcesHolochain({
+  host: 'ws://localhost:8888',
+  instance: 'test-instance'
+});
+
+const discoverableUprtclHolo = { service: uprtclHolochain, knownSources: knownSources };
+
+const discoverableUprtclEth = { service: uprtclEth, knownSources: knownSources };
+
+const uprtcl = uprtclModule([discoverableUprtclHolo, discoverableUprtclEth]);
+await orchestrator.loadModules(uprtcl);
 ```

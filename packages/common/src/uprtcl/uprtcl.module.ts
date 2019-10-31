@@ -17,6 +17,43 @@ import { UprtclDexie } from './services/providers/uprtcl.dexie';
 import { Uprtcl } from './services/uprtcl';
 import { UprtclRemote } from './services/uprtcl.remote';
 
+/**
+ * Configure a _Prtcl module with the given providers
+ *
+ * Example usage:
+ *
+ * ```ts
+ * import { uprtclModule, UprtclEthereum, UprtclHolochain } from '@uprtcl/common';
+ *
+ * const uprtclHolochain = new UprtclHolochain({
+ *   host: 'ws://localhost:8888',
+ *   instance: 'test-instance'
+ * });
+ *
+ * const uprtclEth = new UprtclEthereum('ws://localhost:8545', {
+ *   host: 'ipfs.infura.io',
+ *   port: 5001,
+ *   protocol: 'https'
+ * });
+ *
+ * const knownSources = new KnownSourcesHolochain({
+ *   host: 'ws://localhost:8888',
+ *   instance: 'test-instance'
+ * });
+ *
+ * const discoverableUprtclHolo = { service: uprtclHolochain, knownSources: knownSources };
+ * const discoverableUprtclEth = { service: uprtclEth, knownSources: knownSources };
+ *
+ * const uprtcl = uprtclModule([discoverableUprtclHolo, discoverableUprtclEth]);
+ * await orchestrator.loadModules(uprtcl);
+ * ```
+ *
+ * @category CortexModule
+ *
+ * @param discoverableUprtcls
+ * @param localUprtcl
+ * @returns a configured _Prtcl module ready to be
+ */
 export function uprtclModule(
   discoverableUprtcls: Array<DiscoverableSource<UprtclRemote>>,
   localUprtcl: new (...args: any[]) => UprtclLocal = UprtclDexie

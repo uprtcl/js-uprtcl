@@ -11,8 +11,7 @@ import {
   CachedMultiSourceService,
   Hashed,
   IsSecure,
-  MultiSourceService,
-  CachedSourceService
+  MultiSourceService
 } from '@uprtcl/cortex';
 import { MicroOrchestratorTypes, Logger } from '@uprtcl/micro-orchestrator';
 
@@ -34,10 +33,12 @@ export type NewPerspectiveArgs =
 const creatorId = 'did:hi:ho';
 const DEFAULT_PERSPECTIVE_NAME = 'master';
 
+/**
+ * Main service used to interact with _Prtcl compatible objects and providers
+ */
 @injectable()
 export class Uprtcl {
-  @inject(MicroOrchestratorTypes.Logger)
-  logger!: Logger;
+  logger = new Logger('uprtcl');
 
   service: CachedMultiSourceService<UprtclLocal, UprtclRemote>;
 
