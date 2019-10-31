@@ -23,8 +23,6 @@ export interface Isomorphisms {
   isomorphisms: Array<any>;
 }
 
-export type PatternFactory = () => Pattern[];
-
 export const DiscoveryTypes = {
   Module: Symbol('discovery-module'),
   DiscoveryService: Symbol('discovery-service'),
