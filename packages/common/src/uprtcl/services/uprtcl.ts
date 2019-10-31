@@ -359,7 +359,7 @@ export class Uprtcl {
    * @param data the data to create
    * @returns the created hashed data
    */
-  protected async createData<O extends object>(data: O): Promise<Hashed<O>> {
+  public async createData<O extends object>(data: O): Promise<Hashed<O>> {
     const dataPattern: Creatable<O, any> = this.patternRecognizer.recognizeMerge(data);
 
     if (!dataPattern.create) throw new Error('Cannot create this type of data');
