@@ -16,7 +16,7 @@ export class UprtclHolochain extends HolochainSource implements UprtclRemote {
     super('uprtcl', hcOptions, options);
   }
 
-  get accessControlService() {
+  get accessControl() {
     return new AccessControlMock();
   }
 

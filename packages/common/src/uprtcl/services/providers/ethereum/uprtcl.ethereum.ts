@@ -56,7 +56,7 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
     );
   }
 
-  get accessControlService() {
+  get accessControl() {
     return new AccessControlMock();
   }
 
