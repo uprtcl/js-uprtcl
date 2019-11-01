@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/micro-orchestrator",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha",
   "description": "",
   "keywords": [],
   "main": "dist/uprtcl-micro-orchestrator.umd.js",

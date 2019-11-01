@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/connections",
-  "version": "0.0.0",
+  "version": "0.0.1-alpha",
   "description": "Webcomponent uprtcl-common following open-wc recommendations",
   "author": "uprtcl-connections",
   "homepage": "https://github.com/open-wc/open-wc/",
@@ -25,8 +25,8 @@
   "dependencies": {
     "@holochain/hc-web-client": "^0.5.0",
     "@types/node": "^12.12.3",
-    "@uprtcl/cortex": "*",
-    "@uprtcl/micro-orchestrator": "*",
+    "@uprtcl/cortex": "^0.0.1-alpha",
+    "@uprtcl/micro-orchestrator": "^0.0.1-alpha",
     "ipfs-http-client": "^39.0.0",
     "lodash": "^4.17.15",
     "web3": "^1.2.1",
