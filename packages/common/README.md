@@ -1,10 +1,11 @@
 # @uprtcl/common
 
->_Prtcl resources: [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+>_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+/)
 
 This is a collection of common Cortex modules, developed as the starting point of many applications:
 
-- [\_Prtcl](https://github.com/uprtcl/spec) module: generic version control, allowing different perspectives of any content-addressable content to diverge and merge, and allowing anyone to make proposals to update any content they see
+- **\_Prtcl module**: generic version control, allowing different perspectives of any content-addressable content to diverge and merge, and allowing anyone to make proposals to update any content they see
 - Access Control: generic access control
 - Draft: generic providers to store drafts for any kind of content
 
