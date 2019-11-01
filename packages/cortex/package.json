@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/cortex",
-  "version": "0.0.1-alpha",
+  "version": "0.0.1-alpha1",
   "description": "A new way to build web-applications, by recognizing the patterns that generic objects implement",
   "keywords": [],
   "main": "dist/uprtcl-cortex.umd.js",
@@ -93,7 +93,7 @@
     "@material/mwc-button": "^0.8.0",
     "@material/mwc-linear-progress": "^0.8.0",
     "@types/lodash": "^4.14.138",
-    "@uprtcl/micro-orchestrator": "^0.0.1-alpha",
+    "@uprtcl/micro-orchestrator": "^0.0.1-alpha1",
     "buffer": "^5.4.3",
     "cids": "^0.7.1",
     "dexie": "^2.0.4",
