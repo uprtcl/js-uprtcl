@@ -1,5 +1,7 @@
 # @uprtcl/cortex
 
+>_Prtcl resources: [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+
 The **Cortex** framework: a new way to build web-applications.
 
 At its core, Cortex does what brains do: **recognize patterns**. Its main building block is a _pattern_: a kind of object that implements certain behaviour.
@@ -46,6 +48,10 @@ These are the transitions that Cortex wants to support in the web:
 - "Computer files" to "**generic JSON objects**"
 - "The server controls the data" to "**data can be transformed and stored in any platform **you** choose**"
 - "Every application has to reimplement the wheel" to "**building applications by reusing frontend+backend modules already implemented**"
+
+## Dependencies
+
+This module depends on `@uprtcl/micro-orchestrator` to declare `MicroModule` classes, but can be used without those modules.
 
 ## Install
 

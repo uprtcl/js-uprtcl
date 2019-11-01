@@ -1,5 +1,7 @@
 # @uprtcl/connections
 
+>_Prtcl resources: [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+
 This node package includes basic connections services to help connect to different backend platforms. These services include standard funcionality like a retry mechanism, or a `ready()` function to wait for them to be ready.
 
 List of supported connections:

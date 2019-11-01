@@ -1,5 +1,7 @@
 # @uprtcl/micro-orchestrator
 
+>_Prtcl resources: [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+
 `Micro-orchestrator` is a new library to help coordinate different frontend modules, to build entire applications from small building blocks. This micro-modules can depend on one another,
 
 It's inspired by the `micro-frontends` pattern, and wants to extend it to enable modules that can interact from one another
@@ -88,3 +90,4 @@ export class MyCustomElement extends moduleConnect(HTMLElement) {
 
 ### Building your own module
 
+TBD
