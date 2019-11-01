@@ -1,7 +1,7 @@
 {
   "name": "@uprtcl/cortex",
   "version": "0.0.1-alpha",
-  "description": "",
+  "description": "A new way to build web-applications, by recognizing the patterns that generic objects implement",
   "keywords": [],
   "main": "dist/uprtcl-cortex.umd.js",
   "module": "dist/uprtcl-cortex.es5.js",
@@ -9,6 +9,7 @@
   "files": [
     "dist"
   ],
+  "homepage": "https://github.com/uprtcl/spec/",
   "author": "guillemcordoba <guillem.cordoba@gmail.com>",
   "repository": {
     "type": "git",

@@ -1,14 +1,16 @@
 {
   "name": "@uprtcl/connections",
   "version": "0.0.1-alpha",
-  "description": "Webcomponent uprtcl-common following open-wc recommendations",
-  "author": "uprtcl-connections",
-  "homepage": "https://github.com/open-wc/open-wc/",
+  "description": "Basic connections services to help connect to different backend platforms",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "author": "guillemcordoba <guillem.cordoba@gmail.com>",
   "license": "MIT",
   "main": "dist/uprtcl-connections.umd.js",
   "module": "dist/uprtcl-connections.es5.js",
   "typings": "dist/types/uprtcl-connections.d.ts",
-  "repository": "https://github.com/open-wc/open-wc/",
   "scripts": {
     "build": "npm run clean && rollup -c rollup.config.ts",
     "clean": "rimraf dist docs",

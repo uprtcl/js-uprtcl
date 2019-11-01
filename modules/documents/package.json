@@ -1,14 +1,17 @@
 {
   "name": "@uprtcl/documents",
   "version": "0.0.1-alpha",
-  "description": "Webcomponent uprtcl-common following open-wc recommendations",
-  "author": "uprtcl-common",
-  "homepage": "https://github.com/open-wc/open-wc/",
+  "description": "Cortex module implementing texts and folders",
+  "homepage": "https://github.com/uprtcl/spec/",
+  "author": "guillemcordoba <guillem.cordoba@gmail.com>",
   "license": "MIT",
   "main": "dist/uprtcl-documents.umd.js",
   "module": "dist/uprtcl-documents.es5.js",
   "typings": "dist/types/uprtcl-documents.d.ts",
-  "repository": "https://github.com/open-wc/open-wc/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
   "scripts": {
     "test": "karma start --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false",
