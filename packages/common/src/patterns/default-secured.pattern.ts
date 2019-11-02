@@ -1,9 +1,14 @@
-import { Hashed, Hashable } from '../properties/hashable';
-import { Signed, Signable } from '../properties/signable';
-import { Pattern } from '../pattern';
-import { IsSecure } from '../properties/is-secure';
 import { injectable, inject } from 'inversify';
-import { PatternTypes } from '../../types';
+
+import {
+  Hashed,
+  Hashable,
+  Signed,
+  Signable,
+  IsSecure,
+  PatternTypes,
+  Pattern
+} from '@uprtcl/cortex';
 
 export type Secured<T = any> = Hashed<Signed<T>>;
 

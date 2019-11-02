@@ -1,6 +1,6 @@
-import { Signable, Signed } from '../properties/signable';
 import { injectable } from 'inversify';
-import { Pattern } from '../pattern';
+
+import { Signable, Signed, Pattern } from '@uprtcl/cortex';
 
 @injectable()
 export class DefaultSignedPattern implements Pattern, Signable<any> {

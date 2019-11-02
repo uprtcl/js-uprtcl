@@ -13,9 +13,6 @@ pkg.dependencies['lodash/merge'] = '';
 pkg.dependencies['lodash/uniq'] = '';
 pkg.dependencies['lit-html/directives/unsafe-html'] = '';
 
-// delete pkg.dependencies['multihashing-async'];
-// delete pkg.dependencies['cids'];
-
 const libraryName = 'uprtcl-cortex';
 
 export default {

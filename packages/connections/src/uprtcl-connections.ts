@@ -13,6 +13,7 @@ export { KnownSourcesHolochain } from './services/holochain/known-sources.holoch
 
 // Ipfs
 export { IpfsSource, IpfsConnectionOptions } from './services/ipfs/ipfs.source';
+export { CidConfig, defaultCidConfig } from './services/ipfs/cid.config';
 
 // Ethereum
 export { EthereumConnection } from './services/ethereum/ethereum.connection';

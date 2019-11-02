@@ -47,6 +47,7 @@ export class SimpleEditor extends moduleConnect(LitElement) {
       console.log('hi2');
       window.history.pushState('', '', `/?id=${perspective.id}`);
     }
+    document.getElementById('')
   }
 
   render() {

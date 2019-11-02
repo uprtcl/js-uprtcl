@@ -1,7 +1,6 @@
 import { Perspective, Commit } from '../../types';
-import { Secured } from '@uprtcl/cortex';
 import { UprtclSource } from './uprtcl.source';
-import { ProposalProvider } from './proposal.provider';
+import { Secured } from '../../patterns/default-secured.pattern';
 
 export interface UprtclProvider extends UprtclSource {
 

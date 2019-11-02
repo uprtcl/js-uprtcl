@@ -3,9 +3,10 @@ import { Store } from 'redux';
 import { LitElement, property, html, css, TemplateResult } from 'lit-element';
 
 import { ReduxTypes, moduleConnect } from '@uprtcl/micro-orchestrator';
-import { LensElement, Secured, Source, loadEntity, Hashed, DiscoveryTypes } from '@uprtcl/cortex';
+import { LensElement, Source, loadEntity, Hashed, DiscoveryTypes } from '@uprtcl/cortex';
 
 import { Commit } from '../../types';
+import { Secured } from '../../patterns/default-secured.pattern';
 
 export class CommitHistory extends moduleConnect(LitElement)
   implements LensElement<Secured<Commit>> {

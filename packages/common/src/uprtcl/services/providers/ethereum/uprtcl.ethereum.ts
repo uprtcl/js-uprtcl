@@ -2,7 +2,6 @@ import multihashing from 'multihashing-async';
 import * as Cid from 'cids';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Secured, sortObject } from '@uprtcl/cortex';
 import {
   IpfsSource,
   EthereumConnection,
@@ -16,7 +15,9 @@ import * as UprtclContractArtifact from './uprtcl-contract.json';
 import { Commit, Perspective } from '../../../../types';
 import { UprtclRemote } from '../../uprtcl.remote';
 import { AccessControlMock } from '../../../../access-control/services/access-control.mock';
-import { ProposalMock } from '../../proposal.mock.js';
+import { ProposalMock } from '../../proposal.mock';
+import { sortObject } from '../../../../utils/utils';
+import { Secured } from '../../../../patterns/default-secured.pattern';
 
 /** Function signatures */
 const ADD_PERSP = 'addPerspective(bytes32,bytes32,string,address,string)';

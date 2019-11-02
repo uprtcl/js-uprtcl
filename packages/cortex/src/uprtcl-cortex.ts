@@ -42,16 +42,6 @@ export { HasLenses } from './patterns/properties/has-lenses';
 export { HasActions } from './patterns/properties/has-actions';
 export { Updatable } from './patterns/properties/updatable';
 
-// Default patterns
-export {
-  CidHashedPattern,
-  recognizeHashed,
-  CidConfig,
-  defaultCidConfig
-} from './patterns/defaults/cid-hashed.pattern';
-export { DefaultSignedPattern } from './patterns/defaults/default-signed.pattern';
-export { DefaultSecuredPattern, Secured } from './patterns/defaults/default-secured.pattern';
-
 // Pattern Registry
 export { PatternRecognizer } from './patterns/recognizer/pattern.recognizer';
 export { PatternsModule } from './patterns/patterns.module';
@@ -84,6 +74,3 @@ export { DiscoveryTypes, PatternTypes, EntitiesTypes, LensesTypes } from './type
 /** Module */
 export { CortexModule } from './cortex.module';
 export { CortexEntityBase } from './elements/base/cortex-entity-base';
-
-/** Utils */
-export { sortObject } from './utils/utils';

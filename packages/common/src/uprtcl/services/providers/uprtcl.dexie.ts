@@ -4,7 +4,6 @@ import { inject, injectable } from 'inversify';
 
 import {
   CacheService,
-  Secured,
   Hashed,
   Signed,
   IsSecure,
@@ -13,6 +12,7 @@ import {
 } from '@uprtcl/cortex';
 
 import { Perspective, Commit, UprtclLocal } from '../../../types';
+import { Secured } from '../../../patterns/default-secured.pattern';
 
 @injectable()
 export class UprtclDexie extends Dexie implements UprtclLocal {

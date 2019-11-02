@@ -1,15 +1,16 @@
-import { Secured, Signed } from '@uprtcl/cortex';
 import {
   HolochainConnectionOptions,
   ConnectionOptions,
   EntryResult,
   HolochainSource
 } from '@uprtcl/connections';
+import { Signed } from '@uprtcl/cortex';
 
 import { Perspective, Commit } from '../../../../types';
 import { AccessControlMock } from '../../../../access-control/services/access-control.mock';
 import { UprtclRemote } from '../../uprtcl.remote';
 import { ProposalMock } from '../../proposal.mock';
+import { Secured } from '../../../../patterns/default-secured.pattern';
 
 export class UprtclHolochain extends HolochainSource implements UprtclRemote {
   constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {

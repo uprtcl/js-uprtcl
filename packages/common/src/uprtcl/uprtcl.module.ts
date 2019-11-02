@@ -1,9 +1,6 @@
 import { injectable } from 'inversify';
 import {
   DiscoverableSource,
-  CidHashedPattern,
-  DefaultSignedPattern,
-  DefaultSecuredPattern,
   PatternTypes,
   CortexModule
 } from '@uprtcl/cortex';
@@ -16,6 +13,9 @@ import { UprtclTypes, UprtclLocal } from '../types';
 import { UprtclDexie } from './services/providers/uprtcl.dexie';
 import { Uprtcl } from './services/uprtcl';
 import { UprtclRemote } from './services/uprtcl.remote';
+import { DefaultSecuredPattern } from '../patterns/default-secured.pattern';
+import { DefaultSignedPattern } from '../patterns/default-signed.pattern';
+import { CidHashedPattern } from '../patterns/cid-hashed.pattern';
 
 /**
  * Configure a _Prtcl module with the given providers

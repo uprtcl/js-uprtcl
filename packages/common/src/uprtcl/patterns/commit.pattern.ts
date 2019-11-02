@@ -3,7 +3,6 @@ import { html } from 'lit-element';
 
 import {
   Pattern,
-  Secured,
   HasRedirect,
   IsSecure,
   HasLinks,
@@ -16,6 +15,7 @@ import {
 
 import { Commit, UprtclTypes } from '../../types';
 import { Uprtcl } from '../services/uprtcl';
+import { Secured } from '../../patterns/default-secured.pattern';
 
 export const propertyOrder = ['creatorId', 'timestamp', 'message', 'parentsIds', 'dataId'];
 

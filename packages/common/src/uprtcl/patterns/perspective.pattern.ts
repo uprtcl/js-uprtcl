@@ -1,6 +1,5 @@
 import { injectable, inject } from 'inversify';
 import {
-  Secured,
   PatternTypes,
   HasRedirect,
   Pattern,
@@ -15,6 +14,7 @@ import {
 import { Perspective, UprtclTypes } from '../../types';
 
 import { Uprtcl, NewPerspectiveArgs } from '../services/uprtcl';
+import { Secured } from '../../patterns/default-secured.pattern';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp', 'name'];
 

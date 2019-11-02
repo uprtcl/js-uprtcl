@@ -11,6 +11,8 @@ import { DocumentsLocal } from './services/documents.local';
 /**
  * Configure a documents module with the given providers
  *
+ * Depends on: lensesModule, PatternsModule, discoveryModule
+ *
  * Example usage:
  *
  * ```ts

@@ -1,5 +1,6 @@
-import { Source, Secured } from '@uprtcl/cortex';
+import { Source } from '@uprtcl/cortex';
 import { Perspective } from '../../types';
+import { Secured } from '../../patterns/default-secured.pattern';
 
 export interface UprtclSource extends Source {
 

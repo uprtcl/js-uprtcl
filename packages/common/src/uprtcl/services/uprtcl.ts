@@ -6,18 +6,18 @@ import {
   DiscoveryTypes,
   PatternTypes,
   PatternRecognizer,
-  Secured,
   Creatable,
   CachedMultiSourceService,
   Hashed,
   IsSecure,
   MultiSourceService
 } from '@uprtcl/cortex';
-import { MicroOrchestratorTypes, Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { UprtclTypes, UprtclLocal, Perspective, Commit } from '../../types';
 import { UprtclProvider } from './uprtcl.provider';
 import { UprtclRemote } from './uprtcl.remote';
+import { Secured } from '../../patterns/default-secured.pattern';
 
 export interface PerspectiveArgs {
   name?: string;

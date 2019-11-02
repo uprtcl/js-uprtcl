@@ -2,24 +2,10 @@ import { injectable } from 'inversify';
 import multihashing from 'multihashing-async';
 import * as Cid from 'cids';
 
-import { Hashed, Hashable } from '../properties/hashable';
-import { Transformable } from '../properties/transformable';
-import { Pattern } from '../pattern';
-import { sortObject } from '../../utils/utils';
+import { Transformable, Pattern, Hashed, Hashable } from '@uprtcl/cortex';
+import { CidConfig, defaultCidConfig } from '@uprtcl/connections';
 
-export interface CidConfig {
-  base?: string;
-  version: number;
-  codec: string;
-  type: string;
-}
-
-export const defaultCidConfig: CidConfig = {
-  version: 1,
-  type: 'sha2-256',
-  codec: 'raw',
-  base: 'base58btc'
-};
+import { sortObject } from '../utils/utils';
 
 export function recognizeHashed(object: object) {
   return (

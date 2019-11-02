@@ -20,3 +20,8 @@ export { draftsModule } from './draft/draft.module';
 export { DraftsService } from './draft/services/drafts.service';
 export { DraftsHolochain } from './draft/services/drafts.holochain';
 export { DraftsLocal } from './draft/services/drafts.local';
+
+// Default patterns
+export { CidHashedPattern, recognizeHashed } from './patterns/cid-hashed.pattern';
+export { DefaultSignedPattern } from './patterns/default-signed.pattern';
+export { DefaultSecuredPattern, Secured } from './patterns/default-secured.pattern';
