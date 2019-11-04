@@ -126,8 +126,8 @@ export class Uprtcl {
    * @override
    */
   public async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
-    const localHead = await this.uprtclLocal.getPerspectiveDetails(perspectiveId);
-    if (localHead) return localHead;
+    const details = await this.uprtclLocal.getPerspectiveDetails(perspectiveId);
+    if (details) return details;
 
     const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
     if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);

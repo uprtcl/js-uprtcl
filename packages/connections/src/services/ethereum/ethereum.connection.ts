@@ -1,12 +1,16 @@
-import { Connection, ConnectionOptions } from '../../connections/connection';
 import Web3 from 'web3';
 import { provider } from 'web3-core';
 import { Contract } from 'web3-eth-contract';
 import { AbiItem } from 'web3-utils';
 
+import { Connection, ConnectionOptions } from '../../connections/connection';
+
 export interface EthereumConnectionOptions {
   provider: provider;
-  contractAbi: AbiItem[] | AbiItem;
+  contract: {
+    abi: AbiItem[] | AbiItem;
+    networks: { [key: string]: { address: string } };
+  };
   contractAddress?: string;
 }
 
@@ -29,10 +33,11 @@ export class EthereumConnection extends Connection {
     this.accounts = await this.web3.eth.getAccounts();
     this.networkId = await this.web3.eth.net.getId();
 
-    const contractAddress = this.ethOptions.contractAddress;
+    const contractAddress =
+      this.ethOptions.contractAddress || this.ethOptions.contract.networks[this.networkId].address;
 
     this.contractInstance = new this.web3.eth.Contract(
-      this.ethOptions.contractAbi,
+      this.ethOptions.contract.abi,
       contractAddress
     );
   }

@@ -16,7 +16,7 @@ import { Perspective, UprtclTypes } from '../../types';
 import { Uprtcl, NewPerspectiveArgs } from '../services/uprtcl';
 import { Secured } from '../../patterns/default-secured.pattern';
 
-export const propertyOrder = ['origin', 'creatorId', 'timestamp', 'name'];
+export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
 @injectable()
 export class PerspectivePattern
@@ -32,7 +32,7 @@ export class PerspectivePattern
     @inject(UprtclTypes.Uprtcl) protected uprtcl: Uprtcl
   ) {}
 
-  recognize(object: Object) {
+  recognize(object: object) {
     return (
       this.securedPattern.recognize(object) &&
       propertyOrder.every(p =>

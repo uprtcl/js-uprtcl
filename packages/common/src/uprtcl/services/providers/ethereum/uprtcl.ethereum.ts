@@ -20,9 +20,10 @@ import { sortObject } from '../../../../utils/utils';
 import { Secured } from '../../../../patterns/default-secured.pattern';
 
 /** Function signatures */
-const ADD_PERSP = 'addPerspective(bytes32,bytes32,string,address,string)';
+const ADD_PERSP = 'addPerspective(bytes32,bytes32,string,string,string,address,string)';
 const UPDATE_HEADS = 'updateHeads((bytes32,string,uint8)[])';
-const GET_PERSP = 'getPerspective(bytes32)';
+const UPDATE_PERSP_DETAILS = 'updatePerspectiveDetails(bytes32,string,string,string)';
+const GET_PERSP_DETAILS = 'getPerspectiveDetails(bytes32)';
 const UPDATE_OWNER = 'changeOwner(bytes32,address)';
 
 const INIT_REQUEST =
@@ -45,14 +46,14 @@ export const hashText = async (text: string) => {
 };
 
 export class UprtclEthereum extends IpfsSource implements UprtclRemote {
-  logger: Logger = new Logger('UPRTCL-ETH');
+  logger: Logger = new Logger('UprtclEtereum');
 
   ethConnection!: EthereumConnection;
 
   constructor(provider: provider, ipfsOptions: IpfsConnectionOptions, options: ConnectionOptions) {
     super(ipfsOptions, options);
     this.ethConnection = new EthereumConnection(
-      { provider: provider, contractAbi: UprtclContractArtifact as any },
+      { provider: provider, contract: UprtclContractArtifact as any },
       options
     );
   }
@@ -98,6 +99,8 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
       perspectiveIdHash,
       perspectiveIdHash,
       '',
+      '',
+      '',
       this.ethConnection.getDefaultAccount(),
       perspectiveId
     ]);
@@ -123,11 +126,17 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
   /**
    * @override
    */
-  async updatePerspectiveDetails(perspectiveId: string, details: PerspectiveDetails): Promise<void> {
+  async updatePerspectiveDetails(
+    perspectiveId: string,
+    details: PerspectiveDetails
+  ): Promise<void> {
     let perspectiveIdHash = await hashCid(perspectiveId);
 
-    await this.ethConnection.send(UPDATE_HEADS, [
-      [{ perspectiveIdHash: perspectiveIdHash, headId: details.headId, executed: 0 }]
+    await this.ethConnection.send(UPDATE_PERSP_DETAILS, [
+      perspectiveIdHash,
+      details.headId || '',
+      details.context || '',
+      details.name || ''
     ]);
   }
 
@@ -144,10 +153,9 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
   async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
     let perspectiveIdHash = await hashCid(perspectiveId);
 
-    const perspective = await this.ethConnection.call(GET_PERSP, [perspectiveIdHash]);
+    const perspective = await this.ethConnection.call(GET_PERSP_DETAILS, [perspectiveIdHash]);
 
     /** empty string is null */
-    return perspective.headId !== '' ? perspective.headId : null;
+    return perspective;
   }
-
 }

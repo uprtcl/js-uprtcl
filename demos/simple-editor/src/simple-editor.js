@@ -31,10 +31,8 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   async firstUpdated() {
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
-      console.log('ihi', this.rootHash);
     });
     this.subscribeToHistory(window.history, state => {
-      console.log('ihi', state);
       this.rootHash = state[2].split('id=')[1];
     });
 
@@ -44,10 +42,9 @@ export class SimpleEditor extends moduleConnect(LitElement) {
       const hashed = await this.textNodePattern.create();
 
       const perspective = await this.perspectivePattern.create({ dataId: hashed.id });
-      console.log('hi2');
       window.history.pushState('', '', `/?id=${perspective.id}`);
     }
-    document.getElementById('')
+    document.getElementById('');
   }
 
   render() {

@@ -29,10 +29,7 @@ import { SimpleEditor } from './simple-editor';
     protocol: 'https'
   };
 
-  const uprtclProvider = new UprtclHolochain({
-    host: 'ws://localhost:8888',
-    instance: 'test-instance'
-  });
+  const uprtclProvider = new UprtclEthereum('ws://localhost:8545', ipfsConfig);
 
   const documentsProvider = new DocumentsIpfs(ipfsConfig);
 

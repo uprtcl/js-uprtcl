@@ -17,7 +17,7 @@ import { Commit, UprtclTypes } from '../../types';
 import { Uprtcl } from '../services/uprtcl';
 import { Secured } from '../../patterns/default-secured.pattern';
 
-export const propertyOrder = ['creatorId', 'timestamp', 'message', 'parentsIds', 'dataId'];
+export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
 @injectable()
 export class CommitPattern
