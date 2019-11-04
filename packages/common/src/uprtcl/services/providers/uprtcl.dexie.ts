@@ -11,13 +11,12 @@ import {
   DiscoveryTypes
 } from '@uprtcl/cortex';
 
-import { Perspective, Commit, UprtclLocal } from '../../../types';
+import { Perspective, Commit, UprtclLocal, PerspectiveDetails } from '../../../types';
 import { Secured } from '../../../patterns/default-secured.pattern';
 
 @injectable()
 export class UprtclDexie extends Dexie implements UprtclLocal {
-  heads: Dexie.Table<string, string>;
-  contexts: Dexie.Table<{ context: string }, string>;
+  details: Dexie.Table<PerspectiveDetails, string>;
 
   constructor(
     @inject(PatternTypes.Core.Secured)
@@ -27,11 +26,9 @@ export class UprtclDexie extends Dexie implements UprtclLocal {
   ) {
     super('uprtcl');
     this.version(0.1).stores({
-      heads: '',
-      contexts: ',context'
+      details: ',context'
     });
-    this.heads = this.table('heads');
-    this.contexts = this.table('contexts');
+    this.details = this.table('details');
   }
 
   /**
@@ -80,37 +77,25 @@ export class UprtclDexie extends Dexie implements UprtclLocal {
   /**
    * @override
    */
-  async updatePerspectiveHead(perspectiveId: string, headId: string): Promise<void> {
-    await this.heads.put(headId, perspectiveId);
+  async updatePerspectiveDetails(
+    perspectiveId: string,
+    details: PerspectiveDetails
+  ): Promise<void> {
+    await this.details.put(details, perspectiveId);
   }
 
   /**
    * @override
    */
-  async updatePerspectiveContext(perspectiveId: string, context: string): Promise<void> {
-    await this.contexts.put({ context }, perspectiveId);
-  }
-
-  /**
-   * @override
-   */
-  getPerspectiveHead(perspectiveId: string): Promise<string | undefined> {
-    return this.heads.get(perspectiveId);
-  }
-
-  /**
-   * @override
-   */
-  async getPerspectiveContext(perspectiveId: string): Promise<string | undefined> {
-    const context = await this.contexts.get(perspectiveId);
-    return context ? context.context : undefined;
+  getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
+    return this.details.get(perspectiveId);
   }
 
   /**
    * @override
    */
   async getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
-    const perspectivesIds = await this.contexts
+    const perspectivesIds = await this.details
       .where('context')
       .equals(context)
       .primaryKeys();

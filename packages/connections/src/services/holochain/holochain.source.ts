@@ -27,13 +27,6 @@ export class HolochainSource extends HolochainConnection implements NamedSource 
   /**
    * @override
    */
-  public configure(sourceName: string): boolean {
-    return this.name === sourceName;
-  }
-
-  /**
-   * @override
-   */
   public async ready() {
     await Promise.all([super.ready(), this.sourceZome.ready()]);
   }

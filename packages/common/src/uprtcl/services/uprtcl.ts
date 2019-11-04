@@ -14,21 +14,20 @@ import {
 } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { UprtclTypes, UprtclLocal, Perspective, Commit } from '../../types';
+import { UprtclTypes, UprtclLocal, Perspective, Commit, PerspectiveDetails } from '../../types';
 import { UprtclProvider } from './uprtcl.provider';
 import { UprtclRemote } from './uprtcl.remote';
 import { Secured } from '../../patterns/default-secured.pattern';
 
-export interface PerspectiveArgs {
-  name?: string;
+export interface NoHeadPerspectiveArgs {
+  name: string;
   context?: string;
 }
 
 export type NewPerspectiveArgs =
-  | PerspectiveArgs
-  | (PerspectiveArgs & { headId: string })
-  | (PerspectiveArgs & { dataId: string })
-  | (PerspectiveArgs & { data: any });
+  | Partial<PerspectiveDetails>
+  | (NoHeadPerspectiveArgs & { dataId: string })
+  | (NoHeadPerspectiveArgs & { data: any });
 
 const creatorId = 'did:hi:ho';
 const DEFAULT_PERSPECTIVE_NAME = 'master';
@@ -126,28 +125,16 @@ export class Uprtcl {
   /**
    * @override
    */
-  public async getPerspectiveHead(perspectiveId: string): Promise<string | undefined> {
-    const localHead = await this.uprtclLocal.getPerspectiveHead(perspectiveId);
+  public async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
+    const localHead = await this.uprtclLocal.getPerspectiveDetails(perspectiveId);
     if (localHead) return localHead;
 
     const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
-    if (!perspective) return undefined;
+    if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
 
     const provider = this.getPerspectiveProvider(perspective);
 
-    return provider.getPerspectiveHead(perspectiveId);
-  }
-
-  /**
-   * @override
-   */
-  public async getPerspectiveContext(perspectiveId: string): Promise<string | undefined> {
-    const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
-    if (!perspective) return undefined;
-
-    const provider = this.getPerspectiveProvider(perspective);
-
-    return provider.getPerspectiveContext(perspectiveId);
+    return provider.getPerspectiveDetails(perspectiveId);
   }
 
   /** Creators */
@@ -170,7 +157,6 @@ export class Uprtcl {
     // Create the perspective
     const perspectiveData: Perspective = {
       creatorId: creatorId,
-      name: name,
       origin: providerName,
       timestamp: Date.now()
     };
@@ -183,8 +169,6 @@ export class Uprtcl {
 
     // Create the context to point the perspective to, if needed
     const context = args.context || `${Date.now()}${Math.random()}`;
-
-    await this.updatePerspectiveContext(perspective.id, context);
 
     // Create the data and commit to point the perspective to, if needed
 
@@ -209,9 +193,9 @@ export class Uprtcl {
       headId = head.id;
     }
 
-    // Set the perspective head if given
-    if (headId) {
-      await this.updatePerspectiveHead(perspective.id, headId);
+    // Set the perspective details
+    if (headId || context || name) {
+      await this.updatePerspectiveDetails(perspective.id, { headId, context, name });
     }
 
     return perspective;
@@ -228,6 +212,7 @@ export class Uprtcl {
       dataId: string;
       message: string;
       parentsIds: string[];
+      creatorsIds?: string[];
       timestamp?: number;
     },
     providerName?: string
@@ -235,9 +220,10 @@ export class Uprtcl {
     providerName = this.validateProviderName(providerName);
 
     const timestamp = args.timestamp || Date.now();
+    const creatorsIds = args.creatorsIds || [creatorId];
 
     const commitData: Commit = {
-      creatorId: creatorId,
+      creatorsIds: creatorsIds,
       dataId: args.dataId,
       message: args.message,
       timestamp: timestamp,
@@ -307,47 +293,27 @@ export class Uprtcl {
    * Update the head of the given perspective to the given headId
    *
    * @param perspectiveId perspective to update
-   * @param headId new head of the perspective
+   * @param details new details of the perspective
    */
-  public async updatePerspectiveHead(perspectiveId: string, headId: string): Promise<void> {
-    const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
-    if (!perspective) return undefined;
-
-    const provider = this.getPerspectiveProvider(perspective);
-
-    const updater = (uprtcl: UprtclProvider) => uprtcl.updatePerspectiveHead(perspectiveId, headId);
-
-    this.service.optimisticUpdateIn(
-      provider.name,
-      perspective,
-      updater,
-      updater,
-      `Update head of ${perspective.id}`,
-      perspectiveId
-    );
-  }
-
-  /**
-   * Update the context of the given perspective
-   *
-   * @param perspectiveId perspective to update
-   * @param headId new context of the perspective
-   */
-  public async updatePerspectiveContext(perspectiveId: string, context: string): Promise<void> {
+  public async updatePerspectiveDetails(
+    perspectiveId: string,
+    details: Partial<PerspectiveDetails>
+  ): Promise<void> {
     const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
     if (!perspective) return undefined;
 
     const provider = this.getPerspectiveProvider(perspective);
 
     const updater = (uprtcl: UprtclProvider) =>
-      uprtcl.updatePerspectiveContext(perspective.id, context);
-    await this.service.optimisticUpdateIn(
+      uprtcl.updatePerspectiveDetails(perspectiveId, details);
+
+    this.service.optimisticUpdateIn(
       provider.name,
       perspective,
       updater,
       updater,
-      `Update context of ${perspective.id}`,
-      perspective.id
+      `Update details of ${perspective.id}`,
+      perspectiveId
     );
   }
 

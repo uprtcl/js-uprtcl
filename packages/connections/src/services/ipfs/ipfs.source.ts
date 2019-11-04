@@ -27,13 +27,6 @@ export class IpfsSource extends Connection implements NamedSource {
   /**
    * @override
    */
-  configure(sourceName: string): boolean {
-    return this.name == sourceName;
-  }
-
-  /**
-   * @override
-   */
   protected async connect(): Promise<void> {
     this.client = ipfsClient(this.ipfsOptions);
   }

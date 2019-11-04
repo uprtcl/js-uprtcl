@@ -48,8 +48,8 @@ export class PerspectivePattern
   getSoftLinks: (perspective: Secured<Perspective>) => Promise<string[]> = async (
     perspective: Secured<Perspective>
   ) => {
-    const head = await this.uprtcl.getPerspectiveHead(perspective.id);
-    return head ? [head] : [];
+    const details = await this.uprtcl.getPerspectiveDetails(perspective.id);
+    return details.headId ? [details.headId] : [];
   };
 
   getLinks: (perspective: Secured<Perspective>) => Promise<string[]> = (
@@ -58,7 +58,10 @@ export class PerspectivePattern
 
   redirect: (perspective: Secured<Perspective>) => Promise<string | undefined> = async (
     perspective: Secured<Perspective>
-  ) => this.uprtcl.getPerspectiveHead(perspective.id);
+  ) => {
+    const details = await this.uprtcl.getPerspectiveDetails(perspective.id);
+    return details.headId;
+  };
 
   create: (
     args: NewPerspectiveArgs,
@@ -75,12 +78,9 @@ export class PerspectivePattern
         icon: 'call_split',
         title: 'New perspective',
         action: async () => {
-          const [context, headId] = await Promise.all([
-            this.uprtcl.getPerspectiveContext(perspective.id),
-            this.uprtcl.getPerspectiveHead(perspective.id)
-          ]);
+          const details = await this.uprtcl.getPerspectiveDetails(perspective.id);
           const newPerspective = await this.create(
-            { headId, context },
+            { headId: details.headId, context: details.context },
             perspective.object.payload.origin
           );
           window.history.pushState('', '', `/?id=${newPerspective.id}`);
@@ -95,17 +95,17 @@ export class PerspectivePattern
   ) => {
     const data = await this.uprtcl.createData(newContent);
 
-    const headId = await this.uprtcl.getPerspectiveHead(perspective.id);
+    const details = await this.uprtcl.getPerspectiveDetails(perspective.id);
     const newHead = await this.uprtcl.createCommit(
       {
         dataId: data.id,
         message: `Commit at ${Date.now() / 1000}`,
-        parentsIds: headId ? [headId] : []
+        parentsIds: details.headId ? [details.headId] : []
       },
       perspective.object.payload.origin
     );
 
-    await this.uprtcl.updatePerspectiveHead(perspective.id, newHead.id);
+    await this.uprtcl.updatePerspectiveDetails(perspective.id, { headId: newHead.id });
 
     return true;
   };

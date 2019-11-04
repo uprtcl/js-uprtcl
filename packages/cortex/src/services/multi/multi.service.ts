@@ -64,9 +64,7 @@ export class MultiService<T extends NamedRemote> implements Ready {
    * @returns the source identified with the given name
    */
   public getService(serviceName: string): DiscoverableService<T> | undefined {
-    const namedServiceName = Object.keys(this.services).find(name =>
-      this.services[name].service.configure(serviceName)
-    );
+    const namedServiceName = Object.keys(this.services).find(name => name === serviceName);
 
     if (!namedServiceName) {
       return undefined;
@@ -207,7 +205,10 @@ export class MultiService<T extends NamedRemote> implements Ready {
    * @param hash the hash for which to discover the sources
    * @param service the service to ask for the known sources
    */
-  protected async discoverKnownSources(hash: string, service: DiscoverableService<T>): Promise<void> {
+  protected async discoverKnownSources(
+    hash: string,
+    service: DiscoverableService<T>
+  ): Promise<void> {
     const knownSourcesNames = await service.knownSources.getKnownSources(hash);
 
     if (knownSourcesNames) {
