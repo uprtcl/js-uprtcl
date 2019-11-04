@@ -7,13 +7,18 @@ export interface Perspective {
   origin: string;
   creatorId: string;
   timestamp: number;
+}
+
+export interface PerspectiveDetails {
   name: string;
+  context: string | undefined;
+  headId: string | undefined;
 }
 
 export interface Commit {
-  creatorId: string;
+  creatorsIds: string[];
   timestamp: number;
-  message: string;
+  message: string | undefined;
   parentsIds: Array<string>;
   dataId: string;
 }

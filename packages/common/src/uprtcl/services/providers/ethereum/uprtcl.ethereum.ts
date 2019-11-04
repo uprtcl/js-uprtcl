@@ -12,7 +12,7 @@ import {
 
 import * as UprtclContractArtifact from './uprtcl-contract.json';
 
-import { Commit, Perspective } from '../../../../types';
+import { Commit, Perspective, PerspectiveDetails } from '../../../../types';
 import { UprtclRemote } from '../../uprtcl.remote';
 import { AccessControlMock } from '../../../../access-control/services/access-control.mock';
 import { ProposalMock } from '../../proposal.mock';
@@ -123,19 +123,12 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
   /**
    * @override
    */
-  async updatePerspectiveHead(perspectiveId: string, headId: string): Promise<void> {
+  async updatePerspectiveDetails(perspectiveId: string, details: PerspectiveDetails): Promise<void> {
     let perspectiveIdHash = await hashCid(perspectiveId);
 
     await this.ethConnection.send(UPDATE_HEADS, [
-      [{ perspectiveIdHash: perspectiveIdHash, headId: headId, executed: 0 }]
+      [{ perspectiveIdHash: perspectiveIdHash, headId: details.headId, executed: 0 }]
     ]);
-  }
-
-  /**
-   * @override
-   */
-  updatePerspectiveContext(perspectiveId: string, context: string): Promise<void> {
-    throw new Error('Method not implemented.');
   }
 
   /**
@@ -148,7 +141,7 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
   /**
    * @override
    */
-  async getPerspectiveHead(perspectiveId: string): Promise<string | undefined> {
+  async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
     let perspectiveIdHash = await hashCid(perspectiveId);
 
     const perspective = await this.ethConnection.call(GET_PERSP, [perspectiveIdHash]);
@@ -157,10 +150,4 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
     return perspective.headId !== '' ? perspective.headId : null;
   }
 
-  /**
-   * @override
-   */
-  getPerspectiveContext(perspectiveId: string): Promise<string | undefined> {
-    throw new Error('Method not implemented.');
-  }
 }

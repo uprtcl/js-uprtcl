@@ -1,5 +1,5 @@
 import { Source } from '@uprtcl/cortex';
-import { Perspective } from '../../types';
+import { Perspective, PerspectiveDetails } from '../../types';
 import { Secured } from '../../patterns/default-secured.pattern';
 
 export interface UprtclSource extends Source {
@@ -12,16 +12,10 @@ export interface UprtclSource extends Source {
   getContextPerspectives(context: string): Promise<Secured<Perspective>[]>;
 
   /**
-   * Get the head of a perspective
-   * @param perspectiveId id of the perspective to get the head of
-   * @returns the id of the head commit of the perspective, if exists
+   * Get the details of a perspective
+   * @param perspectiveId id of the perspective
+   * @returns the headId, the context and the name of the perspective
    */
-  getPerspectiveHead(perspectiveId: string): Promise<string | undefined>;
+  getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails>;
 
-  /**
-   * Get the head of a perspective
-   * @param perspectiveId id of the perspective to get the head of
-   * @returns the id of the head commit of the perspective, if exists
-   */
-  getPerspectiveContext(perspectiveId: string): Promise<string | undefined>;
 }

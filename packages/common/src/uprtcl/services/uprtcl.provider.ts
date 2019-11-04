@@ -1,9 +1,8 @@
-import { Perspective, Commit } from '../../types';
+import { Perspective, Commit, PerspectiveDetails } from '../../types';
 import { UprtclSource } from './uprtcl.source';
 import { Secured } from '../../patterns/default-secured.pattern';
 
 export interface UprtclProvider extends UprtclSource {
-
   /** Cloners */
 
   /**
@@ -23,16 +22,10 @@ export interface UprtclProvider extends UprtclSource {
   /** Modifiers */
 
   /**
-   * Set the head of a perspective to a given commitId
+   * Update details of the perspective
+   *
    * @param perspectiveId id of the perspective of which to update the head
-   * @param headId id of the commit
+   * @param details details to update the perspective to
    */
-  updatePerspectiveHead(perspectiveId: string, headId: string): Promise<void>;
-
-  /**
-   * Set the context of a perspective
-   * @param perspectiveId id of the perspective of which to update the head
-   * @param context the context to set the perspective to
-   */
-  updatePerspectiveContext(perspectiveId: string, context: string): Promise<void>;
+  updatePerspectiveDetails(perspectiveId: string, details: Partial<PerspectiveDetails>): Promise<void>;
 }

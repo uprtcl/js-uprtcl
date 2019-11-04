@@ -6,7 +6,7 @@ import {
 } from '@uprtcl/connections';
 import { Signed } from '@uprtcl/cortex';
 
-import { Perspective, Commit } from '../../../../types';
+import { Perspective, Commit, PerspectiveDetails } from '../../../../types';
 import { AccessControlMock } from '../../../../access-control/services/access-control.mock';
 import { UprtclRemote } from '../../uprtcl.remote';
 import { ProposalMock } from '../../proposal.mock';
@@ -48,20 +48,13 @@ export class UprtclHolochain extends HolochainSource implements UprtclRemote {
   /**
    * @override
    */
-  async updatePerspectiveHead(perspectiveId: string, headId: string): Promise<void> {
-    await this.call('update_perspective_head', {
+  async updatePerspectiveDetails(
+    perspectiveId: string,
+    details: PerspectiveDetails
+  ): Promise<void> {
+    await this.call('update_perspective_details', {
       perspective_address: perspectiveId,
-      head_address: headId
-    });
-  }
-
-  /**
-   * @override
-   */
-  async updatePerspectiveContext(perspectiveId: string, context: string): Promise<void> {
-    await this.call('update_perspective_context', {
-      perspective_address: perspectiveId,
-      context: context
+      details: details
     });
   }
 
@@ -82,21 +75,11 @@ export class UprtclHolochain extends HolochainSource implements UprtclRemote {
   /**
    * @override
    */
-  async getPerspectiveHead(perspectiveId: string): Promise<string | undefined> {
-    const result = await this.call('get_perspective_head', {
+  async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
+    const result = await this.call('get_perspective_details', {
       perspective_address: perspectiveId
     });
     return this.parseResponse(result);
   }
 
-  /**
-   * @override
-   */
-  async getPerspectiveContext(perspectiveId: string): Promise<string | undefined> {
-    const result = await this.call('get_perspective_context', {
-      perspective_address: perspectiveId
-    });
-
-    return this.parseResponse(result);
-  }
 }
