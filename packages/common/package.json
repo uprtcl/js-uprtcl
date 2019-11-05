@@ -45,7 +45,7 @@
     "lit-element": "^2.2.1",
     "lit-html": "^1.1.2",
     "lodash": "^4.17.15",
-    "multihashing-async": "^0.8.0",
+    "multihashing-async": "^0.7.0",
     "pwa-helpers": "^0.9.1",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
