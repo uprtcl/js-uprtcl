@@ -7,7 +7,7 @@ import { NamedRemote, NamedSource } from './named.source';
  */
 export interface DiscoverableService<T extends NamedRemote = NamedRemote> {
   service: T;
-  knownSources: KnownSourcesService;
+  knownSources?: KnownSourcesService;
 }
 
 export type DiscoverableSource<T extends NamedSource> = DiscoverableService<T>;

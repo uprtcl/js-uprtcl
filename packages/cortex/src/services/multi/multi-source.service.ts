@@ -1,10 +1,6 @@
 import { multiInject, inject, injectable } from 'inversify';
-import { Dictionary } from 'lodash';
-
-import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { Source } from '../sources/source';
-import { HasLinks } from '../../patterns/properties/has-links';
 import { DiscoverableSource } from '../sources/discoverable.source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
@@ -65,8 +61,17 @@ export class MultiSourceService<T extends NamedSource = NamedSource> extends Mul
    * @returns the object if found, otherwise undefined
    */
   public async get<O extends object>(hash: string): Promise<Hashed<O> | undefined> {
-    // Get the known sources for the object from the local
-    const knownSources = await this.localKnownSources.getKnownSources(hash);
+    let knownSources: string[] | undefined = undefined;
+
+    // If there is only one source, use that to get the object
+    const servicesNames = this.getAllServicesNames();
+
+    if (servicesNames.length === 1) {
+      knownSources = servicesNames;
+    } else {
+      // Get the known sources for the object from the local
+      knownSources = await this.localKnownSources.getKnownSources(hash);
+    }
 
     const tryGetFromSource = async (sourceName: string) => {
       const object = await this.getFromSource<O>(hash, sourceName);

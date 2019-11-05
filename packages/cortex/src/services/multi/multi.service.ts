@@ -209,6 +209,8 @@ export class MultiService<T extends NamedRemote> implements Ready {
     hash: string,
     service: DiscoverableService<T>
   ): Promise<void> {
+    if (!service.knownSources) return;
+
     const knownSourcesNames = await service.knownSources.getKnownSources(hash);
 
     if (knownSourcesNames) {
@@ -247,7 +249,7 @@ export class MultiService<T extends NamedRemote> implements Ready {
   protected async addLinksToKnownSources<O extends object>(
     object: O,
     serviceName: string,
-    knownSourcesService: KnownSourcesService
+    knownSourcesService: KnownSourcesService | undefined
   ): Promise<void> {
     // Add known sources of the object's links to the provider's known sources
     if (knownSourcesService) {

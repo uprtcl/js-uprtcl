@@ -33,18 +33,12 @@ import { SimpleEditor } from './simple-editor';
 
   const documentsProvider = new DocumentsIpfs(ipfsConfig);
 
-  const knownSources = new KnownSourcesHolochain({
-    host: 'ws://localhost:8888',
-    instance: 'test-instance'
-  });
-
-  const discoverableUprtcl = { service: uprtclProvider, knownSources: knownSources };
+  const discoverableUprtcl = { service: uprtclProvider };
 
   const uprtcl = uprtclModule([discoverableUprtcl]);
 
   const discoverableDocs = {
-    service: documentsProvider,
-    knownSources: knownSources
+    service: documentsProvider
   };
   const documents = documentsModule([discoverableDocs]);
 

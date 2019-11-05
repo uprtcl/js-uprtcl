@@ -9,6 +9,8 @@ import { interfaces, injectable, inject } from 'inversify';
 import { Pattern } from './patterns/pattern';
 import { DiscoverableSource } from './services/sources/discoverable.source';
 import { DiscoveryTypes, PatternTypes, LensesTypes } from './types';
+import { NamedSource } from './services/sources/named.source';
+import { Ready } from './services/sources/source';
 
 @injectable()
 export class CortexModule implements MicroModule {
@@ -23,7 +25,7 @@ export class CortexModule implements MicroModule {
     return undefined;
   }
 
-  get sources(): Array<{ symbol: symbol; source: DiscoverableSource<any> }> | undefined {
+  get sources(): Array<{ symbol: symbol; source: DiscoverableSource<NamedSource> }> | undefined {
     return undefined;
   }
 
@@ -50,12 +52,15 @@ export class CortexModule implements MicroModule {
 
     if (this.sources) {
       await Promise.all(
-        this.sources.map(discoverableSource =>
-          Promise.all([
-            discoverableSource.source.service.ready(),
-            discoverableSource.source.knownSources.ready()
-          ])
-        )
+        this.sources.map(discoverableSource => {
+          const services: Ready[] = [discoverableSource.source.service];
+
+          if (discoverableSource.source.knownSources) {
+            services.push(discoverableSource.source.knownSources);
+          }
+
+          return Promise.all(services.map(s => s.ready()));
+        })
       );
     }
 

@@ -89,6 +89,8 @@ export class IpfsSource extends Connection implements NamedSource {
       cidVersion: cidConfig.version
     };
 
+    this.logger.log(`Trying to add object:`, object);
+
     const buffer = this.getObjectBuffer(object);
 
     /** recursively try */
