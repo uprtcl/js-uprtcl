@@ -1,7 +1,7 @@
 {
   "name": "simple-editor",
   "private": true,
-  "version": "0.0.1-alpha2",
+  "version": "0.0.1-alpha3",
   "contributors": [
     "The Polymer Authors"
   ],
@@ -22,11 +22,11 @@
   "dependencies": {
     "@polymer/app-layout": "^3.0.0",
     "@polymer/polymer": "^3.1.0",
-    "@uprtcl/common": "^0.0.1-alpha2",
-    "@uprtcl/connections": "^0.0.1-alpha2",
-    "@uprtcl/cortex": "^0.0.1-alpha2",
-    "@uprtcl/documents": "^0.0.1-alpha2",
-    "@uprtcl/micro-orchestrator": "^0.0.1-alpha2",
+    "@uprtcl/common": "^0.0.1-alpha3",
+    "@uprtcl/connections": "^0.0.1-alpha3",
+    "@uprtcl/cortex": "^0.0.1-alpha3",
+    "@uprtcl/documents": "^0.0.1-alpha3",
+    "@uprtcl/micro-orchestrator": "^0.0.1-alpha3",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "lit-element": "^2.2.1",
     "pwa-helpers": "^0.9.0",
