@@ -1,6 +1,6 @@
 import { Dictionary } from 'lodash';
 import { Store } from 'redux';
-import { LitElement, property, html, css, TemplateResult } from 'lit-element';
+import { LitElement, property, html, css, TemplateResult, CSSResult } from 'lit-element';
 
 import { ReduxTypes, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { LensElement, Source, loadEntity, Hashed, DiscoveryTypes } from '@uprtcl/cortex';
@@ -75,7 +75,7 @@ export class CommitHistory extends moduleConnect(LitElement)
     `;
   }
 
-  static get styles() {
+  static get styles(): CSSResult {
     return css`
       .column {
         display: flex;

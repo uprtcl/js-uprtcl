@@ -23,7 +23,7 @@ npm run migrate
 1. Build the `js-uprtcl` core packages. Inside the root folder of `js-uprtcl`, run: 
 
 ```bash
-lerna bootstrap
+npm run bootstrap
 npm run build
 ```
 
