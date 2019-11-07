@@ -2,7 +2,7 @@
 import 'reflect-metadata';
 
 /** _Prtcl */
-export { Commit, Perspective, Context, UprtclTypes } from './types';
+export { Commit, Perspective, Context, UprtclTypes, AccessControlTypes } from './types';
 export { UprtclSource } from './uprtcl/services/uprtcl.source';
 export { UprtclProvider } from './uprtcl/services/uprtcl.provider';
 export { UprtclRemote } from './uprtcl/services/uprtcl.remote';
@@ -14,6 +14,14 @@ export { uprtclModule } from './uprtcl/uprtcl.module';
 
 /** Access Control */
 export { updatePlugin } from './access-control/plugins/update.plugin';
+export { Updatable } from './access-control/properties/updatable';
+
+export { accessControlReduxModule } from './access-control/state/access-control.redux-module';
+export {
+  selectEntityAccessControl,
+  selectAccessControl
+} from './access-control/state/access-control.selectors';
+export { loadAccessControl } from './access-control/state/access-control.actions';
 
 /** Drafts */
 export { draftsModule } from './draft/draft.module';

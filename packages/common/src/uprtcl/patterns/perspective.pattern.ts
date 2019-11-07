@@ -8,13 +8,14 @@ import {
   Creatable,
   Signed,
   HasActions,
-  Updatable,
   PatternAction
 } from '@uprtcl/cortex';
 import { Perspective, UprtclTypes } from '../../types';
 
 import { Uprtcl, NewPerspectiveArgs } from '../services/uprtcl';
 import { Secured } from '../../patterns/default-secured.pattern';
+import { Updatable } from '../../access-control/properties/updatable';
+import { AccessControlService } from '../../access-control/services/access-control.service';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -110,9 +111,9 @@ export class PerspectivePattern
     return true;
   };
 
-  canUpdate: (perspective: Secured<Perspective>) => boolean = (
+  accessControl: (perspective: Secured<Perspective>) => AccessControlService<any> | undefined = (
     perspective: Secured<Perspective>
   ) => {
-    return true;
+    return this.uprtcl.getPerspectiveProvider(perspective).accessControl;
   };
 }

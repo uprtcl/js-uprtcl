@@ -40,7 +40,6 @@ export { HasText } from './patterns/properties/has-text';
 export { Transformable } from './patterns/properties/transformable';
 export { HasLenses } from './patterns/properties/has-lenses';
 export { HasActions } from './patterns/properties/has-actions';
-export { Updatable } from './patterns/properties/updatable';
 
 // Pattern Registry
 export { PatternRecognizer } from './patterns/recognizer/pattern.recognizer';

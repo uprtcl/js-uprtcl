@@ -28,7 +28,7 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
       for (const pattern of patterns) {
         if ((pattern as HasActions).getActions) {
           actions = actions.concat(
-            (pattern as HasActions).getActions(isomorphism, this.isomorphisms.entity)
+            (pattern as HasActions).getActions(isomorphism, this.isomorphisms.entity.id)
           );
         }
       }

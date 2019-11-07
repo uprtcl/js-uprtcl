@@ -12,13 +12,14 @@ import {
   PatternTypes,
   Creatable,
   NamedSource,
-  DiscoverableSource,
-  PatternRecognizer,
-  Updatable
+  DiscoverableSource
 } from '@uprtcl/cortex';
+import { selectAccessControl, selectEntityAccessControl } from '@uprtcl/common';
+import { Store } from 'redux';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';
 import { DocumentsProvider } from '../services/documents.provider';
+import { ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -26,11 +27,10 @@ const propertyOrder = ['text', 'type', 'links'];
 export class TextNodePattern
   implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasActions {
   constructor(
-    @inject(PatternTypes.Recognizer)
-    protected recognizer: PatternRecognizer,
     @inject(DocumentsTypes.DocumentsProvider)
     protected documentsProvider: DiscoverableSource<DocumentsProvider & NamedSource>,
-    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<TextNode>
+    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<TextNode>,
+    @inject(ReduxTypes.Store) protected store: Store
   ) {}
 
   recognize(object: object): boolean {
@@ -63,10 +63,11 @@ export class TextNodePattern
     ];
   };
 
-  getActions = (textNode: TextNode, entity: any): PatternAction[] => {
-    const updatable: Updatable = this.recognizer.recognizeMerge(entity);
+  getActions = (textNode: TextNode, entityId: string): PatternAction[] => {
+    const state = this.store.getState();
+    const writable = selectEntityAccessControl(entityId)(selectAccessControl(state));
 
-    if (updatable.canUpdate && !updatable.canUpdate(entity)) return [];
+    if (!writable) return [];
 
     if (textNode.type === TextType.Paragraph) {
       return [

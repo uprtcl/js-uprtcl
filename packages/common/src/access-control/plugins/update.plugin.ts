@@ -1,10 +1,16 @@
 import { Store } from 'redux';
 
-import { Plugin, Updatable, CortexEntityBase, LensElement } from '@uprtcl/cortex';
+import { Plugin, CortexEntityBase, LensElement } from '@uprtcl/cortex';
 import { Constructor, ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 import { loadAccessControl } from '../state/access-control.actions';
 import { PropertyValues } from 'lit-element';
+import {
+  accessControlReducerName,
+  selectAccessControl,
+  selectEntityAccessControl
+} from '../state/access-control.selectors';
+import { Updatable } from '../properties/updatable';
 
 export const updatePlugin = <T extends CortexEntityBase>(): Plugin<T> => (
   baseElement: Constructor<CortexEntityBase>
@@ -35,11 +41,17 @@ export const updatePlugin = <T extends CortexEntityBase>(): Plugin<T> => (
     async loadEntity(hash: string) {
       const entity = await super.loadEntity(hash);
 
-      const updatable: Updatable = this.patternRecognizer.recognizeMerge(entity);
+      const store: Store = this.request(ReduxTypes.Store);
 
-      if (updatable.canUpdate) {
-        this.entityEditable = await updatable.canUpdate(entity);
-      }
+      store.subscribe(() => {
+        const state = store.getState();
+
+        this.entityEditable = selectEntityAccessControl(this.hash)(
+          selectAccessControl(state)
+        ).writable;
+      });
+      await store.dispatch(loadAccessControl(this.patternRecognizer)(this.hash, entity) as any);
+
       return entity;
     }
 

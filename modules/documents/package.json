@@ -44,6 +44,7 @@
     "lit-element": "^2.2.1",
     "lit-html": "^1.1.2",
     "lodash": "^4.17.15",
+    "redux": "^4.0.4",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {

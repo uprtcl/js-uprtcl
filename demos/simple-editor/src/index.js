@@ -18,7 +18,9 @@ import {
   UprtclEthereum,
   UprtclHolochain,
   UprtclTypes,
-  updatePlugin
+  updatePlugin,
+  AccessControlTypes,
+  accessControlReduxModule
 } from '@uprtcl/common';
 import { SimpleEditor } from './simple-editor';
 
@@ -52,6 +54,7 @@ import { SimpleEditor } from './simple-editor';
     { id: EntitiesTypes.Module, module: entitiesReducerModule },
     { id: PatternTypes.Module, module: PatternsModule },
     { id: DiscoveryTypes.Module, module: discovery },
+    { id: AccessControlTypes.Module, module: accessControlReduxModule() },
     {
       id: LensesTypes.Module,
       module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])

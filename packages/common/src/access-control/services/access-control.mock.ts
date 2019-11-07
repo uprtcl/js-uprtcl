@@ -1,6 +1,6 @@
 import { AccessControlService } from './access-control.service';
 
-export class AccessControlMock implements AccessControlService {
+export class AccessControlMock implements AccessControlService<object> {
   canRead(hash: string): Promise<boolean> {
     return Promise.resolve(true);
   }

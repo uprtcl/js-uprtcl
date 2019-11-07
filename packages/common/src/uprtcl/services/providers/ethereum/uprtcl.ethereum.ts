@@ -1,5 +1,3 @@
-import multihashing from 'multihashing-async';
-import * as Cid from 'cids';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import {
@@ -14,36 +12,11 @@ import * as UprtclContractArtifact from './uprtcl-contract.json';
 
 import { Commit, Perspective, PerspectiveDetails } from '../../../../types';
 import { UprtclRemote } from '../../uprtcl.remote';
-import { AccessControlMock } from '../../../../access-control/services/access-control.mock';
 import { ProposalMock } from '../../proposal.mock';
 import { sortObject } from '../../../../utils/utils';
 import { Secured } from '../../../../patterns/default-secured.pattern';
-
-/** Function signatures */
-const ADD_PERSP = 'addPerspective(bytes32,bytes32,string,string,string,address,string)';
-const UPDATE_HEADS = 'updateHeads((bytes32,string,uint8)[])';
-const UPDATE_PERSP_DETAILS = 'updatePerspectiveDetails(bytes32,string,string,string)';
-const GET_PERSP_DETAILS = 'getPerspectiveDetails(bytes32)';
-const UPDATE_OWNER = 'changeOwner(bytes32,address)';
-
-const INIT_REQUEST =
-  'initRequest(bytes32,bytes32,address,uint32,(bytes32,string,uint8)[],address[],string,string)';
-const GET_REQUEST = 'getRequest(bytes32)';
-const EXECUTE_REQUEST = 'executeRequest(bytes32)';
-const AUTHORIZE_REQUEST = 'setRequestAuthorized(bytes32,uint8)';
-const GET_REQUEST_ID = 'getRequestId(bytes32,bytes32,uint32)';
-
-/** hashes the cid to fit in a bytes32 word */
-export const hashCid = async (perspectiveCidStr: string) => {
-  const cid = new Cid(perspectiveCidStr);
-  const encoded = await multihashing.digest(cid.buffer, 'sha2-256');
-  return '0x' + encoded.toString('hex');
-};
-
-export const hashText = async (text: string) => {
-  const encoded = await multihashing.digest(Buffer.from(text), 'sha2-256');
-  return '0x' + encoded.toString('hex');
-};
+import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid } from './common';
+import { UprtclAccessControlEthereum } from './uprtcl-access-control.ethereum';
 
 export class UprtclEthereum extends IpfsSource implements UprtclRemote {
   logger: Logger = new Logger('UprtclEtereum');
@@ -59,7 +32,7 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
   }
 
   get accessControl() {
-    return new AccessControlMock();
+    return new UprtclAccessControlEthereum(this.ethConnection);
   }
 
   get proposals() {
@@ -101,7 +74,7 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
       '',
       '',
       '',
-      this.ethConnection.getDefaultAccount(),
+      this.ethConnection.getCurrentAccount(),
       perspectiveId
     ]);
 
@@ -151,11 +124,12 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
    * @override
    */
   async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
-    let perspectiveIdHash = await hashCid(perspectiveId);
+    const perspectiveIdHash = await hashCid(perspectiveId);
 
-    const perspective = await this.ethConnection.call(GET_PERSP_DETAILS, [perspectiveIdHash]);
-
-    /** empty string is null */
-    return perspective;
+    const perspective: PerspectiveDetails & { owner: string } = await this.ethConnection.call(
+      GET_PERSP_DETAILS,
+      [perspectiveIdHash]
+    );
+    return { name: perspective.name, context: perspective.context, headId: perspective.headId };
   }
 }

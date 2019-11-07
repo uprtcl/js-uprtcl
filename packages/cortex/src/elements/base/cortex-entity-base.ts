@@ -66,7 +66,10 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   async entityUpdated() {
     const isomorphisms = await this.loadIsomorphisms(this.entity);
     this.isomorphisms = {
-      entity: this.entity,
+      entity: {
+        id: this.hash,
+        object: this.entity
+      },
       isomorphisms: isomorphisms.reverse()
     };
 

@@ -3,10 +3,21 @@ import { ThunkDispatch } from 'redux-thunk';
 
 import { AccessControlService } from '../services/access-control.service';
 import { AccessControlInformation } from './types';
+import { PatternRecognizer, Pattern } from '@uprtcl/cortex';
+import { Updatable } from '../properties/updatable';
 
-export const loadAccessControl = (accessControl: AccessControlService) => (
-  entityId: string
+export const loadAccessControl = (patternRecognizer: PatternRecognizer) => (
+  entityId: string,
+  entity: any
 ) => async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
+  const patterns: Pattern & Updatable = patternRecognizer.recognizeMerge(entity);
+
+  if (!(patterns as Updatable).accessControl) return;
+
+  const accessControl = (patterns as Updatable).accessControl(entity);
+
+  if (!accessControl) return;
+
   const promises: [Promise<boolean>, Promise<boolean>, Promise<object | undefined>] = [
     accessControl.canRead(entityId),
     accessControl.canWrite(entityId),

@@ -1,6 +1,6 @@
 import { TemplateResult } from 'lit-element';
 
-import { Pattern } from './patterns/pattern';
+import { Hashed } from './patterns/properties/hashable';
 
 export interface Lens {
   name: string;
@@ -19,7 +19,7 @@ export interface LensElement<P> {
 }
 
 export interface Isomorphisms {
-  entity: object;
+  entity: Hashed<object>;
   isomorphisms: Array<any>;
 }
 

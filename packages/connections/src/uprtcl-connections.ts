@@ -16,5 +16,5 @@ export { IpfsSource, IpfsConnectionOptions } from './services/ipfs/ipfs.source';
 export { CidConfig, defaultCidConfig } from './services/ipfs/cid.config';
 
 // Ethereum
-export { EthereumConnection } from './services/ethereum/ethereum.connection';
+export { EthereumConnection, EthereumConnectionOptions } from './services/ethereum/ethereum.connection';
 export { provider } from 'web3-core';

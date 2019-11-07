@@ -47,3 +47,7 @@ export const UprtclTypes = {
 };
 
 export type UprtclLocal = CacheService & UprtclProvider;
+
+export const AccessControlTypes = {
+  Module: Symbol('access-control-module')
+};
