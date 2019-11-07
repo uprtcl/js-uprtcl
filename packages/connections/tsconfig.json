@@ -2,7 +2,11 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declarationDir": "dist/types",
-    "outDir": "dist/lib"
+    "outDir": "dist/lib",
+    "baseUrl": "./",
+    "paths": {
+      "lit-element": ["node_modules/lit-element"]
+    }
   },
   "include": ["src"]
 }

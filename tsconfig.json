@@ -16,6 +16,10 @@
     "declarationDir": "dist/types",
     "typeRoots": ["node_modules/@types"],
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "paths": {
+      "lit-element": ["node_modules/lit-element"]
+    }
   }
 }
