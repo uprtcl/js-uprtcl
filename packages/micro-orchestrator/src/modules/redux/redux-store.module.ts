@@ -4,11 +4,10 @@ import {
   compose,
   combineReducers,
   applyMiddleware,
-  AnyAction,
   StoreEnhancer
 } from 'redux';
 import { LazyStore, lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
-import thunk, { ThunkMiddleware } from 'redux-thunk';
+import createSagaMiddleware, { SagaMiddleware } from 'redux-saga';
 import { injectable, interfaces } from 'inversify';
 
 import { MicroModule } from '../micro.module';
@@ -30,17 +29,19 @@ export class ReduxStoreModule implements MicroModule {
       f2: StoreEnhancer<Ext1, StateExt1>
     ) => StoreEnhancer<Ext0 & Ext1, StateExt0 & StateExt1> =
       window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose;
+    const sagaMiddleware = createSagaMiddleware({ context: { [ReduxTypes.Context]: context.container } });
 
     const store = createStore(
       (state, action) => state,
       devCompose(
         lazyReducerEnhancer(combineReducers),
         // TODO: add dynamic middlewares
-        applyMiddleware(thunk as ThunkMiddleware<any, AnyAction>)
+        applyMiddleware(sagaMiddleware)
       )
     ) as Store & LazyStore;
 
     bind<Store & LazyStore>(ReduxTypes.Store).toConstantValue(store);
+    bind<SagaMiddleware>(ReduxTypes.Saga).toConstantValue(sagaMiddleware);
   }
 
   async onUnload(): Promise<void> {}

@@ -45,31 +45,8 @@ export { HasActions } from './patterns/properties/has-actions';
 export { PatternRecognizer } from './patterns/recognizer/pattern.recognizer';
 export { PatternsModule } from './patterns/patterns.module';
 
-/** Entities */
-export {
-  loadEntity,
-  entitiesReducer,
-  EntityActions,
-  EntitiesState,
-  selectById,
-  selectAll,
-  selectByPattern,
-  selectEntities,
-  entitiesReducerName,
-  entitiesReduxModule
-} from './entities';
-
-/** Lenses */
-export { lensesModule } from './elements/lenses.module';
-export { Lens, PatternAction, LensElement } from './types';
-export { Plugin } from './elements/base/plugin';
-export { lensSelectorPlugin } from './elements/plugins/lens-selector.plugin';
-export { actionsPlugin } from './elements/plugins/actions.plugin';
-export { Node, NodeList } from './elements/lenses/node-list';
-
 /** Types */
-export { DiscoveryTypes, PatternTypes, EntitiesTypes, LensesTypes } from './types';
+export { LensesTypes, DiscoveryTypes, PatternTypes, PatternAction } from './types';
 
 /** Module */
 export { CortexModule } from './cortex.module';
-export { CortexEntityBase } from './elements/base/cortex-entity-base';

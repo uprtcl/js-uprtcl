@@ -1,12 +1,12 @@
 import { html } from 'lit-element';
 import { injectable, inject } from 'inversify';
+import { Store } from 'redux';
 
 import {
   Pattern,
   HasLenses,
   HasActions,
   PatternAction,
-  Lens,
   Hashed,
   Hashable,
   PatternTypes,
@@ -15,11 +15,11 @@ import {
   DiscoverableSource
 } from '@uprtcl/cortex';
 import { selectAccessControl, selectEntityAccessControl } from '@uprtcl/common';
-import { Store } from 'redux';
+import { Lens } from '@uprtcl/lenses';
+import { ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';
 import { DocumentsProvider } from '../services/documents.provider';
-import { ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 const propertyOrder = ['text', 'type', 'links'];
 

@@ -1,0 +1,66 @@
+import { Saga } from '@redux-saga/core';
+import { getContext, call, put, takeEvery } from '@redux-saga/core/effects';
+
+import { DiscoveryTypes, Source, PatternRecognizer, PatternTypes, Pattern } from '@uprtcl/cortex';
+import { ReduxTypes } from '@uprtcl/micro-orchestrator';
+import {
+  LOAD_ACCESS_CONTROL,
+  LoadAccessControl,
+  LoadAccessControlSuccess,
+  LOAD_ACCESS_CONTROL_SUCCESS
+} from './access-control.actions';
+import { LOAD_ENTITY_SUCCESS, LoadEntitySuccess } from '../../entities';
+import { Updatable } from '../properties/updatable';
+import { AccessControlService } from '../services/access-control.service';
+
+function* loadAccessControl(action: LoadAccessControl) {
+  const recognizer: PatternRecognizer = (yield getContext(ReduxTypes.Context)).get(
+    PatternTypes.Recognizer
+  );
+
+  const patterns: Pattern | Updatable = recognizer.recognizeMerge(action.payload.entity);
+
+  if ((patterns as Updatable).accessControl) {
+    const accessControlService:
+      | AccessControlService<any>
+      | undefined = (patterns as Updatable).accessControl(action.payload.entity);
+
+    if (accessControlService) {
+      const accessControlInformation = yield call(() =>
+        accessControlService.getAccessControlInformation(action.payload.hash)
+      );
+      const accessControlSuccess: LoadAccessControlSuccess = {
+        type: LOAD_ACCESS_CONTROL_SUCCESS,
+        payload: {
+          hash: action.payload.hash,
+          accessControl: accessControlInformation
+        }
+      };
+      yield put(accessControlSuccess);
+    }
+  }
+}
+
+export const loadAccessControlSaga: Saga = function*() {
+  yield takeEvery(LOAD_ACCESS_CONTROL, loadAccessControl);
+};
+
+function* filterUpdatableEntity(action: LoadEntitySuccess) {
+  const recognizer: PatternRecognizer = (yield getContext(ReduxTypes.Context)).get(
+    PatternTypes.Recognizer
+  );
+
+  const patterns: Pattern | Updatable = recognizer.recognizeMerge(action.payload.entity);
+
+  if ((patterns as Updatable).accessControl) {
+    const accessControlAction: LoadAccessControl = {
+      type: LOAD_ACCESS_CONTROL,
+      payload: action.payload
+    };
+    yield put(accessControlAction);
+  }
+}
+
+export const loadAccessControlOnEntityLoadSaga: Saga = function*() {
+  yield takeEvery(LOAD_ENTITY_SUCCESS, filterUpdatableEntity);
+};

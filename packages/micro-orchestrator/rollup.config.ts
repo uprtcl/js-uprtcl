@@ -7,6 +7,7 @@ import json from 'rollup-plugin-json';
 import replace from 'rollup-plugin-replace';
 
 const pkg = require('./package.json');
+pkg.dependencies['pwa-helpers/lazy-reducer-enhancer.js'] = '';
 
 const libraryName = 'uprtcl-micro-orchestrator';
 

@@ -28,10 +28,7 @@
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watch",
     "test:prod": "npm run lint && npm run test -- --no-cache",
-    "report-coverage": "cat ./coverage/lcov.info | coveralls",
-    "site:build": "npm run storybook:build",
-    "storybook": "tsc && tsc -w & start-storybook -p 9001",
-    "storybook:build": "npm run build && build-storybook -o _site -s storybook-static"
+    "report-coverage": "cat ./coverage/lcov.info | coveralls"
   },
   "prettier": {
     "semi": true,
@@ -43,7 +40,6 @@
     "@babel/preset-typescript": "^7.6.0",
     "@commitlint/cli": "^7.1.2",
     "@commitlint/config-conventional": "^7.1.2",
-    "@open-wc/demoing-storybook": "^0.3.0",
     "@open-wc/testing": "^0.11.1",
     "@open-wc/testing-karma": "^3.0.0",
     "@open-wc/testing-karma-bs": "^1.0.0",
@@ -85,25 +81,12 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
-    "@authentic/mwc-circular-progress": "^0.9.0",
-    "@authentic/mwc-icon": "^0.9.0",
-    "@authentic/mwc-list": "^0.9.0",
-    "@authentic/mwc-menu": "^0.9.0",
-    "@authentic/mwc-ripple": "^0.9.0",
-    "@material/mwc-button": "^0.8.0",
-    "@material/mwc-linear-progress": "^0.8.0",
     "@types/lodash": "^4.14.138",
     "@uprtcl/micro-orchestrator": "^0.0.1-alpha3",
-    "buffer": "^5.4.3",
     "dexie": "^2.0.4",
     "inversify": "^5.0.1",
     "lit-element": "^2.2.1",
-    "lit-html": "^1.1.2",
     "lodash": "^4.17.15",
-    "pwa-helpers": "^0.9.1",
-    "redux": "^4.0.4",
-    "redux-thunk": "^2.3.0",
-    "reflect-metadata": "^0.1.13",
-    "rxjs": "^6.5.2"
+    "reflect-metadata": "^0.1.13"
   }
 }

@@ -38,6 +38,7 @@
     "@uprtcl/common": "^0.0.1-alpha3",
     "@uprtcl/connections": "^0.0.1-alpha3",
     "@uprtcl/cortex": "^0.0.1-alpha3",
+    "@uprtcl/lenses": "^0.0.1-alpha3",
     "@uprtcl/micro-orchestrator": "^0.0.1-alpha3",
     "dexie": "^2.0.4",
     "inversify": "^5.0.1",

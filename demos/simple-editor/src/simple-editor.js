@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { UprtclTypes } from '@uprtcl/common';
+import { UprtclTypes } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
 
 export class SimpleEditor extends moduleConnect(LitElement) {

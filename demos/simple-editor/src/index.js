@@ -3,25 +3,19 @@ import {
   PatternTypes,
   PatternsModule,
   discoveryModule,
-  lensesModule,
-  entitiesReduxModule,
-  EntitiesTypes,
   DiscoveryTypes,
-  LensesTypes,
-  actionsPlugin,
-  lensSelectorPlugin
+  LensesTypes
 } from '@uprtcl/cortex';
+import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@uprtcl/lenses';
 import { DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import { KnownSourcesHolochain } from '@uprtcl/connections';
 import {
-  uprtclModule,
-  UprtclEthereum,
-  UprtclHolochain,
-  UprtclTypes,
-  updatePlugin,
   AccessControlTypes,
-  accessControlReduxModule
+  accessControlReduxModule,
+  entitiesReduxModule,
+  EntitiesTypes
 } from '@uprtcl/common';
+import { eveesModule, UprtclEthereum, UprtclHolochain, UprtclTypes } from '@uprtcl/evees';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
@@ -37,7 +31,7 @@ import { SimpleEditor } from './simple-editor';
 
   const discoverableUprtcl = { service: uprtclProvider };
 
-  const uprtcl = uprtclModule([discoverableUprtcl]);
+  const uprtcl = eveesModule([discoverableUprtcl]);
 
   const discoverableDocs = {
     service: documentsProvider

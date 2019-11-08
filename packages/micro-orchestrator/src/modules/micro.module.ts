@@ -1,4 +1,5 @@
 import { interfaces } from 'inversify';
+import { Constructor } from '../types';
 
 export interface MicroModule {
   onLoad(
@@ -10,4 +11,6 @@ export interface MicroModule {
   ): Promise<void>;
 
   onUnload(): Promise<void>;
+
+  subModules?: Constructor<MicroModule>[];
 }

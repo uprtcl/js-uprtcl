@@ -6,6 +6,7 @@ export type ModuleProvider = (moduleId: symbol) => Promise<MicroModule>;
 
 export const moduleProvider = (logger: Logger) => {
   const loadingModules = {};
+
   return (context: interfaces.Context): ModuleProvider => async (
     moduleId: symbol
   ): Promise<MicroModule> => {
@@ -17,12 +18,23 @@ export const moduleProvider = (logger: Logger) => {
 
     const microModule: MicroModule = context.container.get(moduleId);
 
-    const containerModule = new AsyncContainerModule((...args) =>
-      microModule.onLoad(context, ...args)
-    );
+    function loadModule(module: MicroModule): Promise<void> {
+      const containerModule = new AsyncContainerModule((...args) =>
+        module.onLoad(context, ...args)
+      );
+      return context.container.loadAsync(containerModule);
+    }
+
+    if (microModule.subModules) {
+      const submodulesPromises = microModule.subModules.map(submoduleConstructor => {
+        const submodule = context.container.resolve(submoduleConstructor);
+        return loadModule(submodule);
+      });
+      await Promise.all(submodulesPromises);
+    }
 
     try {
-      loadingModules[moduleId] = context.container.loadAsync(containerModule);
+      loadingModules[moduleId] = loadModule(microModule);
 
       logger.info(`Module successfully initialized`, moduleId);
       return loadingModules[moduleId];

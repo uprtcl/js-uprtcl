@@ -1,17 +1,24 @@
-import { Store, ReducersMapObject, Action, Reducer } from 'redux';
+import { Saga, SagaMiddleware } from 'redux-saga';
+import { Store, ReducersMapObject, Action } from 'redux';
 import { inject, interfaces, injectable } from 'inversify';
 import { LazyStore } from 'pwa-helpers/lazy-reducer-enhancer';
 
 import { MicroModule } from '../micro.module';
-import { MicroOrchestratorTypes, ReduxTypes } from '../../types';
+import { MicroOrchestratorTypes, ReduxTypes, Constructor } from '../../types';
 import { ModuleProvider } from '../../orchestrator/module-provider';
 
-export function reduxModule<S, A extends Action>(reducersMap: ReducersMapObject<S, A>): any {
+export function reduxModule<S, A extends Action>(
+  reducersMap: ReducersMapObject<S, A>,
+  sagas: Saga[] = [],
+  submodules: Constructor<MicroModule>[] = []
+): any {
   @injectable()
   class ReduxModule implements MicroModule {
     constructor(
       @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider
     ) {}
+
+    subModules = submodules;
 
     async onLoad(
       context: interfaces.Context,
@@ -24,6 +31,9 @@ export function reduxModule<S, A extends Action>(reducersMap: ReducersMapObject<
 
       const store: Store & LazyStore = context.container.get(ReduxTypes.Store);
       store.addReducers(reducersMap as ReducersMapObject);
+
+      const sagaMiddleware: SagaMiddleware = context.container.get(ReduxTypes.Saga);
+      for (const saga of sagas) sagaMiddleware.run(saga);
     }
 
     async onUnload(): Promise<void> {}
