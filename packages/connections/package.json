@@ -2,31 +2,15 @@
   "name": "@uprtcl/connections",
   "version": "0.0.1-alpha3",
   "description": "Basic connections services to help connect to different backend platforms",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/uprtcl/js-uprtcl/"
-  },
-  "author": "guillemcordoba <guillem.cordoba@gmail.com>",
-  "license": "MIT",
-  "main": "dist/uprtcl-connections.umd.js",
-  "module": "dist/uprtcl-connections.es5.js",
-  "typings": "dist/types/uprtcl-connections.d.ts",
+  "homepage": "https://uprtcl.io",
   "scripts": {
+    "clean": "rimraf dist",
     "build": "npm run clean && rollup -c rollup.config.ts",
-    "clean": "rimraf dist docs",
     "test": "karma start --coverage",
-    "test:watch": "karma start --auto-watch=true --single-run=false",
-    "test:update-snapshots": "karma start --update-snapshots",
-    "test:prune-snapshots": "karma start --prune-snapshots",
-    "test:compatibility": "karma start --compatibility all --coverage",
-    "test:compatibility:watch": "karma start --compatibility all --auto-watch=true --single-run=false",
-    "test:bs": "karma start karma.bs.config.js --legacy --coverage",
-    "docs:build": "typedoc --out docs --target es6 --theme minimal --mode file src",
-    "site:build": "npm run storybook:build"
+    "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
     "@holochain/hc-web-client": "^0.5.0",
-    "@types/node": "^12.12.3",
     "@uprtcl/cortex": "^0.0.1-alpha3",
     "@uprtcl/micro-orchestrator": "^0.0.1-alpha3",
     "ipfs-http-client": "^39.0.0",
@@ -39,17 +23,47 @@
   "devDependencies": {
     "@open-wc/testing": "^0.11.1",
     "@open-wc/testing-karma": "^3.0.0",
-    "@open-wc/testing-karma-bs": "^1.0.0",
-    "rimraf": "^2.6.3",
+    "@types/lodash": "^4.14.138",
+    "@types/node": "^10.11.0",
+    "reflect-metadata": "^0.1.13",
+    "rimraf": "^2.6.2",
     "rollup": "^0.67.0",
     "rollup-plugin-commonjs": "^9.1.8",
     "rollup-plugin-json": "^3.1.0",
-    "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.18.0",
-    "typedoc": "^0.14.2",
-    "typescript": "^3.5.3"
+    "typescript": "^3.7.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "contributors": [
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    },
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@collectiveone.org",
+      "url": "https://github.com/pepoospina"
+    }
+  ],
+  "keywords": [
+    "service",
+    "provider",
+    "backend",
+    "websocket",
+    "web3",
+    "holochain"
+  ],
+  "license": "MIT",
+  "main": "dist/uprtcl-connections.umd.js",
+  "module": "dist/uprtcl-connections.es5.js",
+  "typings": "dist/types/uprtcl-connections.d.ts",
+  "engines": {
+    "node": ">=10.0.0"
   }
 }

@@ -18,6 +18,8 @@ npm install @uprtcl/documents
 
 ## Usage
 
+Import the module, instantiate it with its appropiate configuration, and load it:
+
 ```ts
 import { documentsModule, DocumentsIpfs } from '@uprtcl/documents';
 
@@ -27,6 +29,6 @@ const documentsProvider = new DocumentsIpfs({
   protocol: 'https'
 });
 
-const docs = documentsModule([documentsProvider]);
+const docs = documentsModule([{ service: documentsProvider }]);
 await orchestrator.loadModules(docs);
 ```

@@ -1,6 +1,0 @@
-{
-  "presets": ["env", "@babel/preset-typescript"],
-  "plugins": ["@babel/plugin-syntax-dynamic-import"],
-  "extensions": [".js", ".jsx", ".ts", ".tsx"],
-  "exclude": "node_modules/**"
-}

@@ -2,8 +2,9 @@
 
 > \_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
 
+Cortex module to deal with generic version control for any kind of content-addressable objects to become [**Evees**](https://github.com/uprtcl/spec/wiki/What-are-Evees%3F). This package can be used to handle updates to content-addressable content with different perspectives on the content (similar to branches in Git) and built-in proposal management.
 
-
+> This repository contains the current javascript implementation of all the \_Prtcl services, modules and pattern to deal with **Evees** (Evolving Entities).
 
 ## Dependencies
 
@@ -12,7 +13,7 @@ This package depends on `@uprtcl/micro-orchestrator`, `@uprtcl/connections`, `@u
 ## Install
 
 ```bash
-npm install @uprtcl/lenses
+npm install @uprtcl/evees
 ```
 
 ## Usage
@@ -20,25 +21,14 @@ npm install @uprtcl/lenses
 Import the module, instantiate it with its appropiate configuration, and load it:
 
 ```ts
-import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
-import { LensesTypes } from '@uprtcl/cortex';
-import { lensesModule } from '@uprtcl/lenses';
+import { eveesModule, UprtclEthereum } from '@uprtcl/evees';
 
-const orchestrator = new MicroOrchestrator();
+const eveesProvider = new UprtclEthereum('ws://localhost:8545', {
+  host: 'ipfs.infura.io',
+  port: 5001,
+  protocol: 'https'
+});
 
-const lenses = lensesModule([]);
-await orchestrator.loadModules({ id: LensesTypes.Module, module: lenses });
-```
-
-In your `html`, now you can use `<cortex-entity>`:
-
-```html
-<cortex-entity id="cortex-entity-rendering" />
-```
-
-Now we need to pass the `hash` attribute down to the element. Each JS frontend framework has its own way of doing it (props for React, inputs for Angular...). This is how you can do it in vanilla JS:
-
-```js
-const cortexEntityElement = document.getElementById('cortex-entity-rendering');
-cortexEntityElement.hash = '[HASH-OF-THE-ENTITY-WE-WANT-TO-LOAD]';
+const evees = eveesModule([{ service: eveesProvider }]);
+await orchestrator.loadModules(evees);
 ```

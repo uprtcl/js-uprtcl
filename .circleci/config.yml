@@ -19,3 +19,4 @@ jobs:
           command: |
             echo 'Build'
             npm run build
+            npm run docs:build

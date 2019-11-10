@@ -4,14 +4,10 @@ import sourceMaps from 'rollup-plugin-sourcemaps';
 import { camelCase } from 'lodash';
 import typescript from 'rollup-plugin-typescript2';
 import json from 'rollup-plugin-json';
-import builtins from 'rollup-plugin-node-builtins';
-import globals from 'rollup-plugin-node-globals';
-import babel from 'rollup-plugin-babel';
 
 const pkg = require('./package.json');
 pkg.dependencies['lodash/merge'] = '';
 pkg.dependencies['lodash/uniq'] = '';
-pkg.dependencies['lit-html/directives/unsafe-html'] = '';
 
 const libraryName = 'uprtcl-cortex';
 
@@ -27,10 +23,6 @@ export default {
     include: 'src/**'
   },
   plugins: [
-    globals(),
-
-    // Resolve source maps to the original source
-    sourceMaps(),
     // Allow json resolution
     json(),
     // Compile TypeScript files
@@ -44,7 +36,9 @@ export default {
     resolve({ browser: true, preferBuiltins: false }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs(),
-    builtins()
+
+    // Resolve source maps to the original source
+    sourceMaps()
   ],
   preserveSymlinks: true
 };

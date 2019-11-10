@@ -1,15 +1,10 @@
 {
   "name": "root",
   "private": true,
-  "devDependencies": {
-    "@types/node": "^12.7.1",
-    "es-dev-server": "^1.12.0",
-    "lerna": "^3.16.4",
-    "rimraf": "^3.0.0",
-    "ts-node": "^8.3.0",
-    "typedoc": "^0.15.0",
-    "typedoc-plugin-lerna-packages": "^0.2.1",
-    "typescript": "^3.7.2"
+  "homepage": "https://uprtcl.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap",
@@ -21,7 +16,34 @@
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "travis-deploy-once": "travis-deploy-once"
   },
-  "repository": {
-    "url": "https://github.com/uprtcl/js-uprtcl"
+  "devDependencies": {
+    "@types/node": "^12.7.1",
+    "es-dev-server": "^1.12.0",
+    "lerna": "^3.16.4",
+    "rimraf": "^3.0.0",
+    "ts-node": "^8.3.0",
+    "typedoc": "^0.15.0",
+    "typedoc-plugin-lerna-packages": "^0.2.1",
+    "typescript": "^3.7.2"
+  },
+  "contributors": [
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    },
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@collectiveone.org",
+      "url": "https://github.com/pepoospina"
+    }
+  ],
+  "license": "MIT",
+  "prettier": {
+    "semi": true,
+    "singleQuote": true
+  },
+  "engines": {
+    "node": ">=10.0.0"
   }
 }
