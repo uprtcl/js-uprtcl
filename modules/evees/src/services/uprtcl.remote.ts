@@ -6,7 +6,7 @@ import { ProposalProvider } from './proposal.provider';
 
 export interface UprtclRemote extends UprtclProvider, NamedSource {
   /** Access Control */
-  accessControl: AccessControlService | undefined;
+  accessControl: AccessControlService<any> | undefined;
 
   /** Proposals */
   proposals: ProposalProvider | undefined;

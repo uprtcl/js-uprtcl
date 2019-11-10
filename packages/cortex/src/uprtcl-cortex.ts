@@ -38,7 +38,6 @@ export { IsValid } from './patterns/properties/is-valid';
 export { HasType } from './patterns/properties/has-type';
 export { HasText } from './patterns/properties/has-text';
 export { Transformable } from './patterns/properties/transformable';
-export { HasLenses } from './patterns/properties/has-lenses';
 export { HasActions } from './patterns/properties/has-actions';
 
 // Pattern Registry

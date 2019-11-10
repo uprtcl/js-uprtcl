@@ -1,5 +1,6 @@
-import { PatternRecognizer, Pattern, HasLenses, Transformable, HasRedirect } from '@uprtcl/cortex';
+import { PatternRecognizer, Pattern, Transformable, HasRedirect } from '@uprtcl/cortex';
 
+import { HasLenses } from '../properties/has-lenses';
 import { Isomorphisms, Lens } from '../types';
 
 export function getLenses(

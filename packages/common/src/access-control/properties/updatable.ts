@@ -6,5 +6,5 @@ export interface Updatable<T = any> {
    */
   update: (entity: any, newContent: T) => Promise<boolean>;
 
-  accessControl: (entity: any) => AccessControlService | undefined;
+  accessControl: (entity: any) => AccessControlService<any> | undefined;
 }

@@ -7,12 +7,11 @@ import {
   IsSecure,
   HasLinks,
   Creatable,
-  HasLenses,
   Signed,
   PatternTypes
 } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
-import { Lens } from '@uprtcl/lenses';
+import { Lens, HasLenses } from '@uprtcl/lenses';
 
 import { Commit, UprtclTypes } from '../types';
 import { Uprtcl } from '../services/uprtcl';

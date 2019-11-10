@@ -1,5 +1,4 @@
 import { Dictionary } from 'lodash';
-import { Store } from 'redux';
 import { LitElement, property, html, css, TemplateResult } from 'lit-element';
 
 import { reduxConnect } from '@uprtcl/micro-orchestrator';

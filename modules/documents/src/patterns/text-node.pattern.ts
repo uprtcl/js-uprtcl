@@ -4,7 +4,6 @@ import { Store } from 'redux';
 
 import {
   Pattern,
-  HasLenses,
   HasActions,
   PatternAction,
   Hashed,
@@ -15,7 +14,7 @@ import {
   DiscoverableSource
 } from '@uprtcl/cortex';
 import { selectAccessControl, selectEntityAccessControl } from '@uprtcl/common';
-import { Lens } from '@uprtcl/lenses';
+import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';

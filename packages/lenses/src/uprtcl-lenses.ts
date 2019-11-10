@@ -10,3 +10,4 @@ export { updatePlugin } from './plugins/update.plugin';
 export { Node, NodeList } from './lenses/node-list';
 export { CortexEntityBase } from './elements/cortex-entity-base';
 export { Lens, LensElement } from './types';
+export { HasLenses } from './properties/has-lenses';

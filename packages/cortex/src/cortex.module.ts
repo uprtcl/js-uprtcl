@@ -1,13 +1,10 @@
 import { interfaces, injectable, inject } from 'inversify';
-import { ReducersMapObject, Store } from 'redux';
-import { Saga, SagaMiddleware } from 'redux-saga';
 
 import {
   MicroModule,
   Logger,
   MicroOrchestratorTypes,
-  ModuleProvider,
-  ReduxTypes
+  ModuleProvider
 } from '@uprtcl/micro-orchestrator';
 
 import { Pattern } from './patterns/pattern';
