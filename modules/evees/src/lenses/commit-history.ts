@@ -1,5 +1,5 @@
 import { Dictionary } from 'lodash';
-import { LitElement, property, html, css, TemplateResult } from 'lit-element';
+import { LitElement, property, html, css } from 'lit-element';
 
 import { reduxConnect } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
@@ -51,7 +51,7 @@ export class CommitHistory extends reduxConnect(LitElement)
     return array.reduce((objects, object) => ({ ...objects, [object.id]: object }), {});
   }
 
-  renderCommit(commitHash: string): TemplateResult {
+  renderCommit(commitHash: string) {
     const commit = this.commits[commitHash];
     return html`
       ${commit
@@ -74,7 +74,7 @@ export class CommitHistory extends reduxConnect(LitElement)
     `;
   }
 
-  static get styles(): CSSResult {
+  static get styles() {
     return css`
       .column {
         display: flex;
