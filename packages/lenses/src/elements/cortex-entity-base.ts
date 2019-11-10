@@ -63,17 +63,18 @@ export class CortexEntityBase extends reduxConnect(LitElement) {
     this.loadEntity(this.hash);
   }
 
-  update(changedProperties: PropertyValues) {
-    super.update(changedProperties);
+  updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
 
-    if (changedProperties.has('hash') && this.hash) {
+    if (changedProperties.has('hash') && this.hash && this.hash !== changedProperties.get('hash')) {
+      this.entity = undefined;
+      this.isomorphisms = undefined;
       this.entityUpdated();
+      this.stateChanged(this.store.getState());
     }
   }
 
   entityUpdated() {
-    if (!this.entity) return;
-
     this.isomorphisms = undefined;
 
     this.loadEntity(this.hash);

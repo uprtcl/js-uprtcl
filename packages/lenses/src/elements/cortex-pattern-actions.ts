@@ -45,8 +45,8 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
     this.getActions();
   }
 
-  update(changedProperties: PropertyValues) {
-    super.update(changedProperties);
+  updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
 
     if (changedProperties.get('isomorphisms')) {
       this.getActions();

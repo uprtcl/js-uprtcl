@@ -31,8 +31,8 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
     this.lenses = getLenses(patternRecognizer, this.isomorphisms);
   }
 
-  update(changedProperties: PropertyValues) {
-    super.update(changedProperties);
+  updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
 
     if (changedProperties.get('isomorphisms')) {
       const patternRecognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
