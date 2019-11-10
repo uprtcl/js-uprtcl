@@ -97,7 +97,7 @@ export class PerspectivePattern
     ];
   };
 
-  update: (perspective: Secured<Perspective>, newContent: any) => Promise<void> = async (
+  update: (perspective: Secured<Perspective>, newContent: any) => Promise<boolean> = async (
     perspective: Secured<Perspective>,
     newContent: any
   ) => {
@@ -122,6 +122,8 @@ export class PerspectivePattern
       }
     };
     this.store.dispatch(loadHead);
+
+    return true;
   };
 
   accessControl: (perspective: Secured<Perspective>) => AccessControlService<any> | undefined = (

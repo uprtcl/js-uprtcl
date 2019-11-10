@@ -1,19 +1,14 @@
+import { Dictionary } from 'lodash';
 import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import {
-  PatternRecognizer,
-  HasRedirect,
-  Transformable,
-  Pattern,
-  PatternTypes
-} from '@uprtcl/cortex';
+import { reduxConnect } from '@uprtcl/micro-orchestrator';
+import { PatternRecognizer, PatternTypes } from '@uprtcl/cortex';
 
-import { getLenses } from './utils';
+import { getLenses, getIsomorphisms } from './utils';
 import { Isomorphisms, Lens } from '../types';
-import { Dictionary } from 'lodash';
+import { LoadEntity, LOAD_ENTITY, selectById, selectEntities } from '@uprtcl/common';
 
-export class CortexEntityBase extends moduleConnect(LitElement) {
+export class CortexEntityBase extends reduxConnect(LitElement) {
   @property()
   public hash!: string;
 
@@ -21,22 +16,29 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   protected entity: object | undefined = undefined;
 
   @property()
-  protected isomorphisms!: Isomorphisms;
+  protected isomorphisms: Isomorphisms | undefined = undefined;
 
   // Lenses
   @property()
   protected selectedLens!: Lens | undefined;
 
-  @property()
-  private loadedEntities: Dictionary<boolean> = {};
-
   protected patternRecognizer!: PatternRecognizer;
+  protected entities: Dictionary<any> = {};
+  protected entitiesRequested: Dictionary<boolean> = {};
 
-  loadEntity(hash: string): Promise<void> {
-    throw new Error('Method not implemented');
+  async loadEntity(hash: string): Promise<any> {
+    if (this.entitiesRequested[hash]) return;
+
+    this.entitiesRequested[hash] = true;
+
+    const action: LoadEntity = {
+      type: LOAD_ENTITY,
+      payload: { hash }
+    };
+    this.store.dispatch(action);
   }
-  selectEntity(hash: string): any {
-    throw new Error('Method not implemented');
+  selectEntity(hash: string): any | undefined {
+    return this.entities[hash];
   }
   getLensElement(): Element | null {
     return null;
@@ -56,23 +58,42 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     );
   }
 
+  firstUpdated(changedProperties: PropertyValues) {
+    super.firstUpdated(changedProperties);
+    this.loadEntity(this.hash);
+  }
+
   update(changedProperties: PropertyValues) {
     super.update(changedProperties);
 
     if (changedProperties.has('hash') && this.hash) {
-      this.entity = undefined;
-      this.loadEntity(this.hash);
-    }
-    if (changedProperties.get('entity') && this.entity) {
       this.entityUpdated();
     }
   }
 
-  async entityUpdated() {
+  entityUpdated() {
     if (!this.entity) return;
 
-    try {
-      const isomorphisms = this.getIsomorphisms(this.entity);
+    this.isomorphisms = undefined;
+
+    this.loadEntity(this.hash);
+  }
+
+  stateChanged(state: any) {
+    this.entities = selectEntities(state).entities;
+    this.entity = selectById(this.hash)(selectEntities(state));
+
+    if (!this.entity) return;
+
+    const { isomorphisms, entitiesToLoad } = getIsomorphisms(
+      this.patternRecognizer,
+      this.entity,
+      (id: string) => this.selectEntity(id)
+    );
+
+    if (entitiesToLoad.length > 0) {
+      entitiesToLoad.forEach(id => this.loadEntity(id));
+    } else {
       this.isomorphisms = {
         entity: {
           id: this.hash,
@@ -82,63 +103,6 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
       };
 
       this.selectedLens = getLenses(this.patternRecognizer, this.isomorphisms)[0];
-    } catch (e) {}
-  }
-
-  getIsomorphisms(entity: any): Array<any> {
-    let isomorphisms: any[] = [entity];
-
-    const transformIsomorphisms = this.transformEntity(entity);
-    isomorphisms = isomorphisms.concat(transformIsomorphisms);
-
-    // Recursive call to get all isomorphisms from redirected entities
-    const redirectedIsomorphisms = this.redirectEntity(entity);
-    isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
-    return isomorphisms;
-  }
-
-  redirectEntity(entity: object): Array<any> {
-    const patterns: Array<Pattern | HasRedirect> = this.patternRecognizer.recognize(entity);
-
-    let isomorphisms: any[] = [];
-
-    for (const pattern of patterns) {
-      if ((pattern as HasRedirect).redirect) {
-        const redirectHash = (pattern as HasRedirect).redirect(entity);
-
-        if (redirectHash) {
-          const redirectEntity = this.selectEntity(redirectHash);
-
-          if (redirectEntity) {
-            const redirectedIsomorphisms = this.getIsomorphisms(redirectEntity);
-
-            isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
-          } else if (!this.loadedEntities[redirectHash]) {
-            this.loadedEntities[redirectHash] = true;
-            this.loadEntity(redirectHash);
-
-            throw new Error('Isomorphisms not yet loaded');
-          }
-        }
-      }
     }
-
-    return isomorphisms;
-  }
-
-  transformEntity<T extends object>(entity: T): Array<any> {
-    const patterns: Array<Pattern | Transformable<any>> = this.patternRecognizer.recognize(entity);
-
-    let isomorphisms: Array<any> = [];
-
-    for (const pattern of patterns) {
-      if ((pattern as Transformable<any>).transform) {
-        const transformedEntities: Array<any> = (pattern as Transformable<any>).transform(entity);
-
-        isomorphisms = isomorphisms.concat(transformedEntities);
-      }
-    }
-
-    return isomorphisms;
   }
 }

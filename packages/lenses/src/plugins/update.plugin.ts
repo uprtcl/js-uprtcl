@@ -48,7 +48,8 @@ export const updatePlugin = <T extends CortexEntityBase & ReduxConnectedElement>
       const updatable: Updatable = this.patternRecognizer.recognizeMerge(this.entity);
 
       if (updatable.update) {
-        await updatable.update(this.entity, newContent);
+        const reloadNeeded = await updatable.update(this.entity, newContent);
+        if (reloadNeeded) this.entityUpdated();
       }
     }
   };
