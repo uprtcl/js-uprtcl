@@ -1,10 +1,11 @@
+import { interfaces, injectable, inject } from 'inversify';
+
 import {
   MicroModule,
   Logger,
   MicroOrchestratorTypes,
   ModuleProvider
 } from '@uprtcl/micro-orchestrator';
-import { interfaces, injectable, inject } from 'inversify';
 
 import { Pattern } from './patterns/pattern';
 import { DiscoverableSource } from './services/sources/discoverable.source';

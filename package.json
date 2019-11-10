@@ -1,6 +1,21 @@
 {
   "name": "root",
   "private": true,
+  "homepage": "https://uprtcl.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna run build",
+    "clean": "lerna run clean",
+    "docs:build": "rimraf docs node_modules/typedoc/node_modules/typescript && typedoc",
+    "docs:deploy": "ts-node tools/gh-pages-publish",
+    "semantic-release": "semantic-release",
+    "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
+    "travis-deploy-once": "travis-deploy-once"
+  },
   "devDependencies": {
     "@types/node": "^12.7.1",
     "es-dev-server": "^1.12.0",
@@ -11,17 +26,24 @@
     "typedoc-plugin-lerna-packages": "^0.2.1",
     "typescript": "^3.7.2"
   },
-  "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "build": "lerna run build",
-    "clean": "lerna run clean",
-    "docs:build": "rimraf docs && typedoc",
-    "docs:deploy": "ts-node tools/gh-pages-publish",
-    "semantic-release": "semantic-release",
-    "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
-    "travis-deploy-once": "travis-deploy-once"
+  "contributors": [
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    },
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@collectiveone.org",
+      "url": "https://github.com/pepoospina"
+    }
+  ],
+  "license": "MIT",
+  "prettier": {
+    "semi": true,
+    "singleQuote": true
   },
-  "repository": {
-    "url": "https://github.com/uprtcl/js-uprtcl"
+  "engines": {
+    "node": ">=10.0.0"
   }
 }

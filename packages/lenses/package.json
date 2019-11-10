@@ -1,0 +1,74 @@
+{
+  "name": "@uprtcl/lenses",
+  "version": "0.0.1-alpha3",
+  "description": "Basic lenses rendering engine to use in conjunction with @uprtcl/cortex",
+  "homepage": "https://uprtcl.io",
+  "scripts": {
+    "build": "npm run clean && rollup -c rollup.config.ts",
+    "clean": "rimraf dist docs",
+    "test": "karma start --coverage",
+    "test:watch": "karma start --auto-watch=true --single-run=false"
+  },
+  "dependencies": {
+    "@authentic/mwc-circular-progress": "^0.9.0",
+    "@authentic/mwc-icon": "^0.9.0",
+    "@authentic/mwc-list": "^0.9.0",
+    "@authentic/mwc-menu": "^0.9.0",
+    "@authentic/mwc-ripple": "^0.9.0",
+    "@material/mwc-button": "^0.10.0",
+    "@material/mwc-linear-progress": "^0.10.0",
+    "@uprtcl/common": "^0.0.1-alpha3",
+    "@uprtcl/cortex": "^0.0.1-alpha3",
+    "@uprtcl/micro-orchestrator": "^0.0.1-alpha3",
+    "inversify": "^5.0.1",
+    "lit-element": "^2.2.1",
+    "lodash": "^4.17.15",
+    "redux": "^4.0.4"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^0.11.1",
+    "@open-wc/testing-karma": "^3.0.0",
+    "@types/node": "^10.11.0",
+    "@types/lodash": "^4.14.146",
+    "reflect-metadata": "^0.1.13",
+    "rimraf": "^2.6.3",
+    "rollup": "^0.67.0",
+    "rollup-plugin-commonjs": "^9.1.8",
+    "rollup-plugin-json": "^3.1.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript2": "^0.18.0",
+    "typescript": "^3.5.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "contributors": [
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    },
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@collectiveone.org",
+      "url": "https://github.com/pepoospina"
+    }
+  ],
+  "keywords": [
+    "lenses",
+    "elements",
+    "native",
+    "web-components",
+    "rendering",
+    "engine"
+  ],
+  "license": "MIT",
+  "main": "dist/uprtcl-lenses.umd.js",
+  "module": "dist/uprtcl-lenses.es5.js",
+  "typings": "dist/types/uprtcl-lenses.d.ts",
+  "engines": {
+    "node": ">=10.0.0"
+  }
+}

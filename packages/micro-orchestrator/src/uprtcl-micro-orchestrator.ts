@@ -17,7 +17,8 @@ export {
 
 /** Elements */
 export { ModuleContainer, RequestDependencyEvent } from './elements/module-container';
-export { moduleConnect } from './elements/mixins/module-connect-mixin';
+export { moduleConnect, ConnectedElement } from './elements/mixins/module-connect.mixin';
+export { reduxConnect, ReduxConnectedElement } from './elements/mixins/redux-connect.mixin';
 
 /** Utils */
 export { Logger, LogLevel } from './utils/logger';

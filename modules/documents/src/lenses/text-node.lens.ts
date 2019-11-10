@@ -1,6 +1,6 @@
 import { LitElement, property, html } from 'lit-element';
 
-import { LensElement } from '@uprtcl/cortex';
+import { LensElement } from '@uprtcl/lenses';
 
 import { TextNode, TextType } from '../types';
 

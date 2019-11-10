@@ -1,19 +1,33 @@
 // Required by inversify
 import 'reflect-metadata';
 
-/** _Prtcl */
-export { Commit, Perspective, Context, UprtclTypes } from './types';
-export { UprtclSource } from './uprtcl/services/uprtcl.source';
-export { UprtclProvider } from './uprtcl/services/uprtcl.provider';
-export { UprtclRemote } from './uprtcl/services/uprtcl.remote';
-
-export { UprtclHolochain } from './uprtcl/services/providers/holochain/uprtcl.holochain';
-export { UprtclEthereum } from './uprtcl/services/providers/ethereum/uprtcl.ethereum';
-
-export { uprtclModule } from './uprtcl/uprtcl.module';
+/** Types */
+export { EntitiesTypes, AccessControlTypes } from './types';
 
 /** Access Control */
-export { updatePlugin } from './access-control/plugins/update.plugin';
+export { Updatable } from './access-control/properties/updatable';
+
+export { AccessControlService } from './access-control/services/access-control.service';
+export {
+  OwnerAccessControl,
+  OwnerAccessControlService
+} from './access-control/services/owner-access-control.service';
+export { accessControlReduxModule } from './access-control/state';
+export {
+  selectEntityAccessControl,
+  selectAccessControl
+} from './access-control/state/access-control.selectors';
+export {
+  AccessControlAction,
+  LoadAccessControlSuccess,
+  LOAD_ACCESS_CONTROL,
+  LOAD_ACCESS_CONTROL_SUCCESS,
+  LoadAccessControl
+} from './access-control/state/access-control.actions';
+export {
+  loadAccessControlSaga,
+  loadAccessControlOnEntityLoadSaga
+} from './access-control/state/access-control.sagas';
 
 /** Drafts */
 export { draftsModule } from './draft/draft.module';
@@ -25,3 +39,23 @@ export { DraftsLocal } from './draft/services/drafts.local';
 export { CidHashedPattern, recognizeHashed } from './patterns/cid-hashed.pattern';
 export { DefaultSignedPattern } from './patterns/default-signed.pattern';
 export { DefaultSecuredPattern, Secured } from './patterns/default-secured.pattern';
+
+/** Entities */
+export {
+  LOAD_ENTITY,
+  LOAD_ENTITY_SUCCESS,
+  LoadEntity,
+  LoadEntitySuccess,
+  entitiesReducer,
+  EntityActions,
+  EntitiesState,
+  selectById,
+  selectAll,
+  selectByPattern,
+  selectEntities,
+  entitiesReducerName,
+  entitiesReduxModule
+} from './entities';
+
+/** Utils */
+export { sortObject } from './utils/utils';

@@ -10,6 +10,8 @@ export const MicroOrchestratorTypes = {
 
 export const ReduxTypes = {
   Store: Symbol('redux-store'),
+  Saga: Symbol('redux-saga-middleware'),
+  Context: 'redux-saga-middleware-inversify-context',
   Module: Symbol('redux-module')
 };
 

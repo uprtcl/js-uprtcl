@@ -4,8 +4,6 @@ import sourceMaps from 'rollup-plugin-sourcemaps';
 import camelCase from 'lodash.camelcase';
 import typescript from 'rollup-plugin-typescript2';
 import json from 'rollup-plugin-json';
-import builtins from 'rollup-plugin-node-builtins';
-import globals from 'rollup-plugin-node-globals';
 
 const pkg = require('./package.json');
 pkg.dependencies['lodash/merge'] = '';
@@ -26,8 +24,6 @@ export default {
     include: 'src/**'
   },
   plugins: [
-    globals(),
-
     // Allow json resolution
     json(),
     // Compile TypeScript files
@@ -43,7 +39,6 @@ export default {
     commonjs({
       include: /node_modules/
     }),
-    builtins(),
 
     // Resolve source maps to the original source
     sourceMaps()

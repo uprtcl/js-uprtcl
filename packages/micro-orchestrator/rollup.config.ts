@@ -4,9 +4,9 @@ import sourceMaps from 'rollup-plugin-sourcemaps';
 import { camelCase } from 'lodash';
 import typescript from 'rollup-plugin-typescript2';
 import json from 'rollup-plugin-json';
-import replace from 'rollup-plugin-replace';
 
 const pkg = require('./package.json');
+pkg.dependencies['pwa-helpers/lazy-reducer-enhancer.js'] = '';
 
 const libraryName = 'uprtcl-micro-orchestrator';
 

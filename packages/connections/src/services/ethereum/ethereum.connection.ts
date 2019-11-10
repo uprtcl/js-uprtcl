@@ -30,6 +30,15 @@ export class EthereumConnection extends Connection {
   protected async connect(): Promise<void> {
     this.web3 = new Web3(this.ethOptions.provider);
 
+    const setAccounts = (accounts: string[]) => (this.accounts = accounts);
+
+    const web3 = this.web3;
+
+    setInterval(async function() {
+      const accounts = await web3.eth.getAccounts();
+      setAccounts(accounts);
+    }, 100);
+
     this.accounts = await this.web3.eth.getAccounts();
     this.networkId = await this.web3.eth.net.getId();
 
@@ -50,7 +59,7 @@ export class EthereumConnection extends Connection {
       // let gasEstimated = await this.uprtclInstance.methods[funcName](...pars).estimateGas()
 
       let sendPars = {
-        from: this.getDefaultAccount(),
+        from: this.getCurrentAccount(),
         gas: 750000
       };
       this.logger.log(`CALLING ${funcName}`, pars, sendPars);
@@ -84,14 +93,14 @@ export class EthereumConnection extends Connection {
    */
   public async call(funcName: string, pars: any[]): Promise<any> {
     return this.contractInstance.methods[funcName](...pars).call({
-      from: this.getDefaultAccount()
+      from: this.getCurrentAccount()
     });
   }
 
   /**
-   * @returns the default account for this ethereum connection
+   * @returns the current used account for this ethereum connection
    */
-  public getDefaultAccount(): string {
+  public getCurrentAccount(): string {
     return this.accounts[0];
   }
 }

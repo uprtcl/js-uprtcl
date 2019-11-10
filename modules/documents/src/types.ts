@@ -1,4 +1,4 @@
-import { Node } from '@uprtcl/cortex';
+import { Node } from '@uprtcl/lenses';
 
 export enum TextType {
   Title = 'Title',
