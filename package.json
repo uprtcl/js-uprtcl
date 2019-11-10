@@ -9,14 +9,14 @@
     "ts-node": "^8.3.0",
     "typedoc": "^0.15.0",
     "typedoc-plugin-lerna-packages": "^0.2.1",
-    "typescript": "^3.5.3"
+    "typescript": "^3.7.2"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "clean": "lerna run clean",
     "docs:build": "rimraf docs && typedoc",
-    "docs:deploy": "ts-node tools/gh-pages-publish",
+    "docs:deploy": "rimraf node_modules/typedoc/node_modules/typescript && ts-node tools/gh-pages-publish",
     "semantic-release": "semantic-release",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "travis-deploy-once": "travis-deploy-once"
