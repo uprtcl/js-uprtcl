@@ -15,7 +15,7 @@ import {
   entitiesReduxModule,
   EntitiesTypes
 } from '@uprtcl/common';
-import { eveesModule, EveesEthereum, EveesHolochain, EevesTypes } from '@uprtcl/evees';
+import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/evees';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {

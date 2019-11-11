@@ -12,7 +12,7 @@ export class SimpleEditor extends moduleConnect(LitElement) {
 
   constructor() {
     super();
-    this.perspectivePattern = this.request(UprtclTypes.PerspectivePattern);
+    this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
     this.textNodePattern = this.request(DocumentsTypes.TextNodePattern);
   }
 
