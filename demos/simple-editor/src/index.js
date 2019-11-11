@@ -7,30 +7,39 @@ import {
   LensesTypes
 } from '@uprtcl/cortex';
 import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@uprtcl/lenses';
-import { DocumentsHttp, documentsModule, DocumentsTypes } from '@uprtcl/documents';
+import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import {
   AccessControlTypes,
   accessControlReduxModule,
   entitiesReduxModule,
   EntitiesTypes
 } from '@uprtcl/common';
-import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/evees';
+import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
+import { KnownSourcesHttp } from '@uprtcl/connections';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
-  const c1host = 'http://localhost:3100/uprtcl/1'
+  
+  const c1host = 'http://localhost:3100/uprtcl/1';
+  const ethHost = 'ws://localhost:8545';
+  const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+  
+  const httpEvees = new EveesHttp(c1host, '');
+  const ethEvees = new EveesEthereum(ethHost, ipfsConfig);
+  const httpKnownSources = new KnownSourcesHttp(c1host);
 
-  const eveesProvider = new EveesHttp(`${c1host}`, '');
-  const documentsProvider = new DocumentsHttp(`${c1host}`, '');
+  const evees = eveesModule([
+    { service: httpEvees, knownSources: httpKnownSources }, 
+    { service: ethEvees, knownSources: httpKnownSources }
+  ]);
 
-  const discoverableEvees = { service: eveesProvider };
+  const httpDocuments = new DocumentsHttp(c1host, '');
+  const ipfsDocuments = new DocumentsIpfs(ipfsConfig);
 
-  const evees = eveesModule([discoverableEvees]);
-
-  const discoverableDocs = {
-    service: documentsProvider
-  };
-  const documents = documentsModule([discoverableDocs]);
+  const documents = documentsModule([
+    { service: httpDocuments, knownSources: httpKnownSources },
+    { service: ipfsDocuments, knownSources: httpKnownSources }
+  ]);
 
   const orchestrator = new MicroOrchestrator();
 

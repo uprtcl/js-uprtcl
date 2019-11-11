@@ -1,6 +1,6 @@
-import { Source } from '@uprtcl/cortex';
+import { NamedSource } from '@uprtcl/cortex';
 import { TextNode } from '../types';
 
-export interface DocumentsProvider extends Source {
-  createTextNode(node: TextNode): Promise<string>;
+export interface DocumentsProvider extends NamedSource {
+   createTextNode(node: TextNode): Promise<string>;
 }

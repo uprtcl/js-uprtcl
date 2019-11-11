@@ -1,4 +1,7 @@
 import { Node } from '@uprtcl/lenses';
+import { CacheService } from '@uprtcl/cortex';
+
+import { DocumentsProvider } from './services/documents.provider';
 
 export enum TextType {
   Title = 'Title',
@@ -18,3 +21,5 @@ export const DocumentsTypes = {
   DocumentsCache: Symbol('documents-cache'),
   TextNodePattern: Symbol('text-node-pattern')
 };
+
+export type DocumentsLocal = CacheService & DocumentsProvider;

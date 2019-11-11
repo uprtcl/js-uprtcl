@@ -1,8 +1,8 @@
 import { HttpConnection } from '@uprtcl/connections';
 import { Hashed } from '@uprtcl/cortex';
 
-import { DocumentsProvider } from './documents.provider';
-import { TextNode } from '../types';
+import { DocumentsProvider } from '../documents.provider';
+import { TextNode } from '../../types';
 
 export enum DataType {
   TEXT = 'TEXT',
@@ -17,6 +17,10 @@ export class DocumentsHttp implements DocumentsProvider {
   constructor (protected host: string, jwt: string) {
     this.connection = new HttpConnection(host, jwt, {});
   }
+
+  get name() : string {
+    return `http:${this.evees_api}:+${this.host}`;
+  }; 
 
   ready(): Promise<void> {
     return Promise.resolve();
