@@ -4,8 +4,9 @@
   "description": "Basic lenses rendering engine to use in conjunction with @uprtcl/cortex",
   "homepage": "https://uprtcl.io",
   "scripts": {
-    "build": "npm run clean && rollup -c rollup.config.ts",
     "clean": "rimraf dist docs",
+    "dev": "rollup -w -c rollup.config.ts",
+    "build": "npm run clean && rollup -c rollup.config.ts",
     "test": "karma start --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },

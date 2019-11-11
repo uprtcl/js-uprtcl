@@ -1,34 +1,25 @@
-import { NamedSource, Hashed, Source } from '@uprtcl/cortex';
-import { HolochainConnection, HolochainConnectionOptions } from './holochain.connection';
-import { ConnectionOptions } from '../../connections/connection';
+import { SourceProvider, Hashed } from '@uprtcl/cortex';
+
+import { HolochainProvider, HolochainProviderOptions } from './holochain.provider';
+import { HolochainConnection } from './holochain.connection';
 import { HolochainProxy } from './holochain.proxy';
 
-export class HolochainSource extends HolochainConnection implements NamedSource {
-  name!: string;
-
+export class HolochainSource extends HolochainProvider implements SourceProvider {
   constructor(
-    protected zome: string,
-    protected hcOptions: HolochainConnectionOptions,
-    options: ConnectionOptions = {},
-    protected sourceZome: HolochainProxy = new HolochainProxy(hcOptions, options)
+    protected hcOptions: HolochainProviderOptions,
+    protected connection: HolochainConnection,
+    protected sourceZome: HolochainProxy = new HolochainProxy(hcOptions.instance, connection)
   ) {
-    super(zome, hcOptions, options);
-  }
-
-  /**
-   * @override
-   */
-  protected async connect(): Promise<void> {
-    await super.connect();
-
-    this.name = await this.sourceZome.getName();
+    super(hcOptions, connection);
   }
 
   /**
    * @override
    */
   public async ready() {
-    await Promise.all([super.ready(), this.sourceZome.ready()]);
+    await Promise.all([this.connection.ready(), this.sourceZome.ready()]);
+
+    this.uprtclProviderLocator = await this.sourceZome.getUpl();
   }
 
   /**

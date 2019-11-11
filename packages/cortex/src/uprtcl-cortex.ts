@@ -2,8 +2,8 @@
 import 'reflect-metadata';
 
 /** Services */
-export { Source, Ready } from './services/sources/source';
-export { NamedSource, NamedRemote } from './services/sources/named.source';
+export { Source, SourceProvider } from './services/sources/source';
+export { Ready, ServiceProvider } from './services/sources/service.provider';
 export { DiscoverableSource } from './services/sources/discoverable.source';
 
 export { KnownSourcesService } from './services/known-sources/known-sources.service';
@@ -38,14 +38,14 @@ export { IsValid } from './patterns/properties/is-valid';
 export { HasType } from './patterns/properties/has-type';
 export { HasText } from './patterns/properties/has-text';
 export { Transformable } from './patterns/properties/transformable';
-export { HasActions } from './patterns/properties/has-actions';
+export { HasActions, PatternAction } from './patterns/properties/has-actions';
 
 // Pattern Registry
 export { PatternRecognizer } from './patterns/recognizer/pattern.recognizer';
 export { PatternsModule } from './patterns/patterns.module';
 
 /** Types */
-export { LensesTypes, DiscoveryTypes, PatternTypes, PatternAction } from './types';
+export { LensesTypes, DiscoveryTypes, PatternTypes, UplAuth } from './types';
 
 /** Module */
 export { CortexModule } from './cortex.module';

@@ -10,7 +10,7 @@ import {
   Hashable,
   PatternTypes,
   Creatable,
-  NamedSource,
+  SourceProvider,
   DiscoverableSource
 } from '@uprtcl/cortex';
 import { selectAccessControl, selectEntityAccessControl } from '@uprtcl/common';
@@ -27,7 +27,7 @@ export class TextNodePattern
   implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasActions {
   constructor(
     @inject(DocumentsTypes.DocumentsProvider)
-    protected documentsProvider: DiscoverableSource<DocumentsProvider & NamedSource>,
+    protected documentsProvider: DiscoverableSource<DocumentsProvider & SourceProvider>,
     @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<TextNode>,
     @inject(ReduxTypes.Store) protected store: Store
   ) {}

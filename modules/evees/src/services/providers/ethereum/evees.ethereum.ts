@@ -2,11 +2,12 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import {
   IpfsSource,
   EthereumConnection,
-  ConnectionOptions,
-  IpfsConnectionOptions,
-  provider
+  EthereumProviderOptions,
+  EthereumProvider,
+  IpfsConnection
 } from '@uprtcl/connections';
 import { sortObject, Secured } from '@uprtcl/common';
+import { Hashed } from '@uprtcl/cortex';
 
 import * as EveesContractArtifact from './uprtcl-contract.json';
 
@@ -16,21 +17,32 @@ import { ProposalMock } from '../../proposal.mock';
 import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 
-export class EveesEthereum extends IpfsSource implements EveesRemote {
-  logger: Logger = new Logger('UprtclEtereum');
+export class EveesEthereum extends EthereumProvider implements EveesRemote {
+  logger: Logger = new Logger('EveesEtereum');
 
-  ethConnection!: EthereumConnection;
+  ipfsSource: IpfsSource;
 
-  constructor(provider: provider, ipfsOptions: IpfsConnectionOptions, options: ConnectionOptions) {
-    super(ipfsOptions, options);
-    this.ethConnection = new EthereumConnection(
-      { provider: provider, contract: EveesContractArtifact as any },
-      options
-    );
+  constructor(
+    protected ethConnection: EthereumConnection,
+    ipfsConnection: IpfsConnection,
+    ethOptions: EthereumProviderOptions = { contract: EveesContractArtifact as any }
+  ) {
+    super(ethOptions, ethConnection);
+    this.ipfsSource = new IpfsSource(ipfsConnection);
+  }
+
+  get uprtclProviderLocator() {
+    return 'eth:hi:mynameistal';
+  }
+
+  get authInfo() {
+    return {
+      userId: this.ethConnection.getCurrentAccount()
+    };
   }
 
   get accessControl() {
-    return new EveesAccessControlEthereum(this.ethConnection);
+    return new EveesAccessControlEthereum(this);
   }
 
   get proposals() {
@@ -40,8 +52,15 @@ export class EveesEthereum extends IpfsSource implements EveesRemote {
   /**
    * @override
    */
+  public get<T>(hash: string): Promise<Hashed<T> | undefined> {
+    return this.ipfsSource.get(hash);
+  }
+
+  /**
+   * @override
+   */
   async ready(): Promise<void> {
-    await Promise.all([super.ready(), this.ethConnection.ready()]);
+    await Promise.all([super.ready(), this.ipfsSource.ready()]);
   }
 
   /**
@@ -54,7 +73,7 @@ export class EveesEthereum extends IpfsSource implements EveesRemote {
     if (!perspective.origin) throw new Error('origin cannot be empty');
 
     /** Store the perspective data in the data layer */
-    const perspectiveId = await this.addObject(sortObject(secured.object));
+    const perspectiveId = await this.ipfsSource.addObject(sortObject(secured.object));
     this.logger.log(`[ETH] createPerspective - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
@@ -66,7 +85,7 @@ export class EveesEthereum extends IpfsSource implements EveesRemote {
     const perspectiveIdHash = await hashCid(perspectiveId);
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
-    await this.ethConnection.send(ADD_PERSP, [
+    await this.send(ADD_PERSP, [
       perspectiveIdHash,
       perspectiveIdHash,
       '',
@@ -86,7 +105,7 @@ export class EveesEthereum extends IpfsSource implements EveesRemote {
     const commit = sortObject(secured.object);
     /** Store the perspective data in the data layer */
 
-    let commitId = await this.addObject(commit);
+    let commitId = await this.ipfsSource.addObject(commit);
     this.logger.log(`[ETH] createCommit - added to IPFS`, commitId, commit);
 
     if (secured.id && secured.id != commitId) {
@@ -103,7 +122,7 @@ export class EveesEthereum extends IpfsSource implements EveesRemote {
   ): Promise<void> {
     let perspectiveIdHash = await hashCid(perspectiveId);
 
-    await this.ethConnection.send(UPDATE_PERSP_DETAILS, [
+    await this.send(UPDATE_PERSP_DETAILS, [
       perspectiveIdHash,
       details.headId || '',
       details.context || '',
@@ -124,7 +143,7 @@ export class EveesEthereum extends IpfsSource implements EveesRemote {
   async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
     const perspectiveIdHash = await hashCid(perspectiveId);
 
-    const perspective: PerspectiveDetails & { owner: string } = await this.ethConnection.call(
+    const perspective: PerspectiveDetails & { owner: string } = await this.call(
       GET_PERSP_DETAILS,
       [perspectiveIdHash]
     );

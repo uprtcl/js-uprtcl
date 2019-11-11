@@ -4,17 +4,22 @@ import 'reflect-metadata';
 export { Connection, ConnectionOptions } from './connections/connection';
 
 // Holochain
+export { HolochainSource } from './services/holochain/holochain.source';
 export {
   HolochainConnection,
-  HolochainConnectionOptions,
-  EntryResult
+  HolochainConnectionOptions
 } from './services/holochain/holochain.connection';
-export { HolochainSource } from './services/holochain/holochain.source';
+export {
+  EntryResult,
+  HolochainProviderOptions,
+  HolochainProvider
+} from './services/holochain/holochain.provider';
 export { HolochainProxy } from './services/holochain/holochain.proxy';
 export { KnownSourcesHolochain } from './services/holochain/known-sources.holochain';
 
 // Ipfs
-export { IpfsSource, IpfsConnectionOptions } from './services/ipfs/ipfs.source';
+export { IpfsSource } from './services/ipfs/ipfs.source';
+export { IpfsConnection, IpfsConnectionOptions } from './services/ipfs/ipfs.connection';
 export { CidConfig, defaultCidConfig } from './services/ipfs/cid.config';
 
 // Ethereum
@@ -22,4 +27,4 @@ export {
   EthereumConnection,
   EthereumConnectionOptions
 } from './services/ethereum/ethereum.connection';
-export { provider } from 'web3-core';
+export { EthereumProvider, EthereumProviderOptions } from './services/ethereum/ethereum.provider';

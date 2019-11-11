@@ -3,15 +3,15 @@ import { Dictionary } from 'lodash';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { HasLinks } from '../../patterns/properties/has-links';
-import { NamedRemote } from '../sources/named.source';
+import { ServiceProvider } from '../sources/service.provider';
 import { Hashed } from '../../patterns/properties/hashable';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { DiscoverableService, DiscoverableSource } from '../sources/discoverable.source';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
-import { Ready } from '../sources/source';
+import { Ready } from '../sources/service.provider';
 import { Pattern } from '../../patterns/pattern';
 
-export class MultiService<T extends NamedRemote> implements Ready {
+export class MultiService<T extends ServiceProvider> implements Ready {
   protected logger = new Logger('MultiProviderService');
 
   services: Dictionary<DiscoverableService<T>>;
@@ -28,7 +28,7 @@ export class MultiService<T extends NamedRemote> implements Ready {
   ) {
     // Build the sources dictionary from the resulting names
     this.services = discoverableServices.reduce(
-      (services, service) => ({ ...services, [service.service.name]: service }),
+      (services, service) => ({ ...services, [service.service.uprtclProviderLocator]: service }),
       {}
     );
   }

@@ -1,10 +1,13 @@
-import { HolochainConnectionOptions, HolochainSource, ConnectionOptions } from '@uprtcl/connections';
+import {
+  HolochainSource,
+  HolochainConnection
+} from '@uprtcl/connections';
 import { DocumentsProvider } from './documents.provider';
 import { TextNode } from '../types';
 
 export class DocumentsHolochain extends HolochainSource implements DocumentsProvider {
-  constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {
-    super('documents', hcOptions, options);
+  constructor(instance: string, hcConnection: HolochainConnection) {
+    super({ instance, zome: 'documents' }, hcConnection);
   }
 
   createTextNode(node: TextNode): Promise<string> {

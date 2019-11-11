@@ -10,11 +10,11 @@
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "clean": "lerna run clean",
+    "dev": "lerna run dev --parallel",
     "docs:build": "rimraf docs node_modules/typedoc/node_modules/typescript && typedoc",
     "docs:deploy": "ts-node tools/gh-pages-publish",
     "semantic-release": "semantic-release",
-    "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
-    "travis-deploy-once": "travis-deploy-once"
+    "semantic-release-prepare": "ts-node tools/semantic-release-prepare"
   },
   "devDependencies": {
     "@types/node": "^12.7.1",
