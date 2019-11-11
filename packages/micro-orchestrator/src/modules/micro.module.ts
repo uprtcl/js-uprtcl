@@ -12,5 +12,5 @@ export interface MicroModule {
 
   onUnload(): Promise<void>;
 
-  subModules?: Constructor<MicroModule>[];
+  submodules?: Constructor<MicroModule>[];
 }

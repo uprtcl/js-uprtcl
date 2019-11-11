@@ -25,8 +25,8 @@ export const moduleProvider = (logger: Logger) => {
       return context.container.loadAsync(containerModule);
     }
 
-    if (microModule.subModules) {
-      const submodulesPromises = microModule.subModules.map(submoduleConstructor => {
+    if (microModule.submodules) {
+      const submodulesPromises = microModule.submodules.map(submoduleConstructor => {
         const submodule = context.container.resolve(submoduleConstructor);
         return loadModule(submodule);
       });

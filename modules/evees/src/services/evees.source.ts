@@ -3,7 +3,7 @@ import { Secured } from '@uprtcl/common';
 
 import { Perspective, PerspectiveDetails } from '../types';
 
-export interface UprtclSource extends Source {
+export interface EveesSource extends Source {
 
   /**
    * Returns all the perspectives associated to a context

@@ -15,7 +15,7 @@ import {
   entitiesReduxModule,
   EntitiesTypes
 } from '@uprtcl/common';
-import { eveesModule, UprtclEthereum, UprtclHolochain, UprtclTypes } from '@uprtcl/evees';
+import { eveesModule, EveesEthereum, EveesHolochain, EevesTypes } from '@uprtcl/evees';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
@@ -25,13 +25,13 @@ import { SimpleEditor } from './simple-editor';
     protocol: 'https'
   };
 
-  const uprtclProvider = new UprtclEthereum('ws://localhost:8545', ipfsConfig);
+  const eveesProvider = new EveesEthereum('ws://localhost:8545', ipfsConfig);
 
   const documentsProvider = new DocumentsIpfs(ipfsConfig);
 
-  const discoverableUprtcl = { service: uprtclProvider };
+  const discoverableEvees = { service: eveesProvider };
 
-  const uprtcl = eveesModule([discoverableUprtcl]);
+  const evees = eveesModule([discoverableEvees]);
 
   const discoverableDocs = {
     service: documentsProvider
@@ -53,7 +53,7 @@ import { SimpleEditor } from './simple-editor';
       id: LensesTypes.Module,
       module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])
     },
-    { id: UprtclTypes.Module, module: uprtcl },
+    { id: EveesTypes.Module, module: evees },
     { id: DocumentsTypes.Module, module: documents }
   );
 

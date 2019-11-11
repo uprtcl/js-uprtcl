@@ -7,26 +7,26 @@ import { PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern } from './patterns/commit.pattern';
 import { ContextPattern } from './patterns/context.pattern';
 import { CommitHistory } from './lenses/commit-history';
-import { UprtclTypes, UprtclLocal } from './types';
-import { UprtclDexie } from './services/providers/uprtcl.dexie';
-import { Uprtcl } from './services/uprtcl';
-import { UprtclRemote } from './services/uprtcl.remote';
+import { EveesTypes, EveesLocal } from './types';
+import { EveesDexie } from './services/providers/evees.dexie';
+import { Evees } from './services/evees';
+import { EveesRemote } from './services/evees.remote';
 import { eveesReduxModule } from './state';
 
 /**
- * Configure a _Prtcl module with the given providers
+ * Configure a _Prtcl Evees module with the given providers
  *
  * Example usage:
  *
  * ```ts
- * import { uprtclModule, UprtclEthereum, UprtclHolochain } from '@uprtcl/common';
+ * import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/common';
  *
- * const uprtclHolochain = new UprtclHolochain({
+ * const eveesHolochain = new EveesHolochain({
  *   host: 'ws://localhost:8888',
  *   instance: 'test-instance'
  * });
  *
- * const uprtclEth = new UprtclEthereum('ws://localhost:8545', {
+ * const eveesEth = new EveesEthereum('ws://localhost:8545', {
  *   host: 'ipfs.infura.io',
  *   port: 5001,
  *   protocol: 'https'
@@ -37,40 +37,43 @@ import { eveesReduxModule } from './state';
  *   instance: 'test-instance'
  * });
  *
- * const discoverableUprtclHolo = { service: uprtclHolochain, knownSources: knownSources };
- * const discoverableUprtclEth = { service: uprtclEth, knownSources: knownSources };
+ * const discoverableEveesHolo = { service: eveesHolochain, knownSources: knownSources };
+ * const discoverableEveesEth = { service: eveesEth, knownSources: knownSources };
  *
- * const uprtcl = uprtclModule([discoverableUprtclHolo, discoverableUprtclEth]);
- * await orchestrator.loadModules(uprtcl);
+ * const evees = eveesModule([discoverableEveesHolo, discoverableEveesEth]);
+ * await orchestrator.loadModules({
+ *   id: EveesTypes.Module,
+ *   module: evees
+ * });
  * ```
  *
  * @category CortexModule
  *
- * @param discoverableUprtcls
- * @param localUprtcl
- * @returns a configured _Prtcl module ready to be
+ * @param discoverableEvees
+ * @param localEvees
+ * @returns a configured _Prtcl Evees module ready to be
  */
 export function eveesModule(
-  discoverableUprtcls: Array<DiscoverableSource<UprtclRemote>>,
-  localUprtcl: new (...args: any[]) => UprtclLocal = UprtclDexie
+  discoverableEvees: Array<DiscoverableSource<EveesRemote>>,
+  localEvees: new (...args: any[]) => EveesLocal = EveesDexie
 ): new (...args: any[]) => CortexModule {
   @injectable()
-  class UprtclModule extends CortexModule {
+  class EveesModule extends CortexModule {
     get elements() {
       return [{ name: 'commit-history', element: CommitHistory }];
     }
 
     get sources() {
-      return discoverableUprtcls.map(uprtcl => ({
-        symbol: UprtclTypes.UprtclRemote,
-        source: uprtcl
+      return discoverableEvees.map(evees => ({
+        symbol: EveesTypes.EveesRemote,
+        source: evees
       }));
     }
 
     get services() {
       return [
-        { symbol: UprtclTypes.UprtclLocal, service: localUprtcl },
-        { symbol: UprtclTypes.Uprtcl, service: Uprtcl }
+        { symbol: EveesTypes.EveesLocal, service: localEvees },
+        { symbol: EveesTypes.Evees, service: Evees }
       ];
     }
 
@@ -79,14 +82,14 @@ export function eveesModule(
         { symbol: PatternTypes.Core.Hashed, pattern: CidHashedPattern },
         { symbol: PatternTypes.Core.Signed, pattern: DefaultSignedPattern },
         { symbol: PatternTypes.Core.Secured, pattern: DefaultSecuredPattern },
-        { symbol: UprtclTypes.PerspectivePattern, pattern: PerspectivePattern },
-        { symbol: UprtclTypes.CommitPattern, pattern: CommitPattern },
-        { symbol: UprtclTypes.ContextPattern, pattern: ContextPattern }
+        { symbol: EveesTypes.PerspectivePattern, pattern: PerspectivePattern },
+        { symbol: EveesTypes.CommitPattern, pattern: CommitPattern },
+        { symbol: EveesTypes.ContextPattern, pattern: ContextPattern }
       ];
     }
 
-    subModules = [eveesReduxModule()];
+    submodules = [eveesReduxModule()];
   }
 
-  return UprtclModule;
+  return EveesModule;
 }

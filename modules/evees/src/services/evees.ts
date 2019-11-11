@@ -15,9 +15,9 @@ import {
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Secured } from '@uprtcl/common';
 
-import { UprtclTypes, UprtclLocal, Perspective, Commit, PerspectiveDetails } from '../types';
-import { UprtclProvider } from './uprtcl.provider';
-import { UprtclRemote } from './uprtcl.remote';
+import { EveesTypes, EveesLocal, Perspective, Commit, PerspectiveDetails } from '../types';
+import { EveesProvider } from './evees.provider';
+import { EveesRemote } from './evees.remote';
 
 export interface NoHeadPerspectiveArgs {
   name: string;
@@ -36,24 +36,24 @@ const DEFAULT_PERSPECTIVE_NAME = 'master';
  * Main service used to interact with _Prtcl compatible objects and providers
  */
 @injectable()
-export class Uprtcl {
-  logger = new Logger('uprtcl');
+export class Evees {
+  logger = new Logger('evees');
 
-  service: CachedMultiSourceService<UprtclLocal, UprtclRemote>;
+  service: CachedMultiSourceService<EveesLocal, EveesRemote>;
 
   constructor(
     @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(PatternTypes.Core.Secured) protected secured: IsSecure<any>,
     @inject(DiscoveryTypes.LocalKnownSources)
     protected knownSources: KnownSourcesService,
-    @inject(UprtclTypes.UprtclLocal)
-    protected uprtclLocal: UprtclLocal,
-    @multiInject(UprtclTypes.UprtclRemote)
-    protected uprtclRemotes: DiscoverableSource<UprtclRemote>[]
+    @inject(EveesTypes.EveesLocal)
+    protected eveesLocal: EveesLocal,
+    @multiInject(EveesTypes.EveesRemote)
+    protected eveesRemotes: DiscoverableSource<EveesRemote>[]
   ) {
-    this.service = new CachedMultiSourceService<UprtclLocal, UprtclRemote>(
-      uprtclLocal,
-      new MultiSourceService<UprtclRemote>(patternRecognizer, knownSources, uprtclRemotes)
+    this.service = new CachedMultiSourceService<EveesLocal, EveesRemote>(
+      eveesLocal,
+      new MultiSourceService<EveesRemote>(patternRecognizer, knownSources, eveesRemotes)
     );
   }
 
@@ -89,7 +89,7 @@ export class Uprtcl {
    * Returns the uprtcl remote that controls the given perspective, from its origin
    * @returns the uprtcl remote
    */
-  public getPerspectiveProvider(perspective: Secured<Perspective>): UprtclRemote {
+  public getPerspectiveProvider(perspective: Secured<Perspective>): EveesRemote {
     const perspectiveOrigin = perspective.object.payload.origin;
 
     const provider = this.service.remote
@@ -126,7 +126,7 @@ export class Uprtcl {
    * @override
    */
   public async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
-    const details = await this.uprtclLocal.getPerspectiveDetails(perspectiveId);
+    const details = await this.eveesLocal.getPerspectiveDetails(perspectiveId);
     if (details) return details;
 
     const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
@@ -252,11 +252,11 @@ export class Uprtcl {
   ): Promise<void> {
     providerName = this.validateProviderName(providerName);
 
-    const creator = async (uprtcl: UprtclProvider) => {
+    const creator = async (uprtcl: EveesProvider) => {
       await uprtcl.clonePerspective(perspective);
       return perspective;
     };
-    const cloner = async (uprtcl: UprtclProvider, perspective: Secured<Perspective>) => {
+    const cloner = async (uprtcl: EveesProvider, perspective: Secured<Perspective>) => {
       await uprtcl.clonePerspective(perspective);
       return perspective;
     };
@@ -274,11 +274,11 @@ export class Uprtcl {
   public async cloneCommit(commit: Secured<Commit>, providerName?: string): Promise<void> {
     providerName = this.validateProviderName(providerName);
 
-    const creator = async (uprtcl: UprtclProvider) => {
+    const creator = async (uprtcl: EveesProvider) => {
       await uprtcl.cloneCommit(commit);
       return commit;
     };
-    const cloner = async (uprtcl: UprtclProvider, object: Secured<Commit>) => {
+    const cloner = async (uprtcl: EveesProvider, object: Secured<Commit>) => {
       await uprtcl.cloneCommit(object);
       return commit;
     };
@@ -304,8 +304,8 @@ export class Uprtcl {
 
     const provider = this.getPerspectiveProvider(perspective);
 
-    const updater = (uprtcl: UprtclProvider) =>
-      uprtcl.updatePerspectiveDetails(perspectiveId, details);
+    const updater = (evees: EveesProvider) =>
+      evees.updatePerspectiveDetails(perspectiveId, details);
 
     this.service.optimisticUpdateIn(
       provider.name,

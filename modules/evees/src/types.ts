@@ -1,6 +1,6 @@
 import { Hashed, CacheService } from '@uprtcl/cortex';
 
-import { UprtclProvider } from './services/uprtcl.provider';
+import { EveesProvider } from './services/evees.provider';
 
 export type Context = string;
 
@@ -37,14 +37,14 @@ export interface Proposal {
   description: string | undefined;
 }
 
-export const UprtclTypes = {
-  Module: Symbol('uprtcl-module'),
+export const EveesTypes = {
+  Module: Symbol('evees-module'),
   PerspectivePattern: Symbol('perspective-pattern'),
   CommitPattern: Symbol('commit-pattern'),
   ContextPattern: Symbol('context-pattern'),
-  UprtclLocal: Symbol('uprtcl-local'),
-  UprtclRemote: Symbol('uprtcl-remote'),
-  Uprtcl: Symbol('uprtcl')
+  EveesLocal: Symbol('evees-local'),
+  EveesRemote: Symbol('evees-remote'),
+  Evees: Symbol('evees')
 };
 
-export type UprtclLocal = CacheService & UprtclProvider;
+export type EveesLocal = CacheService & EveesProvider;

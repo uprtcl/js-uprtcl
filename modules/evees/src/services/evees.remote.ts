@@ -1,10 +1,10 @@
 import { NamedSource } from '@uprtcl/cortex';
 import { AccessControlService } from '@uprtcl/common';
 
-import { UprtclProvider } from './uprtcl.provider';
+import { EveesProvider } from './evees.provider';
 import { ProposalProvider } from './proposal.provider';
 
-export interface UprtclRemote extends UprtclProvider, NamedSource {
+export interface EveesRemote extends EveesProvider, NamedSource {
   /** Access Control */
   accessControl: AccessControlService<any> | undefined;
 

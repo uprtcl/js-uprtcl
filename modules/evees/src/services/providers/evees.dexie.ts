@@ -11,10 +11,10 @@ import {
 } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
 
-import { Perspective, Commit, UprtclLocal, PerspectiveDetails } from '../../types';
+import { Perspective, Commit, EveesLocal, PerspectiveDetails } from '../../types';
 
 @injectable()
-export class UprtclDexie extends Dexie implements UprtclLocal {
+export class EveesDexie extends Dexie implements EveesLocal {
   details: Dexie.Table<PerspectiveDetails, string>;
 
   constructor(

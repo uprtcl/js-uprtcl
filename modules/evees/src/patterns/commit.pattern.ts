@@ -13,8 +13,8 @@ import {
 import { Secured } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
-import { Commit, UprtclTypes } from '../types';
-import { Uprtcl } from '../services/uprtcl';
+import { Commit, EveesTypes } from '../types';
+import { Evees } from '../services/evees';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
@@ -32,7 +32,7 @@ export class CommitPattern
   constructor(
     @inject(PatternTypes.Core.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
-    @inject(UprtclTypes.Uprtcl) protected uprtcl: Uprtcl
+    @inject(EveesTypes.Evees) protected evees: Evees
   ) {}
 
   recognize(object: object) {
@@ -73,7 +73,7 @@ export class CommitPattern
     },
     providerName?: string
   ) => {
-    return this.uprtcl.createCommit(args, providerName);
+    return this.evees.createCommit(args, providerName);
   };
 
   getLenses: (commit: Secured<Commit>) => Lens[] = (commit: Secured<Commit>): Lens[] => {

@@ -1,9 +1,9 @@
 import { Secured } from '@uprtcl/common';
 
 import { Perspective, Commit, PerspectiveDetails } from '../types';
-import { UprtclSource } from './uprtcl.source';
+import { EveesSource } from './evees.source';
 
-export interface UprtclProvider extends UprtclSource {
+export interface EveesProvider extends EveesSource {
   /** Cloners */
 
   /**

@@ -8,15 +8,15 @@ import {
 } from '@uprtcl/connections';
 import { sortObject, Secured } from '@uprtcl/common';
 
-import * as UprtclContractArtifact from './uprtcl-contract.json';
+import * as EveesContractArtifact from './uprtcl-contract.json';
 
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
-import { UprtclRemote } from '../../uprtcl.remote';
+import { EveesRemote } from '../../evees.remote';
 import { ProposalMock } from '../../proposal.mock';
 import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid } from './common';
-import { UprtclAccessControlEthereum } from './uprtcl-access-control.ethereum';
+import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 
-export class UprtclEthereum extends IpfsSource implements UprtclRemote {
+export class EveesEthereum extends IpfsSource implements EveesRemote {
   logger: Logger = new Logger('UprtclEtereum');
 
   ethConnection!: EthereumConnection;
@@ -24,13 +24,13 @@ export class UprtclEthereum extends IpfsSource implements UprtclRemote {
   constructor(provider: provider, ipfsOptions: IpfsConnectionOptions, options: ConnectionOptions) {
     super(ipfsOptions, options);
     this.ethConnection = new EthereumConnection(
-      { provider: provider, contract: UprtclContractArtifact as any },
+      { provider: provider, contract: EveesContractArtifact as any },
       options
     );
   }
 
   get accessControl() {
-    return new UprtclAccessControlEthereum(this.ethConnection);
+    return new EveesAccessControlEthereum(this.ethConnection);
   }
 
   get proposals() {

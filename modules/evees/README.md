@@ -21,14 +21,17 @@ npm install @uprtcl/evees
 Import the module, instantiate it with its appropiate configuration, and load it:
 
 ```ts
-import { eveesModule, UprtclEthereum } from '@uprtcl/evees';
+import { eveesModule, EveesEthereum, EveesTypes } from '@uprtcl/evees';
 
-const eveesProvider = new UprtclEthereum('ws://localhost:8545', {
+const eveesProvider = new EveesEthereum('ws://localhost:8545', {
   host: 'ipfs.infura.io',
   port: 5001,
   protocol: 'https'
 });
 
 const evees = eveesModule([{ service: eveesProvider }]);
-await orchestrator.loadModules(evees);
+await orchestrator.loadModules({
+  id: EveesTypes.Module,
+  module: evees
+});
 ```

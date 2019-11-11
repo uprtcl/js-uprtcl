@@ -3,7 +3,7 @@ import { OwnerAccessControlService, OwnerAccessControl } from '@uprtcl/common';
 
 import { GET_PERSP_DETAILS, UPDATE_OWNER, hashCid } from './common';
 
-export class UprtclAccessControlEthereum implements OwnerAccessControlService {
+export class EveesAccessControlEthereum implements OwnerAccessControlService {
   constructor(protected ethConnection: EthereumConnection) {}
 
   async changeOwner(hash: string, newOwnerId: string): Promise<void> {

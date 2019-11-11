@@ -10,13 +10,13 @@ import {
   LoadPerspectiveDetailsSuccess,
   LOAD_PERSPECTIVE_DETAILS_SUCCESS
 } from './evees.actions';
-import { UprtclTypes } from '../types';
+import { EveesTypes } from '../types';
 import { PerspectivePattern } from '../patterns/perspective.pattern';
-import { Uprtcl } from '../services/uprtcl';
+import { Evees } from '../services/evees';
 
 function* loadPerspectiveDetails(action: LoadPerspectiveDetails) {
-  const uprtcl: Uprtcl = (yield getContext(ReduxTypes.Context)).get(UprtclTypes.Uprtcl);
-  const details = yield call(() => uprtcl.getPerspectiveDetails(action.payload.perspectiveId));
+  const evees: Evees = (yield getContext(ReduxTypes.Context)).get(EveesTypes.Evees);
+  const details = yield call(() => evees.getPerspectiveDetails(action.payload.perspectiveId));
 
   const successAction: LoadPerspectiveDetailsSuccess = {
     type: LOAD_PERSPECTIVE_DETAILS_SUCCESS,
@@ -34,7 +34,7 @@ export const loadPerspectiveDetailsSaga: Saga = function*() {
 
 function* filterPerspectiveEntity(action: LoadEntitySuccess) {
   const perspectivePattern: PerspectivePattern = (yield getContext(ReduxTypes.Context)).get(
-    UprtclTypes.PerspectivePattern
+    EveesTypes.PerspectivePattern
   );
 
   if (perspectivePattern.recognize(action.payload.entity)) {

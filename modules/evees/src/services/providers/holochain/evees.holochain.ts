@@ -8,10 +8,10 @@ import { Signed } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
 
 import { Perspective, Commit, PerspectiveDetails } from '../../../types';
-import { UprtclRemote } from '../../uprtcl.remote';
+import { EveesRemote } from '../../evees.remote';
 import { ProposalMock } from '../../proposal.mock';
 
-export class UprtclHolochain extends HolochainSource implements UprtclRemote {
+export class EveesHolochain extends HolochainSource implements EveesRemote {
   constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {
     super('uprtcl', hcOptions, options);
   }

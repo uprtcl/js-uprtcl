@@ -18,7 +18,7 @@ export function reduxModule<S, A extends Action>(
       @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider
     ) {}
 
-    subModules = submodules;
+    submodules = submodules;
 
     async onLoad(
       context: interfaces.Context,

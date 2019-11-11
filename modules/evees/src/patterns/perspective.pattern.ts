@@ -15,8 +15,8 @@ import {
 import { AccessControlService, Updatable, Secured } from '@uprtcl/common';
 import { ReduxTypes } from '@uprtcl/micro-orchestrator';
 
-import { Perspective, UprtclTypes } from '../types';
-import { Uprtcl, NewPerspectiveArgs } from '../services/uprtcl';
+import { Perspective, EveesTypes } from '../types';
+import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { selectPerspectiveHeadId, selectEvees } from '../state/evees.selectors';
 import { LoadPerspectiveDetails, LOAD_PERSPECTIVE_DETAILS } from '../state/evees.actions';
 
@@ -33,7 +33,7 @@ export class PerspectivePattern
     Updatable {
   constructor(
     @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
-    @inject(UprtclTypes.Uprtcl) protected uprtcl: Uprtcl,
+    @inject(EveesTypes.Evees) protected evees: Evees,
     @inject(ReduxTypes.Store) protected store: Store
   ) {}
 
@@ -53,7 +53,7 @@ export class PerspectivePattern
   getSoftLinks: (perspective: Secured<Perspective>) => Promise<string[]> = async (
     perspective: Secured<Perspective>
   ) => {
-    const details = await this.uprtcl.getPerspectiveDetails(perspective.id);
+    const details = await this.evees.getPerspectiveDetails(perspective.id);
     return details.headId ? [details.headId] : [];
   };
 
@@ -75,7 +75,7 @@ export class PerspectivePattern
     args: NewPerspectiveArgs,
     providerName?: string
   ) => Promise<Secured<Perspective>> = async (args: NewPerspectiveArgs, providerName?: string) => {
-    return this.uprtcl.createPerspective(args, providerName);
+    return this.evees.createPerspective(args, providerName);
   };
 
   getActions: (perspective: Secured<Perspective>) => PatternAction[] = (
@@ -86,7 +86,7 @@ export class PerspectivePattern
         icon: 'call_split',
         title: 'New perspective',
         action: async () => {
-          const details = await this.uprtcl.getPerspectiveDetails(perspective.id);
+          const details = await this.evees.getPerspectiveDetails(perspective.id);
           const newPerspective = await this.create(
             { headId: details.headId, context: details.context },
             perspective.object.payload.origin
@@ -101,10 +101,10 @@ export class PerspectivePattern
     perspective: Secured<Perspective>,
     newContent: any
   ) => {
-    const data = await this.uprtcl.createData(newContent);
+    const data = await this.evees.createData(newContent);
 
-    const details = await this.uprtcl.getPerspectiveDetails(perspective.id);
-    const newHead = await this.uprtcl.createCommit(
+    const details = await this.evees.getPerspectiveDetails(perspective.id);
+    const newHead = await this.evees.createCommit(
       {
         dataId: data.id,
         message: `Commit at ${Date.now() / 1000}`,
@@ -113,7 +113,7 @@ export class PerspectivePattern
       perspective.object.payload.origin
     );
 
-    await this.uprtcl.updatePerspectiveDetails(perspective.id, { headId: newHead.id });
+    await this.evees.updatePerspectiveDetails(perspective.id, { headId: newHead.id });
 
     const loadHead: LoadPerspectiveDetails = {
       type: LOAD_PERSPECTIVE_DETAILS,
@@ -129,6 +129,6 @@ export class PerspectivePattern
   accessControl: (perspective: Secured<Perspective>) => AccessControlService<any> | undefined = (
     perspective: Secured<Perspective>
   ) => {
-    return this.uprtcl.getPerspectiveProvider(perspective).accessControl;
+    return this.evees.getPerspectiveProvider(perspective).accessControl;
   };
 }
