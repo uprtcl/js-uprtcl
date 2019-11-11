@@ -7,8 +7,7 @@ import {
   LensesTypes
 } from '@uprtcl/cortex';
 import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@uprtcl/lenses';
-import { DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
-import { KnownSourcesHolochain } from '@uprtcl/connections';
+import { DocumentsHttp, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import {
   AccessControlTypes,
   accessControlReduxModule,
@@ -19,15 +18,10 @@ import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
-  const ipfsConfig = {
-    host: 'ipfs.infura.io',
-    port: 5001,
-    protocol: 'https'
-  };
+  const c1host = 'http://localhost:3100/uprtcl/1'
 
-  const eveesProvider = new EveesEthereum('ws://localhost:8545', ipfsConfig);
-
-  const documentsProvider = new DocumentsIpfs(ipfsConfig);
+  const eveesProvider = new EveesHttp(`${c1host}`, '');
+  const documentsProvider = new DocumentsHttp(`${c1host}`, '');
 
   const discoverableEvees = { service: eveesProvider };
 

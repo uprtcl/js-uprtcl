@@ -1,4 +1,4 @@
-import { NamedSource, Hashed, Source } from '@uprtcl/cortex';
+import { NamedSource, Hashed } from '@uprtcl/cortex';
 import { HolochainConnection, HolochainConnectionOptions } from './holochain.connection';
 import { ConnectionOptions } from '../../connections/connection';
 import { HolochainProxy } from './holochain.proxy';

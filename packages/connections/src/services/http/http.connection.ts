@@ -1,4 +1,11 @@
-import { Connection, ConnectionOptions } from './connection';
+import { Connection, ConnectionOptions } from '../../connections/connection';
+
+
+export interface PostResult {
+  result: string;
+  message: string;
+  elementIds: string[];
+}
 
 /**
  * Wrapper over the fetch API
@@ -37,9 +44,16 @@ export class HttpConnection extends Connection {
     return fetch(this.baseUrl + url, {
       method: 'GET',
       headers: this.headers
-    }).then(response => {
-      this.logger.log('GET Result: ', url);
-      return (response.json() as unknown) as T;
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      return response.json() as Promise<{ data: T }>;
+    })
+    .then(data => {
+      console.log('[HTTP GET RESULT] ', url, data);
+      return data.data;
     });
   }
 
@@ -48,7 +62,7 @@ export class HttpConnection extends Connection {
    * @param url url to make the request to
    * @param body body of the request
    */
-  public async put<T>(url: string, body: any): Promise<T> {
+  public async put(url: string, body: any): Promise<PostResult> {
     return this.putOrPost(url, body, 'PUT');
   }
 
@@ -57,7 +71,7 @@ export class HttpConnection extends Connection {
    * @param url url to make the request to
    * @param body body of the request
    */
-  public async post<T>(url: string, body: any): Promise<T> {
+  public async post(url: string, body: any): Promise<PostResult> {
     return this.putOrPost(url, body, 'POST');
   }
 
@@ -67,7 +81,7 @@ export class HttpConnection extends Connection {
    * @param body body of the request
    * @param method method of the request ('POST' or 'PUT')
    */
-  public async putOrPost<T>(url: string, body: any, method: string): Promise<T> {
+  public async putOrPost(url: string, body: any, method: string): Promise<PostResult> {
     this.logger.log('POST: ', url, body, method);
     return fetch(this.baseUrl + url, {
       method: method,
@@ -76,10 +90,12 @@ export class HttpConnection extends Connection {
         Accept: 'application/json'
       },
       body: JSON.stringify(body)
-    }).then(result => {
-      this.logger.log('POST Result: ', url, body, method);
-
-      return (result as unknown) as T;
+    })
+    .then(response => {
+      return response.json() as Promise<PostResult>;
+    })
+    .then(data => {
+       return (data as unknown) as PostResult;
     });
   }
 }

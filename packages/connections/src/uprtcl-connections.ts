@@ -23,3 +23,7 @@ export {
   EthereumConnectionOptions
 } from './services/ethereum/ethereum.connection';
 export { provider } from 'web3-core';
+
+// Http
+export { HttpConnection } from './services/http/http.connection';
+export { KnownSourcesHttp } from './services/http/known-sources.http';
