@@ -21,6 +21,7 @@
   },
   "scripts": {
     "start": "webpack-dev-server --open --mode development",
+    "dev": "webpack-dev-server --open --mode development",
     "build": "rm -rf dist && webpack --config webpack.config.js",
     "serve": "prpl-server --root server/build",
     "serve:static": "polymer serve --port 5000 build/es5-bundled",

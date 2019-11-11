@@ -1,11 +1,10 @@
 import { CachedMultiService } from './cached-multi.service';
 import { CacheService } from '../cache/cache.service';
-import { NamedSource } from '../sources/named.source';
 import { MultiSourceService } from '../multi/multi-source.service';
-import { Source } from '../sources/source';
+import { SourceProvider, Source } from '../sources/source';
 import { Hashed } from '../../patterns/properties/hashable';
 
-export class CachedMultiSourceService<CACHE extends CacheService, REMOTE extends NamedSource>
+export class CachedMultiSourceService<CACHE extends CacheService, REMOTE extends SourceProvider>
   extends CachedMultiService<CACHE, REMOTE, MultiSourceService<REMOTE>>
   implements Source {
   /**

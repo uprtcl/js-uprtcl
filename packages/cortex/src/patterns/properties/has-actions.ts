@@ -1,4 +1,8 @@
-import { PatternAction } from '../../types';
+export interface PatternAction {
+  icon: string;
+  title: string;
+  action: (element: HTMLElement) => any;
+}
 
 export interface HasActions {
   /**

@@ -1,16 +1,15 @@
 import { multiInject, inject, injectable } from 'inversify';
 
-import { Source } from '../sources/source';
+import { Source, SourceProvider } from '../sources/source';
 import { DiscoverableSource } from '../sources/discoverable.source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Hashed } from '../../patterns/properties/hashable';
-import { NamedSource } from '../sources/named.source';
 import { PatternTypes, DiscoveryTypes } from '../../types';
 import { MultiService } from './multi.service';
 
 @injectable()
-export class MultiSourceService<T extends NamedSource = NamedSource> extends MultiService<T>
+export class MultiSourceService<T extends SourceProvider = SourceProvider> extends MultiService<T>
   implements Source {
   /**
    * @param patternRecognizer the pattern recognizer to interact with the objects and their links

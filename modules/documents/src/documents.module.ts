@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { DiscoverableSource, CortexModule, NamedSource } from '@uprtcl/cortex';
+import { DiscoverableSource, CortexModule, SourceProvider } from '@uprtcl/cortex';
 
 import { TextNodeLens } from './lenses/text-node.lens';
 import { TextNodePattern } from './patterns/text-node.pattern';
@@ -35,7 +35,7 @@ import { DocumentsLocal } from './services/documents.local';
  * @returns a configured documents module ready to be loaded
  */
 export function documentsModule(
-  documentsProviders: DiscoverableSource<DocumentsProvider & NamedSource>[],
+  documentsProviders: DiscoverableSource<DocumentsProvider & SourceProvider>[],
   documentsLocal: new (...args: any[]) => DocumentsProvider = DocumentsLocal
 ): new (...args: any[]) => CortexModule {
   @injectable()

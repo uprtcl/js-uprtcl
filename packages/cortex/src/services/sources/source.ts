@@ -1,11 +1,5 @@
 import { Hashed } from '../../patterns/properties/hashable';
-
-export interface Ready {
-  /**
-   * Waits until the connection is ready to process calls
-   */
-  ready(): Promise<void>;
-}
+import { ServiceProvider, Ready } from './service.provider';
 
 /**
  * A source is a service that implements a standard function `get`,
@@ -21,3 +15,5 @@ export interface Source extends Ready {
    */
   get<T extends object>(hash: string): Promise<Hashed<T> | undefined>;
 }
+
+export type SourceProvider = ServiceProvider & Source;

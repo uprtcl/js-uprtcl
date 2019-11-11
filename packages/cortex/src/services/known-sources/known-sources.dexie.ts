@@ -1,5 +1,6 @@
 import { injectable } from 'inversify';
 import Dexie from 'dexie';
+
 import { KnownSourcesService } from './known-sources.service';
 
 @injectable()

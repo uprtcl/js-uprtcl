@@ -1,9 +1,7 @@
-
-export interface PatternAction {
-  icon: string;
-  title: string;
-  action: (element: HTMLElement) => any;
+export interface UplAuth {
+  userId: string;
 }
+
 export const DiscoveryTypes = {
   Module: Symbol('discovery-module'),
   DiscoveryService: Symbol('discovery-service'),

@@ -1,14 +1,14 @@
 import { Source, Hashed } from '@uprtcl/cortex';
 import { HolochainConnection, HolochainConnectionOptions } from './holochain.connection';
-import { ConnectionOptions } from '../../connections/connection';
+import { HolochainProvider } from './holochain.provider';
 
-export class HolochainProxy extends HolochainConnection implements Source {
-  constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions) {
-    super('proxy', hcOptions, options);
+export class HolochainProxy extends HolochainProvider implements Source {
+  constructor(instance: string, connection: HolochainConnection) {
+    super({ instance, zome: 'proxy' }, connection);
   }
 
-  async getName(): Promise<string> {
-    const response = await this.call('get_source_name', {});
+  async getUpl(): Promise<string> {
+    const response = await this.call('get_uprtcl_provider_locator', {});
     return this.parseResponse(response);
   }
 

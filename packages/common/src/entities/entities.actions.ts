@@ -1,4 +1,5 @@
-export const LOAD_ENTITY = 'LOAD_ENTITY';
+export const LOAD_ENTITY = '[ENTITIES] LOAD_ENTITY';
+export const LOAD_ENTITY_SUCCESS = '[ENTITIES] LOAD_ENTITY_SUCCESS';
 
 export interface LoadEntity {
   type: typeof LOAD_ENTITY;
@@ -6,8 +7,6 @@ export interface LoadEntity {
     hash: string;
   };
 }
-
-export const LOAD_ENTITY_SUCCESS = 'LOAD_ENTITY_SUCCESS';
 
 export interface LoadEntitySuccess {
   type: typeof LOAD_ENTITY_SUCCESS;

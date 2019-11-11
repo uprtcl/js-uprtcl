@@ -4,6 +4,11 @@ import 'reflect-metadata';
 /** Types */
 export { EntitiesTypes, AccessControlTypes } from './types';
 
+/** Auth */
+export { authReduxModule } from './auth/state';
+export { AuthAction, UpdateUplAuth, UPDATE_UPL_AUTH } from './auth/state/auth.actions';
+export { authReducerName, selectAuth, selectUplAuthInfo } from './auth/state/auth.selectors';
+
 /** Access Control */
 export { Updatable } from './access-control/properties/updatable';
 

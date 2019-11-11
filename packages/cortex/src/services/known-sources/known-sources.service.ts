@@ -1,7 +1,6 @@
-import { Ready } from '../sources/source';
+import { Ready } from '../sources/service.provider';
 
 export interface KnownSourcesService extends Ready {
-
   /**
    * Retrieves the list of knowns sources for the given hash
    * @param hash the identifier of the object

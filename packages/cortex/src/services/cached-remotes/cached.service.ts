@@ -2,7 +2,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { TaskQueue } from '../../utils/task.queue';
 import { Hashed } from '../../patterns/properties/hashable';
-import { Ready } from '../sources/source';
+import { Ready } from '../sources/service.provider';
 
 export class CachedService<CACHE extends Ready, REMOTE extends Ready = CACHE>
   implements Ready {

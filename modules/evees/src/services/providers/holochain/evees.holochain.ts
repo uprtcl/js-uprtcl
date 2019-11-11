@@ -2,6 +2,7 @@ import {
   HolochainConnectionOptions,
   ConnectionOptions,
   EntryResult,
+  HolochainConnection,
   HolochainSource
 } from '@uprtcl/connections';
 import { Signed } from '@uprtcl/cortex';
@@ -12,8 +13,8 @@ import { EveesRemote } from '../../evees.remote';
 import { ProposalMock } from '../../proposal.mock';
 
 export class EveesHolochain extends HolochainSource implements EveesRemote {
-  constructor(hcOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {
-    super('uprtcl', hcOptions, options);
+  constructor(instance: string, hcConnection: HolochainConnection) {
+    super({ zome: 'uprtcl', instance }, hcConnection);
   }
 
   get accessControl() {

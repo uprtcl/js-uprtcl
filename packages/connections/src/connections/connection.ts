@@ -18,7 +18,7 @@ const defaultOptions: ConnectionOptions = {
   retryInterval: 200
 };
 
-export class Connection implements Ready {
+export abstract class Connection implements Ready {
   state: ConnectionState = ConnectionState.PENDING;
   connectionReady!: Promise<void>;
   connectionResolve!: () => void;
@@ -58,9 +58,7 @@ export class Connection implements Ready {
    * Opens the connection
    * To be overriden by subclasses
    */
-  protected async connect(): Promise<void> {
-    throw new Error('Method not implemented');
-  }
+  protected abstract async connect(): Promise<void>;
 
   /**
    * Waits until the connection is ready to process calls

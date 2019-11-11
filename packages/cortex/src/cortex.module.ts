@@ -10,8 +10,8 @@ import {
 import { Pattern } from './patterns/pattern';
 import { DiscoverableSource } from './services/sources/discoverable.source';
 import { DiscoveryTypes, PatternTypes, LensesTypes } from './types';
-import { NamedSource } from './services/sources/named.source';
-import { Ready } from './services/sources/source';
+import { ServiceProvider, Ready } from './services/sources/service.provider';
+import { Source, SourceProvider } from './services/sources/source';
 
 @injectable()
 export class CortexModule implements MicroModule {
@@ -26,7 +26,7 @@ export class CortexModule implements MicroModule {
     return undefined;
   }
 
-  get sources(): Array<{ symbol: symbol; source: DiscoverableSource<NamedSource> }> | undefined {
+  get sources(): Array<{ symbol: symbol; source: DiscoverableSource<SourceProvider> }> | undefined {
     return undefined;
   }
 

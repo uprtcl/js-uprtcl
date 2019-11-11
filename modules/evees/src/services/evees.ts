@@ -94,7 +94,7 @@ export class Evees {
 
     const provider = this.service.remote
       .getAllServices()
-      .find(provider => provider.name === perspectiveOrigin);
+      .find(provider => provider.uprtclProviderLocator === perspectiveOrigin);
 
     if (!provider)
       throw new Error(
@@ -308,7 +308,7 @@ export class Evees {
       evees.updatePerspectiveDetails(perspectiveId, details);
 
     this.service.optimisticUpdateIn(
-      provider.name,
+      provider.uprtclProviderLocator,
       perspective,
       updater,
       updater,
