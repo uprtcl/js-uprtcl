@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/common",
-  "version": "0.0.1-alpha3",
+  "version": "0.0.1-alpha4",
   "description": "Collection of common Cortex modules, developed as the starting point for many applications",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -10,9 +10,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/connections": "^0.0.1-alpha3",
-    "@uprtcl/cortex": "^0.0.1-alpha3",
-    "@uprtcl/micro-orchestrator": "^0.0.1-alpha3",
+    "@uprtcl/connections": "^0.0.1-alpha4",
+    "@uprtcl/cortex": "^0.0.1-alpha4",
+    "@uprtcl/micro-orchestrator": "^0.0.1-alpha4",
     "cids": "^0.7.1",
     "dexie": "^2.0.4",
     "inversify": "^5.0.1",
