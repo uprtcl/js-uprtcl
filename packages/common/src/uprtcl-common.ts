@@ -2,7 +2,7 @@
 import 'reflect-metadata';
 
 /** Types */
-export { EntitiesTypes, AccessControlTypes } from './types';
+export { EntitiesTypes, AccessControlTypes, AuthTypes } from './types';
 
 /** Auth */
 export { authReduxModule } from './auth/state';
@@ -64,3 +64,5 @@ export {
 
 /** Utils */
 export { sortObject } from './utils/utils';
+
+export { ReduxCortexModule } from './redux-cortex.module';

@@ -35,12 +35,6 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     return 'eth:hi:mynameistal';
   }
 
-  get authInfo() {
-    return {
-      userId: this.ethConnection.getCurrentAccount()
-    };
-  }
-
   get accessControl() {
     return new EveesAccessControlEthereum(this);
   }
@@ -143,10 +137,9 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
     const perspectiveIdHash = await hashCid(perspectiveId);
 
-    const perspective: PerspectiveDetails & { owner: string } = await this.call(
-      GET_PERSP_DETAILS,
-      [perspectiveIdHash]
-    );
+    const perspective: PerspectiveDetails & { owner: string } = await this.call(GET_PERSP_DETAILS, [
+      perspectiveIdHash
+    ]);
     return { name: perspective.name, context: perspective.context, headId: perspective.headId };
   }
 }

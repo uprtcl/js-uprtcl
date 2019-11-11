@@ -4,7 +4,7 @@ import { provider } from 'web3-core';
 import { Connection, ConnectionOptions } from '../../connections/connection';
 
 export interface EthereumConnectionOptions {
-  provider: provider;
+  provider?: provider;
 }
 
 export class EthereumConnection extends Connection {
@@ -20,20 +20,32 @@ export class EthereumConnection extends Connection {
    * @override
    */
   protected async connect(): Promise<void> {
-    this.web3 = new Web3(this.ethOptions.provider);
+    let provider = window['ethereum'];
 
-    const setAccounts = (accounts: string[]) => (this.accounts = accounts);
+    if (this.ethOptions.provider) {
+      this.web3 = new Web3(this.ethOptions.provider);
+    } else if (typeof provider !== 'undefined') {
+      this.accounts = await provider.enable();
+      this.web3 = new Web3(provider);
+    } else {
+      throw new Error('No available web3 provider was found');
+    }
 
-    const web3 = this.web3;
+    console.log(this.web3.eth.accounts);
 
-    setInterval(async function() {
-      const accounts = await web3.eth.getAccounts();
-      setAccounts(accounts);
+    setInterval(async () => {
+      const accounts = await this.web3.eth.getAccounts();
+      this.updateAccounts(accounts);
     }, 100);
 
-    this.accounts = await this.web3.eth.getAccounts();
-    this.networkId = await this.web3.eth.net.getId();
+    const accounts = await this.web3.eth.getAccounts();
+    this.updateAccounts(accounts);
 
+    this.networkId = await this.web3.eth.net.getId();
+  }
+
+  private updateAccounts(accounts: string[]): void {
+    this.accounts = accounts;
   }
 
   /**

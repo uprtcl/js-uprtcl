@@ -1,10 +1,17 @@
-import { DraftsProvider } from './drafts.provider';
+import { HolochainConnection, HolochainProvider, proxyMyAddress } from '@uprtcl/connections';
 
-import { HolochainConnection, HolochainProvider } from '@uprtcl/connections';
+import { DraftsProvider } from './drafts.provider';
 
 export class DraftsHolochain extends HolochainProvider implements DraftsProvider {
   constructor(instance: string, hcConnection: HolochainConnection) {
-    super({ instance, zome: 'drafts' }, hcConnection);
+    super(
+      {
+        instance,
+        zome: 'drafts',
+        getMyAddress: proxyMyAddress(instance)
+      },
+      hcConnection
+    );
   }
 
   /**
@@ -19,6 +26,9 @@ export class DraftsHolochain extends HolochainProvider implements DraftsProvider
    * @override
    */
   async setDraft(elementId: string, content: any): Promise<void> {
-    await this.call('set_draft', JSON.stringify(content));
+    await this.call('set_draft', {
+      address: elementId,
+      content: JSON.stringify(content)
+    });
   }
 }

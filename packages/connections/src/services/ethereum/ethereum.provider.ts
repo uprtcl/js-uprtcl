@@ -24,8 +24,11 @@ export abstract class EthereumProvider implements ServiceProvider {
     protected ethConnection: EthereumConnection
   ) {}
 
-  get authInfo(): UplAuth {
-    return { userId: this.ethConnection.getCurrentAccount() };
+  get uplAuth(): UplAuth {
+    return {
+      userId: this.ethConnection.getCurrentAccount(),
+      isAuthenticated: this.ethConnection.getCurrentAccount() != null
+    };
   }
 
   abstract get uprtclProviderLocator(): string;

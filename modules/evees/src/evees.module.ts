@@ -1,7 +1,12 @@
 import { injectable } from 'inversify';
 
-import { DiscoverableSource, PatternTypes, CortexModule } from '@uprtcl/cortex';
-import { DefaultSecuredPattern, DefaultSignedPattern, CidHashedPattern } from '@uprtcl/common';
+import { DiscoverableSource, PatternTypes } from '@uprtcl/cortex';
+import {
+  DefaultSecuredPattern,
+  DefaultSignedPattern,
+  ReduxCortexModule,
+  CidHashedPattern
+} from '@uprtcl/common';
 
 import { PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern } from './patterns/commit.pattern';
@@ -56,9 +61,9 @@ import { eveesReduxModule } from './state';
 export function eveesModule(
   discoverableEvees: Array<DiscoverableSource<EveesRemote>>,
   localEvees: new (...args: any[]) => EveesLocal = EveesDexie
-): new (...args: any[]) => CortexModule {
+): new (...args: any[]) => ReduxCortexModule {
   @injectable()
-  class EveesModule extends CortexModule {
+  class EveesModule extends ReduxCortexModule {
     get elements() {
       return [{ name: 'commit-history', element: CommitHistory }];
     }

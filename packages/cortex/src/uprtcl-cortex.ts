@@ -2,8 +2,8 @@
 import 'reflect-metadata';
 
 /** Services */
-export { Source, SourceProvider } from './services/sources/source';
 export { Ready, ServiceProvider } from './services/sources/service.provider';
+export { Source, SourceProvider } from './services/sources/source';
 export { DiscoverableSource } from './services/sources/discoverable.source';
 
 export { KnownSourcesService } from './services/known-sources/known-sources.service';

@@ -4,16 +4,25 @@ import { Hashed } from '@uprtcl/cortex';
 import { SocketConnection } from '../../connections/socket.connection';
 import { ConnectionOptions } from '../../connections/connection';
 
+export interface HolochainCallOptions {
+  instance: string;
+  zome: string;
+  funcName: string;
+  params: any;
+}
+
 export interface HolochainConnectionOptions {
   host: string;
 }
-
 
 export class HolochainConnection extends SocketConnection {
   connection!: (instance: string, zome: string, funcName: string, params: any) => Promise<any>;
   onsignal!: (callback: (params: any) => void) => void;
 
-  constructor(protected hcConnectionOptions: HolochainConnectionOptions, options: ConnectionOptions = {}) {
+  constructor(
+    protected hcConnectionOptions: HolochainConnectionOptions,
+    options: ConnectionOptions = {}
+  ) {
     super(options);
   }
 
@@ -47,5 +56,4 @@ export class HolochainConnection extends SocketConnection {
     await this.ready();
     return this.onSignal(callback);
   }
-
 }

@@ -13,7 +13,9 @@ import {
   AccessControlTypes,
   accessControlReduxModule,
   entitiesReduxModule,
-  EntitiesTypes
+  EntitiesTypes,
+  AuthTypes,
+  authReduxModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/evees';
 import { SimpleEditor } from './simple-editor';
@@ -25,7 +27,7 @@ import { SimpleEditor } from './simple-editor';
     protocol: 'https'
   });
 
-  const ethConnection = new EthereumConnection({provider: 'ws://localhost:8545'});
+  const ethConnection = new EthereumConnection({ provider: 'ws://localhost:8545' });
 
   const eveesProvider = new EveesEthereum(ethConnection, ipfsConnection);
 
@@ -48,6 +50,7 @@ import { SimpleEditor } from './simple-editor';
     { id: DiscoveryTypes.Module, module: discoveryModule() },
     { id: EntitiesTypes.Module, module: entitiesReduxModule() },
     { id: AccessControlTypes.Module, module: accessControlReduxModule() },
+    { id: AuthTypes.Module, module: authReduxModule() },
     {
       id: LensesTypes.Module,
       module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])

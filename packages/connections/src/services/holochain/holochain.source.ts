@@ -2,15 +2,32 @@ import { SourceProvider, Hashed } from '@uprtcl/cortex';
 
 import { HolochainProvider, HolochainProviderOptions } from './holochain.provider';
 import { HolochainConnection } from './holochain.connection';
-import { HolochainProxy } from './holochain.proxy';
+import { HolochainProxy, proxyMyAddress } from './holochain.proxy';
+
+export interface HolochainSourceOptions {
+  instance: string;
+  zome: string;
+  getMyAddress?: {
+    instance: string;
+    zome: string;
+    funcName: string;
+  };
+}
 
 export class HolochainSource extends HolochainProvider implements SourceProvider {
   constructor(
-    protected hcOptions: HolochainProviderOptions,
+    protected hcSourceOptions: HolochainSourceOptions,
     protected connection: HolochainConnection,
-    protected sourceZome: HolochainProxy = new HolochainProxy(hcOptions.instance, connection)
+    protected sourceZome: HolochainProxy = new HolochainProxy(hcSourceOptions.instance, connection)
   ) {
-    super(hcOptions, connection);
+    super(
+      { getMyAddress: proxyMyAddress(hcSourceOptions.instance), ...hcSourceOptions },
+      connection
+    );
+  }
+
+  getUserAddress(): Promise<string> {
+    return this.sourceZome.getUserAddress();
   }
 
   /**
@@ -19,6 +36,7 @@ export class HolochainSource extends HolochainProvider implements SourceProvider
   public async ready() {
     await Promise.all([this.connection.ready(), this.sourceZome.ready()]);
 
+    this.uprtclProviderLocator = await this.sourceZome.getUpl();
     this.uprtclProviderLocator = await this.sourceZome.getUpl();
   }
 

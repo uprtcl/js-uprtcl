@@ -1,7 +1,4 @@
-import {
-  HolochainSource,
-  HolochainConnection
-} from '@uprtcl/connections';
+import { HolochainSource, HolochainConnection, proxyMyAddress } from '@uprtcl/connections';
 import { DocumentsProvider } from './documents.provider';
 import { TextNode } from '../types';
 

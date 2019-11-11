@@ -1,6 +1,7 @@
 import { injectable } from 'inversify';
 
-import { DiscoverableSource, CortexModule, SourceProvider } from '@uprtcl/cortex';
+import { DiscoverableSource, SourceProvider } from '@uprtcl/cortex';
+import { ReduxCortexModule } from '@uprtcl/common';
 
 import { TextNodeLens } from './lenses/text-node.lens';
 import { TextNodePattern } from './patterns/text-node.pattern';
@@ -37,9 +38,9 @@ import { DocumentsLocal } from './services/documents.local';
 export function documentsModule(
   documentsProviders: DiscoverableSource<DocumentsProvider & SourceProvider>[],
   documentsLocal: new (...args: any[]) => DocumentsProvider = DocumentsLocal
-): new (...args: any[]) => CortexModule {
+): new (...args: any[]) => ReduxCortexModule {
   @injectable()
-  class DocumentsModule extends CortexModule {
+  class DocumentsModule extends ReduxCortexModule {
     get sources() {
       return documentsProviders.map(provider => ({
         symbol: DocumentsTypes.DocumentsProvider,

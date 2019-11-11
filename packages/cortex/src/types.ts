@@ -1,5 +1,6 @@
 export interface UplAuth {
-  userId: string;
+  userId: string | undefined;
+  isAuthenticated: boolean;
 }
 
 export const DiscoveryTypes = {

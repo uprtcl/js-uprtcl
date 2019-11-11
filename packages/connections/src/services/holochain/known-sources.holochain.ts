@@ -1,11 +1,12 @@
 import { KnownSourcesService } from '@uprtcl/cortex';
-import { HolochainConnection, HolochainConnectionOptions } from './holochain.connection';
-import { ConnectionOptions } from '../../connections/connection';
-import { HolochainProvider, HolochainProviderOptions } from './holochain.provider';
+
+import { HolochainConnection } from './holochain.connection';
+import { HolochainProvider } from './holochain.provider';
+import { proxyMyAddress } from './holochain.proxy';
 
 export class KnownSourcesHolochain extends HolochainProvider implements KnownSourcesService {
   constructor(instance: string, connection: HolochainConnection) {
-    super({ instance, zome: 'discovery' }, connection);
+    super({ instance, zome: 'discovery', getMyAddress: proxyMyAddress(instance) }, connection);
   }
 
   getOwnSource(): Promise<string> {
