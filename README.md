@@ -22,11 +22,17 @@ Orchestrates micro modules in one single web application, following the micro-fr
 
 Implements the Cortex framework, its building blocks and controllers.
 
+### Lenses
+
+> [Documentation](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_lenses.html)
+
+Implements a basic Cortex rendering engine to reinterpret the data together with Cortex patterns.
+
 ### Common
 
 > [Documentation](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_common.html)
 
-Implements the \_Prtcl basic types, patterns and rendering blocks.
+Implements basic Cortex modules and patterns like access control, entities redux module, hashed and signed entities.
 
 ### Connections
 
@@ -41,6 +47,10 @@ Supported technologies for now: IPFS, ethereum, Holochain, websockets...
 These are application modules compatible with `micro-orchestrator` that define patterns, lenses and services that can work together to create, interpret and share different kind of objects.
 
 ### Documents
+
+> [Evees](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_evees.html)
+
+Implements version control for any kind of content addressable object, with different perspectives (branches in git), and proposals to update those perspectives.
 
 > [Documentation](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_documents.html)
 
