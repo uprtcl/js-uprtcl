@@ -1,13 +1,14 @@
 # @uprtcl/common
 
->_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
-/)
+> \_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+> /)
 
 This is a collection of common Cortex modules, developed as the starting point of many applications:
 
-- **\_Prtcl module**: generic version control, allowing different perspectives of any content-addressable content to diverge and merge, and allowing anyone to make proposals to update any content they see
+- Entities reducer: redux module to hold any kind of content addressable object
 - Access Control: generic access control
 - Draft: generic providers to store drafts for any kind of content
+- **Common patterns** for entities that are hashed, signed...
 
 ## Dependencies
 
@@ -21,33 +22,20 @@ npm install @uprtcl/common
 
 ## \_Prtcl module usage
 
-Example
+Import the modules, instantiate them with their appropiate configuration, and load them:
 
 ```ts
-import { uprtclModule, UprtclEthereum, UprtclHolochain } from '@uprtcl/common';
+import {
+  AccessControlTypes,
+  accessControlReduxModule,
+  entitiesReduxModule,
+  EntitiesTypes
+} from '@uprtcl/common';
 
-const uprtclHolochain = new UprtclHolochain({
-  host: 'ws://localhost:8888',
-  instance: 'test-instance'
-});
-
-const uprtclEth = new UprtclEthereum('ws://localhost:8545', {
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https'
-});
-
-const knownSources = new KnownSourcesHolochain({
-  host: 'ws://localhost:8888',
-  instance: 'test-instance'
-});
-
-const discoverableUprtclHolo = { service: uprtclHolochain, knownSources: knownSources };
-
-const discoverableUprtclEth = { service: uprtclEth, knownSources: knownSources };
-
-const uprtcl = uprtclModule([discoverableUprtclHolo, discoverableUprtclEth]);
-await orchestrator.loadModules(uprtcl);
+await orchestrator.loadModules(
+  { id: EntitiesTypes.Module, module: entitiesReduxModule() },
+  { id: AccessControlTypes.Module, module: accessControlReduxModule() }
+);
 ```
 
 ## Drafts and access control

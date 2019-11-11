@@ -38,16 +38,13 @@ import { SimpleEditor } from './simple-editor';
   };
   const documents = documentsModule([discoverableDocs]);
 
-  const discovery = discoveryModule();
-  const entitiesReducerModule = entitiesReduxModule();
-
   const orchestrator = new MicroOrchestrator();
 
   await orchestrator.loadModules(
     { id: ReduxTypes.Module, module: ReduxStoreModule },
-    { id: EntitiesTypes.Module, module: entitiesReducerModule },
     { id: PatternTypes.Module, module: PatternsModule },
-    { id: DiscoveryTypes.Module, module: discovery },
+    { id: DiscoveryTypes.Module, module: discoveryModule() },
+    { id: EntitiesTypes.Module, module: entitiesReduxModule() },
     { id: AccessControlTypes.Module, module: accessControlReduxModule() },
     {
       id: LensesTypes.Module,

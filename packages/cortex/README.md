@@ -68,7 +68,7 @@ Cortex modules are groups of patterns, lenses and services that are prepared to 
 Import it, configure it and load it in the `micro-orchestrator`. Example with the `@uprtcl/documents` module.
 
 ```ts
-import { documentsModule, DocumentsIpfs } from '@uprtcl/documents';
+import { documentsModule, DocumentsIpfs, DocumentsTypes } from '@uprtcl/documents';
 
 const documentsProvider = new DocumentsIpfs({
   host: 'ipfs.infura.io',
@@ -78,7 +78,10 @@ const documentsProvider = new DocumentsIpfs({
 
 const docs = documentsModule([documentsProvider]);
 
-await orchestrator.loadModules(docs);
+await orchestrator.loadModules({
+  id: DocumentsTypes.Module,
+  module: docs
+});
 ```
 
 ### Developing a Cortex module
