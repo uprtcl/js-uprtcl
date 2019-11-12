@@ -29,13 +29,19 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    const documents = this.requestAll(DocumentsTypes.DocumentsRemote);
-    debugger
-    const httpProvider = documents.find((provider) => {
+    const docProvider = this.requestAll(DocumentsTypes.DocumentsRemote)
+    .find(provider => {
       const regexp = new RegExp('^http');
       return regexp.test(provider.service.uprtclProviderLocator);
     });
 
+    const eveesProvider = this.requestAll(EveesTypes.EveesRemote)
+    .find(provider => {
+      const regexp = new RegExp('^http');
+      return regexp.test(provider.service.uprtclProviderLocator);
+    });
+
+    
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
     });
@@ -46,11 +52,15 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const hashed = await this.textNodePattern.create({
+      const hashed = await this.textNodePattern.create(
+        {},
+        docProvider.service.uprtclProviderLocator
+      );
 
-      }, httpProvider.uprtclProviderLocator);
-
-      const perspective = await this.perspectivePattern.create({ dataId: hashed.id });
+      const perspective = await this.perspectivePattern.create(
+        { dataId: hashed.id },
+        eveesProvider.service.uprtclProviderLocator
+      );
       window.history.pushState('', '', `/?id=${perspective.id}`);
     }
     document.getElementById('');

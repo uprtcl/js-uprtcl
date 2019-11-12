@@ -1,5 +1,6 @@
-import { HttpConnection, PostResult } from "./http.connection";
-import { ServiceProvider, UplAuth } from "@uprtcl/cortex";
+import { ServiceProvider, UplAuth } from '@uprtcl/cortex';
+
+import { HttpConnection, PostResult } from './http.connection';
 
 export interface HttpProviderOptions {
   host: string;
@@ -7,22 +8,18 @@ export interface HttpProviderOptions {
 }
 
 export class HttpProvider implements ServiceProvider {
-  
-  constructor (
-    protected options: HttpProviderOptions,
-    protected connection: HttpConnection) {
-  }
+  constructor(protected options: HttpProviderOptions, protected connection: HttpConnection) {}
 
   get uprtclProviderLocator(): string {
     const url = new URL(this.options.host);
     return `http:${this.options.apiId}:${url.hostname}`;
   }
-  
+
   get authInfo(): UplAuth {
     return {
       userId: this.connection.userId,
       isAuthenticated: this.connection.userId != undefined
-    }
+    };
   }
 
   set authInfo(info: UplAuth) {
@@ -44,5 +41,4 @@ export class HttpProvider implements ServiceProvider {
   post(url: string, body: any): Promise<PostResult> {
     return this.connection.post(this.options.host + url, body);
   }
-
 }

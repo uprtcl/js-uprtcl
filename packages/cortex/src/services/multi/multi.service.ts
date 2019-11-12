@@ -54,7 +54,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    * @returns gets all the services
    */
   public getAllServices(): T[] {
-    return Object.keys(this.services).map(serviceName => this.services[serviceName].service);
+    return Object.keys(this.services).map(upl => this.services[upl].service);
   }
 
   /**

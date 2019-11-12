@@ -84,18 +84,27 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
       // Try to retrieve the object from any of the known sources
       promises = knownSources.map(tryGetFromSource);
     } else {
-      // We had no known sources for the hash, try to get the object from all the sources
-      const sourcesNames = this.getAllServicesUpl();
+      // We had no known sources for the hash, try to get the object from any known sources service
+      const knownSources: KnownSourcesService[] = Object.keys(this.services)
+        .map(upl => this.services[upl].knownSources)
+        .filter(s => s !== undefined) as KnownSourcesService[];
 
-      promises = sourcesNames.map(async sourceName => {
-        const object = await tryGetFromSource(sourceName);
+      promises = knownSources.map(async knownSource => {
+        const upls = await knownSource.getKnownSources(hash);
 
-        if (object) {
-          // Luckily we found the object in one of the sources, store it in the known sources
-          await this.localKnownSources.addKnownSources(hash, [sourceName]);
-        }
+        if (!upls) throw new Error('No known sources in this service');
 
-        return object;
+        const requestsPromises = upls.map(async upl => {
+          const object = await tryGetFromSource(upl);
+
+          if (object) {
+            // Luckily we found the object in one of the sources, store it in the known sources
+            await this.localKnownSources.addKnownSources(hash, [upl]);
+          }
+          return object;
+        });
+
+        return this.raceToSuccess(requestsPromises);
       });
     }
 

@@ -14,7 +14,6 @@ export enum DataType {
 const documents_api: string = 'textnode-v1';
 
 export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
-  
   constructor(host: string, protected connection: HttpConnection) {
     super(
       {
@@ -30,11 +29,12 @@ export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
     return {
       id: hash,
       object: object
-    }
+    };
   }
 
-  async createTextNode(node: TextNode): Promise<string> {
-    const result = await this.connection.post(`/data`, {
+  async createTextNode(node: TextNode, hash: string): Promise<string> {
+    const result = await super.post(`/data`, {
+      id: hash,
       type: DataType.DOCUMENT_NODE,
       data: node
     });

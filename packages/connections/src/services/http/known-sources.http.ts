@@ -19,11 +19,11 @@ export class KnownSourcesHttp extends HttpProvider implements KnownSourcesServic
   }
 
   async getKnownSources(hash: string): Promise<string[]> {
-    return this.connection.get(`/discovery/${hash}`);
+    return super.getObject<string[]>(`/discovery/${hash}`);
   }
 
   async addKnownSources(hash: string, sources: string[]): Promise<void> {
-    await this.connection.put(`/discovery/${hash}`, sources);
+    await super.put(`/discovery/${hash}`, sources);
   }
 
   async removeKnownSource(hash: string, source: string): Promise<void> {

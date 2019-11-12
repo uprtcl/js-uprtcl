@@ -35,15 +35,13 @@ export class TextNodePattern
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = async (
-    node: Partial<TextNode>,
-    providerName?: string): Promise<Hashed<TextNode>> => {
+  create = async (node: Partial<TextNode>, upl?: string): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
 
     const newTextNode = { links, text, type };
-    return this.documents.createTextNode(newTextNode, providerName);
+    return this.documents.createTextNode(newTextNode, upl);
   };
 
   getLenses = (node: TextNode): Lens[] => {

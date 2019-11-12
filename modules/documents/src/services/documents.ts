@@ -62,10 +62,7 @@ export class Documents {
    * @param node the text node to clone
    * @param providerName the provider to which to clone the text node to, needed if there is more than one provider
    */
-  public async createTextNode(
-    node: TextNode, 
-    providerName?: string): Promise<Hashed<TextNode>> {
-
+  public async createTextNode(node: TextNode, upl?: string): Promise<Hashed<TextNode>> {
     const creator = async (docs: DocumentsProvider) => {
       const hash = await docs.createTextNode(node);
       return {
@@ -74,10 +71,17 @@ export class Documents {
       };
     };
 
-    const hashedNode = await this.service.optimisticCreateIn(
-      providerName as any, creator, creator);
-      
-    this.logger.info('Cloned textnode: ', {hashedNode});
+    const cloner = async (docs: DocumentsProvider, hashedNode: Hashed<TextNode>) => {
+      const hash = await docs.createTextNode(hashedNode.object, hashedNode.id);
+      return {
+        id: hash,
+        object: node
+      };
+    };
+
+    const hashedNode = await this.service.optimisticCreateIn(upl, creator, cloner);
+
+    this.logger.info('Cloned textnode: ', hashedNode);
     return hashedNode;
   }
 }

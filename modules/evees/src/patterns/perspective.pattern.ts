@@ -13,9 +13,9 @@ import {
   PatternAction
 } from '@uprtcl/cortex';
 import { AccessControlService, Updatable, Secured } from '@uprtcl/common';
-import { ReduxTypes } from '@uprtcl/micro-orchestrator';
+import { ReduxTypes, Logger } from '@uprtcl/micro-orchestrator';
 
-import { Perspective, EveesTypes } from '../types';
+import { Perspective, EveesTypes, Commit } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { selectPerspectiveHeadId, selectEvees } from '../state/evees.selectors';
 import { LoadPerspectiveDetails, LOAD_PERSPECTIVE_DETAILS } from '../state/evees.actions';
@@ -101,9 +101,26 @@ export class PerspectivePattern
     perspective: Secured<Perspective>,
     newContent: any
   ) => {
-    const data = await this.evees.createData(newContent);
-
     const details = await this.evees.getPerspectiveDetails(perspective.id);
+
+    if (!details.headId)
+      throw new Error('First commit must be made before being able to update the perspective');
+
+    const previousHead: Secured<Commit> | undefined = await this.evees.get(details.headId);
+
+    if (!previousHead)
+      throw new Error('First commit must be made before being able to update the perspective');
+
+    const knownSources = await this.evees.knownSources.getKnownSources(
+      previousHead.object.payload.dataId
+    );
+
+    if (!knownSources)
+      throw new Error('First commit must be made before being able to update the perspective');
+
+    console.log({ perspective });
+    const data = await this.evees.createData(newContent, knownSources[0]);
+
     const newHead = await this.evees.createCommit(
       {
         dataId: data.id,
