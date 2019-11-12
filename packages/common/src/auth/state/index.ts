@@ -1,10 +1,14 @@
-import { MicroModule, reduxModule } from '@uprtcl/micro-orchestrator';
+import { injectable } from 'inversify';
+
+import { ReduxModule } from '@uprtcl/micro-orchestrator';
+
 import { AuthAction } from './auth.actions';
 import { authReducer } from './auth.reducer';
 import { authReducerName } from './auth.selectors';
 
-export function authReduxModule(): MicroModule {
-  return reduxModule<any, AuthAction>({
+@injectable()
+export class AuthReduxModule extends ReduxModule<any, AuthAction> {
+  reducersMap = {
     [authReducerName]: authReducer
-  });
+  };
 }

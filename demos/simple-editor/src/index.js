@@ -10,11 +10,11 @@ import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import {
   AccessControlTypes,
-  accessControlReduxModule,
-  entitiesReduxModule,
+  AccessControlReduxModule,
+  EntitiesReduxModule,
   EntitiesTypes,
   AuthTypes,
-  authReduxModule
+  AuthReduxModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
 import { KnownSourcesHttp, IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
@@ -53,9 +53,9 @@ import { SimpleEditor } from './simple-editor';
     { id: ReduxTypes.Module, module: ReduxStoreModule },
     { id: PatternTypes.Module, module: PatternsModule },
     { id: DiscoveryTypes.Module, module: discoveryModule() },
-    { id: EntitiesTypes.Module, module: entitiesReduxModule() },
-    { id: AccessControlTypes.Module, module: accessControlReduxModule() },
-    { id: AuthTypes.Module, module: authReduxModule() },
+    { id: EntitiesTypes.Module, module: EntitiesReduxModule },
+    { id: AccessControlTypes.Module, module: AccessControlReduxModule },
+    { id: AuthTypes.Module, module: AuthReduxModule },
     {
       id: LensesTypes.Module,
       module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])

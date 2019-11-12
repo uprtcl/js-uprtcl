@@ -1,5 +1,6 @@
 export const AccessControlTypes = {
-  Module: Symbol('access-control-module')
+  Module: Symbol('access-control-module'),
+  OwnerPattern: Symbol('owner-pattern')
 };
 
 export const AuthTypes = {

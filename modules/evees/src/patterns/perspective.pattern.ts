@@ -131,4 +131,6 @@ export class PerspectivePattern
   ) => {
     return this.evees.getPerspectiveProvider(perspective).accessControl;
   };
+
+  origin = (entity: Secured<Perspective>) => entity.object.payload.origin;
 }

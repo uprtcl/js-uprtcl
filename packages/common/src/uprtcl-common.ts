@@ -5,12 +5,13 @@ import 'reflect-metadata';
 export { EntitiesTypes, AccessControlTypes, AuthTypes } from './types';
 
 /** Auth */
-export { authReduxModule } from './auth/state';
+export { AuthReduxModule } from './auth/state';
 export { AuthAction, UpdateUplAuth, UPDATE_UPL_AUTH } from './auth/state/auth.actions';
 export { authReducerName, selectAuth, selectUplAuthInfo } from './auth/state/auth.selectors';
 
 /** Access Control */
 export { Updatable } from './access-control/properties/updatable';
+export { Permissions } from './access-control/properties/permissions';
 
 export { AccessControlService } from './access-control/services/access-control.service';
 export {
@@ -21,10 +22,11 @@ export {
   BasicAdminAccessControl,
   BasicAdminAccessControlService 
 } from './access-control/services/basic-admin-control.service';
-export { accessControlReduxModule } from './access-control/state';
+export { AccessControlReduxModule } from './access-control/state';
 export {
   selectEntityAccessControl,
-  selectAccessControl
+  selectAccessControl,
+  selectCanWrite
 } from './access-control/state/access-control.selectors';
 export {
   AccessControlAction,
@@ -63,7 +65,7 @@ export {
   selectByPattern,
   selectEntities,
   entitiesReducerName,
-  entitiesReduxModule
+  EntitiesReduxModule
 } from './entities';
 
 /** Utils */
