@@ -19,7 +19,8 @@ export class HttpProvider implements ServiceProvider {
   
   get authInfo(): UplAuth {
     return {
-      userId: this.connection.userId
+      userId: this.connection.userId,
+      isAuthenticated: this.connection.userId != undefined
     }
   }
 

@@ -16,7 +16,14 @@ export interface PostResult {
  * Wrapper over the fetch API
  */
 export class HttpConnection extends Connection {
-  constructor(protected httpOptions: HttpConnectionOptions, options: ConnectionOptions) {
+  constructor(
+    protected httpOptions: HttpConnectionOptions = {
+      headerIdentifier: 'Authorization',
+      tokenIdLocal: 'http_jwt_token',
+      userIdLocal: 'http_user_id'
+    }, 
+    options: ConnectionOptions) {
+      
     super(options);
   }
 

@@ -29,8 +29,8 @@ export class Documents {
     @inject(PatternTypes.Core.Secured) protected secured: IsSecure<any>,
     @inject(DiscoveryTypes.LocalKnownSources)
     protected knownSources: KnownSourcesService,
-    @inject(EveesTypes.EveesLocal)
-    protected eveesLocal: EveesLocal,
+    @inject(DocumentsTypes.)
+    protected documentsLocal: DocumentsLocal,
     @multiInject(EveesTypes.EveesRemote)
     protected eveesRemotes: DiscoverableSource<EveesRemote>[]
   ) {
@@ -39,6 +39,8 @@ export class Documents {
       new MultiSourceService<EveesRemote>(patternRecognizer, knownSources, eveesRemotes)
     );
   }
+
+  uprtclProviderLocator
 
   /**
    * @override
