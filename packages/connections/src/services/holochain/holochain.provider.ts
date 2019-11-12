@@ -1,9 +1,14 @@
-import { Hashed, UplAuth, ServiceProvider } from '@uprtcl/cortex';
+import { Hashed, ServiceProvider, UplAuth } from '@uprtcl/cortex';
 import { HolochainConnection } from './holochain.connection';
 
-export interface HolochainProviderOptions {
+export interface HolochainProviderOptions  {
   instance: string;
   zome: string;
+  getMyAddress: {
+    instance: string;
+    zome: string;
+    funcName: string;
+  };
 }
 
 // Auxiliar type for Holochain's get_entry call
@@ -12,21 +17,33 @@ export type EntryResult<T extends object = any> = {
   type: string;
 };
 
-export class HolochainProvider implements ServiceProvider {
+export abstract class HolochainProvider implements ServiceProvider {
   uprtclProviderLocator!: string;
-  authInfo!: UplAuth;
+
+  userAddress!: string;
 
   constructor(
     protected hcOptions: HolochainProviderOptions,
     protected connection: HolochainConnection
   ) {}
 
+  public getMyAddress(): Promise<string> {
+    const { instance, zome, funcName } = this.hcOptions.getMyAddress;
+    return this.connection.call(instance, zome, funcName, {});
+  }
+
+  get uplAuth(): UplAuth {
+    return { userId: this.userAddress, isAuthenticated: this.userAddress !== null };
+  }
+
   /**
    * @override
    */
   public async ready() {
-    return this.connection.ready();
+    await this.connection.ready();
+    this.userAddress = await this.getMyAddress();
   }
+
   public async call(funcName: string, params: any): Promise<any> {
     return this.connection.call(this.hcOptions.instance, this.hcOptions.zome, funcName, params);
   }

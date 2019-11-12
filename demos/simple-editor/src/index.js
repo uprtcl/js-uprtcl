@@ -12,7 +12,9 @@ import {
   AccessControlTypes,
   accessControlReduxModule,
   entitiesReduxModule,
-  EntitiesTypes
+  EntitiesTypes,
+  AuthTypes,
+  authReduxModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
 import { KnownSourcesHttp } from '@uprtcl/connections';
@@ -23,9 +25,12 @@ import { SimpleEditor } from './simple-editor';
   const c1host = 'http://localhost:3100/uprtcl/1';
   const ethHost = 'ws://localhost:8545';
   const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+
+  const ipfsConnection = new IpfsConnection(ipfsConfig);
+  const ethConnection = new EthereumConnection({ provider: ethHost });
   
   const httpEvees = new EveesHttp(c1host, '');
-  const ethEvees = new EveesEthereum(ethHost, ipfsConfig);
+  const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
   const httpKnownSources = new KnownSourcesHttp(c1host);
 
   const evees = eveesModule([
@@ -49,6 +54,7 @@ import { SimpleEditor } from './simple-editor';
     { id: DiscoveryTypes.Module, module: discoveryModule() },
     { id: EntitiesTypes.Module, module: entitiesReduxModule() },
     { id: AccessControlTypes.Module, module: accessControlReduxModule() },
+    { id: AuthTypes.Module, module: authReduxModule() },
     {
       id: LensesTypes.Module,
       module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])

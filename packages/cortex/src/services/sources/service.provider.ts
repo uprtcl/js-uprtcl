@@ -14,5 +14,5 @@ export interface ServiceProvider extends Ready {
    */
   uprtclProviderLocator: string;
 
-  authInfo: UplAuth;
+  uplAuth?: UplAuth;
 }

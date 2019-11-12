@@ -1,10 +1,4 @@
-import {
-  HolochainConnectionOptions,
-  ConnectionOptions,
-  EntryResult,
-  HolochainConnection,
-  HolochainSource
-} from '@uprtcl/connections';
+import { EntryResult, HolochainConnection, HolochainSource } from '@uprtcl/connections';
 import { Signed } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
 
