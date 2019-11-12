@@ -3,6 +3,7 @@ import { Hashed } from '@uprtcl/cortex';
 
 import { DocumentsProvider } from '../documents.provider';
 import { TextNode } from '../../types';
+import { injectable } from 'inversify';
 
 export enum DataType {
   TEXT = 'TEXT',

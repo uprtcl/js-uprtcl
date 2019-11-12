@@ -18,7 +18,7 @@ import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';
-import { DocumentsProvider } from '../services/documents.provider';
+import { Documents } from '../services/documents';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -26,8 +26,7 @@ const propertyOrder = ['text', 'type', 'links'];
 export class TextNodePattern
   implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasActions {
   constructor(
-    @inject(DocumentsTypes.DocumentsProvider)
-    protected documentsProvider: DiscoverableSource<DocumentsProvider & SourceProvider>,
+    @inject(DocumentsTypes.Documents) protected documents: Documents,
     @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<TextNode>,
     @inject(ReduxTypes.Store) protected store: Store
   ) {}
@@ -36,18 +35,15 @@ export class TextNodePattern
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = async (node?: Partial<TextNode>): Promise<Hashed<TextNode>> => {
+  create = async (
+    node: Partial<TextNode>,
+    providerName?: string): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
 
     const newTextNode = { links, text, type };
-    const hash = await this.documentsProvider.service.createTextNode(newTextNode);
-
-    return {
-      id: hash,
-      object: newTextNode
-    };
+    return this.documents.createTextNode(newTextNode, providerName);
   };
 
   getLenses = (node: TextNode): Lens[] => {

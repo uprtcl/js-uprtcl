@@ -14,7 +14,8 @@ export class HttpProvider implements ServiceProvider {
   }
 
   get uprtclProviderLocator(): string {
-    return `http:${this.options.apiId}:${this.options.host}`;
+    const url = new URL(this.options.host);
+    return `http:${this.options.apiId}:${url.hostname}`;
   }
   
   get authInfo(): UplAuth {
