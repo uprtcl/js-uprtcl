@@ -29,10 +29,11 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    const documents = this.request(DocumentsTypes.DocumentsRemote);
+    const documents = this.requestAll(DocumentsTypes.DocumentsRemote);
+    debugger
     const httpProvider = documents.find((provider) => {
-      regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      const regexp = new RegExp('^http');
+      return regexp.test(provider.service.uprtclProviderLocator);
     });
 
     window.addEventListener('popstate', () => {
