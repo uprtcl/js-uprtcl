@@ -4,6 +4,7 @@ import { Constructor, CustomElement } from '../../types';
 
 export interface ConnectedElement {
   request<T>(dependency: interfaces.ServiceIdentifier<T>): T;
+  requestAll<T>(dependency: interfaces.ServiceIdentifier<T>): T[];
 }
 
 export const moduleConnect = <T extends Constructor<CustomElement>>(
@@ -13,9 +14,12 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
   prototype: any;
 } & T =>
   class extends baseElement implements ConnectedElement {
-    request<T>(dependency: interfaces.ServiceIdentifier<T>): T {
+    private requestGeneric<T>(
+      dependency: interfaces.ServiceIdentifier<T>,
+      multiple: boolean = false
+    ): T[] {
       const event = new RequestDependencyEvent({
-        detail: { request: [dependency] },
+        detail: { request: [dependency], multiple: multiple },
         composed: true,
         bubbles: true
       });
@@ -28,12 +32,21 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
         event.dependencies.length > 0 &&
         event.dependencies[0]
       ) {
-        return event.dependencies[0];
+        return event.dependencies;
       } else {
         throw new Error(
           `Dependency ${String(dependency)} could not be loaded:
           make sure that this element is included inside a <module-container> super element`
         );
       }
+    }
+
+    request<T>(dependency: interfaces.ServiceIdentifier<T>): T {
+      const deps = this.requestGeneric(dependency, false);
+      return deps[0];
+    }
+
+    requestAll<T>(dependency: interfaces.ServiceIdentifier<T>): T[] {
+      return this.requestGeneric(dependency, true);
     }
   };
