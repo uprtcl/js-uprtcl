@@ -13,10 +13,51 @@ import { DiscoveryTypes, PatternTypes, LensesTypes } from './types';
 import { ServiceProvider, Ready } from './services/sources/service.provider';
 import { Source, SourceProvider } from './services/sources/source';
 
+/**
+ * This is a convenience MicroModule class that is supposed to be overriden. It expects a set of patterns, services, sources and elements
+ * and registers appropriately so that they are ready and available to be used.
+ *
+ * Example usage:
+ *
+ * ```ts
+ * @injectable()
+ * class EveesModule extends ReduxCortexModule {
+ *   get elements() {
+ *     return [{ name: 'commit-history', element: CommitHistory }];
+ *   }
+ *
+ *   get sources() {
+ *     return discoverableEvees.map(evees => ({
+ *       symbol: EveesTypes.EveesRemote,
+ *       source: evees
+ *     }));
+ *   }
+ *
+ *   get services() {
+ *     return [
+ *       { symbol: EveesTypes.EveesLocal, service: localEvees },
+ *       { symbol: EveesTypes.Evees, service: Evees }
+ *     ];
+ *   }
+ *
+ *   get patterns() {
+ *     return [
+ *       { symbol: PatternTypes.Core.Hashed, pattern: CidHashedPattern },
+ *       { symbol: PatternTypes.Core.Signed, pattern: DefaultSignedPattern },
+ *       { symbol: PatternTypes.Core.Secured, pattern: DefaultSecuredPattern },
+ *       { symbol: EveesTypes.PerspectivePattern, pattern: PerspectivePattern },
+ *       { symbol: EveesTypes.CommitPattern, pattern: CommitPattern },
+ *       { symbol: EveesTypes.ContextPattern, pattern: ContextPattern }
+ *     ];
+ *   }
+ *
+ *   submodules = [EveesReduxModule];
+ * }
+ * ```
+ */
 @injectable()
 export class CortexModule implements MicroModule {
-  @inject(MicroOrchestratorTypes.Logger)
-  logger!: Logger;
+  logger: Logger = new Logger('CortexModule');
 
   constructor(
     @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider

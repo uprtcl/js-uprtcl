@@ -24,14 +24,14 @@
     "inversify": "^5.0.1",
     "lit-element": "^2.2.1",
     "lodash": "^4.17.15",
-    "redux": "^4.0.4"
+    "redux": "^4.0.4",
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@open-wc/testing": "^0.11.1",
     "@open-wc/testing-karma": "^3.0.0",
     "@types/lodash": "^4.14.146",
     "@types/node": "^10.11.0",
-    "reflect-metadata": "^0.1.13",
     "rimraf": "^2.6.3",
     "rollup": "^0.67.0",
     "rollup-plugin-commonjs": "^9.1.8",

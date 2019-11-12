@@ -38,7 +38,6 @@ function* filterPerspectiveEntity(action: LoadEntitySuccess) {
   );
 
   if (perspectivePattern.recognize(action.payload.entity)) {
-    console.log('asfd', action.payload.entity);
     const loadPerspectiveDetailsAction: LoadPerspectiveDetails = {
       type: LOAD_PERSPECTIVE_DETAILS,
       payload: { perspectiveId: action.payload.hash }

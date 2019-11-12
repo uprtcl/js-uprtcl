@@ -7,6 +7,8 @@ import json from 'rollup-plugin-json';
 
 const pkg = require('./package.json');
 pkg.dependencies['lodash/merge'] = '';
+pkg.dependencies['@redux-saga/core'] = '';
+pkg.dependencies['@redux-saga/core/effects'] = '';
 
 const libraryName = 'uprtcl-common';
 
