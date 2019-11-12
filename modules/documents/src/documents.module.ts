@@ -8,6 +8,8 @@ import { TextNodePattern } from './patterns/text-node.pattern';
 import { DocumentsTypes } from './types';
 import { DocumentsProvider } from './services/documents.provider';
 import { DocumentsLocal } from './services/documents.local';
+import { Documents } from './services/documents';
+import { DocumentsRemote } from './services/documents.remote';
 
 /**
  * Configure a documents module with the given providers
@@ -37,25 +39,28 @@ import { DocumentsLocal } from './services/documents.local';
  *
  * @category CortexModule
  *
- * @param documentsProviders an array of providers of documents
+ * @param documentsRemote an array of remotes of documents
  * @param documentsLocal the local cache service to
  * @returns a configured documents module ready to be loaded
  */
 export function documentsModule(
-  documentsProviders: DiscoverableSource<DocumentsProvider & SourceProvider>[],
+  documentsRemotes: DiscoverableSource<DocumentsRemote>[],
   documentsLocal: new (...args: any[]) => DocumentsProvider = DocumentsLocal
 ): new (...args: any[]) => ReduxCortexModule {
   @injectable()
   class DocumentsModule extends ReduxCortexModule {
     get sources() {
-      return documentsProviders.map(provider => ({
-        symbol: DocumentsTypes.DocumentsProvider,
-        source: provider
+      return documentsRemotes.map(remote => ({
+        symbol: DocumentsTypes.DocumentsRemote,
+        source: remote
       }));
     }
 
     get services() {
-      return [{ symbol: DocumentsTypes.DocumentsCache, service: documentsLocal }];
+      return [
+        { symbol: DocumentsTypes.DocumentsLocal, service: documentsLocal },
+        { symbol: DocumentsTypes.Documents, service: Documents }
+      ];
     }
 
     get elements() {

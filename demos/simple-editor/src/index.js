@@ -7,8 +7,7 @@ import {
   LensesTypes
 } from '@uprtcl/cortex';
 import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@uprtcl/lenses';
-import { DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
-import { KnownSourcesHolochain, IpfsConnection, EthereumConnection } from '@uprtcl/connections';
+import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import {
   AccessControlTypes,
   AccessControlReduxModule,
@@ -17,30 +16,36 @@ import {
   AuthTypes,
   AuthReduxModule
 } from '@uprtcl/common';
-import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/evees';
+import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
+import { KnownSourcesHttp, IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
-  const ipfsConnection = new IpfsConnection({
-    host: 'ipfs.infura.io',
-    port: 5001,
-    protocol: 'https'
-  });
+  
+  const c1host = 'http://localhost:3100/uprtcl/1';
+  const ethHost = 'ws://localhost:8545';
+  const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
 
-  const ethConnection = new EthereumConnection({ provider: 'ws://localhost:8545' });
+  const httpConnection = new HttpConnection();
+  const ipfsConnection = new IpfsConnection(ipfsConfig);
+  const ethConnection = new EthereumConnection({ provider: ethHost });
+  
+  const httpEvees = new EveesHttp(c1host, httpConnection);
+  const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
+  const httpKnownSources = new KnownSourcesHttp(c1host, httpConnection);
 
-  const eveesProvider = new EveesEthereum(ethConnection, ipfsConnection);
+  const evees = eveesModule([
+    { service: httpEvees, knownSources: httpKnownSources }, 
+    { service: ethEvees, knownSources: httpKnownSources }
+  ]);
 
-  const documentsProvider = new DocumentsIpfs(ipfsConnection);
+  const httpDocuments = new DocumentsHttp(c1host, httpConnection);
+  const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
 
-  const discoverableEvees = { service: eveesProvider };
-
-  const evees = eveesModule([discoverableEvees]);
-
-  const discoverableDocs = {
-    service: documentsProvider
-  };
-  const documents = documentsModule([discoverableDocs]);
+  const documents = documentsModule([
+    { service: httpDocuments, knownSources: httpKnownSources },
+    { service: ipfsDocuments, knownSources: httpKnownSources }
+  ]);
 
   const orchestrator = new MicroOrchestrator();
 

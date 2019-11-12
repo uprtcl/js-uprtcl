@@ -28,3 +28,8 @@ export {
   EthereumConnectionOptions
 } from './services/ethereum/ethereum.connection';
 export { EthereumProvider, EthereumProviderOptions } from './services/ethereum/ethereum.provider';
+
+// Http
+export { HttpConnection } from './services/http/http.connection';
+export { HttpProvider } from './services/http/http.provider';
+export { KnownSourcesHttp } from './services/http/known-sources.http';

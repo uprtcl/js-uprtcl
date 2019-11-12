@@ -12,5 +12,6 @@ export { EveesRemote } from './services/evees.remote';
 /** Service providers */
 export { EveesHolochain } from './services/providers/holochain/evees.holochain';
 export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
+export { EveesHttp } from './services/providers/http/evees.http';
 
 export { eveesModule } from './evees.module';

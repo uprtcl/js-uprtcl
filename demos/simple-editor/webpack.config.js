@@ -20,7 +20,8 @@ module.exports = {
   },
   entry: ['babel-polyfill', './src/index.js'],
   devServer: {
-    historyApiFallback: true
+    historyApiFallback: true,
+    port: 8080
   },
   mode: 'production',
   module: {

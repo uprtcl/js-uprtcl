@@ -26,8 +26,7 @@ export interface NoHeadPerspectiveArgs {
 
 export type NewPerspectiveArgs =
   | Partial<PerspectiveDetails>
-  | (NoHeadPerspectiveArgs & { dataId: string })
-  | (NoHeadPerspectiveArgs & { data: any });
+  | (NoHeadPerspectiveArgs & { dataId: string });
 
 const creatorId = 'did:hi:ho';
 const DEFAULT_PERSPECTIVE_NAME = 'master';
@@ -45,7 +44,7 @@ export class Evees {
     @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(PatternTypes.Core.Secured) protected secured: IsSecure<any>,
     @inject(DiscoveryTypes.LocalKnownSources)
-    protected knownSources: KnownSourcesService,
+    public knownSources: KnownSourcesService,
     @inject(EveesTypes.EveesLocal)
     protected eveesLocal: EveesLocal,
     @multiInject(EveesTypes.EveesRemote)
@@ -158,16 +157,10 @@ export class Evees {
     // Create the context to point the perspective to, if needed
     const context = args.context || `${Date.now()}${Math.random()}`;
 
-    // Create the data and commit to point the perspective to, if needed
+    // Create the commit to point the perspective to, if needed
 
-    let data = (args as { data: any }).data;
     let dataId = (args as { dataId: any }).dataId;
     let headId = (args as { headId: string }).headId;
-
-    if (data) {
-      const createdData = await this.createData(data);
-      dataId = createdData.id;
-    }
 
     if (dataId) {
       const head = await this.createCommit(
@@ -234,10 +227,7 @@ export class Evees {
    * @param perspective the perspective to clone
    * @param upl the provider to which to clone the perspective to, needed if there is more than one provider
    */
-  public async clonePerspective(
-    perspective: Secured<Perspective>,
-    upl?: string
-  ): Promise<void> {
+  public async clonePerspective(perspective: Secured<Perspective>, upl?: string): Promise<void> {
     upl = this.validateUpl(upl);
 
     const creator = async (uprtcl: EveesProvider) => {
@@ -313,13 +303,13 @@ export class Evees {
    * @param data the data to create
    * @returns the created hashed data
    */
-  public async createData<O extends object>(data: O): Promise<Hashed<O>> {
+  public async createData<O extends object>(data: O, upl: string): Promise<Hashed<O>> {
     const dataPattern: Creatable<O, any> = this.patternRecognizer.recognizeMerge(data);
 
     if (!dataPattern.create) throw new Error('Cannot create this type of data');
 
     this.logger.info('Creating the data: ', data);
 
-    return dataPattern.create(data);
+    return dataPattern.create(data, upl);
   }
 }

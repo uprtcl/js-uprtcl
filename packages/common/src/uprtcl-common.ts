@@ -18,6 +18,10 @@ export {
   OwnerAccessControl,
   OwnerAccessControlService
 } from './access-control/services/owner-access-control.service';
+export {
+  BasicAdminAccessControl,
+  BasicAdminAccessControlService 
+} from './access-control/services/basic-admin-control.service';
 export { AccessControlReduxModule } from './access-control/state';
 export {
   selectEntityAccessControl,
