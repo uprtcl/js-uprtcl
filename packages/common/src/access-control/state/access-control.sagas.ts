@@ -1,5 +1,5 @@
 import { Saga } from '@redux-saga/core';
-import { getContext, call, put, takeEvery } from '@redux-saga/core/effects';
+import { getContext, call, put, takeEvery, retry } from '@redux-saga/core/effects';
 
 import { DiscoveryTypes, Source, PatternRecognizer, PatternTypes, Pattern } from '@uprtcl/cortex';
 import { ReduxTypes } from '@uprtcl/micro-orchestrator';
@@ -26,9 +26,10 @@ function* loadAccessControl(action: LoadAccessControl) {
       | undefined = (patterns as Updatable).accessControl(action.payload.entity);
 
     if (accessControlService) {
-      const accessControlInformation = yield call(() =>
+      const accessControlInformation: any | undefined = yield retry(4, 3000, () =>
         accessControlService.getAccessControlInformation(action.payload.hash)
       );
+
       const accessControlSuccess: LoadAccessControlSuccess = {
         type: LOAD_ACCESS_CONTROL_SUCCESS,
         payload: {

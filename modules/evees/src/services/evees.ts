@@ -66,24 +66,12 @@ export class Evees {
 
   /** Private functions */
 
-  /**
-   * If the provider name is undefined and there is more than one provider, throws error
-   * Else, return the provider name that should be used
-   * @param providerName optional provider name to validate
-   */
-  private validateProviderName(providerName?: string): string {
-    if (!providerName) {
-      const sourcesNames = this.service.remote.getAllServicesNames();
-      if (sourcesNames.length > 1) {
-        throw new Error(
-          'Provider name cannot be empty, since we have more than one provider registered'
-        );
-      }
-
-      providerName = sourcesNames[0];
-    }
-    return providerName as string;
+  private validateUpl(upl: string | undefined): string {
+    const provider = this.service.remote.getService(upl);
+    return provider.service.uprtclProviderLocator;
   }
+
+  /** Public functions */
 
   /**
    * Returns the uprtcl remote that controls the given perspective, from its origin
@@ -144,20 +132,20 @@ export class Evees {
    * creating the context, data and commit if necessary
    *
    * @param args the properties of the perspectives
-   * @param providerName provider to which to create the perspective, needed if there is more than one provider
+   * @param upl provider to which to create the perspective, needed if there is more than one provider
    */
   public async createPerspective(
     args: NewPerspectiveArgs,
-    providerName?: string
+    upl?: string
   ): Promise<Secured<Perspective>> {
     const name = args.name || DEFAULT_PERSPECTIVE_NAME;
 
-    providerName = this.validateProviderName(providerName);
+    upl = this.validateUpl(upl);
 
     // Create the perspective
     const perspectiveData: Perspective = {
       creatorId: creatorId,
-      origin: providerName,
+      origin: upl,
       timestamp: Date.now()
     };
     const perspective: Secured<Perspective> = await this.secured.derive(perspectiveData);
@@ -165,7 +153,7 @@ export class Evees {
     this.logger.info('Created new perspective: ', perspective);
 
     // Clone the perspective in the selected provider
-    await this.clonePerspective(perspective, providerName);
+    await this.clonePerspective(perspective, upl);
 
     // Create the context to point the perspective to, if needed
     const context = args.context || `${Date.now()}${Math.random()}`;
@@ -188,7 +176,7 @@ export class Evees {
           message: `Commit at ${Date.now() / 1000}`,
           parentsIds: headId ? [headId] : []
         },
-        providerName
+        upl
       );
       headId = head.id;
     }
@@ -205,7 +193,7 @@ export class Evees {
    * Create a new commit with the given properties
    *
    * @param args the properties of the commit
-   * @param providerName the provider to which to create the commit, needed if there is more than one provider
+   * @param upl the provider to which to create the commit, needed if there is more than one provider
    */
   public async createCommit(
     args: {
@@ -215,9 +203,9 @@ export class Evees {
       creatorsIds?: string[];
       timestamp?: number;
     },
-    providerName?: string
+    upl?: string
   ): Promise<Secured<Commit>> {
-    providerName = this.validateProviderName(providerName);
+    upl = this.validateUpl(upl);
 
     const timestamp = args.timestamp || Date.now();
     const creatorsIds = args.creatorsIds || [creatorId];
@@ -233,7 +221,7 @@ export class Evees {
 
     this.logger.info('Created new commit: ', commit);
 
-    await this.cloneCommit(commit, providerName);
+    await this.cloneCommit(commit, upl);
 
     return commit;
   }
@@ -244,13 +232,13 @@ export class Evees {
    * Clones the given perspective in the given provider
    *
    * @param perspective the perspective to clone
-   * @param providerName the provider to which to clone the perspective to, needed if there is more than one provider
+   * @param upl the provider to which to clone the perspective to, needed if there is more than one provider
    */
   public async clonePerspective(
     perspective: Secured<Perspective>,
-    providerName?: string
+    upl?: string
   ): Promise<void> {
-    providerName = this.validateProviderName(providerName);
+    upl = this.validateUpl(upl);
 
     const creator = async (uprtcl: EveesProvider) => {
       await uprtcl.clonePerspective(perspective);
@@ -261,7 +249,7 @@ export class Evees {
       return perspective;
     };
 
-    await this.service.optimisticCreateIn(providerName, creator, cloner);
+    await this.service.optimisticCreateIn(upl, creator, cloner);
     this.logger.info('Cloned the perspective: ', perspective.id);
   }
 
@@ -269,10 +257,10 @@ export class Evees {
    * Clones the given commit in the given provider
    *
    * @param commit the commit to clone
-   * @param providerName the provider to which to clone the commit to, needed if there is more than one provider
+   * @param upl the provider to which to clone the commit to, needed if there is more than one provider
    */
-  public async cloneCommit(commit: Secured<Commit>, providerName?: string): Promise<void> {
-    providerName = this.validateProviderName(providerName);
+  public async cloneCommit(commit: Secured<Commit>, upl?: string): Promise<void> {
+    upl = this.validateUpl(upl);
 
     const creator = async (uprtcl: EveesProvider) => {
       await uprtcl.cloneCommit(commit);
@@ -283,7 +271,7 @@ export class Evees {
       return commit;
     };
 
-    await this.service.optimisticCreateIn(providerName, creator, cloner);
+    await this.service.optimisticCreateIn(upl, creator, cloner);
     this.logger.info('Cloned the commit: ', commit);
   }
 

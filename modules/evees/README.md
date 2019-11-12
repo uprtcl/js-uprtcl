@@ -21,15 +21,34 @@ npm install @uprtcl/evees
 Import the module, instantiate it with its appropiate configuration, and load it:
 
 ```ts
-import { eveesModule, EveesEthereum, EveesTypes } from '@uprtcl/evees';
+import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
+import { IpfsConnection, HolochainConnection, EthereumConnection } from '@uprtcl/connections';
+import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/evees';
 
-const eveesProvider = new EveesEthereum('ws://localhost:8545', {
+const ipfsConnection = new IpfsConnection({
   host: 'ipfs.infura.io',
   port: 5001,
   protocol: 'https'
 });
 
-const evees = eveesModule([{ service: eveesProvider }]);
+// Don't put anything on host to get from Metamask's ethereum provider
+const ethConnection = new EthereumConnection({});
+
+const eveesEth = new EveesEthereum(ethConnection, ipfsConnection);
+
+const knownSources = new KnownSourcesHolochain('test-instance', hcConnection);
+
+const hcConnection = new HolochainConnection({ host: 'ws://localhost:8888' });
+
+const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
+
+const discoverableEveesHolo = { service: eveesHolochain, knownSources };
+const discoverableEveesEth = { service: eveesEth, knownSources };
+
+const evees = eveesModule([discoverableEveesHolo, discoverableEveesEth]);
+
+const orchestrator = new MicroOrchestrator();
+
 await orchestrator.loadModules({
   id: EveesTypes.Module,
   module: evees

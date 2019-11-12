@@ -19,16 +19,22 @@ import { DocumentsRemote } from './services/documents.remote';
  * Example usage:
  *
  * ```ts
- * import { documentsModule, DocumentsIpfs } from '@uprtcl/documents';
+ * import { IpfsConnection } from '@uprtcl/connections';
+ * import { documentsModule, DocumentsTypes, DocumentsIpfs } from '@uprtcl/documents';
  *
- * const documentsProvider = new DocumentsIpfs({
+ * const ipfsConnection = new IpfsConnection({
  *   host: 'ipfs.infura.io',
  *   port: 5001,
  *   protocol: 'https'
  * });
  *
- * const docs = documentsModule([documentsProvider]);
- * await orchestrator.loadModules(docs);
+ *  const documentsProvider = new DocumentsIpfs(ipfsConnection);
+ *
+ * const docs = documentsModule([{ service: documentsProvider }]);
+ * await orchestrator.loadModules({
+ *   id: DocumentsTypes.Module,
+ *   module: docs
+ * });
  * ```
  *
  * @category CortexModule

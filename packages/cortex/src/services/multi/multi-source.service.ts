@@ -30,24 +30,26 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
    * Gets the object for the given hash from the given source
    *
    * @param hash the object hash
-   * @param sourceName the source name from which to get the object from
+   * @param upl the source from which to get the object from
    * @returns the object if found, otherwise undefined
    */
   public async getFromSource<O extends object>(
     hash: string,
-    sourceName: string
+    upl: string | undefined
   ): Promise<Hashed<O> | undefined> {
     const getter = (source: T) => source.get<O>(hash);
 
     // Get the object from source
-    const object = await this.getGenericFromService(sourceName, getter, (object: Hashed<O>) =>
+    const object = await this.getGenericFromService(upl, getter, (object: Hashed<O>) =>
       this.linksFromObject(object)
     );
+
+    upl = this.getService(upl).service.uprtclProviderLocator;
 
     if (!object) {
       // Object retrieval succeeded but object was not found,
       // remove from the known sources
-      await this.localKnownSources.removeKnownSource(hash, sourceName);
+      await this.localKnownSources.removeKnownSource(hash, upl);
     }
 
     return object;
@@ -63,10 +65,10 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
     let knownSources: string[] | undefined = undefined;
 
     // If there is only one source, use that to get the object
-    const servicesNames = this.getAllServicesNames();
+    const upls = this.getAllServicesUpl();
 
-    if (servicesNames.length === 1) {
-      knownSources = servicesNames;
+    if (upls.length === 1) {
+      knownSources = upls;
     } else {
       // Get the known sources for the object from the local
       knownSources = await this.localKnownSources.getKnownSources(hash);
@@ -83,7 +85,7 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
       promises = knownSources.map(tryGetFromSource);
     } else {
       // We had no known sources for the hash, try to get the object from all the sources
-      const sourcesNames = this.getAllServicesNames();
+      const sourcesNames = this.getAllServicesUpl();
 
       promises = sourcesNames.map(async sourceName => {
         const object = await tryGetFromSource(sourceName);

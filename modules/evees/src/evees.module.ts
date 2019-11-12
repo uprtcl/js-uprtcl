@@ -19,33 +19,39 @@ import { EveesRemote } from './services/evees.remote';
 import { EveesReduxModule } from './state';
 
 /**
- * Configure a _Prtcl Evees module with the given providers
+ * Configure a _Prtcl Evees module with the given configured providers
  *
  * Example usage:
  *
  * ```ts
- * import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/common';
+ * import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
+ * import { IpfsConnection, HolochainConnection, EthereumConnection } from '@uprtcl/connections';
+ * import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/evees';
  *
- * const eveesHolochain = new EveesHolochain({
- *   host: 'ws://localhost:8888',
- *   instance: 'test-instance'
- * });
- *
- * const eveesEth = new EveesEthereum('ws://localhost:8545', {
+ * const ipfsConnection = new IpfsConnection({
  *   host: 'ipfs.infura.io',
  *   port: 5001,
  *   protocol: 'https'
  * });
  *
- * const knownSources = new KnownSourcesHolochain({
- *   host: 'ws://localhost:8888',
- *   instance: 'test-instance'
- * });
+ * // Don't put anything on host to get from Metamask's ethereum provider
+ * const ethConnection = new EthereumConnection({});
  *
- * const discoverableEveesHolo = { service: eveesHolochain, knownSources: knownSources };
- * const discoverableEveesEth = { service: eveesEth, knownSources: knownSources };
+ * const eveesEth = new EveesEthereum(ethConnection, ipfsConnection);
+ *
+ * const knownSources = new KnownSourcesHolochain('test-instance', hcConnection);
+ *
+ * const hcConnection = new HolochainConnection({ host: 'ws://localhost:8888' });
+ *
+ * const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
+ *
+ * const discoverableEveesHolo = { service: eveesHolochain, knownSources };
+ * const discoverableEveesEth = { service: eveesEth, knownSources };
  *
  * const evees = eveesModule([discoverableEveesHolo, discoverableEveesEth]);
+ *
+ * const orchestrator = new MicroOrchestrator();
+ *
  * await orchestrator.loadModules({
  *   id: EveesTypes.Module,
  *   module: evees
@@ -56,7 +62,7 @@ import { EveesReduxModule } from './state';
  *
  * @param discoverableEvees
  * @param localEvees
- * @returns a configured _Prtcl Evees module ready to be
+ * @returns a configured _Prtcl Evees module ready to be used with `micro-orchestrator`
  */
 export function eveesModule(
   discoverableEvees: Array<DiscoverableSource<EveesRemote>>,
