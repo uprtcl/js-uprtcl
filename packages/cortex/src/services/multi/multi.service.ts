@@ -44,9 +44,9 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   }
 
   /**
-   * @returns gets the names of all the services
+   * @returns gets the upl of all the services
    */
-  public getAllServicesNames(): string[] {
+  public getAllServicesUpl(): string[] {
     return Object.keys(this.services);
   }
 
@@ -60,17 +60,25 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   /**
    * Gets the service with the given name
    *
-   * @param serviceName the name of the source
+   * @param upl the UprtclProviderLocator that identifies the service provider
    * @returns the source identified with the given name
    */
-  public getService(serviceName: string): DiscoverableService<T> | undefined {
-    const namedServiceName = Object.keys(this.services).find(name => name === serviceName);
+  public getService(upl: string | undefined): DiscoverableService<T> {
+    const upls: string[] = this.getAllServicesUpl();
 
-    if (!namedServiceName) {
-      return undefined;
+    if (!upl) {
+      if (upls.length === 1) {
+        upl = upls[0];
+      } else
+        throw new Error(
+          'There is more than one registered service provider, you must provide the upl for the service provider you wish to interact with'
+        );
     }
 
-    return this.services[namedServiceName];
+    const serviceProvider = this.services[upl];
+    if (!serviceProvider) throw new Error(`No service provider was found for name ${upl}`);
+
+    return serviceProvider;
   }
 
   /** Getters */
@@ -106,8 +114,8 @@ export class MultiService<T extends ServiceProvider> implements Ready {
     getter: (service: T) => Promise<R>,
     linksSelector: (object: R) => Promise<string[]>
   ): Promise<Array<R>> {
-    const promises = this.getAllServicesNames().map(async sourceName =>
-      this.getGenericFromService(sourceName, getter, linksSelector)
+    const promises = this.getAllServicesUpl().map(async upl =>
+      this.getGenericFromService(upl, getter, linksSelector)
     );
 
     const results = await Promise.all(promises);
@@ -117,22 +125,17 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   /**
    * Executes the getter function in the specified service
    *
-   * @param serviceName name of the service to execute the getter function to
+   * @param upl of the service to execute the getter function to
    * @param getter function to get the object from the specified service
    * @param linksSelector function to select links from the retrieved object
    * @returns the result of the getter function
    */
   public async getGenericFromService<R>(
-    serviceName: string,
+    upl: string | undefined,
     getter: (service: T) => Promise<R | undefined>,
     linksSelector: (object: R) => Promise<string[]>
   ): Promise<R | undefined> {
-    const service = this.getService(serviceName);
-
-    if (!service) {
-      this.logger.warn(`No source was found for name ${serviceName}`);
-      return;
-    }
+    const service = this.getService(upl);
 
     // Execute the getter
     const result = await getter(service.service);
@@ -155,21 +158,21 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    * Executes the given update function on the given service,
    * adding the known sources of the given object links to the service
    *
-   * @param serviceName the name of the service to execute the update function in
+   * @param upl of the service to execute the update function in
    * @param updater the update function to execute in the source
    * @param object the object to create
    * @returns the result of the update function
    */
   public async updateIn<O extends object, S>(
-    serviceName: string,
+    upl: string | undefined,
     updater: (service: T) => Promise<S>,
     object: O
   ): Promise<S> {
     // Execute the updater callback in the source
-    const provider = this.services[serviceName];
+    const provider = this.getService(upl);
     const result = await updater(provider.service);
 
-    await this.addLinksToKnownSources(object, serviceName, provider.knownSources);
+    await this.addLinksToKnownSources(object, upl, provider.knownSources);
 
     return result;
   }
@@ -184,16 +187,18 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    * @returns the newly created object, along with its hash
    */
   public async createIn<O extends object>(
-    serviceName: string,
+    upl: string | undefined,
     creator: (service: T) => Promise<Hashed<O>>
   ): Promise<Hashed<O>> {
-    const provider = this.services[serviceName];
+    const provider = this.getService(upl);
+    upl = provider.service.uprtclProviderLocator;
+
     const createdObject = await creator(provider.service);
 
-    await this.addLinksToKnownSources(createdObject, serviceName, provider.knownSources);
+    await this.addLinksToKnownSources(createdObject, upl, provider.knownSources);
 
     // We successfully created the object in the source, add to local known sources
-    await this.localKnownSources.addKnownSources(createdObject.id, [serviceName]);
+    await this.localKnownSources.addKnownSources(createdObject.id, [upl]);
 
     return createdObject;
   }
@@ -243,12 +248,12 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    * Adds the known sources of the links from the given object to the known sources service
    *
    * @param object
-   * @param serviceName
+   * @param upl
    * @param knownSourcesService
    */
   protected async addLinksToKnownSources<O extends object>(
     object: O,
-    serviceName: string,
+    upl: string | undefined,
     knownSourcesService: KnownSourcesService | undefined
   ): Promise<void> {
     // Add known sources of the object's links to the provider's known sources
@@ -264,8 +269,8 @@ export class MultiService<T extends ServiceProvider> implements Ready {
           links,
           ' from the object ',
           object,
-          ' to the source ',
-          serviceName
+          ' to the service provider ',
+          upl
         );
 
         const promises = links.map(async link => {
@@ -273,8 +278,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
           const knownSources = await this.localKnownSources.getKnownSources(link);
 
           // If the only known source is the name of the source itself, we don't need to tell the provider
-          const sameSource =
-            knownSources && knownSources.length === 1 && knownSources[0] === serviceName;
+          const sameSource = knownSources && knownSources.length === 1 && knownSources[0] === upl;
 
           if (knownSources && !sameSource) {
             await knownSourcesService.addKnownSources(link, knownSources);
