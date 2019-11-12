@@ -26,26 +26,21 @@ export class EthereumConnection extends Connection {
       this.web3 = new Web3(this.ethOptions.provider);
     } else if (typeof provider !== 'undefined') {
       this.accounts = await provider.enable();
+
       this.web3 = new Web3(provider);
+
+      provider.on('accountsChanged', accounts => {
+        if (accounts != this.accounts) {
+          // Time to reload your interface with accounts[0]!
+          window.location.reload();
+        }
+      });
     } else {
       throw new Error('No available web3 provider was found');
     }
 
-    console.log(this.web3.eth.accounts);
-
-    setInterval(async () => {
-      const accounts = await this.web3.eth.getAccounts();
-      this.updateAccounts(accounts);
-    }, 100);
-
-    const accounts = await this.web3.eth.getAccounts();
-    this.updateAccounts(accounts);
-
+    this.accounts = await this.web3.eth.getAccounts();
     this.networkId = await this.web3.eth.net.getId();
-  }
-
-  private updateAccounts(accounts: string[]): void {
-    this.accounts = accounts;
   }
 
   /**

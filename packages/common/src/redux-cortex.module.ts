@@ -24,7 +24,7 @@ export class ReduxCortexModule extends CortexModule {
 
     if (this.sources) {
       for (const source of this.sources) {
-        const authInfo = source.source.service.authInfo;
+        const authInfo = source.source.service.uplAuth;
         if (authInfo) {
           const updateUplAuth: UpdateUplAuth = {
             type: UPDATE_UPL_AUTH,

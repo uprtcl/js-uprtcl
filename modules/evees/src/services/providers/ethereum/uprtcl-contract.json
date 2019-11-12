@@ -25938,10 +25938,16 @@
       "links": {},
       "address": "0x3019953868ad32221039EE98F40e1137a27a4922",
       "transactionHash": "0x2949521bd380087937aca7ac2dfb7005c836858fe1748706994233a6aaa2892a"
+    },
+    "1573551477339": {
+      "events": {},
+      "links": {},
+      "address": "0xde7B4e5432484D79d7f968343904Af5978FDb49e",
+      "transactionHash": "0xc0a1515de6cf31e1f3657398589d79825283c8db4629bc9dc4729ff842d39d0e"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2019-11-11T09:49:24.664Z",
+  "updatedAt": "2019-11-12T09:38:05.577Z",
   "devdoc": {
     "methods": {}
   },
