@@ -26,7 +26,7 @@ export function ModuleContainer(container: Container): typeof HTMLElement {
         e.stopPropagation();
 
         if (e.detail.multiple) e.dependencies = e.detail.request.map(dep => container.getAll(dep));
-        else e.dependencies = e.detail.request.map(dep => container.get(dep));
+        else e.dependencies = e.detail.request.map(dep => [container.get(dep)]);
       });
     }
 

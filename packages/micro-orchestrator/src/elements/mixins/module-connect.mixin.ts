@@ -17,7 +17,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
     private requestGeneric<T>(
       dependency: interfaces.ServiceIdentifier<T>,
       multiple: boolean = false
-    ): T[] {
+    ): T[][] {
       const event = new RequestDependencyEvent({
         detail: { request: [dependency], multiple: multiple },
         composed: true,
@@ -30,7 +30,8 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
         resolved &&
         event.dependencies &&
         event.dependencies.length > 0 &&
-        event.dependencies[0]
+        event.dependencies[0] &&
+        event.dependencies[0][0]
       ) {
         return event.dependencies;
       } else {
@@ -43,10 +44,11 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
 
     request<T>(dependency: interfaces.ServiceIdentifier<T>): T {
       const deps = this.requestGeneric(dependency, false);
-      return deps[0];
+      return deps[0][0];
     }
 
     requestAll<T>(dependency: interfaces.ServiceIdentifier<T>): T[] {
-      return this.requestGeneric(dependency, true);
+      const deps = this.requestGeneric(dependency, true);
+      return deps[0];
     }
   };
