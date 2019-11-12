@@ -8,7 +8,7 @@ This cortex module implements patterns, services and lenses to interact with doc
 
 ## Dependencies
 
-This module depends on `@uprtcl/micro-orchestrator`, `@uprtcl/cortex` and `@uprtcl/connections`.
+This module depends on `@uprtcl/micro-orchestrator`, `@uprtcl/cortex` and `@uprtcl/connections`. It also depends on a redux module to be present.
 
 ## Install
 
