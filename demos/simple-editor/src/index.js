@@ -11,11 +11,11 @@ import { DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/document
 import { KnownSourcesHolochain, IpfsConnection, EthereumConnection } from '@uprtcl/connections';
 import {
   AccessControlTypes,
-  accessControlReduxModule,
-  entitiesReduxModule,
+  AccessControlReduxModule,
+  EntitiesReduxModule,
   EntitiesTypes,
   AuthTypes,
-  authReduxModule
+  AuthReduxModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/evees';
 import { SimpleEditor } from './simple-editor';
@@ -48,9 +48,9 @@ import { SimpleEditor } from './simple-editor';
     { id: ReduxTypes.Module, module: ReduxStoreModule },
     { id: PatternTypes.Module, module: PatternsModule },
     { id: DiscoveryTypes.Module, module: discoveryModule() },
-    { id: EntitiesTypes.Module, module: entitiesReduxModule() },
-    { id: AccessControlTypes.Module, module: accessControlReduxModule() },
-    { id: AuthTypes.Module, module: authReduxModule() },
+    { id: EntitiesTypes.Module, module: EntitiesReduxModule },
+    { id: AccessControlTypes.Module, module: AccessControlReduxModule },
+    { id: AuthTypes.Module, module: AuthReduxModule },
     {
       id: LensesTypes.Module,
       module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])

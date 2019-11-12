@@ -2,14 +2,14 @@ import { PropertyValues } from 'lit-element';
 
 import { Constructor, ReduxConnectedElement } from '@uprtcl/micro-orchestrator';
 
-import { selectAccessControl, Updatable, selectEntityAccessControl } from '@uprtcl/common';
+import { selectAccessControl, Updatable, selectCanWrite } from '@uprtcl/common';
 import { CortexEntityBase } from '../elements/cortex-entity-base';
 import { LensesPlugin } from './lenses-plugin';
 import { LensElement } from '../types';
 
-export const updatePlugin = <T extends CortexEntityBase & ReduxConnectedElement>(): LensesPlugin<
-  T
-> => (
+export const updatePlugin = <
+  T extends CortexEntityBase & ReduxConnectedElement
+>(): LensesPlugin<T> => (
   baseElement: Constructor<CortexEntityBase & ReduxConnectedElement>
 ): Constructor<CortexEntityBase & ReduxConnectedElement> =>
   class extends baseElement {
@@ -27,8 +27,7 @@ export const updatePlugin = <T extends CortexEntityBase & ReduxConnectedElement>
     stateChanged(state: any) {
       super.stateChanged(state);
 
-      selectEntityAccessControl(this.hash)(selectAccessControl(state));
-      this.entityEditable = true;
+      this.entityEditable = selectCanWrite(this.patternRecognizer)(this.hash)(state);
     }
 
     update(changedProperties: PropertyValues) {

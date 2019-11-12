@@ -16,7 +16,7 @@ import { EveesTypes, EveesLocal } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
-import { eveesReduxModule } from './state';
+import { EveesReduxModule } from './state';
 
 /**
  * Configure a _Prtcl Evees module with the given providers
@@ -93,7 +93,7 @@ export function eveesModule(
       ];
     }
 
-    submodules = [eveesReduxModule()];
+    submodules = [EveesReduxModule];
   }
 
   return EveesModule;

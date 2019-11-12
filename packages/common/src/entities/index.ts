@@ -1,9 +1,12 @@
-import { reduxModule, MicroModule } from '@uprtcl/micro-orchestrator';
+import { Saga } from '@redux-saga/core';
+
+import { ReduxModule } from '@uprtcl/micro-orchestrator';
 
 import { entitiesReducer } from './entities.reducer';
 import { loadEntitySaga } from './entities.sagas';
 import { entitiesReducerName } from './entities.selectors';
 import { EntityActions } from './entities.actions';
+import { injectable } from 'inversify';
 
 export {
   LOAD_ENTITY,
@@ -16,8 +19,9 @@ export { entitiesReducer, EntitiesState } from './entities.reducer';
 export { selectEntities, selectAll, selectById, selectByPattern } from './entities.selectors';
 export { entitiesReducerName };
 
-export function entitiesReduxModule(): MicroModule {
-  return reduxModule<any, EntityActions>({ [entitiesReducerName]: entitiesReducer }, [
-    loadEntitySaga
-  ]);
+@injectable()
+export class EntitiesReduxModule extends ReduxModule<any, EntityActions> {
+  reducersMap = { [entitiesReducerName]: entitiesReducer };
+
+  sagas: Saga[] = [loadEntitySaga];
 }
