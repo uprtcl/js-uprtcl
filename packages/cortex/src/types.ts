@@ -1,5 +1,5 @@
 export interface UplAuth {
-  userId: string;
+  userId: string | undefined;
 }
 
 export const DiscoveryTypes = {

@@ -1,5 +1,10 @@
 import { Connection, ConnectionOptions } from '../../connections/connection';
 
+interface HttpConnectionOptions {
+  tokenIdLocal: string;
+  userIdLocal: string;
+  headerIdentifier: string;
+}
 
 export interface PostResult {
   result: string;
@@ -11,12 +16,38 @@ export interface PostResult {
  * Wrapper over the fetch API
  */
 export class HttpConnection extends Connection {
-  constructor(protected baseUrl: string, protected authToken: string, options: ConnectionOptions) {
+  constructor(protected httpOptions: HttpConnectionOptions, options: ConnectionOptions) {
     super(options);
   }
 
   protected connect(): Promise<void> {
     return Promise.resolve();
+  }
+
+  get authToken(): string | undefined {
+    const token = localStorage.getItem(this.httpOptions.tokenIdLocal);
+    if (token != null) {
+      return token;
+    }
+  }
+
+  set authToken(token: string | undefined) {
+    if (token != null) {
+      localStorage.setItem(this.httpOptions.tokenIdLocal, token);
+    }
+  }
+
+  get userId(): string | undefined {
+    const userId = localStorage.getItem(this.httpOptions.userIdLocal);
+    if (userId != null) {
+      return userId;
+    }
+  }
+
+  set userId(userId: string | undefined) {
+    if (userId != null) {
+      localStorage.setItem(this.httpOptions.userIdLocal, userId);
+    }
   }
 
   /**
@@ -28,7 +59,7 @@ export class HttpConnection extends Connection {
     };
 
     if (this.authToken) {
-      headers['Authorization'] = `Bearer ${this.authToken}`;
+      headers[this.httpOptions.headerIdentifier] = this.authToken;
     }
 
     return headers;
@@ -41,20 +72,20 @@ export class HttpConnection extends Connection {
   public async get<T>(url: string): Promise<T> {
     this.logger.log('GET: ', url);
 
-    return fetch(this.baseUrl + url, {
+    return fetch(url, {
       method: 'GET',
       headers: this.headers
     })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      return response.json() as Promise<{ data: T }>;
-    })
-    .then(data => {
-      console.log('[HTTP GET RESULT] ', url, data);
-      return data.data;
-    });
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json() as Promise<{ data: T }>;
+      })
+      .then(data => {
+        console.log('[HTTP GET RESULT] ', url, data);
+        return data.data;
+      });
   }
 
   /**
@@ -83,7 +114,7 @@ export class HttpConnection extends Connection {
    */
   public async putOrPost(url: string, body: any, method: string): Promise<PostResult> {
     this.logger.log('POST: ', url, body, method);
-    return fetch(this.baseUrl + url, {
+    return fetch(url, {
       method: method,
       headers: {
         ...this.headers,
@@ -91,11 +122,11 @@ export class HttpConnection extends Connection {
       },
       body: JSON.stringify(body)
     })
-    .then(response => {
-      return response.json() as Promise<PostResult>;
-    })
-    .then(data => {
-       return (data as unknown) as PostResult;
-    });
+      .then(response => {
+        return response.json() as Promise<PostResult>;
+      })
+      .then(data => {
+        return (data as unknown) as PostResult;
+      });
   }
 }

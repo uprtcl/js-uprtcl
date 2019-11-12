@@ -1,4 +1,4 @@
-import { HttpConnection } from '@uprtcl/connections';
+import { HttpConnection, HttpProvider } from '@uprtcl/connections';
 import { Hashed } from '@uprtcl/cortex';
 
 import { DocumentsProvider } from '../documents.provider';
@@ -10,31 +10,28 @@ export enum DataType {
   DOCUMENT_NODE = 'DOCUMENT_NODE'
 }
 
-export class DocumentsHttp implements DocumentsProvider {
+const documents_api: string = 'textnode-v1';
 
-  connection!: HttpConnection;
-
-  constructor (protected host: string, jwt: string) {
-    this.connection = new HttpConnection(host, jwt, {});
+export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
+  
+  constructor(host: string, protected connection: HttpConnection) {
+    super(
+      {
+        host: host,
+        apiId: documents_api
+      },
+      connection
+    );
   }
 
-  get name() : string {
-    return `http:${this.evees_api}:+${this.host}`;
-  }; 
-
-  ready(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  async get<T extends object>(hash: string): Promise<Hashed<T> | undefined> {
-    const object = await this.connection.get<T>(`/data/${hash}`);
+  async get<T>(hash: string): Promise<Hashed<T>> {
+    const object = await super.getObject<T>(`/get/${hash}`);
     return {
       id: hash,
       object: object
     }
   }
 
-  
   async createTextNode(node: TextNode): Promise<string> {
     const result = await this.connection.post(`/data`, {
       type: DataType.DOCUMENT_NODE,
