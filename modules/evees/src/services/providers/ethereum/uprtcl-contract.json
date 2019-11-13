@@ -634,37 +634,83 @@
       "events": {},
       "links": {},
       "address": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601",
-      "transactionHash": "0xbafed028d387ad405e2fa3f0bb12dd6e78005578ae8eb5144bbe83d2d1ca5e4b"
+      "transactionHash": "0x6eb3a761f9576ec4fec191e7ff41c29d634c6dc6c14ec1f3608d3395b1280a91"
     },
-    "5777": {
+    "1573234616991": {
       "events": {},
       "links": {},
-      "address": "0x8374599C91b10C679ae7911f621F4277c2B82ee0",
-      "transactionHash": "0x4d68820ccfc814fae5cc7a2a63054532f8cd6d54f9dfe3297f6ef25537cd6e1a"
+      "address": "0x76E16d26d49B7d8C6743E43905EE4D373B1c1b0E",
+      "transactionHash": "0x8df869ee972d025535b831ec574660ce4de7eba543a9eb55f026467f0584fe90"
     },
-    "1572277233771": {
+    "1573375694660": {
       "events": {},
       "links": {},
-      "address": "0x563dE24f4778Fea1EF02c0E6F0E8Fb197c4EDeDD",
-      "transactionHash": "0xd0d961f3e09d576f1bc4a92c805b1f7ad854f880c7d623c478101cf6cf0efc95"
+      "address": "0x6b8558F734E121352b32A994fAdc50ab0e56d532",
+      "transactionHash": "0xeb5ad5371fa24360664439ccd6e39fc17a0491c641cac721355b8f69d830d818"
     },
-    "1572864273875": {
+    "1573398758506": {
       "events": {},
       "links": {},
-      "address": "0x3CEFbb819d7aBEC1a51596E7c621753af13D813A",
-      "transactionHash": "0x0ce6568b8ff25e5deec44ba339e2a59185ac8f7a640b6cce10053cbfc0ef97f6"
+      "address": "0x015bF20E568A0abb36F0EAD4AFA0558Fb5345d8e",
+      "transactionHash": "0x18338d9b7859b477eb67bddd88d822441d56295088bbcb67df95ee05ec9d62e4"
     },
-    "1572867802761": {
+    "1573413859193": {
       "events": {},
       "links": {},
-      "address": "0x6DB2E7A9B4164A2E6fE38e3A107e69a3a717b90D",
-      "transactionHash": "0x517eac79310ea36c9677aa497c50cc5c6d98bef0fa5236b008cffff5da502c6c"
+      "address": "0x635d4AE8987Bf262a6E593F01417C70aD8ACdDf7",
+      "transactionHash": "0xb6152f2461c7866a207604525df8e6072f8d5794e9c9eed2b005542eb7c4ddb5"
     },
-    "1572868048919": {
+    "1573465752999": {
       "events": {},
       "links": {},
-      "address": "0x3a521888A5E9cE7d41B375b471d29d43474d89E9",
-      "transactionHash": "0x251e4bffa241d7872a2b864a4ccd1f61ae567931c623c8e33ce5972b91a44f50"
+      "address": "0x3019953868ad32221039EE98F40e1137a27a4922",
+      "transactionHash": "0x2949521bd380087937aca7ac2dfb7005c836858fe1748706994233a6aaa2892a"
+    },
+    "1573551477339": {
+      "events": {},
+      "links": {},
+      "address": "0xde7B4e5432484D79d7f968343904Af5978FDb49e",
+      "transactionHash": "0xc0a1515de6cf31e1f3657398589d79825283c8db4629bc9dc4729ff842d39d0e"
+    },
+    "1573587724926": {
+      "events": {},
+      "links": {},
+      "address": "0x1F89F7850916812f587f76d19035de7B5E45E4E6",
+      "transactionHash": "0x9f9df95a6951a858f891544e40dc116bf5a4ca27ac9c9641c4f90b747a851f9d"
     }
+  },
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2019-11-13T09:57:47.867Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {
+      "addPerspective(bytes32,bytes32,string,string,string,address,string)": {
+        "notice": "Adds a new perspective to the mapping and sets the owner. The head pointer, the context and the name of the perspective are initialized but can be updated independently using updatePerspectiveDetails(). Validation of the perspectiveId to contextHash should be done externally using any content addressable storage solution for the perspectiveId. The perspectiveId is emited to help perspectiveHash reverse mapping "
+      },
+      "addUpdatesToRequest(bytes32,(bytes32,string,uint8)[])": {
+        "notice": "Add one or more headUpdate elements to an existing request "
+      },
+      "changeOwner(bytes32,address)": {
+        "notice": "Changes the owner of a given perspective. Available only to the current owner of that perspective. "
+      },
+      "closeRequest(bytes32)": {
+        "notice": "set the status to disabled (0) and can be called by any authorized address "
+      },
+      "getPerspectiveDetails(bytes32)": {
+        "notice": "Get the perspective owner and details from its ID "
+      },
+      "getRequest(bytes32)": {
+        "notice": "Get the perspective owner and head from its ID "
+      },
+      "initRequest(bytes32,bytes32,address,uint32,(bytes32,string,uint8)[],address[],string,string)": {
+        "notice": "Creates a new request owned and initialize its properties. The id of the request is derived from the message sender to prevent frontrunning attacks. "
+      },
+      "updateHeads((bytes32,string,uint8)[])": {
+        "notice": "One method to execute the head updates directly, without creating the request. Useful if the owner dont want to use the request authorization feature. It also works for updating one single perspective "
+      }
+    },
+    "notice": "Underscore Protocol Ethereum Service used to store the content of _Prtcl perspectives "
   }
 }
