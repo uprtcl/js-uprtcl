@@ -21,7 +21,7 @@ import { KnownSourcesHttp, IpfsConnection, EthereumConnection, HttpConnection } 
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
-  
+
   const c1host = 'http://localhost:3100/uprtcl/1';
   const ethHost = 'ws://localhost:8545';
   const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
@@ -29,13 +29,13 @@ import { SimpleEditor } from './simple-editor';
   const httpConnection = new HttpConnection();
   const ipfsConnection = new IpfsConnection(ipfsConfig);
   const ethConnection = new EthereumConnection({ provider: ethHost });
-  
+
   const httpEvees = new EveesHttp(c1host, httpConnection);
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
   const httpKnownSources = new KnownSourcesHttp(c1host, httpConnection);
 
   const evees = eveesModule([
-    { service: httpEvees, knownSources: httpKnownSources }, 
+    { service: httpEvees, knownSources: httpKnownSources },
     { service: ethEvees, knownSources: httpKnownSources }
   ]);
 
