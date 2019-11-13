@@ -1,12 +1,13 @@
-import { interfaces } from 'inversify';
+import { interfaces, injectable } from 'inversify';
 
-import { MicroModule } from '@uprtcl/micro-orchestrator';
+import { MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
 import { DraftsProvider } from './services/drafts.provider';
-import { DraftsTypes } from './types';
+import { DraftsTypes } from '../types';
 
-export function draftsModule(draftsProvider: DraftsProvider) {
-  return class implements MicroModule {
+export function draftsModule(draftsProvider: DraftsProvider): Constructor<MicroModule> {
+  @injectable()
+  class DraftsModule implements MicroModule {
     async onLoad(
       context: interfaces.Context,
       bind: interfaces.Bind,
@@ -14,9 +15,11 @@ export function draftsModule(draftsProvider: DraftsProvider) {
       isBound: interfaces.IsBound,
       rebind: interfaces.Rebind
     ): Promise<void> {
-      bind<DraftsProvider>(DraftsTypes.Drafts).toConstantValue(draftsProvider);
+      bind<DraftsProvider>(DraftsTypes.DraftsProvider).toConstantValue(draftsProvider);
     }
 
     async onUnload(): Promise<void> {}
-  };
+  }
+
+  return DraftsModule;
 }

@@ -29,7 +29,7 @@ export class DraftsLocal extends Dexie implements DraftsProvider {
   /**
    * @override
    */
-  async setDraft(elementId, content: any): Promise<void> {
+  async updateDraft(elementId, content: any): Promise<void> {
     await this.drafts.put(content, elementId);
   }
 }
