@@ -13,9 +13,15 @@ export class KnownSourcesHolochain extends HolochainProvider implements KnownSou
     return this.call('get_own_source', {});
   }
 
+  async getUpl(): Promise<string> {
+    const response = await this.call('get_uprtcl_provider_locator', {});
+    return this.parseResponse(response);
+  }
+
   getKnownSources(hash: string): Promise<string[]> {
     return this.call('get_known_sources', { address: hash });
   }
+
   addKnownSources(hash: string, sources: string[]): Promise<void> {
     return this.call('add_known_sources', {
       address: hash,

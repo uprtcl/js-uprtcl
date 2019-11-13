@@ -7,8 +7,9 @@ export class DocumentsHolochain extends HolochainSource implements DocumentsProv
     super({ instance, zome: 'documents' }, hcConnection);
   }
 
-  createTextNode(node: TextNode): Promise<string> {
+  createTextNode(node: TextNode, hash?: string): Promise<string> {
     return this.call('create_text_node', {
+      previous_address: hash,
       node: node
     });
   }

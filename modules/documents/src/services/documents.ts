@@ -72,11 +72,8 @@ export class Documents {
     };
 
     const cloner = async (docs: DocumentsProvider, hashedNode: Hashed<TextNode>) => {
-      const hash = await docs.createTextNode(hashedNode.object, hashedNode.id);
-      return {
-        id: hash,
-        object: node
-      };
+      await docs.createTextNode(hashedNode.object, hashedNode.id);
+      return hashedNode;
     };
 
     const hashedNode = await this.service.optimisticCreateIn(upl, creator, cloner);

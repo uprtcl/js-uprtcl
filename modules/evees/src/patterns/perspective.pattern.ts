@@ -118,7 +118,6 @@ export class PerspectivePattern
     if (!knownSources)
       throw new Error('First commit must be made before being able to update the perspective');
 
-    console.log({ perspective });
     const data = await this.evees.createData(newContent, knownSources[0]);
 
     const newHead = await this.evees.createCommit(
