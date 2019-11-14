@@ -8,6 +8,7 @@ import {
 } from '@uprtcl/cortex';
 import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
+import { WikisIpfs, WikisModule, WikisTypes } from '@uprtcl/wikis';
 import {
   AccessControlTypes,
   AccessControlReduxModule,
@@ -47,6 +48,12 @@ import { SimpleEditor } from './simple-editor';
     { service: ipfsDocuments, knownSources: httpKnownSources }
   ]);
 
+  const ipfsWikis = new WikisIpfs(ipfsConnection);
+
+  const wikis = WikisModule([
+    { service: ipfsWikis, knowSources: httpKnownSources}
+  ])
+
   const orchestrator = new MicroOrchestrator();
 
   await orchestrator.loadModules(
@@ -61,9 +68,11 @@ import { SimpleEditor } from './simple-editor';
       module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])
     },
     { id: EveesTypes.Module, module: evees },
-    { id: DocumentsTypes.Module, module: documents }
+    { id: DocumentsTypes.Module, module: documents },
+    { id: WikisTypes.Module, module: wikis }
   );
 
   console.log(orchestrator);
   customElements.define('simple-editor', SimpleEditor);
+  // customElements.define()
 })();

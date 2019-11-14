@@ -40,6 +40,7 @@
     "@uprtcl/cortex": "^0.0.1-alpha5",
     "@uprtcl/documents": "^0.0.1-alpha5",
     "@uprtcl/evees": "^0.0.1-alpha5",
+    "@uprtcl/wikis": "^0.0.1-alpha5",
     "@uprtcl/lenses": "^0.0.1-alpha5",
     "@uprtcl/micro-orchestrator": "^0.0.1-alpha5",
     "@webcomponents/webcomponentsjs": "^2.0.0",

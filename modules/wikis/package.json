@@ -56,9 +56,9 @@
     }
   ],
   "license": "MIT",
-  "main": "dist/uprtcl-documents.umd.js",
-  "module": "dist/uprtcl-documents.es5.js",
-  "typings": "dist/types/uprtcl-documents.d.ts",
+  "main": "dist/uprtcl-wikis.umd.js",
+  "module": "dist/uprtcl-wikis.es5.js",
+  "typings": "dist/types/uprtcl-wikis.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"
