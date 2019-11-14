@@ -1,4 +1,4 @@
-# @uprtcl/documents
+# @uprtcl/wikis
 
 >_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
 
@@ -13,7 +13,7 @@ This module depends on `@uprtcl/micro-orchestrator`, `@uprtcl/cortex` and `@uprt
 ## Install
 
 ```bash
-npm install @uprtcl/documents
+npm install @uprtcl/wikis
 ```
 
 ## Usage
@@ -21,17 +21,17 @@ npm install @uprtcl/documents
 Import the module, instantiate it with its appropiate configuration, and load it:
 
 ```ts
-import { documentsModule, DocumentsIpfs, DocumentsTypes } from '@uprtcl/documents';
+import { wikisModule, WikisIpfs, WikisTypes } from '@uprtcl/wikis';
 
-const documentsProvider = new DocumentsIpfs({
+const wikisProvider = new WikisIpfs({
   host: 'ipfs.infura.io',
   port: 5001,
   protocol: 'https'
 });
 
-const docs = documentsModule([{ service: documentsProvider }]);
+const wikis = wikisModule([{ service: wikisProvider }]);
 await orchestrator.loadModules({
-  id: DocumentsTypes.Module,
-  module: docs
+  id: WikisTypes.Module,
+  module: wikis
 });
 ```
