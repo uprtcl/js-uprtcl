@@ -30,13 +30,13 @@ export class Wikis {
     @inject(DiscoveryTypes.LocalKnownSources)
     protected knownSources: KnownSourcesService,
     @inject(WikisTypes.WikisLocal)
-    protected WikisLocal: WikisLocal,
+    protected wikisLocal: WikisLocal,
     @multiInject(WikisTypes.WikisRemote)
-    protected WikisRemotes: DiscoverableSource<WikisRemote>[]
+    protected wikisRemotes: DiscoverableSource<WikisRemote>[]
   ) {
     this.service = new CachedMultiSourceService<WikisLocal, WikisRemote>(
-      WikisLocal,
-      new MultiSourceService<WikisRemote>(patternRecognizer, knownSources, WikisRemotes)
+      wikisLocal,
+      new MultiSourceService<WikisRemote>(patternRecognizer, knownSources, wikisRemotes)
     );
   }
 
@@ -63,16 +63,16 @@ export class Wikis {
    * @param providerName the provider to which to clone the text node to, needed if there is more than one provider
    */
   public async createWikiNode(node: WikiNode, upl?: string): Promise<Hashed<WikiNode>> {
-    const creator = async (docs: WikisProvider) => {
-      const hash = await docs.createWikiNode(node);
+    const creator = async (wikis: WikisProvider) => {
+      const hash = await wikis.createWikiNode(node);
       return {
         id: hash,
         object: node
       };
     };
 
-    const cloner = async (docs: WikisProvider, hashedNode: Hashed<WikiNode>) => {
-      const hash = await docs.createWikiNode(hashedNode.object, hashedNode.id);
+    const cloner = async (wikis: WikisProvider, hashedNode: Hashed<WikiNode>) => {
+      const hash = await wikis.createWikiNode(hashedNode.object, hashedNode.id);
       return {
         id: hash,
         object: node

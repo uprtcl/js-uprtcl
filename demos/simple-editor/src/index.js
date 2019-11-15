@@ -8,7 +8,7 @@ import {
 } from '@uprtcl/cortex';
 import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
-import { WikisIpfs, WikisModule, WikisTypes } from '@uprtcl/wikis';
+import { WikisIpfs, wikisModule, WikisTypes, WikisHttp } from '@uprtcl/wikis';
 import {
   AccessControlTypes,
   AccessControlReduxModule,
@@ -20,6 +20,7 @@ import {
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
 import { KnownSourcesHttp, IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
 import { SimpleEditor } from './simple-editor';
+import { SimpleWiki } from './simple-wiki';
 
 (async function() {
 
@@ -48,10 +49,12 @@ import { SimpleEditor } from './simple-editor';
     { service: ipfsDocuments, knownSources: httpKnownSources }
   ]);
 
+  const httpWikis = new WikisHttp(c1host, httpConnection);
   const ipfsWikis = new WikisIpfs(ipfsConnection);
 
-  const wikis = WikisModule([
-    { service: ipfsWikis, knowSources: httpKnownSources}
+  const wikis = wikisModule([
+    { service: ipfsWikis, knownSources: httpKnownSources },
+    { service: httpWikis, knownSources: httpKnownSources }
   ])
 
   const orchestrator = new MicroOrchestrator();
@@ -74,5 +77,5 @@ import { SimpleEditor } from './simple-editor';
 
   console.log(orchestrator);
   customElements.define('simple-editor', SimpleEditor);
-  // customElements.define()
+  customElements.define('simple-wiki', SimpleWiki)
 })();

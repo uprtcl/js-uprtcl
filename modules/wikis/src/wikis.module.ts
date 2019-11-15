@@ -43,7 +43,7 @@ import { WikisRemote } from './services/wikis.remote';
  * @param wikisLocal the local cache service to
  * @returns a configured wikis module ready to be loaded
  */
-export function WikisModule(
+export function wikisModule(
   wikisRemotes: DiscoverableSource<WikisRemote>[],
   wikisLocal: new (...args: any[]) => WikisProvider = WikisLocal
 ): new (...args: any[]) => ReduxCortexModule {

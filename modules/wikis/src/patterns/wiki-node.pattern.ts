@@ -38,18 +38,19 @@ export class WikiNodePattern
   create = async (node: Partial<WikiNode>, upl?: string): Promise<Hashed<WikiNode>> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
-    const type = node && node.type ? node.type : 'Wiki';
+    const type = node && node.type ? node.type : "Wiki";
 
     const newWikiNode = { pages, title, type };
     return this.wikis.createWikiNode(newWikiNode, upl);
   };
 
   getLenses = (node: WikiNode): Lens[] => {
+    console.log(node)
     return [
       {
         name: 'Wiki',
         render: html`
-          <basic-wiki .hash=${node}></basic-wiki>     
+          <basic-wiki .data=${node}></basic-wiki>     
         `
       }
     ];
