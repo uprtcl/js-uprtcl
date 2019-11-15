@@ -57,12 +57,14 @@ export class CommitPattern
     commit.object.payload.dataId;
 
   create: (
-    args: {
-      dataId: string;
-      message: string;
-      parentsIds: string[];
-      timestamp?: number;
-    },
+    args:
+      | {
+          dataId: string;
+          message: string;
+          parentsIds: string[];
+          timestamp?: number;
+        }
+      | undefined,
     providerName?: string
   ) => Promise<Secured<Commit>> = async (
     args: {
@@ -70,9 +72,10 @@ export class CommitPattern
       message: string;
       parentsIds: string[];
       timestamp?: number;
-    },
+    } | undefined,
     providerName?: string
   ) => {
+    if (!args) throw new Error('Cannot create commit without specifying its details');
     return this.evees.createCommit(args, providerName);
   };
 

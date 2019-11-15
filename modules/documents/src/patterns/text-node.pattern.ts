@@ -10,10 +10,9 @@ import {
   Hashable,
   PatternTypes,
   Creatable,
-  SourceProvider,
-  DiscoverableSource
+  PatternRecognizer
 } from '@uprtcl/cortex';
-import { selectAccessControl, selectEntityAccessControl } from '@uprtcl/common';
+import { selectCanWrite } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ReduxTypes } from '@uprtcl/micro-orchestrator';
 
@@ -27,6 +26,7 @@ export class TextNodePattern
   implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasActions {
   constructor(
     @inject(DocumentsTypes.Documents) protected documents: Documents,
+    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
     @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<TextNode>,
     @inject(ReduxTypes.Store) protected store: Store
   ) {}
@@ -35,7 +35,7 @@ export class TextNodePattern
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = async (node: Partial<TextNode>, upl?: string): Promise<Hashed<TextNode>> => {
+  create = async (node: Partial<TextNode> | undefined, upl?: string): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
@@ -43,6 +43,11 @@ export class TextNodePattern
     const newTextNode = { links, text, type };
     return this.documents.createTextNode(newTextNode, upl);
   };
+
+  addChildrenLinks = (node: TextNode, childrenHashes: string[]): TextNode => ({
+    ...node,
+    links: [...node.links, ...childrenHashes]
+  });
 
   getLenses = (node: TextNode): Lens[] => {
     return [
@@ -57,7 +62,7 @@ export class TextNodePattern
 
   getActions = (textNode: TextNode, entityId: string): PatternAction[] => {
     const state = this.store.getState();
-    const writable = selectEntityAccessControl(entityId)(selectAccessControl(state));
+    const writable = selectCanWrite(this.recognizer)(entityId)(state);
 
     if (!writable) return [];
 

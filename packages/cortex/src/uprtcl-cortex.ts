@@ -38,6 +38,7 @@ export { IsValid } from './patterns/properties/is-valid';
 export { HasType } from './patterns/properties/has-type';
 export { HasText } from './patterns/properties/has-text';
 export { Transformable } from './patterns/properties/transformable';
+export { CreateChild } from './patterns/properties/create-child';
 export { HasActions, PatternAction } from './patterns/properties/has-actions';
 
 // Pattern Registry
