@@ -9,10 +9,6 @@ export class KnownSourcesHolochain extends HolochainProvider implements KnownSou
     super({ instance, zome: 'discovery', getMyAddress: proxyMyAddress(instance) }, connection);
   }
 
-  getOwnSource(): Promise<string> {
-    return this.call('get_own_source', {});
-  }
-
   async getUpl(): Promise<string> {
     const response = await this.call('get_uprtcl_provider_locator', {});
     return this.parseResponse(response);
