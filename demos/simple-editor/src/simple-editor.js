@@ -40,7 +40,7 @@ export class SimpleEditor extends moduleConnect(LitElement) {
       const regexp = new RegExp('^http');
       return regexp.test(provider.service.uprtclProviderLocator);
     });
-    
+
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
     });

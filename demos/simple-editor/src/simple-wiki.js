@@ -31,21 +31,15 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   async firstUpdated() {
     const wikisProvider = this.requestAll(WikisTypes.WikisRemote)
     .find(provider => {
-      console.log(provider)
       const regexp = new RegExp('^http');
-      console.log(regexp.test(provider.service.uprtclProviderLocator))
       return regexp.test(provider.service.uprtclProviderLocator);
     });
-    console.log(wikisProvider)
 
     const eveesProvider = this.requestAll(EveesTypes.EveesRemote)
     .find(provider => {
-      console.log(provider)
       const regexp = new RegExp('^http');
-      console.log(regexp.test(provider.service.uprtclProviderLocator))
       return regexp.test(provider.service.uprtclProviderLocator);
     });
-    console.log(eveesProvider)
 
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
@@ -58,7 +52,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
       const hashed = await this.wikiPattern.create(
-        { title: 'this is a test wiki', },
+        { title: 'this is a test wiki', pages: ['a']},
         wikisProvider.service.uprtclProviderLocator
       );
 

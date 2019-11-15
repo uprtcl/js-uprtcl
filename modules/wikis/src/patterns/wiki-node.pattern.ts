@@ -45,7 +45,6 @@ export class WikiNodePattern
   };
 
   getLenses = (node: WikiNode): Lens[] => {
-    console.log(node)
     return [
       {
         name: 'Wiki',
@@ -59,18 +58,30 @@ export class WikiNodePattern
   getActions = (WikiNode: WikiNode, entityId: string): PatternAction[] => {
     const state = this.store.getState();
     const writable = selectEntityAccessControl(entityId)(selectAccessControl(state));
-
-    if (!writable) return [];
+    // if (!writable) return [];
     return [
       {
         icon: 'title',
-        title: 'To title',
+        title: 'Create wiki',
         action: (element: HTMLElement) => {
           element.dispatchEvent(
             new CustomEvent('content-changed', {
               bubbles: true,
               composed: true,
               detail: { newContent: { ...WikiNode, type: 'Wiki' } }
+            })
+          );
+        }
+      },
+      {
+        icon: 'plus',
+        title: 'Adding a new page',
+        action: (element: HTMLElement) => {
+          element.dispatchEvent(
+            new CustomEvent('content-changed', {
+              bubbles: true,
+              composed: true,
+              detail: { newContent: { ...WikiNode, pages: WikiNode.pages.push(entityId) } }
             })
           );
         }

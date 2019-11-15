@@ -11,11 +11,13 @@ export class WikiNodeLens extends LitElement implements LensElement<WikiNode> {
   render() {
     return html`
       <h1>${this.data.title}</h1>
-      <div class="pages list">
-          ${this.data.pages.map((page) => {
-              html`i'm a page!`
-          })}
-      </div>
+      <ul>
+        ${this.data.pages.map((page) => {
+            return html`
+            <li>i'm a page!</li>
+            `
+        })}
+      </ul>
     `;
   }
 }
