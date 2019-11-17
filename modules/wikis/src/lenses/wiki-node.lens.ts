@@ -10,14 +10,17 @@ export class WikiNodeLens extends LitElement implements LensElement<WikiNode> {
 
   render() {
     return html`
-      <h1>${this.data.title}</h1>
+      <h4>${this.data.title}</h4>
       <ul>
-        ${this.data.pages.map((page) => {
-            return html`
-            <li>i'm a page!</li>
-            `
+        ${this.data.pages.map(page => {
+          return html`
+            <li>${page}</li>
+          `;
         })}
       </ul>
+      <mwc-button class=${'someclass'} @click=${() => console.log('creating new page..')}>
+        <mwc-icon>new page</mwc-icon>
+      </mwc-button>
     `;
   }
 }

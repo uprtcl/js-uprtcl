@@ -52,7 +52,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
       const hashed = await this.wikiPattern.create(
-        { title: 'this is a test wiki', pages: ['a']},
+        { title: 'Genesis Wiki', pages: [1,2,3]},
         wikisProvider.service.uprtclProviderLocator
       );
 
