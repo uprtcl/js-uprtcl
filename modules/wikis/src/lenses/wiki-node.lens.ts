@@ -18,8 +18,9 @@ export class WikiNodeLens extends LitElement implements LensElement<WikiNode> {
           `;
         })}
       </ul>
-      <mwc-button class=${'someclass'} @click=${() => console.log('creating new page..')}>
-        <mwc-icon>new page</mwc-icon>
+      <mwc-button class=${'someclass2'} @click=${() => console.log('creating new page..')}>
+        <mwc-icon>note_add</mwc-icon>
+        new page
       </mwc-button>
     `;
   }
