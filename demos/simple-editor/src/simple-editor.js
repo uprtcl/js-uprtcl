@@ -1,7 +1,9 @@
 import { LitElement, html } from 'lit-element';
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, GraphQlTypes } from '@uprtcl/micro-orchestrator';
 import { EveesTypes } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
+
+import gql from 'graphql-tag';
 
 export class SimpleEditor extends moduleConnect(LitElement) {
   static get properties() {
@@ -12,8 +14,8 @@ export class SimpleEditor extends moduleConnect(LitElement) {
 
   constructor() {
     super();
-    this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
-    this.textNodePattern = this.request(DocumentsTypes.TextNodePattern);
+    //    this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
+    //  this.textNodePattern = this.request(DocumentsTypes.TextNodePattern);
   }
 
   subscribeToHistory(history, callback) {
@@ -29,19 +31,29 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    const docProvider = this.requestAll(DocumentsTypes.DocumentsRemote)
-    .find(provider => {
+    const client = this.request(GraphQlTypes.Client);
+    const result = await client.query({
+      query: gql`
+        {
+          entity(id: "hi") {
+            id
+          }
+        }
+      `,
+      context: { hi: 'hi' }
+    });
+    console.log(result);
+
+    const docProvider = this.requestAll(DocumentsTypes.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
       return regexp.test(provider.service.uprtclProviderLocator);
     });
 
-    const eveesProvider = this.requestAll(EveesTypes.EveesRemote)
-    .find(provider => {
+    const eveesProvider = this.requestAll(EveesTypes.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
       return regexp.test(provider.service.uprtclProviderLocator);
     });
 
-    
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
     });

@@ -2,8 +2,6 @@
 import 'reflect-metadata';
 
 export { MicroOrchestrator } from './orchestrator/micro-orchestrator';
-export { ReduxStoreModule } from './modules/redux/redux-store.module';
-export { ReduxModule } from './modules/redux/redux.module';
 export { MicroModule } from './modules/micro.module';
 export { ModuleProvider, moduleProvider } from './orchestrator/module-provider';
 
@@ -12,8 +10,17 @@ export {
   Constructor,
   CustomElement,
   ModuleToLoad,
-  ReduxTypes
+  ReduxTypes,
+  GraphQlTypes
 } from './types';
+
+/** Redux */
+export { ReduxStoreModule } from './modules/redux/redux-store.module';
+export { ReduxModule } from './modules/redux/redux.module';
+
+/** GraphQl */
+export { ApolloClientModule } from './modules/graphql/apollo-client.module';
+export { graphQlSchemaModule } from './modules/graphql/graphql-schema.module';
 
 /** Elements */
 export { ModuleContainer, RequestDependencyEvent } from './elements/module-container';

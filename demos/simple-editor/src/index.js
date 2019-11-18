@@ -1,4 +1,10 @@
-import { ReduxTypes, MicroOrchestrator, ReduxStoreModule } from '@uprtcl/micro-orchestrator';
+import {
+  ReduxTypes,
+  MicroOrchestrator,
+  ReduxStoreModule,
+  GraphQlTypes,
+  ApolloClientModule
+} from '@uprtcl/micro-orchestrator';
 import {
   PatternTypes,
   PatternsModule,
@@ -17,11 +23,15 @@ import {
   AuthReduxModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
-import { KnownSourcesHttp, IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
+import {
+  KnownSourcesHttp,
+  IpfsConnection,
+  EthereumConnection,
+  HttpConnection
+} from '@uprtcl/connections';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
-
   const c1host = 'http://localhost:3100/uprtcl/1';
   const ethHost = 'ws://localhost:8545';
   const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
@@ -51,6 +61,7 @@ import { SimpleEditor } from './simple-editor';
 
   await orchestrator.loadModules(
     { id: ReduxTypes.Module, module: ReduxStoreModule },
+    { id: GraphQlTypes.Module, module: ApolloClientModule },
     { id: PatternTypes.Module, module: PatternsModule },
     { id: DiscoveryTypes.Module, module: discoveryModule() },
     { id: EntitiesTypes.Module, module: EntitiesReduxModule },
@@ -59,9 +70,7 @@ import { SimpleEditor } from './simple-editor';
     {
       id: LensesTypes.Module,
       module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])
-    },
-    { id: EveesTypes.Module, module: evees },
-    { id: DocumentsTypes.Module, module: documents }
+    }
   );
 
   console.log(orchestrator);

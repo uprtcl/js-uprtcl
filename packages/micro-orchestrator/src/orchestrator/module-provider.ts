@@ -10,6 +10,7 @@ export const moduleProvider = (logger: Logger) => {
   return (context: interfaces.Context): ModuleProvider => async (
     moduleId: symbol
   ): Promise<MicroModule> => {
+
     if (loadingModules[moduleId]) {
       return loadingModules[moduleId];
     }
@@ -18,19 +19,19 @@ export const moduleProvider = (logger: Logger) => {
 
     const microModule: MicroModule = context.container.get(moduleId);
 
-    function loadModule(module: MicroModule): Promise<void> {
+    async function loadModule(module: MicroModule): Promise<void> {
+      if (module.submodules) {
+        const submodulesPromises = module.submodules.map(submoduleConstructor => {
+          const submodule = context.container.resolve(submoduleConstructor);
+          return loadModule(submodule);
+        });
+        await Promise.all(submodulesPromises);
+      }
+
       const containerModule = new AsyncContainerModule((...args) =>
         module.onLoad(context, ...args)
       );
       return context.container.loadAsync(containerModule);
-    }
-
-    if (microModule.submodules) {
-      const submodulesPromises = microModule.submodules.map(submoduleConstructor => {
-        const submodule = context.container.resolve(submoduleConstructor);
-        return loadModule(submodule);
-      });
-      await Promise.all(submodulesPromises);
     }
 
     try {
