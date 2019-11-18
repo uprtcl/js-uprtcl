@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/connections",
-  "version": "0.0.1-alpha5",
+  "version": "0.0.1-alpha6",
   "description": "Basic connections services to help connect to different backend platforms",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@holochain/hc-web-client": "^0.5.0",
-    "@uprtcl/cortex": "^0.0.1-alpha5",
-    "@uprtcl/micro-orchestrator": "^0.0.1-alpha5",
+    "@uprtcl/cortex": "^0.0.1-alpha6",
+    "@uprtcl/micro-orchestrator": "^0.0.1-alpha6",
     "concat-stream": "^2.0.0",
     "ipfs-http-client": "^39.0.0",
     "lodash": "^4.17.15",
