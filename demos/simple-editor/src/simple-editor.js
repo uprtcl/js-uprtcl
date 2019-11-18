@@ -51,11 +51,13 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
+
       const hashed = await this.textNodePattern.create(
         {},
         docProvider.service.uprtclProviderLocator
       );
-
+        // aqui es donde se crea la perspectiva para 
+        // apuntar al texxt node
       const perspective = await this.perspectivePattern.create(
         { dataId: hashed.id },
         eveesProvider.service.uprtclProviderLocator

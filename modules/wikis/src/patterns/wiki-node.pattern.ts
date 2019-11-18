@@ -81,7 +81,7 @@ export class WikiNodePattern
             new CustomEvent('content-changed', {
               bubbles: true,
               composed: true,
-              detail: { newContent: { ...WikiNode, pages: WikiNode.pages.push(entityId) } }
+              detail: { newContent: { ...WikiNode, pages: WikiNode.pages.push(page) } }
             })
           );
         }

@@ -8,6 +8,10 @@ export class WikiNodeLens extends LitElement implements LensElement<WikiNode> {
   @property({ type: Object })
   data!: WikiNode;
 
+  addPage() {
+    
+  }
+
   render() {
     return html`
       <h4>${this.data.title}</h4>
