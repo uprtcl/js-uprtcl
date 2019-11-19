@@ -2,7 +2,7 @@
 import 'reflect-metadata';
 
 /** Types */
-export { EntitiesTypes, AccessControlTypes, AuthTypes } from './types';
+export { EntitiesTypes, DraftsTypes, AccessControlTypes, AuthTypes } from './types';
 
 /** Auth */
 export { AuthReduxModule } from './auth/state';
@@ -20,7 +20,7 @@ export {
 } from './access-control/services/owner-access-control.service';
 export {
   BasicAdminAccessControl,
-  BasicAdminAccessControlService 
+  BasicAdminAccessControlService
 } from './access-control/services/basic-admin-control.service';
 export { AccessControlReduxModule } from './access-control/state';
 export {
@@ -45,6 +45,7 @@ export { draftsModule } from './draft/draft.module';
 export { DraftsService } from './draft/services/drafts.service';
 export { DraftsHolochain } from './draft/services/drafts.holochain';
 export { DraftsLocal } from './draft/services/drafts.local';
+export { DraftsProvider } from './draft/services/drafts.provider';
 
 // Default patterns
 export { CidHashedPattern, recognizeHashed } from './patterns/cid-hashed.pattern';

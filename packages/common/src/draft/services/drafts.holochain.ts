@@ -1,7 +1,10 @@
+import { injectable } from 'inversify';
+
 import { HolochainConnection, HolochainProvider, proxyMyAddress } from '@uprtcl/connections';
 
 import { DraftsProvider } from './drafts.provider';
 
+@injectable()
 export class DraftsHolochain extends HolochainProvider implements DraftsProvider {
   constructor(instance: string, hcConnection: HolochainConnection) {
     super(
@@ -18,17 +21,17 @@ export class DraftsHolochain extends HolochainProvider implements DraftsProvider
    * @override
    */
   async getDraft(elementId: string): Promise<any> {
-    const content = await this.call('get_draft', { address: elementId });
-    return JSON.parse(content);
+    const draft = await this.call('get_draft', { address: elementId });
+    return JSON.parse(draft);
   }
 
   /**
    * @override
    */
-  async setDraft(elementId: string, content: any): Promise<void> {
-    await this.call('set_draft', {
+  async updateDraft(elementId: string, draft: any): Promise<void> {
+    await this.call('update_draft', {
       address: elementId,
-      content: JSON.stringify(content)
+      draft: JSON.stringify(draft)
     });
   }
 }

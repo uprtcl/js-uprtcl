@@ -1,7 +1,7 @@
 {
   "name": "simple-editor",
   "private": true,
-  "version": "0.0.1-alpha5",
+  "version": "0.0.1-alpha6",
   "contributors": [
     {
       "name": "Guillem Cordoba",
@@ -35,14 +35,14 @@
   "dependencies": {
     "@polymer/app-layout": "^3.0.0",
     "@polymer/polymer": "^3.1.0",
-    "@uprtcl/common": "^0.0.1-alpha5",
-    "@uprtcl/connections": "^0.0.1-alpha5",
-    "@uprtcl/cortex": "^0.0.1-alpha5",
-    "@uprtcl/documents": "^0.0.1-alpha5",
-    "@uprtcl/evees": "^0.0.1-alpha5",
-    "@uprtcl/wikis": "^0.0.1-alpha5",
-    "@uprtcl/lenses": "^0.0.1-alpha5",
-    "@uprtcl/micro-orchestrator": "^0.0.1-alpha5",
+    "@uprtcl/common": "^0.0.1-alpha6",
+    "@uprtcl/connections": "^0.0.1-alpha6",
+    "@uprtcl/cortex": "^0.0.1-alpha6",
+    "@uprtcl/documents": "^0.0.1-alpha6",
+    "@uprtcl/wikis": "^0.0.1-alpha",
+    "@uprtcl/evees": "^0.0.1-alpha6",
+    "@uprtcl/lenses": "^0.0.1-alpha6",
+    "@uprtcl/micro-orchestrator": "^0.0.1-alpha6",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "lit-element": "^2.2.1",
     "pwa-helpers": "^0.9.0",

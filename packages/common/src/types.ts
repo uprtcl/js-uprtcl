@@ -10,3 +10,7 @@ export const AuthTypes = {
 export const EntitiesTypes = {
   Module: Symbol('entities-reducer-module')
 };
+
+export const DraftsTypes = {
+  DraftsProvider: Symbol('drafts-provider')
+};

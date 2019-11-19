@@ -10,7 +10,9 @@ import {
   Creatable,
   Signed,
   HasActions,
-  PatternAction
+  PatternAction,
+  PatternRecognizer,
+  CreateChild
 } from '@uprtcl/cortex';
 import { AccessControlService, Updatable, Secured } from '@uprtcl/common';
 import { ReduxTypes, Logger } from '@uprtcl/micro-orchestrator';
@@ -30,10 +32,12 @@ export class PerspectivePattern
     HasRedirect,
     Creatable<NewPerspectiveArgs, Signed<Perspective>>,
     HasActions,
+    CreateChild,
     Updatable {
   constructor(
     @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesTypes.Evees) protected evees: Evees,
+    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
     @inject(ReduxTypes.Store) protected store: Store
   ) {}
 
@@ -72,10 +76,13 @@ export class PerspectivePattern
   };
 
   create: (
-    args: NewPerspectiveArgs,
+    args: NewPerspectiveArgs | undefined,
     providerName?: string
-  ) => Promise<Secured<Perspective>> = async (args: NewPerspectiveArgs, providerName?: string) => {
-    return this.evees.createPerspective(args, providerName);
+  ) => Promise<Secured<Perspective>> = async (
+    args: NewPerspectiveArgs | undefined,
+    providerName?: string
+  ) => {
+    return this.evees.createPerspective(args || {}, providerName);
   };
 
   getActions: (perspective: Secured<Perspective>) => PatternAction[] = (
@@ -95,6 +102,27 @@ export class PerspectivePattern
         }
       }
     ];
+  };
+
+  createChild = async (perspective: Secured<Perspective>, parent: any) => {
+    const patterns: Pattern | Creatable<any, any> | HasLinks = this.recognizer.recognizeMerge(
+      parent
+    );
+
+    const addChildrenLinks = (patterns as HasLinks).addChildrenLinks;
+
+    if (patterns && (patterns as Creatable<any, any>).create && addChildrenLinks) {
+      const newChildHashed = await (patterns as Creatable<any, any>).create(undefined);
+
+      const childPerspective: Secured<Perspective> = await this.create(
+        { dataId: newChildHashed.id },
+        perspective.object.payload.origin
+      );
+
+      const entity = addChildrenLinks(parent, [childPerspective.id]);
+
+      await this.update(perspective, entity);
+    }
   };
 
   update: (perspective: Secured<Perspective>, newContent: any) => Promise<boolean> = async (
@@ -118,7 +146,6 @@ export class PerspectivePattern
     if (!knownSources)
       throw new Error('First commit must be made before being able to update the perspective');
 
-    console.log({ perspective });
     const data = await this.evees.createData(newContent, knownSources[0]);
 
     const newHead = await this.evees.createCommit(

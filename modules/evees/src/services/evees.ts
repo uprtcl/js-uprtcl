@@ -20,7 +20,7 @@ import { EveesProvider } from './evees.provider';
 import { EveesRemote } from './evees.remote';
 
 export interface NoHeadPerspectiveArgs {
-  name: string;
+  name?: string;
   context?: string;
 }
 

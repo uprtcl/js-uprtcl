@@ -73,18 +73,18 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       return perspective.id
     }
 
-    const newPage = new CustomEvent('new-page', {
-      detail: this.createPage(),
-      bubbles: true,
-      composed: true
-    })
-    this.dispatchEvent(newPage)
+    // const newPage = new CustomEvent('new-page', {
+    //   detail: this.createPage(),
+    //   bubbles: true,
+    //   composed: true
+    // })
+    // this.dispatchEvent(newPage)
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
       const wiki = await this.wikiPattern.create(
-        { title: 'Genesis Wiki', pages: [1,2,3]},
+        { title: 'Genesis Wiki' },
         this.wikisProvider.service.uprtclProviderLocator
       );
       const perspective = await this.perspectivePattern.create(

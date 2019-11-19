@@ -8,6 +8,7 @@ export { Commit, Perspective, Context, EveesTypes } from './types';
 export { EveesSource } from './services/evees.source';
 export { EveesProvider } from './services/evees.provider';
 export { EveesRemote } from './services/evees.remote';
+export { EveesDexie } from './services/providers/evees.dexie';
 
 /** Service providers */
 export { EveesHolochain } from './services/providers/holochain/evees.holochain';
