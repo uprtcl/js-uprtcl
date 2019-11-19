@@ -2,7 +2,6 @@ import { LitElement, html } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { EveesTypes } from '@uprtcl/evees';
 import { WikisTypes } from '@uprtcl/wikis';
-import { DocumentsTypes } from '@uprtcl/documents'
 
 export class SimpleWiki extends moduleConnect(LitElement) {
   static get properties() {
@@ -15,10 +14,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     super();
     this.wikiPattern = this.request(WikisTypes.WikiPattern);
     this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
-    this.pagePattern = this.request(DocumentsTypes.TextNodePattern);
     this.wikisProvider = null;
     this.eveesProvider = null;
-    this.pagesProvider = null;
   }
 
   subscribeToHistory(history, callback) {
@@ -46,11 +43,6 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       return regexp.test(provider.service.uprtclProviderLocator);
     });
 
-    this.pagesProvider = this.requestAll(DocumentsTypes.DocumentsRemote)
-    .find(provider => {
-      const regexp = new RegExp('^http');
-      return regexp.test(provider.service.uprtclProviderLocator);
-    });
 
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
@@ -58,27 +50,6 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     this.subscribeToHistory(window.history, state => {
       this.rootHash = state[2].split('id=')[1];
     });
-
-    this.createPage = async () => {  
-      const pageHash = await this.pagePattern.create(
-        {},
-        this.pagesProvider.service.uprtclProviderLocator
-      );
-  
-      const perspective = await this.perspectivePattern.create(
-        { dataId: pageHash.id },
-        this.eveesProvider.service.uprtclProviderLocator
-      );
-      console.log('here')
-      return perspective.id
-    }
-
-    // const newPage = new CustomEvent('new-page', {
-    //   detail: this.createPage(),
-    //   bubbles: true,
-    //   composed: true
-    // })
-    // this.dispatchEvent(newPage)
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];

@@ -35,7 +35,7 @@ export class WikiNodePattern
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = async (node: Partial<WikiNode>, upl?: string): Promise<Hashed<WikiNode>> => {
+  create = async (node?: Partial<WikiNode>, upl?: string): Promise<Hashed<WikiNode>> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
     const type = node && node.type ? node.type : "Wiki";

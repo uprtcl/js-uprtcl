@@ -39,7 +39,7 @@
     "@uprtcl/connections": "^0.0.1-alpha6",
     "@uprtcl/cortex": "^0.0.1-alpha6",
     "@uprtcl/documents": "^0.0.1-alpha6",
-    "@uprtcl/wikis": "^0.0.1-alpha",
+    "@uprtcl/wikis": "^0.0.1-alpha6",
     "@uprtcl/evees": "^0.0.1-alpha6",
     "@uprtcl/lenses": "^0.0.1-alpha6",
     "@uprtcl/micro-orchestrator": "^0.0.1-alpha6",
