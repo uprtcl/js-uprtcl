@@ -36,6 +36,7 @@ export { IsSecure } from './patterns/properties/is-secure';
 export { Signable, Signed } from './patterns/properties/signable';
 export { IsValid } from './patterns/properties/is-valid';
 export { HasType } from './patterns/properties/has-type';
+export { IsEntity } from './patterns/properties/is-entity';
 export { HasText } from './patterns/properties/has-text';
 export { Transformable } from './patterns/properties/transformable';
 export { CreateChild } from './patterns/properties/create-child';

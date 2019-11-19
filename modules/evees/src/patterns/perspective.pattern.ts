@@ -12,7 +12,8 @@ import {
   HasActions,
   PatternAction,
   PatternRecognizer,
-  CreateChild
+  CreateChild,
+  IsEntity
 } from '@uprtcl/cortex';
 import { AccessControlService, Updatable, Secured } from '@uprtcl/common';
 import { ReduxTypes, Logger } from '@uprtcl/micro-orchestrator';
@@ -28,6 +29,7 @@ export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 export class PerspectivePattern
   implements
     Pattern,
+    IsEntity,
     HasLinks,
     HasRedirect,
     Creatable<NewPerspectiveArgs, Signed<Perspective>>,
@@ -50,6 +52,8 @@ export class PerspectivePattern
     );
   }
 
+  name = 'Perspective';
+
   getHardLinks: (perspective: Secured<Perspective>) => string[] = (
     perspective: Secured<Perspective>
   ): string[] => [];
@@ -65,14 +69,12 @@ export class PerspectivePattern
     perspective: Secured<Perspective>
   ) => this.getSoftLinks(perspective).then(links => links.concat(this.getHardLinks(perspective)));
 
-  redirect: (perspective: Secured<Perspective>) => string | undefined = (
+  redirect: (perspective: Secured<Perspective>) => Promise<string | undefined> = async (
     perspective: Secured<Perspective>
   ) => {
-    const state = this.store.getState();
+    const details = await this.evees.getPerspectiveDetails(perspective.id);
 
-    const headId = selectPerspectiveHeadId(perspective.id)(selectEvees(state));
-
-    return headId;
+    return details.headId;
   };
 
   create: (

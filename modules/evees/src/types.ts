@@ -41,7 +41,6 @@ export const EveesTypes = {
   Module: Symbol('evees-module'),
   PerspectivePattern: Symbol('perspective-pattern'),
   CommitPattern: Symbol('commit-pattern'),
-  ContextPattern: Symbol('context-pattern'),
   EveesLocal: Symbol('evees-local'),
   EveesRemote: Symbol('evees-remote'),
   Evees: Symbol('evees')

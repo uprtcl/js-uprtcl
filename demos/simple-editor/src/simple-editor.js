@@ -14,8 +14,8 @@ export class SimpleEditor extends moduleConnect(LitElement) {
 
   constructor() {
     super();
-    //    this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
-    //  this.textNodePattern = this.request(DocumentsTypes.TextNodePattern);
+       this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
+      this.textNodePattern = this.request(DocumentsTypes.TextNodePattern);
   }
 
   subscribeToHistory(history, callback) {
@@ -32,26 +32,15 @@ export class SimpleEditor extends moduleConnect(LitElement) {
 
   async firstUpdated() {
     const client = this.request(GraphQlTypes.Client);
-    const result = await client.query({
-      query: gql`
-        {
-          entity(id: "hi") {
-            id
-          }
-        }
-      `,
-      context: { hi: 'hi' }
-    });
-    console.log(result);
 
     const docProvider = this.requestAll(DocumentsTypes.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.service.uprtclProviderLocator);
+      return !regexp.test(provider.service.uprtclProviderLocator);
     });
 
     const eveesProvider = this.requestAll(EveesTypes.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.service.uprtclProviderLocator);
+      return !regexp.test(provider.service.uprtclProviderLocator);
     });
 
     window.addEventListener('popstate', () => {
@@ -75,7 +64,6 @@ export class SimpleEditor extends moduleConnect(LitElement) {
       );
       window.history.pushState('', '', `/?id=${perspective.id}`);
     }
-    document.getElementById('');
   }
 
   render() {

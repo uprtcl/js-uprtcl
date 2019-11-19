@@ -8,7 +8,8 @@ import {
   HasLinks,
   Creatable,
   Signed,
-  PatternTypes
+  PatternTypes,
+  IsEntity
 } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
@@ -23,6 +24,7 @@ export class CommitPattern
   implements
     Pattern,
     HasLinks,
+    IsEntity,
     HasRedirect,
     Creatable<
       { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
@@ -44,6 +46,8 @@ export class CommitPattern
     );
   }
 
+  name = 'Commit';
+
   getHardLinks: (commit: Secured<Commit>) => string[] = (commit: Secured<Commit>): string[] => [
     commit.object.payload.dataId,
     ...commit.object.payload.parentsIds
@@ -53,8 +57,9 @@ export class CommitPattern
   getLinks: (commit: Secured<Commit>) => Promise<string[]> = (commit: Secured<Commit>) =>
     this.getSoftLinks(commit).then(links => links.concat(this.getHardLinks(commit)));
 
-  redirect: (commit: Secured<Commit>) => string = (commit: Secured<Commit>) =>
-    commit.object.payload.dataId;
+  redirect: (commit: Secured<Commit>) => Promise<string | undefined> = async (
+    commit: Secured<Commit>
+  ) => commit.object.payload.dataId;
 
   create: (
     args:
@@ -67,12 +72,14 @@ export class CommitPattern
       | undefined,
     providerName?: string
   ) => Promise<Secured<Commit>> = async (
-    args: {
-      dataId: string;
-      message: string;
-      parentsIds: string[];
-      timestamp?: number;
-    } | undefined,
+    args:
+      | {
+          dataId: string;
+          message: string;
+          parentsIds: string[];
+          timestamp?: number;
+        }
+      | undefined,
     providerName?: string
   ) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');

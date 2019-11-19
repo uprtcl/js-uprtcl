@@ -1,14 +1,15 @@
-import { Dictionary } from 'lodash';
+import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
 
-import { reduxConnect } from '@uprtcl/micro-orchestrator';
+import { reduxConnect, GraphQlTypes, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer, PatternTypes } from '@uprtcl/cortex';
 
 import { getLenses, getIsomorphisms } from './utils';
 import { Isomorphisms, Lens } from '../types';
 import { LoadEntity, LOAD_ENTITY, selectById, selectEntities } from '@uprtcl/common';
+import { Dictionary } from 'lodash';
 
-export class CortexEntityBase extends reduxConnect(LitElement) {
+export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
   public hash!: string;
 
@@ -27,19 +28,43 @@ export class CortexEntityBase extends reduxConnect(LitElement) {
   protected entitiesRequested: Dictionary<boolean> = {};
 
   async loadEntity(hash: string): Promise<any> {
-    if (this.entitiesRequested[hash]) return;
+    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
 
-    this.entitiesRequested[hash] = true;
+    const result = await client.query({
+      query: gql`
+      {
+        getEntity(id: "${hash}", depth: 1, disableRedirect: true) {
+          id
+          raw
+        }
+      }
+      `
+    });
 
-    const action: LoadEntity = {
-      type: LOAD_ENTITY,
-      payload: { hash }
+    return result.data.getEntity.raw;
+  }
+
+  async entityUpdated() {
+    this.isomorphisms = undefined;
+    this.entity = await this.loadEntity(this.hash);
+
+    if (!this.entity) return;
+
+    const isomorphisms = await getIsomorphisms(this.patternRecognizer, this.entity, (id: string) =>
+      this.loadEntity(id)
+    );
+
+    this.isomorphisms = {
+      entity: {
+        id: this.hash,
+        object: this.entity
+      },
+      isomorphisms: isomorphisms.reverse()
     };
-    this.store.dispatch(action);
+
+    this.selectedLens = getLenses(this.patternRecognizer, this.isomorphisms)[0];
   }
-  selectEntity(hash: string): any | undefined {
-    return this.entities[hash];
-  }
+
   getLensElement(): Element | null {
     return null;
   }
@@ -60,7 +85,7 @@ export class CortexEntityBase extends reduxConnect(LitElement) {
 
   firstUpdated(changedProperties: PropertyValues) {
     super.firstUpdated(changedProperties);
-    this.loadEntity(this.hash);
+    this.entityUpdated();
   }
 
   updated(changedProperties: PropertyValues) {
@@ -70,40 +95,6 @@ export class CortexEntityBase extends reduxConnect(LitElement) {
       this.entity = undefined;
       this.isomorphisms = undefined;
       this.entityUpdated();
-      this.stateChanged(this.store.getState());
-    }
-  }
-
-  entityUpdated() {
-    this.isomorphisms = undefined;
-
-    this.loadEntity(this.hash);
-  }
-
-  stateChanged(state: any) {
-    this.entities = selectEntities(state).entities;
-    this.entity = selectById(this.hash)(selectEntities(state));
-
-    if (!this.entity) return;
-
-    const { isomorphisms, entitiesToLoad } = getIsomorphisms(
-      this.patternRecognizer,
-      this.entity,
-      (id: string) => this.selectEntity(id)
-    );
-
-    if (entitiesToLoad.length > 0) {
-      entitiesToLoad.forEach(id => this.loadEntity(id));
-    } else {
-      this.isomorphisms = {
-        entity: {
-          id: this.hash,
-          object: this.entity
-        },
-        isomorphisms: isomorphisms.reverse()
-      };
-
-      this.selectedLens = getLenses(this.patternRecognizer, this.isomorphisms)[0];
     }
   }
 }

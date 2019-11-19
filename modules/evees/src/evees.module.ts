@@ -1,6 +1,7 @@
 import { injectable } from 'inversify';
 
 import { DiscoverableSource, PatternTypes } from '@uprtcl/cortex';
+import { graphQlSchemaModule } from '@uprtcl/micro-orchestrator';
 import {
   DefaultSecuredPattern,
   DefaultSignedPattern,
@@ -10,13 +11,13 @@ import {
 
 import { PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern } from './patterns/commit.pattern';
-import { ContextPattern } from './patterns/context.pattern';
 import { CommitHistory } from './lenses/commit-history';
 import { EveesTypes, EveesLocal } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { EveesReduxModule } from './state';
+import { eveesTypeDefs, resolvers } from './graphql.schema';
 
 /**
  * Configure a _Prtcl Evees module with the given configured providers
@@ -94,12 +95,11 @@ export function eveesModule(
         { symbol: PatternTypes.Core.Signed, pattern: DefaultSignedPattern },
         { symbol: PatternTypes.Core.Secured, pattern: DefaultSecuredPattern },
         { symbol: EveesTypes.PerspectivePattern, pattern: PerspectivePattern },
-        { symbol: EveesTypes.CommitPattern, pattern: CommitPattern },
-        { symbol: EveesTypes.ContextPattern, pattern: ContextPattern }
+        { symbol: EveesTypes.CommitPattern, pattern: CommitPattern }
       ];
     }
 
-    submodules = [EveesReduxModule];
+    submodules = [EveesReduxModule, graphQlSchemaModule([eveesTypeDefs], [resolvers])];
   }
 
   return EveesModule;

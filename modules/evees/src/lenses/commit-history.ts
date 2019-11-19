@@ -1,12 +1,13 @@
 import { Dictionary } from 'lodash';
 import { LitElement, property, html, css } from 'lit-element';
 
-import { reduxConnect } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, reduxConnect, GraphQlTypes } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 import { LensElement } from '@uprtcl/lenses';
 import { Secured } from '@uprtcl/common';
 
 import { Commit } from '../types';
+import { ApolloClient, gql } from 'apollo-boost';
 
 export class CommitHistory extends reduxConnect(LitElement)
   implements LensElement<Secured<Commit>> {
@@ -19,8 +20,25 @@ export class CommitHistory extends reduxConnect(LitElement)
   @property({ type: Number })
   commitsToShow!: number;
 
-  firstUpdated() {
+  async firstUpdated() {
     this.initialLoad();
+
+    const apolloClient: ApolloClient<any> = this.request(GraphQlTypes.Client);
+    const result = await apolloClient.query({query: gql`
+      {
+        getEntity(id: "${this.data.id}", depth: 1, disableRedirect: true) {
+          id
+          entity {
+            ... on Commit {
+              parentCommits {
+                id
+              }
+            }
+          }
+        }
+      }
+    `})
+    console.log(result)
   }
 
   async initialLoad() {

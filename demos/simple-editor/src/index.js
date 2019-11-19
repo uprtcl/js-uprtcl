@@ -45,16 +45,16 @@ import { SimpleEditor } from './simple-editor';
   const httpKnownSources = new KnownSourcesHttp(c1host, httpConnection);
 
   const evees = eveesModule([
-    { service: httpEvees, knownSources: httpKnownSources },
-    { service: ethEvees, knownSources: httpKnownSources }
+    //{ service: httpEvees, knownSources: httpKnownSources },
+    { service: ethEvees }
   ]);
 
   const httpDocuments = new DocumentsHttp(c1host, httpConnection);
   const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
 
   const documents = documentsModule([
-    { service: httpDocuments, knownSources: httpKnownSources },
-    { service: ipfsDocuments, knownSources: httpKnownSources }
+    //{ service: httpDocuments, knownSources: httpKnownSources },
+    { service: ipfsDocuments }
   ]);
 
   const orchestrator = new MicroOrchestrator();
@@ -70,7 +70,9 @@ import { SimpleEditor } from './simple-editor';
     {
       id: LensesTypes.Module,
       module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])
-    }
+    },
+    { id: EveesTypes.Module, module: evees },
+    { id: DocumentsTypes.Module, module: documents }
   );
 
   console.log(orchestrator);

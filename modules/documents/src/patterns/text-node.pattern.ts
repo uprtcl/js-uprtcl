@@ -10,7 +10,8 @@ import {
   Hashable,
   PatternTypes,
   Creatable,
-  PatternRecognizer
+  PatternRecognizer,
+  IsEntity
 } from '@uprtcl/cortex';
 import { selectCanWrite } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
@@ -23,7 +24,7 @@ const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
 export class TextNodePattern
-  implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasActions {
+  implements Pattern, Creatable<Partial<TextNode>, TextNode>, IsEntity, HasLenses, HasActions {
   constructor(
     @inject(DocumentsTypes.Documents) protected documents: Documents,
     @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
@@ -34,6 +35,8 @@ export class TextNodePattern
   recognize(object: object): boolean {
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
+
+  name = 'TextNode';
 
   create = async (node: Partial<TextNode> | undefined, upl?: string): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];

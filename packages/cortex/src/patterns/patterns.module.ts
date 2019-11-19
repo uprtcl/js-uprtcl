@@ -5,7 +5,7 @@ import { graphQlSchemaModule, MicroModule } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer } from './recognizer/pattern.recognizer';
 import { Pattern } from './pattern';
 import { PatternTypes } from '../types';
-import { schema } from './patterns.graphql';
+import { cortexTypeDefs, resolvers } from './patterns.graphql';
 
 @injectable()
 export class PatternsModule implements MicroModule {
@@ -31,5 +31,5 @@ export class PatternsModule implements MicroModule {
 
   async onUnload(): Promise<void> {}
 
-  submodules = [graphQlSchemaModule(schema)];
+  submodules = [graphQlSchemaModule([cortexTypeDefs], [resolvers])];
 }

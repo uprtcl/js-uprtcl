@@ -21,31 +21,27 @@ export function getLenses(
   return lenses;
 }
 
-export function getIsomorphisms(
+export async function getIsomorphisms(
   patternRecognizer: PatternRecognizer,
   entity: any,
-  selectEntity: (id: string) => any
-): { entitiesToLoad: Array<string>; isomorphisms: Array<any> } {
+  selectEntity: (id: string) => Promise<any>
+): Promise<any[]> {
   let isomorphisms: any[] = [entity];
 
   const transformIsomorphisms = transformEntity(patternRecognizer, entity);
   isomorphisms = isomorphisms.concat(transformIsomorphisms);
 
   // Recursive call to get all isomorphisms from redirected entities
-  const { isomorphisms: redirectedIsomorphisms, entitiesToLoad } = redirectEntity(
-    patternRecognizer,
-    entity,
-    selectEntity
-  );
+  const redirectedIsomorphisms = await redirectEntity(patternRecognizer, entity, selectEntity);
   isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
-  return { isomorphisms, entitiesToLoad };
+  return isomorphisms;
 }
 
-function redirectEntity(
+async function redirectEntity(
   patternRecognizer: PatternRecognizer,
   entity: object,
-  selectEntity: (id: string) => any
-): { entitiesToLoad: Array<string>; isomorphisms: Array<any> } {
+  selectEntity: (id: string) => Promise<any>
+): Promise<any[]> {
   const patterns: Array<Pattern | HasRedirect> = patternRecognizer.recognize(entity);
 
   let isomorphisms: any[] = [];
@@ -53,27 +49,25 @@ function redirectEntity(
 
   for (const pattern of patterns) {
     if ((pattern as HasRedirect).redirect) {
-      const redirectHash = (pattern as HasRedirect).redirect(entity);
+      const redirectHash = await (pattern as HasRedirect).redirect(entity);
 
       if (redirectHash) {
-        const redirectEntity = selectEntity(redirectHash);
+        const redirectEntity = await selectEntity(redirectHash);
 
         if (redirectEntity) {
-          const {
-            isomorphisms: redirectedIsomorphisms,
-            entitiesToLoad: redirectedEntitiesToLoad
-          } = getIsomorphisms(patternRecognizer, redirectEntity, selectEntity);
+          const redirectedIsomorphisms = await getIsomorphisms(
+            patternRecognizer,
+            redirectEntity,
+            selectEntity
+          );
 
           isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
-          entitiesToLoad = entitiesToLoad.concat(redirectedEntitiesToLoad);
-        } else {
-          entitiesToLoad.push(redirectHash);
         }
       }
     }
   }
 
-  return { isomorphisms, entitiesToLoad };
+  return isomorphisms;
 }
 
 function transformEntity<T extends object>(

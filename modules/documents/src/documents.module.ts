@@ -10,6 +10,8 @@ import { DocumentsProvider } from './services/documents.provider';
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
+import { graphQlSchemaModule } from '@uprtcl/micro-orchestrator';
+import { typeDefs } from './graphql';
 
 /**
  * Configure a documents module with the given providers
@@ -70,6 +72,8 @@ export function documentsModule(
     get patterns() {
       return [{ symbol: DocumentsTypes.TextNodePattern, pattern: TextNodePattern }];
     }
+
+    submodules = [graphQlSchemaModule([typeDefs], [])];
   }
 
   return DocumentsModule;
