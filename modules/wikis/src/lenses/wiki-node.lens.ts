@@ -8,9 +8,34 @@ export class WikiNodeLens extends LitElement implements LensElement<WikiNode> {
   @property({ type: Object })
   data!: WikiNode;
 
-  addPage() {
-    
+  connectedCallback() {
+    super.connectedCallback()
+    this.addEventListener('new-page', e => {
+      e.stopPropagation();
+      this.newPage(e)
+    })
   }
+
+  newPage = (e) => {
+    console.log(e)
+    console.log(e.srcElement)
+    console.log(e.toElement)
+    // const newPageHash = e.target['createPage']()
+    this.data.pages.push(e.detail)
+    this.updateContent(this.data.pages)
+  }
+
+  updateContent(pages: Array<string>) {
+    this.dispatchEvent(
+      new CustomEvent('content-changed', {
+        detail: { newContent: { ...this.data, pages } },
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+
+
 
   render() {
     return html`
@@ -22,7 +47,7 @@ export class WikiNodeLens extends LitElement implements LensElement<WikiNode> {
           `;
         })}
       </ul>
-      <mwc-button class=${'someclass2'} @click=${() => console.log('creating new page..')}>
+      <mwc-button @click={${(e) => this.newPage(e)}}>
         <mwc-icon>note_add</mwc-icon>
         new page
       </mwc-button>

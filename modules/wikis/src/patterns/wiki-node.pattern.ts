@@ -56,8 +56,8 @@ export class WikiNodePattern
   };
 
   getActions = (WikiNode: WikiNode, entityId: string): PatternAction[] => {
-    const state = this.store.getState();
-    const writable = selectEntityAccessControl(entityId)(selectAccessControl(state));
+    // const state = this.store.getState();
+    // const writable = selectEntityAccessControl(entityId)(selectAccessControl(state));
     // if (!writable) return [];
     return [
       {
@@ -69,19 +69,6 @@ export class WikiNodePattern
               bubbles: true,
               composed: true,
               detail: { newContent: { ...WikiNode, type: 'Wiki' } }
-            })
-          );
-        }
-      },
-      {
-        icon: 'plus',
-        title: 'Adding a new page',
-        action: (element: HTMLElement) => {
-          element.dispatchEvent(
-            new CustomEvent('content-changed', {
-              bubbles: true,
-              composed: true,
-              detail: { newContent: { ...WikiNode, pages: WikiNode.pages.push(page) } }
             })
           );
         }
