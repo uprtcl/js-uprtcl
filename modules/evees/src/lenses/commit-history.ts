@@ -26,7 +26,7 @@ export class CommitHistory extends reduxConnect(LitElement)
     const apolloClient: ApolloClient<any> = this.request(GraphQlTypes.Client);
     const result = await apolloClient.query({query: gql`
       {
-        getEntity(id: "${this.data.id}", depth: 1, disableRedirect: true) {
+        getEntity(id: "${this.data.id}", depth: 1) {
           id
           entity {
             ... on Commit {

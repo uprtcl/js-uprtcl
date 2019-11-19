@@ -33,13 +33,21 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        getEntity(id: "${hash}", depth: 1, disableRedirect: true) {
+        getEntity(id: "${hash}", depth: 1) {
           id
           raw
+          content {
+            ... on TextNode {
+              text
+              type
+            }
+          }
         }
       }
       `
     });
+
+    console.log(result);
 
     return result.data.getEntity.raw;
   }
