@@ -10,19 +10,6 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   @property({ type: Object })
   data!: WikiNode;
 
-  connectedCallback() {
-    super.connectedCallback()
-    this.addEventListener('new-page', e => {
-      e.stopPropagation();
-      this.addPageToWiki(e)
-    })
-  }
-
-  addPageToWiki = hash => {
-    this.data.pages.push(hash.detail)
-    this.updateContent(this.data.pages)
-  }
-
   createPage = async () => {
     const perspectivePattern:any = this.request(EveesTypes.PerspectivePattern);
     const pagePattern:any = this.request(DocumentsTypes.TextNodePattern);
@@ -49,13 +36,8 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       eveesProvider.service.uprtclProviderLocator
     );
 
-    const newPage = new CustomEvent('new-page', {
-      detail: perspective.id,
-      bubbles: true,
-      composed: true
-    })
-    this.dispatchEvent(newPage)
-
+    this.data.pages.push(perspective.id)
+    this.updateContent(this.data.pages)
   }
 
   updateContent(pages: Array<string>) {
@@ -67,6 +49,13 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       })
     );
   }
+  
+  public rootHash = null
+  setPage(pageHash) {
+    console.log(pageHash)
+    this.rootHash = pageHash
+    console.log(this.rootHash)
+  }
 
   render() {
     return html`
@@ -74,14 +63,20 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       <ul>
         ${this.data.pages.map(page => {
           return html`
-            <li>${page}</li>
+            <li @click=${() => this.setPage(page)}>${page}</li>
           `;
         })}
       </ul>
-      <mwc-button @click={${() => this.createPage()}}>
+
+      <mwc-button @click=${() => this.createPage()}>
         <mwc-icon>note_add</mwc-icon>
         new page
       </mwc-button>
+
+
+      <div>
+        <cortex-entity .hash=${this.rootHash}></cortex-entity>        
+      </div>
     `;
   }
 }
