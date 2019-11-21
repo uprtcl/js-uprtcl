@@ -10,6 +10,9 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   @property({ type: Object })
   data!: WikiNode;
 
+  @property({ type: String })
+  rootHash!: String
+
   createPage = async () => {
     const perspectivePattern:any = this.request(EveesTypes.PerspectivePattern);
     const pagePattern:any = this.request(DocumentsTypes.TextNodePattern);
@@ -49,12 +52,9 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       })
     );
   }
-  
-  public rootHash = null
+
   setPage(pageHash) {
-    console.log(pageHash)
     this.rootHash = pageHash
-    console.log(this.rootHash)
   }
 
   render() {
@@ -74,9 +74,13 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       </mwc-button>
 
 
-      <div>
-        <cortex-entity .hash=${this.rootHash}></cortex-entity>        
-      </div>
+      ${this.rootHash
+        ? html`
+            <cortex-entity .hash=${this.rootHash}></cortex-entity>
+          `
+        : html`
+            Loading...
+          `}
     `;
   }
 }
