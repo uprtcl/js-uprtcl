@@ -11,7 +11,7 @@ export enum DataType {
   DOCUMENT_NODE = 'DOCUMENT_NODE'
 }
 
-const documents_api: string = 'textnode-v1';
+const documents_api: string = 'documents-v1';
 
 export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
   constructor(host: string, protected connection: HttpConnection) {
