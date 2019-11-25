@@ -8,7 +8,7 @@ import { ProposalMock } from '../../proposal.mock';
 
 export class EveesHolochain extends HolochainSource implements EveesRemote {
   constructor(instance: string, hcConnection: HolochainConnection) {
-    super({ zome: 'uprtcl', instance }, hcConnection);
+    super({ zome: 'evees', instance }, hcConnection);
   }
 
   get accessControl() {

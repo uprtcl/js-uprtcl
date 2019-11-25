@@ -26,7 +26,7 @@ export class DraftsService implements DraftsProvider {
   /**
    * @override
    */
-  setDraft(elementId: string, content: any): Promise<void> {
+  updateDraft(elementId: string, content: any): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

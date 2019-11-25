@@ -11,6 +11,38 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
   @property()
   editable!: boolean;
 
+  lastChangeTimeout: any;
+  lastText!: string;
+
+  get currentContent(): TextNode {
+    const data = { ...this.data };
+    if (this.lastText) data.text = this.lastText;
+
+    return data;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener('keypress', e => {
+      const key = e.which || e.keyCode;
+      // 13 is enter
+      if (key === 13) {
+        e.preventDefault();
+
+        this.dispatchEvent(
+          new CustomEvent('create-child', {
+            detail: {
+              parent: this.currentContent
+            },
+            composed: true,
+            bubbles: true
+          })
+        );
+      }
+    });
+  }
+
   render() {
     return html`
       <node-list .data=${this.data}>
@@ -18,7 +50,7 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
           ? html`
               <div
                 contenteditable=${this.editable ? 'true' : 'false'}
-                @input=${e => e.target && this.updateContent(e.target['innerText'])}
+                @input=${e => e.target && this.textInput(e.target['innerText'])}
               >
                 ${this.data.text}
               </div>
@@ -26,7 +58,7 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
           : html`
               <h3
                 contenteditable=${this.editable ? 'true' : 'false'}
-                @input=${e => e.target && this.updateContent(e.target['innerText'])}
+                @input=${e => e.target && this.textInput(e.target['innerText'])}
               >
                 ${this.data.text}
               </h3>
@@ -35,10 +67,20 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
     `;
   }
 
-  updateContent(content: string) {
+  textInput(content: string) {
+    if (this.lastChangeTimeout) {
+      clearTimeout(this.lastChangeTimeout);
+    }
+
+    this.lastText = content;
+
+    this.lastChangeTimeout = setTimeout(() => this.updateContent(), 2000);
+  }
+
+  updateContent() {
     this.dispatchEvent(
       new CustomEvent('content-changed', {
-        detail: { newContent: { ...this.data, text: content } },
+        detail: { newContent: this.currentContent },
         bubbles: true,
         composed: true
       })

@@ -61,16 +61,20 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
     `;
   }
 
+  get show() {
+    return this.actions && this.actions.length > 0;
+  }
+
   render() {
     return html`
       <mwc-button
-        class=${this.actions ? '' : 'hidden'}
+        class=${this.show ? '' : 'hidden'}
         @click=${() => (this.menu.open = !this.menu.open)}
       >
         <mwc-icon>more_vert</mwc-icon>
       </mwc-button>
 
-      <mwc-menu id="menu" class=${this.actions ? '' : 'hidden'}>
+      <mwc-menu id="menu" class=${this.show ? '' : 'hidden'}>
         <mwc-list>
           ${this.actions &&
             this.actions.map(

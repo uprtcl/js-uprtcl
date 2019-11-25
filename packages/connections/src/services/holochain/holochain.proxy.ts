@@ -28,11 +28,6 @@ export class HolochainProxy extends HolochainProvider implements Source {
     return this.parseResponse(response);
   }
 
-  async getUpl(): Promise<string> {
-    const response = await this.call('get_uprtcl_provider_locator', {});
-    return this.parseResponse(response);
-  }
-
   async get<T extends object>(hash: string): Promise<Hashed<T> | undefined> {
     const response = await this.call('get_proxied_entry', {
       address: hash
