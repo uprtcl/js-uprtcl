@@ -53,6 +53,8 @@ export class CommitPattern
   getLinks: (commit: Secured<Commit>) => Promise<string[]> = (commit: Secured<Commit>) =>
     this.getSoftLinks(commit).then(links => links.concat(this.getHardLinks(commit)));
 
+  replaceChildrenLinks = (commit: Secured<Commit>, newLinks: string[]): Secured<Commit> => commit;
+
   redirect: (commit: Secured<Commit>) => string = (commit: Secured<Commit>) =>
     commit.object.payload.dataId;
 
@@ -67,12 +69,14 @@ export class CommitPattern
       | undefined,
     providerName?: string
   ) => Promise<Secured<Commit>> = async (
-    args: {
-      dataId: string;
-      message: string;
-      parentsIds: string[];
-      timestamp?: number;
-    } | undefined,
+    args:
+      | {
+          dataId: string;
+          message: string;
+          parentsIds: string[];
+          timestamp?: number;
+        }
+      | undefined,
     providerName?: string
   ) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');

@@ -10,7 +10,10 @@ import {
   CachedMultiSourceService,
   Hashed,
   IsSecure,
-  MultiSourceService
+  MultiSourceService,
+  DiscoveryService,
+  HasLinks,
+  Pattern
 } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Secured } from '@uprtcl/common';
@@ -24,9 +27,10 @@ export interface NoHeadPerspectiveArgs {
   context?: string;
 }
 
-export type NewPerspectiveArgs =
+export type NewPerspectiveArgs = (
   | Partial<PerspectiveDetails>
-  | (NoHeadPerspectiveArgs & { dataId: string });
+  | (NoHeadPerspectiveArgs & { dataId: string })
+) & { disableRecursive?: boolean };
 
 const creatorId = 'did:hi:ho';
 const DEFAULT_PERSPECTIVE_NAME = 'master';
@@ -45,6 +49,8 @@ export class Evees {
     @inject(PatternTypes.Core.Secured) protected secured: IsSecure<any>,
     @inject(DiscoveryTypes.LocalKnownSources)
     public knownSources: KnownSourcesService,
+    @inject(DiscoveryTypes.DiscoveryService)
+    protected discoveryService: DiscoveryService,
     @inject(EveesTypes.EveesLocal)
     protected eveesLocal: EveesLocal,
     @multiInject(EveesTypes.EveesRemote)
@@ -145,7 +151,7 @@ export class Evees {
     const perspectiveData: Perspective = {
       creatorId: creatorId,
       origin: upl,
-      timestamp: Date.now()
+      timestamp: Date.now() / 1000
     };
     const perspective: Secured<Perspective> = await this.secured.derive(perspectiveData);
 
@@ -158,9 +164,55 @@ export class Evees {
     const context = args.context || `${Date.now()}${Math.random()}`;
 
     // Create the commit to point the perspective to, if needed
-
     let dataId = (args as { dataId: any }).dataId;
     let headId = (args as { headId: string }).headId;
+
+    if (!dataId && !headId)
+      throw new Error(
+        'Either the headId or the dataId has to be provided to create the perspective'
+      );
+
+    if (!args.disableRecursive) {
+      // Create recursive perspective to be able to write in the descendant perspectives
+      if (!dataId) {
+        const commit: Secured<Commit> | undefined = await this.discoveryService.get(headId);
+        if (!commit) throw new Error('Head commit for the perspective was not found');
+
+        dataId = commit.object.payload.dataId;
+      }
+
+      const dataHashed: Hashed<any> | undefined = await this.discoveryService.get(dataId);
+      if (!dataHashed) throw new Error('Data for the head commit of the perspective was not found');
+
+      const data = dataHashed.object;
+
+      const patterns: Pattern | HasLinks = this.patternRecognizer.recognizeMerge(data);
+
+      if ((patterns as HasLinks).getHardLinks) {
+        const descendantLinks = (patterns as HasLinks).getHardLinks(data);
+
+        // TODO: generalize to break the assumption that all links are to perspectives
+        const promises = descendantLinks.map(async link => {
+          const details = await this.getPerspectiveDetails(link);
+          const newPerspective = await this.createPerspective(
+            { context, name, headId: details.headId },
+            upl
+          );
+          return newPerspective.id;
+        });
+
+        const newLinks = await Promise.all(promises);
+        const newData = (patterns as HasLinks).replaceChildrenLinks(data, newLinks);
+
+        const previousDataUpls = await this.knownSources.getKnownSources(dataId);
+
+        if (!previousDataUpls) throw new Error(`We don't know where to create the data`);
+
+        // TODO: fix this
+        const newDataHashed = await this.createData(newData, previousDataUpls[0]);
+        dataId = newDataHashed.id;
+      }
+    }
 
     if (dataId) {
       const head = await this.createCommit(

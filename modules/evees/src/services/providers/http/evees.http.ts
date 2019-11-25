@@ -3,7 +3,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed, UplAuth } from '@uprtcl/cortex';
 import { BasicAdminAccessControlService } from '@uprtcl/common';
 
-import { ProposalProvider } from '../../proposal.provider';
+import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
 import { PerspectiveDetails } from '../../../types';
 
@@ -13,7 +13,7 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   accessControl: BasicAdminAccessControlService | undefined;
-  proposals: ProposalProvider | undefined;
+  proposals: ProposalsProvider | undefined;
 
   constructor(host: string, protected connection: HttpConnection) {
     super(
