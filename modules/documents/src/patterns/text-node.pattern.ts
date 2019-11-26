@@ -10,7 +10,8 @@ import {
   Hashable,
   PatternTypes,
   Creatable,
-  PatternRecognizer
+  PatternRecognizer,
+  HasLinks
 } from '@uprtcl/cortex';
 import { selectCanWrite } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
@@ -23,7 +24,7 @@ const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
 export class TextNodePattern
-  implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasActions {
+  implements Pattern, Creatable<Partial<TextNode>, TextNode>, HasLenses, HasLinks, HasActions {
   constructor(
     @inject(DocumentsTypes.Documents) protected documents: Documents,
     @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
@@ -44,10 +45,17 @@ export class TextNodePattern
     return this.documents.createTextNode(newTextNode, upl);
   };
 
-  addChildrenLinks = (node: TextNode, childrenHashes: string[]): TextNode => ({
+  replaceChildrenLinks = (node: TextNode, childrenHashes: string[]): TextNode => ({
     ...node,
-    links: [...node.links, ...childrenHashes]
+    links: childrenHashes
   });
+
+  getHardLinks: (node: TextNode) => string[] = (node: TextNode): string[] => node.links;
+
+  getSoftLinks: (node: TextNode) => Promise<string[]> = async (node: TextNode) => [];
+
+  getLinks: (node: TextNode) => Promise<string[]> = (node: TextNode) =>
+    this.getSoftLinks(node).then(links => links.concat(this.getHardLinks(node)));
 
   getLenses = (node: TextNode): Lens[] => {
     return [

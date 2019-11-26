@@ -3,5 +3,5 @@ export interface HasLinks {
   getSoftLinks: (object: any) => Promise<string[]>;
   getHardLinks: (object: any) => string[];
 
-  addChildrenLinks?: <T>(object: T, childrenHashes: string[]) => T;
+  replaceChildrenLinks: (object: any, links: string[]) => any;
 }

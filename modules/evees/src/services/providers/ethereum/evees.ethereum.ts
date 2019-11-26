@@ -13,7 +13,7 @@ import * as EveesContractArtifact from './uprtcl-contract.json';
 
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
-import { ProposalMock } from '../../proposal.mock';
+import { ProposalsMock } from '../../proposals.mock';
 import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 
@@ -40,7 +40,8 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   }
 
   get proposals() {
-    return new ProposalMock();
+    return new ProposalsMock();
+    // Cesar: substituir por `return new ProposalsEthereum(this)`
   }
 
   /**

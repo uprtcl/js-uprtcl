@@ -29,6 +29,7 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
       // 13 is enter
       if (key === 13) {
         e.preventDefault();
+        e.stopPropagation();
 
         this.dispatchEvent(
           new CustomEvent('create-child', {

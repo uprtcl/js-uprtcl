@@ -1,9 +1,9 @@
 import { Hashed } from '@uprtcl/cortex';
 
-import { ProposalProvider } from './proposal.provider';
+import { ProposalsProvider } from './proposals.provider';
 import { Proposal, UpdateRequest } from '../types';
 
-export class ProposalMock implements ProposalProvider {
+export class ProposalsMock implements ProposalsProvider {
   getProposalsByCreator(creatorId: string): Promise<Hashed<Proposal>[]> {
     throw new Error('Method not implemented.');
   }

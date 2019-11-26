@@ -10,7 +10,6 @@ import {
 
 import { PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern } from './patterns/commit.pattern';
-import { ContextPattern } from './patterns/context.pattern';
 import { CommitHistory } from './lenses/commit-history';
 import { EveesTypes, EveesLocal } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
@@ -94,8 +93,7 @@ export function eveesModule(
         { symbol: PatternTypes.Core.Signed, pattern: DefaultSignedPattern },
         { symbol: PatternTypes.Core.Secured, pattern: DefaultSecuredPattern },
         { symbol: EveesTypes.PerspectivePattern, pattern: PerspectivePattern },
-        { symbol: EveesTypes.CommitPattern, pattern: CommitPattern },
-        { symbol: EveesTypes.ContextPattern, pattern: ContextPattern }
+        { symbol: EveesTypes.CommitPattern, pattern: CommitPattern }
       ];
     }
 

@@ -15,7 +15,7 @@ export class DocumentsLocal implements DocumentsProvider {
   async createTextNode(node: TextNode): Promise<string> {
     const hashed = await this.hashedPattern.derive(node);
 
-    await this.objectsCache.cache(hashed.id, node);
+    await this.objectsCache.cache(hashed.id, hashed);
 
     return hashed.id;
   }

@@ -35,17 +35,19 @@ export class CortexEntity extends CortexEntityBase {
             <mwc-circular-progress></mwc-circular-progress>
           `
         : html`
-            <div style="display: flex; flex-direction: row;">
+            <div style="display: flex; flex-direction: row; position: relative;">
               <div style="flex: 1;">
                 ${this.renderLens()}
               </div>
 
-              ${this.renderPlugins().map(
-                plugin =>
-                  html`
-                    ${plugin}
-                  `
-              )}
+              <div style="position: absolute; right: 0; display: flex; flex-direction: row;">
+                ${this.renderPlugins().map(
+                  plugin =>
+                    html`
+                      ${plugin}
+                    `
+                )}
+              </div>
             </div>
           `}
     `;

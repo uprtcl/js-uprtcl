@@ -23,6 +23,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
         composed: true,
         bubbles: true
       });
+      event['id'] = Date.now();
 
       const resolved = this.dispatchEvent(event);
 

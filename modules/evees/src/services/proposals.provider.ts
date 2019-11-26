@@ -1,12 +1,11 @@
 import { Source, Hashed } from '@uprtcl/cortex';
-import { Proposal, UpdateRequest } from '../types';
 
-export interface ProposalProvider extends Source {
+import { Proposal, UpdateRequest, ProposalRequest } from '../types';
+
+export interface ProposalsProvider extends Source {
   /** Getters */
 
-  getProposalsByCreator(creatorId: string): Promise<Hashed<Proposal>[]>;
-
-  getProposalsToPerspective(perspectiveId: string): Promise<Hashed<Proposal>[]>;
+  getProposalsToPerspective(perspectiveId: string): Promise<Array<ProposalRequest>>;
 
   /** Modifiers */
 
