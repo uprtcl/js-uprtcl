@@ -34,12 +34,7 @@ export interface UpdateRequest {
 export interface Proposal {
   timestamp: number;
   creatorId: string;
-  description: string | undefined;
-}
-
-export interface ProposalRequest {
-  proposal: Hashed<Proposal>;
-  requests: Array<Hashed<UpdateRequest>>;
+  requests: Array<UpdateRequest>;
 }
 
 export const EveesTypes = {

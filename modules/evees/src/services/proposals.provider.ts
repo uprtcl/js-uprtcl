@@ -1,22 +1,21 @@
 import { Source, Hashed } from '@uprtcl/cortex';
 
-import { Proposal, UpdateRequest, ProposalRequest } from '../types';
+import { Proposal, UpdateRequest } from '../types';
 
 export interface ProposalsProvider extends Source {
   /** Getters */
 
-  getProposalsToPerspective(perspectiveId: string): Promise<Array<ProposalRequest>>;
+  getProposalsToPerspective(perspectiveId: string): Promise<Array<Proposal>>;
 
   /** Modifiers */
 
   // From the point of view of the proposing person
 
-  createProposal(requests: UpdateRequest[], description: string | undefined): Promise<string>;
+  createProposal(requests: UpdateRequest[]): Promise<string>;
 
   updateProposal(
     proposalId: string,
-    requests: UpdateRequest[],
-    description: string | undefined
+    requests: UpdateRequest[]
   ): Promise<void>;
 
   cancelProposal(proposalId: string): Promise<void>;

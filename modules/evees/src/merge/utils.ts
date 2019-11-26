@@ -1,0 +1,37 @@
+import { Diff } from 'diff-match-patch-ts';
+import * as lodash from 'lodash';
+
+import { DiffUtils } from './diff.utils';
+
+export function mergeStrings(originalString: string, newStrings: string[]): string {
+  const diffs = newStrings.map(newString => DiffUtils.charDiff(originalString, newString));
+
+  const alignedDiffs = DiffUtils.alignDiffs(diffs);
+  let mergeDiffs: Diff[] = [];
+  for (let i = 0; i < alignedDiffs.original.length; i++) {
+    const mergeDiff = mergeResult(
+      alignedDiffs.original[i],
+      alignedDiffs.news.map(newChar => newChar[i])
+    );
+    mergeDiffs.push(mergeDiff);
+  }
+
+  return DiffUtils.applyDiff(originalString, mergeDiffs);
+}
+
+export function mergeResult<A>(original: A, modifications: A[]): A {
+  const changes = modifications.filter(modification => !lodash.isEqual(original, modification));
+
+  switch (changes.length) {
+    // Object has not changed
+    case 0:
+      return original;
+    case 1:
+      return changes[0];
+    default:
+      if (changes.every(change => lodash.isEqual(changes[0], change))) {
+        return changes[0];
+      }
+      throw new Error('conflict when trying to merge');
+  }
+}

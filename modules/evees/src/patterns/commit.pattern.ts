@@ -8,13 +8,16 @@ import {
   HasLinks,
   Creatable,
   Signed,
+  PatternRecognizer,
   PatternTypes
 } from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { Secured, DiscoveryTypes, DiscoveryService } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
 import { Commit, EveesTypes } from '../types';
 import { Evees } from '../services/evees';
+import { Mergeable } from '../properties/mergeable';
+import findMostRecentCommonAncestor from '../merge/common-ancestor';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
@@ -28,11 +31,14 @@ export class CommitPattern
       { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
       Signed<Commit>
     >,
+    Mergeable,
     HasLenses {
   constructor(
     @inject(PatternTypes.Core.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
-    @inject(EveesTypes.Evees) protected evees: Evees
+    @inject(EveesTypes.Evees) protected evees: Evees,
+    @inject(DiscoveryTypes.DiscoveryService) protected discoveryService: DiscoveryService,
+    @inject(PatternTypes.PatternRecognizer) protected recognizer: PatternRecognizer
   ) {}
 
   recognize(object: object) {
@@ -92,5 +98,40 @@ export class CommitPattern
         `
       }
     ];
+  };
+
+  merge = async (toCommit: Secured<Commit>, fromCommit: Secured<Commit>) => {
+    const commitsIds = [fromCommit.id, toCommit.id];
+    const ancestorId = await findMostRecentCommonAncestor(this.discoveryService)(commitsIds);
+
+    const ancestor: Secured<Commit> = await this.discoveryService.get(ancestorId);
+
+    const ancestorData: any = await this.discoveryService.get(ancestor.object.payload.dataId);
+
+    const fromData = await this.discoveryService.get(fromCommit.object.payload.dataId);
+    const toData = await this.discoveryService.get(toCommit.object.payload.dataId);
+
+    const pattern = this.recognizer.recognizeMerge(toCommit);
+
+    if (!(pattern as Mergeable).merge)
+      throw new Error('Trying to merge a data that cannot be merged');
+
+    const newData = await (pattern as Mergeable).merge(toData, fromData, ancestorData);
+
+    const toDataKnownSources = await this.evees.knownSources.getKnownSources(
+      toCommit.object.payload.dataId
+    );
+
+    if (!toDataKnownSources) throw new Error('We do not know where to create the data');
+
+    const newDataId = await this.evees.createData(newData, toDataKnownSources[0]);
+
+    // TODO: filter out the parents that are already ancestors
+
+    return this.create({
+      dataId: newDataId,
+      parentsIds: commitsIds,
+      message: `Merge of ${fromCommit.id} to ${toCommit.id}`
+    });
   };
 }

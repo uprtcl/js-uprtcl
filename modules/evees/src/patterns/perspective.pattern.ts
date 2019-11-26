@@ -21,6 +21,7 @@ import { Perspective, EveesTypes, Commit } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { selectPerspectiveHeadId, selectEvees } from '../state/evees.selectors';
 import { LoadPerspectiveDetails, LOAD_PERSPECTIVE_DETAILS } from '../state/evees.actions';
+import { Mergeable } from '../properties/mergeable';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -33,6 +34,7 @@ export class PerspectivePattern
     Creatable<NewPerspectiveArgs, Signed<Perspective>>,
     HasActions,
     CreateChild,
+    Mergeable,
     Updatable {
   constructor(
     @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
@@ -196,4 +198,8 @@ export class PerspectivePattern
   };
 
   origin = (entity: Secured<Perspective>) => entity.object.payload.origin;
+
+  merge = (perspectiveFrom: Secured<Perspective>, perspectiveTo: Secured<Perspective>): Promise<Secured<Perspective>> => {
+
+  }
 }

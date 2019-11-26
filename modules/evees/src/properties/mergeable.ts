@@ -1,3 +1,3 @@
-export interface Merge<T> {
-  merge: (from: T, to: T) => Promise<T>;
+export interface Mergeable {
+  merge: <T>(to: T, from: T, ancestor: T) => Promise<T>;
 }
