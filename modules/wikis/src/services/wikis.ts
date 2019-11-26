@@ -72,11 +72,8 @@ export class Wikis {
     };
 
     const cloner = async (wikis: WikisProvider, hashedNode: Hashed<WikiNode>) => {
-      const hash = await wikis.createWikiNode(hashedNode.object, hashedNode.id);
-      return {
-        id: hash,
-        object: node
-      };
+      await wikis.createWikiNode(hashedNode.object, hashedNode.id);
+      return hashedNode;
     };
 
     const hashedNode = await this.service.optimisticCreateIn(upl, creator, cloner);

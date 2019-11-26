@@ -17,7 +17,7 @@ import {
 import { AccessControlService, Updatable, Secured } from '@uprtcl/common';
 import { ReduxTypes, Logger } from '@uprtcl/micro-orchestrator';
 
-import { Perspective, EveesTypes, Commit } from '../types';
+import { Perspective, EveesTypes, Commit, UpdateRequest } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { selectPerspectiveHeadId, selectEvees } from '../state/evees.selectors';
 import { LoadPerspectiveDetails, LOAD_PERSPECTIVE_DETAILS } from '../state/evees.actions';
@@ -109,8 +109,12 @@ export class PerspectivePattern
         icon: 'merge_type',
         title: 'New merge request',
         action: async () => {
-          const proposals = this.evees.getPerspectiveProvider(perspective).proposals;
+          const proposals = this.evees.getPerspectiveProvider(perspective);
+          console.log(proposals)
           if (!proposals) return;
+          // const newRequest: UpdateRequest = {
+          //   fromPerspectiveId
+          // };
 
           // Cesar: aqui se llama la interficie de proposals
 
