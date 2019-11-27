@@ -1,4 +1,5 @@
 import { multiInject, injectable, inject } from 'inversify';
+import { isEqual } from 'lodash';
 
 import {
   DiscoverableSource,
@@ -204,13 +205,15 @@ export class Evees {
         const newLinks = await Promise.all(promises);
         const newData = (patterns as HasLinks).replaceChildrenLinks(data, newLinks);
 
-        const previousDataUpls = await this.knownSources.getKnownSources(dataId);
+        if (!isEqual(data, newData)) {
+          const previousDataUpls = await this.knownSources.getKnownSources(dataId);
 
-        if (!previousDataUpls) throw new Error(`We don't know where to create the data`);
+          if (!previousDataUpls) throw new Error(`We don't know where to create the data`);
 
-        // TODO: fix this
-        const newDataHashed = await this.createData(newData, previousDataUpls[0]);
-        dataId = newDataHashed.id;
+          // TODO: fix this
+          const newDataHashed = await this.createData(newData, previousDataUpls[0]);
+          dataId = newDataHashed.id;
+        }
       }
     }
 
