@@ -45,9 +45,14 @@ export class WikiNodePattern
     return this.wikis.createWikiNode(newWikiNode, upl);
   };
 
+  replaceChildrenLinks = (wiki: WikiNode, childrenHashes: string[]): WikiNode => ({
+    ...wiki,
+    pages: childrenHashes
+  });
+
   getHardLinks: (wiki: WikiNode) => string[] = (wiki: WikiNode): string[] => wiki.pages;
 
-  getSoftLinks: (wiki: TextNode) => Promise<string[]> = async (wiki: WikiNode) => [];
+  getSoftLinks: (wiki: WikiNode) => Promise<string[]> = async (wiki: WikiNode) => [];
 
   getLinks: (wiki: WikiNode) => Promise<string[]> = (wiki: WikiNode) =>
     this.getSoftLinks(wiki).then(pages => pages.concat(this.getHardLinks(wiki)));
