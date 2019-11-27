@@ -18,6 +18,8 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
   @query('#menu')
   menu!: Menu;
 
+  patternRecognizer!: PatternRecognizer;
+
   static get styles() {
     return css`
       .hidden {
@@ -27,17 +29,15 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
   }
 
   firstUpdated() {
-    const patternRecognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
-    this.lenses = getLenses(patternRecognizer, this.isomorphisms);
+    this.patternRecognizer = this.request(PatternTypes.Recognizer);
+    this.lenses = getLenses(this.patternRecognizer, this.isomorphisms);
   }
 
   updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
     if (changedProperties.get('isomorphisms')) {
-      const patternRecognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
-
-      this.lenses = getLenses(patternRecognizer, this.isomorphisms);
+      this.lenses = getLenses(this.patternRecognizer, this.isomorphisms);
     }
   }
 
