@@ -11,7 +11,8 @@ import {
   PatternTypes,
   Creatable,
   SourceProvider,
-  DiscoverableSource
+  DiscoverableSource,
+  HasLinks
 } from '@uprtcl/cortex';
 import { selectAccessControl, selectEntityAccessControl } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
@@ -24,7 +25,7 @@ const propertyOrder = ['title', 'type', 'pages'];
 
 @injectable()
 export class WikiNodePattern
-  implements Pattern, Creatable<Partial<WikiNode>, WikiNode>, HasLenses, HasActions {
+  implements Pattern, Creatable<Partial<WikiNode>, WikiNode>, HasLenses, HasLinks, HasActions {
   constructor(
     @inject(WikisTypes.Wikis) protected wikis: Wikis,
     @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<WikiNode>,
@@ -43,6 +44,13 @@ export class WikiNodePattern
     const newWikiNode = { pages, title, type };
     return this.wikis.createWikiNode(newWikiNode, upl);
   };
+
+  getHardLinks: (wiki: WikiNode) => string[] = (wiki: WikiNode): string[] => wiki.pages;
+
+  getSoftLinks: (wiki: TextNode) => Promise<string[]> = async (wiki: WikiNode) => [];
+
+  getLinks: (wiki: WikiNode) => Promise<string[]> = (wiki: WikiNode) =>
+    this.getSoftLinks(wiki).then(pages => pages.concat(this.getHardLinks(wiki)));
 
   getLenses = (node: WikiNode): Lens[] => {
     return [
