@@ -16,3 +16,4 @@ export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
 export { EveesHttp } from './services/providers/http/evees.http';
 
 export { eveesModule } from './evees.module';
+export { Evees } from './services/evees'

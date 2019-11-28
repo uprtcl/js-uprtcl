@@ -34,13 +34,13 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     this.wikisProvider = this.requestAll(WikisTypes.WikisRemote)
     .find(provider => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.service.uprtclProviderLocator);
+      return regexp.test(provider.service.uprtclProviderLocator);
     });
 
     this.eveesProvider = this.requestAll(EveesTypes.EveesRemote)
     .find(provider => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.service.uprtclProviderLocator);
+      return regexp.test(provider.service.uprtclProviderLocator);
     });
 
 
@@ -59,7 +59,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         this.wikisProvider.service.uprtclProviderLocator
       );
       const perspective = await this.perspectivePattern.create(
-        { dataId: wiki.id },
+        { dataId: wiki.id/* , context: 'genesisContext' */ },
         this.eveesProvider.service.uprtclProviderLocator
       );
       console.log(perspective.id)

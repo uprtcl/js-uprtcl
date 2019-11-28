@@ -128,8 +128,17 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   /**
    * @override
    */
-  getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
-    throw new Error('Method not implemented.');
+  async getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
+    // throw new Error('Method not implemented.');
+    const perspective_one: any = {
+      id: '213123',
+      object: {
+        name: 'wikiname',
+        type: 'Wiki',
+        pages: []
+      }
+    }
+    return [perspective_one]
   }
 
   /**
