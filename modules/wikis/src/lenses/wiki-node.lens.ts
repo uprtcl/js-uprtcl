@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { LensElement } from '@uprtcl/lenses';
-import { EveesTypes, Evees, EveesProvider } from '@uprtcl/evees';
+import { EveesTypes, Evees, EveesProvider, PerspectiveDetails } from '@uprtcl/evees';
 import { DocumentsTypes, DocumentsProvider } from '@uprtcl/documents';
 import { WikiNode } from '../types';
 
@@ -16,7 +16,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   selectedPageHash!: String;
 
   @property({ type: Array })
-  wikiPerspectives: Array<any> = []
+  wikiPerspectives: Array<any> = [];
 
   createPage = async () => {
     const perspectivePattern: any = this.request(EveesTypes.PerspectivePattern);
@@ -47,9 +47,14 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
 
   listPerspectives = async idPerspective => {
     const evees: Evees = this.request(EveesTypes.Evees);
-    const perspective: any = await evees.getPerspectiveDetails(idPerspective);
-    const context = await evees.getContextPerspectives(perspective)
-    this.wikiPerspectives = context
+    const { context }: PerspectiveDetails = await evees.getPerspectiveDetails(idPerspective);
+    if (context === undefined) {
+      this.wikiPerspectives = [] 
+    } else {
+      const perspectivesList = await evees.getContextPerspectives(context);
+      console.log(context)
+      this.wikiPerspectives = perspectivesList;
+    }
   };
 
   updateContent(pages: Array<string>) {
@@ -67,11 +72,13 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   }
 
   openWikiPerspective = id => {
-    window.location.href.split('id=')[1] = id
-  }
+    // window.location.href.split('id=')[1] = id
+    window.history.pushState('', '', `/?id=${id}`);
+  };
 
   render() {
     return html`
+      <slot name="plugins"> </slot>
       <div class="row">
         <div class="column left" style="background-color:#aaa;">
           <h2>${this.data.title}</h2>
@@ -92,16 +99,19 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
           <button @click=${() => this.listPerspectives(this.rootHash)}>
             See all perspectives
           </button>
-          ${ this.wikiPerspectives.length > 0 ?
-            html`<ul>
-            ${this.wikiPerspectives.map(perspective => {
-              return html`
-              <li @click=${() => this.openWikiPerspective(perspective.id)}>${perspective.object.name}</li>
-              `;
-            })}
-            </ul>`
-            : ''
-          }
+          ${this.wikiPerspectives.length > 0
+            ? html`
+                <ul>
+                  ${this.wikiPerspectives.map(perspective => {
+                    return html`
+                      <li @click=${() => this.openWikiPerspective(perspective.id)}>
+                        ${perspective.id}
+                      </li>
+                    `;
+                  })}
+                </ul>
+              `
+            : ''}
         </div>
         <div class="column right" style="background-color:#bbb;">
           <p>

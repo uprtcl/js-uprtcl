@@ -59,7 +59,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         this.wikisProvider.service.uprtclProviderLocator
       );
       const perspective = await this.perspectivePattern.create(
-        { dataId: wiki.id/* , context: 'genesisContext' */ },
+        { dataId: wiki.id },
         this.eveesProvider.service.uprtclProviderLocator
       );
       console.log(perspective.id)
