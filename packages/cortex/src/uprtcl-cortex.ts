@@ -30,7 +30,7 @@ export { Creatable } from './patterns/properties/creatable';
 export { HasContent } from './patterns/properties/has-content';
 export { Derivable } from './patterns/properties/derivable';
 export { Hashable, Hashed } from './patterns/properties/hashable';
-export { HasLinks } from './patterns/properties/has-links';
+export { HasLinks, HasChildren } from './patterns/properties/has-links';
 export { HasRedirect } from './patterns/properties/has-redirect';
 export { IsSecure } from './patterns/properties/is-secure';
 export { Signable, Signed } from './patterns/properties/signable';

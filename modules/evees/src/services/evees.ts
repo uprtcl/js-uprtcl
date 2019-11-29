@@ -12,7 +12,7 @@ import {
   IsSecure,
   MultiSourceService,
   DiscoveryService,
-  HasLinks,
+  HasChildren,
   Pattern
 } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -21,6 +21,7 @@ import { Secured } from '@uprtcl/common';
 import { EveesTypes, EveesLocal, Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesProvider } from './evees.provider';
 import { EveesRemote } from './evees.remote';
+import { createEntity } from '../utils/utils';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -186,10 +187,10 @@ export class Evees {
 
       const data = dataHashed.object;
 
-      const patterns: Pattern | HasLinks = this.patternRecognizer.recognizeMerge(data);
+      const patterns: Pattern | HasChildren = this.patternRecognizer.recognizeMerge(data);
 
-      if ((patterns as HasLinks).getHardLinks) {
-        const descendantLinks = (patterns as HasLinks).getHardLinks(data);
+      if ((patterns as HasChildren).getChildrenLinks) {
+        const descendantLinks = (patterns as HasChildren).getChildrenLinks(data);
 
         // TODO: generalize to break the assumption that all links are to perspectives
         const promises = descendantLinks.map(async link => {
@@ -202,14 +203,14 @@ export class Evees {
         });
 
         const newLinks = await Promise.all(promises);
-        const newData = (patterns as HasLinks).replaceChildrenLinks(data, newLinks);
+        const newData = (patterns as HasChildren).replaceChildrenLinks(data, newLinks);
 
         const previousDataUpls = await this.knownSources.getKnownSources(dataId);
 
-        if (!previousDataUpls) throw new Error(`We don't know where to create the data`);
-
-        // TODO: fix this
-        const newDataHashed = await this.createData(newData, previousDataUpls[0]);
+        const newDataHashed = await createEntity(this.patternRecognizer)(
+          newData,
+          previousDataUpls ? previousDataUpls[0] : undefined
+        );
         dataId = newDataHashed.id;
       }
     }
@@ -330,7 +331,10 @@ export class Evees {
     details: Partial<PerspectiveDetails>
   ): Promise<void> {
     const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
-    if (!perspective) return undefined;
+    if (!perspective)
+      throw new Error(
+        `Error trying to fetch perspective with id ${perspectiveId}: failed to update details of perspective`
+      );
 
     const provider = this.getPerspectiveProvider(perspective);
 
@@ -345,23 +349,5 @@ export class Evees {
       `Update details of ${perspective.id}`,
       perspectiveId
     );
-  }
-
-  /** Helper functions */
-
-  /**
-   * Generically create the given data and retrieve its hashed it
-   *
-   * @param data the data to create
-   * @returns the created hashed data
-   */
-  public async createData<O extends object>(data: O, upl: string): Promise<Hashed<O>> {
-    const dataPattern: Creatable<O, any> = this.patternRecognizer.recognizeMerge(data);
-
-    if (!dataPattern.create) throw new Error('Cannot create this type of data');
-
-    this.logger.info('Creating the data: ', data);
-
-    return dataPattern.create(data, upl);
   }
 }

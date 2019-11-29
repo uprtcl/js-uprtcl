@@ -19,7 +19,7 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
   constructor(
     @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(DiscoveryTypes.LocalKnownSources)
-    protected localKnownSources: KnownSourcesService,
+    public localKnownSources: KnownSourcesService,
     @multiInject(DiscoveryTypes.DiscoverableSource)
     discoverableSources: Array<DiscoverableSource<T>>
   ) {

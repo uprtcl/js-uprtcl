@@ -19,6 +19,12 @@ export function mergeStrings(originalString: string, newStrings: string[]): stri
   return DiffUtils.applyDiff(originalString, mergeDiffs);
 }
 
+/**
+ *
+ * @param original
+ * @param modifications
+ * @returns the appropiate result of the merge
+ */
 export function mergeResult<A>(original: A, modifications: A[]): A {
   const changes = modifications.filter(modification => !lodash.isEqual(original, modification));
 

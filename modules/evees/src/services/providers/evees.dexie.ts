@@ -15,7 +15,7 @@ import { Perspective, Commit, EveesLocal, PerspectiveDetails } from '../../types
 
 @injectable()
 export class EveesDexie extends Dexie implements EveesLocal {
-  details: Dexie.Table<PerspectiveDetails, string>;
+  details: Dexie.Table<Partial<PerspectiveDetails>, string>;
 
   constructor(
     @inject(PatternTypes.Core.Secured)
@@ -78,9 +78,12 @@ export class EveesDexie extends Dexie implements EveesLocal {
    */
   async updatePerspectiveDetails(
     perspectiveId: string,
-    details: PerspectiveDetails
+    details: Partial<PerspectiveDetails>
   ): Promise<void> {
-    await this.details.put(details, perspectiveId);
+    const oldDetails = await this.details.get(perspectiveId);
+    const newDetails = { ...oldDetails, ...details };
+
+    await this.details.put(newDetails, perspectiveId);
   }
 
   /**

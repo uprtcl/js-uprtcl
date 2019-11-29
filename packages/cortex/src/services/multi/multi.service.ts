@@ -6,7 +6,7 @@ import { HasLinks } from '../../patterns/properties/has-links';
 import { ServiceProvider } from '../sources/service.provider';
 import { Hashed } from '../../patterns/properties/hashable';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
-import { DiscoverableService, DiscoverableSource } from '../sources/discoverable.source';
+import { DiscoverableService } from '../sources/discoverable.source';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Ready } from '../sources/service.provider';
 import { Pattern } from '../../patterns/pattern';
@@ -23,7 +23,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    */
   constructor(
     protected patternRecognizer: PatternRecognizer,
-    protected localKnownSources: KnownSourcesService,
+    public localKnownSources: KnownSourcesService,
     discoverableServices: Array<DiscoverableService<T>>
   ) {
     // Build the sources dictionary from the resulting names

@@ -9,15 +9,16 @@ import {
   Creatable,
   Signed,
   PatternRecognizer,
-  PatternTypes
+  PatternTypes,
+  DiscoveryTypes,
+  DiscoveryService
 } from '@uprtcl/cortex';
-import { Secured, DiscoveryTypes, DiscoveryService } from '@uprtcl/common';
+import { Secured } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
 import { Commit, EveesTypes } from '../types';
 import { Evees } from '../services/evees';
 import { Mergeable } from '../properties/mergeable';
-import findMostRecentCommonAncestor from '../merge/common-ancestor';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
@@ -31,14 +32,13 @@ export class CommitPattern
       { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
       Signed<Commit>
     >,
-    Mergeable,
     HasLenses {
   constructor(
     @inject(PatternTypes.Core.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
     @inject(EveesTypes.Evees) protected evees: Evees,
     @inject(DiscoveryTypes.DiscoveryService) protected discoveryService: DiscoveryService,
-    @inject(PatternTypes.PatternRecognizer) protected recognizer: PatternRecognizer
+    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer
   ) {}
 
   recognize(object: object) {
@@ -50,14 +50,12 @@ export class CommitPattern
     );
   }
 
-  getHardLinks: (commit: Secured<Commit>) => string[] = (commit: Secured<Commit>): string[] => [
-    commit.object.payload.dataId,
-    ...commit.object.payload.parentsIds
-  ];
-  getSoftLinks: (commit: Secured<Commit>) => Promise<string[]> = async (commit: Secured<Commit>) =>
+  getLinks: (commit: Secured<Commit>) => Promise<string[]> = async (
+    commit: Secured<Commit>
+  ): Promise<string[]> => [commit.object.payload.dataId, ...commit.object.payload.parentsIds];
+
+  getChildrenLinks: (commit: Secured<Commit>) => string[] = (commit: Secured<Commit>) =>
     [] as string[];
-  getLinks: (commit: Secured<Commit>) => Promise<string[]> = (commit: Secured<Commit>) =>
-    this.getSoftLinks(commit).then(links => links.concat(this.getHardLinks(commit)));
 
   replaceChildrenLinks = (commit: Secured<Commit>, newLinks: string[]): Secured<Commit> => commit;
 
@@ -98,40 +96,5 @@ export class CommitPattern
         `
       }
     ];
-  };
-
-  merge = async (toCommit: Secured<Commit>, fromCommit: Secured<Commit>) => {
-    const commitsIds = [fromCommit.id, toCommit.id];
-    const ancestorId = await findMostRecentCommonAncestor(this.discoveryService)(commitsIds);
-
-    const ancestor: Secured<Commit> = await this.discoveryService.get(ancestorId);
-
-    const ancestorData: any = await this.discoveryService.get(ancestor.object.payload.dataId);
-
-    const fromData = await this.discoveryService.get(fromCommit.object.payload.dataId);
-    const toData = await this.discoveryService.get(toCommit.object.payload.dataId);
-
-    const pattern = this.recognizer.recognizeMerge(toCommit);
-
-    if (!(pattern as Mergeable).merge)
-      throw new Error('Trying to merge a data that cannot be merged');
-
-    const newData = await (pattern as Mergeable).merge(toData, fromData, ancestorData);
-
-    const toDataKnownSources = await this.evees.knownSources.getKnownSources(
-      toCommit.object.payload.dataId
-    );
-
-    if (!toDataKnownSources) throw new Error('We do not know where to create the data');
-
-    const newDataId = await this.evees.createData(newData, toDataKnownSources[0]);
-
-    // TODO: filter out the parents that are already ancestors
-
-    return this.create({
-      dataId: newDataId,
-      parentsIds: commitsIds,
-      message: `Merge of ${fromCommit.id} to ${toCommit.id}`
-    });
   };
 }

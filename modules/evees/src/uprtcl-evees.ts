@@ -16,3 +16,12 @@ export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
 export { EveesHttp } from './services/providers/http/evees.http';
 
 export { eveesModule } from './evees.module';
+
+/** Merge */
+
+export { Mergeable } from './properties/mergeable';
+
+export { MergeStrategy } from './merge/merge-strategy';
+export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
+export { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
+export { mergeStrings, mergeResult } from './merge/utils';

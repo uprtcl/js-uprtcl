@@ -1,3 +1,5 @@
+import { MergeStrategy } from '../merge/merge-strategy';
+
 export interface Mergeable {
-  merge: <T>(to: T, from: T, ancestor: T) => Promise<T>;
+  merge: (ancestor: any, modifications: any[], strategy: MergeStrategy) => Promise<any>;
 }
