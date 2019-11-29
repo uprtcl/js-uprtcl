@@ -4,20 +4,13 @@ import { ProposalsProvider } from './proposals.provider';
 import { Proposal, UpdateRequest } from '../types';
 
 export class ProposalsMock implements ProposalsProvider {
-  getProposalsByCreator(creatorId: string): Promise<Hashed<Proposal>[]> {
+  getProposalsToPerspective(perspectiveId: string): Promise<Proposal[]> {
     throw new Error('Method not implemented.');
   }
-  getProposalsToPerspective(perspectiveId: string): Promise<Hashed<Proposal>[]> {
+  createProposal(requests: UpdateRequest[]): Promise<string> {
     throw new Error('Method not implemented.');
   }
-  createProposal(requests: UpdateRequest[], description: string | undefined): Promise<string> {
-    throw new Error('Method not implemented.');
-  }
-  updateProposal(
-    proposalId: string,
-    requests: UpdateRequest[],
-    description: string | undefined
-  ): Promise<void> {
+  updateProposal(proposalId: string, requests: UpdateRequest[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
   cancelProposal(proposalId: string): Promise<void> {
