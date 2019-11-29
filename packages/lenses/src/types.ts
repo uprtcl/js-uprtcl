@@ -4,7 +4,7 @@ import { Hashed } from '@uprtcl/cortex';
 
 export interface Lens {
   name: string;
-  render: TemplateResult;
+  render: (lensContent: TemplateResult) => TemplateResult;
 }
 
 export interface LensElement<P> {

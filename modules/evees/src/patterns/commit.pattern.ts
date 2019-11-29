@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify';
-import { html } from 'lit-element';
+import { html, TemplateResult } from 'lit-element';
 
 import {
   Pattern,
@@ -87,8 +87,8 @@ export class CommitPattern
     return [
       {
         name: 'commit-history',
-        render: html`
-          <commit-history .data=${commit}></commit-history>
+        render: (lensContent: TemplateResult) => html`
+          <commit-history .data=${commit}>${lensContent}</commit-history>
         `
       }
     ];

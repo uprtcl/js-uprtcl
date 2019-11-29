@@ -1,6 +1,7 @@
 import { LitElement, property, html, query, css, PropertyValues } from 'lit-element';
 import { Menu } from '@authentic/mwc-menu';
 import '@authentic/mwc-list';
+import '@material/mwc-icon-button';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer, PatternTypes } from '@uprtcl/cortex';
@@ -47,12 +48,11 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
 
   render() {
     return html`
-      <mwc-button
+      <mwc-icon-button
+        icon="remove_red_eye"
         class=${this.show() ? '' : 'hidden'}
         @click=${() => (this.menu.open = !this.menu.open)}
-      >
-        <mwc-icon>remove_red_eye</mwc-icon>
-      </mwc-button>
+      ></mwc-icon-button>
 
       <mwc-menu id="menu" class=${this.show() ? '' : 'hidden'}>
         <mwc-list>

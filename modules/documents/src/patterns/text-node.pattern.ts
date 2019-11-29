@@ -1,4 +1,4 @@
-import { html } from 'lit-element';
+import { html, TemplateResult } from 'lit-element';
 import { injectable, inject } from 'inversify';
 import { Store } from 'redux';
 
@@ -61,8 +61,8 @@ export class TextNodePattern
     return [
       {
         name: 'Document',
-        render: html`
-          <text-node .data=${node}></text-node>
+        render: (lensContent: TemplateResult) => html`
+          <text-node .data=${node}>${lensContent}</text-node>
         `
       }
     ];

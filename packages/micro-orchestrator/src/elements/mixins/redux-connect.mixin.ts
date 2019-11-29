@@ -23,6 +23,11 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
       dependency: interfaces.ServiceIdentifier<T>,
       multiple: boolean = false
     ): T[][] {
+      if (!this.isConnected)
+        throw new Error(
+          'Element is not connected yet: you can only use request() and requestAll() after the element has been initialized and connected to the DOM (e.g. firstUpdated() in LitElement)'
+        );
+
       const event = new RequestDependencyEvent({
         detail: { request: [dependency], multiple: multiple },
         composed: true,

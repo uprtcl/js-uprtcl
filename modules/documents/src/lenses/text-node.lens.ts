@@ -46,25 +46,29 @@ export class TextNodeLens extends LitElement implements LensElement<TextNode> {
 
   render() {
     return html`
-      <node-list .data=${this.data}>
-        ${this.data.type === TextType.Paragraph
-          ? html`
-              <div
-                contenteditable=${this.editable ? 'true' : 'false'}
-                @input=${e => e.target && this.textInput(e.target['innerText'])}
-              >
-                ${this.data.text}
-              </div>
-            `
-          : html`
-              <h3
-                contenteditable=${this.editable ? 'true' : 'false'}
-                @input=${e => e.target && this.textInput(e.target['innerText'])}
-              >
-                ${this.data.text}
-              </h3>
-            `}
-      </node-list>
+      <div style="display: flex; flex-direction: row;">
+        <node-list .data=${this.data} style="flex: 1;">
+          ${this.data.type === TextType.Paragraph
+            ? html`
+                <div
+                  contenteditable=${this.editable ? 'true' : 'false'}
+                  @input=${e => e.target && this.textInput(e.target['innerText'])}
+                >
+                  ${this.data.text}
+                </div>
+              `
+            : html`
+                <h3
+                  contenteditable=${this.editable ? 'true' : 'false'}
+                  @input=${e => e.target && this.textInput(e.target['innerText'])}
+                >
+                  ${this.data.text}
+                </h3>
+              `}
+        </node-list>
+
+        <slot name="plugins"></slot>
+      </div>
     `;
   }
 

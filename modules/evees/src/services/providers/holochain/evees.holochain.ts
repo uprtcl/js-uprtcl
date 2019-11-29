@@ -16,7 +16,7 @@ export class EveesHolochain extends HolochainSource implements EveesRemote {
   }
 
   get proposals() {
-    return new ProposalsMock();
+    return undefined;
   }
 
   /**
