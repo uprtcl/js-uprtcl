@@ -40,7 +40,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   }
 
   get proposals() {
-    return new ProposalsMock();
+    return undefined;
     // Cesar: substituir por `return new ProposalsEthereum(this)`
   }
 

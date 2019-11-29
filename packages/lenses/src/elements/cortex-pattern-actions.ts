@@ -1,5 +1,6 @@
 import { LitElement, html, property, query, PropertyValues, css } from 'lit-element';
 import { Menu } from '@authentic/mwc-menu';
+import '@material/mwc-icon-button';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import {
@@ -68,12 +69,11 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
 
   render() {
     return html`
-      <mwc-button
+      <mwc-icon-button
+        icon="more_vert"
         class=${this.show ? '' : 'hidden'}
         @click=${() => (this.menu.open = !this.menu.open)}
-      >
-        <mwc-icon>more_vert</mwc-icon>
-      </mwc-button>
+      ></mwc-icon-button>
 
       <mwc-menu id="menu" class=${this.show ? '' : 'hidden'}>
         <mwc-list>
