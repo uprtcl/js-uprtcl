@@ -1,8 +1,8 @@
 import { injectable } from 'inversify';
 
 import { DiscoverableSource, PatternTypes } from '@uprtcl/cortex';
-import { graphQlSchemaModule } from '@uprtcl/micro-orchestrator';
 import {
+  graphQlSchemaModule,
   DefaultSecuredPattern,
   DefaultSignedPattern,
   ReduxCortexModule,
@@ -17,7 +17,7 @@ import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { EveesReduxModule } from './state';
-import { eveesTypeDefs, resolvers } from './graphql.schema';
+import { eveesTypeDefs, resolvers, eveesSchema } from './graphql.schema';
 
 /**
  * Configure a _Prtcl Evees module with the given configured providers
@@ -99,7 +99,7 @@ export function eveesModule(
       ];
     }
 
-    submodules = [EveesReduxModule, graphQlSchemaModule([eveesTypeDefs], [resolvers])];
+    submodules = [EveesReduxModule, graphQlSchemaModule(eveesTypeDefs, eveesSchema)];
   }
 
   return EveesModule;

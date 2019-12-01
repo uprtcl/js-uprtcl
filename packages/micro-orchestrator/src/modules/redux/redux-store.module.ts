@@ -44,5 +44,4 @@ export class ReduxStoreModule implements MicroModule {
     bind<SagaMiddleware>(ReduxTypes.Saga).toConstantValue(sagaMiddleware);
   }
 
-  async onUnload(): Promise<void> {}
 }

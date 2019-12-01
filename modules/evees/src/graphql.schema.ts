@@ -1,9 +1,9 @@
 import { gql } from 'apollo-boost';
-import { delegateToSchema } from 'graphql-tools';
+import { delegateToSchema, makeExecutableSchema } from 'graphql-tools';
 
-import { Secured } from '@uprtcl/common';
+import { Secured, GraphQlTypes, baseTypeDefs, baseResolvers } from '@uprtcl/common';
+
 import { Commit } from './types';
-import { GraphQlTypes } from '@uprtcl/micro-orchestrator';
 
 export const eveesTypeDefs = gql`
   type Commit {
@@ -42,3 +42,11 @@ export const resolvers = {
     }
   }
 };
+
+export const eveesSchema = makeExecutableSchema({
+  typeDefs: [baseTypeDefs, eveesTypeDefs],
+  resolvers: {
+    ...baseResolvers,
+    ...resolvers
+  }
+});

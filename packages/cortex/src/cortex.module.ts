@@ -151,5 +151,4 @@ export class CortexModule implements MicroModule {
     );
   }
 
-  async onUnload(): Promise<void> {}
 }

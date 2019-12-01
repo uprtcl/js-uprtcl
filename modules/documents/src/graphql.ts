@@ -1,16 +1,24 @@
 import gql from 'graphql-tag';
+import { makeExecutableSchema } from 'graphql-tools';
 
-export const typeDefs = gql`
+import { baseTypeDefs, baseResolvers } from '@uprtcl/common';
+
+export const documentsTypeDefs = gql`
   enum TextType {
-    Title,
+    Title
     Paragraph
   }
 
   type TextNode {
     text: String!
-    type: TextType
+    type: TextType!
     links: [Entity]!
   }
 
   extend union EntityType = TextNode
 `;
+
+export const documentsSchema = makeExecutableSchema({
+  typeDefs: [baseTypeDefs, documentsTypeDefs],
+  resolvers: baseResolvers
+});

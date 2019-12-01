@@ -32,8 +32,6 @@ export function lensesModule(plugins: Array<LensesPlugin<any>>): any {
         customElements.define(tag, lens);
       });
     }
-
-    async onUnload(): Promise<void> {}
   }
   return LensesModule;
 }

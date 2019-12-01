@@ -1,10 +1,10 @@
 import { Dictionary } from 'lodash';
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect, reduxConnect, GraphQlTypes } from '@uprtcl/micro-orchestrator';
+import { reduxConnect } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 import { LensElement } from '@uprtcl/lenses';
-import { Secured } from '@uprtcl/common';
+import { Secured, GraphQlTypes } from '@uprtcl/common';
 
 import { Commit } from '../types';
 import { ApolloClient, gql } from 'apollo-boost';
@@ -24,7 +24,8 @@ export class CommitHistory extends reduxConnect(LitElement)
     this.initialLoad();
 
     const apolloClient: ApolloClient<any> = this.request(GraphQlTypes.Client);
-    const result = await apolloClient.query({query: gql`
+    const result = await apolloClient.query({
+      query: gql`
       {
         getEntity(id: "${this.data.id}", depth: 1) {
           id
@@ -32,13 +33,19 @@ export class CommitHistory extends reduxConnect(LitElement)
             ... on Commit {
               parentCommits {
                 id
+                entity {
+                  ... on Commit {
+                    id
+                  }
+                }
               }
             }
           }
         }
       }
-    `})
-    console.log(result)
+    `
+    });
+    console.log(result);
   }
 
   async initialLoad() {

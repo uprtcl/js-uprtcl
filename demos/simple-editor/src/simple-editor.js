@@ -1,9 +1,8 @@
 import { LitElement, html } from 'lit-element';
-import { moduleConnect, GraphQlTypes } from '@uprtcl/micro-orchestrator';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { GraphQlTypes } from '@uprtcl/common';
 import { EveesTypes } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
-
-import gql from 'graphql-tag';
 
 export class SimpleEditor extends moduleConnect(LitElement) {
   static get properties() {
@@ -14,8 +13,8 @@ export class SimpleEditor extends moduleConnect(LitElement) {
 
   constructor() {
     super();
-       this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
-      this.textNodePattern = this.request(DocumentsTypes.TextNodePattern);
+    this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
+    this.textNodePattern = this.request(DocumentsTypes.TextNodePattern);
   }
 
   subscribeToHistory(history, callback) {

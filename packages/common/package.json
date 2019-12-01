@@ -11,13 +11,16 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
+    "@types/graphql-resolvers": "^0.2.2",
     "@uprtcl/connections": "^0.0.1-alpha6",
     "@uprtcl/cortex": "^0.0.1-alpha6",
     "@uprtcl/micro-orchestrator": "^0.0.1-alpha6",
     "apollo-boost": "^0.4.4",
+    "apollo-link-schema": "^1.2.4",
     "cids": "^0.7.1",
     "dexie": "^2.0.4",
     "graphql": "^14.5.8",
+    "graphql-resolvers": "^0.3.3",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.6",
     "inversify": "^5.0.1",

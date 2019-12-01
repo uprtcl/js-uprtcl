@@ -1,10 +1,4 @@
-import {
-  ReduxTypes,
-  MicroOrchestrator,
-  ReduxStoreModule,
-  GraphQlTypes,
-  ApolloClientModule
-} from '@uprtcl/micro-orchestrator';
+import { ReduxTypes, MicroOrchestrator, ReduxStoreModule } from '@uprtcl/micro-orchestrator';
 import {
   PatternTypes,
   PatternsModule,
@@ -15,6 +9,8 @@ import {
 import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import {
+  ApolloClientModule,
+  GraphQlTypes,
   AccessControlTypes,
   AccessControlReduxModule,
   EntitiesReduxModule,

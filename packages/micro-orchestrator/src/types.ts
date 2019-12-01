@@ -15,14 +15,6 @@ export const ReduxTypes = {
   Module: Symbol('redux-module')
 };
 
-export const GraphQlTypes = {
-  Module: Symbol('apollo-client-module'),
-  Client: Symbol('apollo-client'),
-  RootSchema: Symbol('apollo-root-schema'),
-  TypeDef: Symbol('graphql-type-def'),
-  Resolver: Symbol('graphql-resolver')
-};
-
 export interface ModuleToLoad {
   id: symbol;
   module: Constructor<MicroModule, [ModuleProvider]>;

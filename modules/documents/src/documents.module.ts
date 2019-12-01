@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 
 import { DiscoverableSource, SourceProvider } from '@uprtcl/cortex';
-import { ReduxCortexModule } from '@uprtcl/common';
+import { ReduxCortexModule, graphQlSchemaModule } from '@uprtcl/common';
 
 import { TextNodeLens } from './lenses/text-node.lens';
 import { TextNodePattern } from './patterns/text-node.pattern';
@@ -10,8 +10,7 @@ import { DocumentsProvider } from './services/documents.provider';
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
-import { graphQlSchemaModule } from '@uprtcl/micro-orchestrator';
-import { typeDefs } from './graphql';
+import { documentsTypeDefs, documentsSchema } from './graphql';
 
 /**
  * Configure a documents module with the given providers
@@ -73,7 +72,7 @@ export function documentsModule(
       return [{ symbol: DocumentsTypes.TextNodePattern, pattern: TextNodePattern }];
     }
 
-    submodules = [graphQlSchemaModule([typeDefs], [])];
+    submodules = [graphQlSchemaModule(documentsTypeDefs, documentsSchema)];
   }
 
   return DocumentsModule;

@@ -1,12 +1,12 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
 
-import { reduxConnect, GraphQlTypes, moduleConnect } from '@uprtcl/micro-orchestrator';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { GraphQlTypes } from '@uprtcl/common';
 import { PatternRecognizer, PatternTypes } from '@uprtcl/cortex';
 
 import { getLenses, getIsomorphisms } from './utils';
 import { Isomorphisms, Lens } from '../types';
-import { LoadEntity, LOAD_ENTITY, selectById, selectEntities } from '@uprtcl/common';
 import { Dictionary } from 'lodash';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {

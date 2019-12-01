@@ -1,25 +1,17 @@
-import { gql, ApolloClient, InMemoryCache } from 'apollo-boost';
+import { gql } from 'apollo-boost';
+
 import {
-  IGraphQLToolsResolveInfo,
-  mergeSchemas,
-  IDelegateToSchemaOptions,
-  MergeInfo,
-  makeExecutableSchema,
-  delegateToSchema
-} from 'graphql-tools';
-import { GraphQLSchema, GraphQLResolveInfo } from 'graphql';
+  DiscoveryTypes,
+  PatternTypes,
+  DiscoveryService,
+  PatternRecognizer,
+  Hashed,
+  HasRedirect,
+  Pattern,
+  IsEntity
+} from '@uprtcl/cortex';
 
-import { GraphQlTypes } from '@uprtcl/micro-orchestrator';
-
-import { DiscoveryTypes, PatternTypes } from '../types';
-import { DiscoveryService } from '../services/discovery.service';
-import { PatternRecognizer } from './recognizer/pattern.recognizer';
-import { Hashed } from './properties/hashable';
-import { HasRedirect } from './properties/has-redirect';
-import { Pattern } from './pattern';
-import { IsEntity } from './properties/is-entity';
-
-export const cortexTypeDefs = gql`
+export const baseTypeDefs = gql`
   scalar JSON
 
   type EmptyEntity {
@@ -45,7 +37,7 @@ export const cortexTypeDefs = gql`
   }
 `;
 
-export const resolvers = {
+export const baseResolvers = {
   Query: {
     async getEntity(parent, args, context, info) {
       const discoveryService: DiscoveryService = context.get(DiscoveryTypes.DiscoveryService);
@@ -59,16 +51,17 @@ export const resolvers = {
   },
   EntityType: {
     __resolveType(obj, context, info) {
+      console.log('resolveType', obj);
       const recognizer: PatternRecognizer = context.get(PatternTypes.Recognizer);
 
       const patterns: Pattern | IsEntity = recognizer.recognizeMerge(obj);
+      console.log('resolveType2', patterns);
 
       return (patterns as IsEntity).name;
     }
   },
   Entity: {
     async content(parent, args, context, info) {
-      console.log('test', parent, args, context, info);
       const entity = parent.entity;
       const recognizer: PatternRecognizer = context.get(PatternTypes.Recognizer);
       const discovery: DiscoveryService = context.get(DiscoveryTypes.DiscoveryService);
