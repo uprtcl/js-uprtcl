@@ -72,7 +72,7 @@ export function documentsModule(
       return [{ symbol: DocumentsTypes.TextNodePattern, pattern: TextNodePattern }];
     }
 
-    submodules = [graphQlSchemaModule(documentsTypeDefs, documentsSchema)];
+    submodules = [graphQlSchemaModule(documentsTypeDefs, {})];
   }
 
   return DocumentsModule;

@@ -21,7 +21,7 @@ export const eveesTypeDefs = gql`
   extend union EntityType = Commit | Perspective
 `;
 
-export const resolvers = {
+export const eveesResolvers = {
   Commit: {
     message(parent: Secured<Commit>, args, context, info) {
       return parent.object.payload.message;
@@ -47,6 +47,6 @@ export const eveesSchema = makeExecutableSchema({
   typeDefs: [baseTypeDefs, eveesTypeDefs],
   resolvers: {
     ...baseResolvers,
-    ...resolvers
+    ...eveesResolvers
   }
 });

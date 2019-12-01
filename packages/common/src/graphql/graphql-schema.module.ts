@@ -18,7 +18,7 @@ export abstract class GraphQlSchemaModule implements MicroModule {
   ) {}
 
   abstract get typeDefs(): ITypeDefinitions;
-  abstract get schema(): GraphQLSchema;
+  abstract get resolvers(): IResolvers;
 
   async onLoad(
     context: interfaces.Context,
@@ -30,21 +30,21 @@ export abstract class GraphQlSchemaModule implements MicroModule {
     await this.moduleProvider(GraphQlTypes.Module);
 
     bind<ITypeDefinitions>(GraphQlTypes.TypeDefs).toConstantValue(this.typeDefs);
-    bind<GraphQLSchema>(GraphQlTypes.ExecutableSchema).toConstantValue(this.schema);
+    bind<IResolvers>(GraphQlTypes.Resolvers).toConstantValue(this.resolvers);
   }
 }
 
 export function graphQlSchemaModule(
   typeDefs: ITypeDefinitions,
-  schema: GraphQLSchema
+  resolvers: IResolvers
 ): Constructor<MicroModule> {
   @injectable()
   class SchemaModule extends GraphQlSchemaModule {
     get typeDefs(): ITypeDefinitions {
       return typeDefs;
     }
-    get schema() {
-      return schema;
+    get resolvers() {
+      return resolvers;
     }
   }
   return SchemaModule;

@@ -51,11 +51,9 @@ export const baseResolvers = {
   },
   EntityType: {
     __resolveType(obj, context, info) {
-      console.log('resolveType', obj);
       const recognizer: PatternRecognizer = context.get(PatternTypes.Recognizer);
 
       const patterns: Pattern | IsEntity = recognizer.recognizeMerge(obj);
-      console.log('resolveType2', patterns);
 
       return (patterns as IsEntity).name;
     }
