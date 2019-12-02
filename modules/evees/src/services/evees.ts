@@ -209,11 +209,12 @@ export class Evees {
         if (!isEqual(data, newData)) {
           const previousDataUpls = await this.knownSources.getKnownSources(dataId);
 
-        const newDataHashed = await createEntity(this.patternRecognizer)(
-          newData,
-          previousDataUpls ? previousDataUpls[0] : undefined
-        );
-        dataId = newDataHashed.id;
+          const newDataHashed = await createEntity(this.patternRecognizer)(
+            newData,
+            previousDataUpls ? previousDataUpls[0] : undefined
+          );
+          dataId = newDataHashed.id;
+        }
       }
     }
 
