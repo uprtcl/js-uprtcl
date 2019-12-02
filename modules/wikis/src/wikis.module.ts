@@ -5,6 +5,7 @@ import { ReduxCortexModule } from '@uprtcl/common';
 
 import { WikiNodeLens } from './lenses/wiki-node.lens';
 import { WikiNodePattern } from './patterns/wiki-node.pattern';
+import { WikiNodeEntity } from './patterns/wiki-node.entity';
 import { WikisTypes } from './types';
 import { WikisProvider } from './services/wikis.provider';
 import { WikisLocal } from './services/wikis.local';
@@ -68,7 +69,10 @@ export function wikisModule(
     }
 
     get patterns() {
-      return [{ symbol: WikisTypes.WikiPattern, pattern: WikiNodePattern }];
+      return [
+        { symbol: WikisTypes.WikiPattern, pattern: WikiNodePattern },
+        { symbol: WikisTypes.WikiEntity, pattern: WikiNodeEntity }
+      ];
     }
   }
 

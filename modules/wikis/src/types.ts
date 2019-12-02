@@ -12,6 +12,7 @@ export interface WikiNode {
 export const WikisTypes = {
   Module: Symbol('wiki-module'),
   WikiPattern: Symbol('wiki-pattern'),
+  WikiEntity: Symbol('wiki-entity'),
   WikisLocal: Symbol('wikis-local'),
   WikisRemote: Symbol('wikis-remote'),
   Wikis: Symbol('wikis'),

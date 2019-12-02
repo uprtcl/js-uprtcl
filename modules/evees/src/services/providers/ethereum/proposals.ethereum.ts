@@ -2,7 +2,7 @@ import { Hashed } from '@uprtcl/cortex';
 import { EthereumProvider, IpfsSource } from '@uprtcl/connections';
 
 import { ProposalsProvider } from '../../proposals.provider';
-import { Proposal, UpdateRequest, ProposalRequest } from '../../../types';
+import { Proposal, UpdateRequest } from '../../../types';
 
 // Cesar: implement calls in this class
 
@@ -16,11 +16,11 @@ export class ProposalsEthereum implements ProposalsProvider {
     await Promise.all([this.ethProvider.ready(), this.ipfsSource.ready()]);
   }
 
-  getProposalsToPerspective(perspectiveId: string): Promise<Array<ProposalRequest>> {
+  getProposalsToPerspective(perspectiveId: string): Promise<Array<Proposal>> {
     throw new Error('Method not implemented.');
   }
 
-  createProposal(requests: UpdateRequest[], description: string | undefined): Promise<string> {
+  createProposal(requests: UpdateRequest[]): Promise<string> {
     // 1. Create proposal interface, and add it to IPFS
     // 2. Add the requests already passed to IPFS
     // 3. Call the smart contract passing the proposal id and the UpdateRequests
@@ -31,7 +31,6 @@ export class ProposalsEthereum implements ProposalsProvider {
   updateProposal(
     proposalId: string,
     requests: UpdateRequest[],
-    description: string | undefined
   ): Promise<void> {
     throw new Error('Method not implemented.');
   }

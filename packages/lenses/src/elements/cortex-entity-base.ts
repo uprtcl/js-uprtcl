@@ -3,10 +3,10 @@ import { LitElement, property, PropertyValues, TemplateResult } from 'lit-elemen
 
 import { reduxConnect } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer, PatternTypes } from '@uprtcl/cortex';
+import { LoadEntity, LOAD_ENTITY, selectById, selectEntities } from '@uprtcl/common';
 
 import { getLenses, getIsomorphisms } from './utils';
 import { Isomorphisms, Lens } from '../types';
-import { LoadEntity, LOAD_ENTITY, selectById, selectEntities } from '@uprtcl/common';
 
 export class CortexEntityBase extends reduxConnect(LitElement) {
   @property()

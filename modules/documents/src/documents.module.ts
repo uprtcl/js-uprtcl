@@ -10,6 +10,7 @@ import { DocumentsProvider } from './services/documents.provider';
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
+import { TextNodeEntity } from './patterns/text-node.entity';
 
 /**
  * Configure a documents module with the given providers
@@ -68,7 +69,10 @@ export function documentsModule(
     }
 
     get patterns() {
-      return [{ symbol: DocumentsTypes.TextNodePattern, pattern: TextNodePattern }];
+      return [
+        { symbol: DocumentsTypes.TextNodeEntity, pattern: TextNodeEntity },
+        { symbol: DocumentsTypes.TextNodePattern, pattern: TextNodePattern }
+      ];
     }
   }
 

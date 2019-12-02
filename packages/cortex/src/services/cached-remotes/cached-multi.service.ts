@@ -26,7 +26,11 @@ export class CachedMultiService<
     const multiCloner = (service: MultiService<REMOTE>, createdObject: Hashed<O>) =>
       service.createIn(upl, service => cloner(service, createdObject));
 
-    return this.optimisticCreate(creator, multiCloner);
+    const hashed = await this.optimisticCreate(creator, multiCloner);
+
+    if (upl) this.remote.localKnownSources.addKnownSources(hashed.id, [upl]);
+
+    return hashed;
   }
 
   /**

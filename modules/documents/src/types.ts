@@ -17,9 +17,10 @@ export type TextNode = TypedText & Node;
 export const DocumentsTypes = {
   Module: Symbol('documents-module'),
   TextNodePattern: Symbol('text-node-pattern'),
+  TextNodeEntity: Symbol('text-node-entity'),
   DocumentsLocal: Symbol('documents-local'),
   DocumentsRemote: Symbol('documents-remote'),
-  Documents: Symbol('documents'),
+  Documents: Symbol('documents')
 };
 
 export type DocumentsLocal = CacheService & DocumentsProvider;

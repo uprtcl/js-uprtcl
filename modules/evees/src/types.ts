@@ -26,20 +26,15 @@ export interface Commit {
 
 export interface UpdateRequest {
   fromPerspectiveId: string | undefined;
+  oldHeadId: string | undefined;
   perspectiveId: string;
-  oldHeadId: string;
   newHeadId: string;
 }
 
 export interface Proposal {
   timestamp: number;
   creatorId: string;
-  description: string | undefined;
-}
-
-export interface ProposalRequest {
-  proposal: Hashed<Proposal>;
-  requests: Array<Hashed<UpdateRequest>>;
+  requests: Array<UpdateRequest>;
 }
 
 export const EveesTypes = {
@@ -49,6 +44,7 @@ export const EveesTypes = {
   ContextPattern: Symbol('context-pattern'),
   EveesLocal: Symbol('evees-local'),
   EveesRemote: Symbol('evees-remote'),
+  MergeStrategy: Symbol('merge-strategry'),
   Evees: Symbol('evees')
 };
 
