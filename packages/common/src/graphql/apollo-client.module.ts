@@ -1,5 +1,5 @@
 import { injectable, interfaces } from 'inversify';
-import { ApolloClient, InMemoryCache } from 'apollo-boost';
+import { ApolloClient, InMemoryCache, ApolloLink } from 'apollo-boost';
 import { SchemaLink } from 'apollo-link-schema';
 import { GraphQLSchema } from 'graphql';
 import { ITypeDefinitions, makeExecutableSchema, IResolvers } from 'graphql-tools';
@@ -8,6 +8,8 @@ import { MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { GraphQlTypes } from '../types';
 import { baseTypeDefs, baseResolvers } from './base-schema';
+import { DiscoveryLink } from './discovery-link';
+import { contextContainerLink } from './context-link';
 
 @injectable()
 export class ApolloClientModule implements MicroModule {
@@ -34,7 +36,11 @@ export class ApolloClientModule implements MicroModule {
       return new ApolloClient({
         cache: new InMemoryCache(),
         connectToDevTools: true,
-        link: new SchemaLink({ schema, context: context.container })
+        link: ApolloLink.from([
+          contextContainerLink(context.container),
+          new DiscoveryLink(),
+          new SchemaLink({ schema, context: { container: context.container } })
+        ])
       });
     });
   }

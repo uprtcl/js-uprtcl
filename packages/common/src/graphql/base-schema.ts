@@ -39,8 +39,8 @@ export const baseTypeDefs = gql`
 
 export const baseResolvers = {
   Query: {
-    async getEntity(parent, args, context, info) {
-      const discoveryService: DiscoveryService = context.get(DiscoveryTypes.DiscoveryService);
+    async getEntity(parent, args, { container }, info) {
+      const discoveryService: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
       const entity: Hashed<any> | undefined = await discoveryService.get(args.id);
 
@@ -50,8 +50,8 @@ export const baseResolvers = {
     }
   },
   EntityType: {
-    __resolveType(obj, context, info) {
-      const recognizer: PatternRecognizer = context.get(PatternTypes.Recognizer);
+    __resolveType(obj, { container }, info) {
+      const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
 
       const patterns: Pattern | IsEntity = recognizer.recognizeMerge(obj);
 
@@ -59,10 +59,10 @@ export const baseResolvers = {
     }
   },
   Entity: {
-    async content(parent, args, context, info) {
+    async content(parent, args, { container }, info) {
       const entity = parent.entity;
-      const recognizer: PatternRecognizer = context.get(PatternTypes.Recognizer);
-      const discovery: DiscoveryService = context.get(DiscoveryTypes.DiscoveryService);
+      const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
+      const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
       return redirectEntity(entity, recognizer, discovery);
     }
