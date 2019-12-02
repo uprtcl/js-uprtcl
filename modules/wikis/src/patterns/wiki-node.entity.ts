@@ -19,7 +19,7 @@ import { ReduxTypes } from '@uprtcl/micro-orchestrator';
 
 import { WikiNode } from '../types';
 
-const propertyOrder = ['text', 'type', 'links'];
+const propertyOrder = ['title', 'type', 'pages'];
 
 @injectable()
 export class WikiNodeEntity implements Pattern, HasLenses, HasChildren, HasActions, Mergeable {
@@ -36,30 +36,30 @@ export class WikiNodeEntity implements Pattern, HasLenses, HasChildren, HasActio
     return propertyOrder.every(p => node.hasOwnProperty(p));
   }
 
-  replaceChildrenLinks = (wiki: WikiNode, childrenHashes: string[]): WikiNode => ({
+  replaceChildrenLinks = (wiki: Hashed<WikiNode>, childrenHashes: string[]): Hashed<WikiNode> => ({
     ...wiki,
-    pages: childrenHashes
+    object: {
+      ...wiki.object,
+      pages: childrenHashes
+    }
   });
 
-  getHardLinks: (wiki: WikiNode) => string[] = (wiki: WikiNode): string[] => wiki.pages;
+  getChildrenLinks: (wiki: Hashed<WikiNode>) => string[] = (wiki: Hashed<WikiNode>): string[] => wiki.object.pages;
 
-  getSoftLinks: (wiki: WikiNode) => Promise<string[]> = async (wiki: WikiNode) => [];
+  getLinks: (wiki: Hashed<WikiNode>) => Promise<string[]> = async (wiki: Hashed<WikiNode>) => this.getChildrenLinks(wiki);
 
-  getLinks: (wiki: WikiNode) => Promise<string[]> = (wiki: WikiNode) =>
-    this.getSoftLinks(wiki).then(pages => pages.concat(this.getHardLinks(wiki)));
-
-  getLenses = (node: WikiNode): Lens[] => {
+  getLenses = (wiki: Hashed<WikiNode>): Lens[] => {
     return [
       {
         name: 'Wiki',
-        render: html`
-          <basic-wiki .data=${node}></basic-wiki>
+        render: (lensContent: TemplateResult) => html`
+          <basic-wiki .data=${wiki.object}>${lensContent}</basic-wiki>
         `
       }
     ];
   };
 
-  getActions = (WikiNode: WikiNode, entityId: string): PatternAction[] => {
+  getActions = (WikiNode: Hashed<WikiNode>, entityId: string): PatternAction[] => {
     // const state = this.store.getState();
     // const writable = selectEntityAccessControl(entityId)(selectAccessControl(state));
     // if (!writable) return [];
@@ -80,29 +80,29 @@ export class WikiNodeEntity implements Pattern, HasLenses, HasChildren, HasActio
     ];
   };
 
-  // merge = async (
-  //   originalNode: Hashed<WikiNode>,
-  //   modifications: Hashed<WikiNode>[],
-  //   mergeStrategy: MergeStrategy
-  // ): Promise<WikiNode> => {
-  //   const resultText = mergeStrings(
-  //     originalNode.object.text,
-  //     modifications.map(data => data.object.text)
-  //   );
-  //   const resultType = mergeResult(
-  //     originalNode.object.type,
-  //     modifications.map(data => data.object.type)
-  //   );
+  merge = async (
+    originalNode: Hashed<WikiNode>,
+    modifications: Hashed<WikiNode>[],
+    mergeStrategy: MergeStrategy
+  ): Promise<WikiNode> => {
+    const resultTitle = mergeStrings(
+      originalNode.object.title,
+      modifications.map(data => data.object.title)
+    );
+    const resultType = mergeResult(
+      originalNode.object.type,
+      modifications.map(data => data.object.type)
+    );
 
-  //   const mergedLinks = await mergeStrategy.mergeLinks(
-  //     originalNode.object.links,
-  //     modifications.map(data => data.object.links)
-  //   );
+    const mergedPages = await mergeStrategy.mergeLinks(
+      originalNode.object.pages,
+      modifications.map(data => data.object.pages)
+    );
 
-  //   return {
-  //     links: mergedLinks,
-  //     text: resultText,
-  //     type: resultType
-  //   };
-  // };
+    return {
+      pages: mergedPages,
+      title: resultTitle,
+      type: resultType
+    };
+  };
 }

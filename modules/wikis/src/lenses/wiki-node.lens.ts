@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { LensElement } from '@uprtcl/lenses';
-import { EveesTypes, Evees, EveesProvider, PerspectiveDetails } from '@uprtcl/evees';
+import { EveesTypes, EveesProvider, PerspectiveDetails } from '@uprtcl/evees';
 import { DocumentsTypes, DocumentsProvider } from '@uprtcl/documents';
 import { WikiNode } from '../types';
 
@@ -46,7 +46,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   };
 
   listPerspectives = async idPerspective => {
-    const evees: Evees = this.request(EveesTypes.Evees);
+    const evees: any = this.request(EveesTypes.Evees);
     const { context }: PerspectiveDetails = await evees.getPerspectiveDetails(idPerspective);
     if (context === undefined) {
       this.wikiPerspectives = [] 
