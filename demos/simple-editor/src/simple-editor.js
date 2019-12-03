@@ -34,12 +34,12 @@ export class SimpleEditor extends moduleConnect(LitElement) {
 
     const docProvider = this.requestAll(DocumentsTypes.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.service.uprtclProviderLocator);
+      return !regexp.test(provider.uprtclProviderLocator);
     });
 
     const eveesProvider = this.requestAll(EveesTypes.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.service.uprtclProviderLocator);
+      return !regexp.test(provider.uprtclProviderLocator);
     });
 
     window.addEventListener('popstate', () => {
@@ -54,12 +54,12 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     } else {
       const hashed = await this.textNodePattern.create(
         {},
-        docProvider.service.uprtclProviderLocator
+        docProvider.uprtclProviderLocator
       );
 
       const perspective = await this.perspectivePattern.create(
         { dataId: hashed.id },
-        eveesProvider.service.uprtclProviderLocator
+        eveesProvider.uprtclProviderLocator
       );
       window.history.pushState('', '', `/?id=${perspective.id}`);
     }

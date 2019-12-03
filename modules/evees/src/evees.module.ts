@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { DiscoverableSource, PatternTypes } from '@uprtcl/cortex';
+import { PatternTypes } from '@uprtcl/cortex';
 import {
   graphQlSchemaModule,
   DefaultSecuredPattern,
@@ -46,10 +46,7 @@ import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
  *
  * const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
  *
- * const discoverableEveesHolo = { service: eveesHolochain, knownSources };
- * const discoverableEveesEth = { service: eveesEth, knownSources };
- *
- * const evees = eveesModule([discoverableEveesHolo, discoverableEveesEth]);
+ * const evees = eveesModule([eveesHolochain, eveesEth]);
  *
  * const orchestrator = new MicroOrchestrator();
  *
@@ -61,12 +58,12 @@ import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
  *
  * @category CortexModule
  *
- * @param discoverableEvees
+ * @param eveesProviders
  * @param localEvees
  * @returns a configured _Prtcl Evees module ready to be used with `micro-orchestrator`
  */
 export function eveesModule(
-  discoverableEvees: Array<DiscoverableSource<EveesRemote>>,
+  eveesProviders: Array<EveesRemote>,
   localEvees: new (...args: any[]) => EveesLocal = EveesDexie
 ): new (...args: any[]) => ReduxCortexModule {
   @injectable()
@@ -76,7 +73,7 @@ export function eveesModule(
     }
 
     get sources() {
-      return discoverableEvees.map(evees => ({
+      return eveesProviders.map(evees => ({
         symbol: EveesTypes.EveesRemote,
         source: evees
       }));

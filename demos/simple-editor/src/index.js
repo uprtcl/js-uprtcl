@@ -42,7 +42,7 @@ import { SimpleEditor } from './simple-editor';
 
   const evees = eveesModule([
     //{ service: httpEvees, knownSources: httpKnownSources },
-    { service: ethEvees }
+    ethEvees
   ]);
 
   const httpDocuments = new DocumentsHttp(c1host, httpConnection);
@@ -50,7 +50,7 @@ import { SimpleEditor } from './simple-editor';
 
   const documents = documentsModule([
     //{ service: httpDocuments, knownSources: httpKnownSources },
-    { service: ipfsDocuments }
+    ipfsDocuments
   ]);
 
   const orchestrator = new MicroOrchestrator();

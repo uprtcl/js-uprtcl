@@ -8,7 +8,6 @@ import {
 } from '@uprtcl/micro-orchestrator';
 
 import { Pattern } from './patterns/pattern';
-import { DiscoverableSource } from './services/sources/discoverable.source';
 import { DiscoveryTypes, PatternTypes, LensesTypes } from './types';
 import { ServiceProvider, Ready } from './services/sources/service.provider';
 import { Source, SourceProvider } from './services/sources/source';
@@ -27,7 +26,7 @@ import { Source, SourceProvider } from './services/sources/source';
  *   }
  *
  *   get sources() {
- *     return discoverableEvees.map(evees => ({
+ *     return eveesProviders.map(evees => ({
  *       symbol: EveesTypes.EveesRemote,
  *       source: evees
  *     }));
@@ -67,7 +66,7 @@ export class CortexModule implements MicroModule {
     return undefined;
   }
 
-  get sources(): Array<{ symbol: symbol; source: DiscoverableSource<SourceProvider> }> | undefined {
+  get sources(): Array<{ symbol: symbol; source: SourceProvider }> | undefined {
     return undefined;
   }
 
@@ -93,28 +92,26 @@ export class CortexModule implements MicroModule {
     await this.moduleProvider(LensesTypes.Module);
 
     if (this.sources) {
-      await Promise.all(
-        this.sources.map(discoverableSource => {
-          const services: Ready[] = [discoverableSource.source.service];
+      const readyPromises = this.sources.map(symbolSource => {
+        const services: Ready[] = [symbolSource.source];
 
-          if (discoverableSource.source.knownSources) {
-            services.push(discoverableSource.source.knownSources);
-          }
+        if (symbolSource.source.knownSources) {
+          services.push(symbolSource.source.knownSources);
+        }
 
-          return Promise.all(services.map(s => s.ready()));
-        })
-      );
+        return Promise.all(services.map(s => s.ready()));
+      });
+
+      await Promise.all(readyPromises);
     }
 
     // Initialize all the sources
     if (this.sources) {
       for (const symbolSource of this.sources) {
-        const discoverableSource = symbolSource.source;
+        const source = symbolSource.source;
 
-        bind<DiscoverableSource<any>>(DiscoveryTypes.DiscoverableSource).toConstantValue(
-          discoverableSource
-        );
-        bind<DiscoverableSource<any>>(symbolSource.symbol).toConstantValue(discoverableSource);
+        bind<Source>(DiscoveryTypes.Source).toConstantValue(source);
+        bind<Source>(symbolSource.symbol).toConstantValue(source);
       }
     }
 
@@ -150,5 +147,4 @@ export class CortexModule implements MicroModule {
       this.sources
     );
   }
-
 }

@@ -1,6 +1,5 @@
 import { injectable } from 'inversify';
 
-import { DiscoverableSource, SourceProvider } from '@uprtcl/cortex';
 import { ReduxCortexModule, graphQlSchemaModule } from '@uprtcl/common';
 
 import { TextNodeLens } from './lenses/text-node.lens';
@@ -45,7 +44,7 @@ import { documentsTypeDefs, documentsSchema } from './graphql';
  * @returns a configured documents module ready to be loaded
  */
 export function documentsModule(
-  documentsRemotes: DiscoverableSource<DocumentsRemote>[],
+  documentsRemotes: DocumentsRemote[],
   documentsLocal: new (...args: any[]) => DocumentsProvider = DocumentsLocal
 ): new (...args: any[]) => ReduxCortexModule {
   @injectable()

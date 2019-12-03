@@ -42,10 +42,7 @@ const hcConnection = new HolochainConnection({ host: 'ws://localhost:8888' });
 
 const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
 
-const discoverableEveesHolo = { service: eveesHolochain, knownSources };
-const discoverableEveesEth = { service: eveesEth, knownSources };
-
-const evees = eveesModule([discoverableEveesHolo, discoverableEveesEth]);
+const evees = eveesModule([eveesHolochain, eveesEth]);
 
 const orchestrator = new MicroOrchestrator();
 

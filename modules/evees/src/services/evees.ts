@@ -1,7 +1,6 @@
 import { multiInject, injectable, inject } from 'inversify';
 
 import {
-  DiscoverableSource,
   KnownSourcesService,
   DiscoveryTypes,
   PatternTypes,
@@ -48,7 +47,7 @@ export class Evees {
     @inject(EveesTypes.EveesLocal)
     protected eveesLocal: EveesLocal,
     @multiInject(EveesTypes.EveesRemote)
-    protected eveesRemotes: DiscoverableSource<EveesRemote>[]
+    protected eveesRemotes: EveesRemote[]
   ) {
     this.service = new CachedMultiSourceService<EveesLocal, EveesRemote>(
       eveesLocal,
@@ -67,7 +66,7 @@ export class Evees {
 
   private validateUpl(upl: string | undefined): string {
     const provider = this.service.remote.getService(upl);
-    return provider.service.uprtclProviderLocator;
+    return provider.uprtclProviderLocator;
   }
 
   /** Public functions */

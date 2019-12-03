@@ -1,7 +1,6 @@
 import { multiInject, inject, injectable } from 'inversify';
 
 import { Source, SourceProvider } from '../sources/source';
-import { DiscoverableSource } from '../sources/discoverable.source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Hashed } from '../../patterns/properties/hashable';
@@ -14,16 +13,16 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
   /**
    * @param patternRecognizer the pattern recognizer to interact with the objects and their links
    * @param localKnownSources local service to store all known sources to be able to retrieve the object afterwards
-   * @param discoverableSources array of all discoverable sources from which to get objects
+   * @param serviceProviders array of all source service providers from which to get objects
    */
   constructor(
     @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(DiscoveryTypes.LocalKnownSources)
     protected localKnownSources: KnownSourcesService,
-    @multiInject(DiscoveryTypes.DiscoverableSource)
-    discoverableSources: Array<DiscoverableSource<T>>
+    @multiInject(DiscoveryTypes.Source)
+    sourceProviders: Array<T>
   ) {
-    super(patternRecognizer, localKnownSources, discoverableSources);
+    super(patternRecognizer, localKnownSources, sourceProviders);
   }
 
   /**
@@ -44,7 +43,7 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
       this.linksFromObject(object)
     );
 
-    upl = this.getService(upl).service.uprtclProviderLocator;
+    upl = this.getService(upl).uprtclProviderLocator;
 
     if (!object) {
       // Object retrieval succeeded but object was not found,

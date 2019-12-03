@@ -6,7 +6,6 @@ import { HasLinks } from '../../patterns/properties/has-links';
 import { ServiceProvider } from '../sources/service.provider';
 import { Hashed } from '../../patterns/properties/hashable';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
-import { DiscoverableService, DiscoverableSource } from '../sources/discoverable.source';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Ready } from '../sources/service.provider';
 import { Pattern } from '../../patterns/pattern';
@@ -14,21 +13,21 @@ import { Pattern } from '../../patterns/pattern';
 export class MultiService<T extends ServiceProvider> implements Ready {
   protected logger = new Logger('MultiProviderService');
 
-  services: Dictionary<DiscoverableService<T>>;
+  services: Dictionary<T>;
 
   /**
    * @param patternRecognizer the pattern recognizer to interact with the objects and their links
    * @param localKnownSources local service to store all known sources to be able to retrieve the object afterwards
-   * @param discoverableServices array of all discoverable services to which execute functions
+   * @param serviceProviders array of all service providers to which execute functions
    */
   constructor(
     protected patternRecognizer: PatternRecognizer,
     protected localKnownSources: KnownSourcesService,
-    discoverableServices: Array<DiscoverableService<T>>
+    serviceProviders: Array<T>
   ) {
     // Build the sources dictionary from the resulting names
-    this.services = discoverableServices.reduce(
-      (services, service) => ({ ...services, [service.service.uprtclProviderLocator]: service }),
+    this.services = serviceProviders.reduce(
+      (services, service) => ({ ...services, [service.uprtclProviderLocator]: service }),
       {}
     );
   }
@@ -38,7 +37,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    */
   public async ready(): Promise<void> {
     const promises = Object.keys(this.services).map(serviceName =>
-      this.services[serviceName].service.ready()
+      this.services[serviceName].ready()
     );
     await Promise.all(promises);
   }
@@ -54,7 +53,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    * @returns gets all the services
    */
   public getAllServices(): T[] {
-    return Object.keys(this.services).map(upl => this.services[upl].service);
+    return Object.keys(this.services).map(upl => this.services[upl]);
   }
 
   /**
@@ -63,7 +62,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    * @param upl the UprtclProviderLocator that identifies the service provider
    * @returns the source identified with the given name
    */
-  public getService(upl: string | undefined): DiscoverableService<T> {
+  public getService(upl: string | undefined): T {
     const upls: string[] = this.getAllServicesUpl();
 
     if (!upl) {
@@ -138,7 +137,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
     const service = this.getService(upl);
 
     // Execute the getter
-    const result = await getter(service.service);
+    const result = await getter(service);
 
     if (!result) {
       return;
@@ -170,7 +169,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   ): Promise<S> {
     // Execute the updater callback in the source
     const provider = this.getService(upl);
-    const result = await updater(provider.service);
+    const result = await updater(provider);
 
     await this.addLinksToKnownSources(object, upl, provider.knownSources);
 
@@ -191,9 +190,9 @@ export class MultiService<T extends ServiceProvider> implements Ready {
     creator: (service: T) => Promise<Hashed<O>>
   ): Promise<Hashed<O>> {
     const provider = this.getService(upl);
-    upl = provider.service.uprtclProviderLocator;
+    upl = provider.uprtclProviderLocator;
 
-    const createdObject = await creator(provider.service);
+    const createdObject = await creator(provider);
 
     await this.addLinksToKnownSources(createdObject, upl, provider.knownSources);
 
@@ -210,10 +209,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    * @param hash the hash for which to discover the sources
    * @param service the service to ask for the known sources
    */
-  protected async discoverKnownSources(
-    hash: string,
-    service: DiscoverableService<T>
-  ): Promise<void> {
+  protected async discoverKnownSources(hash: string, service: T): Promise<void> {
     if (!service.knownSources) return;
 
     const knownSourcesNames = await service.knownSources.getKnownSources(hash);
