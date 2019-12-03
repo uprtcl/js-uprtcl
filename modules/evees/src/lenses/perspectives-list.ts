@@ -1,23 +1,30 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { reduxConnect } from '@uprtcl/micro-orchestrator';
 import { EveesTypes, PerspectiveDetails, Perspective } from '../types';
-import { Secured } from '@uprtcl/common';
+import { Secured, selectCanWrite } from '@uprtcl/common';
+import { PatternTypes } from '@uprtcl/cortex';
 
-export class PerspectivesList extends moduleConnect(LitElement) {
-  @property({ type: Array })
-  wikiPerspectives: Array<any> = [];
-
+export class PerspectivesList extends reduxConnect(LitElement) {
   @property({ type: String })
-  rootHash: String = window.location.href.split('id=')[1];
+  rootPerspectiveId!: string;
+
+  @property({})
+  perspectivesInfo: Object = {};
+
+  firstUpdated() {
+    this.listPerspectives(this.rootPerspectiveId);
+  }
 
   listPerspectives = async idPerspective => {
     const evees: any = this.request(EveesTypes.Evees);
-    const { context }: PerspectiveDetails = await evees.getPerspectiveDetails(idPerspective);
-    if (context === undefined) {
-      this.wikiPerspectives = [];
+    const details: PerspectiveDetails = await evees.getPerspectiveDetails(idPerspective);
+    console.log(details);
+    console.log('test');
+    if (details === undefined) {
+      // this.perspectives = [];
     } else {
       const perspectivesList: Array<Secured<Perspective>> = await evees.getContextPerspectives(
-        context
+        details.context
       );
       const perspectiveIDs: Array<string> = [];
 
@@ -27,42 +34,52 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           return evees.getPerspectiveDetails(perspective.id);
         }
       );
+
       Promise.all(perspectivesPromises).then(resolved => {
-        this.wikiPerspectives = resolved.map((perspective: any, index: number) => {
-          return {
-            name: perspective.name,
-            id: perspectiveIDs[index]
+        resolved.map((perspective: any, index: number) => {
+          let perspectiveId = perspectiveIDs[index];
+          this.perspectivesInfo[perspectiveId] = {
+            name: perspective.name
           };
         });
       });
+      console.log(this.perspectivesInfo);
     }
   };
 
+  stateChanged(state) {
+    Object.keys(this.perspectivesInfo).map(perspectiveId => {
+      this.perspectivesInfo[perspectiveId]['canMerge'] = selectCanWrite(
+        this.request(PatternTypes.Recognizer)
+      )(perspectiveId)(state);
+    });
+  }
+
   openWikiPerspective = id => {
+    //crear evento para manejar id de perspectiva, en vez de en el url
     window.history.pushState('', '', `/?id=${id}`);
   };
 
+  renderPerspective(perspective) {
+    return html`
+      <li @click=${() => this.openWikiPerspective(perspective.id)}>
+        ${perspective.name}
+      </li>
+    `;
+  }
+
   render() {
     return html`
-      <div slot="plugins">
-        <h4>Perspectives</h4>
-        <button @click=${() => this.listPerspectives(this.rootHash)}>
-          See all perspectives
-        </button>
-        ${this.wikiPerspectives.length > 0
-          ? html`
-              <ul>
-                ${this.wikiPerspectives.map(perspective => {
-                  return html`
-                    <li @click=${() => this.openWikiPerspective(perspective.id)}>
-                      ${perspective.name}
-                    </li>
-                  `;
-                })}
-              </ul>
-            `
-          : ''}
-      </div>
+      <h4>Perspectives</h4>
+      ${Object.keys(this.perspectivesInfo).length > 0
+        ? html`
+            <ul>
+              ${Object.keys(this.perspectivesInfo).map(perspectiveId => {
+                this.renderPerspective(this.perspectivesInfo[perspectiveId]);
+              })}
+            </ul>
+          `
+        : ''}
     `;
   }
 }

@@ -55,10 +55,10 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
 
   render() {
     return html`
-      <slot name="plugins"> </slot>
       <div class="row">
         <div class="column left" style="background-color:#aaa;">
           <h2>${this.data.title}</h2>
+          <slot name="plugins"> </slot>
           <ul>
             ${this.data.pages.map(page => {
               return html`
@@ -76,10 +76,11 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
           <p>
             ${this.selectedPageHash
               ? html`
+                  <!-- agregar header aqui (se planea reutilizar el perspectives list) -->
                   <cortex-entity .hash=${this.selectedPageHash}></cortex-entity>
+                  <perspectives-list .rootPerspectiveId=${this.selectedPageHash} />
                 `
               : html`
-                  Loading...
                 `}
           </p>
         </div>
