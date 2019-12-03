@@ -11,6 +11,7 @@ import {
 import { PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern } from './patterns/commit.pattern';
 import { CommitHistory } from './lenses/commit-history';
+import { PerspectivesList } from './lenses/perspectives-list';
 import { EveesTypes, EveesLocal } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
@@ -71,7 +72,10 @@ export function eveesModule(
   @injectable()
   class EveesModule extends ReduxCortexModule {
     get elements() {
-      return [{ name: 'commit-history', element: CommitHistory }];
+      return [
+        { name: 'commit-history', element: CommitHistory },
+        { name: 'perspectives-list', element: PerspectivesList }
+      ];
     }
 
     get sources() {

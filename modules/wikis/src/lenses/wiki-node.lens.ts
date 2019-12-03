@@ -10,13 +10,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   data!: WikiNode;
 
   @property({ type: String })
-  rootHash: String = window.location.href.split('id=')[1];
-
-  @property({ type: String })
   selectedPageHash!: String;
-
-  @property({ type: Array })
-  wikiPerspectives: Array<any> = [];
 
   createPage = async () => {
     const perspectivePattern: any = this.request(EveesTypes.PerspectivePattern);
@@ -45,18 +39,6 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
     this.updateContent(this.data.pages);
   };
 
-  listPerspectives = async idPerspective => {
-    const evees: any = this.request(EveesTypes.Evees);
-    const { context }: PerspectiveDetails = await evees.getPerspectiveDetails(idPerspective);
-    if (context === undefined) {
-      this.wikiPerspectives = [] 
-    } else {
-      const perspectivesList = await evees.getContextPerspectives(context);
-      console.log(context)
-      this.wikiPerspectives = perspectivesList;
-    }
-  };
-
   updateContent(pages: Array<string>) {
     this.dispatchEvent(
       new CustomEvent('content-changed', {
@@ -70,11 +52,6 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   setPage(pageHash) {
     this.selectedPageHash = pageHash;
   }
-
-  openWikiPerspective = id => {
-    // window.location.href.split('id=')[1] = id
-    window.history.pushState('', '', `/?id=${id}`);
-  };
 
   render() {
     return html`
@@ -94,24 +71,6 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
             <mwc-icon>note_add</mwc-icon>
             new page
           </mwc-button>
-
-          <h4>Perspectives</h4>
-          <button @click=${() => this.listPerspectives(this.rootHash)}>
-            See all perspectives
-          </button>
-          ${this.wikiPerspectives.length > 0
-            ? html`
-                <ul>
-                  ${this.wikiPerspectives.map(perspective => {
-                    return html`
-                      <li @click=${() => this.openWikiPerspective(perspective.id)}>
-                        ${perspective.id}
-                      </li>
-                    `;
-                  })}
-                </ul>
-              `
-            : ''}
         </div>
         <div class="column right" style="background-color:#bbb;">
           <p>
