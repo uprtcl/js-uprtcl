@@ -8,8 +8,8 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   @property({ type: String })
   rootPerspectiveId!: string;
 
-  @property({})
-  perspectivesInfo: Object = {};
+  @property({ attribute: false })
+  perspectives: Array<Object> = [];
 
   firstUpdated() {
     this.listPerspectives(this.rootPerspectiveId);
@@ -18,10 +18,8 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   listPerspectives = async idPerspective => {
     const evees: any = this.request(EveesTypes.Evees);
     const details: PerspectiveDetails = await evees.getPerspectiveDetails(idPerspective);
-    console.log(details);
-    console.log('test');
     if (details === undefined) {
-      // this.perspectives = [];
+      this.perspectives = [];
     } else {
       const perspectivesList: Array<Secured<Perspective>> = await evees.getContextPerspectives(
         details.context
@@ -35,25 +33,24 @@ export class PerspectivesList extends reduxConnect(LitElement) {
         }
       );
 
-      Promise.all(perspectivesPromises).then(resolved => {
-        resolved.map((perspective: any, index: number) => {
-          let perspectiveId = perspectiveIDs[index];
-          this.perspectivesInfo[perspectiveId] = {
-            name: perspective.name
-          };
-        });
+      const resolved = await Promise.all(perspectivesPromises);
+      this.perspectives = resolved.map((perspective: any, index: number) => {
+        return {
+          id: perspectiveIDs[index],
+          name: perspective.name
+        };
       });
-      console.log(this.perspectivesInfo);
     }
   };
 
-  stateChanged(state) {
-    Object.keys(this.perspectivesInfo).map(perspectiveId => {
-      this.perspectivesInfo[perspectiveId]['canMerge'] = selectCanWrite(
-        this.request(PatternTypes.Recognizer)
-      )(perspectiveId)(state);
-    });
-  }
+  // stateChanged(state) {
+  //   this.perspectives = this.perspectives.map(perspective => {
+  //     let updatedPerspective: any = this.perspectives.find(p => p['id'] == perspective['id']);
+  //     console.log(updatedPerspective)
+  //     selectCanWrite(this.request(PatternTypes.Recognizer))(updatedPerspective['id'])(state);
+  //     return updatedPerspective;
+  //   });
+  // }
 
   openWikiPerspective = id => {
     //crear evento para manejar id de perspectiva, en vez de en el url
@@ -71,11 +68,11 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   render() {
     return html`
       <h4>Perspectives</h4>
-      ${Object.keys(this.perspectivesInfo).length > 0
+      ${this.perspectives.length > 0
         ? html`
             <ul>
-              ${Object.keys(this.perspectivesInfo).map(perspectiveId => {
-                this.renderPerspective(this.perspectivesInfo[perspectiveId]);
+              ${this.perspectives.map(perspective => {
+                return this.renderPerspective(perspective);
               })}
             </ul>
           `

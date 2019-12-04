@@ -12,6 +12,10 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   @property({ type: String })
   selectedPageHash!: String;
 
+  //this is going to be changed
+  @property({ type: String })
+  wikiId: String = window.location.href.split('id=')[1];
+
   createPage = async () => {
     const perspectivePattern: any = this.request(EveesTypes.PerspectivePattern);
     const pagePattern: any = this.request(DocumentsTypes.TextNodePattern);
@@ -53,12 +57,33 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
     this.selectedPageHash = pageHash;
   }
 
+  wikiHeader() {
+    return html `
+      <div class="header">
+        <div class="wiki-title">
+          <h2>${this.data.title}</h2>
+        </div>
+        <div class="page">
+          <h2> I'm the title of the page </h2>
+        </div>
+        <div class="proposal-action">
+          <h3> Update Proposals </h3>
+        </div>
+        <div class="proposal-action" @click=${() => this.selectedPageHash = ''}>
+          <h3> Others Perspectives </h3>
+        </div>
+        <div class="plugin">
+          <slot name="plugins"> </slot>
+        </div>
+      </div>
+    `
+  }
+
   render() {
     return html`
+      ${this.wikiHeader()}
       <div class="row">
         <div class="column left" style="background-color:#aaa;">
-          <h2>${this.data.title}</h2>
-          <slot name="plugins"> </slot>
           <ul>
             ${this.data.pages.map(page => {
               return html`
@@ -76,11 +101,10 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
           <p>
             ${this.selectedPageHash
               ? html`
-                  <!-- agregar header aqui (se planea reutilizar el perspectives list) -->
                   <cortex-entity .hash=${this.selectedPageHash}></cortex-entity>
-                  <perspectives-list .rootPerspectiveId=${this.selectedPageHash} />
                 `
               : html`
+                  <perspectives-list .rootPerspectiveId=${this.wikiId} />
                 `}
           </p>
         </div>
@@ -118,6 +142,47 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
         content: '';
         display: table;
         clear: both;
+      }
+      
+      .header {
+        display: flex;
+        flex-direction: row;
+        background-color:#fff;
+        height: 4%;
+      }
+
+      .wiki-title {
+        width: 25%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        border-style: solid;
+        border-width: 2px;
+        float: left;
+      }
+
+      .page{
+        width: 40%; 
+        text-align: left;
+        border-style: solid;
+        border-width: 2px;
+        border-left-width: 0px;
+      }
+
+      .proposal-action{
+        width: 15%;
+        text-align: center;
+        border-style: solid;
+        border-width: 2px;
+        border-left-width: 0px;
+      }
+
+      .plugin{
+        width: 5%;
+        justify-content: center;
+        border-style: solid;
+        border-width: 2px;
+        border-left-width: 0px;
       }
     `;
   }
