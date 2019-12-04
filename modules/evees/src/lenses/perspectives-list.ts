@@ -2,7 +2,7 @@ import { LitElement, property, html, css } from 'lit-element';
 import { reduxConnect } from '@uprtcl/micro-orchestrator';
 import { EveesTypes, PerspectiveDetails, Perspective } from '../types';
 import { Secured, selectCanWrite } from '@uprtcl/common';
-import { PatternTypes } from '@uprtcl/cortex';
+import { PatternTypes, PatternRecognizer } from '@uprtcl/cortex';
 
 export class PerspectivesList extends reduxConnect(LitElement) {
   @property({ type: String })
@@ -11,8 +11,11 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   @property({ attribute: false })
   perspectives: Array<Object> = [];
 
+  private recognizer!:PatternRecognizer;
+
   firstUpdated() {
     this.listPerspectives(this.rootPerspectiveId);
+    this.recognizer = this.request(PatternTypes.Recognizer)
   }
 
   listPerspectives = async idPerspective => {
@@ -43,23 +46,22 @@ export class PerspectivesList extends reduxConnect(LitElement) {
     }
   };
 
-  // stateChanged(state) {
-  //   this.perspectives = this.perspectives.map(perspective => {
-  //     let updatedPerspective: any = this.perspectives.find(p => p['id'] == perspective['id']);
-  //     console.log(updatedPerspective)
-  //     selectCanWrite(this.request(PatternTypes.Recognizer))(updatedPerspective['id'])(state);
-  //     return updatedPerspective;
-  //   });
-  // }
+  stateChanged(state) {
+    this.perspectives = this.perspectives.map(perspective => {
+      let updatedPerspective: any = this.perspectives.find(p => p['id'] == perspective['id']);
+      updatedPerspective['canMerge'] = selectCanWrite(this.recognizer)(updatedPerspective['id'])(state);
+      return updatedPerspective;
+    });
+  }
 
-  openWikiPerspective = id => {
+  openPerspective = id => {
     //crear evento para manejar id de perspectiva, en vez de en el url
     window.history.pushState('', '', `/?id=${id}`);
   };
 
   renderPerspective(perspective) {
     return html`
-      <li @click=${() => this.openWikiPerspective(perspective.id)}>
+      <li @click=${() => this.openPerspective(perspective.id)}>
         ${perspective.name}
       </li>
     `;

@@ -58,25 +58,25 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   }
 
   wikiHeader() {
-    return html `
+    return html`
       <div class="header">
         <div class="wiki-title">
           <h2>${this.data.title}</h2>
         </div>
         <div class="page">
-          <h2> I'm the title of the page </h2>
+          <h2>I'm the title of the page</h2>
         </div>
         <div class="proposal-action">
-          <h3> Update Proposals </h3>
+          <h3>Update Proposals</h3>
         </div>
-        <div class="proposal-action" @click=${() => this.selectedPageHash = ''}>
-          <h3> Others Perspectives </h3>
+        <div class="proposal-action" @click=${() => (this.selectedPageHash = '')}>
+          <h3>Others Perspectives</h3>
         </div>
         <div class="plugin">
           <slot name="plugins"> </slot>
         </div>
       </div>
-    `
+    `;
   }
 
   render() {
@@ -143,11 +143,11 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
         display: table;
         clear: both;
       }
-      
+
       .header {
         display: flex;
         flex-direction: row;
-        background-color:#fff;
+        background-color: #fff;
         height: 4%;
       }
 
@@ -161,15 +161,15 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
         float: left;
       }
 
-      .page{
-        width: 40%; 
+      .page {
+        width: 40%;
         text-align: left;
         border-style: solid;
         border-width: 2px;
         border-left-width: 0px;
       }
 
-      .proposal-action{
+      .proposal-action {
         width: 15%;
         text-align: center;
         border-style: solid;
@@ -177,7 +177,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
         border-left-width: 0px;
       }
 
-      .plugin{
+      .plugin {
         width: 5%;
         justify-content: center;
         border-style: solid;
