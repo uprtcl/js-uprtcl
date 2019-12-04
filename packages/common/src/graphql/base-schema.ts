@@ -28,7 +28,7 @@ export const baseTypeDefs = gql`
     id: ID!
     raw: JSON!
     entity: EntityType!
-    content: EntityType!
+    content: Entity!
     patterns: Patterns!
   }
 
@@ -39,14 +39,15 @@ export const baseTypeDefs = gql`
 
 export const baseResolvers = {
   Query: {
-    async getEntity(parent, args, { container }, info) {
-      const discoveryService: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
+    async getEntity(parent, { id, depth }, { cache, container }, info) {
+      const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
-      const entity: Hashed<any> | undefined = await discoveryService.get(args.id);
+      const entity: Hashed<any> | undefined = await discovery.get(id);
+      console.log(entity);
 
       if (!entity) throw new Error('Entity was not found');
 
-      return { id: args.id, raw: entity, entity, patterns: { links: [] } };
+      return { id, raw: entity, entity, patterns: { links: [] } };
     }
   },
   EntityType: {

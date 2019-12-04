@@ -30,16 +30,19 @@ export class ApolloClientModule implements MicroModule {
       });
     });
 
+    const cache = new InMemoryCache();
+    //cache.writeData({ data: { sources: {__typename: 'JSON', id: 0, hi: '0hi'} } });
+
     bind(GraphQlTypes.Client).toDynamicValue((context: interfaces.Context) => {
       const schema: GraphQLSchema = context.container.get(GraphQlTypes.RootSchema);
 
       return new ApolloClient({
-        cache: new InMemoryCache(),
+        cache,
         connectToDevTools: true,
         link: ApolloLink.from([
           contextContainerLink(context.container),
-          new DiscoveryLink(),
-          new SchemaLink({ schema, context: { container: context.container } })
+          //new DiscoveryLink(),
+          new SchemaLink({ schema, context: { cache, container: context.container } })
         ])
       });
     });

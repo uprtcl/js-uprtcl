@@ -8,7 +8,7 @@ import { Hashed } from '../../patterns/properties/hashable';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Ready } from '../sources/service.provider';
-import { Pattern } from '../../patterns/pattern';
+import { linksFromObject, discoverKnownSources } from '../discovery.utils';
 
 export class MultiService<T extends ServiceProvider> implements Ready {
   protected logger = new Logger('MultiProviderService');
@@ -16,12 +16,12 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   services: Dictionary<T>;
 
   /**
-   * @param patternRecognizer the pattern recognizer to interact with the objects and their links
+   * @param recognizer the pattern recognizer to interact with the objects and their links
    * @param localKnownSources local service to store all known sources to be able to retrieve the object afterwards
    * @param serviceProviders array of all service providers to which execute functions
    */
   constructor(
-    protected patternRecognizer: PatternRecognizer,
+    protected recognizer: PatternRecognizer,
     protected localKnownSources: KnownSourcesService,
     serviceProviders: Array<T>
   ) {
@@ -92,7 +92,9 @@ export class MultiService<T extends ServiceProvider> implements Ready {
     getter: (service: T) => Promise<Array<Hashed<O>>>
   ): Promise<Array<Hashed<O>>> {
     const linksSelector = async (array: Array<Hashed<O>>) => {
-      const promises = array.map(object => this.linksFromObject<Hashed<O>>(object));
+      const promises = array.map(object =>
+        linksFromObject(this.recognizer)(object)
+      );
       const links = await Promise.all(promises);
       return Array.prototype.concat.apply([], links);
     };
@@ -139,15 +141,13 @@ export class MultiService<T extends ServiceProvider> implements Ready {
     // Execute the getter
     const result = await getter(service);
 
-    if (!result) {
-      return;
-    }
+    if (!result) return undefined;
 
     // Get the links
     const links = await linksSelector(result);
 
     // Discover the known sources from the links
-    const linksPromises = links.map(link => this.discoverKnownSources(link, service));
+    const linksPromises = links.map(link => discoverKnownSources(this.localKnownSources)(link, service));
     await Promise.all(linksPromises);
 
     return result;
@@ -171,7 +171,9 @@ export class MultiService<T extends ServiceProvider> implements Ready {
     const provider = this.getService(upl);
     const result = await updater(provider);
 
-    await this.addLinksToKnownSources(object, upl, provider.knownSources);
+    if (provider.knownSources) {
+      await this.addLinksToKnownSources(object, upl, provider.knownSources);
+    }
 
     return result;
   }
@@ -194,7 +196,9 @@ export class MultiService<T extends ServiceProvider> implements Ready {
 
     const createdObject = await creator(provider);
 
-    await this.addLinksToKnownSources(createdObject, upl, provider.knownSources);
+    if (provider.knownSources) {
+      await this.addLinksToKnownSources(createdObject, upl, provider.knownSources);
+    }
 
     // We successfully created the object in the source, add to local known sources
     await this.localKnownSources.addKnownSources(createdObject.id, [upl]);
@@ -203,42 +207,6 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   }
 
   /** Private functions */
-
-  /**
-   * Retrieves the known sources for the given hash from the given source and stores them in the known sources service
-   * @param hash the hash for which to discover the sources
-   * @param service the service to ask for the known sources
-   */
-  protected async discoverKnownSources(hash: string, service: T): Promise<void> {
-    if (!service.knownSources) return;
-
-    const knownSourcesNames = await service.knownSources.getKnownSources(hash);
-
-    if (knownSourcesNames) {
-      await this.localKnownSources.addKnownSources(hash, knownSourcesNames);
-    }
-  }
-
-  /**
-   * Recognize the patterns from the object and get its links
-   *
-   * @param object the object
-   * @returns the links implemented from the object
-   */
-  protected async linksFromObject<O extends object>(object: O): Promise<string[]> {
-    // Recognize all pattern from object
-    const pattern: Array<Pattern | HasLinks> = this.patternRecognizer.recognize(object);
-
-    const promises = pattern.map(async pattern => {
-      if ((pattern as HasLinks).getLinks) {
-        return (pattern as HasLinks).getLinks(object);
-      } else return [] as string[];
-    });
-
-    const links: string[][] = await Promise.all(promises);
-
-    return ([] as string[]).concat(...links);
-  }
 
   /**
    * Adds the known sources of the links from the given object to the known sources service
@@ -250,39 +218,37 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   protected async addLinksToKnownSources<O extends object>(
     object: O,
     upl: string | undefined,
-    knownSourcesService: KnownSourcesService | undefined
+    knownSourcesService: KnownSourcesService
   ): Promise<void> {
     // Add known sources of the object's links to the provider's known sources
-    if (knownSourcesService) {
-      // Get the properties to get the object links from
-      const pattern: HasLinks = this.patternRecognizer.recognizeMerge(object);
+    // Get the properties to get the object links from
+    const pattern: HasLinks = this.recognizer.recognizeMerge(object);
 
-      if (pattern.getLinks) {
-        const links = await pattern.getLinks(object);
+    if (pattern.getLinks) {
+      const links = await pattern.getLinks(object);
 
-        this.logger.info(
-          'Updating known sources of the links ',
-          links,
-          ' from the object ',
-          object,
-          ' to the service provider ',
-          upl
-        );
+      this.logger.info(
+        'Updating known sources of the links ',
+        links,
+        ' from the object ',
+        object,
+        ' to the service provider ',
+        upl
+      );
 
-        const promises = links.map(async link => {
-          // We asume that we have stored the local known sources for the links from the object
-          const knownSources = await this.localKnownSources.getKnownSources(link);
+      const promises = links.map(async link => {
+        // We asume that we have stored the local known sources for the links from the object
+        const knownSources = await this.localKnownSources.getKnownSources(link);
 
-          // If the only known source is the name of the source itself, we don't need to tell the provider
-          const sameSource = knownSources && knownSources.length === 1 && knownSources[0] === upl;
+        // If the only known source is the name of the source itself, we don't need to tell the provider
+        const sameSource = knownSources && knownSources.length === 1 && knownSources[0] === upl;
 
-          if (knownSources && !sameSource) {
-            await knownSourcesService.addKnownSources(link, knownSources);
-          }
-        });
+        if (knownSources && !sameSource) {
+          await knownSourcesService.addKnownSources(link, knownSources);
+        }
+      });
 
-        await Promise.all(promises);
-      }
+      await Promise.all(promises);
     }
   }
 }

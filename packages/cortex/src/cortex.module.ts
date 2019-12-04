@@ -112,6 +112,7 @@ export class CortexModule implements MicroModule {
 
         bind<Source>(DiscoveryTypes.Source).toConstantValue(source);
         bind<Source>(symbolSource.symbol).toConstantValue(source);
+        bind<Source>(source.uprtclProviderLocator).toConstantValue(source);
       }
     }
 

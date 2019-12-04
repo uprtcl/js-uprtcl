@@ -50,3 +50,11 @@ export { LensesTypes, DiscoveryTypes, PatternTypes, UplAuth } from './types';
 
 /** Module */
 export { CortexModule } from './cortex.module';
+
+/** Utils */
+export {
+  linksFromObject,
+  getUplToDiscover,
+  discoverKnownSources,
+  discoverLinksKnownSources
+} from './services/discovery.utils';
