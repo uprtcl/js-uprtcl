@@ -6,19 +6,21 @@ import { Secured, GraphQlTypes, baseTypeDefs, baseResolvers } from '@uprtcl/comm
 import { Commit } from './types';
 
 export const eveesTypeDefs = gql`
-  type Commit {
+  type Commit implements EntityType {
     parentCommits: [Entity!]!
     message: String
     data: Entity
+
+    patterns: Patterns!
   }
 
-  type Perspective {
+  type Perspective implements EntityType {
     head: Entity
     name: String
     context: String
-  }
 
-  extend union EntityType = Commit | Perspective
+    patterns: Patterns!
+  }
 `;
 
 export const eveesResolvers = {
@@ -27,7 +29,7 @@ export const eveesResolvers = {
       return parent.object.payload.message;
     },
     parentCommits(parent: Secured<Commit>, args, context, info) {
-      const schema = context.get(GraphQlTypes.RootSchema);
+      const schema = context.container.get(GraphQlTypes.RootSchema);
 
       return parent.object.payload.parentsIds.map(parentId =>
         delegateToSchema({

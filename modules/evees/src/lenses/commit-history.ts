@@ -33,11 +33,6 @@ export class CommitHistory extends reduxConnect(LitElement)
             ... on Commit {
               parentCommits {
                 id
-                entity {
-                  ... on Commit {
-                    id
-                  }
-                }
               }
             }
           }

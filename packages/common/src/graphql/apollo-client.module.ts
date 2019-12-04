@@ -26,7 +26,8 @@ export class ApolloClientModule implements MicroModule {
 
       return makeExecutableSchema({
         typeDefs: [baseTypeDefs, ...typeDefs],
-        resolvers: [baseResolvers, ...resolvers]
+        resolvers: [baseResolvers, ...resolvers],
+        inheritResolversFromInterfaces: true
       });
     });
 
@@ -40,7 +41,7 @@ export class ApolloClientModule implements MicroModule {
         cache,
         connectToDevTools: true,
         link: ApolloLink.from([
-          contextContainerLink(context.container),
+          // contextContainerLink(context.container),
           //new DiscoveryLink(),
           new SchemaLink({ schema, context: { cache, container: context.container } })
         ])

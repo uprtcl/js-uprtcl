@@ -9,13 +9,13 @@ export const documentsTypeDefs = gql`
     Paragraph
   }
 
-  type TextNode {
+  type TextNode implements EntityType {
     text: String!
     type: TextType!
     links: [Entity]!
+    
+    patterns: Patterns!
   }
-
-  extend union EntityType = TextNode
 `;
 
 export const documentsSchema = makeExecutableSchema({

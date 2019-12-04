@@ -36,10 +36,15 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
         getEntity(id: "${hash}", depth: 1) {
           id
           raw
-          content {
-            ... on TextNode {
-              text
-              type
+          isomorphisms {
+            patterns {
+              getLinks {
+                id
+              }
+              actions {
+                icon
+                action
+              }
             }
           }
         }
