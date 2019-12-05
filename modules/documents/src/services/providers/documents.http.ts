@@ -35,8 +35,7 @@ export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
   async createTextNode(node: TextNode, hash: string): Promise<string> {
     const result = await super.post(`/data`, {
       id: hash,
-      type: DataType.DOCUMENT_NODE,
-      data: node
+      object: node
     });
     return result.elementIds[0];
   }

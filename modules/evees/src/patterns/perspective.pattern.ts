@@ -160,7 +160,7 @@ export class PerspectivePattern
     const newHead = await this.evees.createCommit(
       {
         dataId: data.id,
-        message: `Commit at ${Date.now() / 1000}`,
+        message: `Commit at ${Date.now()}`,
         parentsIds: details.headId ? [details.headId] : []
       },
       perspective.object.payload.origin

@@ -30,8 +30,7 @@ export class WikisHttp extends HttpProvider implements WikisProvider {
   async createWikiNode(node: WikiNode, hash: string): Promise<string> {
     const result = await super.post(`/data`, {
       id: hash,
-      type: 'Wiki',
-      data: node
+      object: node
     });
     return result.elementIds[0];
   }

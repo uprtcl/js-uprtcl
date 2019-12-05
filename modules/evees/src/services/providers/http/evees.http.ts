@@ -45,7 +45,7 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
   }
 
   getContextPerspectives(context: string): Promise<any[]> {
-    return super.getObject<any[]>(`/persp?context=${context}`);
+    return super.getWithPut<any[]>(`/persp`, { context: context });
   }
 
   getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
