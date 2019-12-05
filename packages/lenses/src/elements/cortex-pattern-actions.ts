@@ -1,5 +1,6 @@
 import { LitElement, html, property, query, PropertyValues, css } from 'lit-element';
 import { Menu } from '@authentic/mwc-menu';
+import '@material/mwc-icon-button';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import {
@@ -22,13 +23,13 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
   @property({ type: Array })
   private actions!: PatternAction[];
 
-  getActions() {
-    const patternRecognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
+  patternRecognizer!: PatternRecognizer;
 
+  getActions() {
     let actions: PatternAction[] = [];
 
     for (const isomorphism of this.isomorphisms.isomorphisms) {
-      const patterns: Array<Pattern | HasActions> = patternRecognizer.recognize(isomorphism);
+      const patterns: Array<Pattern | HasActions> = this.patternRecognizer.recognize(isomorphism);
       for (const pattern of patterns) {
         if ((pattern as HasActions).getActions) {
           actions = actions.concat(
@@ -42,6 +43,7 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
   }
 
   firstUpdated() {
+    this.patternRecognizer = this.request(PatternTypes.Recognizer);
     this.getActions();
   }
 
@@ -67,12 +69,11 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
 
   render() {
     return html`
-      <mwc-button
+      <mwc-icon-button
+        icon="more_vert"
         class=${this.show ? '' : 'hidden'}
         @click=${() => (this.menu.open = !this.menu.open)}
-      >
-        <mwc-icon>more_vert</mwc-icon>
-      </mwc-button>
+      ></mwc-icon-button>
 
       <mwc-menu id="menu" class=${this.show ? '' : 'hidden'}>
         <mwc-list>

@@ -6,6 +6,7 @@ import {
   HasRedirect,
   Pattern,
   IsSecure,
+  HasChildren,
   HasLinks,
   Creatable,
   Signed,
@@ -22,6 +23,8 @@ import { Perspective, EveesTypes, Commit } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { selectPerspectiveHeadId, selectEvees } from '../state/evees.selectors';
 import { LoadPerspectiveDetails, LOAD_PERSPECTIVE_DETAILS } from '../state/evees.actions';
+import { MergeStrategy } from '../merge/merge-strategy';
+import { createEntity } from '../utils/utils';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -40,7 +43,8 @@ export class PerspectivePattern
     @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesTypes.Evees) protected evees: Evees,
     @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ReduxTypes.Store) protected store: Store
+    @inject(ReduxTypes.Store) protected store: Store,
+    @inject(EveesTypes.MergeStrategy) protected merge: MergeStrategy
   ) {}
 
   recognize(object: object) {
@@ -52,24 +56,14 @@ export class PerspectivePattern
     );
   }
 
-  name = 'Perspective';
-
-  getHardLinks: (perspective: Secured<Perspective>) => string[] = (
-    perspective: Secured<Perspective>
-  ): string[] => [];
-
-  getSoftLinks: (perspective: Secured<Perspective>) => Promise<string[]> = async (
+  getLinks: (perspective: Secured<Perspective>) => Promise<string[]> = async (
     perspective: Secured<Perspective>
   ) => {
     const details = await this.evees.getPerspectiveDetails(perspective.id);
     return details.headId ? [details.headId] : [];
   };
 
-  getLinks: (perspective: Secured<Perspective>) => Promise<string[]> = (
-    perspective: Secured<Perspective>
-  ) => this.getSoftLinks(perspective).then(links => links.concat(this.getHardLinks(perspective)));
-
-  redirect: (perspective: Secured<Perspective>) => Promise<string | undefined> = async (
+  redirect: (perspective: Secured<Perspective>) => string | undefined = (
     perspective: Secured<Perspective>
   ) => {
     const details = await this.evees.getPerspectiveDetails(perspective.id);
@@ -102,18 +96,29 @@ export class PerspectivePattern
           );
           window.history.pushState('', '', `/?id=${newPerspective.id}`);
         }
+      },
+      {
+        icon: 'merge_type',
+        title: 'Merge',
+        action: async () => {
+          const updateRequests = await this.merge.mergePerspectives(
+            perspective.id,
+            'zb2rhcyLxU429tS4CoGYFbtskWPVE1ws6cByhYqjFTaTgivDe'
+          );
+          console.log(updateRequests);
+        }
       }
     ];
   };
 
   createChild = async (perspective: Secured<Perspective>, parent: any) => {
-    const patterns: Pattern | Creatable<any, any> | HasLinks = this.recognizer.recognizeMerge(
+    const patterns: Pattern | Creatable<any, any> | HasChildren = this.recognizer.recognizeMerge(
       parent
     );
 
-    const addChildrenLinks = (patterns as HasLinks).addChildrenLinks;
+    const replaceChildrenLinks = (patterns as HasChildren).replaceChildrenLinks;
 
-    if (patterns && (patterns as Creatable<any, any>).create && addChildrenLinks) {
+    if (patterns && (patterns as Creatable<any, any>).create && replaceChildrenLinks) {
       const newChildHashed = await (patterns as Creatable<any, any>).create(undefined);
 
       const childPerspective: Secured<Perspective> = await this.create(
@@ -121,7 +126,9 @@ export class PerspectivePattern
         perspective.object.payload.origin
       );
 
-      const entity = addChildrenLinks(parent, [childPerspective.id]);
+      const previousLinks = (patterns as HasChildren).getChildrenLinks(parent);
+
+      const entity = replaceChildrenLinks(parent, [...previousLinks, childPerspective.id]);
 
       await this.update(perspective, entity);
     }
@@ -145,10 +152,10 @@ export class PerspectivePattern
       previousHead.object.payload.dataId
     );
 
-    if (!knownSources)
-      throw new Error('First commit must be made before being able to update the perspective');
-
-    const data = await this.evees.createData(newContent, knownSources[0]);
+    const data = await createEntity(this.recognizer)(
+      newContent,
+      knownSources ? knownSources[0] : undefined
+    );
 
     const newHead = await this.evees.createCommit(
       {

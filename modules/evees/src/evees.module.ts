@@ -18,6 +18,7 @@ import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { EveesReduxModule } from './state';
 import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
+import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 
 /**
  * Configure a _Prtcl Evees module with the given configured providers
@@ -82,7 +83,8 @@ export function eveesModule(
     get services() {
       return [
         { symbol: EveesTypes.EveesLocal, service: localEvees },
-        { symbol: EveesTypes.Evees, service: Evees }
+        { symbol: EveesTypes.Evees, service: Evees },
+        { symbol: EveesTypes.MergeStrategy, service: RecursiveContextMergeStrategy }
       ];
     }
 

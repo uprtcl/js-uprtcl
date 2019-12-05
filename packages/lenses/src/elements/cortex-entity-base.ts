@@ -4,6 +4,7 @@ import { LitElement, property, PropertyValues, TemplateResult } from 'lit-elemen
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { GraphQlTypes } from '@uprtcl/common';
 import { PatternRecognizer, PatternTypes } from '@uprtcl/cortex';
+import { LoadEntity, LOAD_ENTITY, selectById, selectEntities } from '@uprtcl/common';
 
 import { getLenses, getIsomorphisms } from './utils';
 import { Isomorphisms, Lens } from '../types';

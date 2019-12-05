@@ -1,9 +1,5 @@
 import { html } from 'lit-element';
 import '@authentic/mwc-circular-progress';
-import '@material/mwc-button';
-import '@authentic/mwc-icon';
-import '@authentic/mwc-list';
-import '@authentic/mwc-menu';
 
 import { CortexEntityBase } from './cortex-entity-base';
 
@@ -16,7 +12,18 @@ export class CortexEntity extends CortexEntityBase {
 
     return html`
       <div id="lens-renderer">
-        ${this.selectedLens.render}
+        ${this.selectedLens.render(
+          html`
+            <div slot="plugins" style="display: flex; flex-direction: row;">
+              ${this.renderPlugins().map(
+                plugin =>
+                  html`
+                    ${plugin}
+                  `
+              )}
+            </div>
+          `
+        )}
       </div>
     `;
   }
@@ -24,6 +31,8 @@ export class CortexEntity extends CortexEntityBase {
   getLensElement(): Element | null {
     const element = this.shadowRoot ? this.shadowRoot.getElementById('lens-renderer') : null;
     if (!element) return null;
+
+    window['lenselement'] = element.firstElementChild;
 
     return element.firstElementChild;
   }
@@ -35,17 +44,10 @@ export class CortexEntity extends CortexEntityBase {
             <mwc-circular-progress></mwc-circular-progress>
           `
         : html`
-            <div style="display: flex; flex-direction: row;">
+            <div style="display: flex; flex-direction: row; position: relative;">
               <div style="flex: 1;">
                 ${this.renderLens()}
               </div>
-
-              ${this.renderPlugins().map(
-                plugin =>
-                  html`
-                    ${plugin}
-                  `
-              )}
             </div>
           `}
     `;

@@ -4,7 +4,7 @@ import { Secured } from '@uprtcl/common';
 
 import { Perspective, Commit, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
-import { ProposalMock } from '../../proposal.mock';
+import { ProposalsMock } from '../../proposals.mock';
 
 export class EveesHolochain extends HolochainSource implements EveesRemote {
   constructor(instance: string, hcConnection: HolochainConnection) {
@@ -16,7 +16,7 @@ export class EveesHolochain extends HolochainSource implements EveesRemote {
   }
 
   get proposals() {
-    return new ProposalMock();
+    return undefined;
   }
 
   /**

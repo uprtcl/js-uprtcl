@@ -1,5 +1,5 @@
 import { injectable, inject } from 'inversify';
-import { html } from 'lit-element';
+import { html, TemplateResult } from 'lit-element';
 
 import {
   Pattern,
@@ -8,8 +8,10 @@ import {
   HasLinks,
   Creatable,
   Signed,
+  PatternRecognizer,
   PatternTypes,
-  IsEntity
+  DiscoveryTypes,
+  DiscoveryService
 } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
@@ -34,7 +36,9 @@ export class CommitPattern
   constructor(
     @inject(PatternTypes.Core.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
-    @inject(EveesTypes.Evees) protected evees: Evees
+    @inject(EveesTypes.Evees) protected evees: Evees,
+    @inject(DiscoveryTypes.DiscoveryService) protected discoveryService: DiscoveryService,
+    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer
   ) {}
 
   recognize(object: object) {
@@ -46,16 +50,14 @@ export class CommitPattern
     );
   }
 
-  name = 'Commit';
+  getLinks: (commit: Secured<Commit>) => Promise<string[]> = async (
+    commit: Secured<Commit>
+  ): Promise<string[]> => [commit.object.payload.dataId, ...commit.object.payload.parentsIds];
 
-  getHardLinks: (commit: Secured<Commit>) => string[] = (commit: Secured<Commit>): string[] => [
-    commit.object.payload.dataId,
-    ...commit.object.payload.parentsIds
-  ];
-  getSoftLinks: (commit: Secured<Commit>) => Promise<string[]> = async (commit: Secured<Commit>) =>
+  getChildrenLinks: (commit: Secured<Commit>) => string[] = (commit: Secured<Commit>) =>
     [] as string[];
-  getLinks: (commit: Secured<Commit>) => Promise<string[]> = (commit: Secured<Commit>) =>
-    this.getSoftLinks(commit).then(links => links.concat(this.getHardLinks(commit)));
+
+  replaceChildrenLinks = (commit: Secured<Commit>, newLinks: string[]): Secured<Commit> => commit;
 
   redirect: (commit: Secured<Commit>) => Promise<string | undefined> = async (
     commit: Secured<Commit>
@@ -90,8 +92,8 @@ export class CommitPattern
     return [
       {
         name: 'commit-history',
-        render: html`
-          <commit-history .data=${commit}></commit-history>
+        render: (lensContent: TemplateResult) => html`
+          <commit-history .data=${commit}>${lensContent}</commit-history>
         `
       }
     ];
