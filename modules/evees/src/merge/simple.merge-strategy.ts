@@ -120,12 +120,15 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   async mergeData<T extends object>(originalData: T, newDatas: T[]): Promise<T> {
-    const patterns: Pattern | Mergeable = this.recognizer.recognizeMerge(originalData);
+    const merge: Mergeable | undefined = this.recognizer.recognizeUniqueProperty(
+      originalData,
+      prop => !!(prop as Mergeable)
+    );
 
-    if (!(patterns as Mergeable).merge)
+    if (!merge)
       throw new Error('Cannot merge data that does not implement the Mergeable behaviour');
 
-    return (patterns as Mergeable).merge(originalData, newDatas, this);
+    return merge.merge(originalData)(newDatas, this);
   }
 
   async mergeLinks(originalLinks: string[], modificationsLinks: string[][]): Promise<string[]> {

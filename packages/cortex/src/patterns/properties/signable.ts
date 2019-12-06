@@ -11,7 +11,7 @@ export interface Signed<T = any> {
   proof: Proof;
 }
 
-export interface Signable<T> extends Derivable<Signed<T>>, IsValid {
-  sign(object: T): Signed<T>;
-  verifySignature(signed: Signed<T>): boolean;
+export interface Signable<T = any> extends Derivable<Signed<T>>, IsValid<Signed<T>> {
+  sign: () => (object: T) => Signed<T>;
+  verifySignature: (pattern: Signed<T>) => boolean;
 }

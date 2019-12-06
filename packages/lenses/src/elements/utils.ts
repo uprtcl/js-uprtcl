@@ -12,8 +12,8 @@ export function getLenses(
   for (const isomorphism of isomorphisms.isomorphisms) {
     const patterns: Array<Pattern | HasLenses> = patternRecognizer.recognize(isomorphism);
     for (const pattern of patterns) {
-      if ((pattern as HasLenses).getLenses) {
-        lenses = lenses.concat((pattern as HasLenses).getLenses(isomorphism, isomorphisms.entity));
+      if ((pattern as HasLenses).lenses) {
+        lenses = lenses.concat((pattern as HasLenses).lenses(isomorphism));
       }
     }
   }
@@ -42,27 +42,27 @@ async function redirectEntity(
   entity: object,
   loadEntity: (id: string) => Promise<any>
 ): Promise<any[]> {
-  const patterns: Array<Pattern | HasRedirect> = patternRecognizer.recognize(entity);
+  const hasRedirects: Array<HasRedirect> = patternRecognizer.recognizeProperties(
+    entity,
+    prop => !!(prop as HasRedirect<any>).redirect
+  );
 
   let isomorphisms: any[] = [];
-  let entitiesToLoad: string[] = [];
 
-  for (const pattern of patterns) {
-    if ((pattern as HasRedirect).redirect) {
-      const redirectHash = await (pattern as HasRedirect).redirect(entity);
+  for (const hasRedirect of hasRedirects) {
+    const redirectHash = await hasRedirect.redirect(entity);
 
-      if (redirectHash) {
-        const redirectEntity = await loadEntity(redirectHash);
+    if (redirectHash) {
+      const redirectEntity = await loadEntity(redirectHash);
 
-        if (redirectEntity) {
-          const redirectedIsomorphisms = await getIsomorphisms(
-            patternRecognizer,
-            redirectEntity,
-            loadEntity
-          );
+      if (redirectEntity) {
+        const redirectedIsomorphisms = await getIsomorphisms(
+          patternRecognizer,
+          redirectEntity,
+          loadEntity
+        );
 
-          isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
-        }
+        isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
       }
     }
   }

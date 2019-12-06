@@ -11,13 +11,13 @@ import {
   PatternTypes,
   Creatable,
   PatternRecognizer,
-  HasChildren
+  HasChildren,
+  Entity
 } from '@uprtcl/cortex';
-import { Mergeable, MergeStrategy } from '@uprtcl/evees';
+import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { selectCanWrite } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ReduxTypes } from '@uprtcl/micro-orchestrator';
-import { mergeStrings, mergeResult } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';
 import { Documents } from '../services/documents';
@@ -25,13 +25,8 @@ import { Documents } from '../services/documents';
 const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
-export class TextNodeEntity implements Pattern, HasLenses, HasChildren, HasActions, Mergeable {
-  constructor(
-    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(ReduxTypes.Store) protected store: Store
-  ) {}
-
+export class TextNodeEntity implements Entity {
+  constructor(@inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;
 
@@ -39,7 +34,21 @@ export class TextNodeEntity implements Pattern, HasLenses, HasChildren, HasActio
     return propertyOrder.every(p => node.hasOwnProperty(p));
   }
 
-  replaceChildrenLinks = (node: Hashed<TextNode>, childrenHashes: string[]): Hashed<TextNode> => ({
+  name = 'TextNode';
+}
+
+@injectable()
+export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasChildren, Mergeable {
+  recognize(object: object): boolean {
+    if (!this.hashedPattern.recognize(object)) return false;
+
+    const node = this.hashedPattern.extract(object as Hashed<any>);
+    return propertyOrder.every(p => node.hasOwnProperty(p));
+  }
+
+  replaceChildrenLinks = (node: Hashed<TextNode>) => (
+    childrenHashes: string[]
+  ): Hashed<TextNode> => ({
     ...node,
     object: {
       ...node.object,
@@ -47,13 +56,11 @@ export class TextNodeEntity implements Pattern, HasLenses, HasChildren, HasActio
     }
   });
 
-  getChildrenLinks: (node: Hashed<TextNode>) => string[] = (node: Hashed<TextNode>): string[] =>
-    node.object.links;
+  getChildrenLinks = (node: Hashed<TextNode>): string[] => node.object.links;
 
-  getLinks: (node: Hashed<TextNode>) => Promise<string[]> = async (node: Hashed<TextNode>) =>
-    this.getChildrenLinks(node);
+  links = async (node: Hashed<TextNode>) => this.getChildrenLinks(node);
 
-  getLenses = (node: Hashed<TextNode>): Lens[] => {
+  lenses = (node: Hashed<TextNode>): Lens[] => {
     return [
       {
         name: 'Document',
@@ -63,8 +70,43 @@ export class TextNodeEntity implements Pattern, HasLenses, HasChildren, HasActio
       }
     ];
   };
+  merge = (originalNode: Hashed<TextNode>) => async (
+    modifications: Hashed<TextNode>[],
+    mergeStrategy: MergeStrategy
+  ): Promise<TextNode> => {
+    const resultText = mergeStrings(
+      originalNode.object.text,
+      modifications.map(data => data.object.text)
+    );
+    const resultType = mergeResult(
+      originalNode.object.type,
+      modifications.map(data => data.object.type)
+    );
 
-  getActions = (node: Hashed<TextNode>, entityId: string): PatternAction[] => {
+    const mergedLinks = await mergeStrategy.mergeLinks(
+      originalNode.object.links,
+      modifications.map(data => data.object.links)
+    );
+
+    return {
+      links: mergedLinks,
+      text: resultText,
+      type: resultType
+    };
+  };
+}
+
+@injectable()
+export class TextNodeActions extends TextNodeEntity implements HasActions {
+  constructor(
+    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(ReduxTypes.Store) protected store: Store
+  ) {
+    super(hashedPattern);
+  }
+
+  actions = (node: Hashed<TextNode>) => (entityId: string): PatternAction[] => {
     const textNode = node.object;
     const state = this.store.getState();
     const writable = selectCanWrite(this.recognizer)(entityId)(state);
@@ -105,30 +147,31 @@ export class TextNodeEntity implements Pattern, HasLenses, HasChildren, HasActio
       ];
     }
   };
+}
 
-  merge = async (
-    originalNode: Hashed<TextNode>,
-    modifications: Hashed<TextNode>[],
-    mergeStrategy: MergeStrategy
-  ): Promise<TextNode> => {
-    const resultText = mergeStrings(
-      originalNode.object.text,
-      modifications.map(data => data.object.text)
-    );
-    const resultType = mergeResult(
-      originalNode.object.type,
-      modifications.map(data => data.object.type)
-    );
+@injectable()
+export class TextNodeCreate extends TextNodeEntity
+  implements Pattern, Creatable<Partial<TextNode>, TextNode> {
+  constructor(
+    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(DocumentsTypes.Documents) protected documents: Documents
+  ) {
+    super(hashedPattern);
+  }
 
-    const mergedLinks = await mergeStrategy.mergeLinks(
-      originalNode.object.links,
-      modifications.map(data => data.object.links)
-    );
+  create = () => async (
+    node: Partial<TextNode> | undefined,
+    upl?: string
+  ): Promise<Hashed<TextNode>> => {
+    const links = node && node.links ? node.links : [];
+    const text = node && node.text ? node.text : '';
+    const type = node && node.type ? node.type : TextType.Paragraph;
 
-    return {
-      links: mergedLinks,
-      text: resultText,
-      type: resultType
-    };
+    if (!upl) {
+      upl = this.documents.service.remote.getAllServicesUpl().find(upl => !upl.includes('http'));
+    }
+
+    const newTextNode = { links, text, type };
+    return this.documents.createTextNode(newTextNode, upl);
   };
 }

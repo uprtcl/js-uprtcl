@@ -9,8 +9,8 @@ import {
   CidHashedPattern
 } from '@uprtcl/common';
 
-import { PerspectivePattern } from './patterns/perspective.pattern';
-import { CommitPattern } from './patterns/commit.pattern';
+import { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';
+import { CommitPattern, CommitEntity, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './lenses/commit-history';
 import { EveesTypes, EveesLocal } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
@@ -90,11 +90,14 @@ export function eveesModule(
 
     get patterns() {
       return [
-        { symbol: PatternTypes.Core.Hashed, pattern: CidHashedPattern },
-        { symbol: PatternTypes.Core.Signed, pattern: DefaultSignedPattern },
-        { symbol: PatternTypes.Core.Secured, pattern: DefaultSecuredPattern },
-        { symbol: EveesTypes.PerspectivePattern, pattern: PerspectivePattern },
-        { symbol: EveesTypes.CommitPattern, pattern: CommitPattern }
+        { symbol: PatternTypes.Core.Hashed, patterns: [CidHashedPattern] },
+        { symbol: PatternTypes.Core.Signed, patterns: [DefaultSignedPattern] },
+        { symbol: PatternTypes.Core.Secured, patterns: [DefaultSecuredPattern] },
+        { symbol: EveesTypes.PerspectivePattern, patterns: [PerspectiveEntity, PerspectiveLinks] },
+        {
+          symbol: EveesTypes.CommitPattern,
+          patterns: [CommitEntity, CommitLinked, CommitPattern, CommitLens]
+        }
       ];
     }
 

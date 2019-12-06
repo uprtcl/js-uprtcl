@@ -19,21 +19,25 @@ export const selectCanWrite = (recognizer: PatternRecognizer) => (entityId: stri
   const entity = selectById(entityId)(selectEntities(state));
   if (!entity) return false;
 
-  const pattern: Pattern | Updatable = recognizer.recognizeMerge(entity);
-  const origin = (pattern as Updatable).origin;
+  const updatable: Updatable<any, any> | undefined = recognizer.recognizeUniqueProperty(
+    entity,
+    prop => !!prop.origin
+  );
 
-  if (!origin) return false;
+  if (!updatable) return false;
 
-  const auth = selectUplAuthInfo(origin(entity))(selectAuth(state));
+  const auth = selectUplAuthInfo(updatable.origin(entity))(selectAuth(state));
 
   const permissions = selectEntityAccessControl(entityId)(selectAccessControl(state));
 
   if (!permissions) return true;
 
-  const accessControlPattern: Pattern | Permissions = recognizer.recognizeMerge(permissions);
-  const canWrite = (accessControlPattern as Permissions).canWrite;
+  const accessControlPattern: Permissions<any> | undefined = recognizer.recognizeUniqueProperty(
+    permissions,
+    prop => !!prop.canWrite
+  );
 
-  if (!canWrite) return false;
+  if (!accessControlPattern) return false;
 
-  return canWrite(permissions, auth);
+  return accessControlPattern.canWrite(permissions)(auth);
 };

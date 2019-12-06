@@ -1,12 +1,14 @@
+import { Property } from '../pattern';
+
 export interface PatternAction {
   icon: string;
   title: string;
   action: (element: HTMLElement) => any;
 }
 
-export interface HasActions {
+export interface HasActions<T = any> extends Property<T> {
   /**
    * @returns the actions available for the given object
    */
-  getActions(object: object, entityId: string): PatternAction[];
+  actions: (pattern: T) => (patternId: string) => PatternAction[];
 }

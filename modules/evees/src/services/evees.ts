@@ -153,7 +153,7 @@ export class Evees {
       origin: upl,
       timestamp: Date.now() / 1000
     };
-    const perspective: Secured<Perspective> = await this.secured.derive(perspectiveData);
+    const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData);
 
     this.logger.info('Created new perspective: ', perspective);
 
@@ -184,12 +184,13 @@ export class Evees {
       const dataHashed: Hashed<any> | undefined = await this.discoveryService.get(dataId);
       if (!dataHashed) throw new Error('Data for the head commit of the perspective was not found');
 
-      const data = dataHashed.object;
+      const hasChildren: HasChildren | undefined = this.patternRecognizer.recognizeUniqueProperty(
+        dataHashed,
+        prop => !!(prop as HasChildren).getChildrenLinks
+      );
 
-      const patterns: Pattern | HasChildren = this.patternRecognizer.recognizeMerge(data);
-
-      if ((patterns as HasChildren).getChildrenLinks) {
-        const descendantLinks = (patterns as HasChildren).getChildrenLinks(data);
+      if (hasChildren) {
+        const descendantLinks = hasChildren.getChildrenLinks(dataHashed);
 
         // TODO: generalize to break the assumption that all links are to perspectives
         const promises = descendantLinks.map(async link => {
@@ -202,7 +203,7 @@ export class Evees {
         });
 
         const newLinks = await Promise.all(promises);
-        const newData = (patterns as HasChildren).replaceChildrenLinks(data, newLinks);
+        const newData = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
 
         const previousDataUpls = await this.knownSources.getKnownSources(dataId);
 
@@ -262,7 +263,7 @@ export class Evees {
       timestamp: timestamp,
       parentsIds: args.parentsIds
     };
-    const commit: Secured<Commit> = await this.secured.derive(commitData);
+    const commit: Secured<Commit> = await this.secured.derive()(commitData);
 
     this.logger.info('Created new commit: ', commit);
 

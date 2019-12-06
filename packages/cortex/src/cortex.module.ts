@@ -4,7 +4,8 @@ import {
   MicroModule,
   Logger,
   MicroOrchestratorTypes,
-  ModuleProvider
+  ModuleProvider,
+  Constructor
 } from '@uprtcl/micro-orchestrator';
 
 import { Pattern } from './patterns/pattern';
@@ -70,7 +71,7 @@ export class CortexModule implements MicroModule {
     return undefined;
   }
 
-  get patterns(): Array<{ symbol: symbol; pattern: new (...args: any[]) => Pattern }> | undefined {
+  get patterns(): Array<{ symbol: symbol; patterns: Array<Constructor<Pattern>> }> | undefined {
     return undefined;
   }
 
@@ -126,9 +127,10 @@ export class CortexModule implements MicroModule {
     // Initialize all the patterns
     if (this.patterns) {
       for (const symbolPattern of this.patterns) {
-        const pattern = symbolPattern.pattern;
-        bind<Pattern>(PatternTypes.Pattern).to(pattern);
-        bind(symbolPattern.symbol).to(pattern);
+        for (const p of symbolPattern.patterns) {
+          bind<Pattern>(PatternTypes.Pattern).to(p);
+          bind(symbolPattern.symbol).to(p);
+        }
       }
     }
 
@@ -148,4 +150,7 @@ export class CortexModule implements MicroModule {
       this.sources
     );
   }
+}
+class A {
+  recognize() {}
 }

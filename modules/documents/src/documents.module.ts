@@ -3,14 +3,18 @@ import { injectable } from 'inversify';
 import { ReduxCortexModule, graphQlSchemaModule } from '@uprtcl/common';
 
 import { TextNodeLens } from './lenses/text-node.lens';
-import { TextNodePattern } from './patterns/text-node.pattern';
+import {
+  TextNodeActions,
+  TextNodeCreate,
+  TextNodePatterns,
+  TextNodeEntity
+} from './patterns/text-node.entity';
 import { DocumentsTypes } from './types';
 import { DocumentsProvider } from './services/documents.provider';
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
 import { documentsTypeDefs, documentsSchema } from './graphql';
-import { TextNodeEntity } from './patterns/text-node.entity';
 
 /**
  * Configure a documents module with the given providers
@@ -70,8 +74,15 @@ export function documentsModule(
 
     get patterns() {
       return [
-        { symbol: DocumentsTypes.TextNodeEntity, pattern: TextNodeEntity },
-        { symbol: DocumentsTypes.TextNodePattern, pattern: TextNodePattern }
+        {
+          symbol: DocumentsTypes.TextNodeEntity,
+          patterns: [
+            TextNodeEntity,
+            TextNodeActions,
+            TextNodeCreate,
+            TextNodePatterns
+          ]
+        }
       ];
     }
 

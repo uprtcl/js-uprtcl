@@ -33,10 +33,16 @@ export const updatePlugin = <
     async createChild(parent: any) {
       if (!this.entity) return;
 
-      const patterns: Pattern | CreateChild = this.patternRecognizer.recognizeMerge(this.entity);
-      const updateNeeded = await (patterns as CreateChild).createChild(this.entity, parent);
+      const createChild: CreateChild | undefined = this.patternRecognizer.recognizeUniqueProperty(
+        this.entity,
+        prop => !!(prop as CreateChild).createChild
+      );
 
-      if (updateNeeded) this.entityUpdated();
+      if (createChild) {
+        const updateNeeded = await createChild.createChild(this.entity)(parent);
+
+        if (updateNeeded) this.entityUpdated();
+      }
     }
 
     stateChanged(state: any) {
@@ -59,10 +65,15 @@ export const updatePlugin = <
     async updateContent(newContent: any) {
       if (!this.entity) return;
 
-      const updatable: Updatable = this.patternRecognizer.recognizeMerge(this.entity);
+      const updatable:
+        | Updatable<any, any>
+        | undefined = this.patternRecognizer.recognizeUniqueProperty(
+        this.entity,
+        prop => !!(prop as Updatable<any, any>).update
+      );
 
-      if (updatable.update) {
-        const reloadNeeded = await updatable.update(this.entity, newContent);
+      if (updatable) {
+        const reloadNeeded = await updatable.update(this.entity)(newContent);
         if (reloadNeeded) this.entityUpdated();
       }
     }

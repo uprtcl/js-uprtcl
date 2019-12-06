@@ -29,13 +29,12 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
     let actions: PatternAction[] = [];
 
     for (const isomorphism of this.isomorphisms.isomorphisms) {
-      const patterns: Array<Pattern | HasActions> = this.patternRecognizer.recognize(isomorphism);
-      for (const pattern of patterns) {
-        if ((pattern as HasActions).getActions) {
-          actions = actions.concat(
-            (pattern as HasActions).getActions(isomorphism, this.isomorphisms.entity.id)
-          );
-        }
+      const hasActions: Array<HasActions<any>> = this.patternRecognizer.recognizeProperties(
+        isomorphism,
+        prop => !!(prop as HasActions<any>).actions
+      );
+      for (const prop of hasActions) {
+        actions = actions.concat(prop.actions(isomorphism)(this.isomorphisms.entity.id));
       }
     }
 

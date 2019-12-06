@@ -11,7 +11,7 @@ import {
   LOAD_PERSPECTIVE_DETAILS_SUCCESS
 } from './evees.actions';
 import { EveesTypes } from '../types';
-import { PerspectivePattern } from '../patterns/perspective.pattern';
+import { PerspectiveEntity } from '../patterns/perspective.pattern';
 import { Evees } from '../services/evees';
 
 function* loadPerspectiveDetails(action: LoadPerspectiveDetails) {
@@ -33,7 +33,7 @@ export const loadPerspectiveDetailsSaga: Saga = function*() {
 };
 
 function* filterPerspectiveEntity(action: LoadEntitySuccess) {
-  const perspectivePattern: PerspectivePattern = (yield getContext(ReduxTypes.Context)).get(
+  const perspectivePattern: PerspectiveEntity = (yield getContext(ReduxTypes.Context)).get(
     EveesTypes.PerspectivePattern
   );
 

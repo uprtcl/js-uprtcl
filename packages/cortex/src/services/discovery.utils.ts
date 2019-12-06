@@ -13,14 +13,13 @@ import { ServiceProvider } from './sources/service.provider';
 export const linksFromObject = (recognizer: PatternRecognizer) => async <O extends object>(
   object: O
 ): Promise<string[]> => {
-  // Recognize all pattern from object
-  const pattern: Array<Pattern | HasLinks> = recognizer.recognize(object);
+  // Recognize all patterns from object
+  const hasLinks: Array<HasLinks<O>> = recognizer.recognizeProperties(
+    object,
+    prop => !!(prop as HasLinks<O>).links
+  );
 
-  const promises = pattern.map(async pattern => {
-    if ((pattern as HasLinks).getLinks) {
-      return (pattern as HasLinks).getLinks(object);
-    } else return [] as string[];
-  });
+  const promises = hasLinks.map(async has => has.links(object));
 
   const links: string[][] = await Promise.all(promises);
 

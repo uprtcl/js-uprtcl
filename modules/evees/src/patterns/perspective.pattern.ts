@@ -14,7 +14,7 @@ import {
   PatternAction,
   PatternRecognizer,
   CreateChild,
-  IsEntity
+  Entity
 } from '@uprtcl/cortex';
 import { AccessControlService, Updatable, Secured } from '@uprtcl/common';
 import { ReduxTypes, Logger } from '@uprtcl/micro-orchestrator';
@@ -29,24 +29,10 @@ import { createEntity } from '../utils/utils';
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
 @injectable()
-export class PerspectivePattern
-  implements
-    Pattern,
-    IsEntity,
-    HasLinks,
-    HasRedirect,
-    Creatable<NewPerspectiveArgs, Signed<Perspective>>,
-    HasActions,
-    CreateChild,
-    Updatable {
+export class PerspectiveEntity implements Entity {
   constructor(
-    @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
-    @inject(EveesTypes.Evees) protected evees: Evees,
-    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ReduxTypes.Store) protected store: Store,
-    @inject(EveesTypes.MergeStrategy) protected merge: MergeStrategy
+    @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>
   ) {}
-
   recognize(object: object) {
     return (
       this.securedPattern.recognize(object) &&
@@ -56,41 +42,45 @@ export class PerspectivePattern
     );
   }
 
-  getLinks: (perspective: Secured<Perspective>) => Promise<string[]> = async (
-    perspective: Secured<Perspective>
-  ) => {
+  name = 'Perspective';
+}
+
+@injectable()
+export class PerspectiveLinks extends PerspectiveEntity
+  implements HasLinks, HasRedirect, Creatable<NewPerspectiveArgs, Signed<Perspective>>, HasActions {
+  constructor(
+    @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
+    @inject(EveesTypes.Evees) protected evees: Evees,
+    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(ReduxTypes.Store) protected store: Store,
+    @inject(EveesTypes.MergeStrategy) protected merge: MergeStrategy
+  ) {
+    super(securedPattern);
+  }
+
+  links = async (perspective: Secured<Perspective>) => {
     const details = await this.evees.getPerspectiveDetails(perspective.id);
     return details.headId ? [details.headId] : [];
   };
 
-  redirect: (perspective: Secured<Perspective>) => string | undefined = (
-    perspective: Secured<Perspective>
-  ) => {
+  redirect = async (perspective: Secured<Perspective>) => {
     const details = await this.evees.getPerspectiveDetails(perspective.id);
 
     return details.headId;
   };
 
-  create: (
-    args: NewPerspectiveArgs | undefined,
-    providerName?: string
-  ) => Promise<Secured<Perspective>> = async (
-    args: NewPerspectiveArgs | undefined,
-    providerName?: string
-  ) => {
+  create = () => async (args: NewPerspectiveArgs | undefined, providerName?: string) => {
     return this.evees.createPerspective(args || {}, providerName);
   };
 
-  getActions: (perspective: Secured<Perspective>) => PatternAction[] = (
-    perspective: Secured<Perspective>
-  ): PatternAction[] => {
+  actions = (perspective: Secured<Perspective>) => (entityId: string): PatternAction[] => {
     return [
       {
         icon: 'call_split',
         title: 'New perspective',
         action: async () => {
           const details = await this.evees.getPerspectiveDetails(perspective.id);
-          const newPerspective = await this.create(
+          const newPerspective = await this.create()(
             { headId: details.headId, context: details.context },
             perspective.object.payload.origin
           );
@@ -111,33 +101,36 @@ export class PerspectivePattern
     ];
   };
 
-  createChild = async (perspective: Secured<Perspective>, parent: any) => {
-    const patterns: Pattern | Creatable<any, any> | HasChildren = this.recognizer.recognizeMerge(
-      parent
+  createChild = (perspective: Secured<Perspective>) => async (parent: any) => {
+    const creatable: Creatable<any, any> | undefined = this.recognizer.recognizeUniqueProperty(
+      parent,
+      prop => !!(prop as Creatable<any, any>).createChild
+    );
+    const childrenLinks: HasChildren | undefined = this.recognizer.recognizeUniqueProperty(
+      parent,
+      prop => !!(prop as HasChildren).createChild
     );
 
-    const replaceChildrenLinks = (patterns as HasChildren).replaceChildrenLinks;
+    if (creatable && childrenLinks) {
+      const newChildHashed = await creatable.create()(undefined);
 
-    if (patterns && (patterns as Creatable<any, any>).create && replaceChildrenLinks) {
-      const newChildHashed = await (patterns as Creatable<any, any>).create(undefined);
-
-      const childPerspective: Secured<Perspective> = await this.create(
+      const childPerspective: Secured<Perspective> = await this.create()(
         { dataId: newChildHashed.id },
         perspective.object.payload.origin
       );
 
-      const previousLinks = (patterns as HasChildren).getChildrenLinks(parent);
+      const previousLinks = childrenLinks.getChildrenLinks(parent);
 
-      const entity = replaceChildrenLinks(parent, [...previousLinks, childPerspective.id]);
+      const entity = childrenLinks.replaceChildrenLinks(parent)([
+        ...previousLinks,
+        childPerspective.id
+      ]);
 
       await this.update(perspective, entity);
     }
   };
 
-  update: (perspective: Secured<Perspective>, newContent: any) => Promise<boolean> = async (
-    perspective: Secured<Perspective>,
-    newContent: any
-  ) => {
+  update = async (perspective: Secured<Perspective>, newContent: any) => {
     const details = await this.evees.getPerspectiveDetails(perspective.id);
 
     if (!details.headId)
@@ -179,9 +172,7 @@ export class PerspectivePattern
     return true;
   };
 
-  accessControl: (perspective: Secured<Perspective>) => AccessControlService<any> | undefined = (
-    perspective: Secured<Perspective>
-  ) => {
+  accessControl = (perspective: Secured<Perspective>) => {
     return this.evees.getPerspectiveProvider(perspective).accessControl;
   };
 

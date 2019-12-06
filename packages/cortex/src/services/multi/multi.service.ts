@@ -9,6 +9,7 @@ import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Ready } from '../sources/service.provider';
 import { linksFromObject, discoverKnownSources } from '../discovery.utils';
+import { Pattern } from '../../patterns/pattern';
 
 export class MultiService<T extends ServiceProvider> implements Ready {
   protected logger = new Logger('MultiProviderService');
@@ -22,7 +23,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
    */
   constructor(
     protected recognizer: PatternRecognizer,
-    protected localKnownSources: KnownSourcesService,
+    public localKnownSources: KnownSourcesService,
     serviceProviders: Array<T>
   ) {
     // Build the sources dictionary from the resulting names
@@ -92,9 +93,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
     getter: (service: T) => Promise<Array<Hashed<O>>>
   ): Promise<Array<Hashed<O>>> {
     const linksSelector = async (array: Array<Hashed<O>>) => {
-      const promises = array.map(object =>
-        linksFromObject(this.recognizer)(object)
-      );
+      const promises = array.map(object => linksFromObject(this.recognizer)(object));
       const links = await Promise.all(promises);
       return Array.prototype.concat.apply([], links);
     };
@@ -147,7 +146,9 @@ export class MultiService<T extends ServiceProvider> implements Ready {
     const links = await linksSelector(result);
 
     // Discover the known sources from the links
-    const linksPromises = links.map(link => discoverKnownSources(this.localKnownSources)(link, service));
+    const linksPromises = links.map(link =>
+      discoverKnownSources(this.localKnownSources)(link, service)
+    );
     await Promise.all(linksPromises);
 
     return result;
@@ -222,33 +223,38 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   ): Promise<void> {
     // Add known sources of the object's links to the provider's known sources
     // Get the properties to get the object links from
-    const pattern: HasLinks = this.recognizer.recognizeMerge(object);
+    const getLinks: HasLinks<O>[] = this.recognizer.recognizeProperties(
+      object,
+      prop => !!prop.links
+    );
 
-    if (pattern.getLinks) {
-      const links = await pattern.getLinks(object);
+    const linksPromises = getLinks.map(get => get.links(object));
 
-      this.logger.info(
-        'Updating known sources of the links ',
-        links,
-        ' from the object ',
-        object,
-        ' to the service provider ',
-        upl
-      );
+    const allLinks = await Promise.all(linksPromises);
 
-      const promises = links.map(async link => {
-        // We asume that we have stored the local known sources for the links from the object
-        const knownSources = await this.localKnownSources.getKnownSources(link);
+    const links = ([] as string[]).concat(...allLinks);
 
-        // If the only known source is the name of the source itself, we don't need to tell the provider
-        const sameSource = knownSources && knownSources.length === 1 && knownSources[0] === upl;
+    this.logger.info(
+      'Updating known sources of the links ',
+      links,
+      ' from the object ',
+      object,
+      ' to the service provider ',
+      upl
+    );
 
-        if (knownSources && !sameSource) {
-          await knownSourcesService.addKnownSources(link, knownSources);
-        }
-      });
+    const promises = links.map(async link => {
+      // We asume that we have stored the local known sources for the links from the object
+      const knownSources = await this.localKnownSources.getKnownSources(link);
 
-      await Promise.all(promises);
-    }
+      // If the only known source is the name of the source itself, we don't need to tell the provider
+      const sameSource = knownSources && knownSources.length === 1 && knownSources[0] === upl;
+
+      if (knownSources && !sameSource) {
+        await knownSourcesService.addKnownSources(link, knownSources);
+      }
+    });
+
+    await Promise.all(promises);
   }
 }

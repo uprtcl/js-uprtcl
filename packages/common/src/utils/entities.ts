@@ -22,7 +22,6 @@ export async function getIsomorphisms(
   selectEntity: (id: string) => Promise<any>
 ): Promise<any[]> {
   let isomorphisms: any[] = [entity];
-  console.log('hi', entity);
 
   // Recursive call to get all isomorphisms from redirected entities
   const redirectedIsomorphisms = await redirectEntity(patternRecognizer, entity, selectEntity);
@@ -35,26 +34,27 @@ async function redirectEntity(
   entity: object,
   selectEntity: (id: string) => Promise<any>
 ): Promise<any[]> {
-  const patterns: Array<Pattern | HasRedirect> = patternRecognizer.recognize(entity);
+  const hasRedirects: HasRedirect<any>[] = patternRecognizer.recognizeProperties(
+    entity,
+    prop => !!(prop as HasRedirect<any>).redirect
+  );
 
   let isomorphisms: any[] = [];
 
-  for (const pattern of patterns) {
-    if ((pattern as HasRedirect).redirect) {
-      const redirectHash = await (pattern as HasRedirect).redirect(entity);
+  for (const hasRedirect of hasRedirects) {
+    const redirectHash = await hasRedirect.redirect(entity);
 
-      if (redirectHash) {
-        const redirectEntity = await selectEntity(redirectHash);
+    if (redirectHash) {
+      const redirectEntity = await selectEntity(redirectHash);
 
-        if (redirectEntity) {
-          const redirectedIsomorphisms = await getIsomorphisms(
-            patternRecognizer,
-            redirectEntity,
-            selectEntity
-          );
+      if (redirectEntity) {
+        const redirectedIsomorphisms = await getIsomorphisms(
+          patternRecognizer,
+          redirectEntity,
+          selectEntity
+        );
 
-          isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
-        }
+        isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
       }
     }
   }

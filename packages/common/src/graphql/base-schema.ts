@@ -1,4 +1,5 @@
 import { gql, ApolloClient } from 'apollo-boost';
+import { merge, cloneDeep } from 'lodash';
 
 import {
   DiscoveryTypes,
@@ -6,14 +7,13 @@ import {
   DiscoveryService,
   PatternRecognizer,
   Hashed,
-  HasRedirect,
   Pattern,
-  IsEntity,
-  HasActions,
-  HasLinks
+  Entity
 } from '@uprtcl/cortex';
+
 import { getIsomorphisms, loadEntity } from '../utils/entities';
 import { GraphQlTypes } from '../types';
+import { GraphQLResolveInfo } from 'graphql';
 
 export const baseTypeDefs = gql`
   scalar JSON
@@ -40,7 +40,7 @@ export const baseTypeDefs = gql`
   }
 
   type Patterns {
-    getLinks: [Entity!]
+    links: [Entity!]
     actions: [Action!]
   }
 
@@ -56,12 +56,9 @@ export const baseResolvers = {
     async getEntity(parent, { id, depth }, { cache, container }, info) {
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
-      console.log('hi');
-
       const entity: Hashed<any> | undefined = await discovery.get(id);
 
       if (!entity) throw new Error('Entity was not found');
-
       return { id, raw: entity, entity };
     }
   },
@@ -69,65 +66,92 @@ export const baseResolvers = {
     __resolveType(obj, { container }, info) {
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
 
-      const patterns: Pattern | IsEntity = recognizer.recognizeMerge(obj);
+      const patterns: Pattern[] = recognizer.recognize(obj);
 
-      return (patterns as IsEntity).name;
-    },
-    patterns(parent, args, { container }, info) {
-      const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
+      const entities: Entity[] = patterns.filter(p => (p as Entity).name) as Entity[];
 
-      const patterns: Pattern | IsEntity = recognizer.recognizeMerge(parent);
+      if (entities.length === 0) throw new Error('No entity found to recognize object');
 
-      const curriedPatterns = {};
+      const abmiguousError =
+        entities.length > 1 && !entities.every(entity => entity.name === entities[0].name);
 
-      for (const key of Object.keys(patterns)) {
-        let value = patterns[key];
-        if (typeof value === 'function') {
-          value = () => value(parent);
-        }
-
-        curriedPatterns[key] = value;
+      if (abmiguousError) {
+        throw new Error(
+          `Ambiguous error recognizing entity: ${obj.toString()}. These two entites recognized the object ${entities.toString()}`
+        );
       }
 
-      console.log(curriedPatterns);
-
-      return { object: parent, patterns, ...curriedPatterns };
-    }
-  },
-  Patterns: {
-    getLinks(parent) {
-      const patterns = parent.patterns;
-      console.log('parent', parent);
-      if (!(patterns as HasLinks).getLinks) return undefined;
-
-      return (patterns as HasLinks).getLinks(parent.object);
+      return entities[0].name;
     },
-    actions(parent, args, { container }, info) {
-      const patterns = parent.patterns;
-      console.log('parent', parent);
-      if (!(patterns as HasActions).getActions) return undefined;
+    patterns(parent, args, context, info) {
+      const isGraphQlField = (key: string) =>
+        Object.keys(info.returnType.ofType._fields).includes(key);
+      console.log('base', parent, args, context, Object.keys(info.returnType.ofType._fields));
+      const recognizer: PatternRecognizer = context.container.get(PatternTypes.Recognizer);
 
-      const actions = (patterns as HasActions).getActions(parent.object, '');
-      console.log('actions', actions);
-      return actions.map(a => ({
-        ...a,
-        action: () => (element: HTMLElement) => a.action(element)
-      }));
+      const patterns = recognizer.recognize(parent);
+
+      const applyedPatterns = patterns.map(pattern => {
+        const applyedPattern = {};
+
+        for (const key of Object.keys(pattern)) {
+          if (isGraphQlField(key)) {
+            applyedPattern[key] = pattern[key](parent);
+          }
+        }
+        return applyedPattern;
+      });
+
+      console.log('accum', applyedPatterns);
+
+      const accPatterns = {};
+      merge(accPatterns, ...applyedPatterns);
+      console.log('itnerm', cloneDeep(accPatterns));
+
+      for (const key of Object.keys(accPatterns)) {
+        if (isGraphQlField(key) && typeof accPatterns[key] === 'function')
+          accPatterns[key] = () => accPatterns[key];
+      }
+
+      console.log('accum', accPatterns);
+
+      return accPatterns;
     }
   },
   Entity: {
     id(parent) {
-      console.log('hey', parent);
       return parent.id ? parent.id : parent;
     },
+    async raw(parent, _, { container }) {
+      const id = typeof parent === 'string' ? parent: parent.id;
+
+      const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
+
+      const entity: Hashed<any> | undefined = await discovery.get(id);
+
+      if (!entity) throw new Error('Entity was not found');
+      return entity;
+    },
+    async entity(parent, _, { container }) {
+      const id = typeof parent === 'string' ? parent: parent.id;
+
+      const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
+
+      const entity: Hashed<any> | undefined = await discovery.get(id);
+
+      if (!entity) throw new Error('Entity was not found');
+      return entity;
+    },
     async content(parent, args, { container }, info) {
-      const entity = parent.entity;
+      const entity = parent.entity || await loadEntity(container.get(GraphQlTypes.Client), parent);
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
       return redirectEntity(entity, recognizer, discovery);
     },
     async isomorphisms(parent, args, { container }, info) {
+      const entity = parent.entity || await loadEntity(container.get(GraphQlTypes.Client), parent);
+
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
       const client: ApolloClient<any> = container.get(GraphQlTypes.Client);
 
@@ -147,10 +171,10 @@ export async function redirectEntity(
   recognizer: PatternRecognizer,
   discovery: DiscoveryService
 ): Promise<any | undefined> {
-  const patterns: Pattern | HasRedirect = recognizer.recognizeMerge(entity);
+  const hasRedirect = recognizer.recognizeUniqueProperty(entity, prop => !!prop.redirect);
 
-  if ((patterns as HasRedirect).redirect) {
-    const redirectEntityId = await (patterns as HasRedirect).redirect(entity);
+  if (hasRedirect) {
+    const redirectEntityId = await hasRedirect.redirect(entity);
 
     if (redirectEntityId) {
       const redirectedEntity: Hashed<any> | undefined = await discovery.get(redirectEntityId);

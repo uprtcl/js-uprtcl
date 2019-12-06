@@ -1,12 +1,12 @@
+import { injectable } from 'inversify';
 import { Dictionary } from 'lodash';
 
+import { Pattern, HasChildren, Hashed } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import { Perspective, UpdateRequest, Commit } from '../types';
-import { Pattern, HasChildren, Hashed } from '@uprtcl/cortex';
 import { createEntity } from '../utils/utils';
-import { injectable } from 'inversify';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -60,10 +60,13 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (!data)
       throw new Error(`Error when trying to fetch the data with id ${head.object.payload.dataId}`);
 
-    const patterns: Pattern | HasChildren = this.recognizer.recognizeMerge(data);
+    const hasChildren: HasChildren | undefined = this.recognizer.recognizeUniqueProperty(
+      data,
+      prop => !!(prop as HasChildren).getChildrenLinks
+    );
 
-    if ((patterns as HasChildren).getChildrenLinks) {
-      const links = (patterns as HasChildren).getChildrenLinks(data);
+    if (hasChildren) {
+      const links = hasChildren.getChildrenLinks(data);
 
       const promises = links.map(link => this.readPerspective(link, to));
       await Promise.all(promises);
@@ -179,16 +182,19 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   private async mergePerspectiveChildren(perspectiveId: string): Promise<void> {
     const data = await this.loadPerspectiveData(perspectiveId);
 
-    const patterns: Pattern | HasChildren = this.recognizer.recognizeMerge(data);
+    const hasChildren: HasChildren | undefined = this.recognizer.recognizeUniqueProperty(
+      data,
+      prop => !!(prop as HasChildren).getChildrenLinks
+    );
 
-    if (!(patterns as HasChildren).getChildrenLinks) return;
+    if (!hasChildren) return;
 
-    const links = (patterns as HasChildren).getChildrenLinks(data);
+    const links = hasChildren.getChildrenLinks(data);
 
     const mergedLinks = await this.mergeLinks(links, [links]);
 
     if (!links.every((link, index) => link !== mergedLinks[index])) {
-      const newData = (patterns as HasChildren).replaceChildrenLinks(data, mergedLinks);
+      const newData = hasChildren.replaceChildrenLinks(data)(mergedLinks);
 
       await this.updatePerspectiveData(perspectiveId, newData);
     }
