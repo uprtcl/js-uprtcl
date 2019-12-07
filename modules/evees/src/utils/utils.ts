@@ -15,10 +15,12 @@ export const createEntity = (recognizer: PatternRecognizer) => async <T extends 
     prop => !!(prop as Creatable<T, T>).create
   );
 
-  if (!creatable)
+  if (!creatable) {
+    debugger;
     throw new Error(
       `Trying to create data ${data.toString()}, but it does not implement the Creatable pattern`
     );
+  }
 
   return creatable.create()(data, upl);
 };

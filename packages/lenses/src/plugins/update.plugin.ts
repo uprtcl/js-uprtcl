@@ -48,7 +48,7 @@ export const updatePlugin = <
     stateChanged(state: any) {
       super.stateChanged(state);
 
-      this.entityEditable = selectCanWrite(this.patternRecognizer)(this.hash)(state);
+      this.entityEditable = true; //selectCanWrite(this.patternRecognizer)(this.hash)(state);
     }
 
     update(changedProperties: PropertyValues) {

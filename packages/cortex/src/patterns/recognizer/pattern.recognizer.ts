@@ -12,7 +12,6 @@ export class PatternRecognizer {
 
   public recognize<T extends Array<Pattern>>(object: object): T {
     if (!object) {
-      debugger
       throw new Error('The given object was not defined');
     }
 

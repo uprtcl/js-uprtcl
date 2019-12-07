@@ -126,11 +126,11 @@ export class PerspectiveLinks extends PerspectiveEntity
         childPerspective.id
       ]);
 
-      await this.update(perspective, entity);
+      await this.update(perspective)(entity);
     }
   };
 
-  update = async (perspective: Secured<Perspective>, newContent: any) => {
+  update = (perspective: Secured<Perspective>) => async (newContent: any) => {
     const details = await this.evees.getPerspectiveDetails(perspective.id);
 
     if (!details.headId)

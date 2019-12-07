@@ -150,13 +150,10 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 }
 
 @injectable()
-export class TextNodeCreate extends TextNodeEntity
-  implements Pattern, Creatable<Partial<TextNode>, TextNode> {
-  constructor(
-    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(DocumentsTypes.Documents) protected documents: Documents
-  ) {
-    super(hashedPattern);
+export class TextNodeCreate implements Pattern, Creatable<Partial<TextNode>, TextNode> {
+  constructor(@inject(DocumentsTypes.Documents) protected documents: Documents) {}
+  recognize(object: object): boolean {
+    return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
   create = () => async (

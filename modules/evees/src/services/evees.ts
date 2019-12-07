@@ -203,12 +203,12 @@ export class Evees {
         });
 
         const newLinks = await Promise.all(promises);
-        const newData = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
+        const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
 
         const previousDataUpls = await this.knownSources.getKnownSources(dataId);
 
         const newDataHashed = await createEntity(this.patternRecognizer)(
-          newData,
+          newData.object,
           previousDataUpls ? previousDataUpls[0] : undefined
         );
         dataId = newDataHashed.id;
