@@ -86,7 +86,6 @@ export const baseResolvers = {
     patterns(parent, args, context, info) {
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
-      console.log('base', parent, args, context, Object.keys(info.returnType.ofType._fields));
       const recognizer: PatternRecognizer = context.container.get(PatternTypes.Recognizer);
 
       const patterns = recognizer.recognize(parent);
@@ -102,18 +101,15 @@ export const baseResolvers = {
         return applyedPattern;
       });
 
-      console.log('accum', applyedPatterns);
 
       const accPatterns = {};
       merge(accPatterns, ...applyedPatterns);
-      console.log('itnerm', cloneDeep(accPatterns));
 
       for (const key of Object.keys(accPatterns)) {
         if (isGraphQlField(key) && typeof accPatterns[key] === 'function')
           accPatterns[key] = () => accPatterns[key];
       }
 
-      console.log('accum', accPatterns);
 
       return accPatterns;
     }

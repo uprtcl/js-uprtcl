@@ -63,6 +63,8 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   }
 
   async entityUpdated() {
+    if (!this.hash) return;
+
     this.isomorphisms = undefined;
     this.entity = await this.loadEntity(this.hash);
 
@@ -99,11 +101,6 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
       'lens-selected',
       (e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)
     );
-  }
-
-  firstUpdated(changedProperties: PropertyValues) {
-    super.firstUpdated(changedProperties);
-    this.entityUpdated();
   }
 
   updated(changedProperties: PropertyValues) {
