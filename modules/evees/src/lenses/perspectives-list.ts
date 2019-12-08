@@ -4,18 +4,26 @@ import { EveesTypes, PerspectiveDetails, Perspective } from '../types';
 import { Secured, selectCanWrite } from '@uprtcl/common';
 import { PatternTypes, PatternRecognizer } from '@uprtcl/cortex';
 
+
+interface PerspectiveObject {
+  id: string;
+  creatorId: string;
+  name?: string;
+  canMerge?: boolean;
+}
+
 export class PerspectivesList extends reduxConnect(LitElement) {
   @property({ type: String })
   rootPerspectiveId!: string;
 
   @property({ attribute: false })
-  perspectives: Array<Object> = [];
+  perspectives: Array<PerspectiveObject> = [];
 
   private recognizer!:PatternRecognizer;
 
   firstUpdated() {
-    this.listPerspectives(this.rootPerspectiveId);
     this.recognizer = this.request(PatternTypes.Recognizer)
+    this.listPerspectives(this.rootPerspectiveId);
   }
 
   listPerspectives = async idPerspective => {
@@ -27,11 +35,12 @@ export class PerspectivesList extends reduxConnect(LitElement) {
       const perspectivesList: Array<Secured<Perspective>> = await evees.getContextPerspectives(
         details.context
       );
-      const perspectiveIDs: Array<string> = [];
 
+      const perspectiveIDs: Array<PerspectiveObject> = [];
       const perspectivesPromises = perspectivesList.map(
         (perspective: Secured<Perspective>): Array<Promise<PerspectiveDetails>> => {
-          perspectiveIDs.push(perspective.id);
+          const { creatorId } =  perspective.object.payload
+          perspectiveIDs.push({ id: perspective.id, creatorId });
           return evees.getPerspectiveDetails(perspective.id);
         }
       );
@@ -39,13 +48,14 @@ export class PerspectivesList extends reduxConnect(LitElement) {
       const resolved = await Promise.all(perspectivesPromises);
       this.perspectives = resolved.map((perspective: any, index: number) => {
         return {
-          id: perspectiveIDs[index],
+          id: perspectiveIDs[index].id,
+          creatorId: perspectiveIDs[index].creatorId,
           name: perspective.name
         };
       });
     }
   };
-
+  
   stateChanged(state) {
     this.perspectives = this.perspectives.map(perspective => {
       let updatedPerspective: any = this.perspectives.find(p => p['id'] == perspective['id']);
@@ -60,9 +70,10 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   };
 
   renderPerspective(perspective) {
+    const style = perspective.id == this.rootPerspectiveId ? 'font-weight: bold;' : ''
     return html`
-      <li @click=${() => this.openPerspective(perspective.id)}>
-        ${perspective.name}
+      <li style=${style} @click=${() => this.openPerspective(perspective.id)} >
+        ${perspective.name} - Owner: ${perspective.creatorId} - ${perspective['canMerge']}
       </li>
     `;
   }

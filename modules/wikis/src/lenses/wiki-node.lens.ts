@@ -94,7 +94,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
 
           <mwc-button @click=${() => this.createPage()}>
             <mwc-icon>note_add</mwc-icon>
-            new page
+            New page
           </mwc-button>
         </div>
         <div class="column right" style="background-color:#bbb;">
