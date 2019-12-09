@@ -6,14 +6,12 @@ import {
   DiscoveryTypes,
   PatternTypes,
   PatternRecognizer,
-  Creatable,
   CachedMultiSourceService,
   Hashed,
   IsSecure,
   MultiSourceService,
   DiscoveryService,
-  HasChildren,
-  Pattern
+  HasChildren
 } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Secured } from '@uprtcl/common';
@@ -206,14 +204,15 @@ export class Evees {
         const newLinks = await Promise.all(promises);
         const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
 
-        if (!isEqual(data, newData)) {
+        if (!isEqual(dataHashed, newData)) {
           const previousDataUpls = await this.knownSources.getKnownSources(dataId);
 
-        const newDataHashed = await createEntity(this.patternRecognizer)(
-          newData.object,
-          previousDataUpls ? previousDataUpls[0] : undefined
-        );
-        dataId = newDataHashed.id;
+          const newDataHashed = await createEntity(this.patternRecognizer)(
+            newData.object,
+            previousDataUpls ? previousDataUpls[0] : undefined
+          );
+          dataId = newDataHashed.id;
+        }
       }
     }
 

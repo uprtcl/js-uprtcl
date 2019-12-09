@@ -19,10 +19,6 @@ export const baseTypeDefs = gql`
   scalar JSON
   scalar Function
 
-  type EmptyEntity {
-    _: Boolean
-  }
-
   interface EntityType {
     patterns: Patterns!
   }
@@ -136,7 +132,7 @@ export const baseResolvers = {
       const entity: Hashed<any> | undefined = await discovery.get(id);
 
       if (!entity) throw new Error('Entity was not found');
-      return entity;
+      return entity.object;
     },
     async content(parent, args, { container }, info) {
       const entity =

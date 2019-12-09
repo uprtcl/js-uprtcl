@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit-element';
+
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { EveesTypes } from '@uprtcl/evees';
 import { WikisTypes } from '@uprtcl/wikis';
@@ -12,8 +13,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
 
   constructor() {
     super();
-    this.wikiPattern = this.request(WikisTypes.WikiPattern);
-    this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
+    this.wikiPattern = this.request(WikisTypes.WikiPattern).find(p => p.create);
+    this.perspectivePattern = this.request(EveesTypes.PerspectivePattern).find(p => p.create);
     this.wikisProvider = null;
     this.eveesProvider = null;
   }
