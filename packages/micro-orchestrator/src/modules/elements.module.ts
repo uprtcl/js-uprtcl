@@ -3,9 +3,7 @@ import { Constructor } from '../types';
 import { Dictionary } from 'lodash';
 
 export class ElementsModule implements MicroModule {
-  constructor(
-    protected elements: Dictionary<Constructor<HTMLElement>>
-  ) {}
+  constructor(protected elements: Dictionary<Constructor<HTMLElement>>) {}
 
   async onLoad(): Promise<void> {
     const tags = Object.keys(this.elements);
@@ -15,8 +13,4 @@ export class ElementsModule implements MicroModule {
       customElements.define(tag, element);
     });
   }
-
-  async onInit() {}
-
-  async onUnload(): Promise<void> {}
 }

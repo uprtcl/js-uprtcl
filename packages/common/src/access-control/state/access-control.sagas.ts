@@ -18,12 +18,15 @@ function* loadAccessControl(action: LoadAccessControl) {
     PatternTypes.Recognizer
   );
 
-  const patterns: Pattern | Updatable = recognizer.recognizeMerge(action.payload.entity);
+  const updatable: Updatable<any, any> | undefined = recognizer.recognizeUniqueProperty(
+    action.payload.entity,
+    prop => !!(prop as Updatable<any, any>).update
+  );
 
-  if ((patterns as Updatable).accessControl) {
-    const accessControlService:
-      | AccessControlService<any>
-      | undefined = (patterns as Updatable).accessControl(action.payload.entity);
+  if (updatable) {
+    const accessControlService: AccessControlService<any> | undefined = updatable.accessControl(
+      action.payload.entity
+    );
 
     if (accessControlService) {
       const accessControlInformation: any | undefined = yield retry(4, 3000, () =>
@@ -51,9 +54,12 @@ function* filterUpdatableEntity(action: LoadEntitySuccess) {
     PatternTypes.Recognizer
   );
 
-  const patterns: Pattern | Updatable = recognizer.recognizeMerge(action.payload.entity);
+  const updatable: Updatable<any, any> | undefined = recognizer.recognizeUniqueProperty(
+    action.payload.entity,
+    prop => !!(prop as Updatable<any, any>).update
+  );
 
-  if ((patterns as Updatable).accessControl) {
+  if (updatable) {
     const accessControlAction: LoadAccessControl = {
       type: LOAD_ACCESS_CONTROL,
       payload: action.payload

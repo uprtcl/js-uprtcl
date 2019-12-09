@@ -10,12 +10,17 @@ export const createEntity = (recognizer: PatternRecognizer) => async <T extends 
   data: T,
   upl?: string
 ): Promise<Hashed<T>> => {
-  const patterns: Pattern | Creatable<T, Hashed<T>> = recognizer.recognizeMerge(data);
+  const creatable: Creatable<T, T> | undefined = recognizer.recognizeUniqueProperty(
+    data,
+    prop => !!(prop as Creatable<T, T>).create
+  );
 
-  if (!(patterns as Creatable<T, Hashed<T>>).create)
+  if (!creatable) {
+    debugger;
     throw new Error(
       `Trying to create data ${data.toString()}, but it does not implement the Creatable pattern`
     );
+  }
 
-  return (patterns as Creatable<T, T>).create(data, upl);
+  return creatable.create()(data, upl);
 };

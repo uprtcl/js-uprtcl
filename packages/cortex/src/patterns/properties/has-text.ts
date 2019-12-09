@@ -1,3 +1,5 @@
-export interface HasText {
-  getText(object: object): string;
+import { Property } from '../pattern';
+
+export interface HasText<T = any> extends Property<T> {
+  text: (pattern: T) => string;
 }

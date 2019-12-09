@@ -18,7 +18,6 @@ export function draftsModule(draftsProvider: DraftsProvider): Constructor<MicroM
       bind<DraftsProvider>(DraftsTypes.DraftsProvider).toConstantValue(draftsProvider);
     }
 
-    async onUnload(): Promise<void> {}
   }
 
   return DraftsModule;

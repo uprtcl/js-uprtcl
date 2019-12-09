@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { GraphQlTypes } from '@uprtcl/common';
 import { EveesTypes } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
 
@@ -12,8 +13,8 @@ export class SimpleEditor extends moduleConnect(LitElement) {
 
   constructor() {
     super();
-    this.perspectivePattern = this.request(EveesTypes.PerspectivePattern);
-    this.textNodePattern = this.request(DocumentsTypes.TextNodePattern);
+    this.perspectivePattern = this.requestAll(EveesTypes.PerspectivePattern).find(p => p.create);
+    this.textNodePattern = this.requestAll(DocumentsTypes.TextNodeEntity).find(p => p.create);
   }
 
   subscribeToHistory(history, callback) {
@@ -29,19 +30,18 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    const docProvider = this.requestAll(DocumentsTypes.DocumentsRemote)
-    .find(provider => {
+    const client = this.request(GraphQlTypes.Client);
+
+    const docProvider = this.requestAll(DocumentsTypes.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.service.uprtclProviderLocator);
+      return !regexp.test(provider.uprtclProviderLocator);
     });
 
-    const eveesProvider = this.requestAll(EveesTypes.EveesRemote)
-    .find(provider => {
+    const eveesProvider = this.requestAll(EveesTypes.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.service.uprtclProviderLocator);
+      return !regexp.test(provider.uprtclProviderLocator);
     });
 
-    
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
     });
@@ -52,18 +52,17 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const hashed = await this.textNodePattern.create(
+      const hashed = await this.textNodePattern.create()(
         {},
-        docProvider.service.uprtclProviderLocator
+        docProvider.uprtclProviderLocator
       );
 
-      const perspective = await this.perspectivePattern.create(
+      const perspective = await this.perspectivePattern.create()(
         { dataId: hashed.id },
-        eveesProvider.service.uprtclProviderLocator
+        eveesProvider.uprtclProviderLocator
       );
       window.history.pushState('', '', `/?id=${perspective.id}`);
     }
-    document.getElementById('');
   }
 
   render() {

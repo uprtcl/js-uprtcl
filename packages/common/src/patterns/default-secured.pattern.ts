@@ -26,16 +26,16 @@ export class DefaultSecuredPattern implements Pattern, IsSecure<Secured<any>> {
     );
   }
 
-  validate<T>(object: Secured<T>): Promise<boolean> {
+  validate = <T>(object: Secured<T>): Promise<boolean> => {
     return this.hashedPattern.validate(object) && this.signedPattern.validate(object.object);
-  }
+  };
 
-  async derive<T extends object>(object: T): Promise<Secured<T>> {
-    const signed: Signed<T> = await this.signedPattern.derive(object);
-    const hashed = await this.hashedPattern.derive(signed);
+  derive = () => async <T extends object>(object: T): Promise<Secured<T>> => {
+    const signed: Signed<T> = await this.signedPattern.derive()(object);
+    const hashed = await this.hashedPattern.derive()(signed);
 
     return hashed;
-  }
+  };
 
   extract<T extends object>(secured: Secured<T>): T {
     return secured.object.payload;

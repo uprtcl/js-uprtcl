@@ -1,12 +1,14 @@
+import { Property } from '@uprtcl/cortex';
+
 import { AccessControlService } from '../services/access-control.service';
 
-export interface Updatable<T = any> {
+export interface Updatable<T, C = any> extends Property<T> {
   /**
    * @returns whether the entity needs to be reloaded or not
    */
-  update: (entity: any, newContent: T) => Promise<boolean>;
+  update: (entity: T) => (newContent: C) => Promise<boolean>;
 
-  accessControl: (entity: any) => AccessControlService<any> | undefined;
+  accessControl: (entity: T) => AccessControlService<any> | undefined;
 
-  origin: (entity: any) => string;
+  origin: (entity: T) => string;
 }

@@ -2,7 +2,7 @@
 import 'reflect-metadata';
 
 /** Types */
-export { EntitiesTypes, DraftsTypes, AccessControlTypes, AuthTypes } from './types';
+export { EntitiesTypes, DraftsTypes, AccessControlTypes, AuthTypes, GraphQlTypes } from './types';
 
 /** Auth */
 export { AuthReduxModule } from './auth/state';
@@ -73,3 +73,8 @@ export {
 export { sortObject } from './utils/utils';
 
 export { ReduxCortexModule } from './redux-cortex.module';
+
+/** GraphQl */
+export { ApolloClientModule } from './graphql/apollo-client.module';
+export { graphQlSchemaModule, GraphQlSchemaModule } from './graphql/graphql-schema.module';
+export { baseTypeDefs, baseResolvers } from './graphql/base-schema';

@@ -8,7 +8,7 @@ export class CortexEntity extends CortexEntityBase {
    * @returns the rendered selected lens
    */
   renderLens() {
-    if (!this.selectedLens || !this.isomorphisms) return html``;
+    if (!this.selectedLens) return html``;
 
     return html`
       <div id="lens-renderer">
@@ -39,7 +39,7 @@ export class CortexEntity extends CortexEntityBase {
 
   render() {
     return html`
-      ${!this.isomorphisms || !this.selectedLens
+      ${!this.selectedLens
         ? html`
             <mwc-circular-progress></mwc-circular-progress>
           `

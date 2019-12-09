@@ -4,7 +4,6 @@ import 'reflect-metadata';
 /** Services */
 export { Ready, ServiceProvider } from './services/sources/service.provider';
 export { Source, SourceProvider } from './services/sources/source';
-export { DiscoverableSource } from './services/sources/discoverable.source';
 
 export { KnownSourcesService } from './services/known-sources/known-sources.service';
 export { KnownSourcesDexie } from './services/known-sources/known-sources.dexie';
@@ -24,7 +23,7 @@ export { DiscoveryService } from './services/discovery.service';
 export { discoveryModule } from './services/discovery.module';
 
 /** Patterns */
-export { Pattern } from './patterns/pattern';
+export { Pattern, Entity, Property } from './patterns/pattern';
 export { Cloneable } from './patterns/properties/cloneable';
 export { Creatable } from './patterns/properties/creatable';
 export { HasContent } from './patterns/properties/has-content';
@@ -50,3 +49,11 @@ export { LensesTypes, DiscoveryTypes, PatternTypes, UplAuth } from './types';
 
 /** Module */
 export { CortexModule } from './cortex.module';
+
+/** Utils */
+export {
+  linksFromObject,
+  getUplToDiscover,
+  discoverKnownSources,
+  discoverLinksKnownSources
+} from './services/discovery.utils';

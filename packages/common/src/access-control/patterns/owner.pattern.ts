@@ -6,7 +6,7 @@ import { Permissions } from '../properties/permissions';
 import { OwnerAccessControl } from '../services/owner-access-control.service';
 
 @injectable()
-export class OwnerPattern implements Pattern, Permissions {
+export class OwnerPattern implements Pattern, Permissions<OwnerAccessControl> {
   recognize = (entity: any) => {
     return (
       (entity as OwnerAccessControl).owner !== null &&
@@ -14,7 +14,7 @@ export class OwnerPattern implements Pattern, Permissions {
     );
   };
 
-  canWrite = (entity: OwnerAccessControl, uplAuth: UplAuth): boolean => {
+  canWrite = (entity: OwnerAccessControl) => (uplAuth: UplAuth): boolean => {
     return uplAuth.isAuthenticated && entity.owner === uplAuth.userId;
   };
 }

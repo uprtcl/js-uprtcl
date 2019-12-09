@@ -1,16 +1,20 @@
 import { injectable } from 'inversify';
 
-import { DiscoverableSource, SourceProvider } from '@uprtcl/cortex';
-import { ReduxCortexModule } from '@uprtcl/common';
+import { ReduxCortexModule, graphQlSchemaModule } from '@uprtcl/common';
 
 import { TextNodeLens } from './lenses/text-node.lens';
-import { TextNodePattern } from './patterns/text-node.pattern';
+import {
+  TextNodeActions,
+  TextNodeCreate,
+  TextNodePatterns,
+  TextNodeEntity
+} from './patterns/text-node.entity';
 import { DocumentsTypes } from './types';
 import { DocumentsProvider } from './services/documents.provider';
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
-import { TextNodeEntity } from './patterns/text-node.entity';
+import { documentsTypeDefs, documentsSchema } from './graphql';
 
 /**
  * Configure a documents module with the given providers
@@ -45,7 +49,7 @@ import { TextNodeEntity } from './patterns/text-node.entity';
  * @returns a configured documents module ready to be loaded
  */
 export function documentsModule(
-  documentsRemotes: DiscoverableSource<DocumentsRemote>[],
+  documentsRemotes: DocumentsRemote[],
   documentsLocal: new (...args: any[]) => DocumentsProvider = DocumentsLocal
 ): new (...args: any[]) => ReduxCortexModule {
   @injectable()
@@ -70,10 +74,19 @@ export function documentsModule(
 
     get patterns() {
       return [
-        { symbol: DocumentsTypes.TextNodeEntity, pattern: TextNodeEntity },
-        { symbol: DocumentsTypes.TextNodePattern, pattern: TextNodePattern }
+        {
+          symbol: DocumentsTypes.TextNodeEntity,
+          patterns: [
+            TextNodeEntity,
+            TextNodeActions,
+            TextNodeCreate,
+            TextNodePatterns
+          ]
+        }
       ];
     }
+
+    submodules = [graphQlSchemaModule(documentsTypeDefs, {})];
   }
 
   return DocumentsModule;

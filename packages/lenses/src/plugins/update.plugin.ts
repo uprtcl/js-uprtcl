@@ -6,7 +6,7 @@ import { Updatable, selectCanWrite } from '@uprtcl/common';
 import { CortexEntityBase } from '../elements/cortex-entity-base';
 import { LensesPlugin } from './lenses-plugin';
 import { LensElement } from '../types';
-import { Pattern, CreateChild } from '@uprtcl/cortex';
+import { Pattern, CreateChild, PatternTypes, PatternRecognizer } from '@uprtcl/cortex';
 
 export const updatePlugin = <
   T extends CortexEntityBase & ReduxConnectedElement
@@ -14,7 +14,7 @@ export const updatePlugin = <
   baseElement: Constructor<CortexEntityBase & ReduxConnectedElement>
 ): Constructor<CortexEntityBase & ReduxConnectedElement> =>
   class extends baseElement {
-    entityEditable: boolean = false;
+    entityEditable: boolean = true;
 
     connectedCallback() {
       super.connectedCallback();
@@ -32,17 +32,25 @@ export const updatePlugin = <
 
     async createChild(parent: any) {
       if (!this.entity) return;
+      
+      const recognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
 
-      const patterns: Pattern | CreateChild = this.patternRecognizer.recognizeMerge(this.entity);
-      const updateNeeded = await (patterns as CreateChild).createChild(this.entity, parent);
+      const createChild: CreateChild | undefined = recognizer.recognizeUniqueProperty(
+        this.entity,
+        prop => !!(prop as CreateChild).createChild
+      );
 
-      if (updateNeeded) this.entityUpdated();
+      if (createChild) {
+        const updateNeeded = await createChild.createChild(this.entity)(parent);
+
+        if (updateNeeded) this.entityUpdated();
+      }
     }
 
     stateChanged(state: any) {
       super.stateChanged(state);
 
-      this.entityEditable = selectCanWrite(this.patternRecognizer)(this.hash)(state);
+      this.entityEditable = true; //selectCanWrite(this.patternRecognizer)(this.hash)(state);
     }
 
     update(changedProperties: PropertyValues) {
@@ -59,10 +67,14 @@ export const updatePlugin = <
     async updateContent(newContent: any) {
       if (!this.entity) return;
 
-      const updatable: Updatable = this.patternRecognizer.recognizeMerge(this.entity);
+      const recognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
+      const updatable: Updatable<any, any> | undefined = recognizer.recognizeUniqueProperty(
+        this.entity,
+        prop => !!(prop as Updatable<any, any>).update
+      );
 
-      if (updatable.update) {
-        const reloadNeeded = await updatable.update(this.entity, newContent);
+      if (updatable) {
+        const reloadNeeded = await updatable.update(this.entity)(newContent);
         if (reloadNeeded) this.entityUpdated();
       }
     }

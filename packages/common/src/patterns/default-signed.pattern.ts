@@ -8,19 +8,17 @@ export class DefaultSignedPattern implements Pattern, Signable<any> {
     return object.hasOwnProperty('proof') && object.hasOwnProperty('payload');
   }
 
-  async validate<T>(signed: Signed<T>): Promise<boolean> {
-    return this.verifySignature(signed);
-  }
+  validate = async <T>(signed: Signed<T>): Promise<boolean> => this.verifySignature(signed);
 
-  async derive<T>(object: T): Promise<Signed<T>> {
-    return this.sign(object);
-  }
+  derive = () => async <T>(object: T): Promise<Signed<T>> => {
+    return this.sign()(object);
+  };
 
   extract<T extends object>(signed: Signed<T>): T {
     return signed.payload;
   }
 
-  sign<T>(object: T): Signed<T> {
+  sign = () => <T>(object: T): Signed<T> => {
     return {
       proof: {
         signature: '',
@@ -28,7 +26,7 @@ export class DefaultSignedPattern implements Pattern, Signable<any> {
       },
       payload: object
     };
-  }
+  };
 
   verifySignature<T>(signed: Signed<T>): boolean {
     return true;

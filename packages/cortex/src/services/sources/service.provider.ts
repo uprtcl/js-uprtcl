@@ -1,4 +1,5 @@
 import { UplAuth } from '../../types';
+import { KnownSourcesService } from '../known-sources/known-sources.service';
 
 export interface Ready {
   /**
@@ -13,6 +14,12 @@ export interface ServiceProvider extends Ready {
    * This should uniquely identify the provider from with to do requests
    */
   uprtclProviderLocator: string;
+
+  /**
+   * If the service provider has a known source service associated, any object stored on it
+   * can be linked to/from other sources
+   */
+  knownSources?: KnownSourcesService;
 
   uplAuth?: UplAuth;
 }

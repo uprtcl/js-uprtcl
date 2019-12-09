@@ -9,6 +9,8 @@ import {
 import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import {
+  ApolloClientModule,
+  GraphQlTypes,
   AccessControlTypes,
   AccessControlReduxModule,
   EntitiesReduxModule,
@@ -17,11 +19,15 @@ import {
   AuthReduxModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
-import { KnownSourcesHttp, IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
+import {
+  KnownSourcesHttp,
+  IpfsConnection,
+  EthereumConnection,
+  HttpConnection
+} from '@uprtcl/connections';
 import { SimpleEditor } from './simple-editor';
 
 (async function() {
-
   const c1host = 'http://localhost:3100/uprtcl/1';
   const ethHost = 'ws://localhost:8545';
   const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
@@ -35,22 +41,23 @@ import { SimpleEditor } from './simple-editor';
   const httpKnownSources = new KnownSourcesHttp(c1host, httpConnection);
 
   const evees = eveesModule([
-    { service: httpEvees, knownSources: httpKnownSources },
-    { service: ethEvees, knownSources: httpKnownSources }
+    //{ service: httpEvees, knownSources: httpKnownSources },
+    ethEvees
   ]);
 
   const httpDocuments = new DocumentsHttp(c1host, httpConnection);
   const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
 
   const documents = documentsModule([
-    { service: httpDocuments, knownSources: httpKnownSources },
-    { service: ipfsDocuments, knownSources: httpKnownSources }
+    //{ service: httpDocuments, knownSources: httpKnownSources },
+    ipfsDocuments
   ]);
 
   const orchestrator = new MicroOrchestrator();
 
   await orchestrator.loadModules(
     { id: ReduxTypes.Module, module: ReduxStoreModule },
+    { id: GraphQlTypes.Module, module: ApolloClientModule },
     { id: PatternTypes.Module, module: PatternsModule },
     { id: DiscoveryTypes.Module, module: discoveryModule() },
     { id: EntitiesTypes.Module, module: EntitiesReduxModule },
