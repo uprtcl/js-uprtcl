@@ -1,12 +1,14 @@
 import { gql } from 'apollo-boost';
-import { delegateToSchema, makeExecutableSchema } from 'graphql-tools';
+import { makeExecutableSchema } from 'graphql-tools';
 
-import { Secured, GraphQlTypes, baseTypeDefs, baseResolvers } from '@uprtcl/common';
+import { Secured, baseTypeDefs, baseResolvers } from '@uprtcl/common';
 
 import { Commit, Perspective, EveesTypes } from './types';
 import { Evees } from './services/evees';
 
 export const eveesTypeDefs = gql`
+  scalar Date
+
   type Context {
     context: String!
     perspectives: [Entity!]
@@ -14,6 +16,7 @@ export const eveesTypeDefs = gql`
 
   type Commit implements EntityType {
     parentCommits: [Entity!]!
+    timestamp: Date!
     message: String
     data: Entity
 
@@ -31,10 +34,13 @@ export const eveesTypeDefs = gql`
 
 export const eveesResolvers = {
   Commit: {
-    message(parent: Secured<Commit>, args, context, info) {
+    message(parent: Secured<Commit>) {
       return parent.object.payload.message;
     },
-    parentCommits(parent: Secured<Commit>, args, context, info) {
+    timestamp(parent: Secured<Commit>) {
+      return parent.object.payload.timestamp;
+    },
+    parentCommits(parent: Secured<Commit>) {
       return parent.object.payload.parentsIds;
     }
   },

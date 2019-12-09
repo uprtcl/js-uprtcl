@@ -1,14 +1,11 @@
+import { flatMap } from 'lodash';
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { GraphQlTypes } from '@uprtcl/common';
-import { PatternRecognizer, PatternTypes } from '@uprtcl/cortex';
-import { LoadEntity, LOAD_ENTITY, selectById, selectEntities } from '@uprtcl/common';
 
-import { getLenses, getIsomorphisms } from './utils';
-import { Isomorphisms, Lens } from '../types';
-import { Dictionary } from 'lodash';
+import { Lens } from '../types';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
@@ -17,18 +14,13 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
   protected entity: object | undefined = undefined;
 
-  @property()
-  protected isomorphisms: Isomorphisms | undefined = undefined;
-
   // Lenses
   @property()
   protected selectedLens!: Lens | undefined;
 
-  protected patternRecognizer!: PatternRecognizer;
-  protected entities: Dictionary<any> = {};
-  protected entitiesRequested: Dictionary<boolean> = {};
+  async loadEntity(hash: string): Promise<void> {
+    (this.entity = undefined), (this.selectedLens = undefined);
 
-  async loadEntity(hash: string): Promise<any> {
     const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
 
     const result = await client.query({
@@ -43,17 +35,6 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
                 name
                 render
               }
-              links {
-                id
-                raw
-                content {
-                  id
-                }
-              }
-              actions {
-                icon
-                action
-              }
             }
           }
         }
@@ -61,32 +42,18 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
       `
     });
 
-    console.log(result);
+    const lenses = flatMap(
+      result.data.getEntity.isomorphisms.reverse(),
+      iso => iso.patterns.lenses
+    ).filter(l => !!l);
 
-    return result.data.getEntity.raw;
+    this.entity = result.data.getEntity.raw;
+
+    this.selectedLens = lenses[0];
   }
 
   async entityUpdated() {
-    if (!this.hash) return;
-
-    this.isomorphisms = undefined;
-    this.entity = await this.loadEntity(this.hash);
-
-    if (!this.entity) return;
-
-    const isomorphisms = await getIsomorphisms(this.patternRecognizer, this.entity, (id: string) =>
-      this.loadEntity(id)
-    );
-
-    this.isomorphisms = {
-      entity: {
-        id: this.hash,
-        object: this.entity
-      },
-      isomorphisms: isomorphisms.reverse()
-    };
-
-    this.selectedLens = getLenses(this.patternRecognizer, this.isomorphisms)[0];
+    return this.loadEntity(this.hash);
   }
 
   getLensElement(): Element | null {
@@ -99,8 +66,6 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.patternRecognizer = this.request(PatternTypes.Recognizer);
-
     this.addEventListener<any>(
       'lens-selected',
       (e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)
@@ -111,8 +76,6 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     super.updated(changedProperties);
 
     if (changedProperties.has('hash') && this.hash && this.hash !== changedProperties.get('hash')) {
-      this.entity = undefined;
-      this.isomorphisms = undefined;
       this.entityUpdated();
     }
   }

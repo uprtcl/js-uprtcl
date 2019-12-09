@@ -1,16 +1,16 @@
+import { flatMap } from 'lodash';
+import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, query, css, PropertyValues } from 'lit-element';
+
 import { Menu } from '@authentic/mwc-menu';
 import '@authentic/mwc-list';
 import '@material/mwc-icon-button';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { PatternRecognizer, PatternTypes } from '@uprtcl/cortex';
-
-import { getLenses } from './utils';
-import { Isomorphisms, Lens } from '../types';
-import { ApolloClient, gql } from 'apollo-boost';
+import { PatternRecognizer } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
-import { flatMap } from 'lodash';
+
+import { Lens } from '../types';
 
 export class CortexLensSelector extends moduleConnect(LitElement) {
   @property({ type: String })

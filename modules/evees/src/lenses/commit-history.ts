@@ -9,19 +9,29 @@ import { Secured, GraphQlTypes } from '@uprtcl/common';
 import { Commit } from '../types';
 import { ApolloClient, gql } from 'apollo-boost';
 
+interface CommitHistoryData {
+  id: string;
+  entity: {
+    message: string;
+    timestamp: number;
+    parentCommits: Array<CommitHistoryData>;
+  };
+}
+
 export class CommitHistory extends reduxConnect(LitElement)
   implements LensElement<Secured<Commit>> {
   @property({ type: Object })
   data!: Secured<Commit>;
 
   @property({ type: Object })
-  commits: Dictionary<Secured<Commit>> = {};
-
-  @property({ type: Number })
-  commitsToShow!: number;
+  commitHistory: CommitHistoryData | undefined;
 
   async firstUpdated() {
-    this.initialLoad();
+    this.loadCommitHistory();
+  }
+
+  async loadCommitHistory() {
+    this.commitHistory = undefined;
 
     const apolloClient: ApolloClient<any> = this.request(GraphQlTypes.Client);
     const result = await apolloClient.query({
@@ -31,8 +41,25 @@ export class CommitHistory extends reduxConnect(LitElement)
           id
           entity {
             ... on Commit {
+              message
+              timestamp
               parentCommits {
                 id
+                entity {
+                  ... on Commit {
+                    message
+                    timestamp
+                    parentCommits {
+                      id
+                      entity {
+                        ... on Commit {
+                          timestamp
+                          message
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -40,57 +67,33 @@ export class CommitHistory extends reduxConnect(LitElement)
       }
     `
     });
-    console.log(result);
+
+    this.commitHistory = result.data.getEntity;
   }
 
-  async initialLoad() {
-    this.commits = await this.loadCommitParents(this.data);
-    this.commits[this.data.id] = this.data;
-  }
-
-  async loadCommitParents(commit: Secured<Commit>): Promise<Dictionary<Secured<Commit>>> {
-    const parentsIds = commit.object.payload.parentsIds;
-
-    /* const promises = parentsIds.map(async parentId =>
-      this.store.dispatch(loadEntity(this.source)(parentId) as any)
-    ); */
-    const promises = [];
-    const commits: Secured<Commit>[] = await Promise.all(promises);
-    const ancestorCommitsPromises = commits.map(commit => this.loadCommitParents(commit));
-
-    const ancestorsArray = await Promise.all(ancestorCommitsPromises);
-    const ancestorsDict = ancestorsArray.reduce(
-      (commits, commitArray) => ({ ...commits, ...commitArray }),
-      {}
-    );
-
-    return { ...ancestorsDict, ...this.arrayToDict(commits) };
-  }
-
-  arrayToDict<T extends object>(array: Array<Hashed<T>>): Dictionary<Hashed<T>> {
-    return array.reduce((objects, object) => ({ ...objects, [object.id]: object }), {});
-  }
-
-  renderCommit(commitHash: string) {
-    const commit = this.commits[commitHash];
+  renderCommitHistory(commitHistory: CommitHistoryData) {
     return html`
-      ${commit
-        ? html`
-            <div class="column">
-              ${commit.id} ${commit.object.payload.message} ${commit.object.payload.timestamp}
-
+      <div class="column">
+        ${commitHistory.id} ${commitHistory.entity.message} ${commitHistory.entity.timestamp}
+        ${commitHistory.entity.parentCommits
+          ? html`
               <div class="row">
-                ${commit.object.payload.parentsIds.map(parentId => this.renderCommit(parentId))}
+                ${commitHistory.entity.parentCommits.map(parent =>
+                  this.renderCommitHistory(parent)
+                )}
               </div>
-            </div>
-          `
-        : html``}
+            `
+          : html``}
+      </div>
     `;
   }
 
   render() {
     return html`
-      ${this.renderCommit(this.data.id)}
+      <div class="row">
+        ${this.commitHistory ? this.renderCommitHistory(this.commitHistory) : html``}
+        <slot name="plugins"></slot>
+      </div>
     `;
   }
 

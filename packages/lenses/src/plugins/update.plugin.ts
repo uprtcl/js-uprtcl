@@ -6,7 +6,7 @@ import { Updatable, selectCanWrite } from '@uprtcl/common';
 import { CortexEntityBase } from '../elements/cortex-entity-base';
 import { LensesPlugin } from './lenses-plugin';
 import { LensElement } from '../types';
-import { Pattern, CreateChild } from '@uprtcl/cortex';
+import { Pattern, CreateChild, PatternTypes, PatternRecognizer } from '@uprtcl/cortex';
 
 export const updatePlugin = <
   T extends CortexEntityBase & ReduxConnectedElement
@@ -32,8 +32,10 @@ export const updatePlugin = <
 
     async createChild(parent: any) {
       if (!this.entity) return;
+      
+      const recognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
 
-      const createChild: CreateChild | undefined = this.patternRecognizer.recognizeUniqueProperty(
+      const createChild: CreateChild | undefined = recognizer.recognizeUniqueProperty(
         this.entity,
         prop => !!(prop as CreateChild).createChild
       );
@@ -65,9 +67,8 @@ export const updatePlugin = <
     async updateContent(newContent: any) {
       if (!this.entity) return;
 
-      const updatable:
-        | Updatable<any, any>
-        | undefined = this.patternRecognizer.recognizeUniqueProperty(
+      const recognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
+      const updatable: Updatable<any, any> | undefined = recognizer.recognizeUniqueProperty(
         this.entity,
         prop => !!(prop as Updatable<any, any>).update
       );
