@@ -11,11 +11,8 @@ import {
   SourceProvider,
   ServiceProvider
 } from '@uprtcl/cortex';
-import { SelectionNode, DefinitionNode, OperationDefinitionNode } from 'graphql';
-import { interfaces } from 'inversify';
 import { ApolloCache } from 'apollo-cache';
 import { NormalizedCacheObject, gql } from 'apollo-boost';
-import { GET_SOURCE } from './base-schema';
 
 export class DiscoveryLink extends ApolloLink {
 
