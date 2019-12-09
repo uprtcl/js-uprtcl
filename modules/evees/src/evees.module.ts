@@ -93,10 +93,10 @@ export function eveesModule(
         { symbol: PatternTypes.Core.Hashed, patterns: [CidHashedPattern] },
         { symbol: PatternTypes.Core.Signed, patterns: [DefaultSignedPattern] },
         { symbol: PatternTypes.Core.Secured, patterns: [DefaultSecuredPattern] },
-        { symbol: EveesTypes.PerspectivePattern, patterns: [PerspectiveEntity, PerspectiveLinks] },
+        { symbol: EveesTypes.PerspectivePattern, patterns: [PerspectiveLinks] },
         {
           symbol: EveesTypes.CommitPattern,
-          patterns: [CommitEntity, CommitLinked, CommitPattern, CommitLens]
+          patterns: [CommitLinked, CommitPattern, CommitLens]
         }
       ];
     }

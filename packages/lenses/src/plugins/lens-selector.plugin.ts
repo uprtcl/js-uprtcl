@@ -13,7 +13,7 @@ export const lensSelectorPlugin = <T extends CortexEntityBase>(): LensesPlugin<T
       return [
         ...super.renderPlugins(),
         html`
-          <cortex-lens-selector .isomorphisms=${this.isomorphisms}></cortex-lens-selector>
+          <cortex-lens-selector .entityId=${this.hash}></cortex-lens-selector>
         `
       ];
     }

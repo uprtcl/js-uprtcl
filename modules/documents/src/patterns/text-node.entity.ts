@@ -70,6 +70,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
       }
     ];
   };
+
   merge = (originalNode: Hashed<TextNode>) => async (
     modifications: Hashed<TextNode>[],
     mergeStrategy: MergeStrategy
@@ -106,26 +107,16 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
     super(hashedPattern);
   }
 
-  actions = (node: Hashed<TextNode>) => (entityId: string): PatternAction[] => {
+  actions = (node: Hashed<TextNode>): PatternAction[] => {
     const textNode = node.object;
-    const state = this.store.getState();
-    const writable = selectCanWrite(this.recognizer)(entityId)(state);
-
-    if (!writable) return [];
 
     if (textNode.type === TextType.Paragraph) {
       return [
         {
           icon: 'title',
           title: 'To title',
-          action: (element: HTMLElement) => {
-            element.dispatchEvent(
-              new CustomEvent('content-changed', {
-                bubbles: true,
-                composed: true,
-                detail: { newContent: { ...textNode, type: TextType.Title } }
-              })
-            );
+          action: (changeContent: (newContent: any) => void) => {
+            changeContent({ ...textNode, type: TextType.Title });
           }
         }
       ];
@@ -134,14 +125,8 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
         {
           icon: 'text_fields',
           title: 'To paragraph',
-          action: (element: HTMLElement) => {
-            element.dispatchEvent(
-              new CustomEvent('content-changed', {
-                bubbles: true,
-                composed: true,
-                detail: { newContent: { ...textNode, type: TextType.Paragraph } }
-              })
-            );
+          action: (changeContent: (newContent: any) => void) => {
+            changeContent({ ...textNode, type: TextType.Paragraph });
           }
         }
       ];

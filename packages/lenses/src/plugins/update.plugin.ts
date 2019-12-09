@@ -14,7 +14,7 @@ export const updatePlugin = <
   baseElement: Constructor<CortexEntityBase & ReduxConnectedElement>
 ): Constructor<CortexEntityBase & ReduxConnectedElement> =>
   class extends baseElement {
-    entityEditable: boolean = false;
+    entityEditable: boolean = true;
 
     connectedCallback() {
       super.connectedCallback();

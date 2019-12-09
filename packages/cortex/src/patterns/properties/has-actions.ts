@@ -3,12 +3,13 @@ import { Property } from '../pattern';
 export interface PatternAction {
   icon: string;
   title: string;
-  action: (element: HTMLElement) => any;
+  action: (changeContent: (newContent: any) => void) => any;
+  type?: string;
 }
 
 export interface HasActions<T = any> extends Property<T> {
   /**
    * @returns the actions available for the given object
    */
-  actions: (pattern: T) => (patternId: string) => PatternAction[];
+  actions: (pattern: T) => PatternAction[];
 }

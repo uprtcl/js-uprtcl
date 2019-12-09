@@ -13,7 +13,7 @@ export const actionsPlugin = <T extends CortexEntityBase>(): LensesPlugin<T> => 
       return [
         ...super.renderPlugins(),
         html`
-          <cortex-pattern-actions .isomorphisms=${this.isomorphisms}></cortex-pattern-actions>
+          <cortex-pattern-actions .entityId=${this.hash}></cortex-pattern-actions>
         `
       ];
     }

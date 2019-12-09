@@ -68,6 +68,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
       super.connectedCallback();
 
       this.store.subscribe(() => this.stateChanged(this.store.getState()));
+      this.stateChanged(this.store.getState());
     }
 
     stateChanged(state: any) {}

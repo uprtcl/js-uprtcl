@@ -1,5 +1,5 @@
 import { gql, ApolloClient } from 'apollo-boost';
-import { merge, cloneDeep } from 'lodash';
+import { merge, cloneDeep, cloneDeepWith } from 'lodash';
 
 import {
   DiscoveryTypes,
@@ -42,6 +42,12 @@ export const baseTypeDefs = gql`
   type Patterns {
     links: [Entity!]
     actions: [Action!]
+    lenses: [Lens!]
+  }
+
+  type Lens {
+    name: String!
+    render: Function!
   }
 
   type Action {
@@ -89,7 +95,6 @@ export const baseResolvers = {
       const recognizer: PatternRecognizer = context.container.get(PatternTypes.Recognizer);
 
       const patterns = recognizer.recognize(parent);
-
       const applyedPatterns = patterns.map(pattern => {
         const applyedPattern = {};
 
@@ -101,17 +106,12 @@ export const baseResolvers = {
         return applyedPattern;
       });
 
-
       const accPatterns = {};
       merge(accPatterns, ...applyedPatterns);
 
-      for (const key of Object.keys(accPatterns)) {
-        if (isGraphQlField(key) && typeof accPatterns[key] === 'function')
-          accPatterns[key] = () => accPatterns[key];
-      }
-
-
-      return accPatterns;
+      return cloneDeepWith(accPatterns, (value: any) => {
+        if (typeof value === 'function') return () => value;
+      });
     }
   },
   Entity: {
@@ -119,7 +119,7 @@ export const baseResolvers = {
       return parent.id ? parent.id : parent;
     },
     async raw(parent, _, { container }) {
-      const id = typeof parent === 'string' ? parent: parent.id;
+      const id = typeof parent === 'string' ? parent : parent.id;
 
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
@@ -129,7 +129,7 @@ export const baseResolvers = {
       return entity;
     },
     async entity(parent, _, { container }) {
-      const id = typeof parent === 'string' ? parent: parent.id;
+      const id = typeof parent === 'string' ? parent : parent.id;
 
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
@@ -139,14 +139,16 @@ export const baseResolvers = {
       return entity;
     },
     async content(parent, args, { container }, info) {
-      const entity = parent.entity || await loadEntity(container.get(GraphQlTypes.Client), parent);
+      const entity =
+        parent.entity || (await loadEntity(container.get(GraphQlTypes.Client), parent));
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
       return redirectEntity(entity, recognizer, discovery);
     },
     async isomorphisms(parent, args, { container }, info) {
-      const entity = parent.entity || await loadEntity(container.get(GraphQlTypes.Client), parent);
+      const entity =
+        parent.entity || (await loadEntity(container.get(GraphQlTypes.Client), parent));
 
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
       const client: ApolloClient<any> = container.get(GraphQlTypes.Client);

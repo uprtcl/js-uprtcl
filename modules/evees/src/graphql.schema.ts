@@ -3,9 +3,15 @@ import { delegateToSchema, makeExecutableSchema } from 'graphql-tools';
 
 import { Secured, GraphQlTypes, baseTypeDefs, baseResolvers } from '@uprtcl/common';
 
-import { Commit } from './types';
+import { Commit, Perspective, EveesTypes } from './types';
+import { Evees } from './services/evees';
 
 export const eveesTypeDefs = gql`
+  type Context {
+    context: String!
+    perspectives: [Entity!]
+  }
+
   type Commit implements EntityType {
     parentCommits: [Entity!]!
     message: String
@@ -17,7 +23,7 @@ export const eveesTypeDefs = gql`
   type Perspective implements EntityType {
     head: Entity
     name: String
-    context: String
+    context: Context
 
     patterns: Patterns!
   }
@@ -29,18 +35,42 @@ export const eveesResolvers = {
       return parent.object.payload.message;
     },
     parentCommits(parent: Secured<Commit>, args, context, info) {
-      const schema = context.container.get(GraphQlTypes.RootSchema);
+      return parent.object.payload.parentsIds;
+    }
+  },
+  Context: {
+    context(parent) {
+      return typeof parent === 'string' ? parent : parent.context;
+    },
+    async perspectives(parent, _, { container }) {
+      const context = typeof parent === 'string' ? parent : parent.context;
 
-      return parent.object.payload.parentsIds.map(parentId =>
-        delegateToSchema({
-          schema,
-          operation: 'query',
-          fieldName: 'getEntity',
-          args: { ...args, id: parentId },
-          context,
-          info
-        })
-      );
+      const evees: Evees = container.get(EveesTypes.Evees);
+
+      return evees.getContextPerspectives(context);
+    }
+  },
+  Perspective: {
+    async head(parent: Secured<Perspective>, _, { container }) {
+      const evees: Evees = container.get(EveesTypes.Evees);
+
+      const details = await evees.getPerspectiveDetails(parent.id);
+
+      return details && details.headId;
+    },
+    async name(parent: Secured<Perspective>, _, { container }) {
+      const evees: Evees = container.get(EveesTypes.Evees);
+
+      const details = await evees.getPerspectiveDetails(parent.id);
+
+      return details && details.name;
+    },
+    async context(parent: Secured<Perspective>, _, { container }) {
+      const evees: Evees = container.get(EveesTypes.Evees);
+
+      const details = await evees.getPerspectiveDetails(parent.id);
+
+      return details && details.context;
     }
   }
 };

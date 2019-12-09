@@ -73,7 +73,7 @@ export class PerspectiveLinks extends PerspectiveEntity
     return this.evees.createPerspective(args || {}, providerName);
   };
 
-  actions = (perspective: Secured<Perspective>) => (entityId: string): PatternAction[] => {
+  actions = (perspective: Secured<Perspective>): PatternAction[] => {
     return [
       {
         icon: 'call_split',
@@ -169,7 +169,7 @@ export class PerspectiveLinks extends PerspectiveEntity
     };
     this.store.dispatch(loadHead);
 
-    return true;
+    return false;
   };
 
   accessControl = (perspective: Secured<Perspective>) => {
