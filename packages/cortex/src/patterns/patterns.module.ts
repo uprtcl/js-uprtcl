@@ -1,5 +1,7 @@
 import { injectable, interfaces } from 'inversify';
+
 import { MicroModule } from '@uprtcl/micro-orchestrator';
+
 import { PatternRecognizer } from './recognizer/pattern.recognizer';
 import { Pattern } from './pattern';
 import { PatternTypes } from '../types';
@@ -25,6 +27,4 @@ export class PatternsModule implements MicroModule {
       return recognizer;
     });
   }
-
-  async onUnload(): Promise<void> {}
 }

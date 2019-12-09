@@ -1,4 +1,5 @@
 import { LitElement, html, property, query, PropertyValues, css } from 'lit-element';
+import { flatMap } from 'lodash';
 import { Menu } from '@authentic/mwc-menu';
 import '@material/mwc-icon-button';
 
@@ -12,46 +13,60 @@ import {
 } from '@uprtcl/cortex';
 
 import { Isomorphisms } from '../types';
+import { ApolloClient, gql } from 'apollo-boost';
+import { GraphQlTypes } from '@uprtcl/common';
 
 export class CortexPatternActions extends moduleConnect(LitElement) {
-  @property({ type: Object })
-  public isomorphisms!: Isomorphisms;
+  @property({ type: String })
+  public entityId!: string;
 
   @query('#menu')
   menu!: Menu;
 
   @property({ type: Array })
-  private actions!: PatternAction[];
+  private actions!: PatternAction[] | undefined;
 
-  patternRecognizer!: PatternRecognizer;
+  async loadActions() {
+    this.actions = undefined;
+    if (!this.entityId) return;
 
-  getActions() {
-    let actions: PatternAction[] = [];
+    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
 
-    for (const isomorphism of this.isomorphisms.isomorphisms) {
-      const patterns: Array<Pattern | HasActions> = this.patternRecognizer.recognize(isomorphism);
-      for (const pattern of patterns) {
-        if ((pattern as HasActions).getActions) {
-          actions = actions.concat(
-            (pattern as HasActions).getActions(isomorphism, this.isomorphisms.entity.id)
-          );
+    const result = await client.query({
+      query: gql`
+      {
+        getEntity(id: "${this.entityId}", depth: 1) {
+          id
+          raw
+          isomorphisms {
+            patterns {
+              actions {
+                title
+                icon
+                action
+              }
+            }
+          }
         }
       }
-    }
+      `
+    });
 
-    this.actions = actions;
+    const isomorphisms = result.data.getEntity.isomorphisms;
+
+    const actions = flatMap(isomorphisms.reverse(), iso => iso.patterns.actions);
+    this.actions = actions.filter(iso => !!iso);
   }
 
   firstUpdated() {
-    this.patternRecognizer = this.request(PatternTypes.Recognizer);
-    this.getActions();
+    this.loadActions();
   }
 
   updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
-    if (changedProperties.get('isomorphisms')) {
-      this.getActions();
+    if (changedProperties.get('entityId')) {
+      this.loadActions();
     }
   }
 
@@ -81,7 +96,12 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
             this.actions.map(
               action =>
                 html`
-                  <mwc-list-item @click=${() => action.action(this)}>
+                  <mwc-list-item
+                    @click=${() =>
+                      action.action(newContent => {
+                        this.updateContent(newContent);
+                      })}
+                  >
                     <mwc-icon slot="graphic">${action.icon}</mwc-icon>
                     ${action.title}
                   </mwc-list-item>
@@ -90,5 +110,15 @@ export class CortexPatternActions extends moduleConnect(LitElement) {
         </mwc-list>
       </mwc-menu>
     `;
+  }
+
+  updateContent(newContent) {
+    this.dispatchEvent(
+      new CustomEvent('content-changed', {
+        bubbles: true,
+        composed: true,
+        detail: { newContent }
+      })
+    );
   }
 }

@@ -1,29 +1,29 @@
 import { multiInject, inject, injectable } from 'inversify';
 
 import { Source, SourceProvider } from '../sources/source';
-import { DiscoverableSource } from '../sources/discoverable.source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Hashed } from '../../patterns/properties/hashable';
 import { PatternTypes, DiscoveryTypes } from '../../types';
 import { MultiService } from './multi.service';
+import { linksFromObject, raceToSuccess } from '../discovery.utils';
 
 @injectable()
 export class MultiSourceService<T extends SourceProvider = SourceProvider> extends MultiService<T>
   implements Source {
   /**
-   * @param patternRecognizer the pattern recognizer to interact with the objects and their links
+   * @param recognizer the pattern recognizer to interact with the objects and their links
    * @param localKnownSources local service to store all known sources to be able to retrieve the object afterwards
-   * @param discoverableSources array of all discoverable sources from which to get objects
+   * @param serviceProviders array of all source service providers from which to get objects
    */
   constructor(
-    @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
     @inject(DiscoveryTypes.LocalKnownSources)
     public localKnownSources: KnownSourcesService,
-    @multiInject(DiscoveryTypes.DiscoverableSource)
-    discoverableSources: Array<DiscoverableSource<T>>
+    @multiInject(DiscoveryTypes.Source)
+    sourceProviders: Array<T>
   ) {
-    super(patternRecognizer, localKnownSources, discoverableSources);
+    super(recognizer, localKnownSources, sourceProviders);
   }
 
   /**
@@ -41,10 +41,10 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
 
     // Get the object from source
     const object = await this.getGenericFromService(upl, getter, (object: Hashed<O>) =>
-      this.linksFromObject(object)
+      linksFromObject(this.recognizer)(object)
     );
 
-    upl = this.getService(upl).service.uprtclProviderLocator;
+    upl = this.getService(upl).uprtclProviderLocator;
 
     if (!object) {
       // Object retrieval succeeded but object was not found,
@@ -70,7 +70,7 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
     if (upls.length === 1) {
       knownSources = upls;
     } else {
-      // Get the known sources for the object from the local
+      // Get the known sources for the object from the local known sources service
       knownSources = await this.localKnownSources.getKnownSources(hash);
     }
 
@@ -104,13 +104,13 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
           return object;
         });
 
-        return this.raceToSuccess(requestsPromises);
+        return raceToSuccess(requestsPromises);
       });
     }
 
     try {
       // Get first resolved object
-      const object: Hashed<O> = await this.raceToSuccess<Hashed<O>>(promises);
+      const object: Hashed<O> = await raceToSuccess<Hashed<O>>(promises);
       return object;
     } catch (e) {
       this.logger.warn('All sources failed to get the hash', hash, ' with error ', e);
@@ -120,24 +120,4 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
     }
   }
 
-  /**
-   * Execute the promises in parallel and return when the first promise resolves
-   * Only reject if all promises rejected
-   *
-   * @param promises array of promises to execute
-   * @returns the first resolved promise, or rejects if all promises rejected
-   */
-  private raceToSuccess<O>(promises: Array<Promise<O>>): Promise<O> {
-    let numRejected = 0;
-    let errors: Error[] = [];
-
-    return new Promise((resolve, reject) =>
-      promises.forEach(promise =>
-        promise.then(resolve).catch(e => {
-          errors.push(e);
-          if (++numRejected === promises.length) reject(errors);
-        })
-      )
-    );
-  }
 }

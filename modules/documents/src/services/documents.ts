@@ -1,7 +1,6 @@
 import { multiInject, injectable, inject } from 'inversify';
 
 import {
-  DiscoverableSource,
   KnownSourcesService,
   DiscoveryTypes,
   PatternTypes,
@@ -32,7 +31,7 @@ export class Documents {
     @inject(DocumentsTypes.DocumentsLocal)
     protected documentsLocal: DocumentsLocal,
     @multiInject(DocumentsTypes.DocumentsRemote)
-    protected documentsRemotes: DiscoverableSource<DocumentsRemote>[]
+    protected documentsRemotes: DocumentsRemote[]
   ) {
     this.service = new CachedMultiSourceService<DocumentsLocal, DocumentsRemote>(
       documentsLocal,

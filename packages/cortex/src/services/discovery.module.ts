@@ -37,8 +37,6 @@ export function discoveryModule(
       );
       bind<Source>(DiscoveryTypes.DiscoveryService).to(DiscoveryService);
     }
-
-    async onUnload(): Promise<void> {}
   }
   return DiscoveryModule;
 }

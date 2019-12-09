@@ -6,7 +6,7 @@ export interface UplAuth {
 export const DiscoveryTypes = {
   Module: Symbol('discovery-module'),
   DiscoveryService: Symbol('discovery-service'),
-  DiscoverableSource: Symbol('discoverable-source'),
+  Source: Symbol('sources'),
   MultiSource: Symbol('multi-source'),
   Cache: Symbol('cache-service'),
   LocalKnownSources: Symbol('local-known-sources')

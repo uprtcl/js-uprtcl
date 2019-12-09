@@ -1,45 +1,61 @@
-import { Dictionary } from 'lodash';
+import { flatMap } from 'lodash';
+import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
 
-import { reduxConnect } from '@uprtcl/micro-orchestrator';
-import { PatternRecognizer, PatternTypes } from '@uprtcl/cortex';
-import { LoadEntity, LOAD_ENTITY, selectById, selectEntities } from '@uprtcl/common';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { GraphQlTypes } from '@uprtcl/common';
 
-import { getLenses, getIsomorphisms } from './utils';
-import { Isomorphisms, Lens } from '../types';
+import { Lens } from '../types';
 
-export class CortexEntityBase extends reduxConnect(LitElement) {
+export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
   public hash!: string;
 
   @property()
   protected entity: object | undefined = undefined;
 
-  @property()
-  protected isomorphisms: Isomorphisms | undefined = undefined;
-
   // Lenses
   @property()
   protected selectedLens!: Lens | undefined;
 
-  protected patternRecognizer!: PatternRecognizer;
-  protected entities: Dictionary<any> = {};
-  protected entitiesRequested: Dictionary<boolean> = {};
+  async loadEntity(hash: string): Promise<void> {
+    (this.entity = undefined), (this.selectedLens = undefined);
 
-  async loadEntity(hash: string): Promise<any> {
-    if (this.entitiesRequested[hash]) return;
+    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
 
-    this.entitiesRequested[hash] = true;
+    const result = await client.query({
+      query: gql`
+      {
+        getEntity(id: "${hash}", depth: 1) {
+          id
+          raw
+          isomorphisms {
+            patterns {
+              lenses {
+                name
+                render
+              }
+            }
+          }
+        }
+      }
+      `
+    });
 
-    const action: LoadEntity = {
-      type: LOAD_ENTITY,
-      payload: { hash }
-    };
-    this.store.dispatch(action);
+    const lenses = flatMap(
+      result.data.getEntity.isomorphisms.reverse(),
+      iso => iso.patterns.lenses
+    ).filter(l => !!l);
+
+    this.entity = result.data.getEntity.raw;
+
+    this.selectedLens = lenses[0];
   }
-  selectEntity(hash: string): any | undefined {
-    return this.entities[hash];
+
+  async entityUpdated() {
+    return this.loadEntity(this.hash);
   }
+
   getLensElement(): Element | null {
     return null;
   }
@@ -50,60 +66,17 @@ export class CortexEntityBase extends reduxConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.patternRecognizer = this.request(PatternTypes.Recognizer);
-
     this.addEventListener<any>(
       'lens-selected',
       (e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)
     );
   }
 
-  firstUpdated(changedProperties: PropertyValues) {
-    super.firstUpdated(changedProperties);
-    this.loadEntity(this.hash);
-  }
-
   updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
     if (changedProperties.has('hash') && this.hash && this.hash !== changedProperties.get('hash')) {
-      this.entity = undefined;
-      this.isomorphisms = undefined;
       this.entityUpdated();
-      this.stateChanged(this.store.getState());
-    }
-  }
-
-  entityUpdated() {
-    this.isomorphisms = undefined;
-
-    this.loadEntity(this.hash);
-  }
-
-  stateChanged(state: any) {
-    this.entities = selectEntities(state).entities;
-    this.entity = selectById(this.hash)(selectEntities(state));
-
-    if (!this.entity) return;
-
-    const { isomorphisms, entitiesToLoad } = getIsomorphisms(
-      this.patternRecognizer,
-      this.entity,
-      (id: string) => this.selectEntity(id)
-    );
-
-    if (entitiesToLoad.length > 0) {
-      entitiesToLoad.forEach(id => this.loadEntity(id));
-    } else {
-      this.isomorphisms = {
-        entity: {
-          id: this.hash,
-          object: this.entity
-        },
-        isomorphisms: isomorphisms.reverse()
-      };
-
-      this.selectedLens = getLenses(this.patternRecognizer, this.isomorphisms)[0];
     }
   }
 }

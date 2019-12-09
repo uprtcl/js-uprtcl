@@ -24,12 +24,12 @@ export class ReduxCortexModule extends CortexModule {
 
     if (this.sources) {
       for (const source of this.sources) {
-        const authInfo = source.source.service.uplAuth;
+        const authInfo = source.source.uplAuth;
         if (authInfo) {
           const updateUplAuth: UpdateUplAuth = {
             type: UPDATE_UPL_AUTH,
             payload: {
-              upl: source.source.service.uprtclProviderLocator,
+              upl: source.source.uprtclProviderLocator,
               uplAuth: authInfo
             }
           };

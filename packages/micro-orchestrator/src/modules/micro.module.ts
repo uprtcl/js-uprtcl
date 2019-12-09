@@ -10,7 +10,7 @@ export interface MicroModule {
     rebind: interfaces.Rebind
   ): Promise<void>;
 
-  onUnload(): Promise<void>;
+  onUnload?(): Promise<void>;
 
   submodules?: Constructor<MicroModule>[];
 }

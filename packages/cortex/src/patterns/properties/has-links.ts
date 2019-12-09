@@ -1,9 +1,11 @@
-export interface HasLinks {
-  getLinks: (object: any) => Promise<string[]>;
+import { Property } from '../pattern';
+
+export interface HasLinks<T = any> extends Property<T> {
+  links: (pattern: T) => Promise<string[]>;
 }
 
-export interface HasChildren extends HasLinks {
-  getChildrenLinks: (object: any) => string[];
+export interface HasChildren<T = any> extends HasLinks<T> {
+  getChildrenLinks: (pattern: T) => string[];
 
-  replaceChildrenLinks: (object: any, links: string[]) => any;
+  replaceChildrenLinks: (pattern: T) => (links: string[]) => any;
 }

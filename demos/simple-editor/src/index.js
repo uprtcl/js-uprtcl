@@ -10,6 +10,8 @@ import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import { WikisIpfs, wikisModule, WikisTypes, WikisHttp } from '@uprtcl/wikis';
 import {
+  ApolloClientModule,
+  GraphQlTypes,
   AccessControlTypes,
   AccessControlReduxModule,
   EntitiesReduxModule,
@@ -18,12 +20,16 @@ import {
   AuthReduxModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
-import { KnownSourcesHttp, IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
+import {
+  KnownSourcesHttp,
+  IpfsConnection,
+  EthereumConnection,
+  HttpConnection
+} from '@uprtcl/connections';
 import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
-
   const c1host = 'http://localhost:3100/uprtcl/1';
   const ethHost = 'ws://localhost:8545';
   const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
@@ -37,16 +43,16 @@ import { SimpleWiki } from './simple-wiki';
   const httpKnownSources = new KnownSourcesHttp(c1host, httpConnection);
 
   const evees = eveesModule([
-    { service: httpEvees, knownSources: httpKnownSources },
-    { service: ethEvees, knownSources: httpKnownSources }
+    //{ service: httpEvees, knownSources: httpKnownSources },
+    ethEvees
   ]);
 
   const httpDocuments = new DocumentsHttp(c1host, httpConnection);
   const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
 
   const documents = documentsModule([
-    { service: httpDocuments, knownSources: httpKnownSources },
-    { service: ipfsDocuments, knownSources: httpKnownSources }
+    //{ service: httpDocuments, knownSources: httpKnownSources },
+    ipfsDocuments
   ]);
 
   const httpWikis = new WikisHttp(c1host, httpConnection);
@@ -61,6 +67,7 @@ import { SimpleWiki } from './simple-wiki';
 
   await orchestrator.loadModules(
     { id: ReduxTypes.Module, module: ReduxStoreModule },
+    { id: GraphQlTypes.Module, module: ApolloClientModule },
     { id: PatternTypes.Module, module: PatternsModule },
     { id: DiscoveryTypes.Module, module: discoveryModule() },
     { id: EntitiesTypes.Module, module: EntitiesReduxModule },
