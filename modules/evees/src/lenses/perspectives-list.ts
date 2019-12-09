@@ -1,15 +1,14 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { reduxConnect } from '@uprtcl/micro-orchestrator';
 import { EveesTypes, PerspectiveDetails, Perspective } from '../types';
-import { Secured, selectCanWrite } from '@uprtcl/common';
+import { Secured, selectCanWrite, PermissionsStatus } from '@uprtcl/common';
 import { PatternTypes, PatternRecognizer } from '@uprtcl/cortex';
 
-
-interface PerspectiveObject {
+interface PerspectiveData {
   id: string;
-  creatorId: string;
-  name?: string;
-  canMerge?: boolean;
+  perspective: Perspective;
+  details: PerspectiveDetails;
+  permissions: PermissionsStatus;
 }
 
 export class PerspectivesList extends reduxConnect(LitElement) {
@@ -17,51 +16,60 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   rootPerspectiveId!: string;
 
   @property({ attribute: false })
-  perspectives: Array<PerspectiveObject> = [];
+  perspectivesData: Array<PerspectiveData> = [];
 
-  private recognizer!:PatternRecognizer;
+  private recognizer!: PatternRecognizer;
 
   firstUpdated() {
-    this.recognizer = this.request(PatternTypes.Recognizer)
-    this.listPerspectives(this.rootPerspectiveId);
+    this.recognizer = this.request(PatternTypes.Recognizer);
+    this.updatePerspectivesData();
   }
 
-  listPerspectives = async idPerspective => {
+  updatePerspectivesData = async () => {
     const evees: any = this.request(EveesTypes.Evees);
-    const details: PerspectiveDetails = await evees.getPerspectiveDetails(idPerspective);
+    const details: PerspectiveDetails = await evees.getPerspectiveDetails(this.rootPerspectiveId);
+
     if (details === undefined) {
-      this.perspectives = [];
-    } else {
-      const perspectivesList: Array<Secured<Perspective>> = await evees.getContextPerspectives(
-        details.context
-      );
-
-      const perspectiveIDs: Array<PerspectiveObject> = [];
-      const perspectivesPromises = perspectivesList.map(
-        (perspective: Secured<Perspective>): Array<Promise<PerspectiveDetails>> => {
-          const { creatorId } =  perspective.object.payload
-          perspectiveIDs.push({ id: perspective.id, creatorId });
-          return evees.getPerspectiveDetails(perspective.id);
-        }
-      );
-
-      const resolved = await Promise.all(perspectivesPromises);
-      this.perspectives = resolved.map((perspective: any, index: number) => {
-        return {
-          id: perspectiveIDs[index].id,
-          creatorId: perspectiveIDs[index].creatorId,
-          name: perspective.name
-        };
-      });
+      this.perspectivesData = [];
+      return;
     }
+
+    const otherPerspectives: Array<Secured<Perspective>> = await evees.getContextPerspectives(
+      details.context
+    );
+
+    const perspectivesPromises = otherPerspectives.map(
+      async (perspective: Secured<Perspective>): Promise<PerspectiveData> => {
+        const details = await evees.getPerspectiveDetails(perspective.id);
+        const permissions: PermissionsStatus = {
+          canWrite: false
+        };
+        const perspectiveData: PerspectiveData = {
+          id: perspective.id,
+          perspective: perspective.object.payload,
+          details: details,
+          permissions: permissions
+        };
+        return perspectiveData;
+      }
+    );
+
+    this.perspectivesData = await Promise.all(perspectivesPromises);
+    console.log(`[PERSPECTIVE-LIST] updatePerspectivesData`, {perspectivesData: JSON.stringify(this.perspectivesData)});
   };
-  
+
   stateChanged(state) {
-    this.perspectives = this.perspectives.map(perspective => {
-      let updatedPerspective: any = this.perspectives.find(p => p['id'] == perspective['id']);
-      updatedPerspective['canMerge'] = selectCanWrite(this.recognizer)(updatedPerspective['id'])(state);
-      return updatedPerspective;
+    /** update canWrite 
+     * TODO: reactivity will not work, either make a new object of perspectivesData, or 
+     * create a custom changed() function for the attribute that chceks the canWrite.
+    */
+    this.perspectivesData.forEach(perspectiveData => {
+      const canWrite = selectCanWrite(this.recognizer)(perspectiveData.id)(state);
+      perspectiveData.permissions = {
+        canWrite
+      }
     });
+    console.log(`[PERSPECTIVE-LIST] stateChanged`, {perspectivesData: this.perspectivesData});
   }
 
   openPerspective = id => {
@@ -69,11 +77,13 @@ export class PerspectivesList extends reduxConnect(LitElement) {
     window.history.pushState('', '', `/?id=${id}`);
   };
 
-  renderPerspective(perspective) {
-    const style = perspective.id == this.rootPerspectiveId ? 'font-weight: bold;' : ''
+  renderPerspective(perspectiveData: PerspectiveData) {
+    const style = perspectiveData.id == this.rootPerspectiveId ? 'font-weight: bold;' : '';
     return html`
-      <li style=${style} @click=${() => this.openPerspective(perspective.id)} >
-        ${perspective.name} - Owner: ${perspective.creatorId} - ${perspective['canMerge']}
+      <li style=${style} @click=${() => this.openPerspective(perspectiveData.id)}>
+        ${perspectiveData.details.name} 
+        - Creator: ${perspectiveData.perspective.creatorId} 
+        - ${perspectiveData.permissions.canWrite ? `merge` : ``};
       </li>
     `;
   }
@@ -81,11 +91,11 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   render() {
     return html`
       <h4>Perspectives</h4>
-      ${this.perspectives.length > 0
+      ${this.perspectivesData.length > 0
         ? html`
             <ul>
-              ${this.perspectives.map(perspective => {
-                return this.renderPerspective(perspective);
+              ${this.perspectivesData.map(perspectivesData => {
+                return this.renderPerspective(perspectivesData);
               })}
             </ul>
           `

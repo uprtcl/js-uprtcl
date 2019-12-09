@@ -11,7 +11,7 @@ export { authReducerName, selectAuth, selectUplAuthInfo } from './auth/state/aut
 
 /** Access Control */
 export { Updatable } from './access-control/properties/updatable';
-export { Permissions } from './access-control/properties/permissions';
+export { Permissions, PermissionsStatus } from './access-control/properties/permissions';
 
 export { AccessControlService } from './access-control/services/access-control.service';
 export {
