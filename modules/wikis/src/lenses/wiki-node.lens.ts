@@ -64,9 +64,9 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
             ... on Wiki { 
               title
               pages {
-                id // id de la perspectiva
+                id
                 content {
-                  id // id del textnode
+                  id
                   entity {
                     patterns {
                       title
