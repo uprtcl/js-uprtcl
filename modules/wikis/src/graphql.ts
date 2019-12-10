@@ -3,10 +3,10 @@ import { makeExecutableSchema } from 'graphql-tools';
 
 import { baseTypeDefs, baseResolvers } from '@uprtcl/common';
 
-export const wikiTypeDefs = gql`
+export const wikiTypeDefs = gql`  
   type Wiki implements EntityType {
     title: String!
-    links: [Entity]!
+    pages: [Entity]!
 
     patterns: Patterns!
   }

@@ -4,6 +4,10 @@ import { makeExecutableSchema } from 'graphql-tools';
 import { baseTypeDefs, baseResolvers } from '@uprtcl/common';
 
 export const documentsTypeDefs = gql`
+  extend type Patterns {
+    title: String
+  }
+
   enum TextType {
     Title
     Paragraph

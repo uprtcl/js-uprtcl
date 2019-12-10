@@ -59,9 +59,21 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       {
         getEntity(id: "${this.wikiId}") {
           id
-          entity {
+          raw
+          content {
             ... on Wiki { 
-              Title
+              title
+              pages {
+                id // id de la perspectiva
+                content {
+                  id // id del textnode
+                  entity {
+                    patterns {
+                      title
+                    }
+                  }
+                }
+              }
             }
           }
         }
