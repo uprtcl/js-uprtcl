@@ -8,7 +8,7 @@ import { Creatable } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
 
 import { WikiNode } from '../types';
-import gql from 'graphql-tag';
+import { ApolloClient, gql } from 'apollo-boost';
 
 export class WikiNodeLens extends moduleConnect(LitElement) implements LensElement<WikiNode> {
   @property({ type: Object })
@@ -53,7 +53,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   };
 
   async firstUpdated() {
-    const client = this.request(GraphQlTypes.Client);
+    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
     const result = await client.query({
       query: gql`
       {

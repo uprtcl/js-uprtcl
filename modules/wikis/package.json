@@ -25,6 +25,7 @@
     "@uprtcl/evees": "^0.0.1-alpha6",
     "@uprtcl/lenses": "^0.0.1-alpha5",
     "@uprtcl/micro-orchestrator": "^0.0.1-alpha6",
+    "apollo-boost": "^0.4.4",
     "dexie": "^2.0.4",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.6",
