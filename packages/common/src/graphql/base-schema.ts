@@ -54,6 +54,7 @@ export const baseTypeDefs = gql`
     icon: String!
     title: String!
     action: Function!
+    type: String
   }
 `;
 
@@ -74,7 +75,7 @@ export const baseResolvers = {
 
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
 
-      const patterns: Pattern[] = recognizer.recognize(obj);
+      const patterns: Pattern[] = recognizer.recognize(entity);
 
       const entities: Entity[] = patterns.filter(p => (p as Entity).name) as Entity[];
 

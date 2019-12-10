@@ -2,8 +2,13 @@ import { html } from 'lit-element';
 import '@authentic/mwc-circular-progress';
 
 import { CortexEntityBase } from './cortex-entity-base';
+import { sharedStyles } from '../shared-styles';
 
 export class CortexEntity extends CortexEntityBase {
+  static get styles() {
+    return sharedStyles;
+  }
+
   /**
    * @returns the rendered selected lens
    */
@@ -14,7 +19,7 @@ export class CortexEntity extends CortexEntityBase {
       <div id="lens-renderer">
         ${this.selectedLens.render(
           html`
-            <div slot="plugins" style="display: flex; flex-direction: row;">
+            <div slot="plugins" class="row center-content">
               ${this.renderPlugins().map(
                 plugin =>
                   html`
@@ -44,7 +49,7 @@ export class CortexEntity extends CortexEntityBase {
             <mwc-circular-progress></mwc-circular-progress>
           `
         : html`
-            <div style="display: flex; flex-direction: row; position: relative;">
+            <div class="row center-content">
               <div style="flex: 1;">
                 ${this.renderLens()}
               </div>

@@ -13,7 +13,7 @@ export const actionsPlugin = <T extends CortexEntityBase>(): LensesPlugin<T> => 
       return [
         ...super.renderPlugins(),
         html`
-          <cortex-pattern-actions .entityId=${this.hash}></cortex-pattern-actions>
+          <cortex-actions .hash=${this.hash} toolbar="none"></cortex-actions>
         `
       ];
     }

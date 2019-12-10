@@ -85,7 +85,8 @@ export class PerspectiveLinks extends PerspectiveEntity
             perspective.object.payload.origin
           );
           window.history.pushState('', '', `/?id=${newPerspective.id}`);
-        }
+        },
+        type: 'version_control'
       },
       {
         icon: 'merge_type',
@@ -96,7 +97,8 @@ export class PerspectiveLinks extends PerspectiveEntity
             'zb2rhcyLxU429tS4CoGYFbtskWPVE1ws6cByhYqjFTaTgivDe'
           );
           console.log(updateRequests);
-        }
+        },
+        type: 'version_control'
       }
     ];
   };

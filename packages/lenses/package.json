@@ -16,6 +16,7 @@
     "@authentic/mwc-list": "^0.9.0",
     "@authentic/mwc-menu": "^0.9.0",
     "@authentic/mwc-ripple": "^0.9.0",
+    "@authentic/mwc-tooltip": "^0.9.0",
     "@material/mwc-button": "^0.10.0",
     "@material/mwc-icon-button": "^0.11.1",
     "@material/mwc-linear-progress": "^0.10.0",

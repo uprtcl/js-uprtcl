@@ -7,7 +7,7 @@ import { lenses } from './lenses';
 import { CortexLensSelector } from './elements/cortex-lens-selector';
 import { LensesPlugin } from './plugins/lenses-plugin';
 import { CortexEntityBase } from './elements/cortex-entity-base';
-import { CortexPatternActions } from './elements/cortex-pattern-actions';
+import { CortexActions } from './elements/cortex-actions';
 
 export function lensesModule(plugins: Array<LensesPlugin<any>>): any {
   @injectable()
@@ -24,7 +24,7 @@ export function lensesModule(plugins: Array<LensesPlugin<any>>): any {
         cortexEntity = plugin(cortexEntity);
       }
 
-      customElements.define('cortex-pattern-actions', CortexPatternActions);
+      customElements.define('cortex-actions', CortexActions);
       customElements.define('cortex-lens-selector', CortexLensSelector);
       customElements.define('cortex-entity', cortexEntity);
 
