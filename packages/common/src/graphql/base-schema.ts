@@ -88,17 +88,19 @@ export const baseResolvers = {
       return entities[0].name;
     },
     patterns(parent, args, context, info) {
+      const entity = parent.entity ? parent.entity : parent;
+
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
       const recognizer: PatternRecognizer = context.container.get(PatternTypes.Recognizer);
 
-      const patterns = recognizer.recognize(parent);
+      const patterns = recognizer.recognize(entity);
       const applyedPatterns = patterns.map(pattern => {
         const applyedPattern = {};
 
         for (const key of Object.keys(pattern)) {
           if (isGraphQlField(key)) {
-            applyedPattern[key] = pattern[key](parent);
+            applyedPattern[key] = pattern[key](entity);
           }
         }
         return applyedPattern;

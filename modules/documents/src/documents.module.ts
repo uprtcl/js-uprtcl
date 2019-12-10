@@ -7,7 +7,8 @@ import {
   TextNodeActions,
   TextNodeCreate,
   TextNodePatterns,
-  TextNodeEntity
+  TextNodeEntity,
+  TextNodeTitle
 } from './patterns/text-node.entity';
 import { DocumentsTypes } from './types';
 import { DocumentsProvider } from './services/documents.provider';
@@ -80,7 +81,8 @@ export function documentsModule(
             TextNodeEntity,
             TextNodeActions,
             TextNodeCreate,
-            TextNodePatterns
+            TextNodePatterns,
+            TextNodeTitle
           ]
         }
       ];
