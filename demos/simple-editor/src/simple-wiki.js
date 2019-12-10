@@ -13,8 +13,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
 
   constructor() {
     super();
-    this.wikiPattern = this.request(WikisTypes.WikiPattern).find(p => p.create);
-    this.perspectivePattern = this.request(EveesTypes.PerspectivePattern).find(p => p.create);
+    this.wikiPattern = this.requestAll(WikisTypes.WikiEntity).find(p => p.create);
+    this.perspectivePattern = this.requestAll(EveesTypes.PerspectivePattern).find(p => p.create);
     this.wikisProvider = null;
     this.eveesProvider = null;
   }
@@ -35,15 +35,14 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     this.wikisProvider = this.requestAll(WikisTypes.WikisRemote)
     .find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.service.uprtclProviderLocator);
+      return !regexp.test(provider.uprtclProviderLocator);
     });
 
     this.eveesProvider = this.requestAll(EveesTypes.EveesRemote)
     .find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.service.uprtclProviderLocator);
+      return !regexp.test(provider.uprtclProviderLocator);
     });
-
 
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
@@ -55,13 +54,13 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const wiki = await this.wikiPattern.create(
+      const wiki = await this.wikiPattern.create()(
         { title: 'Genesis Wiki' },
-        this.wikisProvider.service.uprtclProviderLocator
+        this.wikisProvider.uprtclProviderLocator
       );
-      const perspective = await this.perspectivePattern.create(
+      const perspective = await this.perspectivePattern.create()(
         { dataId: wiki.id },
-        this.eveesProvider.service.uprtclProviderLocator
+        this.eveesProvider.uprtclProviderLocator
       );
       console.log(perspective.id)
       window.history.pushState('', '', `/?id=${perspective.id}`);
