@@ -9,7 +9,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "clean": "lerna run clean",
+    "clean": "lerna clean",
     "dev": "lerna run dev --parallel",
     "docs:build": "rimraf docs node_modules/typedoc/node_modules/typescript && typedoc",
     "docs:deploy": "ts-node tools/gh-pages-publish",
