@@ -6,7 +6,7 @@ import { baseTypeDefs, baseResolvers } from '@uprtcl/common';
 export const wikiTypeDefs = gql`  
   type Wiki implements EntityType {
     title: String!
-    pages: [Entity]!
+    pages: [Entity!]!
 
     patterns: Patterns!
   }

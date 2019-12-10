@@ -66,9 +66,11 @@ export const baseResolvers = {
   },
   EntityType: {
     __resolveType(obj, { container }, info) {
+      const entity = obj.entity ? obj.entity : obj;
+
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
 
-      const patterns: Pattern[] = recognizer.recognize(obj);
+      const patterns: Pattern[] = recognizer.recognize(entity);
 
       const entities: Entity[] = patterns.filter(p => (p as Entity).name) as Entity[];
 
@@ -132,7 +134,7 @@ export const baseResolvers = {
       const entity: Hashed<any> | undefined = await discovery.get(id);
 
       if (!entity) throw new Error('Entity was not found');
-      return entity.object;
+      return { entity, ...entity.object };
     },
     async content(parent, args, { container }, info) {
       const entity =
