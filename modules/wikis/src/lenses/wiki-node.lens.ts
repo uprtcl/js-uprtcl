@@ -63,6 +63,17 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
           content {
             ... on Wiki { 
               title
+              pages {
+                id
+                content {
+                  id
+                  entity {
+                    patterns {
+                      title
+                    }
+                  }
+                }
+              }
             }
           }
         }
