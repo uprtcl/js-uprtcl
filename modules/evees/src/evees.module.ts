@@ -1,15 +1,16 @@
 import { injectable } from 'inversify';
 
-import { DiscoverableSource, PatternTypes } from '@uprtcl/cortex';
+import { PatternTypes } from '@uprtcl/cortex';
 import {
+  graphQlSchemaModule,
   DefaultSecuredPattern,
   DefaultSignedPattern,
   ReduxCortexModule,
   CidHashedPattern
 } from '@uprtcl/common';
 
-import { PerspectivePattern } from './patterns/perspective.pattern';
-import { CommitPattern } from './patterns/commit.pattern';
+import { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';
+import { CommitPattern, CommitEntity, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './lenses/commit-history';
 import { PerspectivesList } from './lenses/perspectives-list';
 import { EveesTypes, EveesLocal } from './types';
@@ -17,6 +18,7 @@ import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { EveesReduxModule } from './state';
+import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 
 /**
@@ -46,10 +48,7 @@ import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-s
  *
  * const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
  *
- * const discoverableEveesHolo = { service: eveesHolochain, knownSources };
- * const discoverableEveesEth = { service: eveesEth, knownSources };
- *
- * const evees = eveesModule([discoverableEveesHolo, discoverableEveesEth]);
+ * const evees = eveesModule([eveesHolochain, eveesEth]);
  *
  * const orchestrator = new MicroOrchestrator();
  *
@@ -61,12 +60,12 @@ import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-s
  *
  * @category CortexModule
  *
- * @param discoverableEvees
+ * @param eveesProviders
  * @param localEvees
  * @returns a configured _Prtcl Evees module ready to be used with `micro-orchestrator`
  */
 export function eveesModule(
-  discoverableEvees: Array<DiscoverableSource<EveesRemote>>,
+  eveesProviders: Array<EveesRemote>,
   localEvees: new (...args: any[]) => EveesLocal = EveesDexie
 ): new (...args: any[]) => ReduxCortexModule {
   @injectable()
@@ -79,7 +78,7 @@ export function eveesModule(
     }
 
     get sources() {
-      return discoverableEvees.map(evees => ({
+      return eveesProviders.map(evees => ({
         symbol: EveesTypes.EveesRemote,
         source: evees
       }));
@@ -95,15 +94,18 @@ export function eveesModule(
 
     get patterns() {
       return [
-        { symbol: PatternTypes.Core.Hashed, pattern: CidHashedPattern },
-        { symbol: PatternTypes.Core.Signed, pattern: DefaultSignedPattern },
-        { symbol: PatternTypes.Core.Secured, pattern: DefaultSecuredPattern },
-        { symbol: EveesTypes.PerspectivePattern, pattern: PerspectivePattern },
-        { symbol: EveesTypes.CommitPattern, pattern: CommitPattern }
+        { symbol: PatternTypes.Core.Hashed, patterns: [CidHashedPattern] },
+        { symbol: PatternTypes.Core.Signed, patterns: [DefaultSignedPattern] },
+        { symbol: PatternTypes.Core.Secured, patterns: [DefaultSecuredPattern] },
+        { symbol: EveesTypes.PerspectivePattern, patterns: [PerspectiveLinks] },
+        {
+          symbol: EveesTypes.CommitPattern,
+          patterns: [CommitLinked, CommitPattern, CommitLens]
+        }
       ];
     }
 
-    submodules = [EveesReduxModule];
+    submodules = [EveesReduxModule, graphQlSchemaModule(eveesTypeDefs, eveesResolvers)];
   }
 
   return EveesModule;

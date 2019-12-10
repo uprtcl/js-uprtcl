@@ -34,5 +34,4 @@ export abstract class ReduxModule<S, A extends Action> implements MicroModule {
     }
   }
 
-  async onUnload(): Promise<void> {}
 }

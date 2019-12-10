@@ -2,19 +2,16 @@ import { multiInject, injectable, inject } from 'inversify';
 import { isEqual } from 'lodash';
 
 import {
-  DiscoverableSource,
   KnownSourcesService,
   DiscoveryTypes,
   PatternTypes,
   PatternRecognizer,
-  Creatable,
   CachedMultiSourceService,
   Hashed,
   IsSecure,
   MultiSourceService,
   DiscoveryService,
-  HasChildren,
-  Pattern
+  HasChildren
 } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Secured } from '@uprtcl/common';
@@ -56,7 +53,7 @@ export class Evees {
     @inject(EveesTypes.EveesLocal)
     protected eveesLocal: EveesLocal,
     @multiInject(EveesTypes.EveesRemote)
-    protected eveesRemotes: DiscoverableSource<EveesRemote>[]
+    protected eveesRemotes: EveesRemote[]
   ) {
     this.service = new CachedMultiSourceService<EveesLocal, EveesRemote>(
       eveesLocal,
@@ -75,7 +72,7 @@ export class Evees {
 
   private validateUpl(upl: string | undefined): string {
     const provider = this.service.remote.getService(upl);
-    return provider.service.uprtclProviderLocator;
+    return provider.uprtclProviderLocator;
   }
 
   /** Public functions */
@@ -155,7 +152,7 @@ export class Evees {
       origin: upl,
       timestamp: Date.now()
     };
-    const perspective: Secured<Perspective> = await this.secured.derive(perspectiveData);
+    const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData);
 
     this.logger.info('Created new perspective: ', perspective);
 
@@ -186,12 +183,13 @@ export class Evees {
       const dataHashed: Hashed<any> | undefined = await this.discoveryService.get(dataId);
       if (!dataHashed) throw new Error('Data for the head commit of the perspective was not found');
 
-      const data = dataHashed.object;
+      const hasChildren: HasChildren | undefined = this.patternRecognizer.recognizeUniqueProperty(
+        dataHashed,
+        prop => !!(prop as HasChildren).getChildrenLinks
+      );
 
-      const patterns: Pattern | HasChildren = this.patternRecognizer.recognizeMerge(data);
-
-      if ((patterns as HasChildren).getChildrenLinks) {
-        const descendantLinks = (patterns as HasChildren).getChildrenLinks(data);
+      if (hasChildren) {
+        const descendantLinks = hasChildren.getChildrenLinks(dataHashed);
 
         // TODO: generalize to break the assumption that all links are to perspectives
         const promises = descendantLinks.map(async link => {
@@ -204,13 +202,13 @@ export class Evees {
         });
 
         const newLinks = await Promise.all(promises);
-        const newData = (patterns as HasChildren).replaceChildrenLinks(data, newLinks);
+        const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
 
-        if (!isEqual(data, newData)) {
+        if (!isEqual(dataHashed, newData)) {
           const previousDataUpls = await this.knownSources.getKnownSources(dataId);
 
           const newDataHashed = await createEntity(this.patternRecognizer)(
-            newData,
+            newData.object,
             previousDataUpls ? previousDataUpls[0] : undefined
           );
           dataId = newDataHashed.id;
@@ -266,7 +264,7 @@ export class Evees {
       timestamp: timestamp,
       parentsIds: args.parentsIds
     };
-    const commit: Secured<Commit> = await this.secured.derive(commitData);
+    const commit: Secured<Commit> = await this.secured.derive()(commitData);
 
     this.logger.info('Created new commit: ', commit);
 

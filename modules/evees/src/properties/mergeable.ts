@@ -1,5 +1,6 @@
 import { MergeStrategy } from '../merge/merge-strategy';
+import { Property } from '@uprtcl/cortex';
 
-export interface Mergeable {
-  merge: (ancestor: any, modifications: any[], strategy: MergeStrategy) => Promise<any>;
+export interface Mergeable<T = any> extends Property<T> {
+  merge: (ancestor: T) => (modifications: any[], strategy: MergeStrategy) => Promise<any>;
 }

@@ -1,7 +1,6 @@
 import { multiInject, injectable, inject } from 'inversify';
 
 import {
-  DiscoverableSource,
   KnownSourcesService,
   DiscoveryTypes,
   PatternTypes,
@@ -13,7 +12,6 @@ import {
   MultiSourceService
 } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Secured } from '@uprtcl/common';
 
 import { WikisLocal, WikisTypes, WikiNode } from '../types';
 import { WikisRemote } from './wikis.remote';
@@ -32,7 +30,7 @@ export class Wikis {
     @inject(WikisTypes.WikisLocal)
     protected wikisLocal: WikisLocal,
     @multiInject(WikisTypes.WikisRemote)
-    protected wikisRemotes: DiscoverableSource<WikisRemote>[]
+    protected wikisRemotes: WikisRemote[]
   ) {
     this.service = new CachedMultiSourceService<WikisLocal, WikisRemote>(
       wikisLocal,

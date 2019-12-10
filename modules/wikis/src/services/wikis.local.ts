@@ -13,7 +13,7 @@ export class WikisLocal implements WikisProvider {
   ) {}
 
   async createWikiNode(node: WikiNode): Promise<string> {
-    const hashed = await this.hashedPattern.derive(node);
+    const hashed = await this.hashedPattern.derive()(node);
 
     await this.objectsCache.cache(hashed.id, hashed);
 

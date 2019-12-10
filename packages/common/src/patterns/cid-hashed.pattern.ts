@@ -16,7 +16,7 @@ export function recognizeHashed(object: object) {
 }
 
 @injectable()
-export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[any]> {
+export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[any], Hashed<any>> {
   recognize(object: object) {
     return recognizeHashed(object);
   }
@@ -31,18 +31,16 @@ export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[
     return cid.toString();
   }
 
-  async validate<T extends object>(object: Hashed<T>): Promise<boolean> {
-    return true;
-  }
+  validate = async <T extends object>(object: Hashed<T>): Promise<boolean> => true;
 
-  async derive<T extends object>(object: T): Promise<Hashed<T>> {
+  derive = () => async <T extends object>(object: T): Promise<Hashed<T>> => {
     const hash = await this.hashObject(object, defaultCidConfig);
 
     return {
       id: hash,
       object: object
     };
-  }
+  };
 
   extract<T>(hashed: Hashed<T>): T {
     return hashed.object;

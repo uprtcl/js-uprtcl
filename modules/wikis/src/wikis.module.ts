@@ -1,16 +1,15 @@
 import { injectable } from 'inversify';
 
-import { DiscoverableSource, SourceProvider } from '@uprtcl/cortex';
-import { ReduxCortexModule } from '@uprtcl/common';
+import { ReduxCortexModule, graphQlSchemaModule } from '@uprtcl/common';
 
 import { WikiNodeLens } from './lenses/wiki-node.lens';
-import { WikiNodePattern } from './patterns/wiki-node.pattern';
-import { WikiNodeEntity } from './patterns/wiki-node.entity';
+import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
 import { WikisTypes } from './types';
 import { WikisProvider } from './services/wikis.provider';
 import { WikisLocal } from './services/wikis.local';
 import { Wikis } from './services/wikis';
 import { WikisRemote } from './services/wikis.remote';
+import { wikiTypeDefs } from './graphql';
 
 /**
  * Configure a wikis module with the given providers
@@ -45,7 +44,7 @@ import { WikisRemote } from './services/wikis.remote';
  * @returns a configured wikis module ready to be loaded
  */
 export function wikisModule(
-  wikisRemotes: DiscoverableSource<WikisRemote>[],
+  wikisRemotes: WikisRemote[],
   wikisLocal: new (...args: any[]) => WikisProvider = WikisLocal
 ): new (...args: any[]) => ReduxCortexModule {
   @injectable()
@@ -69,11 +68,10 @@ export function wikisModule(
     }
 
     get patterns() {
-      return [
-        { symbol: WikisTypes.WikiPattern, pattern: WikiNodePattern },
-        { symbol: WikisTypes.WikiEntity, pattern: WikiNodeEntity }
-      ];
+      return [{ symbol: WikisTypes.WikiEntity, patterns: [WikiCommon, WikiLinks, WikiCreate] }];
     }
+
+    submodules = [graphQlSchemaModule(wikiTypeDefs, {})];
   }
 
   return WikisModule;

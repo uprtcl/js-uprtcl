@@ -4,11 +4,11 @@ import {
   MicroModule,
   Logger,
   MicroOrchestratorTypes,
-  ModuleProvider
+  ModuleProvider,
+  Constructor
 } from '@uprtcl/micro-orchestrator';
 
 import { Pattern } from './patterns/pattern';
-import { DiscoverableSource } from './services/sources/discoverable.source';
 import { DiscoveryTypes, PatternTypes, LensesTypes } from './types';
 import { ServiceProvider, Ready } from './services/sources/service.provider';
 import { Source, SourceProvider } from './services/sources/source';
@@ -27,7 +27,7 @@ import { Source, SourceProvider } from './services/sources/source';
  *   }
  *
  *   get sources() {
- *     return discoverableEvees.map(evees => ({
+ *     return eveesProviders.map(evees => ({
  *       symbol: EveesTypes.EveesRemote,
  *       source: evees
  *     }));
@@ -67,11 +67,11 @@ export class CortexModule implements MicroModule {
     return undefined;
   }
 
-  get sources(): Array<{ symbol: symbol; source: DiscoverableSource<SourceProvider> }> | undefined {
+  get sources(): Array<{ symbol: symbol; source: SourceProvider }> | undefined {
     return undefined;
   }
 
-  get patterns(): Array<{ symbol: symbol; pattern: new (...args: any[]) => Pattern }> | undefined {
+  get patterns(): Array<{ symbol: symbol; patterns: Array<Constructor<Pattern>> }> | undefined {
     return undefined;
   }
 
@@ -93,28 +93,27 @@ export class CortexModule implements MicroModule {
     await this.moduleProvider(LensesTypes.Module);
 
     if (this.sources) {
-      await Promise.all(
-        this.sources.map(discoverableSource => {
-          const services: Ready[] = [discoverableSource.source.service];
+      const readyPromises = this.sources.map(symbolSource => {
+        const services: Ready[] = [symbolSource.source];
 
-          if (discoverableSource.source.knownSources) {
-            services.push(discoverableSource.source.knownSources);
-          }
+        if (symbolSource.source.knownSources) {
+          services.push(symbolSource.source.knownSources);
+        }
 
-          return Promise.all(services.map(s => s.ready()));
-        })
-      );
+        return Promise.all(services.map(s => s.ready()));
+      });
+
+      await Promise.all(readyPromises);
     }
 
     // Initialize all the sources
     if (this.sources) {
       for (const symbolSource of this.sources) {
-        const discoverableSource = symbolSource.source;
+        const source = symbolSource.source;
 
-        bind<DiscoverableSource<any>>(DiscoveryTypes.DiscoverableSource).toConstantValue(
-          discoverableSource
-        );
-        bind<DiscoverableSource<any>>(symbolSource.symbol).toConstantValue(discoverableSource);
+        bind<Source>(DiscoveryTypes.Source).toConstantValue(source);
+        bind<Source>(symbolSource.symbol).toConstantValue(source);
+        bind<Source>(source.uprtclProviderLocator).toConstantValue(source);
       }
     }
 
@@ -128,9 +127,10 @@ export class CortexModule implements MicroModule {
     // Initialize all the patterns
     if (this.patterns) {
       for (const symbolPattern of this.patterns) {
-        const pattern = symbolPattern.pattern;
-        bind<Pattern>(PatternTypes.Pattern).to(pattern);
-        bind(symbolPattern.symbol).to(pattern);
+        for (const p of symbolPattern.patterns) {
+          bind<Pattern>(PatternTypes.Pattern).to(p);
+          bind(symbolPattern.symbol).to(p);
+        }
       }
     }
 
@@ -150,6 +150,7 @@ export class CortexModule implements MicroModule {
       this.sources
     );
   }
-
-  async onUnload(): Promise<void> {}
+}
+class A {
+  recognize() {}
 }
