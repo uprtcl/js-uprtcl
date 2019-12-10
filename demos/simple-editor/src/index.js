@@ -40,28 +40,17 @@ import { SimpleWiki } from './simple-wiki';
 
   const httpEvees = new EveesHttp(c1host, httpConnection);
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
-  const httpKnownSources = new KnownSourcesHttp(c1host, httpConnection);
 
-  const evees = eveesModule([
-    //{ service: httpEvees, knownSources: httpKnownSources },
-    ethEvees
-  ]);
+  const evees = eveesModule([httpEvees, ethEvees]);
 
-  const httpDocuments = new DocumentsHttp(c1host, httpConnection);
   const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
 
-  const documents = documentsModule([
-    //{ service: httpDocuments, knownSources: httpKnownSources },
-    ipfsDocuments
-  ]);
+  const documents = documentsModule([ipfsDocuments]);
 
   const httpWikis = new WikisHttp(c1host, httpConnection);
   const ipfsWikis = new WikisIpfs(ipfsConnection);
 
-  const wikis = wikisModule([
-    { service: ipfsWikis, knownSources: httpKnownSources },
-    { service: httpWikis, knownSources: httpKnownSources }
-  ])
+  const wikis = wikisModule([ipfsWikis, httpWikis]);
 
   const orchestrator = new MicroOrchestrator();
 
@@ -84,5 +73,5 @@ import { SimpleWiki } from './simple-wiki';
 
   console.log(orchestrator);
   customElements.define('simple-editor', SimpleEditor);
-  customElements.define('simple-wiki', SimpleWiki)
+  customElements.define('simple-wiki', SimpleWiki);
 })();

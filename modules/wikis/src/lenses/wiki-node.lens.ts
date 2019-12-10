@@ -1,4 +1,5 @@
 import { LitElement, property, html, css } from 'lit-element';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { LensElement } from '@uprtcl/lenses';
@@ -8,7 +9,6 @@ import { Creatable } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
 
 import { WikiNode } from '../types';
-import { ApolloClient, gql } from 'apollo-boost';
 
 export class WikiNodeLens extends moduleConnect(LitElement) implements LensElement<WikiNode> {
   @property({ type: Object })
