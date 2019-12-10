@@ -55,20 +55,19 @@ export class PerspectivesList extends reduxConnect(LitElement) {
     );
 
     this.perspectivesData = await Promise.all(perspectivesPromises);
+    this.stateChanged(this.store.getState());
     console.log(`[PERSPECTIVE-LIST] updatePerspectivesData`, {perspectivesData: JSON.stringify(this.perspectivesData)});
   };
 
   stateChanged(state) {
-    /** update canWrite 
-     * TODO: reactivity will not work, either make a new object of perspectivesData, or 
-     * create a custom changed() function for the attribute that chceks the canWrite.
-    */
+    /** update canWrite */
     this.perspectivesData.forEach(perspectiveData => {
       const canWrite = selectCanWrite(this.recognizer)(perspectiveData.id)(state);
       perspectiveData.permissions = {
         canWrite
       }
     });
+    this.perspectivesData = [...this.perspectivesData];
     console.log(`[PERSPECTIVE-LIST] stateChanged`, {perspectivesData: this.perspectivesData});
   }
 
