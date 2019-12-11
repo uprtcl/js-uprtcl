@@ -17,6 +17,9 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   @property({ type: String })
   selectedPageHash!: String;
 
+  @property({ type: String })
+  pagesList: Array<any> = [];
+
   //this is going to be changed
   @property({ type: String })
   wikiId: String = window.location.href.split('id=')[1];
@@ -82,7 +85,13 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       }`
     });
 
-    console.log(result);
+    const { pages } = result.data.getEntity.content.entity
+    this.pagesList = pages.map(page => {
+      return {
+        id: page.id,
+        title: page.content.entity.patterns.title ? page.content.entity.patterns.title : 'unknown'
+      }
+    });
   }
 
   updateContent(pages: Array<string>) {
@@ -127,9 +136,9 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       <div class="row">
         <div class="column left" style="background-color:#aaa;">
           <ul>
-            ${this.data.pages.map(page => {
+            ${this.pagesList.map(page => {
               return html`
-                <li @click=${() => this.setPage(page)}>${page}</li>
+                <li @click=${() => this.setPage(page.id)}>${page.title}</li>
               `;
             })}
           </ul>

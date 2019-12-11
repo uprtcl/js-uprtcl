@@ -57,24 +57,24 @@ export const eveesResolvers = {
     }
   },
   Perspective: {
-    async head(parent: Secured<Perspective>, _, { container }) {
+    async head(parent, _, { container }) {
       const evees: Evees = container.get(EveesTypes.Evees);
 
-      const details = await evees.getPerspectiveDetails(parent.id);
+      const details = await evees.getPerspectiveDetails(parent.entity.id);
 
       return details && details.headId;
     },
-    async name(parent: Secured<Perspective>, _, { container }) {
+    async name(parent, _, { container }) {
       const evees: Evees = container.get(EveesTypes.Evees);
 
-      const details = await evees.getPerspectiveDetails(parent.id);
+      const details = await evees.getPerspectiveDetails(parent.entity.id);
 
       return details && details.name;
     },
-    async context(parent: Secured<Perspective>, _, { container }) {
+    async context(parent, _, { container }) {
       const evees: Evees = container.get(EveesTypes.Evees);
 
-      const details = await evees.getPerspectiveDetails(parent.id);
+      const details = await evees.getPerspectiveDetails(parent.entity.id);
 
       return details && details.context;
     }
