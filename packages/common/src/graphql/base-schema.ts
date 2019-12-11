@@ -141,7 +141,7 @@ export const baseResolvers = {
       const entity: Hashed<any> | undefined = await discovery.get(id);
 
       if (!entity) throw new Error('Entity was not found');
-      return { entity, ...entity.object };
+      return { __entity: entity, ...entity.object };
     },
     async content(parent, args, { container }, info) {
       const entity =
