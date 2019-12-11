@@ -34,14 +34,14 @@ export const eveesTypeDefs = gql`
 
 export const eveesResolvers = {
   Commit: {
-    message(parent: Secured<Commit>) {
-      return parent.object.payload.message;
+    message(parent) {
+      return parent.payload.message;
     },
-    timestamp(parent: Secured<Commit>) {
-      return parent.object.payload.timestamp;
+    timestamp(parent) {
+      return parent.payload.timestamp;
     },
-    parentCommits(parent: Secured<Commit>) {
-      return parent.object.payload.parentsIds;
+    parentCommits(parent) {
+      return parent.payload.parentsIds;
     }
   },
   Context: {
@@ -60,21 +60,21 @@ export const eveesResolvers = {
     async head(parent, _, { container }) {
       const evees: Evees = container.get(EveesTypes.Evees);
 
-      const details = await evees.getPerspectiveDetails(parent.entity.id);
+      const details = await evees.getPerspectiveDetails(parent.__entity.id);
 
       return details && details.headId;
     },
     async name(parent, _, { container }) {
       const evees: Evees = container.get(EveesTypes.Evees);
 
-      const details = await evees.getPerspectiveDetails(parent.entity.id);
+      const details = await evees.getPerspectiveDetails(parent.__entity.id);
 
       return details && details.name;
     },
     async context(parent, _, { container }) {
       const evees: Evees = container.get(EveesTypes.Evees);
 
-      const details = await evees.getPerspectiveDetails(parent.entity.id);
+      const details = await evees.getPerspectiveDetails(parent.__entity.id);
 
       return details && details.context;
     }

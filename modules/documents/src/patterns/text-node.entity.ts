@@ -111,7 +111,8 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
           title: 'To title',
           action: (changeContent: (newContent: any) => void) => {
             changeContent({ ...textNode, type: TextType.Title });
-          }
+          },
+          type: 'formatting'
         }
       ];
     } else {
@@ -121,7 +122,8 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
           title: 'To paragraph',
           action: (changeContent: (newContent: any) => void) => {
             changeContent({ ...textNode, type: TextType.Paragraph });
-          }
+          },
+          type: 'formatting'
         }
       ];
     }
