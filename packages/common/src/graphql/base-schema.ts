@@ -19,10 +19,6 @@ export const baseTypeDefs = gql`
   scalar JSON
   scalar Function
 
-  type EmptyEntity {
-    _: Boolean
-  }
-
   interface EntityType {
     patterns: Patterns!
   }
@@ -70,8 +66,8 @@ export const baseResolvers = {
     }
   },
   EntityType: {
-    __resolveType(obj, { container }, info) {
-      const entity = obj.entity ? obj.entity : obj;
+    __resolveType(parent, { container }, info) {
+      const entity = parent.__entity ? parent.__entity : parent;
 
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
 
@@ -86,14 +82,14 @@ export const baseResolvers = {
 
       if (abmiguousError) {
         throw new Error(
-          `Ambiguous error recognizing entity: ${obj.toString()}. These two entites recognized the object ${entities.toString()}`
+          `Ambiguous error recognizing entity: ${parent.toString()}. These two entites recognized the object ${entities.toString()}`
         );
       }
 
       return entities[0].name;
     },
     patterns(parent, args, context, info) {
-      const entity = parent.entity ? parent.entity : parent;
+      const entity = parent.__entity ? parent.__entity : parent;
 
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
@@ -145,16 +141,13 @@ export const baseResolvers = {
     },
     async content(parent, args, { container }, info) {
       const entity =
-        parent.entity || (await loadEntity(container.get(GraphQlTypes.Client), parent));
+        parent.__entity || (await loadEntity(container.get(GraphQlTypes.Client), parent));
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
       return redirectEntity(entity, recognizer, discovery);
     },
     async isomorphisms(parent, args, { container }, info) {
-      const entity =
-        parent.entity || (await loadEntity(container.get(GraphQlTypes.Client), parent));
-
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
       const client: ApolloClient<any> = container.get(GraphQlTypes.Client);
 

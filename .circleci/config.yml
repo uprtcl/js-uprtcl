@@ -20,3 +20,8 @@ jobs:
             echo 'Build'
             npm run build
             npm run docs:build
+      - test:
+          name: Test
+          command: |
+            echo 'Tests'
+            npm test
