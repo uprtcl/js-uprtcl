@@ -32,21 +32,24 @@ export class PerspectivesList extends reduxConnect(LitElement) {
       const result = await client.query({
         query: gql`{
           getEntity(id: "${this.rootPerspectiveId}") {
+            id
             entity {
               ... on Perspective {
                 context {
                   perspectives {
                     id
                     entity {
-                      name
-                      head
-                      context {
-                        identifier
-                      }
-                      payload {
-                        origin
-                        creatorId
-                        timestamp
+                      ... on Perspective {
+                        name
+                        head
+                        context {
+                          identifier
+                        }
+                        payload {
+                          origin
+                          creatorId
+                          timestamp
+                        }
                       }
                     }
                   }
@@ -56,8 +59,7 @@ export class PerspectivesList extends reduxConnect(LitElement) {
           }
         }`
       });
-      console.log(result);
-      const { perspectives } = result.data.getEntity.content.entity.context;
+      const { perspectives } = result.data.getEntity.entity.context;
       const fillPerspectives = perspective => {
         const { head, context, name, payload } = perspective.entity;
         const permissions: PermissionsStatus = {
