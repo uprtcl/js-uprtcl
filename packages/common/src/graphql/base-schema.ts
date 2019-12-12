@@ -77,7 +77,7 @@ export const baseResolvers = {
 
       if (entities.length === 0) {
         throw new Error('No entity found to recognize object');
-      } 
+      }
 
       const abmiguousError =
         entities.length > 1 && !entities.every(entity => entity.name === entities[0].name);
@@ -141,8 +141,12 @@ export const baseResolvers = {
       return { __entity: entity, ...entity.object };
     },
     async content(parent, args, { container }, info) {
-      const entity =
-        parent.__entity || (await loadEntity(container.get(GraphQlTypes.Client), parent));
+      let entity = parent.__entity;
+
+      if (!entity && typeof parent === 'string')
+        entity = await loadEntity(container.get(GraphQlTypes.Client), parent);
+      else if (!entity && parent.entity) entity = parent.entity;
+
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
