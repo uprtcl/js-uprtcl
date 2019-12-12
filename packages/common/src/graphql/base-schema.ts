@@ -140,8 +140,12 @@ export const baseResolvers = {
       return { __entity: entity, ...entity.object };
     },
     async content(parent, args, { container }, info) {
-      const entity =
-        parent.__entity || (await loadEntity(container.get(GraphQlTypes.Client), parent));
+      let entity = parent.__entity;
+
+      if (!entity && typeof parent === 'string')
+        entity = await loadEntity(container.get(GraphQlTypes.Client), parent);
+      else if (!entity && parent.entity) entity = parent.entity;
+
       const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
