@@ -17,9 +17,6 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   @property({ type: String })
   selectedPageHash!: String;
 
-  @property({ type: String })
-  pagesList: Array<any> = [];
-
   //this is going to be changed
   @property({ type: String })
   wikiId: String = window.location.href.split('id=')[1];
@@ -57,41 +54,24 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
 
   async firstUpdated() {
     const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
+    console.log('funciona')
     const result = await client.query({
       query: gql`
       {
         getEntity(id: "${this.wikiId}") {
           id
-          raw
           content {
             entity {
               ... on Wiki {
                 title
-                pages {
-                  id
-                  content {
-                    id
-                    entity {
-                      patterns {
-                        title
-                      }
-                    }
-                  }
-                }
               }
             }
           }
         }
       }`
     });
-
-    const { pages } = result.data.getEntity.content.entity
-    this.pagesList = pages.map(page => {
-      return {
-        id: page.id,
-        title: page.content.entity.patterns.title ? page.content.entity.patterns.title : 'unknown'
-      }
-    });
+    console.log('esto se deberia de mostrar')
+    console.log(result);
   }
 
   updateContent(pages: Array<string>) {
@@ -114,18 +94,20 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
         <div class="wiki-title">
           <h2>${this.data.title}</h2>
         </div>
-        <div class="page">
-          <h2>I'm the title of the page</h2>
-        </div>
-        <div class="proposal-action">
-          <h3>Update Proposals</h3>
-        </div>
-        <div class="proposal-action" @click=${() => (this.selectedPageHash = '')}>
-          <h3>Others Perspectives</h3>
-        </div>
-        <div class="plugin">
-          <slot name="plugins"> </slot>
-        </div>
+        ${
+          this.selectedPageHash
+           ?
+          html`
+            <div class="page">
+              <h3>Title</h3>
+            </div>
+            <div class="actions">
+              <cortex-actions .hash=${this.selectedPageHash} />
+            </div>` : 
+          html`
+            <h2> Welcome sir </h2>
+          `
+        }
       </div>
     `;
   }
@@ -136,13 +118,12 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       <div class="row">
         <div class="column left" style="background-color:#aaa;">
           <ul>
-            ${this.pagesList.map(page => {
+            ${this.data.pages.map(page => {
               return html`
-                <li @click=${() => this.setPage(page.id)}>${page.title}</li>
+                <li @click=${() => this.setPage(page)}>${page}</li>
               `;
             })}
           </ul>
-
           <mwc-button @click=${() => this.createPage()}>
             <mwc-icon>note_add</mwc-icon>
             New page
@@ -152,11 +133,12 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
           <p>
             ${this.selectedPageHash
               ? html`
-                  <cortex-entity .hash=${this.selectedPageHash}></cortex-entity>
+                  <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
                 `
               : html`
-                  <perspectives-list .rootPerspectiveId=${this.wikiId} />
-                `}
+                  <home-page .wikiHash=${this.wikiId}></home-page>
+                `
+              }
           </p>
         </div>
       </div>
@@ -168,40 +150,34 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       * {
         box-sizing: border-box;
       }
-
       li {
         word-wrap: break-word;
         margin-bottom: 9px;
         cursor: pointer;
       }
-
       .column {
         float: left;
         padding: 10px;
         height: 100vh; /* Should be removed. Only for demonstration */
       }
-
       .left {
         width: 25%;
       }
-
       .right {
         width: 75%;
       }
-
       .row:after {
         content: '';
         display: table;
         clear: both;
       }
-
       .header {
         display: flex;
         flex-direction: row;
-        background-color: #fff;
         height: 4%;
+        width: 100%;
+        background-color:#bbb;
       }
-
       .wiki-title {
         width: 25%;
         display: flex;
@@ -210,27 +186,19 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
         border-style: solid;
         border-width: 2px;
         float: left;
+        background-color:#fff;
       }
-
       .page {
-        width: 40%;
+        width: 65%;
         text-align: left;
         border-style: solid;
         border-width: 2px;
         border-left-width: 0px;
+        background-color:#fff;
       }
-
-      .proposal-action {
-        width: 15%;
+      .actions {
+        width: 10%;
         text-align: center;
-        border-style: solid;
-        border-width: 2px;
-        border-left-width: 0px;
-      }
-
-      .plugin {
-        width: 5%;
-        justify-content: center;
         border-style: solid;
         border-width: 2px;
         border-left-width: 0px;

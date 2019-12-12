@@ -27,19 +27,27 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   }
 
   updatePerspectivesData = async () => {
-    // const evees: any = this.request(EveesTypes.Evees);
-    // const details: PerspectiveDetails = await evees.getPerspectiveDetails(this.rootPerspectiveId);
     const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
-    console.log(this.rootPerspectiveId)
     const result = await client.query({
       query: gql`{
         getEntity(id: "${this.rootPerspectiveId}") {
           entity {
             ... on Perspective {
               context {
-                context
                 perspectives {
                   id
+                  entity {
+                    name
+                    head
+                    context {
+                      identifier
+                    }
+                    payload {
+                      origin
+                      creatorId
+                      timestamp
+                    }
+                  }
                 }
               } 
             } 
@@ -48,35 +56,26 @@ export class PerspectivesList extends reduxConnect(LitElement) {
       }`
     });
 
-    console.log(result);
-
-    // if (details === undefined) {
-    //   this.perspectivesData = [];
-    //   return;
-    // }
-
-    // const otherPerspectives: Array<Secured<Perspective>> = await evees.getContextPerspectives(
-    //   details.context
-    // );
-
-    // const perspectivesPromises = otherPerspectives.map(
-    //   async (perspective: Secured<Perspective>): Promise<PerspectiveData> => {
-    //     const details = await evees.getPerspectiveDetails(perspective.id);
-    //     const permissions: PermissionsStatus = {
-    //       canWrite: false
-    //     };
-    //     const perspectiveData: PerspectiveData = {
-    //       id: perspective.id,
-    //       perspective: perspective.object.payload,
-    //       details: details,
-    //       permissions: permissions
-    //     };
-    //     return perspectiveData;
-    //   }
-    // );
-
-    // this.perspectivesData = await Promise.all(perspectivesPromises);
-    // this.stateChanged(this.store.getState());
+    const { perspectives } = result.data.getEntity.entity.context;
+    const fillPerspectives = perspective => {
+      const { head, context, name, payload } = perspective.entity;
+      const permissions: PermissionsStatus = {
+        canWrite: false
+      };
+      const details: PerspectiveDetails = {
+        headId: head,
+        context: context.identifier,
+        name
+      };
+      return {
+        id: perspective.id,
+        details,
+        perspective: payload,
+        permissions
+      };
+    };
+    this.perspectivesData = perspectives.map(fillPerspectives);
+    this.stateChanged(this.store.getState());
     console.log(`[PERSPECTIVE-LIST] updatePerspectivesData`, {
       perspectivesData: JSON.stringify(this.perspectivesData)
     });

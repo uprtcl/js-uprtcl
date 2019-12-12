@@ -10,6 +10,8 @@ import { WikisLocal } from './services/wikis.local';
 import { Wikis } from './services/wikis';
 import { WikisRemote } from './services/wikis.remote';
 import { wikiTypeDefs } from './graphql';
+import { WikiPage } from './elements/wiki-page';
+import { Homepage } from './elements/homepage';
 
 /**
  * Configure a wikis module with the given providers
@@ -64,7 +66,11 @@ export function wikisModule(
     }
 
     get elements() {
-      return [{ name: 'basic-wiki', element: WikiNodeLens }];
+      return [
+        { name: 'basic-wiki', element: WikiNodeLens },
+        { name: 'wiki-page', element: WikiPage },
+        { name: 'home-page' , element: Homepage }
+      ];
     }
 
     get patterns() {

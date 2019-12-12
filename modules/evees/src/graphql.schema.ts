@@ -10,7 +10,7 @@ export const eveesTypeDefs = gql`
   scalar Date
 
   type Context {
-    context: String!
+    identifier: String!
     perspectives: [Entity!]
   }
 
@@ -27,8 +27,15 @@ export const eveesTypeDefs = gql`
     head: Entity
     name: String
     context: Context
+    payload: Payload
 
     patterns: Patterns!
+  }
+
+  type Payload {
+    origin: String
+    creatorId: String
+    timestamp: Date
   }
 `;
 
@@ -45,7 +52,7 @@ export const eveesResolvers = {
     }
   },
   Context: {
-    context(parent) {
+    identifier(parent) {
       return typeof parent === 'string' ? parent : parent.context;
     },
     async perspectives(parent, _, { container }) {

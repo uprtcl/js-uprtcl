@@ -87,7 +87,6 @@ export const baseResolvers = {
           `Ambiguous error recognizing entity: ${parent.toString()}. These two entites recognized the object ${entities.toString()}`
         );
       }
-
       return entities[0].name;
     },
     patterns(parent, args, context, info) {
