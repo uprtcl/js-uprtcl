@@ -1,9 +1,9 @@
 import { gql } from 'apollo-boost';
 import { makeExecutableSchema } from 'graphql-tools';
 
-import { Secured, baseTypeDefs, baseResolvers } from '@uprtcl/common';
+import { baseTypeDefs, baseResolvers } from '@uprtcl/common';
 
-import { Commit, Perspective, EveesTypes } from './types';
+import { EveesTypes } from './types';
 import { Evees } from './services/evees';
 
 export const eveesTypeDefs = gql`

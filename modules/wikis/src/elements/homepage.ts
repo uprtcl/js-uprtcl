@@ -9,24 +9,14 @@ export class Homepage extends reduxConnect(LitElement) {
   @property({ type: String })
   wikiHash!: string;
 
-  async firstUpdated() {
-    // const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
-    // const result = await client.query({
-    //   query: gql`{
-    //     getEntity(id: "${this.pageHash}") {
-    //       entity {
-    //         ... on TextNode {
-    //           text
-    //         }
-    //       }
-    //     }
-    //   }`
-    // });
-    // console.log(result);
-  }
+  @property({ type: String })
+  title!: string;
 
+  
   recentPerspectives() {
     return html`
+      <h2> Welcome to ${this.title} </h2>
+
       <h4> Recent new perspectives </h4>
       <perspectives-list .rootPerspectiveId=${this.wikiHash} />
     `;

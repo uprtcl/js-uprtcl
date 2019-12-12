@@ -17,6 +17,12 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
   @property({ type: String })
   selectedPageHash!: String;
 
+  @property({ type: String })
+  title!: string;
+
+  @property({ type: String })
+  pagesList: Array<any> = [];
+  
   //this is going to be changed
   @property({ type: String })
   wikiId: String = window.location.href.split('id=')[1];
@@ -54,8 +60,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
 
   async firstUpdated() {
     const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
-    console.log('funciona')
-    const result = await client.query({
+    const titleQuery = await client.query({
       query: gql`
       {
         getEntity(id: "${this.wikiId}") {
@@ -70,8 +75,44 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
         }
       }`
     });
-    console.log('esto se deberia de mostrar')
-    console.log(result);
+
+    const pagesQuery = await client.query({
+      query: gql`
+      {
+        getEntity(id: "${this.wikiId}") {
+          id
+          raw
+          content {
+            entity {
+              ... on Wiki {
+                title
+                pages {
+                  id
+                  content {
+                    id
+                    entity {
+                      patterns {
+                        title
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }`
+    });
+
+    const { pages } = pagesQuery.data.getEntity.content.entity
+    this.pagesList = pages.map(page => {
+      return {
+        id: page.id,
+        title: page.content.entity.patterns.title ? page.content.entity.patterns.title : 'Unknown'
+      }
+    });
+
+    this.title = titleQuery.data.getEntity.content.entity.title;
   }
 
   updateContent(pages: Array<string>) {
@@ -92,35 +133,21 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
     return html`
       <div class="header">
         <div class="wiki-title">
-          <h2>${this.data.title}</h2>
+          <h2 style="text-align: center;">${this.title}</h2>
         </div>
-        ${
-          this.selectedPageHash
-           ?
-          html`
-            <div class="page">
-              <h3>Title</h3>
-            </div>
-            <div class="actions">
-              <cortex-actions .hash=${this.selectedPageHash} />
-            </div>` : 
-          html`
-            <h2> Welcome sir </h2>
-          `
-        }
       </div>
     `;
   }
 
   render() {
     return html`
-      ${this.wikiHeader()}
       <div class="row">
         <div class="column left" style="background-color:#aaa;">
+          ${this.wikiHeader()}
           <ul>
-            ${this.data.pages.map(page => {
+            ${this.pagesList.map(page => {
               return html`
-                <li @click=${() => this.setPage(page)}>${page}</li>
+                <li @click=${() => this.setPage(page.id)}>${page.title}</li>
               `;
             })}
           </ul>
@@ -136,9 +163,8 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
                   <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
                 `
               : html`
-                  <home-page .wikiHash=${this.wikiId}></home-page>
-                `
-              }
+                  <home-page .wikiHash=${this.wikiId} .title=${this.title}></home-page>
+                `}
           </p>
         </div>
       </div>
@@ -174,34 +200,14 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
       .header {
         display: flex;
         flex-direction: row;
-        height: 4%;
-        width: 100%;
-        background-color:#bbb;
+        background-color: #bbb;
       }
       .wiki-title {
-        width: 25%;
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
+        width: 100%;
         border-style: solid;
         border-width: 2px;
         float: left;
-        background-color:#fff;
-      }
-      .page {
-        width: 65%;
-        text-align: left;
-        border-style: solid;
-        border-width: 2px;
-        border-left-width: 0px;
-        background-color:#fff;
-      }
-      .actions {
-        width: 10%;
-        text-align: center;
-        border-style: solid;
-        border-width: 2px;
-        border-left-width: 0px;
+        background-color: #fff;
       }
     `;
   }
