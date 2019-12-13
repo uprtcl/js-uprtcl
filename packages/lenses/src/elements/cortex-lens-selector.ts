@@ -14,7 +14,7 @@ import { Lens } from '../types';
 
 export class CortexLensSelector extends moduleConnect(LitElement) {
   @property({ type: String })
-  public entityId!: string;
+  public hash!: string;
 
   @property({ type: Array })
   private lenses!: Lens[] | undefined;
@@ -34,14 +34,14 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
 
   async loadLenses() {
     this.lenses = undefined;
-    if (!this.entityId) return;
+    if (!this.hash) return;
 
     const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
 
     const result = await client.query({
       query: gql`
       {
-        getEntity(id: "${this.entityId}", depth: 1) {
+        getEntity(id: "${this.hash}", depth: 1) {
           id
           raw
           isomorphisms {
@@ -70,7 +70,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
   updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
-    if (changedProperties.get('entityId')) {
+    if (changedProperties.get('hash')) {
       this.loadLenses();
     }
   }

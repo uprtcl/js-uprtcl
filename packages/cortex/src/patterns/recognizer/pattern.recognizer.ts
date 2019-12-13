@@ -1,10 +1,7 @@
-import { merge, assignIn, cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash';
 import { injectable } from 'inversify';
 
 import { Pattern, Property } from '../pattern';
-
-window['merge'] = merge;
-window['assignIn'] = assignIn;
 
 @injectable()
 export class PatternRecognizer {

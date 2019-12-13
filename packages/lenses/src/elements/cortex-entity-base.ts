@@ -1,25 +1,28 @@
-import { flatMap } from 'lodash';
+import { flatMap, Dictionary } from 'lodash';
 import { ApolloClient, gql } from 'apollo-boost';
-import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
+import { LitElement, property, PropertyValues } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { GraphQlTypes } from '@uprtcl/common';
+import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
+import { LensesPlugin } from '../plugins/lenses-plugin';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
   public hash!: string;
 
   @property()
-  protected entity: object | undefined = undefined;
+  protected entity: Hashed<any> | undefined = undefined;
 
   // Lenses
   @property()
   protected selectedLens!: Lens | undefined;
 
   async loadEntity(hash: string): Promise<void> {
-    (this.entity = undefined), (this.selectedLens = undefined);
+    this.entity = undefined;
+    this.selectedLens = undefined;
 
     const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
 
@@ -52,15 +55,8 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     this.selectedLens = lenses[0];
   }
 
-  async entityUpdated() {
-    return this.loadEntity(this.hash);
-  }
-
-  getLensElement(): Element | null {
-    return null;
-  }
-  renderPlugins(): TemplateResult[] {
-    return [];
+  get plugins(): Dictionary<LensesPlugin> {
+    return {};
   }
 
   connectedCallback() {
@@ -76,7 +72,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     super.updated(changedProperties);
 
     if (changedProperties.has('hash') && this.hash && this.hash !== changedProperties.get('hash')) {
-      this.entityUpdated();
+      this.loadEntity(this.hash);
     }
   }
 }

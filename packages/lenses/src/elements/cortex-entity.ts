@@ -9,45 +9,42 @@ export class CortexEntity extends CortexEntityBase {
     return sharedStyles;
   }
 
+  renderPlugins() {
+    return html`
+      <div slot="plugins" class="row center-content">
+        ${Object.keys(this.plugins).map(
+          key => this.entity && this.plugins[key].render(this.entity)
+        )}
+      </div>
+      ${Object.keys(this.plugins).map(
+        key =>
+          this.entity &&
+          html`
+            <div slot=${key}>${this.plugins[key].render(this.entity)}</div>
+          `
+      )}
+    `;
+  }
+
   /**
    * @returns the rendered selected lens
    */
   renderLens() {
     if (!this.selectedLens) return html``;
 
-    return html`
-      <div id="lens-renderer">
-        ${this.selectedLens.render(
-          html`
-            <div slot="plugins" class="row center-content">
-              ${this.renderPlugins().map(
-                plugin =>
-                  html`
-                    ${plugin}
-                  `
-              )}
-            </div>
-          `
-        )}
-      </div>
-    `;
+    return this.selectedLens.render(this.renderPlugins());
   }
 
-  getLensElement(): Element | null {
-    const element = this.shadowRoot ? this.shadowRoot.getElementById('lens-renderer') : null;
-    if (!element) return null;
-
-    window['lenselement'] = element.firstElementChild;
-
-    return element.firstElementChild;
+  renderLoadingPlaceholder() {
+    return html`
+      <mwc-circular-progress></mwc-circular-progress>
+    `;
   }
 
   render() {
     return html`
       ${!this.selectedLens
-        ? html`
-            <mwc-circular-progress></mwc-circular-progress>
-          `
+        ? this.renderLoadingPlaceholder()
         : html`
             <div class="row center-content">
               <div style="flex: 1;">

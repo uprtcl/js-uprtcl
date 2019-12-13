@@ -4,7 +4,7 @@
 
 This cortex module implements patterns, services and lenses to interact with document-like objects.
 
-> Note: this module is best used with `@uprtcl/common` and using the uprtcl module to handle updating the documents.
+> Note: this module is best used with `@uprtcl/evees` and using the evees module to handle updating the documents.
 
 ## Dependencies
 

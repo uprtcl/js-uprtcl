@@ -2,13 +2,13 @@ import { interfaces, AsyncContainerModule } from 'inversify';
 import { MicroModule } from '../modules/micro.module';
 import { Logger } from '../utils/logger';
 
-export type ModuleProvider = (moduleId: symbol) => Promise<MicroModule>;
+export type ModuleProvider = (moduleId: string | symbol) => Promise<MicroModule>;
 
 export const moduleProvider = (logger: Logger) => {
   const loadingModules = {};
 
   return (context: interfaces.Context): ModuleProvider => async (
-    moduleId: symbol
+    moduleId: string | symbol
   ): Promise<MicroModule> => {
 
     if (loadingModules[moduleId]) {

@@ -15,9 +15,8 @@ export const ReduxTypes = {
   Module: Symbol('redux-module')
 };
 
-export interface ModuleToLoad {
-  id: symbol;
-  module: Constructor<MicroModule, [ModuleProvider]>;
+export interface ModulesToLoad {
+  [id: string]: Constructor<MicroModule, [ModuleProvider]>;
 }
 
 /**

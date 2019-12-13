@@ -1,20 +1,15 @@
+import { injectable } from 'inversify';
 import { html } from 'lit-element';
 
-import { Constructor } from '@uprtcl/micro-orchestrator';
+import { Hashed } from '@uprtcl/cortex';
 
-import { CortexEntityBase } from '../elements/cortex-entity-base';
 import { LensesPlugin } from './lenses-plugin';
 
-export const lensSelectorPlugin = <T extends CortexEntityBase>(): LensesPlugin<T> => (
-  baseElement: Constructor<CortexEntityBase>
-): Constructor<CortexEntityBase> =>
-  class extends baseElement {
-    renderPlugins() {
-      return [
-        ...super.renderPlugins(),
-        html`
-          <cortex-lens-selector .entityId=${this.hash}></cortex-lens-selector>
-        `
-      ];
-    }
-  };
+@injectable()
+export class LensSelectorPlugin implements LensesPlugin {
+  render(entity: Hashed<any>) {
+    return html`
+      <cortex-lens-selector .hash=${entity.id}></cortex-lens-selector>
+    `;
+  }
+}

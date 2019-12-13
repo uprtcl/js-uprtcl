@@ -1,12 +1,12 @@
 import { PropertyValues } from 'lit-element';
 
 import { Constructor, ReduxConnectedElement } from '@uprtcl/micro-orchestrator';
-
 import { Updatable, selectCanWrite } from '@uprtcl/common';
+import { Pattern, CreateChild, PatternTypes, PatternRecognizer } from '@uprtcl/cortex';
+
 import { CortexEntityBase } from '../elements/cortex-entity-base';
 import { LensesPlugin } from './lenses-plugin';
 import { LensElement } from '../types';
-import { Pattern, CreateChild, PatternTypes, PatternRecognizer } from '@uprtcl/cortex';
 
 export const updatePlugin = <
   T extends CortexEntityBase & ReduxConnectedElement

@@ -1,3 +1,4 @@
+import { Dictionary } from 'lodash';
 import { interfaces, injectable } from 'inversify';
 
 import { MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
@@ -9,7 +10,7 @@ import { LensesPlugin } from './plugins/lenses-plugin';
 import { CortexEntityBase } from './elements/cortex-entity-base';
 import { CortexActions } from './elements/cortex-actions';
 
-export function lensesModule(plugins: Array<LensesPlugin<any>>): any {
+export function lensesModule(plugins: Dictionary<Constructor<LensesPlugin>>): any {
   @injectable()
   class LensesModule implements MicroModule {
     async onLoad(
@@ -19,10 +20,21 @@ export function lensesModule(plugins: Array<LensesPlugin<any>>): any {
       isBound: interfaces.IsBound,
       rebind: interfaces.Rebind
     ): Promise<void> {
-      let cortexEntity: Constructor<CortexEntityBase> = CortexEntity;
-      for (const plugin of plugins) {
-        cortexEntity = plugin(cortexEntity);
+      function getPlugins(): Dictionary<LensesPlugin> {
+        return Object.entries(plugins).reduce(
+          (acc, [key, plugin]) => ({
+            ...acc,
+            [key]: context.container.resolve(plugin)
+          }),
+          {}
+        );
       }
+
+      let cortexEntity: Constructor<CortexEntityBase> = class extends CortexEntity {
+        get plugins() {
+          return getPlugins();
+        }
+      };
 
       customElements.define('cortex-actions', CortexActions);
       customElements.define('cortex-lens-selector', CortexLensSelector);

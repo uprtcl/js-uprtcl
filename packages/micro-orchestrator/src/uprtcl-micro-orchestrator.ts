@@ -9,7 +9,7 @@ export {
   MicroOrchestratorTypes,
   Constructor,
   CustomElement,
-  ModuleToLoad,
+  ModulesToLoad,
   ReduxTypes
 } from './types';
 

@@ -1,5 +1,5 @@
 import { gql, ApolloClient } from 'apollo-boost';
-import { merge, cloneDeep, cloneDeepWith } from 'lodash';
+import { merge, cloneDeepWith } from 'lodash';
 
 import {
   DiscoveryTypes,
@@ -13,7 +13,6 @@ import {
 
 import { getIsomorphisms, loadEntity } from '../utils/entities';
 import { GraphQlTypes } from '../types';
-import { GraphQLResolveInfo } from 'graphql';
 
 export const baseTypeDefs = gql`
   scalar JSON

@@ -1,7 +1,7 @@
-import { Constructor } from '@uprtcl/micro-orchestrator';
+import { TemplateResult } from 'lit-element';
 
-import { CortexEntityBase } from '../elements/cortex-entity-base';
+import { Hashed } from '@uprtcl/cortex';
 
-export type LensesPlugin<T extends CortexEntityBase> = (
-  baseElement: Constructor<T>
-) => Constructor<CortexEntityBase>;
+export interface LensesPlugin {
+  render(entity: Hashed<any>): TemplateResult;
+}
