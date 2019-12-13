@@ -9,18 +9,18 @@ export class CortexEntity extends CortexEntityBase {
     return sharedStyles;
   }
 
-  renderPlugins() {
+  renderSlotPlugins() {
     return html`
       <div slot="plugins" class="row center-content">
-        ${Object.keys(this.plugins).map(
-          key => this.entity && this.plugins[key].render(this.entity)
+        ${Object.keys(this.slotPlugins).map(
+          key => this.entity && this.slotPlugins[key].renderSlot(this.entity)
         )}
       </div>
-      ${Object.keys(this.plugins).map(
+      ${Object.keys(this.slotPlugins).map(
         key =>
           this.entity &&
           html`
-            <div slot=${key}>${this.plugins[key].render(this.entity)}</div>
+            <div slot=${key}>${this.slotPlugins[key].renderSlot(this.entity)}</div>
           `
       )}
     `;
@@ -32,7 +32,7 @@ export class CortexEntity extends CortexEntityBase {
   renderLens() {
     if (!this.selectedLens) return html``;
 
-    return this.selectedLens.render(this.renderPlugins());
+    return this.selectedLens.render(this.renderSlotPlugins());
   }
 
   renderLoadingPlaceholder() {

@@ -6,7 +6,7 @@ import {
   DiscoveryTypes,
   LensesTypes
 } from '@uprtcl/cortex';
-import { lensesModule, LensSelectorPlugin, ActionsPlugin } from '@uprtcl/lenses';
+import { lensesModule, LensSelectorPlugin, ActionsPlugin, UpdatablePlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import {
   ApolloClientModule,
@@ -53,6 +53,12 @@ import { SimpleEditor } from './simple-editor';
     ipfsDocuments
   ]);
 
+  const lenses = lensesModule([
+    { name: 'lens-selector', plugin: new LensSelectorPlugin() },
+    { name: 'actions', plugin: new ActionsPlugin() },
+    { name: 'updatable', plugin: new UpdatablePlugin() }
+  ]);
+
   const modules = {
     [ReduxTypes.Module]: ReduxStoreModule,
     [GraphQlTypes.Module]: ApolloClientModule,
@@ -61,10 +67,7 @@ import { SimpleEditor } from './simple-editor';
     [EntitiesTypes.Module]: EntitiesReduxModule,
     [AccessControlTypes.Module]: AccessControlReduxModule,
     [AuthTypes.Module]: AuthReduxModule,
-    [LensesTypes.Module]: lensesModule({
-      'lens-selector': LensSelectorPlugin,
-      actions: ActionsPlugin
-    }),
+    [LensesTypes.Module]: lenses,
     [EveesTypes.Module]: evees,
     [DocumentsTypes.Module]: documents
   };

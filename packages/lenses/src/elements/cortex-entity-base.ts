@@ -7,7 +7,7 @@ import { GraphQlTypes } from '@uprtcl/common';
 import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
-import { LensesPlugin } from '../plugins/lenses-plugin';
+import { SlotPlugin } from '../plugins/slot.plugin';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
@@ -19,6 +19,16 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   // Lenses
   @property()
   protected selectedLens!: Lens | undefined;
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener('entity-updated', () => this.loadEntity(this.hash));
+    this.addEventListener<any>(
+      'lens-selected',
+      (e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)
+    );
+  }
 
   async loadEntity(hash: string): Promise<void> {
     this.entity = undefined;
@@ -55,17 +65,8 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     this.selectedLens = lenses[0];
   }
 
-  get plugins(): Dictionary<LensesPlugin> {
+  get slotPlugins(): Dictionary<SlotPlugin> {
     return {};
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-
-    this.addEventListener<any>(
-      'lens-selected',
-      (e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)
-    );
   }
 
   updated(changedProperties: PropertyValues) {

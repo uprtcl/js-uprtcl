@@ -1,9 +1,6 @@
-import { Dictionary } from 'lodash';
 import { LitElement, property, html, css } from 'lit-element';
 
-import { reduxConnect } from '@uprtcl/micro-orchestrator';
-import { Hashed } from '@uprtcl/cortex';
-import { LensElement } from '@uprtcl/lenses';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { Secured, GraphQlTypes } from '@uprtcl/common';
 
 import { Commit } from '../types';
@@ -18,8 +15,7 @@ interface CommitHistoryData {
   };
 }
 
-export class CommitHistory extends reduxConnect(LitElement)
-  implements LensElement<Secured<Commit>> {
+export class CommitHistory extends moduleConnect(LitElement) {
   @property({ type: Object })
   data!: Secured<Commit>;
 

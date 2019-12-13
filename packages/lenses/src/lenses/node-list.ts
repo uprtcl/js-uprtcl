@@ -1,12 +1,10 @@
 import { LitElement, html, property, css } from 'lit-element';
 
-import { LensElement } from '../types';
-
 export interface Node {
   links: string[];
 }
 
-export class NodeList extends LitElement implements LensElement<Node> {
+export class NodeList extends LitElement {
   @property({ type: Object })
   data!: Node;
 
