@@ -16,7 +16,9 @@ import {
   EntitiesReduxModule,
   EntitiesTypes,
   AuthTypes,
-  AuthReduxModule
+  AuthReduxModule,
+  i18nTypes,
+  i18nextBaseModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
 import {
@@ -60,6 +62,7 @@ import { SimpleEditor } from './simple-editor';
   ]);
 
   const modules = {
+    [i18nTypes.Module]: i18nextBaseModule,
     [ReduxTypes.Module]: ReduxStoreModule,
     [GraphQlTypes.Module]: ApolloClientModule,
     [PatternTypes.Module]: PatternsModule,

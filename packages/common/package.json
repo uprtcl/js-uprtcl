@@ -23,6 +23,7 @@
     "graphql-resolvers": "^0.3.3",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.6",
+    "i18next": "^19.0.2",
     "inversify": "^5.0.1",
     "lit-element": "^2.2.1",
     "lodash": "^4.17.15",

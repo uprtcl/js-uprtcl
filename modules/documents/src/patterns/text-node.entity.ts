@@ -15,9 +15,8 @@ import {
   Entity
 } from '@uprtcl/cortex';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
-import { selectCanWrite } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
-import { ReduxTypes } from '@uprtcl/micro-orchestrator';
+import { ReduxTypes, i18nTypes } from '@uprtcl/micro-orchestrator';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';
 import { Documents } from '../services/documents';
@@ -39,11 +38,11 @@ export class TextNodeEntity implements Entity {
 
 @injectable()
 export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasChildren, Mergeable {
-  recognize(object: object): boolean {
-    if (!this.hashedPattern.recognize(object)) return false;
-
-    const node = this.hashedPattern.extract(object as Hashed<any>);
-    return propertyOrder.every(p => node.hasOwnProperty(p));
+  constructor(
+    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(i18nTypes.Translate) protected t: (key: string) => string
+  ) {
+    super(hashedPattern);
   }
 
   replaceChildrenLinks = (node: Hashed<TextNode>) => (
@@ -63,7 +62,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
   lenses = (node: Hashed<TextNode>): Lens[] => {
     return [
       {
-        name: 'Document',
+        name: this.t('documents:document'),
         render: (lensContent: TemplateResult) => html`
           <text-node .data=${node.object}>${lensContent}</text-node>
         `

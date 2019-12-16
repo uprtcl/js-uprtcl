@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { ReduxCortexModule, graphQlSchemaModule } from '@uprtcl/common';
+import { ReduxCortexModule, graphQlSchemaModule, buildi18nModule } from '@uprtcl/common';
 
 import { TextNodeLens } from './lenses/text-node.lens';
 import {
@@ -15,6 +15,8 @@ import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
 import { documentsTypeDefs, documentsSchema } from './graphql';
+
+import en from '../i18n/en.json';
 
 /**
  * Configure a documents module with the given providers
@@ -76,17 +78,15 @@ export function documentsModule(
       return [
         {
           symbol: DocumentsTypes.TextNodeEntity,
-          patterns: [
-            TextNodeEntity,
-            TextNodeActions,
-            TextNodeCreate,
-            TextNodePatterns
-          ]
+          patterns: [TextNodeEntity, TextNodeActions, TextNodeCreate, TextNodePatterns]
         }
       ];
     }
 
-    submodules = [graphQlSchemaModule(documentsTypeDefs, {})];
+    submodules = [
+      graphQlSchemaModule(documentsTypeDefs, {}),
+      buildi18nModule('documents', { en: en })
+    ];
   }
 
   return DocumentsModule;

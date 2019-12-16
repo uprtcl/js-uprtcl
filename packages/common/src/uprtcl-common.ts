@@ -78,3 +78,7 @@ export { ReduxCortexModule } from './redux-cortex.module';
 export { ApolloClientModule } from './graphql/apollo-client.module';
 export { graphQlSchemaModule, GraphQlSchemaModule } from './graphql/graphql-schema.module';
 export { baseTypeDefs, baseResolvers } from './graphql/base-schema';
+
+/** i18n */
+export { i18nextBaseModule } from './i18n/i18next-base.module';
+export { i18nextModule, buildi18nModule } from './i18n/i18next.module';

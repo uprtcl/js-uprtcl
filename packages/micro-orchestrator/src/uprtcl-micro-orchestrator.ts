@@ -10,7 +10,8 @@ export {
   Constructor,
   CustomElement,
   ModulesToLoad,
-  ReduxTypes
+  ReduxTypes,
+  i18nTypes
 } from './types';
 
 /** Redux */

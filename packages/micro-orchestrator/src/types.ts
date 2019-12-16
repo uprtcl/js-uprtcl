@@ -8,6 +8,12 @@ export const MicroOrchestratorTypes = {
   ModuleProvider: Symbol('module-provider')
 };
 
+export const i18nTypes = {
+  Translate: Symbol('i18n-function'),
+  Service: Symbol('i18n-service'),
+  Module: Symbol('i18n-module')
+};
+
 export const ReduxTypes = {
   Store: Symbol('redux-store'),
   Saga: Symbol('redux-saga-middleware'),
