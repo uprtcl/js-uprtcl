@@ -7,7 +7,7 @@ export enum LogLevel {
 
 // TODO change node_env behaviour
 function defaultLevel() {
-  return process.env.NODE_ENV === 'production' ? LogLevel.ERROR : LogLevel.INFO;
+  return process && process.env.NODE_ENV === 'production' ? LogLevel.ERROR : LogLevel.INFO;
 }
 
 export class Logger {

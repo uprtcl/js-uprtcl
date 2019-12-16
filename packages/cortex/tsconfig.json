@@ -8,5 +8,5 @@
       "lit-element": ["node_modules/lit-element"]
     }
   },
-  "include": ["src", "test/index.ts"]
+  "include": ["src"]
 }
