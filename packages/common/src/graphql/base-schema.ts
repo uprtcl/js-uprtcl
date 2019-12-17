@@ -3,7 +3,7 @@ import { merge, cloneDeepWith } from 'lodash';
 
 import {
   DiscoveryTypes,
-  PatternTypes,
+  CortexTypes,
   DiscoveryService,
   PatternRecognizer,
   Hashed,
@@ -68,7 +68,7 @@ export const baseResolvers = {
     __resolveType(parent, { container }, info) {
       const entity = parent.__entity ? parent.__entity : parent;
 
-      const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
+      const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
 
       const patterns: Pattern[] = recognizer.recognize(entity);
 
@@ -92,7 +92,7 @@ export const baseResolvers = {
 
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
-      const recognizer: PatternRecognizer = context.container.get(PatternTypes.Recognizer);
+      const recognizer: PatternRecognizer = context.container.get(CortexTypes.Recognizer);
 
       const patterns = recognizer.recognize(entity);
       const applyedPatterns = patterns.map(pattern => {
@@ -145,13 +145,13 @@ export const baseResolvers = {
         entity = await loadEntity(container.get(GraphQlTypes.Client), parent);
       else if (!entity && parent.entity) entity = parent.entity;
 
-      const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
+      const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
       return redirectEntity(entity, recognizer, discovery);
     },
     async isomorphisms(parent, args, { container }, info) {
-      const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
+      const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
       const client: ApolloClient<any> = container.get(GraphQlTypes.Client);
 
       const isomorphisms = await getIsomorphisms(recognizer, parent.raw, (id: string) =>

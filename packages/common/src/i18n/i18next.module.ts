@@ -38,7 +38,7 @@ export abstract class i18nextModule implements MicroModule {
   }
 }
 
-export function buildi18nModule(
+export function i18nModule(
   namespace: string,
   resources: Dictionary<Dictionary<string>>
 ): Constructor<MicroModule> {

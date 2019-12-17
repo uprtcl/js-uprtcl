@@ -4,7 +4,7 @@ import { isEqual } from 'lodash';
 import {
   KnownSourcesService,
   DiscoveryTypes,
-  PatternTypes,
+  CortexTypes,
   PatternRecognizer,
   Creatable,
   CachedMultiSourceService,
@@ -46,8 +46,8 @@ export class Evees {
   service: CachedMultiSourceService<EveesLocal, EveesRemote>;
 
   constructor(
-    @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(PatternTypes.Core.Secured) protected secured: IsSecure<any>,
+    @inject(CortexTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(CortexTypes.Core.Secured) protected secured: IsSecure<any>,
     @inject(DiscoveryTypes.LocalKnownSources)
     public knownSources: KnownSourcesService,
     @inject(DiscoveryTypes.DiscoveryService)

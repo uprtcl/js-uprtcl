@@ -12,14 +12,15 @@ module.exports = config => {
         babel: true,
         nodeResolve: true,
         fileExtensions: ['.ts'],
+        preserveSymLinks: true,
         responseTransformers: [
-          cjsTransformer(
+          cjsTransformer([
             ...defaultConfig.esm.babelModernExclude,
             '**/node_modules/@open-wc/**/*',
             '**/node_modules/chai-dom/**/*',
             '**/node_modules/sinon-chai/**/*',
             '**/node_modules/graphql/**/*'
-          )
+          ])
         ]
       },
 

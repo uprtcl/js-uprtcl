@@ -9,7 +9,7 @@ import {
   Creatable,
   Signed,
   PatternRecognizer,
-  PatternTypes,
+  CortexTypes,
   DiscoveryTypes,
   DiscoveryService,
   Entity
@@ -25,7 +25,7 @@ export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds
 @injectable()
 export class CommitEntity implements Entity {
   constructor(
-    @inject(PatternTypes.Core.Secured)
+    @inject(CortexTypes.Core.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>
   ) {}
 
@@ -79,7 +79,7 @@ export class CommitPattern extends CommitEntity
       Signed<Commit>
     > {
   constructor(
-    @inject(PatternTypes.Core.Secured)
+    @inject(CortexTypes.Core.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
     @inject(EveesTypes.Evees) protected evees: Evees
   ) {

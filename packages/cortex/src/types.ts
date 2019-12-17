@@ -1,8 +1,3 @@
-export interface UplAuth {
-  userId: string | undefined;
-  isAuthenticated: boolean;
-}
-
 export const DiscoveryTypes = {
   Module: Symbol('discovery-module'),
   DiscoveryService: Symbol('discovery-service'),
@@ -12,9 +7,8 @@ export const DiscoveryTypes = {
   LocalKnownSources: Symbol('local-known-sources')
 };
 
-export const PatternTypes = {
-  Module: Symbol('pattern-module'),
-  Factory: Symbol('pattern-factory'),
+export const CortexTypes = {
+  Module: Symbol('cortex-module'),
   Recognizer: Symbol('pattern-recognizer'),
   Pattern: Symbol('pattern'),
   Core: {

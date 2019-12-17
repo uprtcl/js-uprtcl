@@ -17,6 +17,7 @@
     "apollo-boost": "^0.4.7",
     "apollo-link-context": "^1.0.19",
     "apollo-link-schema": "^1.2.4",
+    "buffer": "^5.4.3",
     "cids": "^0.7.1",
     "dexie": "^2.0.4",
     "graphql": "^14.5.8",

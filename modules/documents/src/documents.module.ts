@@ -1,16 +1,12 @@
-import { injectable } from 'inversify';
+import { injectable, interfaces } from 'inversify';
 
-import { ReduxCortexModule, graphQlSchemaModule, buildi18nModule } from '@uprtcl/common';
+import { patternsModule, sourcesModule } from '@uprtcl/cortex';
+import { graphQlSchemaModule, i18nModule } from '@uprtcl/common';
+import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
 import { TextNodeLens } from './lenses/text-node.lens';
-import {
-  TextNodeActions,
-  TextNodeCreate,
-  TextNodePatterns,
-  TextNodeEntity
-} from './patterns/text-node.entity';
+import { TextNodeActions, TextNodeCreate, TextNodePatterns } from './patterns/text-node.entity';
 import { DocumentsTypes } from './types';
-import { DocumentsProvider } from './services/documents.provider';
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
@@ -19,9 +15,9 @@ import { documentsTypeDefs, documentsSchema } from './graphql';
 import en from '../i18n/en.json';
 
 /**
- * Configure a documents module with the given providers
+ * Configure a documents module with the given service providers
  *
- * Depends on: lensesModule, PatternsModule, discoveryModule
+ * Depends on these modules being present: lensesModule, CortexModule, discoveryModule, i18nBaseModule
  *
  * Example usage:
  *
@@ -37,55 +33,40 @@ import en from '../i18n/en.json';
  *
  *  const documentsProvider = new DocumentsIpfs(ipfsConnection);
  *
- * const docs = documentsModule([{ service: documentsProvider }]);
+ * const docs = documentsModule([ documentsProvider ]);
  * await orchestrator.loadModules({
- *   id: DocumentsTypes.Module,
- *   module: docs
+ *   [DocumentsTypes.Module]: docs
  * });
  * ```
  *
  * @category CortexModule
  *
  * @param documentsRemote an array of remotes of documents
- * @param documentsLocal the local cache service to
  * @returns a configured documents module ready to be loaded
  */
-export function documentsModule(
-  documentsRemotes: DocumentsRemote[],
-  documentsLocal: new (...args: any[]) => DocumentsProvider = DocumentsLocal
-): new (...args: any[]) => ReduxCortexModule {
+export function documentsModule(documentsRemotes: DocumentsRemote[]): Constructor<MicroModule> {
   @injectable()
-  class DocumentsModule extends ReduxCortexModule {
-    get sources() {
-      return documentsRemotes.map(remote => ({
-        symbol: DocumentsTypes.DocumentsRemote,
-        source: remote
-      }));
-    }
-
-    get services() {
-      return [
-        { symbol: DocumentsTypes.DocumentsLocal, service: documentsLocal },
-        { symbol: DocumentsTypes.Documents, service: Documents }
-      ];
-    }
-
-    get elements() {
-      return [{ name: 'text-node', element: TextNodeLens }];
-    }
-
-    get patterns() {
-      return [
-        {
-          symbol: DocumentsTypes.TextNodeEntity,
-          patterns: [TextNodeEntity, TextNodeActions, TextNodeCreate, TextNodePatterns]
-        }
-      ];
+  class DocumentsModule implements MicroModule {
+    async onLoad(context: interfaces.Context, bind: interfaces.Bind) {
+      bind(DocumentsTypes.DocumentsLocal).to(DocumentsLocal);
+      bind(DocumentsTypes.Documents).to(Documents);
     }
 
     submodules = [
       graphQlSchemaModule(documentsTypeDefs, {}),
-      buildi18nModule('documents', { en: en })
+      i18nModule('documents', { en: en }),
+      sourcesModule(
+        documentsRemotes.map(remote => ({
+          symbol: DocumentsTypes.DocumentsRemote,
+          source: remote
+        }))
+      ),
+      elementsModule({
+        'documents-text-node': TextNodeLens
+      }),
+      patternsModule({
+        [DocumentsTypes.TextNodeEntity]: [TextNodeActions, TextNodeCreate, TextNodePatterns]
+      })
     ];
   }
 

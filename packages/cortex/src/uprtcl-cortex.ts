@@ -42,13 +42,14 @@ export { HasActions, PatternAction } from './patterns/properties/has-actions';
 
 // Pattern Registry
 export { PatternRecognizer } from './patterns/recognizer/pattern.recognizer';
-export { PatternsModule } from './patterns/patterns.module';
+export { CortexModule } from './patterns/cortex.module';
 
 /** Types */
-export { LensesTypes, DiscoveryTypes, PatternTypes, UplAuth } from './types';
+export { LensesTypes, DiscoveryTypes, CortexTypes } from './types';
 
 /** Module */
-export { CortexModule } from './cortex.module';
+export { PatternsModule, patternsModule } from './modules/patterns.module';
+export { SourcesModule, sourcesModule } from './modules/sources.module';
 
 /** Utils */
 export {

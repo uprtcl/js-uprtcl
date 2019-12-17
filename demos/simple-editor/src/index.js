@@ -1,23 +1,21 @@
-import { ReduxTypes, MicroOrchestrator, ReduxStoreModule } from '@uprtcl/micro-orchestrator';
 import {
-  PatternTypes,
+  MicroOrchestrator,
+  ReduxStoreModule,
+  i18nTypes
+} from '@uprtcl/micro-orchestrator';
+import {
+  CortexTypes,
   PatternsModule,
   discoveryModule,
   DiscoveryTypes,
-  LensesTypes
+  LensesTypes,
+  CortexModule
 } from '@uprtcl/cortex';
 import { lensesModule, LensSelectorPlugin, ActionsPlugin, UpdatablePlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import {
   ApolloClientModule,
   GraphQlTypes,
-  AccessControlTypes,
-  AccessControlReduxModule,
-  EntitiesReduxModule,
-  EntitiesTypes,
-  AuthTypes,
-  AuthReduxModule,
-  i18nTypes,
   i18nextBaseModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
@@ -63,21 +61,15 @@ import { SimpleEditor } from './simple-editor';
 
   const modules = {
     [i18nTypes.Module]: i18nextBaseModule,
-    [ReduxTypes.Module]: ReduxStoreModule,
     [GraphQlTypes.Module]: ApolloClientModule,
-    [PatternTypes.Module]: PatternsModule,
+    [CortexTypes.Module]: CortexModule,
     [DiscoveryTypes.Module]: discoveryModule(),
-    [EntitiesTypes.Module]: EntitiesReduxModule,
-    [AccessControlTypes.Module]: AccessControlReduxModule,
-    [AuthTypes.Module]: AuthReduxModule,
     [LensesTypes.Module]: lenses,
     [EveesTypes.Module]: evees,
     [DocumentsTypes.Module]: documents
   };
 
   const orchestrator = new MicroOrchestrator();
-
-  window.modules = modules;
 
   await orchestrator.loadModules(modules);
 

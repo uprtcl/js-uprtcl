@@ -2,7 +2,7 @@ import { ApolloLink, NextLink, Operation, Observable, FetchResult } from 'apollo
 
 import {
   discoverLinksKnownSources,
-  PatternTypes,
+  CortexTypes,
   PatternRecognizer,
   getUplToDiscover,
   KnownSourcesService,
@@ -33,7 +33,7 @@ export class DiscoveryLink extends ApolloLink {
           const hash = result.data.getEntity.id;
           const object = result.data.getEntity.raw;
 
-          const recognizer: PatternRecognizer = container.get(PatternTypes.Recognizer);
+          const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
           const localKnownSources: KnownSourcesService = container.get(
             DiscoveryTypes.LocalKnownSources
           );

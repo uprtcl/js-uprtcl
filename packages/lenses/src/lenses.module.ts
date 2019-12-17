@@ -1,6 +1,12 @@
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
 
-import { MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
+import { CortexTypes } from '@uprtcl/cortex';
+import {
+  MicroModule,
+  Constructor,
+  MicroOrchestratorTypes,
+  ModuleProvider
+} from '@uprtcl/micro-orchestrator';
 
 import { CortexEntity } from './elements/cortex-entity';
 import { lenses } from './lenses';
@@ -38,7 +44,13 @@ export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin
 
   @injectable()
   class LensesModule implements MicroModule {
+    constructor(
+      @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider
+    ) {}
+
     async onLoad(): Promise<void> {
+      await this.moduleProvider(CortexTypes.Module);
+
       customElements.define('cortex-actions', CortexActions);
       customElements.define('cortex-lens-selector', CortexLensSelector);
       customElements.define('cortex-entity', cortexEntity);

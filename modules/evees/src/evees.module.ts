@@ -1,27 +1,26 @@
-import { injectable } from 'inversify';
+import { injectable, interfaces } from 'inversify';
 
-import { PatternTypes } from '@uprtcl/cortex';
+import { CortexTypes, CortexModule, patternsModule, sourcesModule } from '@uprtcl/cortex';
 import {
   graphQlSchemaModule,
   DefaultSecuredPattern,
   DefaultSignedPattern,
-  ReduxCortexModule,
   CidHashedPattern
 } from '@uprtcl/common';
 
-import { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';
-import { CommitPattern, CommitEntity, CommitLens, CommitLinked } from './patterns/commit.pattern';
+import { PerspectiveLinks } from './patterns/perspective.pattern';
+import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './lenses/commit-history';
 import { EveesTypes, EveesLocal } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
-import { EveesReduxModule } from './state';
 import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
+import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
 /**
- * Configure a _Prtcl Evees module with the given configured providers
+ * Configure a _Prtcl Evees module with the given service providers
  *
  * Example usage:
  *
@@ -52,8 +51,7 @@ import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-s
  * const orchestrator = new MicroOrchestrator();
  *
  * await orchestrator.loadModules({
- *   id: EveesTypes.Module,
- *   module: evees
+ *   [EveesTypes.Module]: evees
  * });
  * ```
  *
@@ -66,42 +64,32 @@ import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-s
 export function eveesModule(
   eveesProviders: Array<EveesRemote>,
   localEvees: new (...args: any[]) => EveesLocal = EveesDexie
-): new (...args: any[]) => ReduxCortexModule {
+): Constructor<MicroModule> {
   @injectable()
-  class EveesModule extends ReduxCortexModule {
-    get elements() {
-      return [{ name: 'commit-history', element: CommitHistory }];
+  class EveesModule implements MicroModule {
+    async onLoad(context: interfaces.Context, bind: interfaces.Bind) {
+      bind(EveesTypes.EveesLocal).to(localEvees);
+      bind(EveesTypes.Evees).to(Evees);
+      bind(EveesTypes.MergeStrategy).to(RecursiveContextMergeStrategy);
     }
 
-    get sources() {
-      return eveesProviders.map(evees => ({
-        symbol: EveesTypes.EveesRemote,
-        source: evees
-      }));
-    }
-
-    get services() {
-      return [
-        { symbol: EveesTypes.EveesLocal, service: localEvees },
-        { symbol: EveesTypes.Evees, service: Evees },
-        { symbol: EveesTypes.MergeStrategy, service: RecursiveContextMergeStrategy }
-      ];
-    }
-
-    get patterns() {
-      return [
-        { symbol: PatternTypes.Core.Hashed, patterns: [CidHashedPattern] },
-        { symbol: PatternTypes.Core.Signed, patterns: [DefaultSignedPattern] },
-        { symbol: PatternTypes.Core.Secured, patterns: [DefaultSecuredPattern] },
-        { symbol: EveesTypes.PerspectivePattern, patterns: [PerspectiveLinks] },
-        {
-          symbol: EveesTypes.CommitPattern,
-          patterns: [CommitLinked, CommitPattern, CommitLens]
-        }
-      ];
-    }
-
-    submodules = [EveesReduxModule, graphQlSchemaModule(eveesTypeDefs, eveesResolvers)];
+    submodules = [
+      graphQlSchemaModule(eveesTypeDefs, eveesResolvers),
+      elementsModule({ 'evees-commit-history': CommitHistory }),
+      patternsModule({
+        [CortexTypes.Core.Hashed]: [CidHashedPattern],
+        [CortexTypes.Core.Signed]: [DefaultSignedPattern],
+        [CortexTypes.Core.Secured]: [DefaultSecuredPattern],
+        [EveesTypes.PerspectivePattern]: [PerspectiveLinks],
+        [EveesTypes.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
+      }),
+      sourcesModule(
+        eveesProviders.map(evees => ({
+          symbol: EveesTypes.EveesRemote,
+          source: evees
+        }))
+      )
+    ];
   }
 
   return EveesModule;
