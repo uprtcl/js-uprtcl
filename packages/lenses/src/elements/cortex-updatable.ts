@@ -42,11 +42,14 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
     }
   }
 
+  loadAccessControl() {}
+
   update(changedProperties: PropertyValues) {
     super.update(changedProperties);
 
-    const lensElement = this.shadowRoot?.getRootNode().firstChild;
-    if (lensElement) {
+    if (this.shadowRoot) {
+      const lensElement = this.shadowRoot.getRootNode().firstChild;
+      console.log('lenseleemnet', lensElement);
       ((lensElement as unknown) as { editable: boolean }).editable = this.entityEditable;
     }
   }

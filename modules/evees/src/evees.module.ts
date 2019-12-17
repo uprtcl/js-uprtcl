@@ -5,12 +5,13 @@ import {
   graphQlSchemaModule,
   DefaultSecuredPattern,
   DefaultSignedPattern,
-  CidHashedPattern
+  CidHashedPattern,
+  i18nModule
 } from '@uprtcl/common';
 
 import { PerspectiveLinks } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
-import { CommitHistory } from './lenses/commit-history';
+import { CommitHistory } from './lenses/evee-commit-history';
 import { EveesTypes, EveesLocal } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
@@ -18,6 +19,8 @@ import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
+
+import en from '../i18n/en.json';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -75,7 +78,8 @@ export function eveesModule(
 
     submodules = [
       graphQlSchemaModule(eveesTypeDefs, eveesResolvers),
-      elementsModule({ 'evees-commit-history': CommitHistory }),
+      elementsModule({ 'evee-commit-history': CommitHistory }),
+      i18nModule('evees', { en: en }),
       patternsModule({
         [CortexTypes.Core.Hashed]: [CidHashedPattern],
         [CortexTypes.Core.Signed]: [DefaultSignedPattern],
