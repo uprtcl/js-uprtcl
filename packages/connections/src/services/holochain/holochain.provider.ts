@@ -1,7 +1,7 @@
 import { Hashed, ServiceProvider } from '@uprtcl/cortex';
 import { HolochainConnection } from './holochain.connection';
 
-export interface HolochainProviderOptions  {
+export interface HolochainProviderOptions {
   instance: string;
   zome: string;
   getMyAddress: {
@@ -32,8 +32,8 @@ export abstract class HolochainProvider implements ServiceProvider {
     return this.connection.call(instance, zome, funcName, {});
   }
 
-  get uplAuth() {
-    return { userId: this.userAddress, isAuthenticated: this.userAddress !== null };
+  get userId() {
+    return this.userAddress;
   }
 
   /**

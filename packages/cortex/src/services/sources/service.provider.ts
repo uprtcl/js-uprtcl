@@ -1,4 +1,3 @@
-import { UplAuth } from '../../types';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 
 export interface Ready {
@@ -21,5 +20,5 @@ export interface ServiceProvider extends Ready {
    */
   knownSources?: KnownSourcesService;
 
-  uplAuth?: UplAuth;
+  userId?: string | undefined;
 }

@@ -16,7 +16,9 @@ import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@
 import {
   ApolloClientModule,
   GraphQlTypes,
-  i18nextBaseModule
+  i18nextBaseModule,
+  AccessControlTypes,
+  AccessControlModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
 import {
@@ -65,6 +67,7 @@ import { SimpleEditor } from './simple-editor';
     [CortexTypes.Module]: CortexModule,
     [DiscoveryTypes.Module]: discoveryModule(),
     [LensesTypes.Module]: lenses,
+    [AccessControlTypes.Module]: AccessControlModule,
     [EveesTypes.Module]: evees,
     [DocumentsTypes.Module]: documents
   };

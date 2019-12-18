@@ -2,14 +2,15 @@ import { LitElement, property, PropertyValues, html } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer, CreateChild, Hashed, CortexTypes } from '@uprtcl/cortex';
-import { Updatable } from '@uprtcl/common';
+import { Updatable, GraphQlTypes } from '@uprtcl/common';
+import { ApolloClient, gql } from 'apollo-boost';
 
 export class CortexUpdatable extends moduleConnect(LitElement) {
-  @property()
+  @property({ type: Object })
   entity!: Hashed<any>;
 
-  @property()
-  entityEditable: boolean = true;
+  @property({ type: Boolean })
+  entityEditable: boolean = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -42,11 +43,34 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
     }
   }
 
-  loadAccessControl() {}
+  firstUpdated() {
+    this.loadAccessControl();
+  }
 
+  async loadAccessControl() {
+    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
 
-  update(changedProperties: PropertyValues) {
-    super.update(changedProperties);
+    const result = await client.query({
+      query: gql`
+        {
+          getEntity(id: "${this.entity.id}") {
+            entity {
+              patterns {
+                accessControl {
+                  canWrite
+                }
+              }
+            }
+          }
+        }
+      `
+    });
+
+    this.entityEditable = result.data.getEntity.entity.patterns.accessControl.canWrite;
+  }
+
+  updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
 
     if (!this.shadowRoot) return;
 
@@ -55,13 +79,18 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
 
     let lensElement: Element | undefined = undefined;
     for (const node of slot.assignedNodes()) {
-      if ((node as HTMLElement).querySelector) {
+      if ((node as HTMLElement).id === 'lens-element') {
+        lensElement = node as HTMLElement;
+      } else if ((node as HTMLElement).querySelector) {
         const element = (node as HTMLElement).querySelector('#lens-element');
         if (element) lensElement = element;
       }
     }
+
     if (lensElement) {
-      ((lensElement.firstElementChild as unknown) as { editable: boolean }).editable = this.entityEditable;
+      ((lensElement.firstElementChild as unknown) as {
+        editable: boolean;
+      }).editable = this.entityEditable;
     }
   }
 

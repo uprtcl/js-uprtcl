@@ -2,7 +2,7 @@ import { interfaces } from 'inversify';
 import { Constructor } from '../types';
 
 export interface MicroModule {
-  onLoad(
+  onLoad?(
     context: interfaces.Context,
     bind: interfaces.Bind,
     unbind: interfaces.Unbind,

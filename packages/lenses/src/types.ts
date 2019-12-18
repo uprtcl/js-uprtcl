@@ -7,6 +7,7 @@ import { RenderLensPlugin } from './plugins/render-lens.plugin';
 export interface Lens {
   name: string;
   render: (lensContent: TemplateResult) => TemplateResult;
+  type?: string;
 }
 
 export interface Isomorphisms {

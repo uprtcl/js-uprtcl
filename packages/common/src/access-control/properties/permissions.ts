@@ -1,5 +1,5 @@
-import { UplAuth, Property } from '@uprtcl/cortex';
+import { Property } from '@uprtcl/cortex';
 
 export interface Permissions<T> extends Property<T> {
-  canWrite: (permissions: T) => (uplAuth: UplAuth) => boolean;
+  canWrite: (permissions: T) => (userId: string | undefined) => boolean;
 }

@@ -19,7 +19,7 @@ import { SlotPlugin } from './plugins/slot.plugin';
 import { RenderLensPlugin } from './plugins/render-lens.plugin';
 
 const isSlotPlugin = (p: LensesPlugin) => (p as SlotPlugin).renderSlot;
-const isRenderEntityPlugin = (p: LensesPlugin) => (p as RenderLensPlugin).renderLens;
+const isRenderLensPlugin = (p: LensesPlugin) => (p as RenderLensPlugin).renderLens;
 
 export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin }>): any {
   const cortexEntity: Constructor<CortexEntityBase> = class extends CortexEntity {
@@ -29,17 +29,10 @@ export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin
         .reduce((acc, p) => ({ ...acc, [p.name]: p.plugin }), {});
     }
 
-    render() {
-      const lens = super.render();
-
-      const renderLensPlugins: RenderLensPlugin[] = plugins
-        .map(p => p.plugin)
-        .filter(p => isRenderEntityPlugin(p)) as RenderLensPlugin[];
-
-      return renderLensPlugins.reduce(
-        (acc, next) => next.renderLens(acc, this.entity, this.selectedLens),
-        lens
-      );
+    get lensPlugins() {
+      return plugins
+        .filter(p => isRenderLensPlugin(p.plugin))
+        .reduce((acc, p) => ({ ...acc, [p.name]: p.plugin }), {});
     }
   };
 

@@ -1,3 +1,5 @@
+import { injectable, interfaces, inject } from 'inversify';
+
 import { MicroModule, MicroOrchestratorTypes, ModuleProvider } from '@uprtcl/micro-orchestrator';
 
 import { DiscoveryService } from './discovery.service';
@@ -6,7 +8,6 @@ import { KnownSourcesService } from './known-sources/known-sources.service';
 import { MultiSourceService } from './multi/multi-source.service';
 import { CacheDexie } from './cache/cache.dexie';
 import { KnownSourcesDexie } from './known-sources/known-sources.dexie';
-import { injectable, interfaces, inject } from 'inversify';
 import { CortexTypes, DiscoveryTypes } from '../types';
 import { Source } from './sources/source';
 

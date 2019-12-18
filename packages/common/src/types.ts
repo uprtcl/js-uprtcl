@@ -1,5 +1,6 @@
 export const AccessControlTypes = {
-  OwnerPattern: Symbol('owner-pattern')
+  OwnerPattern: Symbol('owner-pattern'),
+  Module: Symbol('owner-module')
 };
 
 export const DraftsTypes = {
