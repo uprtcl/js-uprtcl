@@ -81,7 +81,7 @@ export function eveesModule(
       graphQlSchemaModule(eveesTypeDefs, eveesResolvers),
       elementsModule({ 
         'evee-commit-history': CommitHistory,
-        'perspective-list': PerspectivesList 
+        'evee-perspectives-list': PerspectivesList 
       }),
       i18nModule('evees', { en: en }),
       patternsModule({

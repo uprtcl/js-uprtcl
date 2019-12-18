@@ -14,7 +14,7 @@ export class Homepage extends moduleConnect(LitElement) {
       <h2> Welcome to ${this.title} </h2>
 
       <h4> Recent new perspectives </h4>
-      <perspectives-list .rootPerspectiveId=${this.wikiHash}></perspectives-list>
+      <evee-perspectives-list .rootPerspectiveId=${this.wikiHash}></evee-perspectives-list>
     `;
   }
 
