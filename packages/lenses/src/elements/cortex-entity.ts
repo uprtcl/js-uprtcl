@@ -32,7 +32,9 @@ export class CortexEntity extends CortexEntityBase {
   renderLens() {
     if (!this.selectedLens) return html``;
 
-    return this.selectedLens.render(this.renderSlotPlugins());
+    return html`
+      <div id="lens-element">${this.selectedLens.render(this.renderSlotPlugins())}</div>
+    `;
   }
 
   renderLoadingPlaceholder() {

@@ -53,8 +53,8 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
       eveesProvider.uprtclProviderLocator
     );
 
-    this.data.pages.push(perspective.id);
-    this.updateContent(this.data.pages);
+    const pages = [...this.data.pages, perspective.id];
+    this.updateContent(pages);
   };
 
   async firstUpdated() {

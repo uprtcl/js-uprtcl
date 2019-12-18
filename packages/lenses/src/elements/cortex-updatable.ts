@@ -45,9 +45,20 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
   update(changedProperties: PropertyValues) {
     super.update(changedProperties);
 
-    const lensElement = this.shadowRoot?.getRootNode().firstChild;
+    if (!this.shadowRoot) return;
+
+    const slot: HTMLSlotElement | null = this.shadowRoot.querySelector('slot');
+    if (!slot) return;
+
+    let lensElement: Element | undefined = undefined;
+    for (const node of slot.assignedNodes()) {
+      if ((node as HTMLElement).querySelector) {
+        const element = (node as HTMLElement).querySelector('#lens-element');
+        if (element) lensElement = element;
+      }
+    }
     if (lensElement) {
-      ((lensElement as unknown) as { editable: boolean }).editable = this.entityEditable;
+      ((lensElement.firstElementChild as unknown) as { editable: boolean }).editable = this.entityEditable;
     }
   }
 
