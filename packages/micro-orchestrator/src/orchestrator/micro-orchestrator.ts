@@ -2,7 +2,7 @@ import { Container, interfaces } from 'inversify';
 import { MicroModule } from '../modules/micro.module';
 import { ModuleContainer } from '../elements/module-container';
 import { Logger } from '../utils/logger';
-import { MicroOrchestratorTypes, ModuleToLoad } from '../types';
+import { MicroOrchestratorTypes, ModulesToLoad } from '../types';
 import { ModuleProvider, moduleProvider } from './module-provider';
 
 export class MicroOrchestrator {
@@ -29,16 +29,18 @@ export class MicroOrchestrator {
    * Loads the given modules
    * @param modules
    */
-  async loadModules(...modules: Array<ModuleToLoad>): Promise<void> {
-    for (const microModule of modules) {
+  async loadModules(modules: ModulesToLoad): Promise<void> {
+    const ids = Object.getOwnPropertySymbols(modules);
+
+    for (const id of ids) {
       this.container
-        .bind<MicroModule>(microModule.id)
-        .to(microModule.module)
+        .bind<MicroModule>(id)
+        .to(modules[id as any])
         .inSingletonScope();
     }
 
     const provider: ModuleProvider = this.container.get(MicroOrchestratorTypes.ModuleProvider);
-    const promises = modules.map(async microModule => provider(microModule.id));
+    const promises = ids.map(async moduleId => provider(moduleId));
 
     await Promise.all(promises);
   }

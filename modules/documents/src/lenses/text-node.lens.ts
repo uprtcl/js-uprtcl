@@ -1,10 +1,8 @@
 import { LitElement, property, html } from 'lit-element';
 
-import { LensElement } from '@uprtcl/lenses';
-
 import { TextNode, TextType } from '../types';
 
-export class TextNodeLens extends LitElement implements LensElement<TextNode> {
+export class TextNodeLens extends LitElement {
   @property({ type: Object })
   data!: TextNode;
 

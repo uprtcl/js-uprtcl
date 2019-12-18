@@ -1,24 +1,37 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const { createDefaultConfig } = require('@open-wc/testing-karma');
-const merge = require('webpack-merge');
+const deepmerge = require('deepmerge');
 
 module.exports = config => {
   config.set(
-    merge(createDefaultConfig(config), {
+    deepmerge(createDefaultConfig(config), {
+      // see the karma-esm docs for all options
+      esm: {
+        babel: true,
+        nodeResolve: true,
+        fileExtensions: ['.ts']
+      },
+
       files: [
-        // runs all files ending with .test in the test folder,
-        // can be overwritten by passing a --grep flag. examples:
-        //
-        // npm run test -- --grep test/foo/bar.test.js
-        // npm run test -- --grep test/bar/*
-        { pattern: config.grep ? config.grep : 'test/**/*.test.js', type: 'module' },
+        {
+          pattern: config.grep ? config.grep : './test/**/*.test.ts',
+          type: 'module'
+        }
       ],
 
-      esm: {
-        nodeResolve: true,
+  // ## code coverage config
+  coverageIstanbulReporter: {
+    thresholds: {
+      global: {
+        statements: 0,
+        branches: 0,
+        functions: 0,
+        lines: 0,
       },
-      // you can overwrite/extend the config further
-    }),
+    },
+  },
+    })
   );
+
   return config;
 };

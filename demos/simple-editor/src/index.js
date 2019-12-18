@@ -6,7 +6,7 @@ import {
   DiscoveryTypes,
   LensesTypes
 } from '@uprtcl/cortex';
-import { lensesModule, actionsPlugin, updatePlugin, lensSelectorPlugin } from '@uprtcl/lenses';
+import { lensesModule, LensSelectorPlugin, ActionsPlugin, UpdatablePlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import { WikisIpfs, wikisModule, WikisTypes, WikisHttp } from '@uprtcl/wikis';
 import {
@@ -52,24 +52,30 @@ import { SimpleWiki } from './simple-wiki';
 
   const wikis = wikisModule([ipfsWikis, httpWikis]);
 
+  const lenses = lensesModule([
+    { name: 'lens-selector', plugin: new LensSelectorPlugin() },
+    { name: 'actions', plugin: new ActionsPlugin() },
+    { name: 'updatable', plugin: new UpdatablePlugin() }
+  ]);
+
+  const modules = {
+    [ReduxTypes.Module]: ReduxStoreModule,
+    [GraphQlTypes.Module]: ApolloClientModule,
+    [PatternTypes.Module]: PatternsModule,
+    [DiscoveryTypes.Module]: discoveryModule(),
+    [EntitiesTypes.Module]: EntitiesReduxModule,
+    [AccessControlTypes.Module]: AccessControlReduxModule,
+    [AuthTypes.Module]: AuthReduxModule,
+    [LensesTypes.Module]: lenses,
+    [EveesTypes.Module]: evees,
+    [DocumentsTypes.Module]: documents
+  };
+
   const orchestrator = new MicroOrchestrator();
 
-  await orchestrator.loadModules(
-    { id: ReduxTypes.Module, module: ReduxStoreModule },
-    { id: GraphQlTypes.Module, module: ApolloClientModule },
-    { id: PatternTypes.Module, module: PatternsModule },
-    { id: DiscoveryTypes.Module, module: discoveryModule() },
-    { id: EntitiesTypes.Module, module: EntitiesReduxModule },
-    { id: AccessControlTypes.Module, module: AccessControlReduxModule },
-    { id: AuthTypes.Module, module: AuthReduxModule },
-    {
-      id: LensesTypes.Module,
-      module: lensesModule([updatePlugin(), lensSelectorPlugin(), actionsPlugin()])
-    },
-    { id: EveesTypes.Module, module: evees },
-    { id: DocumentsTypes.Module, module: documents },
-    { id: WikisTypes.Module, module: wikis }
-  );
+  window.modules = modules;
+
+  await orchestrator.loadModules(modules);
 
   console.log(orchestrator);
   customElements.define('simple-editor', SimpleEditor);
