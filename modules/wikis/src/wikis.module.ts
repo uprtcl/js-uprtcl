@@ -1,17 +1,20 @@
-import { injectable } from 'inversify';
+import { injectable, interfaces } from 'inversify';
 
-import { ReduxCortexModule, graphQlSchemaModule } from '@uprtcl/common';
+import { patternsModule, sourcesModule } from '@uprtcl/cortex';
+import { graphQlSchemaModule, i18nModule } from '@uprtcl/common';
+import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
 import { WikiNodeLens } from './lenses/wiki-node.lens';
 import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
 import { WikisTypes } from './types';
-import { WikisProvider } from './services/wikis.provider';
 import { WikisLocal } from './services/wikis.local';
 import { Wikis } from './services/wikis';
 import { WikisRemote } from './services/wikis.remote';
 import { wikiTypeDefs } from './graphql';
 import { WikiPage } from './elements/wiki-page';
 import { Homepage } from './elements/homepage';
+
+import en from '../i18n/en.json';
 
 /**
  * Configure a wikis module with the given providers
@@ -45,39 +48,32 @@ import { Homepage } from './elements/homepage';
  * @param wikisLocal the local cache service to
  * @returns a configured wikis module ready to be loaded
  */
-export function wikisModule(
-  wikisRemotes: WikisRemote[],
-  wikisLocal: new (...args: any[]) => WikisProvider = WikisLocal
-): new (...args: any[]) => ReduxCortexModule {
+export function wikisModule(wikisRemotes: WikisRemote[]): Constructor<MicroModule> {
   @injectable()
-  class WikisModule extends ReduxCortexModule {
-    get sources() {
-      return wikisRemotes.map(remote => ({
-        symbol: WikisTypes.WikisRemote,
-        source: remote
-      }));
+  class WikisModule implements MicroModule {
+    async onLoad(context: interfaces.Context, bind: interfaces.Bind) {
+      bind(WikisTypes.WikisLocal).to(WikisLocal);
+      bind(WikisTypes.Wikis).to(Wikis);
     }
 
-    get services() {
-      return [
-        { symbol: WikisTypes.WikisLocal, service: wikisLocal },
-        { symbol: WikisTypes.Wikis, service: Wikis }
-      ];
-    }
-
-    get elements() {
-      return [
-        { name: 'basic-wiki', element: WikiNodeLens },
-        { name: 'wiki-page', element: WikiPage },
-        { name: 'home-page' , element: Homepage }
-      ];
-    }
-
-    get patterns() {
-      return [{ symbol: WikisTypes.WikiEntity, patterns: [WikiCommon, WikiLinks, WikiCreate] }];
-    }
-
-    submodules = [graphQlSchemaModule(wikiTypeDefs, {})];
+    submodules = [
+      graphQlSchemaModule(wikiTypeDefs, {}),
+      i18nModule('wikis', { en: en }),
+      sourcesModule(
+        wikisRemotes.map(remote => ({
+          symbol: WikisTypes.WikisRemote,
+          source: remote
+        }))
+      ),
+      elementsModule({
+        'basic-wiki': WikiNodeLens,
+        'wiki-page': WikiPage,
+        'home-page': Homepage
+      }),
+      patternsModule({
+        [WikisTypes.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
+      })
+    ];
   }
 
   return WikisModule;
