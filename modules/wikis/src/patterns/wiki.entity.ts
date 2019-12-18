@@ -5,7 +5,7 @@ import {
   Pattern,
   Hashed,
   Hashable,
-  PatternTypes,
+  CortexTypes,
   Entity,
   Creatable,
   HasChildren
@@ -20,7 +20,7 @@ const propertyOrder = ['title', 'type', 'pages'];
 
 @injectable()
 export class WikiEntity implements Entity {
-  constructor(@inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
+  constructor(@inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
 
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;

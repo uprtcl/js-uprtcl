@@ -1,4 +1,4 @@
-import { ServiceProvider, UplAuth } from '@uprtcl/cortex';
+import { ServiceProvider } from '@uprtcl/cortex';
 
 import { HttpConnection, PostResult } from './http.connection';
 
@@ -15,14 +15,14 @@ export class HttpProvider implements ServiceProvider {
     return `http:${this.options.apiId}:${url.hostname}`;
   }
 
-  get authInfo(): UplAuth {
+  get authInfo() {
     return {
       userId: this.connection.userId,
       isAuthenticated: this.connection.userId != undefined
     };
   }
 
-  set authInfo(info: UplAuth) {
+  set authInfo(info) {
     this.connection.userId = info.userId;
   }
 

@@ -1,10 +1,10 @@
 import { Buffer } from 'ipfs-http-client';
 
 import { Hashed, SourceProvider } from '@uprtcl/cortex';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { CidConfig, defaultCidConfig } from './cid.config';
 import { IpfsConnection } from './ipfs.connection';
-import { Logger } from '@uprtcl/micro-orchestrator';
 
 export class IpfsSource implements SourceProvider {
   logger = new Logger('IpfsSource');

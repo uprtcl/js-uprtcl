@@ -1,12 +1,12 @@
 import { inject, injectable } from 'inversify';
-import { Hashed, DiscoveryTypes, CacheService, PatternTypes, Hashable } from '@uprtcl/cortex';
+import { Hashed, DiscoveryTypes, CacheService, CortexTypes, Hashable } from '@uprtcl/cortex';
 import { WikisProvider } from './wikis.provider';
 import { WikiNode } from '../types';
 
 @injectable()
 export class WikisLocal implements WikisProvider {
   constructor(
-    @inject(PatternTypes.Core.Hashed)
+    @inject(CortexTypes.Core.Hashed)
     protected hashedPattern: Hashable<any>,
     @inject(DiscoveryTypes.Cache)
     protected objectsCache: CacheService

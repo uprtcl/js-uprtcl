@@ -35,17 +35,15 @@ import en from '../i18n/en.json';
  *
  *  const wikisProvider = new wikisIpfs(ipfsConnection);
  *
- * const docs = wikisModule([{ service: WikisProvider }]);
+ * const docs = wikisModule([ wikisProvider ]);
  * await orchestrator.loadModules({
- *   id: WikisTypes.Module,
- *   module: docs
+ *   [WikisTypes.Module]: docs
  * });
  * ```
  *
  * @category CortexModule
  *
  * @param wikisRemote an array of remotes of wikis
- * @param wikisLocal the local cache service to
  * @returns a configured wikis module ready to be loaded
  */
 export function wikisModule(wikisRemotes: WikisRemote[]): Constructor<MicroModule> {
