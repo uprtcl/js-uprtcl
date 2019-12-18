@@ -1,10 +1,13 @@
-import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-import { reduxConnect } from '@uprtcl/micro-orchestrator';
-import { EveesTypes, PerspectiveDetails, Perspective } from '../types';
-import { Secured, selectCanWrite, PermissionsStatus } from '@uprtcl/common';
-import { PatternTypes, PatternRecognizer } from '@uprtcl/cortex';
+import { LitElement, property, html, css } from 'lit-element';
+
+import { PermissionsStatus } from '@uprtcl/common';
+import { CortexTypes, PatternRecognizer } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
+
+import { PerspectiveDetails, Perspective } from '../types';
+
 interface PerspectiveData {
   id: string;
   perspective: Perspective;
@@ -12,7 +15,7 @@ interface PerspectiveData {
   permissions: PermissionsStatus;
 }
 
-export class PerspectivesList extends reduxConnect(LitElement) {
+export class PerspectivesList extends moduleConnect(LitElement) {
   @property({ type: String })
   rootPerspectiveId!: string;
 
@@ -22,7 +25,7 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   private recognizer!: PatternRecognizer;
 
   async firstUpdated() {
-    this.recognizer = this.request(PatternTypes.Recognizer);
+    this.recognizer = this.request(CortexTypes.Recognizer);
     this.updatePerspectivesData();
   }
 
@@ -79,7 +82,6 @@ export class PerspectivesList extends reduxConnect(LitElement) {
       };
 
       this.perspectivesData = perspectives.map(fillPerspectives);
-      this.stateChanged(this.store.getState());
       console.log(`[PERSPECTIVE-LIST] updatePerspectivesData`, {
         perspectivesData: JSON.stringify(this.perspectivesData)
       });
@@ -91,9 +93,8 @@ export class PerspectivesList extends reduxConnect(LitElement) {
   stateChanged(state) {
     /** update canWrite */
     this.perspectivesData.forEach(perspectiveData => {
-      const canWrite = selectCanWrite(this.recognizer)(perspectiveData.id)(state);
       perspectiveData.permissions = {
-        canWrite
+        canWrite: true
       };
     });
     this.perspectivesData = [...this.perspectivesData];

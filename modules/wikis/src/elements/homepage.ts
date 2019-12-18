@@ -1,8 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
-import { reduxConnect } from '@uprtcl/micro-orchestrator';
-
-export class Homepage extends reduxConnect(LitElement) {
+export class Homepage extends moduleConnect(LitElement) {
   @property({ type: String })
   wikiHash!: string;
 

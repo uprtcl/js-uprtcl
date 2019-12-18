@@ -1,9 +1,9 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-import { reduxConnect } from '@uprtcl/micro-orchestrator';
 import { GraphQlTypes } from '@uprtcl/common';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
-export class WikiPage extends reduxConnect(LitElement) {
+export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
   pageHash!: string;
 

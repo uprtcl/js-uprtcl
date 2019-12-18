@@ -1,13 +1,13 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { EveesTypes } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
 import { Creatable } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
 
 import { WikiNode } from '../types';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 export class WikiNodeLens extends moduleConnect(LitElement) {
   @property({ type: Object })
