@@ -10,7 +10,8 @@ export {
   Constructor,
   CustomElement,
   ModulesToLoad,
-  ReduxTypes
+  ReduxTypes,
+  i18nTypes
 } from './types';
 
 /** Redux */
@@ -18,6 +19,7 @@ export { ReduxStoreModule } from './modules/redux/redux-store.module';
 export { ReduxModule } from './modules/redux/redux.module';
 
 /** Elements */
+export { elementsModule, ElementsModule } from './modules/elements.module';
 export { ModuleContainer, RequestDependencyEvent } from './elements/module-container';
 export { moduleConnect, ConnectedElement } from './elements/mixins/module-connect.mixin';
 export { reduxConnect, ReduxConnectedElement } from './elements/mixins/redux-connect.mixin';

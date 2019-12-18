@@ -6,7 +6,7 @@ import {
   Hashed,
   Signed,
   IsSecure,
-  PatternTypes,
+  CortexTypes,
   DiscoveryTypes
 } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
@@ -18,7 +18,7 @@ export class EveesDexie extends Dexie implements EveesLocal {
   details: Dexie.Table<Partial<PerspectiveDetails>, string>;
 
   constructor(
-    @inject(PatternTypes.Core.Secured)
+    @inject(CortexTypes.Core.Secured)
     protected securedPattern: IsSecure<any>,
     @inject(DiscoveryTypes.Cache)
     protected objectsCache: CacheService

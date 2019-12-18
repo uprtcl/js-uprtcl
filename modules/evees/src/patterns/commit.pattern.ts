@@ -9,7 +9,7 @@ import {
   Creatable,
   Signed,
   PatternRecognizer,
-  PatternTypes,
+  CortexTypes,
   DiscoveryTypes,
   DiscoveryService,
   Entity
@@ -19,13 +19,14 @@ import { Lens, HasLenses } from '@uprtcl/lenses';
 
 import { Commit, EveesTypes } from '../types';
 import { Evees } from '../services/evees';
+import { i18nTypes } from '@uprtcl/micro-orchestrator';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
 @injectable()
 export class CommitEntity implements Entity {
   constructor(
-    @inject(PatternTypes.Core.Secured)
+    @inject(CortexTypes.Core.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>
   ) {}
 
@@ -59,12 +60,21 @@ export class CommitLinked extends CommitEntity implements HasLinks, HasRedirect 
 
 @injectable()
 export class CommitLens extends CommitEntity implements HasLenses {
+
+  constructor(
+    @inject(CortexTypes.Core.Secured)
+    protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
+    @inject(i18nTypes.Translate) protected t: (key: string) => string
+  ) {
+    super(securedPattern);
+  }
+  
   lenses: (commit: Secured<Commit>) => Lens[] = (commit: Secured<Commit>): Lens[] => {
     return [
       {
-        name: 'commit-history',
+        name: this.t('evees:commit-history'),
         render: (lensContent: TemplateResult) => html`
-          <commit-history .data=${commit}>${lensContent}</commit-history>
+          <evee-commit-history .data=${commit}>${lensContent}</evee-commit-history>
         `
       }
     ];
@@ -79,7 +89,7 @@ export class CommitPattern extends CommitEntity
       Signed<Commit>
     > {
   constructor(
-    @inject(PatternTypes.Core.Secured)
+    @inject(CortexTypes.Core.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
     @inject(EveesTypes.Evees) protected evees: Evees
   ) {

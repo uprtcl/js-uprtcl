@@ -1,7 +1,7 @@
 import { LitElement, property, PropertyValues, html } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { PatternRecognizer, CreateChild, Hashed, PatternTypes } from '@uprtcl/cortex';
+import { PatternRecognizer, CreateChild, Hashed, CortexTypes } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/common';
 
 export class CortexUpdatable extends moduleConnect(LitElement) {
@@ -28,7 +28,7 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
   async createChild(parent: any) {
     if (!this.entity) return;
 
-    const recognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
+    const recognizer: PatternRecognizer = this.request(CortexTypes.Recognizer);
 
     const createChild: CreateChild | undefined = recognizer.recognizeUniqueProperty(
       this.entity,
@@ -41,6 +41,8 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
       if (updateNeeded) this.fireEntityUpdated();
     }
   }
+
+  loadAccessControl() {}
 
   update(changedProperties: PropertyValues) {
     super.update(changedProperties);
@@ -65,7 +67,7 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
   async updateContent(newContent: any) {
     if (!this.entity) return;
 
-    const recognizer: PatternRecognizer = this.request(PatternTypes.Recognizer);
+    const recognizer: PatternRecognizer = this.request(CortexTypes.Recognizer);
     const updatable: Updatable<any, any> | undefined = recognizer.recognizeUniqueProperty(
       this.entity,
       prop => !!(prop as Updatable<any, any>).update

@@ -9,7 +9,8 @@ module.exports = config => {
       esm: {
         babel: true,
         nodeResolve: true,
-        fileExtensions: ['.ts']
+        fileExtensions: ['.ts'],
+        preserveSymlinks: true
       },
 
       files: [

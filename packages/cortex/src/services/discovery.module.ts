@@ -7,7 +7,7 @@ import { MultiSourceService } from './multi/multi-source.service';
 import { CacheDexie } from './cache/cache.dexie';
 import { KnownSourcesDexie } from './known-sources/known-sources.dexie';
 import { injectable, interfaces, inject } from 'inversify';
-import { PatternTypes, DiscoveryTypes } from '../types';
+import { CortexTypes, DiscoveryTypes } from '../types';
 import { Source } from './sources/source';
 
 export function discoveryModule(
@@ -27,7 +27,7 @@ export function discoveryModule(
       isBound: interfaces.IsBound,
       rebind: interfaces.Rebind
     ): Promise<void> {
-      await this.moduleProvider(PatternTypes.Module);
+      await this.moduleProvider(CortexTypes.Module);
       await Promise.all([cacheService.ready(), localKnownSources.ready()]);
 
       bind<MultiSourceService>(DiscoveryTypes.MultiSource).to(MultiSourceService);

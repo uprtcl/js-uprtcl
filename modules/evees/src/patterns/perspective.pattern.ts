@@ -1,8 +1,7 @@
 import { injectable, inject } from 'inversify';
-import { Store } from 'redux';
 
 import {
-  PatternTypes,
+  CortexTypes,
   HasRedirect,
   Pattern,
   IsSecure,
@@ -13,16 +12,12 @@ import {
   HasActions,
   PatternAction,
   PatternRecognizer,
-  CreateChild,
   Entity
 } from '@uprtcl/cortex';
-import { AccessControlService, Updatable, Secured } from '@uprtcl/common';
-import { ReduxTypes, Logger } from '@uprtcl/micro-orchestrator';
+import { Secured } from '@uprtcl/common';
 
 import { Perspective, EveesTypes, Commit, UpdateRequest } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
-import { selectPerspectiveHeadId, selectEvees } from '../state/evees.selectors';
-import { LoadPerspectiveDetails, LOAD_PERSPECTIVE_DETAILS } from '../state/evees.actions';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { createEntity } from '../utils/utils';
 
@@ -31,7 +26,7 @@ export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 @injectable()
 export class PerspectiveEntity implements Entity {
   constructor(
-    @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>
+    @inject(CortexTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>
   ) {}
   recognize(object: object) {
     return (
@@ -49,10 +44,9 @@ export class PerspectiveEntity implements Entity {
 export class PerspectiveLinks extends PerspectiveEntity
   implements HasLinks, HasRedirect, Creatable<NewPerspectiveArgs, Signed<Perspective>>, HasActions {
   constructor(
-    @inject(PatternTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
+    @inject(CortexTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesTypes.Evees) protected evees: Evees,
-    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ReduxTypes.Store) protected store: Store,
+    @inject(CortexTypes.Recognizer) protected recognizer: PatternRecognizer,
     @inject(EveesTypes.MergeStrategy) protected merge: MergeStrategy
   ) {
     super(securedPattern);
@@ -163,15 +157,7 @@ export class PerspectiveLinks extends PerspectiveEntity
 
     await this.evees.updatePerspectiveDetails(perspective.id, { headId: newHead.id });
 
-    const loadHead: LoadPerspectiveDetails = {
-      type: LOAD_PERSPECTIVE_DETAILS,
-      payload: {
-        perspectiveId: perspective.id
-      }
-    };
-    this.store.dispatch(loadHead);
-
-    return false;
+    return true;
   };
 
   accessControl = (perspective: Secured<Perspective>) => {

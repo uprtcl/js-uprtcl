@@ -4,10 +4,10 @@ import { MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { PatternRecognizer } from './recognizer/pattern.recognizer';
 import { Pattern } from './pattern';
-import { PatternTypes } from '../types';
+import { CortexTypes } from '../types';
 
 @injectable()
-export class PatternsModule implements MicroModule {
+export class CortexModule implements MicroModule {
   async onLoad(
     context: interfaces.Context,
     bind: interfaces.Bind,
@@ -16,12 +16,12 @@ export class PatternsModule implements MicroModule {
     rebind: interfaces.Rebind
   ): Promise<void> {
     let recognizer: PatternRecognizer | undefined = undefined;
-    bind<PatternRecognizer>(PatternTypes.Recognizer).toDynamicValue((ctx: interfaces.Context) => {
+    bind<PatternRecognizer>(CortexTypes.Recognizer).toDynamicValue((ctx: interfaces.Context) => {
       if (recognizer) return recognizer;
 
       recognizer = new PatternRecognizer();
 
-      const patterns = ctx.container.getAll<Pattern>(PatternTypes.Pattern);
+      const patterns = ctx.container.getAll<Pattern>(CortexTypes.Pattern);
       recognizer.patterns = patterns;
 
       return recognizer;

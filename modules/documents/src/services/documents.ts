@@ -3,7 +3,7 @@ import { multiInject, injectable, inject } from 'inversify';
 import {
   KnownSourcesService,
   DiscoveryTypes,
-  PatternTypes,
+  CortexTypes,
   PatternRecognizer,
   Creatable,
   CachedMultiSourceService,
@@ -25,7 +25,7 @@ export class Documents {
   service: CachedMultiSourceService<DocumentsLocal, DocumentsRemote>;
 
   constructor(
-    @inject(PatternTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(CortexTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(DiscoveryTypes.LocalKnownSources)
     protected knownSources: KnownSourcesService,
     @inject(DocumentsTypes.DocumentsLocal)

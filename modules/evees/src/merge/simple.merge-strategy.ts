@@ -4,7 +4,7 @@ import { inject, injectable } from 'inversify';
 import {
   DiscoveryTypes,
   DiscoveryService,
-  PatternTypes,
+  CortexTypes,
   PatternRecognizer,
   Pattern,
   KnownSourcesService,
@@ -29,7 +29,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     @inject(EveesTypes.Evees) protected evees: Evees,
     @inject(DiscoveryTypes.DiscoveryService) protected discovery: DiscoveryService,
     @inject(DiscoveryTypes.LocalKnownSources) protected knownSources: KnownSourcesService,
-    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer
+    @inject(CortexTypes.Recognizer) protected recognizer: PatternRecognizer
   ) {}
 
   async mergePerspectives(

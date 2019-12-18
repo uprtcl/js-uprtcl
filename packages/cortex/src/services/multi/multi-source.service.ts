@@ -4,7 +4,7 @@ import { Source, SourceProvider } from '../sources/source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Hashed } from '../../patterns/properties/hashable';
-import { PatternTypes, DiscoveryTypes } from '../../types';
+import { CortexTypes, DiscoveryTypes } from '../../types';
 import { MultiService } from './multi.service';
 import { linksFromObject, raceToSuccess } from '../discovery.utils';
 
@@ -17,7 +17,7 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
    * @param serviceProviders array of all source service providers from which to get objects
    */
   constructor(
-    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(CortexTypes.Recognizer) protected recognizer: PatternRecognizer,
     @inject(DiscoveryTypes.LocalKnownSources)
     public localKnownSources: KnownSourcesService,
     @multiInject(DiscoveryTypes.Source)

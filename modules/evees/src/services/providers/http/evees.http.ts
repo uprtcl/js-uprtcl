@@ -1,6 +1,6 @@
 import { HttpProvider, HttpConnection } from '@uprtcl/connections';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Hashed, UplAuth } from '@uprtcl/cortex';
+import { Hashed } from '@uprtcl/cortex';
 import { BasicAdminAccessControlService } from '@uprtcl/common';
 
 import { ProposalsProvider } from '../../proposals.provider';

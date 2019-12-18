@@ -8,7 +8,7 @@ import {
   PatternAction,
   Hashed,
   Hashable,
-  PatternTypes,
+  CortexTypes,
   Creatable,
   PatternRecognizer,
   HasChildren,
@@ -16,9 +16,8 @@ import {
   HasTitle
 } from '@uprtcl/cortex';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
-import { selectCanWrite } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
-import { ReduxTypes } from '@uprtcl/micro-orchestrator';
+import { ReduxTypes, i18nTypes } from '@uprtcl/micro-orchestrator';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';
 import { Documents } from '../services/documents';
@@ -27,7 +26,7 @@ const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
 export class TextNodeEntity implements Entity {
-  constructor(@inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
+  constructor(@inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;
 
@@ -40,6 +39,13 @@ export class TextNodeEntity implements Entity {
 
 @injectable()
 export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasChildren, Mergeable {
+  constructor(
+    @inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(i18nTypes.Translate) protected t: (key: string) => string
+  ) {
+    super(hashedPattern);
+  }
+
   replaceChildrenLinks = (node: Hashed<TextNode>) => (
     childrenHashes: string[]
   ): Hashed<TextNode> => ({
@@ -57,9 +63,9 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
   lenses = (node: Hashed<TextNode>): Lens[] => {
     return [
       {
-        name: 'Document',
+        name: this.t('documents:document'),
         render: (lensContent: TemplateResult) => html`
-          <text-node .data=${node.object}>${lensContent}</text-node>
+          <documents-text-node .data=${node.object}>${lensContent}</documents-text-node>
         `
       }
     ];
@@ -94,9 +100,8 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
 @injectable()
 export class TextNodeActions extends TextNodeEntity implements HasActions {
   constructor(
-    @inject(PatternTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(PatternTypes.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ReduxTypes.Store) protected store: Store
+    @inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(CortexTypes.Recognizer) protected recognizer: PatternRecognizer
   ) {
     super(hashedPattern);
   }
