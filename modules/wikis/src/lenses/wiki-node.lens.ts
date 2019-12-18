@@ -2,7 +2,6 @@ import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { LensElement } from '@uprtcl/lenses';
 import { EveesTypes } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
 import { Creatable } from '@uprtcl/cortex';
@@ -10,7 +9,7 @@ import { GraphQlTypes } from '@uprtcl/common';
 
 import { WikiNode } from '../types';
 
-export class WikiNodeLens extends moduleConnect(LitElement) implements LensElement<WikiNode> {
+export class WikiNodeLens extends moduleConnect(LitElement) {
   @property({ type: Object })
   data!: WikiNode;
 
@@ -37,13 +36,13 @@ export class WikiNodeLens extends moduleConnect(LitElement) implements LensEleme
 
     const eveesProvider: any = this.requestAll(EveesTypes.EveesRemote).find((provider: any) => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.uprtclProviderLocator);
+      return regexp.test(provider.uprtclProviderLocator);
     });
 
     const pagesProvider: any = this.requestAll(DocumentsTypes.DocumentsRemote).find(
       (provider: any) => {
         const regexp = new RegExp('^http');
-        return !regexp.test(provider.uprtclProviderLocator);
+        return regexp.test(provider.uprtclProviderLocator);
       }
     );
 

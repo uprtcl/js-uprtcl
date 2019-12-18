@@ -43,9 +43,10 @@ import { SimpleWiki } from './simple-wiki';
 
   const evees = eveesModule([httpEvees, ethEvees]);
 
+  const httpDocuments = new DocumentsHttp(c1host, httpConnection);
   const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
 
-  const documents = documentsModule([ipfsDocuments]);
+  const documents = documentsModule([ipfsDocuments, httpDocuments]);
 
   const httpWikis = new WikisHttp(c1host, httpConnection);
   const ipfsWikis = new WikisIpfs(ipfsConnection);
@@ -68,7 +69,8 @@ import { SimpleWiki } from './simple-wiki';
     [AuthTypes.Module]: AuthReduxModule,
     [LensesTypes.Module]: lenses,
     [EveesTypes.Module]: evees,
-    [DocumentsTypes.Module]: documents
+    [DocumentsTypes.Module]: documents,
+    [WikisTypes.Module]: wikis
   };
 
   const orchestrator = new MicroOrchestrator();
