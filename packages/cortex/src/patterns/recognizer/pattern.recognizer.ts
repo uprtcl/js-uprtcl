@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash-es';
 import { injectable } from 'inversify';
 
 import { Pattern, Property } from '../pattern';

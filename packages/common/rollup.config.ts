@@ -18,7 +18,7 @@ export default {
     { file: pkg.main, name: camelCase(libraryName), format: 'umd', sourcemap: true },
     { file: pkg.module, format: 'es', sourcemap: true }
   ],
-  // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
+  // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash-es')
   external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],
   watch: {
     include: 'src/**'

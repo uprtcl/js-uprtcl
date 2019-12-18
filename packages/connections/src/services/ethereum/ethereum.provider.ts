@@ -1,7 +1,7 @@
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 
-import { ServiceProvider, UplAuth } from '@uprtcl/cortex';
+import { ServiceProvider } from '@uprtcl/cortex';
 
 import { EthereumConnection } from './ethereum.connection';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -24,7 +24,7 @@ export abstract class EthereumProvider implements ServiceProvider {
     protected ethConnection: EthereumConnection
   ) {}
 
-  get uplAuth(): UplAuth {
+  get uplAuth() {
     return {
       userId: this.ethConnection.getCurrentAccount(),
       isAuthenticated: this.ethConnection.getCurrentAccount() != null

@@ -1,8 +1,8 @@
-import { Dictionary } from 'lodash';
 import { interfaces, injectable, inject } from 'inversify';
 import { i18n } from 'i18next';
 
 import {
+  Dictionary,
   MicroModule,
   Constructor,
   MicroOrchestratorTypes,

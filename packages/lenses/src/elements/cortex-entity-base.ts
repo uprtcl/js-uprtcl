@@ -1,8 +1,8 @@
-import { flatMap, Dictionary } from 'lodash';
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, PropertyValues } from 'lit-element';
+import { flatMap } from 'lodash-es';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { GraphQlTypes } from '@uprtcl/common';
 import { Hashed } from '@uprtcl/cortex';
 

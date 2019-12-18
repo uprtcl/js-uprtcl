@@ -1,6 +1,6 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { DiscoveryTypes, CortexTypes, PatternsModule, discoveryModule } from '@uprtcl/cortex';
+import { DiscoveryTypes, CortexTypes, PatternsModule, discoveryModule, CortexModule } from '@uprtcl/cortex';
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 
 import { MockSource } from '../mocks/mock.source';
@@ -17,16 +17,15 @@ describe('basic GraphQl getEntity', () => {
   beforeEach(async () => {
     source = new MockSource();
     source.addObject('hash1', object1);
-    
+
     orchestrator = new MicroOrchestrator();
     orchestrator.container.bind(DiscoveryTypes.Source).toConstantValue(source);
-    /* 
 
     await orchestrator.loadModules({
-      [CortexTypes.Module]: PatternsModule,
+      [CortexTypes.Module]: CortexModule,
       [DiscoveryTypes.Module]: discoveryModule(),
       [GraphQlTypes.Module]: ApolloClientModule
-    }); */
+    });
   });
 
   it('graphql loads and entity given its id', async () => {

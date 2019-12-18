@@ -3,6 +3,8 @@ import { ModuleProvider } from './orchestrator/module-provider';
 
 export type Constructor<T, A extends Array<any> = any[]> = new (...args: A) => T;
 
+export type Dictionary<T> = { [key: string]: T };
+
 export const MicroOrchestratorTypes = {
   Logger: Symbol('logger'),
   ModuleProvider: Symbol('module-provider')

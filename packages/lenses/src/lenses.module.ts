@@ -13,6 +13,7 @@ import { lenses } from './lenses';
 import { CortexLensSelector } from './elements/cortex-lens-selector';
 import { CortexEntityBase } from './elements/cortex-entity-base';
 import { CortexActions } from './elements/cortex-actions';
+import { CortexUpdatable } from './elements/cortex-updatable';
 import { LensesPlugin } from './types';
 import { SlotPlugin } from './plugins/slot.plugin';
 import { RenderLensPlugin } from './plugins/render-lens.plugin';
@@ -54,6 +55,7 @@ export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin
       customElements.define('cortex-actions', CortexActions);
       customElements.define('cortex-lens-selector', CortexLensSelector);
       customElements.define('cortex-entity', cortexEntity);
+      customElements.define('cortex-updatable', CortexUpdatable);
 
       Object.entries(lenses).forEach(([tag, lens]) => {
         customElements.define(tag, lens);

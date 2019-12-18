@@ -1,5 +1,5 @@
 import { gql, ApolloClient } from 'apollo-boost';
-import { merge, cloneDeepWith } from 'lodash';
+import { merge, cloneDeepWith } from 'lodash-es';
 
 import {
   DiscoveryTypes,
@@ -38,6 +38,11 @@ export const baseTypeDefs = gql`
     links: [Entity!]
     actions: [Action!]
     lenses: [Lens!]
+    accessControl: AccessControl
+  }
+
+  type AccessControl {
+    canWrite: Boolean
   }
 
   type Lens {

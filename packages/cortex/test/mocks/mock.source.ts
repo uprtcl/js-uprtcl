@@ -1,4 +1,4 @@
-import { Dictionary } from 'lodash';
+import { Dictionary } from 'lodash-es';
 
 import { Source, Hashed } from '../../src/uprtcl-cortex';
 

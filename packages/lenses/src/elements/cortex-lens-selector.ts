@@ -1,4 +1,4 @@
-import { flatMap } from 'lodash';
+import { flatMap } from 'lodash-es';
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, query, css, PropertyValues } from 'lit-element';
 
