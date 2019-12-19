@@ -45,7 +45,7 @@ export class TextNodeLens extends LitElement {
   render() {
     return html`
       <div style="display: flex; flex-direction: row;">
-        <node-list .data=${this.data} style="flex: 1;">
+        <node-list .data=${this.data} lens="content" style="flex: 1;">
           ${this.data.type === TextType.Paragraph
             ? html`
                 <div

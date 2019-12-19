@@ -23,7 +23,7 @@ export const baseTypeDefs = gql`
   }
 
   type Query {
-    getEntity(id: ID!, depth: Int = 1): Entity!
+    getEntity(id: ID!): Entity!
   }
 
   type Entity {
@@ -38,17 +38,13 @@ export const baseTypeDefs = gql`
     links: [Entity!]
     actions: [Action!]
     lenses: [Lens!]
-    accessControl: AccessControl
-  }
-
-  type AccessControl {
-    canWrite: Boolean
   }
 
   type Lens {
     name: String!
-    tag: String!
+    type: String!
     render: Function!
+    type: String
   }
 
   type Action {
@@ -61,7 +57,7 @@ export const baseTypeDefs = gql`
 
 export const baseResolvers = {
   Query: {
-    async getEntity(parent, { id, depth }, { cache, container }, info) {
+    async getEntity(parent, { id }, { cache, container }, info) {
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
       const entity: Hashed<any> | undefined = await discovery.get(id);
@@ -114,7 +110,7 @@ export const baseResolvers = {
       });
 
       const accPatterns = {};
-      merge(accPatterns, ...applyedPatterns);
+      merge(accPatterns, ...applyedPatterns, { __entity: entity });
 
       return cloneDeepWith(accPatterns, (value: any) => {
         if (typeof value === 'function') return () => value;

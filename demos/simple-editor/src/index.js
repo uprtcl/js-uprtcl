@@ -17,7 +17,9 @@ import { WikisIpfs, wikisModule, WikisTypes, WikisHttp } from '@uprtcl/wikis';
 import {
   ApolloClientModule,
   GraphQlTypes,
-  i18nextBaseModule
+  i18nextBaseModule,
+  AccessControlTypes,
+  AccessControlModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
 import {
@@ -65,6 +67,7 @@ import { SimpleWiki } from './simple-wiki';
     [CortexTypes.Module]: CortexModule,
     [DiscoveryTypes.Module]: discoveryModule(),
     [LensesTypes.Module]: lenses,
+    [AccessControlTypes.Module]: AccessControlModule,
     [EveesTypes.Module]: evees,
     [DocumentsTypes.Module]: documents,
     [WikisTypes.Module]: wikis

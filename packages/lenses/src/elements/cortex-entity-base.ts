@@ -1,20 +1,21 @@
 import { ApolloClient, gql } from 'apollo-boost';
-import { LitElement, property, PropertyValues } from 'lit-element';
+import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
 import { flatMap } from 'lodash-es';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { GraphQlTypes } from '@uprtcl/common';
 import { Hashed } from '@uprtcl/cortex';
 
-import { Lens, CortexConfig } from '../types';
+import { Lens } from '../types';
 import { SlotPlugin } from '../plugins/slot.plugin';
+import { RenderLensPlugin } from '../plugins/render-lens.plugin';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
   public hash!: string;
 
   @property()
-  public config!: CortexConfig;
+  public lens!: string;
 
   @property()
   protected entity: Hashed<any> | undefined = undefined;
@@ -49,7 +50,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
             patterns {
               lenses {
                 name
-                tag
+                type
                 render
               }
             }
@@ -66,8 +67,8 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
 
     this.entity = result.data.getEntity.raw;
 
-    if(this.config && this.config.lens) {
-      this.selectedLens = lenses.find(lens => lens.tag === this.config.lens);
+    if(this.lens) {
+      this.selectedLens = lenses.find(lens => lens.type === this.lens);
     } 
 
     if (this.selectedLens === undefined) {
@@ -77,6 +78,19 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
 
   get slotPlugins(): Dictionary<SlotPlugin> {
     return {};
+  }
+
+  get lensPlugins(): Dictionary<RenderLensPlugin> {
+    return {};
+  }
+
+  renderLensPlugins(initialLens: TemplateResult) {
+    const renderLensPlugins: RenderLensPlugin[] = Object.values(this.lensPlugins);
+
+    return renderLensPlugins.reduce(
+      (acc, next) => next.renderLens(acc, this.entity, this.selectedLens),
+      initialLens
+    );
   }
 
   updated(changedProperties: PropertyValues) {

@@ -1,12 +1,20 @@
-import { injectable, interfaces } from 'inversify';
+import { injectable, interfaces, inject } from 'inversify';
 
-import { CortexTypes, CortexModule, patternsModule, sourcesModule } from '@uprtcl/cortex';
+import {
+  elementsModule,
+  MicroModule,
+  Constructor,
+  ModuleProvider,
+  MicroOrchestratorTypes
+} from '@uprtcl/micro-orchestrator';
+import { CortexTypes, patternsModule, sourcesModule } from '@uprtcl/cortex';
 import {
   graphQlSchemaModule,
   DefaultSecuredPattern,
   DefaultSignedPattern,
   CidHashedPattern,
-  i18nModule
+  i18nModule,
+  AccessControlTypes
 } from '@uprtcl/common';
 
 import { PerspectiveLinks } from './patterns/perspective.pattern';
@@ -18,7 +26,6 @@ import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
-import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
 import en from '../i18n/en.json';
 import { PerspectivesList } from './lenses/perspectives-list';
@@ -71,7 +78,12 @@ export function eveesModule(
 ): Constructor<MicroModule> {
   @injectable()
   class EveesModule implements MicroModule {
+    constructor(
+      @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider
+    ) {}
     async onLoad(context: interfaces.Context, bind: interfaces.Bind) {
+      await this.moduleProvider(AccessControlTypes.Module);
+
       bind(EveesTypes.EveesLocal).to(localEvees);
       bind(EveesTypes.Evees).to(Evees);
       bind(EveesTypes.MergeStrategy).to(RecursiveContextMergeStrategy);

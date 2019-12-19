@@ -2,9 +2,9 @@ import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 
 import { ServiceProvider } from '@uprtcl/cortex';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EthereumConnection } from './ethereum.connection';
-import { Logger } from '@uprtcl/micro-orchestrator';
 
 export interface EthereumProviderOptions {
   contract: {
@@ -24,11 +24,8 @@ export abstract class EthereumProvider implements ServiceProvider {
     protected ethConnection: EthereumConnection
   ) {}
 
-  get uplAuth() {
-    return {
-      userId: this.ethConnection.getCurrentAccount(),
-      isAuthenticated: this.ethConnection.getCurrentAccount() != null
-    };
+  get userId() {
+    return this.ethConnection.getCurrentAccount();
   }
 
   abstract get uprtclProviderLocator(): string;

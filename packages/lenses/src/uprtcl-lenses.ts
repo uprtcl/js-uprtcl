@@ -12,5 +12,5 @@ export { Node, NodeList } from './lenses/node-list';
 export { CortexEntityBase } from './elements/cortex-entity-base';
 export { CortexEntity } from './elements/cortex-entity';
 export { CortexUpdatable } from './elements/cortex-updatable';
-export { Lens, LensesPlugin, CortexConfig } from './types';
+export { Lens, LensesPlugin } from './types';
 export { HasLenses } from './properties/has-lenses';

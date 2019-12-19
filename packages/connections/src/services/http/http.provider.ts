@@ -15,11 +15,8 @@ export class HttpProvider implements ServiceProvider {
     return `http:${this.options.apiId}:${url.hostname}`;
   }
 
-  get authInfo() {
-    return {
-      userId: this.connection.userId,
-      isAuthenticated: this.connection.userId != undefined
-    };
+  get userId() {
+    return this.connection.userId;
   }
 
   set authInfo(info) {
