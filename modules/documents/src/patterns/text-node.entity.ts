@@ -64,6 +64,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
     return [
       {
         name: this.t('documents:document'),
+        tag: 'content',
         render: (lensContent: TemplateResult) => html`
           <documents-text-node .data=${node.object}>${lensContent}</documents-text-node>
         `

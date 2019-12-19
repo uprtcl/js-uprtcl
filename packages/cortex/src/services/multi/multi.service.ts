@@ -1,6 +1,4 @@
-import { Dictionary } from 'lodash';
-
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { HasLinks } from '../../patterns/properties/has-links';
 import { ServiceProvider } from '../sources/service.provider';

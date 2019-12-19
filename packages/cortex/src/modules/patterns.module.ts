@@ -2,17 +2,14 @@ import { interfaces, injectable, inject } from 'inversify';
 
 import {
   MicroModule,
-  Logger,
   MicroOrchestratorTypes,
   ModuleProvider,
-  Constructor
+  Constructor,
+  Dictionary
 } from '@uprtcl/micro-orchestrator';
 
 import { Pattern } from '../patterns/pattern';
-import { DiscoveryTypes, CortexTypes, LensesTypes } from '../types';
-import { ServiceProvider, Ready } from '../services/sources/service.provider';
-import { Source, SourceProvider } from '../services/sources/source';
-import { Dictionary } from 'lodash';
+import { CortexTypes } from '../types';
 
 /**
  * This is a convenience MicroModule class that is supposed to be overriden. It expects a set of patterns

@@ -1,7 +1,8 @@
-import { MicroModule } from './micro.module';
-import { Constructor } from '../types';
 import { Dictionary } from 'lodash';
 import { injectable } from 'inversify';
+
+import { MicroModule } from './micro.module';
+import { Constructor } from '../types';
 
 @injectable()
 export abstract class ElementsModule implements MicroModule {

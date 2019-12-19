@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
-import { Dictionary } from 'lodash';
 
+import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { Pattern, HasChildren, Hashed } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
 

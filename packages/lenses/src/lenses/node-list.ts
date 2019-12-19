@@ -1,4 +1,5 @@
 import { LitElement, html, property, css } from 'lit-element';
+import { CortexConfig } from '../types';
 
 export interface Node {
   links: string[];
@@ -7,6 +8,9 @@ export interface Node {
 export class NodeList extends LitElement {
   @property({ type: Object })
   data!: Node;
+
+  @property({ type: Object })
+  config!: CortexConfig;
 
   @property({ type: Boolean })
   editable: boolean = true;
@@ -27,7 +31,7 @@ export class NodeList extends LitElement {
 
         ${this.data.links.map(
           link => html`
-            <cortex-entity .hash=${link}></cortex-entity>
+            <cortex-entity .hash=${link} .config=${this.config}></cortex-entity>
           `
         )}
       </div>

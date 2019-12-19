@@ -1,5 +1,5 @@
 import { Diff } from 'diff-match-patch-ts';
-import * as lodash from 'lodash';
+import * as lodash from 'lodash-es';
 
 import { DiffUtils } from './diff.utils';
 

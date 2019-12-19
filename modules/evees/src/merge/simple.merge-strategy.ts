@@ -1,12 +1,11 @@
-import { Dictionary } from 'lodash';
 import { inject, injectable } from 'inversify';
 
+import { Dictionary } from '@uprtcl/micro-orchestrator';
 import {
   DiscoveryTypes,
   DiscoveryService,
   CortexTypes,
   PatternRecognizer,
-  Pattern,
   KnownSourcesService,
   Hashed
 } from '@uprtcl/cortex';

@@ -1,5 +1,5 @@
 import { multiInject, injectable, inject } from 'inversify';
-import { isEqual } from 'lodash';
+import { isEqual } from 'lodash-es';
 
 import {
   KnownSourcesService,

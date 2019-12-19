@@ -1,5 +1,3 @@
-import { Buffer } from 'ipfs-http-client';
-
 import { Hashed, SourceProvider } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
 

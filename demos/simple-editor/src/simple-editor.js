@@ -69,7 +69,7 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     return html`
       ${this.rootHash
         ? html`
-            <cortex-entity .hash=${this.rootHash}></cortex-entity>
+            <cortex-entity .hash=${this.rootHash} .config=${{lens: 'evee-commit-history'}}></cortex-entity>
           `
         : html`
             Loading...

@@ -44,6 +44,7 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
 
   loadAccessControl() {}
 
+
   update(changedProperties: PropertyValues) {
     super.update(changedProperties);
 

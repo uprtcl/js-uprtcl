@@ -9,6 +9,7 @@ export {
   MicroOrchestratorTypes,
   Constructor,
   CustomElement,
+  Dictionary,
   ModulesToLoad,
   ReduxTypes,
   i18nTypes

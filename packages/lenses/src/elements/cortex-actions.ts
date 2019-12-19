@@ -1,13 +1,13 @@
 import { LitElement, html, property, query, PropertyValues, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-import { flatMap, Dictionary } from 'lodash';
+import { flatMap } from 'lodash-es';
 import { Menu } from '@authentic/mwc-menu';
 import '@authentic/mwc-list';
 import '@authentic/mwc-tooltip';
 import '@material/mwc-icon-button';
 import '@material/mwc-button';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternAction } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
 
