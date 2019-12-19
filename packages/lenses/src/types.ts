@@ -6,6 +6,7 @@ import { RenderLensPlugin } from './plugins/render-lens.plugin';
 
 export interface Lens {
   name: string;
+  type: string;
   render: (lensContent: TemplateResult) => TemplateResult;
   type?: string;
 }

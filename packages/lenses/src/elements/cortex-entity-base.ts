@@ -15,6 +15,9 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   public hash!: string;
 
   @property()
+  public lens!: string;
+
+  @property()
   protected entity: Hashed<any> | undefined = undefined;
 
   // Lenses
@@ -47,6 +50,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
             patterns {
               lenses {
                 name
+                type
                 render
               }
             }
@@ -63,7 +67,13 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
 
     this.entity = result.data.getEntity.raw;
 
-    this.selectedLens = lenses[0];
+    if(this.lens) {
+      this.selectedLens = lenses.find(lens => lens.type === this.lens);
+    } 
+
+    if (this.selectedLens === undefined) {
+      this.selectedLens = lenses[0];
+    }
   }
 
   get slotPlugins(): Dictionary<SlotPlugin> {

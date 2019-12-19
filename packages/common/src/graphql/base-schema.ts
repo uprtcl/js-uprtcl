@@ -42,6 +42,7 @@ export const baseTypeDefs = gql`
 
   type Lens {
     name: String!
+    type: String!
     render: Function!
     type: String
   }
