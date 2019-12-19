@@ -80,7 +80,7 @@ export class PerspectiveLinks extends PerspectiveEntity
           );
           window.history.pushState('', '', `/?id=${newPerspective.id}`);
         },
-        type: 'version_control'
+        type: 'version-control'
       },
       {
         icon: 'merge_type',
@@ -92,7 +92,7 @@ export class PerspectiveLinks extends PerspectiveEntity
           );
           console.log(updateRequests);
         },
-        type: 'version_control'
+        type: 'version-control'
       }
     ];
   };

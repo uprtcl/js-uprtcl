@@ -6,7 +6,7 @@ import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { GraphQlTypes } from '@uprtcl/common';
 import { Hashed } from '@uprtcl/cortex';
 
-import { Lens, CortexConfig } from '../types';
+import { Lens } from '../types';
 import { SlotPlugin } from '../plugins/slot.plugin';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
@@ -14,7 +14,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   public hash!: string;
 
   @property()
-  public config!: CortexConfig;
+  public lens!: string;
 
   @property()
   protected entity: Hashed<any> | undefined = undefined;
@@ -49,7 +49,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
             patterns {
               lenses {
                 name
-                tag
+                type
                 render
               }
             }
@@ -66,8 +66,8 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
 
     this.entity = result.data.getEntity.raw;
 
-    if(this.config && this.config.lens) {
-      this.selectedLens = lenses.find(lens => lens.tag === this.config.lens);
+    if(this.lens) {
+      this.selectedLens = lenses.find(lens => lens.type === this.lens);
     } 
 
     if (this.selectedLens === undefined) {
