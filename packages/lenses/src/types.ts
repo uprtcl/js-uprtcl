@@ -6,6 +6,7 @@ import { RenderLensPlugin } from './plugins/render-lens.plugin';
 
 export interface Lens {
   name: string;
+  tag: string;
   render: (lensContent: TemplateResult) => TemplateResult;
 }
 
@@ -15,3 +16,7 @@ export interface Isomorphisms {
 }
 
 export type LensesPlugin = SlotPlugin | RenderLensPlugin;
+
+export interface CortexConfig {
+  lens: string
+}
