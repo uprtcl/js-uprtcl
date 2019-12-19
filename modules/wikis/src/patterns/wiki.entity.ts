@@ -82,6 +82,7 @@ export class WikiCommon extends WikiEntity implements HasLenses {
     return [
       {
         name: 'Wiki',
+        type: 'content',
         render: (lensContent: TemplateResult) => html`
           <basic-wiki .data=${wiki.object}>${lensContent}</basic-wiki>
         `

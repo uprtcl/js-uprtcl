@@ -44,7 +44,6 @@ export const baseTypeDefs = gql`
     name: String!
     type: String!
     render: Function!
-    type: String
   }
 
   type Action {

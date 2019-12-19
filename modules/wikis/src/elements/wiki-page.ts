@@ -40,7 +40,7 @@ export class WikiPage extends moduleConnect(LitElement) {
           <cortex-actions .hash=${this.pageHash} />
         </div>
       </div>
-      <cortex-entity .hash=${this.pageHash}> </cortex-entity>
+      <cortex-entity .hash=${this.pageHash} lens="content"> </cortex-entity>
     `;
   }
 
