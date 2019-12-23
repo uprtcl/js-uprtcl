@@ -65,7 +65,9 @@ export class TextNodeLens extends LitElement {
               `}
         </node-list>
 
-        <slot name="plugins"></slot>
+        <div style="flex: 0">
+          <slot name="plugins"></slot>
+        </div>
       </div>
     `;
   }

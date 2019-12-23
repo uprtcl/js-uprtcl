@@ -7,6 +7,7 @@ import {
   MicroOrchestratorTypes,
   ModuleProvider
 } from '@uprtcl/micro-orchestrator';
+import { GraphQlTypes, graphQlSchemaModule } from '@uprtcl/common';
 
 import { CortexEntity } from './elements/cortex-entity';
 import { lenses } from './lenses';
@@ -17,6 +18,7 @@ import { CortexUpdatable } from './elements/cortex-updatable';
 import { LensesPlugin } from './types';
 import { SlotPlugin } from './plugins/slot.plugin';
 import { RenderLensPlugin } from './plugins/render-lens.plugin';
+import { lensesSchema } from './graphql.schema';
 
 const isSlotPlugin = (p: LensesPlugin) => (p as SlotPlugin).renderSlot;
 const isRenderLensPlugin = (p: LensesPlugin) => (p as RenderLensPlugin).renderLens;
@@ -44,6 +46,7 @@ export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin
 
     async onLoad(): Promise<void> {
       await this.moduleProvider(CortexTypes.Module);
+      await this.moduleProvider(GraphQlTypes.Module);
 
       customElements.define('cortex-actions', CortexActions);
       customElements.define('cortex-lens-selector', CortexLensSelector);
@@ -54,6 +57,8 @@ export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin
         customElements.define(tag, lens);
       });
     }
+
+    submodules = [graphQlSchemaModule(lensesSchema, {})];
   }
   return LensesModule;
 }

@@ -36,22 +36,6 @@ export const baseTypeDefs = gql`
 
   type Patterns {
     links: [Entity!]
-    actions: [Action!]
-    lenses: [Lens!]
-  }
-
-  type Lens {
-    name: String!
-    type: String!
-    render: Function!
-    type: String
-  }
-
-  type Action {
-    icon: String!
-    title: String!
-    action: Function!
-    type: String
   }
 `;
 
