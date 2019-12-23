@@ -14,8 +14,8 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
   public hash!: string;
 
-  @property()
-  public lens!: string;
+  @property({ attribute: 'lens-type' })
+  public lensType!: string;
 
   @property()
   protected entity: Hashed<any> | undefined = undefined;
@@ -67,9 +67,9 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
 
     this.entity = result.data.getEntity.raw;
 
-    if(this.lens) {
-      this.selectedLens = lenses.find(lens => lens.type === this.lens);
-    } 
+    if (this.lensType) {
+      this.selectedLens = lenses.find(lens => lens.type === this.lensType);
+    }
 
     if (this.selectedLens === undefined) {
       this.selectedLens = lenses[0];

@@ -1,8 +1,10 @@
 import { LitElement, property, html } from 'lit-element';
 
+import { sharedStyles } from '@uprtcl/lenses';
+
 import { TextNode, TextType } from '../types';
 
-export class TextNodeLens extends LitElement {
+export class DocumentTextNode extends LitElement {
   @property({ type: Object })
   data!: TextNode;
 
@@ -17,6 +19,10 @@ export class TextNodeLens extends LitElement {
     if (this.lastText) data.text = this.lastText;
 
     return data;
+  }
+
+  static get styles() {
+    return sharedStyles;
   }
 
   connectedCallback() {
@@ -44,8 +50,8 @@ export class TextNodeLens extends LitElement {
 
   render() {
     return html`
-      <div style="display: flex; flex-direction: row;">
-        <node-list .data=${this.data} lens="content" style="flex: 1;">
+      <div class="row">
+        <div class="column" style="flex: 1;">
           ${this.data.type === TextType.Paragraph
             ? html`
                 <div
@@ -63,7 +69,12 @@ export class TextNodeLens extends LitElement {
                   ${this.data.text}
                 </h3>
               `}
-        </node-list>
+          ${this.data.links.map(
+            link => html`
+              <cortex-entity .hash=${link} lens-type="content"></cortex-entity>
+            `
+          )}
+        </div>
 
         <div style="flex: 0">
           <slot name="plugins"></slot>

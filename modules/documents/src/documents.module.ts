@@ -4,7 +4,7 @@ import { patternsModule, sourcesModule } from '@uprtcl/cortex';
 import { graphQlSchemaModule, i18nModule } from '@uprtcl/common';
 import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
-import { TextNodeLens } from './lenses/text-node.lens';
+import { DocumentTextNode } from './elements/document-text-node';
 import { TextNodeActions, TextNodeCreate, TextNodePatterns } from './patterns/text-node.entity';
 import { DocumentsTypes } from './types';
 import { DocumentsLocal } from './services/documents.local';
@@ -62,7 +62,7 @@ export function documentsModule(documentsRemotes: DocumentsRemote[]): Constructo
         }))
       ),
       elementsModule({
-        'documents-text-node': TextNodeLens
+        'documents-text-node': DocumentTextNode
       }),
       patternsModule({
         [DocumentsTypes.TextNodeEntity]: [TextNodeActions, TextNodeCreate, TextNodePatterns]

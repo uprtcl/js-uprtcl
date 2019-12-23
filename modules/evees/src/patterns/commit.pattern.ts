@@ -75,7 +75,7 @@ export class CommitLens extends CommitEntity implements HasLenses {
         name: this.t('evees:commit-history'),
         type: 'version-control',
         render: (lensContent: TemplateResult) => html`
-          <evee-commit-history .data=${commit}>${lensContent}</evee-commit-history>
+          <evees-commit-history .headId=${commit.id}>${lensContent}</evees-commit-history>
         `
       }
     ];

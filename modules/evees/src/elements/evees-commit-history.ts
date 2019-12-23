@@ -1,10 +1,8 @@
 import { LitElement, property, html, css } from 'lit-element';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { Secured, GraphQlTypes } from '@uprtcl/common';
-
-import { Commit } from '../types';
-import { ApolloClient, gql } from 'apollo-boost';
+import { GraphQlTypes } from '@uprtcl/common';
 
 interface CommitHistoryData {
   id: string;
@@ -16,8 +14,8 @@ interface CommitHistoryData {
 }
 
 export class CommitHistory extends moduleConnect(LitElement) {
-  @property({ type: Object })
-  data!: Secured<Commit>;
+  @property()
+  headId!: string;
 
   @property({ type: Object })
   commitHistory: CommitHistoryData | undefined;
@@ -33,7 +31,7 @@ export class CommitHistory extends moduleConnect(LitElement) {
     const result = await apolloClient.query({
       query: gql`
       {
-        getEntity(id: "${this.data.id}", depth: 1) {
+        getEntity(id: "${this.headId}", depth: 1) {
           id
           entity {
             ... on Commit {

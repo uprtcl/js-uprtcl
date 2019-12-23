@@ -10,7 +10,6 @@ import {
 import { GraphQlTypes, graphQlSchemaModule } from '@uprtcl/common';
 
 import { CortexEntity } from './elements/cortex-entity';
-import { lenses } from './lenses';
 import { CortexLensSelector } from './elements/cortex-lens-selector';
 import { CortexEntityBase } from './elements/cortex-entity-base';
 import { CortexActions } from './elements/cortex-actions';
@@ -53,9 +52,6 @@ export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin
       customElements.define('cortex-entity', cortexEntity);
       customElements.define('cortex-updatable', CortexUpdatable);
 
-      Object.entries(lenses).forEach(([tag, lens]) => {
-        customElements.define(tag, lens);
-      });
     }
 
     submodules = [graphQlSchemaModule(lensesSchema, {})];

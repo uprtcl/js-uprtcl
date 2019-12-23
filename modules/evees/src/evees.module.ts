@@ -19,7 +19,7 @@ import {
 
 import { PerspectiveLinks } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
-import { CommitHistory } from './lenses/evee-commit-history';
+import { CommitHistory } from './elements/evees-commit-history';
 import { EveesTypes, EveesLocal } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
@@ -90,7 +90,7 @@ export function eveesModule(
 
     submodules = [
       graphQlSchemaModule(eveesTypeDefs, eveesResolvers),
-      elementsModule({ 'evee-commit-history': CommitHistory }),
+      elementsModule({ 'evees-commit-history': CommitHistory }),
       i18nModule('evees', { en: en }),
       patternsModule({
         [CortexTypes.Core.Hashed]: [CidHashedPattern],

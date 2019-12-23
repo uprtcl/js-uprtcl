@@ -1,4 +1,3 @@
-import { Node } from '@uprtcl/lenses';
 import { CacheService } from '@uprtcl/cortex';
 
 import { DocumentsProvider } from './services/documents.provider';
@@ -8,12 +7,11 @@ export enum TextType {
   Paragraph = 'Paragraph'
 }
 
-export interface TypedText {
+export interface TextNode {
   text: string;
   type: TextType;
+  links: string[];
 }
-
-export type TextNode = TypedText & Node;
 
 export const DocumentsTypes = {
   Module: Symbol('documents-module'),
