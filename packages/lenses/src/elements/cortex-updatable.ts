@@ -1,9 +1,9 @@
 import { LitElement, property, PropertyValues, html } from 'lit-element';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer, CreateChild, Hashed, CortexTypes } from '@uprtcl/cortex';
 import { Updatable, GraphQlTypes } from '@uprtcl/common';
-import { ApolloClient, gql } from 'apollo-boost';
 
 export class CortexUpdatable extends moduleConnect(LitElement) {
   @property({ type: Object })
@@ -108,8 +108,8 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
     );
 
     if (updatable) {
-      const reloadNeeded = await updatable.update(this.entity)(newContent);
-      if (reloadNeeded) this.fireEntityUpdated();
+      await updatable.update(this.entity)(newContent);
+      this.fireEntityUpdated();
     }
   }
 

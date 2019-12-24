@@ -75,10 +75,8 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <div>
-        <div class="evee-info"></div>
-        <cortex-entity .hash=${this.entityId} lens-type="content"></cortex-entity>
-      </div>
+      <div class="evee-info"></div>
+      <cortex-entity .hash=${this.entityId} lens-type="content"></cortex-entity>
     `;
   }
 }

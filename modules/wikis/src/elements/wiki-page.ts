@@ -1,6 +1,8 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
+import { TextNode } from '@uprtcl/documents';
+import { sharedStyles } from '@uprtcl/lenses';
 import { GraphQlTypes } from '@uprtcl/common';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
@@ -10,18 +12,21 @@ export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
   pageHash!: string;
 
-  @property({ type: String })
-  title!: string;
+  @property({ type: Object })
+  textNode!: TextNode;
 
   async firstUpdated() {
     const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
     const result = await client.query({
       query: gql`{
         getEntity(id: "${this.pageHash}") {
+          id
           content {
+            id
             entity {
               ... on TextNode {
                 text
+                links
               }
             }
           }
@@ -29,43 +34,35 @@ export class WikiPage extends moduleConnect(LitElement) {
       }`
     });
 
-    const { text } = result.data.getEntity.content.entity;
-    this.title = text ? text : 'Title goes here';
+    this.textNode = result.data.getEntity.content.entity;
   }
 
   render() {
+    if (!this.textNode)
+      return html`
+        <cortex-loading-placeholder></cortex-loading-placeholder>
+      `;
+
     return html`
       <mwc-top-app-bar>
-        <div slot="title">${this.title}</div>
+        <div slot="title">${this.textNode.text}</div>
 
         <div slot="actionItems">
-          <cortex-actions .hash=${this.pageHash}></cortex-actions>
+          <cortex-actions .hash=${this.pageHash} toolbar="none"></cortex-actions>
         </div>
       </mwc-top-app-bar>
 
-      <cortex-entity .hash=${this.pageHash} lens-type="content"> </cortex-entity>
+      <div class="column">
+        ${this.textNode.links.map(
+          link => html`
+            <cortex-entity .hash=${link} lens-type="content"> </cortex-entity>
+          `
+        )}
+      </div>
     `;
   }
 
   static get styles() {
-    return css`
-      .header {
-        display: flex;
-        flex-direction: row;
-        background-color: #fff;
-      }
-      .page {
-        width: 90%;
-        text-align: left;
-        border-style: solid;
-        border-width: 2px;
-      }
-      .actions {
-        width: 10%;
-        border-style: solid;
-        border-width: 2px;
-        border-left-width: 0px;
-      }
-    `;
+    return sharedStyles;
   }
 }

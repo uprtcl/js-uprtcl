@@ -9,6 +9,7 @@ import { DocumentsTypes } from '@uprtcl/documents';
 import { Creatable, Hashed } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { sharedStyles } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
 
@@ -27,10 +28,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ type: String })
   pagesList: Array<any> = [];
-
-  //this is going to be changed
-  @property({ type: String })
-  wikiId: String = window.location.href.split('id=')[1];
 
   createPage = async () => {
     const isCreatable = p => (p as Creatable<any, any>).create;
@@ -52,7 +49,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }
     );
 
-    const pageHash = await pagePattern.create()(undefined, pagesProvider.uprtclProviderLocator);
+    const pageHash = await pagePattern.create()(
+      { text: 'New page' },
+      pagesProvider.uprtclProviderLocator
+    );
 
     const perspective = await perspectivePattern.create()(
       { dataId: pageHash.id },
@@ -89,12 +89,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }`
     });
 
-    console.log('result', result);
-
     const { pages } = result.data.getEntity.entity;
     this.pagesList = pages.map(page => ({
       id: page.id,
-      title: page.entity.patterns.title ? page.entity.patterns.title : 'Unknown'
+      title: page.content.patterns.title ? page.content.patterns.title : this.t('wikis:untitled')
     }));
 
     this.title = result.data.getEntity.entity.title;
@@ -110,8 +108,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
-  setPage(pageHash) {
-    this.selectedPageHash = pageHash;
+  static get styles() {
+    return sharedStyles;
   }
 
   render() {
@@ -119,20 +117,32 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <mwc-drawer hasHeader>
         <span slot="title">${this.title}</span>
 
-        <div class="aside">
-          <ul>
-            ${this.pagesList.map(page => {
-              return html`
-                <li @click=${() => (this.selectedPageHash = page.id)}>${page.title}</li>
-              `;
-            })}
-          </ul>
+        <div class="column" style="height: 100%;">
+          ${this.pagesList.length === 0
+            ? html`
+                <div class="row center-content" style="flex: 1; align-items: start; padding-top: 24px;">
+                  <span>${this.t('wikis:no-pages-yet')}</span>
+                </div>
+              `
+            : html``}
+
+          <mwc-list style="flex: 1;">
+            ${this.pagesList.map(
+              page => html`
+                <mwc-list-item @click=${() => (this.selectedPageHash = page.id)}>
+                  ${page.title}
+                </mwc-list-item>
+              `
+            )}
+          </mwc-list>
 
           ${this.editable
             ? html`
-                <mwc-button icon="note_add" @click=${() => this.createPage()}>
-                  ${this.t('new-page')}
-                </mwc-button>
+                <div class="row">
+                  <mwc-button raised icon="note_add" @click=${() => this.createPage()} style="flex: 1;">
+                    ${this.t('wikis:new-page')}
+                  </mwc-button>
+                </div>
               `
             : html``}
         </div>
@@ -147,16 +157,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               `}
         </div>
       </mwc-drawer>
-    `;
-  }
-
-  static get styles() {
-    return css`
-      li {
-        word-wrap: break-word;
-        margin-bottom: 9px;
-        cursor: pointer;
-      }
     `;
   }
 }

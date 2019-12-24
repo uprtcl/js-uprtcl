@@ -9,7 +9,8 @@ import {
   Hashed,
   DiscoveryTypes,
   Pattern,
-  Entity
+  Entity,
+  HasTitle
 } from '@uprtcl/cortex';
 
 import { loadEntity, getIsomorphisms } from '../utils/entities';
@@ -57,17 +58,14 @@ export const cortexResolvers = {
 
   Entity: {
     async patterns(parent, args, { container }, info) {
-      let entity = parent.raw;
-
-      if (!entity && typeof parent === 'string')
-        entity = await loadEntity(container.get(GraphQlTypes.Client), parent);
-      else if (!entity && parent.entity) entity = parent.entity;
+      const entity = await getEntityFromParent(parent, container);
 
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
       const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
 
       const patterns = recognizer.recognize(entity);
+
       const applyedPatterns = patterns.map(pattern => {
         const applyedPattern = {};
 
@@ -87,11 +85,7 @@ export const cortexResolvers = {
       });
     },
     async content(parent, args, { container }, info) {
-      let entity = parent.raw;
-
-      if (!entity && typeof parent === 'string')
-        entity = await loadEntity(container.get(GraphQlTypes.Client), parent);
-      else if (!entity && parent.entity) entity = parent.entity;
+      const entity = await getEntityFromParent(parent, container);
 
       const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
@@ -99,11 +93,7 @@ export const cortexResolvers = {
       return redirectEntity(entity, recognizer, discovery);
     },
     async isomorphisms(parent, args, { container }, info) {
-      let entity = parent.raw;
-
-      if (!entity && typeof parent === 'string')
-        entity = await loadEntity(container.get(GraphQlTypes.Client), parent);
-      else if (!entity && parent.entity) entity = parent.entity;
+      const entity = await getEntityFromParent(parent, container);
 
       const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
       const client: ApolloClient<any> = container.get(GraphQlTypes.Client);
@@ -134,4 +124,12 @@ export async function redirectEntity(
   }
 
   return entity;
+}
+
+export async function getEntityFromParent(parent, container): Promise<Hashed<any>> {
+  if (parent.raw) return parent.raw;
+  if (parent.entity) return parent.entity;
+  if (typeof parent === 'string') return loadEntity(container.get(GraphQlTypes.Client), parent)
+
+  return parent;
 }
