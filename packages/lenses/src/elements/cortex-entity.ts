@@ -32,11 +32,9 @@ export class CortexEntity extends CortexEntityBase {
   renderLens() {
     if (!this.selectedLens) return html``;
 
-    const lens =  html`
+    return html`
       <div id="lens-element">${this.selectedLens.render(this.renderSlotPlugins())}</div>
     `;
-
-    return this.renderLensPlugins(lens);
   }
 
   renderLoadingPlaceholder() {
@@ -44,7 +42,6 @@ export class CortexEntity extends CortexEntityBase {
       <mwc-circular-progress></mwc-circular-progress>
     `;
   }
-
 
   render() {
     return html`

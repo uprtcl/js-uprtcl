@@ -15,23 +15,15 @@ import { CortexEntityBase } from './elements/cortex-entity-base';
 import { CortexActions } from './elements/cortex-actions';
 import { LensesPlugin } from './types';
 import { SlotPlugin } from './plugins/slot.plugin';
-import { RenderLensPlugin } from './plugins/render-lens.plugin';
 import { lensesSchema } from './graphql.schema';
 
 const isSlotPlugin = (p: LensesPlugin) => (p as SlotPlugin).renderSlot;
-const isRenderLensPlugin = (p: LensesPlugin) => (p as RenderLensPlugin).renderLens;
 
 export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin }>): any {
   const cortexEntity: Constructor<CortexEntityBase> = class extends CortexEntity {
     get slotPlugins() {
       return plugins
         .filter(p => isSlotPlugin(p.plugin))
-        .reduce((acc, p) => ({ ...acc, [p.name]: p.plugin }), {});
-    }
-
-    get lensPlugins() {
-      return plugins
-        .filter(p => isRenderLensPlugin(p.plugin))
         .reduce((acc, p) => ({ ...acc, [p.name]: p.plugin }), {});
     }
   };
@@ -49,8 +41,6 @@ export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin
       customElements.define('cortex-actions', CortexActions);
       customElements.define('cortex-lens-selector', CortexLensSelector);
       customElements.define('cortex-entity', cortexEntity);
-      customElements.define('cortex-updatable', CortexUpdatable);
-
     }
 
     submodules = [graphQlSchemaModule(lensesSchema, {})];

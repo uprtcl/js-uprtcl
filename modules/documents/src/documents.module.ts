@@ -10,7 +10,7 @@ import { DocumentsTypes } from './types';
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
-import { documentsTypeDefs, documentsSchema } from './graphql';
+import { documentsTypeDefs } from './graphql';
 
 import en from '../i18n/en.json';
 

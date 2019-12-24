@@ -26,9 +26,9 @@ import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
+import { PerspectivesList } from './elements/perspectives-list';
 
 import en from '../i18n/en.json';
-import { PerspectivesList } from './lenses/perspectives-list';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers

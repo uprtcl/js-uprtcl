@@ -2,7 +2,7 @@ import { CacheService } from '@uprtcl/cortex';
 
 import { WikisProvider } from './services/wikis.provider';
 
-export interface WikiNode {
+export interface Wiki {
   title: string;
   pages: Array<string>;
   type: 'Wiki';

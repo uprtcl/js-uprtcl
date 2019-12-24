@@ -1,6 +1,8 @@
 // Required by inversify
 import 'reflect-metadata';
 
+export { CortexModule } from './cortex.module';
+
 /** Types */
 export { AccessControlTypes, GraphQlTypes } from './types';
 

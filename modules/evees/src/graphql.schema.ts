@@ -1,7 +1,4 @@
 import { gql } from 'apollo-boost';
-import { makeExecutableSchema } from 'graphql-tools';
-
-import { baseTypeDefs, baseResolvers } from '@uprtcl/common';
 
 import { EveesTypes } from './types';
 import { Evees } from './services/evees';
@@ -14,22 +11,20 @@ export const eveesTypeDefs = gql`
     perspectives: [Entity!]
   }
 
-  type Commit implements EntityType {
+  extend union EntityType = Commit | Perspective
+
+  type Commit {
     parentCommits: [Entity!]!
     timestamp: Date!
     message: String
     data: Entity
-
-    patterns: Patterns!
   }
 
-  type Perspective implements EntityType {
+  type Perspective {
     head: Entity
     name: String
     context: Context
     payload: Payload
-
-    patterns: Patterns!
   }
 
   type Payload {
@@ -87,7 +82,7 @@ export const eveesResolvers = {
     }
   }
 };
-
+/* 
 export const eveesSchema = makeExecutableSchema({
   typeDefs: [baseTypeDefs, eveesTypeDefs],
   resolvers: {
@@ -95,3 +90,4 @@ export const eveesSchema = makeExecutableSchema({
     ...eveesResolvers
   }
 });
+ */

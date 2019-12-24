@@ -1,12 +1,13 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { PatternRecognizer, HasRedirect, Pattern, Transformable } from '@uprtcl/cortex';
+import { PatternRecognizer, HasRedirect, Hashed } from '@uprtcl/cortex';
 
 export async function loadEntity(client: ApolloClient<any>, hash: string): Promise<any> {
   const result = await client.query({
     query: gql`
     {
-      getEntity(id: "${hash}", depth: 1) {
+      getEntity(id: "${hash}") {
+        id
         raw
       }
     }
@@ -18,13 +19,13 @@ export async function loadEntity(client: ApolloClient<any>, hash: string): Promi
 
 export async function getIsomorphisms(
   patternRecognizer: PatternRecognizer,
-  entity: any,
-  selectEntity: (id: string) => Promise<any>
-): Promise<any[]> {
-  let isomorphisms: any[] = [entity];
+  entity: Hashed<any>,
+  loadEntity: (id: string) => Promise<Hashed<any>>
+): Promise<string[]> {
+  let isomorphisms: string[] = [entity.id];
 
   // Recursive call to get all isomorphisms from redirected entities
-  const redirectedIsomorphisms = await redirectEntity(patternRecognizer, entity, selectEntity);
+  const redirectedIsomorphisms = await redirectEntity(patternRecognizer, entity, loadEntity);
   isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
   return isomorphisms;
 }
@@ -32,26 +33,26 @@ export async function getIsomorphisms(
 async function redirectEntity(
   patternRecognizer: PatternRecognizer,
   entity: object,
-  selectEntity: (id: string) => Promise<any>
-): Promise<any[]> {
+  loadEntity: (id: string) => Promise<Hashed<any>>
+): Promise<string[]> {
   const hasRedirects: HasRedirect<any>[] = patternRecognizer.recognizeProperties(
     entity,
     prop => !!(prop as HasRedirect<any>).redirect
   );
 
-  let isomorphisms: any[] = [];
+  let isomorphisms: string[] = [];
 
   for (const hasRedirect of hasRedirects) {
     const redirectHash = await hasRedirect.redirect(entity);
 
     if (redirectHash) {
-      const redirectEntity = await selectEntity(redirectHash);
+      const redirectEntity = await loadEntity(redirectHash);
 
       if (redirectEntity) {
         const redirectedIsomorphisms = await getIsomorphisms(
           patternRecognizer,
           redirectEntity,
-          selectEntity
+          loadEntity
         );
 
         isomorphisms = isomorphisms.concat(redirectedIsomorphisms);

@@ -13,7 +13,7 @@ import {
 } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { WikisLocal, WikisTypes, WikiNode } from '../types';
+import { WikisLocal, WikisTypes, Wiki } from '../types';
 import { WikisRemote } from './wikis.remote';
 import { WikisProvider } from './wikis.provider';
 
@@ -60,17 +60,17 @@ export class Wikis {
    * @param node the text node to clone
    * @param providerName the provider to which to clone the text node to, needed if there is more than one provider
    */
-  public async createWikiNode(node: WikiNode, upl?: string): Promise<Hashed<WikiNode>> {
+  public async createWiki(node: Wiki, upl?: string): Promise<Hashed<Wiki>> {
     const creator = async (wikis: WikisProvider) => {
-      const hash = await wikis.createWikiNode(node);
+      const hash = await wikis.createWiki(node);
       return {
         id: hash,
         object: node
       };
     };
 
-    const cloner = async (wikis: WikisProvider, hashedNode: Hashed<WikiNode>) => {
-      await wikis.createWikiNode(hashedNode.object, hashedNode.id);
+    const cloner = async (wikis: WikisProvider, hashedNode: Hashed<Wiki>) => {
+      await wikis.createWiki(hashedNode.object, hashedNode.id);
       return hashedNode;
     };
 

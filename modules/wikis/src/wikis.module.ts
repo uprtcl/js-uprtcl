@@ -4,7 +4,7 @@ import { patternsModule, sourcesModule } from '@uprtcl/cortex';
 import { graphQlSchemaModule, i18nModule } from '@uprtcl/common';
 import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
-import { WikiNodeLens } from './lenses/wiki-node.lens';
+import { WikiDrawer } from './lenses/wiki-drawer';
 import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
 import { WikisTypes } from './types';
 import { WikisLocal } from './services/wikis.local';
@@ -64,7 +64,7 @@ export function wikisModule(wikisRemotes: WikisRemote[]): Constructor<MicroModul
         }))
       ),
       elementsModule({
-        'basic-wiki': WikiNodeLens,
+        'wiki-drawer': WikiDrawer,
         'wiki-page': WikiPage,
         'home-page': Homepage
       }),

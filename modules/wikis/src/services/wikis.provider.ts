@@ -1,6 +1,6 @@
 import { Source } from '@uprtcl/cortex';
-import { WikiNode } from '../types';
+import { Wiki } from '../types';
 
 export interface WikisProvider extends Source {
-   createWikiNode(node: WikiNode, hash?: string): Promise<string>;
+   createWiki(wiki: Wiki, hash?: string): Promise<string>;
 }

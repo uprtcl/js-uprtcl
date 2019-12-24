@@ -8,7 +8,6 @@ import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
 import { SlotPlugin } from '../plugins/slot.plugin';
-import { RenderLensPlugin } from '../plugins/render-lens.plugin';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
@@ -78,19 +77,6 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
 
   get slotPlugins(): Dictionary<SlotPlugin> {
     return {};
-  }
-
-  get lensPlugins(): Dictionary<RenderLensPlugin> {
-    return {};
-  }
-
-  renderLensPlugins(initialLens: TemplateResult) {
-    const renderLensPlugins: RenderLensPlugin[] = Object.values(this.lensPlugins);
-
-    return renderLensPlugins.reduce(
-      (acc, next) => next.renderLens(acc, this.entity, this.selectedLens),
-      initialLens
-    );
   }
 
   updated(changedProperties: PropertyValues) {

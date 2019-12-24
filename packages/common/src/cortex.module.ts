@@ -1,13 +1,15 @@
 import { injectable, interfaces } from 'inversify';
 
 import { MicroModule } from '@uprtcl/micro-orchestrator';
+import { Pattern, PatternRecognizer, CortexTypes } from '@uprtcl/cortex';
 
-import { PatternRecognizer } from './recognizer/pattern.recognizer';
-import { Pattern } from './pattern';
-import { CortexTypes } from '../types';
+import { graphQlSchemaModule } from './graphql/graphql-schema.module';
+import { cortexSchema, cortexResolvers } from './graphql/cortex/cortex-schema';
 
 @injectable()
 export class CortexModule implements MicroModule {
+  submodules = [graphQlSchemaModule(cortexSchema, cortexResolvers)];
+
   async onLoad(
     context: interfaces.Context,
     bind: interfaces.Bind,

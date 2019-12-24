@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import { Hashed, DiscoveryTypes, CacheService, CortexTypes, Hashable } from '@uprtcl/cortex';
 import { WikisProvider } from './wikis.provider';
-import { WikiNode } from '../types';
+import { Wiki } from '../types';
 
 @injectable()
 export class WikisLocal implements WikisProvider {
@@ -12,7 +12,7 @@ export class WikisLocal implements WikisProvider {
     protected objectsCache: CacheService
   ) {}
 
-  async createWikiNode(node: WikiNode): Promise<string> {
+  async createWiki(node: Wiki): Promise<string> {
     const hashed = await this.hashedPattern.derive()(node);
 
     await this.objectsCache.cache(hashed.id, hashed);

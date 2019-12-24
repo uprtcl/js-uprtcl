@@ -5,13 +5,13 @@ import { EveesTypes } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
 import { Creatable } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
-
-import { WikiNode } from '../types';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
-export class WikiNodeLens extends moduleConnect(LitElement) {
+import { Wiki } from '../types';
+
+export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Object })
-  data!: WikiNode;
+  wiki!: Wiki;
 
   @property({ type: String })
   selectedPageHash!: String;
@@ -21,7 +21,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
 
   @property({ type: String })
   pagesList: Array<any> = [];
-  
+
   //this is going to be changed
   @property({ type: String })
   wikiId: String = window.location.href.split('id=')[1];
@@ -36,13 +36,13 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
 
     const eveesProvider: any = this.requestAll(EveesTypes.EveesRemote).find((provider: any) => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.uprtclProviderLocator);
     });
 
     const pagesProvider: any = this.requestAll(DocumentsTypes.DocumentsRemote).find(
       (provider: any) => {
         const regexp = new RegExp('^http');
-        return regexp.test(provider.uprtclProviderLocator);
+        return !regexp.test(provider.uprtclProviderLocator);
       }
     );
 
@@ -53,7 +53,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
       eveesProvider.uprtclProviderLocator
     );
 
-    const pages = [...this.data.pages, perspective.id];
+    const pages = [...this.wiki.pages, perspective.id];
     this.updateContent(pages);
   };
 
@@ -89,10 +89,8 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
                   id
                   content {
                     id
-                    entity {
-                      patterns {
-                        title
-                      }
+                    patterns {
+                      title
                     }
                   }
                 }
@@ -103,12 +101,12 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
       }`
     });
 
-    const { pages } = pagesQuery.data.getEntity.content.entity
+    const { pages } = pagesQuery.data.getEntity.content.entity;
     this.pagesList = pages.map(page => {
       return {
         id: page.id,
         title: page.content.entity.patterns.title ? page.content.entity.patterns.title : 'Unknown'
-      }
+      };
     });
 
     this.title = titleQuery.data.getEntity.content.entity.title;
@@ -117,7 +115,7 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
   updateContent(pages: Array<string>) {
     this.dispatchEvent(
       new CustomEvent('content-changed', {
-        detail: { newContent: { ...this.data, pages } },
+        detail: { newContent: { ...this.wiki, pages } },
         bubbles: true,
         composed: true
       })

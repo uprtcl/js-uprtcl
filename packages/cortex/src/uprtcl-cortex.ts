@@ -43,7 +43,6 @@ export { HasActions, PatternAction } from './patterns/properties/has-actions';
 
 // Pattern Registry
 export { PatternRecognizer } from './patterns/recognizer/pattern.recognizer';
-export { CortexModule } from './patterns/cortex.module';
 
 /** Types */
 export { LensesTypes, DiscoveryTypes, CortexTypes } from './types';
