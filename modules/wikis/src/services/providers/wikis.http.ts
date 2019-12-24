@@ -1,24 +1,19 @@
 import { HttpConnection, HttpProvider } from '@uprtcl/connections';
 import { Hashed } from '@uprtcl/cortex';
 
-import { DocumentsProvider } from '../documents.provider';
-import { TextNode } from '../../types';
+import { WikisProvider } from '../wikis.provider';
+import { WikiNode } from '../../types';
 import { injectable } from 'inversify';
 
-export enum DataType {
-  TEXT = 'TEXT',
-  TEXT_NODE = 'TEXT_NODE',
-  DOCUMENT_NODE = 'DOCUMENT_NODE'
-}
 
-const documents_api: string = 'documents-v1';
+const wikis_api: string = 'wikinode-v1';
 
-export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
+export class WikisHttp extends HttpProvider implements WikisProvider {
   constructor(host: string, protected connection: HttpConnection) {
     super(
       {
         host: host,
-        apiId: documents_api
+        apiId: wikis_api
       },
       connection
     );
@@ -32,7 +27,7 @@ export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
     };
   }
 
-  async createTextNode(node: TextNode, hash: string): Promise<string> {
+  async createWikiNode(node: WikiNode, hash: string): Promise<string> {
     const result = await super.post(`/data`, {
       id: hash,
       object: node

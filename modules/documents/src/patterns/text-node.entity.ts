@@ -12,7 +12,8 @@ import {
   Creatable,
   PatternRecognizer,
   HasChildren,
-  Entity
+  Entity,
+  HasTitle
 } from '@uprtcl/cortex';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
@@ -157,4 +158,9 @@ export class TextNodeCreate implements Pattern, Creatable<Partial<TextNode>, Tex
     const newTextNode = { links, text, type };
     return this.documents.createTextNode(newTextNode, upl);
   };
+}
+
+@injectable()
+export class TextNodeTitle extends TextNodeEntity implements HasTitle {
+  title = (textNode: Hashed<TextNode>) => textNode.object.text;
 }

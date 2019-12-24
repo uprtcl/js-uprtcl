@@ -44,7 +44,6 @@ export const baseTypeDefs = gql`
     name: String!
     type: String!
     render: Function!
-    type: String
   }
 
   type Action {
@@ -76,7 +75,9 @@ export const baseResolvers = {
 
       const entities: Entity[] = patterns.filter(p => (p as Entity).name) as Entity[];
 
-      if (entities.length === 0) throw new Error('No entity found to recognize object');
+      if (entities.length === 0) {
+        throw new Error('No entity found to recognize object');
+      }
 
       const abmiguousError =
         entities.length > 1 && !entities.every(entity => entity.name === entities[0].name);
@@ -86,7 +87,6 @@ export const baseResolvers = {
           `Ambiguous error recognizing entity: ${parent.toString()}. These two entites recognized the object ${entities.toString()}`
         );
       }
-
       return entities[0].name;
     },
     patterns(parent, args, context, info) {

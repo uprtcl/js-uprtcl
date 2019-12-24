@@ -7,7 +7,6 @@ export enum TextType {
   Title = 'Title',
   Paragraph = 'Paragraph'
 }
-
 export interface TypedText {
   text: string;
   type: TextType;

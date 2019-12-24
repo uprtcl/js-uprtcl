@@ -16,7 +16,7 @@ import {
 } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
 
-import { Perspective, EveesTypes, Commit } from '../types';
+import { Perspective, EveesTypes, Commit, UpdateRequest } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { createEntity } from '../utils/utils';
@@ -149,7 +149,7 @@ export class PerspectiveLinks extends PerspectiveEntity
     const newHead = await this.evees.createCommit(
       {
         dataId: data.id,
-        message: `Commit at ${Date.now() / 1000}`,
+        message: `Commit at ${Date.now()}`,
         parentsIds: details.headId ? [details.headId] : []
       },
       perspective.object.payload.origin

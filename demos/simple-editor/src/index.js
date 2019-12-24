@@ -13,6 +13,7 @@ import {
 } from '@uprtcl/cortex';
 import { lensesModule, LensSelectorPlugin, ActionsPlugin, UpdatablePlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
+import { WikisIpfs, wikisModule, WikisTypes, WikisHttp } from '@uprtcl/wikis';
 import {
   ApolloClientModule,
   GraphQlTypes,
@@ -28,6 +29,7 @@ import {
   HttpConnection
 } from '@uprtcl/connections';
 import { SimpleEditor } from './simple-editor';
+import { SimpleWiki } from './simple-wiki';
 
 (async function() {
   const c1host = 'http://localhost:3100/uprtcl/1';
@@ -40,20 +42,18 @@ import { SimpleEditor } from './simple-editor';
 
   const httpEvees = new EveesHttp(c1host, httpConnection);
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
-  const httpKnownSources = new KnownSourcesHttp(c1host, httpConnection);
 
-  const evees = eveesModule([
-    //{ service: httpEvees, knownSources: httpKnownSources },
-    ethEvees
-  ]);
+  const evees = eveesModule([httpEvees, ethEvees]);
 
   const httpDocuments = new DocumentsHttp(c1host, httpConnection);
   const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
 
-  const documents = documentsModule([
-    //{ service: httpDocuments, knownSources: httpKnownSources },
-    ipfsDocuments
-  ]);
+  const documents = documentsModule([ipfsDocuments, httpDocuments]);
+
+  const httpWikis = new WikisHttp(c1host, httpConnection);
+  const ipfsWikis = new WikisIpfs(ipfsConnection);
+
+  const wikis = wikisModule([ipfsWikis, httpWikis]);
 
   const lenses = lensesModule([
     { name: 'lens-selector', plugin: new LensSelectorPlugin() },
@@ -69,7 +69,8 @@ import { SimpleEditor } from './simple-editor';
     [LensesTypes.Module]: lenses,
     [AccessControlTypes.Module]: AccessControlModule,
     [EveesTypes.Module]: evees,
-    [DocumentsTypes.Module]: documents
+    [DocumentsTypes.Module]: documents,
+    [WikisTypes.Module]: wikis
   };
 
   const orchestrator = new MicroOrchestrator();
@@ -78,4 +79,5 @@ import { SimpleEditor } from './simple-editor';
 
   console.log(orchestrator);
   customElements.define('simple-editor', SimpleEditor);
+  customElements.define('simple-wiki', SimpleWiki);
 })();
