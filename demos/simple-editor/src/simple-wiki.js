@@ -35,13 +35,13 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     this.wikisProvider = this.requestAll(WikisTypes.WikisRemote)
     .find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.uprtclProviderLocator);
     });
 
     this.eveesProvider = this.requestAll(EveesTypes.EveesRemote)
     .find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.uprtclProviderLocator);
     });
 
     window.addEventListener('popstate', () => {
@@ -71,7 +71,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return html`
       ${this.rootHash
         ? html`
-            <cortex-entity .hash=${this.rootHash} lens="content"></cortex-entity>
+            <cortex-entity .hash=${this.rootHash} lens-type="content"></cortex-entity>
           `
         : html`
             Loading...

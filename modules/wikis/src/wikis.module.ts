@@ -4,7 +4,7 @@ import { patternsModule, sourcesModule } from '@uprtcl/cortex';
 import { graphQlSchemaModule, i18nModule } from '@uprtcl/common';
 import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
-import { WikiDrawer } from './lenses/wiki-drawer';
+import { WikiDrawer } from './elements/wiki-drawer';
 import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
 import { WikisTypes } from './types';
 import { WikisLocal } from './services/wikis.local';

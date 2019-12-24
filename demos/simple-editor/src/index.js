@@ -1,17 +1,6 @@
-import {
-  MicroOrchestrator,
-  ReduxStoreModule,
-  i18nTypes
-} from '@uprtcl/micro-orchestrator';
-import {
-  CortexTypes,
-  PatternsModule,
-  discoveryModule,
-  DiscoveryTypes,
-  LensesTypes,
-  CortexModule
-} from '@uprtcl/cortex';
-import { lensesModule, LensSelectorPlugin, ActionsPlugin, UpdatablePlugin } from '@uprtcl/lenses';
+import { MicroOrchestrator, ReduxStoreModule, i18nTypes } from '@uprtcl/micro-orchestrator';
+import { CortexTypes, DiscoveryTypes, LensesTypes } from '@uprtcl/cortex';
+import { lensesModule, LensSelectorPlugin, ActionsPlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
 import { WikisIpfs, wikisModule, WikisTypes, WikisHttp } from '@uprtcl/wikis';
 import {
@@ -19,15 +8,12 @@ import {
   GraphQlTypes,
   i18nextBaseModule,
   AccessControlTypes,
-  AccessControlModule
+  AccessControlModule,
+  CortexModule,
+  discoveryModule
 } from '@uprtcl/common';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
-import {
-  KnownSourcesHttp,
-  IpfsConnection,
-  EthereumConnection,
-  HttpConnection
-} from '@uprtcl/connections';
+import { IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
 import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
@@ -43,22 +29,21 @@ import { SimpleWiki } from './simple-wiki';
   const httpEvees = new EveesHttp(c1host, httpConnection);
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
 
-  const evees = eveesModule([httpEvees, ethEvees]);
+  const evees = eveesModule([ethEvees]);
 
   const httpDocuments = new DocumentsHttp(c1host, httpConnection);
   const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
 
-  const documents = documentsModule([ipfsDocuments, httpDocuments]);
+  const documents = documentsModule([ipfsDocuments]);
 
   const httpWikis = new WikisHttp(c1host, httpConnection);
   const ipfsWikis = new WikisIpfs(ipfsConnection);
 
-  const wikis = wikisModule([ipfsWikis, httpWikis]);
+  const wikis = wikisModule([ipfsWikis]);
 
   const lenses = lensesModule([
     { name: 'lens-selector', plugin: new LensSelectorPlugin() },
-    { name: 'actions', plugin: new ActionsPlugin() },
-    { name: 'updatable', plugin: new UpdatablePlugin() }
+    { name: 'actions', plugin: new ActionsPlugin() }
   ]);
 
   const modules = {

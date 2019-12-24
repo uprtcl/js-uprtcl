@@ -2,14 +2,19 @@ import { injectable, interfaces, inject } from 'inversify';
 
 import { MicroModule, MicroOrchestratorTypes, ModuleProvider } from '@uprtcl/micro-orchestrator';
 
-import { DiscoveryService } from './discovery.service';
-import { CacheService } from './cache/cache.service';
-import { KnownSourcesService } from './known-sources/known-sources.service';
-import { MultiSourceService } from './multi/multi-source.service';
-import { CacheDexie } from './cache/cache.dexie';
-import { KnownSourcesDexie } from './known-sources/known-sources.dexie';
-import { CortexTypes, DiscoveryTypes } from '../types';
-import { Source } from './sources/source';
+import {
+  DiscoveryService,
+  CacheService,
+  MultiSourceService,
+  CacheDexie,
+  KnownSourcesDexie,
+  CortexTypes,
+  DiscoveryTypes,
+  Source,
+  KnownSourcesService
+} from '@uprtcl/cortex';
+import { graphQlSchemaModule } from 'src/graphql/graphql-schema.module';
+import { discoveryTypeDefs } from './discovery-schema';
 
 export function discoveryModule(
   cacheService: CacheService = new CacheDexie(),
@@ -38,6 +43,8 @@ export function discoveryModule(
       );
       bind<Source>(DiscoveryTypes.DiscoveryService).to(DiscoveryService);
     }
+
+    submodules = [graphQlSchemaModule(discoveryTypeDefs, {})];
   }
   return DiscoveryModule;
 }

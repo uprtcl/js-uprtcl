@@ -13,11 +13,13 @@
   "dependencies": {
     "@material/mwc-button": "^0.10.0",
     "@material/mwc-checkbox": "^0.10.0",
+    "@material/mwc-drawer": "^0.12.0",
     "@material/mwc-fab": "^0.10.0",
     "@material/mwc-icon": "^0.10.0",
     "@material/mwc-radio": "^0.10.0",
     "@material/mwc-ripple": "^0.10.0",
     "@material/mwc-switch": "^0.10.0",
+    "@material/mwc-top-app-bar": "^0.12.0",
     "@uprtcl/common": "^0.0.1-alpha5",
     "@uprtcl/connections": "^0.0.1-alpha5",
     "@uprtcl/cortex": "^0.0.1-alpha5",

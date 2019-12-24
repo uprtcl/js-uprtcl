@@ -3,8 +3,8 @@ import { injectable, interfaces } from 'inversify';
 import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { Pattern, PatternRecognizer, CortexTypes } from '@uprtcl/cortex';
 
-import { graphQlSchemaModule } from './graphql/graphql-schema.module';
-import { cortexSchema, cortexResolvers } from './graphql/cortex/cortex-schema';
+import { graphQlSchemaModule } from '../graphql/graphql-schema.module';
+import { cortexSchema, cortexResolvers } from './cortex-schema';
 
 @injectable()
 export class CortexModule implements MicroModule {

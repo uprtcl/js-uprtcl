@@ -20,7 +20,6 @@ export { CachedMultiService } from './services/cached-remotes/cached-multi.servi
 export { CachedMultiSourceService } from './services/cached-remotes/cached-multi-source.service';
 
 export { DiscoveryService } from './services/discovery.service';
-export { discoveryModule } from './services/discovery.module';
 
 /** Patterns */
 export { Pattern, Entity, Property } from './patterns/pattern';

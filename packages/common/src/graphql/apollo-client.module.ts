@@ -41,8 +41,8 @@ export class ApolloClientModule implements MicroModule {
         cache,
         connectToDevTools: true,
         link: ApolloLink.from([
-          // contextContainerLink(context.container),
-          //new DiscoveryLink(),
+          contextContainerLink(context.container),
+          new DiscoveryLink(),
           new SchemaLink({ schema, context: { cache, container: context.container } })
         ])
       });

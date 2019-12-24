@@ -1,7 +1,10 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
+
 import { GraphQlTypes } from '@uprtcl/common';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
+
+import '@material/mwc-top-app-bar';
 
 export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
@@ -25,22 +28,22 @@ export class WikiPage extends moduleConnect(LitElement) {
         }
       }`
     });
-    console.log(result)
-    const { text } = result.data.getEntity.content.entity
-    this.title = text ? text : "Title goes here"
+
+    const { text } = result.data.getEntity.content.entity;
+    this.title = text ? text : 'Title goes here';
   }
 
   render() {
     return html`
-      <div class="header">
-        <div class="page">
-          <h3> ${this.title} </h3>
+      <mwc-top-app-bar>
+        <div slot="title">${this.title}</div>
+
+        <div slot="actionItems">
+          <cortex-actions .hash=${this.pageHash}></cortex-actions>
         </div>
-        <div class="actions">
-          <cortex-actions .hash=${this.pageHash} />
-        </div>
-      </div>
-      <cortex-entity .hash=${this.pageHash} lens="content"> </cortex-entity>
+      </mwc-top-app-bar>
+
+      <cortex-entity .hash=${this.pageHash} lens-type="content"> </cortex-entity>
     `;
   }
 

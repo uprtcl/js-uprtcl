@@ -37,12 +37,7 @@ export class DiscoveryLink extends ApolloLink {
           const localKnownSources: KnownSourcesService = container.get(
             DiscoveryTypes.LocalKnownSources
           );
-
-          const source = cache.readQuery({
-            query: gql`{ sources @client }`
-          });
-          console.log(source);
-
+          
           /* 
           await localKnownSources.addKnownSources(hash, [source]);
           const serviceProvider: ServiceProvider = container.get(source);
