@@ -1,5 +1,4 @@
 import { html } from 'lit-element';
-import '@authentic/mwc-circular-progress';
 
 import { CortexEntityBase } from './cortex-entity-base';
 import { sharedStyles } from '../shared-styles';
@@ -37,16 +36,12 @@ export class CortexEntity extends CortexEntityBase {
     `;
   }
 
-  renderLoadingPlaceholder() {
-    return html`
-      <mwc-circular-progress></mwc-circular-progress>
-    `;
-  }
-
   render() {
     return html`
       ${!this.selectedLens
-        ? this.renderLoadingPlaceholder()
+        ? html`
+            <cortex-loading-placeholder></cortex-loading-placeholder>
+          `
         : html`
             <div class="row center-content">
               <div style="flex: 1;">

@@ -3,6 +3,7 @@ import { RequestDependencyEvent } from '../module-container';
 import { Constructor, CustomElement, i18nTypes } from '../../types';
 
 export interface ConnectedElement {
+  t: (key: string) => string;
   request<T>(dependency: interfaces.ServiceIdentifier<T>): T;
   requestAll<T>(dependency: interfaces.ServiceIdentifier<T>): T[];
 }

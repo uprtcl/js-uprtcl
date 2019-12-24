@@ -16,11 +16,11 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   @property({ attribute: 'lens-type' })
   public lensType!: string;
 
-  @property()
+  @property({ attribute: false })
   protected entity: Hashed<any> | undefined = undefined;
 
   // Lenses
-  @property()
+  @property({ attribute: false })
   protected selectedLens!: Lens | undefined;
 
   connectedCallback() {
@@ -39,19 +39,22 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
 
     const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
 
+    // We are also loading the content to have it cached in case the lens wants it
     const result = await client.query({
       query: gql`
       {
         getEntity(id: "${hash}", depth: 1) {
           id
           raw
-          isomorphisms {
-            patterns {
-              lenses {
-                name
-                type
-                render
-              }
+          content { 
+            id
+            raw
+          }
+          patterns {
+            lenses {
+              name
+              type
+              render
             }
           }
         }
@@ -59,10 +62,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
       `
     });
 
-    const lenses = flatMap(
-      result.data.getEntity.isomorphisms.reverse(),
-      iso => iso.patterns.lenses
-    ).filter(l => !!l);
+    const lenses = result.data.getEntity.patterns.lenses;
 
     this.entity = result.data.getEntity.raw;
 

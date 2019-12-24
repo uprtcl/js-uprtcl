@@ -39,10 +39,7 @@ export class TextNodeEntity implements Entity {
 
 @injectable()
 export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasChildren, Mergeable {
-  constructor(
-    @inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(i18nTypes.Translate) protected t: (key: string) => string
-  ) {
+  constructor(@inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>) {
     super(hashedPattern);
   }
 
@@ -63,7 +60,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
   lenses = (node: Hashed<TextNode>): Lens[] => {
     return [
       {
-        name: this.t('documents:document'),
+        name: 'documents:document',
         type: 'content',
         render: (lensContent: TemplateResult) => html`
           <documents-text-node .data=${node.object}>${lensContent}</documents-text-node>
@@ -114,7 +111,7 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
       return [
         {
           icon: 'title',
-          title: 'To title',
+          title: 'to_title',
           action: (changeContent: (newContent: any) => void) => {
             changeContent({ ...textNode, type: TextType.Title });
           },
@@ -125,7 +122,7 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
       return [
         {
           icon: 'text_fields',
-          title: 'To paragraph',
+          title: 'to_paragraph',
           action: (changeContent: (newContent: any) => void) => {
             changeContent({ ...textNode, type: TextType.Paragraph });
           },

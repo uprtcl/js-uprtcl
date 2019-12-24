@@ -14,11 +14,11 @@ interface CommitHistoryData {
 }
 
 export class CommitHistory extends moduleConnect(LitElement) {
-  @property()
-  headId!: string;
+  @property({ attribute: 'commit-id'})
+  commitId!: string;
 
-  @property({ type: Object })
-  commitHistory: CommitHistoryData | undefined;
+  @property({ type: Object, attribute: false })
+  private commitHistory: CommitHistoryData | undefined;
 
   async firstUpdated() {
     this.loadCommitHistory();
@@ -31,7 +31,7 @@ export class CommitHistory extends moduleConnect(LitElement) {
     const result = await apolloClient.query({
       query: gql`
       {
-        getEntity(id: "${this.headId}", depth: 1) {
+        getEntity(id: "${this.commitId}", depth: 1) {
           id
           entity {
             ... on Commit {

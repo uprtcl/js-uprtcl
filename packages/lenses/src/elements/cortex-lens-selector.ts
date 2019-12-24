@@ -44,6 +44,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
           isomorphisms {
             patterns {
               lenses {
+                type
                 name
                 render
               }
@@ -91,7 +92,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
               lens =>
                 html`
                   <mwc-list-item @click=${() => this.selectLens(lens)}>
-                    ${lens.name}
+                    ${this.t(lens.name)}
                   </mwc-list-item>
                 `
             )}

@@ -1,6 +1,6 @@
 import { interfaces } from 'inversify';
 import { RequestDependencyEvent } from '../module-container';
-import { Constructor, CustomElement, ReduxTypes } from '../../types';
+import { Constructor, CustomElement, ReduxTypes, i18nTypes } from '../../types';
 import { ConnectedElement } from './module-connect.mixin';
 import { Store } from 'redux';
 
@@ -18,6 +18,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
 } & T =>
   class extends baseElement implements ReduxConnectedElement {
     store!: Store;
+    t: (key: string) => string = key => key;
 
     private requestGeneric<T>(
       dependency: interfaces.ServiceIdentifier<T>,
@@ -69,6 +70,13 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
 
       this.store.subscribe(() => this.stateChanged(this.store.getState()));
       this.stateChanged(this.store.getState());
+
+      try {
+        this.t = this.request(i18nTypes.Translate);
+      } catch (e) {
+        console.warn('No translate function present');
+      }
+
     }
 
     stateChanged(state: any) {}

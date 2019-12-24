@@ -84,7 +84,7 @@ export class WikiCommon extends WikiEntity implements HasLenses {
         name: 'Wiki',
         type: 'content',
         render: (lensContent: TemplateResult) => html`
-          <wiki-drawer .data=${wiki.object}>${lensContent}</wiki-drawer>
+          <wiki-drawer .wiki=${wiki}>${lensContent}</wiki-drawer>
         `
       }
     ];

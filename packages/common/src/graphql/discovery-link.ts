@@ -15,13 +15,13 @@ import { ApolloCache } from 'apollo-cache';
 import { NormalizedCacheObject, gql } from 'apollo-boost';
 
 export class DiscoveryLink extends ApolloLink {
-
   request(operation: Operation, forward: NextLink) {
     const context = operation.getContext();
     const container = context.container;
     const cache: ApolloCache<NormalizedCacheObject> = context.cache;
 
-    console.log(context);
+    console.log(operation);
+    console.log(cache);
 
     const operationObserver = forward(operation);
 
@@ -37,16 +37,15 @@ export class DiscoveryLink extends ApolloLink {
           const localKnownSources: KnownSourcesService = container.get(
             DiscoveryTypes.LocalKnownSources
           );
-          
+
           /* 
           await localKnownSources.addKnownSources(hash, [source]);
           const serviceProvider: ServiceProvider = container.get(source);
 
           await discoverLinksKnownSources(recognizer, localKnownSources)(object, serviceProvider);
+           */
 
- */ observer.next(
-            result
-          );
+          observer.next(result);
         },
         error: observer.error.bind(observer),
         complete: observer.complete.bind(observer)

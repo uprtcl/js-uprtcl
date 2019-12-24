@@ -16,6 +16,7 @@ import { CortexActions } from './elements/cortex-actions';
 import { LensesPlugin } from './types';
 import { SlotPlugin } from './plugins/slot.plugin';
 import { lensesSchema } from './graphql.schema';
+import { CortexLoadingPlaceholder } from './elements/cortex-loading-placeholder';
 
 const isSlotPlugin = (p: LensesPlugin) => (p as SlotPlugin).renderSlot;
 
@@ -41,6 +42,7 @@ export function lensesModule(plugins: Array<{ name: string; plugin: LensesPlugin
       customElements.define('cortex-actions', CortexActions);
       customElements.define('cortex-lens-selector', CortexLensSelector);
       customElements.define('cortex-entity', cortexEntity);
+      customElements.define('cortex-loading-placeholder', CortexLoadingPlaceholder);
     }
 
     submodules = [graphQlSchemaModule(lensesSchema, {})];

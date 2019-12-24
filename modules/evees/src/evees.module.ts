@@ -26,9 +26,10 @@ import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
-import { PerspectivesList } from './elements/perspectives-list';
+import { PerspectivesList } from './elements/evees-perspectives-list';
 
 import en from '../i18n/en.json';
+import { EveesPerspective } from './elements/evees-perspective';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -91,9 +92,10 @@ export function eveesModule(
 
     submodules = [
       graphQlSchemaModule(eveesTypeDefs, eveesResolvers),
-      elementsModule({ 
-        'evee-commit-history': CommitHistory,
-        'evee-perspectives-list': PerspectivesList 
+      elementsModule({
+        'evees-commit-history': CommitHistory,
+        'evees-perspectives-list': PerspectivesList,
+        'evees-perspective': EveesPerspective
       }),
       i18nModule('evees', { en: en }),
       patternsModule({

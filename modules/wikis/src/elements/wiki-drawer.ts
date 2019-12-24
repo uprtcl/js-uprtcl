@@ -6,7 +6,7 @@ import '@material/mwc-top-app-bar';
 
 import { EveesTypes } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
-import { Creatable } from '@uprtcl/cortex';
+import { Creatable, Hashed } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
@@ -14,7 +14,10 @@ import { Wiki } from '../types';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Object })
-  wiki!: Wiki;
+  wiki!: Hashed<Wiki>;
+
+  @property({ type: Boolean })
+  public editable: boolean = true;
 
   @property({ type: String })
   selectedPageHash!: String;
@@ -56,7 +59,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       eveesProvider.uprtclProviderLocator
     );
 
-    const pages = [...this.wiki.pages, perspective.id];
+    const pages = [...this.wiki.object.pages, perspective.id];
     this.updateContent(pages);
   };
 
@@ -66,20 +69,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        getEntity(id: "${this.wikiId}") {
+        getEntity(id: "${this.wiki.id}") {
           id
-          raw
-          content {
-            entity {
-              ... on Wiki {
-                title
-                pages {
+          entity {
+            ... on Wiki {
+              title
+              pages {
+                id
+                content {
                   id
-                  content {
-                    id
-                    patterns {
-                      title
-                    }
+                  patterns {
+                    title
                   }
                 }
               }
@@ -89,21 +89,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }`
     });
 
-    const { pages } = result.data.getEntity.content.entity;
-    this.pagesList = pages.map(page => {
-      return {
-        id: page.id,
-        title: page.content.entity.patterns.title ? page.content.entity.patterns.title : 'Unknown'
-      };
-    });
+    console.log('result', result);
 
-    this.title = result.data.getEntity.content.entity.title;
+    const { pages } = result.data.getEntity.entity;
+    this.pagesList = pages.map(page => ({
+      id: page.id,
+      title: page.entity.patterns.title ? page.entity.patterns.title : 'Unknown'
+    }));
+
+    this.title = result.data.getEntity.entity.title;
   }
 
   updateContent(pages: Array<string>) {
     this.dispatchEvent(
       new CustomEvent('content-changed', {
-        detail: { newContent: { ...this.wiki, pages } },
+        detail: { newContent: { ...this.wiki.object, pages } },
         bubbles: true,
         composed: true
       })
@@ -123,14 +123,18 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           <ul>
             ${this.pagesList.map(page => {
               return html`
-                <li @click=${() => this.setPage(page.id)}>${page.title}</li>
+                <li @click=${() => (this.selectedPageHash = page.id)}>${page.title}</li>
               `;
             })}
           </ul>
-          <mwc-button @click=${() => this.createPage()}>
-            <mwc-icon>note_add</mwc-icon>
-            New page
-          </mwc-button>
+
+          ${this.editable
+            ? html`
+                <mwc-button icon="note_add" @click=${() => this.createPage()}>
+                  ${this.t('new-page')}
+                </mwc-button>
+              `
+            : html``}
         </div>
 
         <div slot="appContent">
@@ -139,7 +143,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
               `
             : html`
-                <home-page .wikiHash=${this.wikiId} .title=${this.title}></home-page>
+                <home-page .wikiHash=${this.wiki.id} .title=${this.title}></home-page>
               `}
         </div>
       </mwc-drawer>
@@ -153,7 +157,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         margin-bottom: 9px;
         cursor: pointer;
       }
-
     `;
   }
 }

@@ -1,7 +1,4 @@
 import gql from 'graphql-tag';
-import { makeExecutableSchema } from 'graphql-tools';
-
-import { baseTypeDefs, baseResolvers } from '@uprtcl/common';
 
 export const wikiTypeDefs = gql`  
   type Wiki {

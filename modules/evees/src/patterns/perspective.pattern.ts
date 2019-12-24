@@ -20,6 +20,8 @@ import { Perspective, EveesTypes, Commit, UpdateRequest } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { createEntity } from '../utils/utils';
+import { HasLenses } from '@uprtcl/lenses';
+import { TemplateResult, html } from 'lit-element';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -42,7 +44,12 @@ export class PerspectiveEntity implements Entity {
 
 @injectable()
 export class PerspectiveLinks extends PerspectiveEntity
-  implements HasLinks, HasRedirect, Creatable<NewPerspectiveArgs, Signed<Perspective>>, HasActions {
+  implements
+    HasLinks,
+    HasRedirect,
+    Creatable<NewPerspectiveArgs, Signed<Perspective>>,
+    HasActions,
+    HasLenses {
   constructor(
     @inject(CortexTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesTypes.Evees) protected evees: Evees,
@@ -63,6 +70,16 @@ export class PerspectiveLinks extends PerspectiveEntity
     return details.headId;
   };
 
+  lenses = (perspective: Secured<Perspective>) => [
+    {
+      name: 'evees:perspective-controller',
+      type: 'content',
+      render: () => html`
+        <evees-perspective perspective-id="${perspective.id}"></evees-perspective>
+      `
+    }
+  ];
+
   create = () => async (args: NewPerspectiveArgs | undefined, providerName?: string) => {
     return this.evees.createPerspective(args || {}, providerName);
   };
@@ -71,7 +88,7 @@ export class PerspectiveLinks extends PerspectiveEntity
     return [
       {
         icon: 'call_split',
-        title: 'New perspective',
+        title: 'evees:new-perspective',
         action: async () => {
           const details = await this.evees.getPerspectiveDetails(perspective.id);
           const newPerspective = await this.create()(
@@ -84,7 +101,7 @@ export class PerspectiveLinks extends PerspectiveEntity
       },
       {
         icon: 'merge_type',
-        title: 'Merge',
+        title: 'evees:merge',
         action: async () => {
           const updateRequests = await this.merge.mergePerspectives(
             perspective.id,
@@ -156,8 +173,6 @@ export class PerspectiveLinks extends PerspectiveEntity
     );
 
     await this.evees.updatePerspectiveDetails(perspective.id, { headId: newHead.id });
-
-    return true;
   };
 
   accessControl = (perspective: Secured<Perspective>) => {
