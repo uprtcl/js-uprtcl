@@ -95,6 +95,26 @@ export class HttpConnection extends Connection {
       });
   }
 
+  public async getWithPut<T>(url: string, body: any): Promise<T> {
+    this.logger.log('PUT: ', url);
+
+    return fetch(url, {
+      method: 'PUT',
+      headers: this.headers,
+      body: JSON.stringify(body)
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json() as Promise<{ data: T }>;
+      })
+      .then(data => {
+        console.log('[HTTP GET RESULT] ', url, data);
+        return data.data;
+      });
+  }
+
   /**
    * Execute a PUT request
    * @param url url to make the request to

@@ -28,6 +28,7 @@ import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 
 import en from '../i18n/en.json';
+import { PerspectivesList } from './lenses/perspectives-list';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -90,7 +91,10 @@ export function eveesModule(
 
     submodules = [
       graphQlSchemaModule(eveesTypeDefs, eveesResolvers),
-      elementsModule({ 'evees-commit-history': CommitHistory }),
+      elementsModule({ 
+        'evee-commit-history': CommitHistory,
+        'evee-perspectives-list': PerspectivesList 
+      }),
       i18nModule('evees', { en: en }),
       patternsModule({
         [CortexTypes.Core.Hashed]: [CidHashedPattern],

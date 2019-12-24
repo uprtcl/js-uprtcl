@@ -66,7 +66,11 @@ export class CortexUpdatable extends moduleConnect(LitElement) {
       `
     });
 
-    this.entityEditable = result.data.getEntity.entity.patterns.accessControl.canWrite;
+    if (result.data.getEntity.entity.patterns.accessControl) {
+      this.entityEditable = result.data.getEntity.entity.patterns.accessControl.canWrite;
+    } else {
+      this.entityEditable = true;
+    }
   }
 
   updated(changedProperties: PropertyValues) {

@@ -6,7 +6,7 @@ export { AccessControlTypes, GraphQlTypes } from './types';
 
 /** Access Control */
 export { Updatable } from './access-control/properties/updatable';
-export { Permissions } from './access-control/properties/permissions';
+export { Permissions, PermissionsStatus } from './access-control/properties/permissions';
 
 export { AccessControlModule } from './access-control';
 export { AccessControlService } from './access-control/services/access-control.service';

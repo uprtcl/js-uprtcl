@@ -13,7 +13,6 @@ import { CortexEntity } from './elements/cortex-entity';
 import { CortexLensSelector } from './elements/cortex-lens-selector';
 import { CortexEntityBase } from './elements/cortex-entity-base';
 import { CortexActions } from './elements/cortex-actions';
-import { CortexUpdatable } from './elements/cortex-updatable';
 import { LensesPlugin } from './types';
 import { SlotPlugin } from './plugins/slot.plugin';
 import { RenderLensPlugin } from './plugins/render-lens.plugin';

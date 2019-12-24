@@ -18,7 +18,12 @@ export class CacheDexie extends Dexie implements CacheService {
    * @override
    */
   async get<T extends object>(hash: string): Promise<T | undefined> {
-    return this.cacheObjects.get(hash);
+    if (!hash) {
+      debugger
+    }
+    // if (!!hash) {
+      return this.cacheObjects.get(hash);
+    // }
   }
 
   /**

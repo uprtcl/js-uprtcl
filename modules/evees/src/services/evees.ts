@@ -6,14 +6,12 @@ import {
   DiscoveryTypes,
   CortexTypes,
   PatternRecognizer,
-  Creatable,
   CachedMultiSourceService,
   Hashed,
   IsSecure,
   MultiSourceService,
   DiscoveryService,
-  HasChildren,
-  Pattern
+  HasChildren
 } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Secured } from '@uprtcl/common';
@@ -152,7 +150,7 @@ export class Evees {
     const perspectiveData: Perspective = {
       creatorId: creatorId,
       origin: upl,
-      timestamp: Date.now() / 1000
+      timestamp: Date.now()
     };
     const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData);
 
@@ -222,7 +220,7 @@ export class Evees {
       const head = await this.createCommit(
         {
           dataId: dataId,
-          message: `Commit at ${Date.now() / 1000}`,
+          message: `Commit at ${Date.now()}`,
           parentsIds: headId ? [headId] : []
         },
         upl

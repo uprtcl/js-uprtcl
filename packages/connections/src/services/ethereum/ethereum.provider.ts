@@ -70,7 +70,9 @@ export abstract class EthereumProvider implements ServiceProvider {
           reject();
         })
         .on('confirmation', (confirmationNumber: any) => {
-          this.logger.log(`CONFIRMED ${funcName}`, { confirmationNumber, pars });
+          if (confirmationNumber < 5) {
+            this.logger.log(`CONFIRMED ${funcName}`, { confirmationNumber, pars });
+          }
           resolve();
         })
         .then((receipt: any) => {
