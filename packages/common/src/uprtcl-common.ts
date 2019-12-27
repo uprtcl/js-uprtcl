@@ -28,6 +28,7 @@ export { DefaultSignedPattern } from './patterns/default-signed.pattern';
 export { DefaultSecuredPattern, Secured } from './patterns/default-secured.pattern';
 
 /** Utils */
+export { createEntity } from './utils/entities';
 export { sortObject } from './utils/utils';
 
 /** GraphQl */

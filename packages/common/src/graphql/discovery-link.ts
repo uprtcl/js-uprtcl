@@ -28,7 +28,10 @@ export class DiscoveryLink extends ApolloLink {
     return new Observable<FetchResult>(observer => {
       operationObserver.subscribe({
         next: async result => {
-          if (!result.data || !result.data.getEntity) return result;
+          if (!result.data || !result.data.getEntity) {
+            observer.next(result);
+            return;
+          }
 
           const hash = result.data.getEntity.id;
           const object = result.data.getEntity.raw;

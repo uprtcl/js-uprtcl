@@ -16,16 +16,13 @@ interface PerspectiveData {
 }
 
 export class PerspectivesList extends moduleConnect(LitElement) {
-  @property({ type: String })
-  rootPerspectiveId!: string;
+  @property({ type: String, attribute: 'perspective-id' })
+  perspectiveId!: string;
 
   @property({ attribute: false })
   perspectivesData: Array<PerspectiveData> = [];
 
-  private recognizer!: PatternRecognizer;
-
   async firstUpdated() {
-    this.recognizer = this.request(CortexTypes.Recognizer);
     this.updatePerspectivesData();
   }
 
@@ -34,7 +31,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
       const result = await client.query({
         query: gql`{
-          getEntity(id: "${this.rootPerspectiveId}") {
+          getEntity(id: "${this.perspectiveId}") {
             id
             entity {
               ... on Perspective {
@@ -107,7 +104,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   };
 
   renderPerspective(perspectiveData: PerspectiveData) {
-    const style = perspectiveData.id == this.rootPerspectiveId ? 'font-weight: bold;' : '';
+    const style = perspectiveData.id == this.perspectiveId ? 'font-weight: bold;' : '';
     return html`
       <li style=${style} @click=${() => this.openPerspective(perspectiveData.id)}>
         ${perspectiveData.details.name} - Creator: ${perspectiveData.perspective.creatorId} -

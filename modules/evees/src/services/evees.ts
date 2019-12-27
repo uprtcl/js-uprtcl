@@ -14,12 +14,11 @@ import {
   HasChildren
 } from '@uprtcl/cortex';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Secured } from '@uprtcl/common';
+import { Secured, createEntity } from '@uprtcl/common';
 
 import { EveesTypes, EveesLocal, Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesProvider } from './evees.provider';
 import { EveesRemote } from './evees.remote';
-import { createEntity } from '../utils/utils';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;

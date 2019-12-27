@@ -24,7 +24,7 @@ import { EveesTypes, EveesLocal } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
-import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
+import { eveesTypeDefs, eveesResolvers } from './graphql/schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 import { PerspectivesList } from './elements/evees-perspectives-list';
 

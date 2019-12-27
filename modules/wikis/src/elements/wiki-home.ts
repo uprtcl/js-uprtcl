@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
-export class Homepage extends moduleConnect(LitElement) {
+export class WikiHome extends moduleConnect(LitElement) {
   @property({ type: String })
   wikiHash!: string;
 
@@ -14,7 +14,7 @@ export class Homepage extends moduleConnect(LitElement) {
       <h2> Welcome to ${this.title} </h2>
 
       <h4> Recent new perspectives </h4>
-      <evee-perspectives-list .rootPerspectiveId=${this.wikiHash}></evee-perspectives-list>
+      <evee-perspectives-list perspective-id="${this.wikiHash}"></evee-perspectives-list>
     `;
   }
 

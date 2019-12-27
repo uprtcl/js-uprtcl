@@ -16,6 +16,10 @@ export const baseTypeDefs = gql`
     getEntity(id: ID!): Entity!
   }
 
+  type Mutation {
+    _: Boolean
+  }
+
   type Entity {
     id: ID!
     raw: JSON!

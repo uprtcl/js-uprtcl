@@ -1,6 +1,6 @@
-import gql from 'graphql-tag';
+import { gql } from 'apollo-boost';
 
-export const wikiTypeDefs = gql`  
+export const wikiTypeDefs = gql`
   type Wiki {
     title: String!
     pages: [Entity!]!

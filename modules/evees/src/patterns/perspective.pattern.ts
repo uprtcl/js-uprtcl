@@ -14,12 +14,11 @@ import {
   PatternRecognizer,
   Entity
 } from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { createEntity, Secured } from '@uprtcl/common';
 
 import { Perspective, EveesTypes, Commit, UpdateRequest } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
-import { createEntity } from '../utils/utils';
 import { HasLenses } from '@uprtcl/lenses';
 import { TemplateResult, html } from 'lit-element';
 

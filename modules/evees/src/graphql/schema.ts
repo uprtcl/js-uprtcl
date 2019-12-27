@@ -1,10 +1,16 @@
 import { gql } from 'apollo-boost';
 
-import { EveesTypes } from './types';
-import { Evees } from './services/evees';
+import { EveesTypes, Commit } from '../types';
+import { Evees } from '../services/evees';
+import { Secured } from '@uprtcl/common';
 
 export const eveesTypeDefs = gql`
   scalar Date
+
+  extend type Mutation {
+    updatePerspectiveHead(perspectiveId: ID!, headId: ID!): Perspective!
+    createCommit(dataId: ID!, parentsIds: [ID!]!, message: String, usl: String): Entity!
+  }
 
   type Context {
     identifier: String!
@@ -80,14 +86,25 @@ export const eveesResolvers = {
 
       return details && details.context;
     }
+  },
+  Mutation: {
+    async createCommit(_, { dataId, parentsIds, message, usl }, { container }) {
+      const evees: Evees = container.get(EveesTypes.Evees);
+
+      const commit: Secured<Commit> = await evees.createCommit(
+        { dataId, parentsIds, message },
+        usl
+      );
+      console.log('aahahah', commit);
+      debugger
+      return { id: commit.id };
+    },
+    async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
+      const evees: Evees = container.get(EveesTypes.Evees);
+
+      await evees.updatePerspectiveDetails(perspectiveId, { headId });
+
+      return { id: perspectiveId };
+    }
   }
 };
-/* 
-export const eveesSchema = makeExecutableSchema({
-  typeDefs: [baseTypeDefs, eveesTypeDefs],
-  resolvers: {
-    ...baseResolvers,
-    ...eveesResolvers
-  }
-});
- */

@@ -1,6 +1,5 @@
-import gql from 'graphql-tag';
 import { merge, cloneDeepWith } from 'lodash-es';
-import { ApolloClient } from 'apollo-boost';
+import { gql, ApolloClient } from 'apollo-boost';
 
 import {
   PatternRecognizer,
@@ -9,11 +8,10 @@ import {
   Hashed,
   DiscoveryTypes,
   Pattern,
-  Entity,
-  HasTitle
+  Entity
 } from '@uprtcl/cortex';
 
-import { loadEntity, getIsomorphisms } from '../utils/entities';
+import { loadEntity, getIsomorphisms, createEntity, getEntityContent } from '../utils/entities';
 import { GraphQlTypes } from '../types';
 
 export const cortexSchema = gql`
@@ -90,7 +88,7 @@ export const cortexResolvers = {
       const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
 
-      return redirectEntity(entity, recognizer, discovery);
+      return getEntityContent(entity, recognizer, discovery);
     },
     async isomorphisms(parent, args, { container }, info) {
       const entity = await getEntityFromParent(parent, container);
@@ -107,29 +105,10 @@ export const cortexResolvers = {
   }
 };
 
-export async function redirectEntity(
-  entity: any,
-  recognizer: PatternRecognizer,
-  discovery: DiscoveryService
-): Promise<any | undefined> {
-  const hasRedirect = recognizer.recognizeUniqueProperty(entity, prop => !!prop.redirect);
-
-  if (hasRedirect) {
-    const redirectEntityId = await hasRedirect.redirect(entity);
-
-    if (redirectEntityId) {
-      const redirectedEntity: Hashed<any> | undefined = await discovery.get(redirectEntityId);
-      return redirectEntity(redirectedEntity, recognizer, discovery);
-    }
-  }
-
-  return entity;
-}
-
 export async function getEntityFromParent(parent, container): Promise<Hashed<any>> {
   if (parent.raw) return parent.raw;
   if (parent.entity) return parent.entity;
-  if (typeof parent === 'string') return loadEntity(container.get(GraphQlTypes.Client), parent)
+  if (typeof parent === 'string') return loadEntity(container.get(GraphQlTypes.Client), parent);
 
   return parent;
 }

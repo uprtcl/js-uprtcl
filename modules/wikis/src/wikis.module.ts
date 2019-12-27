@@ -12,7 +12,7 @@ import { Wikis } from './services/wikis';
 import { WikisRemote } from './services/wikis.remote';
 import { wikiTypeDefs } from './graphql';
 import { WikiPage } from './elements/wiki-page';
-import { Homepage } from './elements/homepage';
+import { WikiHome } from './elements/wiki-home';
 
 import en from '../i18n/en.json';
 
@@ -66,7 +66,7 @@ export function wikisModule(wikisRemotes: WikisRemote[]): Constructor<MicroModul
       elementsModule({
         'wiki-drawer': WikiDrawer,
         'wiki-page': WikiPage,
-        'home-page': Homepage
+        'wiki-home': WikiHome
       }),
       patternsModule({
         [WikisTypes.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]

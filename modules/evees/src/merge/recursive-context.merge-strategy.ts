@@ -2,11 +2,10 @@ import { injectable } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { Pattern, HasChildren, Hashed } from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { Secured, createEntity } from '@uprtcl/common';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import { Perspective, UpdateRequest, Commit } from '../types';
-import { createEntity } from '../utils/utils';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {

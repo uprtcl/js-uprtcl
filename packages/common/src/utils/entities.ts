@@ -1,6 +1,6 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { PatternRecognizer, HasRedirect, Hashed } from '@uprtcl/cortex';
+import { PatternRecognizer, HasRedirect, Hashed, Creatable, DiscoveryService } from '@uprtcl/cortex';
 
 export async function loadEntity(client: ApolloClient<any>, hash: string): Promise<any> {
   const result = await client.query({
@@ -62,3 +62,46 @@ async function redirectEntity(
 
   return isomorphisms;
 }
+
+export async function getEntityContent(
+  entity: any,
+  recognizer: PatternRecognizer,
+  discovery: DiscoveryService
+): Promise<any | undefined> {
+  const hasRedirect = recognizer.recognizeUniqueProperty(entity, prop => !!prop.redirect);
+
+  if (hasRedirect) {
+    const redirectEntityId = await hasRedirect.redirect(entity);
+
+    if (redirectEntityId) {
+      const redirectedEntity: Hashed<any> | undefined = await discovery.get(redirectEntityId);
+      return getEntityContent(redirectedEntity, recognizer, discovery);
+    }
+  }
+
+  return entity;
+}
+
+/**
+ * Generically create the given data and retrieve its hashed it
+ *
+ * @param data the data to create
+ * @returns the created hashed data
+ */
+export const createEntity = (recognizer: PatternRecognizer) => async <T extends object>(
+  data: T,
+  usl?: string
+): Promise<Hashed<T>> => {
+  const creatable: Creatable<T, T> | undefined = recognizer.recognizeUniqueProperty(
+    data,
+    prop => !!(prop as Creatable<T, T>).create
+  );
+
+  if (!creatable) {
+    throw new Error(
+      `Trying to create data ${data.toString()}, but it does not implement the Creatable pattern`
+    );
+  }
+
+  return creatable.create()(data, usl);
+};

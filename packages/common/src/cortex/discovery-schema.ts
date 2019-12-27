@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import { gql } from 'apollo-boost';
 
 export const discoveryTypeDefs = gql`
   extend type Entity {
@@ -8,9 +8,6 @@ export const discoveryTypeDefs = gql`
 
 export const discoveryResolvers = {
   Entity: {
-    source(parent, _ , {cache}) {
-      
-
-    }
+    source(parent, _, { cache }) {}
   }
 };

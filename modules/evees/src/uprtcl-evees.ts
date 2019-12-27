@@ -25,3 +25,9 @@ export { MergeStrategy } from './merge/merge-strategy';
 export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 export { mergeStrings, mergeResult } from './merge/utils';
+
+/** Elements */
+export { CommitHistory } from './elements/evees-commit-history';
+export { PerspectivesList } from './elements/evees-perspectives-list';
+export { EveesPerspective } from './elements/evees-perspective';
+export { UpdateContentEvent, UpdateContentArgs } from './elements/events';

@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import { gql } from 'apollo-boost';
 
 import { Hashed, CortexTypes, PatternRecognizer, ServiceProvider } from '@uprtcl/cortex';
 

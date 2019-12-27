@@ -1,17 +1,18 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
 
-import { EveesTypes } from '@uprtcl/evees';
+import { EveesTypes, UpdateContentEvent } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
 import { Creatable, Hashed } from '@uprtcl/cortex';
 import { GraphQlTypes } from '@uprtcl/common';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 
-import { Wiki } from '../types';
+import { Wiki, WikisTypes } from '../types';
+import { Wikis } from '../services/wikis';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Object })
@@ -59,8 +60,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       eveesProvider.uprtclProviderLocator
     );
 
-    const pages = [...this.wiki.object.pages, perspective.id];
-    this.updateContent(pages);
+    const wiki: Wiki = {
+      ...this.wiki.object,
+      pages: [...this.wiki.object.pages, perspective.id]
+    };
+
+    const { id } = await this.createWiki(wiki);
+    this.updateContent(id);
   };
 
   async firstUpdated() {
@@ -98,10 +104,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.title = result.data.getEntity.entity.title;
   }
 
-  updateContent(pages: Array<string>) {
+  createWiki(wiki: Wiki): Promise<Hashed<Wiki>> {
+    const wikis: Wikis = this.request(WikisTypes.Wikis);
+    return wikis.createWiki(wiki);
+  }
+
+  updateContent(dataId: string) {
     this.dispatchEvent(
-      new CustomEvent('content-changed', {
-        detail: { newContent: { ...this.wiki.object, pages } },
+      new UpdateContentEvent({
+        detail: { dataId },
         bubbles: true,
         composed: true
       })
@@ -120,7 +131,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <div class="column" style="height: 100%;">
           ${this.pagesList.length === 0
             ? html`
-                <div class="row center-content" style="flex: 1; align-items: start; padding-top: 24px;">
+                <div
+                  class="row center-content"
+                  style="flex: 1; align-items: start; padding-top: 24px;"
+                >
                   <span>${this.t('wikis:no-pages-yet')}</span>
                 </div>
               `
@@ -139,7 +153,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           ${this.editable
             ? html`
                 <div class="row">
-                  <mwc-button raised icon="note_add" @click=${() => this.createPage()} style="flex: 1;">
+                  <mwc-button
+                    raised
+                    icon="note_add"
+                    @click=${() => this.createPage()}
+                    style="flex: 1;"
+                  >
                     ${this.t('wikis:new-page')}
                   </mwc-button>
                 </div>
@@ -153,7 +172,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
               `
             : html`
-                <home-page .wikiHash=${this.wiki.id} .title=${this.title}></home-page>
+                <wiki-home .wikiHash=${this.wiki.id} .title=${this.title}></wiki-home>
               `}
         </div>
       </mwc-drawer>

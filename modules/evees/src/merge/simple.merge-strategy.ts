@@ -9,7 +9,7 @@ import {
   KnownSourcesService,
   Hashed
 } from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { Secured, createEntity } from '@uprtcl/common';
 
 import { UpdateRequest, EveesTypes, Commit } from '../types';
 import { Evees } from '../services/evees';
@@ -18,7 +18,6 @@ import { isAncestorOf } from '../utils/ancestor';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
-import { createEntity } from '../utils/utils';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
