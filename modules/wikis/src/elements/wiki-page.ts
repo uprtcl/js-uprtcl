@@ -25,7 +25,7 @@ export class WikiPage extends moduleConnect(LitElement) {
         }
       }`
     });
-    console.log(result)
+    
     const { text } = result.data.getEntity.content.entity
     this.title = text ? text : "Title goes here"
   }

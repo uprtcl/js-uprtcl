@@ -1,4 +1,4 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 export class Homepage extends moduleConnect(LitElement) {

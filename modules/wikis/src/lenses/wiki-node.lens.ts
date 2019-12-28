@@ -21,10 +21,9 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
 
   @property({ type: String })
   pagesList: Array<any> = [];
-  
-  //this is going to be changed
+
   @property({ type: String })
-  wikiId: String = window.location.href.split('id=')[1];
+  wikiId!: String;
 
   createPage = async () => {
     const isCreatable = p => (p as Creatable<any, any>).create;
@@ -103,14 +102,13 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
       }`
     });
 
-    const { pages } = pagesQuery.data.getEntity.content.entity
+    const { pages } = pagesQuery.data.getEntity.content.entity;
     this.pagesList = pages.map(page => {
       return {
         id: page.id,
         title: page.content.entity.patterns.title ? page.content.entity.patterns.title : 'Unknown'
-      }
+      };
     });
-
     this.title = titleQuery.data.getEntity.content.entity.title;
   }
 
@@ -125,7 +123,11 @@ export class WikiNodeLens extends moduleConnect(LitElement) {
   }
 
   setPage(pageHash) {
+    const withSlash = () => window.history.pushState('', '', `${window.location.href}/${pageHash}`);
+    const withoutSlash = () =>
+      window.history.pushState('', '', `${window.location.href}${pageHash}`);
     this.selectedPageHash = pageHash;
+    window.location.href.slice(-1) === '/' ? withoutSlash() : withSlash();
   }
 
   wikiHeader() {
