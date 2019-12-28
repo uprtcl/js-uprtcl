@@ -1,7 +1,6 @@
 import {TemplateResult} from 'lit-element';
 
 import { SlotPlugin } from './plugins/slot.plugin';
-import { RenderLensPlugin } from './plugins/render-lens.plugin';
 
 export interface Lens {
   name: string;
@@ -9,4 +8,4 @@ export interface Lens {
   type?: string;
 }
 
-export type LensesPlugin = SlotPlugin | RenderLensPlugin;
+export type LensesPlugin = SlotPlugin;
