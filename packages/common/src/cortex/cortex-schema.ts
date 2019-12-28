@@ -11,7 +11,7 @@ import {
   Entity
 } from '@uprtcl/cortex';
 
-import { loadEntity, getIsomorphisms, createEntity, getEntityContent } from '../utils/entities';
+import { loadEntity, getIsomorphisms, getEntityContent } from '../utils/entities';
 import { GraphQlTypes } from '../types';
 
 export const cortexSchema = gql`

@@ -3,6 +3,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 
 import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
+import '@material/mwc-ripple';
 
 import { EveesTypes, UpdateContentEvent } from '@uprtcl/evees';
 import { DocumentsTypes } from '@uprtcl/documents';
@@ -22,7 +23,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   public editable: boolean = true;
 
   @property({ type: String })
-  selectedPageHash!: String;
+  selectedPageHash: string | undefined = undefined;
 
   @property({ type: String })
   pagesList: Array<{ title: string; id: string }> | undefined = undefined;
@@ -147,7 +148,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   render() {
     return html`
       <mwc-drawer hasHeader>
-        <span slot="title">${this.wiki.object.title}</span>
+        <span
+          slot="title"
+          @click=${() => (this.selectedPageHash = undefined)}
+          style="cursor: pointer;"
+        >
+          ${this.wiki.object.title}
+        </span>
 
         <div class="column" style="height: 100%;">
           <div style="flex: 1;">
@@ -170,7 +177,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             : html``}
         </div>
 
-        <div slot="appContent">
+        <div slot="appContent" class="fill-content">
           ${this.selectedPageHash
             ? html`
                 <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>

@@ -2,10 +2,8 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { Secured, GraphQlTypes, Updatable } from '@uprtcl/common';
-import { PatternRecognizer, CortexTypes } from '@uprtcl/cortex';
+import { GraphQlTypes } from '@uprtcl/common';
 
-import { Perspective } from '../types';
 import { UPDATE_HEAD, CREATE_COMMIT } from '../graphql/queries';
 import { UpdateContentEvent } from './events';
 

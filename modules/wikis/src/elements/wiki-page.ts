@@ -48,7 +48,7 @@ export class WikiPage extends moduleConnect(LitElement) {
         <div slot="title">${this.textNode.text}</div>
 
         <div slot="actionItems">
-          <cortex-actions .hash=${this.pageHash} toolbar="none"></cortex-actions>
+          <cortex-actions .hash=${this.pageHash} ></cortex-actions>
         </div>
       </mwc-top-app-bar>
 
