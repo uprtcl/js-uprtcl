@@ -1,10 +1,22 @@
-import { LitElement, html } from 'lit-element';
+import { LitElement, html, css } from 'lit-element';
 import '@authentic/mwc-circular-progress';
 
 export class CortexLoadingPlaceholder extends LitElement {
+  static get styles() {
+    return css`
+      .container {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    `;
+  }
+
   render() {
     return html`
-      <div style="flex: 1; justify-content: center; align-items: center;">
+      <div class="container">
         <mwc-circular-progress></mwc-circular-progress>
       </div>
     `;

@@ -3,7 +3,15 @@ import { gql } from 'apollo-boost';
 export const UPDATE_HEAD = gql`
   mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID!) {
     updatePerspectiveHead(perspectiveId: $perspectiveId, headId: $headId) {
-      head {
+      id
+      entity {
+        ... on Perspective {
+          head {
+            id
+          }
+        }
+      }
+      content {
         id
       }
     }

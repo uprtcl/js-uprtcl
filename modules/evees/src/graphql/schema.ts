@@ -8,7 +8,7 @@ export const eveesTypeDefs = gql`
   scalar Date
 
   extend type Mutation {
-    updatePerspectiveHead(perspectiveId: ID!, headId: ID!): Perspective!
+    updatePerspectiveHead(perspectiveId: ID!, headId: ID!): Entity!
     createCommit(dataId: ID!, parentsIds: [ID!]!, message: String, usl: String): Entity!
   }
 
@@ -95,8 +95,7 @@ export const eveesResolvers = {
         { dataId, parentsIds, message },
         usl
       );
-      console.log('aahahah', commit);
-      debugger
+
       return { id: commit.id };
     },
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
@@ -104,7 +103,7 @@ export const eveesResolvers = {
 
       await evees.updatePerspectiveDetails(perspectiveId, { headId });
 
-      return { id: perspectiveId };
+      return evees.get(perspectiveId);
     }
   }
 };

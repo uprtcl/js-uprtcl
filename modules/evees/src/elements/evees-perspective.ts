@@ -24,8 +24,6 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   async loadPerspective() {
     this.entityId = undefined;
-    this.requestUpdate();
-    console.log('asdf3', this.entityId);
 
     const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
 
@@ -50,8 +48,6 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       `
     });
 
-    console.log('asdf4', this.perspectiveId);
-
     this.entityId = result.data.getEntity.content.id;
     const head = result.data.getEntity.entity.head;
     this.currentHeadId = head ? head.id : undefined;
@@ -73,7 +69,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     this.entityId = undefined;
 
     const parentsIds = this.currentHeadId ? [this.currentHeadId] : [];
-debugger
+
     const result = await client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
@@ -81,28 +77,26 @@ debugger
         dataId
       }
     });
-    console.log('resultHere', result);
-    /* 
-    await client.mutate({
+
+    const headUpdate = await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.perspectiveId,
-        headId: 'hi'
+        headId: result.data.createCommit.id
       }
-    }); */
+    });
 
-    console.log('asdf1', this.perspectiveId);
+    this.currentHeadId = result.data.createCommit.id;
+    this.entityId = headUpdate.data.updatePerspectiveHead.content.id;
   }
 
   render() {
-    console.log('asdf5');
     if (this.entityId === undefined) {
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
     }
 
-    console.log('asdf6');
     return html`
       <div class="evee-info"></div>
       <cortex-entity .hash=${this.entityId} lens-type="content"></cortex-entity>

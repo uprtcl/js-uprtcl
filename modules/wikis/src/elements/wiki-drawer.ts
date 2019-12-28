@@ -25,10 +25,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   selectedPageHash!: String;
 
   @property({ type: String })
-  title!: string;
-
-  @property({ type: String })
-  pagesList: Array<any> = [];
+  pagesList: Array<{ title: string; id: string }> | undefined = undefined;
 
   createPage = async () => {
     const isCreatable = p => (p as Creatable<any, any>).create;
@@ -100,8 +97,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       id: page.id,
       title: page.content.patterns.title ? page.content.patterns.title : this.t('wikis:untitled')
     }));
-
-    this.title = result.data.getEntity.entity.title;
   }
 
   createWiki(wiki: Wiki): Promise<Hashed<Wiki>> {
@@ -123,32 +118,41 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return sharedStyles;
   }
 
+  renderPageList() {
+    if (!this.pagesList)
+      return html`
+        <cortex-loading-placeholder></cortex-loading-placeholder>
+      `;
+
+    if (this.pagesList.length === 0)
+      return html`
+        <div class="row center-content" style="flex: 1; align-items: start; padding-top: 24px;">
+          <span>${this.t('wikis:no-pages-yet')}</span>
+        </div>
+      `;
+
+    return html`
+      <mwc-list>
+        ${this.pagesList.map(
+          page => html`
+            <mwc-list-item @click=${() => (this.selectedPageHash = page.id)}>
+              ${page.title}
+            </mwc-list-item>
+          `
+        )}
+      </mwc-list>
+    `;
+  }
+
   render() {
     return html`
       <mwc-drawer hasHeader>
-        <span slot="title">${this.title}</span>
+        <span slot="title">${this.wiki.object.title}</span>
 
         <div class="column" style="height: 100%;">
-          ${this.pagesList.length === 0
-            ? html`
-                <div
-                  class="row center-content"
-                  style="flex: 1; align-items: start; padding-top: 24px;"
-                >
-                  <span>${this.t('wikis:no-pages-yet')}</span>
-                </div>
-              `
-            : html``}
-
-          <mwc-list style="flex: 1;">
-            ${this.pagesList.map(
-              page => html`
-                <mwc-list-item @click=${() => (this.selectedPageHash = page.id)}>
-                  ${page.title}
-                </mwc-list-item>
-              `
-            )}
-          </mwc-list>
+          <div style="flex: 1;">
+            ${this.renderPageList()}
+          </div>
 
           ${this.editable
             ? html`
