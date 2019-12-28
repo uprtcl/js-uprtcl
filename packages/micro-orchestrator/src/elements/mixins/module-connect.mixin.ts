@@ -3,7 +3,7 @@ import { RequestDependencyEvent } from '../module-container';
 import { Constructor, CustomElement, i18nTypes } from '../../types';
 
 export interface ConnectedElement {
-  t: (key: string) => string;
+  translate: (key: string) => string;
   request<T>(dependency: interfaces.ServiceIdentifier<T>): T;
   requestAll<T>(dependency: interfaces.ServiceIdentifier<T>): T[];
 }
@@ -15,13 +15,13 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
   prototype: any;
 } & T =>
   class extends baseElement implements ConnectedElement {
-    t: (key: string) => string = key => key;
+    translate: (key: string) => string = key => key;
 
     connectedCallback() {
       super.connectedCallback();
 
       try {
-        this.t = this.request(i18nTypes.Translate);
+        this.translate = this.request(i18nTypes.Translate);
       } catch (e) {
         console.warn('No translate function present');
       }

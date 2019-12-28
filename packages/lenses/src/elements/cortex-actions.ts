@@ -129,7 +129,7 @@ export class CortexActions extends moduleConnect(LitElement) {
             action => html`
               <mwc-button
                 .icon=${action.icon}
-                .label=${this.t(action.title)}
+                .label=${this.translate(action.title)}
                 @click=${() => this.actionClicked(action)}
               ></mwc-button>
             `

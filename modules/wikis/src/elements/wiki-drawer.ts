@@ -96,7 +96,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const { pages } = result.data.getEntity.entity;
     this.pagesList = pages.map(page => ({
       id: page.id,
-      title: page.content.patterns.title ? page.content.patterns.title : this.t('wikis:untitled')
+      title: page.content.patterns.title ? page.content.patterns.title : this.translate('wikis:untitled')
     }));
   }
 
@@ -128,7 +128,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (this.pagesList.length === 0)
       return html`
         <div class="row center-content" style="flex: 1; align-items: start; padding-top: 24px;">
-          <span>${this.t('wikis:no-pages-yet')}</span>
+          <span>${this.translate('wikis:no-pages-yet')}</span>
         </div>
       `;
 
@@ -170,7 +170,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                     @click=${() => this.createPage()}
                     style="flex: 1;"
                   >
-                    ${this.t('wikis:new-page')}
+                    ${this.translate('wikis:new-page')}
                   </mwc-button>
                 </div>
               `

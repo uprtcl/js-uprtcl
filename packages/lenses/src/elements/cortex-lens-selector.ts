@@ -92,7 +92,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
               lens =>
                 html`
                   <mwc-list-item @click=${() => this.selectLens(lens)}>
-                    ${this.t(lens.name)}
+                    ${this.translate(lens.name)}
                   </mwc-list-item>
                 `
             )}
