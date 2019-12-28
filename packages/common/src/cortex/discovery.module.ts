@@ -1,7 +1,6 @@
 import { injectable, interfaces, inject } from 'inversify';
 
 import { MicroModule, MicroOrchestratorTypes, ModuleProvider } from '@uprtcl/micro-orchestrator';
-
 import {
   DiscoveryService,
   CacheService,
@@ -13,7 +12,8 @@ import {
   Source,
   KnownSourcesService
 } from '@uprtcl/cortex';
-import { graphQlSchemaModule } from 'src/graphql/graphql-schema.module';
+
+import { graphQlSchemaModule } from '../graphql/graphql-schema.module';
 import { discoveryTypeDefs } from './discovery-schema';
 
 export function discoveryModule(

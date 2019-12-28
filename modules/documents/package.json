@@ -51,6 +51,7 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.18.0",
+    "temp-dir": "^2.0.0",
     "typescript": "^3.7.2"
   },
   "contributors": [

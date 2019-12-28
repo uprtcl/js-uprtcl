@@ -1,6 +1,6 @@
 module.exports = {
   mode: 'modules',
-  out: 'docs',
+  out: 'docs/api',
   exclude: [
     '**/node_modules/**',
     '**/*.spec.ts',
@@ -11,5 +11,6 @@ module.exports = {
   ],
   name: 'js-uprtcl',
   excludePrivate: true,
-  skipInternal: true
+  skipInternal: true,
+  theme: 'vuepress'
 };
