@@ -1,8 +1,7 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css } from 'lit-element';
 
-import { PermissionsStatus } from '@uprtcl/common';
-import { CortexTypes, PatternRecognizer } from '@uprtcl/cortex';
+import { PermissionsStatus } from '@uprtcl/access-control';
 import { GraphQlTypes } from '@uprtcl/common';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 

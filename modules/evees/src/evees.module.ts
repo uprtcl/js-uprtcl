@@ -13,9 +13,9 @@ import {
   DefaultSecuredPattern,
   DefaultSignedPattern,
   CidHashedPattern,
-  i18nModule,
-  AccessControlTypes
+  i18nModule
 } from '@uprtcl/common';
+import { AccessControlTypes } from '@uprtcl/access-control';
 
 import { PerspectiveLinks } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';

@@ -14,7 +14,7 @@ export class WikiHome extends moduleConnect(LitElement) {
       <h2> Welcome to ${this.title} </h2>
 
       <h4> Recent new perspectives </h4>
-      <evee-perspectives-list perspective-id="${this.wikiHash}"></evee-perspectives-list>
+      <evees-perspectives-list perspective-id="${this.wikiHash}"></evees-perspectives-list>
     `;
   }
 

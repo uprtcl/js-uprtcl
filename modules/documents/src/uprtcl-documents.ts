@@ -1,3 +1,6 @@
+// Required by inversify
+import 'reflect-metadata';
+
 export { TextNode, TextType, DocumentsTypes } from './types';
 
 export { DocumentsProvider } from './services/documents.provider';

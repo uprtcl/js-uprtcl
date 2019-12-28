@@ -7,11 +7,10 @@ import {
   ApolloClientModule,
   GraphQlTypes,
   i18nextBaseModule,
-  AccessControlTypes,
-  AccessControlModule,
   CortexModule,
   discoveryModule
 } from '@uprtcl/common';
+import { AccessControlTypes, AccessControlModule } from '@uprtcl/access-control';
 import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
 import { IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
 import { SimpleEditor } from './simple-editor';

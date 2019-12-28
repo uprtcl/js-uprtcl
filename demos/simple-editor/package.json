@@ -30,6 +30,7 @@
   "dependencies": {
     "@polymer/app-layout": "^3.0.0",
     "@polymer/polymer": "^3.1.0",
+    "@uprtcl/access-control": "^0.0.1-alpha6",
     "@uprtcl/common": "^0.0.1-alpha6",
     "@uprtcl/connections": "^0.0.1-alpha6",
     "@uprtcl/cortex": "^0.0.1-alpha6",

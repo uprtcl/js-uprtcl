@@ -5,22 +5,7 @@ export { CortexModule } from './cortex/cortex.module';
 export { discoveryModule } from './cortex/discovery.module';
 
 /** Types */
-export { AccessControlTypes, GraphQlTypes } from './types';
-
-/** Access Control */
-export { Updatable } from './access-control/properties/updatable';
-export { Permissions, PermissionsStatus } from './access-control/properties/permissions';
-
-export { AccessControlModule } from './access-control';
-export { AccessControlService } from './access-control/services/access-control.service';
-export {
-  OwnerAccessControl,
-  OwnerAccessControlService
-} from './access-control/services/owner-access-control.service';
-export {
-  BasicAdminAccessControl,
-  BasicAdminAccessControlService
-} from './access-control/services/basic-admin-control.service';
+export { GraphQlTypes } from './types';
 
 // Default patterns
 export { CidHashedPattern, recognizeHashed } from './patterns/cid-hashed.pattern';

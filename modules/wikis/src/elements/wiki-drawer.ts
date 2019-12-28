@@ -177,7 +177,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             : html``}
         </div>
 
-        <div slot="appContent" class="fill-content">
+        <div slot="appContent" class="fill-content" style="display: flex;">
           ${this.selectedPageHash
             ? html`
                 <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>

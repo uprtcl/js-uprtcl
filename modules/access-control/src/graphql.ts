@@ -3,7 +3,6 @@ import { gql } from 'apollo-boost';
 import { Hashed, CortexTypes, PatternRecognizer, ServiceProvider } from '@uprtcl/cortex';
 
 import { Permissions } from './properties/permissions';
-import { AccessControlService } from './services/access-control.service';
 import { Updatable } from './properties/updatable';
 
 export const accessControlTypes = gql`

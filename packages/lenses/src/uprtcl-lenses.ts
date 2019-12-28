@@ -8,7 +8,6 @@ export { LensSelectorPlugin } from './plugins/base/lens-selector.plugin';
 export { ActionsPlugin } from './plugins/base/actions.plugin';
 export { CortexEntityBase } from './elements/cortex-entity-base';
 export { CortexEntity } from './elements/cortex-entity';
-export { CortexUpdatable } from './elements/cortex-updatable';
 export { Lens, LensesPlugin } from './types';
 export { HasLenses } from './properties/has-lenses';
 
