@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { MicroModule }from '@uprtcl/micro-orchestrator';
+import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { patternsModule } from '@uprtcl/cortex';
 
 import { graphQlSchemaModule } from '../graphql/graphql-schema.module';
