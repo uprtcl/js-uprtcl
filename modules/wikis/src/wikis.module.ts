@@ -20,6 +20,7 @@ import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
 
 import en from '../i18n/en.json';
+import { WikiTypes } from './types';
 
 /**
  * Configure a wikis module with the given providers
@@ -51,12 +52,7 @@ import en from '../i18n/en.json';
 export class WikisModule extends MicroModule {
   static id = Symbol('wikis-module');
 
-  static types = {
-    WikiEntity: Symbol('wiki-entity'),
-    WikisLocal: Symbol('wikis-local'),
-    WikisRemote: Symbol('wikis-remote'),
-    Wikis: Symbol('wikis')
-  };
+  static types = WikiTypes;
 
   constructor(protected wikisRemotes: WikisRemote[]) {
     super();

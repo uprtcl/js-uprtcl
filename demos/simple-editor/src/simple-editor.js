@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/common';
+import { DocumentsModule } from '@uprtcl/documents';
+import { EveesModule } from '@uprtcl/evees';
 
 export class SimpleEditor extends moduleConnect(LitElement) {
   static get properties() {
@@ -14,7 +15,7 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     this.perspectivePattern = this.requestAll(EveesModule.types.PerspectivePattern).find(
       p => p.create
     );
-    this.textNodePattern = this.requestAll(EveesModule.types.TextNodeEntity).find(p => p.create);
+    this.textNodePattern = this.requestAll(DocumentsModule.types.TextNodeEntity).find(p => p.create);
   }
 
   subscribeToHistory(history, callback) {
@@ -30,8 +31,6 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    const client = this.request(ApolloClientModule.types.Client);
-
     const docProvider = this.requestAll(DocumentsModule.types.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.uprtclProviderLocator);

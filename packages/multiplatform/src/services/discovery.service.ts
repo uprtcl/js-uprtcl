@@ -1,20 +1,21 @@
 import { injectable, inject } from 'inversify';
 
-import {Hashed} from '@uprtcl/cortex'
+import { Hashed } from '@uprtcl/cortex';
 
 import { Source } from './sources/source';
 import { CachedSourceService } from './cached-remotes/cached-source.service';
 import { CacheService } from './cache/cache.service';
 import { MultiSourceService } from './multi/multi-source.service';
 import { DiscoveryModule } from '../discovery.module';
+import { MultiplatformTypes } from '../types';
 
 @injectable()
 export class DiscoveryService implements Source {
   cachedRemote: CachedSourceService<CacheService, Source>;
 
   constructor(
-    @inject(DiscoveryModule.types.Cache) protected cache: CacheService,
-    @inject(DiscoveryModule.types.MultiSource) protected multiSource: MultiSourceService
+    @inject(MultiplatformTypes.Cache) protected cache: CacheService,
+    @inject(MultiplatformTypes.MultiSource) protected multiSource: MultiSourceService
   ) {
     this.cachedRemote = new CachedSourceService<CacheService, Source>(cache, multiSource);
   }

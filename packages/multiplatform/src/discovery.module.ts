@@ -10,17 +10,13 @@ import { KnownSourcesDexie } from './services/known-sources/known-sources.dexie'
 import { MultiSourceService } from './services/multi/multi-source.service';
 import { DiscoveryService } from './services/discovery.service';
 import { Source } from './services/sources/source';
+import { MultiplatformTypes } from './types';
 
 
 export class DiscoveryModule extends MicroModule {
   static id = Symbol('discovery-module');
 
-  static types = {
-    DiscoveryService: Symbol('discovery-service'),
-    MultiSource: Symbol('multi-source'),
-    Cache: Symbol('cache-source'),
-    LocalKnownSources: Symbol('local-known-sources')
-  };
+  static types = MultiplatformTypes;
 
   dependencies = [CortexModule.id];
 

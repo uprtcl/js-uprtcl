@@ -9,3 +9,10 @@ export interface Wiki {
 }
 
 export type WikisLocal = CacheService & WikisProvider;
+
+export const WikiTypes = {
+  WikiEntity: Symbol('wiki-entity'),
+  WikisLocal: Symbol('wikis-local'),
+  WikisRemote: Symbol('wikis-remote'),
+  Wikis: Symbol('wikis')
+};

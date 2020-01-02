@@ -8,12 +8,10 @@ import {
   DiscoveryModule
 } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Secured } from '@uprtcl/common';
 
-import { DocumentsLocal, TextNode } from '../types';
+import { DocumentsLocal, TextNode, DocumentsTypes } from '../types';
 import { DocumentsRemote } from './documents.remote';
 import { DocumentsProvider } from './documents.provider';
-import { DocumentsModule } from 'src/documents.module';
 
 @injectable()
 export class Documents {
@@ -25,9 +23,9 @@ export class Documents {
     @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(DiscoveryModule.types.LocalKnownSources)
     protected knownSources: KnownSourcesService,
-    @inject(DocumentsModule.types.DocumentsLocal)
+    @inject(DocumentsTypes.DocumentsLocal)
     protected documentsLocal: DocumentsLocal,
-    @multiInject(DocumentsModule.types.DocumentsRemote)
+    @multiInject(DocumentsTypes.DocumentsRemote)
     protected documentsRemotes: DocumentsRemote[]
   ) {
     this.service = new CachedMultiSourceService<DocumentsLocal, DocumentsRemote>(

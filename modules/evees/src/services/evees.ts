@@ -12,10 +12,9 @@ import {
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Secured, createEntity, CorePatterns } from '@uprtcl/common';
 
-import { EveesLocal, Perspective, Commit, PerspectiveDetails } from '../types';
+import { EveesLocal, Perspective, Commit, PerspectiveDetails, EveesTypes } from '../types';
 import { EveesProvider } from './evees.provider';
 import { EveesRemote } from './evees.remote';
-import { EveesModule } from 'src/evees.module';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -46,9 +45,9 @@ export class Evees {
     public knownSources: KnownSourcesService,
     @inject(DiscoveryModule.types.DiscoveryService)
     protected discoveryService: DiscoveryService,
-    @inject(EveesModule.types.EveesLocal)
+    @inject(EveesTypes.EveesLocal)
     protected eveesLocal: EveesLocal,
-    @multiInject(EveesModule.types.EveesRemote)
+    @multiInject(EveesTypes.EveesRemote)
     protected eveesRemotes: EveesRemote[]
   ) {
     this.service = new CachedMultiSourceService<EveesLocal, EveesRemote>(

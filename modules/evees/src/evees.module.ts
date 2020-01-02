@@ -15,7 +15,7 @@ import { AccessControlModule } from '@uprtcl/access-control';
 import { PerspectiveLinks } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
-import { EveesLocal } from './types';
+import { EveesLocal, EveesTypes } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
@@ -53,7 +53,7 @@ import { EveesPerspective } from './elements/evees-perspective';
  *
  * const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
  *
- * const evees = eveesModule([eveesHolochain, eveesEth]);
+ * const evees = new EveesModule([eveesHolochain, eveesEth]);
  *
  * const orchestrator = new MicroOrchestrator();
  *
@@ -72,14 +72,7 @@ export class EveesModule extends MicroModule {
 
   dependencies = [AccessControlModule.id];
 
-  static types = {
-    PerspectivePattern: Symbol('perspective-pattern'),
-    CommitPattern: Symbol('commit-pattern'),
-    EveesLocal: Symbol('evees-local'),
-    EveesRemote: Symbol('evees-remote'),
-    MergeStrategy: Symbol('merge-strategry'),
-    Evees: Symbol('evees')
-  };
+  static types = EveesTypes;
 
   constructor(
     protected eveesProviders: Array<EveesRemote>,

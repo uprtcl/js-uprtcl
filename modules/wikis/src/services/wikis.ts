@@ -9,7 +9,7 @@ import {
 } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { WikisLocal, Wiki } from '../types';
+import { WikisLocal, Wiki, WikiTypes } from '../types';
 import { WikisRemote } from './wikis.remote';
 import { WikisProvider } from './wikis.provider';
 import { WikisModule } from 'src/wikis.module';
@@ -24,9 +24,9 @@ export class Wikis {
     @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(DiscoveryModule.types.LocalKnownSources)
     protected knownSources: KnownSourcesService,
-    @inject(WikisModule.types.WikisLocal)
+    @inject(WikiTypes.WikisLocal)
     protected wikisLocal: WikisLocal,
-    @multiInject(WikisModule.types.WikisRemote)
+    @multiInject(WikiTypes.WikisRemote)
     protected wikisRemotes: WikisRemote[]
   ) {
     this.service = new CachedMultiSourceService<WikisLocal, WikisRemote>(

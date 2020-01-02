@@ -18,6 +18,7 @@ import { DocumentsRemote } from './services/documents.remote';
 import { documentsTypeDefs } from './graphql';
 
 import en from '../i18n/en.json';
+import { DocumentsTypes } from './types';
 
 /**
  * Configure a documents module with the given service providers
@@ -39,9 +40,7 @@ import en from '../i18n/en.json';
  *  const documentsProvider = new DocumentsIpfs(ipfsConnection);
  *
  * const docs = new DocumentsModule([ documentsProvider ]);
- * await orchestrator.loadModules({
- *   [DocumentsTypes.Module]: docs
- * });
+ * await orchestrator.loadModule(docs);
  * ```
  *
  * @category CortexModule
@@ -51,12 +50,7 @@ import en from '../i18n/en.json';
 export class DocumentsModule extends MicroModule {
   static id = Symbol('documents-module');
 
-  static types = {
-    TextNodeEntity: Symbol('text-node-entity'),
-    DocumentsLocal: Symbol('documents-local'),
-    DocumentsRemote: Symbol('documents-remote'),
-    Documents: Symbol('documents')
-  };
+  static types = DocumentsTypes;
 
   constructor(protected documentsRemotes: DocumentsRemote[]) {
     super();

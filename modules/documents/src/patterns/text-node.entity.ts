@@ -18,9 +18,8 @@ import { CorePatterns } from '@uprtcl/common';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
-import { TextNode, TextType } from '../types';
+import { TextNode, TextType, DocumentsTypes } from '../types';
 import { Documents } from '../services/documents';
-import { DocumentsModule } from 'src/documents.module';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -135,7 +134,7 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 
 @injectable()
 export class TextNodeCreate implements Pattern, Creatable<Partial<TextNode>, TextNode> {
-  constructor(@inject(DocumentsModule.types.Documents) protected documents: Documents) {}
+  constructor(@inject(DocumentsTypes.Documents) protected documents: Documents) {}
   recognize(object: object): boolean {
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }

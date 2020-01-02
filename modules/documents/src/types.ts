@@ -14,3 +14,10 @@ export interface TextNode {
 }
 
 export type DocumentsLocal = CacheService & DocumentsProvider;
+
+export const DocumentsTypes = {
+  TextNodeEntity: Symbol('text-node-entity'),
+  DocumentsLocal: Symbol('documents-local'),
+  DocumentsRemote: Symbol('documents-remote'),
+  Documents: Symbol('documents')
+};

@@ -6,7 +6,7 @@ import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprt
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
-import { Wiki } from '../types';
+import { Wiki, WikiTypes } from '../types';
 import { Wikis } from '../services/wikis';
 import { WikisModule } from 'src/wikis.module';
 
@@ -85,7 +85,7 @@ export class WikiCommon extends WikiEntity implements HasLenses {
 
 @injectable()
 export class WikiCreate implements Creatable<Partial<Wiki>, Wiki> {
-  constructor(@inject(WikisModule.types.Wikis) protected wikis: Wikis) {}
+  constructor(@inject(WikiTypes.Wikis) protected wikis: Wikis) {}
 
   recognize(object: object): boolean {
     return propertyOrder.every(p => object.hasOwnProperty(p));

@@ -42,7 +42,7 @@
     "temp-dir": "^2.0.0",
     "typedoc": "^0.15.6",
     "typedoc-plugin-markdown": "^2.2.14",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.4"
   },
   "keywords": [
     "micro-frontends",

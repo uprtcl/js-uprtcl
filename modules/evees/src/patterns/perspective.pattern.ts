@@ -17,7 +17,7 @@ import {
 import { createEntity, Secured, CorePatterns } from '@uprtcl/common';
 import { HasLenses } from '@uprtcl/lenses';
 
-import { Perspective, Commit, UpdateRequest } from '../types';
+import { Perspective, Commit, UpdateRequest, EveesTypes } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { TemplateResult, html } from 'lit-element';
@@ -50,9 +50,9 @@ export class PerspectiveLinks extends PerspectiveEntity
     HasLenses {
   constructor(
     @inject(CorePatterns.Secured) protected securedPattern: Pattern & IsSecure<any>,
-    @inject(EveesModule.types.Evees) protected evees: Evees,
+    @inject(EveesTypes.Evees) protected evees: Evees,
     @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(EveesModule.types.MergeStrategy) protected merge: MergeStrategy
+    @inject(EveesTypes.MergeStrategy) protected merge: MergeStrategy
   ) {
     super(securedPattern);
   }
