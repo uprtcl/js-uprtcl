@@ -1,8 +1,11 @@
 import { interfaces } from 'inversify';
-import { RequestDependencyEvent } from '../module-container';
-import { Constructor, CustomElement, ReduxTypes, i18nTypes } from '../../types';
-import { ConnectedElement } from './module-connect.mixin';
 import { Store } from 'redux';
+
+import { RequestDependencyEvent } from '../module-container';
+import { Constructor, CustomElement } from '../../types';
+import { ConnectedElement } from './module-connect.mixin';
+import { ReduxStoreModule } from 'src/modules/redux/redux-store.module';
+import { i18nextBaseModule } from 'src/modules/i18n/i18next-base.module';
 
 export interface ReduxConnectedElement extends ConnectedElement {
   store: Store;
@@ -64,7 +67,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
     }
 
     connectedCallback() {
-      this.store = this.request(ReduxTypes.Store);
+      this.store = this.request(ReduxStoreModule.types.Store);
 
       super.connectedCallback();
 
@@ -72,11 +75,10 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
       this.stateChanged(this.store.getState());
 
       try {
-        this.translate = this.request(i18nTypes.Translate);
+        this.translate = this.request(i18nextBaseModule.types.Translate);
       } catch (e) {
         console.warn('No translate function present');
       }
-
     }
 
     stateChanged(state: any) {}

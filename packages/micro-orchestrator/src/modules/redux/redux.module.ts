@@ -1,37 +1,28 @@
 import { Saga, SagaMiddleware } from 'redux-saga';
 import { Store, ReducersMapObject, Action } from 'redux';
-import { inject, interfaces, injectable } from 'inversify';
+import { interfaces } from 'inversify';
 import { LazyStore } from 'pwa-helpers/lazy-reducer-enhancer';
 
-import { MicroModule } from '../micro.module';
-import { MicroOrchestratorTypes, ReduxTypes } from '../../types';
-import { ModuleProvider } from '../../orchestrator/module-provider';
+import { MicroModule } from '../../orchestrator/micro.module';
+import { ReduxStoreModule } from './redux-store.module';
 
-@injectable()
-export abstract class ReduxModule<S, A extends Action> implements MicroModule {
+export class ReduxModule<S, A extends Action> extends MicroModule {
   constructor(
-    @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider
-  ) {}
+    protected reducersMap: ReducersMapObject<S, A>,
+    protected sagas: Saga[] | undefined = undefined
+  ) {
+    super();
+  }
 
-  abstract reducersMap: ReducersMapObject<S, A>;
-  sagas: Saga[] | undefined = undefined;
+  dependencies = [ReduxStoreModule.id];
 
-  async onLoad(
-    context: interfaces.Context,
-    bind: interfaces.Bind,
-    unbind: interfaces.Unbind,
-    isBound: interfaces.IsBound,
-    rebind: interfaces.Rebind
-  ): Promise<void> {
-    await this.moduleProvider(ReduxTypes.Module);
-
-    const store: Store & LazyStore = context.container.get(ReduxTypes.Store);
+  async onLoad(container: interfaces.Container): Promise<void> {
+    const store: Store & LazyStore = container.get(ReduxStoreModule.types.Store);
     store.addReducers(this.reducersMap as ReducersMapObject);
 
     if (this.sagas) {
-      const sagaMiddleware: SagaMiddleware = context.container.get(ReduxTypes.Saga);
+      const sagaMiddleware: SagaMiddleware = container.get(ReduxStoreModule.types.SagaMiddleware);
       for (const saga of this.sagas) sagaMiddleware.run(saga);
     }
   }
-
 }

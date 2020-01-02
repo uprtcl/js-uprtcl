@@ -1,13 +1,11 @@
 import { Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { HasLinks } from '../../patterns/properties/has-links';
+import { HasLinks, Hashed, PatternRecognizer } from '@uprtcl/cortex';
+
 import { ServiceProvider } from '../sources/service.provider';
-import { Hashed } from '../../patterns/properties/hashable';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
-import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
 import { Ready } from '../sources/service.provider';
 import { linksFromObject, discoverKnownSources } from '../discovery.utils';
-import { Pattern } from '../../patterns/pattern';
 
 export class MultiService<T extends ServiceProvider> implements Ready {
   protected logger = new Logger('MultiProviderService');

@@ -1,7 +1,7 @@
-import { KnownSourcesService } from '@uprtcl/cortex';
-import { HttpConnection } from './http.connection';
-import { ConnectionOptions } from '../../connections/connection';
+import { KnownSourcesService } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
+
+import { HttpConnection } from './http.connection';
 import { HttpProvider } from './http.provider';
 
 const uprtcl_api: string = 'uprtcl-ks-v1';

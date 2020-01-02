@@ -2,7 +2,7 @@
 import 'reflect-metadata';
 
 /** Lenses */
-export { lensesModule } from './lenses.module';
+export { LensesModule } from './lenses.module';
 export { SlotPlugin } from './plugins/slot.plugin';
 export { LensSelectorPlugin } from './plugins/base/lens-selector.plugin';
 export { ActionsPlugin } from './plugins/base/actions.plugin';

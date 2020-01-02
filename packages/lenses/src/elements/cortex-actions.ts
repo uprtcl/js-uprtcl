@@ -9,7 +9,7 @@ import '@material/mwc-button';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternAction } from '@uprtcl/cortex';
-import { GraphQlTypes } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/common';
 
 import { sharedStyles } from '../shared-styles';
 
@@ -36,7 +36,7 @@ export class CortexActions extends moduleConnect(LitElement) {
     this.actions = undefined;
     if (!this.hash) return;
 
-    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
 
     const result = await client.query({
       query: gql`

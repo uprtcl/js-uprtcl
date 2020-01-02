@@ -1,4 +1,4 @@
-import { SourceProvider } from '@uprtcl/cortex';
+import { SourceProvider } from '@uprtcl/multiplatform';
 import { AccessControlService } from '@uprtcl/access-control';
 
 import { EveesProvider } from './evees.provider';

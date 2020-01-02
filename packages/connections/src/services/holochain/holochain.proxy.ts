@@ -1,4 +1,6 @@
-import { Source, Hashed } from '@uprtcl/cortex';
+import { Hashed } from '@uprtcl/cortex';
+import { Source } from '@uprtcl/multiplatform';
+
 import { HolochainConnection, HolochainCallOptions } from './holochain.connection';
 import { HolochainProvider } from './holochain.provider';
 

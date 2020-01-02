@@ -1,6 +1,7 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { PatternRecognizer, HasRedirect, Hashed, Creatable, DiscoveryService } from '@uprtcl/cortex';
+import { PatternRecognizer, Hashed, HasRedirect, Creatable } from '@uprtcl/cortex';
+import { DiscoveryService } from '@uprtcl/multiplatform';
 
 export async function loadEntity(client: ApolloClient<any>, hash: string): Promise<any> {
   const result = await client.query({

@@ -1,4 +1,6 @@
-import { Hashed, ServiceProvider } from '@uprtcl/cortex';
+import { Hashed } from '@uprtcl/cortex';
+import { ServiceProvider } from '@uprtcl/multiplatform';
+
 import { HolochainConnection } from './holochain.connection';
 
 export interface HolochainProviderOptions {

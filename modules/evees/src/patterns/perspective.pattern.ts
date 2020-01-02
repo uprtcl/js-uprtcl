@@ -1,7 +1,6 @@
 import { injectable, inject } from 'inversify';
 
 import {
-  CortexTypes,
   HasRedirect,
   Pattern,
   IsSecure,
@@ -12,23 +11,23 @@ import {
   HasActions,
   PatternAction,
   PatternRecognizer,
-  Entity
+  Entity,
+  CortexModule
 } from '@uprtcl/cortex';
-import { createEntity, Secured } from '@uprtcl/common';
+import { createEntity, Secured, CorePatterns } from '@uprtcl/common';
+import { HasLenses } from '@uprtcl/lenses';
 
-import { Perspective, EveesTypes, Commit, UpdateRequest } from '../types';
+import { Perspective, Commit, UpdateRequest } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
-import { HasLenses } from '@uprtcl/lenses';
 import { TemplateResult, html } from 'lit-element';
+import { EveesModule } from '../evees.module';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
 @injectable()
 export class PerspectiveEntity implements Entity {
-  constructor(
-    @inject(CortexTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>
-  ) {}
+  constructor(@inject(CorePatterns.Secured) protected securedPattern: Pattern & IsSecure<any>) {}
   recognize(object: object) {
     return (
       this.securedPattern.recognize(object) &&
@@ -50,10 +49,10 @@ export class PerspectiveLinks extends PerspectiveEntity
     HasActions,
     HasLenses {
   constructor(
-    @inject(CortexTypes.Core.Secured) protected securedPattern: Pattern & IsSecure<any>,
-    @inject(EveesTypes.Evees) protected evees: Evees,
-    @inject(CortexTypes.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(EveesTypes.MergeStrategy) protected merge: MergeStrategy
+    @inject(CorePatterns.Secured) protected securedPattern: Pattern & IsSecure<any>,
+    @inject(EveesModule.types.Evees) protected evees: Evees,
+    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(EveesModule.types.MergeStrategy) protected merge: MergeStrategy
   ) {
     super(securedPattern);
   }

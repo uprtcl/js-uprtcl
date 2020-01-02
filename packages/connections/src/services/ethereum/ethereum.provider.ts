@@ -1,7 +1,7 @@
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 
-import { ServiceProvider } from '@uprtcl/cortex';
+import { ServiceProvider } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EthereumConnection } from './ethereum.connection';

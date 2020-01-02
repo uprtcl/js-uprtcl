@@ -1,19 +1,21 @@
-import { injectable } from 'inversify';
-
 import { MicroModule } from '@uprtcl/micro-orchestrator';
-import { patternsModule } from '@uprtcl/cortex';
-import { graphQlSchemaModule } from '@uprtcl/common';
+import { PatternsModule } from '@uprtcl/cortex';
+import { GraphQlSchemaModule } from '@uprtcl/common';
 
 import { accessControlResolvers, accessControlTypes } from './graphql';
-import { AccessControlTypes } from './types';
 import { OwnerPattern } from './patterns/owner.pattern';
 
-@injectable()
-export class AccessControlModule implements MicroModule {
+export class AccessControlModule extends MicroModule {
+  static id = Symbol('access-control-module');
+
   submodules = [
-    graphQlSchemaModule(accessControlTypes, accessControlResolvers),
-    patternsModule({
-      [AccessControlTypes.OwnerPattern]: [OwnerPattern]
+    new GraphQlSchemaModule(accessControlTypes, accessControlResolvers),
+    new PatternsModule({
+      [AccessControlModule.types.OwnerPattern]: [OwnerPattern]
     })
   ];
+
+  static types = {
+    OwnerPattern: Symbol('owner-pattern')
+  };
 }

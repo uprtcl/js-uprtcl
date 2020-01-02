@@ -1,8 +1,9 @@
-import { injectable, interfaces } from 'inversify';
+import { interfaces } from 'inversify';
 
-import { patternsModule, sourcesModule } from '@uprtcl/cortex';
-import { graphQlSchemaModule, i18nModule } from '@uprtcl/common';
-import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
+import { SourcesModule } from '@uprtcl/multiplatform';
+import { PatternsModule } from '@uprtcl/cortex';
+import { GraphQlSchemaModule } from '@uprtcl/common';
+import { ElementsModule, i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { DocumentTextNode } from './elements/document-text-node';
 import {
@@ -11,7 +12,6 @@ import {
   TextNodePatterns,
   TextNodeTitle
 } from './patterns/text-node.entity';
-import { DocumentsTypes } from './types';
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
@@ -22,13 +22,13 @@ import en from '../i18n/en.json';
 /**
  * Configure a documents module with the given service providers
  *
- * Depends on these modules being present: lensesModule, CortexModule, discoveryModule, i18nBaseModule
+ * Depends on these modules being present: LensesModule, CortexModule, DiscoveryModule, i18nBaseModule
  *
  * Example usage:
  *
  * ```ts
  * import { IpfsConnection } from '@uprtcl/connections';
- * import { documentsModule, DocumentsTypes, DocumentsIpfs } from '@uprtcl/documents';
+ * import { DocumentsModule, DocumentsIpfs } from '@uprtcl/documents';
  *
  * const ipfsConnection = new IpfsConnection({
  *   host: 'ipfs.infura.io',
@@ -38,7 +38,7 @@ import en from '../i18n/en.json';
  *
  *  const documentsProvider = new DocumentsIpfs(ipfsConnection);
  *
- * const docs = documentsModule([ documentsProvider ]);
+ * const docs = new DocumentsModule([ documentsProvider ]);
  * await orchestrator.loadModules({
  *   [DocumentsTypes.Module]: docs
  * });
@@ -47,38 +47,45 @@ import en from '../i18n/en.json';
  * @category CortexModule
  *
  * @param documentsRemote an array of remotes of documents
- * @returns a configured documents module ready to be loaded
  */
-export function documentsModule(documentsRemotes: DocumentsRemote[]): Constructor<MicroModule> {
-  @injectable()
-  class DocumentsModule implements MicroModule {
-    async onLoad(context: interfaces.Context, bind: interfaces.Bind) {
-      bind(DocumentsTypes.DocumentsLocal).to(DocumentsLocal);
-      bind(DocumentsTypes.Documents).to(Documents);
-    }
+export class DocumentsModule extends MicroModule {
+  static id = Symbol('documents-module');
 
-    submodules = [
-      graphQlSchemaModule(documentsTypeDefs, {}),
-      i18nModule('documents', { en: en }),
-      sourcesModule(
-        documentsRemotes.map(remote => ({
-          symbol: DocumentsTypes.DocumentsRemote,
-          source: remote
-        }))
-      ),
-      elementsModule({
-        'documents-text-node': DocumentTextNode
-      }),
-      patternsModule({
-        [DocumentsTypes.TextNodeEntity]: [
-          TextNodeActions,
-          TextNodeCreate,
-          TextNodePatterns,
-          TextNodeTitle
-        ]
-      })
-    ];
+  static types = {
+    TextNodeEntity: Symbol('text-node-entity'),
+    DocumentsLocal: Symbol('documents-local'),
+    DocumentsRemote: Symbol('documents-remote'),
+    Documents: Symbol('documents')
+  };
+
+  constructor(protected documentsRemotes: DocumentsRemote[]) {
+    super();
   }
 
-  return DocumentsModule;
+  async onLoad(container: interfaces.Container) {
+    container.bind(DocumentsModule.types.DocumentsLocal).to(DocumentsLocal);
+    container.bind(DocumentsModule.types.Documents).to(Documents);
+  }
+
+  submodules = [
+    new GraphQlSchemaModule(documentsTypeDefs, {}),
+    new i18nextModule('documents', { en: en }),
+    new SourcesModule(
+      this.documentsRemotes.map(remote => ({
+        symbol: DocumentsModule.types.DocumentsRemote,
+        source: remote
+      }))
+    ),
+    new ElementsModule({
+      'documents-text-node': DocumentTextNode
+    }),
+    new PatternsModule({
+      [DocumentsModule.types.TextNodeEntity]: [
+        TextNodeActions,
+        TextNodeCreate,
+        TextNodePatterns,
+        TextNodeTitle
+      ]
+    })
+  ];
 }

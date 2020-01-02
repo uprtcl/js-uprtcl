@@ -5,15 +5,16 @@ import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
 import '@material/mwc-ripple';
 
-import { EveesTypes, UpdateContentEvent } from '@uprtcl/evees';
-import { DocumentsTypes } from '@uprtcl/documents';
+import { UpdateContentEvent, EveesModule } from '@uprtcl/evees';
+import { DocumentsModule } from '@uprtcl/documents';
 import { Creatable, Hashed } from '@uprtcl/cortex';
-import { GraphQlTypes } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/common';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 
-import { Wiki, WikisTypes } from '../types';
+import { Wiki } from '../types';
 import { Wikis } from '../services/wikis';
+import { WikisModule } from 'src/wikis.module';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Object })
@@ -31,17 +32,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   createPage = async () => {
     const isCreatable = p => (p as Creatable<any, any>).create;
 
-    const perspectivePattern: any = this.requestAll(EveesTypes.PerspectivePattern).find(
+    const perspectivePattern: any = this.requestAll(EveesModule.types.PerspectivePattern).find(
       isCreatable
     );
-    const pagePattern: any = this.requestAll(DocumentsTypes.TextNodeEntity).find(isCreatable);
+    const pagePattern: any = this.requestAll(DocumentsModule.types.TextNodeEntity).find(isCreatable);
 
-    const eveesProvider: any = this.requestAll(EveesTypes.EveesRemote).find((provider: any) => {
+    const eveesProvider: any = this.requestAll(EveesModule.types.EveesRemote).find((provider: any) => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.uprtclProviderLocator);
     });
 
-    const pagesProvider: any = this.requestAll(DocumentsTypes.DocumentsRemote).find(
+    const pagesProvider: any = this.requestAll(DocumentsModule.types.DocumentsRemote).find(
       (provider: any) => {
         const regexp = new RegExp('^http');
         return !regexp.test(provider.uprtclProviderLocator);
@@ -68,7 +69,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   };
 
   async firstUpdated() {
-    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
 
     const result = await client.query({
       query: gql`
@@ -101,7 +102,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   createWiki(wiki: Wiki): Promise<Hashed<Wiki>> {
-    const wikis: Wikis = this.request(WikisTypes.Wikis);
+    const wikis: Wikis = this.request(WikisModule.types.Wikis);
     return wikis.createWiki(wiki);
   }
 

@@ -1,14 +1,12 @@
 import { Dictionary } from 'lodash';
-import { injectable } from 'inversify';
 
-import { MicroModule } from './micro.module';
+import { MicroModule } from '../orchestrator/micro.module';
 import { Constructor } from '../types';
 
-@injectable()
-export abstract class ElementsModule implements MicroModule {
-  abstract get elements(): Dictionary<Constructor<HTMLElement>>;
-
-  constructor() {}
+export class ElementsModule extends MicroModule {
+  constructor(protected elements: Dictionary<Constructor<HTMLElement>>) {
+    super();
+  }
 
   async onLoad(): Promise<void> {
     const tags = Object.keys(this.elements);
@@ -18,17 +16,4 @@ export abstract class ElementsModule implements MicroModule {
       customElements.define(tag, element);
     });
   }
-}
-
-export function elementsModule(
-  elements: Dictionary<Constructor<HTMLElement>>
-): Constructor<MicroModule> {
-  @injectable()
-  class ElementsModuleInstance extends ElementsModule {
-    get elements() {
-      return elements;
-    }
-  }
-
-  return ElementsModuleInstance;
 }

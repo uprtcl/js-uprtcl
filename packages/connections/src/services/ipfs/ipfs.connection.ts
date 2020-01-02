@@ -1,9 +1,6 @@
 import ipfsClient, { Buffer } from 'ipfs-http-client';
 
-import { Hashed, Source } from '@uprtcl/cortex';
-
 import { ConnectionOptions, Connection } from '../../connections/connection';
-import { CidConfig, defaultCidConfig } from './cid.config';
 
 export interface IpfsConnectionOptions {
   host: string;

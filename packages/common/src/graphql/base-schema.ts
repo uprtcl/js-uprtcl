@@ -1,6 +1,7 @@
 import { gql } from 'apollo-boost';
 
-import { DiscoveryTypes, DiscoveryService, Hashed } from '@uprtcl/cortex';
+import { Hashed } from '@uprtcl/cortex';
+import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 
 export const baseTypeDefs = gql`
   scalar JSON
@@ -30,7 +31,7 @@ export const baseTypeDefs = gql`
 export const baseResolvers = {
   Query: {
     async getEntity(parent, { id }, { cache, container }, info) {
-      const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
 
       const entity: Hashed<any> | undefined = await discovery.get(id);
 
@@ -45,7 +46,7 @@ export const baseResolvers = {
     async raw(parent, _, { container }) {
       const id = typeof parent === 'string' ? parent : parent.id;
 
-      const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
 
       const entity: Hashed<any> | undefined = await discovery.get(id);
 
@@ -55,7 +56,7 @@ export const baseResolvers = {
     async entity(parent, _, { container }) {
       const id = typeof parent === 'string' ? parent : parent.id;
 
-      const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
 
       const entity: Hashed<any> | undefined = await discovery.get(id);
 

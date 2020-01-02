@@ -1,21 +1,18 @@
 import { multiInject, injectable, inject } from 'inversify';
 
+import { PatternRecognizer, Hashed, CortexModule } from '@uprtcl/cortex';
 import {
   KnownSourcesService,
-  DiscoveryTypes,
-  CortexTypes,
-  PatternRecognizer,
-  Creatable,
   CachedMultiSourceService,
-  Hashed,
-  IsSecure,
-  MultiSourceService
-} from '@uprtcl/cortex';
+  MultiSourceService,
+  DiscoveryModule
+} from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { WikisLocal, WikisTypes, Wiki } from '../types';
+import { WikisLocal, Wiki } from '../types';
 import { WikisRemote } from './wikis.remote';
 import { WikisProvider } from './wikis.provider';
+import { WikisModule } from 'src/wikis.module';
 
 @injectable()
 export class Wikis {
@@ -24,12 +21,12 @@ export class Wikis {
   service: CachedMultiSourceService<WikisLocal, WikisRemote>;
 
   constructor(
-    @inject(CortexTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(DiscoveryTypes.LocalKnownSources)
+    @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(DiscoveryModule.types.LocalKnownSources)
     protected knownSources: KnownSourcesService,
-    @inject(WikisTypes.WikisLocal)
+    @inject(WikisModule.types.WikisLocal)
     protected wikisLocal: WikisLocal,
-    @multiInject(WikisTypes.WikisRemote)
+    @multiInject(WikisModule.types.WikisRemote)
     protected wikisRemotes: WikisRemote[]
   ) {
     this.service = new CachedMultiSourceService<WikisLocal, WikisRemote>(

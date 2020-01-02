@@ -1,6 +1,7 @@
-import { Ready } from '@uprtcl/cortex';
+import { merge } from 'lodash-es';
+
 import { Logger } from '@uprtcl/micro-orchestrator';
-import merge from 'lodash/merge';
+import { Ready } from '@uprtcl/multiplatform';
 
 export interface ConnectionOptions {
   retries?: number;

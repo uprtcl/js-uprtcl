@@ -1,24 +1,21 @@
 import { multiInject, injectable, inject } from 'inversify';
 import { isEqual } from 'lodash-es';
 
+import { PatternRecognizer, Hashed, IsSecure, HasChildren, CortexModule } from '@uprtcl/cortex';
 import {
   KnownSourcesService,
-  DiscoveryTypes,
-  CortexTypes,
-  PatternRecognizer,
   CachedMultiSourceService,
-  Hashed,
-  IsSecure,
   MultiSourceService,
   DiscoveryService,
-  HasChildren
-} from '@uprtcl/cortex';
+  DiscoveryModule
+} from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Secured, createEntity } from '@uprtcl/common';
+import { Secured, createEntity, CorePatterns } from '@uprtcl/common';
 
-import { EveesTypes, EveesLocal, Perspective, Commit, PerspectiveDetails } from '../types';
+import { EveesLocal, Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesProvider } from './evees.provider';
 import { EveesRemote } from './evees.remote';
+import { EveesModule } from 'src/evees.module';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -43,15 +40,15 @@ export class Evees {
   service: CachedMultiSourceService<EveesLocal, EveesRemote>;
 
   constructor(
-    @inject(CortexTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(CortexTypes.Core.Secured) protected secured: IsSecure<any>,
-    @inject(DiscoveryTypes.LocalKnownSources)
+    @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(CorePatterns.Secured) protected secured: IsSecure<any>,
+    @inject(DiscoveryModule.types.LocalKnownSources)
     public knownSources: KnownSourcesService,
-    @inject(DiscoveryTypes.DiscoveryService)
+    @inject(DiscoveryModule.types.DiscoveryService)
     protected discoveryService: DiscoveryService,
-    @inject(EveesTypes.EveesLocal)
+    @inject(EveesModule.types.EveesLocal)
     protected eveesLocal: EveesLocal,
-    @multiInject(EveesTypes.EveesRemote)
+    @multiInject(EveesModule.types.EveesRemote)
     protected eveesRemotes: EveesRemote[]
   ) {
     this.service = new CachedMultiSourceService<EveesLocal, EveesRemote>(

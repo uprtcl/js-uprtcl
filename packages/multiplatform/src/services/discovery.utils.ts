@@ -1,6 +1,4 @@
-import { PatternRecognizer } from '../patterns/recognizer/pattern.recognizer';
-import { HasLinks } from '../patterns/properties/has-links';
-import { Pattern } from '../patterns/pattern';
+import { PatternRecognizer, HasLinks } from '@uprtcl/cortex';
 import { KnownSourcesService } from './known-sources/known-sources.service';
 import { ServiceProvider } from './sources/service.provider';
 

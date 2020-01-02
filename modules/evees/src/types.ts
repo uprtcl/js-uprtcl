@@ -37,14 +37,4 @@ export interface Proposal {
   requests: Array<UpdateRequest>;
 }
 
-export const EveesTypes = {
-  Module: Symbol('evees-module'),
-  PerspectivePattern: Symbol('perspective-pattern'),
-  CommitPattern: Symbol('commit-pattern'),
-  EveesLocal: Symbol('evees-local'),
-  EveesRemote: Symbol('evees-remote'),
-  MergeStrategy: Symbol('merge-strategry'),
-  Evees: Symbol('evees')
-};
-
 export type EveesLocal = CacheService & EveesProvider;

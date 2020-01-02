@@ -1,12 +1,17 @@
 import { injectable, interfaces } from 'inversify';
 
-import { patternsModule, sourcesModule } from '@uprtcl/cortex';
-import { graphQlSchemaModule, i18nModule } from '@uprtcl/common';
-import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
+import { PatternsModule } from '@uprtcl/cortex';
+import { SourcesModule } from '@uprtcl/multiplatform';
+import { GraphQlSchemaModule } from '@uprtcl/common';
+import {
+  ElementsModule,
+  MicroModule,
+  Constructor,
+  i18nextModule
+} from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
 import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
-import { WikisTypes } from './types';
 import { WikisLocal } from './services/wikis.local';
 import { Wikis } from './services/wikis';
 import { WikisRemote } from './services/wikis.remote';
@@ -35,44 +40,49 @@ import en from '../i18n/en.json';
  *
  *  const wikisProvider = new wikisIpfs(ipfsConnection);
  *
- * const docs = wikisModule([ wikisProvider ]);
- * await orchestrator.loadModules({
- *   [WikisTypes.Module]: docs
- * });
+ * const wikis = new WikisModule([ wikisProvider ]);
+ * await orchestrator.loadModule(wikis);
  * ```
  *
  * @category CortexModule
  *
  * @param wikisRemote an array of remotes of wikis
- * @returns a configured wikis module ready to be loaded
  */
-export function wikisModule(wikisRemotes: WikisRemote[]): Constructor<MicroModule> {
-  @injectable()
-  class WikisModule implements MicroModule {
-    async onLoad(context: interfaces.Context, bind: interfaces.Bind) {
-      bind(WikisTypes.WikisLocal).to(WikisLocal);
-      bind(WikisTypes.Wikis).to(Wikis);
-    }
+export class WikisModule extends MicroModule {
+  static id = Symbol('wikis-module');
 
-    submodules = [
-      graphQlSchemaModule(wikiTypeDefs, {}),
-      i18nModule('wikis', { en: en }),
-      sourcesModule(
-        wikisRemotes.map(remote => ({
-          symbol: WikisTypes.WikisRemote,
-          source: remote
-        }))
-      ),
-      elementsModule({
-        'wiki-drawer': WikiDrawer,
-        'wiki-page': WikiPage,
-        'wiki-home': WikiHome
-      }),
-      patternsModule({
-        [WikisTypes.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
-      })
-    ];
+  static types = {
+    WikiEntity: Symbol('wiki-entity'),
+    WikisLocal: Symbol('wikis-local'),
+    WikisRemote: Symbol('wikis-remote'),
+    Wikis: Symbol('wikis')
+  };
+
+  constructor(protected wikisRemotes: WikisRemote[]) {
+    super();
   }
 
-  return WikisModule;
+  async onLoad(container: interfaces.Container) {
+    container.bind(WikisModule.types.WikisLocal).to(WikisLocal);
+    container.bind(WikisModule.types.Wikis).to(Wikis);
+  }
+
+  submodules = [
+    new GraphQlSchemaModule(wikiTypeDefs, {}),
+    new i18nextModule('wikis', { en: en }),
+    new SourcesModule(
+      this.wikisRemotes.map(remote => ({
+        symbol: WikisModule.types.WikisRemote,
+        source: remote
+      }))
+    ),
+    new ElementsModule({
+      'wiki-drawer': WikiDrawer,
+      'wiki-page': WikiPage,
+      'wiki-home': WikiHome
+    }),
+    new PatternsModule({
+      [WikisModule.types.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
+    })
+  ];
 }

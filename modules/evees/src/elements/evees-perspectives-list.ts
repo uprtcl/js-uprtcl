@@ -2,7 +2,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css } from 'lit-element';
 
 import { PermissionsStatus } from '@uprtcl/access-control';
-import { GraphQlTypes } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/common';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 import { PerspectiveDetails, Perspective } from '../types';
@@ -27,7 +27,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   updatePerspectivesData = async () => {
     try {
-      const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
+      const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
       const result = await client.query({
         query: gql`{
           getEntity(id: "${this.perspectiveId}") {

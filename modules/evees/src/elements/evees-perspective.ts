@@ -2,7 +2,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { GraphQlTypes } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/common';
 
 import { UPDATE_HEAD, CREATE_COMMIT } from '../graphql/queries';
 import { UpdateContentEvent } from './events';
@@ -23,7 +23,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   async loadPerspective() {
     this.entityId = undefined;
 
-    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
 
     const result = await client.query({
       query: gql`
@@ -62,7 +62,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   async updateContent(dataId: string) {
     if (!this.perspectiveId) return;
-    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
 
     this.entityId = undefined;
 

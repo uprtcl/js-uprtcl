@@ -1,26 +1,20 @@
 import { html, TemplateResult } from 'lit-element';
 import { injectable, inject } from 'inversify';
 
-import {
-  Pattern,
-  Hashed,
-  Hashable,
-  CortexTypes,
-  Entity,
-  Creatable,
-  HasChildren
-} from '@uprtcl/cortex';
+import { CorePatterns } from '@uprtcl/common';
+import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
-import { Wiki, WikisTypes } from '../types';
+import { Wiki } from '../types';
 import { Wikis } from '../services/wikis';
+import { WikisModule } from 'src/wikis.module';
 
 const propertyOrder = ['title', 'type', 'pages'];
 
 @injectable()
 export class WikiEntity implements Entity {
-  constructor(@inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
+  constructor(@inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
 
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;
@@ -34,9 +28,7 @@ export class WikiEntity implements Entity {
 
 @injectable()
 export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
-  replaceChildrenLinks = (wiki: Hashed<Wiki>) => (
-    childrenHashes: string[]
-  ): Hashed<Wiki> => ({
+  replaceChildrenLinks = (wiki: Hashed<Wiki>) => (childrenHashes: string[]): Hashed<Wiki> => ({
     ...wiki,
     object: {
       ...wiki.object,
@@ -93,7 +85,7 @@ export class WikiCommon extends WikiEntity implements HasLenses {
 
 @injectable()
 export class WikiCreate implements Creatable<Partial<Wiki>, Wiki> {
-  constructor(@inject(WikisTypes.Wikis) protected wikis: Wikis) {}
+  constructor(@inject(WikisModule.types.Wikis) protected wikis: Wikis) {}
 
   recognize(object: object): boolean {
     return propertyOrder.every(p => object.hasOwnProperty(p));

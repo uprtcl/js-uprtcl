@@ -1,14 +1,19 @@
 import { inject, injectable } from 'inversify';
-import { Hashed, DiscoveryTypes, CacheService, CortexTypes, Hashable } from '@uprtcl/cortex';
+
+import { Hashed, Hashable } from '@uprtcl/cortex';
+import { CacheService } from '@uprtcl/multiplatform';
+import { DiscoveryModule } from '@uprtcl/multiplatform';
+import { CorePatterns } from '@uprtcl/common';
+
 import { DocumentsProvider } from './documents.provider';
 import { TextNode } from '../types';
 
 @injectable()
 export class DocumentsLocal implements DocumentsProvider {
   constructor(
-    @inject(CortexTypes.Core.Hashed)
+    @inject(CorePatterns.Hashed)
     protected hashedPattern: Hashable<any>,
-    @inject(DiscoveryTypes.Cache)
+    @inject(DiscoveryModule.types.Cache)
     protected objectsCache: CacheService
   ) {}
 

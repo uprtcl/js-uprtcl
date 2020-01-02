@@ -1,18 +1,9 @@
 import { ApolloLink, NextLink, Operation, Observable, FetchResult } from 'apollo-link';
-
-import {
-  discoverLinksKnownSources,
-  CortexTypes,
-  PatternRecognizer,
-  getUplToDiscover,
-  KnownSourcesService,
-  DiscoveryTypes,
-  Source,
-  SourceProvider,
-  ServiceProvider
-} from '@uprtcl/cortex';
 import { ApolloCache } from 'apollo-cache';
 import { NormalizedCacheObject, gql } from 'apollo-boost';
+
+import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
+import { KnownSourcesService, DiscoveryModule } from '@uprtcl/multiplatform';
 
 export class DiscoveryLink extends ApolloLink {
   request(operation: Operation, forward: NextLink) {
@@ -36,9 +27,9 @@ export class DiscoveryLink extends ApolloLink {
           const hash = result.data.getEntity.id;
           const object = result.data.getEntity.raw;
 
-          const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
+          const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
           const localKnownSources: KnownSourcesService = container.get(
-            DiscoveryTypes.LocalKnownSources
+            DiscoveryModule.types.LocalKnownSources
           );
 
           /* 

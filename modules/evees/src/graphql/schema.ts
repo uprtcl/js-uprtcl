@@ -1,8 +1,9 @@
 import { gql } from 'apollo-boost';
 
-import { EveesTypes, Commit } from '../types';
+import { Commit } from '../types';
 import { Evees } from '../services/evees';
 import { Secured } from '@uprtcl/common';
+import { EveesModule } from 'src/evees.module';
 
 export const eveesTypeDefs = gql`
   scalar Date
@@ -59,28 +60,28 @@ export const eveesResolvers = {
     async perspectives(parent, _, { container }) {
       const context = typeof parent === 'string' ? parent : parent.context;
 
-      const evees: Evees = container.get(EveesTypes.Evees);
+      const evees: Evees = container.get(EveesModule.types.Evees);
 
       return evees.getContextPerspectives(context);
     }
   },
   Perspective: {
     async head(parent, _, { container }) {
-      const evees: Evees = container.get(EveesTypes.Evees);
+      const evees: Evees = container.get(EveesModule.types.Evees);
 
       const details = await evees.getPerspectiveDetails(parent.__entity.id);
 
       return details && details.headId;
     },
     async name(parent, _, { container }) {
-      const evees: Evees = container.get(EveesTypes.Evees);
+      const evees: Evees = container.get(EveesModule.types.Evees);
 
       const details = await evees.getPerspectiveDetails(parent.__entity.id);
 
       return details && details.name;
     },
     async context(parent, _, { container }) {
-      const evees: Evees = container.get(EveesTypes.Evees);
+      const evees: Evees = container.get(EveesModule.types.Evees);
 
       const details = await evees.getPerspectiveDetails(parent.__entity.id);
 
@@ -89,7 +90,7 @@ export const eveesResolvers = {
   },
   Mutation: {
     async createCommit(_, { dataId, parentsIds, message, usl }, { container }) {
-      const evees: Evees = container.get(EveesTypes.Evees);
+      const evees: Evees = container.get(EveesModule.types.Evees);
 
       const commit: Secured<Commit> = await evees.createCommit(
         { dataId, parentsIds, message },
@@ -99,7 +100,7 @@ export const eveesResolvers = {
       return { id: commit.id };
     },
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
-      const evees: Evees = container.get(EveesTypes.Evees);
+      const evees: Evees = container.get(EveesModule.types.Evees);
 
       await evees.updatePerspectiveDetails(perspectiveId, { headId });
 

@@ -1,8 +1,9 @@
+import { Hashed } from '@uprtcl/cortex';
+
 import { CacheService } from '../cache/cache.service';
 import { MultiService } from '../multi/multi.service';
 import { CachedService } from './cached.service';
 import { ServiceProvider } from '../sources/service.provider';
-import { Hashed } from '../../patterns/properties/hashable';
 
 export class CachedMultiService<
   CACHE extends CacheService,

@@ -8,28 +8,30 @@ import {
 } from 'redux';
 import { LazyStore, lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
 import createSagaMiddleware, { SagaMiddleware } from 'redux-saga';
-import { injectable, interfaces } from 'inversify';
+import { interfaces } from 'inversify';
 
-import { MicroModule } from '../micro.module';
+import { MicroModule } from '../../orchestrator/micro.module';
 import { ReduxTypes } from '../../types';
 
-@injectable()
-export class ReduxStoreModule implements MicroModule {
-  async onLoad(
-    context: interfaces.Context,
-    bind: interfaces.Bind,
-    unbind: interfaces.Unbind,
-    isBound: interfaces.IsBound,
-    rebind: interfaces.Rebind
-  ): Promise<void> {
-    if (isBound(ReduxTypes.Store)) return;
+export class ReduxStoreModule extends MicroModule {
+  static id = Symbol('redux-store-module');
+
+  static types = {
+    Store: Symbol('redux-store'),
+    SagaMiddleware: Symbol('redux-saga-middleware')
+  };
+
+  async onLoad(container: interfaces.Container): Promise<void> {
+    if (container.isBound(ReduxStoreModule.types.Store)) return;
 
     const devCompose: <Ext0, Ext1, StateExt0, StateExt1>(
       f1: StoreEnhancer<Ext0, StateExt0>,
       f2: StoreEnhancer<Ext1, StateExt1>
     ) => StoreEnhancer<Ext0 & Ext1, StateExt0 & StateExt1> =
       window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose;
-    const sagaMiddleware = createSagaMiddleware({ context: { [ReduxTypes.Context]: context.container } });
+    const sagaMiddleware = createSagaMiddleware({
+      context: { [ReduxTypes.Context]: container }
+    });
 
     const store = createStore(
       (state, action) => state,
@@ -40,8 +42,9 @@ export class ReduxStoreModule implements MicroModule {
       )
     ) as Store & LazyStore;
 
-    bind<Store & LazyStore>(ReduxTypes.Store).toConstantValue(store);
-    bind<SagaMiddleware>(ReduxTypes.Saga).toConstantValue(sagaMiddleware);
+    container.bind<Store & LazyStore>(ReduxStoreModule.types.Store).toConstantValue(store);
+    container
+      .bind<SagaMiddleware>(ReduxStoreModule.types.SagaMiddleware)
+      .toConstantValue(sagaMiddleware);
   }
-
 }

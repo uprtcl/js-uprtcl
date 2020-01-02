@@ -8,25 +8,21 @@ import {
   HasLinks,
   Creatable,
   Signed,
-  PatternRecognizer,
-  CortexTypes,
-  DiscoveryTypes,
-  DiscoveryService,
   Entity
 } from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { Secured, CorePatterns } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
-import { Commit, EveesTypes } from '../types';
+import { Commit } from '../types';
 import { Evees } from '../services/evees';
-import { i18nTypes } from '@uprtcl/micro-orchestrator';
+import { EveesModule } from 'src/evees.module';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
 @injectable()
 export class CommitEntity implements Entity {
   constructor(
-    @inject(CortexTypes.Core.Secured)
+    @inject(CorePatterns.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>
   ) {}
 
@@ -61,7 +57,7 @@ export class CommitLinked extends CommitEntity implements HasLinks, HasRedirect 
 @injectable()
 export class CommitLens extends CommitEntity implements HasLenses {
   constructor(
-    @inject(CortexTypes.Core.Secured)
+    @inject(CorePatterns.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>
   ) {
     super(securedPattern);
@@ -88,9 +84,9 @@ export class CommitPattern extends CommitEntity
       Signed<Commit>
     > {
   constructor(
-    @inject(CortexTypes.Core.Secured)
+    @inject(CorePatterns.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
-    @inject(EveesTypes.Evees) protected evees: Evees
+    @inject(EveesModule.types.Evees) protected evees: Evees
   ) {
     super(securedPattern);
   }

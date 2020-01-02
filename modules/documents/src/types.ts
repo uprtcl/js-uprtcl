@@ -1,4 +1,4 @@
-import { CacheService } from '@uprtcl/cortex';
+import { CacheService } from '@uprtcl/multiplatform';
 
 import { DocumentsProvider } from './services/documents.provider';
 
@@ -12,13 +12,5 @@ export interface TextNode {
   type: TextType;
   links: string[];
 }
-
-export const DocumentsTypes = {
-  Module: Symbol('documents-module'),
-  TextNodeEntity: Symbol('text-node-entity'),
-  DocumentsLocal: Symbol('documents-local'),
-  DocumentsRemote: Symbol('documents-remote'),
-  Documents: Symbol('documents')
-};
 
 export type DocumentsLocal = CacheService & DocumentsProvider;

@@ -1,4 +1,4 @@
-import { KnownSourcesService } from '@uprtcl/cortex';
+import { KnownSourcesService } from '@uprtcl/multiplatform';
 
 import { HolochainConnection } from './holochain.connection';
 import { HolochainProvider } from './holochain.provider';

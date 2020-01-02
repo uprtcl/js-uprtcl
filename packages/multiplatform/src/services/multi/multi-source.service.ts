@@ -1,12 +1,13 @@
 import { multiInject, inject, injectable } from 'inversify';
 
+import { PatternRecognizer, Hashed, CortexModule } from '@uprtcl/cortex';
+
 import { Source, SourceProvider } from '../sources/source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
-import { PatternRecognizer } from '../../patterns/recognizer/pattern.recognizer';
-import { Hashed } from '../../patterns/properties/hashable';
-import { CortexTypes, DiscoveryTypes } from '../../types';
 import { MultiService } from './multi.service';
 import { linksFromObject, raceToSuccess } from '../discovery.utils';
+import { DiscoveryModule } from '../../discovery.module';
+import { SourcesModule } from '../../sources.module';
 
 @injectable()
 export class MultiSourceService<T extends SourceProvider = SourceProvider> extends MultiService<T>
@@ -17,10 +18,10 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
    * @param serviceProviders array of all source service providers from which to get objects
    */
   constructor(
-    @inject(CortexTypes.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(DiscoveryTypes.LocalKnownSources)
+    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(DiscoveryModule.types.LocalKnownSources)
     public localKnownSources: KnownSourcesService,
-    @multiInject(DiscoveryTypes.Source)
+    @multiInject(SourcesModule.types.Source)
     sourceProviders: Array<T>
   ) {
     super(recognizer, localKnownSources, sourceProviders);
@@ -119,5 +120,4 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
       return undefined;
     }
   }
-
 }

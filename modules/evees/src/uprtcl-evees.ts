@@ -2,7 +2,7 @@
 import 'reflect-metadata';
 
 /** Types */
-export { Commit, Perspective, Context, EveesTypes, PerspectiveDetails } from './types';
+export { Commit, Perspective, Context, PerspectiveDetails } from './types';
 
 /** Services interfaces */
 export { EveesSource } from './services/evees.source';
@@ -15,7 +15,7 @@ export { EveesHolochain } from './services/providers/holochain/evees.holochain';
 export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
 export { EveesHttp } from './services/providers/http/evees.http';
 
-export { eveesModule } from './evees.module';
+export { EveesModule } from './evees.module';
 
 /** Merge */
 

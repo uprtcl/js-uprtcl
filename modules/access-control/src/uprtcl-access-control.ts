@@ -2,7 +2,6 @@
 import 'reflect-metadata';
 
 /** Access Control */
-export { AccessControlTypes } from './types';
 export { Updatable } from './properties/updatable';
 export { Permissions, PermissionsStatus } from './properties/permissions';
 

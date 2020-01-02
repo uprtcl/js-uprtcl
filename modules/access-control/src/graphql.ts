@@ -1,6 +1,7 @@
 import { gql } from 'apollo-boost';
 
-import { Hashed, CortexTypes, PatternRecognizer, ServiceProvider } from '@uprtcl/cortex';
+import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
+import { ServiceProvider } from '@uprtcl/multiplatform';
 
 import { Permissions } from './properties/permissions';
 import { Updatable } from './properties/updatable';
@@ -20,7 +21,7 @@ export const accessControlResolvers = {
   Patterns: {
     async accessControl(parent, args, context) {
       const entity: Hashed<any> = parent.__entity;
-      const recognizer: PatternRecognizer = context.container.get(CortexTypes.Recognizer);
+      const recognizer: PatternRecognizer = context.container.get(CortexModule.types.Recognizer);
 
       const updatable: Updatable<any> | undefined = recognizer.recognizeUniqueProperty(
         entity,

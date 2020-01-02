@@ -12,6 +12,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
+    "i18next": "^19.0.2",
     "inversify": "^5.0.1",
     "lit-element": "^2.2.1",
     "lodash-es": "^4.17.15",

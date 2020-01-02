@@ -1,33 +1,28 @@
 import { inject, injectable } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import {
-  DiscoveryTypes,
-  DiscoveryService,
-  CortexTypes,
-  PatternRecognizer,
-  KnownSourcesService,
-  Hashed
-} from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
+import { KnownSourcesService, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 import { Secured, createEntity } from '@uprtcl/common';
 
-import { UpdateRequest, EveesTypes, Commit } from '../types';
+import { UpdateRequest, Commit } from '../types';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
 import { isAncestorOf } from '../utils/ancestor';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
+import { EveesModule } from 'src/evees.module';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
   updatesList: UpdateRequest[] = [];
 
   constructor(
-    @inject(EveesTypes.Evees) protected evees: Evees,
-    @inject(DiscoveryTypes.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryTypes.LocalKnownSources) protected knownSources: KnownSourcesService,
-    @inject(CortexTypes.Recognizer) protected recognizer: PatternRecognizer
+    @inject(EveesModule.types.Evees) protected evees: Evees,
+    @inject(DiscoveryModule.types.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.types.LocalKnownSources) protected knownSources: KnownSourcesService,
+    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer
   ) {}
 
   async mergePerspectives(

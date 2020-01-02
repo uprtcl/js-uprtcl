@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@uprtcl/micro-orchestrator": "^0.0.1-alpha6",
-    "dexie": "^2.0.4",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
     "reflect-metadata": "^0.1.13"

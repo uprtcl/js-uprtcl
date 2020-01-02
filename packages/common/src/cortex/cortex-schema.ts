@@ -1,18 +1,12 @@
 import { merge, cloneDeepWith } from 'lodash-es';
 import { gql, ApolloClient } from 'apollo-boost';
 
-import {
-  PatternRecognizer,
-  CortexTypes,
-  DiscoveryService,
-  Hashed,
-  DiscoveryTypes,
-  Pattern,
-  Entity
-} from '@uprtcl/cortex';
+import { PatternRecognizer, Pattern, Entity, CortexModule, Hashed } from '@uprtcl/cortex';
+import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 
 import { loadEntity, getIsomorphisms, getEntityContent } from '../utils/entities';
-import { GraphQlTypes } from '../types';
+import { GqlCortexModule } from './gql-cortex.module';
+import { ApolloClientModule } from 'src/graphql/apollo-client.module';
 
 export const cortexSchema = gql`
   extend type Entity {
@@ -32,7 +26,7 @@ export const cortexResolvers = {
     __resolveType(parent, { container }, info) {
       const entity = parent.__entity ? parent.__entity : parent;
 
-      const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
+      const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
 
       const patterns: Pattern[] = recognizer.recognize(entity);
 
@@ -60,7 +54,7 @@ export const cortexResolvers = {
 
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
-      const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
+      const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
 
       const patterns = recognizer.recognize(entity);
 
@@ -85,16 +79,16 @@ export const cortexResolvers = {
     async content(parent, args, { container }, info) {
       const entity = await getEntityFromParent(parent, container);
 
-      const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
-      const discovery: DiscoveryService = container.get(DiscoveryTypes.DiscoveryService);
+      const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
 
       return getEntityContent(entity, recognizer, discovery);
     },
     async isomorphisms(parent, args, { container }, info) {
       const entity = await getEntityFromParent(parent, container);
 
-      const recognizer: PatternRecognizer = container.get(CortexTypes.Recognizer);
-      const client: ApolloClient<any> = container.get(GraphQlTypes.Client);
+      const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
+      const client: ApolloClient<any> = container.get(ApolloClientModule.types.Client);
 
       const isomorphisms = await getIsomorphisms(recognizer, entity, (id: string) =>
         loadEntity(client, id)
@@ -108,7 +102,7 @@ export const cortexResolvers = {
 export async function getEntityFromParent(parent, container): Promise<Hashed<any>> {
   if (parent.raw) return parent.raw;
   if (parent.entity) return parent.entity;
-  if (typeof parent === 'string') return loadEntity(container.get(GraphQlTypes.Client), parent);
+  if (typeof parent === 'string') return loadEntity(container.get(ApolloClientModule.types.Client), parent);
 
   return parent;
 }

@@ -1,9 +1,8 @@
 import { ApolloClient, gql } from 'apollo-boost';
-import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
-import { flatMap } from 'lodash-es';
+import { LitElement, property, PropertyValues } from 'lit-element';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
-import { GraphQlTypes } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/common';
 import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
@@ -37,7 +36,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     this.entity = undefined;
     this.selectedLens = undefined;
 
-    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
 
     // We are also loading the content to have it cached in case the lens wants it
     const result = await client.query({
