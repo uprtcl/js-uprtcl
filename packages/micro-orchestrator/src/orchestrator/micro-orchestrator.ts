@@ -10,6 +10,7 @@ export class MicroOrchestrator {
   logger: Logger = new Logger('micro-orchestrator');
   container = new Container({ skipBaseClassChecks: true });
 
+  // Dictionary holding the promises of the modules being loaded, to deduplicate modules with equal id
   loadingModules: Dictionary<Promise<any>> = {};
 
   constructor(protected moduleProvider: ModuleProvider = localModuleProvider) {

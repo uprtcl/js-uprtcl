@@ -21,7 +21,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
 } & T =>
   class extends baseElement implements ReduxConnectedElement {
     store!: Store;
-    translate: (key: string) => string = key => key;
+    t: (key: string) => string = key => key;
 
     private requestGeneric<T>(
       dependency: interfaces.ServiceIdentifier<T>,
@@ -75,7 +75,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
       this.stateChanged(this.store.getState());
 
       try {
-        this.translate = this.request(i18nextBaseModule.types.Translate);
+        this.t = this.request(i18nextBaseModule.types.Translate);
       } catch (e) {
         console.warn('No translate function present');
       }
