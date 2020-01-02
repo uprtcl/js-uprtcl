@@ -4,8 +4,8 @@ import { Store } from 'redux';
 import { RequestDependencyEvent } from '../module-container';
 import { Constructor, CustomElement } from '../../types';
 import { ConnectedElement } from './module-connect.mixin';
-import { ReduxStoreModule } from 'src/modules/redux/redux-store.module';
-import { i18nextBaseModule } from 'src/modules/i18n/i18next-base.module';
+import { ReduxStoreModule } from '../../modules/redux/redux-store.module';
+import { i18nextBaseModule } from '../../modules/i18n/i18next-base.module';
 
 export interface ReduxConnectedElement extends ConnectedElement {
   store: Store;

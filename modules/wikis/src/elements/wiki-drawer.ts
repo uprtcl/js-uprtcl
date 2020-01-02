@@ -14,7 +14,7 @@ import { sharedStyles } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
 import { Wikis } from '../services/wikis';
-import { WikisModule } from 'src/wikis.module';
+import { WikisModule } from '../wikis.module';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Object })
