@@ -8,6 +8,7 @@ import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
 import { IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
 
 import { SimpleEditor } from './simple-editor';
+import { SimpleWiki } from './simple-wiki';
 
 (async function() {
   const c1host = 'http://localhost:3100/uprtcl/1';
@@ -56,4 +57,5 @@ import { SimpleEditor } from './simple-editor';
 
   console.log(orchestrator);
   customElements.define('simple-editor', SimpleEditor);
+  customElements.define('simple-wiki', SimpleWiki);
 })();
