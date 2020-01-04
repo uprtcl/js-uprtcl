@@ -97,11 +97,11 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const sources = await this.knownSources.getKnownSources(toCommitId);
 
-    const newDataHashed = await createEntity(this.recognizer)(newData);
+    const newDataId = await createEntity(this.recognizer)(newData);
 
     const mergeCommit = await this.evees.createCommit(
       {
-        dataId: newDataHashed.id,
+        dataId: newDataId,
         parentsIds: commitsIds,
         message: `Merge commits ${commitsIds.toString()}`
       },
@@ -112,10 +112,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   async mergeData<T extends object>(originalData: T, newDatas: T[]): Promise<T> {
-    const merge: Mergeable | undefined = this.recognizer.recognizeUniqueProperty(
-      originalData,
-      prop => !!(prop as Mergeable)
-    );
+    const merge: Mergeable | undefined = this.recognizer
+      .recognize(originalData)
+      .find(prop => !!(prop as Mergeable));
 
     if (!merge)
       throw new Error('Cannot merge data that does not implement the Mergeable behaviour');

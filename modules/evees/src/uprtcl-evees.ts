@@ -15,6 +15,8 @@ export { EveesHolochain } from './services/providers/holochain/evees.holochain';
 export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
 export { EveesHttp } from './services/providers/http/evees.http';
 
+export { Evees, NewPerspectiveArgs } from './services/evees';
+
 export { EveesModule } from './evees.module';
 
 /** Merge */
@@ -31,3 +33,9 @@ export { CommitHistory } from './elements/evees-commit-history';
 export { PerspectivesList } from './elements/evees-perspectives-list';
 export { EveesPerspective } from './elements/evees-perspective';
 export { UpdateContentEvent, UpdateContentArgs } from './elements/events';
+
+/** Queries */
+export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE } from './graphql/queries';
+
+/** Patterns */
+export { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';

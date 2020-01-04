@@ -80,6 +80,7 @@ export class EveesModule extends MicroModule {
   ) {
     super();
   }
+  
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.types.EveesLocal).to(this.localEvees);
     container.bind(EveesModule.types.Evees).to(Evees);

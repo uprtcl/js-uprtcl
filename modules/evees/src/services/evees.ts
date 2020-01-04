@@ -178,10 +178,9 @@ export class Evees {
       const dataHashed: Hashed<any> | undefined = await this.discoveryService.get(dataId);
       if (!dataHashed) throw new Error('Data for the head commit of the perspective was not found');
 
-      const hasChildren: HasChildren | undefined = this.patternRecognizer.recognizeUniqueProperty(
-        dataHashed,
-        prop => !!(prop as HasChildren).getChildrenLinks
-      );
+      const hasChildren: HasChildren | undefined = this.patternRecognizer
+        .recognize(dataHashed)
+        .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
       if (hasChildren) {
         const descendantLinks = hasChildren.getChildrenLinks(dataHashed);
@@ -202,11 +201,11 @@ export class Evees {
         if (!isEqual(dataHashed, newData)) {
           const previousDataUpls = await this.knownSources.getKnownSources(dataId);
 
-          const newDataHashed = await createEntity(this.patternRecognizer)(
+          const newDataId = await createEntity(this.patternRecognizer)(
             newData.object,
             previousDataUpls ? previousDataUpls[0] : undefined
           );
-          dataId = newDataHashed.id;
+          dataId = newDataId;
         }
       }
     }

@@ -1,21 +1,16 @@
-import { injectable, interfaces } from 'inversify';
+import { interfaces } from 'inversify';
 
 import { PatternsModule } from '@uprtcl/cortex';
 import { SourcesModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/common';
-import {
-  ElementsModule,
-  MicroModule,
-  Constructor,
-  i18nextModule
-} from '@uprtcl/micro-orchestrator';
+import { ElementsModule, MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
-import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
+import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
 import { WikisLocal } from './services/wikis.local';
 import { Wikis } from './services/wikis';
 import { WikisRemote } from './services/wikis.remote';
-import { wikiTypeDefs } from './graphql';
+import { wikiTypeDefs, resolvers } from './graphql/schema';
 import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
 
@@ -64,7 +59,7 @@ export class WikisModule extends MicroModule {
   }
 
   submodules = [
-    new GraphQlSchemaModule(wikiTypeDefs, {}),
+    new GraphQlSchemaModule(wikiTypeDefs, resolvers),
     new i18nextModule('wikis', { en: en }),
     new SourcesModule(
       this.wikisRemotes.map(remote => ({
@@ -78,7 +73,7 @@ export class WikisModule extends MicroModule {
       'wiki-home': WikiHome
     }),
     new PatternsModule({
-      [WikisModule.types.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
+      [WikisModule.types.WikiEntity]: [WikiCommon, WikiLinks]
     })
   ];
 }

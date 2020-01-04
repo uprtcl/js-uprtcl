@@ -59,10 +59,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (!data)
       throw new Error(`Error when trying to fetch the data with id ${head.object.payload.dataId}`);
 
-    const hasChildren: HasChildren | undefined = this.recognizer.recognizeUniqueProperty(
-      data,
-      prop => !!(prop as HasChildren).getChildrenLinks
-    );
+    const hasChildren: HasChildren | undefined = this.recognizer
+      .recognize(data)
+      .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (hasChildren) {
       const links = hasChildren.getChildrenLinks(data);
@@ -162,10 +161,10 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   protected async updatePerspectiveData(perspectiveId: string, data: Hashed<any>): Promise<void> {
     const details = await this.evees.getPerspectiveDetails(perspectiveId);
 
-    const newData = await createEntity(this.recognizer)(data);
+    const newDataId = await createEntity(this.recognizer)(data);
 
     const head = await this.evees.createCommit({
-      dataId: newData.id,
+      dataId: newDataId,
       parentsIds: details.headId ? [details.headId] : [],
       message: 'Merge: reference new commits'
     });
@@ -181,10 +180,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   private async mergePerspectiveChildren(perspectiveId: string): Promise<void> {
     const data = await this.loadPerspectiveData(perspectiveId);
 
-    const hasChildren: HasChildren | undefined = this.recognizer.recognizeUniqueProperty(
-      data,
-      prop => !!(prop as HasChildren).getChildrenLinks
-    );
+    const hasChildren: HasChildren | undefined = this.recognizer
+      .recognize(data)
+      .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (!hasChildren) return;
 

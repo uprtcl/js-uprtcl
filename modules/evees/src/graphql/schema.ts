@@ -1,9 +1,9 @@
 import { gql } from 'apollo-boost';
 
+import { Secured } from '@uprtcl/common';
+
 import { Commit, EveesTypes } from '../types';
 import { Evees } from '../services/evees';
-import { Secured } from '@uprtcl/common';
-import { EveesModule } from 'src/evees.module';
 
 export const eveesTypeDefs = gql`
   scalar Date
@@ -11,6 +11,7 @@ export const eveesTypeDefs = gql`
   extend type Mutation {
     updatePerspectiveHead(perspectiveId: ID!, headId: ID!): Entity!
     createCommit(dataId: ID!, parentsIds: [ID!]!, message: String, usl: String): Entity!
+    createPerspective(headId: ID, context: String, usl: String): Entity!
   }
 
   type Context {
@@ -105,6 +106,13 @@ export const eveesResolvers = {
       await evees.updatePerspectiveDetails(perspectiveId, { headId });
 
       return evees.get(perspectiveId);
+    },
+    async createPerspective(_, { headId, context, usl }, { container }) {
+      const evees: Evees = container.get(EveesTypes.Evees);
+
+      const { id } = await evees.createPerspective({ headId, context }, usl);
+
+      return id;
     }
   }
 };

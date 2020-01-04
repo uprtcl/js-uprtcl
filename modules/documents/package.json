@@ -18,6 +18,7 @@
     "@material/mwc-radio": "^0.10.0",
     "@material/mwc-ripple": "^0.10.0",
     "@material/mwc-switch": "^0.10.0",
+    "@uprtcl/access-control": "^0.0.2-alpha1",
     "@uprtcl/common": "^0.0.2-alpha1",
     "@uprtcl/connections": "^0.0.2-alpha1",
     "@uprtcl/cortex": "^0.0.2-alpha1",

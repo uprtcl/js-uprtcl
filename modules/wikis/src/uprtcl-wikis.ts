@@ -7,3 +7,5 @@ export { WikisHttp } from './services/providers/wikis.http';
 
 // Modules
 export { WikisModule } from './wikis.module';
+
+export { CREATE_WIKI } from './graphql/queries';

@@ -35,12 +35,12 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             entity {
               ... on Perspective {
                 context {
+                  identifier
                   perspectives {
                     id
                     entity {
                       ... on Perspective {
                         name
-                        head
                         context {
                           identifier
                         }

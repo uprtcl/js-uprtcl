@@ -1,28 +1,69 @@
+import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html } from 'lit-element';
 
 import { sharedStyles } from '@uprtcl/lenses';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { Hashed } from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/common';
+import { CREATE_COMMIT, UPDATE_HEAD } from '@uprtcl/evees';
 
 import { TextNode, TextType } from '../types';
+import { CREATE_TEXT_NODE } from '../graphql/queries';
 
-export class DocumentTextNode extends LitElement {
+export class DocumentTextNode extends moduleConnect(LitElement) {
+  @property({ type: String })
+  nodeId!: string;
+
   @property({ type: Object })
-  data!: TextNode;
+  textNode: Hashed<TextNode> | undefined = undefined;
 
   @property()
   editable!: boolean;
 
+  @property()
+  currentHead: string | undefined = undefined;
+
   lastChangeTimeout: any;
   lastText!: string;
 
-  get currentContent(): TextNode {
-    const data = { ...this.data };
-    if (this.lastText) data.text = this.lastText;
-
-    return data;
-  }
-
   static get styles() {
     return sharedStyles;
+  }
+
+  async loadNode() {
+    this.textNode = undefined;
+
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const result = await client.query({
+      query: gql`
+        {
+          getEntity(id: "${this.nodeId}") {
+            id
+            raw
+            entity {
+              ... on Perspective {
+                head {
+                  id
+                }
+              }
+            }
+            content {
+              id
+              raw
+            }
+            patterns {
+              accessControl {
+                canWrite
+              }
+            }
+          }
+        }
+      `
+    });
+
+    this.textNode = result.data.getEntity.content.raw;
+    const head = result.data.getEntity.entity.head;
+    this.currentHead = head ? head.id : undefined;
   }
 
   connectedCallback() {
@@ -35,30 +76,27 @@ export class DocumentTextNode extends LitElement {
         e.preventDefault();
         e.stopPropagation();
 
-        this.dispatchEvent(
-          new CustomEvent('create-child', {
-            detail: {
-              parent: this.currentContent
-            },
-            composed: true,
-            bubbles: true
-          })
-        );
+        // TODO: create child
       }
     });
   }
 
   render() {
+    if (!this.textNode)
+      return html`
+        <cortex-loading-placeholder></cortex-loading-placeholder>
+      `;
+
     return html`
       <div class="row">
         <div class="column" style="flex: 1;">
-          ${this.data.type === TextType.Paragraph
+          ${this.textNode.object.type === TextType.Paragraph
             ? html`
                 <div
                   contenteditable=${this.editable ? 'true' : 'false'}
                   @input=${e => e.target && this.textInput(e.target['innerText'])}
                 >
-                  ${this.data.text}
+                  ${this.textNode.object.text}
                 </div>
               `
             : html`
@@ -66,10 +104,10 @@ export class DocumentTextNode extends LitElement {
                   contenteditable=${this.editable ? 'true' : 'false'}
                   @input=${e => e.target && this.textInput(e.target['innerText'])}
                 >
-                  ${this.data.text}
+                  ${this.textNode.object.text}
                 </h3>
               `}
-          ${this.data.links.map(
+          ${this.textNode.object.links.map(
             link => html`
               <cortex-entity .hash=${link} lens-type="content"></cortex-entity>
             `
@@ -90,16 +128,44 @@ export class DocumentTextNode extends LitElement {
 
     this.lastText = content;
 
-    this.lastChangeTimeout = setTimeout(() => this.updateContent(), 2000);
+    this.lastChangeTimeout = setTimeout(
+      () =>
+        this.textNode &&
+        this.updateContent({
+          ...this.textNode.object,
+          text: this.lastText
+        }),
+      2000
+    );
   }
 
-  updateContent() {
-    this.dispatchEvent(
-      new CustomEvent('content-changed', {
-        detail: { newContent: this.currentContent },
-        bubbles: true,
-        composed: true
-      })
-    );
+  async updateContent(newContent: TextNode) {
+    if (!this.textNode) return;
+
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const result = await client.mutate({
+      mutation: CREATE_TEXT_NODE,
+      variables: {
+        content: newContent
+      }
+    });
+
+    const textNodeId = result.data.createTextNode.id;
+
+    const commit = await client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        dataId: textNodeId,
+        parentsIds: this.currentHead ? [this.currentHead] : []
+      }
+    });
+
+    await client.mutate({
+      mutation: UPDATE_HEAD,
+      variables: {
+        perspectiveId: this.nodeId,
+        headId: commit.data.createCommit.id
+      }
+    });
   }
 }

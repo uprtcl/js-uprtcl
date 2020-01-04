@@ -7,6 +7,7 @@ import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
 import { SlotPlugin } from '../plugins/slot.plugin';
+import { flatMap } from 'lodash-es';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
@@ -49,11 +50,13 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
             id
             raw
           }
-          patterns {
-            lenses {
-              name
-              type
-              render
+          isomorphisms {
+            patterns {
+              lenses {
+                name
+                type
+                render
+              }
             }
           }
         }
@@ -61,7 +64,9 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
       `
     });
 
-    const lenses = result.data.getEntity.patterns.lenses;
+    const lenses = flatMap(result.data.getEntity.isomorphisms, iso => iso.patterns.lenses).filter(
+      lens => !!lens
+    );
 
     this.entity = result.data.getEntity.raw;
 

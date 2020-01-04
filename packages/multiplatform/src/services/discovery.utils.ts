@@ -12,10 +12,9 @@ export const linksFromObject = (recognizer: PatternRecognizer) => async <O exten
   object: O
 ): Promise<string[]> => {
   // Recognize all patterns from object
-  const hasLinks: Array<HasLinks<O>> = recognizer.recognizeProperties(
-    object,
-    prop => !!(prop as HasLinks<O>).links
-  );
+  const hasLinks: Array<HasLinks<O>> = recognizer
+    .recognize(object)
+    .filter(prop => !!(prop as HasLinks<O>).links);
 
   const promises = hasLinks.map(async has => has.links(object));
 

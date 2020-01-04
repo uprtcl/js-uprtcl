@@ -10,3 +10,5 @@ export { DocumentsHttp } from './services/providers/documents.http';
 
 // Module
 export { DocumentsModule } from './documents.module';
+
+export { CREATE_TEXT_NODE } from './graphql/queries';

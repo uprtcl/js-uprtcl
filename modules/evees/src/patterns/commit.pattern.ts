@@ -1,15 +1,7 @@
 import { injectable, inject } from 'inversify';
 import { html, TemplateResult } from 'lit-element';
 
-import {
-  Pattern,
-  HasRedirect,
-  IsSecure,
-  HasLinks,
-  Creatable,
-  Signed,
-  Entity
-} from '@uprtcl/cortex';
+import { Pattern, HasRedirect, IsSecure, HasLinks, Creatable, Entity } from '@uprtcl/cortex';
 import { Secured, CorePatterns } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
@@ -78,10 +70,7 @@ export class CommitLens extends CommitEntity implements HasLenses {
 @injectable()
 export class CommitPattern extends CommitEntity
   implements
-    Creatable<
-      { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
-      Signed<Commit>
-    > {
+    Creatable<{ dataId: string; message: string; parentsIds: string[]; timestamp?: number }> {
   constructor(
     @inject(CorePatterns.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
@@ -111,6 +100,7 @@ export class CommitPattern extends CommitEntity
     providerName?: string
   ) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
-    return this.evees.createCommit(args, providerName);
+    const { id } = await this.evees.createCommit(args, providerName);
+    return id;
   };
 }

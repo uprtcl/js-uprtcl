@@ -15,7 +15,7 @@ import {
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
-import { documentsTypeDefs } from './graphql';
+import { documentsTypeDefs, resolvers } from './graphql/schema';
 
 import en from '../i18n/en.json';
 import { DocumentsTypes } from './types';
@@ -62,7 +62,7 @@ export class DocumentsModule extends MicroModule {
   }
 
   submodules = [
-    new GraphQlSchemaModule(documentsTypeDefs, {}),
+    new GraphQlSchemaModule(documentsTypeDefs, resolvers),
     new i18nextModule('documents', { en: en }),
     new SourcesModule(
       this.documentsRemotes.map(remote => ({

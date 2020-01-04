@@ -17,7 +17,7 @@ export { HasType } from './properties/has-type';
 export { HasTitle } from './properties/has-title';
 export { HasText } from './properties/has-text';
 export { Transformable } from './properties/transformable';
-export { CreateChild } from './properties/create-child';
+export { Updatable } from './properties/updatable';
 export { HasActions, PatternAction } from './properties/has-actions';
 
 // Pattern Registry

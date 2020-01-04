@@ -1,6 +1,5 @@
-import { Hashed } from './hashable';
 import { Property } from '../pattern';
 
-export interface Creatable<A, O> extends Property<Hashed<O>> {
-  create: () => (args: A | undefined, upl?: string) => Promise<Hashed<O>>;
+export interface Creatable<A> extends Property<any> {
+  create: () => (args: A | undefined, upl?: string) => Promise<string>;
 }

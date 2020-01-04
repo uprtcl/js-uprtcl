@@ -5,7 +5,7 @@ export type Property<T> = {
 /**
  * A pattern is a behaviour that a certain kind of object implements
  */
-export interface Pattern {
+export interface Pattern extends Property<any> {
   recognize: (object: object) => boolean;
 }
 

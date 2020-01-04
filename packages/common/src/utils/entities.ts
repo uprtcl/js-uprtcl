@@ -36,10 +36,9 @@ async function redirectEntity(
   entity: object,
   loadEntity: (id: string) => Promise<Hashed<any>>
 ): Promise<string[]> {
-  const hasRedirects: HasRedirect<any>[] = patternRecognizer.recognizeProperties(
-    entity,
-    prop => !!(prop as HasRedirect<any>).redirect
-  );
+  const hasRedirects: HasRedirect<any>[] = patternRecognizer
+    .recognize(entity)
+    .filter(prop => !!(prop as HasRedirect<any>).redirect);
 
   let isomorphisms: string[] = [];
 
@@ -69,7 +68,7 @@ export async function getEntityContent(
   recognizer: PatternRecognizer,
   discovery: DiscoveryService
 ): Promise<any | undefined> {
-  const hasRedirect = recognizer.recognizeUniqueProperty(entity, prop => !!prop.redirect);
+  const hasRedirect = recognizer.recognize(entity).find(prop => !!prop.redirect);
 
   if (hasRedirect) {
     const redirectEntityId = await hasRedirect.redirect(entity);
@@ -92,11 +91,10 @@ export async function getEntityContent(
 export const createEntity = (recognizer: PatternRecognizer) => async <T extends object>(
   data: T,
   usl?: string
-): Promise<Hashed<T>> => {
-  const creatable: Creatable<T, T> | undefined = recognizer.recognizeUniqueProperty(
-    data,
-    prop => !!(prop as Creatable<T, T>).create
-  );
+): Promise<string> => {
+  const creatable: Creatable<T> | undefined = recognizer
+    .recognize(data)
+    .find(prop => !!(prop as Creatable<T>).create);
 
   if (!creatable) {
     throw new Error(

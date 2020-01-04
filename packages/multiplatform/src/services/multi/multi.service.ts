@@ -219,10 +219,9 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   ): Promise<void> {
     // Add known sources of the object's links to the provider's known sources
     // Get the properties to get the object links from
-    const getLinks: HasLinks<O>[] = this.recognizer.recognizeProperties(
-      object,
-      prop => !!prop.links
-    );
+    const getLinks: HasLinks<O>[] = this.recognizer
+      .recognize(object)
+      .filter(prop => !!(prop as HasLinks<O>).links);
 
     const linksPromises = getLinks.map(get => get.links(object));
 

@@ -23,10 +23,9 @@ export const accessControlResolvers = {
       const entity: Hashed<any> = parent.__entity;
       const recognizer: PatternRecognizer = context.container.get(CortexModule.types.Recognizer);
 
-      const updatable: Updatable<any> | undefined = recognizer.recognizeUniqueProperty(
-        entity,
-        prop => !!(prop as Updatable<any, any>).update
-      );
+      const updatable: Updatable<any> | undefined = recognizer
+        .recognize(entity)
+        .find(prop => !!(prop as Updatable<any, any>).update);
 
       if (!updatable) return null;
 
@@ -40,10 +39,9 @@ export const accessControlResolvers = {
 
       if (!accessControlInfo) return null;
 
-      const permissions: Permissions<any> | undefined = recognizer.recognizeUniqueProperty(
-        accessControlInfo,
-        prop => !!(prop as Permissions<any>).canWrite
-      );
+      const permissions: Permissions<any> | undefined = recognizer
+        .recognize(accessControlInfo)
+        .find(prop => !!(prop as Permissions<any>).canWrite);
 
       if (!permissions) return null;
 

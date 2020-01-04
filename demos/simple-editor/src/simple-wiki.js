@@ -1,22 +1,15 @@
 import { LitElement, html } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule } from '@uprtcl/evees';
-import { WikisModule } from '@uprtcl/wikis';
+import { ApolloClientModule } from '@uprtcl/common';
+import { EveesModule, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
+import { WikisModule, CREATE_WIKI } from '@uprtcl/wikis';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
   static get properties() {
     return {
       rootHash: { type: String }
     };
-  }
-
-  constructor() {
-    super();
-    this.wikiPattern = this.requestAll(WikisModule.types.WikiEntity).find(p => p.create);
-    this.perspectivePattern = this.requestAll(EveesModule.types.PerspectivePattern).find(p => p.create);
-    this.wikisProvider = null;
-    this.eveesProvider = null;
   }
 
   subscribeToHistory(history, callback) {
@@ -30,16 +23,13 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       return pushState.apply(history, arguments);
     };
   }
-
   async firstUpdated() {
-    this.wikisProvider = this.requestAll(WikisModule.types.WikisRemote)
-    .find(provider => {
+    this.wikisProvider = this.requestAll(WikisModule.types.WikisRemote).find(provider => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.uprtclProviderLocator);
     });
 
-    this.eveesProvider = this.requestAll(EveesModule.types.EveesRemote)
-    .find(provider => {
+    this.eveesProvider = this.requestAll(EveesModule.types.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.uprtclProviderLocator);
     });
@@ -54,16 +44,33 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const wiki = await this.wikiPattern.create()(
-        { title: 'Genesis Wiki' },
-        this.wikisProvider.uprtclProviderLocator
-      );
-      const perspective = await this.perspectivePattern.create()(
-        { dataId: wiki.id },
-        this.eveesProvider.uprtclProviderLocator
-      );
-      console.log(perspective.id)
-      window.history.pushState('', '', `/?id=${perspective.id}`);
+      const client = this.request(ApolloClientModule.types.Client);
+      const result = await client.mutate({
+        mutation: CREATE_WIKI,
+        variables: {
+          content: {
+            title: 'Genesis Wiki',
+            pages: []
+          }
+        }
+      });
+
+      const createCommit = await client.mutate({
+        mutation: CREATE_COMMIT,
+        variables: {
+          dataId: result.data.createWiki.id,
+          parentsIds: []
+        }
+      });
+
+      const createPerspective = await client.mutate({
+        mutation: CREATE_PERSPECTIVE,
+        variables: {
+          headId: createCommit.data.createCommit.id
+        }
+      });
+
+      window.history.pushState('', '', `/?id=${createPerspective.data.createPerspective.id}`);
     }
   }
 
@@ -71,7 +78,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return html`
       ${this.rootHash
         ? html`
-            <cortex-entity .hash=${this.rootHash} lens-type="content"></cortex-entity>
+            <wiki-drawer wiki-id="${this.rootHash}"></wiki-drawer>
           `
         : html`
             Loading...

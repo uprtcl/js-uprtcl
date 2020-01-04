@@ -8,9 +8,8 @@ import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Wiki, WikiTypes } from '../types';
 import { Wikis } from '../services/wikis';
-import { WikisModule } from 'src/wikis.module';
 
-const propertyOrder = ['title', 'type', 'pages'];
+const propertyOrder = ['title', 'pages'];
 
 @injectable()
 export class WikiEntity implements Entity {
@@ -50,10 +49,6 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
       originalNode.object.title,
       modifications.map(data => data.object.title)
     );
-    const resultType = mergeResult(
-      originalNode.object.type,
-      modifications.map(data => data.object.type)
-    );
 
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
@@ -62,8 +57,7 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
 
     return {
       pages: mergedPages,
-      title: resultTitle,
-      type: resultType
+      title: resultTitle
     };
   };
 }
@@ -80,23 +74,5 @@ export class WikiCommon extends WikiEntity implements HasLenses {
         `
       }
     ];
-  };
-}
-
-@injectable()
-export class WikiCreate implements Creatable<Partial<Wiki>, Wiki> {
-  constructor(@inject(WikiTypes.Wikis) protected wikis: Wikis) {}
-
-  recognize(object: object): boolean {
-    return propertyOrder.every(p => object.hasOwnProperty(p));
-  }
-
-  create = () => async (node?: Partial<Wiki>, upl?: string): Promise<Hashed<Wiki>> => {
-    const pages = node && node.pages ? node.pages : [];
-    const title = node && node.title ? node.title : '';
-    const type = node && node.type ? node.type : 'Wiki';
-
-    const newWiki = { pages, title, type };
-    return this.wikis.createWiki(newWiki, upl);
   };
 }
