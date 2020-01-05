@@ -156,6 +156,18 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return sharedStyles;
   }
 
+  selectPage(pageHash: string | undefined) {
+    this.dispatchEvent(
+      new CustomEvent('page-selected', {
+        detail: {
+          pageId: pageHash
+        }
+      })
+    );
+
+    this.selectedPageHash = pageHash;
+  }
+
   renderPageList() {
     if (!this.pagesList)
       return html`
@@ -173,7 +185,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <mwc-list>
         ${this.pagesList.map(
           page => html`
-            <mwc-list-item @click=${() => (this.selectedPageHash = page.id)}>
+            <mwc-list-item @click=${() => this.selectPage(page.id)}>
               ${page.title}
             </mwc-list-item>
           `
@@ -190,11 +202,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return html`
       <mwc-drawer hasHeader>
-        <span
-          slot="title"
-          @click=${() => (this.selectedPageHash = undefined)}
-          style="cursor: pointer;"
-        >
+        <span slot="title" @click=${() => this.selectPage(undefined)} style="cursor: pointer;">
           ${this.wiki.title}
         </span>
 
