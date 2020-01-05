@@ -41,15 +41,17 @@ export class CortexActions extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        getEntity(id: "${this.hash}", depth: 1) {
+        entity(id: "${this.hash}", depth: 1) {
           id
-          isomorphisms {
-            patterns {
-              actions {
-                title
-                icon
-                action
-                type
+          _patterns {
+            isomorphisms {
+              _patterns {
+                actions {
+                  title
+                  icon
+                  action
+                  type
+                }
               }
             }
           }
@@ -58,7 +60,7 @@ export class CortexActions extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.getEntity.isomorphisms;
+    const isomorphisms = result.data.entity.isomorphisms;
 
     const actions: PatternAction[] = flatMap(isomorphisms.reverse(), iso => iso.patterns.actions);
 

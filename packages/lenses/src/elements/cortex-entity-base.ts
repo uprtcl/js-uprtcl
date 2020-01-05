@@ -1,4 +1,5 @@
 import { ApolloClient, gql } from 'apollo-boost';
+import { flatMap } from 'lodash-es';
 import { LitElement, property, PropertyValues } from 'lit-element';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
@@ -7,7 +8,6 @@ import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
 import { SlotPlugin } from '../plugins/slot.plugin';
-import { flatMap } from 'lodash-es';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
@@ -16,8 +16,8 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   @property({ attribute: 'lens-type' })
   public lensType!: string;
 
-  @property({ attribute: false })
-  protected entity: Hashed<any> | undefined = undefined;
+  @property({ type: Object })
+  protected entity!: Hashed<any>;
 
   // Lenses
   @property({ attribute: false })
@@ -34,7 +34,6 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   }
 
   async loadEntity(hash: string): Promise<void> {
-    this.entity = undefined;
     this.selectedLens = undefined;
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
@@ -43,19 +42,16 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        getEntity(id: "${hash}", depth: 1) {
+        entity(id: "${hash}", depth: 1) {
           id
-          raw
-          content { 
-            id
-            raw
-          }
-          isomorphisms {
-            patterns {
-              lenses {
-                name
-                type
-                render
+          _patterns {
+            isomorphisms {
+              _patterns {
+                lenses {
+                  name
+                  type
+                  render
+                }
               }
             }
           }
@@ -64,11 +60,12 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
       `
     });
 
-    const lenses = flatMap(result.data.getEntity.isomorphisms, iso => iso.patterns.lenses).filter(
-      lens => !!lens
-    );
+    const lenses = flatMap(
+      result.data.entity._patterns.isomorphisms,
+      iso => iso._patterns.lenses
+    ).filter(lens => !!lens);
 
-    this.entity = result.data.getEntity.raw;
+    this.entity = { id: result.data.id, ...result.data.entity };
 
     if (this.lensType) {
       this.selectedLens = lenses.find(lens => lens.type === this.lensType);

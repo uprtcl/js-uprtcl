@@ -4,27 +4,26 @@ import { gql, ApolloClient } from 'apollo-boost';
 import { PatternRecognizer, Pattern, Entity, CortexModule, Hashed } from '@uprtcl/cortex';
 import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 
-import { loadEntity, getIsomorphisms, getEntityContent } from '../utils/entities';
-import { GqlCortexModule } from './gql-cortex.module';
-import { ApolloClientModule } from 'src/graphql/apollo-client.module';
+import { getIsomorphisms, entityContent } from '../utils/entities';
+import { ApolloClientModule } from '../graphql/apollo-client.module';
 
 export const cortexSchema = gql`
-  extend type Entity {
-    content: Entity!
-    isomorphisms: [Entity!]!
-
-    patterns: Patterns!
+  extend interface Entity {
+    _patterns: Patterns!
   }
 
   type Patterns {
     links: [Entity!]
+
+    content: Entity!
+    isomorphisms: [Entity!]!
   }
 `;
 
 export const cortexResolvers = {
-  EntityType: {
-    __resolveType(parent, { container }, info) {
-      const entity = parent.__entity ? parent.__entity : parent;
+  Entity: {
+    async __resolveType(parent, { container }, info) {
+      const entity = await entityFromParent(parent, container);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
 
@@ -45,12 +44,9 @@ export const cortexResolvers = {
         );
       }
       return entities[0].name;
-    }
-  },
-
-  Entity: {
-    async patterns(parent, args, { container }, info) {
-      const entity = await getEntityFromParent(parent, container);
+    },
+    async _patterns(parent, args, { container }, info) {
+      const entity = await entityFromParent(parent, container);
 
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
@@ -75,23 +71,29 @@ export const cortexResolvers = {
       return cloneDeepWith(accPatterns, (value: any) => {
         if (typeof value === 'function') return () => value;
       });
-    },
+    }
+  },
+  Patterns: {
     async content(parent, args, { container }, info) {
-      const entity = await getEntityFromParent(parent, container);
+      const entity = await entityFromParent(parent, container);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
 
-      return getEntityContent(entity, recognizer, discovery);
+      const content: Hashed<any> = await entityContent(entity, recognizer, discovery);
+
+      return { ...content.object, id: content.id };
     },
     async isomorphisms(parent, args, { container }, info) {
-      const entity = await getEntityFromParent(parent, container);
+      const entity = await entityFromParent(parent, container);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
       const client: ApolloClient<any> = container.get(ApolloClientModule.types.Client);
 
+      const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
+
       const isomorphisms = await getIsomorphisms(recognizer, entity, (id: string) =>
-        loadEntity(client, id)
+        discovery.get(id)
       );
 
       return isomorphisms;
@@ -99,10 +101,19 @@ export const cortexResolvers = {
   }
 };
 
-export async function getEntityFromParent(parent, container): Promise<Hashed<any>> {
-  if (parent.raw) return parent.raw;
-  if (parent.entity) return parent.entity;
-  if (typeof parent === 'string') return loadEntity(container.get(ApolloClientModule.types.Client), parent);
+export async function entityFromParent(parent, container): Promise<Hashed<any>> {
+  const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
+  let id: string | undefined = undefined;
 
-  return parent;
+  if (parent.id) id = parent.id;
+  else if (parent.__entity) return parent.__entity;
+  else if (typeof parent === 'string') id = parent;
+
+  if (!id) return parent;
+
+  const object = await discovery.get(id);
+
+  if (!object) throw new Error(`Entity with id ${id} not found`);
+
+  return object;
 }

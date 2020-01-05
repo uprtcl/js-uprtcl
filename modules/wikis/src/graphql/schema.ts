@@ -3,9 +3,14 @@ import { Wikis } from '../services/wikis';
 import { WikiTypes } from 'src/types';
 
 export const wikiTypeDefs = gql`
-  type Wiki {
+  type Wiki implements Entity {
+    id: ID!
+
     title: String!
     pages: [Entity!]!
+
+    _patterns: Patterns!
+    _meta: Metadata!
   }
 
   input WikiInput {
@@ -13,10 +18,8 @@ export const wikiTypeDefs = gql`
     pages: [ID!]!
   }
 
-  extend union EntityType = Wiki
-
   extend type Mutation {
-    createWiki(content: WikiInput!, usl: String): Entity!
+    createWiki(content: WikiInput!, usl: String): Wiki!
   }
 `;
 
@@ -24,8 +27,9 @@ export const resolvers = {
   Mutation: {
     async createWiki(_, { content, usl }, { container }) {
       const wikis: Wikis = container.get(WikiTypes.Wikis);
-      const { id } = await wikis.createWiki(content, usl);
-      return id;
+      const { id, object } = await wikis.createWiki(content, usl);
+
+      return { id, ...object };
     }
   }
 };

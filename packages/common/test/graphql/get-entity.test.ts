@@ -11,7 +11,7 @@ const object1 = {
   test: 'test'
 };
 
-describe('basic GraphQl getEntity', () => {
+describe('basic GraphQl entity', () => {
   let orchestrator: MicroOrchestrator;
   let source: MockSource;
 
@@ -35,7 +35,7 @@ describe('basic GraphQl getEntity', () => {
     const result = await client.query({
       query: gql`
         {
-          getEntity(id: "hash1") {
+          entity(id: "hash1") {
             id
             raw
           }

@@ -13,10 +13,15 @@ export const documentsTypeDefs = gql`
     Paragraph
   }
 
-  type TextNode {
+  type TextNode implements Entity {
+    id: ID!
+
     text: String!
     type: TextType!
     links: [Entity]!
+
+    _patterns: Patterns!
+    _meta: Metadata!
   }
 
   input TextNodeInput {
@@ -25,10 +30,8 @@ export const documentsTypeDefs = gql`
     links: [String!]!
   }
 
-  extend union EntityType = TextNode
-
   extend type Mutation {
-    createTextNode(content: TextNodeInput!, usl: ID): Entity!
+    createTextNode(content: TextNodeInput!, usl: ID): TextNode!
   }
 `;
 
@@ -41,8 +44,8 @@ export const resolvers = {
         usl = documents.service.remote.getAllServicesUpl().find(upl => !upl.includes('http'));
       }
 
-      const { id } = await documents.createTextNode(content, usl);
-      return id;
+      const textNode = await documents.createTextNode(content, usl);
+      return { id: textNode.id, ...textNode.object };
     }
   }
 };

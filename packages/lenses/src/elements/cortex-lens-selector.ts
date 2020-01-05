@@ -38,15 +38,16 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        getEntity(id: "${this.hash}", depth: 1) {
+        entity(id: "${this.hash}", depth: 1) {
           id
-          raw
-          isomorphisms {
-            patterns {
-              lenses {
-                type
-                name
-                render
+          _patterns {
+            isomorphisms {
+              _patterns {
+                lenses {
+                  type
+                  name
+                  render
+                }
               }
             }
           }
@@ -55,7 +56,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.getEntity.isomorphisms;
+    const isomorphisms = result.data.entity.isomorphisms;
 
     const lenses = flatMap(isomorphisms.reverse(), iso => iso.patterns.lenses);
     this.lenses = lenses.filter(iso => !!iso);

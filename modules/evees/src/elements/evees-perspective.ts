@@ -28,7 +28,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        getEntity(id: "${this.perspectiveId}") {
+        entity(id: "${this.perspectiveId}") {
           id
           raw
           entity {
@@ -46,8 +46,8 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       `
     });
 
-    this.entityId = result.data.getEntity.content.id;
-    const head = result.data.getEntity.entity.head;
+    this.entityId = result.data.entity.content.id;
+    const head = result.data.entity.entity.head;
     this.currentHeadId = head ? head.id : undefined;
   }
 

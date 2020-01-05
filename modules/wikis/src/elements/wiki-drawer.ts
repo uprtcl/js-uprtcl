@@ -20,7 +20,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   wikiId!: string;
 
   @property({ type: Object })
-  wiki: Hashed<Wiki> | undefined = undefined;
+  wiki: Wiki | undefined = undefined;
 
   @property({ type: Boolean })
   editable: boolean = true;
@@ -66,8 +66,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     });
 
     const wiki: Wiki = {
-      ...this.wiki.object,
-      pages: [...this.wiki.object.pages, perspective.data.createPerspective.id]
+      title: this.wiki.title,
+      pages: [...this.wiki.pages, perspective.data.createPerspective.id]
     };
 
     const wikiResult = await client.mutate({
@@ -106,28 +106,28 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        getEntity(id: "${this.wikiId}") {
+        entity(id: "${this.wikiId}") {
           id
-          raw
-          entity {
-            ... on Perspective {
-              head {
-                id
-              }
+
+          ... on Perspective {
+            head {
+              id
             }
           }
-          content {
-            id
-            raw
-            entity {
+
+          _patterns {
+            content {
+              id
               ... on Wiki {
                 title
                 pages {
                   id
-                  content {
-                    id
-                    patterns {
-                      title
+                  _patterns {
+                    content {
+                      id
+                      _patterns {
+                        title
+                      }
                     }
                   }
                 }
@@ -138,14 +138,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }`
     });
 
-    const { pages } = result.data.getEntity.content.entity;
+    const { pages } = result.data.entity._patterns.content;
     this.pagesList = pages.map(page => ({
       id: page.id,
-      title: page.content.patterns.title ? page.content.patterns.title : this.t('wikis:untitled')
+      title: page._patterns.content._patterns.title
+        ? page._patterns.content._patterns.title
+        : this.t('wikis:untitled')
     }));
 
-    this.wiki = result.data.getEntity.content.raw;
-    const head = result.data.getEntity.entity.head;
+    const content = result.data.entity._patterns.content;
+    this.wiki = { title: content.title, pages: content.pages.map(p => p.id) };
+    const head = result.data.entity.head;
     this.currentHead = head ? head.id : undefined;
   }
 
@@ -192,7 +195,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           @click=${() => (this.selectedPageHash = undefined)}
           style="cursor: pointer;"
         >
-          ${this.wiki.object.title}
+          ${this.wiki.title}
         </span>
 
         <div class="column" style="height: 100%;">

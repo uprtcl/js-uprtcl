@@ -1,13 +1,13 @@
 import { gql } from 'apollo-boost';
 
 export const discoveryTypeDefs = gql`
-  extend type Entity {
-    source: ID!
+  extend type Metadata {
+    source: String!
   }
 `;
 
 export const discoveryResolvers = {
-  Entity: {
+  Metadata: {
     source(parent, _, { cache }) {}
   }
 };

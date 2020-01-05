@@ -80,7 +80,7 @@ export class EveesModule extends MicroModule {
   ) {
     super();
   }
-  
+
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.types.EveesLocal).to(this.localEvees);
     container.bind(EveesModule.types.Evees).to(Evees);
@@ -91,8 +91,7 @@ export class EveesModule extends MicroModule {
     new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
     new ElementsModule({
       'evees-commit-history': CommitHistory,
-      'evees-perspectives-list': PerspectivesList,
-      'evees-perspective': EveesPerspective
+      'evees-perspectives-list': PerspectivesList
     }),
     new i18nextModule('evees', { en: en }),
     new PatternsModule({

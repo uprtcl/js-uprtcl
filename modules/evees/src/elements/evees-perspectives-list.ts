@@ -26,30 +26,25 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   updatePerspectivesData = async () => {
-    try {
-      const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
-      const result = await client.query({
-        query: gql`{
-          getEntity(id: "${this.perspectiveId}") {
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const result = await client.query({
+      query: gql`{
+          entity(id: "${this.perspectiveId}") {
             id
-            entity {
-              ... on Perspective {
-                context {
-                  identifier
-                  perspectives {
-                    id
-                    entity {
-                      ... on Perspective {
-                        name
-                        context {
-                          identifier
-                        }
-                        payload {
-                          origin
-                          creatorId
-                          timestamp
-                        }
-                      }
+            ... on Perspective {
+              context {
+                identifier
+                perspectives {
+                  id
+                  ... on Perspective {
+                    name
+                    context {
+                      identifier
+                    }
+                    payload {
+                      origin
+                      creatorId
+                      timestamp
                     }
                   }
                 } 
@@ -57,33 +52,27 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             } 
           }
         }`
-      });
-      const { perspectives } = result.data.getEntity.entity.context;
-      const fillPerspectives = perspective => {
-        const { head, context, name, payload } = perspective.entity;
-        const permissions: PermissionsStatus = {
-          canWrite: false
-        };
-        const details: PerspectiveDetails = {
-          headId: head,
-          context: context.identifier,
-          name
-        };
-        return {
-          id: perspective.id,
-          details,
-          perspective: payload,
-          permissions
-        };
+    });
+    const { perspectives } = result.data.entity.context;
+    const fillPerspectives = perspective => {
+      const { head, context, name, payload } = perspective;
+      const permissions: PermissionsStatus = {
+        canWrite: false
       };
+      const details: PerspectiveDetails = {
+        headId: head,
+        context: context.identifier,
+        name
+      };
+      return {
+        id: perspective.id,
+        details,
+        perspective: payload,
+        permissions
+      };
+    };
 
-      this.perspectivesData = perspectives.map(fillPerspectives);
-      console.log(`[PERSPECTIVE-LIST] updatePerspectivesData`, {
-        perspectivesData: JSON.stringify(this.perspectivesData)
-      });
-    } catch (e) {
-      console.log(e);
-    }
+    this.perspectivesData = perspectives.map(fillPerspectives);
   };
 
   stateChanged(state) {
@@ -94,7 +83,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       };
     });
     this.perspectivesData = [...this.perspectivesData];
-    console.log(`[PERSPECTIVE-LIST] stateChanged`, { perspectivesData: this.perspectivesData });
   }
 
   openPerspective = id => {

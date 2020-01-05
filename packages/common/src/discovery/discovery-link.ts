@@ -19,13 +19,13 @@ export class DiscoveryLink extends ApolloLink {
     return new Observable<FetchResult>(observer => {
       operationObserver.subscribe({
         next: async result => {
-          if (!result.data || !result.data.getEntity) {
+          if (!result.data || !result.data.entity) {
             observer.next(result);
             return;
           }
 
-          const hash = result.data.getEntity.id;
-          const object = result.data.getEntity.raw;
+          const hash = result.data.entity.id;
+          const object = result.data.entity;
 
           const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
           const localKnownSources: KnownSourcesService = container.get(

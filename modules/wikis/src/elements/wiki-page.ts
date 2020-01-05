@@ -19,11 +19,11 @@ export class WikiPage extends moduleConnect(LitElement) {
     const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
     const result = await client.query({
       query: gql`{
-        getEntity(id: "${this.pageHash}") {
+        entity(id: "${this.pageHash}") {
           id
-          content {
-            id
-            entity {
+          _patterns {
+            content {
+              id
               ... on TextNode {
                 text
                 links
@@ -34,7 +34,7 @@ export class WikiPage extends moduleConnect(LitElement) {
       }`
     });
 
-    this.textNode = result.data.getEntity.content.entity;
+    this.textNode = result.data.entity._patterns.content;
   }
 
   render() {
@@ -48,7 +48,7 @@ export class WikiPage extends moduleConnect(LitElement) {
         <div slot="title">${this.textNode.text}</div>
 
         <div slot="actionItems">
-          <cortex-actions .hash=${this.pageHash} ></cortex-actions>
+          <cortex-actions .hash=${this.pageHash}></cortex-actions>
         </div>
       </mwc-top-app-bar>
 

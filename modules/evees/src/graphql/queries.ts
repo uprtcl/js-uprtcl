@@ -4,16 +4,6 @@ export const UPDATE_HEAD = gql`
   mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID!) {
     updatePerspectiveHead(perspectiveId: $perspectiveId, headId: $headId) {
       id
-      entity {
-        ... on Perspective {
-          head {
-            id
-          }
-        }
-      }
-      content {
-        id
-      }
     }
   }
 `;
@@ -22,7 +12,6 @@ export const CREATE_COMMIT = gql`
   mutation CreateCommit($dataId: ID!, $parentsIds: [ID!]!, $message: String, $usl: String) {
     createCommit(dataId: $dataId, parentsIds: $parentsIds, message: $message, usl: $usl) {
       id
-      raw
     }
   }
 `;
@@ -31,7 +20,6 @@ export const CREATE_PERSPECTIVE = gql`
   mutation CreatePerspective($headId: ID, $context: String, $usl: String) {
     createPerspective(headId: $headId, context: $context, usl: $usl) {
       id
-      raw
     }
   }
 `;

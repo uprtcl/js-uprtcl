@@ -1,27 +1,10 @@
-import { ApolloClient, gql } from 'apollo-boost';
-
 import { PatternRecognizer, Hashed, HasRedirect, Creatable } from '@uprtcl/cortex';
 import { DiscoveryService } from '@uprtcl/multiplatform';
-
-export async function loadEntity(client: ApolloClient<any>, hash: string): Promise<any> {
-  const result = await client.query({
-    query: gql`
-    {
-      getEntity(id: "${hash}") {
-        id
-        raw
-      }
-    }
-    `
-  });
-
-  return result.data.getEntity.raw;
-}
 
 export async function getIsomorphisms(
   patternRecognizer: PatternRecognizer,
   entity: Hashed<any>,
-  loadEntity: (id: string) => Promise<Hashed<any>>
+  loadEntity: (id: string) => Promise<Hashed<any> | undefined>
 ): Promise<string[]> {
   let isomorphisms: string[] = [entity.id];
 
@@ -34,7 +17,7 @@ export async function getIsomorphisms(
 async function redirectEntity(
   patternRecognizer: PatternRecognizer,
   entity: object,
-  loadEntity: (id: string) => Promise<Hashed<any>>
+  loadEntity: (id: string) => Promise<Hashed<any> | undefined>
 ): Promise<string[]> {
   const hasRedirects: HasRedirect<any>[] = patternRecognizer
     .recognize(entity)
@@ -63,7 +46,7 @@ async function redirectEntity(
   return isomorphisms;
 }
 
-export async function getEntityContent(
+export async function entityContent(
   entity: any,
   recognizer: PatternRecognizer,
   discovery: DiscoveryService
@@ -75,7 +58,7 @@ export async function getEntityContent(
 
     if (redirectEntityId) {
       const redirectedEntity: Hashed<any> | undefined = await discovery.get(redirectEntityId);
-      return getEntityContent(redirectedEntity, recognizer, discovery);
+      return entityContent(redirectedEntity, recognizer, discovery);
     }
   }
 

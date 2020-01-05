@@ -9,30 +9,38 @@ export const eveesTypeDefs = gql`
   scalar Date
 
   extend type Mutation {
-    updatePerspectiveHead(perspectiveId: ID!, headId: ID!): Entity!
-    createCommit(dataId: ID!, parentsIds: [ID!]!, message: String, usl: String): Entity!
-    createPerspective(headId: ID, context: String, usl: String): Entity!
+    updatePerspectiveHead(perspectiveId: ID!, headId: ID!): Perspective!
+    createCommit(dataId: ID!, parentsIds: [ID!]!, message: String, usl: String): Commit!
+    createPerspective(headId: ID, context: String, usl: String): Perspective!
   }
 
   type Context {
     identifier: String!
-    perspectives: [Entity!]
+    perspectives: [Perspective!]
   }
 
-  extend union EntityType = Commit | Perspective
+  type Commit implements Entity {
+    id: ID!
 
-  type Commit {
-    parentCommits: [Entity!]!
+    parentCommits: [Commit!]!
     timestamp: Date!
     message: String
     data: Entity
+
+    _patterns: Patterns!
+    _meta: Metadata!
   }
 
-  type Perspective {
-    head: Entity
+  type Perspective implements Entity {
+    id: ID!
+
+    head: Commit
     name: String
     context: Context
     payload: Payload
+
+    _patterns: Patterns!
+    _meta: Metadata!
   }
 
   type Payload {
@@ -98,21 +106,25 @@ export const eveesResolvers = {
         usl
       );
 
-      return { id: commit.id };
+      return { id: commit.id, ...commit.object };
     },
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
       const evees: Evees = container.get(EveesTypes.Evees);
 
       await evees.updatePerspectiveDetails(perspectiveId, { headId });
 
-      return evees.get(perspectiveId);
+      const perspective = await evees.get(perspectiveId);
+
+      if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
+
+      return { id: perspective.id, ...perspective.object };
     },
     async createPerspective(_, { headId, context, usl }, { container }) {
       const evees: Evees = container.get(EveesTypes.Evees);
 
-      const { id } = await evees.createPerspective({ headId, context }, usl);
+      const hashedPerspective = await evees.createPerspective({ headId, context }, usl);
 
-      return id;
+      return { id: hashedPerspective.id, ...hashedPerspective.object };
     }
   }
 };

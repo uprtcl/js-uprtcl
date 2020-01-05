@@ -13,7 +13,6 @@ export const accessControlTypes = gql`
 
   type AccessControl {
     canWrite: Boolean!
-    info: EntityType!
   }
 `;
 

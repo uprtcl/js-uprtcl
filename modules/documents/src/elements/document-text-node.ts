@@ -37,21 +37,24 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
         {
-          getEntity(id: "${this.nodeId}") {
+          entity(id: "${this.nodeId}") {
             id
-            raw
-            entity {
-              ... on Perspective {
-                head {
-                  id
-                }
+            ... on Perspective {
+              head {
+                id
               }
             }
-            content {
-              id
-              raw
-            }
-            patterns {
+            _patterns {
+              content {
+                id
+                ... on TextNode {
+                  text
+                  type
+                  links {
+                    id
+                  }
+                }
+              }
               accessControl {
                 canWrite
               }
@@ -61,8 +64,8 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       `
     });
 
-    this.textNode = result.data.getEntity.content.raw;
-    const head = result.data.getEntity.entity.head;
+    this.textNode = result.data.entity._patterns.content;
+    const head = result.data.entity.head;
     this.currentHead = head ? head.id : undefined;
   }
 

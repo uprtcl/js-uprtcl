@@ -1,6 +1,8 @@
 import { gql } from 'apollo-boost';
 
 export const lensesSchema = gql`
+  scalar Function
+
   extend type Patterns {
     lenses: [Lens!]
     actions: [Action!]
