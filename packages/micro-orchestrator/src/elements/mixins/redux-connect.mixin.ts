@@ -1,8 +1,11 @@
 import { interfaces } from 'inversify';
-import { RequestDependencyEvent } from '../module-container';
-import { Constructor, CustomElement, ReduxTypes } from '../../types';
-import { ConnectedElement } from './module-connect.mixin';
 import { Store } from 'redux';
+
+import { RequestDependencyEvent } from '../module-container';
+import { Constructor, CustomElement } from '../../types';
+import { ConnectedElement } from './module-connect.mixin';
+import { ReduxStoreModule } from '../../modules/redux/redux-store.module';
+import { i18nextBaseModule } from '../../modules/i18n/i18next-base.module';
 
 export interface ReduxConnectedElement extends ConnectedElement {
   store: Store;
@@ -18,6 +21,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
 } & T =>
   class extends baseElement implements ReduxConnectedElement {
     store!: Store;
+    t: (key: string) => string = key => key;
 
     private requestGeneric<T>(
       dependency: interfaces.ServiceIdentifier<T>,
@@ -63,12 +67,18 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
     }
 
     connectedCallback() {
-      this.store = this.request(ReduxTypes.Store);
+      this.store = this.request(ReduxStoreModule.types.Store);
 
       super.connectedCallback();
 
       this.store.subscribe(() => this.stateChanged(this.store.getState()));
       this.stateChanged(this.store.getState());
+
+      try {
+        this.t = this.request(i18nextBaseModule.types.Translate);
+      } catch (e) {
+        console.warn('No translate function present');
+      }
     }
 
     stateChanged(state: any) {}

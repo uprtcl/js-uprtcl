@@ -1,7 +1,7 @@
 import { HttpProvider, HttpConnection } from '@uprtcl/connections';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
-import { BasicAdminAccessControlService } from '@uprtcl/common';
+import { BasicAdminAccessControlService } from '@uprtcl/access-control';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';

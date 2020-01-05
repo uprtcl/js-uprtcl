@@ -1,33 +1,12 @@
-import {
-  MicroOrchestrator,
-  ReduxStoreModule,
-  i18nTypes
-} from '@uprtcl/micro-orchestrator';
-import {
-  CortexTypes,
-  PatternsModule,
-  discoveryModule,
-  DiscoveryTypes,
-  LensesTypes,
-  CortexModule
-} from '@uprtcl/cortex';
-import { lensesModule, LensSelectorPlugin, ActionsPlugin, UpdatablePlugin } from '@uprtcl/lenses';
-import { DocumentsHttp, DocumentsIpfs, documentsModule, DocumentsTypes } from '@uprtcl/documents';
-import { WikisIpfs, wikisModule, WikisTypes, WikisHttp } from '@uprtcl/wikis';
-import {
-  ApolloClientModule,
-  GraphQlTypes,
-  i18nextBaseModule,
-  AccessControlTypes,
-  AccessControlModule
-} from '@uprtcl/common';
-import { eveesModule, EveesEthereum, EveesHttp, EveesTypes } from '@uprtcl/evees';
-import {
-  KnownSourcesHttp,
-  IpfsConnection,
-  EthereumConnection,
-  HttpConnection
-} from '@uprtcl/connections';
+import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
+import { LensesModule, LensSelectorPlugin, ActionsPlugin } from '@uprtcl/lenses';
+import { DocumentsHttp, DocumentsIpfs, DocumentsModule } from '@uprtcl/documents';
+import { WikisIpfs, WikisModule, WikisHttp } from '@uprtcl/wikis';
+import { ApolloClientModule, GqlCortexModule, GqlDiscoveryModule } from '@uprtcl/common';
+import { AccessControlModule } from '@uprtcl/access-control';
+import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
+import { IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
+
 import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
@@ -43,35 +22,34 @@ import { SimpleWiki } from './simple-wiki';
   const httpEvees = new EveesHttp(c1host, httpConnection);
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
 
-  const evees = eveesModule([httpEvees, ethEvees]);
+  const evees = new EveesModule([ethEvees]);
 
   const httpDocuments = new DocumentsHttp(c1host, httpConnection);
   const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
 
-  const documents = documentsModule([ipfsDocuments, httpDocuments]);
+  const documents = new DocumentsModule([ipfsDocuments]);
 
   const httpWikis = new WikisHttp(c1host, httpConnection);
   const ipfsWikis = new WikisIpfs(ipfsConnection);
 
-  const wikis = wikisModule([ipfsWikis, httpWikis]);
+  const wikis = new WikisModule([ipfsWikis]);
 
-  const lenses = lensesModule([
+  const lenses = new LensesModule([
     { name: 'lens-selector', plugin: new LensSelectorPlugin() },
-    { name: 'actions', plugin: new ActionsPlugin() },
-    { name: 'updatable', plugin: new UpdatablePlugin() }
+    { name: 'actions', plugin: new ActionsPlugin() }
   ]);
 
-  const modules = {
-    [i18nTypes.Module]: i18nextBaseModule,
-    [GraphQlTypes.Module]: ApolloClientModule,
-    [CortexTypes.Module]: CortexModule,
-    [DiscoveryTypes.Module]: discoveryModule(),
-    [LensesTypes.Module]: lenses,
-    [AccessControlTypes.Module]: AccessControlModule,
-    [EveesTypes.Module]: evees,
-    [DocumentsTypes.Module]: documents,
-    [WikisTypes.Module]: wikis
-  };
+  const modules = [
+    new i18nextBaseModule(),
+    new ApolloClientModule(),
+    new GqlCortexModule(),
+    new GqlDiscoveryModule(),
+    lenses,
+    new AccessControlModule(),
+    evees,
+    documents,
+    wikis
+  ];
 
   const orchestrator = new MicroOrchestrator();
 

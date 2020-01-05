@@ -1,25 +1,20 @@
 import { multiInject, injectable, inject } from 'inversify';
 import { isEqual } from 'lodash-es';
 
+import { PatternRecognizer, Hashed, IsSecure, HasChildren, CortexModule } from '@uprtcl/cortex';
 import {
   KnownSourcesService,
-  DiscoveryTypes,
-  CortexTypes,
-  PatternRecognizer,
   CachedMultiSourceService,
-  Hashed,
-  IsSecure,
   MultiSourceService,
   DiscoveryService,
-  HasChildren
-} from '@uprtcl/cortex';
+  DiscoveryModule
+} from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Secured } from '@uprtcl/common';
+import { Secured, createEntity, CorePatterns } from '@uprtcl/common';
 
-import { EveesTypes, EveesLocal, Perspective, Commit, PerspectiveDetails } from '../types';
+import { EveesLocal, Perspective, Commit, PerspectiveDetails, EveesTypes } from '../types';
 import { EveesProvider } from './evees.provider';
 import { EveesRemote } from './evees.remote';
-import { createEntity } from '../utils/utils';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -44,11 +39,11 @@ export class Evees {
   service: CachedMultiSourceService<EveesLocal, EveesRemote>;
 
   constructor(
-    @inject(CortexTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(CortexTypes.Core.Secured) protected secured: IsSecure<any>,
-    @inject(DiscoveryTypes.LocalKnownSources)
+    @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(CorePatterns.Secured) protected secured: IsSecure<any>,
+    @inject(DiscoveryModule.types.LocalKnownSources)
     public knownSources: KnownSourcesService,
-    @inject(DiscoveryTypes.DiscoveryService)
+    @inject(DiscoveryModule.types.DiscoveryService)
     protected discoveryService: DiscoveryService,
     @inject(EveesTypes.EveesLocal)
     protected eveesLocal: EveesLocal,
@@ -183,10 +178,9 @@ export class Evees {
       const dataHashed: Hashed<any> | undefined = await this.discoveryService.get(dataId);
       if (!dataHashed) throw new Error('Data for the head commit of the perspective was not found');
 
-      const hasChildren: HasChildren | undefined = this.patternRecognizer.recognizeUniqueProperty(
-        dataHashed,
-        prop => !!(prop as HasChildren).getChildrenLinks
-      );
+      const hasChildren: HasChildren | undefined = this.patternRecognizer
+        .recognize(dataHashed)
+        .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
       if (hasChildren) {
         const descendantLinks = hasChildren.getChildrenLinks(dataHashed);
@@ -207,11 +201,11 @@ export class Evees {
         if (!isEqual(dataHashed, newData)) {
           const previousDataUpls = await this.knownSources.getKnownSources(dataId);
 
-          const newDataHashed = await createEntity(this.patternRecognizer)(
+          const newDataId = await createEntity(this.patternRecognizer)(
             newData.object,
             previousDataUpls ? previousDataUpls[0] : undefined
           );
-          dataId = newDataHashed.id;
+          dataId = newDataId;
         }
       }
     }

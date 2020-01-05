@@ -2,9 +2,7 @@ import { HttpConnection, HttpProvider } from '@uprtcl/connections';
 import { Hashed } from '@uprtcl/cortex';
 
 import { WikisProvider } from '../wikis.provider';
-import { WikiNode } from '../../types';
-import { injectable } from 'inversify';
-
+import { Wiki } from '../../types';
 
 const wikis_api: string = 'wikinode-v1';
 
@@ -27,10 +25,10 @@ export class WikisHttp extends HttpProvider implements WikisProvider {
     };
   }
 
-  async createWikiNode(node: WikiNode, hash: string): Promise<string> {
+  async createWiki(wiki: Wiki, hash: string): Promise<string> {
     const result = await super.post(`/data`, {
       id: hash,
-      object: node
+      object: wiki
     });
     return result.elementIds[0];
   }

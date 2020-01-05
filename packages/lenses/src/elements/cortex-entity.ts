@@ -1,5 +1,4 @@
 import { html } from 'lit-element';
-import '@authentic/mwc-circular-progress';
 
 import { CortexEntityBase } from './cortex-entity-base';
 import { sharedStyles } from '../shared-styles';
@@ -32,30 +31,17 @@ export class CortexEntity extends CortexEntityBase {
   renderLens() {
     if (!this.selectedLens) return html``;
 
-    const lens =  html`
-      <div id="lens-element">${this.selectedLens.render(this.renderSlotPlugins())}</div>
-    `;
-
-    return this.renderLensPlugins(lens);
+    return this.selectedLens.render(this.renderSlotPlugins());
   }
-
-  renderLoadingPlaceholder() {
-    return html`
-      <mwc-circular-progress></mwc-circular-progress>
-    `;
-  }
-
 
   render() {
     return html`
       ${!this.selectedLens
-        ? this.renderLoadingPlaceholder()
+        ? html`
+            <cortex-loading-placeholder></cortex-loading-placeholder>
+          `
         : html`
-            <div class="row center-content">
-              <div style="flex: 1;">
-                ${this.renderLens()}
-              </div>
-            </div>
+            ${this.renderLens()}
           `}
     `;
   }

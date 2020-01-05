@@ -1,4 +1,3 @@
-import { injectable } from 'inversify';
 import { html } from 'lit-element';
 
 import { Hashed } from '@uprtcl/cortex';

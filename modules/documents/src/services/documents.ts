@@ -1,20 +1,15 @@
 import { multiInject, injectable, inject } from 'inversify';
 
+import { PatternRecognizer, Hashed, CortexModule } from '@uprtcl/cortex';
 import {
   KnownSourcesService,
-  DiscoveryTypes,
-  CortexTypes,
-  PatternRecognizer,
-  Creatable,
+  MultiSourceService,
   CachedMultiSourceService,
-  Hashed,
-  IsSecure,
-  MultiSourceService
-} from '@uprtcl/cortex';
+  DiscoveryModule
+} from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Secured } from '@uprtcl/common';
 
-import { DocumentsLocal, DocumentsTypes, TextNode } from '../types';
+import { DocumentsLocal, TextNode, DocumentsTypes } from '../types';
 import { DocumentsRemote } from './documents.remote';
 import { DocumentsProvider } from './documents.provider';
 
@@ -25,8 +20,8 @@ export class Documents {
   service: CachedMultiSourceService<DocumentsLocal, DocumentsRemote>;
 
   constructor(
-    @inject(CortexTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(DiscoveryTypes.LocalKnownSources)
+    @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(DiscoveryModule.types.LocalKnownSources)
     protected knownSources: KnownSourcesService,
     @inject(DocumentsTypes.DocumentsLocal)
     protected documentsLocal: DocumentsLocal,

@@ -1,20 +1,21 @@
-import { injectable, interfaces } from 'inversify';
+import { interfaces } from 'inversify';
 
-import { patternsModule, sourcesModule } from '@uprtcl/cortex';
-import { graphQlSchemaModule, i18nModule } from '@uprtcl/common';
-import { elementsModule, MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
+import { PatternsModule } from '@uprtcl/cortex';
+import { SourcesModule } from '@uprtcl/multiplatform';
+import { GraphQlSchemaModule } from '@uprtcl/common';
+import { ElementsModule, MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 
-import { WikiNodeLens } from './lenses/wiki-node.lens';
-import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
-import { WikisTypes } from './types';
+import { WikiDrawer } from './elements/wiki-drawer';
+import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
 import { WikisLocal } from './services/wikis.local';
 import { Wikis } from './services/wikis';
 import { WikisRemote } from './services/wikis.remote';
-import { wikiTypeDefs } from './graphql';
+import { wikiTypeDefs, resolvers } from './graphql/schema';
 import { WikiPage } from './elements/wiki-page';
-import { Homepage } from './elements/homepage';
+import { WikiHome } from './elements/wiki-home';
 
 import en from '../i18n/en.json';
+import { WikiTypes } from './types';
 
 /**
  * Configure a wikis module with the given providers
@@ -35,44 +36,44 @@ import en from '../i18n/en.json';
  *
  *  const wikisProvider = new wikisIpfs(ipfsConnection);
  *
- * const docs = wikisModule([ wikisProvider ]);
- * await orchestrator.loadModules({
- *   [WikisTypes.Module]: docs
- * });
+ * const wikis = new WikisModule([ wikisProvider ]);
+ * await orchestrator.loadModule(wikis);
  * ```
  *
  * @category CortexModule
  *
  * @param wikisRemote an array of remotes of wikis
- * @returns a configured wikis module ready to be loaded
  */
-export function wikisModule(wikisRemotes: WikisRemote[]): Constructor<MicroModule> {
-  @injectable()
-  class WikisModule implements MicroModule {
-    async onLoad(context: interfaces.Context, bind: interfaces.Bind) {
-      bind(WikisTypes.WikisLocal).to(WikisLocal);
-      bind(WikisTypes.Wikis).to(Wikis);
-    }
+export class WikisModule extends MicroModule {
+  static id = Symbol('wikis-module');
 
-    submodules = [
-      graphQlSchemaModule(wikiTypeDefs, {}),
-      i18nModule('wikis', { en: en }),
-      sourcesModule(
-        wikisRemotes.map(remote => ({
-          symbol: WikisTypes.WikisRemote,
-          source: remote
-        }))
-      ),
-      elementsModule({
-        'basic-wiki': WikiNodeLens,
-        'wiki-page': WikiPage,
-        'home-page': Homepage
-      }),
-      patternsModule({
-        [WikisTypes.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
-      })
-    ];
+  static types = WikiTypes;
+
+  constructor(protected wikisRemotes: WikisRemote[]) {
+    super();
   }
 
-  return WikisModule;
+  async onLoad(container: interfaces.Container) {
+    container.bind(WikisModule.types.WikisLocal).to(WikisLocal);
+    container.bind(WikisModule.types.Wikis).to(Wikis);
+  }
+
+  submodules = [
+    new GraphQlSchemaModule(wikiTypeDefs, resolvers),
+    new i18nextModule('wikis', { en: en }),
+    new SourcesModule(
+      this.wikisRemotes.map(remote => ({
+        symbol: WikisModule.types.WikisRemote,
+        source: remote
+      }))
+    ),
+    new ElementsModule({
+      'wiki-drawer': WikiDrawer,
+      'wiki-page': WikiPage,
+      'wiki-home': WikiHome
+    }),
+    new PatternsModule({
+      [WikisModule.types.WikiEntity]: [WikiCommon, WikiLinks]
+    })
+  ];
 }

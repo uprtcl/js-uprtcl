@@ -1,15 +1,9 @@
 import Dexie from 'dexie';
 import { inject, injectable } from 'inversify';
 
-import {
-  CacheService,
-  Hashed,
-  Signed,
-  IsSecure,
-  CortexTypes,
-  DiscoveryTypes
-} from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { CacheService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { Hashed, Signed, IsSecure } from '@uprtcl/cortex';
+import { Secured, CorePatterns } from '@uprtcl/common';
 
 import { Perspective, Commit, EveesLocal, PerspectiveDetails } from '../../types';
 
@@ -18,9 +12,9 @@ export class EveesDexie extends Dexie implements EveesLocal {
   details: Dexie.Table<Partial<PerspectiveDetails>, string>;
 
   constructor(
-    @inject(CortexTypes.Core.Secured)
+    @inject(CorePatterns.Secured)
     protected securedPattern: IsSecure<any>,
-    @inject(DiscoveryTypes.Cache)
+    @inject(DiscoveryModule.types.Cache)
     protected objectsCache: CacheService
   ) {
     super('uprtcl');

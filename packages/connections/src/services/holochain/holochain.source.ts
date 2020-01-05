@@ -1,4 +1,5 @@
-import { SourceProvider, Hashed } from '@uprtcl/cortex';
+import { Hashed } from '@uprtcl/cortex';
+import { SourceProvider } from '@uprtcl/multiplatform';
 
 import { HolochainProvider, HolochainProviderOptions } from './holochain.provider';
 import { HolochainConnection } from './holochain.connection';
@@ -20,7 +21,10 @@ export class HolochainSource extends HolochainProvider implements SourceProvider
     protected hcSourceOptions: HolochainSourceOptions,
     protected connection: HolochainConnection,
     protected sourceZome: HolochainProxy = new HolochainProxy(hcSourceOptions.instance, connection),
-    protected discoveryZome: KnownSourcesHolochain = new KnownSourcesHolochain(hcSourceOptions.instance, connection),
+    protected discoveryZome: KnownSourcesHolochain = new KnownSourcesHolochain(
+      hcSourceOptions.instance,
+      connection
+    )
   ) {
     super(
       { getMyAddress: proxyMyAddress(hcSourceOptions.instance), ...hcSourceOptions },

@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/documents",
-  "version": "0.0.1-alpha6",
+  "version": "0.0.2-alpha1",
   "description": "Cortex module implementing texts and folders",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -18,20 +18,21 @@
     "@material/mwc-radio": "^0.10.0",
     "@material/mwc-ripple": "^0.10.0",
     "@material/mwc-switch": "^0.10.0",
-    "@uprtcl/common": "^0.0.1-alpha6",
-    "@uprtcl/connections": "^0.0.1-alpha6",
-    "@uprtcl/cortex": "^0.0.1-alpha6",
-    "@uprtcl/evees": "^0.0.1-alpha6",
-    "@uprtcl/lenses": "^0.0.1-alpha6",
-    "@uprtcl/micro-orchestrator": "^0.0.1-alpha6",
-    "apollo-boost": "^0.4.4",
+    "@uprtcl/access-control": "^0.0.2-alpha1",
+    "@uprtcl/common": "^0.0.2-alpha1",
+    "@uprtcl/connections": "^0.0.2-alpha1",
+    "@uprtcl/cortex": "^0.0.2-alpha1",
+    "@uprtcl/evees": "^0.0.2-alpha1",
+    "@uprtcl/lenses": "^0.0.2-alpha1",
+    "@uprtcl/micro-orchestrator": "^0.0.2-alpha1",
+    "@uprtcl/multiplatform": "^0.0.2-alpha1",
+    "apollo-boost": "^0.4.7",
     "dexie": "^2.0.4",
     "graphql": "^14.5.8",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.6",
     "inversify": "^5.0.1",
     "lit-element": "^2.2.1",
-    "redux": "^4.0.4",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
@@ -51,7 +52,8 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.18.0",
-    "typescript": "^3.7.2"
+    "temp-dir": "^2.0.0",
+    "typescript": "^3.7.4"
   },
   "contributors": [
     {

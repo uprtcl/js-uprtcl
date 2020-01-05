@@ -1,15 +1,19 @@
 import { Container, interfaces } from 'inversify';
-import { MicroModule } from '../modules/micro.module';
+
+import { MicroModule } from './micro.module';
 import { ModuleContainer } from '../elements/module-container';
 import { Logger } from '../utils/logger';
-import { MicroOrchestratorTypes, ModulesToLoad } from '../types';
-import { ModuleProvider, moduleProvider } from './module-provider';
+import { MicroOrchestratorTypes, Dictionary } from '../types';
+import { localModuleProvider, ModuleProvider } from './module-provider';
 
 export class MicroOrchestrator {
   logger: Logger = new Logger('micro-orchestrator');
   container = new Container({ skipBaseClassChecks: true });
 
-  constructor() {
+  // Dictionary holding the promises of the modules being loaded, to deduplicate modules with equal id
+  loadingModules: Dictionary<Promise<any>> = {};
+
+  constructor(protected moduleProvider: ModuleProvider = localModuleProvider) {
     customElements.define('module-container', ModuleContainer(this.container));
 
     this.container
@@ -19,29 +23,78 @@ export class MicroOrchestrator {
 
         return logger;
       });
-
-    this.container
-      .bind<ModuleProvider>(MicroOrchestratorTypes.ModuleProvider)
-      .toProvider<MicroModule>(moduleProvider(this.logger));
   }
 
   /**
    * Loads the given modules
    * @param modules
    */
-  async loadModules(modules: ModulesToLoad): Promise<void> {
-    const ids = Object.getOwnPropertySymbols(modules);
-
-    for (const id of ids) {
-      this.container
-        .bind<MicroModule>(id)
-        .to(modules[id as any])
-        .inSingletonScope();
+  public async loadModules(modules: Array<MicroModule>): Promise<void> {
+    for (const microModule of modules) {
+      const id: interfaces.ServiceIdentifier<any> | undefined = this.idFromInstance(microModule);
+      if (id !== undefined) {
+        this.container.bind<MicroModule>(id).toConstantValue(microModule);
+      }
     }
 
-    const provider: ModuleProvider = this.container.get(MicroOrchestratorTypes.ModuleProvider);
-    const promises = ids.map(async moduleId => provider(moduleId));
-
+    const promises = modules.map(microModule => this.loadModule(microModule));
     await Promise.all(promises);
+  }
+
+  /**
+   * Loads the given module
+   * @param microModule
+   */
+  public async loadModule(microModule: MicroModule): Promise<void> {
+    // If the module has already been loaded (or is being loaded) return that promise
+    const id: interfaces.ServiceIdentifier<any> | undefined = this.idFromInstance(microModule);
+
+    if (id && this.loadingModules[id as any]) return this.loadingModules[id as any];
+
+    if (id) {
+      this.logger.info(`Attempting to load module ${id.toString()}`);
+    }
+
+    // Load dependencies and submodules
+    const dependencies = this.loadDependencies(microModule);
+    const submodulesPromises = microModule.submodules.map(sub => this.loadModule(sub));
+
+    const depsPromise = Promise.all([dependencies, Promise.all(submodulesPromises)]);
+
+    // All dependencies and submodules have been loaded: load the microModule itself
+    const modulePromise = async () => {
+      await depsPromise;
+      await microModule.onLoad(this.container);
+    };
+
+    this.loadingModules[id as any] = modulePromise();
+
+    await this.loadingModules[id as any];
+
+    if (id) {
+      this.logger.info(`Module ${id.toString()} successfully loaded`);
+    }
+  }
+
+  /** Private functions */
+
+  /**
+   * Loads all the dependencies for the given module, using the registered ModuleProvider to fetch the dependencies
+   * @param microModule
+   */
+  private async loadDependencies(microModule: MicroModule): Promise<Array<MicroModule>> {
+    const promises = microModule.dependencies.map(async dep => {
+      const module = await this.moduleProvider(this.container)(dep);
+      await this.loadModule(module);
+      return module;
+    });
+
+    return Promise.all(promises);
+  }
+
+  private idFromInstance(microModule: MicroModule): interfaces.ServiceIdentifier<any> | undefined {
+    return ((microModule.constructor as unknown) as {
+      id: interfaces.ServiceIdentifier<any> | undefined;
+    }).id;
   }
 }

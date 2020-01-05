@@ -1,27 +1,26 @@
 import { ApolloClient, gql } from 'apollo-boost';
-import { LitElement, property, PropertyValues, TemplateResult } from 'lit-element';
 import { flatMap } from 'lodash-es';
+import { LitElement, property, PropertyValues } from 'lit-element';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
-import { GraphQlTypes } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/common';
 import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
 import { SlotPlugin } from '../plugins/slot.plugin';
-import { RenderLensPlugin } from '../plugins/render-lens.plugin';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
   @property()
   public hash!: string;
 
-  @property()
-  public lens!: string;
+  @property({ attribute: 'lens-type' })
+  public lensType!: string;
 
-  @property()
-  protected entity: Hashed<any> | undefined = undefined;
+  @property({ type: Object })
+  protected entity!: Hashed<any>;
 
   // Lenses
-  @property()
+  @property({ attribute: false })
   protected selectedLens!: Lens | undefined;
 
   connectedCallback() {
@@ -35,23 +34,24 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   }
 
   async loadEntity(hash: string): Promise<void> {
-    this.entity = undefined;
     this.selectedLens = undefined;
 
-    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
 
+    // We are also loading the content to have it cached in case the lens wants it
     const result = await client.query({
       query: gql`
       {
-        getEntity(id: "${hash}", depth: 1) {
+        entity(id: "${hash}", depth: 1) {
           id
-          raw
-          isomorphisms {
-            patterns {
-              lenses {
-                name
-                type
-                render
+          _patterns {
+            isomorphisms {
+              _patterns {
+                lenses {
+                  name
+                  type
+                  render
+                }
               }
             }
           }
@@ -61,15 +61,15 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     });
 
     const lenses = flatMap(
-      result.data.getEntity.isomorphisms.reverse(),
-      iso => iso.patterns.lenses
-    ).filter(l => !!l);
+      result.data.entity._patterns.isomorphisms,
+      iso => iso._patterns.lenses
+    ).filter(lens => !!lens);
 
-    this.entity = result.data.getEntity.raw;
+    this.entity = { id: result.data.id, ...result.data.entity };
 
-    if(this.lens) {
-      this.selectedLens = lenses.find(lens => lens.type === this.lens);
-    } 
+    if (this.lensType) {
+      this.selectedLens = lenses.find(lens => lens.type === this.lensType);
+    }
 
     if (this.selectedLens === undefined) {
       this.selectedLens = lenses[0];
@@ -78,19 +78,6 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
 
   get slotPlugins(): Dictionary<SlotPlugin> {
     return {};
-  }
-
-  get lensPlugins(): Dictionary<RenderLensPlugin> {
-    return {};
-  }
-
-  renderLensPlugins(initialLens: TemplateResult) {
-    const renderLensPlugins: RenderLensPlugin[] = Object.values(this.lensPlugins);
-
-    return renderLensPlugins.reduce(
-      (acc, next) => next.renderLens(acc, this.entity, this.selectedLens),
-      initialLens
-    );
   }
 
   updated(changedProperties: PropertyValues) {

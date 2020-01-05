@@ -1,68 +1,68 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-import { GraphQlTypes } from '@uprtcl/common';
+
+import { TextNode } from '@uprtcl/documents';
+import { sharedStyles } from '@uprtcl/lenses';
+import { ApolloClientModule } from '@uprtcl/common';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
+
+import '@material/mwc-top-app-bar';
 
 export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
   pageHash!: string;
 
-  @property({ type: String })
-  title!: string;
+  @property({ type: Object })
+  textNode!: TextNode;
 
   async firstUpdated() {
-    const client: ApolloClient<any> = this.request(GraphQlTypes.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
     const result = await client.query({
       query: gql`{
-        getEntity(id: "${this.pageHash}") {
-          content {
-            entity {
+        entity(id: "${this.pageHash}") {
+          id
+          _patterns {
+            content {
+              id
               ... on TextNode {
                 text
+                links
               }
             }
           }
         }
       }`
     });
-    
-    const { text } = result.data.getEntity.content.entity
-    this.title = text ? text : "Title goes here"
+
+    this.textNode = result.data.entity._patterns.content;
   }
 
   render() {
+    if (!this.textNode)
+      return html`
+        <cortex-loading-placeholder></cortex-loading-placeholder>
+      `;
+
     return html`
-      <div class="header">
-        <div class="page">
-          <h3> ${this.title} </h3>
+      <mwc-top-app-bar>
+        <div slot="title">${this.textNode.text}</div>
+
+        <div slot="actionItems">
+          <cortex-actions .hash=${this.pageHash}></cortex-actions>
         </div>
-        <div class="actions">
-          <cortex-actions .hash=${this.pageHash} />
-        </div>
+      </mwc-top-app-bar>
+
+      <div class="column">
+        ${this.textNode.links.map(
+          link => html`
+            <cortex-entity .hash=${link} lens-type="content"> </cortex-entity>
+          `
+        )}
       </div>
-      <cortex-entity .hash=${this.pageHash} lens="content"> </cortex-entity>
     `;
   }
 
   static get styles() {
-    return css`
-      .header {
-        display: flex;
-        flex-direction: row;
-        background-color: #fff;
-      }
-      .page {
-        width: 90%;
-        text-align: left;
-        border-style: solid;
-        border-width: 2px;
-      }
-      .actions {
-        width: 10%;
-        border-style: solid;
-        border-width: 2px;
-        border-left-width: 0px;
-      }
-    `;
+    return sharedStyles;
   }
 }

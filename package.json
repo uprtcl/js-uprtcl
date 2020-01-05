@@ -13,7 +13,10 @@
     "dev": "lerna run dev --parallel",
     "test": "lerna run test",
     "test:watch": "lerna run test:watch --parallel",
-    "docs:build": "rimraf docs node_modules/typedoc/node_modules/typescript && typedoc",
+    "docs:dev": "cd docs && vuepress dev",
+    "docs:build": "vuepress build docs",
+    "docs:build1": "rimraf node_modules/typedoc/node_modules/typescript && typedoc",
+    "docs:build2": "ts-node tools/build-api-docs.ts",
     "docs:deploy": "ts-node tools/gh-pages-publish",
     "semantic-release": "semantic-release",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare"
@@ -25,10 +28,11 @@
     "lerna": "^3.16.4",
     "nyc": "^14.1.1",
     "rimraf": "^3.0.0",
+    "shelljs": "^0.8.3",
     "ts-node": "=7.0.1",
-    "typedoc": "^0.15.0",
-    "typedoc-plugin-lerna-packages": "^0.2.1",
-    "typescript": "^3.7.2"
+    "typedoc": "^0.15.6",
+    "typescript": "^3.7.4",
+    "vuepress": "^1.2.0"
   },
   "contributors": [
     {
@@ -49,9 +53,5 @@
   },
   "engines": {
     "node": ">=10.0.0"
-  },
-  "dependencies": {
-    "graphql": "^14.5.8",
-    "temp-dir": "^2.0.0"
   }
 }

@@ -1,24 +1,17 @@
 import { inject, injectable } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import {
-  DiscoveryTypes,
-  DiscoveryService,
-  CortexTypes,
-  PatternRecognizer,
-  KnownSourcesService,
-  Hashed
-} from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
+import { KnownSourcesService, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { Secured, createEntity } from '@uprtcl/common';
 
-import { UpdateRequest, EveesTypes, Commit } from '../types';
+import { UpdateRequest, Commit, EveesTypes } from '../types';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
 import { isAncestorOf } from '../utils/ancestor';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
-import { createEntity } from '../utils/utils';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
@@ -26,9 +19,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
   constructor(
     @inject(EveesTypes.Evees) protected evees: Evees,
-    @inject(DiscoveryTypes.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryTypes.LocalKnownSources) protected knownSources: KnownSourcesService,
-    @inject(CortexTypes.Recognizer) protected recognizer: PatternRecognizer
+    @inject(DiscoveryModule.types.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.types.LocalKnownSources) protected knownSources: KnownSourcesService,
+    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer
   ) {}
 
   async mergePerspectives(
@@ -104,11 +97,11 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const sources = await this.knownSources.getKnownSources(toCommitId);
 
-    const newDataHashed = await createEntity(this.recognizer)(newData);
+    const newDataId = await createEntity(this.recognizer)(newData);
 
     const mergeCommit = await this.evees.createCommit(
       {
-        dataId: newDataHashed.id,
+        dataId: newDataId,
         parentsIds: commitsIds,
         message: `Merge commits ${commitsIds.toString()}`
       },
@@ -119,10 +112,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   async mergeData<T extends object>(originalData: T, newDatas: T[]): Promise<T> {
-    const merge: Mergeable | undefined = this.recognizer.recognizeUniqueProperty(
-      originalData,
-      prop => !!(prop as Mergeable)
-    );
+    const merge: Mergeable | undefined = this.recognizer
+      .recognize(originalData)
+      .find(prop => !!(prop as Mergeable));
 
     if (!merge)
       throw new Error('Cannot merge data that does not implement the Mergeable behaviour');

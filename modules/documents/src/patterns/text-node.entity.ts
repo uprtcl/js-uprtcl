@@ -1,6 +1,5 @@
 import { html, TemplateResult } from 'lit-element';
-import { injectable, inject } from 'inversify';
-import { Store } from 'redux';
+import { injectable, inject, multiInject } from 'inversify';
 
 import {
   Pattern,
@@ -8,16 +7,17 @@ import {
   PatternAction,
   Hashed,
   Hashable,
-  CortexTypes,
   Creatable,
   PatternRecognizer,
   HasChildren,
   Entity,
-  HasTitle
+  HasTitle,
+  CortexModule
 } from '@uprtcl/cortex';
+import { CorePatterns } from '@uprtcl/common';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
-import { ReduxTypes, i18nTypes } from '@uprtcl/micro-orchestrator';
+import { EveesModule } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocumentsTypes } from '../types';
 import { Documents } from '../services/documents';
@@ -26,7 +26,7 @@ const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
 export class TextNodeEntity implements Entity {
-  constructor(@inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
+  constructor(@inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;
 
@@ -39,10 +39,7 @@ export class TextNodeEntity implements Entity {
 
 @injectable()
 export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasChildren, Mergeable {
-  constructor(
-    @inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(i18nTypes.Translate) protected t: (key: string) => string
-  ) {
+  constructor(@inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>) {
     super(hashedPattern);
   }
 
@@ -63,7 +60,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
   lenses = (node: Hashed<TextNode>): Lens[] => {
     return [
       {
-        name: this.t('documents:document'),
+        name: 'documents:document',
         type: 'content',
         render: (lensContent: TemplateResult) => html`
           <documents-text-node .data=${node.object}>${lensContent}</documents-text-node>
@@ -101,8 +98,8 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
 @injectable()
 export class TextNodeActions extends TextNodeEntity implements HasActions {
   constructor(
-    @inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(CortexTypes.Recognizer) protected recognizer: PatternRecognizer
+    @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer
   ) {
     super(hashedPattern);
   }
@@ -114,7 +111,7 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
       return [
         {
           icon: 'title',
-          title: 'To title',
+          title: 'documents:to_title',
           action: (changeContent: (newContent: any) => void) => {
             changeContent({ ...textNode, type: TextType.Title });
           },
@@ -125,7 +122,7 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
       return [
         {
           icon: 'text_fields',
-          title: 'To paragraph',
+          title: 'documents:to_paragraph',
           action: (changeContent: (newContent: any) => void) => {
             changeContent({ ...textNode, type: TextType.Paragraph });
           },
@@ -137,16 +134,16 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 }
 
 @injectable()
-export class TextNodeCreate implements Pattern, Creatable<Partial<TextNode>, TextNode> {
-  constructor(@inject(DocumentsTypes.Documents) protected documents: Documents) {}
-  recognize(object: object): boolean {
-    return propertyOrder.every(p => object.hasOwnProperty(p));
+export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<TextNode>> {
+  constructor(
+    @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(DocumentsTypes.Documents) protected documents: Documents,
+    @multiInject(EveesModule.types.PerspectivePattern) protected perspectivePatterns: Pattern[]
+  ) {
+    super(hashedPattern);
   }
 
-  create = () => async (
-    node: Partial<TextNode> | undefined,
-    upl?: string
-  ): Promise<Hashed<TextNode>> => {
+  create = () => async (node: Partial<TextNode> | undefined, upl?: string): Promise<string> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
@@ -156,7 +153,9 @@ export class TextNodeCreate implements Pattern, Creatable<Partial<TextNode>, Tex
     }
 
     const newTextNode = { links, text, type };
-    return this.documents.createTextNode(newTextNode, upl);
+    const { id } = await this.documents.createTextNode(newTextNode, upl);
+
+    return id;
   };
 }
 

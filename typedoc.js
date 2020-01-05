@@ -1,15 +1,7 @@
 module.exports = {
   mode: 'modules',
-  out: 'docs',
-  exclude: [
-    '**/node_modules/**',
-    '**/*.spec.ts',
-    '**/*.test.ts',
-    '**/test/**/*',
-    'tools/**/*',
-    'demos/**/*'
-  ],
-  name: 'js-uprtcl',
+  exclude: ['**/node_modules/**', '**/*.spec.ts', '**/*.test.ts', '**/test/**/*'],
   excludePrivate: true,
-  skipInternal: true
+  skipInternal: true,
+  theme: 'vuepress'
 };

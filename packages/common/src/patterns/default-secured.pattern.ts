@@ -6,17 +6,18 @@ import {
   Signed,
   Signable,
   IsSecure,
-  CortexTypes,
   Pattern
 } from '@uprtcl/cortex';
+
+import { CorePatterns } from '../types';
 
 export type Secured<T = any> = Hashed<Signed<T>>;
 
 @injectable()
 export class DefaultSecuredPattern implements Pattern, IsSecure<Secured<any>> {
   constructor(
-    @inject(CortexTypes.Core.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(CortexTypes.Core.Signed) protected signedPattern: Pattern & Signable<any>
+    @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(CorePatterns.Signed) protected signedPattern: Pattern & Signable<any>
   ) {}
 
   recognize(object: object) {

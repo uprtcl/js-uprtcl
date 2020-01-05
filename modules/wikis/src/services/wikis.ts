@@ -1,21 +1,18 @@
 import { multiInject, injectable, inject } from 'inversify';
 
+import { PatternRecognizer, Hashed, CortexModule } from '@uprtcl/cortex';
 import {
   KnownSourcesService,
-  DiscoveryTypes,
-  CortexTypes,
-  PatternRecognizer,
-  Creatable,
   CachedMultiSourceService,
-  Hashed,
-  IsSecure,
-  MultiSourceService
-} from '@uprtcl/cortex';
+  MultiSourceService,
+  DiscoveryModule
+} from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { WikisLocal, WikisTypes, WikiNode } from '../types';
+import { WikisLocal, Wiki, WikiTypes } from '../types';
 import { WikisRemote } from './wikis.remote';
 import { WikisProvider } from './wikis.provider';
+import { WikisModule } from 'src/wikis.module';
 
 @injectable()
 export class Wikis {
@@ -24,12 +21,12 @@ export class Wikis {
   service: CachedMultiSourceService<WikisLocal, WikisRemote>;
 
   constructor(
-    @inject(CortexTypes.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(DiscoveryTypes.LocalKnownSources)
+    @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(DiscoveryModule.types.LocalKnownSources)
     protected knownSources: KnownSourcesService,
-    @inject(WikisTypes.WikisLocal)
+    @inject(WikiTypes.WikisLocal)
     protected wikisLocal: WikisLocal,
-    @multiInject(WikisTypes.WikisRemote)
+    @multiInject(WikiTypes.WikisRemote)
     protected wikisRemotes: WikisRemote[]
   ) {
     this.service = new CachedMultiSourceService<WikisLocal, WikisRemote>(
@@ -60,17 +57,17 @@ export class Wikis {
    * @param node the text node to clone
    * @param providerName the provider to which to clone the text node to, needed if there is more than one provider
    */
-  public async createWikiNode(node: WikiNode, upl?: string): Promise<Hashed<WikiNode>> {
+  public async createWiki(node: Wiki, upl?: string): Promise<Hashed<Wiki>> {
     const creator = async (wikis: WikisProvider) => {
-      const hash = await wikis.createWikiNode(node);
+      const hash = await wikis.createWiki(node);
       return {
         id: hash,
         object: node
       };
     };
 
-    const cloner = async (wikis: WikisProvider, hashedNode: Hashed<WikiNode>) => {
-      await wikis.createWikiNode(hashedNode.object, hashedNode.id);
+    const cloner = async (wikis: WikisProvider, hashedNode: Hashed<Wiki>) => {
+      await wikis.createWiki(hashedNode.object, hashedNode.id);
       return hashedNode;
     };
 

@@ -1,16 +1,17 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { DiscoveryTypes, CortexTypes, PatternsModule, discoveryModule, CortexModule } from '@uprtcl/cortex';
+import { CortexModule } from '@uprtcl/cortex';
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 
 import { MockSource } from '../mocks/mock.source';
-import { GraphQlTypes, ApolloClientModule } from '../../src/uprtcl-common';
+import { ApolloClientModule } from '../../src/uprtcl-common';
+import { DiscoveryModule } from '@uprtcl/multiplatform';
 
 const object1 = {
   test: 'test'
 };
 
-describe('basic GraphQl getEntity', () => {
+describe('basic GraphQl entity', () => {
   let orchestrator: MicroOrchestrator;
   let source: MockSource;
 
@@ -21,11 +22,11 @@ describe('basic GraphQl getEntity', () => {
     orchestrator = new MicroOrchestrator();
     orchestrator.container.bind(DiscoveryTypes.Source).toConstantValue(source);
 
-    await orchestrator.loadModules({
-      [CortexTypes.Module]: CortexModule,
-      [DiscoveryTypes.Module]: discoveryModule(),
-      [GraphQlTypes.Module]: ApolloClientModule
-    });
+    await orchestrator.loadModules([
+      new CortexModule(),
+      new DiscoveryModule(),
+      new ApolloClientModule()
+    ]);
   });
 
   it('graphql loads and entity given its id', async () => {
@@ -34,7 +35,7 @@ describe('basic GraphQl getEntity', () => {
     const result = await client.query({
       query: gql`
         {
-          getEntity(id: "hash1") {
+          entity(id: "hash1") {
             id
             raw
           }

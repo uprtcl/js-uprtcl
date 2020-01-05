@@ -1,34 +1,30 @@
-import { injectable, interfaces, inject } from 'inversify';
+import { interfaces } from 'inversify';
 
+import { ElementsModule, MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
+import { PatternsModule } from '@uprtcl/cortex';
+import { SourcesModule } from '@uprtcl/multiplatform';
 import {
-  elementsModule,
-  MicroModule,
-  Constructor,
-  ModuleProvider,
-  MicroOrchestratorTypes
-} from '@uprtcl/micro-orchestrator';
-import { CortexTypes, patternsModule, sourcesModule } from '@uprtcl/cortex';
-import {
-  graphQlSchemaModule,
+  GraphQlSchemaModule,
   DefaultSecuredPattern,
   DefaultSignedPattern,
   CidHashedPattern,
-  i18nModule,
-  AccessControlTypes
+  CorePatterns
 } from '@uprtcl/common';
+import { AccessControlModule } from '@uprtcl/access-control';
 
 import { PerspectiveLinks } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
-import { CommitHistory } from './lenses/evee-commit-history';
-import { EveesTypes, EveesLocal } from './types';
+import { CommitHistory } from './elements/evees-commit-history';
+import { EveesLocal, EveesTypes } from './types';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
-import { eveesTypeDefs, eveesResolvers } from './graphql.schema';
+import { eveesTypeDefs, eveesResolvers } from './graphql/schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
+import { PerspectivesList } from './elements/evees-perspectives-list';
 
 import en from '../i18n/en.json';
-import { PerspectivesList } from './lenses/perspectives-list';
+import { EveesPerspective } from './elements/evees-perspective';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -38,7 +34,7 @@ import { PerspectivesList } from './lenses/perspectives-list';
  * ```ts
  * import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
  * import { IpfsConnection, HolochainConnection, EthereumConnection } from '@uprtcl/connections';
- * import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/evees';
+ * import { eveesModule, EveesEthereum, EveesHolochain, EveesModule.types } from '@uprtcl/evees';
  *
  * const ipfsConnection = new IpfsConnection({
  *   host: 'ipfs.infura.io',
@@ -57,12 +53,12 @@ import { PerspectivesList } from './lenses/perspectives-list';
  *
  * const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
  *
- * const evees = eveesModule([eveesHolochain, eveesEth]);
+ * const evees = new EveesModule([eveesHolochain, eveesEth]);
  *
  * const orchestrator = new MicroOrchestrator();
  *
  * await orchestrator.loadModules({
- *   [EveesTypes.Module]: evees
+ *   [EveesModule.types.Module]: evees
  * });
  * ```
  *
@@ -70,47 +66,46 @@ import { PerspectivesList } from './lenses/perspectives-list';
  *
  * @param eveesProviders
  * @param localEvees
- * @returns a configured _Prtcl Evees module ready to be used with `micro-orchestrator`
  */
-export function eveesModule(
-  eveesProviders: Array<EveesRemote>,
-  localEvees: new (...args: any[]) => EveesLocal = EveesDexie
-): Constructor<MicroModule> {
-  @injectable()
-  class EveesModule implements MicroModule {
-    constructor(
-      @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider
-    ) {}
-    async onLoad(context: interfaces.Context, bind: interfaces.Bind) {
-      await this.moduleProvider(AccessControlTypes.Module);
+export class EveesModule extends MicroModule {
+  static id = Symbol('evees-module');
 
-      bind(EveesTypes.EveesLocal).to(localEvees);
-      bind(EveesTypes.Evees).to(Evees);
-      bind(EveesTypes.MergeStrategy).to(RecursiveContextMergeStrategy);
-    }
+  dependencies = [AccessControlModule.id];
 
-    submodules = [
-      graphQlSchemaModule(eveesTypeDefs, eveesResolvers),
-      elementsModule({ 
-        'evee-commit-history': CommitHistory,
-        'evee-perspectives-list': PerspectivesList 
-      }),
-      i18nModule('evees', { en: en }),
-      patternsModule({
-        [CortexTypes.Core.Hashed]: [CidHashedPattern],
-        [CortexTypes.Core.Signed]: [DefaultSignedPattern],
-        [CortexTypes.Core.Secured]: [DefaultSecuredPattern],
-        [EveesTypes.PerspectivePattern]: [PerspectiveLinks],
-        [EveesTypes.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
-      }),
-      sourcesModule(
-        eveesProviders.map(evees => ({
-          symbol: EveesTypes.EveesRemote,
-          source: evees
-        }))
-      )
-    ];
+  static types = EveesTypes;
+
+  constructor(
+    protected eveesProviders: Array<EveesRemote>,
+    protected localEvees: new (...args: any[]) => EveesLocal = EveesDexie
+  ) {
+    super();
   }
 
-  return EveesModule;
+  async onLoad(container: interfaces.Container) {
+    container.bind(EveesModule.types.EveesLocal).to(this.localEvees);
+    container.bind(EveesModule.types.Evees).to(Evees);
+    container.bind(EveesModule.types.MergeStrategy).to(RecursiveContextMergeStrategy);
+  }
+
+  submodules = [
+    new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
+    new ElementsModule({
+      'evees-commit-history': CommitHistory,
+      'evees-perspectives-list': PerspectivesList
+    }),
+    new i18nextModule('evees', { en: en }),
+    new PatternsModule({
+      [CorePatterns.Hashed]: [CidHashedPattern],
+      [CorePatterns.Signed]: [DefaultSignedPattern],
+      [CorePatterns.Secured]: [DefaultSecuredPattern],
+      [EveesModule.types.PerspectivePattern]: [PerspectiveLinks],
+      [EveesModule.types.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
+    }),
+    new SourcesModule(
+      this.eveesProviders.map(evees => ({
+        symbol: EveesModule.types.EveesRemote,
+        source: evees
+      }))
+    )
+  ];
 }

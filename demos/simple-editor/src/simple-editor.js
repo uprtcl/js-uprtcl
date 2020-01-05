@@ -1,8 +1,7 @@
 import { LitElement, html } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { GraphQlTypes } from '@uprtcl/common';
-import { EveesTypes } from '@uprtcl/evees';
-import { DocumentsTypes } from '@uprtcl/documents';
+import { DocumentsModule } from '@uprtcl/documents';
+import { EveesModule } from '@uprtcl/evees';
 
 export class SimpleEditor extends moduleConnect(LitElement) {
   static get properties() {
@@ -13,8 +12,10 @@ export class SimpleEditor extends moduleConnect(LitElement) {
 
   constructor() {
     super();
-    this.perspectivePattern = this.requestAll(EveesTypes.PerspectivePattern).find(p => p.create);
-    this.textNodePattern = this.requestAll(DocumentsTypes.TextNodeEntity).find(p => p.create);
+    this.perspectivePattern = this.requestAll(EveesModule.types.PerspectivePattern).find(
+      p => p.create
+    );
+    this.textNodePattern = this.requestAll(DocumentsModule.types.TextNodeEntity).find(p => p.create);
   }
 
   subscribeToHistory(history, callback) {
@@ -30,14 +31,12 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    const client = this.request(GraphQlTypes.Client);
-
-    const docProvider = this.requestAll(DocumentsTypes.DocumentsRemote).find(provider => {
+    const docProvider = this.requestAll(DocumentsModule.types.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.uprtclProviderLocator);
     });
 
-    const eveesProvider = this.requestAll(EveesTypes.EveesRemote).find(provider => {
+    const eveesProvider = this.requestAll(EveesModule.types.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.uprtclProviderLocator);
     });
@@ -52,10 +51,7 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const hashed = await this.textNodePattern.create()(
-        {},
-        docProvider.uprtclProviderLocator
-      );
+      const hashed = await this.textNodePattern.create()({}, docProvider.uprtclProviderLocator);
 
       const perspective = await this.perspectivePattern.create()(
         { dataId: hashed.id },
@@ -69,7 +65,7 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     return html`
       ${this.rootHash
         ? html`
-            <cortex-entity .hash=${this.rootHash} lens="version-control"}}></cortex-entity>
+            <cortex-entity .hash=${this.rootHash} lens-type="content"></cortex-entity>
           `
         : html`
             Loading...

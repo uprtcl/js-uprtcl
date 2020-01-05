@@ -1,4 +1,4 @@
-import { Hashed, CacheService } from '@uprtcl/cortex';
+import { CacheService } from '@uprtcl/multiplatform';
 
 import { EveesProvider } from './services/evees.provider';
 
@@ -37,8 +37,9 @@ export interface Proposal {
   requests: Array<UpdateRequest>;
 }
 
+export type EveesLocal = CacheService & EveesProvider;
+
 export const EveesTypes = {
-  Module: Symbol('evees-module'),
   PerspectivePattern: Symbol('perspective-pattern'),
   CommitPattern: Symbol('commit-pattern'),
   EveesLocal: Symbol('evees-local'),
@@ -46,5 +47,3 @@ export const EveesTypes = {
   MergeStrategy: Symbol('merge-strategry'),
   Evees: Symbol('evees')
 };
-
-export type EveesLocal = CacheService & EveesProvider;

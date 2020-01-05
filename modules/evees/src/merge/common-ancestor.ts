@@ -1,5 +1,5 @@
 import { Secured } from '@uprtcl/common';
-import { Source } from '@uprtcl/cortex';
+import { Source } from '@uprtcl/multiplatform';
 
 import { Commit } from '../types';
 

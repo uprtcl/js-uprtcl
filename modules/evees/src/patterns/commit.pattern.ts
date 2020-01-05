@@ -1,32 +1,19 @@
 import { injectable, inject } from 'inversify';
 import { html, TemplateResult } from 'lit-element';
 
-import {
-  Pattern,
-  HasRedirect,
-  IsSecure,
-  HasLinks,
-  Creatable,
-  Signed,
-  PatternRecognizer,
-  CortexTypes,
-  DiscoveryTypes,
-  DiscoveryService,
-  Entity
-} from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { Pattern, HasRedirect, IsSecure, HasLinks, Creatable, Entity } from '@uprtcl/cortex';
+import { Secured, CorePatterns } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
 import { Commit, EveesTypes } from '../types';
 import { Evees } from '../services/evees';
-import { i18nTypes } from '@uprtcl/micro-orchestrator';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
 @injectable()
 export class CommitEntity implements Entity {
   constructor(
-    @inject(CortexTypes.Core.Secured)
+    @inject(CorePatterns.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>
   ) {}
 
@@ -60,22 +47,20 @@ export class CommitLinked extends CommitEntity implements HasLinks, HasRedirect 
 
 @injectable()
 export class CommitLens extends CommitEntity implements HasLenses {
-
   constructor(
-    @inject(CortexTypes.Core.Secured)
-    protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
-    @inject(i18nTypes.Translate) protected t: (key: string) => string
+    @inject(CorePatterns.Secured)
+    protected securedPattern: Pattern & IsSecure<Secured<Commit>>
   ) {
     super(securedPattern);
   }
-  
+
   lenses: (commit: Secured<Commit>) => Lens[] = (commit: Secured<Commit>): Lens[] => {
     return [
       {
-        name: this.t('evees:commit-history'),
+        name: 'evees:commit-history',
         type: 'version-control',
         render: (lensContent: TemplateResult) => html`
-          <evee-commit-history .data=${commit}>${lensContent}</evee-commit-history>
+          <evees-commit-history .headId=${commit.id}>${lensContent}</evees-commit-history>
         `
       }
     ];
@@ -85,12 +70,9 @@ export class CommitLens extends CommitEntity implements HasLenses {
 @injectable()
 export class CommitPattern extends CommitEntity
   implements
-    Creatable<
-      { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
-      Signed<Commit>
-    > {
+    Creatable<{ dataId: string; message: string; parentsIds: string[]; timestamp?: number }> {
   constructor(
-    @inject(CortexTypes.Core.Secured)
+    @inject(CorePatterns.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
     @inject(EveesTypes.Evees) protected evees: Evees
   ) {
@@ -118,6 +100,7 @@ export class CommitPattern extends CommitEntity
     providerName?: string
   ) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
-    return this.evees.createCommit(args, providerName);
+    const { id } = await this.evees.createCommit(args, providerName);
+    return id;
   };
 }

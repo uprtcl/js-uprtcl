@@ -1,31 +1,14 @@
-import { MicroModule } from './modules/micro.module';
-import { ModuleProvider } from './orchestrator/module-provider';
-
 export type Constructor<T, A extends Array<any> = any[]> = new (...args: A) => T;
 
 export type Dictionary<T> = { [key: string]: T };
 
 export const MicroOrchestratorTypes = {
-  Logger: Symbol('logger'),
-  ModuleProvider: Symbol('module-provider')
-};
-
-export const i18nTypes = {
-  Translate: Symbol('i18n-function'),
-  Service: Symbol('i18n-service'),
-  Module: Symbol('i18n-module')
+  Logger: Symbol('logger')
 };
 
 export const ReduxTypes = {
-  Store: Symbol('redux-store'),
-  Saga: Symbol('redux-saga-middleware'),
-  Context: 'redux-saga-middleware-inversify-context',
-  Module: Symbol('redux-module')
+  Context: 'redux-saga-middleware-inversify-context'
 };
-
-export interface ModulesToLoad {
-  [id: string]: Constructor<MicroModule, [ModuleProvider]>;
-}
 
 /**
  *  By using this `CustomElement` interface instead of `HTMLElement`, we avoid

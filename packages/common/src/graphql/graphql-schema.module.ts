@@ -1,51 +1,24 @@
-import { interfaces, injectable, inject } from 'inversify';
+import { interfaces } from 'inversify';
 import { ITypeDefinitions, IResolvers } from 'graphql-tools';
 
-import {
-  Constructor,
-  MicroOrchestratorTypes,
-  ModuleProvider,
-  MicroModule
-} from '@uprtcl/micro-orchestrator';
+import { MicroModule } from '@uprtcl/micro-orchestrator';
 
-import { GraphQlTypes } from '../types';
-import { GraphQLSchema } from 'graphql';
+import { ApolloClientModule } from './apollo-client.module';
 
-@injectable()
-export abstract class GraphQlSchemaModule implements MicroModule {
-  constructor(
-    @inject(MicroOrchestratorTypes.ModuleProvider) protected moduleProvider: ModuleProvider
-  ) {}
+export class GraphQlSchemaModule extends MicroModule {
+  dependencies = [ApolloClientModule.id];
 
-  abstract get typeDefs(): ITypeDefinitions;
-  abstract get resolvers(): IResolvers;
+  static types = {
+    TypeDefs: Symbol('graphql-type-defs'),
+    Resolvers: Symbol('graphql-resolvers')
+  };
 
-  async onLoad(
-    context: interfaces.Context,
-    bind: interfaces.Bind,
-    unbind: interfaces.Unbind,
-    isBound: interfaces.IsBound,
-    rebind: interfaces.Rebind
-  ) {
-    await this.moduleProvider(GraphQlTypes.Module);
-
-    bind<ITypeDefinitions>(GraphQlTypes.TypeDefs).toConstantValue(this.typeDefs);
-    bind<IResolvers>(GraphQlTypes.Resolvers).toConstantValue(this.resolvers);
+  constructor(protected typeDefs: ITypeDefinitions, protected resolvers: IResolvers) {
+    super();
   }
-}
 
-export function graphQlSchemaModule(
-  typeDefs: ITypeDefinitions,
-  resolvers: IResolvers
-): Constructor<MicroModule> {
-  @injectable()
-  class SchemaModule extends GraphQlSchemaModule {
-    get typeDefs(): ITypeDefinitions {
-      return typeDefs;
-    }
-    get resolvers() {
-      return resolvers;
-    }
+  async onLoad(container: interfaces.Container) {
+    container.bind<ITypeDefinitions>(GraphQlSchemaModule.types.TypeDefs).toConstantValue(this.typeDefs);
+    container.bind<IResolvers>(GraphQlSchemaModule.types.Resolvers).toConstantValue(this.resolvers);
   }
-  return SchemaModule;
 }

@@ -1,4 +1,4 @@
-import { SourceProvider } from '@uprtcl/cortex';
+import { SourceProvider } from '@uprtcl/multiplatform';
 
 import { DocumentsProvider } from './documents.provider';
 

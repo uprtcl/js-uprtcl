@@ -1,4 +1,4 @@
-import { ServiceProvider } from '@uprtcl/cortex';
+import { ServiceProvider } from '@uprtcl/multiplatform';
 
 import { HttpConnection, PostResult } from './http.connection';
 

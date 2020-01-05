@@ -1,19 +1,17 @@
-import { CacheService } from '@uprtcl/cortex';
+import { CacheService } from '@uprtcl/multiplatform';
 
 import { WikisProvider } from './services/wikis.provider';
 
-export interface WikiNode {
+export interface Wiki {
   title: string;
   pages: Array<string>;
-  type: 'Wiki';
 }
 
-export const WikisTypes = {
-  Module: Symbol('wiki-module'),
+export type WikisLocal = CacheService & WikisProvider;
+
+export const WikiTypes = {
   WikiEntity: Symbol('wiki-entity'),
   WikisLocal: Symbol('wikis-local'),
   WikisRemote: Symbol('wikis-remote'),
-  Wikis: Symbol('wikis'),
+  Wikis: Symbol('wikis')
 };
-
-export type WikisLocal = CacheService & WikisProvider;

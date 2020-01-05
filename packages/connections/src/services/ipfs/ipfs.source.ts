@@ -1,4 +1,5 @@
-import { Hashed, SourceProvider } from '@uprtcl/cortex';
+import { Hashed } from '@uprtcl/cortex';
+import { SourceProvider } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { CidConfig, defaultCidConfig } from './cid.config';

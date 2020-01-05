@@ -1,5 +1,4 @@
-import { Node } from '@uprtcl/lenses';
-import { CacheService } from '@uprtcl/cortex';
+import { CacheService } from '@uprtcl/multiplatform';
 
 import { DocumentsProvider } from './services/documents.provider';
 
@@ -7,19 +6,18 @@ export enum TextType {
   Title = 'Title',
   Paragraph = 'Paragraph'
 }
-export interface TypedText {
+
+export interface TextNode {
   text: string;
   type: TextType;
+  links: string[];
 }
 
-export type TextNode = TypedText & Node;
+export type DocumentsLocal = CacheService & DocumentsProvider;
 
 export const DocumentsTypes = {
-  Module: Symbol('documents-module'),
   TextNodeEntity: Symbol('text-node-entity'),
   DocumentsLocal: Symbol('documents-local'),
   DocumentsRemote: Symbol('documents-remote'),
   Documents: Symbol('documents')
 };
-
-export type DocumentsLocal = CacheService & DocumentsProvider;

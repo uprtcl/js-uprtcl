@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/connections",
-  "version": "0.0.1-alpha6",
+  "version": "0.0.2-alpha1",
   "description": "Basic connections services to help connect to different backend platforms",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -12,15 +12,16 @@
   },
   "dependencies": {
     "@holochain/hc-web-client": "^0.5.0",
-    "@uprtcl/cortex": "^0.0.1-alpha6",
-    "@uprtcl/micro-orchestrator": "^0.0.1-alpha6",
-    "apollo-boost": "^0.4.4",
+    "@uprtcl/cortex": "^0.0.2-alpha1",
+    "@uprtcl/micro-orchestrator": "^0.0.2-alpha1",
+    "@uprtcl/multiplatform": "^0.0.2-alpha1",
+    "apollo-boost": "^0.4.7",
     "concat-stream": "^2.0.0",
     "graphql": "^14.5.8",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.6",
     "ipfs-http-client": "^39.0.0",
-    "lodash": "^4.17.15",
+    "lodash-es": "^4.17.15",
     "reflect-metadata": "^0.1.13",
     "web3": "^1.2.1",
     "web3-eth-contract": "^1.2.1",
@@ -45,7 +46,8 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.18.0",
-    "typescript": "^3.7.2"
+    "temp-dir": "^2.0.0",
+    "typescript": "^3.7.4"
   },
   "repository": {
     "type": "git",
