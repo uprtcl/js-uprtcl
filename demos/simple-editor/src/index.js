@@ -34,10 +34,10 @@ import { SimpleWiki } from './simple-wiki';
 
   const wikis = new WikisModule([ipfsWikis]);
 
-  const lenses = new LensesModule([
-    { name: 'lens-selector', plugin: new LensSelectorPlugin() },
-    { name: 'actions', plugin: new ActionsPlugin() }
-  ]);
+  const lenses = new LensesModule({
+    'lens-selector': new LensSelectorPlugin(),
+    actions: new ActionsPlugin()
+  });
 
   const modules = [
     new i18nextBaseModule(),
