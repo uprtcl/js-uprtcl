@@ -6,7 +6,6 @@ import { Source } from './sources/source';
 import { CachedSourceService } from './cached-remotes/cached-source.service';
 import { CacheService } from './cache/cache.service';
 import { MultiSourceService } from './multi/multi-source.service';
-import { DiscoveryModule } from '../discovery.module';
 import { MultiplatformTypes } from '../types';
 
 @injectable()
