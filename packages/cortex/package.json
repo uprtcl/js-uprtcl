@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/cortex",
-  "version": "0.0.2-alpha2",
+  "version": "0.0.2-alpha3",
   "description": "A new way to build web-applications, by recognizing the patterns that generic objects implement",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,7 +11,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/micro-orchestrator": "^0.0.2-alpha2",
+    "@uprtcl/micro-orchestrator": "^0.0.2-alpha3",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
     "reflect-metadata": "^0.1.13"
