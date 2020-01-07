@@ -1,13 +1,13 @@
+import { injectable } from 'inversify';
+
 import { KnownSourcesService } from '@uprtcl/multiplatform';
 
-import { HolochainConnection } from './holochain.connection';
 import { HolochainProvider } from './holochain.provider';
-import { proxyMyAddress } from './holochain.proxy';
 
-export class KnownSourcesHolochain extends HolochainProvider implements KnownSourcesService {
-  constructor(instance: string, connection: HolochainConnection) {
-    super({ instance, zome: 'discovery', getMyAddress: proxyMyAddress(instance) }, connection);
-  }
+@injectable()
+export abstract class KnownSourcesHolochain extends HolochainProvider
+  implements KnownSourcesService {
+  zome: string = 'discovery';
 
   async getUpl(): Promise<string> {
     const response = await this.call('get_uprtcl_provider_locator', {});

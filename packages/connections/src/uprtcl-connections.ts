@@ -4,7 +4,6 @@ import 'reflect-metadata';
 export { Connection, ConnectionOptions } from './connections/connection';
 
 // Holochain
-export { HolochainSource } from './services/holochain/holochain.source';
 export {
   HolochainConnection,
   HolochainConnectionOptions

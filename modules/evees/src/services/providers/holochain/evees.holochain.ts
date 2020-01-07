@@ -1,15 +1,15 @@
-import { EntryResult, HolochainConnection, HolochainSource } from '@uprtcl/connections';
-import { Signed } from '@uprtcl/cortex';
+import { injectable } from 'inversify';
+
+import { EntryResult, HolochainProvider } from '@uprtcl/connections';
+import { Signed, Hashed } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
 
 import { Perspective, Commit, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
-import { ProposalsMock } from '../../proposals.mock';
 
-export class EveesHolochain extends HolochainSource implements EveesRemote {
-  constructor(instance: string, hcConnection: HolochainConnection) {
-    super({ zome: 'evees', instance }, hcConnection);
-  }
+@injectable()
+export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {
+  zome: string = 'evees';
 
   get accessControl() {
     return undefined;
@@ -17,6 +17,12 @@ export class EveesHolochain extends HolochainSource implements EveesRemote {
 
   get proposals() {
     return undefined;
+  }
+
+  public async get(id: string): Promise<Hashed<any> | undefined> {
+    return this.call('get_entry', {
+      address: id
+    });
   }
 
   /**

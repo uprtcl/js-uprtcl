@@ -1,7 +1,11 @@
+import { injectable, inject } from 'inversify';
+
 import { Hashed } from '@uprtcl/cortex';
 import { ServiceProvider } from '@uprtcl/multiplatform';
+import { Constructor } from '@uprtcl/micro-orchestrator';
 
 import { HolochainConnection } from './holochain.connection';
+import { HolochainConnectionTypes } from './types';
 
 export interface HolochainProviderOptions {
   instance: string;
@@ -19,35 +23,27 @@ export type EntryResult<T extends object = any> = {
   type: string;
 };
 
+@injectable()
 export abstract class HolochainProvider implements ServiceProvider {
   uprtclProviderLocator!: string;
 
-  userAddress!: string;
+  abstract instance: string;
+  abstract zome: string;
 
   constructor(
-    protected hcOptions: HolochainProviderOptions,
+    @inject(HolochainConnectionTypes.HolochainConnection)
     protected connection: HolochainConnection
   ) {}
-
-  public getMyAddress(): Promise<string> {
-    const { instance, zome, funcName } = this.hcOptions.getMyAddress;
-    return this.connection.call(instance, zome, funcName, {});
-  }
-
-  get userId() {
-    return this.userAddress;
-  }
 
   /**
    * @override
    */
   public async ready() {
     await this.connection.ready();
-    this.userAddress = await this.getMyAddress();
   }
 
   public async call(funcName: string, params: any): Promise<any> {
-    return this.connection.call(this.hcOptions.instance, this.hcOptions.zome, funcName, params);
+    return this.connection.call(this.instance, this.zome, funcName, params);
   }
 
   public parseResponse(response: { Ok: any } | any): any {
@@ -76,7 +72,17 @@ export abstract class HolochainProvider implements ServiceProvider {
 
   public parseEntriesResults<T extends object>(entryArray: Array<any>): Array<EntryResult<T>> {
     return entryArray
-      .map(entry => this.parseEntryResult<T>(this.parseResponse(entryArray)))
+      .map(entry => this.parseEntryResult<T>(this.parseResponse(entry)))
       .filter(entry => entry != undefined) as Array<EntryResult<T>>;
   }
+}
+
+export function holochainProvider(instance: string, zome: string): Constructor<HolochainProvider> {
+  @injectable()
+  class ConcreteProvider extends HolochainProvider {
+    instance: string = instance;
+    zome: string = zome;
+  }
+
+  return ConcreteProvider;
 }

@@ -14,8 +14,6 @@ export const baseTypeDefs = gql`
 
   interface Entity {
     id: ID!
-
-    _meta: Metadata!
   }
 
   type Metadata {
