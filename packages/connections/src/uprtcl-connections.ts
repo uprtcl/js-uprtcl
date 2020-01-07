@@ -8,10 +8,11 @@ export {
   HolochainConnection,
   HolochainConnectionOptions
 } from './services/holochain/holochain.connection';
+export { HolochainConnectionModule } from './services/holochain/holochain-connection.module';
 export {
   EntryResult,
-  HolochainProviderOptions,
-  HolochainProvider
+  HolochainProvider,
+  createHolochainProvider
 } from './services/holochain/holochain.provider';
 export { HolochainProxy, proxyMyAddress } from './services/holochain/holochain.proxy';
 export { KnownSourcesHolochain } from './services/holochain/known-sources.holochain';

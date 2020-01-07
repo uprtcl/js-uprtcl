@@ -7,16 +7,6 @@ import { Constructor } from '@uprtcl/micro-orchestrator';
 import { HolochainConnection } from './holochain.connection';
 import { HolochainConnectionTypes } from './types';
 
-export interface HolochainProviderOptions {
-  instance: string;
-  zome: string;
-  getMyAddress: {
-    instance: string;
-    zome: string;
-    funcName: string;
-  };
-}
-
 // Auxiliar type for Holochain's get_entry call
 export type EntryResult<T extends object = any> = {
   entry: Hashed<T>;
@@ -77,7 +67,7 @@ export abstract class HolochainProvider implements ServiceProvider {
   }
 }
 
-export function holochainProvider(instance: string, zome: string): Constructor<HolochainProvider> {
+export function createHolochainProvider(instance: string, zome: string): Constructor<HolochainProvider> {
   @injectable()
   class ConcreteProvider extends HolochainProvider {
     instance: string = instance;
