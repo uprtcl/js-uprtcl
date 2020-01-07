@@ -1,7 +1,7 @@
 {
   "name": "simple-editor",
   "private": true,
-  "version": "0.0.2-alpha1",
+  "version": "0.0.2-alpha2",
   "contributors": [
     {
       "name": "Guillem Cordoba",
@@ -30,15 +30,15 @@
   "dependencies": {
     "@polymer/app-layout": "^3.0.0",
     "@polymer/polymer": "^3.1.0",
-    "@uprtcl/access-control": "^0.0.2-alpha1",
-    "@uprtcl/common": "^0.0.2-alpha1",
-    "@uprtcl/connections": "^0.0.2-alpha1",
-    "@uprtcl/cortex": "^0.0.2-alpha1",
-    "@uprtcl/documents": "^0.0.2-alpha1",
-    "@uprtcl/evees": "^0.0.2-alpha1",
-    "@uprtcl/lenses": "^0.0.2-alpha1",
-    "@uprtcl/micro-orchestrator": "^0.0.2-alpha1",
-    "@uprtcl/wikis": "^0.0.2-alpha1",
+    "@uprtcl/access-control": "^0.0.2-alpha2",
+    "@uprtcl/common": "^0.0.2-alpha2",
+    "@uprtcl/connections": "^0.0.2-alpha2",
+    "@uprtcl/cortex": "^0.0.2-alpha2",
+    "@uprtcl/documents": "^0.0.2-alpha2",
+    "@uprtcl/evees": "^0.0.2-alpha2",
+    "@uprtcl/lenses": "^0.0.2-alpha2",
+    "@uprtcl/micro-orchestrator": "^0.0.2-alpha2",
+    "@uprtcl/wikis": "^0.0.2-alpha2",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "apollo-boost": "^0.4.7",
     "graphql": "^14.5.8",

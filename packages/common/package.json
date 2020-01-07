@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/common",
-  "version": "0.0.2-alpha1",
+  "version": "0.0.2-alpha2",
   "description": "Collection of common Cortex modules, developed as the starting point for many applications",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,10 +11,10 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/connections": "^0.0.2-alpha1",
-    "@uprtcl/cortex": "^0.0.2-alpha1",
-    "@uprtcl/micro-orchestrator": "^0.0.2-alpha1",
-    "@uprtcl/multiplatform": "^0.0.2-alpha1",
+    "@uprtcl/connections": "^0.0.2-alpha2",
+    "@uprtcl/cortex": "^0.0.2-alpha2",
+    "@uprtcl/micro-orchestrator": "^0.0.2-alpha2",
+    "@uprtcl/multiplatform": "^0.0.2-alpha2",
     "apollo-boost": "^0.4.7",
     "apollo-link-context": "^1.0.19",
     "apollo-link-schema": "^1.2.4",

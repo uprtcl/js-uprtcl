@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/multiplatform",
-  "version": "0.0.2-alpha1",
+  "version": "0.0.2-alpha2",
   "description": "Package to add multiplatform features to applications that deal with content-addressable objects",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,8 +11,8 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.0.2-alpha1",
-    "@uprtcl/micro-orchestrator": "^0.0.2-alpha1",
+    "@uprtcl/cortex": "^0.0.2-alpha2",
+    "@uprtcl/micro-orchestrator": "^0.0.2-alpha2",
     "dexie": "^2.0.4",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
