@@ -19,6 +19,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'wiki-id' })
   wikiId!: string;
 
+  @property({ type: String, attribute: 'current-page' })
+  pageId!: string;
+
   @property({ type: Object })
   wiki: Wiki | undefined = undefined;
 
@@ -92,9 +95,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         headId: wikiCommit.data.createCommit.id
       }
     });
+
+    console.log(this.selectedPageHash)
   }
 
   firstUpdated() {
+    if (this.pageId) {
+      this.selectedPageHash  = this.pageId;
+    }
     this.loadWiki();
   }
 
