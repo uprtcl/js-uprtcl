@@ -24,7 +24,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
       super.connectedCallback();
 
       try {
-        this.t = this.request(i18nextBaseModule.types.Translate);
+        this.t = this.request(i18nextBaseModule.bindings.Translate);
       } catch (e) {
         console.warn('No translate function present');
       }

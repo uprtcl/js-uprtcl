@@ -12,10 +12,10 @@ export class SimpleEditor extends moduleConnect(LitElement) {
 
   constructor() {
     super();
-    this.perspectivePattern = this.requestAll(EveesModule.types.PerspectivePattern).find(
+    this.perspectivePattern = this.requestAll(EveesModule.bindings.PerspectivePattern).find(
       p => p.create
     );
-    this.textNodePattern = this.requestAll(DocumentsModule.types.TextNodeEntity).find(p => p.create);
+    this.textNodePattern = this.requestAll(DocumentsModule.bindings.TextNodeEntity).find(p => p.create);
   }
 
   subscribeToHistory(history, callback) {
@@ -31,12 +31,12 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    const docProvider = this.requestAll(DocumentsModule.types.DocumentsRemote).find(provider => {
+    const docProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.uprtclProviderLocator);
     });
 
-    const eveesProvider = this.requestAll(EveesModule.types.EveesRemote).find(provider => {
+    const eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.uprtclProviderLocator);
     });

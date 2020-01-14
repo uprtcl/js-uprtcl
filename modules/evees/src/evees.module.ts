@@ -15,7 +15,8 @@ import { AccessControlModule } from '@uprtcl/access-control';
 import { PerspectiveLinks, PerspectiveLens } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
-import { EveesLocal, EveesTypes } from './types';
+import { EveesLocal } from './types';
+import { EveesBindings } from './bindings';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
@@ -60,7 +61,7 @@ import en from '../i18n/en.json';
  * const orchestrator = new MicroOrchestrator();
  *
  * await orchestrator.loadModules({
- *   [EveesModule.types.Module]: evees
+ *   [EveesModule.bindings.Module]: evees
  * });
  * ```
  *
@@ -74,7 +75,7 @@ export class EveesModule extends MicroModule {
 
   dependencies = [AccessControlModule.id];
 
-  static types = EveesTypes;
+  static bindings = EveesBindings;
 
   constructor(
     protected eveesProviders: Array<EveesRemote>,
@@ -85,9 +86,9 @@ export class EveesModule extends MicroModule {
   }
 
   async onLoad(container: interfaces.Container) {
-    container.bind(EveesModule.types.EveesLocal).to(this.localEvees);
-    container.bind(EveesModule.types.Evees).to(Evees);
-    container.bind(EveesModule.types.MergeStrategy).to(RecursiveContextMergeStrategy);
+    container.bind(EveesModule.bindings.EveesLocal).to(this.localEvees);
+    container.bind(EveesModule.bindings.Evees).to(Evees);
+    container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
   }
 
   submodules = [
@@ -103,12 +104,12 @@ export class EveesModule extends MicroModule {
       [CorePatterns.Hashed]: [CidHashedPattern],
       [CorePatterns.Signed]: [DefaultSignedPattern],
       [CorePatterns.Secured]: [DefaultSecuredPattern],
-      [EveesModule.types.PerspectivePattern]: [PerspectiveLinks, PerspectiveLens],
-      [EveesModule.types.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
+      [EveesModule.bindings.PerspectivePattern]: [PerspectiveLinks, PerspectiveLens],
+      [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
     }),
     new SourcesModule(
       this.eveesProviders.map(evees => ({
-        symbol: EveesModule.types.EveesRemote,
+        symbol: EveesModule.bindings.EveesRemote,
         source: evees
       }))
     )

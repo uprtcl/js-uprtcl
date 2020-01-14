@@ -19,4 +19,4 @@ export { baseTypeDefs, baseResolvers } from './graphql/base-schema';
 export { GqlDiscoveryModule } from './discovery/gql-discovery.module';
 export { GqlCortexModule } from './cortex/gql-cortex.module';
 
-export { CorePatterns } from './types';
+export { CorePatterns } from './bindings';

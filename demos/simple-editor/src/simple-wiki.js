@@ -33,7 +33,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    this.wikisProvider = this.requestAll(WikisModule.types.WikisRemote).find(provider => {
+    this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => {
       const regexp = new RegExp('^http');
       return regexp.test(provider.uprtclProviderLocator);
     });
@@ -43,7 +43,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       return regexp.test(provider.uprtclProviderLocator);
     });
 
-    this.eveesProvider = this.requestAll(EveesModule.types.EveesRemote).find(provider => {
+    this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
       return regexp.test(provider.uprtclProviderLocator);
     });
@@ -61,8 +61,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = window.location.href.split('id=')[1];
 
     } else {
-
-      const client = this.request(ApolloClientModule.types.Client);
+      const client = this.request(ApolloClientModule.bindings.Client);
       const result = await client.mutate({
         mutation: CREATE_WIKI,
         variables: {

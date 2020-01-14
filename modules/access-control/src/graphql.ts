@@ -20,7 +20,7 @@ export const accessControlResolvers = {
   Patterns: {
     async accessControl(parent, args, context) {
       const entity: Hashed<any> = parent.__entity;
-      const recognizer: PatternRecognizer = context.container.get(CortexModule.types.Recognizer);
+      const recognizer: PatternRecognizer = context.container.get(CortexModule.bindings.Recognizer);
 
       const updatable: Updatable<any> | undefined = recognizer
         .recognize(entity)

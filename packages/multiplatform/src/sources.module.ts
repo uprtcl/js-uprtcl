@@ -5,7 +5,7 @@ import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { DiscoveryModule } from './discovery.module';
 import { SourceProvider, Source } from './services/sources/source';
 import { Ready } from './services/sources/service.provider';
-import { SourcesTypes } from './types';
+import { SourcesBindings } from './bindings';
 
 /**
  * This module registers the given sources and makes them available to be used by the `DiscoveryModule`
@@ -24,7 +24,7 @@ import { SourcesTypes } from './types';
 export class SourcesModule extends MicroModule {
   dependencies = [DiscoveryModule.id];
 
-  static types = SourcesTypes;
+  static bindings = SourcesBindings;
 
   constructor(protected sources: Array<{ symbol: symbol; source: SourceProvider }>) {
     super();
@@ -47,7 +47,7 @@ export class SourcesModule extends MicroModule {
     for (const symbolSource of this.sources) {
       const source = symbolSource.source;
 
-      container.bind<Source>(SourcesTypes.Source).toConstantValue(source);
+      container.bind<Source>(SourcesBindings.Source).toConstantValue(source);
       container.bind<Source>(symbolSource.symbol).toConstantValue(source);
       container.bind<Source>(source.uprtclProviderLocator).toConstantValue(source);
     }

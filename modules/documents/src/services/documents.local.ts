@@ -13,7 +13,7 @@ export class DocumentsLocal implements DocumentsProvider {
   constructor(
     @inject(CorePatterns.Hashed)
     protected hashedPattern: Hashable<any>,
-    @inject(DiscoveryModule.types.Cache)
+    @inject(DiscoveryModule.bindings.Cache)
     protected objectsCache: CacheService
   ) {}
 

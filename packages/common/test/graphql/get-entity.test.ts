@@ -20,7 +20,7 @@ describe('basic GraphQl entity', () => {
     source.addObject('hash1', object1);
 
     orchestrator = new MicroOrchestrator();
-    orchestrator.container.bind(DiscoveryTypes.Source).toConstantValue(source);
+    orchestrator.container.bind(DiscoveryBindings.Source).toConstantValue(source);
 
     await orchestrator.loadModules([
       new CortexModule(),
@@ -30,7 +30,7 @@ describe('basic GraphQl entity', () => {
   });
 
   it('graphql loads and entity given its id', async () => {
-    /*     const client: ApolloClient<any> = orchestrator.container.get(GraphQlTypes.Client);
+    /*     const client: ApolloClient<any> = orchestrator.container.get(GraphQlBindings.Client);
 
     const result = await client.query({
       query: gql`

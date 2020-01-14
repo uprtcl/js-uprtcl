@@ -1,6 +1,6 @@
 import { gql } from 'apollo-boost';
 import { Wikis } from '../services/wikis';
-import { WikiTypes } from 'src/types';
+import { WikiBindings } from '../bindings';
 
 export const wikiTypeDefs = gql`
   type Wiki implements Entity {
@@ -10,7 +10,6 @@ export const wikiTypeDefs = gql`
     pages: [Entity!]!
 
     _patterns: Patterns!
-    _meta: Metadata!
   }
 
   input WikiInput {
@@ -26,7 +25,7 @@ export const wikiTypeDefs = gql`
 export const resolvers = {
   Mutation: {
     async createWiki(_, { content, usl }, { container }) {
-      const wikis: Wikis = container.get(WikiTypes.Wikis);
+      const wikis: Wikis = container.get(WikiBindings.Wikis);
       const { id, object } = await wikis.createWiki(content, usl);
 
       return { id, ...object };

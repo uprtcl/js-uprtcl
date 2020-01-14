@@ -5,7 +5,8 @@ import { Pattern, HasRedirect, IsSecure, HasLinks, Creatable, Entity } from '@up
 import { Secured, CorePatterns } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
-import { Commit, EveesTypes } from '../types';
+import { Commit } from '../types';
+import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
@@ -74,7 +75,7 @@ export class CommitPattern extends CommitEntity
   constructor(
     @inject(CorePatterns.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
-    @inject(EveesTypes.Evees) protected evees: Evees
+    @inject(EveesBindings.Evees) protected evees: Evees
   ) {
     super(securedPattern);
   }

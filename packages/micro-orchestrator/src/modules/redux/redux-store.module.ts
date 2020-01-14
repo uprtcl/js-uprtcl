@@ -11,18 +11,15 @@ import createSagaMiddleware, { SagaMiddleware } from 'redux-saga';
 import { interfaces } from 'inversify';
 
 import { MicroModule } from '../../orchestrator/micro.module';
-import { ReduxTypes } from '../../types';
+import { ReduxBindings } from '../../bindings';
 
 export class ReduxStoreModule extends MicroModule {
   static id = Symbol('redux-store-module');
 
-  static types = {
-    Store: Symbol('redux-store'),
-    SagaMiddleware: Symbol('redux-saga-middleware')
-  };
+  static bindings = ReduxBindings;
 
   async onLoad(container: interfaces.Container): Promise<void> {
-    if (container.isBound(ReduxStoreModule.types.Store)) return;
+    if (container.isBound(ReduxStoreModule.bindings.Store)) return;
 
     const devCompose: <Ext0, Ext1, StateExt0, StateExt1>(
       f1: StoreEnhancer<Ext0, StateExt0>,
@@ -30,7 +27,7 @@ export class ReduxStoreModule extends MicroModule {
     ) => StoreEnhancer<Ext0 & Ext1, StateExt0 & StateExt1> =
       window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose;
     const sagaMiddleware = createSagaMiddleware({
-      context: { [ReduxTypes.Context]: container }
+      context: { [ReduxBindings.Context]: container }
     });
 
     const store = createStore(
@@ -42,9 +39,9 @@ export class ReduxStoreModule extends MicroModule {
       )
     ) as Store & LazyStore;
 
-    container.bind<Store & LazyStore>(ReduxStoreModule.types.Store).toConstantValue(store);
+    container.bind<Store & LazyStore>(ReduxStoreModule.bindings.Store).toConstantValue(store);
     container
-      .bind<SagaMiddleware>(ReduxStoreModule.types.SagaMiddleware)
+      .bind<SagaMiddleware>(ReduxStoreModule.bindings.SagaMiddleware)
       .toConstantValue(sagaMiddleware);
   }
 }

@@ -15,7 +15,7 @@ import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
 
 import en from '../i18n/en.json';
-import { WikiTypes } from './types';
+import { WikiBindings } from './bindings';
 
 /**
  * Configure a wikis module with the given providers
@@ -47,15 +47,15 @@ import { WikiTypes } from './types';
 export class WikisModule extends MicroModule {
   static id = Symbol('wikis-module');
 
-  static types = WikiTypes;
+  static bindings = WikiBindings;
 
   constructor(protected wikisRemotes: WikisRemote[], protected remoteLinks: Dictionary<string>) {
     super();
   }
 
   async onLoad(container: interfaces.Container) {
-    container.bind(WikisModule.types.WikisLocal).to(WikisLocal);
-    container.bind(WikisModule.types.Wikis).to(Wikis);
+    container.bind(WikisModule.bindings.WikisLocal).to(WikisLocal);
+    container.bind(WikisModule.bindings.Wikis).to(Wikis);
   }
 
   submodules = [
@@ -63,7 +63,7 @@ export class WikisModule extends MicroModule {
     new i18nextModule('wikis', { en: en }),
     new SourcesModule(
       this.wikisRemotes.map(remote => ({
-        symbol: WikisModule.types.WikisRemote,
+        symbol: WikisModule.bindings.WikisRemote,
         source: remote
       }))
     ),
@@ -73,7 +73,7 @@ export class WikisModule extends MicroModule {
       'wiki-home': WikiHome
     }),
     new PatternsModule({
-      [WikisModule.types.WikiEntity]: [WikiCommon, WikiLinks]
+      [WikisModule.bindings.WikiEntity]: [WikiCommon, WikiLinks]
     })
   ];
 }

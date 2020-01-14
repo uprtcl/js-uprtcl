@@ -9,7 +9,8 @@ import {
 } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { DocumentsLocal, TextNode, DocumentsTypes } from '../types';
+import { DocumentsLocal, TextNode } from '../types';
+import { DocumentsBindings } from '../bindings';
 import { DocumentsRemote } from './documents.remote';
 import { DocumentsProvider } from './documents.provider';
 
@@ -20,12 +21,12 @@ export class Documents {
   service: CachedMultiSourceService<DocumentsLocal, DocumentsRemote>;
 
   constructor(
-    @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(DiscoveryModule.types.LocalKnownSources)
+    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(DiscoveryModule.bindings.LocalKnownSources)
     protected knownSources: KnownSourcesService,
-    @inject(DocumentsTypes.DocumentsLocal)
+    @inject(DocumentsBindings.DocumentsLocal)
     protected documentsLocal: DocumentsLocal,
-    @multiInject(DocumentsTypes.DocumentsRemote)
+    @multiInject(DocumentsBindings.DocumentsRemote)
     protected documentsRemotes: DocumentsRemote[]
   ) {
     this.service = new CachedMultiSourceService<DocumentsLocal, DocumentsRemote>(

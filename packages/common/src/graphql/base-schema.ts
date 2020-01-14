@@ -16,7 +16,7 @@ export const baseTypeDefs = gql`
     id: ID!
   }
 
-  type Metadata {
+  type EntityContext {
     _: Boolean
   }
 `;
@@ -24,7 +24,7 @@ export const baseTypeDefs = gql`
 export const baseResolvers = {
   Query: {
     async entity(parent, { id }, { container }, info) {
-      const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
 
       const entity: Hashed<any> | undefined = await discovery.get(id);
 
@@ -34,13 +34,20 @@ export const baseResolvers = {
     }
   },
   Entity: {
-    id(parent) {
-      return parent.id ? parent.id : parent;
+    async id(parent, _, { container }) {
+      const id = parent.id ? parent.id : parent;
+      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
+
+      const entity: Hashed<any> | undefined = await discovery.get(id);
+
+      if (!entity) throw new Error('Entity was not found');
+
+      return { id, ...entity.object };
     }
     /*     async raw(parent, _, { container }) {
       const id = typeof parent === 'string' ? parent : parent.id;
 
-      const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
 
       const entity: Hashed<any> | undefined = await discovery.get(id);
 
@@ -54,7 +61,7 @@ export const baseResolvers = {
       ) {
         const id = typeof parent === 'string' ? parent : parent.id;
         
-        const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
+        const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
         
         const entity: Hashed<any> | undefined = await discovery.get(id);
         

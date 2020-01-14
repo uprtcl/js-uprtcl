@@ -17,11 +17,11 @@ export class ReduxModule<S, A extends Action> extends MicroModule {
   dependencies = [ReduxStoreModule.id];
 
   async onLoad(container: interfaces.Container): Promise<void> {
-    const store: Store & LazyStore = container.get(ReduxStoreModule.types.Store);
+    const store: Store & LazyStore = container.get(ReduxStoreModule.bindings.Store);
     store.addReducers(this.reducersMap as ReducersMapObject);
 
     if (this.sagas) {
-      const sagaMiddleware: SagaMiddleware = container.get(ReduxStoreModule.types.SagaMiddleware);
+      const sagaMiddleware: SagaMiddleware = container.get(ReduxStoreModule.bindings.SagaMiddleware);
       for (const saga of this.sagas) sagaMiddleware.run(saga);
     }
   }

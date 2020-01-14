@@ -5,7 +5,7 @@ export { MicroOrchestrator } from './orchestrator/micro-orchestrator';
 export { MicroModule } from './orchestrator/micro.module';
 export { ModuleProvider } from './orchestrator/module-provider';
 
-export { Constructor, CustomElement, Dictionary, ReduxTypes } from './types';
+export { Constructor, CustomElement, Dictionary } from './types';
 
 /** Redux */
 export { ReduxStoreModule } from './modules/redux/redux-store.module';

@@ -14,7 +14,7 @@ export class EveesDexie extends Dexie implements EveesLocal {
   constructor(
     @inject(CorePatterns.Secured)
     protected securedPattern: IsSecure<any>,
-    @inject(DiscoveryModule.types.Cache)
+    @inject(DiscoveryModule.bindings.Cache)
     protected objectsCache: CacheService
   ) {
     super('uprtcl');

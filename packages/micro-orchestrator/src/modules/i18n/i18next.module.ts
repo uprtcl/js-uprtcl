@@ -13,7 +13,7 @@ export class i18nextModule extends MicroModule {
   }
 
   async onLoad(container: interfaces.Container): Promise<void> {
-    const i18next: i18n = container.get(i18nextBaseModule.types.Service);
+    const i18next: i18n = container.get(i18nextBaseModule.bindings.Service);
 
     await i18next.loadNamespaces(this.namespace);
 

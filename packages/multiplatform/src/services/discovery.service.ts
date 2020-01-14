@@ -6,15 +6,15 @@ import { Source } from './sources/source';
 import { CachedSourceService } from './cached-remotes/cached-source.service';
 import { CacheService } from './cache/cache.service';
 import { MultiSourceService } from './multi/multi-source.service';
-import { MultiplatformTypes } from '../types';
+import { MultiplatformBindings } from '../bindings';
 
 @injectable()
 export class DiscoveryService implements Source {
   cachedRemote: CachedSourceService<CacheService, Source>;
 
   constructor(
-    @inject(MultiplatformTypes.Cache) protected cache: CacheService,
-    @inject(MultiplatformTypes.MultiSource) protected multiSource: MultiSourceService
+    @inject(MultiplatformBindings.Cache) protected cache: CacheService,
+    @inject(MultiplatformBindings.MultiSource) protected multiSource: MultiSourceService
   ) {
     this.cachedRemote = new CachedSourceService<CacheService, Source>(cache, multiSource);
   }

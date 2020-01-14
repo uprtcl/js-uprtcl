@@ -11,11 +11,11 @@ export class AccessControlModule extends MicroModule {
   submodules = [
     new GraphQlSchemaModule(accessControlTypes, accessControlResolvers),
     new PatternsModule({
-      [AccessControlModule.types.OwnerPattern]: [OwnerPattern]
+      [AccessControlModule.bindings.OwnerPattern]: [OwnerPattern]
     })
   ];
 
-  static types = {
+  static bindings = {
     OwnerPattern: Symbol('owner-pattern')
   };
 }

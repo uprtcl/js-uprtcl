@@ -6,7 +6,7 @@ import { Source, SourceProvider } from '../sources/source';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
 import { MultiService } from './multi.service';
 import { linksFromObject, raceToSuccess } from '../discovery.utils';
-import { MultiplatformTypes, SourcesTypes } from '../../types';
+import { MultiplatformBindings, SourcesBindings } from '../../bindings';
 
 @injectable()
 export class MultiSourceService<T extends SourceProvider = SourceProvider> extends MultiService<T>
@@ -17,10 +17,10 @@ export class MultiSourceService<T extends SourceProvider = SourceProvider> exten
    * @param serviceProviders array of all source service providers from which to get objects
    */
   constructor(
-    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(MultiplatformTypes.LocalKnownSources)
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(MultiplatformBindings.LocalKnownSources)
     public localKnownSources: KnownSourcesService,
-    @multiInject(SourcesTypes.Source)
+    @multiInject(SourcesBindings.Source)
     sourceProviders: Array<T>
   ) {
     super(recognizer, localKnownSources, sourceProviders);

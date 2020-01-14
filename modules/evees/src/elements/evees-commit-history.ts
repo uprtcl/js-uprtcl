@@ -27,7 +27,7 @@ export class CommitHistory extends moduleConnect(LitElement) {
   async loadCommitHistory() {
     this.commitHistory = undefined;
 
-    const apolloClient: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const apolloClient: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await apolloClient.query({
       query: gql`
       {

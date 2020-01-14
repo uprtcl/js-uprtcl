@@ -7,7 +7,6 @@ import '@material/mwc-ripple';
 
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD } from '@uprtcl/evees';
 import { TextType, CREATE_TEXT_NODE } from '@uprtcl/documents';
-import { Hashed } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/common';
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
@@ -39,6 +38,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!this.wiki) return;
     if (!this.origin) return;
 
+    this.pagesList = undefined;
+
     const pageContent = {
       text: 'New page',
       type: TextType.Title,
@@ -49,7 +50,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const dataUsl = remoteLinks[this.origin];
     const docsUsl = remoteLinks[dataUsl];
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
@@ -104,6 +105,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         headId: wikiCommit.data.createCommit.id
       }
     });
+
+    this.loadWiki();
   }
 
   firstUpdated() {
@@ -113,7 +116,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async loadWiki() {
     this.wiki = undefined;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.query({
       query: gql`
@@ -126,20 +129,18 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             }
             head {
               id
-            }
-          }
-          _patterns {
-            content {
-              id
-              ... on Wiki {
-                title
-                pages {
-                  id
-                  _patterns {
-                    content {
-                      id
-                      _patterns {
-                        title
+              data {
+                id
+                ... on Wiki {
+                  title
+                  pages {
+                    id
+                    _patterns {
+                      content {
+                        id
+                        _patterns {
+                          title
+                        }
                       }
                     }
                   }
@@ -151,17 +152,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }`
     });
 
-    
-    const { pages } = result.data.entity._patterns.content;
+    console.log(result);
+
+    const wiki = result.data.entity.head.data;
+
+    const pages = wiki.pages;
     this.pagesList = pages.map(page => ({
       id: page.id,
       title: page._patterns.content._patterns.title
       ? page._patterns.content._patterns.title
       : this.t('wikis:untitled')
     }));
-    
-    const content = result.data.entity._patterns.content;
-    this.wiki = { title: content.title, pages: content.pages.map(p => p.id) };
+
+    this.wiki = { title: wiki.title, pages: wiki.pages.map(p => p.id) };
     const head = result.data.entity.head;
     this.currentHead = head ? head.id : undefined;
     this.origin = result.data.entity.payload.origin;

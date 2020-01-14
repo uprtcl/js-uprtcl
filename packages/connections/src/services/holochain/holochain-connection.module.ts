@@ -3,12 +3,12 @@ import { interfaces } from 'inversify';
 import { MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { HolochainConnection } from './holochain.connection';
-import { HolochainConnectionTypes } from './types';
+import { HolochainConnectionBindings } from './bindings';
 
 export class HolochainConnectionModule extends MicroModule {
   static id = Symbol('holochain-connection-module');
 
-  static types = HolochainConnectionTypes;
+  static bindings = HolochainConnectionBindings;
 
   constructor(protected connection: HolochainConnection) {
     super();
@@ -16,7 +16,7 @@ export class HolochainConnectionModule extends MicroModule {
 
   async onLoad(container: interfaces.Container) {
     container
-      .bind(HolochainConnectionModule.types.HolochainConnection)
+      .bind(HolochainConnectionModule.bindings.HolochainConnection)
       .toConstantValue(this.connection);
   }
 }

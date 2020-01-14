@@ -19,7 +19,8 @@ import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/eve
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { EveesModule } from '@uprtcl/evees';
 
-import { TextNode, TextType, DocumentsTypes } from '../types';
+import { TextNode, TextType } from '../types';
+import { DocumentsBindings } from '../bindings';
 import { Documents } from '../services/documents';
 
 const propertyOrder = ['text', 'type', 'links'];
@@ -105,7 +106,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
 export class TextNodeActions extends TextNodeEntity implements HasActions {
   constructor(
     @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
   ) {
     super(hashedPattern);
   }
@@ -143,8 +144,8 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<TextNode>> {
   constructor(
     @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(DocumentsTypes.Documents) protected documents: Documents,
-    @multiInject(EveesModule.types.PerspectivePattern) protected perspectivePatterns: Pattern[]
+    @inject(DocumentsBindings.Documents) protected documents: Documents,
+    @multiInject(EveesModule.bindings.PerspectivePattern) protected perspectivePatterns: Pattern[]
   ) {
     super(hashedPattern);
   }

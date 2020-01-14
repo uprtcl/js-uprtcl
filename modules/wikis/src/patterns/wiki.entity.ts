@@ -6,7 +6,8 @@ import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprt
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
-import { Wiki, WikiTypes } from '../types';
+import { Wiki } from '../types';
+import { WikiBindings } from '../bindings';
 import { Wikis } from '../services/wikis';
 
 const propertyOrder = ['title', 'pages'];
@@ -74,5 +75,23 @@ export class WikiCommon extends WikiEntity implements HasLenses {
         `
       }
     ];
+  };
+}
+
+@injectable()
+export class WikiCreate implements Creatable<Partial<Wiki>> {
+  constructor(@inject(WikiBindings.Wikis) protected wikis: Wikis) {}
+
+  recognize(object: object): boolean {
+    return propertyOrder.every(p => object.hasOwnProperty(p));
+  }
+
+  create = () => async (node?: Partial<Wiki>, upl?: string): Promise<string> => {
+    const pages = node && node.pages ? node.pages : [];
+    const title = node && node.title ? node.title : '';
+
+    const newWiki = { pages, title };
+    const { id } = await this.wikis.createWiki(newWiki, upl);
+    return id;
   };
 }

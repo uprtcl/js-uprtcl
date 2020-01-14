@@ -13,13 +13,13 @@ import {
   PatternAction,
   PatternRecognizer,
   Entity,
-  CortexModule,
-  Updatable
+  CortexModule
 } from '@uprtcl/cortex';
 import { Secured, CorePatterns, ApolloClientModule } from '@uprtcl/common';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
-import { EveesTypes, Perspective } from '../types';
+import { Perspective } from '../types';
+import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 
@@ -71,10 +71,10 @@ export class PerspectiveLinks extends PerspectiveEntity
   implements HasLinks, HasRedirect, Creatable<NewPerspectiveArgs>, HasActions {
   constructor(
     @inject(CorePatterns.Secured) protected securedPattern: Pattern & IsSecure<any>,
-    @inject(EveesTypes.Evees) protected evees: Evees,
-    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(EveesTypes.MergeStrategy) protected merge: MergeStrategy,
-    @inject(ApolloClientModule.types.Client) protected client: ApolloClient<any>
+    @inject(EveesBindings.Evees) protected evees: Evees,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(securedPattern);
   }

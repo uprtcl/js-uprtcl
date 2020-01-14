@@ -2,14 +2,6 @@ export type Constructor<T, A extends Array<any> = any[]> = new (...args: A) => T
 
 export type Dictionary<T> = { [key: string]: T };
 
-export const MicroOrchestratorTypes = {
-  Logger: Symbol('logger')
-};
-
-export const ReduxTypes = {
-  Context: 'redux-saga-middleware-inversify-context'
-};
-
 /**
  *  By using this `CustomElement` interface instead of `HTMLElement`, we avoid
  *  having the generated typings include most DOM API already provided by

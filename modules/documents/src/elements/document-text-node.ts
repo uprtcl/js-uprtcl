@@ -49,7 +49,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   }
 
   async updateContent(newContent: TextNode): Promise<string> {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.mutate({
       mutation: CREATE_TEXT_NODE,
@@ -224,6 +224,11 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   static get styles() {
     return css`
       .column {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .row {
         display: flex;
         flex-direction: row;
       }

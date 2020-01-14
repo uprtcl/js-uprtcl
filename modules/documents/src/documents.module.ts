@@ -18,7 +18,7 @@ import { DocumentsRemote } from './services/documents.remote';
 import { documentsTypeDefs, resolvers } from './graphql/schema';
 
 import en from '../i18n/en.json';
-import { DocumentsTypes } from './types';
+import { DocumentsBindings } from './bindings';
 
 /**
  * Configure a documents module with the given service providers
@@ -50,15 +50,15 @@ import { DocumentsTypes } from './types';
 export class DocumentsModule extends MicroModule {
   static id = Symbol('documents-module');
 
-  static types = DocumentsTypes;
+  static bindings = DocumentsBindings;
 
   constructor(protected documentsRemotes: DocumentsRemote[], protected remoteLinks: Dictionary<string>) {
     super();
   }
 
   async onLoad(container: interfaces.Container) {
-    container.bind(DocumentsModule.types.DocumentsLocal).to(DocumentsLocal);
-    container.bind(DocumentsModule.types.Documents).to(Documents);
+    container.bind(DocumentsModule.bindings.DocumentsLocal).to(DocumentsLocal);
+    container.bind(DocumentsModule.bindings.Documents).to(Documents);
   }
 
   submodules = [
@@ -66,7 +66,7 @@ export class DocumentsModule extends MicroModule {
     new i18nextModule('documents', { en: en }),
     new SourcesModule(
       this.documentsRemotes.map(remote => ({
-        symbol: DocumentsModule.types.DocumentsRemote,
+        symbol: DocumentsModule.bindings.DocumentsRemote,
         source: remote
       }))
     ),
@@ -74,7 +74,7 @@ export class DocumentsModule extends MicroModule {
       'documents-text-node': DocumentTextNode
     }),
     new PatternsModule({
-      [DocumentsModule.types.TextNodeEntity]: [
+      [DocumentsModule.bindings.TextNodeEntity]: [
         TextNodeActions,
         TextNodeCreate,
         TextNodePatterns,

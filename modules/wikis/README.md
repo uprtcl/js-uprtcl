@@ -21,7 +21,7 @@ npm install @uprtcl/wikis
 Import the module, instantiate it with its appropiate configuration, and load it:
 
 ```ts
-import { wikisModule, WikisIpfs, WikisTypes } from '@uprtcl/wikis';
+import { wikisModule, WikisIpfs, WikisBindings} from '@uprtcl/wikis';
 
 const wikisProvider = new WikisIpfs({
   host: 'ipfs.infura.io',
@@ -31,7 +31,7 @@ const wikisProvider = new WikisIpfs({
 
 const wikis = wikisModule([{ service: wikisProvider }]);
 await orchestrator.loadModules({
-  id: WikisTypes.Module,
+  id: WikisBindings.Module,
   module: wikis
 });
 ```

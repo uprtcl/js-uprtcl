@@ -10,13 +10,13 @@ import { KnownSourcesDexie } from './services/known-sources/known-sources.dexie'
 import { MultiSourceService } from './services/multi/multi-source.service';
 import { DiscoveryService } from './services/discovery.service';
 import { Source } from './services/sources/source';
-import { MultiplatformTypes } from './types';
+import { MultiplatformBindings } from './bindings';
 
 
 export class DiscoveryModule extends MicroModule {
   static id = Symbol('discovery-module');
 
-  static types = MultiplatformTypes;
+  static bindings = MultiplatformBindings;
 
   dependencies = [CortexModule.id];
 
@@ -30,11 +30,11 @@ export class DiscoveryModule extends MicroModule {
   async onLoad(container: interfaces.Container): Promise<void> {
     await Promise.all([this.cacheService.ready(), this.localKnownSources.ready()]);
 
-    container.bind<MultiSourceService>(DiscoveryModule.types.MultiSource).to(MultiSourceService);
-    container.bind<CacheService>(DiscoveryModule.types.Cache).toConstantValue(this.cacheService);
+    container.bind<MultiSourceService>(DiscoveryModule.bindings.MultiSource).to(MultiSourceService);
+    container.bind<CacheService>(DiscoveryModule.bindings.Cache).toConstantValue(this.cacheService);
     container
-      .bind<KnownSourcesService>(DiscoveryModule.types.LocalKnownSources)
+      .bind<KnownSourcesService>(DiscoveryModule.bindings.LocalKnownSources)
       .toConstantValue(this.localKnownSources);
-    container.bind<Source>(DiscoveryModule.types.DiscoveryService).to(DiscoveryService);
+    container.bind<Source>(DiscoveryModule.bindings.DiscoveryService).to(DiscoveryService);
   }
 }

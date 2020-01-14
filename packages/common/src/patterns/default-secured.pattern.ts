@@ -9,7 +9,7 @@ import {
   Pattern
 } from '@uprtcl/cortex';
 
-import { CorePatterns } from '../types';
+import { CorePatterns } from '../bindings';
 
 export type Secured<T = any> = Hashed<Signed<T>>;
 

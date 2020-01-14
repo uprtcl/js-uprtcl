@@ -34,7 +34,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   async loadPerspective() {
     this.entityId = undefined;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     this.logger.info('loadPerspective() pre', this.perspectiveId);
 
@@ -133,7 +133,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     if (!this.perspectiveId) return;
     if (!this.perspective) return;
     
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     this.logger.info('updateContent() pre', dataId);
 

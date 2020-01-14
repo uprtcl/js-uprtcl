@@ -39,15 +39,6 @@ export interface Proposal {
 
 export type EveesLocal = CacheService & EveesProvider;
 
-export const EveesTypes = {
-  PerspectivePattern: Symbol('perspective-pattern'),
-  CommitPattern: Symbol('commit-pattern'),
-  EveesLocal: Symbol('evees-local'),
-  EveesRemote: Symbol('evees-remote'),
-  MergeStrategy: Symbol('merge-strategry'),
-  Evees: Symbol('evees')
-};
-
 export interface PerspectiveData {
   id: string;
   perspective: Perspective;

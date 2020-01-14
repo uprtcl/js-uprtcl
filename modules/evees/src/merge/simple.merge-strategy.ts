@@ -5,7 +5,8 @@ import { CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 import { Secured, createEntity } from '@uprtcl/common';
 
-import { UpdateRequest, Commit, EveesTypes } from '../types';
+import { UpdateRequest, Commit } from '../types';
+import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
 import { isAncestorOf } from '../utils/ancestor';
@@ -18,10 +19,10 @@ export class SimpleMergeStrategy implements MergeStrategy {
   updatesList: UpdateRequest[] = [];
 
   constructor(
-    @inject(EveesTypes.Evees) protected evees: Evees,
-    @inject(DiscoveryModule.types.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryModule.types.LocalKnownSources) protected knownSources: KnownSourcesService,
-    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer
+    @inject(EveesBindings.Evees) protected evees: Evees,
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
   ) {}
 
   async mergePerspectives(

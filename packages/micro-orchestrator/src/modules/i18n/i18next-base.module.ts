@@ -6,7 +6,7 @@ import { MicroModule } from '../../orchestrator/micro.module';
 export class i18nextBaseModule extends MicroModule {
   static id = Symbol('i18n-base-module');
 
-  static types = {
+  static bindings= {
     Translate: Symbol('i18n-function'),
     Service: Symbol('i18n-service')
   };
@@ -18,7 +18,7 @@ export class i18nextBaseModule extends MicroModule {
       defaultNS: 'core'
     });
 
-    container.bind(i18nextBaseModule.types.Service).toConstantValue(i18next);
-    container.bind(i18nextBaseModule.types.Translate).toConstantValue(translateFunction);
+    container.bind(i18nextBaseModule.bindings.Service).toConstantValue(i18next);
+    container.bind(i18nextBaseModule.bindings.Translate).toConstantValue(translateFunction);
   }
 }

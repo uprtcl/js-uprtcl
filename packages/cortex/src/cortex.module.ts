@@ -9,20 +9,20 @@ import { Pattern } from './pattern';
 export class CortexModule extends MicroModule {
   static id = Symbol('cortex-module');
 
-  static types = {
+  static bindings= {
     Recognizer: Symbol('pattern-recognizer')
   };
 
   async onLoad(container: interfaces.Container): Promise<void> {
     let recognizer: PatternRecognizer | undefined = undefined;
     container
-      .bind<PatternRecognizer>(CortexModule.types.Recognizer)
+      .bind<PatternRecognizer>(CortexModule.bindings.Recognizer)
       .toDynamicValue((ctx: interfaces.Context) => {
         if (recognizer) return recognizer;
 
         recognizer = new PatternRecognizer();
 
-        const patterns = ctx.container.getAll<Pattern>(PatternsModule.types.Pattern);
+        const patterns = ctx.container.getAll<Pattern>(PatternsModule.bindings.Pattern);
         recognizer.patterns = patterns;
 
         return recognizer;

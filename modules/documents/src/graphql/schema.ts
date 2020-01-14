@@ -1,10 +1,11 @@
 import { gql } from 'apollo-boost';
 
-import { DocumentsTypes } from '../types';
-import { Documents } from '../services/documents';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-const logger = new Logger('DECUMENT-TEXT-NODE-SCHEMA');
+import { Documents } from '../services/documents';
+import { DocumentsBindings } from 'src/bindings';
+
+const logger = new Logger('DOCUMENT-TEXT-NODE-SCHEMA');
 
 export const documentsTypeDefs = gql`
   extend type Patterns {
@@ -24,7 +25,6 @@ export const documentsTypeDefs = gql`
     links: [Entity]!
 
     _patterns: Patterns!
-    _meta: Metadata!
   }
 
   input TextNodeInput {
@@ -43,7 +43,7 @@ export const resolvers = {
     async createTextNode(_, { content, usl }, { container }) {
       logger.info('createTextNode()', { content, usl })
 
-      const documents: Documents = container.get(DocumentsTypes.Documents);
+      const documents: Documents = container.get(DocumentsBindings.Documents);
 
       const textNode = await documents.createTextNode(content, usl);
       return { id: textNode.id, ...textNode.object };

@@ -1,10 +1,10 @@
-export const MultiplatformTypes = {
+export const MultiplatformBindings = {
   DiscoveryService: Symbol('discovery-service'),
   MultiSource: Symbol('multi-source'),
   Cache: Symbol('cache-source'),
   LocalKnownSources: Symbol('local-known-sources')
 };
 
-export const SourcesTypes = {
+export const SourcesBindings = {
   Source: Symbol('discovery-source')
 };

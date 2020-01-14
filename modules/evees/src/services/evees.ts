@@ -12,7 +12,8 @@ import {
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Secured, createEntity, CorePatterns } from '@uprtcl/common';
 
-import { EveesLocal, Perspective, Commit, PerspectiveDetails, EveesTypes } from '../types';
+import { EveesLocal, Perspective, Commit, PerspectiveDetails } from '../types';
+import { EveesBindings } from '../bindings';
 import { EveesProvider } from './evees.provider';
 import { EveesRemote } from './evees.remote';
 
@@ -39,15 +40,15 @@ export class Evees {
   service: CachedMultiSourceService<EveesLocal, EveesRemote>;
 
   constructor(
-    @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(CorePatterns.Secured) protected secured: IsSecure<any>,
-    @inject(DiscoveryModule.types.LocalKnownSources)
+    @inject(DiscoveryModule.bindings.LocalKnownSources)
     public knownSources: KnownSourcesService,
-    @inject(DiscoveryModule.types.DiscoveryService)
+    @inject(DiscoveryModule.bindings.DiscoveryService)
     protected discoveryService: DiscoveryService,
-    @inject(EveesTypes.EveesLocal)
+    @inject(EveesBindings.EveesLocal)
     protected eveesLocal: EveesLocal,
-    @multiInject(EveesTypes.EveesRemote)
+    @multiInject(EveesBindings.EveesRemote)
     protected eveesRemotes: EveesRemote[]
   ) {
     this.service = new CachedMultiSourceService<EveesLocal, EveesRemote>(

@@ -9,26 +9,21 @@ import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { baseTypeDefs, baseResolvers } from './base-schema';
 import { DiscoveryLink } from '../discovery/discovery-link';
 import { contextContainerLink } from './context-link';
-import { GraphQlSchemaModule } from './graphql-schema.module';
+import { GraphQlSchemaBindings, ApolloClientBindings } from './bindings';
 
 export class ApolloClientModule extends MicroModule {
   static id = Symbol('apollo-client-module');
 
-  static types = {
-    Client: Symbol('apollo-client'),
-    RootSchema: Symbol('apollo-root-schema')
-  };
+  static bindings = ApolloClientBindings;
 
   async onLoad(container: interfaces.Container) {
     container
-      .bind(ApolloClientModule.types.RootSchema)
+      .bind(ApolloClientModule.bindings.RootSchema)
       .toDynamicValue((context: interfaces.Context) => {
         const typeDefs: ITypeDefinitions[] = context.container.getAll(
-          GraphQlSchemaModule.types.TypeDefs
+          GraphQlSchemaBindings.TypeDefs
         );
-        const resolvers: IResolvers[] = context.container.getAll(
-          GraphQlSchemaModule.types.Resolvers
-        );
+        const resolvers: IResolvers[] = context.container.getAll(GraphQlSchemaBindings.Resolvers);
 
         return makeExecutableSchema({
           typeDefs: [baseTypeDefs, ...typeDefs],
@@ -41,9 +36,9 @@ export class ApolloClientModule extends MicroModule {
     //cache.writeData({ data: { sources: {__typename: 'JSON', id: 0, hi: '0hi'} } });
 
     container
-      .bind(ApolloClientModule.types.Client)
+      .bind(ApolloClientModule.bindings.Client)
       .toDynamicValue((context: interfaces.Context) => {
-        const schema: GraphQLSchema = context.container.get(ApolloClientModule.types.RootSchema);
+        const schema: GraphQLSchema = context.container.get(ApolloClientModule.bindings.RootSchema);
 
         return new ApolloClient({
           cache,

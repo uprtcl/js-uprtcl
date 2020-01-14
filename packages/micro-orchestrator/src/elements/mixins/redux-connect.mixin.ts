@@ -67,7 +67,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
     }
 
     connectedCallback() {
-      this.store = this.request(ReduxStoreModule.types.Store);
+      this.store = this.request(ReduxStoreModule.bindings.Store);
 
       super.connectedCallback();
 
@@ -75,7 +75,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
       this.stateChanged(this.store.getState());
 
       try {
-        this.t = this.request(i18nextBaseModule.types.Translate);
+        this.t = this.request(i18nextBaseModule.bindings.Translate);
       } catch (e) {
         console.warn('No translate function present');
       }

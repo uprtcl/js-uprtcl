@@ -25,7 +25,7 @@ export const cortexResolvers = {
     async __resolveType(parent, { container }, info) {
       const entity = await entityFromParent(parent, container);
 
-      const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
+      const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
       const patterns: Pattern[] = recognizer.recognize(entity);
 
@@ -50,7 +50,7 @@ export const cortexResolvers = {
 
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
-      const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
+      const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
       const patterns = recognizer.recognize(entity);
 
@@ -77,8 +77,8 @@ export const cortexResolvers = {
     async content(parent, args, { container }, info) {
       const entity = await entityFromParent(parent, container);
 
-      const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
-      const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
+      const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
 
       const content: Hashed<any> = await entityContent(entity, recognizer, discovery);
 
@@ -87,10 +87,10 @@ export const cortexResolvers = {
     async isomorphisms(parent, args, { container }, info) {
       const entity = await entityFromParent(parent, container);
 
-      const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
-      const client: ApolloClient<any> = container.get(ApolloClientModule.types.Client);
+      const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
 
-      const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
 
       const isomorphisms = await getIsomorphisms(recognizer, entity, (id: string) =>
         discovery.get(id)
@@ -102,7 +102,7 @@ export const cortexResolvers = {
 };
 
 export async function entityFromParent(parent, container): Promise<Hashed<any>> {
-  const discovery: DiscoveryService = container.get(DiscoveryModule.types.DiscoveryService);
+  const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
   let id: string | undefined = undefined;
 
   if (parent.id) id = parent.id;

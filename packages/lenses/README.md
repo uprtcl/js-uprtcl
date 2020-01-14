@@ -24,13 +24,13 @@ Import the module, instantiate it with its appropiate configuration, and load it
 
 ```ts
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
-import { LensesTypes } from '@uprtcl/cortex';
+import { LensesBindings} from '@uprtcl/cortex';
 import { lensesModule } from '@uprtcl/lenses';
 
 const orchestrator = new MicroOrchestrator();
 
 const lenses = lensesModule([]);
-await orchestrator.loadModules({ id: LensesTypes.Module, module: lenses });
+await orchestrator.loadModules({ id: LensesBindings.Module, module: lenses });
 ```
 
 In your `html`, now you can use `<cortex-entity>`:

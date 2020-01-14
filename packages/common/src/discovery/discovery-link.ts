@@ -27,9 +27,9 @@ export class DiscoveryLink extends ApolloLink {
           const hash = result.data.entity.id;
           const object = result.data.entity;
 
-          const recognizer: PatternRecognizer = container.get(CortexModule.types.Recognizer);
+          const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
           const localKnownSources: KnownSourcesService = container.get(
-            DiscoveryModule.types.LocalKnownSources
+            DiscoveryModule.bindings.LocalKnownSources
           );
 
           /* 

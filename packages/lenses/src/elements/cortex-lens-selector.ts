@@ -33,7 +33,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
     this.lenses = undefined;
     if (!this.hash) return;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.query({
       query: gql`

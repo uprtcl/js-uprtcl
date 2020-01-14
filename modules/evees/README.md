@@ -23,7 +23,7 @@ Import the module, instantiate it with its appropiate configuration, and load it
 ```ts
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 import { IpfsConnection, HolochainConnection, EthereumConnection } from '@uprtcl/connections';
-import { eveesModule, EveesEthereum, EveesHolochain, EveesTypes } from '@uprtcl/evees';
+import { eveesModule, EveesEthereum, EveesHolochain, EveesBindings} from '@uprtcl/evees';
 
 const ipfsConnection = new IpfsConnection({
   host: 'ipfs.infura.io',
@@ -47,7 +47,7 @@ const evees = eveesModule([eveesHolochain, eveesEth]);
 const orchestrator = new MicroOrchestrator();
 
 await orchestrator.loadModules({
-  id: EveesTypes.Module,
+  id: EveesBindings.Module,
   module: evees
 });
 ```

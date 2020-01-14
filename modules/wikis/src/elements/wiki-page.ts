@@ -16,7 +16,7 @@ export class WikiPage extends moduleConnect(LitElement) {
   textNode!: TextNode;
 
   async firstUpdated() {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`{
         entity(id: "${this.pageHash}") {

@@ -33,8 +33,8 @@ import {
 } from '@uprtcl/common';
 
 await orchestrator.loadModules(
-  { id: EntitiesTypes.Module, module: entitiesReduxModule() },
-  { id: AccessControlTypes.Module, module: accessControlReduxModule() }
+  { id: EntitiesBindings.Module, module: entitiesReduxModule() },
+  { id: AccessControlBindings.Module, module: accessControlReduxModule() }
 );
 ```
 

@@ -9,10 +9,10 @@ import {
 } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { WikisLocal, Wiki, WikiTypes } from '../types';
+import { WikisLocal, Wiki } from '../types';
+import { WikiBindings } from '../bindings';
 import { WikisRemote } from './wikis.remote';
 import { WikisProvider } from './wikis.provider';
-import { WikisModule } from 'src/wikis.module';
 
 @injectable()
 export class Wikis {
@@ -21,12 +21,12 @@ export class Wikis {
   service: CachedMultiSourceService<WikisLocal, WikisRemote>;
 
   constructor(
-    @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(DiscoveryModule.types.LocalKnownSources)
+    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(DiscoveryModule.bindings.LocalKnownSources)
     protected knownSources: KnownSourcesService,
-    @inject(WikiTypes.WikisLocal)
+    @inject(WikiBindings.WikisLocal)
     protected wikisLocal: WikisLocal,
-    @multiInject(WikiTypes.WikisRemote)
+    @multiInject(WikiBindings.WikisRemote)
     protected wikisRemotes: WikisRemote[]
   ) {
     this.service = new CachedMultiSourceService<WikisLocal, WikisRemote>(

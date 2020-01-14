@@ -42,7 +42,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   async loadEntity(hash: string): Promise<void> {
     this.selectedLens = undefined;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     // We are also loading the content to have it cached in case the lens wants it
     const result = await client.query({

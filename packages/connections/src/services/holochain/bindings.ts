@@ -1,3 +1,3 @@
-export const HolochainConnectionTypes = {
+export const HolochainConnectionBindings = {
   HolochainConnection: Symbol('holochain-connection')
 };
