@@ -81,7 +81,7 @@ export const createEntity = (recognizer: PatternRecognizer) => async <T extends 
 
   if (!creatable) {
     throw new Error(
-      `Trying to create data ${data.toString()}, but it does not implement the Creatable pattern`
+      `Trying to create data ${data.toString()} - ${JSON.stringify(data)}, but it does not implement the Creatable pattern`
     );
   }
 

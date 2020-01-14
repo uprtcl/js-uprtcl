@@ -4,7 +4,7 @@ import { SlotPlugin } from './plugins/slot.plugin';
 
 export interface Lens {
   name: string;
-  render: (lensContent: TemplateResult) => TemplateResult;
+  render: (lensContent: TemplateResult, context: any) => TemplateResult;
   type?: string;
 }
 

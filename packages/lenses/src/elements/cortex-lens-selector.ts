@@ -56,9 +56,9 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.entity.isomorphisms;
+    const isomorphisms = result.data.entity._patterns.isomorphisms;
 
-    const lenses = flatMap(isomorphisms.reverse(), iso => iso.patterns.lenses);
+    const lenses = flatMap(isomorphisms.reverse(), iso => iso._patterns.lenses);
     this.lenses = lenses.filter(iso => !!iso);
   }
 

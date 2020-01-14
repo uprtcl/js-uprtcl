@@ -31,6 +31,7 @@ export { mergeStrings, mergeResult } from './merge/utils';
 /** Elements */
 export { CommitHistory } from './elements/evees-commit-history';
 export { PerspectivesList } from './elements/evees-perspectives-list';
+export { EveesInfo } from './elements/evees-info';
 export { EveesPerspective } from './elements/evees-perspective';
 export { UpdateContentEvent, UpdateContentArgs } from './elements/events';
 

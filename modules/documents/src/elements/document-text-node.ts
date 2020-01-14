@@ -1,72 +1,151 @@
 import { ApolloClient, gql } from 'apollo-boost';
-import { LitElement, property, html } from 'lit-element';
+import { LitElement, property, html, css } from 'lit-element';
 
-import { sharedStyles } from '@uprtcl/lenses';
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
-import { ApolloClientModule } from '@uprtcl/common';
-import { CREATE_COMMIT, UPDATE_HEAD } from '@uprtcl/evees';
+import { ApolloClientModule, Secured } from '@uprtcl/common';
+import { CREATE_COMMIT, CREATE_PERSPECTIVE, Perspective } from '@uprtcl/evees';
 
 import { TextNode, TextType } from '../types';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
+import { DocumentsModule } from '../documents.module';
 
 export class DocumentTextNode extends moduleConnect(LitElement) {
-  @property({ type: String })
-  nodeId!: string;
+  logger = new Logger('DOCUMENT-TEXT-NODE');
 
   @property({ type: Object })
-  textNode: Hashed<TextNode> | undefined = undefined;
+  data: Hashed<TextNode> | undefined = undefined;
 
-  @property()
-  editable!: boolean;
+  @property({ type: Object })
+  perspective: Secured<Perspective> | undefined = undefined;
 
-  @property()
-  currentHead: string | undefined = undefined;
+  @property({ type: String })
+  color: string | undefined = undefined;
+
+  editable: Boolean = true;
 
   lastChangeTimeout: any;
   lastText!: string;
 
-  static get styles() {
-    return sharedStyles;
+  textInput(e) {
+    this.logger.info('textInput()', e);
   }
 
-  async loadNode() {
-    this.textNode = undefined;
+  async onBlur(e) {
+    if (!this.data) return;
 
+    const newText = e.target['innerText'];
+
+    if (newText === this.data.object.text) return;
+
+    const newContent = {
+      ...this.data.object,
+      text: newText
+    };
+
+    this.logger.info('onBlur()', newContent);
+
+    await this.updateContent(newContent);
+  }
+
+  async updateContent(newContent: TextNode): Promise<string> {
     const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
-    const result = await client.query({
-      query: gql`
-        {
-          entity(id: "${this.nodeId}") {
-            id
-            ... on Perspective {
-              head {
-                id
-              }
-            }
-            _patterns {
-              content {
-                id
-                ... on TextNode {
-                  text
-                  type
-                  links {
-                    id
-                  }
-                }
-              }
-              accessControl {
-                canWrite
-              }
-            }
-          }
-        }
-      `
+
+    const result = await client.mutate({
+      mutation: CREATE_TEXT_NODE,
+      variables: {
+        content: newContent
+      }
     });
 
-    this.textNode = result.data.entity._patterns.content;
-    const head = result.data.entity.head;
-    this.currentHead = head ? head.id : undefined;
+    const textNodeId = result.data.createTextNode.id;
+
+    this.dispatchEvent(
+      new CustomEvent('update-content', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          dataId: textNodeId
+        }
+      })
+    );
+
+    return textNodeId;
+  }
+
+  async createChild() {
+    if (!this.data) return;
+    if (!this.perspective) return;
+
+    const origin = this.perspective.object.payload.origin;
+
+    const { remoteLinks }: Dictionary<string> = this.request(DocumentsModule.id);
+    const dataUsl = remoteLinks[origin];
+
+    const newNode = {
+      text: 'empty',
+      type: TextType.Paragraph,
+      links: []
+    };
+
+    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const result = await client.mutate({
+      mutation: CREATE_TEXT_NODE,
+      variables: {
+        content: newNode,
+        usl: dataUsl
+      }
+    });
+
+    const commit = await client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        dataId: result.data.createTextNode.id,
+        parentsIds: [],
+        usl: origin
+      }
+    });
+
+    const perspective = await client.mutate({
+      mutation: CREATE_PERSPECTIVE,
+      variables: {
+        headId: commit.data.createCommit.id,
+        usl: origin
+      }
+    });
+
+    const newContent = {
+      ...this.data.object,
+      links: [...this.data.object.links, perspective.data.createPerspective.id]
+    };
+
+    this.logger.info('createChild()', newContent);
+    await this.updateContent(newContent);
+  }
+
+  createSibling() {
+    this.logger.info('createSibling()', { dataId: this.data ? this.data.id : undefined });
+    this.dispatchEvent(
+      new CustomEvent('create-sibling', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          dataId: this.data ? this.data.id : undefined
+        }
+      })
+    );
+  }
+
+  enterPressed() {
+    if (!this.data) return;
+
+    this.logger.info('enterPressed()', { data: this.data });
+
+    if (this.data.object.type === TextType.Title) {
+      this.createChild();
+    } else {
+      this.createSibling();
+    }
   }
 
   connectedCallback() {
@@ -79,96 +158,91 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
         e.preventDefault();
         e.stopPropagation();
 
-        // TODO: create child
+        this.enterPressed();
       }
     });
+
+    this.addEventListener('create-sibling', ((e: CustomEvent) => {
+      if (!this.data) return;
+
+      this.logger.info('CATCHED EVENT: create-sibling ', { dataId: this.data.id, e });
+
+      // TODO: this.addEventListener listens  this.dispatchEvent ???
+      if (e.detail.dataId === this.data.id) return;
+
+      // At this point this should be the text node that is the parent of the source of the event.
+      e.stopPropagation();
+      this.createChild();
+    }) as EventListener);
   }
 
   render() {
-    if (!this.textNode)
+    if (!this.data)
       return html`
-        <cortex-loading-placeholder></cortex-loading-placeholder>
+        <cortex-loading-placeholder>loading text node...</cortex-loading-placeholder>
       `;
+
+    let contentClasses = this.data.object.type === TextType.Paragraph ? ['paragraph'] : ['title'];
+    contentClasses.push('content-editable');
 
     return html`
       <div class="row">
-        <div class="column" style="flex: 1;">
-          ${this.textNode.object.type === TextType.Paragraph
-            ? html`
-                <div
-                  contenteditable=${this.editable ? 'true' : 'false'}
-                  @input=${e => e.target && this.textInput(e.target['innerText'])}
-                >
-                  ${this.textNode.object.text}
-                </div>
-              `
-            : html`
-                <h3
-                  contenteditable=${this.editable ? 'true' : 'false'}
-                  @input=${e => e.target && this.textInput(e.target['innerText'])}
-                >
-                  ${this.textNode.object.text}
-                </h3>
-              `}
-          ${this.textNode.object.links.map(
-            link => html`
-              <cortex-entity .hash=${link} lens-type="content"></cortex-entity>
-            `
-          )}
+        <div class="column">
+          <div class="evee-info">
+            <slot name="evee"></slot>
+          </div>
+          <div class="node-content">
+            <div
+              class=${contentClasses.join(' ')}
+              contenteditable=${this.editable ? 'true' : 'false'}
+              @input=${e => this.textInput(e)}
+              @blur=${e => this.onBlur(e)}
+            >
+              ${this.data.object.text}
+            </div>
+          </div>
+          <div class="plugins">
+            <slot name="plugins"></slot>
+          </div>
         </div>
 
-        <div style="flex: 0">
-          <slot name="plugins"></slot>
+        <div class="node-children">
+          ${this.data.object.links.map(
+            link => html`
+              <cortex-entity
+                .hash=${link}
+                lens-type="evee"
+                .context=${{ color: this.color }}
+              ></cortex-entity>
+            `
+          )}
         </div>
       </div>
     `;
   }
 
-  textInput(content: string) {
-    if (this.lastChangeTimeout) {
-      clearTimeout(this.lastChangeTimeout);
-    }
-
-    this.lastText = content;
-
-    this.lastChangeTimeout = setTimeout(
-      () =>
-        this.textNode &&
-        this.updateContent({
-          ...this.textNode.object,
-          text: this.lastText
-        }),
-      2000
-    );
-  }
-
-  async updateContent(newContent: TextNode) {
-    if (!this.textNode) return;
-
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
-    const result = await client.mutate({
-      mutation: CREATE_TEXT_NODE,
-      variables: {
-        content: newContent
+  static get styles() {
+    return css`
+      .column {
+        display: flex;
+        flex-direction: row;
       }
-    });
 
-    const textNodeId = result.data.createTextNode.id;
-
-    const commit = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: textNodeId,
-        parentsIds: this.currentHead ? [this.currentHead] : []
+      .evee-info {
+        flex-grow: 0;
       }
-    });
 
-    await client.mutate({
-      mutation: UPDATE_HEAD,
-      variables: {
-        perspectiveId: this.nodeId,
-        headId: commit.data.createCommit.id
+      .node-content {
+        flex-grow: 1;
       }
-    });
+
+      .content-editable {
+        padding: 11px 8px;
+      }
+
+      .node-children {
+        width: 100%;
+      }
+    `;
   }
 }

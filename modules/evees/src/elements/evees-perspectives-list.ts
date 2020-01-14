@@ -1,31 +1,44 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css } from 'lit-element';
 
-import { PermissionsStatus } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/common';
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
-
-import { PerspectiveDetails, Perspective } from '../types';
-
-interface PerspectiveData {
-  id: string;
-  perspective: Perspective;
-  details: PerspectiveDetails;
-  permissions: PermissionsStatus;
-}
+import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
 export class PerspectivesList extends moduleConnect(LitElement) {
+  
+  logger = new Logger('EVEES-PERSPECTIVES-LIST');
+
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
 
   @property({ attribute: false })
-  perspectivesData: Array<PerspectiveData> = [];
+  perspectivesIds: Array<string> = [];
 
   async firstUpdated() {
-    this.updatePerspectivesData();
+    this.getOtherPersepectives();
   }
 
-  updatePerspectivesData = async () => {
+  perspectiveClicked(id: string) {
+    this.dispatchEvent(new CustomEvent('perspective-selected', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        id
+      }
+    }))
+  }
+
+  mergeClicked(id: string) {
+    this.dispatchEvent(new CustomEvent('merge-perspective', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        id
+      }
+    }))
+  }
+
+  getOtherPersepectives = async () => {
     const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
     const result = await client.query({
       query: gql`{
@@ -33,81 +46,29 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             id
             ... on Perspective {
               context {
-                identifier
                 perspectives {
                   id
-                  ... on Perspective {
-                    name
-                    context {
-                      identifier
-                    }
-                    payload {
-                      origin
-                      creatorId
-                      timestamp
-                    }
-                  }
                 } 
               } 
             } 
           }
         }`
     });
-    const { perspectives } = result.data.entity.context;
-    const fillPerspectives = perspective => {
-      const { head, context, name, payload } = perspective;
-      const permissions: PermissionsStatus = {
-        canWrite: false
-      };
-      const details: PerspectiveDetails = {
-        headId: head,
-        context: context.identifier,
-        name
-      };
-      return {
-        id: perspective.id,
-        details,
-        perspective: payload,
-        permissions
-      };
-    };
-
-    this.perspectivesData = perspectives.map(fillPerspectives);
+    this.perspectivesIds = result.data.entity.context.perspectives.map(p => p.id);
+    this.logger.info('getOtherPersepectives()', { result, perspectivesIds: this.perspectivesIds });
   };
-
-  stateChanged(state) {
-    /** update canWrite */
-    this.perspectivesData.forEach(perspectiveData => {
-      perspectiveData.permissions = {
-        canWrite: true
-      };
-    });
-    this.perspectivesData = [...this.perspectivesData];
-  }
-
-  openPerspective = id => {
-    //crear evento para manejar id de perspectiva, en vez de en el url
-    window.history.pushState('', '', `/?id=${id}`);
-  };
-
-  renderPerspective(perspectiveData: PerspectiveData) {
-    const style = perspectiveData.id == this.perspectiveId ? 'font-weight: bold;' : '';
-    return html`
-      <li style=${style} @click=${() => this.openPerspective(perspectiveData.id)}>
-        ${perspectiveData.details.name} - Creator: ${perspectiveData.perspective.creatorId} -
-        ${perspectiveData.permissions.canWrite ? `merge` : ``};
-      </li>
-    `;
-  }
 
   render() {
     return html`
-      <h4>Perspectives</h4>
-      ${this.perspectivesData.length > 0
+      <h4>Other Perspectives</h4>
+      ${this.perspectivesIds.length > 0
         ? html`
             <ul>
-              ${this.perspectivesData.map(perspectivesData => {
-                return this.renderPerspective(perspectivesData);
+              ${this.perspectivesIds.filter(id => id !== this.perspectiveId).map(id => {
+                return html`
+                  <li @click=${() => this.perspectiveClicked(id)}>${id}</li>
+                  <button @click=${() => this.mergeClicked(id)}>merge</button>
+                `;
               })}
             </ul>
           `

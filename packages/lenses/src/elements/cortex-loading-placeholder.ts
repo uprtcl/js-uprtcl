@@ -18,6 +18,9 @@ export class CortexLoadingPlaceholder extends LitElement {
     return html`
       <div class="container">
         <mwc-circular-progress></mwc-circular-progress>
+        <div>
+          <slot></slot>
+        </div>
       </div>
     `;
   }

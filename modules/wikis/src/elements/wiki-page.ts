@@ -40,7 +40,7 @@ export class WikiPage extends moduleConnect(LitElement) {
   render() {
     if (!this.textNode)
       return html`
-        <cortex-loading-placeholder></cortex-loading-placeholder>
+        <cortex-loading-placeholder>loading page content...</cortex-loading-placeholder>
       `;
 
     return html`
@@ -52,13 +52,7 @@ export class WikiPage extends moduleConnect(LitElement) {
         </div>
       </mwc-top-app-bar>
 
-      <div class="column">
-        ${this.textNode.links.map(
-          link => html`
-            <cortex-entity .hash=${link} lens-type="content"> </cortex-entity>
-          `
-        )}
-      </div>
+      <cortex-entity .hash=${this.pageHash} lens-type="evee"> </cortex-entity>
     `;
   }
 

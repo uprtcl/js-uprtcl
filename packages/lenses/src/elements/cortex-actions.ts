@@ -60,9 +60,9 @@ export class CortexActions extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.entity.isomorphisms;
+    const isomorphisms = result.data.entity._patterns.isomorphisms;
 
-    const actions: PatternAction[] = flatMap(isomorphisms.reverse(), iso => iso.patterns.actions);
+    const actions: PatternAction[] = flatMap(isomorphisms.reverse(), iso => iso._patterns.actions);
 
     this.actions = {};
 

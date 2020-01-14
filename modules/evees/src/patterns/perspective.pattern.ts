@@ -1,4 +1,5 @@
-import { html } from 'lit-element';
+import { html, TemplateResult } from 'lit-element';
+import { ifDefined } from 'lit-html/directives/if-defined';
 import { ApolloClient } from 'apollo-boost';
 import { injectable, inject } from 'inversify';
 
@@ -15,10 +16,10 @@ import {
   CortexModule,
   Updatable
 } from '@uprtcl/cortex';
-import { Secured, CorePatterns, ApolloClientModule } from '@uprtcl/common';
-import { HasLenses } from '@uprtcl/lenses';
+import { Secured, CorePatterns, ApolloClientModule, Perspective } from '@uprtcl/common';
+import { HasLenses, Lens } from '@uprtcl/lenses';
 
-import { Perspective, EveesTypes } from '../types';
+import { EveesTypes } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 
@@ -37,6 +38,32 @@ export class PerspectiveEntity implements Entity {
   }
 
   name = 'Perspective';
+}
+
+@injectable()
+export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
+  constructor(
+    @inject(CorePatterns.Secured)
+    protected securedPattern: Pattern & IsSecure<Secured<Perspective>>
+  ) {
+    super(securedPattern);
+  }
+
+  lenses = (perspective: Secured<Perspective>): Lens[] => {
+    return [
+      {
+        name: 'evees:evee-perspective',
+        type: 'evee',
+        render: (lensContent: TemplateResult, context: any) => {
+          const color = context ? (context.color ? context.color : undefined) : undefined;
+          return html`
+            <evees-perspective perspective-id=${perspective.id} evee-color=${color}>
+            </evees-perspective>
+          `;
+        }
+      }
+    ];
+  };
 }
 
 @injectable()

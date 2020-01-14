@@ -1,6 +1,6 @@
 import { interfaces } from 'inversify';
 
-import { ElementsModule, MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
+import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 import { SourcesModule } from '@uprtcl/multiplatform';
 import {
@@ -12,7 +12,7 @@ import {
 } from '@uprtcl/common';
 import { AccessControlModule } from '@uprtcl/access-control';
 
-import { PerspectiveLinks } from './patterns/perspective.pattern';
+import { PerspectiveLinks, PerspectiveLens } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
 import { EveesLocal, EveesTypes } from './types';
@@ -22,9 +22,11 @@ import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs, eveesResolvers } from './graphql/schema';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 import { PerspectivesList } from './elements/evees-perspectives-list';
+import { EveesPerspective } from './elements/evees-perspective';
+import { EveesInfo } from './elements/evees-info';
+
 
 import en from '../i18n/en.json';
-import { EveesPerspective } from './elements/evees-perspective';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -76,6 +78,7 @@ export class EveesModule extends MicroModule {
 
   constructor(
     protected eveesProviders: Array<EveesRemote>,
+    protected remoteLinks: Dictionary<string>,
     protected localEvees: new (...args: any[]) => EveesLocal = EveesDexie
   ) {
     super();
@@ -91,14 +94,16 @@ export class EveesModule extends MicroModule {
     new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
     new ElementsModule({
       'evees-commit-history': CommitHistory,
-      'evees-perspectives-list': PerspectivesList
+      'evees-perspectives-list': PerspectivesList,
+      'evees-perspective': EveesPerspective,
+      'evees-info': EveesInfo
     }),
     new i18nextModule('evees', { en: en }),
     new PatternsModule({
       [CorePatterns.Hashed]: [CidHashedPattern],
       [CorePatterns.Signed]: [DefaultSignedPattern],
       [CorePatterns.Secured]: [DefaultSecuredPattern],
-      [EveesModule.types.PerspectivePattern]: [PerspectiveLinks],
+      [EveesModule.types.PerspectivePattern]: [PerspectiveLinks, PerspectiveLens],
       [EveesModule.types.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
     }),
     new SourcesModule(

@@ -1,4 +1,4 @@
-import { html } from 'lit-element';
+import { html, TemplateResult } from 'lit-element';
 
 import { CortexEntityBase } from './cortex-entity-base';
 import { sharedStyles } from '../shared-styles';
@@ -8,8 +8,23 @@ export class CortexEntity extends CortexEntityBase {
     return sharedStyles;
   }
 
+  forwardSlots():TemplateResult[] {
+    let slots:TemplateResult[] = [];
+
+    for (const el of this.children) {
+      const slotName = el.getAttribute('slot');
+      if (slotName) {
+        slots.push(html`<slot name=${slotName} slot=${slotName}></slot>`);
+      }
+    }
+
+    console.log('[CORTEX-ENTITY] forwardSlots()', slots);
+    return slots;
+  }
+
   renderSlotPlugins() {
     return html`
+      ${this.forwardSlots()}
       <div slot="plugins" class="row center-content">
         ${Object.keys(this.slotPlugins).map(
           key => this.entity && this.slotPlugins[key].renderSlot(this.entity)
@@ -31,14 +46,14 @@ export class CortexEntity extends CortexEntityBase {
   renderLens() {
     if (!this.selectedLens) return html``;
 
-    return this.selectedLens.render(this.renderSlotPlugins());
+    return this.selectedLens.render(this.renderSlotPlugins(), this.context);
   }
 
   render() {
     return html`
       ${!this.selectedLens
         ? html`
-            <cortex-loading-placeholder></cortex-loading-placeholder>
+            <cortex-loading-placeholder>loading lense...</cortex-loading-placeholder>
           `
         : html`
             ${this.renderLens()}

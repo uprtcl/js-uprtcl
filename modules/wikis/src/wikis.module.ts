@@ -3,7 +3,7 @@ import { interfaces } from 'inversify';
 import { PatternsModule } from '@uprtcl/cortex';
 import { SourcesModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/common';
-import { ElementsModule, MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
+import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
 import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
@@ -49,7 +49,7 @@ export class WikisModule extends MicroModule {
 
   static types = WikiTypes;
 
-  constructor(protected wikisRemotes: WikisRemote[]) {
+  constructor(protected wikisRemotes: WikisRemote[], protected remoteLinks: Dictionary<string>) {
     super();
   }
 

@@ -22,17 +22,35 @@ import { SimpleWiki } from './simple-wiki';
   const httpEvees = new EveesHttp(c1host, httpConnection);
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
 
-  const evees = new EveesModule([ethEvees]);
-
   const httpDocuments = new DocumentsHttp(c1host, httpConnection);
   const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
-
-  const documents = new DocumentsModule([ipfsDocuments]);
 
   const httpWikis = new WikisHttp(c1host, httpConnection);
   const ipfsWikis = new WikisIpfs(ipfsConnection);
 
-  const wikis = new WikisModule([ipfsWikis]);
+
+  const eveesRemotesLinks = {
+    [httpEvees.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
+    [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
+  }
+
+  const evees = new EveesModule([ethEvees, httpEvees], eveesRemotesLinks);
+
+  const docsRemotesLinks = {
+    [httpEvees.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
+    [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
+  }
+
+  const documents = new DocumentsModule([ipfsDocuments, httpDocuments], docsRemotesLinks);
+
+  const wikiRemotesLinks = {
+    [httpEvees.uprtclProviderLocator]: httpWikis.uprtclProviderLocator,
+    [ethEvees.uprtclProviderLocator]: ipfsWikis.uprtclProviderLocator,
+    [httpWikis.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
+    [ipfsWikis.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
+  }
+
+  const wikis = new WikisModule([ipfsWikis, httpWikis], wikiRemotesLinks);
 
   const lenses = new LensesModule({
     'lens-selector': new LensSelectorPlugin(),

@@ -2,19 +2,25 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { flatMap } from 'lodash-es';
 import { LitElement, property, PropertyValues } from 'lit-element';
 
-import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/common';
+import { moduleConnect, Dictionary, Logger } from '@uprtcl/micro-orchestrator';
+import { ApolloClientModule, Secured, Perspective } from '@uprtcl/common';
 import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
 import { SlotPlugin } from '../plugins/slot.plugin';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
+    
+  logger = new Logger('CORTEX-ENTITY-BASE');
+  
   @property()
   public hash!: string;
 
   @property({ attribute: 'lens-type' })
   public lensType!: string;
+
+  @property({ type: Object })
+  public context!: any;
 
   @property({ type: Object })
   protected entity!: Hashed<any>;
@@ -74,6 +80,8 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     if (this.selectedLens === undefined) {
       this.selectedLens = lenses[0];
     }
+
+    this.logger.info(`Lens selected for entity ${this.hash}`, { selectedLens: this.selectedLens, lenses });
   }
 
   get slotPlugins(): Dictionary<SlotPlugin> {
