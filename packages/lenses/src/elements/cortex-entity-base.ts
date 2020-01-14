@@ -3,7 +3,7 @@ import { flatMap } from 'lodash-es';
 import { LitElement, property, PropertyValues } from 'lit-element';
 
 import { moduleConnect, Dictionary, Logger } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule, Secured, Perspective } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/common';
 import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';

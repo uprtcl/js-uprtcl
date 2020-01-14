@@ -16,10 +16,10 @@ import {
   CortexModule,
   Updatable
 } from '@uprtcl/cortex';
-import { Secured, CorePatterns, ApolloClientModule, Perspective } from '@uprtcl/common';
+import { Secured, CorePatterns, ApolloClientModule } from '@uprtcl/common';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
-import { EveesTypes } from '../types';
+import { EveesTypes, Perspective } from '../types';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 

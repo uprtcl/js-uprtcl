@@ -3,7 +3,7 @@ import { interfaces } from 'inversify';
 import { SourcesModule } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/common';
-import { ElementsModule, i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
+import { ElementsModule, i18nextModule, MicroModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { DocumentTextNode } from './elements/document-text-node';
 import {
@@ -52,7 +52,7 @@ export class DocumentsModule extends MicroModule {
 
   static types = DocumentsTypes;
 
-  constructor(protected documentsRemotes: DocumentsRemote[]) {
+  constructor(protected documentsRemotes: DocumentsRemote[], protected remoteLinks: Dictionary<string>) {
     super();
   }
 

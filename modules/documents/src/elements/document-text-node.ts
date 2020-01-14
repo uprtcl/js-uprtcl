@@ -79,6 +79,8 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
     const origin = this.perspective.object.payload.origin;
 
+    debugger
+
     const { remoteLinks }: Dictionary<string> = this.request(DocumentsModule.id);
     const dataUsl = remoteLinks[origin];
 

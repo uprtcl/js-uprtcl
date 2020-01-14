@@ -47,3 +47,11 @@ export const EveesTypes = {
   MergeStrategy: Symbol('merge-strategry'),
   Evees: Symbol('evees')
 };
+
+export interface PerspectiveData {
+  id: string;
+  perspective: Perspective;
+  details: PerspectiveDetails;
+  canWrite: Boolean;
+}
+

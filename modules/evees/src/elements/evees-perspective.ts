@@ -2,10 +2,11 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule, Secured, Perspective } from '@uprtcl/common';
+import { ApolloClientModule, Secured } from '@uprtcl/common';
 
 import { UPDATE_HEAD, CREATE_COMMIT } from '../graphql/queries';
 import { UpdateContentEvent } from './events';
+import { Perspective } from '../types';
 
 export class EveesPerspective extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVE');
