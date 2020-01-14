@@ -4,16 +4,19 @@ import { NormalizedCacheObject, gql } from 'apollo-boost';
 
 import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 export class DiscoveryLink extends ApolloLink {
+
+  logger = new Logger('DISCOVERY-LINK');
+
   request(operation: Operation, forward: NextLink) {
     const context = operation.getContext();
     const container = context.container;
     const cache: ApolloCache<NormalizedCacheObject> = context.cache;
 
-    console.log(operation);
-    console.log(cache);
-
+    this.logger.info({ operation, cache });
+    
     const operationObserver = forward(operation);
 
     return new Observable<FetchResult>(observer => {
