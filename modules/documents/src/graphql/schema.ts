@@ -15,7 +15,7 @@ export const documentsTypeDefs = gql`
 
     text: String!
     type: TextType!
-    links: [Entity]!
+    links: [Entity]! @discover
 
     _patterns: Patterns!
   }
