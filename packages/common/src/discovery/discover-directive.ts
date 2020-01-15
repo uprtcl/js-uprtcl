@@ -9,7 +9,7 @@ export class DiscoverDirective extends SchemaDirectiveVisitor {
 
     field.resolve = async (parent, args, context, info) => {
       let entityId: string | string[] | undefined = args.id;
-      debugger;
+
       if (!entityId) {
         if (!defaultResolver) {
           defaultResolver = parent => parent[field.name];
