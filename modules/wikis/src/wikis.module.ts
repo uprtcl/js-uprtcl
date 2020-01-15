@@ -10,7 +10,8 @@ import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
 import { WikisLocal } from './services/wikis.local';
 import { Wikis } from './services/wikis';
 import { WikisRemote } from './services/wikis.remote';
-import { wikiTypeDefs, resolvers } from './graphql/schema';
+import { wikiTypeDefs } from './graphql/schema';
+import { resolvers } from './graphql/resolvers';
 import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
 

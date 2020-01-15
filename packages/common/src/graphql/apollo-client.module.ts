@@ -6,10 +6,12 @@ import { ITypeDefinitions, makeExecutableSchema, IResolvers } from 'graphql-tool
 
 import { MicroModule } from '@uprtcl/micro-orchestrator';
 
-import { baseTypeDefs, baseResolvers } from './base-schema';
+import { baseTypeDefs } from './base-schema';
+import { baseResolvers } from './base-resolvers';
 import { DiscoveryLink } from '../discovery/discovery-link';
 import { contextContainerLink } from './context-link';
 import { GraphQlSchemaBindings, ApolloClientBindings } from './bindings';
+import { DiscoverDirective } from '../discovery/discover-directive';
 
 export class ApolloClientModule extends MicroModule {
   static id = Symbol('apollo-client-module');
@@ -28,7 +30,10 @@ export class ApolloClientModule extends MicroModule {
         return makeExecutableSchema({
           typeDefs: [baseTypeDefs, ...typeDefs],
           resolvers: [baseResolvers, ...resolvers],
-          inheritResolversFromInterfaces: true
+          inheritResolversFromInterfaces: true,
+          schemaDirectives: {
+            discover: DiscoverDirective
+          }
         });
       });
 

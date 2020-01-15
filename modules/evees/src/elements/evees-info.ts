@@ -1,20 +1,22 @@
 import { LitElement, property, html, css } from 'lit-element';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
-export const styleMap = (style) => {
+export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-      propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
-      return `${styleString}${propName}:${propValue};`;
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    return `${styleString}${propName}:${propValue};`;
   }, '');
-}
+};
 
+import { ApolloClientModule } from '@uprtcl/common';
 
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { ApolloClient, gql } from 'apollo-boost';
-import { PerspectiveData, EveesTypes } from '../types';
-import { ApolloClientModule } from '@uprtcl/common';
-import { Evees, NewPerspectiveArgs } from '../services/evees';
-import { CREATE_COMMIT, CREATE_PERSPECTIVE, EveesModule, MergeStrategy } from '../uprtcl-evees';
+import { PerspectiveData } from '../types';
+import { EveesBindings } from '../bindings';
+import { EveesModule } from 'src/evees.module';
+import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
+import { MergeStrategy } from '../merge/merge-strategy';
 
 export interface TextNode {
   text: string;
@@ -44,7 +46,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async load() {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`
         {
@@ -91,7 +93,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async createGlobalPerspective(perspectiveId: string): Promise<string> {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const { remoteLinks }: Dictionary<string> = this.request(EveesModule.id);
 
     this.logger.info('createGlobalPerspective()', { perspectiveId });
@@ -207,17 +209,13 @@ export class EveesInfo extends moduleConnect(LitElement) {
     return perspectiveMutation.data.createPerspective.id;
   }
 
-
   async merge(fromPerspectiveId: string) {
     if (!fromPerspectiveId) return;
-    
+
     this.logger.info('merge()', { perspectiveId: this.perspectiveId, fromPerspectiveId });
 
-    const merge: MergeStrategy = this.request(EveesTypes.MergeStrategy);
-    const updateRequests = await merge.mergePerspectives(
-      this.perspectiveId,
-      fromPerspectiveId
-    );
+    const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
+    const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId);
     console.log(updateRequests);
   }
 
@@ -225,7 +223,10 @@ export class EveesInfo extends moduleConnect(LitElement) {
     super.connectedCallback();
 
     this.addEventListener('merge-perspective', ((e: CustomEvent) => {
-      this.logger.info('CATCHED EVENT: merge-perspective', { perspectiveId: this.perspectiveId, e });
+      this.logger.info('CATCHED EVENT: merge-perspective', {
+        perspectiveId: this.perspectiveId,
+        e
+      });
 
       e.stopPropagation();
       this.merge(e.detail.id);

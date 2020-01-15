@@ -13,7 +13,8 @@ export { sortObject } from './utils/utils';
 /** GraphQl */
 export { ApolloClientModule } from './graphql/apollo-client.module';
 export { GraphQlSchemaModule } from './graphql/graphql-schema.module';
-export { baseTypeDefs, baseResolvers } from './graphql/base-schema';
+export { baseTypeDefs } from './graphql/base-schema';
+export { baseResolvers } from './graphql/base-resolvers';
 
 /** Modules */
 export { GqlDiscoveryModule } from './discovery/gql-discovery.module';

@@ -15,7 +15,8 @@ import {
 import { DocumentsLocal } from './services/documents.local';
 import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
-import { documentsTypeDefs, resolvers } from './graphql/schema';
+import { documentsTypeDefs } from './graphql/schema';
+import { resolvers } from './graphql/resolvers';
 
 import en from '../i18n/en.json';
 import { DocumentsBindings } from './bindings';
@@ -52,7 +53,10 @@ export class DocumentsModule extends MicroModule {
 
   static bindings = DocumentsBindings;
 
-  constructor(protected documentsRemotes: DocumentsRemote[], protected remoteLinks: Dictionary<string>) {
+  constructor(
+    protected documentsRemotes: DocumentsRemote[],
+    protected remoteLinks: Dictionary<string>
+  ) {
     super();
   }
 

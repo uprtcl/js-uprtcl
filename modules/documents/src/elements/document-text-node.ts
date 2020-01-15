@@ -88,7 +88,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       links: []
     };
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
@@ -186,8 +186,8 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     contentClasses.push('content-editable');
 
     return html`
-      <div class="row">
-        <div class="column">
+      <div class="column">
+        <div class="row">
           <div class="evee-info">
             <slot name="evee"></slot>
           </div>

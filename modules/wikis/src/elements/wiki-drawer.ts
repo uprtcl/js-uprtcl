@@ -8,12 +8,11 @@ import '@material/mwc-ripple';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD } from '@uprtcl/evees';
 import { TextType, CREATE_TEXT_NODE } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/common';
-import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
 import { CREATE_WIKI } from '../graphql/queries';
-import { WikisModule } from '../wikis.module';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'wiki-id' })
@@ -21,11 +20,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ type: Object })
   wiki: Wiki | undefined = undefined;
-  
+
   @property({ type: Boolean })
   editable: boolean = true;
 
-  origin: string | undefined = undefined;
   currentHead: string | undefined = undefined;
 
   @property({ type: String })
@@ -36,26 +34,20 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async createPage() {
     if (!this.wiki) return;
-    if (!this.origin) return;
 
     this.pagesList = undefined;
 
     const pageContent = {
       text: 'New page',
-      type: TextType.Title,
+      type: TextType.Paragraph,
       links: []
     };
-
-    const { remoteLinks } : Dictionary<string> = this.request(WikisModule.id)
-    const dataUsl = remoteLinks[this.origin];
-    const docsUsl = remoteLinks[dataUsl];
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
-        content: pageContent,
-        usl: docsUsl
+        content: pageContent
       }
     });
 
@@ -63,16 +55,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_COMMIT,
       variables: {
         dataId: result.data.createTextNode.id,
-        parentsIds: [],
-        usl: this.origin
+        parentsIds: []
       }
     });
 
     const perspective = await client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
-        headId: commit.data.createCommit.id,
-        usl: this.origin
+        headId: commit.data.createCommit.id
       }
     });
 
@@ -84,8 +74,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const wikiResult = await client.mutate({
       mutation: CREATE_WIKI,
       variables: {
-        content: wiki,
-        usl: dataUsl
+        content: wiki
       }
     });
 
@@ -93,8 +82,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_COMMIT,
       variables: {
         dataId: wikiResult.data.createWiki.id,
-        parentsIds: this.currentHead ? [this.currentHead] : [],
-        usl: this.origin
+        parentsIds: this.currentHead ? [this.currentHead] : []
       }
     });
 
@@ -123,10 +111,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       {
         entity(id: "${this.wikiId}") {
           id
+
           ... on Perspective {
-            payload {
-              origin
-            }
             head {
               id
               data {
@@ -160,14 +146,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.pagesList = pages.map(page => ({
       id: page.id,
       title: page._patterns.content._patterns.title
-      ? page._patterns.content._patterns.title
-      : this.t('wikis:untitled')
+        ? page._patterns.content._patterns.title
+        : this.t('wikis:untitled')
     }));
 
     this.wiki = { title: wiki.title, pages: wiki.pages.map(p => p.id) };
     const head = result.data.entity.head;
     this.currentHead = head ? head.id : undefined;
-    this.origin = result.data.entity.payload.origin;
   }
 
   static get styles() {
@@ -189,7 +174,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   renderPageList() {
     if (!this.pagesList)
       return html`
-        <cortex-loading-placeholder>loading pages...</cortex-loading-placeholder>
+        <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
     if (this.pagesList.length === 0)
@@ -215,7 +200,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   render() {
     if (!this.wiki)
       return html`
-        <cortex-loading-placeholder>loading wiki...</cortex-loading-placeholder>
+        <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
     return html`

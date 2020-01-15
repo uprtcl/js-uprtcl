@@ -20,12 +20,12 @@ import { EveesBindings } from './bindings';
 import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
-import { eveesTypeDefs, eveesResolvers } from './graphql/schema';
+import { eveesTypeDefs } from './graphql/schema';
+import { eveesResolvers } from './graphql/resolvers';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 import { PerspectivesList } from './elements/evees-perspectives-list';
 import { EveesPerspective } from './elements/evees-perspective';
 import { EveesInfo } from './elements/evees-info';
-
 
 import en from '../i18n/en.json';
 
@@ -60,9 +60,7 @@ import en from '../i18n/en.json';
  *
  * const orchestrator = new MicroOrchestrator();
  *
- * await orchestrator.loadModules({
- *   [EveesModule.bindings.Module]: evees
- * });
+ * await orchestrator.loadModule(evees);
  * ```
  *
  * @category CortexModule

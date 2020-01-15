@@ -1,5 +1,4 @@
 import { html, TemplateResult } from 'lit-element';
-import { ifDefined } from 'lit-html/directives/if-defined';
 import { ApolloClient } from 'apollo-boost';
 import { injectable, inject } from 'inversify';
 
