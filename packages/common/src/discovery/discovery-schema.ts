@@ -7,7 +7,7 @@ export const discoveryTypeDefs = gql`
 
   directive @discover on FIELD_DEFINITION
 
-  extend type Quer {
+  extend type Query {
     entity(id: ID!): Entity! @discover
   }
 `;
