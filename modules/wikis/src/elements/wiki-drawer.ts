@@ -86,13 +86,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }
     });
 
-    await client.mutate({
+    const updateHeadResult = await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.wikiId,
         headId: wikiCommit.data.createCommit.id
       }
     });
+
+    console.log('result2', updateHeadResult);
 
     this.loadWiki();
   }
@@ -138,7 +140,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }`
     });
 
-    console.log(result);
+    console.log('result1', result);
 
     const wiki = result.data.entity.head.data;
 

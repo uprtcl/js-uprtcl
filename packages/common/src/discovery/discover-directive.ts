@@ -18,7 +18,7 @@ export class DiscoverDirective extends SchemaDirectiveVisitor {
         entityId = await defaultResolver(parent, args, context, info);
       }
 
-      if (!entityId) throw new Error('EntityId not found');
+      if (!entityId) return null;
 
       const discovery: DiscoveryService = context.container.get(
         DiscoveryModule.bindings.DiscoveryService

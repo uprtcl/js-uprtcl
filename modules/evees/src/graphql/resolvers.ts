@@ -37,6 +37,8 @@ export const eveesResolvers = {
 
       const details = await evees.getPerspectiveDetails(parent.id);
 
+      console.log('head', details.headId);
+
       return details && details.headId;
     },
     async name(parent, _, { container }) {

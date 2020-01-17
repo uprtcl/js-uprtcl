@@ -4,6 +4,15 @@ export const UPDATE_HEAD = gql`
   mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID!) {
     updatePerspectiveHead(perspectiveId: $perspectiveId, headId: $headId) {
       id
+      head {
+        id
+        data {
+          id
+        }
+      }
+      payload {
+        origin
+      }
     }
   }
 `;
