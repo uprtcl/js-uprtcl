@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 import multihashing from 'multihashing-async';
-import * as Cid from 'cids';
+import CID from 'cids';
 
 import { Transformable, Pattern, Hashed, Hashable } from '@uprtcl/cortex';
 import { CidConfig, defaultCidConfig } from '@uprtcl/connections';
@@ -27,7 +27,7 @@ export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[
     const b = multihashing.Buffer.from(JSON.stringify(ordered));
     const encoded = await multihashing(b, config.type);
 
-    const cid = new Cid(config.version, config.codec, encoded, config.base);
+    const cid = new CID(config.version, config.codec, encoded, config.base);
     return cid.toString();
   }
 

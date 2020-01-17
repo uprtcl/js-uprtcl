@@ -1,5 +1,5 @@
 import multihashing from 'multihashing-async';
-import * as Cid from 'cids';
+import CID from 'cids';
 
 /** Function signatures */
 export const ADD_PERSP = 'addPerspective(bytes32,bytes32,string,string,string,address,string)';
@@ -17,7 +17,7 @@ export const GET_REQUEST_ID = 'getRequestId(bytes32,bytes32,uint32)';
 
 /** hashes the cid to fit in a bytes32 word */
 export const hashCid = async (perspectiveCidStr: string) => {
-  const cid = new Cid(perspectiveCidStr);
+  const cid = new CID(perspectiveCidStr);
   const encoded = await multihashing.digest(cid.buffer, 'sha2-256');
   return '0x' + encoded.toString('hex');
 };

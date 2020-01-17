@@ -1,6 +1,6 @@
 export interface CidConfig {
   base?: string;
-  version: number;
+  version: 0 | 1;
   codec: string;
   type: string;
 }

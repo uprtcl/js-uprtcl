@@ -48,13 +48,21 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     await this.updateContent(newContent);
   }
 
-  async updateContent(newContent: TextNode): Promise<string> {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+  async updateContent(newContent: TextNode): Promise<void> {
+    if (!this.perspective) return;
 
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const origin = this.perspective.object.payload.origin;
+
+    const { remoteLinks }: Dictionary<string> = this.request(DocumentsModule.id);
+    const dataUsl = remoteLinks[origin];
+
+    this.logger.info('updateContent() - CREATE_TEXT_NODE', { newContent });
     const result = await client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
-        content: newContent
+        content: newContent,
+        usl: dataUsl
       }
     });
 
