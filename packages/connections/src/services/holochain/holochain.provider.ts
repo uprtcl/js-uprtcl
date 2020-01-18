@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
 
 import { Hashed } from '@uprtcl/cortex';
-import { ServiceProvider } from '@uprtcl/multiplatform';
+import { Authority } from '@uprtcl/multiplatform';
 import { Constructor } from '@uprtcl/micro-orchestrator';
 
 import { HolochainConnection } from './holochain.connection';
@@ -14,8 +14,8 @@ export type EntryResult<T extends object = any> = {
 };
 
 @injectable()
-export abstract class HolochainProvider implements ServiceProvider {
-  uprtclProviderLocator!: string;
+export abstract class HolochainProvider implements Authority {
+  authority!: string;
 
   abstract instance: string;
   abstract zome: string;

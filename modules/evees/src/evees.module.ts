@@ -15,9 +15,7 @@ import { AccessControlModule } from '@uprtcl/access-control';
 import { PerspectiveLinks, PerspectiveLens } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
-import { EveesLocal } from './types';
 import { EveesBindings } from './bindings';
-import { EveesDexie } from './services/providers/evees.dexie';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs } from './graphql/schema';
@@ -77,14 +75,12 @@ export class EveesModule extends MicroModule {
 
   constructor(
     protected eveesProviders: Array<EveesRemote>,
-    protected remoteLinks: Dictionary<string>,
-    protected localEvees: new (...args: any[]) => EveesLocal = EveesDexie
+    protected remoteLinks: Dictionary<string>
   ) {
     super();
   }
 
   async onLoad(container: interfaces.Container) {
-    container.bind(EveesModule.bindings.EveesLocal).to(this.localEvees);
     container.bind(EveesModule.bindings.Evees).to(Evees);
     container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
   }

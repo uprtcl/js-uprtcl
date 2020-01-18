@@ -2,12 +2,12 @@ import { Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { HasLinks, Hashed, PatternRecognizer } from '@uprtcl/cortex';
 
-import { ServiceProvider } from '../sources/service.provider';
+import { Authority } from '../sources/authority';
 import { KnownSourcesService } from '../known-sources/known-sources.service';
-import { Ready } from '../sources/service.provider';
+import { Ready } from '../sources/ready';
 import { linksFromObject, discoverKnownSources } from '../discovery.utils';
 
-export class MultiService<T extends ServiceProvider> implements Ready {
+export class MultiService<T extends Authority> implements Ready {
   protected logger = new Logger('MultiProviderService');
 
   services: Dictionary<T>;
@@ -24,7 +24,7 @@ export class MultiService<T extends ServiceProvider> implements Ready {
   ) {
     // Build the sources dictionary from the resulting names
     this.services = serviceProviders.reduce(
-      (services, service) => ({ ...services, [service.uprtclProviderLocator]: service }),
+      (services, service) => ({ ...services, [service.authority]: service }),
       {}
     );
   }
@@ -53,6 +53,37 @@ export class MultiService<T extends ServiceProvider> implements Ready {
     return Object.keys(this.services).map(upl => this.services[upl]);
   }
 
+  /**
+   * Executes the getter function in the specified service
+   *
+   * @param upl of the service to execute the getter function to
+   * @param getter function to get the object from the specified service
+   * @param linksSelector function to select links from the retrieved object
+   * @returns the result of the getter function
+   */
+  public async getGenericFromService<R>(
+    upl: string | undefined,
+    getter: (service: T) => Promise<R | undefined>,
+    linksSelector: (object: R) => Promise<string[]>
+  ): Promise<R | undefined> {
+    const source = this.getService(upl);
+
+    // Execute the getter
+    const result = await getter(source);
+
+    if (!result) return undefined;
+
+    // Get the links
+    const links = await linksSelector(result);
+
+    // Discover the known sources from the links
+    const linksPromises = links.map(link =>
+      discoverKnownSources(this.localKnownSources)(link, source)
+    );
+    await Promise.all(linksPromises);
+
+    return result;
+  }
   /**
    * Gets the service with the given name
    *
@@ -116,38 +147,6 @@ export class MultiService<T extends ServiceProvider> implements Ready {
 
     const results = await Promise.all(promises);
     return results.filter(result => !!result) as R[];
-  }
-
-  /**
-   * Executes the getter function in the specified service
-   *
-   * @param upl of the service to execute the getter function to
-   * @param getter function to get the object from the specified service
-   * @param linksSelector function to select links from the retrieved object
-   * @returns the result of the getter function
-   */
-  public async getGenericFromService<R>(
-    upl: string | undefined,
-    getter: (service: T) => Promise<R | undefined>,
-    linksSelector: (object: R) => Promise<string[]>
-  ): Promise<R | undefined> {
-    const service = this.getService(upl);
-
-    // Execute the getter
-    const result = await getter(service);
-
-    if (!result) return undefined;
-
-    // Get the links
-    const links = await linksSelector(result);
-
-    // Discover the known sources from the links
-    const linksPromises = links.map(link =>
-      discoverKnownSources(this.localKnownSources)(link, service)
-    );
-    await Promise.all(linksPromises);
-
-    return result;
   }
 
   /**

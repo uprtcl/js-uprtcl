@@ -25,6 +25,10 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
     );
   }
 
+  get source() {
+    return super.authority;
+  }
+
   async get<T>(hash: string): Promise<Hashed<T>> {
     return super.getObject<Hashed<T>>(`/get/${hash}`);
   }

@@ -33,12 +33,12 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   async firstUpdated() {
     const docProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.authority);
     });
 
     const eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.authority);
     });
 
     window.addEventListener('popstate', () => {
@@ -51,11 +51,11 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const hashed = await this.textNodePattern.create()({}, docProvider.uprtclProviderLocator);
+      const hashed = await this.textNodePattern.create()({}, docProvider.authority);
 
       const perspective = await this.perspectivePattern.create()(
         { dataId: hashed.id },
-        eveesProvider.uprtclProviderLocator
+        eveesProvider.authority
       );
       window.history.pushState('', '', `/?id=${perspective.id}`);
     }

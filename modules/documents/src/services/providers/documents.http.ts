@@ -14,6 +14,10 @@ export enum DataType {
 const documents_api: string = 'documents-v1';
 
 export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
+  get source() {
+    return super.authority;
+  }
+
   constructor(host: string, protected connection: HttpConnection) {
     super(
       {

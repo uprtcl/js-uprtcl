@@ -12,8 +12,6 @@ import {
   TextNodePatterns,
   TextNodeTitle
 } from './patterns/text-node.entity';
-import { DocumentsLocal } from './services/documents.local';
-import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
 import { documentsTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
@@ -58,11 +56,6 @@ export class DocumentsModule extends MicroModule {
     protected remoteLinks: Dictionary<string>
   ) {
     super();
-  }
-
-  async onLoad(container: interfaces.Container) {
-    container.bind(DocumentsModule.bindings.DocumentsLocal).to(DocumentsLocal);
-    container.bind(DocumentsModule.bindings.Documents).to(Documents);
   }
 
   submodules = [

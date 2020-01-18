@@ -1,13 +1,12 @@
-import { Wikis } from '../services/wikis';
-import { WikiBindings } from '../bindings';
+import { WikisProvider } from '../services/wikis.provider';
 
 export const resolvers = {
-    Mutation: {
-      async createWiki(_, { content, usl }, { container }) {
-        const wikis: Wikis = container.get(WikiBindings.Wikis);
-        const { id, object } = await wikis.createWiki(content, usl);
-  
-        return { id, ...object };
-      }
+  Mutation: {
+    async createWiki(_, { content, source }, { container }) {
+      const wikis: WikisProvider = container.get(source);
+      const id = await wikis.createWiki(content);
+
+      return { id, ...content };
     }
-  };
+  }
+};

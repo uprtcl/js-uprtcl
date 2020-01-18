@@ -34,12 +34,13 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   async readPerspective(perspectiveId: string, to: boolean): Promise<void> {
-    const perspective: Secured<Perspective> | undefined = await this.evees.get(perspectiveId);
+    const perspective: Secured<Perspective> | undefined = await this.discovery.get(perspectiveId);
 
     if (!perspective)
       throw new Error(`Error when trying to fetch perspective with id ${perspectiveId}`);
 
-    const details = await this.evees.getPerspectiveDetails(perspectiveId);
+    const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
+    const details = await remote.getPerspectiveDetails(perspectiveId);
 
     if (!details.context)
       throw new Error(
@@ -51,7 +52,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     this.setPerspective(perspective, details.context, to);
 
-    const head: Secured<Commit> | undefined = await this.evees.get(details.headId);
+    const head: Secured<Commit> | undefined = await this.discovery.get(details.headId);
 
     if (!head) throw new Error(`Error when trying to fetch the commit with id ${details.headId}`);
 
@@ -101,7 +102,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (this.allPerspectives[perspectiveId]) {
       return this.allPerspectives[perspectiveId];
     } else {
-      const details = await this.evees.getPerspectiveDetails(perspectiveId);
+      const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
+      const details = await remote.getPerspectiveDetails(perspectiveId);
 
       if (!details.context)
         throw new Error(
@@ -159,7 +161,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   protected async updatePerspectiveData(perspectiveId: string, data: Hashed<any>): Promise<void> {
-    const details = await this.evees.getPerspectiveDetails(perspectiveId);
+    const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
+    const details = await remote.getPerspectiveDetails(perspectiveId);
 
     const newDataId = await createEntity(this.recognizer)(data);
 

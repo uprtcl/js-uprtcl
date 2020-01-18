@@ -21,7 +21,7 @@ import { EveesModule } from '@uprtcl/evees';
 
 import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
-import { Documents } from '../services/documents';
+import { DocumentsProvider } from '../services/documents.provider';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -144,25 +144,30 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<TextNode>> {
   constructor(
     @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(DocumentsBindings.Documents) protected documents: Documents,
+    @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
     @multiInject(EveesModule.bindings.PerspectivePattern) protected perspectivePatterns: Pattern[]
   ) {
     super(hashedPattern);
   }
 
-  create = () => async (node: Partial<TextNode> | undefined, upl?: string): Promise<string> => {
+  create = () => async (node: Partial<TextNode> | undefined, source?: string): Promise<string> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
 
-    if (!upl) {
-      upl = this.documents.service.remote.getAllServicesUpl().find(upl => !upl.includes('http'));
+    let remote: DocumentsProvider | undefined;
+    if (source) {
+      remote = this.documentsRemotes.find(documents => documents.source === source);
+    } else {
+      remote = this.documentsRemotes.find(remote => remote.source.includes('http'));
+    }
+
+    if (!remote) {
+      throw new Error('Could not find remote to create a TextNode in');
     }
 
     const newTextNode = { links, text, type };
-    const { id } = await this.documents.createTextNode(newTextNode, upl);
-
-    return id;
+    return remote.createTextNode(newTextNode);
   };
 }
 

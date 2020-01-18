@@ -79,12 +79,14 @@ export class PerspectiveLinks extends PerspectiveEntity
   }
 
   links = async (perspective: Secured<Perspective>) => {
-    const details = await this.evees.getPerspectiveDetails(perspective.id);
+    const remote = this.evees.getPerspectiveProvider(perspective);
+    const details = await remote.getPerspectiveDetails(perspective.id);
     return details.headId ? [details.headId] : [];
   };
 
   redirect = async (perspective: Secured<Perspective>) => {
-    const details = await this.evees.getPerspectiveDetails(perspective.id);
+    const remote = this.evees.getPerspectiveProvider(perspective);
+    const details = await remote.getPerspectiveDetails(perspective.id);
 
     return details.headId;
   };
@@ -100,7 +102,9 @@ export class PerspectiveLinks extends PerspectiveEntity
         icon: 'call_split',
         title: 'evees:new-perspective',
         action: async () => {
-          const details = await this.evees.getPerspectiveDetails(perspective.id);
+          const remote = this.evees.getPerspectiveProvider(perspective);
+          const details = await remote.getPerspectiveDetails(perspective.id);
+
           const newPerspectiveId = await this.create()(
             { headId: details.headId, context: details.context },
             perspective.object.payload.origin

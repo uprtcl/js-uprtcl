@@ -1,11 +1,20 @@
-import { Hashed } from '../../patterns/properties/hashable';
-import { ServiceProvider, Ready } from './service.provider';
+import { Hashed } from '@uprtcl/cortex';
+import { Ready } from './ready';
+import { KnownSourcesService } from '../known-sources/known-sources.service';
 
 /**
  * A source is a service that implements a standard function `get`,
  * which receives the hash of the object and returns it
  */
 export interface Source extends Ready {
+  source: string;
+
+  /**
+   * If the service provider has a known source service associated, any object stored on it
+   * can be linked to/from other sources
+   */
+  knownSources?: KnownSourcesService;
+
   /**
    * Get the object identified by the given hash,
    * or undefined if it didn't exist in the source
@@ -15,5 +24,3 @@ export interface Source extends Ready {
    */
   get<T extends object>(hash: string): Promise<Hashed<T> | undefined>;
 }
-
-export type SourceProvider = ServiceProvider & Source;

@@ -1,5 +1,3 @@
-import { CacheService } from '@uprtcl/multiplatform';
-
 import { EveesProvider } from './services/evees.provider';
 
 export type Context = string;
@@ -36,8 +34,6 @@ export interface Proposal {
   creatorId: string;
   requests: Array<UpdateRequest>;
 }
-
-export type EveesLocal = CacheService & EveesProvider;
 
 export interface PerspectiveData {
   id: string;

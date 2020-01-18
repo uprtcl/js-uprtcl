@@ -26,8 +26,8 @@ export const CREATE_COMMIT = gql`
 `;
 
 export const CREATE_PERSPECTIVE = gql`
-  mutation CreatePerspective($headId: ID, $context: String, $usl: String) {
-    createPerspective(headId: $headId, context: $context, usl: $usl) {
+  mutation CreatePerspective($headId: ID, $context: String, $authority: String) {
+    createPerspective(headId: $headId, context: $context, usl: $authority) {
       id
     }
   }

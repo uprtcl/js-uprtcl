@@ -1,7 +1,7 @@
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 
-import { ServiceProvider } from '@uprtcl/multiplatform';
+import { Authority } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EthereumConnection } from './ethereum.connection';
@@ -14,7 +14,7 @@ export interface EthereumProviderOptions {
   contractAddress?: string;
 }
 
-export abstract class EthereumProvider implements ServiceProvider {
+export abstract class EthereumProvider implements Authority {
   logger = new Logger('EthereumProvider');
 
   contractInstance!: Contract;
@@ -28,7 +28,7 @@ export abstract class EthereumProvider implements ServiceProvider {
     return this.ethConnection.getCurrentAccount();
   }
 
-  abstract get uprtclProviderLocator(): string;
+  abstract get authority(): string;
 
   async ready() {
     await this.ethConnection.ready();

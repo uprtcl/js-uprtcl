@@ -17,6 +17,8 @@ export class WikisHttp extends HttpProvider implements WikisProvider {
     );
   }
 
+  source = '';
+
   async get<T>(hash: string): Promise<Hashed<T>> {
     const object = await super.getObject<T>(`/get/${hash}`);
     return {

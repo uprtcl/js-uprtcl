@@ -19,6 +19,18 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
     return undefined;
   }
 
+  get source() {
+    // TODO RETURN SOURCE ID
+    return 'undefined';
+  }
+
+  /**
+   * @override
+   */
+  public async ready() {
+    await super.ready();
+  }
+
   public async get(id: string): Promise<Hashed<any> | undefined> {
     return this.call('get_entry', {
       address: id

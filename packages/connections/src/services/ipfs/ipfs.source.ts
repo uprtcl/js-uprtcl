@@ -1,16 +1,16 @@
 import { Hashed } from '@uprtcl/cortex';
-import { SourceProvider } from '@uprtcl/multiplatform';
+import { Source } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { CidConfig, defaultCidConfig } from './cid.config';
 import { IpfsConnection } from './ipfs.connection';
 
-export class IpfsSource implements SourceProvider {
+export class IpfsSource implements Source {
   logger = new Logger('IpfsSource');
 
   constructor(protected ipfsConnection: IpfsConnection) {}
 
-  uprtclProviderLocator = 'ipfs:api-v1:mainnet';
+  source = 'ipfs';
 
   private getObjectBuffer(object: object): Buffer {
     return Buffer.from(JSON.stringify(object));

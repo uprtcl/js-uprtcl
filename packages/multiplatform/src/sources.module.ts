@@ -3,8 +3,8 @@ import { interfaces } from 'inversify';
 import { MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { DiscoveryModule } from './discovery.module';
-import { SourceProvider, Source } from './services/sources/source';
-import { Ready } from './services/sources/service.provider';
+import { Source } from './services/sources/source';
+import { Ready } from './services/sources/ready';
 import { SourcesBindings } from './bindings';
 
 /**
@@ -26,16 +26,17 @@ export class SourcesModule extends MicroModule {
 
   static bindings = SourcesBindings;
 
-  constructor(protected sources: Array<{ symbol: symbol; source: SourceProvider }>) {
+  constructor(protected sources: Array<{ symbol: symbol; source: Source }>) {
     super();
   }
 
   async onLoad(container: interfaces.Container): Promise<void> {
     const readyPromises = this.sources.map(symbolSource => {
-      const services: Ready[] = [symbolSource.source];
+      const source: Source = symbolSource.source;
+      const services: Ready[] = [source];
 
-      if (symbolSource.source.knownSources) {
-        services.push(symbolSource.source.knownSources);
+      if (source.knownSources) {
+        services.push(source.knownSources);
       }
 
       return Promise.all(services.map(s => s.ready()));
@@ -49,7 +50,7 @@ export class SourcesModule extends MicroModule {
 
       container.bind<Source>(SourcesBindings.Source).toConstantValue(source);
       container.bind<Source>(symbolSource.symbol).toConstantValue(source);
-      container.bind<Source>(source.uprtclProviderLocator).toConstantValue(source);
+      container.bind<Source>(source.source).toConstantValue(source);
     }
   }
 }

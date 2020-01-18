@@ -1,4 +1,4 @@
-import { ServiceProvider } from '@uprtcl/multiplatform';
+import { Authority } from '@uprtcl/multiplatform';
 
 import { HttpConnection, PostResult } from './http.connection';
 
@@ -7,10 +7,10 @@ export interface HttpProviderOptions {
   apiId: string;
 }
 
-export class HttpProvider implements ServiceProvider {
+export class HttpProvider implements Authority {
   constructor(protected options: HttpProviderOptions, protected connection: HttpConnection) {}
 
-  get uprtclProviderLocator(): string {
+  get authority(): string {
     const url = new URL(this.options.host);
     return `http:${this.options.apiId}:${url.hostname}`;
   }

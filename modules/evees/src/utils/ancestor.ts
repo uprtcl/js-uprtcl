@@ -1,15 +1,15 @@
 import { Secured } from '@uprtcl/common';
+import { Source } from '@uprtcl/multiplatform';
 
-import { Evees } from '../services/evees';
 import { Commit } from '../types';
 
-export const isAncestorOf = (evees: Evees) => async (
+export const isAncestorOf = (source: Source) => async (
   ancestorId: string,
   commitId: string
 ): Promise<boolean> => {
   if (ancestorId === commitId) return true;
 
-  const commit: Secured<Commit> | undefined = await evees.get(commitId);
+  const commit: Secured<Commit> | undefined = await source.get(commitId);
 
   if (!commit) throw new Error(`Could not fetch commit with id ${commitId} from any source`);
 
@@ -20,7 +20,7 @@ export const isAncestorOf = (evees: Evees) => async (
   } else {
     /** recursive call */
     for (let ix = 0; ix < parentsIds.length; ix++) {
-      if (await isAncestorOf(evees)(ancestorId, parentsIds[ix])) {
+      if (await isAncestorOf(source)(ancestorId, parentsIds[ix])) {
         return true;
       }
     }

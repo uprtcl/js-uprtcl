@@ -33,7 +33,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     this.updatesList = [];
 
     const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
-      const details = await this.evees.getPerspectiveDetails(id);
+      const remote = await this.evees.getPerspectiveProviderById(id);
+      const details = await remote.getPerspectiveDetails(id);
+
       if (!details.headId)
         throw new Error('Cannot merge a perspective that has no head associated');
       return details.headId;
@@ -41,7 +43,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-    const isAncestor = await isAncestorOf(this.evees)(fromHeadId, toHeadId);
+    const isAncestor = await isAncestorOf(this.discovery)(fromHeadId, toHeadId);
     if (isAncestor) {
       // All commits to merge from are ancestors of the current one, do nothing
       return this.updatesList;
@@ -64,7 +66,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   protected async loadPerspectiveData(perspectiveId: string): Promise<Hashed<any>> {
-    const details = await this.evees.getPerspectiveDetails(perspectiveId);
+    const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
+    const details = await remote.getPerspectiveDetails(perspectiveId);
     if (!details.headId)
       throw new Error(
         `Error when trying to load data for perspective ${perspectiveId}: perspective has no head associated`
@@ -74,7 +77,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   protected async loadCommitData(commitId: string): Promise<Hashed<any>> {
-    const commit: Secured<Commit> | undefined = await this.evees.get(commitId);
+    const commit: Secured<Commit> | undefined = await this.discovery.get(commitId);
     if (!commit) throw new Error(`Could not fetch ancestor commit with id ${commitId}`);
 
     const data = await this.discovery.get(commit.object.payload.dataId);
@@ -87,7 +90,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeCommits(toCommitId: string, fromCommitId: string): Promise<string> {
     const commitsIds = [toCommitId, fromCommitId];
 
-    const ancestorId = await findMostRecentCommonAncestor(this.evees)(commitsIds);
+    const ancestorId = await findMostRecentCommonAncestor(this.discovery)(commitsIds);
     const ancestorData: any = await this.loadCommitData(ancestorId);
 
     const datasPromises = commitsIds.map(async commitId => this.loadCommitData(commitId));

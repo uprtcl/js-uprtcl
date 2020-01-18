@@ -10,6 +10,8 @@ import { TextNode } from '../../types';
 export abstract class DocumentsHolochain extends HolochainProvider implements DocumentsProvider {
   zome: string = 'documents';
 
+  source = '';
+
   createTextNode(node: TextNode, hash?: string): Promise<string> {
     return this.call('create_text_node', {
       previous_address: hash,

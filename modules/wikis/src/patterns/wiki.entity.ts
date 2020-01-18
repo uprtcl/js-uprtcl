@@ -1,14 +1,14 @@
 import { html, TemplateResult } from 'lit-element';
-import { injectable, inject } from 'inversify';
+import { injectable, inject, multiInject } from 'inversify';
 
 import { CorePatterns } from '@uprtcl/common';
 import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
-import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
+import { Mergeable, MergeStrategy, mergeStrings } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
-import { Wikis } from '../services/wikis';
+import { WikisProvider } from '../services/wikis.provider';
 
 const propertyOrder = ['title', 'pages'];
 
@@ -80,18 +80,28 @@ export class WikiCommon extends WikiEntity implements HasLenses {
 
 @injectable()
 export class WikiCreate implements Creatable<Partial<Wiki>> {
-  constructor(@inject(WikiBindings.Wikis) protected wikis: Wikis) {}
+  constructor(@multiInject(WikiBindings.WikisRemote) protected wikisRemotes: WikisProvider[]) {}
 
   recognize(object: object): boolean {
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = () => async (node?: Partial<Wiki>, upl?: string): Promise<string> => {
+  create = () => async (node?: Partial<Wiki>, source?: string): Promise<string> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
 
+    let remote: WikisProvider | undefined;
+    if (source) {
+      remote = this.wikisRemotes.find(documents => documents.source === source);
+    } else {
+      remote = this.wikisRemotes.find(remote => remote.source.includes('http'));
+    }
+
+    if (!remote) {
+      throw new Error('Could not find remote to create a Wiki in');
+    }
+
     const newWiki = { pages, title };
-    const { id } = await this.wikis.createWiki(newWiki, upl);
-    return id;
+    return remote.createWiki(newWiki);
   };
 }

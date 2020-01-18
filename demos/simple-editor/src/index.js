@@ -34,14 +34,14 @@ import { SimpleWiki } from './simple-wiki';
     [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
   }
 
-  const evees = new EveesModule([ethEvees, httpEvees], eveesRemotesLinks);
+  const evees = new EveesModule([ethEvees], eveesRemotesLinks);
 
   const docsRemotesLinks = {
     [httpEvees.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
     [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
   }
 
-  const documents = new DocumentsModule([ipfsDocuments, httpDocuments], docsRemotesLinks);
+  const documents = new DocumentsModule([ipfsDocuments], docsRemotesLinks);
 
   const wikiRemotesLinks = {
     [httpEvees.uprtclProviderLocator]: httpWikis.uprtclProviderLocator,
@@ -50,7 +50,7 @@ import { SimpleWiki } from './simple-wiki';
     [ipfsWikis.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
   }
 
-  const wikis = new WikisModule([ipfsWikis, httpWikis], wikiRemotesLinks);
+  const wikis = new WikisModule([ipfsWikis], wikiRemotesLinks);
 
   const lenses = new LensesModule({
     'lens-selector': new LensSelectorPlugin(),

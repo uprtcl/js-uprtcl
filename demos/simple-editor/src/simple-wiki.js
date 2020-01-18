@@ -35,17 +35,17 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.authority);
     });
 
-    this.docsProvider = this.requestAll(DocumentsModule.types.DocumentsRemote).find(provider => {
+    this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.authority);
     });
 
     this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.authority);
     });
 
     window.addEventListener('popstate', () => {
@@ -59,8 +59,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       
       this.rootHash = window.location.href.split('id=')[1];
-
     } else {
+
       const client = this.request(ApolloClientModule.bindings.Client);
       const result = await client.mutate({
         mutation: CREATE_WIKI,
@@ -69,7 +69,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
             title: 'Genesis Wiki',
             pages: []
           },
-          usl: this.wikisProvider.uprtclProviderLocator
+          source: this.wikisProvider.source
         }
       });
 
@@ -78,7 +78,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         variables: {
           dataId: result.data.createWiki.id,
           parentsIds: [],
-          usl: this.eveesProvider.uprtclProviderLocator
+          usl: this.eveesProvider.authority
         }
       });
 
@@ -86,7 +86,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         mutation: CREATE_PERSPECTIVE,
         variables: {
           headId: createCommit.data.createCommit.id,
-          usl: this.eveesProvider.uprtclProviderLocator
+          authority: this.eveesProvider.authority
         }
       });
 

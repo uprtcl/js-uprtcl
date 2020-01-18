@@ -1,7 +1,7 @@
 import { gql } from 'apollo-boost';
 
 import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
-import { ServiceProvider } from '@uprtcl/multiplatform';
+import { Authority } from '@uprtcl/multiplatform';
 
 import { Permissions } from './properties/permissions';
 import { Updatable } from './properties/updatable';
@@ -44,7 +44,7 @@ export const accessControlResolvers = {
 
       if (!permissions) return null;
 
-      const serviceProvider: ServiceProvider = context.container.get(updatable.origin(entity));
+      const serviceProvider: Authority = context.container.get(updatable.origin(entity));
 
       const userId = serviceProvider.userId;
 

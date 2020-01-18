@@ -14,7 +14,6 @@ export {
   HolochainProvider,
   createHolochainProvider
 } from './services/holochain/holochain.provider';
-export { HolochainProxy, proxyMyAddress } from './services/holochain/holochain.proxy';
 export { KnownSourcesHolochain } from './services/holochain/known-sources.holochain';
 
 // Ipfs

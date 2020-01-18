@@ -2,7 +2,7 @@ import { Hashed } from '@uprtcl/cortex';
 
 import { CachedMultiService } from './cached-multi.service';
 import { CacheService } from '../cache/cache.service';
-import { MultiSourceService } from '../multi/multi-source.service';
+import { MultiSourceService } from '../discovery.service';
 import { SourceProvider, Source } from '../sources/source';
 
 export class CachedMultiSourceService<CACHE extends CacheService, REMOTE extends SourceProvider>

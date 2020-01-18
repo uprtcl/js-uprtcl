@@ -1,3 +1,4 @@
+import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Secured } from '@uprtcl/common';
 
 import { Commit } from '../types';
@@ -35,23 +36,24 @@ export const eveesResolvers = {
     async head(parent, _, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
 
-      const details = await evees.getPerspectiveDetails(parent.id);
-
-      console.log('head', details.headId);
+      const remote = evees.getPerspectiveProvider(parent);
+      const details = await remote.getPerspectiveDetails(parent.id);
 
       return details && details.headId;
     },
     async name(parent, _, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
 
-      const details = await evees.getPerspectiveDetails(parent.id);
+      const remote = evees.getPerspectiveProvider(parent);
+      const details = await remote.getPerspectiveDetails(parent.id);
 
       return details && details.name;
     },
     async context(parent, _, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
 
-      const details = await evees.getPerspectiveDetails(parent.id);
+      const remote = evees.getPerspectiveProvider(parent);
+      const details = await remote.getPerspectiveDetails(parent.id);
 
       return details && details.context;
     }
@@ -63,25 +65,26 @@ export const eveesResolvers = {
       const commit: Secured<Commit> = await evees.createCommit(
         { dataId, parentsIds, message },
         usl
-      );
+      );evees
 
       return { id: commit.id, ...commit.object };
     },
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
 
       await evees.updatePerspectiveDetails(perspectiveId, { headId });
 
-      const perspective = await evees.get(perspectiveId);
+      const perspective = await discovery.get(perspectiveId);
 
       if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
 
       return { id: perspective.id, ...perspective.object };
     },
-    async createPerspective(_, { headId, context, usl }, { container }) {
+    async createPerspective(_, { headId, context, authority }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
 
-      const hashedPerspective = await evees.createPerspective({ headId, context }, usl);
+      const hashedPerspective = await evees.createPerspective({ headId, context }, authority);
 
       return { id: hashedPerspective.id, ...hashedPerspective.object };
     }

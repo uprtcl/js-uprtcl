@@ -16,7 +16,7 @@ export const wikiTypeDefs = gql`
   }
 
   extend type Mutation {
-    createWiki(content: WikiInput!, usl: String): Wiki!
+    createWiki(content: WikiInput!, source: String): Wiki!
   }
 `;
 

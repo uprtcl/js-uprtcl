@@ -1,5 +1,3 @@
-import { interfaces } from 'inversify';
-
 import { PatternsModule } from '@uprtcl/cortex';
 import { SourcesModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/common';
@@ -7,8 +5,6 @@ import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/
 
 import { WikiDrawer } from './elements/wiki-drawer';
 import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
-import { WikisLocal } from './services/wikis.local';
-import { Wikis } from './services/wikis';
 import { WikisRemote } from './services/wikis.remote';
 import { wikiTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
@@ -52,11 +48,6 @@ export class WikisModule extends MicroModule {
 
   constructor(protected wikisRemotes: WikisRemote[], protected remoteLinks: Dictionary<string>) {
     super();
-  }
-
-  async onLoad(container: interfaces.Container) {
-    container.bind(WikisModule.bindings.WikisLocal).to(WikisLocal);
-    container.bind(WikisModule.bindings.Wikis).to(Wikis);
   }
 
   submodules = [

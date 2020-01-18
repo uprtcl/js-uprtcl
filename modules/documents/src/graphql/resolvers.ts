@@ -1,19 +1,12 @@
-import { Documents } from '../services/documents';
-import { DocumentsBindings } from 'src/bindings';
-
-import { Logger } from '@uprtcl/micro-orchestrator';
-
-const logger = new Logger('DOCUMENT-TEXT-NODE-SCHEMA');
+import { DocumentsProvider } from '../services/documents.provider';
 
 export const resolvers = {
   Mutation: {
-    async createTextNode(_, { content, usl }, { container }) {
-      logger.info('createTextNode()', { content, usl });
+    async createTextNode(_, { content, source }, { container }) {
+      const documents: DocumentsProvider = container.get(source);
 
-      const documents: Documents = container.get(DocumentsBindings.Documents);
-
-      const textNode = await documents.createTextNode(content, usl);
-      return { id: textNode.id, ...textNode.object };
+      const id = await documents.createTextNode(content);
+      return { id: id, ...content };
     }
   }
 };
