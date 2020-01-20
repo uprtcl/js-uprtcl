@@ -3,7 +3,7 @@ import { inject, injectable } from 'inversify';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
-import { Secured, createEntity } from '@uprtcl/common';
+import { Secured, createEntity, ApolloClientModule } from '@uprtcl/common';
 
 import { UpdateRequest, Commit } from '../types';
 import { EveesBindings } from '../bindings';
@@ -13,6 +13,8 @@ import { isAncestorOf } from '../utils/ancestor';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
+import { ApolloClient } from 'apollo-boost';
+import { CREATE_COMMIT } from 'src/graphql/queries';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
@@ -22,7 +24,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {}
 
   async mergePerspectives(
@@ -103,16 +106,17 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDataId = await createEntity(this.recognizer)(newData);
 
-    const mergeCommit = await this.evees.createCommit(
-      {
+    const mergeCommit = await this.client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
         dataId: newDataId,
         parentsIds: commitsIds,
-        message: `Merge commits ${commitsIds.toString()}`
-      },
-      sources ? sources[0] : undefined
-    );
+        message: `Merge commits ${commitsIds.toString()}`,
+        source: sources ? sources[0] : undefined
+      }
+    });
 
-    return mergeCommit.id;
+    return mergeCommit.data.createCommit.id;
   }
 
   async mergeData<T extends object>(originalData: T, newDatas: T[]): Promise<T> {

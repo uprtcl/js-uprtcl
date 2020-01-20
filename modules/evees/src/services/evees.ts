@@ -1,7 +1,14 @@
 import { multiInject, injectable, inject } from 'inversify';
 import { isEqual } from 'lodash-es';
 
-import { PatternRecognizer, Hashed, IsSecure, HasChildren, CortexModule, Signed } from '@uprtcl/cortex';
+import {
+  PatternRecognizer,
+  Hashed,
+  IsSecure,
+  HasChildren,
+  CortexModule,
+  Signed
+} from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Secured, createEntity, CorePatterns, ApolloClientModule } from '@uprtcl/common';
@@ -10,6 +17,7 @@ import { Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
 import { ApolloClient, gql } from 'apollo-boost';
+import { CREATE_PERSPECTIVE, CREATE_COMMIT } from 'src/graphql/queries';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -21,8 +29,8 @@ export type NewPerspectiveArgs = (
   | (NoHeadPerspectiveArgs & { dataId: string })
 ) & { disableRecursive?: boolean };
 
-const creatorId = 'did:hi:ho';
 const DEFAULT_PERSPECTIVE_NAME = 'master';
+const creatorId = 'did:hi:ho';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -124,9 +132,6 @@ export class Evees {
 
     this.logger.info('Created new perspective: ', perspective);
 
-    // Clone the perspective in the selected provider
-    await eveesRemote.clonePerspective(perspective);
-
     // Create the context to point the perspective to, if needed
     const context = args.context || `${Date.now()}${Math.random()}`;
 
@@ -184,61 +189,27 @@ export class Evees {
     }
 
     if (dataId) {
-      const head = await this.createCommit(
-        {
+      const result = await this.client.mutate({
+        mutation: CREATE_COMMIT,
+        variables: {
           dataId: dataId,
           message: `Commit at ${Date.now()}`,
-          parentsIds: headId ? [headId] : []
-        },
-        eveesRemote.authority
-      );
-      headId = head.id;
+          parentsIds: headId ? [headId] : [],
+          source: eveesRemote.authority
+        }
+      });
+      headId = result.data.createCommit.id;
     }
 
-    // Set the perspective details
-    if (headId || context || name) {
-      const provider = this.getPerspectiveProvider(perspective.object);
-      await provider.updatePerspectiveDetails(perspective.id, { headId, context, name });
-    }
+    // Clone the perspective in the selected provider
+    await this.client.mutate({
+      mutation: CREATE_PERSPECTIVE,
+      variables: {
+        headId: headId,
+        authority: eveesRemote.authority
+      }
+    });
 
     return perspective;
   }
-
-  /**
-   * Create a new commit with the given properties
-   *
-   * @param args the properties of the commit
-   * @param upl the provider to which to create the commit, needed if there is more than one provider
-   */
-  public async createCommit(
-    args: {
-      dataId: string;
-      message: string;
-      parentsIds: string[];
-      creatorsIds?: string[];
-      timestamp?: number;
-    },
-    authority?: string
-  ): Promise<Secured<Commit>> {
-    const eveesRemote = this.getAuthority(authority);
-
-    const timestamp = args.timestamp || Date.now();
-    const creatorsIds = args.creatorsIds || [creatorId];
-
-    const commitData: Commit = {
-      creatorsIds: creatorsIds,
-      dataId: args.dataId,
-      message: args.message,
-      timestamp: timestamp,
-      parentsIds: args.parentsIds
-    };
-    const commit: Secured<Commit> = await this.secured.derive()(commitData);
-
-    this.logger.info('Created new commit: ', commit);
-
-    await eveesRemote.cloneCommit(commit);
-
-    return commit;
-  }
-
 }

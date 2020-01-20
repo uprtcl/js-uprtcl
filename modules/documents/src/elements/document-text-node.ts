@@ -101,7 +101,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       mutation: CREATE_TEXT_NODE,
       variables: {
         content: newNode,
-        usl: dataUsl
+        source: dataUsl
       }
     });
 
@@ -110,7 +110,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       variables: {
         dataId: result.data.createTextNode.id,
         parentsIds: [],
-        usl: origin
+        source: origin
       }
     });
 
@@ -118,7 +118,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       mutation: CREATE_PERSPECTIVE,
       variables: {
         headId: commit.data.createCommit.id,
-        usl: origin
+        authority: origin
       }
     });
 

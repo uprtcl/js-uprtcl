@@ -1,4 +1,4 @@
-import { injectable, inject } from 'inversify';
+import { injectable, inject, multiInject } from 'inversify';
 import { html, TemplateResult } from 'lit-element';
 
 import { Pattern, HasRedirect, IsSecure, HasLinks, Creatable, Entity } from '@uprtcl/cortex';
@@ -8,8 +8,10 @@ import { Lens, HasLenses } from '@uprtcl/lenses';
 import { Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
+import { EveesRemote } from '../services/evees.remote';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
+const creatorId = 'did:hi:ho';
 
 @injectable()
 export class CommitEntity implements Entity {
@@ -74,18 +76,17 @@ export class CommitPattern extends CommitEntity
     Creatable<{ dataId: string; message: string; parentsIds: string[]; timestamp?: number }> {
   constructor(
     @inject(CorePatterns.Secured)
-    protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
+    protected secured: Pattern & IsSecure<Secured<Commit>>,
+    @multiInject(EveesBindings.EveesRemote) protected remotes: EveesRemote[],
     @inject(EveesBindings.Evees) protected evees: Evees
   ) {
-    super(securedPattern);
+    super(secured);
   }
 
   recognize(object: object) {
     return (
-      this.securedPattern.recognize(object) &&
-      propertyOrder.every(p =>
-        this.securedPattern.extract(object as Secured<Commit>).hasOwnProperty(p)
-      )
+      this.secured.recognize(object) &&
+      propertyOrder.every(p => this.secured.extract(object as Secured<Commit>).hasOwnProperty(p))
     );
   }
 
@@ -94,14 +95,39 @@ export class CommitPattern extends CommitEntity
       | {
           dataId: string;
           message: string;
+          creatorsIds?: string[];
+
           parentsIds: string[];
           timestamp?: number;
         }
       | undefined,
-    providerName?: string
+    source?: string
   ) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
-    const { id } = await this.evees.createCommit(args, providerName);
-    return id;
+
+    const timestamp = args.timestamp || Date.now();
+    const creatorsIds = args.creatorsIds || [creatorId];
+
+    const commitData: Commit = {
+      creatorsIds: creatorsIds,
+      dataId: args.dataId,
+      message: args.message,
+      timestamp: timestamp,
+      parentsIds: args.parentsIds
+    };
+    const commit: Secured<Commit> = await this.secured.derive()(commitData);
+
+    if (!source) {
+      if (this.remotes.length === 1) source = this.remotes[0].source;
+      else throw new Error('You need to specify which source to create the commit');
+    }
+
+    const remote: EveesRemote | undefined = this.remotes.find(r => r.authority === source);
+
+    if (!remote) throw new Error(`Source ${source} not registered`);
+
+    await remote.cloneCommit(commit);
+
+    return commit.id;
   };
 }

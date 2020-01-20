@@ -15,6 +15,7 @@ import {
   CortexModule
 } from '@uprtcl/cortex';
 import { Secured, CorePatterns, ApolloClientModule } from '@uprtcl/common';
+import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Perspective } from '../types';
@@ -73,6 +74,8 @@ export class PerspectiveLinks extends PerspectiveEntity
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
+    @inject(DiscoveryModule.bindings.DiscoveryService)
+    protected discovery: DiscoveryService,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(securedPattern);
@@ -91,9 +94,14 @@ export class PerspectiveLinks extends PerspectiveEntity
     return details.headId;
   };
 
-  create = () => async (args: NewPerspectiveArgs | undefined, providerName?: string) => {
-    const { id } = await this.evees.createPerspective(args || {}, providerName);
-    return id;
+  create = () => async (args: NewPerspectiveArgs | undefined, authority?: string) => {
+    const perspective = await this.evees.createPerspective(args || {}, authority);
+
+    const provider = this.evees.getPerspectiveProvider(perspective.object);
+
+    await this.discovery.postEntityCreate(provider, perspective);
+
+    return perspective.id;
   };
 
   actions = (perspective: Secured<Perspective>): PatternAction[] => {

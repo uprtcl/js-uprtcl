@@ -1,6 +1,6 @@
 import { multiInject, inject, injectable } from 'inversify';
 
-import { PatternRecognizer, Hashed, CortexModule } from '@uprtcl/cortex';
+import { PatternRecognizer, Hashed, CortexModule, Pattern, HasLinks } from '@uprtcl/cortex';
 import { Dictionary, Logger } from '@uprtcl/micro-orchestrator';
 
 import { Source } from './sources/source';
@@ -161,5 +161,60 @@ export class DiscoveryService implements Source {
       // All sources failed, return undefined
       return undefined;
     }
+  }
+
+  /**
+   * Adds the known sources of the links from the given object to the known sources service
+   *
+   * @param source
+   * @param links
+   */
+  public async postEntityUpdate(source: Source, links: string[]): Promise<void> {
+    const knownSourcesService = source.knownSources;
+    if (!knownSourcesService) return;
+
+    const promises = links.map(async link => {
+      // We asume that we have stored the local known sources for the links from the object
+      const knownSources = await this.localKnownSources.getKnownSources(link);
+
+      // If the only known source is the name of the source itself, we don't need to tell the provider
+      const sameSource =
+        knownSources && knownSources.length === 1 && knownSources[0] === source.source;
+
+      if (knownSources && !sameSource) {
+        await knownSourcesService.addKnownSources(link, knownSources);
+      }
+    });
+
+    await Promise.all(promises);
+  }
+
+  /**
+   * Adds the known sources of the links from the given object to the known sources service
+   *
+   * @param source
+   * @param links
+   */
+  public async postEntityCreate<O extends Object>(
+    source: Source,
+    entity: Hashed<O>
+  ): Promise<void> {
+    const sourceName = source.source;
+
+    await this.localKnownSources.addKnownSources(entity.id, [sourceName]);
+
+    const patterns: Pattern[] = this.recognizer.recognize(entity);
+
+    const hasLinks: HasLinks[] = (patterns.filter(
+      p => ((p as unknown) as HasLinks).links
+    ) as unknown) as HasLinks[];
+
+    const promises = hasLinks.map(l => l.links(entity));
+
+    const linksArray = await Promise.all(promises);
+
+    const links = ([] as string[]).concat(...linksArray);
+
+    await this.postEntityUpdate(source, links);
   }
 }

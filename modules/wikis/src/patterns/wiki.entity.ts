@@ -9,6 +9,7 @@ import { HasLenses, Lens } from '@uprtcl/lenses';
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
 import { WikisProvider } from '../services/wikis.provider';
+import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 
 const propertyOrder = ['title', 'pages'];
 
@@ -80,7 +81,10 @@ export class WikiCommon extends WikiEntity implements HasLenses {
 
 @injectable()
 export class WikiCreate implements Creatable<Partial<Wiki>> {
-  constructor(@multiInject(WikiBindings.WikisRemote) protected wikisRemotes: WikisProvider[]) {}
+  constructor(
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @multiInject(WikiBindings.WikisRemote) protected wikisRemotes: WikisProvider[]
+  ) {}
 
   recognize(object: object): boolean {
     return propertyOrder.every(p => object.hasOwnProperty(p));
@@ -100,8 +104,11 @@ export class WikiCreate implements Creatable<Partial<Wiki>> {
     if (!remote) {
       throw new Error('Could not find remote to create a Wiki in');
     }
-
     const newWiki = { pages, title };
-    return remote.createWiki(newWiki);
+    const wikiId = await remote.createWiki(newWiki);
+
+    await this.discovery.postEntityCreate(remote, { id: wikiId, object: newWiki });
+
+    return wikiId;
   };
 }

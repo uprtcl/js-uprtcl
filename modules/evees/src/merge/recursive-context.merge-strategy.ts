@@ -6,6 +6,7 @@ import { Secured, createEntity } from '@uprtcl/common';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import { Perspective, UpdateRequest, Commit } from '../types';
+import { CREATE_COMMIT } from 'src/graphql/queries';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -166,17 +167,20 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const newDataId = await createEntity(this.recognizer)(data);
 
-    const head = await this.evees.createCommit({
-      dataId: newDataId,
-      parentsIds: details.headId ? [details.headId] : [],
-      message: 'Merge: reference new commits'
+    const head = await this.client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        dataId: newDataId,
+        parentsIds: details.headId ? [details.headId] : [],
+        message: 'Merge: reference new commits'
+      }
     });
 
     this.addUpdateRequest({
       fromPerspectiveId: undefined,
       perspectiveId,
       oldHeadId: details.headId,
-      newHeadId: head.id
+      newHeadId: head.data.createCommit.id
     });
   }
 

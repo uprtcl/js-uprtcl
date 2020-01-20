@@ -1,5 +1,6 @@
 import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Secured } from '@uprtcl/common';
+import { Pattern, Creatable } from '@uprtcl/cortex';
 
 import { Commit } from '../types';
 import { EveesBindings } from '../bindings';
@@ -60,15 +61,17 @@ export const eveesResolvers = {
   },
   Mutation: {
     async createCommit(_, { dataId, parentsIds, message, source }, { container }) {
-      const evees: Evees = container.get(EveesBindings.Evees);
+      const patterns: Pattern[] = container.getAll(EveesBindings.CommitPattern);
 
-      const commit: Secured<Commit> = await evees.createCommit(
-        { dataId, parentsIds, message },
-        source
-      );
-      evees;
+      const creatable: Creatable<any> | undefined = patterns.find(
+        p => ((p as unknown) as Creatable<any>).create
+      ) as Creatable<any> | undefined;
 
-      return { id: commit.id, ...commit.object };
+      if (!creatable) throw new Error(`No creatable pattern registered for perspectives`);
+
+      const commitId = await creatable.create()({ dataId, parentsIds, message }, source);
+
+      return { id: commitId };
     },
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
@@ -84,11 +87,17 @@ export const eveesResolvers = {
       return { id: perspective.id, ...perspective.object };
     },
     async createPerspective(_, { headId, context, authority }, { container }) {
-      const evees: Evees = container.get(EveesBindings.Evees);
+      const patterns: Pattern[] = container.getAll(EveesBindings.PerspectivePattern);
 
-      const hashedPerspective = await evees.createPerspective({ headId, context }, authority);
+      const creatable: Creatable<any> | undefined = patterns.find(
+        p => ((p as unknown) as Creatable<any>).create
+      ) as Creatable<any> | undefined;
 
-      return { id: hashedPerspective.id, ...hashedPerspective.object };
+      if (!creatable) throw new Error(`No creatable pattern registered for perspectives`);
+
+      const perspectiveId = await creatable.create()({ headId, context }, authority);
+
+      return { id: perspectiveId };
     }
   }
 };

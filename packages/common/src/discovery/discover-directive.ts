@@ -1,5 +1,6 @@
 import { SchemaDirectiveVisitor } from 'graphql-tools';
-import { GraphQLInterfaceType, GraphQLField } from 'graphql';
+import { GraphQLField } from 'graphql';
+
 import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Hashed } from '@uprtcl/cortex';
 

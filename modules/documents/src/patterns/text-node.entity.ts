@@ -15,6 +15,7 @@ import {
   CortexModule
 } from '@uprtcl/cortex';
 import { CorePatterns } from '@uprtcl/common';
+import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { EveesModule } from '@uprtcl/evees';
@@ -144,6 +145,7 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<TextNode>> {
   constructor(
     @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
     @multiInject(EveesModule.bindings.PerspectivePattern) protected perspectivePatterns: Pattern[]
   ) {
@@ -167,7 +169,11 @@ export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<
     }
 
     const newTextNode = { links, text, type };
-    return remote.createTextNode(newTextNode);
+    const id = await remote.createTextNode(newTextNode);
+
+    await this.discovery.postEntityCreate(remote, { id, object: newTextNode });
+
+    return id;
   };
 }
 

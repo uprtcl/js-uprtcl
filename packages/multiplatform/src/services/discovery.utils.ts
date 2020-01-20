@@ -50,9 +50,7 @@ export const discoverLinksKnownSources = (
   const links = await linksFromObject(recognizer)(object);
 
   // Discover the known sources from the links
-  const linksPromises = links.map(link =>
-    discoverKnownSources(localKnownSources)(link, source)
-  );
+  const linksPromises = links.map(link => discoverKnownSources(localKnownSources)(link, source));
   await Promise.all(linksPromises);
 };
 
