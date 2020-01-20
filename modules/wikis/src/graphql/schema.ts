@@ -7,7 +7,7 @@ export const wikiTypeDefs = gql`
     title: String!
     pages: [Entity!]! @discover
 
-    _patterns: Patterns!
+    _context: EntityContext!
   }
 
   input WikiInput {

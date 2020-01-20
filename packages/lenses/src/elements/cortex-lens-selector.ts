@@ -40,13 +40,19 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
       {
         entity(id: "${this.hash}", depth: 1) {
           id
-          _patterns {
-            isomorphisms {
-              _patterns {
-                lenses {
-                  type
-                  name
-                  render
+          _context {
+
+            patterns {
+              isomorphisms {
+                _context {
+
+                  patterns {
+                    lenses {
+                      type
+                      name
+                      render
+                    }
+                  }
                 }
               }
             }
@@ -56,9 +62,9 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.entity._patterns.isomorphisms;
+    const isomorphisms = result.data.entity._context.patterns.isomorphisms;
 
-    const lenses = flatMap(isomorphisms.reverse(), iso => iso._patterns.lenses);
+    const lenses = flatMap(isomorphisms.reverse(), iso => iso._context.patterns.lenses);
     this.lenses = lenses.filter(iso => !!iso);
   }
 

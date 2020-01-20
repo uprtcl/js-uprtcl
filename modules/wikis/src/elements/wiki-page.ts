@@ -21,12 +21,14 @@ export class WikiPage extends moduleConnect(LitElement) {
       query: gql`{
         entity(id: "${this.pageHash}") {
           id
-          _patterns {
-            content {
-              id
-              ... on TextNode {
-                text
-                links
+          _context {
+            patterns {
+              content {
+                id
+                ... on TextNode {
+                  text
+                  links
+                }
               }
             }
           }
@@ -34,7 +36,7 @@ export class WikiPage extends moduleConnect(LitElement) {
       }`
     });
 
-    this.textNode = result.data.entity._patterns.content;
+    this.textNode = result.data.entity._context.patterns.content;
   }
 
   render() {

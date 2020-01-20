@@ -39,6 +39,7 @@
     "@types/lodash-es": "^4.17.3",
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.11.0",
+    "apollo-cache-persist": "^0.1.1",
     "babel-plugin-module-extension": "^0.1.1",
     "babel-plugin-transform-inline-environment-variables": "^0.4.3",
     "deepmerge": "^4.2.2",

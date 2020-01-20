@@ -8,8 +8,8 @@ import { getIsomorphisms, entityContent } from '../utils/entities';
 import { ApolloClientModule } from '../graphql/apollo-client.module';
 
 export const cortexSchema = gql`
-  extend interface Entity {
-    _patterns: Patterns!
+  extend type EntityContext {
+    patterns: Patterns!
   }
 
   type Patterns {
@@ -44,8 +44,10 @@ export const cortexResolvers = {
         );
       }
       return entities[0].name;
-    },
-    async _patterns(parent, args, { container }, info) {
+    }
+  },
+  EntityContext: {
+    async patterns(parent, args, { container }, info) {
       const entity = await entityFromParent(parent, container);
 
       const isGraphQlField = (key: string) =>

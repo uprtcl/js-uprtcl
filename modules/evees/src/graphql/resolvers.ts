@@ -8,19 +8,15 @@ import { Evees } from '../services/evees';
 export const eveesResolvers = {
   Commit: {
     message(parent) {
-      console.log('parent', parent);
       return parent.payload.message;
     },
     timestamp(parent) {
-      console.log('parent', parent);
       return parent.payload.timestamp;
     },
     parentCommits(parent) {
-      console.log('parent', parent);
       return parent.payload.parentsIds;
     },
     data(parent) {
-      console.log('parent', parent);
       return parent.payload.dataId;
     }
   },

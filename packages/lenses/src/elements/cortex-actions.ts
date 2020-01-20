@@ -43,14 +43,20 @@ export class CortexActions extends moduleConnect(LitElement) {
       {
         entity(id: "${this.hash}", depth: 1) {
           id
-          _patterns {
-            isomorphisms {
-              _patterns {
-                actions {
-                  title
-                  icon
-                  action
-                  type
+          _context {
+
+            patterns {
+              isomorphisms {
+                _context {
+
+                  patterns {
+                    actions {
+                      title
+                      icon
+                      action
+                      type
+                    }
+                  }
                 }
               }
             }
@@ -60,9 +66,9 @@ export class CortexActions extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.entity._patterns.isomorphisms;
+    const isomorphisms = result.data.entity._context.patterns.isomorphisms;
 
-    const actions: PatternAction[] = flatMap(isomorphisms.reverse(), iso => iso._patterns.actions);
+    const actions: PatternAction[] = flatMap(isomorphisms.reverse(), iso => iso._context.patterns.actions);
 
     this.actions = {};
 

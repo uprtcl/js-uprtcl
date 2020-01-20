@@ -53,9 +53,11 @@ export class EveesPerspective extends moduleConnect(LitElement) {
               id
             }
           }
-          _patterns {
-            content {
-              id
+          _context {
+            patterns {
+              content {
+                id
+              }
             }
           }
         }
@@ -63,7 +65,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       `
     });
 
-    this.entityId = result.data.entity._patterns.content.id;
+    this.entityId = result.data.entity._context.patterns.content.id;
     const head = result.data.entity.head;
     this.currentHeadId = head ? head.id : undefined;
     

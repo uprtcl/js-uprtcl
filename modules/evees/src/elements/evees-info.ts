@@ -66,9 +66,11 @@ export class EveesInfo extends moduleConnect(LitElement) {
                 timestamp
               }
             }
-            _patterns {
-              accessControl {
-                canWrite
+            _context {
+              patterns {
+                accessControl {
+                  canWrite
+                }
               }
             }
           }
@@ -84,8 +86,8 @@ export class EveesInfo extends moduleConnect(LitElement) {
         name: result.data.entity.name
       },
       perspective: result.data.entity.payload,
-      canWrite: result.data.entity._patterns.accessControl
-        ? result.data.entity._patterns.accessControl.canWrite
+      canWrite: result.data.entity._context.patterns.accessControl
+        ? result.data.entity._context.patterns.accessControl.canWrite
         : true
     };
 
@@ -113,14 +115,16 @@ export class EveesInfo extends moduleConnect(LitElement) {
               origin
             }
           }
-          _patterns {
-            content {
-              id
-              ... on TextNode {
-                text
-                type
-                links {
-                  id
+          _context {
+            patterns {
+              content {
+                id
+                ... on TextNode {
+                  text
+                  type
+                  links {
+                    id
+                  }
                 }
               }
             }
@@ -135,9 +139,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
      * and use pattern-based get and set links like you were doing with perspective-pattern
      */
     const data: TextNode = {
-      text: queryResult.data.entity._patterns.content.text,
-      type: queryResult.data.entity._patterns.content.type,
-      links: queryResult.data.entity._patterns.content.links.map(l => l.id)
+      text: queryResult.data.entity._context.patterns.content.text,
+      type: queryResult.data.entity._context.patterns.content.type,
+      links: queryResult.data.entity._context.patterns.content.links.map(l => l.id)
     };
 
     /** this perspective details */

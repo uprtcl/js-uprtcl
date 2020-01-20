@@ -17,7 +17,7 @@ export const documentsTypeDefs = gql`
     type: TextType!
     links: [Entity]! @discover
 
-    _patterns: Patterns!
+    _context: EntityContext!
   }
 
   input TextNodeInput {

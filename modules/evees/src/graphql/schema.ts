@@ -23,7 +23,7 @@ export const eveesTypeDefs = gql`
     message: String
     data: Entity @discover
 
-    _patterns: Patterns!
+    _context: EntityContext!
   }
 
   type Perspective implements Entity {
@@ -34,7 +34,7 @@ export const eveesTypeDefs = gql`
     context: Context
     payload: Payload
 
-    _patterns: Patterns!
+    _context: EntityContext!
   }
 
   type Payload {

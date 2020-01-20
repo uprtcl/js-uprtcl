@@ -12,6 +12,8 @@ export const baseTypeDefs = gql`
 
   interface Entity {
     id: ID!
+
+    _context: EntityContext!
   }
 
   type EntityContext {

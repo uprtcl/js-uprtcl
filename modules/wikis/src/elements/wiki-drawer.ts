@@ -94,8 +94,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }
     });
 
-    console.log('result2', updateHeadResult);
-
     this.loadWiki();
   }
 
@@ -123,11 +121,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   title
                   pages {
                     id
-                    _patterns {
-                      content {
-                        id
-                        _patterns {
-                          title
+                    _context {
+                      patterns {
+                        content {
+                          id
+                          _context {
+                            patterns {
+                              title
+                            }
+                          }
                         }
                       }
                     }
@@ -140,15 +142,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }`
     });
 
-    console.log('result1', result);
-
     const wiki = result.data.entity.head.data;
 
     const pages = wiki.pages;
     this.pagesList = pages.map(page => ({
       id: page.id,
-      title: page._patterns.content._patterns.title
-        ? page._patterns.content._patterns.title
+      title: page._context.patterns.content._context.patterns.title
+        ? page._context.patterns.content._context.patterns.title
         : this.t('wikis:untitled')
     }));
 
