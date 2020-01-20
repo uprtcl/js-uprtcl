@@ -28,29 +28,28 @@ import { SimpleWiki } from './simple-wiki';
   const httpWikis = new WikisHttp(c1host, httpConnection);
   const ipfsWikis = new WikisIpfs(ipfsConnection);
 
-
   const eveesRemotesLinks = {
     [httpEvees.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
     [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
-  }
+  };
 
-  const evees = new EveesModule([ethEvees], eveesRemotesLinks);
+  const evees = new EveesModule([ethEvees, httpEvees], eveesRemotesLinks);
 
   const docsRemotesLinks = {
     [httpEvees.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
     [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
-  }
+  };
 
-  const documents = new DocumentsModule([ipfsDocuments], docsRemotesLinks);
+  const documents = new DocumentsModule([ipfsDocuments, httpDocuments], docsRemotesLinks);
 
   const wikiRemotesLinks = {
     [httpEvees.uprtclProviderLocator]: httpWikis.uprtclProviderLocator,
     [ethEvees.uprtclProviderLocator]: ipfsWikis.uprtclProviderLocator,
     [httpWikis.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
     [ipfsWikis.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
-  }
+  };
 
-  const wikis = new WikisModule([ipfsWikis], wikiRemotesLinks);
+  const wikis = new WikisModule([ipfsWikis, httpWikis], wikiRemotesLinks);
 
   const lenses = new LensesModule({
     'lens-selector': new LensSelectorPlugin(),

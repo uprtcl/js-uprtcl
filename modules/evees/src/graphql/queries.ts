@@ -18,8 +18,8 @@ export const UPDATE_HEAD = gql`
 `;
 
 export const CREATE_COMMIT = gql`
-  mutation CreateCommit($dataId: ID!, $parentsIds: [ID!]!, $message: String, $usl: String) {
-    createCommit(dataId: $dataId, parentsIds: $parentsIds, message: $message, usl: $usl) {
+  mutation CreateCommit($dataId: ID!, $parentsIds: [ID!]!, $message: String, $source: String) {
+    createCommit(dataId: $dataId, parentsIds: $parentsIds, message: $message, source: $source) {
       id
     }
   }
@@ -27,7 +27,7 @@ export const CREATE_COMMIT = gql`
 
 export const CREATE_PERSPECTIVE = gql`
   mutation CreatePerspective($headId: ID, $context: String, $authority: String) {
-    createPerspective(headId: $headId, context: $context, usl: $authority) {
+    createPerspective(headId: $headId, context: $context, authority: $authority) {
       id
     }
   }

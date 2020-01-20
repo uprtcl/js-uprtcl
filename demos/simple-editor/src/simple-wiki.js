@@ -78,7 +78,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         variables: {
           dataId: result.data.createWiki.id,
           parentsIds: [],
-          usl: this.eveesProvider.authority
+          source: this.eveesProvider.authority
         }
       });
 

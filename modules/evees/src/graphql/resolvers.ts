@@ -59,12 +59,12 @@ export const eveesResolvers = {
     }
   },
   Mutation: {
-    async createCommit(_, { dataId, parentsIds, message, usl }, { container }) {
+    async createCommit(_, { dataId, parentsIds, message, source }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const commit: Secured<Commit> = await evees.createCommit(
         { dataId, parentsIds, message },
-        usl
+        source
       );
       evees;
 

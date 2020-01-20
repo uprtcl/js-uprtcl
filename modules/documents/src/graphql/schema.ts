@@ -27,6 +27,6 @@ export const documentsTypeDefs = gql`
   }
 
   extend type Mutation {
-    createTextNode(content: TextNodeInput!, usl: ID): TextNode!
+    createTextNode(content: TextNodeInput!, source: ID): TextNode!
   }
 `;

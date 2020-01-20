@@ -6,7 +6,7 @@ export const eveesTypeDefs = gql`
 
   extend type Mutation {
     updatePerspectiveHead(perspectiveId: ID!, headId: ID!): Perspective!
-    createCommit(dataId: ID!, parentsIds: [ID!]!, message: String, usl: String): Commit!
+    createCommit(dataId: ID!, parentsIds: [ID!]!, message: String, source: String): Commit!
     createPerspective(headId: ID, context: String, authority: String): Perspective!
   }
 
