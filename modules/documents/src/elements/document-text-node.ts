@@ -203,14 +203,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
             <slot name="evee"></slot>
           </div>
           <div class="node-content">
-            <div
-              class=${contentClasses.join(' ')}
-              contenteditable=${this.editable ? 'true' : 'false'}
-              @input=${e => this.textInput(e)}
-              @blur=${e => this.onBlur(e)}
-            >
-              ${this.data.object.text}
-            </div>
+            <documents-text-node-editor type="paragraph"></documents-text-node-editor>
           </div>
           <div class="plugins">
             <slot name="plugins"></slot>

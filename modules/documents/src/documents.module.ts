@@ -19,6 +19,7 @@ import { documentsTypeDefs, resolvers } from './graphql/schema';
 
 import en from '../i18n/en.json';
 import { DocumentsTypes } from './types';
+import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
 
 /**
  * Configure a documents module with the given service providers
@@ -71,7 +72,8 @@ export class DocumentsModule extends MicroModule {
       }))
     ),
     new ElementsModule({
-      'documents-text-node': DocumentTextNode
+      'documents-text-node': DocumentTextNode,
+      'documents-text-node-editor': DocumentTextNodeEditor
     }),
     new PatternsModule({
       [DocumentsModule.types.TextNodeEntity]: [

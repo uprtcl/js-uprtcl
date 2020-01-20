@@ -1,4 +1,4 @@
-import { LitElement, property, html } from 'lit-element';
+import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { TextNode } from '@uprtcl/documents';
@@ -57,6 +57,10 @@ export class WikiPage extends moduleConnect(LitElement) {
   }
 
   static get styles() {
-    return sharedStyles;
+    return [sharedStyles, css`
+      :root {
+        width: 100%;
+      }
+    `];
   }
 }
