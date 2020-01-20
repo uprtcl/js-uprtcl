@@ -22,7 +22,7 @@
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.6",
     "inversify": "^5.0.1",
-    "ipfs-http-client": "^39.0.0",
+    "ipfs-http-client": "^41.0.0",
     "lodash-es": "^4.17.15",
     "reflect-metadata": "^0.1.13",
     "web3": "^1.2.1",

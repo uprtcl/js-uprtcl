@@ -8,15 +8,19 @@ import { Evees } from '../services/evees';
 export const eveesResolvers = {
   Commit: {
     message(parent) {
+      console.log('parent', parent);
       return parent.payload.message;
     },
     timestamp(parent) {
+      console.log('parent', parent);
       return parent.payload.timestamp;
     },
     parentCommits(parent) {
+      console.log('parent', parent);
       return parent.payload.parentsIds;
     },
     data(parent) {
+      console.log('parent', parent);
       return parent.payload.dataId;
     }
   },
@@ -65,7 +69,8 @@ export const eveesResolvers = {
       const commit: Secured<Commit> = await evees.createCommit(
         { dataId, parentsIds, message },
         usl
-      );evees
+      );
+      evees;
 
       return { id: commit.id, ...commit.object };
     },
@@ -73,7 +78,8 @@ export const eveesResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
 
-      await evees.updatePerspectiveDetails(perspectiveId, { headId });
+      const provider = await evees.getPerspectiveProviderById(perspectiveId);
+      await provider.updatePerspectiveDetails(perspectiveId, { headId });
 
       const perspective = await discovery.get(perspectiveId);
 

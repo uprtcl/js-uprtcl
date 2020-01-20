@@ -37,6 +37,6 @@ async function loadEntity(
   const entity: Hashed<any> | undefined = await discoveryService.get(entityId);
 
   if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
-
+  
   return { id: entityId, ...entity.object };
 }

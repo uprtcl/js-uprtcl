@@ -94,7 +94,7 @@ export class WikiCreate implements Creatable<Partial<Wiki>> {
     if (source) {
       remote = this.wikisRemotes.find(documents => documents.source === source);
     } else {
-      remote = this.wikisRemotes.find(remote => remote.source.includes('http'));
+      remote = this.wikisRemotes.find(remote => !remote.source.includes('http'));
     }
 
     if (!remote) {

@@ -1,7 +1,7 @@
 import { multiInject, injectable, inject } from 'inversify';
 import { isEqual } from 'lodash-es';
 
-import { PatternRecognizer, Hashed, IsSecure, HasChildren, CortexModule } from '@uprtcl/cortex';
+import { PatternRecognizer, Hashed, IsSecure, HasChildren, CortexModule, Signed } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Secured, createEntity, CorePatterns, ApolloClientModule } from '@uprtcl/common';
@@ -60,8 +60,8 @@ export class Evees {
    * Returns the uprtcl remote that controls the given perspective, from its origin
    * @returns the uprtcl remote
    */
-  public getPerspectiveProvider(perspective: Secured<Perspective>): EveesRemote {
-    const perspectiveOrigin = perspective.object.payload.origin;
+  public getPerspectiveProvider(perspective: Signed<Perspective>): EveesRemote {
+    const perspectiveOrigin = perspective.payload.origin;
 
     return this.getAuthority(perspectiveOrigin);
   }
@@ -197,7 +197,8 @@ export class Evees {
 
     // Set the perspective details
     if (headId || context || name) {
-      await this.updatePerspectiveDetails(perspective.id, { headId, context, name });
+      const provider = this.getPerspectiveProvider(perspective.object);
+      await provider.updatePerspectiveDetails(perspective.id, { headId, context, name });
     }
 
     return perspective;
@@ -240,21 +241,4 @@ export class Evees {
     return commit;
   }
 
-  /** Modifiers */
-
-  /**
-   * Update the head of the given perspective to the given headId
-   *
-   * @param perspectiveId perspective to update
-   * @param details new details of the perspective
-   */
-  public async updatePerspectiveDetails(
-    perspectiveId: string,
-    details: Partial<PerspectiveDetails>
-  ): Promise<void> {
-    debugger;
-    const provider = await this.getPerspectiveProviderById(perspectiveId);
-
-    await provider.updatePerspectiveDetails(perspectiveId, details);
-  }
 }

@@ -159,7 +159,7 @@ export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<
     if (source) {
       remote = this.documentsRemotes.find(documents => documents.source === source);
     } else {
-      remote = this.documentsRemotes.find(remote => remote.source.includes('http'));
+      remote = this.documentsRemotes.find(remote => !remote.source.includes('http'));
     }
 
     if (!remote) {

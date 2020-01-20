@@ -4,7 +4,7 @@ import { GraphQlSchemaModule } from '@uprtcl/common';
 import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
-import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
+import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
 import { WikisRemote } from './services/wikis.remote';
 import { wikiTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
@@ -65,7 +65,7 @@ export class WikisModule extends MicroModule {
       'wiki-home': WikiHome
     }),
     new PatternsModule({
-      [WikisModule.bindings.WikiEntity]: [WikiCommon, WikiLinks]
+      [WikisModule.bindings.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
     })
   ];
 }
