@@ -103,7 +103,7 @@ export const eveesResolvers = {
         authority
       );
 
-      return { id: perspective.id, ...perspective.object };
+      return { id: perspective.id, ...perspective.object, head: headId };
     }
   }
 };

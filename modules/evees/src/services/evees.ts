@@ -210,6 +210,9 @@ export class Evees {
 
     // Clone the perspective in the selected provider
     await eveesRemote.clonePerspective(perspective);
+    
+    // And update its details
+    await eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context });
 
     return perspective;
   }
