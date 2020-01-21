@@ -75,15 +75,18 @@ export const createEntity = (recognizer: PatternRecognizer) => async <T extends 
   data: T,
   usl?: string
 ): Promise<string> => {
-  const creatable: Creatable<T> | undefined = recognizer
+  const creatable: Creatable<T, any> | undefined = recognizer
     .recognize(data)
-    .find(prop => !!(prop as Creatable<T>).create);
+    .find(prop => !!(prop as Creatable<T, any>).create);
 
   if (!creatable) {
     throw new Error(
-      `Trying to create data ${data.toString()} - ${JSON.stringify(data)}, but it does not implement the Creatable pattern`
+      `Trying to create data ${data.toString()} - ${JSON.stringify(
+        data
+      )}, but it does not implement the Creatable pattern`
     );
   }
 
-  return creatable.create()(data, usl);
+  const hashed = await creatable.create()(data, usl);
+  return hashed.id;
 };

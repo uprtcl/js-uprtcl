@@ -1,8 +1,8 @@
 import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
 import { Secured } from '@uprtcl/common';
-import { Pattern, Creatable } from '@uprtcl/cortex';
 
-import { Commit } from '../types';
+import { Commit, Perspective } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 
@@ -63,15 +63,18 @@ export const eveesResolvers = {
     async createCommit(_, { dataId, parentsIds, message, source }, { container }) {
       const patterns: Pattern[] = container.getAll(EveesBindings.CommitPattern);
 
-      const creatable: Creatable<any> | undefined = patterns.find(
-        p => ((p as unknown) as Creatable<any>).create
-      ) as Creatable<any> | undefined;
+      const creatable: Creatable<any, Signed<Commit>> | undefined = patterns.find(
+        p => ((p as unknown) as Creatable<any, Signed<Commit>>).create
+      ) as Creatable<any, Signed<Commit>> | undefined;
 
       if (!creatable) throw new Error(`No creatable pattern registered for perspectives`);
 
-      const commitId = await creatable.create()({ dataId, parentsIds, message }, source);
+      const commit: Secured<Commit> = await creatable.create()(
+        { dataId, parentsIds, message },
+        source
+      );
 
-      return { id: commitId };
+      return { id: commit.id, ...commit.object };
     },
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
@@ -86,18 +89,21 @@ export const eveesResolvers = {
 
       return { id: perspective.id, ...perspective.object };
     },
-    async createPerspective(_, { headId, context, authority }, { container }) {
+    async createPerspective(_, { headId, context, name, authority }, { container }) {
       const patterns: Pattern[] = container.getAll(EveesBindings.PerspectivePattern);
 
-      const creatable: Creatable<any> | undefined = patterns.find(
-        p => ((p as unknown) as Creatable<any>).create
-      ) as Creatable<any> | undefined;
+      const creatable: Creatable<any, Signed<Perspective>> | undefined = patterns.find(
+        p => ((p as unknown) as Creatable<any, Signed<Perspective>>).create
+      ) as Creatable<any, Signed<Perspective>> | undefined;
 
       if (!creatable) throw new Error(`No creatable pattern registered for perspectives`);
 
-      const perspectiveId = await creatable.create()({ headId, context }, authority);
+      const perspective: Secured<Perspective> = await creatable.create()(
+        { name, headId, context },
+        authority
+      );
 
-      return { id: perspectiveId };
+      return { id: perspective.id, ...perspective.object };
     }
   }
 };

@@ -80,7 +80,7 @@ export class WikiCommon extends WikiEntity implements HasLenses {
 }
 
 @injectable()
-export class WikiCreate implements Creatable<Partial<Wiki>> {
+export class WikiCreate implements Creatable<Partial<Wiki>, Wiki> {
   constructor(
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @multiInject(WikiBindings.WikisRemote) protected wikisRemotes: WikisProvider[]
@@ -90,7 +90,7 @@ export class WikiCreate implements Creatable<Partial<Wiki>> {
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = () => async (node?: Partial<Wiki>, source?: string): Promise<string> => {
+  create = () => async (node?: Partial<Wiki>, source?: string): Promise<Hashed<Wiki>> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
 
@@ -109,6 +109,6 @@ export class WikiCreate implements Creatable<Partial<Wiki>> {
 
     await this.discovery.postEntityCreate(remote, { id: wikiId, object: newWiki });
 
-    return wikiId;
+    return { id: wikiId, object: newWiki };
   };
 }

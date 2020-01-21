@@ -166,11 +166,16 @@ export class Evees {
         // TODO: generalize to break the assumption that all links are to perspectives
         const promises = descendantLinks.map(async link => {
           const details = await eveesRemote.getPerspectiveDetails(link);
-          const newPerspective = await this.createPerspective(
-            { context, name, headId: details.headId },
-            eveesRemote.authority
-          );
-          return newPerspective.id;
+          const newPerspective = await this.client.mutate({
+            mutation: CREATE_PERSPECTIVE,
+            variables: {
+              context,
+              name,
+              headId: details.headId,
+              authority: eveesRemote.authority
+            }
+          });
+          return newPerspective.data.createPerspective.id;
         });
 
         const newLinks = await Promise.all(promises);
@@ -184,6 +189,8 @@ export class Evees {
             previousDataUpls ? previousDataUpls[0] : undefined
           );
           dataId = newDataId;
+        } else {
+          dataId = undefined;
         }
       }
     }
@@ -195,20 +202,14 @@ export class Evees {
           dataId: dataId,
           message: `Commit at ${Date.now()}`,
           parentsIds: headId ? [headId] : [],
-          source: eveesRemote.authority
+          source: eveesRemote.source
         }
       });
       headId = result.data.createCommit.id;
     }
 
     // Clone the perspective in the selected provider
-    await this.client.mutate({
-      mutation: CREATE_PERSPECTIVE,
-      variables: {
-        headId: headId,
-        authority: eveesRemote.authority
-      }
-    });
+    await eveesRemote.clonePerspective(perspective);
 
     return perspective;
   }

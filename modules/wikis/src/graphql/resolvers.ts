@@ -1,21 +1,22 @@
 import { Pattern, Creatable } from '@uprtcl/cortex';
 
 import { WikiBindings } from '../bindings';
+import { Wiki } from '../types';
 
 export const resolvers = {
   Mutation: {
     async createWiki(_, { content, source }, { container }) {
       const patterns: Pattern[] = container.getAll(WikiBindings.WikiEntity);
 
-      const creatable: Creatable<any> | undefined = (patterns.find(
-        p => ((p as unknown) as Creatable<any>).create
-      ) as unknown) as Creatable<any>;
+      const creatable: Creatable<any, Wiki> | undefined = (patterns.find(
+        p => ((p as unknown) as Creatable<any, Wiki>).create
+      ) as unknown) as Creatable<any, Wiki>;
 
       if (!creatable) throw new Error(`No creatable pattern for WikiEntity is registered`);
 
-      const id = await creatable.create()(content, source);
+      const wiki = await creatable.create()(content, source);
 
-      return { id, ...content };
+      return { id: wiki.id, ...wiki.object };
     }
   }
 };

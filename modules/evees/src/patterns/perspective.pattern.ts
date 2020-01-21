@@ -12,7 +12,8 @@ import {
   PatternAction,
   PatternRecognizer,
   Entity,
-  CortexModule
+  CortexModule,
+  Signed
 } from '@uprtcl/cortex';
 import { Secured, CorePatterns, ApolloClientModule } from '@uprtcl/common';
 import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
@@ -68,7 +69,7 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
 
 @injectable()
 export class PerspectiveLinks extends PerspectiveEntity
-  implements HasLinks, HasRedirect, Creatable<NewPerspectiveArgs>, HasActions {
+  implements HasLinks, HasRedirect, Creatable<NewPerspectiveArgs, Signed<Perspective>>, HasActions {
   constructor(
     @inject(CorePatterns.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees,
@@ -101,7 +102,7 @@ export class PerspectiveLinks extends PerspectiveEntity
 
     await this.discovery.postEntityCreate(provider, perspective);
 
-    return perspective.id;
+    return perspective;
   };
 
   actions = (perspective: Secured<Perspective>): PatternAction[] => {

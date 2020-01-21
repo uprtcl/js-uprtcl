@@ -16,41 +16,26 @@ export class KnownSourcesApollo implements KnownSourcesService {
   async ready(): Promise<void> {}
 
   async getKnownSources(hash: string): Promise<string[] | undefined> {
-    console.log('HSAH', hash);
-    console.log(
-      this.client
-    ); /* 
-    const result: any = this.client.readQuery({
-      query: gql`
+    try {
+      const result: any = this.client.readQuery({
+        query: gql`
         {
           entity(id: "${hash}") {
-            id
             _context {
-              source @client
+              source
             }
           }
         }
         `
-    });
-    return result.data.entity._context.source; */
-
-    return undefined;
+      });
+      return [result.entity._context.source];
+    } catch (e) {
+      return undefined;
+    }
   }
 
   async addKnownSources(hash: string, sources: string[]): Promise<void> {
-    console.log('HSAH', hash, sources);
-    console.log(this.client);
-/*     const result = this.client.readQuery({
-      query: gql`
-      {
-        entity(id: "${hash}") {
-          id
-        }
-      }`
-    });
-    console.log('HSAH1', result);
-
- */    /*     const result1 = this.client.writeData({
+    this.client.writeData({
       data: {
         entity: {
           id: hash,
@@ -61,9 +46,6 @@ export class KnownSourcesApollo implements KnownSourcesService {
         }
       }
     });
- */ console.log(
-      'as'
-    );
   }
 
   removeKnownSource(hash: string, source: string): Promise<void> {

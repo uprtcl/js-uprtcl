@@ -1,7 +1,7 @@
 import { injectable, inject, multiInject } from 'inversify';
 import { html, TemplateResult } from 'lit-element';
 
-import { Pattern, HasRedirect, IsSecure, HasLinks, Creatable, Entity } from '@uprtcl/cortex';
+import { Pattern, HasRedirect, IsSecure, HasLinks, Creatable, Entity, Signed } from '@uprtcl/cortex';
 import { Secured, CorePatterns } from '@uprtcl/common';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
@@ -9,6 +9,7 @@ import { Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { EveesRemote } from '../services/evees.remote';
+import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 const creatorId = 'did:hi:ho';
@@ -73,12 +74,12 @@ export class CommitLens extends CommitEntity implements HasLenses {
 @injectable()
 export class CommitPattern extends CommitEntity
   implements
-    Creatable<{ dataId: string; message: string; parentsIds: string[]; timestamp?: number }> {
+    Creatable<{ dataId: string; message: string; parentsIds: string[]; timestamp?: number }, Signed<Commit>> {
   constructor(
     @inject(CorePatterns.Secured)
     protected secured: Pattern & IsSecure<Secured<Commit>>,
     @multiInject(EveesBindings.EveesRemote) protected remotes: EveesRemote[],
-    @inject(EveesBindings.Evees) protected evees: Evees
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService
   ) {
     super(secured);
   }
@@ -122,12 +123,14 @@ export class CommitPattern extends CommitEntity
       else throw new Error('You need to specify which source to create the commit');
     }
 
-    const remote: EveesRemote | undefined = this.remotes.find(r => r.authority === source);
+    const remote: EveesRemote | undefined = this.remotes.find(r => r.source === source);
 
     if (!remote) throw new Error(`Source ${source} not registered`);
 
     await remote.cloneCommit(commit);
 
-    return commit.id;
+    await this.discovery.postEntityCreate(remote, commit);
+
+    return commit;
   };
 }

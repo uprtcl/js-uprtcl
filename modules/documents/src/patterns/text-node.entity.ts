@@ -142,7 +142,8 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 }
 
 @injectable()
-export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<TextNode>> {
+export class TextNodeCreate extends TextNodeEntity
+  implements Creatable<Partial<TextNode>, TextNode> {
   constructor(
     @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
@@ -152,7 +153,10 @@ export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<
     super(hashedPattern);
   }
 
-  create = () => async (node: Partial<TextNode> | undefined, source?: string): Promise<string> => {
+  create = () => async (
+    node: Partial<TextNode> | undefined,
+    source?: string
+  ): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
@@ -173,7 +177,7 @@ export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<
 
     await this.discovery.postEntityCreate(remote, { id, object: newTextNode });
 
-    return id;
+    return { id, object: newTextNode };
   };
 }
 
