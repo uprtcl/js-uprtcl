@@ -17,49 +17,10 @@ export class KnownSourcesApollo implements KnownSourcesService {
 
   async getKnownSources(hash: string): Promise<string[] | undefined> {
     console.log('HSAH', hash);
-
+    console.log(
+      this.client
+    ); /* 
     const result: any = this.client.readQuery({
-      query: gql`
-        {
-          entity(id: "${hash}") {
-            id
-            _context {
-              source
-            }
-          }
-        }
-        `
-    });
-    return result.data.entity._context.source;
-  }
-
-  async addKnownSources(hash: string, sources: string[]): Promise<void> {
-    console.log('HSAH', hash, sources);
-
-    const result: any = this.client.writeQuery({
-      query: gql`
-      {
-        entity(id: "${hash}") {
-          id
-          _context {
-            source
-          }
-        }
-      }
-      `,
-      data: {
-        entity: {
-          id: hash,
-          _context: {
-            __typename: 'EntityContext',
-            source: sources[0]
-          }
-        }
-      }
-    });
-    console.log('as');
-
-    const result2: any = this.client.readQuery({
       query: gql`
         {
           entity(id: "${hash}") {
@@ -71,8 +32,38 @@ export class KnownSourcesApollo implements KnownSourcesService {
         }
         `
     });
+    return result.data.entity._context.source; */
 
-    console.log(result2);
+    return undefined;
+  }
+
+  async addKnownSources(hash: string, sources: string[]): Promise<void> {
+    console.log('HSAH', hash, sources);
+    console.log(this.client);
+/*     const result = this.client.readQuery({
+      query: gql`
+      {
+        entity(id: "${hash}") {
+          id
+        }
+      }`
+    });
+    console.log('HSAH1', result);
+
+ */    /*     const result1 = this.client.writeData({
+      data: {
+        entity: {
+          id: hash,
+          _context: {
+            __typename: 'EntityContext',
+            source: sources[0]
+          }
+        }
+      }
+    });
+ */ console.log(
+      'as'
+    );
   }
 
   removeKnownSource(hash: string, source: string): Promise<void> {

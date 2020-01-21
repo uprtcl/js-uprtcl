@@ -10,7 +10,6 @@ import { MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { baseTypeDefs } from './base-schema';
 import { baseResolvers } from './base-resolvers';
-import { contextContainerLink } from './context-link';
 import { GraphQlSchemaBindings, ApolloClientBindings } from './bindings';
 import { DiscoverDirective } from '../discovery/discover-directive';
 
@@ -45,12 +44,19 @@ export class ApolloClientModule extends MicroModule {
       });
 
     if (!this.apolloClientBuilder) {
-      const cache = new InMemoryCache();
-      await persistCache({
+      const cache = new InMemoryCache({
+        dataIdFromObject: object => object.id || null,
+        cacheRedirects: {
+          Query: {
+            entity: (_, { id }, { getCacheKey }) => getCacheKey({ __typename: '', id: id })
+          }
+        }
+      });
+/*       await persistCache({
         cache,
         storage: window.localStorage as PersistentStorage<PersistedData<NormalizedCacheObject>>
       });
-
+ */
       this.apolloClientBuilder = (finalLink: ApolloLink) => {
         return new ApolloClient({
           cache,
