@@ -52,13 +52,13 @@ export class WikiPage extends moduleConnect(LitElement) {
         </div>
       </mwc-top-app-bar>
 
-      <cortex-entity .hash=${this.pageHash} lens-type="evee"> </cortex-entity>
+      <cortex-entity .hash=${this.pageHash} lens-type="evee" .context=${ { onlyChildren: 'true' } }> </cortex-entity>
     `;
   }
 
   static get styles() {
     return [sharedStyles, css`
-      :root {
+      :host {
         width: 100%;
       }
     `];

@@ -40,7 +40,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!this.origin) return;
 
     const pageContent = {
-      text: 'New page',
+      text: '<h1>New page</h1>',
       type: TextType.Title,
       links: []
     };

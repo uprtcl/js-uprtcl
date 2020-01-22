@@ -3,20 +3,29 @@ import { LitElement, html, css, property } from 'lit-element';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { toggleMark } from 'prosemirror-commands';
+import { DOMParser, DOMSerializer } from "prosemirror-model";
+import { keymap } from "prosemirror-keymap";
+
 
 import { styles } from './prosemirror.css';
-import { titleSetup } from './setup';
 import { titleSchema } from './schema-title';
 import { blockSchema } from './schema-block';
 
 import { iconsStyle } from './icons.css';
 import { icons } from './icons';
+import { TextType } from '../../types';
 
 export class DocumentTextNodeEditor extends LitElement {
   editor: any = {};
 
   @property({ type: String })
   type!: string;
+
+  @property({ type: String })
+  init!: string;
+
+  @property({ type: Boolean })
+  editable: boolean = true;
 
   @property({ type: String })
   placeholder: string | undefined = undefined;
@@ -50,7 +59,6 @@ export class DocumentTextNodeEditor extends LitElement {
       // 13 is enter
       if (key === 13) {
         e.preventDefault();
-        e.stopPropagation();
 
         if (this.showUrl) {
           this.linkConfirmed();
@@ -60,7 +68,6 @@ export class DocumentTextNodeEditor extends LitElement {
       // 27 is esc
       if (key === 27) {
         e.preventDefault();
-        e.stopPropagation();
 
         this.preventHide = false;
         this.showUrl = false;
@@ -69,34 +76,82 @@ export class DocumentTextNodeEditor extends LitElement {
     });
   }
 
+  onEnter() {
+    this.dispatchEvent(new CustomEvent('enter-pressed'));
+    return true;
+  }
+
   firstUpdated() {
-    this.editor.schema = this.type === 'title' ? titleSchema : blockSchema;
+    this.editor.schema = this.type === TextType.Title ? titleSchema : blockSchema;
+
+    /** convert HTML string to doc state */
+    let htmlString = this.init.trim();
+
+    if (!htmlString.startsWith('<')) {
+      if (this.type === TextType.Title) {
+        htmlString = `<h1>${htmlString}</h1>`
+      } else {
+        htmlString = `<p>${htmlString}</p>`
+      }
+    }
+
+    let temp = document.createElement('template');
+    temp.innerHTML = htmlString;
+    const element = temp.content.firstChild;
+
+    this.editor.parser = DOMParser.fromSchema(this.editor.schema);
+    this.editor.serializer = DOMSerializer.fromSchema(this.editor.schema);
 
     this.editor.state = EditorState.create({
       schema: this.editor.schema,
-      plugins: titleSetup({ schema: this.editor.schema })
+      doc: this.editor.parser.parse(element),
+      plugins: [
+        keymap({ 'Enter': (state, dispatch) => this.onEnter() })
+      ]
     });
 
     if (this.shadowRoot == null) return;
     const container = this.shadowRoot.getElementById('editor-content');
-    
+
     this.editor.view = new EditorView(container, {
       state: this.editor.state,
-      dispatchTransaction: (transaction: any) => {
-        if (!transaction.curSelection.empty) {
-          this.selected = true;
-        } else {
-          this.selected = false;
-        }
-        let newState = this.editor.view.state.apply(transaction);
-        this.editor.view.updateState(newState);
-        this.content = newState.doc.content;
-        this.chechIsEmpty();
-      }
+      editable: () => this.editable,
+      dispatchTransaction: (transaction) => this.handleTransaction(transaction)
     });
   }
 
+  handleTransaction(transaction: any) {
+    if (!transaction.curSelection.empty) {
+      this.selected = true;
+    } else {
+      this.selected = false;
+    }
+
+    console.log('transaction', {selected : this.selected })
+
+    let newState = this.editor.view.state.apply(transaction);
+
+    let contentChanged = !newState.doc.eq(this.editor.view.state.doc);
+    
+    this.editor.view.updateState(newState);
+    if (!contentChanged) return;
+    
+    /** doc changed */
+    const fragment = this.editor.serializer.serializeFragment(newState.doc);
+    const temp = document.createElement('div');
+    temp.appendChild(fragment);
+
+    this.dispatchEvent(new CustomEvent('content-changed', {
+      detail: {
+        content: temp.innerHTML
+      }
+    }))
+  }
+
+
   updated(changedProperties: Map<string, any>) {
+    console.log('updated', changedProperties);
+
     if (changedProperties.has('showUrl') && this.showUrl && this.shadowRoot != null) {
       const input = this.shadowRoot.getElementById('URL_INPUT');
       if (input) {
@@ -113,17 +168,6 @@ export class DocumentTextNodeEditor extends LitElement {
         this.showMenu = true;
       }
     }
-  }
-
-  getIsEmpty() {
-    if (this.content === undefined) return true;
-    if (this.content.length > 1) return false;
-    if (this.content.content[0].content.content[0].content.content.length === 0) return true;
-    return false;
-  }
-
-  chechIsEmpty() {
-    this.empty = this.getIsEmpty();
   }
 
   linkClick() {
@@ -176,7 +220,7 @@ export class DocumentTextNodeEditor extends LitElement {
             <div class="top-menu">
               <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
               ${this.type !== 'title'
-                ? html`
+            ? html`
                     <div
                       class="btn btn-large"
                       @click=${() => this.menuItemClick(this.editor.schema.marks.strong)}
@@ -184,7 +228,7 @@ export class DocumentTextNodeEditor extends LitElement {
                       ${icons.bold}
                     </div>
                   `
-                : ''}
+            : ''}
               <div
                 class="btn btn-large"
                 @click=${() => this.menuItemClick(this.editor.schema.marks.em)}
@@ -195,7 +239,7 @@ export class DocumentTextNodeEditor extends LitElement {
                 ${icons.link}
               </div>
               ${this.showUrl
-                ? html`
+            ? html`
                     <div class="inp">
                       <input placeholder="url" id="URL_INPUT" />
                       <div @click=${this.linkCancelled} class="btn btn-small">
@@ -206,16 +250,16 @@ export class DocumentTextNodeEditor extends LitElement {
                       </div>
                     </div>
                   `
-                : ''}
+            : ''}
             </div>
           `
         : ''}
       <div id="editor-content" class="editor-content">
         ${this.empty
-          ? html`
+        ? html`
               ${this.placeholder ? this.placeholder : ''}
             `
-          : ''}
+        : ''}
       </div>
     `;
   }
@@ -234,6 +278,7 @@ export class DocumentTextNodeEditor extends LitElement {
           width: 100%;
         }
         .top-menu {
+          z-index: 10;
           position: absolute;
           display: flex;
           padding: 0px 0px;
@@ -243,7 +288,6 @@ export class DocumentTextNodeEditor extends LitElement {
           background-color: white;
           border-radius: 10px;
           border: solid 1px #cfcfcf;
-          box-shadow: 3px 3px 2px 0px rgba(201, 201, 201, 1);
           background-color: #28282a;
         }
         .btn {

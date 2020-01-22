@@ -20,6 +20,9 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'evee-color' })
   eveeColor: String | undefined = undefined;
 
+  @property({ type: String, attribute: 'only-children' })
+  onlyChildren: String | undefined = undefined;
+
   private currentHeadId: string | undefined = undefined;
   private perspective: Secured<Perspective> | undefined = undefined;
 
@@ -27,6 +30,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   private entityId: string | undefined = undefined;
 
   firstUpdated() {
+    this.logger.info('firstUpdated()', {firtPerspectiveId: this.firtPerspectiveId, onlyChildren: this.onlyChildren});
     this.perspectiveId = this.firtPerspectiveId;
     this.loadPerspective();
   }
@@ -66,22 +70,27 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     this.entityId = result.data.entity._patterns.content.id;
     const head = result.data.entity.head;
     this.currentHeadId = head ? head.id : undefined;
-    
-    this.perspective = { 
+
+    this.perspective = {
       id: result.data.entity.id,
       object: {
         payload: {
           origin: result.data.entity.payload.origin,
           creatorId: result.data.entity.payload.creatorId,
-          timestamp: result.data.entity.payload.timestamp,
+          timestamp: result.data.entity.payload.timestamp
         },
         proof: {
-          signature: '', type: ''
+          signature: '',
+          type: ''
         }
       }
-    }
+    };
 
-    this.logger.info('loadPerspective() post', { result, entityId: this.entityId, currentHeadId: this.currentHeadId });
+    this.logger.info('loadPerspective() post', {
+      result,
+      entityId: this.entityId,
+      currentHeadId: this.currentHeadId
+    });
   }
 
   checkoutPerspective(id: string) {
@@ -122,17 +131,19 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     }) as EventListener);
 
     this.addEventListener('perspective-selected', ((e: CustomEvent) => {
-      this.logger.info('CATCHED EVENT: perspective-selected ', { perspectiveId: this.perspectiveId, e });
+      this.logger.info('CATCHED EVENT: perspective-selected ', {
+        perspectiveId: this.perspectiveId,
+        e
+      });
       e.stopPropagation();
       this.checkoutPerspective(e.detail.id);
-
     }) as EventListener);
   }
 
   async updateContent(dataId: string) {
     if (!this.perspectiveId) return;
     if (!this.perspective) return;
-    
+
     const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
 
     this.logger.info('updateContent() pre', dataId);
@@ -159,7 +170,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     this.currentHeadId = commitUpdate.data.createCommit.id;
     this.entityId = headUpdate.data.updatePerspectiveHead.id;
 
-    this.logger.info('updateContent() post', this.entityId );
+    this.logger.info('updateContent() post', this.entityId);
   }
 
   render() {
@@ -170,8 +181,20 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     }
 
     return html`
-      <cortex-entity .hash=${this.entityId} lens-type="content" .context=${ { perspective: this.perspective, color: this.getEveeColor() } }>
-        <evees-info slot="evee" perspective-id=${this.perspectiveId} evee-color=${this.getEveeColor()}></evees-info>
+      <cortex-entity
+        .hash=${this.entityId}
+        lens-type="content"
+        .context=${{
+          perspective: this.perspective,
+          color: this.getEveeColor(),
+          onlyChildren: this.onlyChildren
+        }}
+      >
+        <evees-info
+          slot="evee"
+          perspective-id=${this.perspectiveId}
+          evee-color=${this.getEveeColor()}
+        ></evees-info>
       </cortex-entity>
     `;
   }
