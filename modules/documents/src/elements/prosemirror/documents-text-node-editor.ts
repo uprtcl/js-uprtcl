@@ -26,6 +26,9 @@ export class DocumentTextNodeEditor extends LitElement {
   @property({ type: Boolean })
   editable: boolean = true;
 
+  @property({ type: Number })
+  level: number = 0;
+
   @property({ type: String })
   placeholder: string | undefined = undefined;
 
@@ -40,6 +43,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
   @property({ type: Boolean, attribute: false })
   empty: Boolean = false;
+  
 
   preventHide: Boolean = false;
   content: any | undefined = undefined;
@@ -86,6 +90,7 @@ export class DocumentTextNodeEditor extends LitElement {
     /** convert HTML string to doc state */
     let htmlString = this.init.trim();
 
+    /** sorry, we work with HTML... */
     if (!htmlString.startsWith('<')) {
       if (this.type === TextType.Title) {
         htmlString = `<h1>${htmlString}</h1>`;
@@ -101,9 +106,17 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.parser = DOMParser.fromSchema(this.editor.schema);
     this.editor.serializer = DOMSerializer.fromSchema(this.editor.schema);
 
+    const doc = this.editor.parser.parse(element);
+
+    /** the heading level for render is given by the `level` attribute, 
+     * not the heading tag (which is always <h1> in the data text) */
+    if (doc.content.content[0].type.name === 'heading') {
+      doc.content.content[0].attrs.level = this.level;
+    }
+
     this.editor.state = EditorState.create({
       schema: this.editor.schema,
-      doc: this.editor.parser.parse(element),
+      doc: doc,
       plugins: [keymap({ Enter: (state, dispatch) => this.onEnter() })]
     });
 
@@ -124,8 +137,6 @@ export class DocumentTextNodeEditor extends LitElement {
       this.selected = false;
     }
 
-    console.log('transaction', { selected: this.selected });
-
     let newState = this.editor.view.state.apply(transaction);
 
     let contentChanged = !newState.doc.eq(this.editor.view.state.doc);
@@ -134,6 +145,12 @@ export class DocumentTextNodeEditor extends LitElement {
     if (!contentChanged) return;
 
     /** doc changed */
+    
+    /** make sure heading is <h1> */
+    if (newState.doc.content.content[0].type.name === 'heading') {
+      newState.doc.content.content[0].attrs.level = 1;
+    }
+
     const fragment = this.editor.serializer.serializeFragment(newState.doc);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
@@ -148,8 +165,6 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   updated(changedProperties: Map<string, any>) {
-    console.log('updated', changedProperties);
-
     if (changedProperties.has('showUrl') && this.showUrl && this.shadowRoot != null) {
       const input = this.shadowRoot.getElementById('URL_INPUT');
       if (input) {

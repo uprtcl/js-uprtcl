@@ -22,6 +22,9 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   @property({ type: String })
   color: string | undefined = undefined;
 
+  @property({ type: Number })
+  level: number = 0;
+
   @property({ type: String, attribute: 'only-children' })
   onlyChildren: String | undefined = undefined;
 
@@ -60,6 +63,10 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     );
 
     return textNodeId;
+  }
+
+  getLevel() {
+    return this.level !== undefined ? this.level : 0;
   }
 
   async createChild() {
@@ -197,7 +204,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
     return html`
       <div class="row">
-        ${(onlyChildren !== 'true')
+        ${onlyChildren !== 'true'
           ? html`
               <div class="column">
                 <div class="evee-info">
@@ -207,6 +214,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
                   <documents-text-node-editor
                     type=${this.data.object.type}
                     init=${this.data.object.text}
+                    level=${this.level}
                     .editable=${true}
                     @content-changed=${this.editorContentChanged}
                     @enter-pressed=${this.enterPressed}
@@ -226,7 +234,10 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
               <cortex-entity
                 .hash=${link}
                 lens-type="evee"
-                .context=${{ color: this.color }}
+                .context=${{
+                  color: this.color,
+                  level: this.getLevel() + 1
+                }}
               ></cortex-entity>
             `
           )}

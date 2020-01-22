@@ -320,6 +320,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
         background-color: white;
         box-shadow: 2px 2px 3px 0px rgba(71,60,71,0.75);
         padding: 32px;
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+        border-bottom-left-radius: 12px;
       }
     `;
   }

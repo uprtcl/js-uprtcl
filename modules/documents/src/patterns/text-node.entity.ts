@@ -70,6 +70,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
               .perspective=${context.perspective}
               color=${context.color}
               only-children=${context.onlyChildren}
+              level=${context.level}
             >
               ${lensContent}
             </documents-text-node>
