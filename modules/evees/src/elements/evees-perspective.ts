@@ -99,8 +99,8 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   }
 
   getEveeColor() {
-    const base = this.eveeColor !== 'undefined' ? this.eveeColor : 'blue';
-    return this.perspectiveId === this.firtPerspectiveId ? base : 'red';
+    const base = this.eveeColor !== 'undefined' ? this.eveeColor : '#9fc5e8ff';
+    return this.perspectiveId === this.firtPerspectiveId ? base : '#ffd966ff';
   }
 
   connectedCallback() {

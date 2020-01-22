@@ -3,9 +3,8 @@ import { LitElement, html, css, property } from 'lit-element';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { toggleMark } from 'prosemirror-commands';
-import { DOMParser, DOMSerializer } from "prosemirror-model";
-import { keymap } from "prosemirror-keymap";
-
+import { DOMParser, DOMSerializer } from 'prosemirror-model';
+import { keymap } from 'prosemirror-keymap';
 
 import { styles } from './prosemirror.css';
 import { titleSchema } from './schema-title';
@@ -89,9 +88,9 @@ export class DocumentTextNodeEditor extends LitElement {
 
     if (!htmlString.startsWith('<')) {
       if (this.type === TextType.Title) {
-        htmlString = `<h1>${htmlString}</h1>`
+        htmlString = `<h1>${htmlString}</h1>`;
       } else {
-        htmlString = `<p>${htmlString}</p>`
+        htmlString = `<p>${htmlString}</p>`;
       }
     }
 
@@ -105,9 +104,7 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.state = EditorState.create({
       schema: this.editor.schema,
       doc: this.editor.parser.parse(element),
-      plugins: [
-        keymap({ 'Enter': (state, dispatch) => this.onEnter() })
-      ]
+      plugins: [keymap({ Enter: (state, dispatch) => this.onEnter() })]
     });
 
     if (this.shadowRoot == null) return;
@@ -116,7 +113,7 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.view = new EditorView(container, {
       state: this.editor.state,
       editable: () => this.editable,
-      dispatchTransaction: (transaction) => this.handleTransaction(transaction)
+      dispatchTransaction: transaction => this.handleTransaction(transaction)
     });
   }
 
@@ -127,27 +124,28 @@ export class DocumentTextNodeEditor extends LitElement {
       this.selected = false;
     }
 
-    console.log('transaction', {selected : this.selected })
+    console.log('transaction', { selected: this.selected });
 
     let newState = this.editor.view.state.apply(transaction);
 
     let contentChanged = !newState.doc.eq(this.editor.view.state.doc);
-    
+
     this.editor.view.updateState(newState);
     if (!contentChanged) return;
-    
+
     /** doc changed */
     const fragment = this.editor.serializer.serializeFragment(newState.doc);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
 
-    this.dispatchEvent(new CustomEvent('content-changed', {
-      detail: {
-        content: temp.innerHTML
-      }
-    }))
+    this.dispatchEvent(
+      new CustomEvent('content-changed', {
+        detail: {
+          content: temp.innerHTML
+        }
+      })
+    );
   }
-
 
   updated(changedProperties: Map<string, any>) {
     console.log('updated', changedProperties);
@@ -168,6 +166,17 @@ export class DocumentTextNodeEditor extends LitElement {
         this.showMenu = true;
       }
     }
+  }
+
+  typeClick() {
+    const newType = this.type === TextType.Title ? TextType.Paragraph : TextType.Title;
+    this.dispatchEvent(
+      new CustomEvent('change-type', {
+        detail: {
+          type: newType
+        }
+      })
+    );
   }
 
   linkClick() {
@@ -219,27 +228,30 @@ export class DocumentTextNodeEditor extends LitElement {
         ? html`
             <div class="top-menu">
               <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
-              ${this.type !== 'title'
-            ? html`
+              <div class="btn btn-text" @click=${this.typeClick}>
+                ${this.type === TextType.Title ? 'text' : 'Title'}
+              </div>
+              ${this.type !== TextType.Title
+                ? html`
                     <div
-                      class="btn btn-large"
+                      class="btn btn-square btn-large"
                       @click=${() => this.menuItemClick(this.editor.schema.marks.strong)}
                     >
                       ${icons.bold}
                     </div>
                   `
-            : ''}
+                : ''}
               <div
-                class="btn btn-large"
+                class="btn btn-square btn-large"
                 @click=${() => this.menuItemClick(this.editor.schema.marks.em)}
               >
                 ${icons.em}
               </div>
-              <div class="btn btn-small" @click=${this.linkClick}>
+              <div class="btn btn-square btn-small" @click=${this.linkClick}>
                 ${icons.link}
               </div>
               ${this.showUrl
-            ? html`
+                ? html`
                     <div class="inp">
                       <input placeholder="url" id="URL_INPUT" />
                       <div @click=${this.linkCancelled} class="btn btn-small">
@@ -250,16 +262,16 @@ export class DocumentTextNodeEditor extends LitElement {
                       </div>
                     </div>
                   `
-            : ''}
+                : ''}
             </div>
           `
         : ''}
       <div id="editor-content" class="editor-content">
         ${this.empty
-        ? html`
+          ? html`
               ${this.placeholder ? this.placeholder : ''}
             `
-        : ''}
+          : ''}
       </div>
     `;
   }
@@ -269,14 +281,17 @@ export class DocumentTextNodeEditor extends LitElement {
       styles,
       iconsStyle,
       css`
-        [contenteditable]:empty:before {
-          content: attr(placeholder);
-          display: block;
-        }
         :host {
           position: relative;
           width: 100%;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
+            Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
         }
+
+        a {
+          color: inherit;
+        }
+
         .top-menu {
           z-index: 10;
           position: absolute;
@@ -290,30 +305,46 @@ export class DocumentTextNodeEditor extends LitElement {
           border: solid 1px #cfcfcf;
           background-color: #28282a;
         }
+
         .btn {
-          width: 40px;
           cursor: pointer;
           border-radius: 8px;
           text-align: center;
           fill: white;
+          color: white;
         }
+        
         .btn:hover {
           background-color: #444444;
           transition: background-color 100ms linear;
         }
+
+        .btn-text {
+          color: white;
+          padding: 12px 16px;
+          font-weight: bold;
+        }
+
+        .btn-square {
+          width: 40px;
+        }
+
         .btn-large svg {
           margin-top: 6px;
           width: 30px;
           height: 30px;
         }
+
         .btn-small svg {
           margin-top: 8px;
           width: 26px;
           height: 26px;
         }
+
         .inp {
           display: flex;
         }
+
         .inp input {
           height: 40px;
           font-size: 14px;
@@ -322,6 +353,7 @@ export class DocumentTextNodeEditor extends LitElement {
           background-color: #444444;
           color: white;
         }
+
         .editor-content {
           margin: 0px 0px;
         }

@@ -173,6 +173,17 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     this.updateContent(newContent);
   }
 
+  changeType(e: CustomEvent) {
+    if (!this.data) return;
+
+    const newContent = {
+      ...this.data.object,
+      type: e.detail.type
+    };
+
+    this.updateContent(newContent);
+  }
+
   render() {
     if (!this.data)
       return html`
@@ -199,11 +210,12 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
                     .editable=${true}
                     @content-changed=${this.editorContentChanged}
                     @enter-pressed=${this.enterPressed}
+                    @change-type=${this.changeType}
                   ></documents-text-node-editor>
                 </div>
-                <div class="plugins">
+                <!-- <div class="plugins">
                   <slot name="plugins"></slot>
-                </div>
+                </div> -->
               </div>
             `
           : ''}
@@ -231,7 +243,6 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       }
 
       .evee-info {
-        flex-grow: 0;
       }
 
       .node-content {

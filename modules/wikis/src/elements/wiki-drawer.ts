@@ -22,7 +22,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ type: Object })
   wiki: Wiki | undefined = undefined;
-  
+
   @property({ type: Boolean })
   editable: boolean = true;
 
@@ -45,7 +45,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       links: []
     };
 
-    const { remoteLinks } : Dictionary<string> = this.request(WikisModule.id)
+    const { remoteLinks }: Dictionary<string> = this.request(WikisModule.id);
     const dataUsl = remoteLinks[this.origin];
     const docsUsl = remoteLinks[dataUsl];
 
@@ -151,15 +151,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }`
     });
 
-    
     const { pages } = result.data.entity._patterns.content;
     this.pagesList = pages.map(page => ({
       id: page.id,
       title: page._patterns.content._patterns.title
-      ? page._patterns.content._patterns.title
-      : this.t('wikis:untitled')
+        ? page._patterns.content._patterns.title
+        : this.t('wikis:untitled')
     }));
-    
+
     const content = result.data.entity._patterns.content;
     this.wiki = { title: content.title, pages: content.pages.map(p => p.id) };
     const head = result.data.entity.head;
@@ -198,13 +197,23 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return html`
       <mwc-list>
-        ${this.pagesList.map(
-          page => html`
+        ${this.pagesList.map(page => {
+          
+          /** html to plain text */
+          const temp = document.createElement('template');
+          temp.innerHTML = page.title;
+
+          if (!temp.content) return 'unknown';
+          if (!temp.content.firstElementChild) return 'unknown';
+          
+          const text = (temp.content.firstElementChild as HTMLElement).innerText;
+
+          return html`
             <mwc-list-item @click=${() => this.selectPage(page.id)}>
-              ${page.title}
+              ${text}
             </mwc-list-item>
-          `
-        )}
+          `;
+        })}
       </mwc-list>
     `;
   }

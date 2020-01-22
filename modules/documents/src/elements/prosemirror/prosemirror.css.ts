@@ -332,7 +332,6 @@ export const styles = css`
     margin-bottom: 23px;
   }
 
-  .ProseMirror p:first-child,
   .ProseMirror h1:first-child,
   .ProseMirror h2:first-child,
   .ProseMirror h3:first-child,
@@ -340,6 +339,7 @@ export const styles = css`
   .ProseMirror h5:first-child,
   .ProseMirror h6:first-child {
     margin-top: 10px;
+    margin-bottom: 10px;
   }
 
   .ProseMirror {
@@ -349,6 +349,6 @@ export const styles = css`
   }
 
   .ProseMirror p {
-    margin-bottom: 1em;
+    margin: 0px;
   }
 `;
