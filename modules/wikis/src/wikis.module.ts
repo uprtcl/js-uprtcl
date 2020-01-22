@@ -1,6 +1,6 @@
 import { PatternsModule } from '@uprtcl/cortex';
 import { SourcesModule } from '@uprtcl/multiplatform';
-import { GraphQlSchemaModule } from '@uprtcl/common';
+import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';

@@ -1,6 +1,6 @@
 import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
-import { GraphQlSchemaModule } from '@uprtcl/common';
+import { GraphQlSchemaModule } from '@uprtcl/graphql';
 
 import { accessControlResolvers, accessControlTypes } from './graphql';
 import { OwnerPattern } from './patterns/owner.pattern';

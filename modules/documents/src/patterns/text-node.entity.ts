@@ -14,7 +14,6 @@ import {
   HasTitle,
   CortexModule
 } from '@uprtcl/cortex';
-import { CorePatterns } from '@uprtcl/common';
 import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
@@ -28,7 +27,7 @@ const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
 export class TextNodeEntity implements Entity {
-  constructor(@inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
+  constructor(@inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;
 
@@ -41,7 +40,7 @@ export class TextNodeEntity implements Entity {
 
 @injectable()
 export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasChildren, Mergeable {
-  constructor(@inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>) {
+  constructor(@inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>) {
     super(hashedPattern);
   }
 
@@ -106,7 +105,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
 @injectable()
 export class TextNodeActions extends TextNodeEntity implements HasActions {
   constructor(
-    @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
   ) {
     super(hashedPattern);
@@ -145,7 +144,7 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 export class TextNodeCreate extends TextNodeEntity
   implements Creatable<Partial<TextNode>, TextNode> {
   constructor(
-    @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
     @multiInject(EveesModule.bindings.PerspectivePattern) protected perspectivePatterns: Pattern[]

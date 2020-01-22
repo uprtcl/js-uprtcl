@@ -9,7 +9,7 @@ import '@material/mwc-button';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternAction } from '@uprtcl/cortex';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { sharedStyles } from '../shared-styles';
 
@@ -41,7 +41,7 @@ export class CortexActions extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        entity(id: "${this.hash}", depth: 1) {
+        entity(id: "${this.hash}") {
           id
           _context {
 

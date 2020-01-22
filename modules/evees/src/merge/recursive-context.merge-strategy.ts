@@ -1,12 +1,13 @@
 import { injectable } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { Pattern, HasChildren, Hashed } from '@uprtcl/cortex';
-import { Secured, createEntity } from '@uprtcl/common';
+import { HasChildren, Hashed } from '@uprtcl/cortex';
+import { createEntity } from '@uprtcl/common';
 
+import { Secured } from '../patterns/default-secured.pattern';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import { Perspective, UpdateRequest, Commit } from '../types';
-import { CREATE_COMMIT } from 'src/graphql/queries';
+import { CREATE_COMMIT } from '../graphql/queries';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {

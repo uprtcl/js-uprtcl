@@ -7,14 +7,14 @@ export const styleMap = style => {
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
-
-import { ApolloClientModule } from '@uprtcl/common';
-
-import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { ApolloClient, gql } from 'apollo-boost';
+
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
+
 import { PerspectiveData } from '../types';
 import { EveesBindings } from '../bindings';
-import { EveesModule } from 'src/evees.module';
+import { EveesModule } from '../evees.module';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 

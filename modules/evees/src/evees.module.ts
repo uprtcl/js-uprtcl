@@ -3,15 +3,12 @@ import { interfaces } from 'inversify';
 import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 import { SourcesModule } from '@uprtcl/multiplatform';
-import {
-  GraphQlSchemaModule,
-  DefaultSecuredPattern,
-  DefaultSignedPattern,
-  CidHashedPattern,
-  CorePatterns
-} from '@uprtcl/common';
+import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { AccessControlModule } from '@uprtcl/access-control';
 
+import { DefaultSecuredPattern } from './patterns/default-secured.pattern';
+import { DefaultSignedPattern } from './patterns/default-signed.pattern';
+import { CidHashedPattern } from './patterns/cid-hashed.pattern';
 import { PerspectiveLinks, PerspectiveLens } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
@@ -95,9 +92,9 @@ export class EveesModule extends MicroModule {
     }),
     new i18nextModule('evees', { en: en }),
     new PatternsModule({
-      [CorePatterns.Hashed]: [CidHashedPattern],
-      [CorePatterns.Signed]: [DefaultSignedPattern],
-      [CorePatterns.Secured]: [DefaultSecuredPattern],
+      [EveesModule.bindings.Hashed]: [CidHashedPattern],
+      [EveesModule.bindings.Signed]: [DefaultSignedPattern],
+      [EveesModule.bindings.Secured]: [DefaultSecuredPattern],
       [EveesModule.bindings.PerspectivePattern]: [PerspectiveLinks, PerspectiveLens],
       [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
     }),

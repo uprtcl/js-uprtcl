@@ -1,7 +1,7 @@
 import { LitElement, html, property } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
 import { WikisModule, CREATE_WIKI } from '@uprtcl/wikis';
 import { DocumentsModule } from '@uprtcl/documents';

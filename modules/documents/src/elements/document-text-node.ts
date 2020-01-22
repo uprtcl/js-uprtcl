@@ -3,7 +3,8 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
-import { ApolloClientModule, Secured } from '@uprtcl/common';
+import { Secured } from '@uprtcl/evees';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, Perspective } from '@uprtcl/evees';
 
 import { TextNode, TextType } from '../types';

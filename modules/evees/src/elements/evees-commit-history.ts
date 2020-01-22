@@ -2,7 +2,7 @@ import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 interface CommitHistoryData {
   id: string;
@@ -31,7 +31,7 @@ export class CommitHistory extends moduleConnect(LitElement) {
     const result = await apolloClient.query({
       query: gql`
       {
-        entity(id: "${this.commitId}", depth: 1) {
+        entity(id: "${this.commitId}") {
           id
           entity {
             ... on Commit {

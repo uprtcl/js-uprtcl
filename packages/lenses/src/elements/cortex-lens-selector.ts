@@ -7,7 +7,7 @@ import '@authentic/mwc-list';
 import '@material/mwc-icon-button';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Lens } from '../types';
 
@@ -38,7 +38,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        entity(id: "${this.hash}", depth: 1) {
+        entity(id: "${this.hash}") {
           id
           _context {
 

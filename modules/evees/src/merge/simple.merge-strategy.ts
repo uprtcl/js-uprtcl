@@ -1,10 +1,13 @@
+import { ApolloClient } from 'apollo-boost';
 import { inject, injectable } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
-import { Secured, createEntity, ApolloClientModule } from '@uprtcl/common';
+import { createEntity } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
+import { Secured } from '../patterns/default-secured.pattern';
 import { UpdateRequest, Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
@@ -13,8 +16,7 @@ import { isAncestorOf } from '../utils/ancestor';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
-import { ApolloClient } from 'apollo-boost';
-import { CREATE_COMMIT } from 'src/graphql/queries';
+import { CREATE_COMMIT } from '../graphql/queries';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {

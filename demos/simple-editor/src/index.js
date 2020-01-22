@@ -2,10 +2,12 @@ import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator
 import { LensesModule, LensSelectorPlugin, ActionsPlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, DocumentsModule } from '@uprtcl/documents';
 import { WikisIpfs, WikisModule, WikisHttp } from '@uprtcl/wikis';
-import { ApolloClientModule, GqlCortexModule, GqlDiscoveryModule } from '@uprtcl/common';
+import { GqlCortexModule } from '@uprtcl/common';
 import { AccessControlModule } from '@uprtcl/access-control';
 import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
 import { IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { DiscoveryModule } from '@uprtcl/multiplatform';
 
 import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
@@ -60,7 +62,7 @@ import { SimpleWiki } from './simple-wiki';
     new i18nextBaseModule(),
     new ApolloClientModule(),
     new GqlCortexModule(),
-    new GqlDiscoveryModule(),
+    new DiscoveryModule(),
     lenses,
     new AccessControlModule(),
     evees,

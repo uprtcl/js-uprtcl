@@ -1,7 +1,7 @@
 import { PatternRecognizer, HasLinks } from '@uprtcl/cortex';
 
-import { KnownSourcesService } from './known-sources/known-sources.service';
-import { Source } from './sources/source';
+import { KnownSourcesService } from './known-sources.service';
+import { Source } from '../types/source';
 
 /**
  * Recognize the patterns from the object and get its links

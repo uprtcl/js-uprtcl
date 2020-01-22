@@ -6,11 +6,12 @@ import {
   EthereumProvider,
   IpfsConnection
 } from '@uprtcl/connections';
-import { sortObject, Secured } from '@uprtcl/common';
 import { Hashed } from '@uprtcl/cortex';
 
 import * as EveesContractArtifact from './uprtcl-contract.json';
 
+import { sortObject } from '../../../utils/utils';
+import { Secured } from '../../../patterns/default-secured.pattern';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid } from './common';

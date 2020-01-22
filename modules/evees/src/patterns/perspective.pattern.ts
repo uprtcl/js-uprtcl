@@ -15,7 +15,8 @@ import {
   CortexModule,
   Signed
 } from '@uprtcl/cortex';
-import { Secured, CorePatterns, ApolloClientModule } from '@uprtcl/common';
+import { Secured } from '../patterns/default-secured.pattern';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
@@ -28,7 +29,7 @@ export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
 @injectable()
 export class PerspectiveEntity implements Entity {
-  constructor(@inject(CorePatterns.Secured) protected securedPattern: Pattern & IsSecure<any>) {}
+  constructor(@inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>) {}
   recognize(object: object) {
     return (
       this.securedPattern.recognize(object) &&
@@ -44,7 +45,7 @@ export class PerspectiveEntity implements Entity {
 @injectable()
 export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
   constructor(
-    @inject(CorePatterns.Secured)
+    @inject(EveesBindings.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Perspective>>
   ) {
     super(securedPattern);
@@ -71,7 +72,7 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
 export class PerspectiveLinks extends PerspectiveEntity
   implements HasLinks, HasRedirect, Creatable<NewPerspectiveArgs, Signed<Perspective>>, HasActions {
   constructor(
-    @inject(CorePatterns.Secured) protected securedPattern: Pattern & IsSecure<any>,
+    @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,

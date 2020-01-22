@@ -1,6 +1,6 @@
 import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { Secured } from '../patterns/default-secured.pattern';
 
 import { Commit, Perspective } from '../types';
 import { EveesBindings } from '../bindings';

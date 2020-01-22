@@ -1,21 +1,22 @@
 import { html, TemplateResult } from 'lit-element';
 import { injectable, inject, multiInject } from 'inversify';
 
-import { CorePatterns } from '@uprtcl/common';
 import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
-import { Mergeable, MergeStrategy, mergeStrings } from '@uprtcl/evees';
+import { Mergeable, EveesModule, MergeStrategy, mergeStrings } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
+import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
 import { WikisProvider } from '../services/wikis.provider';
-import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 
 const propertyOrder = ['title', 'pages'];
 
 @injectable()
 export class WikiEntity implements Entity {
-  constructor(@inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
+  constructor(
+    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
+  ) {}
 
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;

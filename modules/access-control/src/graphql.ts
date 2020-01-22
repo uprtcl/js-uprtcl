@@ -1,4 +1,4 @@
-import { gql } from 'apollo-boost';
+import gql from 'graphql-tag';
 
 import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 import { Authority } from '@uprtcl/multiplatform';

@@ -3,8 +3,8 @@ import { multiInject, inject, injectable } from 'inversify';
 import { PatternRecognizer, Hashed, CortexModule, Pattern, HasLinks } from '@uprtcl/cortex';
 import { Dictionary, Logger } from '@uprtcl/micro-orchestrator';
 
-import { Source } from './sources/source';
-import { KnownSourcesService } from './known-sources/known-sources.service';
+import { Source } from '../types/source';
+import { KnownSourcesService } from './known-sources.service';
 import { linksFromObject, raceToSuccess, discoverKnownSources } from './discovery.utils';
 import { MultiplatformBindings, SourcesBindings } from '../bindings';
 

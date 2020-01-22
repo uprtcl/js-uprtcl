@@ -3,8 +3,8 @@ import { interfaces } from 'inversify';
 import { MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { DiscoveryModule } from './discovery.module';
-import { Source } from './services/sources/source';
-import { Ready } from './services/sources/ready';
+import { Source } from './types/source';
+import { Ready } from './types/ready';
 import { SourcesBindings } from './bindings';
 
 /**

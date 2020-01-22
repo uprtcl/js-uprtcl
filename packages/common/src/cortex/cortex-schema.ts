@@ -1,11 +1,10 @@
 import { merge, cloneDeepWith } from 'lodash-es';
-import { gql, ApolloClient } from 'apollo-boost';
+import gql from 'graphql-tag';
 
 import { PatternRecognizer, Pattern, Entity, CortexModule, Hashed } from '@uprtcl/cortex';
 import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 
 import { getIsomorphisms, entityContent } from '../utils/entities';
-import { ApolloClientModule } from '../graphql/apollo-client.module';
 
 export const cortexSchema = gql`
   extend type EntityContext {
@@ -90,7 +89,6 @@ export const cortexResolvers = {
       const entity = await entityFromParent(parent, container);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
-      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
 
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
 

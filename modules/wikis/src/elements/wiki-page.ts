@@ -3,7 +3,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 
 import { TextNode } from '@uprtcl/documents';
 import { sharedStyles } from '@uprtcl/lenses';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 import '@material/mwc-top-app-bar';

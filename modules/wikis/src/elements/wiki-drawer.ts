@@ -7,7 +7,7 @@ import '@material/mwc-ripple';
 
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD } from '@uprtcl/evees';
 import { TextType, CREATE_TEXT_NODE } from '@uprtcl/documents';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 

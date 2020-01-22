@@ -1,3 +1,4 @@
+import { ApolloClient, gql } from 'apollo-boost';
 import { multiInject, injectable, inject } from 'inversify';
 import { isEqual } from 'lodash-es';
 
@@ -11,13 +12,14 @@ import {
 } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Secured, createEntity, CorePatterns, ApolloClientModule } from '@uprtcl/common';
+import { createEntity } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
+import { Secured } from '../patterns/default-secured.pattern';
 import { Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
-import { ApolloClient, gql } from 'apollo-boost';
-import { CREATE_PERSPECTIVE, CREATE_COMMIT } from 'src/graphql/queries';
+import { CREATE_PERSPECTIVE, CREATE_COMMIT } from '../graphql/queries';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -41,7 +43,7 @@ export class Evees {
 
   constructor(
     @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(CorePatterns.Secured) protected secured: IsSecure<any>,
+    @inject(EveesBindings.Secured) protected secured: IsSecure<any>,
     @inject(DiscoveryModule.bindings.LocalKnownSources)
     public knownSources: KnownSourcesService,
     @inject(DiscoveryModule.bindings.DiscoveryService)
@@ -210,7 +212,7 @@ export class Evees {
 
     // Clone the perspective in the selected provider
     await eveesRemote.clonePerspective(perspective);
-    
+
     // And update its details
     await eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context });
 

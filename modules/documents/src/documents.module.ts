@@ -1,8 +1,6 @@
-import { interfaces } from 'inversify';
-
 import { SourcesModule } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
-import { GraphQlSchemaModule } from '@uprtcl/common';
+import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { ElementsModule, i18nextModule, MicroModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { DocumentTextNode } from './elements/document-text-node';

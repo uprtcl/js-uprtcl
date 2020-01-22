@@ -2,8 +2,8 @@ import { injectable } from 'inversify';
 
 import { EntryResult, HolochainProvider } from '@uprtcl/connections';
 import { Signed, Hashed } from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
 
+import { Secured } from '../../../patterns/default-secured.pattern';
 import { Perspective, Commit, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 

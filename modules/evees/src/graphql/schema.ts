@@ -1,6 +1,5 @@
 import { gql } from 'apollo-boost';
 
-
 export const eveesTypeDefs = gql`
   scalar Date
 
@@ -18,7 +17,7 @@ export const eveesTypeDefs = gql`
   type Commit implements Entity {
     id: ID!
 
-    parentCommits: [Commit!]!
+    parentCommits: [Commit!]! @discover
     timestamp: Date!
     message: String
     data: Entity @discover

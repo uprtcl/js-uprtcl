@@ -1,6 +1,6 @@
 import { MicroModule, Constructor, Dictionary } from '@uprtcl/micro-orchestrator';
 import { CortexModule } from '@uprtcl/cortex';
-import { GraphQlSchemaModule } from '@uprtcl/common';
+import { GraphQlSchemaModule } from '@uprtcl/graphql';
 
 import { CortexEntity } from './elements/cortex-entity';
 import { CortexLensSelector } from './elements/cortex-lens-selector';

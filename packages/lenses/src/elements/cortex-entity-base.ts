@@ -3,16 +3,15 @@ import { flatMap } from 'lodash-es';
 import { LitElement, property, PropertyValues } from 'lit-element';
 
 import { moduleConnect, Dictionary, Logger } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
 import { SlotPlugin } from '../plugins/slot.plugin';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
-    
   logger = new Logger('CORTEX-ENTITY-BASE');
-  
+
   @property()
   public hash!: string;
 
@@ -48,7 +47,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        entity(id: "${hash}", depth: 1) {
+        entity(id: "${hash}") {
           id
           _context {
             patterns {
@@ -85,7 +84,10 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
       this.selectedLens = lenses[0];
     }
 
-    this.logger.info(`Lens selected for entity ${this.hash}`, { selectedLens: this.selectedLens, lenses });
+    this.logger.info(`Lens selected for entity ${this.hash}`, {
+      selectedLens: this.selectedLens,
+      lenses
+    });
   }
 
   get slotPlugins(): Dictionary<SlotPlugin> {

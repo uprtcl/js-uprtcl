@@ -1,10 +1,9 @@
-import { Source } from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
+import { Source } from '@uprtcl/multiplatform';
 
+import { Secured } from '../patterns/default-secured.pattern';
 import { Perspective, PerspectiveDetails } from '../types';
 
 export interface EveesSource extends Source {
-
   /**
    * Returns all the perspectives associated to a context
    *
@@ -18,5 +17,4 @@ export interface EveesSource extends Source {
    * @returns the headId, the context and the name of the perspective
    */
   getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails>;
-
 }

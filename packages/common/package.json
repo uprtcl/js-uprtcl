@@ -13,6 +13,7 @@
   "dependencies": {
     "@uprtcl/connections": "^0.0.2-alpha3",
     "@uprtcl/cortex": "^0.0.2-alpha3",
+    "@uprtcl/graphql": "^0.0.2-alpha3",
     "@uprtcl/micro-orchestrator": "^0.0.2-alpha3",
     "@uprtcl/multiplatform": "^0.0.2-alpha3",
     "apollo-boost": "^0.4.7",
@@ -20,6 +21,7 @@
     "apollo-link-schema": "^1.2.4",
     "buffer": "^5.4.3",
     "cids": "^0.7.2",
+    "graphql": "^14.5.8",
     "graphql-tools": "^4.0.6",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
@@ -27,9 +29,6 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.7.4",
-    "@babel/plugin-proposal-decorators": "^7.7.4",
-    "@babel/preset-typescript": "^7.7.4",
     "@open-wc/testing": "^0.11.1",
     "@open-wc/testing-karma": "^3.2.19",
     "@rollup/plugin-commonjs": "^11.0.1",
@@ -42,7 +41,6 @@
     "apollo-cache-persist": "^0.1.1",
     "babel-plugin-module-extension": "^0.1.1",
     "babel-plugin-transform-inline-environment-variables": "^0.4.3",
-    "deepmerge": "^4.2.2",
     "es-dev-commonjs-transformer": "^0.1.1",
     "es-module-lexer": "^0.3.13",
     "karma-typescript": "^4.1.1",
