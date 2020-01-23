@@ -181,7 +181,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
         `,
         variables: {
           content: newNode,
-          usl: dataUsl
+          source: dataUsl
         }
       });
 

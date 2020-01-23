@@ -1,4 +1,6 @@
-import { EveesProvider } from './services/evees.provider';
+import { Source } from '@uprtcl/multiplatform';
+
+export type RemoteMap = (eveesAuthority: string, entityName: string) => Source;
 
 export type Context = string;
 

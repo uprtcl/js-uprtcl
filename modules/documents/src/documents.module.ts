@@ -49,10 +49,7 @@ export class DocumentsModule extends MicroModule {
 
   static bindings = DocumentsBindings;
 
-  constructor(
-    protected documentsRemotes: DocumentsRemote[],
-    protected remoteLinks: Dictionary<string>
-  ) {
+  constructor(protected documentsRemotes: DocumentsRemote[]) {
     super();
   }
 

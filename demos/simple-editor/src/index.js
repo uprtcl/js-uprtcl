@@ -30,28 +30,21 @@ import { SimpleWiki } from './simple-wiki';
   const httpWikis = new WikisHttp(c1host, httpConnection);
   const ipfsWikis = new WikisIpfs(ipfsConnection);
 
-  const eveesRemotesLinks = {
-    [httpEvees.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
-    [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
+  const remoteMap = (eveesAuthority, entityName) => {
+    if (eveesAuthority === ethEvees.authority) {
+      if (entityName === 'Wiki') return ipfsWikis;
+      else if (entityName === 'TextNode') return ipfsDocuments;
+    } else {
+      if (entityName === 'Wiki') return httpWikis;
+      else if (entityName === 'TextNode') return httpDocuments;
+    }
   };
 
-  const evees = new EveesModule([ethEvees, httpEvees], eveesRemotesLinks);
+  const evees = new EveesModule([ethEvees, httpEvees], remoteMap);
 
-  const docsRemotesLinks = {
-    [httpEvees.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
-    [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
-  };
+  const documents = new DocumentsModule([ipfsDocuments, httpDocuments]);
 
-  const documents = new DocumentsModule([ipfsDocuments, httpDocuments], docsRemotesLinks);
-
-  const wikiRemotesLinks = {
-    [httpEvees.uprtclProviderLocator]: httpWikis.uprtclProviderLocator,
-    [ethEvees.uprtclProviderLocator]: ipfsWikis.uprtclProviderLocator,
-    [httpWikis.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
-    [ipfsWikis.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
-  };
-
-  const wikis = new WikisModule([ipfsWikis, httpWikis], wikiRemotesLinks);
+  const wikis = new WikisModule([ipfsWikis, httpWikis]);
 
   const lenses = new LensesModule({
     'lens-selector': new LensSelectorPlugin(),

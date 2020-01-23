@@ -14,15 +14,15 @@ export const cortexSchema = gql`
   type Patterns {
     links: [Entity!]
 
-    content: Entity!
-    isomorphisms: [Entity!]!
+    content: Entity! @discover
+    isomorphisms: [Entity!]! @discover
   }
 `;
 
 export const cortexResolvers = {
   Entity: {
     async __resolveType(parent, { container }, info) {
-      const entity = await entityFromParent(parent, container);
+      const entity = await entityFromParent(parent);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
@@ -47,7 +47,7 @@ export const cortexResolvers = {
   },
   EntityContext: {
     async patterns(parent, args, { container }, info) {
-      const entity = await entityFromParent(parent, container);
+      const entity = await entityFromParent(parent);
 
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
@@ -76,17 +76,15 @@ export const cortexResolvers = {
   },
   Patterns: {
     async content(parent, args, { container }, info) {
-      const entity = await entityFromParent(parent, container);
+      const entity = parent.__entity;
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
 
-      const content: Hashed<any> = await entityContent(entity, recognizer, discovery);
-
-      return { ...content.object, id: content.id };
+      return entityContent(entity, recognizer, discovery);
     },
     async isomorphisms(parent, args, { container }, info) {
-      const entity = await entityFromParent(parent, container);
+      const entity = parent.__entity;
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
@@ -101,19 +99,17 @@ export const cortexResolvers = {
   }
 };
 
-export async function entityFromParent(parent, container): Promise<Hashed<any>> {
-  const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
-  let id: string | undefined = undefined;
+export async function entityFromParent(parent): Promise<Hashed<any>> {
+  const id = parent.id;
 
-  if (parent.id) id = parent.id;
-  else if (parent.__entity) return parent.__entity;
-  else if (typeof parent === 'string') id = parent;
+  let object = {};
 
-  if (!id) return parent;
+  for (const key of Object.keys(parent)) {
+    if (key !== 'id') object[key] = parent[key];
+  }
 
-  const object = await discovery.get(id);
-
-  if (!object) throw new Error(`Entity with id ${id} not found`);
-
-  return object;
+  return {
+    id,
+    object
+  };
 }

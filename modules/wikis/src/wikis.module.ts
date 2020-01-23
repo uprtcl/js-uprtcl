@@ -46,7 +46,7 @@ export class WikisModule extends MicroModule {
 
   static bindings = WikiBindings;
 
-  constructor(protected wikisRemotes: WikisRemote[], protected remoteLinks: Dictionary<string>) {
+  constructor(protected wikisRemotes: WikisRemote[]) {
     super();
   }
 

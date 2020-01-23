@@ -19,7 +19,7 @@ export const accessControlTypes = gql`
 export const accessControlResolvers = {
   Patterns: {
     async accessControl(parent, args, context) {
-      const entity: Hashed<any> = parent.__entity;
+      const entity: Hashed<any> = parent;
       const recognizer: PatternRecognizer = context.container.get(CortexModule.bindings.Recognizer);
 
       const updatable: Updatable<any> | undefined = recognizer

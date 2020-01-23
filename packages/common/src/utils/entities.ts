@@ -50,7 +50,7 @@ export async function entityContent(
   entity: any,
   recognizer: PatternRecognizer,
   discovery: DiscoveryService
-): Promise<any | undefined> {
+): Promise<string | undefined> {
   const hasRedirect = recognizer.recognize(entity).find(prop => !!prop.redirect);
 
   if (hasRedirect) {
@@ -62,7 +62,7 @@ export async function entityContent(
     }
   }
 
-  return entity;
+  return entity.id;
 }
 
 /**

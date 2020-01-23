@@ -5,14 +5,16 @@ import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
 import '@material/mwc-ripple';
 
-import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD } from '@uprtcl/evees';
-import { TextType, CREATE_TEXT_NODE } from '@uprtcl/documents';
+import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD, RemoteMap, EveesModule, EveesRemote } from '@uprtcl/evees';
+import { TextType, CREATE_TEXT_NODE, DocumentsModule } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
 import { CREATE_WIKI } from '../graphql/queries';
+import { Entity } from '@uprtcl/cortex';
+import { Source } from '@uprtcl/multiplatform';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'wiki-id' })
@@ -25,6 +27,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   editable: boolean = true;
 
   currentHead: string | undefined = undefined;
+  perspectiveOrigin: string | undefined = undefined;
 
   @property({ type: String })
   selectedPageHash: string | undefined = undefined;
@@ -37,6 +40,22 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.pagesList = undefined;
 
+    const remoteMap: RemoteMap = this.request(EveesModule.bindings.RemoteMap);
+    const remotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
+    
+    const textNodeEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
+    const name = textNodeEntity[0].name;
+
+    const wikiEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
+    const wikiName = wikiEntity[0].name;
+
+    const remote: EveesRemote | undefined = remotes.find(r => r.authority === this.perspectiveOrigin);
+
+    if (!remote) throw new Error(`Evees remote not registered for authority ${this.perspectiveOrigin}`);
+
+    const textNodeSource: Source = remoteMap(this.perspectiveOrigin, name);
+    const wikiSource: Source = remoteMap(this.perspectiveOrigin, wikiName);
+
     const pageContent = {
       text: 'New page',
       type: TextType.Paragraph,
@@ -47,7 +66,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const result = await client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
-        content: pageContent
+        content: pageContent,
+        source: textNodeSource.source
       }
     });
 
@@ -55,14 +75,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_COMMIT,
       variables: {
         dataId: result.data.createTextNode.id,
-        parentsIds: []
+        parentsIds: [],
+        source: remote.source
       }
     });
 
     const perspective = await client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
-        headId: commit.data.createCommit.id
+        headId: commit.data.createCommit.id,
+        authority: remote.authority
       }
     });
 
@@ -74,7 +96,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const wikiResult = await client.mutate({
       mutation: CREATE_WIKI,
       variables: {
-        content: wiki
+        content: wiki,
+        source: wikiSource.source
       }
     });
 
@@ -82,7 +105,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_COMMIT,
       variables: {
         dataId: wikiResult.data.createWiki.id,
-        parentsIds: this.currentHead ? [this.currentHead] : []
+        parentsIds: this.currentHead ? [this.currentHead] : [],
+        source: remote.source
       }
     });
 
@@ -113,6 +137,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           id
 
           ... on Perspective {
+            payload {
+              origin
+            }
             head {
               id
               data {
@@ -146,6 +173,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     console.log('result', result);
 
     const wiki = result.data.entity.head.data;
+
+    this.perspectiveOrigin = result.data.entity.payload.origin;
 
     const pages = wiki.pages;
     this.pagesList = pages.map(page => ({

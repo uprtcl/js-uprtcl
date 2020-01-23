@@ -11,11 +11,16 @@ import { KnownSourcesApollo } from './graphql/known-sources.apollo';
 import { discoveryTypeDefs } from './graphql/discovery-schema';
 import { DiscoverDirective } from './graphql/discover-directive';
 import { SourceDirective } from './graphql/source-directive';
+import { Source } from './types/source';
 
 export class DiscoveryModule extends MicroModule {
   static id = Symbol('discovery-module');
 
   static bindings = MultiplatformBindings;
+
+  constructor(protected defaultSourceResolver: (sources: Source[]) => Source) {
+    super();
+  }
 
   dependencies = [CortexModule.id, ApolloClientModule.id];
   submodules = [

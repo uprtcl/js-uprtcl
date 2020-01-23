@@ -11,21 +11,13 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/connections": "^0.0.2-alpha3",
     "@uprtcl/cortex": "^0.0.2-alpha3",
     "@uprtcl/graphql": "^0.0.2-alpha3",
     "@uprtcl/micro-orchestrator": "^0.0.2-alpha3",
     "@uprtcl/multiplatform": "^0.0.2-alpha3",
-    "apollo-boost": "^0.4.7",
-    "apollo-link-context": "^1.0.19",
-    "apollo-link-schema": "^1.2.4",
-    "buffer": "^5.4.3",
-    "cids": "^0.7.2",
-    "graphql": "^14.5.8",
-    "graphql-tools": "^4.0.6",
+    "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
-    "multihashing-async": "^0.8.0",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {

@@ -122,7 +122,7 @@ export class CommitPattern extends CommitEntity
     const commitData: Commit = {
       creatorsIds: creatorsIds,
       dataId: args.dataId,
-      message: args.message,
+      message: args.message || `Commit at ${Date.now().toLocaleString()}`,
       timestamp: timestamp,
       parentsIds: args.parentsIds
     };
@@ -130,7 +130,11 @@ export class CommitPattern extends CommitEntity
 
     if (!source) {
       if (this.remotes.length === 1) source = this.remotes[0].source;
-      else throw new Error('You need to specify which source to create the commit');
+      else {
+        const s = this.remotes.find(r => r.source.includes('http'));
+        if (!s) throw new Error('Http source not found');
+        source = s.source;
+      }
     }
 
     const remote: EveesRemote | undefined = this.remotes.find(r => r.source === source);
