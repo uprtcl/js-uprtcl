@@ -22,7 +22,7 @@ import { WikiBindings } from './bindings';
  * Example usage:
  *
  * ```ts
- * import { IpfsConnection } from '@uprtcl/connections';
+ * import { IpfsConnection } from '@uprtcl/ipfs-provider';
  * import { wikisModule, WikisTypes, WikisIpfs } from '@uprtcl/wikis';
  *
  * const ipfsConnection = new IpfsConnection({

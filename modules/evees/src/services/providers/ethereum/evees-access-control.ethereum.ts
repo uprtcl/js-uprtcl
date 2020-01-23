@@ -1,4 +1,4 @@
-import { EthereumProvider } from '@uprtcl/connections';
+import { EthereumProvider } from '@uprtcl/ethereum-provider';
 import { OwnerAccessControlService, OwnerAccessControl } from '@uprtcl/access-control';
 
 import { GET_PERSP_DETAILS, UPDATE_OWNER, hashCid } from './common';

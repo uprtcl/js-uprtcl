@@ -1,4 +1,4 @@
-import { HttpConnection, HttpProvider } from '@uprtcl/connections';
+import { HttpConnection, HttpProvider } from '@uprtcl/http-provider';
 import { Hashed } from '@uprtcl/cortex';
 
 import { WikisProvider } from '../wikis.provider';

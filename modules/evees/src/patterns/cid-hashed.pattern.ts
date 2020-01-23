@@ -3,7 +3,7 @@ import multihashing from 'multihashing-async';
 import CID from 'cids';
 
 import { Transformable, Pattern, Hashed, Hashable } from '@uprtcl/cortex';
-import { CidConfig, defaultCidConfig } from '@uprtcl/connections';
+import { CidConfig, defaultCidConfig } from '@uprtcl/ipfs-provider';
 
 import { sortObject } from '../utils/utils';
 

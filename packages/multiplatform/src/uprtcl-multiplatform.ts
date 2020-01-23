@@ -21,3 +21,14 @@ export {
 /** Modules */
 export { DiscoveryModule } from './discovery.module';
 export { SourcesModule } from './sources.module';
+
+/** Connections */
+export { Connection, ConnectionOptions } from './connections/connection';
+export { SocketConnection } from './connections/socket.connection';
+
+/** Utils */
+export {
+  createEntity,
+  entityContent,
+  getIsomorphisms
+} from '../../multiplatform/src/utils/entities';

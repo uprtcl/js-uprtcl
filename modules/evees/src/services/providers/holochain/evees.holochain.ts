@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { EntryResult, HolochainProvider } from '@uprtcl/connections';
+import { EntryResult, HolochainProvider } from '@uprtcl/holochain-provider';
 import { Signed, Hashed } from '@uprtcl/cortex';
 
 import { Secured } from '../../../patterns/default-secured.pattern';

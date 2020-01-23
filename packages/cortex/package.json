@@ -11,7 +11,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
+    "@uprtcl/graphql": "^0.0.2-alpha3",
     "@uprtcl/micro-orchestrator": "^0.0.2-alpha3",
+    "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
     "reflect-metadata": "^0.1.13"

@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { HolochainProvider } from '@uprtcl/connections';
+import { HolochainProvider } from '@uprtcl/holochain-provider';
 import { Hashed } from '@uprtcl/cortex';
 
 import { DocumentsProvider } from '../documents.provider';

@@ -8,9 +8,10 @@ import { DiscoveryService } from './services/discovery.service';
 import { MultiplatformBindings } from './bindings';
 import { KnownSourcesService } from './services/known-sources.service';
 import { KnownSourcesApollo } from './graphql/known-sources.apollo';
-import { discoveryTypeDefs } from './graphql/discovery-schema';
-import { DiscoverDirective } from './graphql/discover-directive';
-import { SourceDirective } from './graphql/source-directive';
+import { discoveryTypeDefs } from './graphql/schema';
+import { DiscoverDirective } from './graphql/directives/discover-directive';
+import { SourceDirective } from './graphql/directives/source-directive';
+import { discoverResolvers } from './graphql/resolvers';
 
 export class DiscoveryModule extends MicroModule {
   static id = Symbol('discovery-module');
@@ -19,7 +20,10 @@ export class DiscoveryModule extends MicroModule {
 
   dependencies = [CortexModule.id, ApolloClientModule.id];
   submodules = [
-    new GraphQlSchemaModule(discoveryTypeDefs, {}, [DiscoverDirective, SourceDirective])
+    new GraphQlSchemaModule(discoveryTypeDefs, discoverResolvers, [
+      DiscoverDirective,
+      SourceDirective
+    ])
   ];
 
   async onLoad(container: interfaces.Container): Promise<void> {

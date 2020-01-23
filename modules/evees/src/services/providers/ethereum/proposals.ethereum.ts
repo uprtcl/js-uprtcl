@@ -1,5 +1,6 @@
 import { Hashed } from '@uprtcl/cortex';
-import { EthereumProvider, IpfsSource } from '@uprtcl/connections';
+import { EthereumProvider } from '@uprtcl/ethereum-provider';
+import { IpfsSource } from '@uprtcl/ipfs-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { Proposal, UpdateRequest } from '../../../types';
@@ -28,10 +29,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     throw new Error('Method not implemented.');
   }
 
-  updateProposal(
-    proposalId: string,
-    requests: UpdateRequest[],
-  ): Promise<void> {
+  updateProposal(proposalId: string, requests: UpdateRequest[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

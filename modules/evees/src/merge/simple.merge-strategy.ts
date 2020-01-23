@@ -4,7 +4,7 @@ import { inject, injectable } from 'inversify';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
-import { createEntity } from '@uprtcl/common';
+import { createEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';

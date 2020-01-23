@@ -1,11 +1,10 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
 import {
-  IpfsSource,
   EthereumConnection,
   EthereumProviderOptions,
-  EthereumProvider,
-  IpfsConnection
-} from '@uprtcl/connections';
+  EthereumProvider
+} from '@uprtcl/ethereum-provider';
+import { IpfsSource, IpfsConnection } from '@uprtcl/ipfs-provider';
 import { Hashed } from '@uprtcl/cortex';
 
 import * as EveesContractArtifact from './uprtcl-contract.json';

@@ -168,9 +168,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
       }`
     });
-    console.log(client);
-
-    console.log('result', result);
 
     const wiki = result.data.entity.head.data;
 

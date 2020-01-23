@@ -1,0 +1,74 @@
+{
+  "name": "@uprtcl/ethereum-provider",
+  "version": "0.0.2-alpha3",
+  "description": "_Prtcl provider wrappers around web3",
+  "homepage": "https://uprtcl.io",
+  "scripts": {
+    "clean": "rimraf dist",
+    "dev": "rollup -w -c rollup.config.ts",
+    "build": "npm run clean && rollup -c rollup.config.ts",
+    "test": "karma start --coverage",
+    "test:watch": "karma start --auto-watch=true --single-run=false"
+  },
+  "dependencies": {
+    "@uprtcl/cortex": "^0.0.2-alpha3",
+    "@uprtcl/micro-orchestrator": "^0.0.2-alpha3",
+    "@uprtcl/multiplatform": "^0.0.2-alpha3",
+    "inversify": "^5.0.1",
+    "reflect-metadata": "^0.1.13",
+    "web3": "^1.2.1",
+    "web3-eth-contract": "^1.2.1",
+    "web3-providers": "^1.0.0-beta.55",
+    "web3-utils": "^1.2.1"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-proposal-decorators": "^7.7.4",
+    "@babel/preset-typescript": "^7.7.4",
+    "@open-wc/testing": "^0.11.1",
+    "@open-wc/testing-karma": "^3.0.0",
+    "@rollup/plugin-commonjs": "^11.0.1",
+    "@rollup/plugin-json": "^4.0.1",
+    "@rollup/plugin-node-resolve": "^7.0.0",
+    "@types/lodash-es": "^4.14.3",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^10.11.0",
+    "rimraf": "^2.6.2",
+    "rollup": "^1.29.0",
+    "rollup-plugin-sourcemaps": "^0.5.0",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "temp-dir": "^2.0.0",
+    "typescript": "^3.7.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "contributors": [
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    },
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@collectiveone.org",
+      "url": "https://github.com/pepoospina"
+    }
+  ],
+  "keywords": [
+    "service",
+    "provider",
+    "backend",
+    "websocket",
+    "web3",
+    "holochain"
+  ],
+  "license": "MIT",
+  "main": "dist/uprtcl-ethereum-provider.umd.js",
+  "module": "dist/uprtcl-ethereum-provider.es5.js",
+  "typings": "dist/types/uprtcl-ethereum-provider.d.ts",
+  "engines": {
+    "node": ">=10.0.0"
+  }
+}

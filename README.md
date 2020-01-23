@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop.svg?style=shield)](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop)
 
->_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+> \_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
 
 This repo contains a set of tools and libraries to help develop \_Prtcl compatible web-applications.
 
@@ -22,36 +22,64 @@ Orchestrates micro modules in one single web application, following the micro-fr
 
 Implements the Cortex framework, its building blocks and controllers.
 
+### Multiplatform
+
+> [Documentation](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_cortex.html)
+
+Implements services, apollo directives and interfaces that allow your application to consume data from different (de)centralized technologies.
+
 ### Lenses
 
 > [Documentation](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_lenses.html)
 
 Implements a basic Cortex rendering engine to reinterpret the data together with Cortex patterns.
 
-### Common
+### GraphQl
 
 > [Documentation](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_common.html)
 
-Implements basic Cortex modules and patterns like access control, entities redux module, hashed and signed entities.
+Provides modules to integrate `ApolloClient` in your \_Prtcl applications.
 
-### Connections
+### Redux
 
 > [Documentation](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_connections.html)
 
-Optional package containing convencience services and connections to different (de)centralized technologies.
+Provides modules to integrate `redux` in your \_Prtcl applications.
 
-Supported technologies for now: IPFS, ethereum, Holochain, websockets...
+## Providers
+
+These packages provide convenience classes and wrappers around different (de)centralized web technologies so that micro modules can consume them easily.
+
+These services include standard funcionality like a retry mechanism, or a `ready()` function to wait for them to be ready.
+
+### Holochain
+
+\_Prtcl provider wrappers around @holochain/hc-web-client.
+
+### Ipfs
+
+\_Prtcl provider wrappers around ipfs-http-client.
+
+### Ethereum
+
+\_Prtcl provider wrappers around web3.
+
+### Http
+
+\_Prtcl provider wrappers around the native `fetch` API.
 
 ## Modules
 
 These are application modules compatible with `micro-orchestrator` that define patterns, lenses and services that can work together to create, interpret and share different kind of objects.
 
-### Documents
-
-> [Evees](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_evees.html)
+### Evees
 
 Implements version control for any kind of content addressable object, with different perspectives (branches in git), and proposals to update those perspectives.
 
-> [Documentation](https://uprtcl.github.io/js-uprtcl/modules/_uprtcl_documents.html)
+### Evees
 
 Implements documents and folders.
+
+### Wikis
+
+Implements wikis.

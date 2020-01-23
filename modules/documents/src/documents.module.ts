@@ -25,7 +25,7 @@ import { DocumentsBindings } from './bindings';
  * Example usage:
  *
  * ```ts
- * import { IpfsConnection } from '@uprtcl/connections';
+ * import { IpfsConnection } from '@uprtcl/ipfs-provider';
  * import { DocumentsModule, DocumentsIpfs } from '@uprtcl/documents';
  *
  * const ipfsConnection = new IpfsConnection({

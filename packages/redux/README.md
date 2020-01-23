@@ -1,43 +1,24 @@
-# @uprtcl/common
+# @uprtcl/redux
 
 > \_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
 > /)
 
-This is a collection of common Cortex modules, developed as the starting point of many applications:
-
-- Entities reducer: redux module to hold any kind of content addressable object
-- Access Control: generic access control
-- Draft: generic providers to store drafts for any kind of content
-- **Common patterns** for entities that are hashed, signed...
-
-## Dependencies
-
-This module depends on `@uprtcl/micro-orchestrator`, `@uprtcl/cortex` and `@uprtcl/connections`.
+These are \_Prtcl `micro-orchestrator`'s modules to integrate redux in your applications.
 
 ## Install
 
 ```bash
-npm install @uprtcl/common
+npm install @uprtcl/redux
 ```
 
-## \_Prtcl module usage
+## Usage
 
 Import the modules, instantiate them with their appropiate configuration, and load them:
 
 ```ts
-import {
-  AccessControlTypes,
-  accessControlReduxModule,
-  entitiesReduxModule,
-  EntitiesTypes
-} from '@uprtcl/common';
+import { ReduxStoreModule } from '@uprtcl/redux';
 
-await orchestrator.loadModules(
-  { id: EntitiesBindings.Module, module: entitiesReduxModule() },
-  { id: AccessControlBindings.Module, module: accessControlReduxModule() }
-);
+const reduxModule = new ReduxStoreModule();
+
+await orchestrator.loadModule(reduxModule);
 ```
-
-## Drafts and access control
-
-> Not yet ready

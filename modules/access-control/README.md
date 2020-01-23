@@ -6,7 +6,7 @@ This cortex module implements patterns, services and elements to interact with a
 
 ## Dependencies
 
-This module depends on `@uprtcl/micro-orchestrator`, `@uprtcl/cortex` and `@uprtcl/connections`.
+This module depends on `@uprtcl/micro-orchestrator`, `@uprtcl/cortex`.
 
 ## Install
 

@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { HasChildren, Hashed } from '@uprtcl/cortex';
-import { createEntity } from '@uprtcl/common';
+import { createEntity } from '@uprtcl/multiplatform';
 
 import { Secured } from '../patterns/default-secured.pattern';
 import { SimpleMergeStrategy } from './simple.merge-strategy';

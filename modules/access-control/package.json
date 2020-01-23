@@ -11,8 +11,6 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common": "^0.0.2-alpha3",
-    "@uprtcl/connections": "^0.0.2-alpha3",
     "@uprtcl/cortex": "^0.0.2-alpha3",
     "@uprtcl/graphql": "^0.0.2-alpha3",
     "@uprtcl/lenses": "^0.0.2-alpha3",

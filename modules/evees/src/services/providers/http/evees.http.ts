@@ -1,4 +1,4 @@
-import { HttpProvider, HttpConnection } from '@uprtcl/connections';
+import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';

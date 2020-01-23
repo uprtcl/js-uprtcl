@@ -32,30 +32,30 @@ import { RemoteMap } from './types';
  *
  * ```ts
  * import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
- * import { IpfsConnection, HolochainConnection, EthereumConnection } from '@uprtcl/connections';
- * import { eveesModule, EveesEthereum, EveesHolochain, EveesModule.types } from '@uprtcl/evees';
- *
+ * import { IpfsConnection } from '@uprtcl/ipfs-provider';
+ * import { HolochainConnection } from '@uprtcl/holochain-provider';
+ * import { EthereumConnection } from '@uprtcl/ethereum-provider';
+ * import { EveesModule, EveesEthereum, EveesHolochain, EveesBindings } from '@uprtcl/evees';
+ * 
  * const ipfsConnection = new IpfsConnection({
  *   host: 'ipfs.infura.io',
  *   port: 5001,
  *   protocol: 'https'
  * });
- *
+ * 
  * // Don't put anything on host to get from Metamask's ethereum provider
  * const ethConnection = new EthereumConnection({});
- *
+ * 
  * const eveesEth = new EveesEthereum(ethConnection, ipfsConnection);
- *
- * const knownSources = new KnownSourcesHolochain('test-instance', hcConnection);
- *
+ * 
  * const hcConnection = new HolochainConnection({ host: 'ws://localhost:8888' });
- *
+ * 
  * const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
- *
+ * 
  * const evees = new EveesModule([eveesHolochain, eveesEth]);
- *
+ * 
  * const orchestrator = new MicroOrchestrator();
- *
+ * 
  * await orchestrator.loadModule(evees);
  * ```
  *

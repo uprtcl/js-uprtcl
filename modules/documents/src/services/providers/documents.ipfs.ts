@@ -1,4 +1,4 @@
-import { IpfsSource } from '@uprtcl/connections';
+import { IpfsSource } from '@uprtcl/ipfs-provider';
 
 import { DocumentsProvider } from '../documents.provider';
 import { TextNode } from '../../types';
