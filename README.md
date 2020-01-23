@@ -76,7 +76,7 @@ These are application modules compatible with `micro-orchestrator` that define p
 
 Implements version control for any kind of content addressable object, with different perspectives (branches in git), and proposals to update those perspectives.
 
-### Evees
+### Documents
 
 Implements documents and folders.
 
