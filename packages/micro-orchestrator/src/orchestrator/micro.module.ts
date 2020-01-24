@@ -22,10 +22,10 @@ export abstract class MicroModule {
   submodules: MicroModule[] = [];
 
   /**
-   * Types that this module will make available for other modules to use
-   * This types **must** be made available through `container.bind()` in the `onLoad()` callback
+   * Bindings that this module will make available for other modules to use
+   * This bindings **must** be made available through `container.bind()` in the `onLoad()` callback
    */
-  static types: Dictionary<interfaces.ServiceIdentifier<any>> = {}
+  static bindings: Dictionary<interfaces.ServiceIdentifier<any>> = {}
 
   /**
    * Loading callback for the module to load

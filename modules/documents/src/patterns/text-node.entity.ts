@@ -14,19 +14,20 @@ import {
   HasTitle,
   CortexModule
 } from '@uprtcl/cortex';
-import { CorePatterns } from '@uprtcl/common';
+import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { EveesModule } from '@uprtcl/evees';
 
-import { TextNode, TextType, DocumentsTypes } from '../types';
-import { Documents } from '../services/documents';
+import { TextNode, TextType } from '../types';
+import { DocumentsBindings } from '../bindings';
+import { DocumentsProvider } from '../services/documents.provider';
 
 const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
 export class TextNodeEntity implements Entity {
-  constructor(@inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
+  constructor(@inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;
 
@@ -39,7 +40,7 @@ export class TextNodeEntity implements Entity {
 
 @injectable()
 export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasChildren, Mergeable {
-  constructor(@inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>) {
+  constructor(@inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>) {
     super(hashedPattern);
   }
 
@@ -109,8 +110,8 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
 @injectable()
 export class TextNodeActions extends TextNodeEntity implements HasActions {
   constructor(
-    @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer
+    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
   ) {
     super(hashedPattern);
   }
@@ -145,28 +146,42 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 }
 
 @injectable()
-export class TextNodeCreate extends TextNodeEntity implements Creatable<Partial<TextNode>> {
+export class TextNodeCreate extends TextNodeEntity
+  implements Creatable<Partial<TextNode>, TextNode> {
   constructor(
-    @inject(CorePatterns.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(DocumentsTypes.Documents) protected documents: Documents,
-    @multiInject(EveesModule.types.PerspectivePattern) protected perspectivePatterns: Pattern[]
+    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
+    @multiInject(EveesModule.bindings.PerspectivePattern) protected perspectivePatterns: Pattern[]
   ) {
     super(hashedPattern);
   }
 
-  create = () => async (node: Partial<TextNode> | undefined, upl?: string): Promise<string> => {
+  create = () => async (
+    node: Partial<TextNode> | undefined,
+    source?: string
+  ): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
 
-    if (!upl) {
-      upl = this.documents.service.remote.getAllServicesUpl().find(upl => !upl.includes('http'));
+    let remote: DocumentsProvider | undefined;
+    if (source) {
+      remote = this.documentsRemotes.find(documents => documents.source === source);
+    } else {
+      remote = this.documentsRemotes.find(remote => !remote.source.includes('http'));
+    }
+
+    if (!remote) {
+      throw new Error('Could not find remote to create a TextNode in');
     }
 
     const newTextNode = { links, text, type };
-    const { id } = await this.documents.createTextNode(newTextNode, upl);
+    const id = await remote.createTextNode(newTextNode);
 
-    return id;
+    await this.discovery.postEntityCreate(remote, { id, object: newTextNode });
+
+    return { id, object: newTextNode };
   };
 }
 

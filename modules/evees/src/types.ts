@@ -1,6 +1,6 @@
-import { CacheService } from '@uprtcl/multiplatform';
+import { Source } from '@uprtcl/multiplatform';
 
-import { EveesProvider } from './services/evees.provider';
+export type RemoteMap = (eveesAuthority: string, entityName: string) => Source;
 
 export type Context = string;
 
@@ -36,17 +36,6 @@ export interface Proposal {
   creatorId: string;
   requests: Array<UpdateRequest>;
 }
-
-export type EveesLocal = CacheService & EveesProvider;
-
-export const EveesTypes = {
-  PerspectivePattern: Symbol('perspective-pattern'),
-  CommitPattern: Symbol('commit-pattern'),
-  EveesLocal: Symbol('evees-local'),
-  EveesRemote: Symbol('evees-remote'),
-  MergeStrategy: Symbol('merge-strategry'),
-  Evees: Symbol('evees')
-};
 
 export interface PerspectiveData {
   id: string;

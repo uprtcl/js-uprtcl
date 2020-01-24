@@ -2,8 +2,9 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule, Secured } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
+import { Secured } from '../patterns/default-secured.pattern';
 import { UPDATE_HEAD, CREATE_COMMIT } from '../graphql/queries';
 import { UpdateContentEvent } from './events';
 import { Perspective } from '../types';
@@ -41,7 +42,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   async loadPerspective() {
     this.entityId = undefined;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     this.logger.info('loadPerspective() pre', this.perspectiveId);
 
@@ -60,9 +61,11 @@ export class EveesPerspective extends moduleConnect(LitElement) {
               id
             }
           }
-          _patterns {
-            content {
-              id
+          _context {
+            patterns {
+              content {
+                id
+              }
             }
           }
         }
@@ -70,7 +73,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       `
     });
 
-    this.entityId = result.data.entity._patterns.content.id;
+    this.entityId = result.data.entity._context.patterns.content.id;
     const head = result.data.entity.head;
     this.currentHeadId = head ? head.id : undefined;
 
@@ -147,7 +150,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     if (!this.perspectiveId) return;
     if (!this.perspective) return;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     this.logger.info('updateContent() pre', dataId);
 

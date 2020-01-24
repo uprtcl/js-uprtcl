@@ -1,4 +1,4 @@
-import { HttpConnection, HttpProvider } from '@uprtcl/connections';
+import { HttpConnection, HttpProvider } from '@uprtcl/http-provider';
 import { Hashed } from '@uprtcl/cortex';
 
 import { WikisProvider } from '../wikis.provider';
@@ -16,6 +16,8 @@ export class WikisHttp extends HttpProvider implements WikisProvider {
       connection
     );
   }
+
+  source = '';
 
   async get<T>(hash: string): Promise<Hashed<T>> {
     const object = await super.getObject<T>(`/get/${hash}`);

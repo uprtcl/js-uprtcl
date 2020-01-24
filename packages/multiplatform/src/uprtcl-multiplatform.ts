@@ -2,22 +2,11 @@
 import 'reflect-metadata';
 
 /** Services */
-export { Ready, ServiceProvider } from './services/sources/service.provider';
-export { Source, SourceProvider } from './services/sources/source';
+export { Authority } from './types/authority';
+export { Ready } from './types/ready';
+export { Source } from './types/source';
 
-export { KnownSourcesService } from './services/known-sources/known-sources.service';
-export { KnownSourcesDexie } from './services/known-sources/known-sources.dexie';
-
-export { MultiSourceService } from './services/multi/multi-source.service';
-export { MultiService } from './services/multi/multi.service';
-
-export { CacheDexie } from './services/cache/cache.dexie';
-export { CacheService } from './services/cache/cache.service';
-
-export { CachedSourceService } from './services/cached-remotes/cached-source.service';
-export { CachedService } from './services/cached-remotes/cached.service';
-export { CachedMultiService } from './services/cached-remotes/cached-multi.service';
-export { CachedMultiSourceService } from './services/cached-remotes/cached-multi-source.service';
+export { KnownSourcesService } from './services/known-sources.service';
 
 export { DiscoveryService } from './services/discovery.service';
 
@@ -32,3 +21,14 @@ export {
 /** Modules */
 export { DiscoveryModule } from './discovery.module';
 export { SourcesModule } from './sources.module';
+
+/** Connections */
+export { Connection, ConnectionOptions } from './connections/connection';
+export { SocketConnection } from './connections/socket.connection';
+
+/** Utils */
+export {
+  createEntity,
+  entityContent,
+  getIsomorphisms
+} from '../../multiplatform/src/utils/entities';

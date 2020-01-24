@@ -4,13 +4,9 @@
 
 This package provides a basic lenses rendering engine for the `@uprtcl/cortex` framework. Cortex needs a rendering engine of this type in order for it to work in the frontend.
 
-This module declares and exposes the native HTMLElements: 
+This module declares and exposes the native HTMLElements:
 
 - `<cortex-entity>`: entry point of the engine. This element takes a `hash` property, and is responsible for fetching, recognizing, and rendering the object in the appropiate lens.
-
-## Dependencies
-
-This package depends on `@uprtcl/micro-orchestrator`, `@uprtcl/common` and `@uprtcl/cortex`.
 
 ## Install
 
@@ -24,13 +20,13 @@ Import the module, instantiate it with its appropiate configuration, and load it
 
 ```ts
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
-import { LensesTypes } from '@uprtcl/cortex';
-import { lensesModule } from '@uprtcl/lenses';
+import { LensesBindings } from '@uprtcl/cortex';
+import { LensesModule } from '@uprtcl/lenses';
 
 const orchestrator = new MicroOrchestrator();
 
-const lenses = lensesModule([]);
-await orchestrator.loadModules({ id: LensesTypes.Module, module: lenses });
+const lenses = new LensesModule({});
+await orchestrator.loadModule(lenses);
 ```
 
 In your `html`, now you can use `<cortex-entity>`:

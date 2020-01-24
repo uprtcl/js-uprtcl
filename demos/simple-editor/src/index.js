@@ -2,10 +2,14 @@ import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator
 import { LensesModule, LensSelectorPlugin, ActionsPlugin } from '@uprtcl/lenses';
 import { DocumentsHttp, DocumentsIpfs, DocumentsModule } from '@uprtcl/documents';
 import { WikisIpfs, WikisModule, WikisHttp } from '@uprtcl/wikis';
-import { ApolloClientModule, GqlCortexModule, GqlDiscoveryModule } from '@uprtcl/common';
+import { CortexModule } from '@uprtcl/cortex';
 import { AccessControlModule } from '@uprtcl/access-control';
 import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
-import { IpfsConnection, EthereumConnection, HttpConnection } from '@uprtcl/connections';
+import { IpfsConnection } from '@uprtcl/ipfs-provider';
+import { EthereumConnection } from '@uprtcl/ethereum-provider';
+import { HttpConnection } from '@uprtcl/http-provider';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { DiscoveryModule } from '@uprtcl/multiplatform';
 
 import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
@@ -28,29 +32,21 @@ import { SimpleWiki } from './simple-wiki';
   const httpWikis = new WikisHttp(c1host, httpConnection);
   const ipfsWikis = new WikisIpfs(ipfsConnection);
 
+  const remoteMap = (eveesAuthority, entityName) => {
+    if (eveesAuthority === ethEvees.authority) {
+      if (entityName === 'Wiki') return ipfsWikis;
+      else if (entityName === 'TextNode') return ipfsDocuments;
+    } else {
+      if (entityName === 'Wiki') return httpWikis;
+      else if (entityName === 'TextNode') return httpDocuments;
+    }
+  };
 
-  const eveesRemotesLinks = {
-    [httpEvees.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
-    [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
-  }
+  const evees = new EveesModule([ethEvees, httpEvees], remoteMap);
 
-  const evees = new EveesModule([ethEvees, httpEvees], eveesRemotesLinks);
+  const documents = new DocumentsModule([ipfsDocuments, httpDocuments]);
 
-  const docsRemotesLinks = {
-    [httpEvees.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
-    [ethEvees.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
-  }
-
-  const documents = new DocumentsModule([ipfsDocuments, httpDocuments], docsRemotesLinks);
-
-  const wikiRemotesLinks = {
-    [httpEvees.uprtclProviderLocator]: httpWikis.uprtclProviderLocator,
-    [ethEvees.uprtclProviderLocator]: ipfsWikis.uprtclProviderLocator,
-    [httpWikis.uprtclProviderLocator]: httpDocuments.uprtclProviderLocator,
-    [ipfsWikis.uprtclProviderLocator]: ipfsDocuments.uprtclProviderLocator
-  }
-
-  const wikis = new WikisModule([ipfsWikis, httpWikis], wikiRemotesLinks);
+  const wikis = new WikisModule([ipfsWikis, httpWikis]);
 
   const lenses = new LensesModule({
     'lens-selector': new LensSelectorPlugin(),
@@ -60,8 +56,8 @@ import { SimpleWiki } from './simple-wiki';
   const modules = [
     new i18nextBaseModule(),
     new ApolloClientModule(),
-    new GqlCortexModule(),
-    new GqlDiscoveryModule(),
+    new CortexModule(),
+    new DiscoveryModule(),
     lenses,
     new AccessControlModule(),
     evees,

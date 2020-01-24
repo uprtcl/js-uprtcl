@@ -1,9 +1,9 @@
 import { injectable } from 'inversify';
 
-import { EntryResult, HolochainProvider } from '@uprtcl/connections';
+import { EntryResult, HolochainProvider } from '@uprtcl/holochain-provider';
 import { Signed, Hashed } from '@uprtcl/cortex';
-import { Secured } from '@uprtcl/common';
 
+import { Secured } from '../../../patterns/default-secured.pattern';
 import { Perspective, Commit, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 
@@ -17,6 +17,18 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
 
   get proposals() {
     return undefined;
+  }
+
+  get source() {
+    // TODO RETURN SOURCE ID
+    return 'undefined';
+  }
+
+  /**
+   * @override
+   */
+  public async ready() {
+    await super.ready();
   }
 
   public async get(id: string): Promise<Hashed<any> | undefined> {

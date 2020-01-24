@@ -1,20 +1,25 @@
+import { ApolloClient, gql } from 'apollo-boost';
 import { multiInject, injectable, inject } from 'inversify';
 import { isEqual } from 'lodash-es';
 
-import { PatternRecognizer, Hashed, IsSecure, HasChildren, CortexModule } from '@uprtcl/cortex';
 import {
-  KnownSourcesService,
-  CachedMultiSourceService,
-  MultiSourceService,
-  DiscoveryService,
-  DiscoveryModule
-} from '@uprtcl/multiplatform';
+  PatternRecognizer,
+  Hashed,
+  IsSecure,
+  HasChildren,
+  CortexModule,
+  Signed
+} from '@uprtcl/cortex';
+import { KnownSourcesService, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Secured, createEntity, CorePatterns } from '@uprtcl/common';
+import { createEntity } from '@uprtcl/multiplatform';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { EveesLocal, Perspective, Commit, PerspectiveDetails, EveesTypes } from '../types';
-import { EveesProvider } from './evees.provider';
+import { Secured } from '../patterns/default-secured.pattern';
+import { Perspective, Commit, PerspectiveDetails } from '../types';
+import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
+import { CREATE_PERSPECTIVE, CREATE_COMMIT } from '../graphql/queries';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -26,8 +31,8 @@ export type NewPerspectiveArgs = (
   | (NoHeadPerspectiveArgs & { dataId: string })
 ) & { disableRecursive?: boolean };
 
-const creatorId = 'did:hi:ho';
 const DEFAULT_PERSPECTIVE_NAME = 'master';
+const creatorId = 'did:hi:ho';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -36,92 +41,70 @@ const DEFAULT_PERSPECTIVE_NAME = 'master';
 export class Evees {
   logger = new Logger('evees');
 
-  service: CachedMultiSourceService<EveesLocal, EveesRemote>;
-
   constructor(
-    @inject(CortexModule.types.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(CorePatterns.Secured) protected secured: IsSecure<any>,
-    @inject(DiscoveryModule.types.LocalKnownSources)
+    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(EveesBindings.Secured) protected secured: IsSecure<any>,
+    @inject(DiscoveryModule.bindings.LocalKnownSources)
     public knownSources: KnownSourcesService,
-    @inject(DiscoveryModule.types.DiscoveryService)
+    @inject(DiscoveryModule.bindings.DiscoveryService)
     protected discoveryService: DiscoveryService,
-    @inject(EveesTypes.EveesLocal)
-    protected eveesLocal: EveesLocal,
-    @multiInject(EveesTypes.EveesRemote)
-    protected eveesRemotes: EveesRemote[]
-  ) {
-    this.service = new CachedMultiSourceService<EveesLocal, EveesRemote>(
-      eveesLocal,
-      new MultiSourceService<EveesRemote>(patternRecognizer, knownSources, eveesRemotes)
-    );
-  }
-
-  /**
-   * @override
-   */
-  public ready(): Promise<void> {
-    return this.service.ready();
-  }
-
-  /** Private functions */
-
-  private validateUpl(upl: string | undefined): string {
-    const provider = this.service.remote.getService(upl);
-    return provider.uprtclProviderLocator;
-  }
+    @multiInject(EveesBindings.EveesRemote)
+    protected eveesRemotes: EveesRemote[],
+    @inject(ApolloClientModule.bindings.Client)
+    protected client: ApolloClient<any>
+  ) {}
 
   /** Public functions */
+
+  private getAuthority(authority: String | undefined): EveesRemote {
+    if (!authority && this.eveesRemotes.length === 1) return this.eveesRemotes[0];
+
+    const remote = this.eveesRemotes.find(remote => remote.authority === authority);
+
+    if (!remote) throw new Error(`Authority ${authority}  is not registered`);
+
+    return remote;
+  }
 
   /**
    * Returns the uprtcl remote that controls the given perspective, from its origin
    * @returns the uprtcl remote
    */
-  public getPerspectiveProvider(perspective: Secured<Perspective>): EveesRemote {
-    const perspectiveOrigin = perspective.object.payload.origin;
+  public getPerspectiveProvider(perspective: Signed<Perspective>): EveesRemote {
+    const perspectiveOrigin = perspective.payload.origin;
 
-    const provider = this.service.remote
-      .getAllServices()
-      .find(provider => provider.uprtclProviderLocator === perspectiveOrigin);
-
-    if (!provider)
-      throw new Error(
-        `Provider ${perspectiveOrigin} for perspective ${perspective.id} is not registered`
-      );
-
-    return provider;
-  }
-
-  /** Getters */
-
-  /**
-   * @override
-   */
-  public get<T extends object>(hash: string): Promise<Hashed<T> | undefined> {
-    return this.service.get(hash);
+    return this.getAuthority(perspectiveOrigin);
   }
 
   /**
-   * @override
+   * Returns the uprtcl remote that controls the given perspective, from its origin
+   * @returns the uprtcl remote
    */
-  public async getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
-    return this.service.remote.getArrayFromAllServices(uprtcl =>
-      uprtcl.getContextPerspectives(context)
-    );
+  public async getPerspectiveProviderById(perspectiveId: String): Promise<EveesRemote> {
+    const result = await this.client.query({
+      query: gql`
+        {
+          entity(id: "${perspectiveId}") {
+            id 
+            ... on Perspective {
+              payload {
+                origin
+              }
+            }
+          }
+        }
+      `
+    });
+
+    const perspectiveOrigin = result.data.entity.payload.origin;
+    return this.getAuthority(perspectiveOrigin);
   }
 
-  /**
-   * @override
-   */
-  public async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
-    const details = await this.eveesLocal.getPerspectiveDetails(perspectiveId);
-    if (details) return details;
+  public async getContextPerspectives(context: string): Promise<Array<Secured<Perspective>>> {
+    const promises = this.eveesRemotes.map(remote => remote.getContextPerspectives(context));
+    const perspectives = await Promise.all(promises);
 
-    const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
-    if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
-
-    const provider = this.getPerspectiveProvider(perspective);
-
-    return provider.getPerspectiveDetails(perspectiveId);
+    return ([] as Secured<Perspective>[]).concat(...perspectives);
   }
 
   /** Creators */
@@ -135,24 +118,21 @@ export class Evees {
    */
   public async createPerspective(
     args: NewPerspectiveArgs,
-    upl?: string
+    authority?: string
   ): Promise<Secured<Perspective>> {
     const name = args.name || DEFAULT_PERSPECTIVE_NAME;
 
-    upl = this.validateUpl(upl);
+    const eveesRemote = this.getAuthority(authority);
 
     // Create the perspective
     const perspectiveData: Perspective = {
       creatorId: creatorId,
-      origin: upl,
+      origin: eveesRemote.authority,
       timestamp: Date.now()
     };
     const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData);
 
     this.logger.info('Created new perspective: ', perspective);
-
-    // Clone the perspective in the selected provider
-    await this.clonePerspective(perspective, upl);
 
     // Create the context to point the perspective to, if needed
     const context = args.context || `${Date.now()}${Math.random()}`;
@@ -187,12 +167,17 @@ export class Evees {
 
         // TODO: generalize to break the assumption that all links are to perspectives
         const promises = descendantLinks.map(async link => {
-          const details = await this.getPerspectiveDetails(link);
-          const newPerspective = await this.createPerspective(
-            { context, name, headId: details.headId },
-            upl
-          );
-          return newPerspective.id;
+          const details = await eveesRemote.getPerspectiveDetails(link);
+          const newPerspective = await this.client.mutate({
+            mutation: CREATE_PERSPECTIVE,
+            variables: {
+              context,
+              name,
+              headId: details.headId,
+              authority: eveesRemote.authority
+            }
+          });
+          return newPerspective.data.createPerspective.id;
         });
 
         const newLinks = await Promise.all(promises);
@@ -206,143 +191,31 @@ export class Evees {
             previousDataUpls ? previousDataUpls[0] : undefined
           );
           dataId = newDataId;
+        } else {
+          dataId = undefined;
         }
       }
     }
 
     if (dataId) {
-      const head = await this.createCommit(
-        {
+      const result = await this.client.mutate({
+        mutation: CREATE_COMMIT,
+        variables: {
           dataId: dataId,
           message: `Commit at ${Date.now()}`,
-          parentsIds: headId ? [headId] : []
-        },
-        upl
-      );
-      headId = head.id;
+          parentsIds: headId ? [headId] : [],
+          source: eveesRemote.source
+        }
+      });
+      headId = result.data.createCommit.id;
     }
 
-    // Set the perspective details
-    if (headId || context || name) {
-      await this.updatePerspectiveDetails(perspective.id, { headId, context, name });
-    }
+    // Clone the perspective in the selected provider
+    await eveesRemote.clonePerspective(perspective);
+
+    // And update its details
+    await eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context });
 
     return perspective;
-  }
-
-  /**
-   * Create a new commit with the given properties
-   *
-   * @param args the properties of the commit
-   * @param upl the provider to which to create the commit, needed if there is more than one provider
-   */
-  public async createCommit(
-    args: {
-      dataId: string;
-      message: string;
-      parentsIds: string[];
-      creatorsIds?: string[];
-      timestamp?: number;
-    },
-    upl?: string
-  ): Promise<Secured<Commit>> {
-    upl = this.validateUpl(upl);
-
-    const timestamp = args.timestamp || Date.now();
-    const creatorsIds = args.creatorsIds || [creatorId];
-
-    const commitData: Commit = {
-      creatorsIds: creatorsIds,
-      dataId: args.dataId,
-      message: args.message,
-      timestamp: timestamp,
-      parentsIds: args.parentsIds
-    };
-    const commit: Secured<Commit> = await this.secured.derive()(commitData);
-
-    this.logger.info('Created new commit: ', commit);
-
-    await this.cloneCommit(commit, upl);
-
-    return commit;
-  }
-
-  /** Cloners */
-
-  /**
-   * Clones the given perspective in the given provider
-   *
-   * @param perspective the perspective to clone
-   * @param upl the provider to which to clone the perspective to, needed if there is more than one provider
-   */
-  public async clonePerspective(perspective: Secured<Perspective>, upl?: string): Promise<void> {
-    upl = this.validateUpl(upl);
-
-    const creator = async (uprtcl: EveesProvider) => {
-      await uprtcl.clonePerspective(perspective);
-      return perspective;
-    };
-    const cloner = async (uprtcl: EveesProvider, perspective: Secured<Perspective>) => {
-      await uprtcl.clonePerspective(perspective);
-      return perspective;
-    };
-
-    await this.service.optimisticCreateIn(upl, creator, cloner);
-    this.logger.info('Cloned the perspective: ', perspective.id);
-  }
-
-  /**
-   * Clones the given commit in the given provider
-   *
-   * @param commit the commit to clone
-   * @param upl the provider to which to clone the commit to, needed if there is more than one provider
-   */
-  public async cloneCommit(commit: Secured<Commit>, upl?: string): Promise<void> {
-    upl = this.validateUpl(upl);
-
-    const creator = async (uprtcl: EveesProvider) => {
-      await uprtcl.cloneCommit(commit);
-      return commit;
-    };
-    const cloner = async (uprtcl: EveesProvider, object: Secured<Commit>) => {
-      await uprtcl.cloneCommit(object);
-      return commit;
-    };
-
-    await this.service.optimisticCreateIn(upl, creator, cloner);
-    this.logger.info('Cloned the commit: ', commit);
-  }
-
-  /** Modifiers */
-
-  /**
-   * Update the head of the given perspective to the given headId
-   *
-   * @param perspectiveId perspective to update
-   * @param details new details of the perspective
-   */
-  public async updatePerspectiveDetails(
-    perspectiveId: string,
-    details: Partial<PerspectiveDetails>
-  ): Promise<void> {
-    const perspective: Secured<Perspective> | undefined = await this.get(perspectiveId);
-    if (!perspective)
-      throw new Error(
-        `Error trying to fetch perspective with id ${perspectiveId}: failed to update details of perspective`
-      );
-
-    const provider = this.getPerspectiveProvider(perspective);
-
-    const updater = (evees: EveesProvider) =>
-      evees.updatePerspectiveDetails(perspectiveId, details);
-
-    this.service.optimisticUpdateIn(
-      provider.uprtclProviderLocator,
-      perspective,
-      updater,
-      updater,
-      `Update details of ${perspective.id}`,
-      perspectiveId
-    );
   }
 }

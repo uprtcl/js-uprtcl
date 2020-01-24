@@ -1,11 +1,10 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css } from 'lit-element';
 
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
 export class PerspectivesList extends moduleConnect(LitElement) {
-  
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
 
   @property({ type: String, attribute: 'perspective-id' })
@@ -19,27 +18,31 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   perspectiveClicked(id: string) {
-    this.dispatchEvent(new CustomEvent('perspective-selected', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        id
-      }
-    }))
+    this.dispatchEvent(
+      new CustomEvent('perspective-selected', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          id
+        }
+      })
+    );
   }
 
   mergeClicked(id: string) {
-    this.dispatchEvent(new CustomEvent('merge-perspective', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        id
-      }
-    }))
+    this.dispatchEvent(
+      new CustomEvent('merge-perspective', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          id
+        }
+      })
+    );
   }
 
   getOtherPersepectives = async () => {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`{
           entity(id: "${this.perspectiveId}") {
@@ -64,12 +67,14 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       ${this.perspectivesIds.length > 0
         ? html`
             <ul>
-              ${this.perspectivesIds.filter(id => id !== this.perspectiveId).map(id => {
-                return html`
-                  <li @click=${() => this.perspectiveClicked(id)}>${id}</li>
-                  <button @click=${() => this.mergeClicked(id)}>merge</button>
-                `;
-              })}
+              ${this.perspectivesIds
+                .filter(id => id !== this.perspectiveId)
+                .map(id => {
+                  return html`
+                    <li @click=${() => this.perspectiveClicked(id)}>${id}</li>
+                    <button @click=${() => this.mergeClicked(id)}>merge</button>
+                  `;
+                })}
             </ul>
           `
         : ''}

@@ -34,7 +34,7 @@ await orchestrator.loadModules(
     module: MyModule
   },
   {
-    id: ReduxTypes.Module,
+    id: ReduxBindings.Module,
     module: ReduxStoreModule
   }
 );
@@ -62,7 +62,7 @@ In its detail, you need to specify the identifier of the dependencies you want t
 import { RequestDependencyEvent } from '@uprtcl/micro-orchestrator';
 
 const event = new RequestDependencyEvent({
-  detail: { request: [ReduxTypes.Store] },
+  detail: { request: [ReduxBindings.Store] },
   composed: true,
   bubbles: true
 });
@@ -75,13 +75,13 @@ const reduxStore = event.dependencies[0];
 Or if you are building a native HTMLElement (or any subtype) you can use the simple `moduleConnect()` mixin, which provides a helper `request()` function.
 
 ```ts
-import { moduleConnect, ReduxTypes } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, ReduxBindings} from '@uprtcl/micro-orchestrator';
 
 export class MyCustomElement extends moduleConnect(HTMLElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.reduxStore = this.request(ReduxTypes.Store);
+    this.reduxStore = this.request(ReduxBindings.Store);
 
     // Do things with reduxStore...
   }

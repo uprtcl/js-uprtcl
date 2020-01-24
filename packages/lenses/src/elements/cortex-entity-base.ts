@@ -3,16 +3,15 @@ import { flatMap } from 'lodash-es';
 import { LitElement, property, PropertyValues } from 'lit-element';
 
 import { moduleConnect, Dictionary, Logger } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { Hashed } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
 import { SlotPlugin } from '../plugins/slot.plugin';
 
 export class CortexEntityBase extends moduleConnect(LitElement) {
-    
   logger = new Logger('CORTEX-ENTITY-BASE');
-  
+
   @property()
   public hash!: string;
 
@@ -42,21 +41,25 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   async loadEntity(hash: string): Promise<void> {
     this.selectedLens = undefined;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     // We are also loading the content to have it cached in case the lens wants it
     const result = await client.query({
       query: gql`
       {
-        entity(id: "${hash}", depth: 1) {
+        entity(id: "${hash}") {
           id
-          _patterns {
-            isomorphisms {
-              _patterns {
-                lenses {
-                  name
-                  type
-                  render
+          _context {
+            patterns {
+              isomorphisms {
+                _context {
+                  patterns {
+                    lenses {
+                      name
+                      type
+                      render
+                    }
+                  }
                 }
               }
             }
@@ -67,8 +70,8 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
     });
 
     const lenses = flatMap(
-      result.data.entity._patterns.isomorphisms,
-      iso => iso._patterns.lenses
+      result.data.entity._context.patterns.isomorphisms,
+      iso => iso._context.patterns.lenses
     ).filter(lens => !!lens);
 
     this.entity = { id: result.data.id, ...result.data.entity };
@@ -81,7 +84,10 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
       this.selectedLens = lenses[0];
     }
 
-    this.logger.info(`Lens selected for entity ${this.hash}`, { selectedLens: this.selectedLens, lenses });
+    this.logger.info(`Lens selected for entity ${this.hash}`, {
+      selectedLens: this.selectedLens,
+      lenses
+    });
   }
 
   get slotPlugins(): Dictionary<SlotPlugin> {

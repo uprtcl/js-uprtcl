@@ -9,7 +9,7 @@ import '@material/mwc-button';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternAction } from '@uprtcl/cortex';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { sharedStyles } from '../shared-styles';
 
@@ -36,21 +36,27 @@ export class CortexActions extends moduleConnect(LitElement) {
     this.actions = undefined;
     if (!this.hash) return;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.query({
       query: gql`
       {
-        entity(id: "${this.hash}", depth: 1) {
+        entity(id: "${this.hash}") {
           id
-          _patterns {
-            isomorphisms {
-              _patterns {
-                actions {
-                  title
-                  icon
-                  action
-                  type
+          _context {
+
+            patterns {
+              isomorphisms {
+                _context {
+
+                  patterns {
+                    actions {
+                      title
+                      icon
+                      action
+                      type
+                    }
+                  }
                 }
               }
             }
@@ -60,9 +66,9 @@ export class CortexActions extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.entity._patterns.isomorphisms;
+    const isomorphisms = result.data.entity._context.patterns.isomorphisms;
 
-    const actions: PatternAction[] = flatMap(isomorphisms.reverse(), iso => iso._patterns.actions);
+    const actions: PatternAction[] = flatMap(isomorphisms.reverse(), iso => iso._context.patterns.actions);
 
     this.actions = {};
 

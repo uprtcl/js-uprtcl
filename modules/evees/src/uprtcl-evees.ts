@@ -8,7 +8,6 @@ export { Commit, Perspective, Context, PerspectiveDetails } from './types';
 export { EveesSource } from './services/evees.source';
 export { EveesProvider } from './services/evees.provider';
 export { EveesRemote } from './services/evees.remote';
-export { EveesDexie } from './services/providers/evees.dexie';
 
 /** Service providers */
 export { EveesHolochain } from './services/providers/holochain/evees.holochain';
@@ -20,7 +19,6 @@ export { Evees, NewPerspectiveArgs } from './services/evees';
 export { EveesModule } from './evees.module';
 
 /** Merge */
-
 export { Mergeable } from './properties/mergeable';
 
 export { MergeStrategy } from './merge/merge-strategy';
@@ -40,3 +38,11 @@ export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE } from './graphql/querie
 
 /** Patterns */
 export { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';
+export { CommitEntity, CommitLens, CommitLinked, CommitPattern } from './patterns/commit.pattern';
+export { CidHashedPattern, recognizeHashed } from './patterns/cid-hashed.pattern';
+export { DefaultSignedPattern } from './patterns/default-signed.pattern';
+export { DefaultSecuredPattern, Secured } from './patterns/default-secured.pattern';
+
+/** Utils */
+export { isAncestorOf } from './utils/ancestor';
+export { sortObject } from './utils/utils';

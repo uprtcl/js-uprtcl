@@ -1,10 +1,9 @@
-import { IpfsSource } from '@uprtcl/connections';
+import { IpfsSource } from '@uprtcl/ipfs-provider';
 
 import { WikisProvider } from '../wikis.provider';
 import { Wiki } from '../../types';
 
 export class WikisIpfs extends IpfsSource implements WikisProvider {
-
   /**
    * @override
    */

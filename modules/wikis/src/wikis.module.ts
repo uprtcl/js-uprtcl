@@ -1,21 +1,18 @@
-import { interfaces } from 'inversify';
-
 import { PatternsModule } from '@uprtcl/cortex';
 import { SourcesModule } from '@uprtcl/multiplatform';
-import { GraphQlSchemaModule } from '@uprtcl/common';
+import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
-import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
-import { WikisLocal } from './services/wikis.local';
-import { Wikis } from './services/wikis';
+import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
 import { WikisRemote } from './services/wikis.remote';
-import { wikiTypeDefs, resolvers } from './graphql/schema';
+import { wikiTypeDefs } from './graphql/schema';
+import { resolvers } from './graphql/resolvers';
 import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
 
 import en from '../i18n/en.json';
-import { WikiTypes } from './types';
+import { WikiBindings } from './bindings';
 
 /**
  * Configure a wikis module with the given providers
@@ -25,7 +22,7 @@ import { WikiTypes } from './types';
  * Example usage:
  *
  * ```ts
- * import { IpfsConnection } from '@uprtcl/connections';
+ * import { IpfsConnection } from '@uprtcl/ipfs-provider';
  * import { wikisModule, WikisTypes, WikisIpfs } from '@uprtcl/wikis';
  *
  * const ipfsConnection = new IpfsConnection({
@@ -47,15 +44,10 @@ import { WikiTypes } from './types';
 export class WikisModule extends MicroModule {
   static id = Symbol('wikis-module');
 
-  static types = WikiTypes;
+  static bindings = WikiBindings;
 
-  constructor(protected wikisRemotes: WikisRemote[], protected remoteLinks: Dictionary<string>) {
+  constructor(protected wikisRemotes: WikisRemote[]) {
     super();
-  }
-
-  async onLoad(container: interfaces.Container) {
-    container.bind(WikisModule.types.WikisLocal).to(WikisLocal);
-    container.bind(WikisModule.types.Wikis).to(Wikis);
   }
 
   submodules = [
@@ -63,7 +55,7 @@ export class WikisModule extends MicroModule {
     new i18nextModule('wikis', { en: en }),
     new SourcesModule(
       this.wikisRemotes.map(remote => ({
-        symbol: WikisModule.types.WikisRemote,
+        symbol: WikisModule.bindings.WikisRemote,
         source: remote
       }))
     ),
@@ -73,7 +65,7 @@ export class WikisModule extends MicroModule {
       'wiki-home': WikiHome
     }),
     new PatternsModule({
-      [WikisModule.types.WikiEntity]: [WikiCommon, WikiLinks]
+      [WikisModule.bindings.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
     })
   ];
 }

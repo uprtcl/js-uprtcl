@@ -19,7 +19,6 @@ jobs:
           command: |
             echo 'Build'
             npm run build
-            npm run docs:build
       - run:
           name: Test
           command: |

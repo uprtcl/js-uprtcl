@@ -3,7 +3,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 
 import { TextNode } from '@uprtcl/documents';
 import { sharedStyles } from '@uprtcl/lenses';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 import '@material/mwc-top-app-bar';
@@ -16,17 +16,19 @@ export class WikiPage extends moduleConnect(LitElement) {
   textNode!: TextNode;
 
   async firstUpdated() {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`{
         entity(id: "${this.pageHash}") {
           id
-          _patterns {
-            content {
-              id
-              ... on TextNode {
-                text
-                links
+          _context {
+            patterns {
+              content {
+                id
+                ... on TextNode {
+                  text
+                  links
+                }
               }
             }
           }
@@ -34,7 +36,7 @@ export class WikiPage extends moduleConnect(LitElement) {
       }`
     });
 
-    this.textNode = result.data.entity._patterns.content;
+    this.textNode = result.data.entity._context.patterns.content;
   }
 
   render() {

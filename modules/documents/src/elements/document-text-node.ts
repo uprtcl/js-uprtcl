@@ -2,13 +2,15 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
-import { Hashed } from '@uprtcl/cortex';
-import { ApolloClientModule, Secured } from '@uprtcl/common';
+import { Hashed, Entity } from '@uprtcl/cortex';
+import { Secured, RemoteMap, EveesModule, EveesRemote } from '@uprtcl/evees';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, Perspective } from '@uprtcl/evees';
 
 import { TextNode, TextType } from '../types';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { DocumentsModule } from '../documents.module';
+import { Source } from '@uprtcl/multiplatform';
 
 export class DocumentTextNode extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-TEXT-NODE');
@@ -32,21 +34,27 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
   currentContent: any;
 
+  getSource(eveesAuthority: string): Source {
+    const remoteMap: RemoteMap = this.request(EveesModule.bindings.RemoteMap);
+
+    const textNodeEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
+    const name = textNodeEntity[0].name;
+
+    return remoteMap(origin, name);
+  }
+
   async updateContent(newContent: TextNode): Promise<void> {
     if (!this.perspective) return;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const origin = this.perspective.object.payload.origin;
-
-    const { remoteLinks }: Dictionary<string> = this.request(DocumentsModule.id);
-    const dataUsl = remoteLinks[origin];
 
     this.logger.info('updateContent() - CREATE_TEXT_NODE', { newContent });
     const result = await client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
         content: newContent,
-        usl: dataUsl
+        source: this.getSource(origin)
       }
     });
 
@@ -75,8 +83,10 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
     const origin = this.perspective.object.payload.origin;
 
-    const { remoteLinks }: Dictionary<string> = this.request(DocumentsModule.id);
-    const dataUsl = remoteLinks[origin];
+    const eveesRemotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
+    const remote = eveesRemotes.find(r => r.authority === origin);
+
+    if (!remote) throw new Error(`Remote not found for authority ${origin}`);
 
     const newNode = {
       text: '<p>empty</p>',
@@ -84,15 +94,12 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       links: []
     };
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
-
-    this.logger.info('createChild() - CREATE_TEXT_NODE', { newNode, dataUsl });
-
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
         content: newNode,
-        usl: dataUsl
+        source: this.getSource(origin)
       }
     });
 
@@ -101,7 +108,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       variables: {
         dataId: result.data.createTextNode.id,
         parentsIds: [],
-        usl: origin
+        source: remote.source
       }
     });
 
@@ -109,7 +116,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       mutation: CREATE_PERSPECTIVE,
       variables: {
         headId: commit.data.createCommit.id,
-        usl: origin
+        authority: origin
       }
     });
 
@@ -249,6 +256,11 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   static get styles() {
     return css`
       .column {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .row {
         display: flex;
         flex-direction: row;
       }

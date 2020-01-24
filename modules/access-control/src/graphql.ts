@@ -1,7 +1,7 @@
-import { gql } from 'apollo-boost';
+import gql from 'graphql-tag';
 
 import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
-import { ServiceProvider } from '@uprtcl/multiplatform';
+import { Authority } from '@uprtcl/multiplatform';
 
 import { Permissions } from './properties/permissions';
 import { Updatable } from './properties/updatable';
@@ -19,8 +19,8 @@ export const accessControlTypes = gql`
 export const accessControlResolvers = {
   Patterns: {
     async accessControl(parent, args, context) {
-      const entity: Hashed<any> = parent.__entity;
-      const recognizer: PatternRecognizer = context.container.get(CortexModule.types.Recognizer);
+      const entity: Hashed<any> = parent;
+      const recognizer: PatternRecognizer = context.container.get(CortexModule.bindings.Recognizer);
 
       const updatable: Updatable<any> | undefined = recognizer
         .recognize(entity)
@@ -44,7 +44,7 @@ export const accessControlResolvers = {
 
       if (!permissions) return null;
 
-      const serviceProvider: ServiceProvider = context.container.get(updatable.origin(entity));
+      const serviceProvider: Authority = context.container.get(updatable.origin(entity));
 
       const userId = serviceProvider.userId;
 

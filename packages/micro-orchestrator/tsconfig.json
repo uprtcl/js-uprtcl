@@ -6,7 +6,6 @@
     "baseUrl": "./",
     "paths": {
       "lit-element": ["node_modules/lit-element"],
-      "lodash-es": ["node_modules/lodash-es"]
     }
   },
   "include": ["src"]

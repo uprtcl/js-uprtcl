@@ -7,7 +7,7 @@ import '@authentic/mwc-list';
 import '@material/mwc-icon-button';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Lens } from '../types';
 
@@ -33,20 +33,26 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
     this.lenses = undefined;
     if (!this.hash) return;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.query({
       query: gql`
       {
-        entity(id: "${this.hash}", depth: 1) {
+        entity(id: "${this.hash}") {
           id
-          _patterns {
-            isomorphisms {
-              _patterns {
-                lenses {
-                  type
-                  name
-                  render
+          _context {
+
+            patterns {
+              isomorphisms {
+                _context {
+
+                  patterns {
+                    lenses {
+                      type
+                      name
+                      render
+                    }
+                  }
                 }
               }
             }
@@ -56,9 +62,9 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.entity._patterns.isomorphisms;
+    const isomorphisms = result.data.entity._context.patterns.isomorphisms;
 
-    const lenses = flatMap(isomorphisms.reverse(), iso => iso._patterns.lenses);
+    const lenses = flatMap(isomorphisms.reverse(), iso => iso._context.patterns.lenses);
     this.lenses = lenses.filter(iso => !!iso);
   }
 

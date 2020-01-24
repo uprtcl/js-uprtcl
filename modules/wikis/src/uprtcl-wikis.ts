@@ -1,4 +1,4 @@
-export { Wiki, WikisLocal } from './types';
+export { Wiki } from './types';
 
 export { WikisProvider } from './services/wikis.provider';
 export { WikisIpfs } from './services/providers/wikis.ipfs';

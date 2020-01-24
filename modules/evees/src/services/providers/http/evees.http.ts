@@ -1,4 +1,4 @@
-import { HttpProvider, HttpConnection } from '@uprtcl/connections';
+import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';
@@ -23,6 +23,10 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
       },
       connection
     );
+  }
+
+  get source() {
+    return super.authority;
   }
 
   async get<T>(hash: string): Promise<Hashed<T>> {

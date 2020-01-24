@@ -1,19 +1,30 @@
-import { injectable, inject } from 'inversify';
+import { injectable, inject, multiInject } from 'inversify';
 import { html, TemplateResult } from 'lit-element';
 
-import { Pattern, HasRedirect, IsSecure, HasLinks, Creatable, Entity } from '@uprtcl/cortex';
-import { Secured, CorePatterns } from '@uprtcl/common';
+import {
+  Pattern,
+  HasRedirect,
+  IsSecure,
+  HasLinks,
+  Creatable,
+  Entity,
+  Signed
+} from '@uprtcl/cortex';
+import { Secured } from '../patterns/default-secured.pattern';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
-import { Commit, EveesTypes } from '../types';
-import { Evees } from '../services/evees';
+import { Commit } from '../types';
+import { EveesBindings } from '../bindings';
+import { EveesRemote } from '../services/evees.remote';
+import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
+const creatorId = 'did:hi:ho';
 
 @injectable()
 export class CommitEntity implements Entity {
   constructor(
-    @inject(CorePatterns.Secured)
+    @inject(EveesBindings.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>
   ) {}
 
@@ -48,7 +59,7 @@ export class CommitLinked extends CommitEntity implements HasLinks, HasRedirect 
 @injectable()
 export class CommitLens extends CommitEntity implements HasLenses {
   constructor(
-    @inject(CorePatterns.Secured)
+    @inject(EveesBindings.Secured)
     protected securedPattern: Pattern & IsSecure<Secured<Commit>>
   ) {
     super(securedPattern);
@@ -70,21 +81,23 @@ export class CommitLens extends CommitEntity implements HasLenses {
 @injectable()
 export class CommitPattern extends CommitEntity
   implements
-    Creatable<{ dataId: string; message: string; parentsIds: string[]; timestamp?: number }> {
+    Creatable<
+      { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
+      Signed<Commit>
+    > {
   constructor(
-    @inject(CorePatterns.Secured)
-    protected securedPattern: Pattern & IsSecure<Secured<Commit>>,
-    @inject(EveesTypes.Evees) protected evees: Evees
+    @inject(EveesBindings.Secured)
+    protected secured: Pattern & IsSecure<Secured<Commit>>,
+    @multiInject(EveesBindings.EveesRemote) protected remotes: EveesRemote[],
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService
   ) {
-    super(securedPattern);
+    super(secured);
   }
 
   recognize(object: object) {
     return (
-      this.securedPattern.recognize(object) &&
-      propertyOrder.every(p =>
-        this.securedPattern.extract(object as Secured<Commit>).hasOwnProperty(p)
-      )
+      this.secured.recognize(object) &&
+      propertyOrder.every(p => this.secured.extract(object as Secured<Commit>).hasOwnProperty(p))
     );
   }
 
@@ -93,14 +106,45 @@ export class CommitPattern extends CommitEntity
       | {
           dataId: string;
           message: string;
+          creatorsIds?: string[];
+
           parentsIds: string[];
           timestamp?: number;
         }
       | undefined,
-    providerName?: string
+    source?: string
   ) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
-    const { id } = await this.evees.createCommit(args, providerName);
-    return id;
+
+    const timestamp = args.timestamp || Date.now();
+    const creatorsIds = args.creatorsIds || [creatorId];
+
+    const commitData: Commit = {
+      creatorsIds: creatorsIds,
+      dataId: args.dataId,
+      message: args.message || `Commit at ${Date.now().toLocaleString()}`,
+      timestamp: timestamp,
+      parentsIds: args.parentsIds
+    };
+    const commit: Secured<Commit> = await this.secured.derive()(commitData);
+
+    if (!source) {
+      if (this.remotes.length === 1) source = this.remotes[0].source;
+      else {
+        const s = this.remotes.find(r => r.source.includes('http'));
+        if (!s) throw new Error('Http source not found');
+        source = s.source;
+      }
+    }
+
+    const remote: EveesRemote | undefined = this.remotes.find(r => r.source === source);
+
+    if (!remote) throw new Error(`Source ${source} not registered`);
+
+    await remote.cloneCommit(commit);
+
+    await this.discovery.postEntityCreate(remote, commit);
+
+    return commit;
   };
 }

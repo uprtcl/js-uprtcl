@@ -1,4 +1,4 @@
-import { Secured } from '@uprtcl/common';
+import { Secured } from '../patterns/default-secured.pattern';
 
 import { Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesSource } from './evees.source';
@@ -28,5 +28,8 @@ export interface EveesProvider extends EveesSource {
    * @param perspectiveId id of the perspective of which to update the head
    * @param details details to update the perspective to
    */
-  updatePerspectiveDetails(perspectiveId: string, details: Partial<PerspectiveDetails>): Promise<void>;
+  updatePerspectiveDetails(
+    perspectiveId: string,
+    details: Partial<PerspectiveDetails>
+  ): Promise<void>;
 }

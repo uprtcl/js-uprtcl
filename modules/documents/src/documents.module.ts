@@ -1,8 +1,6 @@
-import { interfaces } from 'inversify';
-
 import { SourcesModule } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
-import { GraphQlSchemaModule } from '@uprtcl/common';
+import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { ElementsModule, i18nextModule, MicroModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { DocumentTextNode } from './elements/document-text-node';
@@ -12,14 +10,13 @@ import {
   TextNodePatterns,
   TextNodeTitle
 } from './patterns/text-node.entity';
-import { DocumentsLocal } from './services/documents.local';
-import { Documents } from './services/documents';
 import { DocumentsRemote } from './services/documents.remote';
-import { documentsTypeDefs, resolvers } from './graphql/schema';
+import { documentsTypeDefs } from './graphql/schema';
+import { resolvers } from './graphql/resolvers';
 
 import en from '../i18n/en.json';
-import { DocumentsTypes } from './types';
 import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
+import { DocumentsBindings } from './bindings';
 
 /**
  * Configure a documents module with the given service providers
@@ -29,7 +26,7 @@ import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-no
  * Example usage:
  *
  * ```ts
- * import { IpfsConnection } from '@uprtcl/connections';
+ * import { IpfsConnection } from '@uprtcl/ipfs-provider';
  * import { DocumentsModule, DocumentsIpfs } from '@uprtcl/documents';
  *
  * const ipfsConnection = new IpfsConnection({
@@ -51,15 +48,10 @@ import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-no
 export class DocumentsModule extends MicroModule {
   static id = Symbol('documents-module');
 
-  static types = DocumentsTypes;
+  static bindings = DocumentsBindings;
 
-  constructor(protected documentsRemotes: DocumentsRemote[], protected remoteLinks: Dictionary<string>) {
+  constructor(protected documentsRemotes: DocumentsRemote[]) {
     super();
-  }
-
-  async onLoad(container: interfaces.Container) {
-    container.bind(DocumentsModule.types.DocumentsLocal).to(DocumentsLocal);
-    container.bind(DocumentsModule.types.Documents).to(Documents);
   }
 
   submodules = [
@@ -67,7 +59,7 @@ export class DocumentsModule extends MicroModule {
     new i18nextModule('documents', { en: en }),
     new SourcesModule(
       this.documentsRemotes.map(remote => ({
-        symbol: DocumentsModule.types.DocumentsRemote,
+        symbol: DocumentsModule.bindings.DocumentsRemote,
         source: remote
       }))
     ),
@@ -76,7 +68,7 @@ export class DocumentsModule extends MicroModule {
       'documents-text-node-editor': DocumentTextNodeEditor
     }),
     new PatternsModule({
-      [DocumentsModule.types.TextNodeEntity]: [
+      [DocumentsModule.bindings.TextNodeEntity]: [
         TextNodeActions,
         TextNodeCreate,
         TextNodePatterns,

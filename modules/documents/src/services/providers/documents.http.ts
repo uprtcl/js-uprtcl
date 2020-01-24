@@ -1,4 +1,4 @@
-import { HttpConnection, HttpProvider } from '@uprtcl/connections';
+import { HttpConnection, HttpProvider } from '@uprtcl/http-provider';
 import { Hashed } from '@uprtcl/cortex';
 
 import { DocumentsProvider } from '../documents.provider';
@@ -14,6 +14,10 @@ export enum DataType {
 const documents_api: string = 'documents-v1';
 
 export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
+  get source() {
+    return super.authority;
+  }
+
   constructor(host: string, protected connection: HttpConnection) {
     super(
       {

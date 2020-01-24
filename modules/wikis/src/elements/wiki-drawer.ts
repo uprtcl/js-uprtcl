@@ -5,16 +5,16 @@ import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
 import '@material/mwc-ripple';
 
-import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD } from '@uprtcl/evees';
-import { TextType, CREATE_TEXT_NODE } from '@uprtcl/documents';
-import { Hashed } from '@uprtcl/cortex';
-import { ApolloClientModule } from '@uprtcl/common';
-import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
+import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD, RemoteMap, EveesModule, EveesRemote } from '@uprtcl/evees';
+import { TextType, CREATE_TEXT_NODE, DocumentsModule } from '@uprtcl/documents';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
 import { CREATE_WIKI } from '../graphql/queries';
-import { WikisModule } from '../wikis.module';
+import { Entity } from '@uprtcl/cortex';
+import { Source } from '@uprtcl/multiplatform';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'wiki-id' })
@@ -26,8 +26,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Boolean })
   editable: boolean = true;
 
-  origin: string | undefined = undefined;
   currentHead: string | undefined = undefined;
+  perspectiveOrigin: string | undefined = undefined;
 
   @property({ type: String })
   selectedPageHash: string | undefined = undefined;
@@ -37,24 +37,37 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async createPage() {
     if (!this.wiki) return;
-    if (!this.origin) return;
+
+    this.pagesList = undefined;
+
+    const remoteMap: RemoteMap = this.request(EveesModule.bindings.RemoteMap);
+    const remotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
+    
+    const textNodeEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
+    const name = textNodeEntity[0].name;
+
+    const wikiEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
+    const wikiName = wikiEntity[0].name;
+
+    const remote: EveesRemote | undefined = remotes.find(r => r.authority === this.perspectiveOrigin);
+
+    if (!remote) throw new Error(`Evees remote not registered for authority ${this.perspectiveOrigin}`);
+
+    const textNodeSource: Source = remoteMap(this.perspectiveOrigin, name);
+    const wikiSource: Source = remoteMap(this.perspectiveOrigin, wikiName);
 
     const pageContent = {
-      text: '<h1>New page</h1>',
-      type: TextType.Title,
+      text: 'New page',
+      type: TextType.Paragraph,
       links: []
     };
 
-    const { remoteLinks }: Dictionary<string> = this.request(WikisModule.id);
-    const dataUsl = remoteLinks[this.origin];
-    const docsUsl = remoteLinks[dataUsl];
-
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
         content: pageContent,
-        usl: docsUsl
+        source: textNodeSource.source
       }
     });
 
@@ -63,7 +76,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       variables: {
         dataId: result.data.createTextNode.id,
         parentsIds: [],
-        usl: this.origin
+        source: remote.source
       }
     });
 
@@ -71,7 +84,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_PERSPECTIVE,
       variables: {
         headId: commit.data.createCommit.id,
-        usl: this.origin
+        authority: remote.authority
       }
     });
 
@@ -84,7 +97,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_WIKI,
       variables: {
         content: wiki,
-        usl: dataUsl
+        source: wikiSource.source
       }
     });
 
@@ -93,17 +106,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       variables: {
         dataId: wikiResult.data.createWiki.id,
         parentsIds: this.currentHead ? [this.currentHead] : [],
-        usl: this.origin
+        source: remote.source
       }
     });
 
-    await client.mutate({
+    const updateHeadResult = await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.wikiId,
         headId: wikiCommit.data.createCommit.id
       }
     });
+
+    this.loadWiki();
   }
 
   firstUpdated() {
@@ -113,33 +128,36 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async loadWiki() {
     this.wiki = undefined;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.types.Client);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.query({
       query: gql`
       {
         entity(id: "${this.wikiId}") {
           id
+
           ... on Perspective {
             payload {
               origin
             }
             head {
               id
-            }
-          }
-          _patterns {
-            content {
-              id
-              ... on Wiki {
-                title
-                pages {
-                  id
-                  _patterns {
-                    content {
-                      id
-                      _patterns {
-                        title
+              data {
+                id
+                ... on Wiki {
+                  title
+                  pages {
+                    id
+                    _context {
+                      patterns {
+                        content {
+                          id
+                          _context {
+                            patterns {
+                              title
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -151,19 +169,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }`
     });
 
-    const { pages } = result.data.entity._patterns.content;
+    const wiki = result.data.entity.head.data;
+
+    this.perspectiveOrigin = result.data.entity.payload.origin;
+
+    const pages = wiki.pages;
     this.pagesList = pages.map(page => ({
       id: page.id,
-      title: page._patterns.content._patterns.title
-        ? page._patterns.content._patterns.title
+      title: page._context.patterns.content._context.patterns.title
+        ? page._context.patterns.content._context.patterns.title
         : this.t('wikis:untitled')
     }));
 
-    const content = result.data.entity._patterns.content;
-    this.wiki = { title: content.title, pages: content.pages.map(p => p.id) };
+    this.wiki = { title: wiki.title, pages: wiki.pages.map(p => p.id) };
     const head = result.data.entity.head;
     this.currentHead = head ? head.id : undefined;
-    this.origin = result.data.entity.payload.origin;
   }
 
   static get styles() {
@@ -185,7 +205,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   renderPageList() {
     if (!this.pagesList)
       return html`
-        <cortex-loading-placeholder>loading pages...</cortex-loading-placeholder>
+        <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
     if (this.pagesList.length === 0)
@@ -221,7 +241,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   render() {
     if (!this.wiki)
       return html`
-        <cortex-loading-placeholder>loading wiki...</cortex-loading-placeholder>
+        <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
     return html`

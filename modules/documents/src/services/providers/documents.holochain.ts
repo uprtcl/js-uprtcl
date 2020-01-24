@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { HolochainProvider } from '@uprtcl/connections';
+import { HolochainProvider } from '@uprtcl/holochain-provider';
 import { Hashed } from '@uprtcl/cortex';
 
 import { DocumentsProvider } from '../documents.provider';
@@ -9,6 +9,8 @@ import { TextNode } from '../../types';
 @injectable()
 export abstract class DocumentsHolochain extends HolochainProvider implements DocumentsProvider {
   zome: string = 'documents';
+
+  source = '';
 
   createTextNode(node: TextNode, hash?: string): Promise<string> {
     return this.call('create_text_node', {

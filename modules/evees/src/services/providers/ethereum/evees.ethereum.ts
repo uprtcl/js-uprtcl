@@ -1,19 +1,18 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
 import {
-  IpfsSource,
   EthereumConnection,
   EthereumProviderOptions,
-  EthereumProvider,
-  IpfsConnection
-} from '@uprtcl/connections';
-import { sortObject, Secured } from '@uprtcl/common';
+  EthereumProvider
+} from '@uprtcl/ethereum-provider';
+import { IpfsSource, IpfsConnection } from '@uprtcl/ipfs-provider';
 import { Hashed } from '@uprtcl/cortex';
 
 import * as EveesContractArtifact from './uprtcl-contract.json';
 
+import { sortObject } from '../../../utils/utils';
+import { Secured } from '../../../patterns/default-secured.pattern';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
-import { ProposalsMock } from '../../proposals.mock';
 import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 
@@ -31,7 +30,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     this.ipfsSource = new IpfsSource(ipfsConnection);
   }
 
-  get uprtclProviderLocator() {
+  get authority() {
     return 'eth:hi:mynameistal';
   }
 
@@ -42,6 +41,10 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   get proposals() {
     return undefined;
     // Cesar: substituir por `return new ProposalsEthereum(this)`
+  }
+
+  get source() {
+    return this.ipfsSource.source;
   }
 
   /**

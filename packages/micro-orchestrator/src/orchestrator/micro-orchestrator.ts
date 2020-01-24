@@ -3,7 +3,8 @@ import { Container, interfaces } from 'inversify';
 import { MicroModule } from './micro.module';
 import { ModuleContainer } from '../elements/module-container';
 import { Logger } from '../utils/logger';
-import { MicroOrchestratorTypes, Dictionary } from '../types';
+import { Dictionary } from '../types';
+import { MicroOrchestratorBindings } from '../bindings';
 import { localModuleProvider, ModuleProvider } from './module-provider';
 
 export class MicroOrchestrator {
@@ -17,7 +18,7 @@ export class MicroOrchestrator {
     customElements.define('module-container', ModuleContainer(this.container));
 
     this.container
-      .bind<Logger>(MicroOrchestratorTypes.Logger)
+      .bind<Logger>(MicroOrchestratorBindings.Logger)
       .toDynamicValue((ctx: interfaces.Context) => {
         const logger = new Logger(ctx.plan.rootRequest.serviceIdentifier['name']);
 

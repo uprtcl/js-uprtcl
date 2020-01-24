@@ -1,27 +1,33 @@
+import { ApolloClient } from 'apollo-boost';
 import { inject, injectable } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
-import { Secured, createEntity } from '@uprtcl/common';
+import { createEntity } from '@uprtcl/multiplatform';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { UpdateRequest, Commit, EveesTypes } from '../types';
+import { Secured } from '../patterns/default-secured.pattern';
+import { UpdateRequest, Commit } from '../types';
+import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
 import { isAncestorOf } from '../utils/ancestor';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
+import { CREATE_COMMIT } from '../graphql/queries';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
   updatesList: UpdateRequest[] = [];
 
   constructor(
-    @inject(EveesTypes.Evees) protected evees: Evees,
-    @inject(DiscoveryModule.types.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryModule.types.LocalKnownSources) protected knownSources: KnownSourcesService,
-    @inject(CortexModule.types.Recognizer) protected recognizer: PatternRecognizer
+    @inject(EveesBindings.Evees) protected evees: Evees,
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {}
 
   async mergePerspectives(
@@ -32,7 +38,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     this.updatesList = [];
 
     const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
-      const details = await this.evees.getPerspectiveDetails(id);
+      const remote = await this.evees.getPerspectiveProviderById(id);
+      const details = await remote.getPerspectiveDetails(id);
+
       if (!details.headId)
         throw new Error('Cannot merge a perspective that has no head associated');
       return details.headId;
@@ -40,7 +48,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-    const isAncestor = await isAncestorOf(this.evees)(fromHeadId, toHeadId);
+    const isAncestor = await isAncestorOf(this.discovery)(fromHeadId, toHeadId);
     if (isAncestor) {
       // All commits to merge from are ancestors of the current one, do nothing
       return this.updatesList;
@@ -63,7 +71,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   protected async loadPerspectiveData(perspectiveId: string): Promise<Hashed<any>> {
-    const details = await this.evees.getPerspectiveDetails(perspectiveId);
+    const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
+    const details = await remote.getPerspectiveDetails(perspectiveId);
     if (!details.headId)
       throw new Error(
         `Error when trying to load data for perspective ${perspectiveId}: perspective has no head associated`
@@ -73,7 +82,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   protected async loadCommitData(commitId: string): Promise<Hashed<any>> {
-    const commit: Secured<Commit> | undefined = await this.evees.get(commitId);
+    const commit: Secured<Commit> | undefined = await this.discovery.get(commitId);
     if (!commit) throw new Error(`Could not fetch ancestor commit with id ${commitId}`);
 
     const data = await this.discovery.get(commit.object.payload.dataId);
@@ -86,7 +95,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeCommits(toCommitId: string, fromCommitId: string): Promise<string> {
     const commitsIds = [toCommitId, fromCommitId];
 
-    const ancestorId = await findMostRecentCommonAncestor(this.evees)(commitsIds);
+    const ancestorId = await findMostRecentCommonAncestor(this.discovery)(commitsIds);
     const ancestorData: any = await this.loadCommitData(ancestorId);
 
     const datasPromises = commitsIds.map(async commitId => this.loadCommitData(commitId));
@@ -99,16 +108,17 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDataId = await createEntity(this.recognizer)(newData);
 
-    const mergeCommit = await this.evees.createCommit(
-      {
+    const mergeCommit = await this.client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
         dataId: newDataId,
         parentsIds: commitsIds,
-        message: `Merge commits ${commitsIds.toString()}`
-      },
-      sources ? sources[0] : undefined
-    );
+        message: `Merge commits ${commitsIds.toString()}`,
+        source: sources ? sources[0] : undefined
+      }
+    });
 
-    return mergeCommit.id;
+    return mergeCommit.data.createCommit.id;
   }
 
   async mergeData<T extends object>(originalData: T, newDatas: T[]): Promise<T> {

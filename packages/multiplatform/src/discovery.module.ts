@@ -2,39 +2,37 @@ import { interfaces } from 'inversify';
 
 import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { CortexModule } from '@uprtcl/cortex';
+import { ApolloClientModule, GraphQlSchemaModule } from '@uprtcl/graphql';
 
-import { CacheService } from './services/cache/cache.service';
-import { CacheDexie } from './services/cache/cache.dexie';
-import { KnownSourcesService } from './services/known-sources/known-sources.service';
-import { KnownSourcesDexie } from './services/known-sources/known-sources.dexie';
-import { MultiSourceService } from './services/multi/multi-source.service';
 import { DiscoveryService } from './services/discovery.service';
-import { Source } from './services/sources/source';
-import { MultiplatformTypes } from './types';
-
+import { MultiplatformBindings } from './bindings';
+import { KnownSourcesService } from './services/known-sources.service';
+import { KnownSourcesApollo } from './graphql/known-sources.apollo';
+import { discoveryTypeDefs } from './graphql/schema';
+import { DiscoverDirective } from './graphql/directives/discover-directive';
+import { SourceDirective } from './graphql/directives/source-directive';
+import { discoverResolvers } from './graphql/resolvers';
 
 export class DiscoveryModule extends MicroModule {
   static id = Symbol('discovery-module');
 
-  static types = MultiplatformTypes;
+  static bindings = MultiplatformBindings;
 
-  dependencies = [CortexModule.id];
-
-  constructor(
-    protected cacheService: CacheService = new CacheDexie(),
-    protected localKnownSources: KnownSourcesService = new KnownSourcesDexie()
-  ) {
-    super();
-  }
+  dependencies = [CortexModule.id, ApolloClientModule.id];
+  submodules = [
+    new GraphQlSchemaModule(discoveryTypeDefs, discoverResolvers, [
+      DiscoverDirective,
+      SourceDirective
+    ])
+  ];
 
   async onLoad(container: interfaces.Container): Promise<void> {
-    await Promise.all([this.cacheService.ready(), this.localKnownSources.ready()]);
-
-    container.bind<MultiSourceService>(DiscoveryModule.types.MultiSource).to(MultiSourceService);
-    container.bind<CacheService>(DiscoveryModule.types.Cache).toConstantValue(this.cacheService);
     container
-      .bind<KnownSourcesService>(DiscoveryModule.types.LocalKnownSources)
-      .toConstantValue(this.localKnownSources);
-    container.bind<Source>(DiscoveryModule.types.DiscoveryService).to(DiscoveryService);
+      .bind<DiscoveryService>(DiscoveryModule.bindings.DiscoveryService)
+      .to(DiscoveryService);
+
+    container
+      .bind<KnownSourcesService>(DiscoveryModule.bindings.LocalKnownSources)
+      .to(KnownSourcesApollo);
   }
 }

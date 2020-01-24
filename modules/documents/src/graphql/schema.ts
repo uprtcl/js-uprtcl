@@ -1,11 +1,5 @@
 import { gql } from 'apollo-boost';
 
-import { DocumentsTypes } from '../types';
-import { Documents } from '../services/documents';
-import { Logger } from '@uprtcl/micro-orchestrator';
-
-const logger = new Logger('DECUMENT-TEXT-NODE-SCHEMA');
-
 export const documentsTypeDefs = gql`
   extend type Patterns {
     title: String
@@ -21,10 +15,9 @@ export const documentsTypeDefs = gql`
 
     text: String!
     type: TextType!
-    links: [Entity]!
+    links: [Entity]! @discover
 
-    _patterns: Patterns!
-    _meta: Metadata!
+    _context: EntityContext!
   }
 
   input TextNodeInput {
@@ -34,26 +27,6 @@ export const documentsTypeDefs = gql`
   }
 
   extend type Mutation {
-    createTextNode(content: TextNodeInput!, usl: ID): TextNode!
+    createTextNode(content: TextNodeInput!, source: ID): TextNode!
   }
 `;
-
-export const resolvers = {
-  Mutation: {
-    async createTextNode(_, { content, usl }, { container }) {
-      logger.info('createTextNode()', { content, usl })
-
-      const documents: Documents = container.get(DocumentsTypes.Documents);
-
-      const textNode = await documents.createTextNode(content, usl);
-      return { id: textNode.id, ...textNode.object };
-    }
-  }
-};
-
-/* 
-export const documentsSchema = makeExecutableSchema({
-  typeDefs: [baseTypeDefs, documentsTypeDefs],
-  resolvers: baseResolvers
-});
- */

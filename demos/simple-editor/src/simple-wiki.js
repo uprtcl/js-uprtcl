@@ -1,7 +1,7 @@
 import { LitElement, html, property } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/common';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
 import { WikisModule, CREATE_WIKI } from '@uprtcl/wikis';
 import { DocumentsModule } from '@uprtcl/documents';
@@ -33,19 +33,19 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    this.wikisProvider = this.requestAll(WikisModule.types.WikisRemote).find(provider => {
+    this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.authority);
     });
 
-    this.docsProvider = this.requestAll(DocumentsModule.types.DocumentsRemote).find(provider => {
+    this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.authority);
     });
 
-    this.eveesProvider = this.requestAll(EveesModule.types.EveesRemote).find(provider => {
+    this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return regexp.test(provider.uprtclProviderLocator);
+      return !regexp.test(provider.authority);
     });
 
     window.addEventListener('popstate', () => {
@@ -59,10 +59,9 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       
       this.rootHash = window.location.href.split('id=')[1];
-
     } else {
 
-      const client = this.request(ApolloClientModule.types.Client);
+      const client = this.request(ApolloClientModule.bindings.Client);
       const result = await client.mutate({
         mutation: CREATE_WIKI,
         variables: {
@@ -70,7 +69,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
             title: 'Genesis Wiki',
             pages: []
           },
-          usl: this.wikisProvider.uprtclProviderLocator
+          source: this.wikisProvider.source
         }
       });
 
@@ -79,7 +78,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         variables: {
           dataId: result.data.createWiki.id,
           parentsIds: [],
-          usl: this.eveesProvider.uprtclProviderLocator
+          source: this.eveesProvider.source
         }
       });
 
@@ -87,7 +86,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         mutation: CREATE_PERSPECTIVE,
         variables: {
           headId: createCommit.data.createCommit.id,
-          usl: this.eveesProvider.uprtclProviderLocator
+          authority: this.eveesProvider.authority
         }
       });
 
