@@ -10,7 +10,7 @@ import {
   TextNodePatterns,
   TextNodeTitle
 } from './patterns/text-node.entity';
-import { DocumentsRemote } from './services/documents.remote';
+import { DocumentsProvider } from './services/documents.provider';
 import { documentsTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 
@@ -49,7 +49,7 @@ export class DocumentsModule extends MicroModule {
 
   static bindings = DocumentsBindings;
 
-  constructor(protected documentsRemotes: DocumentsRemote[]) {
+  constructor(protected documentsRemotes: DocumentsProvider[]) {
     super();
   }
 
