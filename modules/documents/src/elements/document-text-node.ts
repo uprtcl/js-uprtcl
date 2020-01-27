@@ -40,7 +40,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     const textNodeEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
     const name = textNodeEntity[0].name;
 
-    return remoteMap(origin, name);
+    return remoteMap(eveesAuthority, name);
   }
 
   async updateContent(newContent: TextNode): Promise<void> {
