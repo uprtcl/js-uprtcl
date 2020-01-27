@@ -6,7 +6,7 @@ import '@material/mwc-top-app-bar';
 import '@material/mwc-ripple';
 
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD, RemoteMap, EveesModule, EveesRemote } from '@uprtcl/evees';
-import { TextType, CREATE_TEXT_NODE, DocumentsModule } from '@uprtcl/documents';
+import { TextType, CREATE_TEXT_NODE, DocumentsModule, htmlToText } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
@@ -218,16 +218,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return html`
       <mwc-list>
         ${this.pagesList.map(page => {
-          
-          /** html to plain text */
-          const temp = document.createElement('template');
-          temp.innerHTML = page.title;
-
-          if (!temp.content) return 'unknown';
-          if (!temp.content.firstElementChild) return 'unknown';
-          
-          const text = (temp.content.firstElementChild as HTMLElement).innerText;
-
+          let text = htmlToText(page.title)
           return html`
             <mwc-list-item @click=${() => this.selectPage(page.id)}>
               ${text}
