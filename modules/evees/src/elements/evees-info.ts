@@ -96,7 +96,6 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   async createGlobalPerspective(perspectiveId: string): Promise<string> {
 
-    debugger
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const { remoteLinks }: Dictionary<string> = this.request(EveesModule.id);
 
