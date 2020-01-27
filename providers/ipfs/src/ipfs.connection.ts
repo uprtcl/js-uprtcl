@@ -30,7 +30,7 @@ export class IpfsConnection extends Connection {
     return new Promise((resolve, reject) => {
       this.logger.log(`Try put. Attempt: ${attempt}`);
 
-      if (attempt > 10) {
+      if (attempt > 4) {
         reject();
       }
 

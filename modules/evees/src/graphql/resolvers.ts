@@ -89,7 +89,7 @@ export const eveesResolvers = {
 
       return { id: perspective.id, ...perspective.object };
     },
-    async createPerspective(_, { headId, context, name, authority }, { container }) {
+    async createPerspective(_, { headId, context, name, authority, recursive }, { container }) {
       const patterns: Pattern[] = container.getAll(EveesBindings.PerspectivePattern);
 
       const creatable: Creatable<any, Signed<Perspective>> | undefined = patterns.find(
@@ -99,7 +99,7 @@ export const eveesResolvers = {
       if (!creatable) throw new Error(`No creatable pattern registered for perspectives`);
 
       const perspective: Secured<Perspective> = await creatable.create()(
-        { name, headId, context },
+        { name, headId, context, recursive },
         authority
       );
 

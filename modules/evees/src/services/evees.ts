@@ -16,7 +16,7 @@ import { createEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective, Commit, PerspectiveDetails } from '../types';
+import { Perspective, Commit, PerspectiveDetails, RemoteMap } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
 import { CREATE_PERSPECTIVE, CREATE_COMMIT } from '../graphql/queries';
@@ -29,9 +29,9 @@ export interface NoHeadPerspectiveArgs {
 export type NewPerspectiveArgs = (
   | Partial<PerspectiveDetails>
   | (NoHeadPerspectiveArgs & { dataId: string })
-) & { disableRecursive?: boolean };
+) & { recursive?: boolean };
 
-const DEFAULT_PERSPECTIVE_NAME = 'master';
+const DEFAULT_PERSPECTIVE_NAME = 'first';
 const creatorId = 'did:hi:ho';
 
 /**
@@ -51,7 +51,9 @@ export class Evees {
     @multiInject(EveesBindings.EveesRemote)
     protected eveesRemotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client)
-    protected client: ApolloClient<any>
+    protected client: ApolloClient<any>,
+    @inject(EveesBindings.RemoteMap)
+    protected remoteMap: RemoteMap
   ) {}
 
   /** Public functions */
@@ -120,6 +122,7 @@ export class Evees {
     args: NewPerspectiveArgs,
     authority?: string
   ): Promise<Secured<Perspective>> {
+
     const name = args.name || DEFAULT_PERSPECTIVE_NAME;
 
     const eveesRemote = this.getAuthority(authority);
@@ -146,7 +149,7 @@ export class Evees {
         'Either the headId or the dataId has to be provided to create the perspective'
       );
 
-    if (!args.disableRecursive) {
+    if (args.recursive) {
       // Create recursive perspective to be able to write in the descendant perspectives
       if (!dataId) {
         const commit: Secured<Commit> | undefined = await this.discoveryService.get(headId);
@@ -171,10 +174,11 @@ export class Evees {
           const newPerspective = await this.client.mutate({
             mutation: CREATE_PERSPECTIVE,
             variables: {
-              context,
+              context: details.context,
               name,
               headId: details.headId,
-              authority: eveesRemote.authority
+              authority: eveesRemote.authority,
+              recursive: true
             }
           });
           return newPerspective.data.createPerspective.id;
@@ -184,11 +188,11 @@ export class Evees {
         const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
 
         if (!isEqual(dataHashed, newData)) {
-          const previousDataUpls = await this.knownSources.getKnownSources(dataId);
+          const dataSource = this.remoteMap(eveesRemote.authority, hasChildren.name);
 
           const newDataId = await createEntity(this.patternRecognizer)(
-            newData.object,
-            previousDataUpls ? previousDataUpls[0] : undefined
+            newData,
+            dataSource.source
           );
           dataId = newDataId;
         } else {

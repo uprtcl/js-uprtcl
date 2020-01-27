@@ -94,126 +94,6 @@ export class EveesInfo extends moduleConnect(LitElement) {
     this.logger.info('load', { perspectiveData: this.perspectiveData });
   }
 
-  async createGlobalPerspective(perspectiveId: string): Promise<string> {
-
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const { remoteLinks }: Dictionary<string> = this.request(EveesModule.id);
-
-    this.logger.info('createGlobalPerspective()', { perspectiveId });
-
-    const queryResult = await client.query({
-      query: gql`{
-        entity(id: "${perspectiveId}") {
-          id
-          ... on Perspective {
-            context {
-              identifier
-            }
-            head {
-              id
-            }
-            payload {
-              origin
-            }
-          }
-          _context {
-            patterns {
-              content {
-                id
-                ... on TextNode {
-                  text
-                  type
-                  links {
-                    id
-                  }
-                }
-              }
-            }
-          }
-        }
-      }`
-    });
-
-    /** maybe we will have to skip apollo here to be able to get an entity with all
-     * its content without knowing it before hand. Something like
-     * data:any = this.getEntity(id)
-     * and use pattern-based get and set links like you were doing with perspective-pattern
-     */
-    const data: TextNode = {
-      text: queryResult.data.entity._context.patterns.content.text,
-      type: queryResult.data.entity._context.patterns.content.type,
-      links: queryResult.data.entity._context.patterns.content.links.map(l => l.id)
-    };
-
-    /** this perspective details */
-    const orgHeadId = queryResult.data.entity.head.id;
-    let newCommitId = orgHeadId;
-    const context = queryResult.data.entity.context.identifier;
-    const origin = queryResult.data.entity.payload.origin;
-
-    this.logger.info('createGlobalPerspective() - data', { data });
-
-    let newLinks = data.links;
-
-    for (let i = 0; i < data.links.length; i++) {
-      const childPerspectiveId = data.links[i];
-      /** recursive call!!! */
-      const childNewPerspectiveId = await this.createGlobalPerspective(childPerspectiveId);
-      newLinks[i] = childNewPerspectiveId;
-    }
-
-    /** create a new commit on the parent to point to the new perspectives of the children */
-    if (data.links.length > 0) {
-      // text node... ouch, do we need a pattern-based mutation?
-      let newNode: TextNode = {
-        ...data,
-        links: newLinks
-      };
-
-      const dataUsl = remoteLinks[origin];
-
-      const textNodeMutation = await client.mutate({
-        mutation: gql`
-          mutation CreateTextNode($content: TextNodeInput!, $usl: ID) {
-            createTextNode(content: $content, usl: $usl) {
-              id
-            }
-          }
-        `,
-        variables: {
-          content: newNode,
-          source: dataUsl
-        }
-      });
-
-      const commitMutation = await client.mutate({
-        mutation: CREATE_COMMIT,
-        variables: {
-          dataId: textNodeMutation.data.createTextNode.id,
-          parentsIds: [orgHeadId],
-          message: 'automatic commit during new global perspective',
-          usl: origin
-        }
-      });
-
-      newCommitId = commitMutation.data.createCommit.id;
-    }
-
-    /** create the new perspective */
-    const perspectiveMutation = await client.mutate({
-      mutation: CREATE_PERSPECTIVE,
-      variables: {
-        headId: newCommitId,
-        context: context,
-        authority: origin
-      }
-    });
-
-    this.logger.info('createGlobalPerspective() - perspective', { perspectiveMutation });
-
-    return perspectiveMutation.data.createPerspective.id;
-  }
-
   async merge(fromPerspectiveId: string) {
     if (!fromPerspectiveId) return;
 
@@ -243,7 +123,20 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async newPerspectiveClicked() {
-    const newPerspectiveId = await this.createGlobalPerspective(this.perspectiveId);
+
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+
+    const perspectiveMutation = await client.mutate({
+      mutation: CREATE_PERSPECTIVE,
+      variables: {
+        headId: this.perspectiveData.details.headId,
+        authority: this.perspectiveData.perspective.origin,
+        context: this.perspectiveData.details.context,
+        recursive: true
+      }
+    });
+
+    const newPerspectiveId = perspectiveMutation.data.createPerspective.id;
     this.show = false;
 
     this.logger.info('newPerspectiveClicked() - perspective created', { newPerspectiveId });
