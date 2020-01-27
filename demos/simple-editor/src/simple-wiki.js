@@ -35,17 +35,17 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.authority);
+      return regexp.test(provider.authority);
     });
 
     this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.authority);
+      return regexp.test(provider.authority);
     });
 
     this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider => {
       const regexp = new RegExp('^http');
-      return !regexp.test(provider.authority);
+      return regexp.test(provider.authority);
     });
 
     window.addEventListener('popstate', () => {

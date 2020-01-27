@@ -57,9 +57,33 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
         name: 'evees:evee-perspective',
         type: 'evee',
         render: (lensContent: TemplateResult, context: any) => {
-          const color = context ? (context.color ? context.color : undefined) : undefined;
+          const color: string = context
+            ? context.color
+              ? context.color
+              : undefined
+            : undefined;
+
+          const level: number = context
+            ? context.level
+              ? context.level
+              : 1
+            : 1;
+
+          const onlyChildren: string = context
+            ? context.onlyChildren !== undefined
+              ? context.onlyChildren
+              : 'false'
+            : 'false';
+
+          console.log('[PERSPECTIVE-PATTERN] render()', {perspective, context, onlyChildren, color});
+
           return html`
-            <evees-perspective perspective-id=${perspective.id} evee-color=${color}>
+            <evees-perspective
+              perspective-id=${perspective.id}
+              evee-color=${color}
+              only-children=${onlyChildren}
+              level=${level}
+            >
             </evees-perspective>
           `;
         }

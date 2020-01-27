@@ -6,7 +6,7 @@ import '@material/mwc-top-app-bar';
 import '@material/mwc-ripple';
 
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD, RemoteMap, EveesModule, EveesRemote } from '@uprtcl/evees';
-import { TextType, CREATE_TEXT_NODE, DocumentsModule } from '@uprtcl/documents';
+import { TextType, CREATE_TEXT_NODE, DocumentsModule, htmlToText } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
@@ -57,8 +57,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const wikiSource: Source = remoteMap(this.perspectiveOrigin, wikiName);
 
     const pageContent = {
-      text: 'New page',
-      type: TextType.Paragraph,
+      text: '<h1>New page</h1>',
+      type: TextType.Title,
       links: []
     };
 
@@ -217,13 +217,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return html`
       <mwc-list>
-        ${this.pagesList.map(
-          page => html`
+        ${this.pagesList.map(page => {
+          let text = htmlToText(page.title)
+          return html`
             <mwc-list-item @click=${() => this.selectPage(page.id)}>
-              ${page.title}
+              ${text}
             </mwc-list-item>
-          `
-        )}
+          `;
+        })}
       </mwc-list>
     `;
   }

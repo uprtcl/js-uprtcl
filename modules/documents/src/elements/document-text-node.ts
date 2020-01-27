@@ -24,31 +24,15 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   @property({ type: String })
   color: string | undefined = undefined;
 
+  @property({ type: Number })
+  level: number = 0;
+
+  @property({ type: String, attribute: 'only-children' })
+  onlyChildren: String | undefined = undefined;
+
   editable: Boolean = true;
 
-  lastChangeTimeout: any;
-  lastText!: string;
-
-  textInput(e) {
-    this.logger.info('textInput()', e);
-  }
-
-  async onBlur(e) {
-    if (!this.data) return;
-
-    const newText = e.target['innerText'];
-
-    if (newText === this.data.object.text) return;
-
-    const newContent = {
-      ...this.data.object,
-      text: newText
-    };
-
-    this.logger.info('onBlur()', newContent);
-
-    await this.updateContent(newContent);
-  }
+  currentContent: any;
 
   getSource(eveesAuthority: string): Source {
     const remoteMap: RemoteMap = this.request(EveesModule.bindings.RemoteMap);
@@ -70,7 +54,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       mutation: CREATE_TEXT_NODE,
       variables: {
         content: newContent,
-        source: this.getSource(origin)
+        source: this.getSource(origin).source
       }
     });
 
@@ -89,6 +73,10 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     return textNodeId;
   }
 
+  getLevel() {
+    return this.level !== undefined ? this.level : 0;
+  }
+
   async createChild() {
     if (!this.data) return;
     if (!this.perspective) return;
@@ -101,7 +89,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     if (!remote) throw new Error(`Remote not found for authority ${origin}`);
 
     const newNode = {
-      text: 'empty',
+      text: '<p>empty</p>',
       type: TextType.Paragraph,
       links: []
     };
@@ -111,7 +99,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       mutation: CREATE_TEXT_NODE,
       variables: {
         content: newNode,
-        source: this.getSource(origin)
+        source: this.getSource(origin).source
       }
     });
 
@@ -169,15 +157,9 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.addEventListener('keypress', e => {
-      const key = e.which || e.keyCode;
-      // 13 is enter
-      if (key === 13) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        this.enterPressed();
-      }
+    console.log('[DOCUMENT-NODE] connectedCallback()', {
+      data: this.data,
+      onlyChildren: this.onlyChildren
     });
 
     this.addEventListener('create-sibling', ((e: CustomEvent) => {
@@ -194,6 +176,28 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
+  editorContentChanged(e) {
+    if (!this.data) return;
+
+    const newContent = {
+      ...this.data.object,
+      text: e.detail.content
+    };
+
+    this.updateContent(newContent);
+  }
+
+  changeType(e: CustomEvent) {
+    if (!this.data) return;
+
+    const newContent = {
+      ...this.data.object,
+      type: e.detail.type
+    };
+
+    this.updateContent(newContent);
+  }
+
   render() {
     if (!this.data)
       return html`
@@ -203,26 +207,33 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     let contentClasses = this.data.object.type === TextType.Paragraph ? ['paragraph'] : ['title'];
     contentClasses.push('content-editable');
 
+    const onlyChildren = this.onlyChildren !== undefined ? this.onlyChildren : 'false';
+
     return html`
-      <div class="column">
-        <div class="row">
-          <div class="evee-info">
-            <slot name="evee"></slot>
-          </div>
-          <div class="node-content">
-            <div
-              class=${contentClasses.join(' ')}
-              contenteditable=${this.editable ? 'true' : 'false'}
-              @input=${e => this.textInput(e)}
-              @blur=${e => this.onBlur(e)}
-            >
-              ${this.data.object.text}
-            </div>
-          </div>
-          <div class="plugins">
-            <slot name="plugins"></slot>
-          </div>
-        </div>
+      <div class="row">
+        ${onlyChildren !== 'true'
+          ? html`
+              <div class="column">
+                <div class="evee-info">
+                  <slot name="evee"></slot>
+                </div>
+                <div class="node-content">
+                  <documents-text-node-editor
+                    type=${this.data.object.type}
+                    init=${this.data.object.text}
+                    level=${this.level}
+                    .editable=${true}
+                    @content-changed=${this.editorContentChanged}
+                    @enter-pressed=${this.enterPressed}
+                    @change-type=${this.changeType}
+                  ></documents-text-node-editor>
+                </div>
+                <!-- <div class="plugins">
+                  <slot name="plugins"></slot>
+                </div> -->
+              </div>
+            `
+          : ''}
 
         <div class="node-children">
           ${this.data.object.links.map(
@@ -230,7 +241,10 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
               <cortex-entity
                 .hash=${link}
                 lens-type="evee"
-                .context=${{ color: this.color }}
+                .context=${{
+                  color: this.color,
+                  level: this.getLevel() + 1
+                }}
               ></cortex-entity>
             `
           )}
@@ -243,16 +257,10 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     return css`
       .column {
         display: flex;
-        flex-direction: column;
-      }
-
-      .row {
-        display: flex;
         flex-direction: row;
       }
 
       .evee-info {
-        flex-grow: 0;
       }
 
       .node-content {

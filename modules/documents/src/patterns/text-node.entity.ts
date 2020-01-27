@@ -63,15 +63,20 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
       {
         name: 'documents:document',
         type: 'content',
-        render: (lensContent: TemplateResult, context: any) => html`
-          <documents-text-node
-            .data=${node}
-            .perspective=${context.perspective}
-            color=${context.color}
-          >
-            ${lensContent}
-          </documents-text-node>
-        `
+        render: (lensContent: TemplateResult, context: any) => {
+          console.log('[DOCUMENT-ENTITY] render()', {node, context});
+          return html`
+            <documents-text-node
+              .data=${node}
+              .perspective=${context.perspective}
+              color=${context.color}
+              only-children=${context.onlyChildren}
+              level=${context.level}
+            >
+              ${lensContent}
+            </documents-text-node>
+          `;
+        }
       }
     ];
   };

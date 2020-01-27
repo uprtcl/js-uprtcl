@@ -95,6 +95,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async createGlobalPerspective(perspectiveId: string): Promise<string> {
+
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const { remoteLinks }: Dictionary<string> = this.request(EveesModule.id);
 
@@ -204,7 +205,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
       variables: {
         headId: newCommitId,
         context: context,
-        usl: origin
+        authority: origin
       }
     });
 
@@ -301,26 +302,33 @@ export class EveesInfo extends moduleConnect(LitElement) {
     return css`
       .container {
         position: relative;
-      }
-      .blue {
-        background-color: #9fc5e8ff;
-      }
-      .yellow {
-        background-color: #ffd966ff;
+        height: 100%;
+        width: 15px;
       }
       .button {
+        height: calc(100% - 10px);
+        margin-top: 5px;
+        margin-left: 5px;
         width: 10px;
-        min-height: 40px;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .button:hover {
+        background-color: #cccccc;
       }
       .info-box {
+        z-index: 20;
         position: absolute;
         right: -364px;
         top: 0;
         width: 300px;
         min-height: 300px;
         background-color: white;
-        box-shadow: 4px;
+        box-shadow: 2px 2px 3px 0px rgba(71,60,71,0.75);
         padding: 32px;
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+        border-bottom-left-radius: 12px;
       }
     `;
   }

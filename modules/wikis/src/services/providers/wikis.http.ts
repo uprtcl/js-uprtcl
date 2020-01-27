@@ -4,7 +4,7 @@ import { Hashed } from '@uprtcl/cortex';
 import { WikisProvider } from '../wikis.provider';
 import { Wiki } from '../../types';
 
-const wikis_api: string = 'wikinode-v1';
+const wikis_api: string = 'source';
 
 export class WikisHttp extends HttpProvider implements WikisProvider {
   constructor(host: string, protected connection: HttpConnection) {
@@ -17,14 +17,12 @@ export class WikisHttp extends HttpProvider implements WikisProvider {
     );
   }
 
-  source = '';
+  get source() {
+    return `http:${wikis_api}:${this.options.host}`;
+  }
 
   async get<T>(hash: string): Promise<Hashed<T>> {
-    const object = await super.getObject<T>(`/get/${hash}`);
-    return {
-      id: hash,
-      object: object
-    };
+    return super.getObject<Hashed<T>>(`/get/${hash}`);
   }
 
   async createWiki(wiki: Wiki, hash: string): Promise<string> {

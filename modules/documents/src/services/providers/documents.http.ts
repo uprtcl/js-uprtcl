@@ -11,11 +11,11 @@ export enum DataType {
   DOCUMENT_NODE = 'DOCUMENT_NODE'
 }
 
-const documents_api: string = 'documents-v1';
+const documents_api: string = 'source';
 
 export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
   get source() {
-    return super.authority;
+    return `http:${documents_api}:${this.options.host}`;
   }
 
   constructor(host: string, protected connection: HttpConnection) {
@@ -29,11 +29,7 @@ export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
   }
 
   async get<T>(hash: string): Promise<Hashed<T>> {
-    const object = await super.getObject<T>(`/get/${hash}`);
-    return {
-      id: hash,
-      object: object
-    };
+    return super.getObject<Hashed<T>>(`/get/${hash}`);
   }
 
   async createTextNode(node: TextNode, hash: string): Promise<string> {

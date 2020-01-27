@@ -19,7 +19,13 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   perspectiveId!: string;
 
   @property({ type: String, attribute: 'evee-color' })
-  eveeColor: String | undefined = undefined;
+  eveeColor: string = 'undefined';
+
+  @property({ type: String, attribute: 'only-children' })
+  onlyChildren: string = 'false';
+
+  @property({ type: Number })
+  level: number = 0;
 
   private currentHeadId: string | undefined = undefined;
   private perspective: Secured<Perspective> | undefined = undefined;
@@ -28,6 +34,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   private entityId: string | undefined = undefined;
 
   firstUpdated() {
+    this.logger.info('firstUpdated()', {firtPerspectiveId: this.firtPerspectiveId, onlyChildren: this.onlyChildren});
     this.perspectiveId = this.firtPerspectiveId;
     this.loadPerspective();
   }
@@ -98,8 +105,8 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   }
 
   getEveeColor() {
-    const base = this.eveeColor !== 'undefined' ? this.eveeColor : 'blue';
-    return this.perspectiveId === this.firtPerspectiveId ? base : 'red';
+    const base = this.eveeColor !== 'undefined' ? this.eveeColor : '#9fc5e8ff';
+    return this.perspectiveId === this.firtPerspectiveId ? base : '#ffd966ff';
   }
 
   connectedCallback() {
@@ -183,7 +190,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       <cortex-entity
         .hash=${this.entityId}
         lens-type="content"
-        .context=${{ perspective: this.perspective, color: this.getEveeColor() }}
+        .context=${{
+          perspective: this.perspective,
+          color: this.getEveeColor(),
+          onlyChildren: this.onlyChildren,
+          level: this.level
+        }}
       >
         <evees-info
           slot="evee"

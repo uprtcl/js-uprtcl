@@ -1,4 +1,4 @@
-import { LitElement, property, html } from 'lit-element';
+import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { TextNode } from '@uprtcl/documents';
@@ -47,18 +47,17 @@ export class WikiPage extends moduleConnect(LitElement) {
 
     return html`
       <mwc-top-app-bar>
-        <div slot="title">${this.textNode.text}</div>
-
-        <div slot="actionItems">
-          <cortex-actions .hash=${this.pageHash}></cortex-actions>
-        </div>
       </mwc-top-app-bar>
 
-      <cortex-entity .hash=${this.pageHash} lens-type="evee"> </cortex-entity>
+      <cortex-entity .hash=${this.pageHash} lens-type="evee" .context=${ { onlyChildren: 'false' } }> </cortex-entity>
     `;
   }
 
   static get styles() {
-    return sharedStyles;
+    return [sharedStyles, css`
+      :host {
+        width: 100%;
+      }
+    `];
   }
 }

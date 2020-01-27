@@ -15,6 +15,7 @@ import { documentsTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 
 import en from '../i18n/en.json';
+import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
 import { DocumentsBindings } from './bindings';
 
 /**
@@ -63,7 +64,8 @@ export class DocumentsModule extends MicroModule {
       }))
     ),
     new ElementsModule({
-      'documents-text-node': DocumentTextNode
+      'documents-text-node': DocumentTextNode,
+      'documents-text-node-editor': DocumentTextNodeEditor
     }),
     new PatternsModule({
       [DocumentsModule.bindings.TextNodeEntity]: [
