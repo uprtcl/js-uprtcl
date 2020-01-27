@@ -95,6 +95,8 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async createGlobalPerspective(perspectiveId: string): Promise<string> {
+
+    debugger
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const { remoteLinks }: Dictionary<string> = this.request(EveesModule.id);
 
@@ -204,7 +206,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
       variables: {
         headId: newCommitId,
         context: context,
-        usl: origin
+        authority: origin
       }
     });
 

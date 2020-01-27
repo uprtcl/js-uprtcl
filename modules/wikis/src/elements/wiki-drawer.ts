@@ -57,8 +57,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const wikiSource: Source = remoteMap(this.perspectiveOrigin, wikiName);
 
     const pageContent = {
-      text: 'New page',
-      type: TextType.Paragraph,
+      text: '<h1>New page</h1>',
+      type: TextType.Title,
       links: []
     };
 

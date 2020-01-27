@@ -54,7 +54,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       mutation: CREATE_TEXT_NODE,
       variables: {
         content: newContent,
-        source: this.getSource(origin)
+        source: this.getSource(origin).source
       }
     });
 
@@ -99,7 +99,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       mutation: CREATE_TEXT_NODE,
       variables: {
         content: newNode,
-        source: this.getSource(origin)
+        source: this.getSource(origin).source
       }
     });
 
@@ -256,11 +256,6 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   static get styles() {
     return css`
       .column {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .row {
         display: flex;
         flex-direction: row;
       }
