@@ -1,7 +1,9 @@
-import { multiInject, inject, injectable } from 'inversify';
+import { multiInject, inject, injectable, id } from 'inversify';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import { PatternRecognizer, Hashed, CortexModule, Pattern, HasLinks } from '@uprtcl/cortex';
 import { Dictionary, Logger } from '@uprtcl/micro-orchestrator';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Source } from '../types/source';
 import { KnownSourcesService } from './known-sources.service';
@@ -25,6 +27,8 @@ export class DiscoveryService implements Source {
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(MultiplatformBindings.LocalKnownSources)
     public localKnownSources: KnownSourcesService,
+    @inject(ApolloClientModule.bindings.Client)
+    public client: ApolloClient<any>,
     @multiInject(SourcesBindings.Source)
     sources: Array<Source>
   ) {
@@ -101,13 +105,32 @@ export class DiscoveryService implements Source {
     if (!object) return undefined;
 
     // Get the links
-    const links = await linksFromObject(this.recognizer)(object);
 
-    // Discover the known sources from the links
-    const linksPromises = links.map(link =>
-      discoverKnownSources(this.localKnownSources)(link, source)
-    );
-    await Promise.all(linksPromises);
+    setTimeout(async () => {
+      const result = await this.client.query({
+        query: gql`
+        {
+          entity(id: "${hash}") {
+            id
+            _context {
+              patterns {
+                links {
+                  id
+                }
+              }
+            }
+          }
+        }
+        `
+      });
+      const links = result.data.entity._context.patterns.links.map(l => l.id);
+
+      // Discover the known sources from the links
+      const linksPromises = links.map(link =>
+        discoverKnownSources(this.localKnownSources)(link, source)
+      );
+      await Promise.all(linksPromises);
+    });
 
     if (!object) {
       // Object retrieval succeeded but object was not found,

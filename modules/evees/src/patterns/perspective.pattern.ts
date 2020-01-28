@@ -1,5 +1,5 @@
 import { html, TemplateResult } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
+import { ApolloClient, gql } from 'apollo-boost';
 import { injectable, inject } from 'inversify';
 
 import {
@@ -57,17 +57,9 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
         name: 'evees:evee-perspective',
         type: 'evee',
         render: (lensContent: TemplateResult, context: any) => {
-          const color: string = context
-            ? context.color
-              ? context.color
-              : undefined
-            : undefined;
+          const color: string = context ? (context.color ? context.color : undefined) : undefined;
 
-          const level: number = context
-            ? context.level
-              ? context.level
-              : 1
-            : 1;
+          const level: number = context ? (context.level ? context.level : 1) : 1;
 
           const onlyChildren: string = context
             ? context.onlyChildren !== undefined
@@ -75,7 +67,12 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
               : 'false'
             : 'false';
 
-          console.log('[PERSPECTIVE-PATTERN] render()', {perspective, context, onlyChildren, color});
+          console.log('[PERSPECTIVE-PATTERN] render()', {
+            perspective,
+            context,
+            onlyChildren,
+            color
+          });
 
           return html`
             <evees-perspective
@@ -108,16 +105,39 @@ export class PerspectiveLinks extends PerspectiveEntity
   }
 
   links = async (perspective: Secured<Perspective>) => {
-    const remote = this.evees.getPerspectiveProvider(perspective.object);
-    const details = await remote.getPerspectiveDetails(perspective.id);
-    return details.headId ? [details.headId] : [];
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${perspective.id}") {
+          id
+          ... on Perspective {
+            head {
+              id
+            }
+          }
+        }
+      }`
+    });
+
+    const headId = result.data.entity.head ? result.data.entity.head.id : undefined;
+
+    return headId ? [headId] : [];
   };
 
   redirect = async (perspective: Secured<Perspective>) => {
-    const remote = this.evees.getPerspectiveProvider(perspective.object);
-    const details = await remote.getPerspectiveDetails(perspective.id);
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${perspective.id}") {
+          id
+          ... on Perspective {
+            head {
+              id
+            }
+          }
+        }
+      }`
+    });
 
-    return details.headId;
+    return result.data.entity.head ? result.data.entity.head.id : undefined;
   };
 
   create = () => async (args: NewPerspectiveArgs | undefined, authority?: string) => {

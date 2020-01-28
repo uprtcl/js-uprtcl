@@ -35,7 +35,7 @@ export class WikiPage extends moduleConnect(LitElement) {
         }
       }`
     });
-
+console.group(result)
     this.textNode = result.data.entity._context.patterns.content;
   }
 

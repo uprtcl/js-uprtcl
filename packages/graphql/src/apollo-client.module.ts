@@ -46,16 +46,16 @@ export class ApolloClientModule extends MicroModule {
           schemaDirectives: directives
         });
       });
+    const cache = new InMemoryCache({
+      dataIdFromObject: object => object.id || null,
+      cacheRedirects: {
+        Query: {
+          entity: (_, { id }, { getCacheKey }) => getCacheKey({ __typename: '', id: id })
+        }
+      }
+    });
 
     if (!this.apolloClientBuilder) {
-      const cache = new InMemoryCache({
-        dataIdFromObject: object => object.id || null,
-        cacheRedirects: {
-          Query: {
-            entity: (_, { id }, { getCacheKey }) => getCacheKey({ __typename: '', id: id })
-          }
-        }
-      });
       /*       await persistCache({
         cache,
         storage: window.localStorage as PersistentStorage<PersistedData<NormalizedCacheObject>>
@@ -75,7 +75,10 @@ export class ApolloClientModule extends MicroModule {
       .toDynamicValue((context: interfaces.Context) => {
         const schema: GraphQLSchema = context.container.get(ApolloClientModule.bindings.RootSchema);
 
-        const links = new SchemaLink({ schema, context: { container: context.container } });
+        const links = new SchemaLink({
+          schema,
+          context: { container: context.container, cache }
+        });
 
         return (this.apolloClientBuilder as ApolloClientBuilder)(links);
       });
