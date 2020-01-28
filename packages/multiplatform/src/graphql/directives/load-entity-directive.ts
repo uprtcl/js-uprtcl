@@ -42,25 +42,18 @@ export abstract class LoadEntityDirective extends NamedDirective {
     source: Source
   ): Promise<Hashed<any> | undefined> {
     try {
-      const cachedObject: any = cache.readQuery({
-        query: gql`
-        {
-          entity(id: "${entityId}") {
-            id
-            _context {
-              raw
-            }
-          }
-        }
-      `
-      });
-      const object = JSON.parse(cachedObject.entity._context.raw);
+      const data = cache['data'].data;
+      const cachedObject = data[`$${entityId}._context`];
 
+      const object = JSON.parse(cachedObject.raw);
       return { id: entityId, ...object };
-    } catch (e) {}
+    } catch (e) {
+    }
+
     const entity: Hashed<any> | undefined = await source.get(entityId);
 
     if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
+
 
     cache.writeData({
       data: {
