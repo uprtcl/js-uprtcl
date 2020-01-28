@@ -188,7 +188,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
     return html`
       <cortex-entity
-        .hash=${this.entityId}
+        hash=${this.entityId}
         lens-type="content"
         .context=${{
           perspective: this.perspective,

@@ -56,6 +56,8 @@ export class IpfsSource implements Source {
    */
   public async get<T>(hash: string): Promise<Hashed<T> | undefined> {
     /** recursively try */
+    this.logger.warn('IPFS Disabled!');
+    return undefined;
     return this.ipfsConnection
       .tryGet(hash, 500, 0)
       .then(raw => {

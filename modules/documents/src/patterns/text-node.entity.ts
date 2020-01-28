@@ -47,7 +47,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
   replaceChildrenLinks = (node: Hashed<TextNode>) => (
     childrenHashes: string[]
   ): Hashed<TextNode> => ({
-    ...node,
+    id: '',
     object: {
       ...node.object,
       links: childrenHashes
@@ -155,6 +155,10 @@ export class TextNodeCreate extends TextNodeEntity
     @multiInject(EveesModule.bindings.PerspectivePattern) protected perspectivePatterns: Pattern[]
   ) {
     super(hashedPattern);
+  }
+
+  recognize(object: object): boolean {
+    return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
   create = () => async (

@@ -168,35 +168,33 @@ export class Evees {
       if (hasChildren) {
         const descendantLinks = hasChildren.getChildrenLinks(dataHashed);
 
-        // TODO: generalize to break the assumption that all links are to perspectives
-        const promises = descendantLinks.map(async link => {
-          const details = await eveesRemote.getPerspectiveDetails(link);
-          const newPerspective = await this.client.mutate({
-            mutation: CREATE_PERSPECTIVE,
-            variables: {
-              context: details.context,
-              name,
-              headId: details.headId,
-              authority: eveesRemote.authority,
-              recursive: true
-            }
+        if (descendantLinks.length > 0) {
+          /** create a new perspective of the child 
+           * (this will recursively call this same createPerspective() function) */
+
+          // TODO: generalize to break the assumption that all links are to perspectives
+          const promises = descendantLinks.map(async link => {
+            const details = await eveesRemote.getPerspectiveDetails(link);
+            const newPerspective = await this.client.mutate({
+              mutation: CREATE_PERSPECTIVE,
+              variables: {
+                context: details.context,
+                name,
+                headId: details.headId,
+                authority: eveesRemote.authority,
+                recursive: true
+              }
+            });
+            return newPerspective.data.createPerspective.id;
           });
-          return newPerspective.data.createPerspective.id;
-        });
 
-        const newLinks = await Promise.all(promises);
-        const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
-
-        if (!isEqual(dataHashed, newData)) {
+          const newLinks = await Promise.all(promises);
+          const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
           const dataSource = this.remoteMap(eveesRemote.authority, hasChildren.name);
-
-          const newDataId = await createEntity(this.patternRecognizer)(
-            newData,
+          dataId = await createEntity(this.patternRecognizer)(
+            newData.object,
             dataSource.source
           );
-          dataId = newDataId;
-        } else {
-          dataId = undefined;
         }
       }
     }
