@@ -1,4 +1,4 @@
-import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
+import { HttpProvider, HttpConnection, KnownSourcesHttp } from '@uprtcl/http-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';
@@ -11,6 +11,8 @@ const evees_api: string = 'evees-v1';
 
 export class EveesHttp extends HttpProvider implements EveesRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
+
+  knownSources = new KnownSourcesHttp(this.options.host, this.connection);
 
   accessControl: BasicAdminAccessControlService | undefined;
   proposals: ProposalsProvider | undefined;

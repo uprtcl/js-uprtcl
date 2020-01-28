@@ -11,8 +11,7 @@ export class HttpProvider implements Authority {
   constructor(protected options: HttpProviderOptions, protected connection: HttpConnection) {}
 
   get authority(): string {
-    const url = new URL(this.options.host);
-    return `http:${this.options.apiId}:${url.hostname}`;
+    return `http:${this.options.apiId}:${this.options.host}`;
   }
 
   get userId() {

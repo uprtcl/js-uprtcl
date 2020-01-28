@@ -49,18 +49,24 @@ export class IpfsConnection extends Connection {
   }
 
   public tryGet(hash: string, wait: number, attempt: number): Promise<any> {
+    let timeout;
+
     return new Promise((resolve, reject) => {
       this.logger.log(`Trying to get ${hash}. Attempt: ${attempt}`);
 
-      if (attempt > 10) {
+      if (attempt > 0) {
+        clearTimeout(timeout);
         reject();
+        return;
       }
 
       /** retry recursively with twice as much the wait time setting */
-      let timeout = setTimeout(() => {
+      timeout = setTimeout(() => {
         this.tryGet(hash, wait * 2, attempt + 1)
           .then(result => resolve(result))
-          .catch(e => reject(e));
+          .catch(e => {
+            reject(e);
+          });
       }, wait);
 
       this.client.dag.get(hash).then((result: any) => {
@@ -69,5 +75,4 @@ export class IpfsConnection extends Connection {
       });
     });
   }
-
 }
