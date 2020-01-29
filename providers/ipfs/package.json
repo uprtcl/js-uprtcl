@@ -68,5 +68,6 @@
   "typings": "dist/types/uprtcl-ipfs-provider.d.ts",
   "engines": {
     "node": ">=10.0.0"
-  }
+  },
+  "gitHead": "b5d916b6aa57b009dd84f237f9d47192d9e4eef3"
 }
