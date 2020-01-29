@@ -83,6 +83,8 @@ export const eveesResolvers = {
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
       await provider.updatePerspectiveDetails(perspectiveId, { headId });
 
+      await discovery.postEntityUpdate(provider, [headId]);
+
       const perspective = await discovery.get(perspectiveId);
 
       if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);

@@ -26,3 +26,6 @@ export { PatternRecognizer } from './recognizer/pattern.recognizer';
 /** Modules */
 export { CortexModule } from './cortex.module';
 export { PatternsModule } from './patterns.module';
+
+// Utils
+export { hashedFromGraphQlObject } from './graphql/resolvers';

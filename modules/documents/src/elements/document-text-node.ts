@@ -3,9 +3,9 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { Hashed, Entity } from '@uprtcl/cortex';
-import { Secured, RemoteMap, EveesModule, EveesRemote } from '@uprtcl/evees';
+import { Secured, RemoteMap, EveesModule, EveesRemote, Evees } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CREATE_COMMIT, CREATE_PERSPECTIVE, Perspective } from '@uprtcl/evees';
+import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD, Perspective } from '@uprtcl/evees';
 
 import { TextNode, TextType } from '../types';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
@@ -33,6 +33,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   editable: Boolean = true;
 
   currentContent: any;
+  private currentHeadId: string | undefined = undefined;
 
   getSource(eveesAuthority: string): Source {
     const remoteMap: RemoteMap = this.request(EveesModule.bindings.RemoteMap);
@@ -43,11 +44,31 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     return remoteMap(eveesAuthority, name);
   }
 
+  async firstUpdated() {
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const result = await client.query({
+      query: gql`
+      {
+        entity(id: "${this.perspective.id}") {
+          id
+          ... on Perspective {
+            head {
+              id
+            }
+          }
+        }
+      }`
+    });
+
+    this.currentHeadId = result.data.entity.head.id;
+  }
+
   async updateContent(newContent: TextNode): Promise<void> {
     if (!this.perspective) return;
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const origin = this.perspective.object.payload.origin;
+    const evees: Evees = this.request(EveesModule.bindings.Evees);
 
     this.logger.info('updateContent() - CREATE_TEXT_NODE', { newContent });
     const result = await client.mutate({
@@ -60,15 +81,22 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
     const textNodeId = result.data.createTextNode.id;
 
-    this.dispatchEvent(
-      new CustomEvent('update-content', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          dataId: textNodeId
-        }
-      })
-    );
+    const commitUpdate = await client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
+        dataId: textNodeId,
+        source: evees.getPerspectiveProvider(this.perspective.object).source
+      }
+    });
+
+    const headUpdate = await client.mutate({
+      mutation: UPDATE_HEAD,
+      variables: {
+        perspectiveId: this.perspective.id,
+        headId: commitUpdate.data.createCommit.id
+      }
+    });
 
     return textNodeId;
   }
@@ -125,6 +153,11 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       links: [...this.data.object.links, perspective.data.createPerspective.id]
     };
 
+    this.data = {
+      ...this.data,
+      object: newContent
+    };
+
     this.logger.info('createChild()', newContent);
     await this.updateContent(newContent);
   }
@@ -176,6 +209,8 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
+  timeout: any = undefined;
+
   editorContentChanged(e) {
     if (!this.data) return;
 
@@ -184,7 +219,12 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       text: e.detail.content
     };
 
-    this.updateContent(newContent);
+    this.data.object.text = e.detail.content;
+    if (this.timeout) clearTimeout(this.timeout);
+
+    this.timeout = setTimeout(() => {
+      this.updateContent(newContent);
+    }, 2000);
   }
 
   changeType(e: CustomEvent) {

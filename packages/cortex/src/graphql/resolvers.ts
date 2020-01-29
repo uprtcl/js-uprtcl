@@ -8,7 +8,7 @@ import { Hashed } from '../properties/hashable';
 export const cortexResolvers = {
   Entity: {
     async __resolveType(parent, { container }, info) {
-      const entity = await entityFromParent(parent);
+      const entity = hashedFromGraphQlObject(parent);
 
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 
@@ -17,6 +17,7 @@ export const cortexResolvers = {
       const entities: Entity[] = patterns.filter(p => (p as Entity).name) as Entity[];
 
       if (entities.length === 0) {
+        debugger;
         throw new Error(`No entity found to recognize object ${JSON.stringify(entity)}`);
       }
 
@@ -32,8 +33,11 @@ export const cortexResolvers = {
     }
   },
   EntityContext: {
+    raw(parent) {
+      return hashedFromGraphQlObject(parent).object;
+    },
     async patterns(parent, args, { container }, info) {
-      const entity = await entityFromParent(parent);
+      const entity = hashedFromGraphQlObject(parent);
 
       const isGraphQlField = (key: string) =>
         Object.keys(info.returnType.ofType._fields).includes(key);
@@ -62,7 +66,7 @@ export const cortexResolvers = {
   }
 };
 
-export async function entityFromParent(parent): Promise<Hashed<any>> {
+export function hashedFromGraphQlObject(parent): Hashed<any> {
   const id = parent.id;
 
   let object = {};

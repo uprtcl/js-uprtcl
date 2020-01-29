@@ -8,6 +8,8 @@ import { Secured } from '../patterns/default-secured.pattern';
 import { UPDATE_HEAD, CREATE_COMMIT } from '../graphql/queries';
 import { UpdateContentEvent } from './events';
 import { Perspective } from '../types';
+import { EveesRemote } from 'src/services/evees.remote';
+import { EveesBindings } from 'src/bindings';
 
 export class EveesPerspective extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVE');
@@ -34,7 +36,10 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   private entityId: string | undefined = undefined;
 
   firstUpdated() {
-    this.logger.info('firstUpdated()', {firtPerspectiveId: this.firtPerspectiveId, onlyChildren: this.onlyChildren});
+    this.logger.info('firstUpdated()', {
+      firtPerspectiveId: this.firtPerspectiveId,
+      onlyChildren: this.onlyChildren
+    });
     this.perspectiveId = this.firtPerspectiveId;
     this.loadPerspective();
   }
@@ -141,8 +146,13 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   async updateContent(dataId: string) {
     if (!this.perspectiveId) return;
     if (!this.perspective) return;
+    const origin = this.perspective.object.payload.origin;
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const remotes: EveesRemote[] = this.requestAll(EveesBindings.EveesRemote);
+    const remote = remotes.find(r => r.authority === origin);
+
+    if (!remote) return;
 
     this.logger.info('updateContent() pre', dataId);
 
@@ -153,7 +163,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       variables: {
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
         dataId,
-        usl: this.perspective.object.payload.origin
+        source: remote.source
       }
     });
 
