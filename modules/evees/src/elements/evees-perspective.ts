@@ -135,15 +135,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
         })
       );
     }) as EventListener);
-
-    this.addEventListener('perspective-selected', ((e: CustomEvent) => {
-      this.logger.info('CATCHED EVENT: perspective-selected ', {
-        perspectiveId: this.perspectiveId,
-        e
-      });
-      e.stopPropagation();
-      this.checkoutPerspective(e.detail.id);
-    }) as EventListener);
+    
   }
 
   async updateContent(dataId: string) {
@@ -201,6 +193,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
           slot="evee"
           perspective-id=${this.perspectiveId}
           evee-color=${this.getEveeColor()}
+          @checkout-perspective=${(e) => this.checkoutPerspective(e.detail.id)}
         ></evees-info>
       </cortex-entity>
     `;

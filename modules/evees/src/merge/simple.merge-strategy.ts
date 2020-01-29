@@ -124,7 +124,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeData<T extends object>(originalData: T, newDatas: T[]): Promise<T> {
     const merge: Mergeable | undefined = this.recognizer
       .recognize(originalData)
-      .find(prop => !!(prop as Mergeable));
+      .find(prop => !!(prop as Mergeable).merge);
 
     if (!merge)
       throw new Error('Cannot merge data that does not implement the Mergeable behaviour');

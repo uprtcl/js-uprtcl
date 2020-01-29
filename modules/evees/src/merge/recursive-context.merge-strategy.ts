@@ -1,13 +1,17 @@
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { HasChildren, Hashed } from '@uprtcl/cortex';
-import { createEntity } from '@uprtcl/multiplatform';
+import { HasChildren, Hashed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { createEntity, DiscoveryModule, DiscoveryService, KnownSourcesService } from '@uprtcl/multiplatform';
 
 import { Secured } from '../patterns/default-secured.pattern';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import { Perspective, UpdateRequest, Commit } from '../types';
+import { Perspective, UpdateRequest, Commit, RemoteMap } from '../types';
 import { CREATE_COMMIT } from '../graphql/queries';
+import { EveesBindings } from '../bindings';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { ApolloClient } from 'apollo-boost';
+import { Evees } from '../uprtcl-evees';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -17,6 +21,16 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }>;
 
   allPerspectives!: Dictionary<string>;
+
+  constructor (
+    @inject(EveesBindings.RemoteMap) protected remoteMap: RemoteMap,
+    @inject(EveesBindings.Evees) protected evees: Evees,
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {
+    super(evees, discovery, knownSources, recognizer, client);
+  }
 
   setPerspective(perspective: Secured<Perspective>, context: string, to: boolean): void {
     if (!this.perspectivesByContext[context]) {
@@ -52,6 +66,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (!details.headId)
       throw new Error(`Perspective with id ${perspectiveId} has no head associated: cannot merge`);
 
+    // 
     this.setPerspective(perspective, details.context, to);
 
     const head: Secured<Commit> | undefined = await this.discovery.get(details.headId);
@@ -166,14 +181,16 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
     const details = await remote.getPerspectiveDetails(perspectiveId);
 
-    const newDataId = await createEntity(this.recognizer)(data);
+    const patternName = this.recognizer.recognize(data)[0].name;
+    const newDataId = await createEntity(this.recognizer)(data, this.remoteMap(remote.authority, patternName));
 
     const head = await this.client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
         dataId: newDataId,
         parentsIds: details.headId ? [details.headId] : [],
-        message: 'Merge: reference new commits'
+        message: 'Merge: reference new commits',
+        source: remote.source
       }
     });
 

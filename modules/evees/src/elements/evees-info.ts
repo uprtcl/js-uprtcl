@@ -107,15 +107,31 @@ export class EveesInfo extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.addEventListener('merge-perspective', ((e: CustomEvent) => {
-      this.logger.info('CATCHED EVENT: merge-perspective', {
-        perspectiveId: this.perspectiveId,
-        e
-      });
+    
+  }
 
-      e.stopPropagation();
-      this.merge(e.detail.id);
-    }) as EventListener);
+  otherPerspectiveClicked (e: CustomEvent) {
+    this.dispatchEvent(
+      new CustomEvent('checkout-perspective', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          id: e.detail.id
+        }
+      })
+    );
+  }
+
+  async otherPerspectiveMerge (e: CustomEvent) {
+    this.logger.info(`merge ${e.detail.id} on ${this.perspectiveId}`);
+    
+    const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);    
+    const updateRequests = await merge.mergePerspectives(
+      this.perspectiveId,
+      e.detail.id
+    );
+
+    console.log(updateRequests);
   }
 
   showClicked() {
@@ -179,6 +195,8 @@ export class EveesInfo extends moduleConnect(LitElement) {
                       <div>
                         <evees-perspectives-list
                           perspective-id=${this.perspectiveId}
+                          @perspective-selected=${this.otherPerspectiveClicked}
+                          @merge-perspective=${this.otherPerspectiveMerge}
                         ></evees-perspectives-list>
                         <button @click=${this.newPerspectiveClicked}>new perspective</button>
                       </div>
