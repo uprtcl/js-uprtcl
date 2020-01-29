@@ -58,7 +58,7 @@ export class Evees {
 
   /** Public functions */
 
-  private getAuthority(authority: String | undefined): EveesRemote {
+  public getAuthority(authority: String | undefined): EveesRemote {
     if (!authority && this.eveesRemotes.length === 1) return this.eveesRemotes[0];
 
     const remote = this.eveesRemotes.find(remote => remote.authority === authority);

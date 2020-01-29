@@ -12,11 +12,12 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { PerspectiveData } from '../types';
+import { PerspectiveData, UpdateRequest } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
+import { Evees } from '../services/evees';
 
 export interface TextNode {
   text: string;
@@ -106,11 +107,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-
-    
   }
 
-  otherPerspectiveClicked (e: CustomEvent) {
+  otherPerspectiveClicked(e: CustomEvent) {
     this.dispatchEvent(
       new CustomEvent('checkout-perspective', {
         bubbles: true,
@@ -122,16 +121,62 @@ export class EveesInfo extends moduleConnect(LitElement) {
     );
   }
 
-  async otherPerspectiveMerge (e: CustomEvent) {
+  async otherPerspectiveMerge(e: CustomEvent) {
     this.logger.info(`merge ${e.detail.id} on ${this.perspectiveId}`);
-    
-    const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);    
-    const updateRequests = await merge.mergePerspectives(
-      this.perspectiveId,
-      e.detail.id
-    );
 
-    console.log(updateRequests);
+    const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
+    const updateRequests = await merge.mergePerspectives(this.perspectiveId, e.detail.id);
+
+    this.logger.info('merge computed', { updateRequests });
+
+    /** filter updates per authority */
+    const authoritiesPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {
+      const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+      const result = await client.query({
+        query: gql`
+          {
+            entity(id: "${updateRequest.perspectiveId}") {
+              id
+              ... on Perspective {
+                payload {
+                  origin
+                }
+              }
+            }
+          }
+        `
+      });
+
+      return {
+        origin: result.data.entity.payload.origin,
+        updateRequest: updateRequest
+      };
+    });
+
+    const authoritiesData = await Promise.all(authoritiesPromises);
+
+    const updatesByAuthority = {};
+
+    for (var i = 0; i < authoritiesData.length; i++) {
+      if (!updatesByAuthority[authoritiesData[i].origin]) {
+        updatesByAuthority[authoritiesData[i].origin] = [];
+      }
+      updatesByAuthority[authoritiesData[i].origin].push(authoritiesData[i].updateRequest);
+    }
+
+    const evees: Evees = this.request(EveesModule.bindings.Evees);
+    
+    Object.keys(updatesByAuthority).map((authority: string) => {
+      const remote = evees.getAuthority(authority);
+      if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+      const updateRequests = updatesByAuthority[authority].updateRequests;
+      const requestId = remote.proposals.createProposal(updateRequests);
+      
+      this.logger.info('created proposal', { requestId, updateRequests });
+    })
+
+    this.logger.info('authorities computed', { updatesByAuthority });
   }
 
   showClicked() {
@@ -139,7 +184,6 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async newPerspectiveClicked() {
-
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const perspectiveMutation = await client.mutate({
@@ -235,7 +279,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
         width: 300px;
         min-height: 300px;
         background-color: white;
-        box-shadow: 2px 2px 3px 0px rgba(71,60,71,0.75);
+        box-shadow: 2px 2px 3px 0px rgba(71, 60, 71, 0.75);
         padding: 32px;
         border-top-right-radius: 12px;
         border-bottom-right-radius: 12px;

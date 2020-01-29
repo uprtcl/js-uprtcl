@@ -15,11 +15,15 @@ import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
+import { ProposalsEthereum } from './proposals.ethereum.js';
+import { ProposalsProvider } from 'src/services/proposals.provider.js';
 
 export class EveesEthereum extends EthereumProvider implements EveesRemote {
   logger: Logger = new Logger('EveesEtereum');
 
   ipfsSource: IpfsSource;
+  accessControl: EveesAccessControlEthereum;
+  proposals: ProposalsProvider;
 
   constructor(
     protected ethConnection: EthereumConnection,
@@ -28,19 +32,12 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   ) {
     super(ethOptions, ethConnection);
     this.ipfsSource = new IpfsSource(ipfsConnection);
+    this.accessControl = new EveesAccessControlEthereum(this);
+    this.proposals = new ProposalsEthereum(this, this.ipfsSource, this.accessControl);
   }
 
   get authority() {
     return 'eth:hi:mynameistal';
-  }
-
-  get accessControl() {
-    return new EveesAccessControlEthereum(this);
-  }
-
-  get proposals() {
-    return undefined;
-    // Cesar: substituir por `return new ProposalsEthereum(this)`
   }
 
   get source() {

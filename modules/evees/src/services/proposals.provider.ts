@@ -11,12 +11,13 @@ export interface ProposalsProvider extends Source {
 
   // From the point of view of the proposing person
 
-  createProposal(requests: UpdateRequest[]): Promise<string>;
-
-  updateProposal(
-    proposalId: string,
+  createProposal(
+    fromPerspectiveId: string,
+    toPerspectiveId: string,
     requests: UpdateRequest[]
-  ): Promise<void>;
+  ): Promise<string>;
+
+  updateProposal(proposalId: string, requests: UpdateRequest[]): Promise<void>;
 
   cancelProposal(proposalId: string): Promise<void>;
 

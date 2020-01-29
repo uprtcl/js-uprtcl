@@ -102,7 +102,6 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string
   ): Promise<UpdateRequest[]> {
-    debugger
     let root = false;
     if (!this.perspectivesByContext) {
       root = true;
