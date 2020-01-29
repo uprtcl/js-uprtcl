@@ -8,7 +8,7 @@ import { createEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { UpdateRequest, Commit } from '../types';
+import { UpdateRequest, Commit, RemoteMap } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
@@ -23,6 +23,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   updatesList: UpdateRequest[] = [];
 
   constructor(
+    @inject(EveesBindings.RemoteMap) protected remoteMap: RemoteMap,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
@@ -54,7 +55,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
       return this.updatesList;
     }
 
-    const mergeCommitId = await this.mergeCommits(toHeadId, fromHeadId);
+    const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
+    
+    const mergeCommitId = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, remote.source);
 
     this.addUpdateRequest({
       fromPerspectiveId,
@@ -92,7 +95,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     return data;
   }
 
-  async mergeCommits(toCommitId: string, fromCommitId: string): Promise<string> {
+  async mergeCommits(toCommitId: string, fromCommitId: string, authority: string, source: string): Promise<string> {
     const commitsIds = [toCommitId, fromCommitId];
 
     const ancestorId = await findMostRecentCommonAncestor(this.discovery)(commitsIds);
@@ -103,10 +106,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const newDatas: any[] = await Promise.all(datasPromises);
 
     const newData = await this.mergeData(ancestorData, newDatas);
-
-    const sources = await this.knownSources.getKnownSources(toCommitId);
-
-    const newDataId = await createEntity(this.recognizer)(newData);
+    
+    const patternName = this.recognizer.recognize(newData)[0].name;
+    const newDataId = await createEntity(this.recognizer)(newData, this.remoteMap(authority, patternName).source);
 
     const mergeCommit = await this.client.mutate({
       mutation: CREATE_COMMIT,
@@ -114,7 +116,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
         dataId: newDataId,
         parentsIds: commitsIds,
         message: `Merge commits ${commitsIds.toString()}`,
-        source: sources ? sources[0] : undefined
+        source: source
       }
     });
 

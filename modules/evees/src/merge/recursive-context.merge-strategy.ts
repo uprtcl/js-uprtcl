@@ -29,7 +29,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {
-    super(evees, discovery, knownSources, recognizer, client);
+    super(remoteMap, evees, discovery, knownSources, recognizer, client);
   }
 
   setPerspective(perspective: Secured<Perspective>, context: string, to: boolean): void {
@@ -102,6 +102,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string
   ): Promise<UpdateRequest[]> {
+    debugger
     let root = false;
     if (!this.perspectivesByContext) {
       root = true;

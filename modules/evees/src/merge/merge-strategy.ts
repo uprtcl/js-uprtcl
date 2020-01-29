@@ -12,7 +12,7 @@ export interface MergeStrategy {
   /**
    * @returns the id of the resulting merge commit
    */
-  mergeCommits(toCommitId: string, fromCommitId: string): Promise<string>;
+  mergeCommits(toCommitId: string, fromCommitId: string, commitSource: string, dataSource: string): Promise<string>;
 
   /**
    * Merges the links to other entities appropiately
