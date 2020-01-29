@@ -171,10 +171,10 @@ export class EveesInfo extends moduleConnect(LitElement) {
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
       const updateRequests = updatesByAuthority[authority].updateRequests;
-      const requestId = remote.proposals.createProposal(updateRequests);
+/*       const requestId = remote.proposals.createProposal(updateRequests);
       
       this.logger.info('created proposal', { requestId, updateRequests });
-    })
+ */    })
 
     this.logger.info('authorities computed', { updatesByAuthority });
   }

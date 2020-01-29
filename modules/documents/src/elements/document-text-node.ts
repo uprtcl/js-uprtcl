@@ -56,9 +56,18 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
               id
             }
           }
+          _context {
+            patterns {
+              accessControl {
+                canWrite
+              }
+            }
+          }
         }
       }`
     });
+
+    debugger;
 
     this.currentHeadId = result.data.entity.head.id;
   }

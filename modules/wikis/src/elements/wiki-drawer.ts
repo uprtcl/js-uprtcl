@@ -5,10 +5,17 @@ import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
 import '@material/mwc-ripple';
 
-import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD, RemoteMap, EveesModule, EveesRemote } from '@uprtcl/evees';
+import {
+  CREATE_COMMIT,
+  CREATE_PERSPECTIVE,
+  UPDATE_HEAD,
+  RemoteMap,
+  EveesModule,
+  EveesRemote
+} from '@uprtcl/evees';
 import { TextType, CREATE_TEXT_NODE, DocumentsModule, htmlToText } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
@@ -17,6 +24,8 @@ import { Entity } from '@uprtcl/cortex';
 import { Source } from '@uprtcl/multiplatform';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
+  logger = new Logger('WIKI-DRAWER');
+
   @property({ type: String, attribute: 'wiki-id' })
   wikiId!: string;
 
@@ -42,16 +51,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const remoteMap: RemoteMap = this.request(EveesModule.bindings.RemoteMap);
     const remotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
-    
+
     const textNodeEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
     const name = textNodeEntity[0].name;
 
     const wikiEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
     const wikiName = wikiEntity[0].name;
 
-    const remote: EveesRemote | undefined = remotes.find(r => r.authority === this.perspectiveOrigin);
+    const remote: EveesRemote | undefined = remotes.find(
+      r => r.authority === this.perspectiveOrigin
+    );
 
-    if (!remote) throw new Error(`Evees remote not registered for authority ${this.perspectiveOrigin}`);
+    if (!remote)
+      throw new Error(`Evees remote not registered for authority ${this.perspectiveOrigin}`);
 
     const textNodeSource: Source = remoteMap(this.perspectiveOrigin, name);
     const wikiSource: Source = remoteMap(this.perspectiveOrigin, wikiName);
@@ -170,6 +182,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     });
 
     const wiki = result.data.entity.head.data;
+    this.editable = result.data.entity._context.patterns.accessControl.canWrite;
+
+    console.log('[WIKI] can write', this.editable);
 
     this.perspectiveOrigin = result.data.entity.payload.origin;
 
@@ -218,7 +233,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return html`
       <mwc-list>
         ${this.pagesList.map(page => {
-          let text = htmlToText(page.title)
+          let text = htmlToText(page.title);
           return html`
             <mwc-list-item @click=${() => this.selectPage(page.id)}>
               ${text}

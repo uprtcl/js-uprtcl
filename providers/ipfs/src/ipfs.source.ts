@@ -66,7 +66,7 @@ export class IpfsSource implements Source {
         return { id: hash, object: object };
       })
       .catch(e => {
-        this.logger.error(`Impossible to get ${hash} from IPFS, returning null`, e);
+        this.logger.warn(`Object with ${hash} not found in IPFS, returning undefined`, e);
         return undefined;
       });
   }

@@ -54,22 +54,21 @@ export class IpfsConnection extends Connection {
     return new Promise((resolve, reject) => {
       this.logger.log(`Trying to get ${hash}. Attempt: ${attempt}`);
 
-      if (attempt > 0) {
-        clearTimeout(timeout);
-        reject();
-        return;
-      }
+      let found = false;
 
       /** retry recursively with twice as much the wait time setting */
-      timeout = setTimeout(() => {
-        this.tryGet(hash, wait * 2, attempt + 1)
-          .then(result => resolve(result))
-          .catch(e => {
-            reject(e);
-          });
-      }, wait);
+      if (attempt < 1) {
+        timeout = setTimeout(() => {
+          this.tryGet(hash, wait * 2, attempt + 1)
+            .then(result => resolve(result))
+            .catch(e => {
+              if (!found) reject(e);
+            });
+        }, wait);
+      }
 
       this.client.dag.get(hash).then((result: any) => {
+        found = true;
         clearTimeout(timeout);
         resolve(result);
       });

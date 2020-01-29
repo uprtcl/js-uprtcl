@@ -9,7 +9,12 @@ import { AccessControlModule } from '@uprtcl/access-control';
 import { DefaultSecuredPattern } from './patterns/default-secured.pattern';
 import { DefaultSignedPattern } from './patterns/default-signed.pattern';
 import { CidHashedPattern } from './patterns/cid-hashed.pattern';
-import { PerspectiveLinks, PerspectiveLens } from './patterns/perspective.pattern';
+import {
+  PerspectiveLinks,
+  PerspectiveLens,
+  PerspectiveCreate,
+  PerspectiveAccessControl
+} from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
@@ -36,26 +41,26 @@ import { RemoteMap } from './types';
  * import { HolochainConnection } from '@uprtcl/holochain-provider';
  * import { EthereumConnection } from '@uprtcl/ethereum-provider';
  * import { EveesModule, EveesEthereum, EveesHolochain, EveesBindings } from '@uprtcl/evees';
- * 
+ *
  * const ipfsConnection = new IpfsConnection({
  *   host: 'ipfs.infura.io',
  *   port: 5001,
  *   protocol: 'https'
  * });
- * 
+ *
  * // Don't put anything on host to get from Metamask's ethereum provider
  * const ethConnection = new EthereumConnection({});
- * 
+ *
  * const eveesEth = new EveesEthereum(ethConnection, ipfsConnection);
- * 
+ *
  * const hcConnection = new HolochainConnection({ host: 'ws://localhost:8888' });
- * 
+ *
  * const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
- * 
+ *
  * const evees = new EveesModule([eveesHolochain, eveesEth]);
- * 
+ *
  * const orchestrator = new MicroOrchestrator();
- * 
+ *
  * await orchestrator.loadModule(evees);
  * ```
  *
@@ -71,10 +76,7 @@ export class EveesModule extends MicroModule {
 
   static bindings = EveesBindings;
 
-  constructor(
-    protected eveesProviders: Array<EveesRemote>,
-    protected remoteMap: RemoteMap
-  ) {
+  constructor(protected eveesProviders: Array<EveesRemote>, protected remoteMap: RemoteMap) {
     super();
   }
 
@@ -97,7 +99,12 @@ export class EveesModule extends MicroModule {
       [EveesModule.bindings.Hashed]: [CidHashedPattern],
       [EveesModule.bindings.Signed]: [DefaultSignedPattern],
       [EveesModule.bindings.Secured]: [DefaultSecuredPattern],
-      [EveesModule.bindings.PerspectivePattern]: [PerspectiveLinks, PerspectiveLens],
+      [EveesModule.bindings.PerspectivePattern]: [
+        PerspectiveLinks,
+        PerspectiveLens,
+        PerspectiveCreate,
+        PerspectiveAccessControl
+      ],
       [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
     }),
     new SourcesModule(

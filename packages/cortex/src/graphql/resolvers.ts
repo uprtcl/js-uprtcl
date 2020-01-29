@@ -17,7 +17,6 @@ export const cortexResolvers = {
       const entities: Entity[] = patterns.filter(p => (p as Entity).name) as Entity[];
 
       if (entities.length === 0) {
-        debugger;
         throw new Error(`No entity found to recognize object ${JSON.stringify(entity)}`);
       }
 

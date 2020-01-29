@@ -1,4 +1,4 @@
-import { Source, Hashed } from '@uprtcl/cortex';
+import { Source } from '@uprtcl/multiplatform';
 
 import { Proposal, UpdateRequest } from '../types';
 

@@ -10,16 +10,15 @@ import {
   Creatable,
   HasActions,
   PatternAction,
-  PatternRecognizer,
   Entity,
-  CortexModule,
   Signed
 } from '@uprtcl/cortex';
-import { Secured } from '../patterns/default-secured.pattern';
+import { AccessControl } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
+import { Secured } from '../patterns/default-secured.pattern';
 import { Perspective } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
@@ -90,55 +89,17 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
 }
 
 @injectable()
-export class PerspectiveLinks extends PerspectiveEntity
-  implements HasLinks, HasRedirect, Creatable<NewPerspectiveArgs, Signed<Perspective>>, HasActions {
+export class PerspectiveCreate extends PerspectiveEntity
+  implements Creatable<NewPerspectiveArgs, Signed<Perspective>>, HasActions {
   constructor(
     @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
     @inject(DiscoveryModule.bindings.DiscoveryService)
-    protected discovery: DiscoveryService,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
+    protected discovery: DiscoveryService
   ) {
     super(securedPattern);
   }
-
-  links = async (perspective: Secured<Perspective>) => {
-    const result = await this.client.query({
-      query: gql`{
-        entity(id: "${perspective.id}") {
-          id
-          ... on Perspective {
-            head {
-              id
-            }
-          }
-        }
-      }`
-    });
-
-    const headId = result.data.entity.head ? result.data.entity.head.id : undefined;
-
-    return headId ? [headId] : [];
-  };
-
-  redirect = async (perspective: Secured<Perspective>) => {
-    const result = await this.client.query({
-      query: gql`{
-        entity(id: "${perspective.id}") {
-          id
-          ... on Perspective {
-            head {
-              id
-            }
-          }
-        }
-      }`
-    });
-
-    return result.data.entity.head ? result.data.entity.head.id : undefined;
-  };
 
   create = () => async (args: NewPerspectiveArgs | undefined, authority?: string) => {
     const perspective = await this.evees.createPerspective(args || {}, authority);
@@ -180,5 +141,67 @@ export class PerspectiveLinks extends PerspectiveEntity
         type: 'version-control'
       }
     ];
+  };
+}
+
+@injectable()
+export class PerspectiveLinks extends PerspectiveEntity implements HasLinks, HasRedirect {
+  constructor(
+    @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
+  ) {
+    super(securedPattern);
+  }
+
+  links = async (perspective: Secured<Perspective>) => {
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${perspective.id}") {
+          id
+          ... on Perspective {
+            head {
+              id
+            }
+          }
+        }
+      }`
+    });
+
+    const headId = result.data.entity.head ? result.data.entity.head.id : undefined;
+
+    return headId ? [headId] : [];
+  };
+
+  redirect = async (perspective: Secured<Perspective>) => {
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${perspective.id}") {
+          id
+          ... on Perspective {
+            head {
+              id
+            }
+          }
+        }
+      }`
+    });
+
+    return result.data.entity.head ? result.data.entity.head.id : undefined;
+  };
+}
+
+@injectable()
+export class PerspectiveAccessControl extends PerspectiveEntity
+  implements AccessControl<Secured<Perspective>> {
+  constructor(
+    @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
+    @inject(EveesBindings.Evees) protected evees: Evees
+  ) {
+    super(securedPattern);
+  }
+
+  canWrite = (perspective: Secured<Perspective>): boolean => {
+    const provider = this.evees.getPerspectiveProvider(perspective.object);
+    return provider.userId === perspective.object.payload.creatorId;
   };
 }

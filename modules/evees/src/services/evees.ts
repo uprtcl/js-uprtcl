@@ -32,7 +32,6 @@ export type NewPerspectiveArgs = (
 ) & { recursive?: boolean };
 
 const DEFAULT_PERSPECTIVE_NAME = 'first';
-const creatorId = 'did:hi:ho';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -122,14 +121,16 @@ export class Evees {
     args: NewPerspectiveArgs,
     authority?: string
   ): Promise<Secured<Perspective>> {
-
     const name = args.name || DEFAULT_PERSPECTIVE_NAME;
 
     const eveesRemote = this.getAuthority(authority);
 
+    if (!eveesRemote.userId)
+      throw new Error('You need to be logged in the evees authority to create perspectives in it');
+
     // Create the perspective
     const perspectiveData: Perspective = {
-      creatorId: creatorId,
+      creatorId: eveesRemote.userId,
       origin: eveesRemote.authority,
       timestamp: Date.now()
     };
@@ -169,7 +170,7 @@ export class Evees {
         const descendantLinks = hasChildren.getChildrenLinks(dataHashed);
 
         if (descendantLinks.length > 0) {
-          /** create a new perspective of the child 
+          /** create a new perspective of the child
            * (this will recursively call this same createPerspective() function) */
 
           // TODO: generalize to break the assumption that all links are to perspectives
@@ -191,10 +192,7 @@ export class Evees {
           const newLinks = await Promise.all(promises);
           const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
           const dataSource = this.remoteMap(eveesRemote.authority, hasChildren.name);
-          dataId = await createEntity(this.patternRecognizer)(
-            newData.object,
-            dataSource.source
-          );
+          dataId = await createEntity(this.patternRecognizer)(newData.object, dataSource.source);
         }
       }
     }
