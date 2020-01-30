@@ -34,20 +34,11 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.addEventListener('evees-create-proposal', e => console.log(e));
 
-    this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => {
-      const regexp = new RegExp('^http');
-      return regexp.test(provider.source);
-    });
+    this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => provider.source.startsWith('ipfs'));
 
-    this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => {
-      const regexp = new RegExp('^http');
-      return regexp.test(provider.source);
-    });
+    this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => provider.source.startsWith('ipfs'));
 
-    this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider => {
-      const regexp = new RegExp('^http');
-      return regexp.test(provider.authority);
-    });
+    this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>  provider.authority.startsWith('eth'));
 
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];

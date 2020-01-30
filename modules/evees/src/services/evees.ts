@@ -16,7 +16,7 @@ import { createEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective, Commit, PerspectiveDetails, RemoteMap } from '../types';
+import { Perspective, Commit, PerspectiveDetails, RemotesConfig } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
 import { CREATE_PERSPECTIVE, CREATE_COMMIT } from '../graphql/queries';
@@ -51,8 +51,8 @@ export class Evees {
     protected eveesRemotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client)
     protected client: ApolloClient<any>,
-    @inject(EveesBindings.RemoteMap)
-    protected remoteMap: RemoteMap
+    @inject(EveesBindings.RemotesConfig)
+    protected remotesConfig: RemotesConfig
   ) {}
 
   /** Public functions */
@@ -191,7 +191,7 @@ export class Evees {
 
           const newLinks = await Promise.all(promises);
           const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
-          const dataSource = this.remoteMap(eveesRemote.authority, hasChildren.name);
+          const dataSource = this.remotesConfig.map(eveesRemote.authority, hasChildren.name);
           dataId = await createEntity(this.patternRecognizer)(newData.object, dataSource.source);
         }
       }

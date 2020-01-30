@@ -71,16 +71,16 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             <mwc-list>
               ${otherPerspectivesIds.map(id => {
                 return html`
-                  <mwc-list-item @click=${() => this.perspectiveClicked(id)}>
-                    <div class="row">
+                  <div class="row">
+                    <mwc-list-item @click=${() => this.perspectiveClicked(id)}>
                       <span class="perspective-id-label">${id}</span>
-                      <mwc-button
-                        icon="call_merge"
-                        @click=${() => this.mergeClicked(id)}
-                        label="Merge"
-                      ></mwc-button>
-                    </div>
-                  </mwc-list-item>
+                    </mwc-list-item>
+                    <mwc-button
+                      icon="call_merge"
+                      @click=${() => this.mergeClicked(id)}
+                      label="Merge"
+                    ></mwc-button>
+                  </div>
                 `;
               })}
             </mwc-list>

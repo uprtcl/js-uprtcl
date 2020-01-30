@@ -14,12 +14,13 @@ import '@authentic/mwc-card';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { PerspectiveData, UpdateRequest, CreateProposalEvent } from '../types';
+import { PerspectiveData, UpdateRequest, CreateProposalEvent, RemotesConfig } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
+import { EveesRemote } from '../services/evees.remote';
 
 export class EveesInfo extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
@@ -107,6 +108,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   otherPerspectiveClicked(e: CustomEvent) {
+    this.logger.info(`otherPerspectiveClicked() ${e.detail.id}`);
     this.dispatchEvent(
       new CustomEvent('checkout-perspective', {
         bubbles: true,
@@ -126,9 +128,10 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
     this.logger.info('merge computed', { updateRequests });
 
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+
     /** filter updates per authority */
     const authoritiesPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {
-      const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
       const result = await client.query({
         query: gql`
           {
@@ -193,11 +196,14 @@ export class EveesInfo extends moduleConnect(LitElement) {
   async newPerspectiveClicked() {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
+    /** new perspectives are always created in one evees remote */
+    const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
+
     const perspectiveMutation = await client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
         headId: this.perspectiveData.details.headId,
-        authority: this.perspectiveData.perspective.origin,
+        authority: remotesConfig.defaultCreator.authority,
         context: this.perspectiveData.details.context,
         recursive: true
       }

@@ -4,7 +4,7 @@ export const EveesBindings = {
   EveesRemote: Symbol('evees-remote'),
   MergeStrategy: Symbol('merge-strategry'),
   Evees: Symbol('evees'),
-  RemoteMap: Symbol('evees'),
+  RemotesConfig: Symbol('evees'),
   Hashed: Symbol('core-hashed-pattern'),
   Secured: Symbol('core-secured-pattern'),
   Signed: Symbol('core-signed-pattern')
