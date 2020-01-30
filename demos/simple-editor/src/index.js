@@ -24,6 +24,8 @@ import { SimpleWiki } from './simple-wiki';
   const ethConnection = new EthereumConnection({ provider: ethHost });
 
   const httpEvees = new EveesHttp(c1host, httpConnection);
+  httpEvees.authInfo = { userId: 'dummy' };
+
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
 
   const httpDocuments = new DocumentsHttp(c1host, httpConnection);

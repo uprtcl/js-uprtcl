@@ -147,7 +147,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       {
         entity(id: "${this.wikiId}") {
           id
-
           ... on Perspective {
             payload {
               origin
