@@ -23,7 +23,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
 
   ipfsSource: IpfsSource;
   accessControl: EveesAccessControlEthereum;
-  proposals: ProposalsProvider;
+  proposals!: ProposalsProvider;
 
   constructor(
     protected ethConnection: EthereumConnection,
@@ -33,7 +33,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     super(ethOptions, ethConnection);
     this.ipfsSource = new IpfsSource(ipfsConnection);
     this.accessControl = new EveesAccessControlEthereum(this);
-    this.proposals = new ProposalsEthereum(this, this.ipfsSource, this.accessControl);
+    //this.proposals = new ProposalsEthereum(this, this.ipfsSource, this.accessControl);
   }
 
   get authority() {

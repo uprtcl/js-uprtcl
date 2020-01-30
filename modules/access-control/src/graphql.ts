@@ -27,8 +27,10 @@ export const accessControlResolvers = {
 
       if (!accessControl) return null;
 
+      const canWrite = accessControl.canWrite(entity);
+
       return {
-        canWrite: accessControl.canWrite(entity)
+        canWrite
       };
     }
   }

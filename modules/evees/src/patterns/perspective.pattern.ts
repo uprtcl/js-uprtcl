@@ -202,6 +202,7 @@ export class PerspectiveAccessControl extends PerspectiveEntity
 
   canWrite = (perspective: Secured<Perspective>): boolean => {
     const provider = this.evees.getPerspectiveProvider(perspective.object);
+    console.log('userId', provider.userId, perspective.object.payload.creatorId);
     return provider.userId === perspective.object.payload.creatorId;
   };
 }

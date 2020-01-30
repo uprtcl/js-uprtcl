@@ -47,6 +47,6 @@ export class EthereumConnection extends Connection {
    * @returns the current used account for this ethereum connection
    */
   public getCurrentAccount(): string {
-    return this.accounts[0];
+    return this.accounts[0].toLowerCase();
   }
 }

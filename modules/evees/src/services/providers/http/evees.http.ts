@@ -2,6 +2,7 @@ import { HttpProvider, HttpConnection, KnownSourcesHttp } from '@uprtcl/http-pro
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';
+import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
@@ -17,7 +18,11 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
   accessControl: BasicAdminAccessControlService | undefined;
   proposals: ProposalsProvider | undefined;
 
-  constructor(host: string, protected connection: HttpConnection) {
+  constructor(
+    host: string,
+    protected connection: HttpConnection,
+    protected ethConnection: EthereumConnection
+  ) {
     super(
       {
         host: host,
@@ -25,6 +30,10 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
       },
       connection
     );
+  }
+
+  get userId() {
+    return this.ethConnection.getCurrentAccount();
   }
 
   get source() {

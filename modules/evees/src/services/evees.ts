@@ -126,8 +126,8 @@ export class Evees {
     const eveesRemote = this.getAuthority(authority);
 
     if (!eveesRemote.userId)
-      throw new Error('You need to be logged in the evees authority to create perspectives in it');
-
+      throw new Error(`You need to be logged in the evees authority ${eveesRemote.authority} to create perspectives in it`);
+    console.log('userId', eveesRemote.userId)
     // Create the perspective
     const perspectiveData: Perspective = {
       creatorId: eveesRemote.userId,
