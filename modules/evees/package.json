@@ -11,6 +11,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
+    "@authentic/mwc-card": "^0.9.0",
     "@authentic/mwc-circular-progress": "^0.9.0",
     "@authentic/mwc-icon": "^0.9.0",
     "@authentic/mwc-list": "^0.9.0",

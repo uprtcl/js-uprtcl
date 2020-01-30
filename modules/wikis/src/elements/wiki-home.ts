@@ -8,19 +8,34 @@ export class WikiHome extends moduleConnect(LitElement) {
   @property({ type: String })
   title!: string;
 
-  
   recentPerspectives() {
     return html`
-      <h2> Welcome to ${this.title} </h2>
+      <span class="title">Welcome to ${this.title}</span>
 
-      <h4> Recent new perspectives </h4>
       <evees-perspectives-list perspective-id="${this.wikiHash}"></evees-perspectives-list>
     `;
   }
 
   render() {
     return html`
-      ${this.recentPerspectives()}
+      <div style="padding: 36px" class="row">
+        ${this.recentPerspectives()}
+      </div>
+    `;
+  }
+
+  static get styles() {
+    return css`
+      .row {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .title {
+        font-size: 20px;
+        padding-bottom: 16px;
+        font-weight: bold;
+      }
     `;
   }
 }

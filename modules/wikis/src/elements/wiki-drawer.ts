@@ -289,7 +289,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
               `
             : html`
-                <wiki-home .wikiHash=${this.wikiId} .title=${this.title}></wiki-home>
+                <wiki-home .wikiHash=${this.wikiId} .title=${this.wiki.title}></wiki-home>
               `}
         </div>
       </mwc-drawer>

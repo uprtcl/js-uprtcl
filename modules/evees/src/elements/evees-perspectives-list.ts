@@ -62,22 +62,49 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   };
 
   render() {
+    const otherPerspectivesIds = this.perspectivesIds.filter(id => id !== this.perspectiveId);
+
     return html`
-      <h4>Other Perspectives</h4>
-      ${this.perspectivesIds.length > 0
+      <strong>Other Perspectives</strong><br />
+      ${otherPerspectivesIds.length > 0
         ? html`
-            <ul>
-              ${this.perspectivesIds
-                .filter(id => id !== this.perspectiveId)
-                .map(id => {
-                  return html`
-                    <li @click=${() => this.perspectiveClicked(id)}>${id}</li>
-                    <button @click=${() => this.mergeClicked(id)}>merge</button>
-                  `;
-                })}
-            </ul>
+            <mwc-list>
+              ${otherPerspectivesIds.map(id => {
+                return html`
+                  <mwc-list-item @click=${() => this.perspectiveClicked(id)}>
+                    <div class="row">
+                      <span class="perspective-id-label">${id}</span>
+                      <mwc-button
+                        icon="call_merge"
+                        @click=${() => this.mergeClicked(id)}
+                        label="Merge"
+                      ></mwc-button>
+                    </div>
+                  </mwc-list-item>
+                `;
+              })}
+            </mwc-list>
           `
-        : ''}
+        : html`
+            <span>There are no other perspectives for this context</span>
+          `}
+    `;
+  }
+
+  static get styles() {
+    return css`
+      .row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .perspective-id-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+      }
     `;
   }
 }

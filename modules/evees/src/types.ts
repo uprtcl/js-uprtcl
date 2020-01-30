@@ -44,3 +44,12 @@ export interface PerspectiveData {
   canWrite: Boolean;
 }
 
+export interface CreateProposalDetail {
+  toPerspective: PerspectiveData;
+}
+
+export class CreateProposalEvent extends CustomEvent<CreateProposalDetail> {
+  constructor(eventInitDict?: CustomEventInit<CreateProposalDetail>) {
+    super('evees-create-proposal', eventInitDict);
+  }
+}

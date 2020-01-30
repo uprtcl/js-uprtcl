@@ -9,21 +9,18 @@ export const styleMap = style => {
 };
 import { ApolloClient, gql } from 'apollo-boost';
 
+import '@authentic/mwc-card';
+
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { PerspectiveData, UpdateRequest } from '../types';
+import { PerspectiveData, UpdateRequest, CreateProposalEvent } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
-export interface TextNode {
-  text: string;
-  type: string;
-  links: string[];
-}
 export class EveesInfo extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
 
@@ -115,7 +112,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
         bubbles: true,
         composed: true,
         detail: {
-          id: e.detail.id
+          perspectiveId: e.detail.id
         }
       })
     );
@@ -165,16 +162,26 @@ export class EveesInfo extends moduleConnect(LitElement) {
     }
 
     const evees: Evees = this.request(EveesModule.bindings.Evees);
-    
+
     Object.keys(updatesByAuthority).map((authority: string) => {
       const remote = evees.getAuthority(authority);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
       const updateRequests = updatesByAuthority[authority].updateRequests;
-/*       const requestId = remote.proposals.createProposal(updateRequests);
+      /*       const requestId = remote.proposals.createProposal(updateRequests);
       
       this.logger.info('created proposal', { requestId, updateRequests });
- */    })
+ */
+    });
+
+    this.dispatchEvent(
+      new CreateProposalEvent({
+        detail: { toPerspective: this.perspectiveData },
+        cancelable: true,
+        composed: true,
+        bubbles: true
+      })
+    );
 
     this.logger.info('authorities computed', { updatesByAuthority });
   }
@@ -226,27 +233,41 @@ export class EveesInfo extends moduleConnect(LitElement) {
         ></div>
         ${this.show
           ? html`
-              <div class="info-box">
-                ${this.perspectiveData
-                  ? html`
-                      <div class="perspective-details">
-                        context: ${this.perspectiveData.details.context}<br />
-                        id: ${this.perspectiveData.id}<br />
-                        name: ${this.perspectiveData.details.name}<br />
-                        origin: ${this.perspectiveData.perspective.origin}<br />
-                        headId: ${this.perspectiveData.details.headId}
-                      </div>
-                      <div>
-                        <evees-perspectives-list
-                          perspective-id=${this.perspectiveId}
-                          @perspective-selected=${this.otherPerspectiveClicked}
-                          @merge-perspective=${this.otherPerspectiveMerge}
-                        ></evees-perspectives-list>
-                        <button @click=${this.newPerspectiveClicked}>new perspective</button>
-                      </div>
-                    `
-                  : this.renderLoading()}
-              </div>
+              <mwc-card class="info-box">
+                <div style="padding: 16px;">
+                  ${this.perspectiveData
+                    ? html`
+                        <div class="perspective-details">
+                          <span style="padding-bottom: 16px;">
+                            <strong>Perspective</strong> ${this.perspectiveData.id}</span
+                          >
+                          <span><strong>Name:</strong> ${this.perspectiveData.details.name}</span>
+                          <span
+                            ><strong>Context:</strong> ${this.perspectiveData.details.context}</span
+                          >
+                          <span
+                            ><strong>Origin:</strong> ${this.perspectiveData.perspective
+                              .origin}</span
+                          >
+                          <span><strong>Head:</strong> ${this.perspectiveData.details.headId}</span>
+                        </div>
+                        <div style="margin-top: 16px; margin-bottom: 16px;">
+                          <evees-perspectives-list
+                            perspective-id=${this.perspectiveId}
+                            @perspective-selected=${this.otherPerspectiveClicked}
+                            @merge-perspective=${this.otherPerspectiveMerge}
+                          ></evees-perspectives-list>
+                        </div>
+                        <mwc-button
+                          outlined
+                          icon="call_split"
+                          @click=${this.newPerspectiveClicked}
+                          label="Create new perspective"
+                        ></mwc-button>
+                      `
+                    : this.renderLoading()}
+                </div>
+              </mwc-card>
             `
           : ''}
       </div>
@@ -272,18 +293,18 @@ export class EveesInfo extends moduleConnect(LitElement) {
         background-color: #cccccc;
       }
       .info-box {
+        width: 600px;
         z-index: 20;
         position: absolute;
-        right: -364px;
+        left: 20px;
         top: 0;
-        width: 300px;
-        min-height: 300px;
-        background-color: white;
-        box-shadow: 2px 2px 3px 0px rgba(71, 60, 71, 0.75);
-        padding: 32px;
-        border-top-right-radius: 12px;
-        border-bottom-right-radius: 12px;
-        border-bottom-left-radius: 12px;
+      }
+      .perspective-details {
+        flex-direction: column;
+        display: flex;
+      }
+      .perspective-details > span {
+        padding-bottom: 4px;
       }
     `;
   }

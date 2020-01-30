@@ -203,7 +203,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
           slot="evee"
           perspective-id=${this.perspectiveId}
           evee-color=${this.getEveeColor()}
-          @checkout-perspective=${(e) => this.checkoutPerspective(e.detail.id)}
+          @checkout-perspective=${(e) => this.checkoutPerspective(e.detail.perspectiveId)}
         ></evees-info>
       </cortex-entity>
     `;
