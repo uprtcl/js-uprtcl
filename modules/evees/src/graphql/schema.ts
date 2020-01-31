@@ -11,7 +11,7 @@ export const eveesTypeDefs = gql`
 
   type Context {
     identifier: String!
-    perspectives: [Perspective!]
+    perspectives: [Perspective!] @discover
   }
 
   type Commit implements Entity {

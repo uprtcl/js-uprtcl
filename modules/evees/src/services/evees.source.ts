@@ -1,7 +1,6 @@
 import { Source } from '@uprtcl/multiplatform';
 
-import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective, PerspectiveDetails } from '../types';
+import { PerspectiveDetails } from '../types';
 
 export interface EveesSource extends Source {
   /**
@@ -9,7 +8,7 @@ export interface EveesSource extends Source {
    *
    * @param context The context
    */
-  getContextPerspectives(context: string): Promise<Secured<Perspective>[]>;
+  getContextPerspectives(context: string): Promise<string[]>;
 
   /**
    * Get the details of a perspective

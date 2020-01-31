@@ -59,7 +59,7 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
     await super.put(`/persp/${perspectiveId}/details`, details);
   }
 
-  getContextPerspectives(context: string): Promise<any[]> {
+  getContextPerspectives(context: string): Promise<string[]> {
     return super.getWithPut<any[]>(`/persp`, { context: context });
   }
 

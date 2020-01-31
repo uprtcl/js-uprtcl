@@ -101,11 +101,18 @@ export class Evees {
     return this.getAuthority(perspectiveOrigin);
   }
 
-  public async getContextPerspectives(context: string): Promise<Array<Secured<Perspective>>> {
-    const promises = this.eveesRemotes.map(remote => remote.getContextPerspectives(context));
-    const perspectives = await Promise.all(promises);
+  public async getContextPerspectives(context: string): Promise<string[]> {
+    const promises = this.eveesRemotes.map(async (remote) => { 
+      const thisPerspectivesIds = await remote.getContextPerspectives(context);
+      thisPerspectivesIds.forEach(pId => {
+        this.knownSources.addKnownSources(pId, [remote.source]);
+      });
+      return thisPerspectivesIds;
+    });
 
-    return ([] as Secured<Perspective>[]).concat(...perspectives);
+    const perspectivesIds = await Promise.all(promises);
+
+    return ([] as string[]).concat(...perspectivesIds);
   }
 
   /** Creators */

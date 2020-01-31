@@ -125,11 +125,39 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     ]);
   }
 
+  async hashToId (perspectiveIdHash: string) {
+    /** check the creation event to reverse map the cid */
+    const perspectiveAddedEvents = await this.contractInstance.getPastEvents(
+      'PerspectiveAdded', {
+        filter: { perspectiveIdHash: perspectiveIdHash },
+        fromBlock: 0
+      }
+    )
+
+    /** one event should exist only */
+    const perspectiveAddedEvent = perspectiveAddedEvents[0];
+
+    console.log(`[ETH] Reverse map perspective hash ${perspectiveIdHash}`, perspectiveAddedEvent);
+    return perspectiveAddedEvent.returnValues.perspectiveId;
+  }
+
   /**
    * @override
    */
-  async getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
-    return [];
+  async getContextPerspectives(context: string): Promise<string[]> {
+    let perspectiveContextUpdatedEvents = await this.contractInstance.getPastEvents(
+      'PerspectiveDetailsUpdated', {
+        filter: { newContext: context },
+        fromBlock: 0
+      }
+    )
+    
+    let perspectiveIdHashes = perspectiveContextUpdatedEvents.map(e => e.returnValues.perspectiveIdHash);
+
+    const hashToIdPromises = perspectiveIdHashes.map((idHash) => this.hashToId(idHash));
+    console.log(`[ETH] getContextPerspectives of ${context}`, perspectiveIdHashes);
+
+    return Promise.all(hashToIdPromises);
   }
 
   /**

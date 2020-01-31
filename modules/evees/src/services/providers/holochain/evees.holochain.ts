@@ -73,7 +73,7 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   /**
    * @override
    */
-  async getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
+  async getContextPerspectives(context: string): Promise<string[]> {
     const perspectivesResponse = await this.call('get_context_perspectives', {
       context: context
     });
@@ -81,7 +81,7 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
     const perspectivesEntries: EntryResult<Signed<Perspective>>[] = this.parseEntriesResults(
       perspectivesResponse
     );
-    return perspectivesEntries.filter(p => !!p).map(p => p.entry);
+    return perspectivesEntries.filter(p => !!p).map(p => p.entry.id);
   }
 
   /**
