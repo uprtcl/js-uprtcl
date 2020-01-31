@@ -13,7 +13,7 @@ import { sortObject } from '../../../utils/utils';
 import { Secured } from '../../../patterns/default-secured.pattern';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
-import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid } from './common';
+import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid, hashText } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum.js';
 import { ProposalsProvider } from 'src/services/proposals.provider.js';
@@ -115,10 +115,17 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     perspectiveId: string,
     details: PerspectiveDetails
   ): Promise<void> {
+    
     let perspectiveIdHash = await hashCid(perspectiveId);
+    let contextHash = '0x' + new Array(32).fill(0).join('');;
+    
+    if (details.context) {
+      contextHash = await hashText(details.context);
+    }
 
     await this.send(UPDATE_PERSP_DETAILS, [
       perspectiveIdHash,
+      contextHash,
       details.headId || '',
       details.context || '',
       details.name || ''
@@ -145,9 +152,11 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
    * @override
    */
   async getContextPerspectives(context: string): Promise<string[]> {
+    const contextHash = await hashText(context)
+
     let perspectiveContextUpdatedEvents = await this.contractInstance.getPastEvents(
       'PerspectiveDetailsUpdated', {
-        filter: { newContext: context },
+        filter: { newContextHash: contextHash },
         fromBlock: 0
       }
     )

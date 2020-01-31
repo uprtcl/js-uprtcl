@@ -182,7 +182,34 @@ export class Evees {
 
           // TODO: generalize to break the assumption that all links are to perspectives
           const promises = descendantLinks.map(async link => {
-            const details = await eveesRemote.getPerspectiveDetails(link);
+
+            const result = await this.client.query({
+              query: gql`
+                {
+                  entity(id: "${link}") {
+                    id
+                    ... on Perspective {
+                      context {
+                        identifier
+                      }
+                      head {
+                        id
+                      }
+                    }
+                  }
+                }
+              `
+            });
+
+            if (!result.data.entity.context) {
+              throw new Error('Original perspective dont have a context');
+            };
+
+            const details = {
+              context: result.data.entity.context.identifier,
+              headId: result.data.entity.head ? result.data.entity.head.id : ''
+            };
+            
             const newPerspective = await this.client.mutate({
               mutation: CREATE_PERSPECTIVE,
               variables: {
@@ -193,6 +220,7 @@ export class Evees {
                 recursive: true
               }
             });
+
             return newPerspective.data.createPerspective.id;
           });
 
