@@ -7,6 +7,8 @@ import { NamedDirective } from '@uprtcl/graphql';
 
 import { Source } from '../../types/source';
 import gql from 'graphql-tag';
+import { MultiplatformBindings } from 'src/bindings';
+import { EntityCache } from '../entity-cache';
 
 export abstract class LoadEntityDirective extends NamedDirective {
   protected abstract getSource(container: interfaces.Container): Source;
@@ -28,44 +30,29 @@ export abstract class LoadEntityDirective extends NamedDirective {
       if (!entityId) return null;
 
       const source = this.getSource(context.container);
+      const entityCache: EntityCache = context.container.get(MultiplatformBindings.EntityCache);
 
-      if (typeof entityId === 'string') return this.loadEntity(entityId, context.cache, source);
+      if (typeof entityId === 'string') return this.loadEntity(entityId, entityCache, source);
       else if (Array.isArray(entityId)) {
-        return entityId.map(id => this.loadEntity(id, context.cache, source));
+        return entityId.map(id => this.loadEntity(id, entityCache, source));
       }
     };
   }
 
   protected async loadEntity(
     entityId: string,
-    cache: ApolloCache<any>,
+    entityCache: EntityCache,
     source: Source
   ): Promise<Hashed<any> | undefined> {
-    try {
-      const data = cache['data'].data;
-      const cachedObject = data[`$${entityId}._context`];
+    const cachedEntity = entityCache.getCachedEntity(entityId);
 
-      const object = JSON.parse(cachedObject.raw);
-      return { id: entityId, ...object };
-    } catch (e) {
-    }
+    if (cachedEntity) return cachedEntity;
 
     const entity: Hashed<any> | undefined = await source.get(entityId);
 
     if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
 
-
-    cache.writeData({
-      data: {
-        entity: {
-          id: entityId,
-          _context: {
-            __typename: 'EntityContext',
-            raw: JSON.stringify(entity.object)
-          }
-        }
-      }
-    });
+    entityCache.cacheEntity(entityId, entity.object);
 
     return { id: entityId, ...entity.object };
   }

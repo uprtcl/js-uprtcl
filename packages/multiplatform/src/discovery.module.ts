@@ -12,6 +12,8 @@ import { discoveryTypeDefs } from './graphql/schema';
 import { DiscoverDirective } from './graphql/directives/discover-directive';
 import { SourceDirective } from './graphql/directives/source-directive';
 import { discoverResolvers } from './graphql/resolvers';
+import { TaskQueue } from './utils/task.queue';
+import { EntityCache } from './graphql/entity-cache';
 
 export class DiscoveryModule extends MicroModule {
   static id = Symbol('discovery-module');
@@ -34,5 +36,7 @@ export class DiscoveryModule extends MicroModule {
     container
       .bind<KnownSourcesService>(DiscoveryModule.bindings.LocalKnownSources)
       .to(KnownSourcesApollo);
+    container.bind<TaskQueue>(DiscoveryModule.bindings.TaskQueue).to(TaskQueue);
+    container.bind<EntityCache>(DiscoveryModule.bindings.EntityCache).to(EntityCache);
   }
 }
