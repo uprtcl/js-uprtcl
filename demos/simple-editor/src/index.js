@@ -41,8 +41,12 @@ import { SimpleWiki } from './simple-wiki';
       else if (entityName === 'TextNode') return httpDocuments;
     }
   };
+  const remotesConfig = {
+    map: remoteMap,
+    defaultCreator: httpEvees
+  }
 
-  const evees = new EveesModule([ethEvees, httpEvees], remoteMap);
+  const evees = new EveesModule([ethEvees, httpEvees], remotesConfig);
 
   const documents = new DocumentsModule([ipfsDocuments, httpDocuments]);
 

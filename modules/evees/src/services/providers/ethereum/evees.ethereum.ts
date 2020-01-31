@@ -13,7 +13,7 @@ import { sortObject } from '../../../utils/utils';
 import { Secured } from '../../../patterns/default-secured.pattern';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
-import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid } from './common';
+import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid, hashText } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum.js';
 import { ProposalsProvider } from 'src/services/proposals.provider.js';
@@ -115,21 +115,58 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     perspectiveId: string,
     details: PerspectiveDetails
   ): Promise<void> {
+    
     let perspectiveIdHash = await hashCid(perspectiveId);
+    let contextHash = '0x' + new Array(32).fill(0).join('');;
+    
+    if (details.context) {
+      contextHash = await hashText(details.context);
+    }
 
     await this.send(UPDATE_PERSP_DETAILS, [
       perspectiveIdHash,
+      contextHash,
       details.headId || '',
       details.context || '',
       details.name || ''
     ]);
   }
 
+  async hashToId (perspectiveIdHash: string) {
+    /** check the creation event to reverse map the cid */
+    const perspectiveAddedEvents = await this.contractInstance.getPastEvents(
+      'PerspectiveAdded', {
+        filter: { perspectiveIdHash: perspectiveIdHash },
+        fromBlock: 0
+      }
+    )
+
+    /** one event should exist only */
+    const perspectiveAddedEvent = perspectiveAddedEvents[0];
+
+    console.log(`[ETH] Reverse map perspective hash ${perspectiveIdHash}`, perspectiveAddedEvent);
+    return perspectiveAddedEvent.returnValues.perspectiveId;
+  }
+
   /**
    * @override
    */
-  async getContextPerspectives(context: string): Promise<Secured<Perspective>[]> {
-    return [];
+  async getContextPerspectives(context: string): Promise<string[]> {
+    const contextHash = await hashText(context)
+
+    let perspectiveContextUpdatedEvents = await this.contractInstance.getPastEvents(
+      'PerspectiveDetailsUpdated', {
+        filter: { newContextHash: contextHash },
+        fromBlock: 0
+      }
+    )
+    
+    let perspectiveIdHashes = perspectiveContextUpdatedEvents.map(e => e.returnValues.perspectiveIdHash);
+
+    const hashToIdPromises = perspectiveIdHashes.map((idHash) => this.hashToId(idHash));
+    console.log(`[ETH] getContextPerspectives of ${context}`, perspectiveIdHashes);
+
+    return Promise.all(hashToIdPromises);
   }
 
   /**

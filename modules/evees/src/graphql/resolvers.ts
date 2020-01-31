@@ -30,7 +30,7 @@ export const eveesResolvers = {
 
       const evees: Evees = container.get(EveesBindings.Evees);
 
-      return evees.getContextPerspectives(context);
+      return evees.getContextPerspectives(context);      
     }
   },
   Perspective: {

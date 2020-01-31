@@ -22,8 +22,8 @@ export class HttpConnection extends Connection {
       tokenIdLocal: 'http_jwt_token',
       userIdLocal: 'http_user_id'
     },
-    options: ConnectionOptions) {
-
+    options: ConnectionOptions
+  ) {
     super(options);
   }
 
@@ -77,7 +77,7 @@ export class HttpConnection extends Connection {
    * @param url url to make the request to
    */
   public async get<T>(url: string): Promise<T> {
-    this.logger.log('GET: ', url);
+    this.logger.log('[HTTP GET]: ', url);
 
     return fetch(url, {
       method: 'GET',
@@ -110,7 +110,7 @@ export class HttpConnection extends Connection {
         return response.json() as Promise<{ data: T }>;
       })
       .then(data => {
-        console.log('[HTTP GET RESULT] ', url, data);
+        console.log('[HTTP PUT RESULT] ', url, data);
         return data.data;
       });
   }
@@ -140,7 +140,7 @@ export class HttpConnection extends Connection {
    * @param method method of the request ('POST' or 'PUT')
    */
   public async putOrPost(url: string, body: any, method: string): Promise<PostResult> {
-    this.logger.log('POST: ', url, body, method);
+    this.logger.log(`[HTTP ${method}]`, url, body);
     return fetch(url, {
       method: method,
       headers: {
@@ -153,6 +153,7 @@ export class HttpConnection extends Connection {
         return response.json() as Promise<PostResult>;
       })
       .then(data => {
+        this.logger.log('[HTTP POST RESULT]', url, body, data);
         return (data as unknown) as PostResult;
       });
   }

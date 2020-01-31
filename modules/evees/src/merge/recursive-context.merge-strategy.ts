@@ -6,7 +6,7 @@ import { createEntity, DiscoveryModule, DiscoveryService, KnownSourcesService } 
 
 import { Secured } from '../patterns/default-secured.pattern';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import { Perspective, UpdateRequest, Commit, RemoteMap } from '../types';
+import { Perspective, UpdateRequest, Commit, RemotesConfig } from '../types';
 import { CREATE_COMMIT } from '../graphql/queries';
 import { EveesBindings } from '../bindings';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -23,13 +23,13 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   allPerspectives!: Dictionary<string>;
 
   constructor (
-    @inject(EveesBindings.RemoteMap) protected remoteMap: RemoteMap,
+    @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {
-    super(remoteMap, evees, discovery, knownSources, recognizer, client);
+    super(remotesConfig, evees, discovery, knownSources, recognizer, client);
   }
 
   setPerspective(perspective: Secured<Perspective>, context: string, to: boolean): void {
@@ -182,7 +182,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const details = await remote.getPerspectiveDetails(perspectiveId);
 
     const patternName = this.recognizer.recognize(data)[0].name;
-    const newDataId = await createEntity(this.recognizer)(data, this.remoteMap(remote.authority, patternName));
+    const newDataId = await createEntity(this.recognizer)(data, this.remotesConfig.map(remote.authority, patternName).source);
 
     const head = await this.client.mutate({
       mutation: CREATE_COMMIT,

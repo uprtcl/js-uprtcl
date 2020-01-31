@@ -3,7 +3,7 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { Hashed, Entity } from '@uprtcl/cortex';
-import { Secured, RemoteMap, EveesModule, EveesRemote, Evees } from '@uprtcl/evees';
+import { Secured, RemotesConfig, EveesModule, EveesRemote, Evees } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD, Perspective } from '@uprtcl/evees';
 
@@ -36,12 +36,12 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   private currentHeadId: string | undefined = undefined;
 
   getSource(eveesAuthority: string): Source {
-    const remoteMap: RemoteMap = this.request(EveesModule.bindings.RemoteMap);
+    const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
 
     const textNodeEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
     const name = textNodeEntity[0].name;
 
-    return remoteMap(eveesAuthority, name);
+    return remotesConfig.map(eveesAuthority, name);
   }
 
   async firstUpdated() {

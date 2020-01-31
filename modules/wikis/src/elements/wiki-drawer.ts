@@ -9,7 +9,7 @@ import {
   CREATE_COMMIT,
   CREATE_PERSPECTIVE,
   UPDATE_HEAD,
-  RemoteMap,
+  RemotesConfig,
   EveesModule,
   EveesRemote
 } from '@uprtcl/evees';
@@ -49,7 +49,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.pagesList = undefined;
 
-    const remoteMap: RemoteMap = this.request(EveesModule.bindings.RemoteMap);
+    const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
     const remotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
 
     const textNodeEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
@@ -65,8 +65,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!remote)
       throw new Error(`Evees remote not registered for authority ${this.perspectiveOrigin}`);
 
-    const textNodeSource: Source = remoteMap(this.perspectiveOrigin, name);
-    const wikiSource: Source = remoteMap(this.perspectiveOrigin, wikiName);
+    const textNodeSource: Source = remotesConfig.map(this.perspectiveOrigin, name);
+    const wikiSource: Source = remotesConfig.map(this.perspectiveOrigin, wikiName);
 
     const pageContent = {
       text: '<h1>New page</h1>',

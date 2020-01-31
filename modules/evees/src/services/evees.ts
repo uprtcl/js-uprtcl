@@ -16,7 +16,7 @@ import { createEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective, Commit, PerspectiveDetails, RemoteMap } from '../types';
+import { Perspective, Commit, PerspectiveDetails, RemotesConfig } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
 import { CREATE_PERSPECTIVE, CREATE_COMMIT } from '../graphql/queries';
@@ -51,8 +51,8 @@ export class Evees {
     protected eveesRemotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client)
     protected client: ApolloClient<any>,
-    @inject(EveesBindings.RemoteMap)
-    protected remoteMap: RemoteMap
+    @inject(EveesBindings.RemotesConfig)
+    protected remotesConfig: RemotesConfig
   ) {}
 
   /** Public functions */
@@ -101,11 +101,18 @@ export class Evees {
     return this.getAuthority(perspectiveOrigin);
   }
 
-  public async getContextPerspectives(context: string): Promise<Array<Secured<Perspective>>> {
-    const promises = this.eveesRemotes.map(remote => remote.getContextPerspectives(context));
-    const perspectives = await Promise.all(promises);
+  public async getContextPerspectives(context: string): Promise<string[]> {
+    const promises = this.eveesRemotes.map(async (remote) => { 
+      const thisPerspectivesIds = await remote.getContextPerspectives(context);
+      thisPerspectivesIds.forEach(pId => {
+        this.knownSources.addKnownSources(pId, [remote.source]);
+      });
+      return thisPerspectivesIds;
+    });
 
-    return ([] as Secured<Perspective>[]).concat(...perspectives);
+    const perspectivesIds = await Promise.all(promises);
+
+    return ([] as string[]).concat(...perspectivesIds);
   }
 
   /** Creators */
@@ -127,8 +134,8 @@ export class Evees {
 
     if (!eveesRemote.userId)
       throw new Error(`You need to be logged in the evees authority ${eveesRemote.authority} to create perspectives in it`);
-    console.log('userId', eveesRemote.userId)
-    // Create the perspective
+
+      // Create the perspective
     const perspectiveData: Perspective = {
       creatorId: eveesRemote.userId,
       origin: eveesRemote.authority,
@@ -175,7 +182,34 @@ export class Evees {
 
           // TODO: generalize to break the assumption that all links are to perspectives
           const promises = descendantLinks.map(async link => {
-            const details = await eveesRemote.getPerspectiveDetails(link);
+
+            const result = await this.client.query({
+              query: gql`
+                {
+                  entity(id: "${link}") {
+                    id
+                    ... on Perspective {
+                      context {
+                        identifier
+                      }
+                      head {
+                        id
+                      }
+                    }
+                  }
+                }
+              `
+            });
+
+            if (!result.data.entity.context) {
+              throw new Error('Original perspective dont have a context');
+            };
+
+            const details = {
+              context: result.data.entity.context.identifier,
+              headId: result.data.entity.head ? result.data.entity.head.id : ''
+            };
+            
             const newPerspective = await this.client.mutate({
               mutation: CREATE_PERSPECTIVE,
               variables: {
@@ -186,12 +220,13 @@ export class Evees {
                 recursive: true
               }
             });
+
             return newPerspective.data.createPerspective.id;
           });
 
           const newLinks = await Promise.all(promises);
           const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
-          const dataSource = this.remoteMap(eveesRemote.authority, hasChildren.name);
+          const dataSource = this.remotesConfig.map(eveesRemote.authority, hasChildren.name);
           dataId = await createEntity(this.patternRecognizer)(newData.object, dataSource.source);
         }
       }

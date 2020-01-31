@@ -28,7 +28,7 @@ import { EveesPerspective } from './elements/evees-perspective';
 import { EveesInfo } from './elements/evees-info';
 
 import en from '../i18n/en.json';
-import { RemoteMap } from './types';
+import { RemotesConfig } from './types';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -76,14 +76,14 @@ export class EveesModule extends MicroModule {
 
   static bindings = EveesBindings;
 
-  constructor(protected eveesProviders: Array<EveesRemote>, protected remoteMap: RemoteMap) {
+  constructor(protected eveesProviders: Array<EveesRemote>, protected remotesConfig: RemotesConfig) {
     super();
   }
 
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.bindings.Evees).to(Evees);
     container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
-    container.bind(EveesModule.bindings.RemoteMap).toConstantValue(this.remoteMap);
+    container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
   }
 
   submodules = [
