@@ -182,7 +182,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const details = await remote.getPerspectiveDetails(perspectiveId);
 
     const patternName = this.recognizer.recognize(data)[0].name;
-    const newDataId = await createEntity(this.recognizer)(data, this.remotesConfig.map(remote.authority, patternName));
+    const newDataId = await createEntity(this.recognizer)(data, this.remotesConfig.map(remote.authority, patternName).source);
 
     const head = await this.client.mutate({
       mutation: CREATE_COMMIT,
