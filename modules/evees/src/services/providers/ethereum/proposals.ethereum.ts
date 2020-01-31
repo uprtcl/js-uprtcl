@@ -27,7 +27,6 @@ export interface EthMergeRequest {
 }
 
 export class ProposalsEthereum implements ProposalsProvider {
-
   logger = new Logger('PROPOSALS-ETHEREUM');
 
   constructor(
@@ -51,6 +50,30 @@ export class ProposalsEthereum implements ProposalsProvider {
   ): Promise<string> {
     this.logger.info('createProposal()', { fromPerspectiveId, toPerspectiveId, headUpdates });
 
+    /** verify all perspectives are owned by the owner of the to perspective (which might not be in the updateHead list) */
+    const accessData = await this.accessControl.getAccessControlInformation(toPerspectiveId);
+    if (!accessData)
+      throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
+
+    const verifyPromises = headUpdates.map(async headUpdate => {
+      const thisAccessData = await this.accessControl.getAccessControlInformation(
+        headUpdate.perspectiveId
+      );
+      if (!thisAccessData)
+        throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
+
+      if (thisAccessData.owner !== accessData.owner) {
+        throw new Error(
+          `perspective ${headUpdate.perspectiveId} in request not owned by target perspective owner ${accessData.owner} but by ${thisAccessData.owner}`
+        );
+      }
+    });
+
+    await Promise.all(verifyPromises);
+
+    /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
+    const nonce = 0;
+
     const ethHeadUpdatesPromises = headUpdates.map(
       async (update): Promise<EthHeadUpdate> => {
         return {
@@ -63,32 +86,8 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const ethHeadUpdates = await Promise.all(ethHeadUpdatesPromises);
 
-    /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     let toPerspectiveIdHash = await hashCid(toPerspectiveId);
     let fromPerspectiveIdHash = await hashCid(fromPerspectiveId);
-
-    const nonce = 0;
-    const accessData = await this.accessControl.getAccessControlInformation(toPerspectiveIdHash);
-
-    if (!accessData)
-      throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
-
-    /** verify all perspectives are owned by that address */
-    const verifyPromises = ethHeadUpdates.map(async headUpdate => {
-      const thisAccessData = await this.accessControl.getAccessControlInformation(
-        toPerspectiveIdHash
-      );
-      if (!thisAccessData)
-        throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
-
-      if (thisAccessData.owner !== accessData.owner) {
-        throw new Error(
-          `perspective ${headUpdate.perspectiveIdHash} in request not owned by target perspective owner ${accessData.owner} but by ${thisAccessData.owner}`
-        );
-      }
-    });
-
-    await Promise.all(verifyPromises);
 
     await this.ethProvider.send(INIT_REQUEST, [
       toPerspectiveIdHash,

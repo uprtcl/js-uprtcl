@@ -14,7 +14,7 @@ import '@authentic/mwc-card';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { PerspectiveData, UpdateRequest, CreateProposalEvent, RemotesConfig } from '../types';
+import { PerspectiveData, UpdateRequest, RemotesConfig, RequestCreatedEvent } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
@@ -121,7 +121,8 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async otherPerspectiveMerge(e: CustomEvent) {
-    this.logger.info(`merge ${e.detail.id} on ${this.perspectiveId}`);
+    const fromPerspectiveId = e.detail.id;
+    this.logger.info(`merge ${fromPerspectiveId} on ${this.perspectiveId}`);
 
     const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
     const updateRequests = await merge.mergePerspectives(this.perspectiveId, e.detail.id);
@@ -166,27 +167,27 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
     const evees: Evees = this.request(EveesModule.bindings.Evees);
 
-    Object.keys(updatesByAuthority).map((authority: string) => {
+    Object.keys(updatesByAuthority).map(async (authority: string) => {
       const remote = evees.getAuthority(authority);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
-      const updateRequests = updatesByAuthority[authority].updateRequests;
-      /*       const requestId = remote.proposals.createProposal(updateRequests);
-      
+      const requestId = await remote.proposals.createProposal(
+        fromPerspectiveId,
+        this.perspectiveId,
+        updatesByAuthority[authority]
+      );
+
       this.logger.info('created proposal', { requestId, updateRequests });
- */
+
+      this.dispatchEvent(
+        new RequestCreatedEvent({
+          detail: { requestId },
+          cancelable: true,
+          composed: true,
+          bubbles: true
+        })
+      );
     });
-
-    this.dispatchEvent(
-      new CreateProposalEvent({
-        detail: { toPerspective: this.perspectiveData },
-        cancelable: true,
-        composed: true,
-        bubbles: true
-      })
-    );
-
-    this.logger.info('authorities computed', { updatesByAuthority });
   }
 
   showClicked() {

@@ -23,9 +23,6 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
 
   async getAccessControlInformation(hash: string): Promise<OwnerAccessControl | undefined> {
     let owner = await this.getOwner(hash);
-
-    if (/^0x0+$/.test(owner)) throw new Error('Perspective not found');
-
     return { owner };
   }
 }

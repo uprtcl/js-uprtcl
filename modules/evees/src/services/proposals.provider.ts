@@ -1,8 +1,6 @@
-import { Source } from '@uprtcl/multiplatform';
-
 import { Proposal, UpdateRequest } from '../types';
 
-export interface ProposalsProvider extends Source {
+export interface ProposalsProvider {
   /** Getters */
 
   getProposalsToPerspective(perspectiveId: string): Promise<Array<Proposal>>;
