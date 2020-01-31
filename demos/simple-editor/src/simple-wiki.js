@@ -32,7 +32,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    this.addEventListener('evees-create-proposal', e => console.log(e));
+    this.addEventListener('evees-request-created', e => console.log(e));
 
     this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => provider.source.startsWith('ipfs'));
 
@@ -90,7 +90,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return html`
       ${!this.loading
         ? html`
-            <wiki-drawer wiki-id=${this.rootHash}></wiki-drawer>
+            <wiki-drawer @evees- wiki-id=${this.rootHash}></wiki-drawer>
           `
         : html`
             Loading...

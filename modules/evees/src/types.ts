@@ -50,12 +50,12 @@ export interface PerspectiveData {
   canWrite: Boolean;
 }
 
-export interface CreateProposalDetail {
-  toPerspective: PerspectiveData;
+export interface RequestCreatedDetail {
+  requestId: string
 }
 
-export class CreateProposalEvent extends CustomEvent<CreateProposalDetail> {
-  constructor(eventInitDict?: CustomEventInit<CreateProposalDetail>) {
-    super('evees-create-proposal', eventInitDict);
+export class RequestCreatedEvent extends CustomEvent<RequestCreatedDetail> {
+  constructor(eventInitDict?: CustomEventInit<RequestCreatedDetail>) {
+    super('evees-request-created', eventInitDict);
   }
 }
