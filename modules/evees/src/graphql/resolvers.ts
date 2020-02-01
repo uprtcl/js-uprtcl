@@ -1,4 +1,10 @@
-import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import {
+  DiscoveryService,
+  DiscoveryModule,
+  TaskQueue,
+  Task,
+  EntityCache
+} from '@uprtcl/multiplatform';
 import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
 import { Secured } from '../patterns/default-secured.pattern';
 
@@ -79,17 +85,27 @@ export const eveesResolvers = {
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
+      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
+      const taskQueue: TaskQueue = container.get(DiscoveryModule.bindings.TaskQueue);
 
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
-      await provider.updatePerspectiveDetails(perspectiveId, { headId });
+
+      const updatePerspectiveTask: Task = {
+        id: `Update head of ${perspectiveId}`,
+        task: async () => {
+          await provider.updatePerspectiveDetails(perspectiveId, { headId });
+        }
+      };
+
+      taskQueue.queueTask(updatePerspectiveTask);
 
       await discovery.postEntityUpdate(provider, [headId]);
 
-      const perspective = await discovery.get(perspectiveId);
+      const perspective = entityCache.getCachedEntity(perspectiveId);
 
       if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
 
-      return { id: perspective.id, ...perspective.object };
+      return { id: perspective.id, ...perspective.object, head: { id: headId } };
     },
     async createPerspective(_, { headId, context, name, authority, recursive }, { container }) {
       const patterns: Pattern[] = container.getAll(EveesBindings.PerspectivePattern);
