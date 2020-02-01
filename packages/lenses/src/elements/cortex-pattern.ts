@@ -8,6 +8,9 @@ export class CortexPattern extends moduleConnect(LitElement) {
   @property()
   public pattern: any;
 
+  @property({ type: Object })
+  public context!: any;
+
   private recognizer!: PatternRecognizer;
 
   connectedCallback() {
@@ -31,7 +34,7 @@ export class CortexPattern extends moduleConnect(LitElement) {
   render() {
     const lens = this.getLens()[0];
     return html`
-      ${lens.render(html``, {})}
+      ${lens.render(html``, this.context)}
     `;
   }
 }

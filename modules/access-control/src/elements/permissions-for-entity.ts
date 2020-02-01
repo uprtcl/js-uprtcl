@@ -10,6 +10,8 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
 
   @property()
   private permissions: String | undefined;
+  @property()
+  private canWrite: boolean | undefined;
 
   firstUpdated() {
     this.loadPermissions();
@@ -28,6 +30,7 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
                   patterns {
                       accessControl {
                           permissions
+                          canWrite
                       }
                   }
               }
@@ -37,6 +40,7 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
     });
 
     this.permissions = result.data.entity._context.patterns.accessControl.permissions;
+    this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
   }
 
   render() {
@@ -46,7 +50,10 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <cortex-pattern .pattern=${this.permissions}></cortex-pattern>
+      <cortex-pattern
+        .pattern=${this.permissions}
+        .context=${{ canWrite: this.canWrite, entityId: this.hash }}
+      ></cortex-pattern>
     `;
   }
 }
