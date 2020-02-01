@@ -10,6 +10,8 @@ export const styleMap = style => {
 import { ApolloClient, gql } from 'apollo-boost';
 
 import '@authentic/mwc-card';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
@@ -33,6 +35,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   show: Boolean = false;
+
+  @property({ attribute: false })
+  activeTabIndex: number = 0;
 
   perspectiveData!: PerspectiveData;
 
@@ -69,6 +74,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
               patterns {
                 accessControl {
                   canWrite
+                  permissions
                 }
               }
             }
@@ -76,6 +82,8 @@ export class EveesInfo extends moduleConnect(LitElement) {
         }
       `
     });
+
+    const accessControl = result.data.entity._context.patterns.accessControl;
 
     this.perspectiveData = {
       id: result.data.entity.id,
@@ -85,9 +93,8 @@ export class EveesInfo extends moduleConnect(LitElement) {
         name: result.data.entity.name
       },
       perspective: result.data.entity.payload,
-      canWrite: result.data.entity._context.patterns.accessControl
-        ? result.data.entity._context.patterns.accessControl.canWrite
-        : true
+      canWrite: accessControl ? accessControl.canWrite : true,
+      permissions: accessControl ? accessControl.permissions : undefined
     };
 
     this.logger.info('load', { perspectiveData: this.perspectiveData });
@@ -230,6 +237,47 @@ export class EveesInfo extends moduleConnect(LitElement) {
     `;
   }
 
+  renderInfo() {
+    return html`
+      <div class="perspective-details">
+        <span><strong>Name:</strong> ${this.perspectiveData.details.name}</span>
+        <span><strong>Context:</strong> ${this.perspectiveData.details.context}</span>
+        <span><strong>Origin:</strong> ${this.perspectiveData.perspective.origin}</span>
+        <span><strong>Head:</strong> ${this.perspectiveData.details.headId}</span>
+      </div>
+    `;
+  }
+
+  renderOtherPerspectives() {
+    return html`
+      <div style="margin-top: 16px; margin-bottom: 16px;">
+        <evees-perspectives-list
+          perspective-id=${this.perspectiveId}
+          @perspective-selected=${this.otherPerspectiveClicked}
+          @merge-perspective=${this.otherPerspectiveMerge}
+        ></evees-perspectives-list>
+      </div>
+      <mwc-button
+        outlined
+        icon="call_split"
+        @click=${this.newPerspectiveClicked}
+        label="Create new perspective"
+      ></mwc-button>
+    `;
+  }
+
+  renderPermissions() {
+    return html`
+      <permissions-for-entity hash=${this.perspectiveId}></permissions-for-entity>
+    `;
+  }
+
+  renderTabContent() {
+    if (this.activeTabIndex === 0) return this.renderOtherPerspectives();
+    else if (this.activeTabIndex === 1) return this.renderInfo();
+    else return this.renderPermissions();
+  }
+
   render() {
     return html`
       <div class="container">
@@ -241,39 +289,33 @@ export class EveesInfo extends moduleConnect(LitElement) {
         ${this.show
           ? html`
               <mwc-card class="info-box">
-                <div style="padding: 16px;">
-                  ${this.perspectiveData
-                    ? html`
-                        <div class="perspective-details">
-                          <span style="padding-bottom: 16px;">
-                            <strong>Perspective</strong> ${this.perspectiveData.id}</span
-                          >
-                          <span><strong>Name:</strong> ${this.perspectiveData.details.name}</span>
-                          <span
-                            ><strong>Context:</strong> ${this.perspectiveData.details.context}</span
-                          >
-                          <span
-                            ><strong>Origin:</strong> ${this.perspectiveData.perspective
-                              .origin}</span
-                          >
-                          <span><strong>Head:</strong> ${this.perspectiveData.details.headId}</span>
+                ${this.perspectiveData
+                  ? html`
+                      <div class="column">
+                        <span style="padding: 16px;">
+                          <strong>Perspective</strong> ${this.perspectiveData.id}
+                        </span>
+
+                        <mwc-tab-bar
+                          @MDCTabBar:activated=${e => (this.activeTabIndex = e.detail.index)}
+                        >
+                          <mwc-tab .label=${this.t('evees:other-perspectives')} hasImageIcon>
+                            <mwc-icon>list_alt</mwc-icon>
+                          </mwc-tab>
+                          <mwc-tab .label=${this.t('evees:information')} hasImageIcon>
+                            <mwc-icon>info</mwc-icon>
+                          </mwc-tab>
+                          <mwc-tab .label=${this.t('evees:permissions')} hasImageIcon>
+                            <mwc-icon>group</mwc-icon>
+                          </mwc-tab>
+                        </mwc-tab-bar>
+
+                        <div style="padding: 16px;">
+                          ${this.renderTabContent()}
                         </div>
-                        <div style="margin-top: 16px; margin-bottom: 16px;">
-                          <evees-perspectives-list
-                            perspective-id=${this.perspectiveId}
-                            @perspective-selected=${this.otherPerspectiveClicked}
-                            @merge-perspective=${this.otherPerspectiveMerge}
-                          ></evees-perspectives-list>
-                        </div>
-                        <mwc-button
-                          outlined
-                          icon="call_split"
-                          @click=${this.newPerspectiveClicked}
-                          label="Create new perspective"
-                        ></mwc-button>
-                      `
-                    : this.renderLoading()}
-                </div>
+                      </div>
+                    `
+                  : this.renderLoading()}
               </mwc-card>
             `
           : ''}
@@ -300,7 +342,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
         background-color: #cccccc;
       }
       .info-box {
-        width: 600px;
+        width: auto;
         z-index: 20;
         position: absolute;
         left: 20px;
@@ -312,6 +354,14 @@ export class EveesInfo extends moduleConnect(LitElement) {
       }
       .perspective-details > span {
         padding-bottom: 4px;
+      }
+      .row {
+        display: flex;
+        flex-direction: row;
+      }
+      .column {
+        display: flex;
+        flex-direction: column;
       }
     `;
   }

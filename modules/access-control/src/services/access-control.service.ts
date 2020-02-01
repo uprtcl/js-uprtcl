@@ -1,3 +1,3 @@
 export interface AccessControlService<T> {
-  getAccessControlInformation(hash: string): Promise<T | undefined>;
+  getPermissions(hash: string): Promise<T | undefined>;
 }

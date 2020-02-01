@@ -48,6 +48,7 @@ export interface PerspectiveData {
   perspective: Perspective;
   details: PerspectiveDetails;
   canWrite: Boolean;
+  permissions: any;
 }
 
 export interface RequestCreatedDetail {

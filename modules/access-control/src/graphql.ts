@@ -3,7 +3,8 @@ import gql from 'graphql-tag';
 import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 import { Authority } from '@uprtcl/multiplatform';
 
-import { AccessControl } from './properties/access-control';
+import { Permissions } from './properties/permissions';
+import { Updatable } from './properties/updatable';
 
 export const accessControlTypes = gql`
   extend type Patterns {
@@ -12,6 +13,7 @@ export const accessControlTypes = gql`
 
   type AccessControl {
     canWrite: Boolean!
+    permissions: JSON!
   }
 `;
 
@@ -21,16 +23,33 @@ export const accessControlResolvers = {
       const entity: Hashed<any> = parent.__entity;
       const recognizer: PatternRecognizer = context.container.get(CortexModule.bindings.Recognizer);
 
-      const accessControl: AccessControl<any> | undefined = recognizer
+      const updatable: Updatable<any> | undefined = recognizer
         .recognize(entity)
-        .find(prop => !!(prop as AccessControl<any>).canWrite);
+        .find(prop => !!(prop as Updatable<any>).accessControl);
+
+      if (!updatable) return null;
+
+      const accessControl = updatable.accessControl(entity);
 
       if (!accessControl) return null;
 
-      const canWrite = accessControl.canWrite(entity);
+      const permissions: any | undefined = await accessControl.getPermissions(entity.id);
+
+      if (!permissions) return null;
+
+      const permissionsPattern: Permissions<any> | undefined = recognizer
+        .recognize(permissions)
+        .find(prop => !!(prop as Permissions<any>).canWrite);
+
+      if (!permissionsPattern) return null;
+
+      const serviceProvider: Authority = updatable.authority(entity);
+
+      const userId = serviceProvider.userId;
 
       return {
-        canWrite
+        canWrite: permissionsPattern.canWrite(permissions)(userId),
+        permissions
       };
     }
   }
