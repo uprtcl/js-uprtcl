@@ -3,9 +3,13 @@ import { ApolloClient, gql } from 'apollo-boost';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { Hashed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { Dictionary } from '@uprtcl/micro-orchestrator';
 
 @injectable()
 export class EntityCache {
+
+  pendingLoads: Dictionary<Promise<any> | undefined> = {}
+
   constructor(
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
@@ -51,4 +55,5 @@ export class EntityCache {
       }
     });
   }
+
 }

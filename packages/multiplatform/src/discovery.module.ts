@@ -37,6 +37,6 @@ export class DiscoveryModule extends MicroModule {
       .bind<KnownSourcesService>(DiscoveryModule.bindings.LocalKnownSources)
       .to(KnownSourcesApollo);
     container.bind<TaskQueue>(DiscoveryModule.bindings.TaskQueue).to(TaskQueue);
-    container.bind<EntityCache>(DiscoveryModule.bindings.EntityCache).to(EntityCache);
+    container.bind<EntityCache>(DiscoveryModule.bindings.EntityCache).to(EntityCache).inSingletonScope();
   }
 }

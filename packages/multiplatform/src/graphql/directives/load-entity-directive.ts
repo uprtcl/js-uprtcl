@@ -6,7 +6,6 @@ import { Hashed } from '@uprtcl/cortex';
 import { NamedDirective } from '@uprtcl/graphql';
 
 import { Source } from '../../types/source';
-import gql from 'graphql-tag';
 import { MultiplatformBindings } from 'src/bindings';
 import { EntityCache } from '../entity-cache';
 
@@ -48,12 +47,21 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
     if (cachedEntity) return cachedEntity;
 
-    const entity: Hashed<any> | undefined = await source.get(entityId);
+    if (entityCache.pendingLoads[entityId]) return entityCache.pendingLoads[entityId];
 
-    if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
+    const promise = async () => {
+      const entity: Hashed<any> | undefined = await source.get(entityId);
 
-    entityCache.cacheEntity(entityId, entity);
+      if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
 
-    return { id: entityId, ...entity.object };
+      entityCache.cacheEntity(entityId, entity);
+
+      entityCache.pendingLoads[entityId] = undefined;
+
+      return { id: entityId, ...entity.object };
+    };
+
+    entityCache.pendingLoads[entityId] = promise();
+    return entityCache.pendingLoads[entityId];
   }
 }

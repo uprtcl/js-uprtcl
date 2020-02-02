@@ -7,7 +7,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Source } from '../types/source';
 import { KnownSourcesService } from './known-sources.service';
-import { linksFromObject, raceToSuccess, discoverKnownSources } from './discovery.utils';
+import { raceToSuccess, discoverKnownSources } from './discovery.utils';
 import { MultiplatformBindings, SourcesBindings } from '../bindings';
 
 @injectable()
