@@ -52,6 +52,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
           _context {
             patterns {
               isomorphisms {
+                id
                 _context {
                   patterns {
                     lenses {

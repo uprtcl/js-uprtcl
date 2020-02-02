@@ -1,4 +1,3 @@
-import { cloneDeep } from 'lodash-es';
 import { injectable } from 'inversify';
 
 import { Pattern, Property } from '../pattern';
@@ -14,7 +13,7 @@ export class PatternRecognizer {
 
     const recognizedPatterns = this.patterns
       .filter(pattern => pattern.recognize(object))
-      .map(cloneDeep);
+      .map(p => ({ ...p }));
 
     return recognizedPatterns as T;
   }

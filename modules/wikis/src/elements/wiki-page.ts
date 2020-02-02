@@ -21,9 +21,11 @@ export class WikiPage extends moduleConnect(LitElement) {
       query: gql`{
         entity(id: "${this.pageHash}") {
           id
-          _context {
-            patterns {
-              content {
+
+          ... on Perspective {
+            head {
+              id
+              data {
                 id
                 ... on TextNode {
                   text
@@ -32,11 +34,12 @@ export class WikiPage extends moduleConnect(LitElement) {
               }
             }
           }
+
         }
       }`
     });
-console.group(result)
-    this.textNode = result.data.entity._context.patterns.content;
+
+    this.textNode = result.data.entity.head.data;
   }
 
   render() {
@@ -46,18 +49,21 @@ console.group(result)
       `;
 
     return html`
-      <mwc-top-app-bar>
-      </mwc-top-app-bar>
+      <mwc-top-app-bar> </mwc-top-app-bar>
 
-      <cortex-entity .hash=${this.pageHash} lens-type="evee" .context=${ { onlyChildren: 'false' } }> </cortex-entity>
+      <cortex-entity .hash=${this.pageHash} lens-type="evee" .context=${{ onlyChildren: 'false' }}>
+      </cortex-entity>
     `;
   }
 
   static get styles() {
-    return [sharedStyles, css`
-      :host {
-        width: 100%;
-      }
-    `];
+    return [
+      sharedStyles,
+      css`
+        :host {
+          width: 100%;
+        }
+      `
+    ];
   }
 }

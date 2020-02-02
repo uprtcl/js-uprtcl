@@ -60,6 +60,7 @@ async function loadEntity(id: string, client: ApolloClient<any>): Promise<Hashed
   const result = await client.query({
     query: gql`{
       entity(id: "${id}") {
+        id
         _context {
           raw
         }

@@ -38,7 +38,9 @@ export class PermissionsOwner extends moduleConnect(LitElement)
     const result = await client.query({
       query: gql`{
         entity(id: "${this.entityId}") {
+          id
           _context {
+            id
             patterns {
               accessControl {
                 canWrite
@@ -92,7 +94,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
     return html`
       ${this.renderDialog()}
       <span>${this.t('access-control:owner')}: ${this.permissions.owner}</span>
-      <mwc-button raised icon="swap-horizontal" @click=${() => (this.dialog.open = true)}
+      <mwc-button raised icon="swap_horizontal" @click=${() => (this.dialog.open = true)}
         >${this.t('access-control:transfer-ownership')}</mwc-button
       >
     `;

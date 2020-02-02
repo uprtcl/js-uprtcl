@@ -30,16 +30,15 @@ export class IpfsConnection extends Connection {
     return new Promise((resolve, reject) => {
       this.logger.log(`Try put. Attempt: ${attempt}`);
 
-      if (attempt > 4) {
-        reject();
+      let timeout;
+      if (attempt < 4) {
+        /** retry recursively with twice as much the wait time setting */
+        timeout = setTimeout(() => {
+          this.tryPut(buffer, putConfig, wait * 2, attempt + 1)
+            .then((result: any) => resolve(result))
+            .catch(e => reject(e));
+        }, wait);
       }
-
-      /** retry recursively with twice as much the wait time setting */
-      let timeout = setTimeout(() => {
-        this.tryPut(buffer, putConfig, wait * 2, attempt + 1)
-          .then((result: any) => resolve(result))
-          .catch(e => reject(e));
-      }, wait);
 
       this.client.dag.put(buffer, putConfig).then((result: object) => {
         clearTimeout(timeout);

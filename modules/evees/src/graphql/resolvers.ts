@@ -11,6 +11,8 @@ import { Secured } from '../patterns/default-secured.pattern';
 import { Commit, Perspective } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
+import { ApolloClient, gql } from 'apollo-boost';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 export const eveesResolvers = {
   Commit: {
@@ -36,7 +38,7 @@ export const eveesResolvers = {
 
       const evees: Evees = container.get(EveesBindings.Evees);
 
-      return evees.getContextPerspectives(context);      
+      return evees.getContextPerspectives(context);
     }
   },
   Perspective: {
@@ -85,7 +87,7 @@ export const eveesResolvers = {
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
-      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
       const taskQueue: TaskQueue = container.get(DiscoveryModule.bindings.TaskQueue);
 
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
@@ -101,11 +103,22 @@ export const eveesResolvers = {
 
       await discovery.postEntityUpdate(provider, [headId]);
 
-      const perspective = entityCache.getCachedEntity(perspectiveId);
+      const result = await client.query({
+        query: gql`{
+        entity(id: "${perspectiveId}") {
+          id
+          _context {
+            raw
+          }
+        }
+      }`
+      });
+
+      const perspective = JSON.parse(result.data.entity._context.raw);
 
       if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
 
-      return { id: perspective.id, ...perspective.object, head: { id: headId } };
+      return { id: perspectiveId, ...perspective, head: { id: headId } };
     },
     async createPerspective(_, { headId, context, name, authority, recursive }, { container }) {
       const patterns: Pattern[] = container.getAll(EveesBindings.PerspectivePattern);

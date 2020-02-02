@@ -1,16 +1,22 @@
 import { injectable, inject } from 'inversify';
+import { ApolloClient, gql } from 'apollo-boost';
+
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { ApolloClient } from 'apollo-boost';
-import { Hashed } from '@uprtcl/cortex';
+import { Hashed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
 @injectable()
 export class EntityCache {
-  constructor(@inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {}
+  constructor(
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
+  ) {}
 
   getCachedEntity(entityId: string): Hashed<any> | undefined {
     try {
       const data = this.client.cache['data'].data;
       const cachedObject = data[`$${entityId}._context`];
+
+      if (!cachedObject || !cachedObject.raw) return undefined;
 
       const object = JSON.parse(cachedObject.raw);
       return { id: entityId, ...object };
@@ -20,9 +26,22 @@ export class EntityCache {
   }
 
   cacheEntity(entityId: string, entity: any): void {
-    this.client.cache.writeData({
+    const patterns = this.recognizer.recognize(entity);
+    const name = patterns.find(p => p.name).name;
+
+    this.client.cache.writeQuery({
+      query: gql`{
+        entity(id: "${entityId}") {
+          id
+          _context {
+            raw
+          }
+        }
+      }`,
+
       data: {
         entity: {
+          __typename: name,
           id: entityId,
           _context: {
             __typename: 'EntityContext',
