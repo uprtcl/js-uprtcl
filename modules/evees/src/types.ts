@@ -51,12 +51,12 @@ export interface PerspectiveData {
   permissions: any;
 }
 
-export interface RequestCreatedDetail {
-  requestId: string
+export interface ProposalCreatedDetail {
+  proposalId: string
 }
 
-export class RequestCreatedEvent extends CustomEvent<RequestCreatedDetail> {
-  constructor(eventInitDict?: CustomEventInit<RequestCreatedDetail>) {
-    super('evees-request-created', eventInitDict);
+export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
+  constructor(eventInitDict?: CustomEventInit<ProposalCreatedDetail>) {
+    super('evees-proposal-created', eventInitDict);
   }
 }
