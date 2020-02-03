@@ -24,6 +24,8 @@ import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
+import { DEFAULT_COLOR } from './evees-perspective';
+
 interface PerspectiveData {
   id: string;
   perspective: Perspective;
@@ -326,7 +328,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
       <div class="container">
         <div
           class="button"
-          style=${styleMap({ backgroundColor: this.eveeColor })}
+          style=${styleMap({ backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR })}
           @click=${this.showClicked}
         ></div>
         ${this.show

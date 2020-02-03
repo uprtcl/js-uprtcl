@@ -11,7 +11,12 @@ export class WikiHome extends moduleConnect(LitElement) {
   recentPerspectives() {
     return html`
       <span class="title">Welcome to ${this.title}</span>
-
+      <div class="evee-info">
+        <evees-info 
+          first-perspective-id=${this.wikiHash} 
+          perspective-id=${this.wikiHash}>
+        </evees-info>
+      </div>      
       <evees-perspectives-list perspective-id="${this.wikiHash}"></evees-perspectives-list>
     `;
   }
@@ -35,6 +40,10 @@ export class WikiHome extends moduleConnect(LitElement) {
         font-size: 20px;
         padding-bottom: 16px;
         font-weight: bold;
+      }
+
+      .evee-info {
+        height: 40px;
       }
     `;
   }
