@@ -29,6 +29,7 @@ interface PerspectiveData {
   perspective: Perspective;
   details: PerspectiveDetails;
   canWrite: Boolean
+  permissions: any;
 }
 
 export class EveesInfo extends moduleConnect(LitElement) {
@@ -42,6 +43,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   show: Boolean = false;
+
+  @property({ attribute: false })
+  loading: Boolean = false;
 
   @property({ attribute: false })
   activeTabIndex: number = 0;

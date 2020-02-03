@@ -4,15 +4,12 @@ import '@material/mwc-dialog';
 import '@material/mwc-textfield';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { CortexModule } from '@uprtcl/cortex';
+import { ApolloClientModule, ApolloClient, gql } from '@uprtcl/graphql';
 
 import { PermissionsElement } from './permissions-element';
 import {
-  OwnerPermissions,
-  OwnerAccessControlService
+  OwnerPermissions
 } from '../services/owner-access-control.service';
-import { ApolloClient, gql } from 'apollo-boost';
 import { CHANGE_OWNER } from 'src/graphql/queries';
 
 export class PermissionsOwner extends moduleConnect(LitElement)

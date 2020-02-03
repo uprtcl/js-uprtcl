@@ -59,12 +59,12 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     if (proposal !== undefined) {
       if (!proposal.authorized) {
         if (proposal.canAuthorize) {
-          return 'Authorize';        
+          return 'Authorize';
         } else {
           return 'Pending';
         }
+      }
     }
-    
     return '';
   }
 
@@ -100,30 +100,32 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         }`
     });
     result.data.entity.context.perspectives.map(p => p.id);
-    const proposals = result.data.entity.proposals.map((prop): Proposal => {
-      return {
-        id: prop.id,
-        fromPerspectiveId: prop.fromPerspective.id,
-        authorized: prop.authorized,
-        canAuthorize: prop.canAuthorize,
-        executed: prop.exectude
-      };
-    });
+    const proposals = result.data.entity.proposals.map(
+      (prop): Proposal => {
+        return {
+          id: prop.id,
+          fromPerspectiveId: prop.fromPerspective.id,
+          authorized: prop.authorized,
+          canAuthorize: prop.canAuthorize,
+          executed: prop.exectude
+        };
+      }
+    );
 
     this.perspectivesData = result.data.entity.context.perspectives
       .filter(perspective => perspective.id !== this.perspectiveId)
       .map(perspective => {
-      /** search for proposals from this perspective */
-      const thisProposal: Proposal | undefined = proposals.find(
-        proposal => proposal.fromPerspectiveId === perspective.id
-      );
-      return {
-        id: perspective.id,
-        name: perspective.name,
-        creatorId: perspective.payload.creatorId,
-        proposal: thisProposal
-      };
-    });
+        /** search for proposals from this perspective */
+        const thisProposal: Proposal | undefined = proposals.find(
+          proposal => proposal.fromPerspectiveId === perspective.id
+        );
+        return {
+          id: perspective.id,
+          name: perspective.name,
+          creatorId: perspective.payload.creatorId,
+          proposal: thisProposal
+        };
+      });
 
     this.loading = false;
     this.logger.info('getOtherPersepectives() - post', {
