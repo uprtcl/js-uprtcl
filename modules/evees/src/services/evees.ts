@@ -31,8 +31,6 @@ export type NewPerspectiveArgs = (
   | (NoHeadPerspectiveArgs & { dataId: string })
 ) & { recursive?: boolean };
 
-const DEFAULT_PERSPECTIVE_NAME = 'first';
-
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
  */
@@ -128,9 +126,9 @@ export class Evees {
     args: NewPerspectiveArgs,
     authority?: string
   ): Promise<Secured<Perspective>> {
-    const name = args.name || DEFAULT_PERSPECTIVE_NAME;
-
     const eveesRemote = this.getAuthority(authority);
+
+    const name = args.name || ``;
 
     if (!eveesRemote.userId)
       throw new Error(`You need to be logged in the evees authority ${eveesRemote.authority} to create perspectives in it`);

@@ -1,9 +1,11 @@
-import { Proposal, UpdateRequest } from '../types';
+import { UpdateRequest, Proposal } from '../types';
 
 export interface ProposalsProvider {
   /** Getters */
 
-  getProposalsToPerspective(perspectiveId: string): Promise<Array<Proposal>>;
+  getProposal(proposalId: string): Promise<Proposal>;
+
+  getProposalsToPerspective(perspectiveId: string): Promise<string[]>;
 
   /** Modifiers */
 
@@ -12,16 +14,18 @@ export interface ProposalsProvider {
   createProposal(
     fromPerspectiveId: string,
     toPerspectiveId: string,
-    requests: UpdateRequest[]
+    updates: UpdateRequest[]
   ): Promise<string>;
 
-  updateProposal(proposalId: string, requests: UpdateRequest[]): Promise<void>;
-
+  addUpdatesToProposal(proposalId: string, updates: UpdateRequest[]): Promise<void>;
+  
+  freezeProposal(proposalId: string, updates: UpdateRequest[]): Promise<void>;
+  
   cancelProposal(proposalId: string): Promise<void>;
 
   // From the point of view of the person that is proposed
 
-  declineUpdateRequests(updateRequestIds: string[]): Promise<void>;
+  declineProposal(proposalId: string[]): Promise<void>;
 
-  acceptUpdateRequests(updateRequestIds: string[]): Promise<void>;
+  acceptProposal(proposalId: string[]): Promise<void>;
 }

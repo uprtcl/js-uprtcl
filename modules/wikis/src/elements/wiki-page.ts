@@ -58,6 +58,11 @@ console.group(result)
       :host {
         width: 100%;
       }
+
+      mwc-top-app-bar {
+        --mdc-theme-primary: transparent;
+        --mdc-theme-on-primary: #37352f;
+      }
     `];
   }
 }

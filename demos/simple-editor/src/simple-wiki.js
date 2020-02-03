@@ -76,7 +76,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         mutation: CREATE_PERSPECTIVE,
         variables: {
           headId: createCommit.data.createCommit.id,
-          authority: this.eveesProvider.authority
+          authority: this.eveesProvider.authority,
+          name: 'master'
         }
       });
 

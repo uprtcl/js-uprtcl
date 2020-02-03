@@ -5,6 +5,7 @@ import { Secured } from '../patterns/default-secured.pattern';
 import { Commit, Perspective } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
+import { ProposalsProvider } from '../services/proposals.provider';
 
 export const eveesResolvers = {
   Commit: {
@@ -33,6 +34,14 @@ export const eveesResolvers = {
       return evees.getContextPerspectives(context);      
     }
   },
+  UpdateProposal: {
+    toPerspective (parent) {
+      return parent.toPerspectiveId;
+    },
+    fromPerspective (parent) {
+      return parent.fromPerspectiveId;
+    }
+  },
   Perspective: {
     async head(parent, _, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
@@ -57,6 +66,22 @@ export const eveesResolvers = {
       const details = await remote.getPerspectiveDetails(parent.id);
 
       return details && details.context;
+    },
+    async proposals(parent, _, { container }) {
+      const evees: Evees = container.get(EveesBindings.Evees);
+
+      const remote = evees.getPerspectiveProvider(parent);
+      
+      if (!remote.proposals) return [];
+      
+      const proposalsIds = await remote.proposals.getProposalsToPerspective(parent.id);
+      const proposalsPromises = proposalsIds.map((proposalId) => {
+        return (remote.proposals as ProposalsProvider).getProposal(proposalId)
+      });
+
+      const proposals = await Promise.all(proposalsPromises);
+
+      return proposals;
     }
   },
   Mutation: {

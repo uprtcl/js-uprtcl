@@ -1,4 +1,4 @@
-import { LitElement, property, html } from 'lit-element';
+import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import '@material/mwc-drawer';
@@ -207,10 +207,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.currentHead = head ? head.id : undefined;
   }
 
-  static get styles() {
-    return sharedStyles;
-  }
-
   selectPage(pageHash: string | undefined) {
     this.dispatchEvent(
       new CustomEvent('page-selected', {
@@ -262,7 +258,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           ${this.wiki.title}
         </span>
 
-        <div class="column" style="height: 100%;">
+        <div class="column light-gray" style="height: 100%;">
           <div style="flex: 1;">
             ${this.renderPageList()}
           </div>
@@ -283,7 +279,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             : html``}
         </div>
 
-        <div slot="appContent" class="fill-content" style="display: flex;">
+        <div slot="appContent" class="fill-content">
           ${this.selectedPageHash
             ? html`
                 <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
@@ -295,4 +291,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       </mwc-drawer>
     `;
   }
+
+  static get styles() {
+    return [ sharedStyles,
+      css`
+        :host {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
+            Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
+          color: #37352f;   
+        }
+        .light-gray {
+          background-color: #f7f6f3;
+        }
+      `, ];
+  }
+
 }
