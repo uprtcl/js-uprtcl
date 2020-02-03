@@ -17,7 +17,7 @@ import '@material/mwc-tab-bar';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { UpdateRequest, RemotesConfig, RequestCreatedEvent, Proposal, Perspective, PerspectiveDetails } from '../types';
+import { UpdateRequest, RemotesConfig, ProposalCreatedEvent, Perspective, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
@@ -193,17 +193,17 @@ export class EveesInfo extends moduleConnect(LitElement) {
       const remote = evees.getAuthority(authority);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
-      const requestId = await remote.proposals.createProposal(
+      const proposalId = await remote.proposals.createProposal(
         fromPerspectiveId,
         this.perspectiveId,
         updatesByAuthority[authority]
       );
 
-      this.logger.info('created proposal', { requestId, updateRequests });
+      this.logger.info('created proposal', { proposalId, updateRequests });
 
       this.dispatchEvent(
-        new RequestCreatedEvent({
-          detail: { requestId },
+        new ProposalCreatedEvent({
+          detail: { proposalId },
           cancelable: true,
           composed: true,
           bubbles: true

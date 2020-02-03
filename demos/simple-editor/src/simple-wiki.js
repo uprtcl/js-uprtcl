@@ -32,7 +32,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    this.addEventListener('evees-request-created', e => console.log(e));
+    this.addEventListener('evees-proposal-created', e => console.log(e));
 
     this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => provider.source.startsWith('ipfs'));
 
