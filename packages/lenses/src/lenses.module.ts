@@ -10,6 +10,7 @@ import { LensesPlugin } from './types';
 import { SlotPlugin } from './plugins/slot.plugin';
 import { lensesSchema } from './graphql.schema';
 import { CortexLoadingPlaceholder } from './elements/cortex-loading-placeholder';
+import { CortexPattern } from './elements/cortex-pattern';
 
 const isSlotPlugin = (p: LensesPlugin) => (p as SlotPlugin).renderSlot;
 
@@ -34,6 +35,7 @@ export class LensesModule extends MicroModule {
     customElements.define('cortex-actions', CortexActions);
     customElements.define('cortex-lens-selector', CortexLensSelector);
     customElements.define('cortex-entity', cortexEntity);
+    customElements.define('cortex-pattern', CortexPattern);
     customElements.define('cortex-loading-placeholder', CortexLoadingPlaceholder);
   }
 }

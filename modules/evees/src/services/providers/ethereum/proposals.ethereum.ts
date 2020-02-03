@@ -59,20 +59,20 @@ export class ProposalsEthereum implements ProposalsProvider {
     this.logger.info('createProposal()', { fromPerspectiveId, toPerspectiveId, headUpdates });
 
     /** verify all perspectives are owned by the owner of the to perspective (which might not be in the updateHead list) */
-    const accessData = await this.accessControl.getAccessControlInformation(toPerspectiveId);
+    const accessData = await this.accessControl.getPermissions(toPerspectiveId);
     if (!accessData)
       throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
 
     const verifyPromises = headUpdates.map(async headUpdate => {
-      const thisAccessData = await this.accessControl.getAccessControlInformation(
+      const permissions = await this.accessControl.getPermissions(
         headUpdate.perspectiveId
       );
-      if (!thisAccessData)
+      if (!permissions)
         throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
 
-      if (thisAccessData.owner !== accessData.owner) {
+      if (permissions.owner !== accessData.owner) {
         throw new Error(
-          `perspective ${headUpdate.perspectiveId} in request not owned by target perspective owner ${accessData.owner} but by ${thisAccessData.owner}`
+          `perspective ${headUpdate.perspectiveId} in request not owned by target perspective owner ${accessData.owner} but by ${permissions.owner}`
         );
       }
     });

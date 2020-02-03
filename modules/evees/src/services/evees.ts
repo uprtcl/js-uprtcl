@@ -10,7 +10,13 @@ import {
   CortexModule,
   Signed
 } from '@uprtcl/cortex';
-import { KnownSourcesService, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import {
+  KnownSourcesService,
+  DiscoveryService,
+  DiscoveryModule,
+  TaskQueue,
+  Task
+} from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { createEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -50,7 +56,9 @@ export class Evees {
     @inject(ApolloClientModule.bindings.Client)
     protected client: ApolloClient<any>,
     @inject(EveesBindings.RemotesConfig)
-    protected remotesConfig: RemotesConfig
+    protected remotesConfig: RemotesConfig,
+    @inject(DiscoveryModule.bindings.TaskQueue)
+    protected taskQueue: TaskQueue
   ) {}
 
   /** Public functions */
@@ -131,9 +139,11 @@ export class Evees {
     const name = args.name || ``;
 
     if (!eveesRemote.userId)
-      throw new Error(`You need to be logged in the evees authority ${eveesRemote.authority} to create perspectives in it`);
+      throw new Error(
+        `You need to be logged in the evees authority ${eveesRemote.authority} to create perspectives in it`
+      );
 
-      // Create the perspective
+    // Create the perspective
     const perspectiveData: Perspective = {
       creatorId: eveesRemote.userId,
       origin: eveesRemote.authority,
@@ -244,10 +254,19 @@ export class Evees {
     }
 
     // Clone the perspective in the selected provider
-    await eveesRemote.clonePerspective(perspective);
+    const clonePerspectiveTask: Task = {
+      id: perspective.id,
+      task: () => eveesRemote.clonePerspective(perspective)
+    };
+    this.taskQueue.queueTask(clonePerspectiveTask);
 
     // And update its details
-    await eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context });
+    const updatedPerspectiveTask: Task = {
+      id: `Update details of ${perspective.id}`,
+      task: () => eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context }),
+      dependsOn: perspective.id
+    };
+    this.taskQueue.queueTask(updatedPerspectiveTask);
 
     return perspective;
   }

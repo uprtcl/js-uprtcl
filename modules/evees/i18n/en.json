@@ -1,5 +1,8 @@
 {
   "commit-history": "Version history",
   "new-perspective": "New perspective",
-  "merge": "Merge"
+  "merge": "Merge",
+  "permissions": "Permissions",
+  "information": "Information",
+  "other-perspectives": "Other perspectives"
 }

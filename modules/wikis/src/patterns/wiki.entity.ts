@@ -4,7 +4,7 @@ import { injectable, inject, multiInject } from 'inversify';
 import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
 import { Mergeable, EveesModule, MergeStrategy, mergeStrings } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
-import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
@@ -84,6 +84,8 @@ export class WikiCommon extends WikiEntity implements HasLenses {
 export class WikiCreate implements Creatable<Partial<Wiki>, Wiki> {
   constructor(
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
+    @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
     @multiInject(WikiBindings.WikisRemote) protected wikisRemotes: WikisProvider[]
   ) {}
 
@@ -104,10 +106,16 @@ export class WikiCreate implements Creatable<Partial<Wiki>, Wiki> {
       throw new Error('Could not find remote to create a Wiki in');
     }
     const newWiki = { pages, title };
-    const wikiId = await remote.createWiki(newWiki);
 
-    await this.discovery.postEntityCreate(remote, { id: wikiId, object: newWiki });
+    const { id } = await this.hashedPattern.derive()(newWiki);
+    const createWikiTask: Task = {
+      id,
+      task: () => (remote as WikisProvider).createWiki(newWiki)
+    };
+    this.taskQueue.queueTask(createWikiTask);
 
-    return { id: wikiId, object: newWiki };
+    await this.discovery.postEntityCreate(remote, { id, object: newWiki });
+
+    return { id, object: newWiki };
   };
 }

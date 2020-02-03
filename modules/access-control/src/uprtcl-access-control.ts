@@ -2,12 +2,13 @@
 import 'reflect-metadata';
 
 /** Access Control */
-export { AccessControl } from './properties/access-control';
+export { Updatable } from './properties/updatable';
+export { Permissions } from './properties/permissions';
 
 export { AccessControlModule } from './access-control.module';
 export { AccessControlService } from './services/access-control.service';
 export {
-  OwnerAccessControl,
+  OwnerPermissions,
   OwnerAccessControlService
 } from './services/owner-access-control.service';
 export {

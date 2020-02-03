@@ -44,6 +44,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
 
             patterns {
               isomorphisms {
+                id
                 _context {
 
                   patterns {

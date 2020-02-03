@@ -1,5 +1,5 @@
 import { EthereumProvider } from '@uprtcl/ethereum-provider';
-import { OwnerAccessControlService, OwnerAccessControl } from '@uprtcl/access-control';
+import { OwnerAccessControlService, OwnerPermissions } from '@uprtcl/access-control';
 
 import { GET_PERSP_DETAILS, UPDATE_OWNER, hashCid } from './common';
 
@@ -18,10 +18,10 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
     const perspective: { owner: string } = await this.ethProvider.call(GET_PERSP_DETAILS, [
       perspectiveIdHash
     ]);
-    return perspective.owner;
+    return perspective.owner.toLowerCase();
   }
 
-  async getAccessControlInformation(hash: string): Promise<OwnerAccessControl | undefined> {
+  async getPermissions(hash: string): Promise<OwnerPermissions | undefined> {
     let owner = await this.getOwner(hash);
     return { owner };
   }

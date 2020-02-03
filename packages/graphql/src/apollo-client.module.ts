@@ -70,9 +70,13 @@ export class ApolloClientModule extends MicroModule {
       };
     }
 
+    let client: ApolloClient<any> | undefined = undefined;
+
     container
       .bind(ApolloClientModule.bindings.Client)
       .toDynamicValue((context: interfaces.Context) => {
+        if (client) return client;
+
         const schema: GraphQLSchema = context.container.get(ApolloClientModule.bindings.RootSchema);
 
         const links = new SchemaLink({
@@ -80,7 +84,8 @@ export class ApolloClientModule extends MicroModule {
           context: { container: context.container, cache }
         });
 
-        return (this.apolloClientBuilder as ApolloClientBuilder)(links);
+        client = (this.apolloClientBuilder as ApolloClientBuilder)(links);
+        return client;
       });
   }
 }
