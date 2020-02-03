@@ -16,7 +16,7 @@ import { SimpleWiki } from './simple-wiki';
 
 (async function() {
   const c1host = 'http://localhost:3100/uprtcl/1';
-  const ethHost = '';
+  const ethHost = 'http://localhost:8545';
   const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
 
   const httpConnection = new HttpConnection();
