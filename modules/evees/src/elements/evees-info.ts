@@ -38,6 +38,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
 
+  @property({ type: String, attribute: 'first-perspective-id' })
+  firstPerspectiveId!: string;
+
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
@@ -52,7 +55,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   perspectiveData!: PerspectiveData;
 
-  firstUpdated() {}
+  firstUpdated() { }
 
   updated(changedProperties) {
     if (changedProperties.get('perspectiveId') !== undefined) {
@@ -247,10 +250,24 @@ export class EveesInfo extends moduleConnect(LitElement) {
     );
   }
 
-  perspectiveTitle () {
-    return this.perspectiveData.details.name !== '' ? 
-      this.perspectiveData.details.name : 
-      `by ${this.perspectiveData.perspective.creatorId.substr(0, 6)} on ${this.perspectiveData.perspective.timestamp}`;
+  perspectiveTitle() {
+    if (this.perspectiveId === this.firstPerspectiveId) {
+      return 'Current Perspective';
+    } else {
+      const name = this.perspectiveData.details.name !== '' ?
+        this.perspectiveData.details.name :
+        `by ${this.perspectiveData.perspective.creatorId.substr(0, 6)} on ${this.perspectiveData.perspective.timestamp}`;
+
+      return `Other Perspective - ${name}`
+    }
+  }
+
+  perspectiveTextColor() {
+    if (this.perspectiveId === this.firstPerspectiveId) {
+      return '#37352f';
+    } else {
+      return '#ffffff';
+    }
   }
 
   renderLoading() {
@@ -272,19 +289,23 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   renderOtherPerspectives() {
     return html`
-      <div style="margin-top: 16px; margin-bottom: 16px;">
+      <div class="perspectives-list">
         <evees-perspectives-list
           perspective-id=${this.perspectiveId}
+          first-perspective-id=${this.firstPerspectiveId}
           @perspective-selected=${this.otherPerspectiveClicked}
           @merge-perspective=${this.otherPerspectiveMerge}
         ></evees-perspectives-list>
       </div>
-      <mwc-button
-        outlined
-        icon="call_split"
-        @click=${this.newPerspectiveClicked}
-        label="Create new perspective"
-      ></mwc-button>
+      <div class="row">
+        <mwc-button
+          outlined
+          icon="call_split"
+          @click=${this.newPerspectiveClicked}
+          label="Create new perspective"
+        ></mwc-button>
+      </div>
+      
     `;
   }
 
@@ -309,14 +330,14 @@ export class EveesInfo extends moduleConnect(LitElement) {
           @click=${this.showClicked}
         ></div>
         ${this.show
-          ? html`
+        ? html`
               <mwc-card class="info-box">
                 ${this.perspectiveData
-                  ? html`
+            ? html`
                       <div class="column">
-                        <span style="padding: 16px;">
-                          <strong>Perspective</strong> ${this.perspectiveData.id}
-                        </span>
+                        <div class="perspective-title" style=${styleMap({ backgroundColor: this.eveeColor, color: this.perspectiveTextColor() })}>
+                           ${this.perspectiveTitle()}
+                        </div>
 
                         <mwc-tab-bar
                           @MDCTabBar:activated=${e => (this.activeTabIndex = e.detail.index)}
@@ -332,15 +353,15 @@ export class EveesInfo extends moduleConnect(LitElement) {
                           </mwc-tab>
                         </mwc-tab-bar>
 
-                        <div style="padding: 16px;">
+                        <div class="tab-content">
                           ${this.renderTabContent()}
                         </div>
                       </div>
                     `
-                  : this.renderLoading()}
+            : this.renderLoading()}
               </mwc-card>
             `
-          : ''}
+        : ''}
       </div>
     `;
   }
@@ -384,6 +405,20 @@ export class EveesInfo extends moduleConnect(LitElement) {
       .column {
         display: flex;
         flex-direction: column;
+      }
+      .perspective-title {
+        padding: 16px;
+        font-weight: bold;
+        border-top-right-radius: 4px;
+        border-top-left-radius: 4px;
+      }
+      .perspectives-list {
+        border-bottom: solid 1px #d9d7d0;
+        margin-bottom: 16px;
+        min-height: 120px;
+      }
+      .tab-content {
+        padding: 16px;
       }
     `;
   }

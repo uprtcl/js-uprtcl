@@ -12,11 +12,13 @@ import { Perspective } from '../types';
 import { EveesRemote } from 'src/services/evees.remote';
 import { EveesBindings } from 'src/bindings';
 
+export const DEFAULT_COLOR = '#d9d7d0';
+
 export class EveesPerspective extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVE');
 
   @property({ type: String, attribute: 'perspective-id' })
-  firtPerspectiveId!: string;
+  firstPerspectiveId!: string;
 
   @property({ type: String, attribute: false })
   perspectiveId!: string;
@@ -38,10 +40,10 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   firstUpdated() {
     this.logger.info('firstUpdated()', {
-      firtPerspectiveId: this.firtPerspectiveId,
+      firtPerspectiveId: this.firstPerspectiveId,
       onlyChildren: this.onlyChildren
     });
-    this.perspectiveId = this.firtPerspectiveId;
+    this.perspectiveId = this.firstPerspectiveId;
     this.loadPerspective();
   }
 
@@ -120,8 +122,8 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   }
 
   getEveeColor() {
-    const base = this.eveeColor !== 'undefined' ? this.eveeColor : randomColor({seed: this.firtPerspectiveId});
-    return this.perspectiveId === this.firtPerspectiveId ? base : randomColor({seed: this.perspectiveId});
+    const base = this.eveeColor !== 'undefined' ? this.eveeColor : DEFAULT_COLOR;
+    return this.perspectiveId === this.firstPerspectiveId ? base : randomColor({seed: this.perspectiveId});
   }
 
   connectedCallback() {
@@ -210,6 +212,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       >
         <evees-info
           slot="evee"
+          first-perspective-id=${this.firstPerspectiveId}
           perspective-id=${this.perspectiveId}
           evee-color=${this.getEveeColor()}
           @checkout-perspective=${e => this.checkoutPerspective(e.detail.perspectiveId)}

@@ -6,11 +6,13 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Proposal } from '../types';
 import { styleMap } from './evees-info';
+import { DEFAULT_COLOR } from './evees-perspective';
 
 interface PerspectiveData {
   id: string;
   name: string;
   creatorId: string;
+  timestamp: number;
   proposal: Proposal | undefined;
 }
 
@@ -19,6 +21,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
+
+  @property({ type: String, attribute: 'first-perspective-id' })
+  firstPerspectiveId!: string;
 
   @property({ type: Boolean, attribute: false })
   loading: boolean = true;
@@ -83,6 +88,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                   name
                   payload {
                     creatorId
+                    timestamp
                   }
                 } 
               }
@@ -123,6 +129,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           id: perspective.id,
           name: perspective.name,
           creatorId: perspective.payload.creatorId,
+          timestamp: perspective.payload.timestamp,
           proposal: thisProposal
         };
       });
@@ -132,6 +139,18 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       persperspectivesData: this.perspectivesData
     });
   };
+
+  perspectiveTitle(perspectivesData: PerspectiveData) {
+    return `${perspectivesData.name} by ${perspectivesData.creatorId.substr(0, 6)} on ${perspectivesData.timestamp}`;
+  }
+
+  perspectiveColor(perspectiveId: string) {
+    if (perspectiveId === this.firstPerspectiveId) {
+      return DEFAULT_COLOR;
+    } else {
+      return randomColor({ seed: perspectiveId });
+    }
+  }
 
   renderLoading() {
     return html`
@@ -144,34 +163,31 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       ? this.renderLoading()
       : html`
           ${this.perspectivesData.length > 0
-            ? html`
+          ? html`
                 <mwc-list>
-                  ${this.perspectivesData.map((perspectivesData: PerspectiveData) => {
+                  ${this.perspectivesData.map((perspectiveData: PerspectiveData) => {
                     return html`
                       <div class="row">
-                        <mwc-list-item @click=${() => this.perspectiveClicked(perspectivesData.id)}>
+                        <mwc-list-item class="perspective-title" @click=${() => this.perspectiveClicked(perspectiveData.id)}>
                           <div
                             class="perspective-mark"
-                            style=${styleMap({
-                              backgroundColor: randomColor({ seed: perspectivesData.id })
-                            })}
+                            style=${styleMap({ backgroundColor: this.perspectiveColor(perspectiveData.id) })})
                           ></div>
                           <span class="perspective-name"
-                            >${perspectivesData.name} by
-                            ${perspectivesData.creatorId.substr(0, 6)}</span
+                            >${this.perspectiveTitle(perspectiveData)}</span
                           >
                         </mwc-list-item>
                         <mwc-button
                           icon="call_merge"
-                          @click=${() => this.mergeClicked(perspectivesData.id)}
-                          label=${this.getProposalAction(perspectivesData.proposal)}
+                          @click=${() => this.mergeClicked(perspectiveData.id)}
+                          label=${this.getProposalAction(perspectiveData.proposal)}
                         ></mwc-button>
                       </div>
                     `;
                   })}
                 </mwc-list>
               `
-            : html`
+          : html`
                 <span>There are no other perspectives for this context</span>
               `}
         `;
@@ -198,6 +214,10 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         text-overflow: ellipsis;
         flex: 1;
         margin-left: 8px;
+      }
+
+      .perspective-title {
+        flex: 1;
       }
     `;
   }
