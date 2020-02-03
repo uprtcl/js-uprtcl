@@ -142,12 +142,14 @@ export class CommitPattern extends CommitEntity
 
     if (!remote) throw new Error(`Source ${source} not registered`);
 
-    const task: Task = {
-      id: commit.id,
-      task: () => remote.cloneCommit(commit)
-    };
+    // const task: Task = {
+    //   id: commit.id,
+    //   task: () => remote.cloneCommit(commit)
+    // };
 
-    this.taskQueue.queueTask(task);
+    // this.taskQueue.queueTask(task);
+
+    await remote.cloneCommit(commit);
 
     await this.discovery.postEntityCreate(remote, commit);
 

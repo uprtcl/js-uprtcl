@@ -107,12 +107,14 @@ export class WikiCreate implements Creatable<Partial<Wiki>, Wiki> {
     }
     const newWiki = { pages, title };
 
-    const { id } = await this.hashedPattern.derive()(newWiki);
-    const createWikiTask: Task = {
-      id,
-      task: () => (remote as WikisProvider).createWiki(newWiki)
-    };
-    this.taskQueue.queueTask(createWikiTask);
+    // const { id } = await this.hashedPattern.derive()(newWiki);
+    // const createWikiTask: Task = {
+    //   id,
+    //   task: () => (remote as WikisProvider).createWiki(newWiki)
+    // };
+    // this.taskQueue.queueTask(createWikiTask);
+
+    const id = await remote.createWiki(newWiki);
 
     await this.discovery.postEntityCreate(remote, { id, object: newWiki });
 

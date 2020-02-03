@@ -255,21 +255,27 @@ export class Evees {
       headId = result.data.createCommit.id;
     }
 
+    // // Clone the perspective in the selected provider
+    // const clonePerspectiveTask: Task = {
+    //   id: perspective.id,
+    //   task: () => eveesRemote.clonePerspective(perspective)
+    // };
+    // this.taskQueue.queueTask(clonePerspectiveTask);
+
+    // // And update its details
+    // const updatedPerspectiveTask: Task = {
+    //   id: `Update details of ${perspective.id}`,
+    //   task: () => eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context }),
+    //   dependsOn: perspective.id
+    // };
+    // this.taskQueue.queueTask(updatedPerspectiveTask);
+
     // Clone the perspective in the selected provider
-    const clonePerspectiveTask: Task = {
-      id: perspective.id,
-      task: () => eveesRemote.clonePerspective(perspective)
-    };
-    this.taskQueue.queueTask(clonePerspectiveTask);
+    await eveesRemote.clonePerspective(perspective);
 
     // And update its details
-    const updatedPerspectiveTask: Task = {
-      id: `Update details of ${perspective.id}`,
-      task: () => eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context }),
-      dependsOn: perspective.id
-    };
-    this.taskQueue.queueTask(updatedPerspectiveTask);
-
+    await eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context });
+    
     return perspective;
   }
 }

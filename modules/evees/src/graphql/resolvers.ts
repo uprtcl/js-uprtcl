@@ -92,15 +92,17 @@ export const eveesResolvers = {
 
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
-      const updatePerspectiveTask: Task = {
-        id: `Update head of ${perspectiveId}`,
-        task: async () => {
-          await provider.updatePerspectiveDetails(perspectiveId, { headId });
-        }
-      };
+      // const updatePerspectiveTask: Task = {
+      //   id: `Update head of ${perspectiveId}`,
+      //   task: async () => {
+      //     await provider.updatePerspectiveDetails(perspectiveId, { headId });
+      //   }
+      // };
 
-      taskQueue.queueTask(updatePerspectiveTask);
+      // taskQueue.queueTask(updatePerspectiveTask);
 
+      await provider.updatePerspectiveDetails(perspectiveId, { headId });
+      
       await discovery.postEntityUpdate(provider, [headId]);
 
       const result = await client.query({

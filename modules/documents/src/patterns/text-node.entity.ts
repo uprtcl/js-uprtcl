@@ -185,14 +185,16 @@ export class TextNodeCreate extends TextNodeEntity
     }
 
     const newTextNode = { links, text, type };
-    const { id } = await this.hashedPattern.derive()(newTextNode);
+    
+    // const { id } = await this.hashedPattern.derive()(newTextNode);
+    // const createTextNodeTask: Task = {
+    //   id: id,
+    //   task: () => (remote as DocumentsProvider).createTextNode(newTextNode)
+    // };
 
-    const createTextNodeTask: Task = {
-      id: id,
-      task: () => (remote as DocumentsProvider).createTextNode(newTextNode)
-    };
+    // this.taskQueue.queueTask(createTextNodeTask);
 
-    this.taskQueue.queueTask(createTextNodeTask);
+    const id = await remote.createTextNode(newTextNode);
 
     await this.discovery.postEntityCreate(remote, { id, object: newTextNode });
 
