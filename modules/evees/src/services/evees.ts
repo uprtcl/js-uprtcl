@@ -134,6 +134,8 @@ export class Evees {
     args: NewPerspectiveArgs,
     authority?: string
   ): Promise<Secured<Perspective>> {
+
+    debugger
     const eveesRemote = this.getAuthority(authority);
 
     const name = args.name || ``;

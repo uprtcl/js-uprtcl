@@ -1,5 +1,5 @@
 import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
-import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
+import { DiscoveryModule, EntityCache, DiscoveryService } from '@uprtcl/multiplatform';
 import { Authority } from '@uprtcl/multiplatform';
 
 import { Permissions } from '../properties/permissions';
@@ -9,8 +9,12 @@ import { OwnerAccessControlService } from 'src/services/owner-access-control.ser
 export const accessControlResolvers = {
   Mutation: {
     async changeOwner(_, { entityId, newOwner }, { container }) {
-      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
-      const entity = entityCache.getCachedEntity(entityId);
+      // const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
+      // const entity = entityCache.getCachedEntity(entityId);
+      debugger
+      const discoveryService: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
+      const entity: any = await discoveryService.get(entityId);
+
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
       if (!entity) throw new Error(`Cannot change owner of ${entityId}: entity not found`);

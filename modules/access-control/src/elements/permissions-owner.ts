@@ -10,7 +10,7 @@ import { PermissionsElement } from './permissions-element';
 import {
   OwnerPermissions
 } from '../services/owner-access-control.service';
-import { CHANGE_OWNER } from 'src/graphql/queries';
+import { CHANGE_OWNER } from '../graphql/queries';
 
 export class PermissionsOwner extends moduleConnect(LitElement)
   implements PermissionsElement<OwnerPermissions> {
@@ -24,6 +24,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   @query('mwc-dialog')
   dialog: any;
 
+  @property({ type: String })
   newOwnerAddress!: string;
 
   firstUpdated() {
@@ -77,7 +78,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
           initialFocusAttribute
           @input=${e => (this.newOwnerAddress = e.target.value)}
         ></mwc-textfield>
-        <mwc-button dialogAction="ok" slot="primaryAction" .disabled=${!this.newOwnerAddress}>
+        <mwc-button @click=${this.changeOwner} dialogAction="ok" slot="primaryAction" .disabled=${!this.newOwnerAddress}>
           ${this.t('access-control:confirm')}
         </mwc-button>
         <mwc-button dialogAction="cancel" slot="secondaryAction">

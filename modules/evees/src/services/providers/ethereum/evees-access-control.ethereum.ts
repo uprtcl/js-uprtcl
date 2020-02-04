@@ -7,6 +7,7 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
   constructor(protected ethProvider: EthereumProvider) {}
 
   async changeOwner(hash: string, newOwnerId: string): Promise<void> {
+    debugger
     const perspectiveIdHash = await hashCid(hash);
 
     await this.ethProvider.call(UPDATE_OWNER, [perspectiveIdHash, newOwnerId]);

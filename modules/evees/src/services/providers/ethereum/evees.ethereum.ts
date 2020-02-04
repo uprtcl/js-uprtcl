@@ -48,6 +48,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
    * @override
    */
   public get<T>(hash: string): Promise<Hashed<T> | undefined> {
+    debugger
     return this.ipfsSource.get(hash);
   }
 
