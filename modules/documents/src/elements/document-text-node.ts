@@ -30,7 +30,8 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'only-children' })
   onlyChildren: String | undefined = undefined;
 
-  editable: Boolean = true;
+  @property({ type: Boolean })
+  editable: Boolean = false;
 
   currentContent: any;
   private currentHeadId: string | undefined = undefined;
@@ -68,6 +69,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     });
 
     this.currentHeadId = result.data.entity.head.id;
+    this.editable = result.data.entity._context.patterns.accessControl.canWrite;
   }
 
   async updateContent(newContent: TextNode): Promise<void> {
@@ -269,7 +271,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
                     type=${this.data.object.type}
                     init=${this.data.object.text}
                     level=${this.level}
-                    .editable=${true}
+                    editable=${this.editable ? 'true' : 'false'}
                     @content-changed=${this.editorContentChanged}
                     @enter-pressed=${this.enterPressed}
                     @change-type=${this.changeType}

@@ -33,13 +33,13 @@ export const cortexResolvers = {
   },
   EntityContext: {
     raw(parent) {
-      return hashedFromGraphQlObject(parent).object;
+      return JSON.stringify(hashedFromGraphQlObject(parent).object);
     },
     async patterns(parent, args, { container }, info) {
       const entity = hashedFromGraphQlObject(parent);
 
       const isGraphQlField = (key: string) =>
-        Object.keys(info.returnType.ofType._fields).includes(key);
+        key !== 'accessControl' && Object.keys(info.returnType.ofType._fields).includes(key);
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 
       const patterns = recognizer.recognize(entity);
@@ -58,9 +58,7 @@ export const cortexResolvers = {
       const accPatterns = {};
       merge(accPatterns, ...applyedPatterns, { __entity: entity });
 
-      return cloneDeepWith(accPatterns, (value: any) => {
-        if (typeof value === 'function') return () => value;
-      });
+      return substituteFunction(accPatterns);
     }
   }
 };
@@ -78,4 +76,19 @@ export function hashedFromGraphQlObject(parent): Hashed<any> {
     id,
     object
   };
+}
+
+export function substituteFunction(object: Object): Object {
+  for (const key of Object.keys(object)) {
+    try {
+      if (Array.isArray(object[key])) object[key] = object[key].map(o => substituteFunction(o));
+      else if (typeof object[key] === 'object') object[key] = substituteFunction(object[key]);
+      else if (typeof object[key] === 'function') {
+        const f = object[key];
+        object[key] = () => f;
+      }
+    } catch (e) {}
+  }
+
+  return object;
 }

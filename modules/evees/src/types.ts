@@ -1,5 +1,6 @@
 import { Source } from '@uprtcl/multiplatform';
 import { EveesRemote } from './services/evees.remote';
+import { Secured } from './patterns/default-secured.pattern';
 
 export type RemoteMap = (eveesAuthority: string, entityName: string) => Source;
 
@@ -31,31 +32,30 @@ export interface Commit {
 }
 
 export interface UpdateRequest {
-  fromPerspectiveId: string | undefined;
-  oldHeadId: string | undefined;
+  fromPerspectiveId?: string | undefined;
+  oldHeadId?: string | undefined;
   perspectiveId: string;
   newHeadId: string;
 }
 
 export interface Proposal {
-  timestamp: number;
-  creatorId: string;
-  requests: Array<UpdateRequest>;
-}
-
-export interface PerspectiveData {
   id: string;
-  perspective: Perspective;
-  details: PerspectiveDetails;
-  canWrite: Boolean;
+  creatorId?: string,
+  toPerspectiveId?: string;
+  fromPerspectiveId: string;
+  updates?: Array<UpdateRequest>;
+  status?: boolean;
+  authorized?: boolean;
+  executed?: boolean;
+  canAuthorize?: boolean;
 }
 
-export interface RequestCreatedDetail {
-  requestId: string
+export interface ProposalCreatedDetail {
+  proposalId: string
 }
 
-export class RequestCreatedEvent extends CustomEvent<RequestCreatedDetail> {
-  constructor(eventInitDict?: CustomEventInit<RequestCreatedDetail>) {
-    super('evees-request-created', eventInitDict);
+export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
+  constructor(eventInitDict?: CustomEventInit<ProposalCreatedDetail>) {
+    super('evees-proposal-created', eventInitDict);
   }
 }

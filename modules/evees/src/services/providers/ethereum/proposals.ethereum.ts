@@ -1,12 +1,11 @@
-import { Hashed } from '@uprtcl/cortex';
-import { EthereumProvider } from '@uprtcl/ethereum-provider';
 import { IpfsSource } from '@uprtcl/ipfs-provider';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { ProposalsProvider } from '../../proposals.provider';
-import { Proposal, UpdateRequest } from '../../../types';
-import { hashCid, INIT_REQUEST } from './common';
+import { UpdateRequest, Proposal } from '../../../types';
+import { hashCid, INIT_REQUEST, GET_REQUEST } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { EveesEthereum } from './evees.ethereum';
 
 export interface EthHeadUpdate {
   perspectiveIdHash: string;
@@ -26,11 +25,22 @@ export interface EthMergeRequest {
   authorized?: number;
 }
 
+export interface EthRequestCreatedEvent {
+  toPerspectiveIdHash: string,
+  fromPerspectiveIdHash: string,
+  nonce: number,
+  requestId: string,
+  toPerspectiveId: string,
+  fromPerspectiveId: string,
+  creator: string
+}
+
 export class ProposalsEthereum implements ProposalsProvider {
+  
   logger = new Logger('PROPOSALS-ETHEREUM');
 
   constructor(
-    protected ethProvider: EthereumProvider,
+    protected ethProvider: EveesEthereum,
     protected ipfsSource: IpfsSource,
     protected accessControl: EveesAccessControlEthereum
   ) {}
@@ -39,32 +49,30 @@ export class ProposalsEthereum implements ProposalsProvider {
     await Promise.all([this.ethProvider.ready(), this.ipfsSource.ready()]);
   }
 
-  getProposalsToPerspective(perspectiveId: string): Promise<Array<Proposal>> {
-    throw new Error('Method not implemented.');
-  }
-
   async createProposal(
     fromPerspectiveId: string,
     toPerspectiveId: string,
     headUpdates: UpdateRequest[]
   ): Promise<string> {
+    await this.ready();
+
     this.logger.info('createProposal()', { fromPerspectiveId, toPerspectiveId, headUpdates });
 
     /** verify all perspectives are owned by the owner of the to perspective (which might not be in the updateHead list) */
-    const accessData = await this.accessControl.getAccessControlInformation(toPerspectiveId);
+    const accessData = await this.accessControl.getPermissions(toPerspectiveId);
     if (!accessData)
       throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
 
     const verifyPromises = headUpdates.map(async headUpdate => {
-      const thisAccessData = await this.accessControl.getAccessControlInformation(
+      const permissions = await this.accessControl.getPermissions(
         headUpdate.perspectiveId
       );
-      if (!thisAccessData)
+      if (!permissions)
         throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
 
-      if (thisAccessData.owner !== accessData.owner) {
+      if (permissions.owner !== accessData.owner) {
         throw new Error(
-          `perspective ${headUpdate.perspectiveId} in request not owned by target perspective owner ${accessData.owner} but by ${thisAccessData.owner}`
+          `perspective ${headUpdate.perspectiveId} in request not owned by target perspective owner ${accessData.owner} but by ${permissions.owner}`
         );
       }
     });
@@ -86,8 +94,8 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const ethHeadUpdates = await Promise.all(ethHeadUpdatesPromises);
 
-    let toPerspectiveIdHash = await hashCid(toPerspectiveId);
-    let fromPerspectiveIdHash = await hashCid(fromPerspectiveId);
+    const toPerspectiveIdHash = await hashCid(toPerspectiveId);
+    const fromPerspectiveIdHash = await hashCid(fromPerspectiveId);
 
     await this.ethProvider.send(INIT_REQUEST, [
       toPerspectiveIdHash,
@@ -101,7 +109,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     ]);
 
     /** check logs to get the requestId (batchId) */
-    let createdEvents = await this.ethProvider.contractInstance.getPastEvents(
+    const createdEvents = await this.ethProvider.contractInstance.getPastEvents(
       'MergeRequestCreated',
       {
         filter: {
@@ -112,27 +120,109 @@ export class ProposalsEthereum implements ProposalsProvider {
       }
     );
 
-    let requestId = createdEvents.filter(e => parseInt(e.returnValues.nonce) === nonce)[0]
+    const requestId = createdEvents.filter(e => parseInt(e.returnValues.nonce) === nonce)[0]
       .returnValues.requestId;
 
-    this.logger.info('createProposal()', { requestId, headUpdates });
+    this.logger.info('createProposal() - post', { requestId, headUpdates });
 
     return requestId;
   }
 
-  updateProposal(proposalId: string, requests: UpdateRequest[]): Promise<void> {
-    throw new Error('Method not implemented.');
+  async getProposal(requestId: string): Promise<Proposal> {
+    await this.ready();
+
+    this.logger.info('getProposal() - pre', { requestId });
+
+    const request: EthMergeRequest = await this.ethProvider.call(
+      GET_REQUEST, 
+      [ requestId ]);
+
+    let requestCreatedEvents = await this.ethProvider.contractInstance.getPastEvents(
+      'MergeRequestCreated',
+      {
+        filter: {
+          requestId,
+        },
+        fromBlock: 0
+      }
+    );
+
+    if (requestCreatedEvents.length === 0) {
+      throw new Error(`Request creationg event not found for ${requestId}`);
+    }
+
+    const requestEventValues = (requestCreatedEvents[0].returnValues as EthRequestCreatedEvent);
+    
+    const ethHeadUpdates = request.headUpdates;
+
+    const updatesPromises = ethHeadUpdates.map(async (ethUpdateRequest) => {
+      const perspectiveId = await this.ethProvider.hashToId(ethUpdateRequest.perspectiveIdHash);
+
+      return {
+        perspectiveId: perspectiveId,
+        newHeadId: ethUpdateRequest.headId
+      }
+    });
+
+    const updates = await Promise.all(updatesPromises);
+    const executed = (ethHeadUpdates.find(update => update.executed === 0) === undefined);
+
+    const proposal: Proposal = {
+      id: requestId,
+      creatorId: requestEventValues.creator,
+      toPerspectiveId: requestEventValues.toPerspectiveId,
+      fromPerspectiveId: requestEventValues.fromPerspectiveId,
+      updates: updates,
+      status: request.status === 1,
+      authorized: request.authorized === 1,
+      executed: executed,
+      canAuthorize: request.owner === this.ethProvider.userId
+    }
+
+    this.logger.info('getProposal() - post', { proposal });
+
+    return proposal;
+  }
+
+  async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
+    await this.ready();
+
+    this.logger.info('getProposalsToPerspective() - pre', { perspectiveId });
+
+    let requestsCreatedEvents = await this.ethProvider.contractInstance.getPastEvents(
+      'MergeRequestCreated', {
+        filter: { toPerspectiveIdHash: await hashCid(perspectiveId) },
+        fromBlock: 0
+      }
+    )
+
+    const requestsIds = requestsCreatedEvents.map((event) => {
+      return event.returnValues.requestId;
+    })
+
+    this.logger.info('getProposalsToPerspective() - post', { requestsIds });
+    
+    return requestsIds;
+  }
+
+  addUpdatesToProposal(proposalId: string, updates: any[]): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
+  freezeProposal(proposalId: string, updates: any[]): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 
   cancelProposal(proposalId: string): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new Error("Method not implemented.");
   }
 
-  declineUpdateRequests(updateRequestIds: string[]): Promise<void> {
-    throw new Error('Method not implemented.');
+  declineProposal(proposalId: string[]): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 
-  acceptUpdateRequests(updateRequestIds: string[]): Promise<void> {
-    throw new Error('Method not implemented.');
+  acceptProposal(proposalId: string[]): Promise<void> {
+    throw new Error("Method not implemented.");
   }
+
 }

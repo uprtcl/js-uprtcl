@@ -17,6 +17,7 @@ export class KnownSourcesApollo implements KnownSourcesService {
         query: gql`
         {
           entity(id: "${hash}") {
+            id
             _context {
               source
             }

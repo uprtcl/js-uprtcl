@@ -16,7 +16,7 @@ import { Lens, HasLenses } from '@uprtcl/lenses';
 import { Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from '../services/evees.remote';
-import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/multiplatform';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 const creatorId = 'did:hi:ho';
@@ -89,7 +89,8 @@ export class CommitPattern extends CommitEntity
     @inject(EveesBindings.Secured)
     protected secured: Pattern & IsSecure<Secured<Commit>>,
     @multiInject(EveesBindings.EveesRemote) protected remotes: EveesRemote[],
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue
   ) {
     super(secured);
   }
@@ -140,6 +141,13 @@ export class CommitPattern extends CommitEntity
     const remote: EveesRemote | undefined = this.remotes.find(r => r.source === source);
 
     if (!remote) throw new Error(`Source ${source} not registered`);
+
+    // const task: Task = {
+    //   id: commit.id,
+    //   task: () => remote.cloneCommit(commit)
+    // };
+
+    // this.taskQueue.queueTask(task);
 
     await remote.cloneCommit(commit);
 

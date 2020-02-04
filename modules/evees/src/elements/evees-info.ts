@@ -7,20 +7,32 @@ export const styleMap = style => {
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
+
 import { ApolloClient, gql } from 'apollo-boost';
 
 import '@authentic/mwc-card';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { PerspectiveData, UpdateRequest, RemotesConfig, RequestCreatedEvent } from '../types';
+import { UpdateRequest, RemotesConfig, ProposalCreatedEvent, Perspective, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
-import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
+import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
-import { EveesRemote } from '../services/evees.remote';
+
+import { DEFAULT_COLOR } from './evees-perspective';
+
+interface PerspectiveData {
+  id: string;
+  perspective: Perspective;
+  details: PerspectiveDetails;
+  canWrite: Boolean
+  permissions: any;
+}
 
 export class EveesInfo extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
@@ -28,23 +40,34 @@ export class EveesInfo extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
 
+  @property({ type: String, attribute: 'first-perspective-id' })
+  firstPerspectiveId!: string;
+
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
   @property({ attribute: false })
   show: Boolean = false;
 
+  @property({ attribute: false })
+  loading: Boolean = false;
+
+  @property({ attribute: false })
+  activeTabIndex: number = 0;
+
   perspectiveData!: PerspectiveData;
 
-  firstUpdated() {
-    this.load();
-  }
+  firstUpdated() { }
 
-  updated() {
-    this.load();
+  updated(changedProperties) {
+    if (changedProperties.get('perspectiveId') !== undefined) {
+      this.logger.info('updated() reload', { changedProperties });
+      this.load();
+    }
   }
 
   async load() {
+    this.loading = true;
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`
@@ -69,6 +92,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
               patterns {
                 accessControl {
                   canWrite
+                  permissions
                 }
               }
             }
@@ -76,6 +100,8 @@ export class EveesInfo extends moduleConnect(LitElement) {
         }
       `
     });
+
+    const accessControl = result.data.entity._context.patterns.accessControl;
 
     this.perspectiveData = {
       id: result.data.entity.id,
@@ -85,12 +111,12 @@ export class EveesInfo extends moduleConnect(LitElement) {
         name: result.data.entity.name
       },
       perspective: result.data.entity.payload,
-      canWrite: result.data.entity._context.patterns.accessControl
-        ? result.data.entity._context.patterns.accessControl.canWrite
-        : true
+      canWrite: accessControl ? accessControl.canWrite : true,
+      permissions: accessControl ? accessControl.permissions : undefined
     };
 
     this.logger.info('load', { perspectiveData: this.perspectiveData });
+    this.loading = false;
   }
 
   async merge(fromPerspectiveId: string) {
@@ -121,6 +147,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async otherPerspectiveMerge(e: CustomEvent) {
+
     const fromPerspectiveId = e.detail.id;
     this.logger.info(`merge ${fromPerspectiveId} on ${this.perspectiveId}`);
 
@@ -171,17 +198,17 @@ export class EveesInfo extends moduleConnect(LitElement) {
       const remote = evees.getAuthority(authority);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
-      const requestId = await remote.proposals.createProposal(
+      const proposalId = await remote.proposals.createProposal(
         fromPerspectiveId,
         this.perspectiveId,
         updatesByAuthority[authority]
       );
 
-      this.logger.info('created proposal', { requestId, updateRequests });
+      this.logger.info('created proposal', { proposalId, updateRequests });
 
       this.dispatchEvent(
-        new RequestCreatedEvent({
-          detail: { requestId },
+        new ProposalCreatedEvent({
+          detail: { proposalId },
           cancelable: true,
           composed: true,
           bubbles: true
@@ -192,6 +219,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   showClicked() {
     this.show = !this.show;
+    if (this.show) this.load();
   }
 
   async newPerspectiveClicked() {
@@ -224,10 +252,75 @@ export class EveesInfo extends moduleConnect(LitElement) {
     );
   }
 
+  perspectiveTitle() {
+    if (this.perspectiveId === this.firstPerspectiveId) {
+      return 'Current Perspective';
+    } else {
+      const name = this.perspectiveData.details.name !== '' ?
+        this.perspectiveData.details.name :
+        `by ${this.perspectiveData.perspective.creatorId.substr(0, 6)} on ${this.perspectiveData.perspective.timestamp}`;
+
+      return `Other Perspective - ${name}`
+    }
+  }
+
+  perspectiveTextColor() {
+    if (this.perspectiveId === this.firstPerspectiveId) {
+      return '#37352f';
+    } else {
+      return '#ffffff';
+    }
+  }
+
   renderLoading() {
     return html`
       loading perspective data ...<mwc-circular-progress></mwc-circular-progress>
     `;
+  }
+
+  renderInfo() {
+    return html`
+      <div class="perspective-details">
+        <span><strong>Name:</strong> ${this.perspectiveData.details.name}</span>
+        <span><strong>Context:</strong> ${this.perspectiveData.details.context}</span>
+        <span><strong>Origin:</strong> ${this.perspectiveData.perspective.origin}</span>
+        <span><strong>Head:</strong> ${this.perspectiveData.details.headId}</span>
+      </div>
+    `;
+  }
+
+  renderOtherPerspectives() {
+    return html`
+      <div class="perspectives-list">
+        <evees-perspectives-list
+          perspective-id=${this.perspectiveId}
+          first-perspective-id=${this.firstPerspectiveId}
+          @perspective-selected=${this.otherPerspectiveClicked}
+          @merge-perspective=${this.otherPerspectiveMerge}
+        ></evees-perspectives-list>
+      </div>
+      <div class="row">
+        <mwc-button
+          outlined
+          icon="call_split"
+          @click=${this.newPerspectiveClicked}
+          label="Create new perspective"
+        ></mwc-button>
+      </div>
+      
+    `;
+  }
+
+  renderPermissions() {
+    return html`
+      <permissions-for-entity hash=${this.perspectiveId}></permissions-for-entity>
+    `;
+  }
+
+  renderTabContent() {
+    if (this.activeTabIndex === 0) return this.renderOtherPerspectives();
+    else if (this.activeTabIndex === 1) return this.renderInfo();
+    else return this.renderPermissions();
   }
 
   render() {
@@ -235,48 +328,42 @@ export class EveesInfo extends moduleConnect(LitElement) {
       <div class="container">
         <div
           class="button"
-          style=${styleMap({ backgroundColor: this.eveeColor })}
+          style=${styleMap({ backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR })}
           @click=${this.showClicked}
         ></div>
         ${this.show
-          ? html`
+        ? html`
               <mwc-card class="info-box">
-                <div style="padding: 16px;">
-                  ${this.perspectiveData
-                    ? html`
-                        <div class="perspective-details">
-                          <span style="padding-bottom: 16px;">
-                            <strong>Perspective</strong> ${this.perspectiveData.id}</span
-                          >
-                          <span><strong>Name:</strong> ${this.perspectiveData.details.name}</span>
-                          <span
-                            ><strong>Context:</strong> ${this.perspectiveData.details.context}</span
-                          >
-                          <span
-                            ><strong>Origin:</strong> ${this.perspectiveData.perspective
-                              .origin}</span
-                          >
-                          <span><strong>Head:</strong> ${this.perspectiveData.details.headId}</span>
+                ${this.perspectiveData
+            ? html`
+                      <div class="column">
+                        <div class="perspective-title" style=${styleMap({ backgroundColor: this.eveeColor, color: this.perspectiveTextColor() })}>
+                           ${this.perspectiveTitle()}
                         </div>
-                        <div style="margin-top: 16px; margin-bottom: 16px;">
-                          <evees-perspectives-list
-                            perspective-id=${this.perspectiveId}
-                            @perspective-selected=${this.otherPerspectiveClicked}
-                            @merge-perspective=${this.otherPerspectiveMerge}
-                          ></evees-perspectives-list>
+
+                        <mwc-tab-bar
+                          @MDCTabBar:activated=${e => (this.activeTabIndex = e.detail.index)}
+                        >
+                          <mwc-tab .label=${this.t('evees:other-perspectives')} hasImageIcon>
+                            <mwc-icon>list_alt</mwc-icon>
+                          </mwc-tab>
+                          <mwc-tab .label=${this.t('evees:information')} hasImageIcon>
+                            <mwc-icon>info</mwc-icon>
+                          </mwc-tab>
+                          <mwc-tab .label=${this.t('evees:permissions')} hasImageIcon>
+                            <mwc-icon>group</mwc-icon>
+                          </mwc-tab>
+                        </mwc-tab-bar>
+
+                        <div class="tab-content">
+                          ${this.renderTabContent()}
                         </div>
-                        <mwc-button
-                          outlined
-                          icon="call_split"
-                          @click=${this.newPerspectiveClicked}
-                          label="Create new perspective"
-                        ></mwc-button>
-                      `
-                    : this.renderLoading()}
-                </div>
+                      </div>
+                    `
+            : this.renderLoading()}
               </mwc-card>
             `
-          : ''}
+        : ''}
       </div>
     `;
   }
@@ -300,7 +387,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
         background-color: #cccccc;
       }
       .info-box {
-        width: 600px;
+        width: auto;
         z-index: 20;
         position: absolute;
         left: 20px;
@@ -312,6 +399,28 @@ export class EveesInfo extends moduleConnect(LitElement) {
       }
       .perspective-details > span {
         padding-bottom: 4px;
+      }
+      .row {
+        display: flex;
+        flex-direction: row;
+      }
+      .column {
+        display: flex;
+        flex-direction: column;
+      }
+      .perspective-title {
+        padding: 16px;
+        font-weight: bold;
+        border-top-right-radius: 4px;
+        border-top-left-radius: 4px;
+      }
+      .perspectives-list {
+        border-bottom: solid 1px #d9d7d0;
+        margin-bottom: 16px;
+        min-height: 120px;
+      }
+      .tab-content {
+        padding: 16px;
       }
     `;
   }

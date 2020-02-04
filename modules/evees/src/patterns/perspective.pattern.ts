@@ -13,7 +13,7 @@ import {
   Entity,
   Signed
 } from '@uprtcl/cortex';
-import { AccessControl } from '@uprtcl/access-control';
+import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
@@ -192,7 +192,7 @@ export class PerspectiveLinks extends PerspectiveEntity implements HasLinks, Has
 
 @injectable()
 export class PerspectiveAccessControl extends PerspectiveEntity
-  implements AccessControl<Secured<Perspective>> {
+  implements Updatable<Secured<Perspective>> {
   constructor(
     @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees
@@ -200,8 +200,11 @@ export class PerspectiveAccessControl extends PerspectiveEntity
     super(securedPattern);
   }
 
-  canWrite = (perspective: Secured<Perspective>): boolean => {
+  authority = (perspective: Secured<Perspective>) =>
+    this.evees.getPerspectiveProvider(perspective.object);
+
+  accessControl = (perspective: Secured<Perspective>) => {
     const provider = this.evees.getPerspectiveProvider(perspective.object);
-    return provider.userId === perspective.object.payload.creatorId;
+    return provider.accessControl;
   };
 }

@@ -23,8 +23,8 @@ export class DocumentTextNodeEditor extends LitElement {
   @property({ type: String })
   init!: string;
 
-  @property({ type: Boolean })
-  editable: boolean = true;
+  @property({ type: String })
+  editable: string = 'true';
 
   @property({ type: Number })
   level: number = 0;
@@ -125,7 +125,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
     this.editor.view = new EditorView(container, {
       state: this.editor.state,
-      editable: () => this.editable,
+      editable: () => this.editable === 'true',
       dispatchTransaction: transaction => this.handleTransaction(transaction)
     });
   }

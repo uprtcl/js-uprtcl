@@ -14,10 +14,9 @@ import {
   HasTitle,
   CortexModule
 } from '@uprtcl/cortex';
-import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
-import { Mergeable, MergeStrategy, mergeStrings, mergeResult } from '@uprtcl/evees';
+import { DiscoveryService, DiscoveryModule, TaskQueue, Task } from '@uprtcl/multiplatform';
+import { Mergeable, MergeStrategy, mergeStrings, mergeResult, EveesModule } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
-import { EveesModule } from '@uprtcl/evees';
 
 import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
@@ -27,7 +26,9 @@ const propertyOrder = ['text', 'type', 'links'];
 
 @injectable()
 export class TextNodeEntity implements Entity {
-  constructor(@inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>) {}
+  constructor(
+    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
+  ) {}
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;
 
@@ -40,7 +41,9 @@ export class TextNodeEntity implements Entity {
 
 @injectable()
 export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasChildren, Mergeable {
-  constructor(@inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>) {
+  constructor(
+    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
+  ) {
     super(hashedPattern);
   }
 
@@ -64,7 +67,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
         name: 'documents:document',
         type: 'content',
         render: (lensContent: TemplateResult, context: any) => {
-          console.log('[DOCUMENT-ENTITY] render()', {node, context});
+          console.log('[DOCUMENT-ENTITY] render()', { node, context });
           return html`
             <documents-text-node
               .data=${node}
@@ -151,6 +154,7 @@ export class TextNodeCreate extends TextNodeEntity
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
     @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
     @multiInject(EveesModule.bindings.PerspectivePattern) protected perspectivePatterns: Pattern[]
   ) {
@@ -181,6 +185,15 @@ export class TextNodeCreate extends TextNodeEntity
     }
 
     const newTextNode = { links, text, type };
+    
+    // const { id } = await this.hashedPattern.derive()(newTextNode);
+    // const createTextNodeTask: Task = {
+    //   id: id,
+    //   task: () => (remote as DocumentsProvider).createTextNode(newTextNode)
+    // };
+
+    // this.taskQueue.queueTask(createTextNodeTask);
+
     const id = await remote.createTextNode(newTextNode);
 
     await this.discovery.postEntityCreate(remote, { id, object: newTextNode });

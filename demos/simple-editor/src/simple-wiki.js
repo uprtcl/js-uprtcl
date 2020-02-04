@@ -32,7 +32,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    this.addEventListener('evees-request-created', e => console.log(e));
+    this.addEventListener('evees-proposal-created', e => console.log(e));
 
     this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => provider.source.startsWith('ipfs'));
 
@@ -76,7 +76,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         mutation: CREATE_PERSPECTIVE,
         variables: {
           headId: createCommit.data.createCommit.id,
-          authority: this.eveesProvider.authority
+          authority: this.eveesProvider.authority,
+          name: 'master'
         }
       });
 

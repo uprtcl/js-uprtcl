@@ -9,6 +9,7 @@ export { Source } from './types/source';
 export { KnownSourcesService } from './services/known-sources.service';
 
 export { DiscoveryService } from './services/discovery.service';
+export { EntityCache } from './graphql/entity-cache';
 
 /** Utils */
 export {
@@ -27,8 +28,5 @@ export { Connection, ConnectionOptions } from './connections/connection';
 export { SocketConnection } from './connections/socket.connection';
 
 /** Utils */
-export {
-  createEntity,
-  entityContent,
-  getIsomorphisms
-} from '../../multiplatform/src/utils/entities';
+export { createEntity, entityContent, getIsomorphisms } from './utils/entities';
+export { TaskQueue, Task } from './utils/task.queue';
