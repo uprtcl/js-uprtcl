@@ -10,20 +10,22 @@ import { PermissionsElement } from './permissions-element';
 import {
   OwnerPermissions
 } from '../services/owner-access-control.service';
-import { CHANGE_OWNER } from 'src/graphql/queries';
+import { CHANGE_OWNER } from '../graphql/queries';
 
 export class PermissionsOwner extends moduleConnect(LitElement)
   implements PermissionsElement<OwnerPermissions> {
   @property()
+  entityId!: string;
+
+  @property()
   permissions!: OwnerPermissions;
   @property()
   canWrite!: boolean;
-  @property()
-  entityId!: string;
 
   @query('mwc-dialog')
   dialog: any;
 
+  @property({ type: String })
   newOwnerAddress!: string;
 
   firstUpdated() {
@@ -37,7 +39,6 @@ export class PermissionsOwner extends moduleConnect(LitElement)
         entity(id: "${this.entityId}") {
           id
           _context {
-            id
             patterns {
               accessControl {
                 canWrite
@@ -64,8 +65,8 @@ export class PermissionsOwner extends moduleConnect(LitElement)
       }
     });
 
-    this.permissions = result.data.entity._context.patterns.accessControl.permissions;
-    this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
+    this.permissions = result.data.changeOwner._context.patterns.accessControl.permissions;
+    this.canWrite = result.data.changeOwner._context.patterns.accessControl.canWrite;
   }
 
   renderDialog() {
@@ -77,7 +78,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
           initialFocusAttribute
           @input=${e => (this.newOwnerAddress = e.target.value)}
         ></mwc-textfield>
-        <mwc-button dialogAction="ok" slot="primaryAction" .disabled=${!this.newOwnerAddress}>
+        <mwc-button @click=${this.changeOwner} dialogAction="ok" slot="primaryAction" .disabled=${!this.newOwnerAddress}>
           ${this.t('access-control:confirm')}
         </mwc-button>
         <mwc-button dialogAction="cancel" slot="secondaryAction">

@@ -1,7 +1,7 @@
 import { LitElement, html, property } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
+import { ApolloClientModule, CHANGE_OWNER } from '@uprtcl/graphql';
 import { EveesModule, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
 import { WikisModule, CREATE_WIKI } from '@uprtcl/wikis';
 import { DocumentsModule } from '@uprtcl/documents';
@@ -81,7 +81,20 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         }
       });
 
-      window.history.pushState('', '', `/?id=${createPerspective.data.createPerspective.id}`);
+      const perspectiveId = createPerspective.data.createPerspective.id;
+
+      // debugger
+
+      // /** transfer ownership to the DAO */
+      // await client.mutate({
+      //   mutation: CHANGE_OWNER,
+      //   variables: {
+      //     entityId: perspectiveId,
+      //     newOwner: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
+      //   }
+      // });
+
+      window.history.pushState('', '', `/?id=${perspectiveId}`);
     }
 
     this.loading = false;
