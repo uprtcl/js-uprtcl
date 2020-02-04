@@ -281,6 +281,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
   renderInfo() {
     return html`
       <div class="perspective-details">
+        <span><strong>Id:</strong> ${this.perspectiveData.id}</span>
         <span><strong>Name:</strong> ${this.perspectiveData.details.name}</span>
         <span><strong>Context:</strong> ${this.perspectiveData.details.context}</span>
         <span><strong>Origin:</strong> ${this.perspectiveData.perspective.origin}</span>

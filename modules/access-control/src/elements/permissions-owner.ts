@@ -15,11 +15,12 @@ import { CHANGE_OWNER } from '../graphql/queries';
 export class PermissionsOwner extends moduleConnect(LitElement)
   implements PermissionsElement<OwnerPermissions> {
   @property()
+  entityId!: string;
+
+  @property()
   permissions!: OwnerPermissions;
   @property()
   canWrite!: boolean;
-  @property()
-  entityId!: string;
 
   @query('mwc-dialog')
   dialog: any;
@@ -38,7 +39,6 @@ export class PermissionsOwner extends moduleConnect(LitElement)
         entity(id: "${this.entityId}") {
           id
           _context {
-            id
             patterns {
               accessControl {
                 canWrite
@@ -65,8 +65,8 @@ export class PermissionsOwner extends moduleConnect(LitElement)
       }
     });
 
-    this.permissions = result.data.entity._context.patterns.accessControl.permissions;
-    this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
+    this.permissions = result.data.changeOwner._context.patterns.accessControl.permissions;
+    this.canWrite = result.data.changeOwner._context.patterns.accessControl.canWrite;
   }
 
   renderDialog() {

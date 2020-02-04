@@ -11,7 +11,6 @@ export const accessControlResolvers = {
     async changeOwner(_, { entityId, newOwner }, { container }) {
       // const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
       // const entity = entityCache.getCachedEntity(entityId);
-      debugger
       const discoveryService: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
       const entity: any = await discoveryService.get(entityId);
 
