@@ -3,7 +3,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { UpdateRequest, Proposal } from '../../../types';
-import { hashCid, INIT_REQUEST, GET_REQUEST } from './common';
+import { hashCid, INIT_REQUEST, GET_REQUEST, AUTHORIZE_REQUEST } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { EveesEthereum } from './evees.ethereum';
 
@@ -176,7 +176,7 @@ export class ProposalsEthereum implements ProposalsProvider {
       status: request.status === 1,
       authorized: request.authorized === 1,
       executed: executed,
-      canAuthorize: request.owner === this.ethProvider.userId
+      canAuthorize: request.owner.toLocaleLowerCase() === this.ethProvider.userId.toLocaleLowerCase()
     }
 
     this.logger.info('getProposal() - post', { proposal });
@@ -221,8 +221,15 @@ export class ProposalsEthereum implements ProposalsProvider {
     throw new Error("Method not implemented.");
   }
 
-  acceptProposal(proposalId: string[]): Promise<void> {
-    throw new Error("Method not implemented.");
+  async acceptProposal(proposalId: string[]): Promise<void> {
+    await this.ready();
+
+    this.logger.info('acceptProposal()', { proposalId });
+
+    await this.ethProvider.send(AUTHORIZE_REQUEST, [
+      proposalId,
+      1
+    ]);
   }
 
 }

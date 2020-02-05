@@ -20,7 +20,7 @@ import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { UpdateRequest, RemotesConfig, ProposalCreatedEvent, Perspective, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
-import { CREATE_PERSPECTIVE } from '../graphql/queries';
+import { CREATE_PERSPECTIVE, UPDATE_HEAD } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
@@ -46,6 +46,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
+  @property({ type: String })
+  popout: string = 'true';
+
   @property({ attribute: false })
   show: Boolean = false;
 
@@ -57,7 +60,12 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   perspectiveData!: PerspectiveData;
 
-  firstUpdated() { }
+  firstUpdated() {
+    if (this.popout !== 'true') {
+      this.show = true;
+      this.load();
+    }
+  }
 
   updated(changedProperties) {
     if (changedProperties.get('perspectiveId') !== undefined) {
@@ -146,15 +154,45 @@ export class EveesInfo extends moduleConnect(LitElement) {
     );
   }
 
-  async otherPerspectiveMerge(e: CustomEvent) {
+  async otherPerspectiveMerge(fromPerspectiveId: string, isProposal: boolean) {
 
-    const fromPerspectiveId = e.detail.id;
-    this.logger.info(`merge ${fromPerspectiveId} on ${this.perspectiveId}`);
+    debugger 
+    
+    this.logger.info(`merge ${fromPerspectiveId} on ${this.perspectiveId} - isProposal: ${isProposal}`);
 
     const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
-    const updateRequests = await merge.mergePerspectives(this.perspectiveId, e.detail.id);
+    const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId);
 
     this.logger.info('merge computed', { updateRequests });
+
+    if (isProposal) {
+      this.createMergeProposal(fromPerspectiveId, updateRequests);
+    } else {
+      this.mergePerspective(updateRequests);
+    }
+
+  }
+
+  async mergePerspective(updateRequests: UpdateRequest[]) {
+
+    debugger 
+
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+
+    const updateHeadsPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {
+      await client.mutate({
+        mutation: UPDATE_HEAD,
+        variables: {
+          perspectiveId: updateRequest.perspectiveId,
+          headId: updateRequest.newHeadId
+        }
+      });
+    })
+
+    await Promise.all(updateHeadsPromises);
+  }
+
+  async createMergeProposal(fromPerspectiveId: string, updateRequests: UpdateRequest[]) {
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
@@ -215,6 +253,28 @@ export class EveesInfo extends moduleConnect(LitElement) {
         })
       );
     });
+  }
+
+  async authorizeProposal(e: CustomEvent) {
+    const proposalId = e.detail.proposalId;
+    const authority = e.detail.authority;
+
+    const evees: Evees = this.request(EveesModule.bindings.Evees);
+    
+    const remote = evees.getAuthority(authority);
+
+    if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+    await remote.proposals.acceptProposal(
+      proposalId
+    );
+
+    this.logger.info('accepted proposal', { proposalId });
+
+  }
+
+  async executeProposal(e: CustomEvent) {
+    console.log('TBD');
   }
 
   showClicked() {
@@ -297,7 +357,10 @@ export class EveesInfo extends moduleConnect(LitElement) {
           perspective-id=${this.perspectiveId}
           first-perspective-id=${this.firstPerspectiveId}
           @perspective-selected=${this.otherPerspectiveClicked}
-          @merge-perspective=${this.otherPerspectiveMerge}
+          @merge-perspective=${(e) => this.otherPerspectiveMerge(e.detail.perspectiveId, false)}
+          @create-proposal=${(e) => this.otherPerspectiveMerge(e.detail.perspectiveId, true)}
+          @authorize-proposal=${this.authorizeProposal}
+          @execute-proposal=${this.executeProposal}
         ></evees-perspectives-list>
       </div>
       <div class="row">
@@ -327,14 +390,15 @@ export class EveesInfo extends moduleConnect(LitElement) {
   render() {
     return html`
       <div class="container">
-        <div
-          class="button"
-          style=${styleMap({ backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR })}
-          @click=${this.showClicked}
-        ></div>
+        ${this.popout === 'true' ? html`
+          <div
+            class="button"
+            style=${styleMap({ backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR })}
+            @click=${this.showClicked}
+          ></div>` : ''}
         ${this.show
         ? html`
-              <mwc-card class="info-box">
+              <mwc-card class=${['info-box'].concat(this.popout === 'true' ? ['popout'] : []).join(' ')}>
                 ${this.perspectiveData
             ? html`
                       <div class="column">
@@ -387,12 +451,14 @@ export class EveesInfo extends moduleConnect(LitElement) {
       .button:hover {
         background-color: #cccccc;
       }
-      .info-box {
-        width: auto;
+      .popout {
         z-index: 20;
         position: absolute;
         left: 20px;
         top: 0;
+      }
+      .info-box {
+        width: auto;
       }
       .perspective-details {
         flex-direction: column;

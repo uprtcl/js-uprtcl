@@ -177,7 +177,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     return links;
   }
 
-  protected async updatePerspectiveData(perspectiveId: string, data: Hashed<any>): Promise<void> {
+  protected async updatePerspectiveData(perspectiveId: string, data: any): Promise<void> {
     const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
     const details = await remote.getPerspectiveDetails(perspectiveId);
 
@@ -213,12 +213,15 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const links = hasChildren.getChildrenLinks(data);
 
+    if (links.length === 0) return;
+    
     const mergedLinks = await this.mergeLinks(links, [links]);
 
     if (!links.every((link, index) => link !== mergedLinks[index])) {
-      const newData = hasChildren.replaceChildrenLinks(data)(mergedLinks);
+      /** data is Hased -> new Data should be hashed too */
+      const newData = (hasChildren.replaceChildrenLinks(data)(mergedLinks) as Hashed<any>);
 
-      await this.updatePerspectiveData(perspectiveId, newData);
+      await this.updatePerspectiveData(perspectiveId, newData.object);
     }
   }
 }

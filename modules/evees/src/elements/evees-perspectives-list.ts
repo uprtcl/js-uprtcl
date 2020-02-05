@@ -11,10 +11,17 @@ import { DEFAULT_COLOR } from './evees-perspective';
 interface PerspectiveData {
   id: string;
   name: string;
+  origin: string;
   creatorId: string;
   timestamp: number;
   proposal: Proposal | undefined;
 }
+
+const MERGE_ACTION: string = 'Merge';
+const PENDING_ACTION: string = 'Pendign';
+const AUTHORIZE_ACTION: string = 'Authorize';
+const EXECUTE_ACTION: string = 'Execute';
+const MERGE_PROPOSAL_ACTION: string = 'Propose Merge';
 
 export class PerspectivesList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
@@ -30,6 +37,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   @property({ type: String, attribute: false })
   perspectivesData: PerspectiveData[] = [];
+
+  @property({ type: String, attribute: false })
+  canWrite: Boolean = false;
 
   async firstUpdated() {
     this.getOtherPersepectivesData();
@@ -47,30 +57,80 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     );
   }
 
-  mergeClicked(id: string) {
-    this.dispatchEvent(
-      new CustomEvent('merge-perspective', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          id
-        }
-      })
-    );
+  buttonClicked(perspectiveData: PerspectiveData) {
+    switch (this.getProposalAction(perspectiveData.proposal)) {
+      case MERGE_ACTION: 
+        this.dispatchEvent(
+          new CustomEvent('merge-perspective', {
+            bubbles: true,
+            composed: true,
+            detail: {
+              perspectiveId: perspectiveData.id
+            }
+          })
+        );
+        break;
+
+      case MERGE_PROPOSAL_ACTION: 
+        this.dispatchEvent(
+          new CustomEvent('create-proposal', {
+            bubbles: true,
+            composed: true,
+            detail: {
+              perspectiveId: perspectiveData.id
+            }
+          })
+        );
+        break;
+
+      case AUTHORIZE_ACTION: 
+        if (!perspectiveData.proposal) return;
+        this.dispatchEvent(
+          new CustomEvent('authorize-proposal', {
+            bubbles: true,
+            composed: true,
+            detail: {
+              proposalId: perspectiveData.proposal.id,
+              authority: perspectiveData.origin
+            }
+          })
+        );
+        break;
+
+      case EXECUTE_ACTION:  
+        if (!perspectiveData.proposal) return;
+        this.dispatchEvent(
+          new CustomEvent('execute-proposal', {
+            bubbles: true,
+            composed: true,
+            detail: {
+              proposalId: perspectiveData.proposal.id,
+              authority: perspectiveData.origin
+            }
+          })
+        );
+        break;
+    }
   }
 
   getProposalAction(proposal: Proposal | undefined): string {
-    if (proposal === undefined) return 'Merge';
-    if (proposal !== undefined) {
-      if (!proposal.authorized) {
-        if (proposal.canAuthorize) {
-          return 'Authorize';
-        } else {
-          return 'Pending';
-        }
+    if (proposal === undefined) {
+      if (this.canWrite) {
+        return MERGE_ACTION;
+      } else {
+        return MERGE_PROPOSAL_ACTION;
       }
     }
-    return '';
+    
+    if (!proposal.authorized) {
+      if (proposal.canAuthorize) {
+        return AUTHORIZE_ACTION;
+      } else {
+        return PENDING_ACTION;
+      }
+    } else {
+      return EXECUTE_ACTION;
+    }
   }
 
   getOtherPersepectivesData = async () => {
@@ -89,6 +149,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                   payload {
                     creatorId
                     timestamp
+                    origin
                   }
                 } 
               }
@@ -101,11 +162,21 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                 canAuthorize
                 executed
               }
-            } 
+            }
+            _context {
+              patterns {
+                accessControl {
+                  canWrite
+                }
+              }
+            }
           }
         }`
     });
-    result.data.entity.context.perspectives.map(p => p.id);
+
+    /** data on this perspective */
+    this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
+
     const proposals = result.data.entity.proposals.map(
       (prop): Proposal => {
         return {
@@ -117,6 +188,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         };
       }
     );
+
+    /** data on other perspectives (proposals are injected on them) */
 
     this.perspectivesData = result.data.entity.context.perspectives
       .filter(perspective => perspective.id !== this.perspectiveId)
@@ -130,6 +203,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           name: perspective.name,
           creatorId: perspective.payload.creatorId,
           timestamp: perspective.payload.timestamp,
+          origin: perspective.payload.origin,
           proposal: thisProposal
         };
       });
@@ -179,8 +253,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                         </mwc-list-item>
                         <mwc-button
                           icon="call_merge"
-                          @click=${() => this.mergeClicked(perspectiveData.id)}
+                          @click=${() => this.buttonClicked(perspectiveData)}
                           label=${this.getProposalAction(perspectiveData.proposal)}
+                          .disabled=${this.getProposalAction(perspectiveData.proposal) === PENDING_ACTION}
                         ></mwc-button>
                       </div>
                     `;

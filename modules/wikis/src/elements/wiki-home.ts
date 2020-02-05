@@ -17,7 +17,8 @@ export class WikiHome extends moduleConnect(LitElement) {
       <div class="evee-info">
         <evees-info 
           first-perspective-id=${this.wikiHash} 
-          perspective-id=${this.wikiHash}>
+          perspective-id=${this.wikiHash}
+          popout="false">
         </evees-info>
       </div>
     `;
