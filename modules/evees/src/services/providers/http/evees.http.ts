@@ -7,6 +7,7 @@ import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
 import { PerspectiveDetails } from '../../../types';
+import { EveesAccessControlHttp } from './evees-access-control-http';
 
 const evees_api: string = 'evees-v1';
 
@@ -30,6 +31,8 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
       },
       connection
     );
+
+    this.accessControl =  new EveesAccessControlHttp();
   }
 
   get userId() {

@@ -8,6 +8,9 @@ export class WikiHome extends moduleConnect(LitElement) {
   @property({ type: String })
   title!: string;
 
+  @property({ type: String })
+  color!: string;
+
   recentPerspectives() {
     return html`
       <span class="title">Welcome to ${this.title}</span>
@@ -16,8 +19,7 @@ export class WikiHome extends moduleConnect(LitElement) {
           first-perspective-id=${this.wikiHash} 
           perspective-id=${this.wikiHash}>
         </evees-info>
-      </div>      
-      <evees-perspectives-list perspective-id="${this.wikiHash}"></evees-perspectives-list>
+      </div>
     `;
   }
 

@@ -11,6 +11,7 @@ export {
   OwnerPermissions,
   OwnerAccessControlService
 } from './services/owner-access-control.service';
+
 export {
   BasicAdminAccessControl,
   BasicAdminAccessControlService

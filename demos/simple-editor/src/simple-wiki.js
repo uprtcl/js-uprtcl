@@ -103,7 +103,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return html`
       ${!this.loading
         ? html`
-            <wiki-drawer @evees- wiki-id=${this.rootHash}></wiki-drawer>
+            <cortex-entity hash=${this.rootHash}></cortex-entity>
           `
         : html`
             Loading...

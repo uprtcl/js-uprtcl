@@ -11,7 +11,10 @@ import {
   UPDATE_HEAD,
   RemotesConfig,
   EveesModule,
-  EveesRemote
+  EveesRemote,
+  Secured,
+  Perspective,
+  Evees
 } from '@uprtcl/evees';
 import { TextType, CREATE_TEXT_NODE, DocumentsModule, htmlToText } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -20,53 +23,105 @@ import { sharedStyles } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
 import { CREATE_WIKI } from '../graphql/queries';
-import { Entity } from '@uprtcl/cortex';
+import { Entity, Hashed } from '@uprtcl/cortex';
 import { Source } from '@uprtcl/multiplatform';
+import { WikisModule } from '../wikis.module';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
 
-  @property({ type: String, attribute: 'wiki-id' })
-  wikiId!: string;
+  @property({ type: Object })
+  wiki: Hashed<Wiki> | undefined = undefined;
 
   @property({ type: Object })
-  wiki: Wiki | undefined = undefined;
+  perspective: Secured<Perspective> | undefined = undefined;
 
-  @property({ type: Boolean })
-  editable: boolean = true;
+  @property({ type: String })
+  color: string | undefined = undefined;
 
-  currentHead: string | undefined = undefined;
-  perspectiveOrigin: string | undefined = undefined;
+  @property({ type: Number })
+  level: number = 0;
+
+  @property({ type: Boolean, attribute: false })
+  editable: Boolean = false;
 
   @property({ type: String })
   selectedPageHash: string | undefined = undefined;
 
-  @property({ type: String })
+  @property({ type: Object, attribute: false })
   pagesList: Array<{ title: string; id: string }> | undefined = undefined;
 
-  async createPage() {
-    if (!this.wiki) return;
+  currentContent: any;
+  private currentHeadId: string | undefined = undefined;
 
-    this.pagesList = undefined;
-
+  getTextNodeSource(eveesAuthority: string): Source {
     const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
-    const remotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
 
     const textNodeEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
     const name = textNodeEntity[0].name;
 
-    const wikiEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
-    const wikiName = wikiEntity[0].name;
+    return remotesConfig.map(eveesAuthority, name);
+  }
 
-    const remote: EveesRemote | undefined = remotes.find(
-      r => r.authority === this.perspectiveOrigin
-    );
+  getWikiSource(eveesAuthority: string): Source {
+    const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
 
-    if (!remote)
-      throw new Error(`Evees remote not registered for authority ${this.perspectiveOrigin}`);
+    const wikiEntity: Entity[] = this.requestAll(WikisModule.bindings.WikiEntity);
+    const name = wikiEntity[0].name;
 
-    const textNodeSource: Source = remotesConfig.map(this.perspectiveOrigin, name);
-    const wikiSource: Source = remotesConfig.map(this.perspectiveOrigin, wikiName);
+    return remotesConfig.map(eveesAuthority, name);
+  }
+
+  async updateContent(newContent: Wiki): Promise<void> {
+    if (!this.perspective) return;
+
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const origin = this.perspective.object.payload.origin;
+    const evees: Evees = this.request(EveesModule.bindings.Evees);
+
+    this.logger.info('updateContent() - CREATE_TEXT_NODE', { newContent });
+    const createWiki = await client.mutate({
+      mutation: CREATE_WIKI,
+      variables: {
+        content: newContent,
+        source: this.getWikiSource(origin).source
+      }
+    });
+
+    const wikiId = createWiki.data.createWiki.id;
+
+    const commitUpdate = await client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
+        dataId: wikiId,
+        source: evees.getPerspectiveProvider(this.perspective.object).source
+      }
+    });
+
+    const headUpdate = await client.mutate({
+      mutation: UPDATE_HEAD,
+      variables: {
+        perspectiveId: this.perspective.id,
+        headId: commitUpdate.data.createCommit.id
+      }
+    });
+
+    return wikiId;
+  }
+
+  async createPage() {
+    if (!this.wiki) return;
+    if (!this.perspective) return;
+
+    this.pagesList = undefined;
+
+    const origin = this.perspective.object.payload.origin;
+
+    const eveesRemotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
+    const remote = eveesRemotes.find(r => r.authority === origin);
+
+    if (!remote) throw new Error(`Remote not found for authority ${origin}`);
 
     const pageContent = {
       text: '<h1>New page</h1>',
@@ -79,7 +134,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_TEXT_NODE,
       variables: {
         content: pageContent,
-        source: textNodeSource.source
+        source: this.getTextNodeSource(origin).source
       }
     });
 
@@ -96,56 +151,73 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_PERSPECTIVE,
       variables: {
         headId: commit.data.createCommit.id,
-        authority: remote.authority
+        authority: origin
       }
     });
 
-    const wiki: Wiki = {
-      title: this.wiki.title,
-      pages: [...this.wiki.pages, perspective.data.createPerspective.id]
+    const newWiki: Wiki = {
+      title: this.wiki.object.title,
+      pages: [...this.wiki.object.pages, perspective.data.createPerspective.id]
     };
 
-    const wikiResult = await client.mutate({
-      mutation: CREATE_WIKI,
-      variables: {
-        content: wiki,
-        source: wikiSource.source
-      }
-    });
+    this.wiki = {
+      ...this.wiki,
+      object: newWiki
+    };
 
-    const wikiCommit = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: wikiResult.data.createWiki.id,
-        parentsIds: this.currentHead ? [this.currentHead] : [],
-        source: remote.source
-      }
-    });
-
-    const updateHeadResult = await client.mutate({
-      mutation: UPDATE_HEAD,
-      variables: {
-        perspectiveId: this.wikiId,
-        headId: wikiCommit.data.createCommit.id
-      }
-    });
-
-    this.loadWiki();
+    this.logger.info('createPage()', newWiki);
+    await this.updateContent(newWiki);
   }
 
-  firstUpdated() {
-    this.loadWiki();
+  updated (changedProperties: any) {
+    if (changedProperties.get('wiki') !== undefined) {
+      this.loadPagesData();
+    }
   }
 
-  async loadWiki() {
-    this.wiki = undefined;
+  async loadPagesData() {
+    if (!this.wiki) return;
 
+    const pagesListPromises = this.wiki.object.pages.map(async (pageId) => {
+      const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+
+      const result = await client.query({
+        query: gql`
+        {
+          entity(id: "${pageId}") {
+            id
+            _context {
+              patterns {
+                content {
+                  id
+                  _context {
+                    patterns {
+                      title
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }`
+      });
+
+      return {
+        id: pageId,
+        title: result.data.entity._context.patterns.content._context.patterns.title
+      }
+    })
+
+    this.pagesList = await Promise.all(pagesListPromises);
+  }
+
+  async firstUpdated() {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.query({
       query: gql`
       {
-        entity(id: "${this.wikiId}") {
+        entity(id: "${this.perspective.id}") {
           id
           _context {
             patterns {
@@ -160,51 +232,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             }
             head {
               id
-              data {
-                id
-                ... on Wiki {
-                  title
-                  pages {
-                    id
-                    _context {
-                      patterns {
-                        content {
-                          id
-                          _context {
-                            patterns {
-                              title
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
             }
           }
         }
       }`
     });
 
-    const wiki = result.data.entity.head.data;
+    this.currentHeadId = result.data.entity.head.id;
     this.editable = result.data.entity._context.patterns.accessControl.canWrite;
 
-    console.log('[WIKI] can write', this.editable);
-
-    this.perspectiveOrigin = result.data.entity.payload.origin;
-
-    const pages = wiki.pages;
-    this.pagesList = pages.map(page => ({
-      id: page.id,
-      title: page._context.patterns.content._context.patterns.title
-        ? page._context.patterns.content._context.patterns.title
-        : this.t('wikis:untitled')
-    }));
-
-    this.wiki = { title: wiki.title, pages: wiki.pages.map(p => p.id) };
-    const head = result.data.entity.head;
-    this.currentHead = head ? head.id : undefined;
+    this.loadPagesData();
   }
 
   selectPage(pageHash: string | undefined) {
@@ -255,7 +292,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return html`
       <mwc-drawer hasHeader>
         <span slot="title" @click=${() => this.selectPage(undefined)} style="cursor: pointer;">
-          ${this.wiki.title}
+          ${this.wiki.object.title}
         </span>
 
         <div class="column light-gray" style="height: 100%;">
@@ -285,7 +322,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
               `
             : html`
-                <wiki-home .wikiHash=${this.wikiId} .title=${this.wiki.title}></wiki-home>
+                <wiki-home .wikiHash=${this.perspective.id} .title=${this.wiki.object.title}></wiki-home>
               `}
         </div>
       </mwc-drawer>

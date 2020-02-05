@@ -135,6 +135,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       this.updateContent(e.detail.dataId);
     }) as EventListener);
 
+    this.addEventListener('checkout-perspective', ((e: CustomEvent) => {
+      this.logger.info('CATCHED EVENT: checkout-perspective ', { perspectiveId: this.perspectiveId, e });
+      e.stopPropagation();
+      this.checkoutPerspective(e.detail.perspectiveId)
+    }) as EventListener);
+
     this.addEventListener('create-sibling', ((e: CustomEvent) => {
       this.logger.info('CATCHED EVENT: create-sibling ', { perspectiveId: this.perspectiveId, e });
 
@@ -215,7 +221,6 @@ export class EveesPerspective extends moduleConnect(LitElement) {
           first-perspective-id=${this.firstPerspectiveId}
           perspective-id=${this.perspectiveId}
           evee-color=${this.getEveeColor()}
-          @checkout-perspective=${e => this.checkoutPerspective(e.detail.perspectiveId)}
         ></evees-info>
       </cortex-entity>
     `;
