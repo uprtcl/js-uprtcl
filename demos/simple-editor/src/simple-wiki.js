@@ -4,6 +4,7 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
 import { WikisModule, CREATE_WIKI } from '@uprtcl/wikis';
+import { CHANGE_OWNER } from '@uprtcl/access-control';
 import { DocumentsModule } from '@uprtcl/documents';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
@@ -52,7 +53,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
       const client = this.request(ApolloClientModule.bindings.Client);
-      const result = await client.mutate({
+      const createWiki = await client.mutate({
         mutation: CREATE_WIKI,
         variables: {
           content: {
@@ -66,7 +67,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       const createCommit = await client.mutate({
         mutation: CREATE_COMMIT,
         variables: {
-          dataId: result.data.createWiki.id,
+          dataId: createWiki.data.createWiki.id,
           parentsIds: [],
           source: this.eveesProvider.source
         }
@@ -81,7 +82,18 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         }
       });
 
-      window.history.pushState('', '', `/?id=${createPerspective.data.createPerspective.id}`);
+      const perspectiveId = createPerspective.data.createPerspective.id;
+
+      /** transfer ownership to the DAO */
+      const changeOwner = await client.mutate({
+        mutation: CHANGE_OWNER,
+        variables: {
+          entityId: perspectiveId,
+          newOwner: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
+        }
+      });
+
+      window.history.pushState('', '', `/?id=${perspectiveId}`);
     }
 
     this.loading = false;
