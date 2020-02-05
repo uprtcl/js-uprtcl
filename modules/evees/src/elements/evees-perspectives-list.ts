@@ -90,8 +90,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             bubbles: true,
             composed: true,
             detail: {
-              proposalId: perspectiveData.proposal.id,
-              authority: perspectiveData.origin
+              proposalId: perspectiveData.proposal.id
             }
           })
         );
@@ -104,8 +103,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             bubbles: true,
             composed: true,
             detail: {
-              proposalId: perspectiveData.proposal.id,
-              authority: perspectiveData.origin
+              proposalId: perspectiveData.proposal.id
             }
           })
         );

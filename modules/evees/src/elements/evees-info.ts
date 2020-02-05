@@ -155,9 +155,6 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async otherPerspectiveMerge(fromPerspectiveId: string, isProposal: boolean) {
-
-    debugger 
-    
     this.logger.info(`merge ${fromPerspectiveId} on ${this.perspectiveId} - isProposal: ${isProposal}`);
 
     const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
@@ -174,9 +171,6 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async mergePerspective(updateRequests: UpdateRequest[]) {
-
-    debugger 
-
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const updateHeadsPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {
@@ -257,11 +251,10 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   async authorizeProposal(e: CustomEvent) {
     const proposalId = e.detail.proposalId;
-    const authority = e.detail.authority;
-
+    
     const evees: Evees = this.request(EveesModule.bindings.Evees);
     
-    const remote = evees.getAuthority(authority);
+    const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
 
     if (!remote.proposals) throw new Error('remote cant handle proposals');
 
@@ -274,7 +267,17 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async executeProposal(e: CustomEvent) {
-    console.log('TBD');
+    const proposalId = e.detail.proposalId;
+    const evees: Evees = this.request(EveesModule.bindings.Evees);
+    
+    const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
+    if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+    await remote.proposals.executeProposal(
+      proposalId
+    );
+
+    this.logger.info('accepted proposal', { proposalId });
   }
 
   showClicked() {

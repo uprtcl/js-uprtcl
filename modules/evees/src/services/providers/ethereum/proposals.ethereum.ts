@@ -3,7 +3,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { UpdateRequest, Proposal } from '../../../types';
-import { hashCid, INIT_REQUEST, GET_REQUEST, AUTHORIZE_REQUEST } from './common';
+import { hashCid, INIT_REQUEST, GET_REQUEST, AUTHORIZE_REQUEST, EXECUTE_REQUEST } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { EveesEthereum } from './evees.ethereum';
 
@@ -21,8 +21,8 @@ export interface EthMergeRequest {
   nonce?: number;
   headUpdates: EthHeadUpdate[];
   approvedAddresses: string[];
-  status?: number;
-  authorized?: number;
+  status?: string;
+  authorized?: string;
 }
 
 export interface EthRequestCreatedEvent {
@@ -173,8 +173,8 @@ export class ProposalsEthereum implements ProposalsProvider {
       toPerspectiveId: requestEventValues.toPerspectiveId,
       fromPerspectiveId: requestEventValues.fromPerspectiveId,
       updates: updates,
-      status: request.status === 1,
-      authorized: request.authorized === 1,
+      status: request.status === '1',
+      authorized: request.authorized === '1',
       executed: executed,
       canAuthorize: request.owner.toLocaleLowerCase() === this.ethProvider.userId.toLocaleLowerCase()
     }
@@ -229,6 +229,16 @@ export class ProposalsEthereum implements ProposalsProvider {
     await this.ethProvider.send(AUTHORIZE_REQUEST, [
       proposalId,
       1
+    ]);
+  }
+
+  async executeProposal(proposalId: string[]): Promise<void> {
+    await this.ready();
+
+    this.logger.info('acceptProposal()', { proposalId });
+
+    await this.ethProvider.send(EXECUTE_REQUEST, [
+      proposalId
     ]);
   }
 
