@@ -251,9 +251,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   async authorizeProposal(e: CustomEvent) {
     const proposalId = e.detail.proposalId;
-    
+
     const evees: Evees = this.request(EveesModule.bindings.Evees);
-    
+
     const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
 
     if (!remote.proposals) throw new Error('remote cant handle proposals');
@@ -269,7 +269,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
   async executeProposal(e: CustomEvent) {
     const proposalId = e.detail.proposalId;
     const evees: Evees = this.request(EveesModule.bindings.Evees);
-    
+
     const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
     if (!remote.proposals) throw new Error('remote cant handle proposals');
 
@@ -337,7 +337,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   renderLoading() {
     return html`
-      loading perspective data ...<mwc-circular-progress></mwc-circular-progress>
+      <mwc-circular-progress></mwc-circular-progress>
     `;
   }
 
@@ -380,7 +380,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   renderPermissions() {
     return html`
-      <permissions-for-entity hash=${this.perspectiveId}></permissions-for-entity>
+      <div class="perspectives-permissions">
+        <permissions-for-entity hash=${this.perspectiveId}></permissions-for-entity>
+      </div>
     `;
   }
 
@@ -399,39 +401,39 @@ export class EveesInfo extends moduleConnect(LitElement) {
             style=${styleMap({ backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR })}
             @click=${this.showClicked}
           ></div>` : ''}
-        ${this.show
-        ? html`
-              <mwc-card class=${['info-box'].concat(this.popout === 'true' ? ['popout'] : []).join(' ')}>
-                ${this.perspectiveData
-            ? html`
-                      <div class="column">
-                        <div class="perspective-title" style=${styleMap({ backgroundColor: this.eveeColor, color: this.perspectiveTextColor() })}>
-                           ${this.perspectiveTitle()}
-                        </div>
+        ${this.show ?
+        html`
+            <mwc-card class=${['info-box'].concat(this.popout === 'true' ? ['popout'] : []).join(' ')}>
+              ${this.perspectiveData ?
+            html`
+                  <div class="column">
+                    <div class="perspective-title" style=${styleMap({ backgroundColor: this.eveeColor, color: this.perspectiveTextColor() })}>
+                        ${this.perspectiveTitle()}
+                    </div>
 
-                        <mwc-tab-bar
-                          @MDCTabBar:activated=${e => (this.activeTabIndex = e.detail.index)}
-                        >
-                          <mwc-tab .label=${this.t('evees:other-perspectives')} hasImageIcon>
-                            <mwc-icon>list_alt</mwc-icon>
-                          </mwc-tab>
-                          <mwc-tab .label=${this.t('evees:information')} hasImageIcon>
-                            <mwc-icon>info</mwc-icon>
-                          </mwc-tab>
-                          <mwc-tab .label=${this.t('evees:permissions')} hasImageIcon>
-                            <mwc-icon>group</mwc-icon>
-                          </mwc-tab>
-                        </mwc-tab-bar>
+                    <mwc-tab-bar
+                      @MDCTabBar:activated=${e => (this.activeTabIndex = e.detail.index)}
+                    >
+                      <mwc-tab .label=${this.t('evees:other-perspectives')} hasImageIcon>
+                        <mwc-icon>list_alt</mwc-icon>
+                      </mwc-tab>
+                      <mwc-tab .label=${this.t('evees:information')} hasImageIcon>
+                        <mwc-icon>info</mwc-icon>
+                      </mwc-tab>
+                      <mwc-tab .label=${this.t('evees:permissions')} hasImageIcon>
+                        <mwc-icon>group</mwc-icon>
+                      </mwc-tab>
+                    </mwc-tab-bar>
 
-                        <div class="tab-content">
-                          ${this.renderTabContent()}
-                        </div>
+                    <div class="tab-content-container">
+                      <div class="tab-content">
+                        ${this.renderTabContent()}
                       </div>
-                    `
-            : this.renderLoading()}
-              </mwc-card>
-            `
-        : ''}
+                    </div>
+                  </div>
+                ` : ''}
+            </mwc-card>
+          ` : ''}
       </div>
     `;
   }
@@ -464,6 +466,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
         width: auto;
       }
       .perspective-details {
+        flex-grow: 1;
         flex-direction: column;
         display: flex;
       }
@@ -487,10 +490,20 @@ export class EveesInfo extends moduleConnect(LitElement) {
       .perspectives-list {
         border-bottom: solid 1px #d9d7d0;
         margin-bottom: 16px;
-        min-height: 120px;
+        flex-grow: 1;
+      }
+      .perspectives-permissions {
+        flex-grow: 1;
+      }
+      .tab-content-container {
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
       }
       .tab-content {
-        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
       }
     `;
   }

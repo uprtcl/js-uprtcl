@@ -45,7 +45,7 @@ export class WikiPage extends moduleConnect(LitElement) {
   render() {
     if (!this.textNode)
       return html`
-        <cortex-loading-placeholder>loading page content...</cortex-loading-placeholder>
+        <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
     return html`

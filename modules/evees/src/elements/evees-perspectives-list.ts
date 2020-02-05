@@ -226,7 +226,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   renderLoading() {
     return html`
-      loading perspectives data ...<mwc-circular-progress></mwc-circular-progress>
+      <cortex-loading-placeholder></cortex-loading-placeholder>
     `;
   }
 

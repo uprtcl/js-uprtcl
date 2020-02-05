@@ -53,7 +53,7 @@ export class CortexEntity extends CortexEntityBase {
     return html`
       ${!this.selectedLens
         ? html`
-            <cortex-loading-placeholder>loading lense...</cortex-loading-placeholder>
+            <cortex-loading-placeholder></cortex-loading-placeholder>
           `
         : html`
             ${this.renderLens()}
