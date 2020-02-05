@@ -6,7 +6,7 @@ export const accessControlTypes = gql`
   }
 
   extend type Mutation {
-    changeOwner(entityId: ID!, newOwner: ID!): Entity! @discover
+    setCanWrite(entityId: ID!, userId: ID!): Entity! @discover
   }
 
   type AccessControl {
