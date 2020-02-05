@@ -28,4 +28,6 @@ export interface ProposalsProvider {
   declineProposal(proposalId: string[]): Promise<void>;
 
   acceptProposal(proposalId: string[]): Promise<void>;
+
+  executeProposal(proposalId: string[]): Promise<void>;
 }

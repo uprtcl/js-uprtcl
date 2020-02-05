@@ -201,7 +201,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   render() {
     if (this.entityId === undefined || this.perspective === undefined) {
       return html`
-        <cortex-loading-placeholder>loading perspective...</cortex-loading-placeholder>
+        <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
     }
 

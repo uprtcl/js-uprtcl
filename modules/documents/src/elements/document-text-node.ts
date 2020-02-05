@@ -250,7 +250,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   render() {
     if (!this.data)
       return html`
-        <cortex-loading-placeholder>loading text node...</cortex-loading-placeholder>
+        <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
     let contentClasses = this.data.object.type === TextType.Paragraph ? ['paragraph'] : ['title'];
