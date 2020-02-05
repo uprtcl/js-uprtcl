@@ -44,13 +44,13 @@ export const accessControlResolvers = {
       const entity: Hashed<any> = parent.__entity;
       const recognizer: PatternRecognizer = context.container.get(CortexModule.bindings.Recognizer);
 
-      const updatable: Updatable<any> | undefined = recognizer
+      const hasAccessControl: Updatable<any> | undefined = recognizer
         .recognize(entity)
         .find(prop => !!(prop as Updatable<any>).accessControl);
 
-      if (!updatable) return null;
+      if (!hasAccessControl) return null;
 
-      const accessControl = updatable.accessControl(entity);
+      const accessControl = hasAccessControl.accessControl(entity);
 
       if (!accessControl) return null;
 
@@ -64,7 +64,7 @@ export const accessControlResolvers = {
 
       if (!permissionsPattern) return null;
 
-      const serviceProvider: Authority = updatable.authority(entity);
+      const serviceProvider: Authority = hasAccessControl.authority(entity);
 
       const userId = serviceProvider.userId;
 

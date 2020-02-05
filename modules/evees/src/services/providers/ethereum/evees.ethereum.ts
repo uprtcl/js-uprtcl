@@ -82,7 +82,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     await this.send(ADD_PERSP, [
       perspectiveIdHash,
-      perspectiveIdHash,
+      '0x' + new Array(32).fill(0).join(''),
       '',
       '',
       '',

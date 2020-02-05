@@ -30,7 +30,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'only-children' })
   onlyChildren: String | undefined = undefined;
 
-  @property({ type: Boolean })
+  @property({ type: Boolean, attribute: false })
   editable: Boolean = false;
 
   currentContent: any;
