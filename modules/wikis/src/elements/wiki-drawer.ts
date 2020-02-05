@@ -322,7 +322,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
               `
             : html`
-                <wiki-home .wikiHash=${this.perspective.id} .title=${this.wiki.object.title}></wiki-home>
+                <wiki-home wikiHash=${this.perspective.id} title=${this.wiki.object.title}>
+                  <slot slot="evee" name="evee"></slot>
+                </wiki-home>
               `}
         </div>
       </mwc-drawer>
@@ -339,6 +341,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .light-gray {
           background-color: #f7f6f3;
+        }
+        .evee-info {
+          height: 40px;
         }
       `, ];
   }
