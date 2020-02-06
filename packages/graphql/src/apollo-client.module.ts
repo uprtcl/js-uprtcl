@@ -2,7 +2,7 @@ import { interfaces } from 'inversify';
 import { ApolloClient, InMemoryCache, ApolloLink } from 'apollo-boost';
 import { SchemaLink } from 'apollo-link-schema';
 import { GraphQLSchema } from 'graphql';
-import { ITypeDefinitions, makeExecutableSchema, IResolvers } from 'graphql-tools';
+import { ITypedef, makeExecutableSchema, IResolvers } from 'graphql-tools';
 
 import { MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
@@ -26,7 +26,7 @@ export class ApolloClientModule extends MicroModule {
     container
       .bind(ApolloClientModule.bindings.RootSchema)
       .toDynamicValue((context: interfaces.Context) => {
-        const typeDefs: ITypeDefinitions[] = context.container.getAll(
+        const typeDefs: ITypedef[] = context.container.getAll(
           GraphQlSchemaBindings.TypeDefs
         );
         const resolvers: IResolvers[] = context.container.getAll(GraphQlSchemaBindings.Resolvers);

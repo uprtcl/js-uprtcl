@@ -17,7 +17,13 @@ import '@material/mwc-tab-bar';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { UpdateRequest, RemotesConfig, ProposalCreatedEvent, Perspective, PerspectiveDetails } from '../types';
+import {
+  UpdateRequest,
+  RemotesConfig,
+  ProposalCreatedEvent,
+  Perspective,
+  PerspectiveDetails
+} from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
 import { CREATE_PERSPECTIVE, UPDATE_HEAD } from '../graphql/queries';
@@ -30,7 +36,7 @@ interface PerspectiveData {
   id: string;
   perspective: Perspective;
   details: PerspectiveDetails;
-  canWrite: Boolean
+  canWrite: Boolean;
   permissions: any;
 }
 
@@ -155,7 +161,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
   }
 
   async otherPerspectiveMerge(fromPerspectiveId: string, isProposal: boolean) {
-    this.logger.info(`merge ${fromPerspectiveId} on ${this.perspectiveId} - isProposal: ${isProposal}`);
+    this.logger.info(
+      `merge ${fromPerspectiveId} on ${this.perspectiveId} - isProposal: ${isProposal}`
+    );
 
     const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
     const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId);
@@ -167,7 +175,6 @@ export class EveesInfo extends moduleConnect(LitElement) {
     } else {
       this.mergePerspective(updateRequests);
     }
-
   }
 
   async mergePerspective(updateRequests: UpdateRequest[]) {
@@ -181,13 +188,12 @@ export class EveesInfo extends moduleConnect(LitElement) {
           headId: updateRequest.newHeadId
         }
       });
-    })
+    });
 
     await Promise.all(updateHeadsPromises);
   }
 
   async createMergeProposal(fromPerspectiveId: string, updateRequests: UpdateRequest[]) {
-
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     /** filter updates per authority */
@@ -258,12 +264,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
     if (!remote.proposals) throw new Error('remote cant handle proposals');
 
-    await remote.proposals.acceptProposal(
-      proposalId
-    );
+    await remote.proposals.acceptProposal(proposalId);
 
     this.logger.info('accepted proposal', { proposalId });
-
   }
 
   async executeProposal(e: CustomEvent) {
@@ -273,9 +276,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
     const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
     if (!remote.proposals) throw new Error('remote cant handle proposals');
 
-    await remote.proposals.executeProposal(
-      proposalId
-    );
+    await remote.proposals.executeProposal(proposalId);
 
     this.logger.info('accepted proposal', { proposalId });
   }
@@ -287,6 +288,7 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
   async newPerspectiveClicked() {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    this.loading = true;
 
     /** new perspectives are always created in one evees remote */
     const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
@@ -310,7 +312,9 @@ export class EveesInfo extends moduleConnect(LitElement) {
       new CustomEvent('checkout-perspective', {
         detail: {
           perspectiveId: newPerspectiveId
-        }
+        },
+        composed: true,
+        bubbles: true
       })
     );
   }
@@ -319,11 +323,14 @@ export class EveesInfo extends moduleConnect(LitElement) {
     if (this.perspectiveId === this.firstPerspectiveId) {
       return 'Current Perspective';
     } else {
-      const name = this.perspectiveData.details.name !== '' ?
-        this.perspectiveData.details.name :
-        `by ${this.perspectiveData.perspective.creatorId.substr(0, 6)} on ${this.perspectiveData.perspective.timestamp}`;
+      const name =
+        this.perspectiveData.details.name !== ''
+          ? this.perspectiveData.details.name
+          : `by ${this.perspectiveData.perspective.creatorId.substr(0, 6)} on ${
+              this.perspectiveData.perspective.timestamp
+            }`;
 
-      return `Other Perspective - ${name}`
+      return `Other Perspective - ${name}`;
     }
   }
 
@@ -360,21 +367,24 @@ export class EveesInfo extends moduleConnect(LitElement) {
           perspective-id=${this.perspectiveId}
           first-perspective-id=${this.firstPerspectiveId}
           @perspective-selected=${this.otherPerspectiveClicked}
-          @merge-perspective=${(e) => this.otherPerspectiveMerge(e.detail.perspectiveId, false)}
-          @create-proposal=${(e) => this.otherPerspectiveMerge(e.detail.perspectiveId, true)}
+          @merge-perspective=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, false)}
+          @create-proposal=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, true)}
           @authorize-proposal=${this.authorizeProposal}
           @execute-proposal=${this.executeProposal}
         ></evees-perspectives-list>
       </div>
       <div class="row">
-        <mwc-button
-          outlined
-          icon="call_split"
-          @click=${this.newPerspectiveClicked}
-          label="Create new perspective"
-        ></mwc-button>
+        ${this.loading
+          ? this.renderLoading()
+          : html`
+              <mwc-button
+                outlined
+                icon="call_split"
+                @click=${this.newPerspectiveClicked}
+                label="Create new perspective"
+              ></mwc-button>
+            `}
       </div>
-      
     `;
   }
 
@@ -395,45 +405,60 @@ export class EveesInfo extends moduleConnect(LitElement) {
   render() {
     return html`
       <div class="container">
-        ${this.popout === 'true' ? html`
-          <div
-            class="button"
-            style=${styleMap({ backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR })}
-            @click=${this.showClicked}
-          ></div>` : ''}
-        ${this.show ?
-        html`
-            <mwc-card class=${['info-box'].concat(this.popout === 'true' ? ['popout'] : []).join(' ')}>
-              ${this.perspectiveData ?
-            html`
-                  <div class="column">
-                    <div class="perspective-title" style=${styleMap({ backgroundColor: this.eveeColor, color: this.perspectiveTextColor() })}>
-                        ${this.perspectiveTitle()}
-                    </div>
+        ${this.popout === 'true'
+          ? html`
+              <div
+                class="button"
+                style=${styleMap({
+                  backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR
+                })}
+                @click=${this.showClicked}
+              ></div>
+            `
+          : ''}
+        ${this.show
+          ? html`
+              <mwc-card
+                class=${['info-box'].concat(this.popout === 'true' ? ['popout'] : []).join(' ')}
+              >
+                ${this.perspectiveData
+                  ? html`
+                      <div class="column">
+                        <div
+                          class="perspective-title"
+                          style=${styleMap({
+                            backgroundColor: this.eveeColor,
+                            color: this.perspectiveTextColor()
+                          })}
+                        >
+                          ${this.perspectiveTitle()}
+                        </div>
 
-                    <mwc-tab-bar
-                      @MDCTabBar:activated=${e => (this.activeTabIndex = e.detail.index)}
-                    >
-                      <mwc-tab .label=${this.t('evees:other-perspectives')} hasImageIcon>
-                        <mwc-icon>list_alt</mwc-icon>
-                      </mwc-tab>
-                      <mwc-tab .label=${this.t('evees:information')} hasImageIcon>
-                        <mwc-icon>info</mwc-icon>
-                      </mwc-tab>
-                      <mwc-tab .label=${this.t('evees:permissions')} hasImageIcon>
-                        <mwc-icon>group</mwc-icon>
-                      </mwc-tab>
-                    </mwc-tab-bar>
+                        <mwc-tab-bar
+                          @MDCTabBar:activated=${e => (this.activeTabIndex = e.detail.index)}
+                        >
+                          <mwc-tab .label=${this.t('evees:other-perspectives')} hasImageIcon>
+                            <mwc-icon>list_alt</mwc-icon>
+                          </mwc-tab>
+                          <mwc-tab .label=${this.t('evees:information')} hasImageIcon>
+                            <mwc-icon>info</mwc-icon>
+                          </mwc-tab>
+                          <mwc-tab .label=${this.t('evees:permissions')} hasImageIcon>
+                            <mwc-icon>group</mwc-icon>
+                          </mwc-tab>
+                        </mwc-tab-bar>
 
-                    <div class="tab-content-container">
-                      <div class="tab-content">
-                        ${this.renderTabContent()}
+                        <div class="tab-content-container">
+                          <div class="tab-content">
+                            ${this.renderTabContent()}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ` : ''}
-            </mwc-card>
-          ` : ''}
+                    `
+                  : ''}
+              </mwc-card>
+            `
+          : ''}
       </div>
     `;
   }

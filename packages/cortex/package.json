@@ -13,6 +13,7 @@
   "dependencies": {
     "@uprtcl/graphql": "^0.0.3-alpha11",
     "@uprtcl/micro-orchestrator": "^0.0.3-alpha11",
+    "graphql": "^14.6.0",
     "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",

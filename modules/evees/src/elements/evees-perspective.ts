@@ -1,6 +1,6 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html } from 'lit-element';
-import { randomColor } from 'randomcolor'; 
+import { randomColor } from 'randomcolor';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -49,7 +49,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   updated(changedProperties) {
     if (
-      changedProperties.get('firtPerspectiveId') !== undefined ||
+      changedProperties.get('firstPerspectiveId') !== undefined ||
       changedProperties.get('perspectiveId') !== undefined
     ) {
       this.loadPerspective();
@@ -58,6 +58,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   async loadPerspective() {
     this.entityId = undefined;
+this.requestUpdate();
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
@@ -76,12 +77,10 @@ export class EveesPerspective extends moduleConnect(LitElement) {
             }
             head {
               id
-            }
-          }
-          _context {
-            patterns {
-              content {
-                id
+              ... on Commit {
+                data {
+                  id
+                }
               }
             }
           }
@@ -90,7 +89,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       `
     });
 
-    this.entityId = result.data.entity._context.patterns.content.id;
+    this.entityId = result.data.entity.head.data.id;
     const head = result.data.entity.head;
     this.currentHeadId = head ? head.id : undefined;
 
@@ -123,7 +122,9 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   getEveeColor() {
     const base = this.eveeColor !== 'undefined' ? this.eveeColor : DEFAULT_COLOR;
-    return this.perspectiveId === this.firstPerspectiveId ? base : randomColor({seed: this.perspectiveId});
+    return this.perspectiveId === this.firstPerspectiveId
+      ? base
+      : randomColor({ seed: this.perspectiveId });
   }
 
   connectedCallback() {
@@ -136,9 +137,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     }) as EventListener);
 
     this.addEventListener('checkout-perspective', ((e: CustomEvent) => {
-      this.logger.info('CATCHED EVENT: checkout-perspective ', { perspectiveId: this.perspectiveId, e });
+      this.logger.info('CATCHED EVENT: checkout-perspective ', {
+        perspectiveId: this.perspectiveId,
+        e
+      });
       e.stopPropagation();
-      this.checkoutPerspective(e.detail.perspectiveId)
+      this.checkoutPerspective(e.detail.perspectiveId);
     }) as EventListener);
 
     this.addEventListener('create-sibling', ((e: CustomEvent) => {

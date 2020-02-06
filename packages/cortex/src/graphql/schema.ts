@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
+import { DocumentNode } from 'graphql';
 
-export const cortexSchema = gql`
+export const cortexSchema: DocumentNode = gql`
   scalar JSON
 
   extend type EntityContext {
