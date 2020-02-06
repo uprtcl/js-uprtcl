@@ -33,7 +33,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   @property({ type: Boolean, attribute: false })
   editable: Boolean = false;
 
-  currentContent: any;
+  currentText: string | undefined = undefined;
   private currentHeadId: string | undefined = undefined;
 
   getSource(eveesAuthority: string): Source {
@@ -162,6 +162,10 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       links: [...this.data.object.links, perspective.data.createPerspective.id]
     };
 
+    if (this.currentText) {
+      newContent.text = this.currentText;
+    }
+
     this.data = {
       ...this.data,
       object: newContent
@@ -228,12 +232,12 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       text: e.detail.content
     };
 
-    this.data.object.text = e.detail.content;
+    this.currentText = e.detail.content;
     if (this.timeout) clearTimeout(this.timeout);
 
     this.timeout = setTimeout(() => {
       this.updateContent(newContent);
-    }, 2000);
+    }, 400);
   }
 
   changeType(e: CustomEvent) {
@@ -247,7 +251,13 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     this.updateContent(newContent);
   }
 
+  updated(changedProperties) {
+    super.updated(changedProperties);
+    console.log('hihi', changedProperties, this.data);
+  }
+
   render() {
+    console.log('hihi', this.data);
     if (!this.data)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>

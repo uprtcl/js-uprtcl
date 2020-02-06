@@ -16,7 +16,7 @@ const propertyOrder = ['title', 'pages'];
 export class WikiEntity implements Entity {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
-  ) { }
+  ) {}
 
   recognize(object: object): boolean {
     if (!this.hashedPattern.recognize(object)) return false;
@@ -73,12 +73,14 @@ export class WikiCommon extends WikiEntity implements HasLenses {
         name: 'Wiki',
         type: 'content',
         render: (lensContent: TemplateResult, context: any) => html`
-          <wiki-drawer 
+          <wiki-drawer
             .wiki=${wiki}
             .perspective=${context.perspective}
             color=${context.color}
             only-children=${context.onlyChildren}
-            level=${context.level}>
+            .selectedPageHash=${context.selectedPageHash}
+            level=${context.level}
+          >
             ${lensContent}
           </wiki-drawer>
         `
@@ -94,7 +96,7 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
     @multiInject(WikiBindings.WikisRemote) protected wikisRemotes: WikisProvider[]
-  ) { 
+  ) {
     super(hashedPattern);
   }
 

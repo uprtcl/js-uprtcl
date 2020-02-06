@@ -51,17 +51,10 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
           id
           _context {
             patterns {
-              isomorphisms {
-                id
-                _context {
-                  patterns {
-                    lenses {
-                      name
-                      type
-                      render
-                    }
-                  }
-                }
+              lenses {
+                name
+                type
+                render
               }
             }
           }
@@ -70,10 +63,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
       `
     });
 
-    const lenses = flatMap(
-      result.data.entity._context.patterns.isomorphisms,
-      iso => iso._context.patterns.lenses
-    ).filter(lens => !!lens);
+    const lenses = result.data.entity._context.patterns.lenses.filter(lens => !!lens);
 
     this.entity = { id: result.data.id, ...result.data.entity };
 
