@@ -4,6 +4,14 @@ import { Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesSource } from './evees.source';
 
 export interface EveesProvider extends EveesSource {
+
+  /**
+   * Create perspective in the service
+   *
+   * @param perspective: the signed perspective to create
+   */
+  createPerspective(perspective: Secured<Perspective>, details: ): Promise<void>;
+
   /** Cloners */
 
   /**
