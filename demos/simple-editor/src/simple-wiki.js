@@ -4,7 +4,6 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
 import { WikisModule, CREATE_WIKI } from '@uprtcl/wikis';
-import { CHANGE_OWNER } from '@uprtcl/access-control';
 import { DocumentsModule } from '@uprtcl/documents';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
@@ -73,25 +72,20 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         }
       });
 
+      const randint = 0 + Math.floor((10000 - 0) * Math.random());
+
       const createPerspective = await client.mutate({
         mutation: CREATE_PERSPECTIVE,
         variables: {
           headId: createCommit.data.createCommit.id,
+          context: `genesis-dao-wiki-${randint}`,
+          name: 'common',
           authority: this.eveesProvider.authority,
-          name: 'master'
+          canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
         }
       });
 
       const perspectiveId = createPerspective.data.createPerspective.id;
-
-      /** transfer ownership to the DAO */
-      const changeOwner = await client.mutate({
-        mutation: CHANGE_OWNER,
-        variables: {
-          entityId: perspectiveId,
-          newOwner: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
-        }
-      });
 
       window.history.pushState('', '', `/?id=${perspectiveId}`);
     }

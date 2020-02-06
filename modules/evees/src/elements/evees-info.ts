@@ -25,6 +25,7 @@ import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
 import { DEFAULT_COLOR } from './evees-perspective';
+import { OwnerPreservingMergeStrategy, OwnerPreservinConfig } from 'src/merge/owner-preserving.merge-strategy';
 
 interface PerspectiveData {
   id: string;
@@ -127,16 +128,6 @@ export class EveesInfo extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
-  async merge(fromPerspectiveId: string) {
-    if (!fromPerspectiveId) return;
-
-    this.logger.info('merge()', { perspectiveId: this.perspectiveId, fromPerspectiveId });
-
-    const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
-    const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId);
-    console.log(updateRequests);
-  }
-
   connectedCallback() {
     super.connectedCallback();
   }
@@ -158,7 +149,17 @@ export class EveesInfo extends moduleConnect(LitElement) {
     this.logger.info(`merge ${fromPerspectiveId} on ${this.perspectiveId} - isProposal: ${isProposal}`);
 
     const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
-    const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId);
+
+    const evees: Evees = this.request(EveesModule.bindings.Evees);
+    const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
+
+    if (!remote.userId) throw new Error('remote dont have a logged user');
+
+    const config: OwnerPreservinConfig = {
+      targetAuthority: remote.authority,
+      targetCanWrite: remote.userId
+    }
+    const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId, config);
 
     this.logger.info('merge computed', { updateRequests });
 

@@ -6,7 +6,8 @@ export interface MergeStrategy {
    */
   mergePerspectives(
     toPerspectiveId: string,
-    fromPerspectiveId: string
+    fromPerspectiveId: string,
+    config?: any
   ): Promise<UpdateRequest[]>;
 
   /**

@@ -6,11 +6,11 @@ import { EveesSource } from './evees.source';
 export interface EveesProvider extends EveesSource {
 
   /**
-   * Create perspective in the service
+   * Clone a perspective, set its details and forces a user canWrite in the service. 
    *
    * @param perspective: the signed perspective to create
    */
-  createPerspective(perspective: Secured<Perspective>, details: ): Promise<void>;
+  cloneAndInitPerspective(perspective: Secured<Perspective>, details: PerspectiveDetails, canWrite?: string): Promise<void>;
 
   /** Cloners */
 

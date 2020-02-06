@@ -24,6 +24,7 @@ export { Mergeable } from './properties/mergeable';
 export { MergeStrategy } from './merge/merge-strategy';
 export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
+export { OwnerPreservingMergeStrategy } from './merge/owner-preserving.merge-strategy';
 export { mergeStrings, mergeResult } from './merge/utils';
 
 /** Elements */
