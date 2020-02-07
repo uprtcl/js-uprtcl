@@ -32,6 +32,9 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   @property({ type: Number })
   level: number = 0;
 
+  @property({ type: Number })
+  index: number = 0;
+
   private currentHeadId: string | undefined = undefined;
   private perspective: Secured<Perspective> | undefined = undefined;
 
@@ -217,7 +220,8 @@ this.requestUpdate();
           perspective: this.perspective,
           color: this.getEveeColor(),
           onlyChildren: this.onlyChildren,
-          level: this.level
+          level: this.level,
+          index: this.index
         }}
       >
         <evees-info
