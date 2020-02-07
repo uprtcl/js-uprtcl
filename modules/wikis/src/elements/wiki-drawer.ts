@@ -1,5 +1,13 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
+// import { styleMap } from 'lit-html/directives/style-map';
+// https://github.com/Polymer/lit-html/issues/729
+export const styleMap = style => {
+  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    return `${styleString}${propName}:${propValue};`;
+  }, '');
+};
 
 import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
@@ -169,7 +177,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     await this.updateContent(newWiki);
   }
 
-  updated (changedProperties: any) {
+  updated(changedProperties: any) {
     if (changedProperties.get('wiki') !== undefined) {
       this.loadPagesData();
     }
@@ -272,13 +280,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return html`
       <mwc-list>
         ${this.pagesList.map(page => {
-          let text = htmlToText(page.title);
-          return html`
+      let text = htmlToText(page.title);
+      return html`
             <mwc-list-item @click=${() => this.selectPage(page.id)}>
               ${text}
             </mwc-list-item>
           `;
-        })}
+    })}
       </mwc-list>
     `;
   }
@@ -289,44 +297,51 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
+    console.log(this.color === '#d9d7d0'); 
     return html`
       <mwc-drawer hasHeader>
         <span slot="title" @click=${() => this.selectPage(undefined)} style="cursor: pointer;">
           ${this.wiki.object.title}
         </span>
 
-        <div class="column light-gray" style="height: 100%;">
+        <div 
+          class="column" 
+          style=${styleMap({
+            backgroundColor: this.color ? this.color : '#f7f6f3',
+            color: this.color === '#d9d7d0' ? '#28282a' : '#ffffff'
+          })}>
+          
           <div style="flex: 1;">
             ${this.renderPageList()}
           </div>
 
-          ${this.editable
-            ? html`
-                <div class="row">
-                  <mwc-button
-                    raised
-                    icon="note_add"
-                    @click=${() => this.createPage()}
-                    style="flex: 1;"
-                  >
-                    ${this.t('wikis:new-page')}
-                  </mwc-button>
-                </div>
-              `
+          ${this.editable ?
+            html`
+                    <div class="row">
+                      <mwc-button
+                        raised
+                        icon="note_add"
+                        @click=${() => this.createPage()}
+                        style="flex: 1;"
+                      >
+                        ${this.t('wikis:new-page')}
+                      </mwc-button>
+                    </div>
+                  `
             : html``}
-        </div>
+            </div>
 
-        <div slot="appContent" class="fill-content">
-          ${this.selectedPageHash
+            <div slot="appContent" class="fill-content">
+              ${this.selectedPageHash
             ? html`
-                <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
-              `
+                    <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
+                  `
             : html`
-                <wiki-home wikiHash=${this.perspective.id} title=${this.wiki.object.title}>
-                  <slot slot="evee" name="evee"></slot>
-                </wiki-home>
-              `}
-        </div>
+                    <wiki-home wikiHash=${this.perspective.id} title=${this.wiki.object.title}>
+                      <slot slot="evee" name="evee"></slot>
+                    </wiki-home>
+                  `}
+            </div>
       </mwc-drawer>
     `;
   }
@@ -339,13 +354,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
           color: #37352f;   
         }
-        .light-gray {
-          background-color: #f7f6f3;
-        }
         .evee-info {
           height: 40px;
         }
-      `, ];
+        .column {
+          height: 100%;
+        }
+      `];
   }
 
 }

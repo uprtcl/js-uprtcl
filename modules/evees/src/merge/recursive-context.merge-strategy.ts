@@ -167,7 +167,12 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
           ? perspectivesByContext.to
           : perspectivesByContext.from;
 
-        await this.mergePerspectiveChildren(finalPerspectiveId as string);
+        /** TODO: why is this needed? its creating abug when merging wiki
+         * with one page and one paragraph into a wiki without pages.
+         * only one head update is expected, but two or found. The head 
+         * of the page is updated but it should not.
+         */
+        // await this.mergePerspectiveChildren(finalPerspectiveId as string);
 
         return finalPerspectiveId as string;
       }

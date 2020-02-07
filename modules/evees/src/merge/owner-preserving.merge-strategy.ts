@@ -35,8 +35,6 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     fromPerspectiveId: string,
     config: OwnerPreservinConfig    
   ): Promise<UpdateRequest[]> {
-
-    debugger
     
     await super.mergePerspectives(toPerspectiveId, fromPerspectiveId);
 

@@ -16,6 +16,7 @@ import '@material/mwc-tab-bar';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
+import { AccessControlService, OwnerPermissions } from '@uprtcl/access-control';
 
 import {
   UpdateRequest,
@@ -31,7 +32,7 @@ import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
 import { DEFAULT_COLOR } from './evees-perspective';
-import { OwnerPreservingMergeStrategy, OwnerPreservinConfig } from 'src/merge/owner-preserving.merge-strategy';
+import { OwnerPreservinConfig } from '../merge/owner-preserving.merge-strategy';
 
 interface PerspectiveData {
   id: string;
@@ -161,11 +162,17 @@ export class EveesInfo extends moduleConnect(LitElement) {
     const evees: Evees = this.request(EveesModule.bindings.Evees);
     const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
 
-    if (!remote.userId) throw new Error('remote dont have a logged user');
+    const accessControl = remote.accessControl as AccessControlService<OwnerPermissions>;
+    const permissions = await accessControl.getPermissions(this.perspectiveId);
 
+    if (!permissions.owner) {
+      // TODO: ownerPreserving merge should be changed to permissionPreserving merge
+      throw new Error('Target perspective dont have an owner. TODO: ownerPreserving merge should be changed to permissionPreserving merge');
+    }
+    
     const config: OwnerPreservinConfig = {
       targetAuthority: remote.authority,
-      targetCanWrite: remote.userId
+      targetCanWrite: permissions.owner
     }
     const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId, config);
 
