@@ -86,7 +86,8 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
 
   merge = (originalNode: Hashed<TextNode>) => async (
     modifications: Hashed<TextNode>[],
-    mergeStrategy: MergeStrategy
+    mergeStrategy: MergeStrategy,
+    config: any
   ): Promise<TextNode> => {
     const resultText = mergeStrings(
       originalNode.object.text,
@@ -99,7 +100,8 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
 
     const mergedLinks = await mergeStrategy.mergeLinks(
       originalNode.object.links,
-      modifications.map(data => data.object.links)
+      modifications.map(data => data.object.links),
+      config
     );
 
     return {

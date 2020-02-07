@@ -46,7 +46,8 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
 
   merge = (originalNode: Hashed<Wiki>) => async (
     modifications: Hashed<Wiki>[],
-    mergeStrategy: MergeStrategy
+    mergeStrategy: MergeStrategy,
+    config
   ): Promise<Wiki> => {
     const resultTitle = mergeStrings(
       originalNode.object.title,
@@ -55,7 +56,8 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
 
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
-      modifications.map(data => data.object.pages)
+      modifications.map(data => data.object.pages),
+      config
     );
 
     return {

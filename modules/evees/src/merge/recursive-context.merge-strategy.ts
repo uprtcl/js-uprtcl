@@ -111,7 +111,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
     }
 
-    await super.mergePerspectives(toPerspectiveId, fromPerspectiveId);
+    await super.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
 
     return this.updatesList;
   }
@@ -132,7 +132,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     }
   }
 
-  async mergeLinks(originalLinks: string[], modificationsLinks: string[][]): Promise<string[]> {
+  async mergeLinks(originalLinks: string[], modificationsLinks: string[][], config: any): Promise<string[]> {
     const originalPromises = originalLinks.map(link => this.getPerspectiveContext(link));
     const modificationsPromises = modificationsLinks.map(links =>
       links.map(link => this.getPerspectiveContext(link))
@@ -143,7 +143,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       modificationsPromises.map(promises => Promise.all(promises))
     );
 
-    const contextIdLinks = await super.mergeLinks(originalContexts, modificationsContexts);
+    const contextIdLinks = await super.mergeLinks(originalContexts, modificationsContexts, config);
 
     const dictionary = this.perspectivesByContext;
 
@@ -157,7 +157,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
         // We need to merge the new perspectives with the original perspective
         await this.mergePerspectives(
           perspectivesByContext.to as string,
-          perspectivesByContext.from as string
+          perspectivesByContext.from as string,
+          config
         );
 
         // The final perspective has not changed
@@ -208,7 +209,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     };
   }
 
-  private async mergePerspectiveChildren(perspectiveId: string): Promise<void> {
+  private async mergePerspectiveChildren(perspectiveId: string, config: any): Promise<void> {
     const data = await this.loadPerspectiveData(perspectiveId);
 
     const hasChildren: HasChildren | undefined = this.recognizer
@@ -221,7 +222,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     if (links.length === 0) return;
     
-    const mergedLinks = await this.mergeLinks(links, [links]);
+    const mergedLinks = await this.mergeLinks(links, [links], config);
 
     if (!links.every((link, index) => link !== mergedLinks[index])) {
       /** data is Hased -> new Data should be hashed too */

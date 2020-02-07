@@ -58,7 +58,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
     
-    const mergeCommitId = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, remote.source);
+    const mergeCommitId = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, remote.source, config);
 
     this.addUpdateRequest({
       fromPerspectiveId,
@@ -96,7 +96,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     return data;
   }
 
-  async mergeCommits(toCommitId: string, fromCommitId: string, authority: string, source: string): Promise<string> {
+  async mergeCommits(toCommitId: string, fromCommitId: string, authority: string, source: string, config: any): Promise<string> {
     const commitsIds = [toCommitId, fromCommitId];
 
     const ancestorId = await findMostRecentCommonAncestor(this.discovery)(commitsIds);
@@ -106,7 +106,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDatas: any[] = await Promise.all(datasPromises);
 
-    const newData = await this.mergeData(ancestorData, newDatas);
+    const newData = await this.mergeData(ancestorData, newDatas, config);
     
     const patternName = this.recognizer.recognize(newData)[0].name;
     const newDataId = await createEntity(this.recognizer)(newData, this.remotesConfig.map(authority, patternName).source);
@@ -124,7 +124,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     return mergeCommit.data.createCommit.id;
   }
 
-  async mergeData<T extends object>(originalData: T, newDatas: T[]): Promise<T> {
+  async mergeData<T extends object>(originalData: T, newDatas: T[], config: any): Promise<T> {
     const merge: Mergeable | undefined = this.recognizer
       .recognize(originalData)
       .find(prop => !!(prop as Mergeable).merge);
@@ -132,10 +132,10 @@ export class SimpleMergeStrategy implements MergeStrategy {
     if (!merge)
       throw new Error('Cannot merge data that does not implement the Mergeable behaviour');
 
-    return merge.merge(originalData)(newDatas, this);
+    return merge.merge(originalData)(newDatas, this, config);
   }
 
-  async mergeLinks(originalLinks: string[], modificationsLinks: string[][]): Promise<string[]> {
+  async mergeLinks(originalLinks: string[], modificationsLinks: string[][], config): Promise<string[]> {
     const allLinks: Dictionary<boolean> = {};
 
     const originalLinksDic = {};
