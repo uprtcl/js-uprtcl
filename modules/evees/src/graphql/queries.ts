@@ -30,8 +30,8 @@ export const CREATE_COMMIT = gql`
 `;
 
 export const CREATE_PERSPECTIVE = gql`
-  mutation CreatePerspective($headId: ID, $context: String, $name: String, $authority: String, $recursive: Boolean) {
-    createPerspective(headId: $headId, context: $context, name: $name, authority: $authority, recursive: $recursive) {
+  mutation CreatePerspective($headId: ID, $context: String, $name: String, $authority: String, $canWrite: String, $recursive: Boolean) {
+    createPerspective(headId: $headId, context: $context, name: $name, authority: $authority, canWrite: $canWrite, recursive: $recursive) {
       id
       name
       head {

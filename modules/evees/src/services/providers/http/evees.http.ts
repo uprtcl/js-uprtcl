@@ -6,8 +6,9 @@ import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
-import { PerspectiveDetails } from '../../../types';
+import { PerspectiveDetails, Perspective } from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
+import { Secured } from 'src/uprtcl-evees';
 
 const evees_api: string = 'evees-v1';
 
@@ -47,9 +48,16 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
     return super.getObject<Hashed<T>>(`/get/${hash}`);
   }
 
-  async clonePerspective(perspective: any): Promise<void> {
+  async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
     await super.post('/persp', perspective);
   }
+
+  async cloneAndInitPerspective(perspective: Secured<Perspective>, details: PerspectiveDetails, canWrite?: string | undefined): Promise<void> {
+    await this.clonePerspective(perspective);
+    await this.updatePerspectiveDetails(perspective.id, details);
+    // TODO: addEditor
+  }
+  
 
   async cloneCommit(commit: any): Promise<void> {
     await super.post('/commit', commit);

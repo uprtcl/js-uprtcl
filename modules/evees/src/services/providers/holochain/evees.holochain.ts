@@ -9,6 +9,9 @@ import { EveesRemote } from '../../evees.remote';
 
 @injectable()
 export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {
+  
+  knownSources?: import("@uprtcl/multiplatform").KnownSourcesService | undefined;
+  userId?: string | undefined;
   zome: string = 'evees';
 
   get accessControl() {
@@ -92,5 +95,12 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
       perspective_address: perspectiveId
     });
     return this.parseResponse(result);
+  }
+
+  async cloneAndInitPerspective(perspective: Secured<Perspective>, details: PerspectiveDetails, canWrite?: string | undefined): Promise<void> {
+    await this.ready();
+    
+    await this.clonePerspective(perspective);
+    return this.updatePerspectiveDetails(perspective.id, details);
   }
 }

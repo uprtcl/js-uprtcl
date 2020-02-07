@@ -33,7 +33,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
   async mergePerspectives(
     toPerspectiveId: string,
-    fromPerspectiveId: string
+    fromPerspectiveId: string,
+    config?: any
   ): Promise<UpdateRequest[]> {
     /** initialize list */
     this.updatesList = [];

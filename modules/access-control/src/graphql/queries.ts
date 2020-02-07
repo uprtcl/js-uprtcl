@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
 
-export const CHANGE_OWNER = gql`
-  mutation ChangeOwner($entityId: ID!, $newOwner: ID!) {
-    changeOwner(entityId: $entityId, newOwner: $newOwner) {
+export const SET_CAN_WRITE = gql`
+  mutation setCanWrite($entityId: ID!, $userId: ID!) {
+    setCanWrite(entityId: $entityId, userId: $userId) {
       id
       _context {
         patterns {

@@ -35,7 +35,7 @@ export interface NoHeadPerspectiveArgs {
 export type NewPerspectiveArgs = (
   | Partial<PerspectiveDetails>
   | (NoHeadPerspectiveArgs & { dataId: string })
-) & { recursive?: boolean };
+) & { recursive?: boolean } & { canWrite?: string };
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -226,6 +226,7 @@ export class Evees {
                 name,
                 headId: details.headId,
                 authority: eveesRemote.authority,
+                canWrite: args.canWrite ? args.canWrite : undefined,
                 recursive: true
               }
             });
@@ -270,11 +271,8 @@ export class Evees {
     // this.taskQueue.queueTask(updatedPerspectiveTask);
 
     // Clone the perspective in the selected provider
-    await eveesRemote.clonePerspective(perspective);
+    await eveesRemote.cloneAndInitPerspective(perspective, { headId, name, context }, args.canWrite);
 
-    // And update its details
-    await eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context });
-    
     return perspective;
   }
 }

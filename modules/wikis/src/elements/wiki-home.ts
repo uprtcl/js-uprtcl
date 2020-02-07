@@ -11,33 +11,30 @@ export class WikiHome extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
-  recentPerspectives() {
-    return html`
-      <span class="title">Welcome to ${this.title}</span>
-      <div class="evee-info">
-        <slot name="evee"></slot>
-      </div>
-    `;
-  }
-
   render() {
     return html`
-      <div style="padding: 36px" class="row">
-        ${this.recentPerspectives()}
+      <div class="page-container">
+        <div class="title">Welcome to ${this.title}</div>
+        <div class="evee-info">
+          <slot name="evee"></slot>
+        </div>
       </div>
     `;
   }
 
   static get styles() {
     return css`
+      .page-container {
+      }
+
       .row {
         display: flex;
         flex-direction: column;
       }
 
       .title {
-        font-size: 20px;
-        padding-bottom: 16px;
+        margin: 22px 0px 36px 16px;
+        font-size: 32px;
         font-weight: bold;
       }
 

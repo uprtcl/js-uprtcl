@@ -12,6 +12,10 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
     await this.ethProvider.send(UPDATE_OWNER, [perspectiveIdHash, newOwnerId]);
   }
 
+  async setCanWrite(hash: string, userId: string): Promise<void> {
+    return this.changeOwner(hash, userId);
+  }
+
   private async getOwner(hash: string): Promise<string> {
     const perspectiveIdHash = await hashCid(hash);
 

@@ -18,7 +18,10 @@ import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 import { ProposalsProvider } from '../../proposals.provider';
 
+const evees_if = 'evees-v0';
+
 export class EveesEthereum extends EthereumProvider implements EveesRemote {
+  knownSources?: import("@uprtcl/multiplatform").KnownSourcesService | undefined;
   logger: Logger = new Logger('EveesEtereum');
 
   ipfsSource: IpfsSource;
@@ -37,7 +40,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   }
 
   get authority() {
-    return 'eth:hi:mynameistal';
+    return `eth-${this.ethConnection.networkId}:${evees_if}:${this.contractInstance.options.address.toLocaleLowerCase()}`;
   }
 
   get source() {
@@ -56,6 +59,42 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
    */
   async ready(): Promise<void> {
     await Promise.all([super.ready(), this.ipfsSource.ready()]);
+  }
+
+  async cloneAndInitPerspective(secured: Secured<Perspective>, details: PerspectiveDetails, canWrite?: string): Promise<void> {
+    let perspective = secured.object.payload;
+
+    /** validate */
+    if (!perspective.origin) throw new Error('origin cannot be empty');
+
+    /** Store the perspective data in the data layer */
+    const perspectiveId = await this.ipfsSource.addObject(sortObject(secured.object));
+    this.logger.log(`[ETH] createPerspective - added to IPFS`, perspectiveId);
+
+    if (secured.id && secured.id != perspectiveId) {
+      throw new Error(
+        `perspective ID computed by IPFS ${perspectiveId} is not the same as the input one ${secured.id}.`
+      );
+    }
+
+    const perspectiveIdHash = await hashCid(perspectiveId);
+    let contextHash;
+    if (details.context) {
+      contextHash = await hashText(details.context);
+    } else {
+      contextHash = '0x' + new Array(32).fill(0).join('')
+    }
+
+    /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
+    await this.send(ADD_PERSP, [
+      perspectiveIdHash,
+      contextHash,
+      details.headId ? details.headId : '',
+      details.context ? details.context : '',
+      details.name ? details.name : '',
+      canWrite ? canWrite : this.ethConnection.getCurrentAccount(),
+      perspectiveId
+    ]);
   }
 
   /**
@@ -78,7 +117,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     }
 
     const perspectiveIdHash = await hashCid(perspectiveId);
-
+    
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     await this.send(ADD_PERSP, [
       perspectiveIdHash,
@@ -152,9 +191,9 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     const contextHash = await hashText(context);
 
     let perspectiveContextUpdatedEvents = await this.contractInstance.getPastEvents(
-      'PerspectiveDetailsUpdated',
+      'PerspectiveAdded',
       {
-        filter: { newContextHash: contextHash },
+        filter: { contextHash: contextHash },
         fromBlock: 0
       }
     );

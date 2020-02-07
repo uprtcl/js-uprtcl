@@ -22,7 +22,7 @@ import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs } from './graphql/schema';
 import { eveesResolvers } from './graphql/resolvers';
-import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
+import { OwnerPreservingMergeStrategy } from './merge/owner-preserving.merge-strategy';
 import { PerspectivesList } from './elements/evees-perspectives-list';
 import { EveesPerspective } from './elements/evees-perspective';
 import { EveesInfo } from './elements/evees-info';
@@ -82,7 +82,7 @@ export class EveesModule extends MicroModule {
 
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.bindings.Evees).to(Evees);
-    container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
+    container.bind(EveesModule.bindings.MergeStrategy).to(OwnerPreservingMergeStrategy);
     container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
   }
 

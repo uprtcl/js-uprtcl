@@ -16,6 +16,7 @@ import '@material/mwc-tab-bar';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
+import { AccessControlService, OwnerPermissions } from '@uprtcl/access-control';
 
 import {
   UpdateRequest,
@@ -31,6 +32,7 @@ import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
 import { DEFAULT_COLOR } from './evees-perspective';
+import { OwnerPreservinConfig } from '../merge/owner-preserving.merge-strategy';
 
 interface PerspectiveData {
   id: string;
@@ -133,16 +135,6 @@ export class EveesInfo extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
-  async merge(fromPerspectiveId: string) {
-    if (!fromPerspectiveId) return;
-
-    this.logger.info('merge()', { perspectiveId: this.perspectiveId, fromPerspectiveId });
-
-    const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
-    const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId);
-    console.log(updateRequests);
-  }
-
   connectedCallback() {
     super.connectedCallback();
   }
@@ -166,7 +158,23 @@ export class EveesInfo extends moduleConnect(LitElement) {
     );
 
     const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
-    const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId);
+
+    const evees: Evees = this.request(EveesModule.bindings.Evees);
+    const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
+
+    const accessControl = remote.accessControl as AccessControlService<OwnerPermissions>;
+    const permissions = await accessControl.getPermissions(this.perspectiveId);
+
+    if (!permissions.owner) {
+      // TODO: ownerPreserving merge should be changed to permissionPreserving merge
+      throw new Error('Target perspective dont have an owner. TODO: ownerPreserving merge should be changed to permissionPreserving merge');
+    }
+    
+    const config: OwnerPreservinConfig = {
+      targetAuthority: remote.authority,
+      targetCanWrite: permissions.owner
+    }
+    const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId, config);
 
     this.logger.info('merge computed', { updateRequests });
 

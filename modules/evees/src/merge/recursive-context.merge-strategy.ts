@@ -100,7 +100,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
   async mergePerspectives(
     toPerspectiveId: string,
-    fromPerspectiveId: string
+    fromPerspectiveId: string,
+    config?: any
   ): Promise<UpdateRequest[]> {
     let root = false;
     if (!this.perspectivesByContext) {
@@ -166,7 +167,12 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
           ? perspectivesByContext.to
           : perspectivesByContext.from;
 
-        await this.mergePerspectiveChildren(finalPerspectiveId as string);
+        /** TODO: why is this needed? its creating abug when merging wiki
+         * with one page and one paragraph into a wiki without pages.
+         * only one head update is expected, but two or found. The head 
+         * of the page is updated but it should not.
+         */
+        // await this.mergePerspectiveChildren(finalPerspectiveId as string);
 
         return finalPerspectiveId as string;
       }
@@ -177,7 +183,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     return links;
   }
 
-  protected async updatePerspectiveData(perspectiveId: string, data: any): Promise<void> {
+  protected async updatePerspectiveData(perspectiveId: string, data: any): Promise<UpdateRequest> {
     const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
     const details = await remote.getPerspectiveDetails(perspectiveId);
 
@@ -194,12 +200,12 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       }
     });
 
-    this.addUpdateRequest({
+    return {
       fromPerspectiveId: undefined,
       perspectiveId,
       oldHeadId: details.headId,
       newHeadId: head.data.createCommit.id
-    });
+    };
   }
 
   private async mergePerspectiveChildren(perspectiveId: string): Promise<void> {
@@ -221,7 +227,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       /** data is Hased -> new Data should be hashed too */
       const newData = (hasChildren.replaceChildrenLinks(data)(mergedLinks) as Hashed<any>);
 
-      await this.updatePerspectiveData(perspectiveId, newData.object);
+      const updateRequest = await this.updatePerspectiveData(perspectiveId, newData.object);
+      this.addUpdateRequest(updateRequest);
     }
   }
 }
