@@ -15,21 +15,25 @@ export type RemoveSyblingsArgs = {
   toIndex?: number;
 };
 
+export const CREATE_SYBLING_TAG = 'create-sybling';
+export const ADD_SYBLINGS_TAG = 'add-syblings';
+export const REMOVE_CHILDREN_TAG = 'remove-children';
+
 export class CreateSyblingEvent extends CustomEvent<CreateSyblingArgs> {
   constructor(init: CustomEventInit<CreateSyblingArgs>) {
-    super('create-sybling', init);
+    super(CREATE_SYBLING_TAG, init);
   }
 }
 
 export class AddSyblingsEvent extends CustomEvent<AddSyblingsArgs> {
   constructor(init: CustomEventInit<AddSyblingsArgs>) {
-    super('add-syblings', init);
+    super(ADD_SYBLINGS_TAG, init);
   }
 }
 
 export class RemoveChildrenEvent extends CustomEvent<RemoveSyblingsArgs> {
   constructor(init: CustomEventInit<RemoveSyblingsArgs>) {
-    super('remove-syblings', init);
+    super(REMOVE_CHILDREN_TAG, init);
   }
 }
 

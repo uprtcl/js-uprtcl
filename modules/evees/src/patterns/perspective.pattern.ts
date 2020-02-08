@@ -60,6 +60,7 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
 
           const level: number = context ? (context.level !== undefined ? context.level : 1) : 1;
           const index: number = context ? (context.index !== undefined ? context.index : undefined) : undefined;
+          const genealogy: string[] = context ? (context.genealogy !== undefined ? context.genealogy : []) : [];
 
           const onlyChildren: string = context
             ? context.onlyChildren !== undefined
@@ -81,6 +82,7 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
               only-children=${onlyChildren}
               level=${level}
               index=${index}
+              .genealogy=${genealogy}
             >
             </evees-perspective>
           `;

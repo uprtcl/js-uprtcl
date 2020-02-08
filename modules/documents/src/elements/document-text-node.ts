@@ -20,8 +20,7 @@ import { TextNode, TextType } from '../types';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { DocumentsModule } from '../documents.module';
 import { Source, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
-import { CreateSyblingEvent, AddSyblingsEvent, RemoveChildrenEvent, RemoveSyblingsArgs } from './events';
-import { link } from 'fs';
+import { CreateSyblingEvent, AddSyblingsEvent, RemoveChildrenEvent, RemoveSyblingsArgs, CREATE_SYBLING_TAG, REMOVE_CHILDREN_TAG, ADD_SYBLINGS_TAG } from './events';
 
 export class DocumentTextNode extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-TEXT-NODE');
@@ -31,6 +30,9 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
   @property({ type: Object })
   perspective: Secured<Perspective> | undefined = undefined;
+
+  @property({ type: Array })
+  genealogy: string[] = [];
 
   @property({ type: String })
   color: string | undefined = undefined;
@@ -237,7 +239,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
         composed: true,
         detail: {
           startedOnElementId: this.data.id,
-          index: this.index
+          index: this.index + 1
         }
       })
     );
@@ -245,7 +247,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
   addChildren(links: string[], index?: number) {
     if (!this.data) return;
-  
+
     /** children are added to the bottom by default */
     index = index || this.data.object.links.length;
     let newLinks: string[] = [...this.data.object.links];
@@ -265,13 +267,13 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
   removeChildren(fromIndex?: number, toIndex?: number) {
     if (!this.data) return;
-  
+
     /** children are added to the bottom by default */
     fromIndex = fromIndex || 0;
     toIndex = toIndex || this.data.object.links.length;
 
     let newLinks: string[] = [...this.data.object.links];
-    newLinks.slice(fromIndex, toIndex);
+    newLinks.splice(fromIndex, toIndex - fromIndex + 1);
 
     const newContent: TextNode = {
       ...this.data.object,
@@ -301,7 +303,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       onlyChildren: this.onlyChildren
     });
 
-    this.addEventListener(CreateSyblingEvent.name, ((e: CreateSyblingEvent) => {
+    this.addEventListener(CREATE_SYBLING_TAG, ((e: CreateSyblingEvent) => {
       if (!this.data) return;
 
       this.logger.info(`CATCHED EVENT: ${CreateSyblingEvent.name}`, { dataId: this.data.id, e });
@@ -314,11 +316,11 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       this.createChild(e.detail.index);
     }) as EventListener);
 
-    this.addEventListener(AddSyblingsEvent.name, ((e: AddSyblingsEvent) => {
+    this.addEventListener(ADD_SYBLINGS_TAG, ((e: AddSyblingsEvent) => {
       if (!this.data) return;
 
       this.logger.info(`CATCHED EVENT: ${AddSyblingsEvent.name}`, { dataId: this.data.id, e });
-
+      
       // TODO: this.addEventListener listens  this.dispatchEvent ???
       if (e.detail.startedOnElementId === this.data.id) return;
 
@@ -327,7 +329,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       this.addChildren(e.detail.elementIds, e.detail.index);
     }) as EventListener);
 
-    this.addEventListener(RemoveChildrenEvent.name, ((e: RemoveChildrenEvent) => {
+    this.addEventListener(REMOVE_CHILDREN_TAG, ((e: RemoveChildrenEvent) => {
       if (!this.data) return;
 
       this.logger.info(`CATCHED EVENT: ${RemoveChildrenEvent.name}`, { dataId: this.data.id, e });
@@ -339,10 +341,44 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       e.stopPropagation();
       this.removeChildren(e.detail.fromIndex, e.detail.toIndex);
     }) as EventListener);
-    
+
   }
 
   timeout: any = undefined;
+
+  async getPerspectiveDataId(perspectiveId: string): Promise<string> {
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const result = await client.query({
+      query: gql`
+      {
+        entity(id: "${perspectiveId}") {
+          id
+          ... on Perspective {
+            head {
+              id
+              ... on Commit {
+                data {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }`
+    });
+
+    return result.data.entity.head.data.id;
+  }
+
+  async getData(dataId: string): Promise<Hashed<TextNode> | undefined> {
+    const discovery: DiscoveryService = this.request(DiscoveryModule.bindings.DiscoveryService);
+    return discovery.get(dataId);
+  }
+
+  async getPerspectiveData(perspectiveId: string): Promise<Hashed<TextNode> | undefined> {
+    const dataId = await this.getPerspectiveDataId(perspectiveId);
+    return this.getData(dataId);
+  }
 
   editorContentChanged(e) {
     if (!this.data) return;
@@ -363,8 +399,6 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   async changeType(e: CustomEvent) {
     if (!this.data) return;
 
-    debugger
-
     const newType = e.detail.type;
     let newContent: TextNode;
 
@@ -374,7 +408,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
           /** title to title: setting the same view changes nothing */
           case TextType.Title:
             return;
-          
+
           /** title to paragraph: changing the type of a title to a paragraph
            *  will move all its subelements as younger siblings of the new typed
            *  paragraph */
@@ -388,7 +422,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
               type: newType,
             };
 
-            this.updateContentLocal(newContent);
+            this.updateContent(newContent);
 
             /** add as syblings */
             this.dispatchEvent(new AddSyblingsEvent({
@@ -404,94 +438,80 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
             return;
         }
-      
+
       case TextType.Paragraph:
-        switch(newType) {
+        switch (newType) {
           case TextType.Paragraph:
             return;
-          
+
           /** paragraph to title: Changing the type of a paragraph to a title
           * will move all the younger sibling contexts of the paragraph as
           * children of the new title. */
           case TextType.Title:
-            const youngerSyblings = this.data.object.links.splice(this.index + 1);
-
             let newContent: TextNode = {
               ...this.data.object,
               type: newType
             };
-            
-            if (youngerSyblings.length > 0) {
-              const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-              const discovery: DiscoveryService = this.request(DiscoveryModule.bindings.DiscoveryService);
-              
-              const syblingsDataPromises = youngerSyblings.map(async (id) => {
-                const result = await client.query({
-                  query: gql`
-                  {
-                    entity(id: "${link}") {
-                      id
-                      ... on Perspective {
-                        head {
-                          id
-                          ... on Commit {
-                            data {
-                              id
-                            }
-                          }
-                        }
-                      }
+
+            /** read parent to get syblings */
+            if (this.genealogy.length > 1) {
+              const parentData = await this.getPerspectiveData(this.genealogy[1]);
+
+              if (parentData !== undefined) {
+                const youngerSyblings = parentData.object.links.splice(this.index + 1);
+
+                if (youngerSyblings.length > 0) {
+                  const syblingsDataPromises = youngerSyblings.map(async (id) => {
+                    const data = await this.getPerspectiveData(id);
+
+                    if (!data) return true;
+                    if (!data.object.type) return true;
+                    if (data.object.type !== TextType.Paragraph) return true;
+
+                    /** return true if element is not a paragraph */
+                    return false;
+                  })
+
+                  const syblingsData = await Promise.all(syblingsDataPromises);
+
+                  /** return the index first non paragraph element */
+                  let until = syblingsData.findIndex(e => e)
+
+                  if (until === -1) {
+                    until = youngerSyblings.length;
+                  }
+
+                  /** remove these paragraphs from parent */
+                  this.dispatchEvent(new RemoveChildrenEvent({
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true,
+                    detail: {
+                      startedOnElementId: this.data.id,
+                      fromIndex: this.index + 1,
+                      toIndex: this.index + 1 + until
                     }
+                  }))
+
+                  const nextParagraphs = [...youngerSyblings];
+                  nextParagraphs.slice(0, until);
+
+                  /** add this paragraphs as children of this node */
+                  let newLinks: string[] = [...this.data.object.links];
+                  if (this.index >= this.data.object.links.length) {
+                    newLinks.push(...nextParagraphs);
+                  } else {
+                    newLinks.splice(this.index, 0, ...nextParagraphs);
                   }
-                  `
-                });
-            
-                const dataId = result.data.entity.head.data.id;
 
-                const data = (await discovery.get(dataId) as Hashed<TextNode>);
-                if (!data) return true;
-                if (!data.object.type) return true;
-                if (data.object.type !== TextType.Paragraph) return true;
-
-                /** return the index first non paragraph element */
-                return false;
-              })
-
-              const syblingsData = await Promise.all(syblingsDataPromises);
-
-              // TODO: what if this is not an evee?
-              const until = syblingsData.findIndex(e => e)
-
-              if (until === -1) {
-                /** remove these paragraphs from parent */
-                this.dispatchEvent(new RemoveChildrenEvent({
-                  bubbles: true,
-                  cancelable: true,
-                  composed: true,
-                  detail: {
-                    startedOnElementId: this.data.id,
-                    fromIndex: this.index,
-                    toIndex: this.index + until
+                  newContent = {
+                    ...newContent,
+                    links: newLinks
                   }
-                }))
-  
-                const nextParagraphs = [...youngerSyblings];
-                nextParagraphs.slice(0, until);
-                /** add this paragraphs as children of this node */
-                let newLinks: string[] = [...this.data.object.links];
-                if (until >= this.data.object.links.length) {
-                  newLinks.push(...nextParagraphs);
-                } else {
-                  newLinks.splice(until, 0, ...nextParagraphs);
                 }
-  
-                newContent = {
-                  ...newContent,
-                  links: newLinks
-                }  
               }
             }
-            
+
             this.updateContent(newContent);
 
             return;
@@ -549,10 +569,11 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
                 hash=${link}
                 lens-type="evee"
                 .context=${{
-                  color: this.color,
-                  level: this.getLevel() + 1,
-                  index: ix
-              }}>
+              color: this.color,
+              level: this.getLevel() + 1,
+              index: ix,
+              genealogy: this.genealogy
+            }}>
               </cortex-entity>
             `
         )}
