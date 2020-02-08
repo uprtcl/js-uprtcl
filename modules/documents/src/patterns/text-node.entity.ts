@@ -171,7 +171,7 @@ export class TextNodeCreate extends TextNodeEntity
 
   create = () => async (
     node: Partial<TextNode> | undefined,
-    source?: string
+    source: string
   ): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
@@ -190,19 +190,30 @@ export class TextNodeCreate extends TextNodeEntity
 
     const newTextNode = { links, text, type };
     
-    // const { id } = await this.hashedPattern.derive()(newTextNode);
-    // const createTextNodeTask: Task = {
-    //   id: id,
-    //   task: () => (remote as DocumentsProvider).createTextNode(newTextNode)
-    // };
-
-    // this.taskQueue.queueTask(createTextNodeTask);
-
     const id = await remote.createTextNode(newTextNode);
 
     await this.discovery.postEntityCreate(remote, { id, object: newTextNode });
 
     return { id, object: newTextNode };
+  };
+
+  computeId = () => async (
+    node: Partial<TextNode> | undefined,
+    source: string
+  ): Promise<string> => {
+    const links = node && node.links ? node.links : [];
+    const text = node && node.text ? node.text : '';
+    const type = node && node.type ? node.type : TextType.Paragraph;
+
+    let remote = this.documentsRemotes.find(documents => documents.source === source);
+    
+    if (!remote) {
+      throw new Error('Could not find remote to create a TextNode in');
+    }
+
+    const newTextNode = { links, text, type };
+    const { id } = await this.hashedPattern.derive()(newTextNode);
+    return id;
   };
 }
 

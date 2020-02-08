@@ -51,41 +51,43 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const client = this.request(ApolloClientModule.bindings.Client);
-      const createWiki = await client.mutate({
-        mutation: CREATE_WIKI,
-        variables: {
-          content: {
-            title: 'Genesis Wiki',
-            pages: []
-          },
-          source: this.wikisProvider.source
-        }
-      });
 
-      const createCommit = await client.mutate({
-        mutation: CREATE_COMMIT,
-        variables: {
-          dataId: createWiki.data.createWiki.id,
-          parentsIds: [],
-          source: this.eveesProvider.source
-        }
-      });
+      const wikipatterns = this.request(WikisBindings.WikiPattern);
+      const wikicreatable = wikipatterns.find(p => p.create);
+      const wiki = await wikicreatable.create()(
+        { 
+          title: 'Genesis Wiki',
+          pages: []
+        },
+        this.wikisProvider.source
+      );
 
+      const commitpatterns = this.request(EveesBindings.CommitPattern);
+      const commitcreatable = commitpatterns.find(p => p.create);
+      const commit = await commitcreatable.create()(
+        { 
+          dataId: wiki.id, 
+          parentsIds: [], 
+          message: 'create',
+        },
+        this.eveesProvider.source
+      );
+     
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
 
-      const createPerspective = await client.mutate({
-        mutation: CREATE_PERSPECTIVE,
-        variables: {
+      const perspectivepatterns = this.request(EveesBindings.PerspectivePattern);
+      const perspectivecreatable = perspectivepatterns.find(p => p.create);
+      const perspective = await perspectivecreatable.create()(
+        { 
           headId: createCommit.data.createCommit.id,
           context: `genesis-dao-wiki-${randint}`,
           name: 'common',
-          authority: this.eveesProvider.authority,
           canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
-        }
-      });
+        },
+        this.eveesProvider.authority
+      );
 
-      const perspectiveId = createPerspective.data.createPerspective.id;
+      const perspectiveId = perspective.id;
 
       window.history.pushState('', '', `/?id=${perspectiveId}`);
     }

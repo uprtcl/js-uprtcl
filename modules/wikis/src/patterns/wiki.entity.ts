@@ -106,7 +106,7 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = () => async (node?: Partial<Wiki>, source?: string): Promise<Hashed<Wiki>> => {
+  create = () => async (node: Partial<Wiki>, source: string): Promise<Hashed<Wiki>> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
 
@@ -120,17 +120,29 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
     }
     const newWiki = { pages, title };
 
-    // const { id } = await this.hashedPattern.derive()(newWiki);
-    // const createWikiTask: Task = {
-    //   id,
-    //   task: () => (remote as WikisProvider).createWiki(newWiki)
-    // };
-    // this.taskQueue.queueTask(createWikiTask);
-
     const id = await remote.createWiki(newWiki);
 
     await this.discovery.postEntityCreate(remote, { id, object: newWiki });
 
     return { id, object: newWiki };
+  };
+
+  computeId = () => async (node: Partial<Wiki>, source: string): Promise<string> => {
+    const pages = node && node.pages ? node.pages : [];
+    const title = node && node.title ? node.title : '';
+
+    let remote: WikisProvider | undefined;
+    if (source) {
+      remote = this.wikisRemotes.find(remote => remote.source === source);
+    }
+
+    if (!remote) {
+      throw new Error('Could not find remote to create a Wiki in');
+    }
+    const newWiki = { pages, title };
+
+    const { id } = await this.hashedPattern.derive()(newWiki);
+    
+    return id;
   };
 }

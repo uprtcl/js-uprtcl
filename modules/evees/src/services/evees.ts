@@ -14,18 +14,16 @@ import {
   KnownSourcesService,
   DiscoveryService,
   DiscoveryModule,
-  TaskQueue,
-  Task
+  TaskQueue
 } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { createEntity } from '@uprtcl/multiplatform';
+import { computeIdOfEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective, Commit, PerspectiveDetails, RemotesConfig } from '../types';
+import { Perspective, Commit, PerspectiveDetails, RemotesConfig, UprtclAction, CreateDataAction, CREATE_DATA_ACTION, CREATE_COMMIT_ACTION, CreateCommitAction, CREATE_AND_INIT_PERSPECTIVE, CreateAndInitPerspectiveAction } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
-import { CREATE_PERSPECTIVE, CREATE_COMMIT } from '../graphql/queries';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -132,7 +130,8 @@ export class Evees {
    */
   public async createPerspective(
     args: NewPerspectiveArgs,
-    authority?: string
+    authority: string,
+    currentActions: UprtclAction<any>[] // CAUTION: Updated by reference
   ): Promise<Secured<Perspective>> {
 
     const eveesRemote = this.getAuthority(authority);
@@ -143,16 +142,6 @@ export class Evees {
       throw new Error(
         `You need to be logged in the evees authority ${eveesRemote.authority} to create perspectives in it`
       );
-
-    // Create the perspective
-    const perspectiveData: Perspective = {
-      creatorId: eveesRemote.userId,
-      origin: eveesRemote.authority,
-      timestamp: Date.now()
-    };
-    const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData);
-
-    this.logger.info('Created new perspective: ', perspective);
 
     // Create the context to point the perspective to, if needed
     const context = args.context || `${Date.now()}${Math.random()}`;
@@ -192,7 +181,7 @@ export class Evees {
           // TODO: generalize to break the assumption that all links are to perspectives
           const promises = descendantLinks.map(async link => {
 
-            const result = await this.client.query({
+            const getDetails = await this.client.query({
               query: gql`
                 {
                   entity(id: "${link}") {
@@ -210,69 +199,125 @@ export class Evees {
               `
             });
 
-            if (!result.data.entity.context) {
+            if (!getDetails.data.entity.context) {
               throw new Error('Original perspective dont have a context');
             };
 
             const details = {
-              context: result.data.entity.context.identifier,
-              headId: result.data.entity.head ? result.data.entity.head.id : ''
+              context: getDetails.data.entity.context.identifier,
+              headId: getDetails.data.entity.head ? getDetails.data.entity.head.id : ''
             };
             
-            const newPerspective = await this.client.mutate({
-              mutation: CREATE_PERSPECTIVE,
-              variables: {
-                context: details.context,
-                name,
-                headId: details.headId,
-                authority: eveesRemote.authority,
-                canWrite: args.canWrite ? args.canWrite : undefined,
-                recursive: true
-              }
-            });
+            // const newPerspective = await this.client.mutate({
+            //   mutation: CREATE_PERSPECTIVE,
+            //   variables: {
+            //     context: details.context,
+            //     name,
+            //     headId: details.headId,
+            //     authority: eveesRemote.authority,
+            //     canWrite: args.canWrite ? args.canWrite : undefined,
+            //     recursive: true
+            //   }
+            // });
 
-            return newPerspective.data.createPerspective.id;
+            const childArgs: NewPerspectiveArgs = {
+              headId: headId,
+              canWrite: args.canWrite ? args.canWrite : undefined,
+              context: details.context,
+              name: name,
+              recursive: true
+            }
+
+            const perspective = await this.createPerspective(childArgs, eveesRemote.authority, currentActions);
+
+            return perspective.id;
           });
 
           const newLinks = await Promise.all(promises);
           const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
           const dataSource = this.remotesConfig.map(eveesRemote.authority, hasChildren.name);
-          dataId = await createEntity(this.patternRecognizer)(newData.object, dataSource.source);
+
+          dataId = await computeIdOfEntity(this.patternRecognizer)(newData.object);
+
+          const newDataAction: UprtclAction<CreateDataAction> = {
+            id: dataId,
+            type: CREATE_DATA_ACTION,
+            payload: {
+              data: newData.object,
+              source: dataSource.source
+            }
+          }
+
+          currentActions.unshift(newDataAction);
         }
       }
     }
 
     if (dataId) {
-      const result = await this.client.mutate({
-        mutation: CREATE_COMMIT,
-        variables: {
+      // const result = await this.client.mutate({
+      //   mutation: CREATE_COMMIT,
+      //   variables: {
+      //     dataId: dataId,
+      //     message: `Commit at ${Date.now()}`,
+      //     parentsIds: headId ? [headId] : [],
+      //     source: eveesRemote.source
+      //   }
+      // });
+      // headId = result.data.createCommit.id;
+      const newCommit: Signed<Commit> = {
+        payload: {
           dataId: dataId,
-          message: `Commit at ${Date.now()}`,
+          message: `auto-commit for new perspective ${name}`,
+          creatorsIds: [],
           parentsIds: headId ? [headId] : [],
+          timestamp: Date.now()
+        },
+        proof: {
+          signature: '',
+          type: ''
+        }
+      }
+
+      headId = await computeIdOfEntity(this.patternRecognizer)(newCommit);
+
+      const newCommitAction: UprtclAction<CreateCommitAction> = {
+        type: CREATE_COMMIT_ACTION,
+        id: headId,
+        payload: {
+          commit: newCommit,
           source: eveesRemote.source
         }
-      });
-      headId = result.data.createCommit.id;
+      }
+
+      currentActions.unshift(newCommitAction);
+
     }
 
-    // // Clone the perspective in the selected provider
-    // const clonePerspectiveTask: Task = {
-    //   id: perspective.id,
-    //   task: () => eveesRemote.clonePerspective(perspective)
-    // };
-    // this.taskQueue.queueTask(clonePerspectiveTask);
-
-    // // And update its details
-    // const updatedPerspectiveTask: Task = {
-    //   id: `Update details of ${perspective.id}`,
-    //   task: () => eveesRemote.updatePerspectiveDetails(perspective.id, { headId, name, context }),
-    //   dependsOn: perspective.id
-    // };
-    // this.taskQueue.queueTask(updatedPerspectiveTask);
+    // Create the perspective
+    const perspectiveData: Perspective = {
+      creatorId: eveesRemote.userId,
+      origin: eveesRemote.authority,
+      timestamp: Date.now()
+    };
+    const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData);
 
     // Clone the perspective in the selected provider
-    await eveesRemote.cloneAndInitPerspective(perspective, { headId, name, context }, args.canWrite);
+    // await eveesRemote.cloneAndInitPerspective(perspective, { headId, name, context }, args.canWrite);
 
+    const newPerspectiveAction: UprtclAction<CreateAndInitPerspectiveAction> = {
+      id: perspective.id,
+      type: CREATE_AND_INIT_PERSPECTIVE,
+      payload: {
+        perspective: perspective,
+        details: { headId, name, context },
+        owner: args.canWrite ? args.canWrite : ''
+      }
+    }
+
+    currentActions.unshift(newPerspectiveAction);
+
+    this.logger.info('Computed new perspective action: ', perspective);
+    
     return perspective;
   }
 }

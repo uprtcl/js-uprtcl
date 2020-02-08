@@ -74,7 +74,7 @@ export async function entityContent(
  */
 export const createEntity = (recognizer: PatternRecognizer) => async <T extends object>(
   data: T,
-  usl?: string
+  usl: string
 ): Promise<string> => {
   const creatable: Creatable<T, any> | undefined = recognizer
     .recognize(data)
@@ -90,4 +90,30 @@ export const createEntity = (recognizer: PatternRecognizer) => async <T extends 
 
   const hashed = await creatable.create()(data, usl);
   return hashed.id;
+};
+
+/**
+ * Generically create the given data and retrieve its hashed it
+ *
+ * @param data the data to create
+ * @returns the created hashed data
+ */
+export const computeIdOfEntity = (recognizer: PatternRecognizer) => async <T extends object>(
+  data: T,
+  usl: string
+): Promise<string> => {
+  const creatable: Creatable<T, any> | undefined = recognizer
+    .recognize(data)
+    .find(prop => !!(prop as Creatable<T, any>).create);
+
+  if (!creatable) {
+    throw new Error(
+      `Trying to get id of data ${data.toString()} - ${JSON.stringify(
+        data
+      )}, but it does not implement the Creatable pattern`
+    );
+  }
+
+  const id = await creatable.computeId()(data, usl);
+  return id;
 };

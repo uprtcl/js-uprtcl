@@ -4,9 +4,27 @@ export const eveesTypeDefs = gql`
   scalar Date
 
   extend type Mutation {
-    updatePerspectiveHead(perspectiveId: ID!, headId: ID!): Perspective!
-    createCommit(dataId: ID!, parentsIds: [ID!]!, message: String, source: String): Commit!
-    createPerspective(name: String, headId: ID, context: String, authority: String, canWrite: String, recursive: Boolean): Perspective!
+    updatePerspectiveHead(
+        perspectiveId: ID!, 
+        headId: ID!): Perspective!
+
+    createCommit(
+      creatorsIds: [String], 
+      dataId: ID!, 
+      parentsIds: [ID!]!, 
+      message: String, 
+      source: String, 
+      timestamp: Number): Commit!
+
+    createPerspective(
+      creatorId: String, 
+      origin: String, 
+      timestamp: Number,
+      headId: ID, 
+      context: String, 
+      name: String, 
+      authority: String, 
+      canWrite: String): Perspective!
   }
 
   type Context {

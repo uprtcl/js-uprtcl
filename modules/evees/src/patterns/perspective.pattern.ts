@@ -11,24 +11,27 @@ import {
   HasActions,
   PatternAction,
   Entity,
-  Signed
+  Signed,
+  CortexModule,
+  PatternRecognizer
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { DiscoveryModule, DiscoveryService, createEntity } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective } from '../types';
+import { Perspective, UprtclAction, CREATE_DATA_ACTION, CreateDataAction, CREATE_COMMIT_ACTION, CreateCommitAction } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
+import { CREATE_COMMIT } from 'src/graphql/queries';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
 @injectable()
 export class PerspectiveEntity implements Entity {
-  constructor(@inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>) {}
+  constructor(@inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>) { }
   recognize(object: object) {
     return (
       this.securedPattern.recognize(object) &&
@@ -99,20 +102,74 @@ export class PerspectiveCreate extends PerspectiveEntity
     @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
-    @inject(DiscoveryModule.bindings.DiscoveryService)
-    protected discovery: DiscoveryService
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(securedPattern);
   }
 
-  create = () => async (args: NewPerspectiveArgs | undefined, authority?: string) => {
-    const perspective = await this.evees.createPerspective(args || {}, authority);
+  create = () => async (args: NewPerspectiveArgs, authority: string) => {
+    const actions: UprtclAction<any>[] = [];
+    const perspective = await this.evees.createPerspective(args || {}, authority, actions);
 
-    const provider = this.evees.getPerspectiveProvider(perspective.object);
+    const createDataPromises = actions
+      .filter(a => a.type === CREATE_DATA_ACTION)
+      .map(async (action: UprtclAction<CreateDataAction>) => {
+        const dataId = await createEntity(this.patternRecognizer)(action.payload.data, action.payload.source);
+        if (dataId !== action.id) {
+          throw new Error(`created entity id ${dataId} not as expected ${action.id}`)
+        }
+    })
 
-    await this.discovery.postEntityCreate(provider, perspective);
+    await Promise.all(createDataPromises);
+
+    const createCommitsPromises = actions
+      .filter(a => a.type === CREATE_COMMIT_ACTION)
+      .map(async (action: UprtclAction<CreateCommitAction>) => {
+        const result = await this.client.mutate({
+          mutation: CREATE_COMMIT,
+          variables: {
+            dataId: action.payload.commit.payload.dataId,
+            message: action.payload.commit.payload.message,
+            parentsIds: action.payload.commit.payload.parentsIds,
+            source: action.payload.source
+          }
+        });
+        const headId = result.data.createCommit.id;
+        if (headId !== action.id) {
+          throw new Error(`created commit id ${headId} not as expected ${action.id}`)
+        }
+    })
+
+    await Promise.all(createCommitsPromises);
+
+    const createPerspectivesPromises = actions
+      .filter(a => a.type === CREATE_COMMIT_ACTION)
+      .map(async (action: UprtclAction<CreateCommitAction>) => {
+        const result = await this.client.mutate({
+          mutation: CREATE_COMMIT,
+          variables: {
+            dataId: action.payload.commit.payload.dataId,
+            message: action.payload.commit.payload.message,
+            parentsIds: action.payload.commit.payload.parentsIds,
+            source: action.payload.source
+          }
+        });
+        const headId = result.data.createCommit.id;
+        if (headId !== action.id) {
+          throw new Error(`created commit id ${headId} not as expected ${action.id}`)
+        }
+    })
+
+    await Promise.all(createPerspectivesPromises);
 
     return perspective;
+  };
+
+  computeId = () => async (args: NewPerspectiveArgs, authority: string) => {
+    const perspective = await this.evees.createPerspective(args || {}, authority, []);
+    return perspective.id;
   };
 
   actions = (perspective: Secured<Perspective>): PatternAction[] => {

@@ -19,7 +19,6 @@ import { EveesRemote } from '../services/evees.remote';
 import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/multiplatform';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
-const creatorId = 'did:hi:ho';
 
 @injectable()
 export class CommitEntity implements Entity {
@@ -82,7 +81,7 @@ export class CommitLens extends CommitEntity implements HasLenses {
 export class CommitPattern extends CommitEntity
   implements
     Creatable<
-      { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
+      { dataId: string; message: string; creatorsIds: string[]; parentsIds: string[]; timestamp: number },
       Signed<Commit>
     > {
   constructor(
@@ -107,52 +106,65 @@ export class CommitPattern extends CommitEntity
       | {
           dataId: string;
           message: string;
-          creatorsIds?: string[];
-
+          creatorsIds: string[];
           parentsIds: string[];
-          timestamp?: number;
+          timestamp: number;
         }
       | undefined,
-    source?: string
+    source: string
   ) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
 
-    const timestamp = args.timestamp || Date.now();
-    const creatorsIds = args.creatorsIds || [creatorId];
+    const timestamp = args.timestamp;
+    const creatorsIds = args.creatorsIds;
 
     const commitData: Commit = {
       creatorsIds: creatorsIds,
       dataId: args.dataId,
-      message: args.message || `Commit at ${Date.now().toLocaleString()}`,
+      message: args.message,
       timestamp: timestamp,
       parentsIds: args.parentsIds
     };
+
     const commit: Secured<Commit> = await this.secured.derive()(commitData);
-
-    if (!source) {
-      if (this.remotes.length === 1) source = this.remotes[0].source;
-      else {
-        const s = this.remotes.find(r => r.source.includes('http'));
-        if (!s) throw new Error('Http source not found');
-        source = s.source;
-      }
-    }
-
     const remote: EveesRemote | undefined = this.remotes.find(r => r.source === source);
 
     if (!remote) throw new Error(`Source ${source} not registered`);
-
-    // const task: Task = {
-    //   id: commit.id,
-    //   task: () => remote.cloneCommit(commit)
-    // };
-
-    // this.taskQueue.queueTask(task);
 
     await remote.cloneCommit(commit);
 
     await this.discovery.postEntityCreate(remote, commit);
 
     return commit;
+  };
+
+  computeId = () => async (
+    args:
+      | {
+          dataId: string;
+          message: string;
+          creatorsIds: string[];
+          parentsIds: string[];
+          timestamp: number;
+        }
+      | undefined,
+    source?: string
+  ) => {
+    if (!args) throw new Error('Cannot create commit without specifying its details');
+
+    const timestamp = args.timestamp;
+    const creatorsIds = args.creatorsIds;
+
+    const commitData: Commit = {
+      creatorsIds: creatorsIds,
+      dataId: args.dataId,
+      message: args.message,
+      timestamp: timestamp,
+      parentsIds: args.parentsIds
+    };
+
+    const commit: Secured<Commit> = await this.secured.derive()(commitData);
+
+    return commit.id;
   };
 }
