@@ -111,8 +111,9 @@ export class PerspectiveCreate extends PerspectiveEntity
 
   create = () => async (args: NewPerspectiveArgs, authority: string) => {
     const actions: UprtclAction<any>[] = [];
-    const perspective = await this.evees.createPerspective(args, recursive, authority, canWrite, actions);
+    const perspective = await this.evees.createPerspective(args, authority, actions);
 
+    debugger
     const createDataPromises = actions
       .filter(a => a.type === CREATE_DATA_ACTION)
       .map(async (action: UprtclAction<CreateDataAction>) => {
@@ -162,7 +163,7 @@ export class PerspectiveCreate extends PerspectiveEntity
             canWrite: action.payload.owner
           }
         });
-        const headId = result.data.createCommit.id;
+        const headId = action.payload.details.headId;
         if (headId !== action.id) {
           throw new Error(`created commit id ${headId} not as expected ${action.id}`)
         }
@@ -181,33 +182,6 @@ export class PerspectiveCreate extends PerspectiveEntity
 
   actions = (perspective: Secured<Perspective>): PatternAction[] => {
     return [
-      {
-        icon: 'call_split',
-        title: 'evees:new-perspective',
-        action: async () => {
-          const remote = this.evees.getPerspectiveProvider(perspective.object);
-          const details = await remote.getPerspectiveDetails(perspective.id);
-
-          const newPerspectiveId = await this.create()(
-            { headId: details.headId, context: details.context },
-            perspective.object.payload.origin
-          );
-          window.history.pushState('', '', `/?id=${newPerspectiveId}`);
-        },
-        type: 'version-control'
-      },
-      {
-        icon: 'merge_type',
-        title: 'evees:merge',
-        action: async () => {
-          const updateRequests = await this.merge.mergePerspectives(
-            perspective.id,
-            'zb2rhcyLxU429tS4CoGYFbtskWPVE1ws6cByhYqjFTaTgivDe'
-          );
-          console.log(updateRequests);
-        },
-        type: 'version-control'
-      }
     ];
   };
 }

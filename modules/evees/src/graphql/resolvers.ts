@@ -114,7 +114,10 @@ export const eveesResolvers = {
       await remote.cloneCommit(commit);
         await discovery.postEntityCreate(remote, commit);
 
-      return { id: commit.id, ...commit.object };
+      return { 
+        id: commit.id, 
+        ...commit.object 
+      };
     },
 
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
@@ -161,7 +164,17 @@ export const eveesResolvers = {
 
       await remote.cloneAndInitPerspective(perspective, { headId, name, context }, canWrite);
       
-      return { id: perspective.id, ...perspective.object, head: headId };
+      return { 
+        id: perspective.id, 
+        name: name,
+        head: headId,
+        context: context,
+        payload: {
+          creatorId,
+          origin,
+          timestamp
+        }
+      };
     }
   }
 };
