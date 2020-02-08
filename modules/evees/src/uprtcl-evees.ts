@@ -26,6 +26,7 @@ export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 export { OwnerPreservingMergeStrategy } from './merge/owner-preserving.merge-strategy';
 export { mergeStrings, mergeResult } from './merge/utils';
+export { EveesBindings } from './bindings';
 
 /** Elements */
 export { CommitHistory } from './elements/evees-commit-history';

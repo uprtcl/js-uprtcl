@@ -198,18 +198,11 @@ export class TextNodeCreate extends TextNodeEntity
   };
 
   computeId = () => async (
-    node: Partial<TextNode> | undefined,
-    source: string
+    node: Partial<TextNode> | undefined
   ): Promise<string> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
-
-    let remote = this.documentsRemotes.find(documents => documents.source === source);
-    
-    if (!remote) {
-      throw new Error('Could not find remote to create a TextNode in');
-    }
 
     const newTextNode = { links, text, type };
     const { id } = await this.hashedPattern.derive()(newTextNode);

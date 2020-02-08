@@ -147,10 +147,9 @@ export const eveesResolvers = {
     },
 
     async createPerspective(_, { creatorId, origin, timestamp, headId, context, name, authority, canWrite }, { container }) {
-      const remotes = container.get(EveesBindings.EveesRemote);
+      const remotes = container.getAll(EveesBindings.EveesRemote);
       const secured: IsSecure<any> = container.get(EveesBindings.Secured);
-      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
-
+      
       const remote: EveesRemote = remotes.find(remote => remote.authority === authority);
 
       const perspectiveData: Perspective = {
@@ -161,8 +160,7 @@ export const eveesResolvers = {
       const perspective: Secured<Perspective> = await secured.derive()(perspectiveData);
 
       await remote.cloneAndInitPerspective(perspective, { headId, name, context }, canWrite);
-      await discovery.postEntityCreate(remote, perspective);
-
+      
       return { id: perspective.id, ...perspective.object, head: headId };
     }
   }

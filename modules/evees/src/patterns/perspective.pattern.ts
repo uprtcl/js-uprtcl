@@ -21,11 +21,11 @@ import { DiscoveryModule, DiscoveryService, createEntity } from '@uprtcl/multipl
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective, UprtclAction, CREATE_DATA_ACTION, CreateDataAction, CREATE_COMMIT_ACTION, CreateCommitAction } from '../types';
+import { Perspective, UprtclAction, CREATE_DATA_ACTION, CreateDataAction, CREATE_COMMIT_ACTION, CreateCommitAction, CREATE_AND_INIT_PERSPECTIVE, CreateAndInitPerspectiveAction } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
-import { CREATE_COMMIT } from 'src/graphql/queries';
+import { CREATE_COMMIT, CREATE_PERSPECTIVE } from 'src/graphql/queries';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -111,7 +111,7 @@ export class PerspectiveCreate extends PerspectiveEntity
 
   create = () => async (args: NewPerspectiveArgs, authority: string) => {
     const actions: UprtclAction<any>[] = [];
-    const perspective = await this.evees.createPerspective(args || {}, authority, actions);
+    const perspective = await this.evees.createPerspective(args, recursive, authority, canWrite, actions);
 
     const createDataPromises = actions
       .filter(a => a.type === CREATE_DATA_ACTION)
@@ -130,9 +130,11 @@ export class PerspectiveCreate extends PerspectiveEntity
         const result = await this.client.mutate({
           mutation: CREATE_COMMIT,
           variables: {
+            creatorsId:action.payload.commit.payload.creatorsIds,
             dataId: action.payload.commit.payload.dataId,
             message: action.payload.commit.payload.message,
             parentsIds: action.payload.commit.payload.parentsIds,
+            timestamp: action.payload.commit.payload.timestamp,
             source: action.payload.source
           }
         });
@@ -145,15 +147,19 @@ export class PerspectiveCreate extends PerspectiveEntity
     await Promise.all(createCommitsPromises);
 
     const createPerspectivesPromises = actions
-      .filter(a => a.type === CREATE_COMMIT_ACTION)
-      .map(async (action: UprtclAction<CreateCommitAction>) => {
+      .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE)
+      .map(async (action: UprtclAction<CreateAndInitPerspectiveAction>) => {
         const result = await this.client.mutate({
-          mutation: CREATE_COMMIT,
+          mutation: CREATE_PERSPECTIVE,
           variables: {
-            dataId: action.payload.commit.payload.dataId,
-            message: action.payload.commit.payload.message,
-            parentsIds: action.payload.commit.payload.parentsIds,
-            source: action.payload.source
+            creatorId: action.payload.perspective.object.payload.creatorId,
+            origin: action.payload.perspective.object.payload.origin,
+            timestamp: action.payload.perspective.object.payload.timestamp,
+            headId: action.payload.details.headId,
+            context: action.payload.details.context,
+            name: action.payload.details.name,
+            authority: action.payload.perspective.object.payload.origin,
+            canWrite: action.payload.owner
           }
         });
         const headId = result.data.createCommit.id;
@@ -167,8 +173,9 @@ export class PerspectiveCreate extends PerspectiveEntity
     return perspective;
   };
 
-  computeId = () => async (args: NewPerspectiveArgs, authority: string) => {
-    const perspective = await this.evees.createPerspective(args || {}, authority, []);
+  computeId = () => async (args: NewPerspectiveArgs) => {
+    const perspective: Secured<Perspective> = await this.securedPattern.derive()(args.perspective);
+
     return perspective.id;
   };
 

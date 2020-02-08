@@ -14,12 +14,12 @@ export const eveesTypeDefs = gql`
       parentsIds: [ID!]!, 
       message: String, 
       source: String, 
-      timestamp: Number): Commit!
+      timestamp: Date!): Commit!
 
     createPerspective(
       creatorId: String, 
       origin: String, 
-      timestamp: Number,
+      timestamp: Date!,
       headId: ID, 
       context: String, 
       name: String, 

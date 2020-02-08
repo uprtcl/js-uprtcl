@@ -30,10 +30,12 @@ export interface NoHeadPerspectiveArgs {
   context?: string;
 }
 
-export type NewPerspectiveArgs = (
-  | Partial<PerspectiveDetails>
-  | (NoHeadPerspectiveArgs & { dataId: string })
-) & { recursive?: boolean } & { canWrite?: string };
+export interface NewPerspectiveArgs {
+  perspective: Perspective,
+  details?: PerspectiveDetails,
+  canWrite: string,
+  recursive: boolean
+};
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -136,7 +138,7 @@ export class Evees {
 
     const eveesRemote = this.getAuthority(authority);
 
-    const name = args.name || ``;
+    const name = (args.details && args.details.name) || ``;
 
     if (!eveesRemote.userId)
       throw new Error(
@@ -144,26 +146,18 @@ export class Evees {
       );
 
     // Create the context to point the perspective to, if needed
-    const context = args.context || `${Date.now()}${Math.random()}`;
+    const context = (args.details && args.details.context) || `${Date.now()}${Math.random()}`;
+    let headId = (args.details && args.details.headId) || ``;
 
-    // Create the commit to point the perspective to, if needed
-    let dataId = (args as { dataId: any }).dataId;
-    let headId = (args as { headId: string }).headId;
-
-    if (!dataId && !headId)
-      throw new Error(
-        'Either the headId or the dataId has to be provided to create the perspective'
-      );
+    let newDataId: string | undefined = undefined;
 
     if (args.recursive) {
       // Create recursive perspective to be able to write in the descendant perspectives
-      if (!dataId) {
-        const commit: Secured<Commit> | undefined = await this.discoveryService.get(headId);
-        if (!commit) throw new Error('Head commit for the perspective was not found');
+      const commit: Secured<Commit> | undefined = await this.discoveryService.get(headId);
+      if (!commit) throw new Error('Head commit for the perspective was not found');
 
-        dataId = commit.object.payload.dataId;
-      }
-
+      const dataId = commit.object.payload.dataId;
+      
       const dataHashed: Hashed<any> | undefined = await this.discoveryService.get(dataId);
       if (!dataHashed) throw new Error('Data for the head commit of the perspective was not found');
 
@@ -180,7 +174,6 @@ export class Evees {
 
           // TODO: generalize to break the assumption that all links are to perspectives
           const promises = descendantLinks.map(async link => {
-
             const getDetails = await this.client.query({
               query: gql`
                 {
@@ -221,11 +214,18 @@ export class Evees {
             // });
 
             const childArgs: NewPerspectiveArgs = {
-              headId: headId,
-              canWrite: args.canWrite ? args.canWrite : undefined,
-              context: details.context,
-              name: name,
-              recursive: true
+              perspective: {
+                creatorId: (eveesRemote.userId ? eveesRemote.userId : ''),
+                origin: eveesRemote.authority,
+                timestamp: Date.now()
+              },
+              details: {
+                headId: headId,
+                context: details.context,
+                name: name
+              },
+              recursive: true,
+              canWrite: args.canWrite
             }
 
             const perspective = await this.createPerspective(childArgs, eveesRemote.authority, currentActions);
@@ -237,8 +237,8 @@ export class Evees {
           const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
           const dataSource = this.remotesConfig.map(eveesRemote.authority, hasChildren.name);
 
-          dataId = await computeIdOfEntity(this.patternRecognizer)(newData.object);
-
+          newDataId = await computeIdOfEntity(this.patternRecognizer)(newData.object);
+          
           const newDataAction: UprtclAction<CreateDataAction> = {
             id: dataId,
             type: CREATE_DATA_ACTION,
@@ -253,7 +253,7 @@ export class Evees {
       }
     }
 
-    if (dataId) {
+    if (newDataId !== undefined) {
       // const result = await this.client.mutate({
       //   mutation: CREATE_COMMIT,
       //   variables: {
@@ -266,7 +266,7 @@ export class Evees {
       // headId = result.data.createCommit.id;
       const newCommit: Signed<Commit> = {
         payload: {
-          dataId: dataId,
+          dataId: newDataId,
           message: `auto-commit for new perspective ${name}`,
           creatorsIds: [],
           parentsIds: headId ? [headId] : [],
@@ -290,7 +290,6 @@ export class Evees {
       }
 
       currentActions.unshift(newCommitAction);
-
     }
 
     // Create the perspective

@@ -127,18 +127,10 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
     return { id, object: newWiki };
   };
 
-  computeId = () => async (node: Partial<Wiki>, source: string): Promise<string> => {
+  computeId = () => async (node: Partial<Wiki>): Promise<string> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
 
-    let remote: WikisProvider | undefined;
-    if (source) {
-      remote = this.wikisRemotes.find(remote => remote.source === source);
-    }
-
-    if (!remote) {
-      throw new Error('Could not find remote to create a Wiki in');
-    }
     const newWiki = { pages, title };
 
     const { id } = await this.hashedPattern.derive()(newWiki);

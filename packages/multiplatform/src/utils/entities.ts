@@ -99,8 +99,7 @@ export const createEntity = (recognizer: PatternRecognizer) => async <T extends 
  * @returns the created hashed data
  */
 export const computeIdOfEntity = (recognizer: PatternRecognizer) => async <T extends object>(
-  data: T,
-  usl: string
+  data: T
 ): Promise<string> => {
   const creatable: Creatable<T, any> | undefined = recognizer
     .recognize(data)
@@ -114,6 +113,6 @@ export const computeIdOfEntity = (recognizer: PatternRecognizer) => async <T ext
     );
   }
 
-  const id = await creatable.computeId()(data, usl);
+  const id = await creatable.computeId()(data);
   return id;
 };

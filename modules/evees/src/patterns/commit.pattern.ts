@@ -147,8 +147,7 @@ export class CommitPattern extends CommitEntity
           parentsIds: string[];
           timestamp: number;
         }
-      | undefined,
-    source?: string
+      | undefined
   ) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
 

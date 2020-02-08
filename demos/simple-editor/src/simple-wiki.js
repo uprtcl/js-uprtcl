@@ -1,9 +1,8 @@
 import { LitElement, html, property } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { EveesModule, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
-import { WikisModule, CREATE_WIKI } from '@uprtcl/wikis';
+import { EveesModule, EveesBindings } from '@uprtcl/evees';
+import { WikisModule, WikiBindings } from '@uprtcl/wikis';
 import { DocumentsModule } from '@uprtcl/documents';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
@@ -52,7 +51,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
 
-      const wikipatterns = this.request(WikisBindings.WikiPattern);
+      const wikipatterns = this.requestAll(WikiBindings.WikiEntity);
       const wikicreatable = wikipatterns.find(p => p.create);
       const wiki = await wikicreatable.create()(
         { 
@@ -62,7 +61,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         this.wikisProvider.source
       );
 
-      const commitpatterns = this.request(EveesBindings.CommitPattern);
+      const commitpatterns = this.requestAll(EveesBindings.CommitPattern);
       const commitcreatable = commitpatterns.find(p => p.create);
       const commit = await commitcreatable.create()(
         { 
@@ -75,11 +74,11 @@ export class SimpleWiki extends moduleConnect(LitElement) {
      
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
 
-      const perspectivepatterns = this.request(EveesBindings.PerspectivePattern);
+      const perspectivepatterns = this.requestAll(EveesBindings.PerspectivePattern);
       const perspectivecreatable = perspectivepatterns.find(p => p.create);
       const perspective = await perspectivecreatable.create()(
         { 
-          headId: createCommit.data.createCommit.id,
+          headId: commit.id,
           context: `genesis-dao-wiki-${randint}`,
           name: 'common',
           canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
