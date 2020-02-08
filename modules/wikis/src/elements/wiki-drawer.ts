@@ -307,8 +307,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <div 
           class="column" 
           style=${styleMap({
-            backgroundColor: this.color ? this.color : '#f7f6f3',
-            color: this.color === '#d9d7d0' ? '#28282a' : '#ffffff'
+            backgroundColor: this.color
           })}>
           
           <div style="flex: 1;">

@@ -32,6 +32,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   @property({ type: Number })
   level: number = 0;
 
+  @property({ type: Array })
+  genealogy: string[] = [];
+
+  @property({ type: Number })
+  index: number = 0;
+
   private currentHeadId: string | undefined = undefined;
   private perspective: Secured<Perspective> | undefined = undefined;
 
@@ -203,6 +209,9 @@ this.requestUpdate();
   }
 
   render() {
+    const newGenealogy = [...this.genealogy];
+    newGenealogy.unshift(this.perspectiveId);
+
     if (this.entityId === undefined || this.perspective === undefined) {
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
@@ -217,7 +226,9 @@ this.requestUpdate();
           perspective: this.perspective,
           color: this.getEveeColor(),
           onlyChildren: this.onlyChildren,
-          level: this.level
+          level: this.level,
+          index: this.index,
+          genealogy: newGenealogy
         }}
       >
         <evees-info
