@@ -134,7 +134,8 @@ export class PerspectiveCreate extends PerspectiveEntity
   create = () => async (args: CreatePerspectiveArgs, authority: string) => {
     let fromDetails: PerspectiveDetails = (args as any).fromDetails;
     if (fromDetails) {
-      fromDetails.context = fromDetails.context || `${Date.now()}:${Math.random() / 1000}`;
+      fromDetails.context =
+        fromDetails.context || `${Date.now()}.${Math.floor(Math.random() / 1000)}`;
       fromDetails.name = fromDetails.name || 'master';
 
       const result = await this.evees.computeNewGlobalPerspectiveOps(
