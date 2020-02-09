@@ -9,6 +9,8 @@ import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/mult
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
 import { WikisProvider } from '../services/wikis.provider';
+import { CREATE_WIKI } from 'src/graphql/queries';
+import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
 
 const propertyOrder = ['title', 'pages'];
 
@@ -96,7 +98,7 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
   constructor(
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
     @multiInject(WikiBindings.WikisRemote) protected wikisRemotes: WikisProvider[]
   ) {
     super(hashedPattern);
@@ -106,35 +108,25 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = () => async (node: Partial<Wiki>, source: string): Promise<Hashed<Wiki>> => {
-    const pages = node && node.pages ? node.pages : [];
-    const title = node && node.title ? node.title : '';
+  create = () => async (wiki: Partial<Wiki>, source: string): Promise<Hashed<Wiki>> => {
+    const hashedWiki = await this.new()(wiki);
+    const result = await this.client.mutate({
+      mutation: CREATE_WIKI,
+      variables: {
+        content: hashedWiki.object,
+        source
+      }
+    });
 
-    let remote: WikisProvider | undefined;
-    if (source) {
-      remote = this.wikisRemotes.find(remote => remote.source === source);
-    }
-
-    if (!remote) {
-      throw new Error('Could not find remote to create a Wiki in');
-    }
-    const newWiki = { pages, title };
-
-    const id = await remote.createWiki(newWiki);
-
-    await this.discovery.postEntityCreate(remote, { id, object: newWiki });
-
-    return { id, object: newWiki };
+    return hashedWiki;
   };
 
-  computeId = () => async (node: Partial<Wiki>): Promise<string> => {
+  new = () => async (node: Partial<Wiki>): Promise<Hashed<Wiki>> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
 
     const newWiki = { pages, title };
 
-    const { id } = await this.hashedPattern.derive()(newWiki);
-    
-    return id;
+    return this.hashedPattern.derive()(newWiki);
   };
 }

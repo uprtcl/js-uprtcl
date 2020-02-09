@@ -8,7 +8,8 @@ import {
   HasLinks,
   Creatable,
   Entity,
-  Signed
+  Signed,
+  Newable
 } from '@uprtcl/cortex';
 import { Secured } from '../patterns/default-secured.pattern';
 import { Lens, HasLenses } from '@uprtcl/lenses';
@@ -16,7 +17,10 @@ import { Lens, HasLenses } from '@uprtcl/lenses';
 import { Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from '../services/evees.remote';
-import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/multiplatform';
+import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { CREATE_COMMIT } from '../graphql/queries';
+import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
+import { CreateCommitArgs } from 'src/services/evees';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
@@ -79,17 +83,13 @@ export class CommitLens extends CommitEntity implements HasLenses {
 
 @injectable()
 export class CommitPattern extends CommitEntity
-  implements
-    Creatable<
-      { dataId: string; message: string; creatorsIds: string[]; parentsIds: string[]; timestamp: number },
-      Signed<Commit>
-    > {
+  implements Creatable<Commit, Signed<Commit>>, Newable<Commit, Signed<Commit>> {
   constructor(
     @inject(EveesBindings.Secured)
     protected secured: Pattern & IsSecure<Secured<Commit>>,
     @multiInject(EveesBindings.EveesRemote) protected remotes: EveesRemote[],
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(secured);
   }
@@ -101,57 +101,37 @@ export class CommitPattern extends CommitEntity
     );
   }
 
-  create = () => async (
-    args:
-      | {
-          dataId: string;
-          message: string;
-          creatorsIds: string[];
-          parentsIds: string[];
-          timestamp: number;
-        }
-      | undefined,
-    source: string
-  ) => {
-    if (!args) throw new Error('Cannot create commit without specifying its details');
+  create = () => async (args: CreateCommitArgs, source: string) => {
+    args.timestamp = args.timestamp || Date.now();
+    args.message = args.message || `Commit at ${Date.now()}`;
+    args.parentIds = args.parentIds || [];
 
-    const timestamp = args.timestamp;
-    const creatorsIds = args.creatorsIds;
+    if (!args.creatorsIds) {
+      const remote = this.remotes.find(r => r.source === source);
+      if (!remote || !remote.userId)
+        throw new Error(
+          'You must be signed in the evees remote you are trying to create the commit on or specify the creators ids'
+        );
 
-    const commitData: Commit = {
-      creatorsIds: creatorsIds,
-      dataId: args.dataId,
-      message: args.message,
-      timestamp: timestamp,
-      parentsIds: args.parentsIds
-    };
+      args.creatorsIds = [remote.userId];
+    }
 
-    const commit: Secured<Commit> = await this.secured.derive()(commitData);
-    const remote: EveesRemote | undefined = this.remotes.find(r => r.source === source);
-
-    if (!remote) throw new Error(`Source ${source} not registered`);
-
-    await remote.cloneCommit(commit);
-
-    await this.discovery.postEntityCreate(remote, commit);
+    const commit = await this.new()(args as Commit);
+    const result = await this.client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        ...args,
+        source: source
+      }
+    });
 
     return commit;
   };
 
-  computeId = () => async (
-    args:
-      | {
-          dataId: string;
-          message: string;
-          creatorsIds: string[];
-          parentsIds: string[];
-          timestamp: number;
-        }
-      | undefined
-  ) => {
+  new = () => async (args: Commit) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
 
-    const timestamp = args.timestamp;
+    const timestamp = args.timestamp || Date.now();
     const creatorsIds = args.creatorsIds;
 
     const commitData: Commit = {
@@ -162,8 +142,6 @@ export class CommitPattern extends CommitEntity
       parentsIds: args.parentsIds
     };
 
-    const commit: Secured<Commit> = await this.secured.derive()(commitData);
-
-    return commit.id;
+    return this.secured.derive()(commitData);
   };
 }

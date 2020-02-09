@@ -1,22 +1,18 @@
-import { Pattern, Creatable } from '@uprtcl/cortex';
-
-import { DocumentsBindings } from '../bindings';
-import { TextNode } from 'src/types';
+import { DocumentsProvider } from '../services/documents.provider';
+import { DocumentsBindings } from 'src/bindings';
 
 export const resolvers = {
   Mutation: {
     async createTextNode(_, { content, source }, { container }) {
-      const patterns: Pattern[] = container.getAll(DocumentsBindings.TextNodeEntity);
+      const documents: DocumentsProvider[] = container.getAll(DocumentsBindings.DocumentsRemote);
 
-      const creatable: Creatable<any, TextNode> | undefined = (patterns.find(
-        p => ((p as unknown) as Creatable<any, TextNode>).create
-      ) as unknown) as Creatable<any, TextNode>;
+      const remote = documents.find(d => d.source === source);
 
-      if (!creatable) throw new Error(`No creatable pattern for TextNodeEntity is registered`);
+      if (!remote) throw new Error(`No documents provider registered for source ${source}`);
 
-      const hashed = await creatable.create()(content, source);
+      const id = await remote.createTextNode(content);
 
-      return { id: hashed.id, ...hashed.object };
+      return { id, ...content };
     }
   }
 };

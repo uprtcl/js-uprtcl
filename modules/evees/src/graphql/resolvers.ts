@@ -44,10 +44,10 @@ export const eveesResolvers = {
     }
   },
   UpdateProposal: {
-    toPerspective (parent) {
+    toPerspective(parent) {
       return parent.toPerspectiveId;
     },
-    fromPerspective (parent) {
+    fromPerspective(parent) {
       return parent.fromPerspectiveId;
     }
   },
@@ -80,12 +80,12 @@ export const eveesResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = evees.getPerspectiveProvider(parent);
-      
+
       if (!remote.proposals) return [];
-      
+
       const proposalsIds = await remote.proposals.getProposalsToPerspective(parent.id);
-      const proposalsPromises = proposalsIds.map((proposalId) => {
-        return (remote.proposals as ProposalsProvider).getProposal(proposalId)
+      const proposalsPromises = proposalsIds.map(proposalId => {
+        return (remote.proposals as ProposalsProvider).getProposal(proposalId);
       });
 
       const proposals = await Promise.all(proposalsPromises);
@@ -94,8 +94,11 @@ export const eveesResolvers = {
     }
   },
   Mutation: {
-    async createCommit(_, { creatorsIds, dataId, parentsIds, message, source, timestamp }, { container }) {
-      
+    async createCommit(
+      _,
+      { creatorsIds, dataId, parentsIds, message, source, timestamp },
+      { container }
+    ) {
       const remotes = container.get(EveesBindings.EveesRemote);
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
       const secured: IsSecure<any> = container.get(EveesBindings.Secured);
@@ -107,16 +110,16 @@ export const eveesResolvers = {
         timestamp: timestamp,
         parentsIds: parentsIds
       };
-      
+
       const commit: Secured<Commit> = await secured.derive()(commitData);
       const remote: EveesRemote = remotes.find(r => r.source === source);
 
       await remote.cloneCommit(commit);
-        await discovery.postEntityCreate(remote, commit);
+      await discovery.postEntityCreate(remote, commit);
 
-      return { 
-        id: commit.id, 
-        ...commit.object 
+      return {
+        id: commit.id,
+        ...commit.object
       };
     },
 
@@ -124,11 +127,11 @@ export const eveesResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
-      
+
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
       await provider.updatePerspectiveDetails(perspectiveId, { headId });
-      
+
       await discovery.postEntityUpdate(provider, [headId]);
 
       const result = await client.query({
@@ -149,10 +152,14 @@ export const eveesResolvers = {
       return { id: perspectiveId, ...perspective, head: { id: headId } };
     },
 
-    async createPerspective(_, { creatorId, origin, timestamp, headId, context, name, authority, canWrite }, { container }) {
+    async createPerspective(
+      _,
+      { creatorId, origin, timestamp, headId, context, name, authority, canWrite },
+      { container }
+    ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
       const secured: IsSecure<any> = container.get(EveesBindings.Secured);
-      
+
       const remote: EveesRemote = remotes.find(remote => remote.authority === authority);
 
       const perspectiveData: Perspective = {
@@ -163,9 +170,9 @@ export const eveesResolvers = {
       const perspective: Secured<Perspective> = await secured.derive()(perspectiveData);
 
       await remote.cloneAndInitPerspective(perspective, { headId, name, context }, canWrite);
-      
-      return { 
-        id: perspective.id, 
+
+      return {
+        id: perspective.id,
         name: name,
         head: headId,
         context: context,

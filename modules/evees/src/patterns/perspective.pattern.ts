@@ -1,5 +1,5 @@
 import { html, TemplateResult } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
+import { ApolloClient, gql, from } from 'apollo-boost';
 import { injectable, inject } from 'inversify';
 
 import {
@@ -13,7 +13,8 @@ import {
   Entity,
   Signed,
   CortexModule,
-  PatternRecognizer
+  PatternRecognizer,
+  Newable
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -21,17 +22,27 @@ import { DiscoveryModule, DiscoveryService, createEntity } from '@uprtcl/multipl
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective, UprtclAction, CREATE_DATA_ACTION, CreateDataAction, CREATE_COMMIT_ACTION, CreateCommitAction, CREATE_AND_INIT_PERSPECTIVE, CreateAndInitPerspectiveAction } from '../types';
+import {
+  Perspective,
+  UprtclAction,
+  CREATE_DATA_ACTION,
+  CreateDataAction,
+  CREATE_COMMIT_ACTION,
+  CreateCommitAction,
+  CREATE_AND_INIT_PERSPECTIVE,
+  CreateAndInitPerspectiveAction,
+  PerspectiveDetails
+} from '../types';
 import { EveesBindings } from '../bindings';
-import { Evees, NewPerspectiveArgs } from '../services/evees';
+import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
-import { CREATE_COMMIT, CREATE_PERSPECTIVE } from 'src/graphql/queries';
+import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
 @injectable()
 export class PerspectiveEntity implements Entity {
-  constructor(@inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>) { }
+  constructor(@inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>) {}
   recognize(object: object) {
     return (
       this.securedPattern.recognize(object) &&
@@ -62,8 +73,16 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
           const color: string = context ? (context.color ? context.color : undefined) : undefined;
 
           const level: number = context ? (context.level !== undefined ? context.level : 1) : 1;
-          const index: number = context ? (context.index !== undefined ? context.index : undefined) : undefined;
-          const genealogy: string[] = context ? (context.genealogy !== undefined ? context.genealogy : []) : [];
+          const index: number = context
+            ? context.index !== undefined
+              ? context.index
+              : undefined
+            : undefined;
+          const genealogy: string[] = context
+            ? context.genealogy !== undefined
+              ? context.genealogy
+              : []
+            : [];
 
           const onlyChildren: string = context
             ? context.onlyChildren !== undefined
@@ -97,7 +116,10 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
 
 @injectable()
 export class PerspectiveCreate extends PerspectiveEntity
-  implements Creatable<NewPerspectiveArgs, Signed<Perspective>>, HasActions {
+  implements
+    Creatable<CreatePerspectiveArgs, Signed<Perspective>>,
+    Newable<NewPerspectiveArgs, Signed<Perspective>>,
+    HasActions {
   constructor(
     @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees,
@@ -109,80 +131,102 @@ export class PerspectiveCreate extends PerspectiveEntity
     super(securedPattern);
   }
 
-  create = () => async (args: NewPerspectiveArgs, authority: string) => {
-    const actions: UprtclAction<any>[] = [];
-    const perspective = await this.evees.createPerspective(args, authority, actions);
+  create = () => async (args: CreatePerspectiveArgs, authority: string) => {
+    let fromDetails: PerspectiveDetails = (args as any).fromDetails;
+    if (fromDetails) {
+      fromDetails.context = fromDetails.context || `${Date.now()}:${Math.random() / 1000}`;
+      fromDetails.name = fromDetails.name || 'master';
 
-    debugger
-    const createDataPromises = actions
-      .filter(a => a.type === CREATE_DATA_ACTION)
-      .map(async (action: UprtclAction<CreateDataAction>) => {
-        const dataId = await createEntity(this.patternRecognizer)(action.payload.data, action.payload.source);
-        if (dataId !== action.id) {
-          throw new Error(`created entity id ${dataId} not as expected ${action.id}`)
-        }
-    })
+      const result = await this.evees.computeNewGlobalPerspectiveOps(
+        authority,
+        fromDetails,
+        args.canWrite
+      );
+      const actions = result[1];
+      const perspective = result[0];
 
-    await Promise.all(createDataPromises);
-
-    const createCommitsPromises = actions
-      .filter(a => a.type === CREATE_COMMIT_ACTION)
-      .map(async (action: UprtclAction<CreateCommitAction>) => {
-        const result = await this.client.mutate({
-          mutation: CREATE_COMMIT,
-          variables: {
-            creatorsId:action.payload.commit.payload.creatorsIds,
-            dataId: action.payload.commit.payload.dataId,
-            message: action.payload.commit.payload.message,
-            parentsIds: action.payload.commit.payload.parentsIds,
-            timestamp: action.payload.commit.payload.timestamp,
-            source: action.payload.source
+      const createDataPromises = actions
+        .filter(a => a.type === CREATE_DATA_ACTION)
+        .map(async (action: UprtclAction<CreateDataAction>) => {
+          const dataId = await createEntity(this.patternRecognizer)(
+            action.payload.data,
+            action.payload.source
+          );
+          if (dataId !== action.id) {
+            throw new Error(`created entity id ${dataId} not as expected ${action.id}`);
           }
         });
-        const headId = result.data.createCommit.id;
-        if (headId !== action.id) {
-          throw new Error(`created commit id ${headId} not as expected ${action.id}`)
-        }
-    })
 
-    await Promise.all(createCommitsPromises);
+      await Promise.all(createDataPromises);
 
-    const createPerspectivesPromises = actions
-      .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE)
-      .map(async (action: UprtclAction<CreateAndInitPerspectiveAction>) => {
-        const result = await this.client.mutate({
-          mutation: CREATE_PERSPECTIVE,
-          variables: {
-            creatorId: action.payload.perspective.object.payload.creatorId,
-            origin: action.payload.perspective.object.payload.origin,
-            timestamp: action.payload.perspective.object.payload.timestamp,
-            headId: action.payload.details.headId,
-            context: action.payload.details.context,
-            name: action.payload.details.name,
-            authority: action.payload.perspective.object.payload.origin,
-            canWrite: action.payload.owner
+      const createCommitsPromises = actions
+        .filter(a => a.type === CREATE_COMMIT_ACTION)
+        .map(async (action: UprtclAction<CreateCommitAction>) => {
+          const result = await this.client.mutate({
+            mutation: CREATE_COMMIT,
+            variables: {
+              creatorsId: action.payload.commit.payload.creatorsIds,
+              dataId: action.payload.commit.payload.dataId,
+              message: action.payload.commit.payload.message,
+              parentsIds: action.payload.commit.payload.parentsIds,
+              timestamp: action.payload.commit.payload.timestamp,
+              source: action.payload.source
+            }
+          });
+          const headId = result.data.createCommit.id;
+          if (headId !== action.id) {
+            throw new Error(`created commit id ${headId} not as expected ${action.id}`);
           }
         });
-        const headId = action.payload.details.headId;
-        if (headId !== action.id) {
-          throw new Error(`created commit id ${headId} not as expected ${action.id}`)
-        }
-    })
 
-    await Promise.all(createPerspectivesPromises);
+      await Promise.all(createCommitsPromises);
 
-    return perspective;
+      const createPerspectivesPromises = actions
+        .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE)
+        .map(async (action: UprtclAction<CreateAndInitPerspectiveAction>) => {
+          const result = await this.client.mutate({
+            mutation: CREATE_PERSPECTIVE,
+            variables: {
+              creatorId: action.payload.perspective.object.payload.creatorId,
+              origin: action.payload.perspective.object.payload.origin,
+              timestamp: action.payload.perspective.object.payload.timestamp,
+              headId: action.payload.details.headId,
+              context: action.payload.details.context,
+              name: action.payload.details.name,
+              authority: action.payload.perspective.object.payload.origin,
+              canWrite: action.payload.owner
+            }
+          });
+          const headId = action.payload.details.headId;
+          if (headId !== action.id) {
+            throw new Error(`created commit id ${headId} not as expected ${action.id}`);
+          }
+        });
+
+      await Promise.all(createPerspectivesPromises);
+
+      return perspective;
+    } else {
+      return this.new()((args as any).newPerspective);
+    }
   };
 
-  computeId = () => async (args: NewPerspectiveArgs) => {
-    const perspective: Secured<Perspective> = await this.securedPattern.derive()(args.perspective);
+  new = () => async (args: NewPerspectiveArgs) => {
+    const userId = this.evees.getAuthority(args.autority).userId;
 
-    return perspective.id;
+    if (!userId) throw new Error('Cannot create in an authority in which you are not signed in');
+
+    const perspective: Perspective = {
+      creatorId: userId,
+      origin: args.autority,
+      timestamp: args.timestamp || Date.now()
+    };
+
+    return this.securedPattern.derive()(perspective);
   };
 
   actions = (perspective: Secured<Perspective>): PatternAction[] => {
-    return [
-    ];
+    return [];
   };
 }
 

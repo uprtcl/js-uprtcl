@@ -1,3 +1,4 @@
+import { ApolloClient } from 'apollo-boost';
 import { html, TemplateResult } from 'lit-element';
 import { injectable, inject, multiInject } from 'inversify';
 
@@ -12,15 +13,19 @@ import {
   HasChildren,
   Entity,
   HasTitle,
-  CortexModule
+  CortexModule,
+  Newable
 } from '@uprtcl/cortex';
 import { DiscoveryService, DiscoveryModule, TaskQueue, Task } from '@uprtcl/multiplatform';
 import { Mergeable, MergeStrategy, mergeStrings, mergeResult, EveesModule } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { DocumentsProvider } from '../services/documents.provider';
+import { CREATE_TEXT_NODE } from '../graphql/queries';
+import { type } from 'os';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -154,13 +159,13 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 
 @injectable()
 export class TextNodeCreate extends TextNodeEntity
-  implements Creatable<Partial<TextNode>, TextNode> {
+  implements Creatable<Partial<TextNode>, TextNode>, Newable<Partial<TextNode>, TextNode> {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
     @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
-    @multiInject(EveesModule.bindings.PerspectivePattern) protected perspectivePatterns: Pattern[]
+    @multiInject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(hashedPattern);
   }
@@ -173,40 +178,25 @@ export class TextNodeCreate extends TextNodeEntity
     node: Partial<TextNode> | undefined,
     source: string
   ): Promise<Hashed<TextNode>> => {
-    const links = node && node.links ? node.links : [];
-    const text = node && node.text ? node.text : '';
-    const type = node && node.type ? node.type : TextType.Paragraph;
+    const textNode = await this.new()(node);
+    const result = await this.client.mutate({
+      mutation: CREATE_TEXT_NODE,
+      variables: {
+        content: textNode.object,
+        source
+      }
+    });
 
-    let remote: DocumentsProvider | undefined;
-    if (source) {
-      remote = this.documentsRemotes.find(documents => documents.source === source);
-    } else {
-      remote = this.documentsRemotes.find(remote => !remote.source.includes('http'));
-    }
-
-    if (!remote) {
-      throw new Error('Could not find remote to create a TextNode in');
-    }
-
-    const newTextNode = { links, text, type };
-    
-    const id = await remote.createTextNode(newTextNode);
-
-    await this.discovery.postEntityCreate(remote, { id, object: newTextNode });
-
-    return { id, object: newTextNode };
+    return textNode;
   };
 
-  computeId = () => async (
-    node: Partial<TextNode> | undefined
-  ): Promise<string> => {
+  new = () => async (node: Partial<TextNode> | undefined): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
 
     const newTextNode = { links, text, type };
-    const { id } = await this.hashedPattern.derive()(newTextNode);
-    return id;
+    return this.hashedPattern.derive()(newTextNode);
   };
 }
 

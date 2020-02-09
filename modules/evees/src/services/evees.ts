@@ -21,21 +21,47 @@ import { computeIdOfEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective, Commit, PerspectiveDetails, RemotesConfig, UprtclAction, CreateDataAction, CREATE_DATA_ACTION, CREATE_COMMIT_ACTION, CreateCommitAction, CREATE_AND_INIT_PERSPECTIVE, CreateAndInitPerspectiveAction } from '../types';
+import {
+  Perspective,
+  Commit,
+  PerspectiveDetails,
+  RemotesConfig,
+  UprtclAction,
+  CreateDataAction,
+  CREATE_DATA_ACTION,
+  CREATE_COMMIT_ACTION,
+  CreateCommitAction,
+  CREATE_AND_INIT_PERSPECTIVE,
+  CreateAndInitPerspectiveAction
+} from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
+import { CidHashedPattern } from 'src/patterns/cid-hashed.pattern';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
   context?: string;
 }
 
+export type CreatePerspectiveArgs = {
+  canWrite: string;
+} & (
+  | { newPerspective: NewPerspectiveArgs }
+  | { fromDetails: { headId: string; context?: string; name?: string } }
+);
+
 export interface NewPerspectiveArgs {
-  perspective: Perspective,
-  details?: PerspectiveDetails,
-  canWrite: string,
-  recursive: boolean
-};
+  autority: string;
+  timestamp?: number;
+}
+
+export interface CreateCommitArgs {
+  parentIds?: string[];
+  dataId: string;
+  creatorsIds?: string[];
+  timestamp?: number;
+  message?: string;
+}
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -47,6 +73,7 @@ export class Evees {
   constructor(
     @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(EveesBindings.Secured) protected secured: IsSecure<any>,
+    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern,
     @inject(DiscoveryModule.bindings.LocalKnownSources)
     public knownSources: KnownSourcesService,
     @inject(DiscoveryModule.bindings.DiscoveryService)
@@ -56,9 +83,7 @@ export class Evees {
     @inject(ApolloClientModule.bindings.Client)
     protected client: ApolloClient<any>,
     @inject(EveesBindings.RemotesConfig)
-    protected remotesConfig: RemotesConfig,
-    @inject(DiscoveryModule.bindings.TaskQueue)
-    protected taskQueue: TaskQueue
+    protected remotesConfig: RemotesConfig
   ) {}
 
   /** Public functions */
@@ -108,7 +133,7 @@ export class Evees {
   }
 
   public async getContextPerspectives(context: string): Promise<string[]> {
-    const promises = this.eveesRemotes.map(async (remote) => { 
+    const promises = this.eveesRemotes.map(async remote => {
       const thisPerspectivesIds = await remote.getContextPerspectives(context);
       thisPerspectivesIds.forEach(pId => {
         this.knownSources.addKnownSources(pId, [remote.source]);
@@ -130,168 +155,122 @@ export class Evees {
    * @param args the properties of the perspectives
    * @param upl provider to which to create the perspective, needed if there is more than one provider
    */
-  public async createPerspective(
-    args: NewPerspectiveArgs,
+  public async computeNewGlobalPerspectiveOps(
     authority: string,
-    currentActions: UprtclAction<any>[] // CAUTION: Updated by reference
-  ): Promise<Secured<Perspective>> {
-
+    details: PerspectiveDetails,
+    canWrite: string
+  ): Promise<[Secured<Perspective>, Array<UprtclAction<any>>]> {
     const eveesRemote = this.getAuthority(authority);
 
-    const name = (args.details && args.details.name) || ``;
-
     if (!eveesRemote.userId)
-      throw new Error(
-        `You need to be logged in the evees authority ${eveesRemote.authority} to create perspectives in it`
-      );
+      throw new Error(`Cannot create perspectives on remotes you aren't signed in`);
 
-    // Create the context to point the perspective to, if needed
-    const context = (args.details && args.details.context) || `${Date.now()}${Math.random()}`;
-    let headId = (args.details && args.details.headId) || ``;
+    let actions: Array<UprtclAction<any>> = [];
 
-    let newDataId: string | undefined = undefined;
-
-    if (args.recursive) {
-      // Create recursive perspective to be able to write in the descendant perspectives
-      const commit: Secured<Commit> | undefined = await this.discoveryService.get(headId);
-      if (!commit) throw new Error('Head commit for the perspective was not found');
-
-      const dataId = commit.object.payload.dataId;
-      
-      const dataHashed: Hashed<any> | undefined = await this.discoveryService.get(dataId);
-      if (!dataHashed) throw new Error('Data for the head commit of the perspective was not found');
-
-      const hasChildren: HasChildren | undefined = this.patternRecognizer
-        .recognize(dataHashed)
-        .find(prop => !!(prop as HasChildren).getChildrenLinks);
-
-      if (hasChildren) {
-        const descendantLinks = hasChildren.getChildrenLinks(dataHashed);
-
-        if (descendantLinks.length > 0) {
-          /** create a new perspective of the child
-           * (this will recursively call this same createPerspective() function) */
-
-          // TODO: generalize to break the assumption that all links are to perspectives
-          const promises = descendantLinks.map(async link => {
-            const getDetails = await this.client.query({
-              query: gql`
-                {
-                  entity(id: "${link}") {
-                    id
-                    ... on Perspective {
-                      context {
-                        identifier
-                      }
-                      head {
-                        id
-                      }
-                    }
-                  }
-                }
-              `
-            });
-
-            if (!getDetails.data.entity.context) {
-              throw new Error('Original perspective dont have a context');
-            };
-
-            const details = {
-              context: getDetails.data.entity.context.identifier,
-              headId: getDetails.data.entity.head ? getDetails.data.entity.head.id : ''
-            };
-            
-            // const newPerspective = await this.client.mutate({
-            //   mutation: CREATE_PERSPECTIVE,
-            //   variables: {
-            //     context: details.context,
-            //     name,
-            //     headId: details.headId,
-            //     authority: eveesRemote.authority,
-            //     canWrite: args.canWrite ? args.canWrite : undefined,
-            //     recursive: true
-            //   }
-            // });
-
-            const childArgs: NewPerspectiveArgs = {
-              perspective: {
-                creatorId: (eveesRemote.userId ? eveesRemote.userId : ''),
-                origin: eveesRemote.authority,
-                timestamp: Date.now()
-              },
-              details: {
-                headId: headId,
-                context: details.context,
-                name: name
-              },
-              recursive: true,
-              canWrite: args.canWrite
-            }
-
-            const perspective = await this.createPerspective(childArgs, eveesRemote.authority, currentActions);
-
-            return perspective.id;
-          });
-
-          const newLinks = await Promise.all(promises);
-          const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
-          const dataSource = this.remotesConfig.map(eveesRemote.authority, hasChildren.name);
-
-          newDataId = await computeIdOfEntity(this.patternRecognizer)(newData.object);
-          
-          const newDataAction: UprtclAction<CreateDataAction> = {
-            id: dataId,
-            type: CREATE_DATA_ACTION,
-            payload: {
-              data: newData.object,
-              source: dataSource.source
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${details.headId}") {
+          id
+          ... on Commit {
+            data {
+              id
+              _context {
+                raw
+              }
             }
           }
-
-          currentActions.unshift(newDataAction);
         }
+      }`
+    });
+
+    const headId = result.data.entity.id;
+    const dataId = result.data.entity.data.id;
+    const dataRaw = JSON.parse(result.data.entity.data._context.raw);
+    const dataHashed = { id: dataId, object: dataRaw };
+
+    const hasChildren: HasChildren | undefined = this.patternRecognizer
+      .recognize(dataHashed)
+      .find(prop => !!(prop as HasChildren).getChildrenLinks);
+
+    if (hasChildren) {
+      const descendantLinks = hasChildren.getChildrenLinks(dataHashed);
+
+      if (descendantLinks.length > 0) {
+        const promises = descendantLinks.map(async link => {
+          const descendantResult = await this.client.query({
+            query: gql`{
+              entity(id: "${link}") {
+                id
+                ... on Perspective {
+                  head {
+                    id
+                  }
+                  name
+                  context
+                }
+              }
+            }`
+          });
+
+          const perspectiveDetails: PerspectiveDetails = {
+            context: descendantResult.data.entity.context,
+            headId: descendantResult.data.entity.head.id,
+            name: descendantResult.data.entity.name
+          };
+
+          return this.computeNewGlobalPerspectiveOps(authority, perspectiveDetails, canWrite);
+        });
+
+        const results = await Promise.all(promises);
+
+        actions = actions.concat(...results.map(r => r[1]));
+
+        const newLinks = results.map(r => r[0].id);
+
+        const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
+        const dataSource = this.remotesConfig.map(eveesRemote.authority, hasChildren.name);
+
+        const { id: newDataId } = await this.hashed.derive()(newData.object);
+
+        const newDataAction: UprtclAction<CreateDataAction> = {
+          id: newDataId,
+          type: CREATE_DATA_ACTION,
+          payload: {
+            data: newData.object,
+            source: dataSource.source
+          }
+        };
+
+        actions.push(newDataAction);
+
+        const newCommit: Signed<Commit> = {
+          payload: {
+            dataId: newDataId,
+            message: `auto-commit for new perspective ${name}`,
+            creatorsIds: [],
+            parentsIds: headId ? [headId] : [],
+            timestamp: Date.now()
+          },
+          proof: {
+            signature: '',
+            type: ''
+          }
+        };
+
+        const { id: newHeadId } = await this.hashed.derive()(newCommit);
+
+        const newCommitAction: UprtclAction<CreateCommitAction> = {
+          type: CREATE_COMMIT_ACTION,
+          id: newHeadId,
+          payload: {
+            commit: newCommit,
+            source: eveesRemote.source
+          }
+        };
+
+        actions.push(newCommitAction);
       }
     }
-
-    if (newDataId !== undefined) {
-      // const result = await this.client.mutate({
-      //   mutation: CREATE_COMMIT,
-      //   variables: {
-      //     dataId: dataId,
-      //     message: `Commit at ${Date.now()}`,
-      //     parentsIds: headId ? [headId] : [],
-      //     source: eveesRemote.source
-      //   }
-      // });
-      // headId = result.data.createCommit.id;
-      const newCommit: Signed<Commit> = {
-        payload: {
-          dataId: newDataId,
-          message: `auto-commit for new perspective ${name}`,
-          creatorsIds: [],
-          parentsIds: headId ? [headId] : [],
-          timestamp: Date.now()
-        },
-        proof: {
-          signature: '',
-          type: ''
-        }
-      }
-
-      headId = await computeIdOfEntity(this.patternRecognizer)(newCommit);
-
-      const newCommitAction: UprtclAction<CreateCommitAction> = {
-        type: CREATE_COMMIT_ACTION,
-        id: headId,
-        payload: {
-          commit: newCommit,
-          source: eveesRemote.source
-        }
-      }
-
-      currentActions.unshift(newCommitAction);
-    }
-
     // Create the perspective
     const perspectiveData: Perspective = {
       creatorId: eveesRemote.userId,
@@ -300,23 +279,16 @@ export class Evees {
     };
     const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData);
 
-    // Clone the perspective in the selected provider
-    // await eveesRemote.cloneAndInitPerspective(perspective, { headId, name, context }, args.canWrite);
-
     const newPerspectiveAction: UprtclAction<CreateAndInitPerspectiveAction> = {
       id: perspective.id,
       type: CREATE_AND_INIT_PERSPECTIVE,
       payload: {
         perspective: perspective,
-        details: { headId, name, context },
-        owner: args.canWrite ? args.canWrite : ''
+        details: { headId, name, context: details.context },
+        owner: canWrite ? canWrite : ''
       }
-    }
+    };
 
-    currentActions.unshift(newPerspectiveAction);
-
-    this.logger.info('Computed new perspective action: ', perspective);
-    
-    return perspective;
+    return [perspective, actions];
   }
 }
