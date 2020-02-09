@@ -91,10 +91,12 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   render() {
     return html`
       ${this.renderDialog()}
-      <span>${this.t('access-control:owner')}: ${this.permissions.owner}</span>
-      <mwc-button raised icon="swap_horizontal" @click=${() => (this.dialog.open = true)}
-        >${this.t('access-control:transfer-ownership')}</mwc-button
-      >
+      <span><strong>${this.t('access-control:owner')}:</strong> ${this.permissions.owner}</span>
+      ${this.canWrite ? html`
+        <mwc-button raised icon="swap_horizontal" @click=${() => (this.dialog.open = true)}
+          >${this.t('access-control:transfer-ownership')}</mwc-button
+        >` : ''}
+      
     `;
   }
 }

@@ -1,5 +1,13 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
+// import { styleMap } from 'lit-html/directives/style-map';
+// https://github.com/Polymer/lit-html/issues/729
+export const styleMap = style => {
+  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    return `${styleString}${propName}:${propValue};`;
+  }, '');
+};
 
 export class WikiHome extends moduleConnect(LitElement) {
   @property({ type: String })
@@ -14,9 +22,13 @@ export class WikiHome extends moduleConnect(LitElement) {
   render() {
     return html`
       <div class="page-container">
-        <div class="title">Welcome to ${this.title}</div>
+        <div class="color-bar" style=${styleMap({
+          backgroundColor: this.color
+        })}></div>
+          
+        <div class="title"><h1>Welcome to ${this.title}</h1></div>
         <div class="evee-info">
-          <slot name="evee"></slot>
+          <slot name="evee-page"></slot>
         </div>
       </div>
     `;
@@ -25,6 +37,7 @@ export class WikiHome extends moduleConnect(LitElement) {
   static get styles() {
     return css`
       .page-container {
+        text-align: center;
       }
 
       .row {
@@ -33,14 +46,15 @@ export class WikiHome extends moduleConnect(LitElement) {
       }
 
       .title {
-        margin: 22px 0px 36px 16px;
-        font-size: 32px;
+        margin: 5vw 0px 3vw;
         font-weight: bold;
       }
 
-      .evee-info {
-        height: 40px;
-      }
+      .color-bar {
+          height: 1vw;
+          width: 100%;
+          margin-bottom: 1vw;
+        }
     `;
   }
 }

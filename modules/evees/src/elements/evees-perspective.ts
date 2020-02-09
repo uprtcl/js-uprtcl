@@ -247,12 +247,18 @@ export class EveesPerspective extends moduleConnect(LitElement) {
           genealogy: newGenealogy
         }}
       >
-        <evees-info
-          slot="evee"
+        <evees-info-popper
+          slot="evee-popper"
           first-perspective-id=${this.firstPerspectiveId}
           perspective-id=${this.perspectiveId}
           evee-color=${this.getEveeColor()}
-        ></evees-info>
+        ></evees-info-popper>
+        <evees-info-page
+          slot="evee-page"
+          first-perspective-id=${this.firstPerspectiveId}
+          perspective-id=${this.perspectiveId}
+          evee-color=${this.getEveeColor()}
+        ></evees-info-page>
       </cortex-entity>
     `;
   }

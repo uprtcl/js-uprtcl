@@ -289,8 +289,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     if (this.pagesList.length === 0)
       return html`
-        <div class="row center-content" style="flex: 1; align-items: start; padding-top: 24px;">
-          <span>${this.t('wikis:no-pages-yet')}</span>
+        <div class="empty">
+          <span><i>${this.t('wikis:no-pages-yet')}</i></span>
         </div>
       `;
 
@@ -314,47 +314,47 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
-    console.log(this.color === '#d9d7d0');
     return html`
-      <mwc-drawer hasHeader>
-        <span slot="title" @click=${() => this.selectPage(undefined)} style="cursor: pointer;">
-          ${this.wiki.object.title}
-        </span>
-
-        <div
-          class="column"
-          style=${styleMap({
-            backgroundColor: this.color
-          })}
-        >
-          <div style="flex: 1;">
-            ${this.renderPageList()}
-          </div>
+      <mwc-drawer>
+        <div class="column">
+          <div
+            class="color-bar"
+            style=${styleMap({
+              backgroundColor: this.color
+            })}
+          ></div>
 
           ${this.editable
             ? html`
-                <div class="row">
-                  <mwc-button
-                    raised
-                    icon="note_add"
-                    @click=${() => this.createPage()}
-                    style="flex: 1;"
-                  >
+                <div class="button-row">
+                  <mwc-button outlined icon="note_add" @click=${() => this.createPage()}>
                     ${this.t('wikis:new-page')}
                   </mwc-button>
                 </div>
               `
             : html``}
+          <div>
+            ${this.renderPageList()}
+          </div>
         </div>
 
         <div slot="appContent" class="fill-content">
           ${this.selectedPageHash
             ? html`
-                <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
+                <wiki-page
+                  @nav-back=${() => this.selectPage(undefined)}
+                  pageHash=${this.selectedPageHash}
+                  color=${this.color ? this.color : ''}
+                >
+                </wiki-page>
               `
             : html`
-                <wiki-home wikiHash=${this.perspective.id} title=${this.wiki.object.title}>
-                  <slot slot="evee" name="evee"></slot>
+                <wiki-home
+                  wikiHash=${this.perspective.id}
+                  title=${this.wiki.object.title}
+                  color=${this.color ? this.color : ''}
+                >
+                  <slot slot="evee-page" name="evee-page"></slot>
                 </wiki-home>
               `}
         </div>
@@ -376,6 +376,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .column {
           height: 100%;
+        }
+        .color-bar {
+          height: 1vw;
+          width: 100%;
+        }
+        .empty {
+          width: 100%;
+          text-align: center;
+          padding-top: 24px;
+          color: #d0d8db;
+        }
+        .button-row {
+          margin: 16px 0px 8px 0px;
+          text-align: center;
+          width: 100%;
         }
       `
     ];

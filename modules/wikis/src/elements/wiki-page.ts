@@ -1,5 +1,13 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
+// import { styleMap } from 'lit-html/directives/style-map';
+// https://github.com/Polymer/lit-html/issues/729
+export const styleMap = style => {
+  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    return `${styleString}${propName}:${propValue};`;
+  }, '');
+};
 
 import { TextNode } from '@uprtcl/documents';
 import { sharedStyles } from '@uprtcl/lenses';
@@ -14,6 +22,13 @@ export class WikiPage extends moduleConnect(LitElement) {
 
   @property({ type: Object })
   textNode!: TextNode;
+
+  @property({ type: String })
+  color!: string;
+
+  back() {
+    this.dispatchEvent(new CustomEvent('nav-back'));
+  }
 
   async firstUpdated() {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
@@ -49,10 +64,24 @@ export class WikiPage extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <mwc-top-app-bar> </mwc-top-app-bar>
+      <div class="color-bar" style=${styleMap({
+        backgroundColor: this.color
+      })}></div>
 
-      <cortex-entity .hash=${this.pageHash} lens-type="evee" .context=${{ onlyChildren: 'false' }}>
-      </cortex-entity>
+      <div class="top-row">
+        <mwc-button
+          outlined
+          icon="arrow_back_ios"
+          @click=${this.back}
+        ></mwc-button>
+      </div>
+
+      <div class="page-content">
+        <div class="text-editor">
+          <cortex-entity .hash=${this.pageHash} lens-type="evee" .context=${{ onlyChildren: 'false', color: this.color }}>
+          </cortex-entity>
+        </div>
+      </div>
     `;
   }
 
@@ -61,10 +90,20 @@ export class WikiPage extends moduleConnect(LitElement) {
       :host {
         width: 100%;
       }
-
-      mwc-top-app-bar {
-        --mdc-theme-primary: transparent;
-        --mdc-theme-on-primary: #37352f;
+      .color-bar {
+        height: 1vw;
+        width: 100%;
+        margin-bottom: 1vw;
+      }
+      .page-content {
+        margin: 0 auto;
+        max-width: 900px;
+      }
+      .top-row {
+        margin: 16px 0px 2vw 1.5vw;
+      }
+      .text-editor {
+        padding: 0vw 0vw;
       }
     `];
   }

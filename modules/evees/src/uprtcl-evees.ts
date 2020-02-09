@@ -36,7 +36,8 @@ export { EveesBindings } from './bindings';
 /** Elements */
 export { CommitHistory } from './elements/evees-commit-history';
 export { PerspectivesList } from './elements/evees-perspectives-list';
-export { EveesInfo } from './elements/evees-info';
+export { EveesInfoPopper } from './elements/evees-info-popper';
+export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesPerspective } from './elements/evees-perspective';
 export { UpdateContentEvent, UpdateContentArgs } from './elements/events';
 
