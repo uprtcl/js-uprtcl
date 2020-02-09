@@ -540,7 +540,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
         ? html`
               <div class="column">
                 <div class="evee-info">
-                  <slot name="evee"></slot>
+                  <slot name="evee-popper"></slot>
                 </div>
                 <div class="node-content">
                   <documents-text-node-editor
