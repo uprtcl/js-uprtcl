@@ -14,21 +14,26 @@ const M2MS = H2M * M2S * S2MS;
 export const prettyTime = (timestamp: number): string => {
   const date = new Date(timestamp);
   const ago = Date.now() - timestamp;
+  let value;
 
   if (ago > 3 * MT2MS) {
     return `on ${date.getMonth()} ${date.getUTCDay} `;
   } else {
     if (ago > 1 * MT2MS) {
-      return `${Math.floor(ago/M2MS)} months ago`;
+      value = Math.floor(ago/MT2MS);
+      return `${value} month${value > 1 ? 's' : ''} ago`;
     } else {
       if (ago > 1 * D2MS) {
-        return `${Math.floor(ago/D2MS)} days ago`;
+        value = Math.floor(ago/D2MS);
+        return `${value} day${value > 1 ? 's' : ''} ago`;
       } else {
         if (ago > 1 * H2MS) {
-          return `${Math.floor(ago/H2MS)} hours ago`;
+          value = Math.floor(ago/H2MS);
+          return `${value} hour${value > 1 ? 's' : ''} ago`;
         } else {
           if (ago > 5 * M2MS) {
-            return `${Math.floor(ago/H2MS)} minutes ago`;
+            value = Math.floor(ago/M2MS);
+            return `${value} minute${value > 1 ? 's' : ''} ago`;
           } else {
             return `a few minutes ago`;
           } 

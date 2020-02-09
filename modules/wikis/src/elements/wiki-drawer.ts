@@ -367,7 +367,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           color: #d0d8db;
         }
         .button-row {
-          margin: 16px 0px 0px 0px;
+          margin: 16px 0px 8px 0px;
           text-align: center;
           width: 100%;
         }

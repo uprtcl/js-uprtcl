@@ -40,6 +40,7 @@ interface PerspectiveData {
   details: PerspectiveDetails;
   canWrite: Boolean;
   permissions: any;
+  data: { id: string }
 }
 
 export class EveesInfoBase extends moduleConnect(LitElement) {
@@ -84,6 +85,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
               }
               head {
                 id
+                ... on Commit {
+                  data {
+                    id
+                  }
+                }
               }
               name
               payload {
@@ -116,7 +122,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       },
       perspective: result.data.entity.payload,
       canWrite: accessControl ? accessControl.canWrite : true,
-      permissions: accessControl ? accessControl.permissions : undefined
+      permissions: accessControl ? accessControl.permissions : undefined,
+      data: {
+        id: result.data.entity.head.data.id
+      }
     };
 
     this.logger.info('load', { perspectiveData: this.perspectiveData });

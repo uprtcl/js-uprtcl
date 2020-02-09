@@ -68,14 +68,15 @@ export class WikiPage extends moduleConnect(LitElement) {
         backgroundColor: this.color
       })}></div>
 
+      <div class="top-row">
+        <mwc-button
+          outlined
+          icon="arrow_back_ios"
+          @click=${this.back}
+        ></mwc-button>
+      </div>
+
       <div class="page-content">
-        <div class="top-row">
-          <mwc-button
-            outlined
-            icon="arrow_back_ios"
-            @click=${this.back}
-          ></mwc-button>
-        </div>
         <div class="text-editor">
           <cortex-entity .hash=${this.pageHash} lens-type="evee" .context=${{ onlyChildren: 'false', color: this.color }}>
           </cortex-entity>
@@ -99,8 +100,7 @@ export class WikiPage extends moduleConnect(LitElement) {
         max-width: 900px;
       }
       .top-row {
-        padding-top: 2vw;
-        padding-bottom: 2vw;
+        margin: 16px 0px 2vw 1.5vw;
       }
       .text-editor {
         padding: 0vw 0vw;
