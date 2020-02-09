@@ -51,18 +51,20 @@ export class EveesInfoPage extends EveesInfoBase {
         <div class="container">
           <div class="column">
             <div class="section">
-              <div class="section-header" >
+              <div class="section-header" style=${styleMap({
+                color: this.eveeColor
+              })}>
                 ${this.perspectiveTitle()}
               </div>
               <div class="section-content">
-                <div>
+                <div class="description">
                   <div style="margin-bottom: 16px">
                     ${!this.perspectiveData.canWrite ? html`
                       <p>
-                        You can't edit it, but you can create new one!
+                        <span>You can't edit this perspective, but you can create a new one!</span>
                       </p>` : html`
                       <p>
-                        You can create and edit new pages!
+                        <span>You can create and edit new pages! When your are done, check out the Accepted Perspective and make a "Merge Request".</span>
                       </p>
                       `}
                   </div>
@@ -76,14 +78,14 @@ export class EveesInfoPage extends EveesInfoBase {
                 </div>
                 <div class="other-perspectives">
                   ${this.renderOtherPerspectives()}
-                  ${this.perspectiveData.canWrite ? html`
-                    <mwc-button
-                      outlined
-                      icon="call_split"
-                      @click=${this.newPerspectiveClicked}
-                      label="new perspective"
-                    ></mwc-button>` : ''}
                 </div>
+                ${this.perspectiveData.canWrite ? html`
+                  <mwc-button
+                    outlined
+                    icon="call_split"
+                    @click=${this.newPerspectiveClicked}
+                    label="new perspective"
+                  ></mwc-button>` : ''}
               </div>
             </div>
 
@@ -129,6 +131,9 @@ export class EveesInfoPage extends EveesInfoBase {
       }
       .section-content {
         padding: 2.2vw 0px 2.2vw 0px;
+      }
+      .description {
+        padding: 0px 1.5vw;
       }
       .other-perspectives {
         border-top: solid 1px #cccccc;

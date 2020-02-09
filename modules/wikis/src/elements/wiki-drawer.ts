@@ -272,7 +272,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     if (this.pagesList.length === 0)
       return html`
-        <div class="row center-content" style="flex: 1; align-items: start; padding-top: 24px; color: ">
+        <div class="empty">
           <span><i>${this.t('wikis:no-pages-yet')}</i></span>
         </div>
       `;
@@ -280,13 +280,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return html`
       <mwc-list>
         ${this.pagesList.map(page => {
-      let text = htmlToText(page.title);
-      return html`
+          let text = htmlToText(page.title);
+          return html`
             <mwc-list-item @click=${() => this.selectPage(page.id)}>
               ${text}
             </mwc-list-item>
           `;
-    })}
+        })}
       </mwc-list>
     `;
   }
@@ -297,50 +297,47 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
-    console.log(this.color === '#d9d7d0');
-    return html`
+      return html`
       <mwc-drawer>
         <div class="column">
           <div class="color-bar" style=${styleMap({
             backgroundColor: this.color
           })}></div>
-          <div style="flex: 1;">
-            ${this.renderPageList()}
-          </div>
-
+          
           ${this.editable ?
               html`
-                    <div class="row">
-                      <mwc-button
-                        raised
-                        icon="note_add"
-                        @click=${() => this.createPage()}
-                        style="flex: 1;"
-                      >
-                        ${this.t('wikis:new-page')}
-                      </mwc-button>
-                    </div>
-                  `
-              : html``}
-            </div>
+                <div class="button-row">
+                  <mwc-button
+                    outlined
+                    icon="note_add"
+                    @click=${() => this.createPage()}
+                  >
+                    ${this.t('wikis:new-page')}
+                  </mwc-button>
+                </div>`: html``}
+          <div>
+            ${this.renderPageList()}
+          </div>
+        </div>
 
-            <div slot="appContent" class="fill-content">
-              ${this.selectedPageHash
-                  ? html`
-                    <wiki-page 
-                      pageHash=${this.selectedPageHash} 
-                      color=${this.color ? this.color : ''}>
-                    </wiki-page>
-                  `
-                  : html`
-                    <wiki-home 
-                      wikiHash=${this.perspective.id} 
-                      title=${this.wiki.object.title} 
-                      color=${this.color ? this.color : ''}>
-                      <slot slot="evee-page" name="evee-page"></slot>
-                    </wiki-home>
-                  `}
-            </div>
+        <div slot="appContent" class="fill-content">
+          ${this.selectedPageHash
+              ? html`
+                <wiki-page
+                  @nav-back=${() => this.selectPage(undefined)}
+                  pageHash=${this.selectedPageHash} 
+                  color=${this.color ? this.color : ''}>
+                </wiki-page>
+              `
+              : html`
+                <wiki-home 
+                  wikiHash=${this.perspective.id} 
+                  title=${this.wiki.object.title} 
+                  color=${this.color ? this.color : ''}>
+                  <slot slot="evee-page" name="evee-page"></slot>
+                </wiki-home>
+              `}
+        </div>
       </mwc-drawer>
     `;
   }
@@ -362,7 +359,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .color-bar {
           height: 1vw;
           width: 100%;
-          margin-bottom: 1vw;
+        }
+        .empty {
+          width: 100%;
+          text-align: center; 
+          padding-top: 24px; 
+          color: #d0d8db;
+        }
+        .button-row {
+          margin: 16px 0px 0px 0px;
+          text-align: center;
+          width: 100%;
         }
       `];
   }

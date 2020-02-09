@@ -15,11 +15,11 @@ export class EveesInfoPopper extends EveesInfoBase {
   show: Boolean = false;
 
   firstUpdated() {
-    this.show = true;
     this.load();
   }
 
   showClicked() {
+    console.log('show clicked')
     this.show = !this.show;
     if (this.show) this.load();
   }
@@ -31,7 +31,7 @@ export class EveesInfoPopper extends EveesInfoBase {
 
   perspectiveTitle() {
     if (this.perspectiveId === this.firstPerspectiveId) {
-      return 'Current Perspective';
+      return 'Accepted Perspective (on the parent)';
     } else {
       return `Another Perspective`;
     }
@@ -62,7 +62,7 @@ export class EveesInfoPopper extends EveesInfoBase {
           @execute-proposal=${this.executeProposal}
         ></evees-perspectives-list>
       </div>
-      <div class="row">
+      <div class="button-row">
         ${this.loading
           ? this.renderLoading()
           : html`
@@ -70,7 +70,7 @@ export class EveesInfoPopper extends EveesInfoBase {
                 outlined
                 icon="call_split"
                 @click=${this.newPerspectiveClicked}
-                label="Create new perspective"
+                label="new perspective"
               ></mwc-button>
             `}
       </div>
@@ -94,13 +94,14 @@ export class EveesInfoPopper extends EveesInfoBase {
   render() {
     return html`
       <div class="container">
-        <div
-          class="button"
-          style=${styleMap({
-            backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR
-          })}
-          @click=${this.showClicked}
-        ></div>
+        <div class="button" @click=${this.showClicked}>
+          <div
+            class="evee-stripe"
+            style=${styleMap({
+              backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR
+            })}
+          ></div>
+        </div>
 
         ${this.show
           ? html`
@@ -108,14 +109,14 @@ export class EveesInfoPopper extends EveesInfoBase {
                 ${this.perspectiveData
                   ? html`
                       <div class="column">
-                        <div
-                          class="perspective-title"
-                          style=${styleMap({
-                            backgroundColor: this.eveeColor,
-                            color: this.perspectiveTextColor()
-                          })}
-                        >
-                          ${this.perspectiveTitle()}
+                        <div class="color-bar" style=${styleMap({
+                          backgroundColor: this.eveeColor
+                        })}></div>
+
+                        <div class="perspective-title" style=${styleMap({
+                          color: this.eveeColor
+                        })}> 
+                          <h2>${this.perspectiveTitle()}</h2>
                         </div>
 
                         <mwc-tab-bar
@@ -127,15 +128,20 @@ export class EveesInfoPopper extends EveesInfoBase {
                           <mwc-tab .label=${this.t('evees:information')} hasImageIcon>
                             <mwc-icon>info</mwc-icon>
                           </mwc-tab>
-                          <mwc-tab .label=${this.t('evees:permissions')} hasImageIcon>
-                            <mwc-icon>group</mwc-icon>
-                          </mwc-tab>
                         </mwc-tab-bar>
 
                         <div class="tab-content-container">
                           <div class="tab-content">
                             ${this.renderTabContent()}
                           </div>
+                        </div>
+
+                        <div class="close">
+                          <mwc-button
+                            outlined
+                            icon="close"
+                            @click=${this.showClicked}
+                          ></mwc-button>
                         </div>
                       </div>
                     `
@@ -152,57 +158,33 @@ export class EveesInfoPopper extends EveesInfoBase {
       .container {
         position: relative;
         height: 100%;
-        width: 15px;
       }
       .button {
-        height: calc(100% - 10px);
-        margin-top: 5px;
-        margin-left: 5px;
-        width: 10px;
-        border-radius: 3px;
         cursor: pointer;
+        padding-top: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+        height: 100%;
+        border-radius: 3px;
+        user-select: none;
+        transition: background-color 100ms linear;
       }
       .button:hover {
-        background-color: #cccccc;
+        background-color: #eef1f1;
       }
-      .popout {
-        z-index: 20;
-        position: absolute;
-        left: 20px;
-        top: 0;
+      .evee-stripe {
+        width: 10px;
+        height: calc(100% - 10px);
+        border-radius: 3px;
       }
       .info-box {
         width: auto;
-      }
-      .perspective-details {
-        flex-grow: 1;
-        flex-direction: column;
-        display: flex;
-      }
-      .perspective-details > span {
-        padding-bottom: 4px;
-      }
-      .row {
-        display: flex;
-        flex-direction: row;
-      }
-      .column {
-        display: flex;
-        flex-direction: column;
-      }
-      .perspective-title {
-        padding: 16px;
-        font-weight: bold;
-        border-top-right-radius: 4px;
-        border-top-left-radius: 4px;
-      }
-      .perspectives-list {
-        border-bottom: solid 1px #d9d7d0;
-        margin-bottom: 16px;
-        flex-grow: 1;
-      }
-      .perspectives-permissions {
-        flex-grow: 1;
+        z-index: 20;
+        position: absolute;
+        left: 30px;
+        top: 0;
+        width: 80vw;
+        max-width: 700px;
       }
       .tab-content-container {
         min-height: 400px;
@@ -213,6 +195,29 @@ export class EveesInfoPopper extends EveesInfoBase {
         display: flex;
         flex-direction: column;
         flex-grow: 1;
+      }
+      .color-bar {
+        height: 1vw;
+        width: 100%;
+        margin-bottom: 1vw;
+        border-top-right-radius: 4px;
+        border-top-left-radius: 4px;
+      }
+      .perspective-title {
+        font-weight: bold;
+        padding: 0.5vw 0 1.5vw 1.5vw;
+      }
+      .button-row {
+        padding-bottom: 16px; 
+        text-align: center;
+      }
+      .perspectives-list {
+        flex-grow: 1;
+      }
+      .close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
       }
     `;
   }

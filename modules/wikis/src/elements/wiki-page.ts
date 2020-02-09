@@ -26,6 +26,10 @@ export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
+  back() {
+    this.dispatchEvent(new CustomEvent('nav-back'));
+  }
+
   async firstUpdated() {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
@@ -64,8 +68,19 @@ export class WikiPage extends moduleConnect(LitElement) {
         backgroundColor: this.color
       })}></div>
 
-      <cortex-entity .hash=${this.pageHash} lens-type="evee" .context=${{ onlyChildren: 'false', color: this.color }}>
-      </cortex-entity>
+      <div class="page-content">
+        <div class="top-row">
+          <mwc-button
+            outlined
+            icon="arrow_back_ios"
+            @click=${this.back}
+          ></mwc-button>
+        </div>
+        <div class="text-editor">
+          <cortex-entity .hash=${this.pageHash} lens-type="evee" .context=${{ onlyChildren: 'false', color: this.color }}>
+          </cortex-entity>
+        </div>
+      </div>
     `;
   }
 
@@ -75,10 +90,21 @@ export class WikiPage extends moduleConnect(LitElement) {
         width: 100%;
       }
       .color-bar {
-          height: 1vw;
-          width: 100%;
-          margin-bottom: 1vw;
-        }
+        height: 1vw;
+        width: 100%;
+        margin-bottom: 1vw;
+      }
+      .page-content {
+        margin: 0 auto;
+        max-width: 900px;
+      }
+      .top-row {
+        padding-top: 2vw;
+        padding-bottom: 2vw;
+      }
+      .text-editor {
+        padding: 0vw 0vw;
+      }
     `];
   }
 }

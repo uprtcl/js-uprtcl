@@ -7,6 +7,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Proposal } from '../types';
 import { styleMap } from './evees-info-popper';
 import { DEFAULT_COLOR } from './evees-perspective';
+import { prettyTime, prettyAddress } from './support';
 
 interface PerspectiveData {
   id: string;
@@ -59,7 +60,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   buttonClicked(perspectiveData: PerspectiveData) {
     switch (this.getProposalAction(perspectiveData.proposal)) {
-      case MERGE_ACTION: 
+      case MERGE_ACTION:
         this.dispatchEvent(
           new CustomEvent('merge-perspective', {
             bubbles: true,
@@ -71,7 +72,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         );
         break;
 
-      case MERGE_PROPOSAL_ACTION: 
+      case MERGE_PROPOSAL_ACTION:
         this.dispatchEvent(
           new CustomEvent('create-proposal', {
             bubbles: true,
@@ -83,7 +84,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         );
         break;
 
-      case AUTHORIZE_ACTION: 
+      case AUTHORIZE_ACTION:
         if (!perspectiveData.proposal) return;
         this.dispatchEvent(
           new CustomEvent('authorize-proposal', {
@@ -96,7 +97,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         );
         break;
 
-      case EXECUTE_ACTION:  
+      case EXECUTE_ACTION:
         if (!perspectiveData.proposal) return;
         this.dispatchEvent(
           new CustomEvent('execute-proposal', {
@@ -119,7 +120,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         return MERGE_PROPOSAL_ACTION;
       }
     }
-    
+
     if (!proposal.authorized) {
       if (proposal.canAuthorize) {
         return AUTHORIZE_ACTION;
@@ -140,6 +141,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           entity(id: "${this.perspectiveId}") {
             id
             ... on Perspective {
+              payload {
+                origin
+              }
               context {
                 perspectives {
                   id
@@ -213,7 +217,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   };
 
   perspectiveTitle(perspectivesData: PerspectiveData) {
-    return `${perspectivesData.name} by ${perspectivesData.creatorId.substr(0, 6)} on ${perspectivesData.timestamp}`;
+    return html`
+      ${perspectivesData.name !== '' ?
+        html`<strong>${perspectivesData.name}</strong>` : 'created'} 
+        by ${prettyAddress(perspectivesData.creatorId)} 
+        ${prettyTime(perspectivesData.timestamp)}`;
   }
 
   perspectiveColor(perspectiveId: string) {
@@ -238,30 +246,33 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           ? html`
                 <mwc-list>
                   ${this.perspectivesData.map((perspectiveData: PerspectiveData) => {
-                    return html`
+            return html`
                       <div class="row">
                         <mwc-list-item class="perspective-title" @click=${() => this.perspectiveClicked(perspectiveData.id)}>
-                          <div
+                          <div slot="graphic"
                             class="perspective-mark"
                             style=${styleMap({ backgroundColor: this.perspectiveColor(perspectiveData.id) })})
                           ></div>
-                          <span class="perspective-name"
-                            >${this.perspectiveTitle(perspectiveData)}</span
-                          >
+                          <span class="perspective-name">
+                            ${this.perspectiveTitle(perspectiveData)}
+                          </span>
                         </mwc-list-item>
-                        <mwc-button
-                          icon="call_merge"
-                          @click=${() => this.buttonClicked(perspectiveData)}
-                          label=${this.getProposalAction(perspectiveData.proposal)}
-                          .disabled=${this.getProposalAction(perspectiveData.proposal) === PENDING_ACTION}
-                        ></mwc-button>
+                        <div class="button-container">
+                          <mwc-button
+                            slot="meta"
+                            icon="call_merge"
+                            @click=${() => this.buttonClicked(perspectiveData)}
+                            label=${this.getProposalAction(perspectiveData.proposal)}
+                            .disabled=${this.getProposalAction(perspectiveData.proposal) === PENDING_ACTION}
+                          ></mwc-button>
+                        </div>
                       </div>
                     `;
-                  })}
+          })}
                 </mwc-list>
               `
           : html`
-                <span>There are no other perspectives for this context</span>
+                <div class="empty"><i>There are no other perspectives for this context</i></div>
               `}
         `;
   }
@@ -271,7 +282,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       .row {
         display: flex;
         flex-direction: row;
-        align-items: center;
+        align-items: left;
       }
 
       .perspective-mark {
@@ -291,6 +302,19 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
       .perspective-title {
         flex: 1;
+      }
+
+      .button-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-right: 16px;
+      }
+
+      .empty {
+        margin-top: 60px;
+        color: #d0d8db;
+        text-align: center;
       }
     `;
   }
