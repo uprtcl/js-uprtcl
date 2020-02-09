@@ -22,7 +22,7 @@ export class DefaultSignedPattern implements Pattern, Signable<any> {
     return {
       proof: {
         signature: '',
-        type: 'ecdsa'
+        type: ''
       },
       payload: object
     };

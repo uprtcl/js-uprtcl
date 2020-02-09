@@ -62,7 +62,6 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   }
 
   async cloneAndInitPerspective(secured: Secured<Perspective>, details: PerspectiveDetails, canWrite?: string): Promise<void> {
-    debugger
     let perspective = secured.object.payload;
 
     /** validate */

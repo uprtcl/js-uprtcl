@@ -165,11 +165,7 @@ export class PerspectiveCreate extends PerspectiveEntity
           const result = await this.client.mutate({
             mutation: CREATE_COMMIT,
             variables: {
-              creatorsId: action.payload.commit.payload.creatorsIds,
-              dataId: action.payload.commit.payload.dataId,
-              message: action.payload.commit.payload.message,
-              parentsIds: action.payload.commit.payload.parentsIds,
-              timestamp: action.payload.commit.payload.timestamp,
+              ...action.payload.commit,
               source: action.payload.source
             }
           });
@@ -197,9 +193,10 @@ export class PerspectiveCreate extends PerspectiveEntity
               canWrite: action.payload.owner
             }
           });
-          const headId = action.payload.details.headId;
-          if (headId !== action.id) {
-            throw new Error(`created commit id ${headId} not as expected ${action.id}`);
+          if (result.data.createPerspective.id !== action.id) {
+            throw new Error(
+              `created commit id ${result.data.createPerspective.id} not as expected ${action.id}`
+            );
           }
         });
 
@@ -207,7 +204,21 @@ export class PerspectiveCreate extends PerspectiveEntity
 
       return perspective;
     } else {
-      return this.new()((args as any).newPerspective);
+      const remote = this.evees.getAuthority(authority);
+
+      const perspective = await this.new()((args as any).newPerspective);
+      const result = await this.client.mutate({
+        mutation: CREATE_PERSPECTIVE,
+        variables: {
+          creatorId: perspective.object.payload.creatorId,
+          origin: perspective.object.payload.origin,
+          timestamp: perspective.object.payload.timestamp,
+          authority: perspective.object.payload.origin,
+          canWrite: args.canWrite || remote.userId
+        }
+      });
+
+      return perspective;
     }
   };
 

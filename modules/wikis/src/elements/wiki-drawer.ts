@@ -14,8 +14,6 @@ import '@material/mwc-top-app-bar';
 import '@material/mwc-ripple';
 
 import {
-  CREATE_COMMIT,
-  CREATE_PERSPECTIVE,
   UPDATE_HEAD,
   RemotesConfig,
   EveesModule,
@@ -27,13 +25,7 @@ import {
   CreateCommitArgs,
   NewPerspectiveArgs
 } from '@uprtcl/evees';
-import {
-  TextType,
-  CREATE_TEXT_NODE,
-  DocumentsModule,
-  htmlToText,
-  TextNode
-} from '@uprtcl/documents';
+import { TextType, DocumentsModule, htmlToText, TextNode } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
@@ -104,7 +96,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!this.perspective) return;
 
     const createWiki: Creatable<Partial<Wiki>, Wiki> = this.getCreatePattern(
-      WikiBindings.WikisRemote
+      WikiBindings.WikiEntity
     );
     const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
       EveesModule.bindings.CommitPattern
@@ -166,7 +158,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const commitCreator: Creatable<CreateCommitArgs, Commit> = this.getCreatePattern(
       EveesModule.bindings.CommitPattern
     );
-    const commit: Secured<Commit> = await nodeCreator.create()(
+    const commit: Secured<Commit> = await commitCreator.create()(
       {
         dataId: hashedNode.id,
         parentsIds: []
@@ -181,7 +173,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const perspective: Secured<Commit> = await perspectiveCreator.create()(
       {
         fromDetails: {
-          headId: commit.data.createCommit.id
+          headId: commit.id
           // TODO: add name of previous perspective?
         }
       },
@@ -190,7 +182,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const newWiki: Wiki = {
       title: this.wiki.object.title,
-      pages: [...this.wiki.object.pages, perspective.data.createPerspective.id]
+      pages: [...this.wiki.object.pages, perspective.id]
     };
 
     this.wiki = {

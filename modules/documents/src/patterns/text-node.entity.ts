@@ -25,7 +25,6 @@ import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { DocumentsProvider } from '../services/documents.provider';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
-import { type } from 'os';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -165,7 +164,7 @@ export class TextNodeCreate extends TextNodeEntity
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
     @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
-    @multiInject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(hashedPattern);
   }

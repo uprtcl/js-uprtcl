@@ -27,12 +27,13 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
-import { CREATE_PERSPECTIVE, UPDATE_HEAD } from '../graphql/queries';
+import { UPDATE_HEAD } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
-import { Evees } from '../services/evees';
+import { Evees, CreatePerspectiveArgs } from '../services/evees';
 
 import { DEFAULT_COLOR } from './evees-perspective';
 import { OwnerPreservinConfig } from '../merge/owner-preserving.merge-strategy';
+import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
 
 interface PerspectiveData {
   id: string;
@@ -167,14 +168,20 @@ export class EveesInfo extends moduleConnect(LitElement) {
 
     if (!permissions.owner) {
       // TODO: ownerPreserving merge should be changed to permissionPreserving merge
-      throw new Error('Target perspective dont have an owner. TODO: ownerPreserving merge should be changed to permissionPreserving merge');
+      throw new Error(
+        'Target perspective dont have an owner. TODO: ownerPreserving merge should be changed to permissionPreserving merge'
+      );
     }
-    
+
     const config: OwnerPreservinConfig = {
       targetAuthority: remote.authority,
       targetCanWrite: permissions.owner
-    }
-    const updateRequests = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId, config);
+    };
+    const updateRequests = await merge.mergePerspectives(
+      this.perspectiveId,
+      fromPerspectiveId,
+      config
+    );
 
     this.logger.info('merge computed', { updateRequests });
 
@@ -294,24 +301,42 @@ export class EveesInfo extends moduleConnect(LitElement) {
     if (this.show) this.load();
   }
 
+  getCreatePattern(symbol) {
+    const patterns: Pattern[] = this.requestAll(symbol);
+    const create: Creatable<any, any> | undefined = (patterns.find(
+      pattern => ((pattern as unknown) as Creatable<any, any>).create
+    ) as unknown) as Creatable<any, any>;
+
+    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
+
+    return create;
+  }
+
   async newPerspectiveClicked() {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     this.loading = true;
+
+    if (!this.perspectiveData.details.headId)
+      throw new Error('Cannot create a perspective that does not have a headId');
 
     /** new perspectives are always created in one evees remote */
     const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
 
-    const perspectiveMutation = await client.mutate({
-      mutation: CREATE_PERSPECTIVE,
-      variables: {
-        headId: this.perspectiveData.details.headId,
-        authority: remotesConfig.defaultCreator.authority,
-        context: this.perspectiveData.details.context,
-        recursive: true
-      }
-    });
+    const createPerspective: Creatable<
+      CreatePerspectiveArgs,
+      Signed<Perspective>
+    > = this.getCreatePattern(EveesModule.bindings.PerspectivePattern);
 
-    const newPerspectiveId = perspectiveMutation.data.createPerspective.id;
+    const perspective = await createPerspective.create()(
+      {
+        fromDetails: {
+          headId: this.perspectiveData.details.headId,
+          context: this.perspectiveData.details.context
+        }
+      },
+      remotesConfig.defaultCreator.authority
+    );
+
+    const newPerspectiveId = perspective.id;
     this.show = false;
 
     this.logger.info('newPerspectiveClicked() - perspective created', { newPerspectiveId });

@@ -9,18 +9,33 @@ export const styleMap = style => {
   }, '');
 };
 
-
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
-import { Hashed, Entity } from '@uprtcl/cortex';
-import { Secured, RemotesConfig, EveesModule, EveesRemote, Evees, UpdateContentEvent } from '@uprtcl/evees';
+import { Hashed, Entity, Pattern, Creatable, Signed } from '@uprtcl/cortex';
+import {
+  Secured,
+  RemotesConfig,
+  EveesModule,
+  Commit,
+  EveesRemote,
+  Evees,
+  UpdateContentEvent,
+  CreateCommitArgs
+} from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CREATE_COMMIT, CREATE_PERSPECTIVE, UPDATE_HEAD, Perspective } from '@uprtcl/evees';
+import { UPDATE_HEAD, CreatePerspectiveArgs, Perspective } from '@uprtcl/evees';
 
 import { TextNode, TextType } from '../types';
-import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { DocumentsModule } from '../documents.module';
 import { Source, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
-import { CreateSyblingEvent, AddSyblingsEvent, RemoveChildrenEvent, RemoveSyblingsArgs, CREATE_SYBLING_TAG, REMOVE_CHILDREN_TAG, ADD_SYBLINGS_TAG } from './events';
+import {
+  CreateSyblingEvent,
+  AddSyblingsEvent,
+  RemoveChildrenEvent,
+  CREATE_SYBLING_TAG,
+  REMOVE_CHILDREN_TAG,
+  ADD_SYBLINGS_TAG
+} from './events';
+import { DocumentsBindings } from '../bindings';
 
 export class DocumentTextNode extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-TEXT-NODE');
@@ -64,6 +79,17 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     return remotesConfig.map(eveesAuthority, name);
   }
 
+  getCreatePattern(symbol) {
+    const patterns: Pattern[] = this.requestAll(symbol);
+    const create: Creatable<any, any> | undefined = (patterns.find(
+      pattern => ((pattern as unknown) as Creatable<any, any>).create
+    ) as unknown) as Creatable<any, any>;
+
+    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
+
+    return create;
+  }
+
   async firstUpdated() {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
@@ -92,25 +118,21 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   }
 
   async updateContent(newContent: TextNode) {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const creatable: Creatable<Partial<TextNode>, TextNode> = this.getCreatePattern(
+      DocumentsBindings.TextNodeEntity
+    );
+    const textNode = await creatable.create()(newContent, this.getSource(origin).source);
 
-    const createTextNode = await client.mutate({
-      mutation: CREATE_TEXT_NODE,
-      variables: {
-        content: newContent,
-        source: this.getSource(origin).source
-      }
-    });
+    const dataId = textNode.id;
 
-    const dataId = createTextNode.data.createTextNode.id;
-
-    this.dispatchEvent(new CustomEvent('update-content', {
-      bubbles: true,
-      composed: true,
-      detail: { dataId }
-    }));
+    this.dispatchEvent(
+      new CustomEvent('update-content', {
+        bubbles: true,
+        composed: true,
+        detail: { dataId }
+      })
+    );
     this.logger.info('updateContent', { newContent, dataId });
-
   }
 
   async updateContentLocal(newContent: TextNode): Promise<void> {
@@ -126,36 +148,31 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const origin = this.perspective.object.payload.origin;
     const evees: Evees = this.request(EveesModule.bindings.Evees);
+    const creatable: Creatable<Partial<TextNode>, TextNode> = this.getCreatePattern(
+      DocumentsBindings.TextNodeEntity
+    );
+    const textNode = await creatable.create()(newContent, this.getSource(origin).source);
 
     this.logger.info('updateContent() - CREATE_TEXT_NODE', { newContent });
-    const result = await client.mutate({
-      mutation: CREATE_TEXT_NODE,
-      variables: {
-        content: newContent,
-        source: this.getSource(origin).source
-      }
-    });
 
-    const textNodeId = result.data.createTextNode.id;
-
-    const commitUpdate = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
+    const creatableCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
+      EveesModule.bindings.CommitPattern
+    );
+    const commit = await creatableCommit.create()(
+      {
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
-        dataId: textNodeId,
-        source: evees.getPerspectiveProvider(this.perspective.object).source
-      }
-    });
+        dataId: textNode.id
+      },
+      evees.getPerspectiveProvider(this.perspective.object).source
+    );
 
     const headUpdate = await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.perspective.id,
-        headId: commitUpdate.data.createCommit.id
+        headId: commit.id
       }
     });
-
-    return textNodeId;
   }
 
   getLevel() {
@@ -180,32 +197,36 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     };
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const result = await client.mutate({
-      mutation: CREATE_TEXT_NODE,
-      variables: {
-        content: newNode,
-        source: this.getSource(origin).source
-      }
-    });
+    const creatable: Creatable<Partial<TextNode>, TextNode> = this.getCreatePattern(
+      DocumentsBindings.TextNodeEntity
+    );
+    const textNode = await creatable.create()(newNode, this.getSource(origin).source);
 
-    const commit = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: result.data.createTextNode.id,
+    const creatableCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
+      EveesModule.bindings.CommitPattern
+    );
+    const commit = await creatableCommit.create()(
+      {
         parentsIds: [],
-        source: remote.source
-      }
-    });
+        dataId: textNode.id
+      },
+      remote.source
+    );
 
-    const perspective = await client.mutate({
-      mutation: CREATE_PERSPECTIVE,
-      variables: {
-        headId: commit.data.createCommit.id,
-        authority: origin
-      }
-    });
+    const creatablePerspective: Creatable<
+      CreatePerspectiveArgs,
+      Signed<Perspective>
+    > = this.getCreatePattern(EveesModule.bindings.PerspectivePattern);
+    const perspective = await creatablePerspective.create()(
+      {
+        fromDetails: {
+          headId: commit.id
+        }
+      },
+      origin
+    );
 
-    const newLink = perspective.data.createPerspective.id;
+    const newLink = perspective.id;
 
     /** by default children is added as first child */
     index = index || 0;
@@ -320,7 +341,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       if (!this.data) return;
 
       this.logger.info(`CATCHED EVENT: ${AddSyblingsEvent.name}`, { dataId: this.data.id, e });
-      
+
       // TODO: this.addEventListener listens  this.dispatchEvent ???
       if (e.detail.startedOnElementId === this.data.id) return;
 
@@ -341,7 +362,6 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       e.stopPropagation();
       this.removeChildren(e.detail.fromIndex, e.detail.toIndex);
     }) as EventListener);
-
   }
 
   timeout: any = undefined;
@@ -419,22 +439,24 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
             newContent = {
               ...this.data.object,
               links: [],
-              type: newType,
+              type: newType
             };
 
             this.updateContent(newContent);
 
             /** add as syblings */
-            this.dispatchEvent(new AddSyblingsEvent({
-              bubbles: true,
-              cancelable: true,
-              composed: true,
-              detail: {
-                startedOnElementId: this.data.id,
-                elementIds: links,
-                index: this.index + 1
-              }
-            }))
+            this.dispatchEvent(
+              new AddSyblingsEvent({
+                bubbles: true,
+                cancelable: true,
+                composed: true,
+                detail: {
+                  startedOnElementId: this.data.id,
+                  elementIds: links,
+                  index: this.index + 1
+                }
+              })
+            );
 
             return;
         }
@@ -445,8 +467,8 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
             return;
 
           /** paragraph to title: Changing the type of a paragraph to a title
-          * will move all the younger sibling contexts of the paragraph as
-          * children of the new title. */
+           * will move all the younger sibling contexts of the paragraph as
+           * children of the new title. */
           case TextType.Title:
             let newContent: TextNode = {
               ...this.data.object,
@@ -461,7 +483,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
                 const youngerSyblings = parentData.object.links.splice(this.index + 1);
 
                 if (youngerSyblings.length > 0) {
-                  const syblingsDataPromises = youngerSyblings.map(async (id) => {
+                  const syblingsDataPromises = youngerSyblings.map(async id => {
                     const data = await this.getPerspectiveData(id);
 
                     if (!data) return true;
@@ -470,28 +492,30 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
                     /** return true if element is not a paragraph */
                     return false;
-                  })
+                  });
 
                   const syblingsData = await Promise.all(syblingsDataPromises);
 
                   /** return the index first non paragraph element */
-                  let until = syblingsData.findIndex(e => e)
+                  let until = syblingsData.findIndex(e => e);
 
                   if (until === -1) {
                     until = youngerSyblings.length;
                   }
 
                   /** remove these paragraphs from parent */
-                  this.dispatchEvent(new RemoveChildrenEvent({
-                    bubbles: true,
-                    cancelable: true,
-                    composed: true,
-                    detail: {
-                      startedOnElementId: this.data.id,
-                      fromIndex: this.index + 1,
-                      toIndex: this.index + 1 + until
-                    }
-                  }))
+                  this.dispatchEvent(
+                    new RemoveChildrenEvent({
+                      bubbles: true,
+                      cancelable: true,
+                      composed: true,
+                      detail: {
+                        startedOnElementId: this.data.id,
+                        fromIndex: this.index + 1,
+                        toIndex: this.index + 1 + until
+                      }
+                    })
+                  );
 
                   const nextParagraphs = [...youngerSyblings];
                   nextParagraphs.slice(0, until);
@@ -507,7 +531,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
                   newContent = {
                     ...newContent,
                     links: newLinks
-                  }
+                  };
                 }
               }
             }
@@ -535,9 +559,12 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
     const onlyChildren = this.onlyChildren !== undefined ? this.onlyChildren : 'false';
 
     return html`
-      <div class="row" style=${styleMap({ backgroundColor: this.focused ? '#f7f6f3' : 'transparent' })}>
+      <div
+        class="row"
+        style=${styleMap({ backgroundColor: this.focused ? '#f7f6f3' : 'transparent' })}
+      >
         ${onlyChildren !== 'true'
-        ? html`
+          ? html`
               <div class="column">
                 <div class="evee-info">
                   <slot name="evee"></slot>
@@ -548,8 +575,8 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
                     init=${this.data.object.text}
                     level=${this.level}
                     editable=${this.editable ? 'true' : 'false'}
-                    @focus=${() => this.focused = true}
-                    @blur=${() => this.focused = false}
+                    @focus=${() => (this.focused = true)}
+                    @blur=${() => (this.focused = false)}
                     @content-changed=${this.editorContentChanged}
                     @enter-pressed=${this.enterPressed}
                     @change-type=${this.changeType}
@@ -560,23 +587,24 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
                 </div> -->
               </div>
             `
-        : ''}
+          : ''}
 
         <div class="node-children">
           ${this.data.object.links.map(
-          (link, ix) => html`
+            (link, ix) => html`
               <cortex-entity
                 hash=${link}
                 lens-type="evee"
                 .context=${{
-              color: this.color,
-              level: this.getLevel() + 1,
-              index: ix,
-              genealogy: this.genealogy
-            }}>
+                  color: this.color,
+                  level: this.getLevel() + 1,
+                  index: ix,
+                  genealogy: this.genealogy
+                }}
+              >
               </cortex-entity>
             `
-        )}
+          )}
         </div>
       </div>
     `;

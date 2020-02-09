@@ -6,11 +6,13 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { UPDATE_HEAD, CREATE_COMMIT } from '../graphql/queries';
+import { UPDATE_HEAD } from '../graphql/queries';
 import { UpdateContentEvent } from './events';
-import { Perspective } from '../types';
+import { Perspective, Commit } from '../types';
 import { EveesRemote } from 'src/services/evees.remote';
 import { EveesBindings } from 'src/bindings';
+import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
+import { CreateCommitArgs, EveesModule } from 'src/uprtcl-evees';
 
 export const DEFAULT_COLOR = '#d9d7d0';
 
@@ -64,7 +66,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   async loadPerspective() {
     this.entityId = undefined;
-this.requestUpdate();
+    this.requestUpdate();
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
@@ -170,6 +172,17 @@ this.requestUpdate();
     }) as EventListener);
   }
 
+  getCreatePattern(symbol) {
+    const patterns: Pattern[] = this.requestAll(symbol);
+    const create: Creatable<any, any> | undefined = (patterns.find(
+      pattern => ((pattern as unknown) as Creatable<any, any>).create
+    ) as unknown) as Creatable<any, any>;
+
+    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
+
+    return create;
+  }
+
   async updateContent(dataId: string) {
     if (!this.perspectiveId) return;
     if (!this.perspective) return;
@@ -185,24 +198,27 @@ this.requestUpdate();
 
     this.entityId = undefined;
 
-    const commitUpdate = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
+    const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
+      EveesModule.bindings.CommitPattern
+    );
+
+    const commit: Secured<Commit> = await createCommit.create()(
+      {
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
-        dataId,
-        source: remote.source
-      }
-    });
+        dataId
+      },
+      remote.source
+    );
 
     const headUpdate = await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.perspectiveId,
-        headId: commitUpdate.data.createCommit.id
+        headId: commit.id
       }
     });
 
-    this.currentHeadId = commitUpdate.data.createCommit.id;
+    this.currentHeadId = commit.id;
     this.entityId = headUpdate.data.updatePerspectiveHead.id;
 
     this.logger.info('updateContent() post', this.entityId);

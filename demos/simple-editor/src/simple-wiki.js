@@ -33,11 +33,17 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.addEventListener('evees-proposal-created', e => console.log(e));
 
-    this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => provider.source.startsWith('ipfs'));
+    this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider =>
+      provider.source.startsWith('ipfs')
+    );
 
-    this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => provider.source.startsWith('ipfs'));
+    this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider =>
+      provider.source.startsWith('ipfs')
+    );
 
-    this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>  provider.authority.startsWith('eth'));
+    this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
+      provider.authority.startsWith('eth')
+    );
 
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
@@ -50,11 +56,10 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-
       const wikipatterns = this.requestAll(WikiBindings.WikiEntity);
       const wikicreatable = wikipatterns.find(p => p.create);
       const wiki = await wikicreatable.create()(
-        { 
+        {
           title: 'Genesis Wiki',
           pages: []
         },
@@ -64,29 +69,26 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       const commitpatterns = this.requestAll(EveesBindings.CommitPattern);
       const commitcreatable = commitpatterns.find(p => p.create);
       const commit = await commitcreatable.create()(
-        { 
-          dataId: wiki.id, 
-          parentsIds: [], 
-          message: 'create',
+        {
+          dataId: wiki.id,
+          parentsIds: [],
+          message: 'create'
         },
         this.eveesProvider.source
       );
-     
+
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
 
       const perspectivepatterns = this.requestAll(EveesBindings.PerspectivePattern);
       const perspectivecreatable = perspectivepatterns.find(p => p.create);
       const perspective = await perspectivecreatable.create()(
-        { 
-          newPerspective: {
-            autority: 'this.eveesProvider.authority'
-          },
+        {
           fromDetails: {
             headId: commit.id,
             context: `genesis-dao-wiki-${randint}`,
-            name: 'common',
+            name: 'common'
           },
-          canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
+          canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
         },
         this.eveesProvider.authority
       );

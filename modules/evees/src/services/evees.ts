@@ -44,7 +44,7 @@ export interface NoHeadPerspectiveArgs {
 }
 
 export type CreatePerspectiveArgs = {
-  canWrite: string;
+  canWrite?: string;
 } & (
   | { newPerspective: NewPerspectiveArgs }
   | { fromDetails: { headId: string; context?: string; name?: string } }
@@ -56,7 +56,7 @@ export interface NewPerspectiveArgs {
 }
 
 export interface CreateCommitArgs {
-  parentIds?: string[];
+  parentsIds?: string[];
   dataId: string;
   creatorsIds?: string[];
   timestamp?: number;
@@ -158,7 +158,7 @@ export class Evees {
   public async computeNewGlobalPerspectiveOps(
     authority: string,
     details: PerspectiveDetails,
-    canWrite: string
+    canWrite?: string
   ): Promise<[Secured<Perspective>, Array<UprtclAction<any>>]> {
     const eveesRemote = this.getAuthority(authority);
 
@@ -243,21 +243,15 @@ export class Evees {
 
         actions.push(newDataAction);
 
-        const newCommit: Signed<Commit> = {
-          payload: {
-            dataId: newDataId,
-            message: `auto-commit for new perspective ${name}`,
-            creatorsIds: [],
-            parentsIds: headId ? [headId] : [],
-            timestamp: Date.now()
-          },
-          proof: {
-            signature: '',
-            type: ''
-          }
+        const newCommit: Commit = {
+          dataId: newDataId,
+          message: `auto-commit for new perspective ${name}`,
+          creatorsIds: [eveesRemote.userId],
+          parentsIds: headId ? [headId] : [],
+          timestamp: Date.now()
         };
 
-        const { id: newHeadId } = await this.hashed.derive()(newCommit);
+        const { id: newHeadId } = await this.secured.derive()(newCommit);
 
         const newCommitAction: UprtclAction<CreateCommitAction> = {
           type: CREATE_COMMIT_ACTION,
@@ -285,9 +279,11 @@ export class Evees {
       payload: {
         perspective: perspective,
         details: { headId, name, context: details.context },
-        owner: canWrite ? canWrite : ''
+        owner: canWrite || eveesRemote.userId
       }
     };
+
+    actions.push(newPerspectiveAction);
 
     return [perspective, actions];
   }

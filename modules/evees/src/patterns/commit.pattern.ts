@@ -104,7 +104,7 @@ export class CommitPattern extends CommitEntity
   create = () => async (args: CreateCommitArgs, source: string) => {
     args.timestamp = args.timestamp || Date.now();
     args.message = args.message || `Commit at ${Date.now()}`;
-    args.parentIds = args.parentIds || [];
+    args.parentsIds = args.parentsIds || [];
 
     if (!args.creatorsIds) {
       const remote = this.remotes.find(r => r.source === source);

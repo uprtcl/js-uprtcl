@@ -14,7 +14,12 @@ export { EveesHolochain } from './services/providers/holochain/evees.holochain';
 export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
 export { EveesHttp } from './services/providers/http/evees.http';
 
-export { Evees, NewPerspectiveArgs } from './services/evees';
+export {
+  Evees,
+  NewPerspectiveArgs,
+  CreatePerspectiveArgs,
+  CreateCommitArgs
+} from './services/evees';
 
 export { EveesModule } from './evees.module';
 
