@@ -99,7 +99,7 @@ export const eveesResolvers = {
       { creatorsIds, dataId, parentsIds, message, source, timestamp },
       { container }
     ) {
-      const remotes = container.get(EveesBindings.EveesRemote);
+      const remotes = container.getAll(EveesBindings.EveesRemote);
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
       const secured: IsSecure<any> = container.get(EveesBindings.Secured);
 

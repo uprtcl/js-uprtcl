@@ -78,12 +78,10 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       const perspectivecreatable = perspectivepatterns.find(p => p.create);
       const perspective = await perspectivecreatable.create()(
         { 
-          perspective: {
-            creatorId: 'dummy',
-            origin: this.eveesProvider.authority,
-            timestamp: Date.now()
+          newPerspective: {
+            autority: 'this.eveesProvider.authority'
           },
-          details: {
+          fromDetails: {
             headId: commit.id,
             context: `genesis-dao-wiki-${randint}`,
             name: 'common',
