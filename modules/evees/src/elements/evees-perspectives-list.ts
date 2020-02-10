@@ -252,8 +252,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                   ${this.perspectivesData.map(
                     (perspectiveData: PerspectiveData) => html`
                       <mwc-list-item
-                        class="perspective-title"
                         @click=${() => this.perspectiveClicked(perspectiveData.id)}
+                        hasMeta
+                        graphic="small"
                       >
                         <div
                           slot="graphic"
@@ -262,18 +263,20 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                             backgroundColor: this.perspectiveColor(perspectiveData.id)
                           })})"
                         ></div>
-                        <span class="perspective-name">
-                          ${this.perspectiveTitle(perspectiveData)}
-                        </span>
+                        <div class="row">
+                          <span class="perspective-name">
+                            ${this.perspectiveTitle(perspectiveData)}
+                          </span>
+                          <mwc-button
+                            icon="call_merge"
+                            class="merge-button"
+                            @click=${() => this.buttonClicked(perspectiveData)}
+                            label=${this.getProposalAction(perspectiveData.proposal)}
+                            .disabled=${this.getProposalAction(perspectiveData.proposal) ===
+                              PENDING_ACTION}
+                          ></mwc-button>
+                        </div>
                       </mwc-list-item>
-                      <mwc-button
-                        slot="meta"
-                        icon="call_merge"
-                        @click=${() => this.buttonClicked(perspectiveData)}
-                        label=${this.getProposalAction(perspectiveData.proposal)}
-                        .disabled=${this.getProposalAction(perspectiveData.proposal) ===
-                          PENDING_ACTION}
-                      ></mwc-button>
                     `
                   )}
                 </mwc-list>

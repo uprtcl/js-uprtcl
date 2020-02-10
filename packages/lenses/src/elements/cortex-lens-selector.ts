@@ -3,7 +3,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, query, css, PropertyValues } from 'lit-element';
 
 import { Menu } from '@material/mwc-menu';
-import '@material/mwc-list';
+import '@material/mwc-list/mwc-list-item';
 import '@material/mwc-icon-button';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
