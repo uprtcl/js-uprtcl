@@ -190,8 +190,9 @@ export class TextNodeCreate extends TextNodeEntity
       }
     });
 
-    // TODO: Comment this
-    if (result.data.createTextNode.id != textNode.id) debugger;
+    if (result.data.createTextNode.id != textNode.id) {
+      throw new Error('unexpected id');
+    };
 
     return textNode;
   };

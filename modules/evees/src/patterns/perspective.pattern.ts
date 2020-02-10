@@ -14,7 +14,8 @@ import {
   Signed,
   CortexModule,
   PatternRecognizer,
-  Newable
+  Newable,
+  Hashed
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
 import { CidConfig } from '@uprtcl/ipfs-provider';
@@ -27,11 +28,8 @@ import {
   Perspective,
   UprtclAction,
   CREATE_DATA_ACTION,
-  CreateDataAction,
   CREATE_COMMIT_ACTION,
-  CreateCommitAction,
   CREATE_AND_INIT_PERSPECTIVE_ACTION,
-  CreateAndInitPerspectiveAction,
   PerspectiveDetails
 } from '../types';
 import { EveesBindings } from '../bindings';
@@ -149,31 +147,25 @@ export class PerspectiveCreate extends PerspectiveEntity
       const perspective = result[0];
 
       /** optimistic pre-fill the cache */
-      const updateCachePromises = actions.map((a) => {
-        switch(a.type) {
-          case CREATE_AND_INIT_PERSPECTIVE_ACTION:
-            this.entityCache.cacheEntity(a.payload.perspective);
-            break;
-
-          case CREATE_COMMIT_ACTION:
-            this.entityCache.cacheEntity(a.payload.commit);
-            break;
-
-          case CREATE_DATA_ACTION:
-            this.entityCache.cacheEntity(a.payload.data);
-            break;
+      const updateCachePromises = actions.map((action) => {
+        if (action.entity) {
+          return this.entityCache.cacheEntity(action.entity);  
         }
       })
+
+      await Promise.all(updateCachePromises);
       
       const createDataPromises = actions
         .filter(a => a.type === CREATE_DATA_ACTION)
-        .map(async (action: UprtclAction<CreateDataAction>) => {
+        .map(async (action: UprtclAction) => {
+          if (!action.entity) throw new Error('entity undefined');
+
           const dataId = await createEntity(this.patternRecognizer)(
-            action.payload.data,
+            action.entity.object,
             action.payload.source
           );
-          if (dataId !== action.id) {
-            throw new Error(`created entity id ${dataId} not as expected ${action.id}`);
+          if (dataId !== action.entity.id) {
+            throw new Error(`created entity id ${dataId} not as expected ${action.entity.id}`);
           }
         });
 
@@ -181,17 +173,18 @@ export class PerspectiveCreate extends PerspectiveEntity
 
       const createCommitsPromises = actions
         .filter(a => a.type === CREATE_COMMIT_ACTION)
-        .map(async (action: UprtclAction<CreateCommitAction>) => {
+        .map(async (action: UprtclAction) => {
+          if (!action.entity) throw new Error('entity undefined');
           const result = await this.client.mutate({
             mutation: CREATE_COMMIT,
             variables: {
-              ...action.payload.commit,
+              ...action.entity.object.payload,
               source: action.payload.source
             }
           });
           const headId = result.data.createCommit.id;
-          if (headId !== action.id) {
-            throw new Error(`created commit id ${headId} not as expected ${action.id}`);
+          if (headId !== action.entity.id) {
+            throw new Error(`created commit id ${headId} not as expected ${action.entity.id}`);
           }
         });
 
@@ -199,23 +192,20 @@ export class PerspectiveCreate extends PerspectiveEntity
 
       const createPerspectivesPromises = actions
         .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION)
-        .map(async (action: UprtclAction<CreateAndInitPerspectiveAction>) => {
+        .map(async (action: UprtclAction) => {
+          if (!action.entity) throw new Error('entity undefined');
           const result = await this.client.mutate({
             mutation: CREATE_PERSPECTIVE,
             variables: {
-              creatorId: action.payload.perspective.object.payload.creatorId,
-              origin: action.payload.perspective.object.payload.origin,
-              timestamp: action.payload.perspective.object.payload.timestamp,
-              headId: action.payload.details.headId,
-              context: action.payload.details.context,
-              name: action.payload.details.name,
-              authority: action.payload.perspective.object.payload.origin,
+              ...action.entity.object.payload,
+              ...action.payload.details,
+              authority: action.entity.object.payload.origin,
               canWrite: action.payload.owner
             }
           });
-          if (result.data.createPerspective.id !== action.id) {
+          if (result.data.createPerspective.id !== action.entity.id) {
             throw new Error(
-              `created commit id ${result.data.createPerspective.id} not as expected ${action.id}`
+              `created commit id ${result.data.createPerspective.id} not as expected ${action.entity.id}`
             );
           }
         });

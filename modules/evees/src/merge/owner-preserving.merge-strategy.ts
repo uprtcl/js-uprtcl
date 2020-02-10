@@ -18,7 +18,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config: OwnerPreservingConfig
-  ): Promise<UprtclAction<any>[]> {
+  ): Promise<UprtclAction[]> {
     await super.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
 
     /** review all updates and craete new globnal perspective if target authority and

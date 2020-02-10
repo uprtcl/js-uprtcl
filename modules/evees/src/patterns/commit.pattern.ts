@@ -126,7 +126,9 @@ export class CommitPattern extends CommitEntity
         source: source
       }
     });
-    if (result.data.createCommit.id != commit.id) debugger;
+    if (result.data.createCommit.id != commit.id)  {
+      throw new Error('unexpected id');
+    };
     return commit;
   };
 

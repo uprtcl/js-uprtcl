@@ -20,7 +20,7 @@ import { CREATE_COMMIT } from '../graphql/queries';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
-  updatesList: UprtclAction<any>[] = [];
+  updatesList: UprtclAction[] = [];
 
   constructor(
     @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
@@ -35,7 +35,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config?: any
-  ): Promise<UprtclAction<any>[]> {
+  ): Promise<UprtclAction[]> {
     /** initialize list */
     this.updatesList = [];
 
@@ -71,7 +71,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   protected addUpdateRequest(request: UpdateRequest): void {
-    const updateHeadAction: UprtclAction<UpdateRequest> = {
+    const updateHeadAction: UprtclAction = {
       type: UPDATE_HEAD_ACTION,
       payload: request      
     }
