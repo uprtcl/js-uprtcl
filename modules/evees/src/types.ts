@@ -79,10 +79,11 @@ export interface CreateAndInitPerspectiveAction {
 
 export const CREATE_DATA_ACTION = 'CREATE_DATA';
 export const CREATE_COMMIT_ACTION = 'CREATE_COMMIT';
-export const CREATE_AND_INIT_PERSPECTIVE = 'CREATE_AND_INIT_PERSPECTIVE';
+export const CREATE_AND_INIT_PERSPECTIVE_ACTION = 'CREATE_AND_INIT_PERSPECTIVE';
+export const UPDATE_HEAD_ACTION = 'UPDATE_HEAD';
 
 export interface UprtclAction<T> {
-  id: string;
+  id?: string | undefined;
   type: string;
   payload: T;
 }

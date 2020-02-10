@@ -6,7 +6,7 @@ import { createEntity, DiscoveryModule, DiscoveryService, KnownSourcesService } 
 
 import { Secured } from '../patterns/default-secured.pattern';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import { Perspective, UpdateRequest, Commit, RemotesConfig } from '../types';
+import { Perspective, UpdateRequest, Commit, RemotesConfig, UprtclAction } from '../types';
 import { CREATE_COMMIT } from '../graphql/queries';
 import { EveesBindings } from '../bindings';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -102,7 +102,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config?: any
-  ): Promise<UpdateRequest[]> {
+  ): Promise<UprtclAction<any>[]> {
     let root = false;
     if (!this.perspectivesByContext) {
       root = true;

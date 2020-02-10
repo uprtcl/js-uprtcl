@@ -8,7 +8,7 @@ import { createEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { UpdateRequest, Commit, RemotesConfig } from '../types';
+import { UpdateRequest, Commit, RemotesConfig, UprtclAction, UPDATE_HEAD_ACTION } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
@@ -20,7 +20,7 @@ import { CREATE_COMMIT } from '../graphql/queries';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
-  updatesList: UpdateRequest[] = [];
+  updatesList: UprtclAction<any>[] = [];
 
   constructor(
     @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
@@ -35,7 +35,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config?: any
-  ): Promise<UpdateRequest[]> {
+  ): Promise<UprtclAction<any>[]> {
     /** initialize list */
     this.updatesList = [];
 
@@ -71,7 +71,11 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   protected addUpdateRequest(request: UpdateRequest): void {
-    this.updatesList.push(request);
+    const updateHeadAction: UprtclAction<UpdateRequest> = {
+      type: UPDATE_HEAD_ACTION,
+      payload: request      
+    }
+    this.updatesList.push(updateHeadAction);
   }
 
   protected async loadPerspectiveData(perspectiveId: string): Promise<Hashed<any>> {

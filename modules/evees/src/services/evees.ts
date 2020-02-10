@@ -31,7 +31,7 @@ import {
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
   CreateCommitAction,
-  CREATE_AND_INIT_PERSPECTIVE,
+  CREATE_AND_INIT_PERSPECTIVE_ACTION,
   CreateAndInitPerspectiveAction
 } from '../types';
 import { EveesBindings } from '../bindings';
@@ -275,7 +275,7 @@ export class Evees {
 
     const newPerspectiveAction: UprtclAction<CreateAndInitPerspectiveAction> = {
       id: perspective.id,
-      type: CREATE_AND_INIT_PERSPECTIVE,
+      type: CREATE_AND_INIT_PERSPECTIVE_ACTION,
       payload: {
         perspective: perspective,
         details: { headId, name, context: details.context },

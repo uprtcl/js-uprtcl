@@ -6,7 +6,7 @@ import { DiscoveryModule, DiscoveryService, KnownSourcesService, Authority } fro
 import { Permissions } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { UpdateRequest, RemotesConfig } from '../types';
+import { UpdateRequest, RemotesConfig, UprtclAction, UPDATE_HEAD_ACTION } from '../types';
 import { EveesBindings } from '../bindings';
 import { RecursiveContextMergeStrategy } from './recursive-context.merge-strategy';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
@@ -34,7 +34,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config: OwnerPreservinConfig    
-  ): Promise<UpdateRequest[]> {
+  ): Promise<UprtclAction<any>[]> {
 
     await super.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
 
@@ -49,8 +49,10 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     const targetAuthority = config.targetAuthority;
     const targetCanWrite = config.targetCanWrite;
 
-    const forceOwnerPromises = this.updatesList.map(async (updateRequest): Promise<UpdateRequest> => {
+    const updateHeads = this.updatesList.filter(a => a.type === UPDATE_HEAD_ACTION);
+    const forceOwnerPromises = updateHeads.map(async (updateHead): Promise<UpdateRequest> => {
       
+      const updateRequest = updateHead.payload;
       let oldLinks: string[] = [];
       
       if (updateRequest.oldHeadId) {
