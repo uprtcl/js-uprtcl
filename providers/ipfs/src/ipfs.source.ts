@@ -1,3 +1,5 @@
+import CBOR from 'cbor-js';
+
 import { Hashed } from '@uprtcl/cortex';
 import { Source } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -26,10 +28,6 @@ export class IpfsSource implements Source {
 
   source = 'ipfs';
 
-  private getObjectBuffer(object: object): Buffer {
-    return Buffer.from(JSON.stringify(sortObject(object)));
-  }
-
   /**
    * @override
    */
@@ -47,16 +45,17 @@ export class IpfsSource implements Source {
       cidVersion: cidConfig.version
     };
 
-    this.logger.log(`Trying to add object:`, object);
-
-    const buffer = this.getObjectBuffer(object);
+    
+    const sorted = sortObject(object);
+    const buffer = CBOR.encode(sorted);
+    this.logger.log(`Trying to add object:`, {object, sorted, buffer});
 
     /** recursively try */
     return this.ipfsConnection
       .tryPut(buffer, putConfig, 500, 0)
       .then((result: any) => {
         let hashString = result.toString(cidConfig.base);
-        this.logger.log(`Object stored`, object, { hashString });
+        this.logger.log(`Object stored`, { object, sorted, buffer, hashString });
         return hashString;
       })
       .catch(e => {
@@ -71,10 +70,10 @@ export class IpfsSource implements Source {
   public async get<T>(hash: string): Promise<Hashed<T> | undefined> {
     /** recursively try */
     return this.ipfsConnection
-      .tryGet(hash, 500, 0)
+      .tryGet(hash, 500, 2)
       .then(raw => {
-        let object = JSON.parse(Buffer.from(raw.value).toString());
-        this.logger.log(`Object retrieved ${hash}`, object);
+        let object = CBOR.decode(raw.value.buffer);
+        this.logger.log(`Object retrieved ${hash}`, { raw, object });
         return { id: hash, object: object };
       })
       .catch(e => {

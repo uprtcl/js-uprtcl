@@ -1,9 +1,11 @@
 import { injectable } from 'inversify';
 import multihashing from 'multihashing-async';
+import CBOR from 'cbor-js';
 import CID from 'cids';
 
 import { Transformable, Pattern, Hashed, Hashable } from '@uprtcl/cortex';
 import { CidConfig, defaultCidConfig, sortObject } from '@uprtcl/ipfs-provider';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 export function recognizeHashed(object: object) {
   return (
@@ -13,6 +15,8 @@ export function recognizeHashed(object: object) {
   );
 }
 
+const logger = new Logger('CidHashedPattern');
+
 @injectable()
 export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[any], Hashed<any>> {
   recognize(object: object) {
@@ -20,12 +24,15 @@ export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[
   }
 
   async hashObject(object: object, config: CidConfig): Promise<string> {
-    const ordered = sortObject(object);
-
-    const b = Buffer.from(JSON.stringify(ordered));
-    const encoded = await multihashing(b, config.type);
+    
+    const sorted = sortObject(object);
+    const buffer = CBOR.encode(sorted);
+    const encoded = await multihashing(buffer, config.type);
 
     const cid = new CID(config.version, config.codec, encoded, config.base);
+
+    logger.log(`hashed object:`, {object, sorted, buffer, cid, cidStr: cid.toString()});
+
     return cid.toString();
   }
 
