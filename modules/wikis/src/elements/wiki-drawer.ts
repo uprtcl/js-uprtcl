@@ -375,6 +375,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .column {
           height: 100%;
+          background-color: #f7f6f3;
         }
         .color-bar {
           height: 1vw;
@@ -384,7 +385,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           width: 100%;
           text-align: center;
           padding-top: 24px;
-          color: #d0d8db;
+          color: #a2a8aa;
         }
         .button-row {
           margin: 16px 0px 8px 0px;

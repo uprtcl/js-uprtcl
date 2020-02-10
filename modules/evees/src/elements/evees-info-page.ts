@@ -57,14 +57,14 @@ export class EveesInfoPage extends EveesInfoBase {
                 ${this.perspectiveTitle()}
               </div>
               <div class="section-content">
-                <div class="description">
+                <div class="description info-text">
                   <div style="margin-bottom: 16px">
                     ${!this.perspectiveData.canWrite ? html`
                       <p>
                         <span>You can't edit this perspective, but you can create a new one!</span>
                       </p>` : html`
                       <p>
-                        <span>You can create and edit new pages! When your are done, check out the Accepted Perspective and make a "Merge Request".</span>
+                        <span>You can create and edit new pages! <br>When your are done, checkout the "Accepted Perspective" and make a "Merge Proposal".</span>
                       </p>
                       `}
                   </div>
@@ -93,7 +93,7 @@ export class EveesInfoPage extends EveesInfoBase {
               <div class="section-header">
                 Access Control
               </div>
-              <div class="section-content">
+              <div class="section-content info-text">
                 ${this.renderPermissions()}
               </div>
             </div>
@@ -134,6 +134,9 @@ export class EveesInfoPage extends EveesInfoBase {
       }
       .description {
         padding: 0px 1.5vw;
+      }
+      .info-text {
+        color: #4e585c;
       }
       .other-perspectives {
         border-top: solid 1px #cccccc;

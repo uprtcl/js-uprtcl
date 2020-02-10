@@ -46,7 +46,7 @@ export class WikiHome extends moduleConnect(LitElement) {
       }
 
       .title {
-        margin: 5vw 0px 3vw;
+        margin: 5vw 0px 5vw;
         font-weight: bold;
       }
 

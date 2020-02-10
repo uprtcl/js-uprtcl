@@ -238,7 +238,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   renderLoading() {
     return html`
-      <cortex-loading-placeholder></cortex-loading-placeholder>
+      <div class="loading-container">
+        <cortex-loading-placeholder></cortex-loading-placeholder>
+      </div>
     `;
   }
 
@@ -251,23 +253,29 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                 <mwc-list activatable>
                   ${this.perspectivesData.map(
                     (perspectiveData: PerspectiveData) => html`
-                      <mwc-list-item
-                        @click=${() => this.perspectiveClicked(perspectiveData.id)}
-                        hasMeta
-                        graphic="small"
-                      >
-                        <div
-                          slot="graphic"
-                          class="perspective-mark"
-                          style="${styleMap({
-                            backgroundColor: this.perspectiveColor(perspectiveData.id)
-                          })})"
-                        ></div>
-                        <div class="row">
-                          <span class="perspective-name">
-                            ${this.perspectiveTitle(perspectiveData)}
-                          </span>
+                      <div class="list-row">
+                        <div class="perspective-title">
+                          <mwc-list-item
+                            @click=${() => this.perspectiveClicked(perspectiveData.id)}
+                            graphic="small"
+                          >
+                            <div
+                              slot="graphic"
+                              class="perspective-mark"
+                              style="${styleMap({
+                                backgroundColor: this.perspectiveColor(perspectiveData.id)
+                              })})"
+                            ></div>
+                            <div>
+                              <span class="perspective-name">
+                                ${this.perspectiveTitle(perspectiveData)}
+                              </span>
+                            </div>
+                          </mwc-list-item>
+                        </div>
+                        <div class="perspective-action">
                           <mwc-button
+                            class="merge-button"
                             icon="call_merge"
                             class="merge-button"
                             @click=${() => this.buttonClicked(perspectiveData)}
@@ -276,7 +284,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                               PENDING_ACTION}
                           ></mwc-button>
                         </div>
-                      </mwc-list-item>
+                      </div>
                     `
                   )}
                 </mwc-list>
@@ -289,16 +297,23 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   static get styles() {
     return css`
-      .merge-button {
-        position: absolute;
-        right: 16px;
+      :host {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
       }
-
       .row {
         display: flex;
         flex-direction: row;
         align-items: center;
         flex: 1;
+      }
+
+      .loading-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
       }
 
       .perspective-mark {
@@ -316,8 +331,20 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         margin-left: 8px;
       }
 
+      .list-row {
+        width: 100%;
+        display: flex;
+      }
+
       .perspective-title {
-        flex: 1;
+        flex-grow: 1;
+      }
+
+      .perspective-action {
+        display: flex;
+        flex-direction: column;
+        padding-right: 16px;
+        justify-content: center;
       }
 
       .button-container {
