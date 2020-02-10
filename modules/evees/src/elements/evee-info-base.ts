@@ -17,6 +17,7 @@ import '@material/mwc-tab-bar';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { AccessControlService, OwnerPermissions } from '@uprtcl/access-control';
+import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
 
 import {
   UpdateRequest,
@@ -31,9 +32,7 @@ import { UPDATE_HEAD } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees, CreatePerspectiveArgs } from '../services/evees';
 
-import { DEFAULT_COLOR } from './evees-perspective';
-import { OwnerPreservinConfig } from '../merge/owner-preserving.merge-strategy';
-import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
+import { OwnerPreservingConfig } from '../merge/owner-preserving.merge-strategy';
 
 interface PerspectiveData {
   id: string;
@@ -169,15 +168,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       );
     }
 
-    const config: OwnerPreservinConfig = {
+    const config: OwnerPreservingConfig = {
       targetAuthority: remote.authority,
       targetCanWrite: permissions.owner
     };
-    const updateRequests = await merge.mergePerspectives(
-      this.perspectiveId,
-      fromPerspectiveId,
-      config
-    );
+    const actions = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId, config);
+
+    const updateRequests = actions.map(a => a.payload);
 
     this.logger.info('merge computed', { updateRequests });
 

@@ -58,6 +58,7 @@ export const eveesTypeDefs = gql`
     timestamp: Date!
     message: String
     data: Entity @discover
+    creatorsIds: [ID!]!
 
     _context: EntityContext!
   }

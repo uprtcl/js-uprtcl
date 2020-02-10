@@ -14,11 +14,13 @@ import {
   Signed,
   CortexModule,
   PatternRecognizer,
-  Newable
+  Newable,
+  Hashed
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { DiscoveryModule, DiscoveryService, createEntity } from '@uprtcl/multiplatform';
+import { DiscoveryModule, DiscoveryService, createEntity, EntityCache } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Secured } from '../patterns/default-secured.pattern';
@@ -26,18 +28,14 @@ import {
   Perspective,
   UprtclAction,
   CREATE_DATA_ACTION,
-  CreateDataAction,
   CREATE_COMMIT_ACTION,
-  CreateCommitAction,
-  CREATE_AND_INIT_PERSPECTIVE,
-  CreateAndInitPerspectiveAction,
+  CREATE_AND_INIT_PERSPECTIVE_ACTION,
   PerspectiveDetails
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
-import { CidConfig } from '@uprtcl/ipfs-provider';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -127,7 +125,8 @@ export class PerspectiveCreate extends PerspectiveEntity
     @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
+    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
   ) {
     super(securedPattern);
   }
@@ -147,15 +146,26 @@ export class PerspectiveCreate extends PerspectiveEntity
       const actions = result[1];
       const perspective = result[0];
 
+      /** optimistic pre-fill the cache */
+      const updateCachePromises = actions.map((action) => {
+        if (action.entity) {
+          return this.entityCache.cacheEntity(action.entity);  
+        }
+      })
+
+      await Promise.all(updateCachePromises);
+      
       const createDataPromises = actions
         .filter(a => a.type === CREATE_DATA_ACTION)
-        .map(async (action: UprtclAction<CreateDataAction>) => {
+        .map(async (action: UprtclAction) => {
+          if (!action.entity) throw new Error('entity undefined');
+
           const dataId = await createEntity(this.patternRecognizer)(
-            action.payload.data,
+            action.entity.object,
             action.payload.source
           );
-          if (dataId !== action.id) {
-            throw new Error(`created entity id ${dataId} not as expected ${action.id}`);
+          if (dataId !== action.entity.id) {
+            throw new Error(`created entity id ${dataId} not as expected ${action.entity.id}`);
           }
         });
 
@@ -163,41 +173,39 @@ export class PerspectiveCreate extends PerspectiveEntity
 
       const createCommitsPromises = actions
         .filter(a => a.type === CREATE_COMMIT_ACTION)
-        .map(async (action: UprtclAction<CreateCommitAction>) => {
+        .map(async (action: UprtclAction) => {
+          if (!action.entity) throw new Error('entity undefined');
           const result = await this.client.mutate({
             mutation: CREATE_COMMIT,
             variables: {
-              ...action.payload.commit,
+              ...action.entity.object.payload,
               source: action.payload.source
             }
           });
           const headId = result.data.createCommit.id;
-          if (headId !== action.id) {
-            throw new Error(`created commit id ${headId} not as expected ${action.id}`);
+          if (headId !== action.entity.id) {
+            throw new Error(`created commit id ${headId} not as expected ${action.entity.id}`);
           }
         });
 
       await Promise.all(createCommitsPromises);
 
       const createPerspectivesPromises = actions
-        .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE)
-        .map(async (action: UprtclAction<CreateAndInitPerspectiveAction>) => {
+        .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION)
+        .map(async (action: UprtclAction) => {
+          if (!action.entity) throw new Error('entity undefined');
           const result = await this.client.mutate({
             mutation: CREATE_PERSPECTIVE,
             variables: {
-              creatorId: action.payload.perspective.object.payload.creatorId,
-              origin: action.payload.perspective.object.payload.origin,
-              timestamp: action.payload.perspective.object.payload.timestamp,
-              headId: action.payload.details.headId,
-              context: action.payload.details.context,
-              name: action.payload.details.name,
-              authority: action.payload.perspective.object.payload.origin,
+              ...action.entity.object.payload,
+              ...action.payload.details,
+              authority: action.entity.object.payload.origin,
               canWrite: action.payload.owner
             }
           });
-          if (result.data.createPerspective.id !== action.id) {
+          if (result.data.createPerspective.id !== action.entity.id) {
             throw new Error(
-              `created commit id ${result.data.createPerspective.id} not as expected ${action.id}`
+              `created commit id ${result.data.createPerspective.id} not as expected ${action.entity.id}`
             );
           }
         });

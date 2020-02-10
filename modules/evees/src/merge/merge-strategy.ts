@@ -1,4 +1,4 @@
-import { UpdateRequest } from '../types';
+import { UprtclAction } from '../types';
 
 export interface MergeStrategy {
   /**
@@ -8,7 +8,7 @@ export interface MergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config?: any
-  ): Promise<UpdateRequest[]>;
+  ): Promise<UprtclAction<any>[]>;
 
   /**
    * @returns the id of the resulting merge commit

@@ -27,12 +27,9 @@ import {
   PerspectiveDetails,
   RemotesConfig,
   UprtclAction,
-  CreateDataAction,
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
-  CreateCommitAction,
-  CREATE_AND_INIT_PERSPECTIVE,
-  CreateAndInitPerspectiveAction
+  CREATE_AND_INIT_PERSPECTIVE_ACTION
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
@@ -159,13 +156,14 @@ export class Evees {
     authority: string,
     details: PerspectiveDetails,
     canWrite?: string
-  ): Promise<[Secured<Perspective>, Array<UprtclAction<any>>]> {
+  ): Promise<[Secured<Perspective>, Array<UprtclAction>]> {
+
     const eveesRemote = this.getAuthority(authority);
 
     if (!eveesRemote.userId)
       throw new Error(`Cannot create perspectives on remotes you aren't signed in`);
 
-    let actions: Array<UprtclAction<any>> = [];
+    let actions: Array<UprtclAction> = [];
 
     const result = await this.client.query({
       query: gql`{
@@ -206,14 +204,16 @@ export class Evees {
                     id
                   }
                   name
-                  context
+                  context {
+                    id
+                  }
                 }
               }
             }`
           });
 
           const perspectiveDetails: PerspectiveDetails = {
-            context: descendantResult.data.entity.context,
+            context: descendantResult.data.entity.context.id,
             headId: descendantResult.data.entity.head.id,
             name: descendantResult.data.entity.name
           };
@@ -230,13 +230,12 @@ export class Evees {
         const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
         const dataSource = this.remotesConfig.map(eveesRemote.authority, hasChildren.name);
 
-        const { id: newDataId } = await this.hashed.derive()(newData.object, dataSource.hashRecipe);
+        const newHasheData = await this.hashed.derive()(newData.object, dataSource.hashRecipe);
 
-        const newDataAction: UprtclAction<CreateDataAction> = {
-          id: newDataId,
+        const newDataAction: UprtclAction = {
           type: CREATE_DATA_ACTION,
+          entity: newHasheData, 
           payload: {
-            data: newData.object,
             source: dataSource.source
           }
         };
@@ -244,20 +243,19 @@ export class Evees {
         actions.push(newDataAction);
 
         const newCommit: Commit = {
-          dataId: newDataId,
+          dataId: newHasheData.id,
           message: `auto-commit for new perspective ${name}`,
           creatorsIds: [eveesRemote.userId],
           parentsIds: headId ? [headId] : [],
           timestamp: Date.now()
         };
 
-        const { id: newHeadId } = await this.secured.derive()(newCommit, eveesRemote.hashRecipe);
+        const securedCommit = await this.secured.derive()(newCommit, eveesRemote.hashRecipe);
 
-        const newCommitAction: UprtclAction<CreateCommitAction> = {
+        const newCommitAction: UprtclAction = {
           type: CREATE_COMMIT_ACTION,
-          id: newHeadId,
+          entity: securedCommit,
           payload: {
-            commit: newCommit,
             source: eveesRemote.source
           }
         };
@@ -273,11 +271,10 @@ export class Evees {
     };
     const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData, eveesRemote.hashRecipe);
 
-    const newPerspectiveAction: UprtclAction<CreateAndInitPerspectiveAction> = {
-      id: perspective.id,
-      type: CREATE_AND_INIT_PERSPECTIVE,
+    const newPerspectiveAction: UprtclAction = {
+      type: CREATE_AND_INIT_PERSPECTIVE_ACTION,
+      entity: perspective,
       payload: {
-        perspective: perspective,
         details: { headId, name, context: details.context },
         owner: canWrite || eveesRemote.userId
       }

@@ -6,7 +6,7 @@ import { createEntity, DiscoveryModule, DiscoveryService, KnownSourcesService } 
 
 import { Secured } from '../patterns/default-secured.pattern';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import { Perspective, UpdateRequest, Commit, RemotesConfig } from '../types';
+import { Perspective, UpdateRequest, Commit, RemotesConfig, UprtclAction } from '../types';
 import { CREATE_COMMIT } from '../graphql/queries';
 import { EveesBindings } from '../bindings';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -21,16 +21,6 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }>;
 
   allPerspectives!: Dictionary<string>;
-
-  constructor (
-    @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
-    @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {
-    super(remotesConfig, evees, discovery, knownSources, recognizer, client);
-  }
 
   setPerspective(perspective: Secured<Perspective>, context: string, to: boolean): void {
     if (!this.perspectivesByContext[context]) {
@@ -102,7 +92,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config?: any
-  ): Promise<UpdateRequest[]> {
+  ): Promise<UprtclAction[]> {
     let root = false;
     if (!this.perspectivesByContext) {
       root = true;

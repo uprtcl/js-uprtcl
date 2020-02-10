@@ -122,7 +122,9 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
       }
     });
     // TODO: Comment this
-    if (result.data.createWiki.id != hashedWiki.id) debugger;
+    if (result.data.createWiki.id != hashedWiki.id) {
+      throw new Error('unexpected id');
+    };
 
     return { id: result.data.createWiki.id, object: hashedWiki.object };
   };
