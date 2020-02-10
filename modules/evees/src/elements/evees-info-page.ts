@@ -96,6 +96,34 @@ export class EveesInfoPage extends EveesInfoBase {
               <div class="section-content info-text">
                 ${this.renderPermissions()}
               </div>
+
+              <div class="technical-details">
+              <div class="card-container">
+                <div class="card tech-card">
+                  <table class="tech-table">
+                    <tr>
+                      <td class="prop-name">perspective-id:</td>
+                      <td class="prop-value">${this.perspectiveData.id}</td>
+                    </tr>
+                    <tr>
+                      <td class="prop-name">context:</td>
+                      <td class="prop-value">${this.perspectiveData.details.context}</td>
+                    </tr>
+                    <tr>
+                      <td class="prop-name">origin:</td>
+                      <td class="prop-value">${this.perspectiveData.perspective.origin}</td>
+                    </tr>
+                    <tr>
+                      <td class="prop-name">head:</td>
+                      <td class="prop-value">${this.perspectiveData.details.headId}</td>
+                    </tr>
+                    <tr>
+                      <td class="prop-name">data:</td>
+                      <td class="prop-value">${this.perspectiveData.data.id}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
             </div>
 
           </div>

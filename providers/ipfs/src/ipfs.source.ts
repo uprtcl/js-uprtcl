@@ -74,7 +74,7 @@ export class IpfsSource implements Source {
   public async get<T>(hash: string): Promise<Hashed<T> | undefined> {
     /** recursively try */
     return this.ipfsConnection
-      .tryGet(hash, 500, 2)
+      .tryGet(hash, 500, 0)
       .then(raw => {
         let object = CBOR.decode(raw.value.buffer);
         this.logger.log(`Object retrieved ${hash}`, { raw, object });
