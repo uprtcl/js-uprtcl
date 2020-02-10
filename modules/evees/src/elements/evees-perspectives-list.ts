@@ -292,7 +292,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       .row {
         display: flex;
         flex-direction: row;
-        align-items: left;
+        align-items: center;
+        flex: 1;
       }
 
       .perspective-mark {
