@@ -18,7 +18,7 @@ import {
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { DiscoveryModule, DiscoveryService, createEntity } from '@uprtcl/multiplatform';
+import { DiscoveryModule, DiscoveryService, createEntity, EntityCache } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Secured } from '../patterns/default-secured.pattern';
@@ -29,9 +29,9 @@ import {
   CreateDataAction,
   CREATE_COMMIT_ACTION,
   CreateCommitAction,
-  CREATE_AND_INIT_PERSPECTIVE,
   CreateAndInitPerspectiveAction,
-  PerspectiveDetails
+  PerspectiveDetails,
+  CREATE_AND_INIT_PERSPECTIVE_ACTION
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
@@ -127,7 +127,8 @@ export class PerspectiveCreate extends PerspectiveEntity
     @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
+    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
   ) {
     super(securedPattern);
   }
@@ -147,6 +148,23 @@ export class PerspectiveCreate extends PerspectiveEntity
       const actions = result[1];
       const perspective = result[0];
 
+      /** optimistic pre-fill the cache */
+      const updateCachePromises = actions.map((a) => {
+        switch(a.type) {
+          case CREATE_AND_INIT_PERSPECTIVE_ACTION:
+            this.entityCache.cacheEntity(a.payload.perspective);
+            break;
+
+          case CREATE_COMMIT_ACTION:
+            this.entityCache.cacheEntity(a.payload.commit);
+            break;
+
+          case CREATE_DATA_ACTION:
+            this.entityCache.cacheEntity(a.payload.data);
+            break;
+        }
+      })
+      
       const createDataPromises = actions
         .filter(a => a.type === CREATE_DATA_ACTION)
         .map(async (action: UprtclAction<CreateDataAction>) => {
@@ -180,7 +198,7 @@ export class PerspectiveCreate extends PerspectiveEntity
       await Promise.all(createCommitsPromises);
 
       const createPerspectivesPromises = actions
-        .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE)
+        .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION)
         .map(async (action: UprtclAction<CreateAndInitPerspectiveAction>) => {
           const result = await this.client.mutate({
             mutation: CREATE_PERSPECTIVE,

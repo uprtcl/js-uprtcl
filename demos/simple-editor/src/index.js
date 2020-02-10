@@ -20,7 +20,9 @@ import { SimpleWiki } from './simple-wiki';
   const ethHost = 'ws://localhost:8545';
   const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
 
-  const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+  // const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+  const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
+  
   const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
 
   const httpConnection = new HttpConnection();

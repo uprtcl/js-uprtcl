@@ -31,8 +31,8 @@ import {
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
   CreateCommitAction,
-  CREATE_AND_INIT_PERSPECTIVE_ACTION,
-  CreateAndInitPerspectiveAction
+  CreateAndInitPerspectiveAction,
+  CREATE_AND_INIT_PERSPECTIVE_ACTION
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
@@ -160,6 +160,9 @@ export class Evees {
     details: PerspectiveDetails,
     canWrite?: string
   ): Promise<[Secured<Perspective>, Array<UprtclAction<any>>]> {
+
+    debugger
+
     const eveesRemote = this.getAuthority(authority);
 
     if (!eveesRemote.userId)
@@ -206,14 +209,16 @@ export class Evees {
                     id
                   }
                   name
-                  context
+                  context {
+                    id
+                  } 
                 }
               }
             }`
           });
 
           const perspectiveDetails: PerspectiveDetails = {
-            context: descendantResult.data.entity.context,
+            context: descendantResult.data.entity.context.id,
             headId: descendantResult.data.entity.head.id,
             name: descendantResult.data.entity.name
           };
