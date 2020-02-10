@@ -28,7 +28,7 @@ export const eveesTypeDefs = gql`
   }
 
   type Context {
-    identifier: String!
+    id: String!
     perspectives: [Perspective!] @discover
   }
 

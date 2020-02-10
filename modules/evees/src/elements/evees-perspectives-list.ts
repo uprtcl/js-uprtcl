@@ -145,6 +145,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                 origin
               }
               context {
+                id
                 perspectives {
                   id
                   name

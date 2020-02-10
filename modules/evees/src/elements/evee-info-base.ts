@@ -81,7 +81,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
             id
             ... on Perspective {
               context {
-                identifier
+                id
               }
               head {
                 id
@@ -116,7 +116,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.perspectiveData = {
       id: result.data.entity.id,
       details: {
-        context: result.data.entity.context.identifier,
+        context: result.data.entity.context.id,
         headId: result.data.entity.head.id,
         name: result.data.entity.name
       },

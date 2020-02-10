@@ -32,7 +32,7 @@ export const eveesResolvers = {
     }
   },
   Context: {
-    identifier(parent) {
+    id(parent) {
       return typeof parent === 'string' ? parent : parent.context;
     },
     async perspectives(parent, _, { container }) {
