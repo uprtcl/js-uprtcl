@@ -11,9 +11,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@material/mwc-button": "^0.12.0",
-    "@material/mwc-dialog": "^0.12.0",
-    "@material/mwc-textfield": "^0.12.0",
+    "@material/mwc-button": "^0.13.0",
+    "@material/mwc-dialog": "^0.13.0",
+    "@material/mwc-textfield": "^0.13.0",
     "@uprtcl/cortex": "^0.0.3-alpha12",
     "@uprtcl/graphql": "^0.0.3-alpha12",
     "@uprtcl/lenses": "^0.0.3-alpha12",

@@ -219,10 +219,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   perspectiveTitle(perspectivesData: PerspectiveData) {
     return html`
-      ${perspectivesData.name !== '' ?
-        html`<strong>${perspectivesData.name}</strong>` : 'created'} 
-        by ${prettyAddress(perspectivesData.creatorId)} 
-        ${prettyTime(perspectivesData.timestamp)}`;
+      ${perspectivesData.name !== ''
+        ? html`
+            <strong>${perspectivesData.name}</strong>
+          `
+        : 'created'}
+      by ${prettyAddress(perspectivesData.creatorId)} ${prettyTime(perspectivesData.timestamp)}
+    `;
   }
 
   perspectiveColor(perspectiveId: string) {
@@ -244,35 +247,38 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       ? this.renderLoading()
       : html`
           ${this.perspectivesData.length > 0
-          ? html`
-                <mwc-list>
-                  ${this.perspectivesData.map((perspectiveData: PerspectiveData) => {
-            return html`
-                      <div class="row">
-                        <mwc-list-item class="perspective-title" @click=${() => this.perspectiveClicked(perspectiveData.id)}>
-                          <div slot="graphic"
-                            class="perspective-mark"
-                            style=${styleMap({ backgroundColor: this.perspectiveColor(perspectiveData.id) })})
-                          ></div>
-                          <span class="perspective-name">
-                            ${this.perspectiveTitle(perspectiveData)}
-                          </span>
-                        </mwc-list-item>
-                        <div class="button-container">
-                          <mwc-button
-                            slot="meta"
-                            icon="call_merge"
-                            @click=${() => this.buttonClicked(perspectiveData)}
-                            label=${this.getProposalAction(perspectiveData.proposal)}
-                            .disabled=${this.getProposalAction(perspectiveData.proposal) === PENDING_ACTION}
-                          ></mwc-button>
-                        </div>
-                      </div>
-                    `;
-          })}
+            ? html`
+                <mwc-list activatable>
+                  ${this.perspectivesData.map(
+                    (perspectiveData: PerspectiveData) => html`
+                      <mwc-list-item
+                        class="perspective-title"
+                        @click=${() => this.perspectiveClicked(perspectiveData.id)}
+                      >
+                        <div
+                          slot="graphic"
+                          class="perspective-mark"
+                          style="${styleMap({
+                            backgroundColor: this.perspectiveColor(perspectiveData.id)
+                          })})"
+                        ></div>
+                        <span class="perspective-name">
+                          ${this.perspectiveTitle(perspectiveData)}
+                        </span>
+                      </mwc-list-item>
+                      <mwc-button
+                        slot="meta"
+                        icon="call_merge"
+                        @click=${() => this.buttonClicked(perspectiveData)}
+                        label=${this.getProposalAction(perspectiveData.proposal)}
+                        .disabled=${this.getProposalAction(perspectiveData.proposal) ===
+                          PENDING_ACTION}
+                      ></mwc-button>
+                    `
+                  )}
                 </mwc-list>
               `
-          : html`
+            : html`
                 <div class="empty"><i>There are no other perspectives for this context</i></div>
               `}
         `;
