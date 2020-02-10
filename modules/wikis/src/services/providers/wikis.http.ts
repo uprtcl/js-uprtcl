@@ -1,5 +1,6 @@
 import { HttpConnection, HttpProvider } from '@uprtcl/http-provider';
 import { Hashed } from '@uprtcl/cortex';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 import { WikisProvider } from '../wikis.provider';
 import { Wiki } from '../../types';
@@ -7,7 +8,10 @@ import { Wiki } from '../../types';
 const wikis_api: string = 'source';
 
 export class WikisHttp extends HttpProvider implements WikisProvider {
-  constructor(host: string, protected connection: HttpConnection) {
+
+  hashRecipe: CidConfig;
+  
+  constructor(host: string, protected connection: HttpConnection, hashRecipe: CidConfig) {
     super(
       {
         host: host,
@@ -15,6 +19,7 @@ export class WikisHttp extends HttpProvider implements WikisProvider {
       },
       connection
     );
+    this.hashRecipe = hashRecipe;
   }
 
   get source() {

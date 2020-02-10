@@ -4,8 +4,9 @@ import {
   EthereumProviderOptions,
   EthereumProvider
 } from '@uprtcl/ethereum-provider';
-import { IpfsSource, IpfsConnection, sortObject } from '@uprtcl/ipfs-provider';
+import { IpfsSource, IpfsConnection, sortObject, CidConfig } from '@uprtcl/ipfs-provider';
 import { Hashed } from '@uprtcl/cortex';
+import { KnownSourcesService } from '@uprtcl/multiplatform';
 
 import * as EveesContractArtifact from './uprtcl-contract.json';
 
@@ -20,22 +21,26 @@ import { ProposalsProvider } from '../../proposals.provider';
 const evees_if = 'evees-v0';
 
 export class EveesEthereum extends EthereumProvider implements EveesRemote {
-  knownSources?: import('@uprtcl/multiplatform').KnownSourcesService | undefined;
   logger: Logger = new Logger('EveesEtereum');
-
+  
   ipfsSource: IpfsSource;
   accessControl: EveesAccessControlEthereum;
   proposals: ProposalsProvider;
+  userId?: string | undefined;
+  knownSources?: KnownSourcesService | undefined;
+  hashRecipe: CidConfig;
 
   constructor(
     protected ethConnection: EthereumConnection,
     ipfsConnection: IpfsConnection,
-    ethOptions: EthereumProviderOptions = { contract: EveesContractArtifact as any }
+    ethOptions: EthereumProviderOptions = { contract: EveesContractArtifact as any },
+    hashRecipe: CidConfig
   ) {
     super(ethOptions, ethConnection);
-    this.ipfsSource = new IpfsSource(ipfsConnection);
+    this.ipfsSource = new IpfsSource(ipfsConnection, hashRecipe);
     this.accessControl = new EveesAccessControlEthereum(this);
     this.proposals = new ProposalsEthereum(this, this.ipfsSource, this.accessControl);
+    this.hashRecipe = hashRecipe;
   }
 
   get authority() {
