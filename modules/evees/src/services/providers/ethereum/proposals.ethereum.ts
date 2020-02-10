@@ -166,6 +166,9 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const updates = await Promise.all(updatesPromises);
     const executed = (ethHeadUpdates.find(update => update.executed === 0) === undefined);
+    const canAuthorize = (this.ethProvider.userId !== undefined) ? 
+      (request.owner.toLocaleLowerCase() === this.ethProvider.userId.toLocaleLowerCase()) :
+      false;
 
     const proposal: Proposal = {
       id: requestId,
@@ -176,7 +179,7 @@ export class ProposalsEthereum implements ProposalsProvider {
       status: request.status === '1',
       authorized: request.authorized === '1',
       executed: executed,
-      canAuthorize: request.owner.toLocaleLowerCase() === this.ethProvider.userId.toLocaleLowerCase()
+      canAuthorize: canAuthorize
     }
 
     this.logger.info('getProposal() - post', { proposal });

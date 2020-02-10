@@ -25,6 +25,7 @@ import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { DocumentsProvider } from '../services/documents.provider';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -177,7 +178,10 @@ export class TextNodeCreate extends TextNodeEntity
     node: Partial<TextNode> | undefined,
     source: string
   ): Promise<Hashed<TextNode>> => {
-    const textNode = await this.new()(node);
+    const sourceDep = this.documentsRemotes.find(s => s.source === source);
+    if (!sourceDep) throw new Error(`source connection for ${source} not found`);
+    
+    const textNode = await this.new()(node, sourceDep.hashRecipe);
     const result = await this.client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
@@ -192,13 +196,13 @@ export class TextNodeCreate extends TextNodeEntity
     return textNode;
   };
 
-  new = () => async (node: Partial<TextNode> | undefined): Promise<Hashed<TextNode>> => {
+  new = () => async (node: Partial<TextNode> | undefined, recipe: CidConfig): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
 
     const newTextNode = { links, text, type };
-    return this.hashedPattern.derive()(newTextNode);
+    return this.hashedPattern.derive()(newTextNode, recipe);
   };
 }
 

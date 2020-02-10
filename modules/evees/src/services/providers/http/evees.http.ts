@@ -3,27 +3,30 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
 import { PerspectiveDetails, Perspective } from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
 import { Secured } from 'src/uprtcl-evees';
+import { KnownSourcesService } from '@uprtcl/multiplatform';
 
 const evees_api: string = 'evees-v1';
 
 export class EveesHttp extends HttpProvider implements EveesRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
-  knownSources = new KnownSourcesHttp(this.options.host, this.connection);
+  knownSources: KnownSourcesService;
 
   accessControl: BasicAdminAccessControlService | undefined;
   proposals: ProposalsProvider | undefined;
+  hashRecipe: CidConfig;
 
   constructor(
     host: string,
     protected connection: HttpConnection,
-    protected ethConnection: EthereumConnection
+    hashRecipe: CidConfig
   ) {
     super(
       {
@@ -34,10 +37,16 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
     );
 
     this.accessControl =  new EveesAccessControlHttp();
+    this.knownSources= new KnownSourcesHttp(host, this.connection);
+    this.hashRecipe = hashRecipe;
+  }
+
+  ready(): Promise<void> {
+    return Promise.resolve();
   }
 
   get userId() {
-    return this.ethConnection.getCurrentAccount();
+    return 'anonymous';
   }
 
   get source() {

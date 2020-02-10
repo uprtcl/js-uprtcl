@@ -11,6 +11,7 @@ import { WikiBindings } from '../bindings';
 import { WikisProvider } from '../services/wikis.provider';
 import { CREATE_WIKI } from 'src/graphql/queries';
 import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 const propertyOrder = ['title', 'pages'];
 
@@ -109,7 +110,10 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
   }
 
   create = () => async (wiki: Partial<Wiki>, source: string): Promise<Hashed<Wiki>> => {
-    const hashedWiki = await this.new()(wiki);
+    const sourceDep = this.wikisRemotes.find(s => s.source === source);
+    if (!sourceDep) throw new Error(`source connection for ${source} not found`);
+    
+    const hashedWiki = await this.new()(wiki, sourceDep.hashRecipe);
     const result = await this.client.mutate({
       mutation: CREATE_WIKI,
       variables: {
@@ -123,12 +127,12 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
     return { id: result.data.createWiki.id, object: hashedWiki.object };
   };
 
-  new = () => async (node: Partial<Wiki>): Promise<Hashed<Wiki>> => {
+  new = () => async (node: Partial<Wiki>, config: CidConfig): Promise<Hashed<Wiki>> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
 
     const newWiki = { pages, title };
 
-    return this.hashedPattern.derive()(newWiki);
+    return this.hashedPattern.derive()(newWiki, config);
   };
 }

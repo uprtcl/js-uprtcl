@@ -23,10 +23,14 @@ export function sortObject(object: object): object {
 
 export class IpfsSource implements Source {
   logger = new Logger('IpfsSource');
-
-  constructor(protected ipfsConnection: IpfsConnection) {}
-
+  
   source = 'ipfs';
+  hashRecipe: CidConfig;
+
+  constructor(protected ipfsConnection: IpfsConnection, hashRecipe: CidConfig) {
+    this.hashRecipe = hashRecipe;
+  }
+
 
   /**
    * @override
@@ -38,11 +42,11 @@ export class IpfsSource implements Source {
   /**
    * Adds a raw js object to IPFS with the given cid configuration
    */
-  public async addObject(object: object, cidConfig: CidConfig = defaultCidConfig): Promise<string> {
+  public async addObject(object: object): Promise<string> {
     let putConfig = {
-      format: cidConfig.codec,
-      hashAlg: cidConfig.type,
-      cidVersion: cidConfig.version
+      format: this.hashRecipe.codec,
+      hashAlg: this.hashRecipe.type,
+      cidVersion: this.hashRecipe.version
     };
 
     
@@ -54,7 +58,7 @@ export class IpfsSource implements Source {
     return this.ipfsConnection
       .tryPut(buffer, putConfig, 500, 0)
       .then((result: any) => {
-        let hashString = result.toString(cidConfig.base);
+        let hashString = result.toString(this.hashRecipe.base);
         this.logger.log(`Object stored`, { object, sorted, buffer, hashString });
         return hashString;
       })

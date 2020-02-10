@@ -17,6 +17,7 @@ export class DiscoveryService implements Source {
   services: Dictionary<Source>;
 
   source = '';
+  hashRecipe = {};
 
   /**
    * @param recognizer the pattern recognizer to interact with the objects and their links

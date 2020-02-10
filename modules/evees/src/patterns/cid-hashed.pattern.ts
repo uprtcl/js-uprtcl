@@ -4,7 +4,7 @@ import CBOR from 'cbor-js';
 import CID from 'cids';
 
 import { Transformable, Pattern, Hashed, Hashable } from '@uprtcl/cortex';
-import { CidConfig, defaultCidConfig, sortObject } from '@uprtcl/ipfs-provider';
+import { CidConfig,  sortObject } from '@uprtcl/ipfs-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 export function recognizeHashed(object: object) {
@@ -31,15 +31,15 @@ export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[
 
     const cid = new CID(config.version, config.codec, encoded, config.base);
 
-    logger.log(`hashed object:`, {object, sorted, buffer, cid, cidStr: cid.toString()});
+    logger.log(`hashed object:`, {object, sorted, buffer, config, cid, cidStr: cid.toString()});
 
     return cid.toString();
   }
 
   validate = async <T extends object>(object: Hashed<T>): Promise<boolean> => true;
 
-  derive = () => async <T extends object>(object: T): Promise<Hashed<T>> => {
-    const hash = await this.hashObject(object, defaultCidConfig);
+  derive = () => async <T extends object>(object: T, cidConfig: CidConfig): Promise<Hashed<T>> => {
+    const hash = await this.hashObject(object, cidConfig);
 
     return {
       id: hash,
