@@ -18,7 +18,10 @@ import { SimpleWiki } from './simple-wiki';
   const c1host = 'http://localhost:3100/uprtcl/1';
   // const ethHost = '';
   const ethHost = 'ws://localhost:8545';
+  const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
+
   const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+  const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
 
   const httpConnection = new HttpConnection();
   const ipfsConnection = new IpfsConnection(ipfsConfig);
@@ -27,11 +30,11 @@ import { SimpleWiki } from './simple-wiki';
   const httpEvees = new EveesHttp(c1host, httpConnection, ethConnection);
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection);
 
-  const httpDocuments = new DocumentsHttp(c1host, httpConnection);
-  const ipfsDocuments = new DocumentsIpfs(ipfsConnection);
+  const httpDocuments = new DocumentsHttp(c1host, httpConnection, httpCidConfig);
+  const ipfsDocuments = new DocumentsIpfs(ipfsConnection, ipfsCidConfig);
 
-  const httpWikis = new WikisHttp(c1host, httpConnection);
-  const ipfsWikis = new WikisIpfs(ipfsConnection);
+  const httpWikis = new WikisHttp(c1host, httpConnection, httpCidConfig);
+  const ipfsWikis = new WikisIpfs(ipfsConnection, ipfsCidConfig);
 
   const remoteMap = (eveesAuthority, entityName) => {
     if (eveesAuthority === ethEvees.authority) {

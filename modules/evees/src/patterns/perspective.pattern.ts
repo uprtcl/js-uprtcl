@@ -37,6 +37,7 @@ import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -207,7 +208,7 @@ export class PerspectiveCreate extends PerspectiveEntity
     } else {
       const remote = this.evees.getAuthority(authority);
 
-      const perspective = await this.new()((args as any).newPerspective);
+      const perspective = await this.new()((args as any).newPerspective, remote.hashRecipe);
       const result = await this.client.mutate({
         mutation: CREATE_PERSPECTIVE,
         variables: {
@@ -223,7 +224,7 @@ export class PerspectiveCreate extends PerspectiveEntity
     }
   };
 
-  new = () => async (args: NewPerspectiveArgs) => {
+  new = () => async (args: NewPerspectiveArgs, recipe: CidConfig) => {
     const userId = this.evees.getAuthority(args.autority).userId;
 
     if (!userId) throw new Error('Cannot create in an authority in which you are not signed in');
@@ -234,7 +235,7 @@ export class PerspectiveCreate extends PerspectiveEntity
       timestamp: args.timestamp || Date.now()
     };
 
-    return this.securedPattern.derive()(perspective);
+    return this.securedPattern.derive()(perspective, recipe);
   };
 
   actions = (perspective: Secured<Perspective>): PatternAction[] => {

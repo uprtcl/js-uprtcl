@@ -230,7 +230,7 @@ export class Evees {
         const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
         const dataSource = this.remotesConfig.map(eveesRemote.authority, hasChildren.name);
 
-        const { id: newDataId } = await this.hashed.derive()(newData.object);
+        const { id: newDataId } = await this.hashed.derive()(newData.object, dataSource.hashRecipe);
 
         const newDataAction: UprtclAction<CreateDataAction> = {
           id: newDataId,
@@ -251,7 +251,7 @@ export class Evees {
           timestamp: Date.now()
         };
 
-        const { id: newHeadId } = await this.secured.derive()(newCommit);
+        const { id: newHeadId } = await this.secured.derive()(newCommit, eveesRemote.hashRecipe);
 
         const newCommitAction: UprtclAction<CreateCommitAction> = {
           type: CREATE_COMMIT_ACTION,
@@ -271,7 +271,7 @@ export class Evees {
       origin: eveesRemote.authority,
       timestamp: Date.now()
     };
-    const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData);
+    const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData, eveesRemote.hashRecipe);
 
     const newPerspectiveAction: UprtclAction<CreateAndInitPerspectiveAction> = {
       id: perspective.id,

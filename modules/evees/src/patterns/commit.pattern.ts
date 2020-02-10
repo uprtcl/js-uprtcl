@@ -21,6 +21,7 @@ import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 import { CREATE_COMMIT } from '../graphql/queries';
 import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
 import { CreateCommitArgs } from 'src/services/evees';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
@@ -106,8 +107,9 @@ export class CommitPattern extends CommitEntity
     args.message = args.message || `Commit at ${Date.now()}`;
     args.parentsIds = args.parentsIds || [];
 
+    const remote = this.remotes.find(r => r.source === source);
+    if (remote === undefined) throw new Error(`remote ${source} not found`);
     if (!args.creatorsIds) {
-      const remote = this.remotes.find(r => r.source === source);
       if (!remote || !remote.userId)
         throw new Error(
           'You must be signed in the evees remote you are trying to create the commit on or specify the creators ids'
@@ -116,7 +118,7 @@ export class CommitPattern extends CommitEntity
       args.creatorsIds = [remote.userId];
     }
 
-    const commit = await this.new()(args as Commit);
+    const commit = await this.new()(args as Commit, remote.hashRecipe);
     const result = await this.client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
@@ -128,7 +130,7 @@ export class CommitPattern extends CommitEntity
     return commit;
   };
 
-  new = () => async (args: Commit) => {
+  new = () => async (args: Commit, recipe: CidConfig) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
 
     const timestamp = args.timestamp || Date.now();
@@ -142,6 +144,6 @@ export class CommitPattern extends CommitEntity
       parentsIds: args.parentsIds
     };
 
-    return this.secured.derive()(commitData);
+    return this.secured.derive()(commitData, recipe);
   };
 }

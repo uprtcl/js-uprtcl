@@ -111,8 +111,8 @@ export const eveesResolvers = {
         parentsIds: parentsIds
       };
 
-      const commit: Secured<Commit> = await secured.derive()(commitData);
       const remote: EveesRemote = remotes.find(r => r.source === source);
+      const commit: Secured<Commit> = await secured.derive()(commitData, remote.hashRecipe);
 
       await remote.cloneCommit(commit);
       await discovery.postEntityCreate(remote, commit);
@@ -167,7 +167,7 @@ export const eveesResolvers = {
         origin,
         timestamp
       };
-      const perspective: Secured<Perspective> = await secured.derive()(perspectiveData);
+      const perspective: Secured<Perspective> = await secured.derive()(perspectiveData, remote.hashRecipe);
 
       await remote.cloneAndInitPerspective(perspective, { headId, name, context }, canWrite);
 

@@ -23,9 +23,9 @@ export class DefaultSecuredPattern implements Pattern, IsSecure<Secured<any>> {
     return this.hashedPattern.validate(object) && this.signedPattern.validate(object.object);
   };
 
-  derive = () => async <T extends object>(object: T): Promise<Secured<T>> => {
-    const signed: Signed<T> = await this.signedPattern.derive()(object);
-    const hashed = await this.hashedPattern.derive()(signed);
+  derive = () => async <T extends object>(object: T, recipe: any): Promise<Secured<T>> => {
+    const signed: Signed<T> = await this.signedPattern.derive()(object, recipe);
+    const hashed = await this.hashedPattern.derive()(signed, recipe);
 
     return hashed;
   };
