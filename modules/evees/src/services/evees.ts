@@ -206,14 +206,16 @@ export class Evees {
                     id
                   }
                   name
-                  context
+                  context {
+                    id
+                  }
                 }
               }
             }`
           });
 
           const perspectiveDetails: PerspectiveDetails = {
-            context: descendantResult.data.entity.context,
+            context: descendantResult.data.entity.context.id,
             headId: descendantResult.data.entity.head.id,
             name: descendantResult.data.entity.name
           };

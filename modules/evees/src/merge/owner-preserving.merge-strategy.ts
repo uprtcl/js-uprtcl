@@ -7,7 +7,7 @@ import { UpdateRequest, RemotesConfig, UprtclAction, UPDATE_HEAD_ACTION } from '
 import { RecursiveContextMergeStrategy } from './recursive-context.merge-strategy';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
 
-export interface OwnerPreservinConfig {
+export interface OwnerPreservingConfig {
   targetCanWrite: string;
   targetAuthority: string;
 }
@@ -17,7 +17,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config: OwnerPreservinConfig
+    config: OwnerPreservingConfig
   ): Promise<UprtclAction<any>[]> {
     await super.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
 
