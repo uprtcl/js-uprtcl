@@ -17,6 +17,7 @@ import {
   Newable
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule, DiscoveryService, createEntity } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
@@ -29,7 +30,7 @@ import {
   CreateDataAction,
   CREATE_COMMIT_ACTION,
   CreateCommitAction,
-  CREATE_AND_INIT_PERSPECTIVE,
+  CREATE_AND_INIT_PERSPECTIVE_ACTION,
   CreateAndInitPerspectiveAction,
   PerspectiveDetails
 } from '../types';
@@ -37,7 +38,6 @@ import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
-import { CidConfig } from '@uprtcl/ipfs-provider';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -180,7 +180,7 @@ export class PerspectiveCreate extends PerspectiveEntity
       await Promise.all(createCommitsPromises);
 
       const createPerspectivesPromises = actions
-        .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE)
+        .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION)
         .map(async (action: UprtclAction<CreateAndInitPerspectiveAction>) => {
           const result = await this.client.mutate({
             mutation: CREATE_PERSPECTIVE,

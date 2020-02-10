@@ -173,11 +173,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       targetAuthority: remote.authority,
       targetCanWrite: permissions.owner
     };
-    const updateRequests = await merge.mergePerspectives(
-      this.perspectiveId,
-      fromPerspectiveId,
-      config
-    );
+    const actions = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId, config);
+
+    const updateRequests = actions.map(a => a.payload);
 
     this.logger.info('merge computed', { updateRequests });
 
