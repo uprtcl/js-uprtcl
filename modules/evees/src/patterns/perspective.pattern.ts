@@ -17,6 +17,7 @@ import {
   Newable
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule, DiscoveryService, createEntity, EntityCache } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
@@ -29,15 +30,14 @@ import {
   CreateDataAction,
   CREATE_COMMIT_ACTION,
   CreateCommitAction,
+  CREATE_AND_INIT_PERSPECTIVE_ACTION,
   CreateAndInitPerspectiveAction,
-  PerspectiveDetails,
-  CREATE_AND_INIT_PERSPECTIVE_ACTION
+  PerspectiveDetails
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
-import { CidConfig } from '@uprtcl/ipfs-provider';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 

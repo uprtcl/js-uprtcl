@@ -29,6 +29,9 @@ export const eveesResolvers = {
     },
     data(parent) {
       return parent.payload.dataId;
+    },
+    creatorsIds(parent) {
+      return parent.payload.creatorsIds;
     }
   },
   Context: {
@@ -167,7 +170,10 @@ export const eveesResolvers = {
         origin,
         timestamp
       };
-      const perspective: Secured<Perspective> = await secured.derive()(perspectiveData, remote.hashRecipe);
+      const perspective: Secured<Perspective> = await secured.derive()(
+        perspectiveData,
+        remote.hashRecipe
+      );
 
       await remote.cloneAndInitPerspective(perspective, { headId, name, context }, canWrite);
 

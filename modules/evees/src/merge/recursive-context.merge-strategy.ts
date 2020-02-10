@@ -22,16 +22,6 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
   allPerspectives!: Dictionary<string>;
 
-  constructor (
-    @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
-    @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {
-    super(remotesConfig, evees, discovery, knownSources, recognizer, client);
-  }
-
   setPerspective(perspective: Secured<Perspective>, context: string, to: boolean): void {
     if (!this.perspectivesByContext[context]) {
       this.perspectivesByContext[context] = {

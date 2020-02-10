@@ -211,7 +211,7 @@ export class Evees {
                   name
                   context {
                     id
-                  } 
+                  }
                 }
               }
             }`

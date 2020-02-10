@@ -11,6 +11,7 @@ export abstract class DocumentsHolochain extends HolochainProvider implements Do
   zome: string = 'documents';
 
   source = '';
+  hashRecipe: any;
 
   createTextNode(node: TextNode, hash?: string): Promise<string> {
     return this.call('create_text_node', {
