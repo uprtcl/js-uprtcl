@@ -1,5 +1,5 @@
 import { WikisProvider } from '../services/wikis.provider';
-import { WikiBindings } from 'src/bindings';
+import { WikiBindings } from '../bindings';
 
 export const resolvers = {
   Mutation: {

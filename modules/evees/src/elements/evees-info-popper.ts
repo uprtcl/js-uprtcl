@@ -12,7 +12,6 @@ import { prettyAddress, prettyTime } from './support';
 import { Evees, EveesModule } from 'src/uprtcl-evees';
 
 export class EveesInfoPopper extends EveesInfoBase {
-
   @property({ attribute: false })
   show: Boolean = false;
 
@@ -21,7 +20,7 @@ export class EveesInfoPopper extends EveesInfoBase {
   }
 
   showClicked() {
-    console.log('show clicked')
+    console.log('show clicked');
     this.show = !this.show;
     if (this.show) this.load();
   }
@@ -42,9 +41,8 @@ export class EveesInfoPopper extends EveesInfoBase {
   renderInfo() {
     return html`
       <div class="perspective-details">
-        
         <p class="summary">
-          This Evee was created by ${prettyAddress(this.perspectiveData.perspective.creatorId)} 
+          This Evee was created by ${prettyAddress(this.perspectiveData.perspective.creatorId)}
           ${prettyTime(this.perspectiveData.perspective.timestamp)}
         </p>
 
@@ -54,23 +52,23 @@ export class EveesInfoPopper extends EveesInfoBase {
               <table class="tech-table">
                 <tr>
                   <td class="prop-name">perspective-id:</td>
-                  <td class="prop-value">${this.perspectiveData.id}</td>         
+                  <td class="prop-value">${this.perspectiveData.id}</td>
                 </tr>
                 <tr>
                   <td class="prop-name">context:</td>
-                  <td class="prop-value">${this.perspectiveData.details.context}</td>         
+                  <td class="prop-value">${this.perspectiveData.details.context}</td>
                 </tr>
                 <tr>
                   <td class="prop-name">origin:</td>
-                  <td class="prop-value">${this.perspectiveData.perspective.origin}</td>         
+                  <td class="prop-value">${this.perspectiveData.perspective.origin}</td>
                 </tr>
                 <tr>
                   <td class="prop-name">head:</td>
-                  <td class="prop-value">${this.perspectiveData.details.headId}</td>         
+                  <td class="prop-value">${this.perspectiveData.details.headId}</td>
                 </tr>
                 <tr>
                   <td class="prop-name">data:</td>
-                  <td class="prop-value">${this.perspectiveData.data.id}</td>         
+                  <td class="prop-value">${this.perspectiveData.data.id}</td>
                 </tr>
               </table>
             </div>
@@ -95,8 +93,8 @@ export class EveesInfoPopper extends EveesInfoBase {
       </div>
       <div class="button-row">
         ${this.loading
-        ? this.renderLoading()
-        : html`
+          ? this.renderLoading()
+          : html`
               <mwc-button
                 outlined
                 icon="call_split"
@@ -129,24 +127,30 @@ export class EveesInfoPopper extends EveesInfoBase {
           <div
             class="evee-stripe"
             style=${styleMap({
-      backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR
-    })}
+              backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR
+            })}
           ></div>
         </div>
 
         ${this.show
-        ? html`
+          ? html`
               <mwc-card class="info-box">
                 ${this.perspectiveData
-            ? html`
+                  ? html`
                       <div class="column">
-                        <div class="color-bar" style=${styleMap({
-              backgroundColor: this.eveeColor
-            })}></div>
+                        <div
+                          class="color-bar"
+                          style=${styleMap({
+                            backgroundColor: this.eveeColor
+                          })}
+                        ></div>
 
-                        <div class="perspective-title" style=${styleMap({
-              color: this.eveeColor
-            })}> 
+                        <div
+                          class="perspective-title"
+                          style=${styleMap({
+                            color: this.eveeColor
+                          })}
+                        >
                           <h2>${this.perspectiveTitle()}</h2>
                         </div>
 
@@ -168,18 +172,14 @@ export class EveesInfoPopper extends EveesInfoBase {
                         </div>
 
                         <div class="close">
-                          <mwc-button
-                            outlined
-                            icon="close"
-                            @click=${this.showClicked}
-                          ></mwc-button>
+                          <mwc-icon-button icon="close" @click=${this.showClicked}></mwc-icon-button>
                         </div>
                       </div>
                     `
-            : ''}
+                  : ''}
               </mwc-card>
             `
-        : ''}
+          : ''}
       </div>
     `;
   }
@@ -239,7 +239,7 @@ export class EveesInfoPopper extends EveesInfoBase {
         padding: 0.5vw 0 1.5vw 1.5vw;
       }
       .button-row {
-        padding-bottom: 16px; 
+        padding-bottom: 16px;
         text-align: center;
       }
       .perspectives-list {
@@ -250,7 +250,7 @@ export class EveesInfoPopper extends EveesInfoBase {
         top: 20px;
         right: 20px;
       }
-      
+
       .perspective-details {
         padding: 5px;
       }
@@ -297,8 +297,6 @@ export class EveesInfoPopper extends EveesInfoBase {
         font-size: 12px;
         text-align: left;
       }
-
-
     `;
   }
 }

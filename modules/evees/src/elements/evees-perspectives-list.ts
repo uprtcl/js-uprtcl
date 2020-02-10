@@ -289,6 +289,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   static get styles() {
     return css`
+      .merge-button {
+        position: absolute;
+        right: 16px;
+      }
+
       .row {
         display: flex;
         flex-direction: row;

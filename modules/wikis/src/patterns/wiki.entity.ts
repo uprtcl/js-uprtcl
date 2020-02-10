@@ -117,8 +117,10 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
         source
       }
     });
+    // TODO: Comment this
+    if (result.data.createWiki.id != hashedWiki.id) debugger;
 
-    return hashedWiki;
+    return { id: result.data.createWiki.id, object: hashedWiki.object };
   };
 
   new = () => async (node: Partial<Wiki>): Promise<Hashed<Wiki>> => {

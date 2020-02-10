@@ -109,6 +109,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       newContent,
       this.getWikiSource(origin).source
     );
+
     const commit: Secured<Commit> = await createCommit.create()(
       {
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
@@ -116,9 +117,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       },
       evees.getPerspectiveProvider(this.perspective.object).source
     );
-
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-
     const headUpdate = await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {

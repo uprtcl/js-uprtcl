@@ -5,6 +5,20 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { CidConfig, defaultCidConfig } from './cid.config';
 import { IpfsConnection } from './ipfs.connection';
 
+export function sortObject(object: object): object {
+  if (typeof object !== 'object' || object instanceof Array) {
+    // Not to sort the array
+    return object;
+  }
+  const keys = Object.keys(object).sort();
+
+  const newObject = {};
+  for (let i = 0; i < keys.length; i++) {
+    newObject[keys[i]] = sortObject(object[keys[i]]);
+  }
+  return newObject;
+}
+
 export class IpfsSource implements Source {
   logger = new Logger('IpfsSource');
 
@@ -13,7 +27,7 @@ export class IpfsSource implements Source {
   source = 'ipfs';
 
   private getObjectBuffer(object: object): Buffer {
-    return Buffer.from(JSON.stringify(object));
+    return Buffer.from(JSON.stringify(sortObject(object)));
   }
 
   /**
@@ -56,8 +70,6 @@ export class IpfsSource implements Source {
    */
   public async get<T>(hash: string): Promise<Hashed<T> | undefined> {
     /** recursively try */
-    // this.logger.warn('IPFS Disabled!');
-    // return undefined;
     return this.ipfsConnection
       .tryGet(hash, 500, 0)
       .then(raw => {

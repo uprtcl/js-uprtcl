@@ -53,4 +53,3 @@ export { DefaultSecuredPattern, Secured } from './patterns/default-secured.patte
 
 /** Utils */
 export { isAncestorOf } from './utils/ancestor';
-export { sortObject } from './utils/utils';

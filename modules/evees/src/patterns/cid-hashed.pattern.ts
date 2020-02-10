@@ -3,9 +3,7 @@ import multihashing from 'multihashing-async';
 import CID from 'cids';
 
 import { Transformable, Pattern, Hashed, Hashable } from '@uprtcl/cortex';
-import { CidConfig, defaultCidConfig } from '@uprtcl/ipfs-provider';
-
-import { sortObject } from '../utils/utils';
+import { CidConfig, defaultCidConfig, sortObject } from '@uprtcl/ipfs-provider';
 
 export function recognizeHashed(object: object) {
   return (
@@ -24,7 +22,7 @@ export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[
   async hashObject(object: object, config: CidConfig): Promise<string> {
     const ordered = sortObject(object);
 
-    const b = multihashing.Buffer.from(JSON.stringify(ordered));
+    const b = Buffer.from(JSON.stringify(ordered));
     const encoded = await multihashing(b, config.type);
 
     const cid = new CID(config.version, config.codec, encoded, config.base);

@@ -186,6 +186,9 @@ export class TextNodeCreate extends TextNodeEntity
       }
     });
 
+    // TODO: Comment this
+    if (result.data.createTextNode.id != textNode.id) debugger;
+
     return textNode;
   };
 

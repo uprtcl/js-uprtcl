@@ -4,12 +4,11 @@ import {
   EthereumProviderOptions,
   EthereumProvider
 } from '@uprtcl/ethereum-provider';
-import { IpfsSource, IpfsConnection } from '@uprtcl/ipfs-provider';
+import { IpfsSource, IpfsConnection, sortObject } from '@uprtcl/ipfs-provider';
 import { Hashed } from '@uprtcl/cortex';
 
 import * as EveesContractArtifact from './uprtcl-contract.json';
 
-import { sortObject } from '../../../utils/utils';
 import { Secured } from '../../../patterns/default-secured.pattern';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
@@ -21,7 +20,7 @@ import { ProposalsProvider } from '../../proposals.provider';
 const evees_if = 'evees-v0';
 
 export class EveesEthereum extends EthereumProvider implements EveesRemote {
-  knownSources?: import("@uprtcl/multiplatform").KnownSourcesService | undefined;
+  knownSources?: import('@uprtcl/multiplatform').KnownSourcesService | undefined;
   logger: Logger = new Logger('EveesEtereum');
 
   ipfsSource: IpfsSource;
@@ -40,7 +39,9 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   }
 
   get authority() {
-    return `eth-${this.ethConnection.networkId}:${evees_if}:${this.contractInstance.options.address.toLocaleLowerCase()}`;
+    return `eth-${
+      this.ethConnection.networkId
+    }:${evees_if}:${this.contractInstance.options.address.toLocaleLowerCase()}`;
   }
 
   get source() {
@@ -61,7 +62,11 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     await Promise.all([super.ready(), this.ipfsSource.ready()]);
   }
 
-  async cloneAndInitPerspective(secured: Secured<Perspective>, details: PerspectiveDetails, canWrite?: string): Promise<void> {
+  async cloneAndInitPerspective(
+    secured: Secured<Perspective>,
+    details: PerspectiveDetails,
+    canWrite?: string
+  ): Promise<void> {
     let perspective = secured.object.payload;
 
     /** validate */
@@ -82,7 +87,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     if (details.context) {
       contextHash = await hashText(details.context);
     } else {
-      contextHash = '0x' + new Array(32).fill(0).join('')
+      contextHash = '0x' + new Array(32).fill(0).join('');
     }
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
@@ -117,7 +122,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     }
 
     const perspectiveIdHash = await hashCid(perspectiveId);
-    
+
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     await this.send(ADD_PERSP, [
       perspectiveIdHash,
