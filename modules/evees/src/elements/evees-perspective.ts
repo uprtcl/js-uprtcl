@@ -14,7 +14,7 @@ import { EveesBindings } from 'src/bindings';
 import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
 import { CreateCommitArgs, EveesModule } from 'src/uprtcl-evees';
 
-export const DEFAULT_COLOR = '#d9d7d0';
+export const DEFAULT_COLOR = '#d0dae0';
 
 export class EveesPerspective extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVE');

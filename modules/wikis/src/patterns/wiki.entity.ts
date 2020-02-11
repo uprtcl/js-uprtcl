@@ -2,7 +2,7 @@ import { html, TemplateResult } from 'lit-element';
 import { injectable, inject, multiInject } from 'inversify';
 
 import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
-import { Mergeable, EveesModule, MergeStrategy, mergeStrings } from '@uprtcl/evees';
+import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/multiplatform';
 
@@ -51,22 +51,25 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
     modifications: Hashed<Wiki>[],
     mergeStrategy: MergeStrategy,
     config
-  ): Promise<Wiki> => {
+  ): Promise<[Wiki, UprtclAction[]]> => {
     const resultTitle = mergeStrings(
       originalNode.object.title,
       modifications.map(data => data.object.title)
     );
 
-    const mergedPages = await mergeStrategy.mergeLinks(
+    const [mergedPages, actions] = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
       modifications.map(data => data.object.pages),
       config
     );
 
-    return {
-      pages: mergedPages,
-      title: resultTitle
-    };
+    return [
+      {
+        pages: mergedPages,
+        title: resultTitle
+      },
+      actions
+    ];
   };
 }
 
@@ -112,7 +115,7 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
   create = () => async (wiki: Partial<Wiki>, source: string): Promise<Hashed<Wiki>> => {
     const sourceDep = this.wikisRemotes.find(s => s.source === source);
     if (!sourceDep) throw new Error(`source connection for ${source} not found`);
-    
+
     const hashedWiki = await this.new()(wiki, sourceDep.hashRecipe);
     const result = await this.client.mutate({
       mutation: CREATE_WIKI,
@@ -124,7 +127,7 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
     // TODO: Comment this
     if (result.data.createWiki.id != hashedWiki.id) {
       throw new Error('unexpected id');
-    };
+    }
 
     return { id: result.data.createWiki.id, object: hashedWiki.object };
   };

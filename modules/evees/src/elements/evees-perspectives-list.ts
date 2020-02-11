@@ -19,7 +19,7 @@ interface PerspectiveData {
 }
 
 const MERGE_ACTION: string = 'Merge';
-const PENDING_ACTION: string = 'Pendign';
+const PENDING_ACTION: string = 'Pending';
 const AUTHORIZE_ACTION: string = 'Authorize';
 const EXECUTE_ACTION: string = 'Execute';
 const MERGE_PROPOSAL_ACTION: string = 'Propose Merge';

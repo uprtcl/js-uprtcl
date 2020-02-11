@@ -38,6 +38,8 @@ export class WikiHome extends moduleConnect(LitElement) {
     return css`
       .page-container {
         text-align: center;
+        background-color: #e8ecec;
+        height: 100%;
       }
 
       .row {
@@ -48,6 +50,7 @@ export class WikiHome extends moduleConnect(LitElement) {
       .title {
         margin: 5vw 0px 5vw;
         font-weight: bold;
+        color: #929a9e;
       }
 
       .color-bar {

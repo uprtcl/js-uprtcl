@@ -17,8 +17,8 @@ export const eveesTypeDefs = gql`
       timestamp: Date!): Commit!
 
     createPerspective(
-      creatorId: String, 
-      origin: String, 
+      creatorId: String!,
+      origin: String!, 
       timestamp: Date!,
       headId: ID, 
       context: String, 
