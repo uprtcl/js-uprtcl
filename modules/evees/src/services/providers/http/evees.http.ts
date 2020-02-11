@@ -11,6 +11,8 @@ import { PerspectiveDetails, Perspective } from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
 import { Secured } from 'src/uprtcl-evees';
 import { KnownSourcesService } from '@uprtcl/multiplatform';
+import { NewPerspectiveArgs } from 'src/services/evees';
+import { NewPerspectiveData } from 'src/services/evees.provider';
 
 const evees_api: string = 'evees-v1';
 
@@ -61,12 +63,16 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
     await super.post('/persp', perspective);
   }
 
-  async cloneAndInitPerspective(perspective: Secured<Perspective>, details: PerspectiveDetails, canWrite?: string | undefined): Promise<void> {
-    await this.clonePerspective(perspective);
-    await this.updatePerspectiveDetails(perspective.id, details);
+  async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    await this.clonePerspective(perspectiveData.perspective);
+    return this.updatePerspectiveDetails(perspectiveData.perspective.id, perspectiveData.details);
     // TODO: addEditor
   }
-  
+
+  async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+    const promises = newPerspectivesData.map(perspectiveData => this.cloneAndInitPerspective(perspectiveData));
+    await Promise.all(promises);
+  }
 
   async cloneCommit(commit: any): Promise<void> {
     await super.post('/commit', commit);

@@ -7,6 +7,7 @@ export const UPDATE_HEADS = 'updateHeads((bytes32,string,uint8)[])';
 export const UPDATE_PERSP_DETAILS = 'updatePerspectiveDetails(bytes32,bytes32,string,string,string)';
 export const GET_PERSP_DETAILS = 'getPerspectiveDetails(bytes32)';
 export const UPDATE_OWNER = 'changeOwner(bytes32,address)';
+export const ADD_PERSP_BATCH = 'addPerspectiveBatch((bytes32,bytes32,string,string,string,address,string)[])';
 
 export const INIT_REQUEST =
   'initRequest(bytes32,bytes32,address,uint32,(bytes32,string,uint8)[],address[],string,string)';

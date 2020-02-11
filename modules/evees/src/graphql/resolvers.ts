@@ -10,6 +10,7 @@ import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
+import { NewPerspectiveData } from 'src/services/evees.provider';
 
 export const eveesResolvers = {
   Commit: {
@@ -170,7 +171,12 @@ export const eveesResolvers = {
         remote.hashRecipe
       );
 
-      await remote.cloneAndInitPerspective(perspective, { headId, name, context }, canWrite);
+      const newPerspectiveData: NewPerspectiveData = {
+        perspective, 
+        details: { headId, name, context }, 
+        canWrite
+      }
+      await remote.cloneAndInitPerspective(newPerspectiveData);
 
       return {
         id: perspective.id,

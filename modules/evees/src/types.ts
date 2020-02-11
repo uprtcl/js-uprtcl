@@ -53,6 +53,7 @@ export interface Proposal {
 
 export interface ProposalCreatedDetail {
   proposalId: string;
+  authority: string;
 }
 
 export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {

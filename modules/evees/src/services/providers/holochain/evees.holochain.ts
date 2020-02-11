@@ -7,6 +7,7 @@ import { KnownSourcesService } from '@uprtcl/multiplatform';
 import { Secured } from '../../../patterns/default-secured.pattern';
 import { Perspective, Commit, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
+import { NewPerspectiveData } from 'src/services/evees.provider';
 
 @injectable()
 export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {
@@ -106,10 +107,14 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
     return this.parseResponse(result);
   }
 
-  async cloneAndInitPerspective(perspective: Secured<Perspective>, details: PerspectiveDetails, canWrite?: string | undefined): Promise<void> {
-    await this.ready();
-    
-    await this.clonePerspective(perspective);
-    return this.updatePerspectiveDetails(perspective.id, details);
+  async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    await this.clonePerspective(perspectiveData.perspective);
+    return this.updatePerspectiveDetails(perspectiveData.perspective.id, perspectiveData.details);
+    // TODO: addEditor
+  }
+
+  async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+    const promises = newPerspectivesData.map(perspectiveData => this.cloneAndInitPerspective(perspectiveData));
+    await Promise.all(promises);
   }
 }

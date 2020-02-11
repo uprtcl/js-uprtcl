@@ -127,7 +127,7 @@ export class EveesInfoPopper extends EveesInfoBase {
           <div
             class="evee-stripe"
             style=${styleMap({
-              backgroundColor: this.eveeColor ? this.eveeColor : DEFAULT_COLOR
+              backgroundColor: (this.eveeColor ? this.eveeColor : DEFAULT_COLOR) + '80'
             })}
           ></div>
         </div>
