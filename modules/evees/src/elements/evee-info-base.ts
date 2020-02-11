@@ -40,6 +40,7 @@ import { Evees, CreatePerspectiveArgs } from '../services/evees';
 import { OwnerPreservingConfig } from '../merge/owner-preserving.merge-strategy';
 import { executeActions, cacheActions } from 'src/utils/actions';
 import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
+import { NewPerspectiveData } from 'src/services/evees.provider';
 
 interface PerspectiveData {
   id: string;
@@ -215,29 +216,23 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await Promise.all(updateHeadsPromises);
   }
 
-  async createMergeProposal(fromPerspectiveId: string, actions: UprtclAction[]) {
-    
+
+  /** executes a given function for each group of actions on perspectives of the same origin */
+  async executeActionsBatched(
+    actions: UprtclAction[], 
+    actionToPerspectiveId: (string) => Promise<string>, 
+    executeActionsOnAuthority: (authority: string, actions: UprtclAction[]) => Promise<void>) {
+      
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
-    const cache: EntityCache = this.request(DiscoveryModule.bindings.EntityCache);
 
-    await cacheActions(actions, cache);
-    
-    /** create commits and data */
-    const dataActions = actions.filter(a => [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type));
-    await executeActions(dataActions, client, recognizer);
+    const authoritiesPromises = actions.map(async (action: UprtclAction) => {
+      
+      const perspectiveId = actionToPerspectiveId(action);
 
-    const newPerspectiveActions = actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION);
-    await executeActions(newPerspectiveActions, client, recognizer);
-
-    const updateRequests = actions.filter(a => a.type === UPDATE_HEAD_ACTION).map(a => a.payload);
-
-    /** filter updates per authority */
-    const authoritiesPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {
       const result = await client.query({
         query: gql`
           {
-            entity(id: "${updateRequest.perspectiveId}") {
+            entity(id: "${perspectiveId}") {
               id
               ... on Perspective {
                 payload {
@@ -251,44 +246,87 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
       return {
         origin: result.data.entity.payload.origin,
-        updateRequest: updateRequest
+        action: action
       };
     });
 
     const authoritiesData = await Promise.all(authoritiesPromises);
 
-    const updatesByAuthority = {};
+    const actionsByAuthority = {};
 
     for (var i = 0; i < authoritiesData.length; i++) {
-      if (!updatesByAuthority[authoritiesData[i].origin]) {
-        updatesByAuthority[authoritiesData[i].origin] = [];
+      if (!actionsByAuthority[authoritiesData[i].origin]) {
+        actionsByAuthority[authoritiesData[i].origin] = [];
       }
-      updatesByAuthority[authoritiesData[i].origin].push(authoritiesData[i].updateRequest);
+      actionsByAuthority[authoritiesData[i].origin].push(authoritiesData[i].action);
     }
 
+    const executePromises = Object.keys(actionsByAuthority).map(async (authority: string) => {
+      return executeActionsOnAuthority(authority, actionsByAuthority[authority]);
+    });
+
+    return Promise.all(executePromises);
+  }
+
+  async createMergeProposal(fromPerspectiveId: string, actions: UprtclAction[]) {
+    
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
+    const cache: EntityCache = this.request(DiscoveryModule.bindings.EntityCache);
     const evees: Evees = this.request(EveesModule.bindings.Evees);
 
-    Object.keys(updatesByAuthority).map(async (authority: string) => {
-      const remote = evees.getAuthority(authority);
-      if (!remote.proposals) throw new Error('remote cant handle proposals');
+    await cacheActions(actions, cache);
+    
+    /** create commits and data */
+    const dataActions = actions.filter(a => [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type));
+    await executeActions(dataActions, client, recognizer);
 
-      const proposalId = await remote.proposals.createProposal(
-        fromPerspectiveId,
-        this.perspectiveId,
-        updatesByAuthority[authority]
-      );
+    await this.executeActionsBatched(
+      actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION), 
+      action => action.entity.id, 
+      async (authority, actions) => {
+        const remote = evees.getAuthority(authority);
+        
+        const perspectivesData = actions.map((action: UprtclAction): NewPerspectiveData => {
+          if (!action.entity) throw new Error('entity not found');
+          
+          return {
+            perspective: action.entity,
+            details: action.payload.details,
+            canWrite: action.payload.canWrite
+          }
+        });
 
-      this.logger.info('created proposal', { proposalId, updateRequests });
+        await remote.clonePerspectivesBatch(perspectivesData);
 
-      this.dispatchEvent(
-        new ProposalCreatedEvent({
-          detail: { proposalId },
-          cancelable: true,
-          composed: true,
-          bubbles: true
-        })
-      );
-    });
+        this.logger.info('created perspective batch', { authority, perspectivesData });
+      });
+
+    await this.executeActionsBatched(
+      actions.filter(a => a.type === UPDATE_HEAD_ACTION), 
+      action => action.payload.perspectiveId, 
+      async (authority, actions) => {
+        const remote = evees.getAuthority(authority);
+        if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+        const proposalId = await remote.proposals.createProposal(
+          fromPerspectiveId,
+          this.perspectiveId,
+          actions.map(action => action.payload)
+        );
+
+        this.logger.info('created proposal', { proposalId, actions });
+
+        this.dispatchEvent(
+          new ProposalCreatedEvent({
+            detail: { proposalId, authority },
+            cancelable: true,
+            composed: true,
+            bubbles: true
+          })
+        );
+      });
+  
   }
 
   async authorizeProposal(e: CustomEvent) {
