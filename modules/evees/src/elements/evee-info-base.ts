@@ -155,6 +155,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       `merge ${fromPerspectiveId} on ${this.perspectiveId} - isProposal: ${isProposal}`
     );
 
+    debugger
+
     const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
 
     const evees: Evees = this.request(EveesModule.bindings.Evees);
@@ -189,6 +191,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
     debugger
     await executeActions(actions, client, cache, recognizer);
+    
     if (isProposal) {
       this.createMergeProposal(fromPerspectiveId, updateRequests);
     } else {

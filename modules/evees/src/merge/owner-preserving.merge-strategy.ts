@@ -16,6 +16,7 @@ import { RecursiveContextMergeStrategy } from './recursive-context.merge-strateg
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import gql from 'graphql-tag';
 import { Secured } from 'src/patterns/default-secured.pattern';
+import { cacheActions } from 'src/utils/actions';
 
 export interface OwnerPreservingConfig {
   targetCanWrite: string;
@@ -40,7 +41,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     return { id, object };
   }
 
-  async computeActions(
+  async getOwnerPreservingActions(
     updateRequest: UpdateRequest,
     targetAuthority: string,
     targetCanWrite: string
@@ -140,6 +141,8 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
               targetCanWrite
             );
 
+            await cacheActions(actions, this.entityCache);
+
             // TODO: optimize and remove from the list the perspectives that have already had their head updated
 
             for (const action of actions.filter(
@@ -218,7 +221,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     fromPerspectiveId: string,
     config: OwnerPreservingConfig
   ): Promise<[string, UprtclAction[]]> {
-    const [finalPerspectiveId, updatesList] = await super.mergePerspectives(
+    const [finalPerspectiveId, mergeActionsOriginal] = await super.mergePerspectives(
       toPerspectiveId,
       fromPerspectiveId,
       config
@@ -237,14 +240,45 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     const targetAuthority = config.targetAuthority;
     const targetCanWrite = config.targetCanWrite;
 
-    const updateHeads = updatesList.filter(a => a.type === UPDATE_HEAD_ACTION);
-    const forceOwnerPromises = updateHeads.map(updateHead =>
-      this.computeActions(updateHead.payload, targetAuthority, targetCanWrite)
+    const updateHeads = mergeActionsOriginal.filter(a => a.type === UPDATE_HEAD_ACTION);
+    const getOwnerPreservingPromises = updateHeads.map(updateHead =>
+      this.getOwnerPreservingActions(updateHead.payload, targetAuthority, targetCanWrite)
     );
 
-    const newUpdatesList = await Promise.all(forceOwnerPromises);
+    const ownerPreservingActionsPre = await Promise.all(getOwnerPreservingPromises);
+    const ownerPreservingActions = ([] as UprtclAction[]).concat(...ownerPreservingActionsPre);
+        
+    /** remove the original headUpdate in mergeActionsOriginal fro which there is a new headUpdate in ownerPreservingActions */
+    let mergeActionsNew = [...mergeActionsOriginal];
 
-    const actions = ([] as UprtclAction[]).concat(...newUpdatesList);
-    return [finalPerspectiveId, actions];
+    ownerPreservingActions.filter(a => a.type === UPDATE_HEAD_ACTION).forEach((ownerPreservingAction) => {
+      const ixHeadUpdate = mergeActionsNew.findIndex((actionOriginal) => {
+        return (actionOriginal.type === UPDATE_HEAD_ACTION) && 
+          ((actionOriginal.payload as UpdateRequest).perspectiveId === (ownerPreservingAction.payload as UpdateRequest).perspectiveId)
+      });
+
+      /** remove head update */
+      const removedHeadUpdate = mergeActionsNew.splice(ixHeadUpdate, 1)[0];
+
+      /** remove create commit associated to that head update */
+      const ixCreateCommit = mergeActionsNew.findIndex((action) => {
+        if (!action.entity) return false;
+        return (action.type === CREATE_COMMIT_ACTION) && (action.entity.id === (removedHeadUpdate.payload as UpdateRequest).newHeadId);
+      })
+
+      const removedCreateCommit = mergeActionsNew.splice(ixCreateCommit, 1)[0];
+
+      /** remove create data associated to that commit */
+      const ixCreateData = mergeActionsNew.findIndex((action) => {
+        if (!action.entity) return false;
+        return (action.type === CREATE_DATA_ACTION) && (action.entity.id === (removedCreateCommit.entity as Secured<Commit>).object.payload.dataId);
+      })
+
+      mergeActionsNew.splice(ixCreateData, 1);
+    })
+
+    const allActions = mergeActionsNew.concat(ownerPreservingActions);
+
+    return [finalPerspectiveId, allActions];
   }
 }

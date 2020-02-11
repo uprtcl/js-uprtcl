@@ -11,20 +11,26 @@ import {
   CREATE_AND_INIT_PERSPECTIVE_ACTION
 } from '../types';
 
-export async function executeActions(
-  actions: UprtclAction[],
-  client: ApolloClient<any>,
-  entityCache: EntityCache,
-  recognizer: PatternRecognizer
-): Promise<void> {
-  /** optimistic pre-fill the cache */
+export async function cacheActions(actions: UprtclAction[], entityCache: EntityCache, ) {
   const updateCachePromises = actions.map(action => {
     if (action.entity) {
       return entityCache.cacheEntity(action.entity);
     }
   });
 
-  await Promise.all(updateCachePromises);
+  return Promise.all(updateCachePromises);
+}
+
+export async function executeActions(
+  actions: UprtclAction[],
+  client: ApolloClient<any>,
+  entityCache: EntityCache,
+  recognizer: PatternRecognizer
+): Promise<void> {
+
+  await cacheActions(actions, entityCache);
+
+  /** optimistic pre-fill the cache */
   const createDataPromises = actions
     .filter(a => a.type === CREATE_DATA_ACTION)
     .map(async (action: UprtclAction) => {
