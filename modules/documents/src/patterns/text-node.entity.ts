@@ -17,7 +17,14 @@ import {
   Newable
 } from '@uprtcl/cortex';
 import { DiscoveryService, DiscoveryModule, TaskQueue, Task } from '@uprtcl/multiplatform';
-import { Mergeable, MergeStrategy, mergeStrings, mergeResult, EveesModule } from '@uprtcl/evees';
+import {
+  Mergeable,
+  MergeStrategy,
+  mergeStrings,
+  mergeResult,
+  EveesModule,
+  UprtclAction
+} from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -95,7 +102,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
     modifications: Hashed<TextNode>[],
     mergeStrategy: MergeStrategy,
     config: any
-  ): Promise<TextNode> => {
+  ): Promise<[TextNode, UprtclAction[]]> => {
     const resultText = mergeStrings(
       originalNode.object.text,
       modifications.map(data => data.object.text)
@@ -105,17 +112,20 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
       modifications.map(data => data.object.type)
     );
 
-    const mergedLinks = await mergeStrategy.mergeLinks(
+    const [mergedLinks, actions] = await mergeStrategy.mergeLinks(
       originalNode.object.links,
       modifications.map(data => data.object.links),
       config
     );
 
-    return {
-      links: mergedLinks,
-      text: resultText,
-      type: resultType
-    };
+    return [
+      {
+        links: mergedLinks,
+        text: resultText,
+        type: resultType
+      },
+      actions
+    ];
   };
 }
 
@@ -180,7 +190,7 @@ export class TextNodeCreate extends TextNodeEntity
   ): Promise<Hashed<TextNode>> => {
     const sourceDep = this.documentsRemotes.find(s => s.source === source);
     if (!sourceDep) throw new Error(`source connection for ${source} not found`);
-    
+
     const textNode = await this.new()(node, sourceDep.hashRecipe);
     const result = await this.client.mutate({
       mutation: CREATE_TEXT_NODE,
@@ -192,12 +202,15 @@ export class TextNodeCreate extends TextNodeEntity
 
     if (result.data.createTextNode.id != textNode.id) {
       throw new Error('unexpected id');
-    };
+    }
 
     return textNode;
   };
 
-  new = () => async (node: Partial<TextNode> | undefined, recipe: CidConfig): Promise<Hashed<TextNode>> => {
+  new = () => async (
+    node: Partial<TextNode> | undefined,
+    recipe: CidConfig
+  ): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;

@@ -17,7 +17,7 @@ import '@material/mwc-tab-bar';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { AccessControlService, OwnerPermissions } from '@uprtcl/access-control';
-import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
+import { Pattern, Creatable, Signed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
 import {
   UpdateRequest,
@@ -33,6 +33,8 @@ import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees, CreatePerspectiveArgs } from '../services/evees';
 
 import { OwnerPreservingConfig } from '../merge/owner-preserving.merge-strategy';
+import { executeActions } from 'src/utils/actions';
+import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 
 interface PerspectiveData {
   id: string;
@@ -172,12 +174,21 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       targetAuthority: remote.authority,
       targetCanWrite: permissions.owner
     };
-    const actions = await merge.mergePerspectives(this.perspectiveId, fromPerspectiveId, config);
+    const [perspectiveId, actions] = await merge.mergePerspectives(
+      this.perspectiveId,
+      fromPerspectiveId,
+      config
+    );
 
     const updateRequests = actions.map(a => a.payload);
 
     this.logger.info('merge computed', { updateRequests });
 
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const cache: EntityCache = this.request(DiscoveryModule.bindings.EntityCache);
+    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
+    debugger
+    await executeActions(actions, client, cache, recognizer);
     if (isProposal) {
       this.createMergeProposal(fromPerspectiveId, updateRequests);
     } else {

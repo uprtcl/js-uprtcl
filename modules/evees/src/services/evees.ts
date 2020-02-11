@@ -157,7 +157,6 @@ export class Evees {
     details: PerspectiveDetails,
     canWrite?: string
   ): Promise<[Secured<Perspective>, Array<UprtclAction>]> {
-
     const eveesRemote = this.getAuthority(authority);
 
     if (!eveesRemote.userId)
@@ -185,6 +184,8 @@ export class Evees {
     const dataId = result.data.entity.data.id;
     const dataRaw = JSON.parse(result.data.entity.data._context.raw);
     const dataHashed = { id: dataId, object: dataRaw };
+
+    let newHeadId = headId;
 
     const hasChildren: HasChildren | undefined = this.patternRecognizer
       .recognize(dataHashed)
@@ -234,7 +235,7 @@ export class Evees {
 
         const newDataAction: UprtclAction = {
           type: CREATE_DATA_ACTION,
-          entity: newHasheData, 
+          entity: newHasheData,
           payload: {
             source: dataSource.source
           }
@@ -260,6 +261,8 @@ export class Evees {
           }
         };
 
+        newHeadId = securedCommit.id;
+
         actions.push(newCommitAction);
       }
     }
@@ -269,13 +272,16 @@ export class Evees {
       origin: eveesRemote.authority,
       timestamp: Date.now()
     };
-    const perspective: Secured<Perspective> = await this.secured.derive()(perspectiveData, eveesRemote.hashRecipe);
+    const perspective: Secured<Perspective> = await this.secured.derive()(
+      perspectiveData,
+      eveesRemote.hashRecipe
+    );
 
     const newPerspectiveAction: UprtclAction = {
       type: CREATE_AND_INIT_PERSPECTIVE_ACTION,
       entity: perspective,
       payload: {
-        details: { headId, name, context: details.context },
+        details: { headId: newHeadId, name, context: details.context },
         owner: canWrite || eveesRemote.userId
       }
     };

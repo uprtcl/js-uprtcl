@@ -8,16 +8,25 @@ export interface MergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config?: any
-  ): Promise<UprtclAction<any>[]>;
+  ): Promise<[string, UprtclAction[]]>;
 
   /**
    * @returns the id of the resulting merge commit
    */
-  mergeCommits(toCommitId: string, fromCommitId: string, commitSource: string, dataSource: string, config?: any): Promise<string>;
+  mergeCommits(
+    toCommitId: string,
+    fromCommitId: string,
+    dataSource: string,
+    config?: any
+  ): Promise<[string, UprtclAction[]]>;
 
   /**
    * Merges the links to other entities appropiately
    * @returns the new list of links
    */
-  mergeLinks(originalLinks: string[], modificationsLinks: string[][], config?: any): Promise<string[]>;
+  mergeLinks(
+    originalLinks: string[],
+    modificationsLinks: string[][],
+    config?: any
+  ): Promise<[string[], UprtclAction[]]>;
 }
