@@ -24,11 +24,8 @@ export async function cacheActions(actions: UprtclAction[], entityCache: EntityC
 export async function executeActions(
   actions: UprtclAction[],
   client: ApolloClient<any>,
-  entityCache: EntityCache,
   recognizer: PatternRecognizer
 ): Promise<void> {
-
-  await cacheActions(actions, entityCache);
 
   /** optimistic pre-fill the cache */
   const createDataPromises = actions

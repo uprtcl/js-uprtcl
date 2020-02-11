@@ -24,7 +24,12 @@ import {
   RemotesConfig,
   ProposalCreatedEvent,
   Perspective,
-  PerspectiveDetails
+  PerspectiveDetails,
+  UprtclAction,
+  CREATE_DATA_ACTION,
+  CREATE_COMMIT_ACTION,
+  CREATE_AND_INIT_PERSPECTIVE_ACTION,
+  UPDATE_HEAD_ACTION
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
@@ -33,7 +38,7 @@ import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees, CreatePerspectiveArgs } from '../services/evees';
 
 import { OwnerPreservingConfig } from '../merge/owner-preserving.merge-strategy';
-import { executeActions } from 'src/utils/actions';
+import { executeActions, cacheActions } from 'src/utils/actions';
 import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 
 interface PerspectiveData {
@@ -155,8 +160,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       `merge ${fromPerspectiveId} on ${this.perspectiveId} - isProposal: ${isProposal}`
     );
 
-    debugger
-
     const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
 
     const evees: Evees = this.request(EveesModule.bindings.Evees);
@@ -181,26 +184,23 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       fromPerspectiveId,
       config
     );
-
-    const updateRequests = actions.map(a => a.payload);
-
-    this.logger.info('merge computed', { updateRequests });
-
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const cache: EntityCache = this.request(DiscoveryModule.bindings.EntityCache);
-    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
-    debugger
-    await executeActions(actions, client, cache, recognizer);
-    
+ 
     if (isProposal) {
-      this.createMergeProposal(fromPerspectiveId, updateRequests);
+      this.createMergeProposal(fromPerspectiveId, actions);
     } else {
-      this.mergePerspective(updateRequests);
+      this.mergePerspective(actions);
     }
   }
 
-  async mergePerspective(updateRequests: UpdateRequest[]) {
+  async mergePerspective(actions: UprtclAction[]) {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
+    const cache: EntityCache = this.request(DiscoveryModule.bindings.EntityCache);
+
+    await cacheActions(actions, cache);
+    await executeActions(actions, client, recognizer);
+
+    const updateRequests = actions.filter(a => a.type === UPDATE_HEAD_ACTION).map(a => a.payload);
 
     const updateHeadsPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {
       await client.mutate({
@@ -215,8 +215,22 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await Promise.all(updateHeadsPromises);
   }
 
-  async createMergeProposal(fromPerspectiveId: string, updateRequests: UpdateRequest[]) {
+  async createMergeProposal(fromPerspectiveId: string, actions: UprtclAction[]) {
+    
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
+    const cache: EntityCache = this.request(DiscoveryModule.bindings.EntityCache);
+
+    await cacheActions(actions, cache);
+    
+    /** create commits and data */
+    const dataActions = actions.filter(a => [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type));
+    await executeActions(dataActions, client, recognizer);
+
+    const newPerspectiveActions = actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION);
+    await executeActions(newPerspectiveActions, client, recognizer);
+
+    const updateRequests = actions.filter(a => a.type === UPDATE_HEAD_ACTION).map(a => a.payload);
 
     /** filter updates per authority */
     const authoritiesPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {

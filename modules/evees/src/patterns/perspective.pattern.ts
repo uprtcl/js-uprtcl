@@ -41,7 +41,7 @@ import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
-import { executeActions } from 'src/utils/actions';
+import { executeActions, cacheActions } from 'src/utils/actions';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -152,7 +152,8 @@ export class PerspectiveCreate extends PerspectiveEntity
       const actions = result[1];
       const perspective = result[0];
 
-      await executeActions(actions, this.client, this.entityCache, this.patternRecognizer);
+      await cacheActions(actions, this.entityCache);
+      await executeActions(actions, this.client, this.patternRecognizer);
 
       return perspective;
     } else {

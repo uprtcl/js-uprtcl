@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { HasChildren, Hashed } from '@uprtcl/cortex';
+import { HasChildren, Hashed, Signed } from '@uprtcl/cortex';
 
 import {
   UpdateRequest,
@@ -143,40 +143,62 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
 
             await cacheActions(actions, this.entityCache);
 
-            // TODO: optimize and remove from the list the perspectives that have already had their head updated
+            /** for each new perspective that is created, 
+             *  craete a new commit and data 
+             * (should be a clone but we dont have "clone" mutations and the id 
+             *  changes when you create the same entity on another remote)  */
+            for (let ix = 0; ix < actions.length; ix++) {
+              
+              const action = actions[ix];
+              if (action.type !== CREATE_AND_INIT_PERSPECTIVE_ACTION) break;
 
-            for (const action of actions.filter(
-              a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION
-            )) {
               const headId = action.payload.details.headId;
               const remote = this.evees.getAuthority(targetAuthority);
 
-              const head: Secured<Commit> | undefined = await this.getEntity(headId);
+              const oldHead: Secured<Commit> | undefined = await this.getEntity(headId);
+              if (!oldHead) throw new Error(`Error getting the cached head: ${headId}`);
 
-              if (!head) throw new Error(`Error getting the cached head: ${headId}`);
-
-              const newCommitAction: UprtclAction = {
-                type: CREATE_COMMIT_ACTION,
-                entity: head,
-                payload: {
-                  source: remote.source
-                }
-              };
-
-              actions.push(newCommitAction);
-
-              const data = await this.getEntity(head.object.payload.dataId);
+              const oldData = await this.getEntity(oldHead.object.payload.dataId);
+              
+              const newData = await this.hashed.derive()(oldData.object, remote.hashRecipe);
               const newDataAction: UprtclAction = {
                 type: CREATE_DATA_ACTION,
-                entity: data,
+                entity: newData,
                 payload: {
                   source: remote.source
                 }
               };
 
+              /** build new head object pointing to new data */
+              const newHeadObject: Signed<Commit> = {
+                payload: {
+                  ...oldHead.object.payload,
+                  dataId: newData.id 
+                },
+                proof: {
+                  type: '',
+                  signature: ''
+                }
+              }
+              
+              const newHead = await this.hashed.derive()(newHeadObject, remote.hashRecipe);
+              
+              const newCommitAction: UprtclAction = {
+                type: CREATE_COMMIT_ACTION,
+                entity: newHead,
+                payload: {
+                  source: remote.source
+                }
+              };
+
+              /** replace head in headupdate action */
+              actions[ix].payload.details.headId = newHead.id;
+              
+              /** add the new create commit and head actions */
+              actions.push(newCommitAction);
               actions.push(newDataAction);
             }
-
+            
             return [perspective.id, actions];
           }
 
