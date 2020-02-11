@@ -42,23 +42,34 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromPerspectiveId: string,
     config?: any
   ): Promise<[string, UprtclAction[]]> {
-    const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
-      const remote = await this.evees.getPerspectiveProviderById(id);
-      const details = await remote.getPerspectiveDetails(id);
 
-      if (!details.headId)
-        throw new Error('Cannot merge a perspective that has no head associated');
-      return details.headId;
+    const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
+      const result = await this.client.query({
+        query: gql`{
+          entity(id: "${id}") {
+          id
+          ... on Perspective {
+            head {
+              id
+            }
+          }
+        }}`
+      });
+      const headId = result.data.entity.head.id;
+
+      if (!headId) throw new Error('Cannot merge a perspective that has no head associated');
+      return headId;
     });
 
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-    const isAncestor = await isAncestorOf(this.client)(fromHeadId, toHeadId);
+/*     const isAncestor = await isAncestorOf(this.client)(fromHeadId, toHeadId);
+
     if (isAncestor) {
       // All commits to merge from are ancestors of the current one, do nothing
       return [toPerspectiveId, []];
     }
-
+ */
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
 
     const [mergeCommitId, actions] = await this.mergeCommits(
@@ -78,6 +89,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     return [toPerspectiveId, [action, ...actions]];
   }
+
   protected buildUpdateAction(updateRequest: UpdateRequest): UprtclAction {
     const updateHead = {
       type: UPDATE_HEAD_ACTION,

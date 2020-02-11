@@ -293,7 +293,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
             return {
               perspective: action.entity,
               details: action.payload.details,
-              canWrite: action.payload.canWrite
+              canWrite: action.payload.owner
             };
           }
         );

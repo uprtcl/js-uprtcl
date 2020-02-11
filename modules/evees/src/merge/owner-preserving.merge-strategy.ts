@@ -242,6 +242,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     config: OwnerPreservingConfig
   ): Promise<[string, UprtclAction[]]> {
     this.depth++;
+
     const [finalPerspectiveId, mergeActionsOriginal] = await super.mergePerspectives(
       toPerspectiveId,
       fromPerspectiveId,
@@ -292,7 +293,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
         const removedHeadUpdate = mergeActionsNew.splice(ixHeadUpdate, 1)[0];
 
         /** remove create commit associated to that head update */
-        const ixCreateCommit = mergeActionsNew.findIndex(action => {
+        /*         const ixCreateCommit = mergeActionsNew.findIndex(action => {
           if (!action.entity) return false;
           return (
             action.type === CREATE_COMMIT_ACTION &&
@@ -302,7 +303,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
 
         const removedCreateCommit = mergeActionsNew.splice(ixCreateCommit, 1)[0];
 
-        /** remove create data associated to that commit */
+         remove create data associated to that commit 
         const ixCreateData = mergeActionsNew.findIndex(action => {
           if (!action.entity) return false;
           return (
@@ -310,9 +311,10 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
             action.entity.id ===
               (removedCreateCommit.entity as Secured<Commit>).object.payload.dataId
           );
-        });
-
+        }); 
+        
         mergeActionsNew.splice(ixCreateData, 1);
+       */
       });
 
     const allActions = mergeActionsNew.concat(ownerPreservingActions);

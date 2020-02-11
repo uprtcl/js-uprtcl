@@ -46,8 +46,7 @@ export async function cacheActions(
   entityCache: EntityCache,
   client: ApolloClient<any>
 ) {
-  if (!client) debugger;
-  const updateCachePromises = actions.map(action => {
+    const updateCachePromises = actions.map(action => {
     if (action.type === CREATE_AND_INIT_PERSPECTIVE_ACTION && action.entity) {
       const perspectiveId = ((action.entity as unknown) as Hashed<any>).id;
       const headId = action.payload.details.headId;
@@ -138,6 +137,7 @@ export async function executeActions(
     .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION)
     .map(async (action: UprtclAction) => {
       if (!action.entity) throw new Error('entity undefined');
+      
       const result = await client.mutate({
         mutation: CREATE_PERSPECTIVE,
         variables: {

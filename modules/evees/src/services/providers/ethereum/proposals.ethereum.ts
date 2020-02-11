@@ -60,6 +60,7 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     /** verify all perspectives are owned by the owner of the to perspective (which might not be in the updateHead list) */
     const accessData = await this.accessControl.getPermissions(toPerspectiveId);
+    
     if (!accessData)
       throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
 
