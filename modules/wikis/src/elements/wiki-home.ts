@@ -50,6 +50,7 @@ export class WikiHome extends moduleConnect(LitElement) {
       .title {
         margin: 5vw 0px 5vw;
         font-weight: bold;
+        color: #929a9e;
       }
 
       .color-bar {
