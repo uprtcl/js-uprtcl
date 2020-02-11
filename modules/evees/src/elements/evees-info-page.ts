@@ -64,7 +64,7 @@ export class EveesInfoPage extends EveesInfoBase {
                         <span>You can't edit this perspective, but you can create a new one!</span>
                       </p>` : html`
                       <p>
-                        <span>You can create and edit new pages! <br>When your are done, checkout the "Accepted Perspective" and make a "Merge Proposal".</span>
+                        <span>You can create and edit new pages! <br><br>When you are done, checkout the "Accepted Perspective" and make a "Propose Merge".</span>
                       </p>
                       `}
                   </div>
@@ -97,34 +97,34 @@ export class EveesInfoPage extends EveesInfoBase {
                 ${this.renderPermissions()}
               </div>
 
-              <div class="technical-details">
-              <div class="card-container">
-                <div class="card tech-card">
-                  <table class="tech-table">
-                    <tr>
-                      <td class="prop-name">perspective-id:</td>
-                      <td class="prop-value">${this.perspectiveData.id}</td>
-                    </tr>
-                    <tr>
-                      <td class="prop-name">context:</td>
-                      <td class="prop-value">${this.perspectiveData.details.context}</td>
-                    </tr>
-                    <tr>
-                      <td class="prop-name">origin:</td>
-                      <td class="prop-value">${this.perspectiveData.perspective.origin}</td>
-                    </tr>
-                    <tr>
-                      <td class="prop-name">head:</td>
-                      <td class="prop-value">${this.perspectiveData.details.headId}</td>
-                    </tr>
-                    <tr>
-                      <td class="prop-name">data:</td>
-                      <td class="prop-value">${this.perspectiveData.data.id}</td>
-                    </tr>
-                  </table>
+              <!-- <div class="technical-details">
+                <div class="card-container">
+                  <div class="card tech-card">
+                    <table class="tech-table">
+                      <tr>
+                        <td class="prop-name">perspective-id:</td>
+                        <td class="prop-value">${this.perspectiveData.id}</td>
+                      </tr>
+                      <tr>
+                        <td class="prop-name">context:</td>
+                        <td class="prop-value">${this.perspectiveData.details.context}</td>
+                      </tr>
+                      <tr>
+                        <td class="prop-name">origin:</td>
+                        <td class="prop-value">${this.perspectiveData.perspective.origin}</td>
+                      </tr>
+                      <tr>
+                        <td class="prop-name">head:</td>
+                        <td class="prop-value">${this.perspectiveData.details.headId}</td>
+                      </tr>
+                      <tr>
+                        <td class="prop-name">data:</td>
+                        <td class="prop-value">${this.perspectiveData.data.id}</td>
+                      </tr>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </div> -->
 
           </div>
         </div>` : ''}
@@ -150,6 +150,7 @@ export class EveesInfoPage extends EveesInfoBase {
         margin-bottom: 36px;
         border-radius: 4px;
         overflow: hidden;
+        background-color: white;
       }
       .section-header {
         font-weight: bold;
@@ -161,7 +162,7 @@ export class EveesInfoPage extends EveesInfoBase {
         padding: 2.2vw 0px 2.2vw 0px;
       }
       .description {
-        padding: 0px 1.5vw;
+        padding: 0px 2.5vw;
       }
       .info-text {
         color: #4e585c;
