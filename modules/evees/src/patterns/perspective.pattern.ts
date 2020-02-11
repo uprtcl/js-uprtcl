@@ -29,18 +29,11 @@ import {
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import {
-  Perspective,
-  UprtclAction,
-  CREATE_DATA_ACTION,
-  CREATE_COMMIT_ACTION,
-  CREATE_AND_INIT_PERSPECTIVE_ACTION,
-  PerspectiveDetails
-} from '../types';
+import { Perspective, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
-import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
+import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import { executeActions, cacheActions } from 'src/utils/actions';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
@@ -95,13 +88,6 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
               : 'false'
             : 'false';
 
-          console.log('[PERSPECTIVE-PATTERN] render()', {
-            perspective,
-            context,
-            onlyChildren,
-            color
-          });
-
           return html`
             <evees-perspective
               perspective-id=${perspective.id}
@@ -152,7 +138,7 @@ export class PerspectiveCreate extends PerspectiveEntity
       const actions = result[1];
       const perspective = result[0];
 
-      await cacheActions(actions, this.entityCache);
+      await cacheActions(actions, this.entityCache, this.client);
       await executeActions(actions, this.client, this.patternRecognizer);
 
       return perspective;

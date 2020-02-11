@@ -10,7 +10,8 @@ import {
   UprtclAction,
   UPDATE_HEAD_ACTION,
   CREATE_COMMIT_ACTION,
-  CREATE_DATA_ACTION
+  CREATE_DATA_ACTION,
+  UpdateRequest
 } from '../types';
 
 @injectable()
@@ -187,9 +188,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
            * only one head update is expected, but two are found. The head
            * of the page is updated but it should not.
            */
-          // await this.mergePerspectiveChildren(finalPerspectiveId as string);
+          const actions = await this.mergePerspectiveChildren(finalPerspectiveId as string, config);
 
-          return [finalPerspectiveId as string, [] as UprtclAction[]] as [string, UprtclAction[]];
+          return [finalPerspectiveId as string, actions] as [string, UprtclAction[]];
         }
       }
     );
@@ -264,15 +265,14 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     this.entityCache.cacheEntity(securedCommit);
 
-    const updateHead = {
-      type: UPDATE_HEAD_ACTION,
-      payload: {
-        fromPerspectiveId: undefined,
-        perspectiveId,
-        oldHeadId: headId,
-        newHeadId: securedCommit.id
-      }
+    const updateRequest: UpdateRequest = {
+      fromPerspectiveId: undefined,
+      perspectiveId,
+      oldHeadId: headId,
+      newHeadId: securedCommit.id
     };
+
+    const updateHead = this.buildUpdateAction(updateRequest);
 
     return [updateHead, newCommitAction, newDataAction];
   }

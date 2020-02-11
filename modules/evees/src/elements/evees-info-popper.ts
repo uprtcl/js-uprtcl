@@ -9,7 +9,6 @@ export const styleMap = style => {
 import { EveesInfoBase } from './evee-info-base';
 import { DEFAULT_COLOR } from './evees-perspective';
 import { prettyAddress, prettyTime } from './support';
-import { Evees, EveesModule } from 'src/uprtcl-evees';
 
 export class EveesInfoPopper extends EveesInfoBase {
   @property({ attribute: false })
@@ -20,7 +19,6 @@ export class EveesInfoPopper extends EveesInfoBase {
   }
 
   showClicked() {
-    console.log('show clicked');
     this.show = !this.show;
     if (this.show) this.load();
   }
@@ -172,7 +170,10 @@ export class EveesInfoPopper extends EveesInfoBase {
                         </div>
 
                         <div class="close">
-                          <mwc-icon-button icon="close" @click=${this.showClicked}></mwc-icon-button>
+                          <mwc-icon-button
+                            icon="close"
+                            @click=${this.showClicked}
+                          ></mwc-icon-button>
                         </div>
                       </div>
                     `

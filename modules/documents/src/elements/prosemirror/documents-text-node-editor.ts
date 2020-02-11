@@ -43,7 +43,6 @@ export class DocumentTextNodeEditor extends LitElement {
 
   @property({ type: Boolean, attribute: false })
   empty: Boolean = false;
-  
 
   preventHide: Boolean = false;
   content: any | undefined = undefined;
@@ -108,7 +107,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
     const doc = this.editor.parser.parse(element);
 
-    /** the heading level for render is given by the `level` attribute, 
+    /** the heading level for render is given by the `level` attribute,
      * not the heading tag (which is always <h1> in the data text) */
     if (doc.content.content[0].type.name === 'heading') {
       doc.content.content[0].attrs.level = this.level;
@@ -145,7 +144,7 @@ export class DocumentTextNodeEditor extends LitElement {
     if (!contentChanged) return;
 
     /** doc changed */
-    
+
     /** make sure heading is <h1> */
     if (newState.doc.content.content[0].type.name === 'heading') {
       newState.doc.content.content[0].attrs.level = 1;
@@ -219,7 +218,6 @@ export class DocumentTextNodeEditor extends LitElement {
       new URL(href);
     } catch (_) {
       valid = false;
-      console.log('Invalid url');
     }
     if (valid) {
       toggleMark(this.editor.schema.marks.link, { href })(
@@ -328,7 +326,7 @@ export class DocumentTextNodeEditor extends LitElement {
           fill: white;
           color: white;
         }
-        
+
         .btn:hover {
           background-color: #444444;
           transition: background-color 100ms linear;

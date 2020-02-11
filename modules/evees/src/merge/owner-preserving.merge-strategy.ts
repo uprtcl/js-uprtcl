@@ -141,14 +141,13 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
               targetCanWrite
             );
 
-            await cacheActions(actions, this.entityCache);
+            await cacheActions(actions, this.entityCache, this.client);
 
-            /** for each new perspective that is created, 
-             *  craete a new commit and data 
-             * (should be a clone but we dont have "clone" mutations and the id 
+            /** for each new perspective that is created,
+             *  craete a new commit and data
+             * (should be a clone but we dont have "clone" mutations and the id
              *  changes when you create the same entity on another remote)  */
             for (let ix = 0; ix < actions.length; ix++) {
-              
               const action = actions[ix];
               if (action.type !== CREATE_AND_INIT_PERSPECTIVE_ACTION) break;
 
@@ -159,7 +158,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
               if (!oldHead) throw new Error(`Error getting the cached head: ${headId}`);
 
               const oldData = await this.getEntity(oldHead.object.payload.dataId);
-              
+
               const newData = await this.hashed.derive()(oldData.object, remote.hashRecipe);
               const newDataAction: UprtclAction = {
                 type: CREATE_DATA_ACTION,
@@ -173,16 +172,16 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
               const newHeadObject: Signed<Commit> = {
                 payload: {
                   ...oldHead.object.payload,
-                  dataId: newData.id 
+                  dataId: newData.id
                 },
                 proof: {
                   type: '',
                   signature: ''
                 }
-              }
-              
+              };
+
               const newHead = await this.hashed.derive()(newHeadObject, remote.hashRecipe);
-              
+
               const newCommitAction: UprtclAction = {
                 type: CREATE_COMMIT_ACTION,
                 entity: newHead,
@@ -193,12 +192,12 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
 
               /** replace head in headupdate action */
               actions[ix].payload.details.headId = newHead.id;
-              
+
               /** add the new create commit and head actions */
               actions.push(newCommitAction);
               actions.push(newDataAction);
             }
-            
+
             return [perspective.id, actions];
           }
 
@@ -229,25 +228,30 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
       const globalPerspectiveActions = result.map(r => r[1]);
       return actions.concat(...globalPerspectiveActions);
     } else {
-      const action = {
-        type: UPDATE_HEAD_ACTION,
-        payload: updateRequest
-      };
+      const action = this.buildUpdateAction(updateRequest);
 
       return [action];
     }
   }
+
+  depth: number = 0;
 
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config: OwnerPreservingConfig
   ): Promise<[string, UprtclAction[]]> {
+    this.depth++;
     const [finalPerspectiveId, mergeActionsOriginal] = await super.mergePerspectives(
       toPerspectiveId,
       fromPerspectiveId,
       config
     );
+    this.depth--;
+
+    if (this.depth > 0) return [finalPerspectiveId, mergeActionsOriginal];
+
+    await cacheActions(mergeActionsOriginal, this.entityCache, this.client);
 
     /** review all updates and craete new global perspective if target authority and
      * canWrite are not as exected. This keeps the target perspective under control of one
@@ -269,35 +273,47 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
 
     const ownerPreservingActionsPre = await Promise.all(getOwnerPreservingPromises);
     const ownerPreservingActions = ([] as UprtclAction[]).concat(...ownerPreservingActionsPre);
-        
+
     /** remove the original headUpdate in mergeActionsOriginal fro which there is a new headUpdate in ownerPreservingActions */
     let mergeActionsNew = [...mergeActionsOriginal];
 
-    ownerPreservingActions.filter(a => a.type === UPDATE_HEAD_ACTION).forEach((ownerPreservingAction) => {
-      const ixHeadUpdate = mergeActionsNew.findIndex((actionOriginal) => {
-        return (actionOriginal.type === UPDATE_HEAD_ACTION) && 
-          ((actionOriginal.payload as UpdateRequest).perspectiveId === (ownerPreservingAction.payload as UpdateRequest).perspectiveId)
+    ownerPreservingActions
+      .filter(a => a.type === UPDATE_HEAD_ACTION)
+      .forEach(ownerPreservingAction => {
+        const ixHeadUpdate = mergeActionsNew.findIndex(actionOriginal => {
+          return (
+            actionOriginal.type === UPDATE_HEAD_ACTION &&
+            (actionOriginal.payload as UpdateRequest).perspectiveId ===
+              (ownerPreservingAction.payload as UpdateRequest).perspectiveId
+          );
+        });
+
+        /** remove head update */
+        const removedHeadUpdate = mergeActionsNew.splice(ixHeadUpdate, 1)[0];
+
+        /** remove create commit associated to that head update */
+        const ixCreateCommit = mergeActionsNew.findIndex(action => {
+          if (!action.entity) return false;
+          return (
+            action.type === CREATE_COMMIT_ACTION &&
+            action.entity.id === (removedHeadUpdate.payload as UpdateRequest).newHeadId
+          );
+        });
+
+        const removedCreateCommit = mergeActionsNew.splice(ixCreateCommit, 1)[0];
+
+        /** remove create data associated to that commit */
+        const ixCreateData = mergeActionsNew.findIndex(action => {
+          if (!action.entity) return false;
+          return (
+            action.type === CREATE_DATA_ACTION &&
+            action.entity.id ===
+              (removedCreateCommit.entity as Secured<Commit>).object.payload.dataId
+          );
+        });
+
+        mergeActionsNew.splice(ixCreateData, 1);
       });
-
-      /** remove head update */
-      const removedHeadUpdate = mergeActionsNew.splice(ixHeadUpdate, 1)[0];
-
-      /** remove create commit associated to that head update */
-      const ixCreateCommit = mergeActionsNew.findIndex((action) => {
-        if (!action.entity) return false;
-        return (action.type === CREATE_COMMIT_ACTION) && (action.entity.id === (removedHeadUpdate.payload as UpdateRequest).newHeadId);
-      })
-
-      const removedCreateCommit = mergeActionsNew.splice(ixCreateCommit, 1)[0];
-
-      /** remove create data associated to that commit */
-      const ixCreateData = mergeActionsNew.findIndex((action) => {
-        if (!action.entity) return false;
-        return (action.type === CREATE_DATA_ACTION) && (action.entity.id === (removedCreateCommit.entity as Secured<Commit>).object.payload.dataId);
-      })
-
-      mergeActionsNew.splice(ixCreateData, 1);
-    })
 
     const allActions = mergeActionsNew.concat(ownerPreservingActions);
 

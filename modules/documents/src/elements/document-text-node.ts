@@ -319,11 +319,6 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    console.log('[DOCUMENT-NODE] connectedCallback()', {
-      data: this.data,
-      onlyChildren: this.onlyChildren
-    });
-
     this.addEventListener(CREATE_SYBLING_TAG, ((e: CreateSyblingEvent) => {
       if (!this.data) return;
 

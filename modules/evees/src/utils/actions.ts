@@ -1,20 +1,95 @@
-import { ApolloClient } from 'apollo-boost';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import { createEntity, EntityCache } from '@uprtcl/multiplatform';
-import { PatternRecognizer } from '@uprtcl/cortex';
+import { PatternRecognizer, Hashed } from '@uprtcl/cortex';
 
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
 import {
   UprtclAction,
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
-  CREATE_AND_INIT_PERSPECTIVE_ACTION
+  CREATE_AND_INIT_PERSPECTIVE_ACTION,
+  UPDATE_HEAD_ACTION
 } from '../types';
 
-export async function cacheActions(actions: UprtclAction[], entityCache: EntityCache, ) {
+export function cacheUpdateRequest(
+  client: ApolloClient<any>,
+  perspectiveId: string,
+  headId: string
+): void {
+  client.cache.writeQuery({
+    query: gql`{
+      entity(id: "${perspectiveId}") {
+        id
+        ... on Perspective {
+          head {
+            id
+          }
+        }
+      }
+    }`,
+    data: {
+      entity: {
+        __typename: 'Perspective',
+        id: perspectiveId,
+        head: {
+          __typename: 'Commit',
+          id: headId
+        }
+      }
+    }
+  });
+}
+
+export async function cacheActions(
+  actions: UprtclAction[],
+  entityCache: EntityCache,
+  client: ApolloClient<any>
+) {
+  if (!client) debugger;
   const updateCachePromises = actions.map(action => {
-    if (action.entity) {
-      return entityCache.cacheEntity(action.entity);
+    if (action.type === CREATE_AND_INIT_PERSPECTIVE_ACTION && action.entity) {
+      const perspectiveId = ((action.entity as unknown) as Hashed<any>).id;
+      const headId = action.payload.details.headId;
+
+      const raw = JSON.stringify(action.entity.object);
+
+      client.cache.writeQuery({
+        query: gql`{
+          entity(id: "${perspectiveId}") {
+            id
+            ... on Perspective {
+              head {
+                id
+              }
+            }
+            _context {
+              raw
+            }
+          }
+        }`,
+        data: {
+          entity: {
+            __typename: 'Perspective',
+            id: perspectiveId,
+            head: {
+              __typename: 'Commit',
+              id: headId
+            },
+            _context: {
+              __typename: 'EntityContext',
+              raw
+            }
+          }
+        }
+      });
+    } else if (action.entity) {
+      entityCache.cacheEntity(action.entity);
+    }
+    if (action.type === UPDATE_HEAD_ACTION) {
+      const perspectiveId = action.payload.perspectiveId;
+
+      cacheUpdateRequest(client, perspectiveId, action.payload.newHeadId);
     }
   });
 
@@ -26,7 +101,6 @@ export async function executeActions(
   client: ApolloClient<any>,
   recognizer: PatternRecognizer
 ): Promise<void> {
-
   /** optimistic pre-fill the cache */
   const createDataPromises = actions
     .filter(a => a.type === CREATE_DATA_ACTION)

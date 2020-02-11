@@ -23,6 +23,7 @@ import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
 import { CidHashedPattern } from '../patterns/cid-hashed.pattern';
+import { cacheUpdateRequest } from 'src/utils/actions';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
@@ -73,19 +74,20 @@ export class SimpleMergeStrategy implements MergeStrategy {
       oldHeadId: toHeadId,
       newHeadId: mergeCommitId
     };
+    const action = this.buildUpdateAction(request);
 
-    return [
-      toPerspectiveId,
-      [
-        {
-          type: UPDATE_HEAD_ACTION,
-          payload: request
-        },
-        ...actions
-      ]
-    ];
+    return [toPerspectiveId, [action, ...actions]];
   }
+  protected buildUpdateAction(updateRequest: UpdateRequest): UprtclAction {
+    const updateHead = {
+      type: UPDATE_HEAD_ACTION,
+      payload: updateRequest
+    };
 
+    cacheUpdateRequest(this.client, updateRequest.perspectiveId, updateRequest.newHeadId);
+
+    return updateHead;
+  }
   protected async loadPerspectiveData(perspectiveId: string): Promise<Hashed<any>> {
     const result = await this.client.query({
       query: gql`{
