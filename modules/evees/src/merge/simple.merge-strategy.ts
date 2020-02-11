@@ -42,7 +42,6 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromPerspectiveId: string,
     config?: any
   ): Promise<[string, UprtclAction[]]> {
-
     const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
       const result = await this.client.query({
         query: gql`{
@@ -63,7 +62,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-/*     const isAncestor = await isAncestorOf(this.client)(fromHeadId, toHeadId);
+    /*     
+    const isAncestor = await isAncestorOf(this.client)(fromHeadId, toHeadId);
 
     if (isAncestor) {
       // All commits to merge from are ancestors of the current one, do nothing
