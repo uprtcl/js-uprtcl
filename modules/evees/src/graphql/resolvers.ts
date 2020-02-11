@@ -1,20 +1,15 @@
-import {
-  DiscoveryService,
-  DiscoveryModule,
-  TaskQueue,
-  Task,
-  EntityCache
-} from '@uprtcl/multiplatform';
-import { Pattern, Creatable, Signed, IsSecure } from '@uprtcl/cortex';
-import { Secured } from '../patterns/default-secured.pattern';
+import { ApolloClient, gql } from 'apollo-boost';
 
+import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { IsSecure } from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/graphql';
+
+import { Secured } from '../patterns/default-secured.pattern';
 import { Commit, Perspective } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
-import { ApolloClient, gql } from 'apollo-boost';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { EveesRemote } from 'src/services/evees.remote';
+import { EveesRemote } from '../services/evees.remote';
 
 export const eveesResolvers = {
   Commit: {

@@ -1,4 +1,4 @@
-import { ApolloClient } from 'apollo-boost';
+import { ApolloClient, gql } from 'apollo-boost';
 import { inject, injectable } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
@@ -25,8 +25,6 @@ export class SimpleMergeStrategy implements MergeStrategy {
   constructor(
     @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
     @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {}
@@ -50,15 +48,21 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-    const isAncestor = await isAncestorOf(this.discovery)(fromHeadId, toHeadId);
+    const isAncestor = await isAncestorOf(this.client)(fromHeadId, toHeadId);
     if (isAncestor) {
       // All commits to merge from are ancestors of the current one, do nothing
       return this.updatesList;
     }
 
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
-    
-    const mergeCommitId = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, remote.source, config);
+
+    const mergeCommitId = await this.mergeCommits(
+      toHeadId,
+      fromHeadId,
+      remote.authority,
+      remote.source,
+      config
+    );
 
     this.addUpdateRequest({
       fromPerspectiveId,
@@ -73,37 +77,70 @@ export class SimpleMergeStrategy implements MergeStrategy {
   protected addUpdateRequest(request: UpdateRequest): void {
     const updateHeadAction: UprtclAction = {
       type: UPDATE_HEAD_ACTION,
-      payload: request      
-    }
+      payload: request
+    };
     this.updatesList.push(updateHeadAction);
   }
 
   protected async loadPerspectiveData(perspectiveId: string): Promise<Hashed<any>> {
-    const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
-    const details = await remote.getPerspectiveDetails(perspectiveId);
-    if (!details.headId)
-      throw new Error(
-        `Error when trying to load data for perspective ${perspectiveId}: perspective has no head associated`
-      );
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${perspectiveId}") {
+          id
+          ... on Perspective {
+            head {
+              id
+              data {
+                id 
+                _context {
+                  raw
+                }
+              }
+            }
+          }
+        }
+      }`
+    });
 
-    return this.loadCommitData(details.headId);
+    const object = JSON.parse(result.data.entity.head.data._context.raw);
+    return {
+      id: result.data.entity.head.data.id,
+      object
+    };
   }
 
   protected async loadCommitData(commitId: string): Promise<Hashed<any>> {
-    const commit: Secured<Commit> | undefined = await this.discovery.get(commitId);
-    if (!commit) throw new Error(`Could not fetch ancestor commit with id ${commitId}`);
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${commitId}") {
+          id
+          data {
+            id
+            _context {
+              raw
+            }
+          }
+        }
+      }`
+    });
 
-    const data = await this.discovery.get(commit.object.payload.dataId);
-    if (!data)
-      throw new Error(`Could not fetch ancestor data with id ${commit.object.payload.dataId}`);
-
-    return data;
+    const object = JSON.parse(result.data.entity.data._context.raw);
+    return {
+      id: result.data.entity.data.id,
+      object
+    };
   }
 
-  async mergeCommits(toCommitId: string, fromCommitId: string, authority: string, source: string, config: any): Promise<string> {
+  async mergeCommits(
+    toCommitId: string,
+    fromCommitId: string,
+    authority: string,
+    source: string,
+    config: any
+  ): Promise<string> {
     const commitsIds = [toCommitId, fromCommitId];
 
-    const ancestorId = await findMostRecentCommonAncestor(this.discovery)(commitsIds);
+    const ancestorId = await findMostRecentCommonAncestor(this.client)(commitsIds);
     const ancestorData: any = await this.loadCommitData(ancestorId);
 
     const datasPromises = commitsIds.map(async commitId => this.loadCommitData(commitId));
@@ -111,9 +148,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const newDatas: any[] = await Promise.all(datasPromises);
 
     const newData = await this.mergeData(ancestorData, newDatas, config);
-    
+
     const patternName = this.recognizer.recognize(newData)[0].name;
-    const newDataId = await createEntity(this.recognizer)(newData, this.remotesConfig.map(authority, patternName).source);
+    const newDataId = await createEntity(this.recognizer)(
+      newData,
+      this.remotesConfig.map(authority, patternName).source
+    );
+
+    const remote = this.evees.getAuthority(authority);
 
     const mergeCommit = await this.client.mutate({
       mutation: CREATE_COMMIT,
@@ -121,6 +163,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
         dataId: newDataId,
         parentsIds: commitsIds,
         message: `Merge commits ${commitsIds.toString()}`,
+        timestamp: Date.now(),
+        creatorsIds: [remote.userId],
         source: source
       }
     });
@@ -139,7 +183,11 @@ export class SimpleMergeStrategy implements MergeStrategy {
     return merge.merge(originalData)(newDatas, this, config);
   }
 
-  async mergeLinks(originalLinks: string[], modificationsLinks: string[][], config): Promise<string[]> {
+  async mergeLinks(
+    originalLinks: string[],
+    modificationsLinks: string[][],
+    config
+  ): Promise<string[]> {
     const allLinks: Dictionary<boolean> = {};
 
     const originalLinksDic = {};

@@ -1,11 +1,11 @@
-import { injectable, inject } from 'inversify';
+import { injectable } from 'inversify';
 
 import { HasChildren, Hashed } from '@uprtcl/cortex';
-import { Permissions } from '@uprtcl/access-control';
 
 import { UpdateRequest, RemotesConfig, UprtclAction, UPDATE_HEAD_ACTION } from '../types';
 import { RecursiveContextMergeStrategy } from './recursive-context.merge-strategy';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
+import gql from 'graphql-tag';
 
 export interface OwnerPreservingConfig {
   targetCanWrite: string;
@@ -21,7 +21,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
   ): Promise<UprtclAction[]> {
     await super.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
 
-    /** review all updates and craete new globnal perspective if target authority and
+    /** review all updates and craete new global perspective if target authority and
      * canWrite are not as exected. This keeps the target perspective under control of one
      * owner and authority */
 
@@ -66,8 +66,9 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
           newLinks = newHasChildren.getChildrenLinks(newData);
         }
 
-        /** check for each newLink that was not an old link if the authority and canWrite are the
-         * target, if not, create a global perspective on the targetAuthority wher targetCanWrite canWrite
+        /**
+         * Check for each newLink that was not an old link if the authority and canWrite are the
+         * target, if not, create a global perspective on the targetAuthority where targetCanWrite canWrite
          */
 
         const newNewLinksPromises = newLinks.map(
@@ -76,40 +77,63 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
               let fork = false;
 
               /** TODO: instead of using getPerspectiveProviderById, get access control
-               * from pattern te generalize to not-to-perspective links */
-              const remote = await this.evees.getPerspectiveProviderById(newLink);
+               * from pattern and generalize to not-to-perspective links */
+              const result = await this.client.query({
+                query: gql`{
+                  entity(id: "${newLink}") {
+                    id
 
-              if (remote.authority !== targetAuthority) {
+                    ... on Perspective {
+                      payload {
+                        origin
+                      }
+                      head {
+                        id
+                      }
+                      context {
+                        id
+                      }
+                      name
+                    }
+
+                    _context {
+                      patterns {
+                        accessControl {
+                          permissions
+                          canWrite
+                        }
+                      }
+                    }
+                  }
+                }`
+              });
+              const authority = result.data.entity.payload.origin;
+              const canWrite = result.data.entity._context.patterns.accessControl.canWrite;
+              const headId = result.data.entity.head.id;
+              const name = result.data.entity.name;
+              const context = result.data.entity.context.id;
+              const remote = this.evees.getAuthority(authority);
+
+              if (authority !== targetAuthority) {
                 /** if different remote, then fork */
                 fork = true;
               } else {
-                // if same remote then check canWrite too
-                const permissions = await remote.accessControl.getPermissions(newLink);
-
-                const permissionsPattern: Permissions<any> | undefined = this.recognizer
-                  .recognize(permissions)
-                  .find(prop => !!(prop as Permissions<any>).canWrite);
-
-                if (!permissionsPattern) throw new Error('Target remote cant hanle canWrite');
-
-                const userId = remote.userId;
-                const canWrite = permissionsPattern.canWrite(permissions)(userId);
-
                 if (!canWrite) {
                   fork = true;
                 }
               }
 
               if (fork) {
-                const details = await remote.getPerspectiveDetails(newLink);
-
-                /** create a global perspective of the link and set as the bew link */
+                /** create a global perspective of the link and set as the new link */
                 const perspectiveMutation = await this.client.mutate({
                   mutation: CREATE_PERSPECTIVE,
                   variables: {
-                    headId: details.headId,
-                    context: details.context,
-                    name: `from${details.name ? '-' + details.name : ''}`,
+                    headId: headId,
+                    context: context,
+                    timestamp: Date.now(),
+                    name: `from${name ? '-' + name : ''}`,
+                    origin: targetAuthority,
+                    creatorId: remote.userId,
                     authority: targetAuthority,
                     canWrite: targetCanWrite,
                     recursive: true
@@ -133,7 +157,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
           newNewLinks.length === newLinks.length &&
           newNewLinks.every((value, index) => value === newLinks[index]);
         if (!sameLinks) {
-          /** create a new data and commit with the new links and upadte perspective head */
+          /** create a new data and commit with the new links and update perspective head */
           if (!newHasChildren)
             throw new Error('Target data dont have children, cant update its links');
 

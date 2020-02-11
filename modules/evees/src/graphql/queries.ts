@@ -39,7 +39,9 @@ export const CREATE_COMMIT = gql`
       data {
         id
       }
-      parentsIds
+      parentCommits {
+        id
+      }
       message
       timestamp
     }
