@@ -5,31 +5,41 @@ import { Pattern } from '@uprtcl/cortex';
 import { HasLenses } from '@uprtcl/lenses';
 
 import { Permissions } from '../properties/permissions';
-import { BasicAdminAccessControl } from '../services/basic-admin-control.service';
+import { BasicAdminPermissions } from '../services/basic-admin-control.service';
 
 @injectable()
-export class BasicAdminPattern implements Pattern, HasLenses, Permissions<BasicAdminAccessControl> {
+export class BasicAdminPattern implements Pattern, HasLenses, Permissions<BasicAdminPermissions> {
   recognize = (entity: any) => {
     return (
-      (entity as BasicAdminAccessControl).publicWrite !== undefined &&
-      (entity as BasicAdminAccessControl).publicRead !== undefined &&
-      (entity as BasicAdminAccessControl).canAdmin !== undefined &&
-      (entity as BasicAdminAccessControl).canRead !== undefined &&
-      (entity as BasicAdminAccessControl).canWrite !== undefined
+      (entity as BasicAdminPermissions).publicWrite !== undefined &&
+      (entity as BasicAdminPermissions).publicRead !== undefined &&
+      (entity as BasicAdminPermissions).canAdmin !== undefined &&
+      (entity as BasicAdminPermissions).canRead !== undefined &&
+      (entity as BasicAdminPermissions).canWrite !== undefined
     );
   };
 
-  canWrite = (entity: BasicAdminAccessControl) => (userId: string | undefined): boolean => {
-    return true;
+  canWrite = (entity: BasicAdminPermissions) => (userId: string | undefined): boolean => {
+    debugger
+    if (entity.publicWrite) return true;
+    if (!userId) return false;
+    if (entity.canWrite.includes(userId)) return true;
+    if (entity.canAdmin.includes(userId)) return true;
+    return false;
   };
 
-  lenses = (entity: BasicAdminAccessControl) => [
+  lenses = (entity: BasicAdminPermissions) => [
     {
       name: 'basic-admin-access-control',
       type: 'permissions',
       render: (_, context: any) =>
         html`
-          <h1>TBD</h1>
+          <!-- <h1>?</h1> -->
+          <permissions-admin
+            .permissions=${entity}
+            .canWrite=${context.canWrite}
+            .entityId=${context.entityId}
+          ></permissions-admin>
         `
     }
   ];

@@ -13,7 +13,7 @@ export {
 } from './services/owner-access-control.service';
 
 export {
-  BasicAdminAccessControl,
+  BasicAdminPermissions,
   BasicAdminAccessControlService
 } from './services/basic-admin-control.service';
 

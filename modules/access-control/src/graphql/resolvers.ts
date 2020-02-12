@@ -6,12 +6,12 @@ import { Permissions } from '../properties/permissions';
 import { Updatable } from '../properties/updatable';
 import { OwnerAccessControlService } from 'src/services/owner-access-control.service';
 import { AccessControlService } from '../services/access-control.service';
+import { access } from 'fs';
+import { BasicAdminPermissions } from 'src/services/basic-admin-control.service';
 
 export const accessControlResolvers = {
   Mutation: {
     async setCanWrite(_, { entityId, userId }, { container }) {
-      // const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
-      // const entity = entityCache.getCachedEntity(entityId);
       const discoveryService: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
       const entity: any = await discoveryService.get(entityId);
 
@@ -34,6 +34,43 @@ export const accessControlResolvers = {
         );
 
       await accessControl.setCanWrite(entityId, userId);
+
+      return entityId;
+    },
+    async setPublicRead(_,{ entityId, value}, { container }) {
+      const discoveryService: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
+      const entity: any = await discoveryService.get(entityId);
+
+      const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
+
+      if (!entity) throw new Error(`Cannot change owner of ${entityId}: entity not found`);
+
+      const updatable: Updatable<any> | undefined = recognizer
+        .recognize(entity)
+        .find(prop => !!(prop as Updatable<any>).accessControl);
+
+      if (!updatable)
+        throw new Error(`Cannot change owner of ${entityId}: no Updatable pattern implemented`);
+
+      const accessControl: AccessControlService<BasicAdminPermissions> | undefined = updatable.accessControl(entity);
+
+      if (!accessControl)
+        throw new Error(
+          `Cannot set permissions of ${entityId}: no AccessControlService associated with this entity`
+        );
+
+      const currentPermissions = await accessControl.getPermissions(entityId);
+      if (!currentPermissions) throw new Error(`Persmissions for entity ${entityId} not found`);
+
+      const newPermissions: BasicAdminPermissions = {
+        canAdmin: currentPermissions.canAdmin,
+        canRead: currentPermissions.canRead,
+        canWrite: currentPermissions.canWrite,
+        publicWrite: currentPermissions.publicWrite,
+        publicRead: value
+      }
+      
+      await accessControl.setPermissions(entityId, newPermissions);
 
       return entityId;
     }

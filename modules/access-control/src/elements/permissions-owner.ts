@@ -19,6 +19,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
 
   @property()
   permissions!: OwnerPermissions;
+
   @property()
   canWrite!: boolean;
 
@@ -93,10 +94,12 @@ export class PermissionsOwner extends moduleConnect(LitElement)
       ${this.renderDialog()}
       <span><strong>${this.t('access-control:owner')}:</strong> ${this.permissions.owner}</span>
       ${this.canWrite ? html`
-        <mwc-button raised icon="swap_horizontal" @click=${() => (this.dialog.open = true)}
-          >${this.t('access-control:transfer-ownership')}</mwc-button
-        >` : ''}
-      
+        <mwc-button 
+          outlined 
+          icon="swap_horizontal" 
+          @click=${() => (this.dialog.open = true)}>
+          ${this.t('access-control:transfer-ownership')}
+        </mwc-button>` : ''}      
     `;
   }
 }

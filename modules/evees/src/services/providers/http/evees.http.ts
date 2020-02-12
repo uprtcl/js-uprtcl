@@ -39,17 +39,13 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
       ethConnection
     );
 
-    this.accessControl =  new EveesAccessControlHttp();
+    this.accessControl = new EveesAccessControlHttp(host, this.connection);
     this.knownSources= new KnownSourcesHttp(host, this.connection);
     this.hashRecipe = hashRecipe;
   }
 
   ready(): Promise<void> {
     return Promise.resolve();
-  }
-
-  get userId() {
-    return 'anonymous';
   }
 
   get source() {
