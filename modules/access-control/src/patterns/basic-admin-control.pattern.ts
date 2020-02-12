@@ -20,7 +20,6 @@ export class BasicAdminPattern implements Pattern, HasLenses, Permissions<BasicA
   };
 
   canWrite = (entity: BasicAdminPermissions) => (userId: string | undefined): boolean => {
-    debugger
     if (entity.publicWrite) return true;
     if (!userId) return false;
     if (entity.canWrite.includes(userId)) return true;
