@@ -18,10 +18,6 @@ export class HttpProvider implements Authority {
     return this.connection.userId;
   }
 
-  set authInfo(info) {
-    this.connection.userId = info.userId;
-  }
-
   ready(): Promise<void> {
     return Promise.resolve();
   }

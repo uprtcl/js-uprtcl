@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "@uprtcl/cortex": "^0.0.4-alpha2",
+    "@uprtcl/ethereum-provider": "0.0.4-alpha2",
     "@uprtcl/micro-orchestrator": "^0.0.4-alpha2",
     "@uprtcl/multiplatform": "^0.0.4-alpha2",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "web3": "^1.2.6"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.7.4",
