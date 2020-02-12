@@ -3,7 +3,29 @@ import { Secured } from '../patterns/default-secured.pattern';
 import { Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesSource } from './evees.source';
 
+export interface NewPerspectiveData {
+  perspective: Secured<Perspective>;
+  details: PerspectiveDetails;
+  canWrite?: string
+}
+
 export interface EveesProvider extends EveesSource {
+
+  /**
+   * Clone a perspective, set its details and forces a user canWrite in the service. 
+   
+   * @param newPerspectiveData: TBW
+   */
+  cloneAndInitPerspective(newPerspectiveData: NewPerspectiveData): Promise<void>;
+
+  /**
+   * Batch call to cloneAndInitPerspective
+   *
+   * @param newPerspectivesData: TBW
+   */
+  clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void>;
+
+
   /** Cloners */
 
   /**
@@ -13,6 +35,7 @@ export interface EveesProvider extends EveesSource {
    */
   clonePerspective(perspective: Secured<Perspective>): Promise<void>;
 
+  
   /**
    * Clone the given commit in the service
    *

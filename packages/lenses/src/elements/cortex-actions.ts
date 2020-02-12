@@ -1,8 +1,8 @@
 import { LitElement, html, property, query, PropertyValues, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 import { flatMap } from 'lodash-es';
-import { Menu } from '@authentic/mwc-menu';
-import '@authentic/mwc-list';
+import { Menu } from '@material/mwc-menu';
+import '@material/mwc-list/mwc-list-item';
 import '@authentic/mwc-tooltip';
 import '@material/mwc-icon-button';
 import '@material/mwc-button';

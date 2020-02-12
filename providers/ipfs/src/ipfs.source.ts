@@ -1,3 +1,5 @@
+import CBOR from 'cbor-js';
+
 import { Hashed } from '@uprtcl/cortex';
 import { Source } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -5,16 +7,30 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { CidConfig, defaultCidConfig } from './cid.config';
 import { IpfsConnection } from './ipfs.connection';
 
+export function sortObject(object: object): object {
+  if (typeof object !== 'object' || object instanceof Array) {
+    // Not to sort the array
+    return object;
+  }
+  const keys = Object.keys(object).sort();
+
+  const newObject = {};
+  for (let i = 0; i < keys.length; i++) {
+    newObject[keys[i]] = sortObject(object[keys[i]]);
+  }
+  return newObject;
+}
+
 export class IpfsSource implements Source {
   logger = new Logger('IpfsSource');
-
-  constructor(protected ipfsConnection: IpfsConnection) {}
-
+  
   source = 'ipfs';
+  hashRecipe: CidConfig;
 
-  private getObjectBuffer(object: object): Buffer {
-    return Buffer.from(JSON.stringify(object));
+  constructor(protected ipfsConnection: IpfsConnection, hashRecipe: CidConfig) {
+    this.hashRecipe = hashRecipe;
   }
+
 
   /**
    * @override
@@ -26,23 +42,24 @@ export class IpfsSource implements Source {
   /**
    * Adds a raw js object to IPFS with the given cid configuration
    */
-  public async addObject(object: object, cidConfig: CidConfig = defaultCidConfig): Promise<string> {
+  public async addObject(object: object): Promise<string> {
     let putConfig = {
-      format: cidConfig.codec,
-      hashAlg: cidConfig.type,
-      cidVersion: cidConfig.version
+      format: this.hashRecipe.codec,
+      hashAlg: this.hashRecipe.type,
+      cidVersion: this.hashRecipe.version
     };
 
-    this.logger.log(`Trying to add object:`, object);
-
-    const buffer = this.getObjectBuffer(object);
+    
+    const sorted = sortObject(object);
+    const buffer = CBOR.encode(sorted);
+    this.logger.log(`Trying to add object:`, {object, sorted, buffer});
 
     /** recursively try */
     return this.ipfsConnection
       .tryPut(buffer, putConfig, 500, 0)
       .then((result: any) => {
-        let hashString = result.toString(cidConfig.base);
-        this.logger.log(`Object stored`, object, { hashString });
+        let hashString = result.toString(this.hashRecipe.base);
+        this.logger.log(`Object stored`, { object, sorted, buffer, hashString });
         return hashString;
       })
       .catch(e => {
@@ -56,13 +73,11 @@ export class IpfsSource implements Source {
    */
   public async get<T>(hash: string): Promise<Hashed<T> | undefined> {
     /** recursively try */
-    // this.logger.warn('IPFS Disabled!');
-    // return undefined;
     return this.ipfsConnection
       .tryGet(hash, 500, 0)
       .then(raw => {
-        let object = JSON.parse(Buffer.from(raw.value).toString());
-        this.logger.log(`Object retrieved ${hash}`, object);
+        let object = CBOR.decode(raw.value.buffer);
+        this.logger.log(`Object retrieved ${hash}`, { raw, object });
         return { id: hash, object: object };
       })
       .catch(e => {

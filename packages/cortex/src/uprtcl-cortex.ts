@@ -5,6 +5,7 @@ import 'reflect-metadata';
 export { Pattern, Entity, Property } from './pattern';
 export { Cloneable } from './properties/cloneable';
 export { Creatable } from './properties/creatable';
+export { Newable } from './properties/newable';
 export { HasContent } from './properties/has-content';
 export { Derivable } from './properties/derivable';
 export { Hashable, Hashed } from './properties/hashable';

@@ -28,7 +28,7 @@ export class IpfsConnection extends Connection {
 
   public tryPut(buffer: Buffer, putConfig: object, wait: number, attempt: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.logger.log(`Try put. Attempt: ${attempt}`);
+      this.logger.log(`Try put. Attempt: ${attempt}`, { client: this.client, buffer, putConfig });
 
       let timeout;
       if (attempt < 4) {

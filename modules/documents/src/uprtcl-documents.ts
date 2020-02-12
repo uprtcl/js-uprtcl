@@ -2,6 +2,7 @@
 import 'reflect-metadata';
 
 export { TextNode, TextType } from './types';
+export { DocumentsBindings } from './bindings';
 
 export { DocumentsProvider } from './services/documents.provider';
 export { DocumentsHolochain } from './services/providers/documents.holochain';

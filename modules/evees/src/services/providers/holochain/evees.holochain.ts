@@ -2,14 +2,23 @@ import { injectable } from 'inversify';
 
 import { EntryResult, HolochainProvider } from '@uprtcl/holochain-provider';
 import { Signed, Hashed } from '@uprtcl/cortex';
+import { KnownSourcesService } from '@uprtcl/multiplatform';
 
 import { Secured } from '../../../patterns/default-secured.pattern';
 import { Perspective, Commit, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
+import { NewPerspectiveData } from 'src/services/evees.provider';
 
 @injectable()
 export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {
+  
+  knownSources?: KnownSourcesService | undefined;
+  userId?: string | undefined;
   zome: string = 'evees';
+
+  get authority() {
+    return '';
+  }
 
   get accessControl() {
     return undefined;
@@ -22,6 +31,10 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   get source() {
     // TODO RETURN SOURCE ID
     return 'undefined';
+  }
+
+  get hashRecipe() {
+    return {};
   }
 
   /**
@@ -92,5 +105,16 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
       perspective_address: perspectiveId
     });
     return this.parseResponse(result);
+  }
+
+  async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    await this.clonePerspective(perspectiveData.perspective);
+    return this.updatePerspectiveDetails(perspectiveData.perspective.id, perspectiveData.details);
+    // TODO: addEditor
+  }
+
+  async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+    const promises = newPerspectivesData.map(perspectiveData => this.cloneAndInitPerspective(perspectiveData));
+    await Promise.all(promises);
   }
 }

@@ -18,7 +18,6 @@ export class CortexEntity extends CortexEntityBase {
       }
     }
 
-    console.log('[CORTEX-ENTITY] forwardSlots()', slots);
     return slots;
   }
 

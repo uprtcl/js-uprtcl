@@ -4,19 +4,39 @@ import {
   EthereumProviderOptions,
   EthereumProvider
 } from '@uprtcl/ethereum-provider';
-import { IpfsSource, IpfsConnection } from '@uprtcl/ipfs-provider';
+import { IpfsSource, IpfsConnection, sortObject, CidConfig } from '@uprtcl/ipfs-provider';
 import { Hashed } from '@uprtcl/cortex';
+import { KnownSourcesService } from '@uprtcl/multiplatform';
 
 import * as EveesContractArtifact from './uprtcl-contract.json';
 
-import { sortObject } from '../../../utils/utils';
 import { Secured } from '../../../patterns/default-secured.pattern';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
-import { ADD_PERSP, UPDATE_PERSP_DETAILS, GET_PERSP_DETAILS, hashCid, hashText } from './common';
+import {
+  ADD_PERSP,
+  UPDATE_PERSP_DETAILS,
+  GET_PERSP_DETAILS,
+  hashCid,
+  hashText,
+  ADD_PERSP_BATCH
+} from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 import { ProposalsProvider } from '../../proposals.provider';
+import { NewPerspectiveData } from 'src/services/evees.provider.js';
+
+const evees_if = 'evees-v0';
+
+export interface NewEthPerspectiveData {
+  perspectiveIdHash: string;
+  contextHash: string;
+  headId: string;
+  context: string;
+  name: string;
+  owner: string;
+  perspectiveId: string;
+}
 
 export class EveesEthereum extends EthereumProvider implements EveesRemote {
   logger: Logger = new Logger('EveesEtereum');
@@ -24,20 +44,27 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   ipfsSource: IpfsSource;
   accessControl: EveesAccessControlEthereum;
   proposals: ProposalsProvider;
+  userId?: string | undefined;
+  knownSources?: KnownSourcesService | undefined;
+  hashRecipe: CidConfig;
 
   constructor(
     protected ethConnection: EthereumConnection,
     ipfsConnection: IpfsConnection,
-    ethOptions: EthereumProviderOptions = { contract: EveesContractArtifact as any }
+    ethOptions: EthereumProviderOptions = { contract: EveesContractArtifact as any },
+    hashRecipe: CidConfig
   ) {
     super(ethOptions, ethConnection);
-    this.ipfsSource = new IpfsSource(ipfsConnection);
+    this.ipfsSource = new IpfsSource(ipfsConnection, hashRecipe);
     this.accessControl = new EveesAccessControlEthereum(this);
     this.proposals = new ProposalsEthereum(this, this.ipfsSource, this.accessControl);
+    this.hashRecipe = hashRecipe;
   }
 
   get authority() {
-    return 'eth:hi:mynameistal';
+    return `eth-${
+      this.ethConnection.networkId
+    }:${evees_if}:${this.contractInstance.options.address.toLocaleLowerCase()}`;
   }
 
   get source() {
@@ -56,6 +83,90 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
    */
   async ready(): Promise<void> {
     await Promise.all([super.ready(), this.ipfsSource.ready()]);
+  }
+
+  async persistPerspectiveEntity(secured: Secured<Perspective>) {
+    const perspectiveId = await this.ipfsSource.addObject(sortObject(secured.object));
+    this.logger.log(`[ETH] persistPerspectiveEntity - added to IPFS`, perspectiveId);
+
+    if (secured.id && secured.id != perspectiveId) {
+      throw new Error(
+        `perspective ID computed by IPFS ${perspectiveId} is not the same as the input one ${secured.id}.`
+      );
+    }
+
+    return perspectiveId;
+  }
+
+  async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    const secured = perspectiveData.perspective;
+    const details = perspectiveData.details;
+    const canWrite = perspectiveData.canWrite;
+
+    /** validate */
+    if (!secured.object.payload.origin) throw new Error('origin cannot be empty');
+
+    /** Store the perspective data in the data layer */
+    const perspectiveId = await this.persistPerspectiveEntity(secured);
+
+    const perspectiveIdHash = await hashCid(perspectiveId);
+    let contextHash;
+    if (details.context) {
+      contextHash = await hashText(details.context);
+    } else {
+      contextHash = '0x' + new Array(32).fill(0).join('');
+    }
+
+    /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
+    await this.send(ADD_PERSP, [
+      perspectiveIdHash,
+      contextHash,
+      details.headId ? details.headId : '',
+      details.context ? details.context : '',
+      details.name ? details.name : '',
+      canWrite ? canWrite : this.ethConnection.getCurrentAccount(),
+      perspectiveId
+    ]);
+  }
+
+  async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+    const persistPromises = newPerspectivesData.map(perspectiveData => {
+      return this.persistPerspectiveEntity(perspectiveData.perspective);
+    });
+
+    await Promise.all(persistPromises);
+
+    const ethPerspectivesDataPromises = newPerspectivesData.map(
+      async (perspectiveData): Promise<NewEthPerspectiveData> => {
+        const perspectiveIdHash = await hashCid(perspectiveData.perspective.id);
+
+        let contextHash;
+        if (perspectiveData.details.context) {
+          contextHash = await hashText(perspectiveData.details.context);
+        } else {
+          contextHash = '0x' + new Array(32).fill(0).join('');
+        }
+
+        const zero = '0x' + new Array(32).fill(0).join('');
+
+        return {
+          perspectiveIdHash,
+          contextHash,
+          headId: perspectiveData.details.headId ? perspectiveData.details.headId : zero,
+          context: perspectiveData.details.context ? perspectiveData.details.context : '',
+          name: perspectiveData.details.name,
+          owner: perspectiveData.canWrite
+            ? perspectiveData.canWrite
+            : this.ethConnection.getCurrentAccount(),
+          perspectiveId: perspectiveData.perspective.id
+        };
+      }
+    );
+
+    const ethPerspectivesData = await Promise.all(ethPerspectivesDataPromises);
+
+    /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
+    await this.send(ADD_PERSP_BATCH, [ethPerspectivesData]);
   }
 
   /**
@@ -141,7 +252,6 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     /** one event should exist only */
     const perspectiveAddedEvent = perspectiveAddedEvents[0];
 
-    console.log(`[ETH] Reverse map perspective hash ${perspectiveIdHash}`, perspectiveAddedEvent);
     return perspectiveAddedEvent.returnValues.perspectiveId;
   }
 
@@ -152,9 +262,9 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     const contextHash = await hashText(context);
 
     let perspectiveContextUpdatedEvents = await this.contractInstance.getPastEvents(
-      'PerspectiveDetailsUpdated',
+      'PerspectiveAdded',
       {
-        filter: { newContextHash: contextHash },
+        filter: { contextHash: contextHash },
         fromBlock: 0
       }
     );
@@ -164,7 +274,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     );
 
     const hashToIdPromises = perspectiveIdHashes.map(idHash => this.hashToId(idHash));
-    console.log(`[ETH] getContextPerspectives of ${context}`, perspectiveIdHashes);
+    this.logger.log(`[ETH] getContextPerspectives of ${context}`, perspectiveIdHashes);
 
     return Promise.all(hashToIdPromises);
   }

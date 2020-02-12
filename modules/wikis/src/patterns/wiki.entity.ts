@@ -2,13 +2,16 @@ import { html, TemplateResult } from 'lit-element';
 import { injectable, inject, multiInject } from 'inversify';
 
 import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
-import { Mergeable, EveesModule, MergeStrategy, mergeStrings } from '@uprtcl/evees';
+import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
 import { WikisProvider } from '../services/wikis.provider';
+import { CREATE_WIKI } from 'src/graphql/queries';
+import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 const propertyOrder = ['title', 'pages'];
 
@@ -46,22 +49,27 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
 
   merge = (originalNode: Hashed<Wiki>) => async (
     modifications: Hashed<Wiki>[],
-    mergeStrategy: MergeStrategy
-  ): Promise<Wiki> => {
+    mergeStrategy: MergeStrategy,
+    config
+  ): Promise<[Wiki, UprtclAction[]]> => {
     const resultTitle = mergeStrings(
       originalNode.object.title,
       modifications.map(data => data.object.title)
     );
 
-    const mergedPages = await mergeStrategy.mergeLinks(
+    const [mergedPages, actions] = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
-      modifications.map(data => data.object.pages)
+      modifications.map(data => data.object.pages),
+      config
     );
 
-    return {
-      pages: mergedPages,
-      title: resultTitle
-    };
+    return [
+      {
+        pages: mergedPages,
+        title: resultTitle
+      },
+      actions
+    ];
   };
 }
 
@@ -94,7 +102,7 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
   constructor(
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
     @multiInject(WikiBindings.WikisRemote) protected wikisRemotes: WikisProvider[]
   ) {
     super(hashedPattern);
@@ -104,31 +112,32 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  create = () => async (node?: Partial<Wiki>, source?: string): Promise<Hashed<Wiki>> => {
+  create = () => async (wiki: Partial<Wiki>, source: string): Promise<Hashed<Wiki>> => {
+    const sourceDep = this.wikisRemotes.find(s => s.source === source);
+    if (!sourceDep) throw new Error(`source connection for ${source} not found`);
+
+    const hashedWiki = await this.new()(wiki, sourceDep.hashRecipe);
+    const result = await this.client.mutate({
+      mutation: CREATE_WIKI,
+      variables: {
+        content: hashedWiki.object,
+        source
+      }
+    });
+    // TODO: Comment this
+    if (result.data.createWiki.id != hashedWiki.id) {
+      throw new Error('unexpected id');
+    }
+
+    return { id: result.data.createWiki.id, object: hashedWiki.object };
+  };
+
+  new = () => async (node: Partial<Wiki>, config: CidConfig): Promise<Hashed<Wiki>> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
 
-    let remote: WikisProvider | undefined;
-    if (source) {
-      remote = this.wikisRemotes.find(remote => remote.source === source);
-    }
-
-    if (!remote) {
-      throw new Error('Could not find remote to create a Wiki in');
-    }
     const newWiki = { pages, title };
 
-    // const { id } = await this.hashedPattern.derive()(newWiki);
-    // const createWikiTask: Task = {
-    //   id,
-    //   task: () => (remote as WikisProvider).createWiki(newWiki)
-    // };
-    // this.taskQueue.queueTask(createWikiTask);
-
-    const id = await remote.createWiki(newWiki);
-
-    await this.discovery.postEntityCreate(remote, { id, object: newWiki });
-
-    return { id, object: newWiki };
+    return this.hashedPattern.derive()(newWiki, config);
   };
 }

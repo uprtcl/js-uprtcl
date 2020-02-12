@@ -14,7 +14,12 @@ export { EveesHolochain } from './services/providers/holochain/evees.holochain';
 export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
 export { EveesHttp } from './services/providers/http/evees.http';
 
-export { Evees, NewPerspectiveArgs } from './services/evees';
+export {
+  Evees,
+  NewPerspectiveArgs,
+  CreatePerspectiveArgs,
+  CreateCommitArgs
+} from './services/evees';
 
 export { EveesModule } from './evees.module';
 
@@ -24,12 +29,15 @@ export { Mergeable } from './properties/mergeable';
 export { MergeStrategy } from './merge/merge-strategy';
 export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
+export { OwnerPreservingMergeStrategy } from './merge/owner-preserving.merge-strategy';
 export { mergeStrings, mergeResult } from './merge/utils';
+export { EveesBindings } from './bindings';
 
 /** Elements */
 export { CommitHistory } from './elements/evees-commit-history';
 export { PerspectivesList } from './elements/evees-perspectives-list';
-export { EveesInfo } from './elements/evees-info';
+export { EveesInfoPopper } from './elements/evees-info-popper';
+export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesPerspective } from './elements/evees-perspective';
 export { UpdateContentEvent, UpdateContentArgs } from './elements/events';
 
@@ -45,4 +53,3 @@ export { DefaultSecuredPattern, Secured } from './patterns/default-secured.patte
 
 /** Utils */
 export { isAncestorOf } from './utils/ancestor';
-export { sortObject } from './utils/utils';

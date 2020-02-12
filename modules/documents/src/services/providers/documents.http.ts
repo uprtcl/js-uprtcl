@@ -3,7 +3,7 @@ import { Hashed } from '@uprtcl/cortex';
 
 import { DocumentsProvider } from '../documents.provider';
 import { TextNode } from '../../types';
-import { injectable } from 'inversify';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 export enum DataType {
   TEXT = 'TEXT',
@@ -14,11 +14,9 @@ export enum DataType {
 const documents_api: string = 'source';
 
 export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
-  get source() {
-    return `http:${documents_api}:${this.options.host}`;
-  }
+  hashRecipe: CidConfig;
 
-  constructor(host: string, protected connection: HttpConnection) {
+  constructor(host: string, protected connection: HttpConnection, hashRecipe: CidConfig) {
     super(
       {
         host: host,
@@ -26,6 +24,11 @@ export class DocumentsHttp extends HttpProvider implements DocumentsProvider {
       },
       connection
     );
+    this.hashRecipe = hashRecipe;
+  }
+
+  get source() {
+    return `http:${documents_api}:${this.options.host}`;
   }
 
   async get<T>(hash: string): Promise<Hashed<T>> {

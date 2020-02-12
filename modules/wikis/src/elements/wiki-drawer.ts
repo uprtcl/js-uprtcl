@@ -1,31 +1,40 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
+// import { styleMap } from 'lit-html/directives/style-map';
+// https://github.com/Polymer/lit-html/issues/729
+export const styleMap = style => {
+  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    return `${styleString}${propName}:${propValue};`;
+  }, '');
+};
 
 import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
 import '@material/mwc-ripple';
 
 import {
-  CREATE_COMMIT,
-  CREATE_PERSPECTIVE,
   UPDATE_HEAD,
   RemotesConfig,
   EveesModule,
   EveesRemote,
   Secured,
   Perspective,
-  Evees
+  Commit,
+  Evees,
+  CreateCommitArgs,
+  NewPerspectiveArgs
 } from '@uprtcl/evees';
-import { TextType, CREATE_TEXT_NODE, DocumentsModule, htmlToText } from '@uprtcl/documents';
+import { TextType, DocumentsModule, htmlToText, TextNode } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
-import { CREATE_WIKI } from '../graphql/queries';
-import { Entity, Hashed } from '@uprtcl/cortex';
+import { Entity, Hashed, Creatable, Pattern, Signed } from '@uprtcl/cortex';
 import { Source } from '@uprtcl/multiplatform';
 import { WikisModule } from '../wikis.module';
+import { WikiBindings } from '../bindings';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
@@ -72,42 +81,50 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return remotesConfig.map(eveesAuthority, name);
   }
 
+  getCreatePattern(symbol) {
+    const patterns: Pattern[] = this.requestAll(symbol);
+    const create: Creatable<any, any> | undefined = (patterns.find(
+      pattern => ((pattern as unknown) as Creatable<any, any>).create
+    ) as unknown) as Creatable<any, any>;
+
+    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
+
+    return create;
+  }
+
   async updateContent(newContent: Wiki): Promise<void> {
     if (!this.perspective) return;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const origin = this.perspective.object.payload.origin;
+    const createWiki: Creatable<Partial<Wiki>, Wiki> = this.getCreatePattern(
+      WikiBindings.WikiEntity
+    );
+    const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
+      EveesModule.bindings.CommitPattern
+    );
+
     const evees: Evees = this.request(EveesModule.bindings.Evees);
 
-    this.logger.info('updateContent() - CREATE_TEXT_NODE', { newContent });
-    const createWiki = await client.mutate({
-      mutation: CREATE_WIKI,
-      variables: {
-        content: newContent,
-        source: this.getWikiSource(origin).source
-      }
-    });
+    const origin = this.perspective.object.payload.origin;
+    const wikiHashed: Hashed<Wiki> = await createWiki.create()(
+      newContent,
+      this.getWikiSource(origin).source
+    );
 
-    const wikiId = createWiki.data.createWiki.id;
-
-    const commitUpdate = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
+    const commit: Secured<Commit> = await createCommit.create()(
+      {
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
-        dataId: wikiId,
-        source: evees.getPerspectiveProvider(this.perspective.object).source
-      }
-    });
-
+        dataId: wikiHashed.id
+      },
+      evees.getPerspectiveProvider(this.perspective.object).source
+    );
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const headUpdate = await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.perspective.id,
-        headId: commitUpdate.data.createCommit.id
+        headId: commit.id
       }
     });
-
-    return wikiId;
   }
 
   async createPage() {
@@ -129,35 +146,42 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       links: []
     };
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const result = await client.mutate({
-      mutation: CREATE_TEXT_NODE,
-      variables: {
-        content: pageContent,
-        source: this.getTextNodeSource(origin).source
-      }
-    });
+    const nodeCreator: Creatable<Partial<TextNode>, TextNode> = this.getCreatePattern(
+      DocumentsModule.bindings.TextNodeEntity
+    );
+    const hashedNode: Hashed<TextNode> = await nodeCreator.create()(
+      pageContent,
+      this.getTextNodeSource(origin).source
+    );
 
-    const commit = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: result.data.createTextNode.id,
-        parentsIds: [],
-        source: remote.source
-      }
-    });
+    const commitCreator: Creatable<CreateCommitArgs, Commit> = this.getCreatePattern(
+      EveesModule.bindings.CommitPattern
+    );
+    const commit: Secured<Commit> = await commitCreator.create()(
+      {
+        dataId: hashedNode.id,
+        parentsIds: []
+      },
+      remote.source
+    );
 
-    const perspective = await client.mutate({
-      mutation: CREATE_PERSPECTIVE,
-      variables: {
-        headId: commit.data.createCommit.id,
-        authority: origin
-      }
-    });
+    const perspectiveCreator: Creatable<
+      NewPerspectiveArgs,
+      Signed<Perspective>
+    > = this.getCreatePattern(EveesModule.bindings.PerspectivePattern);
+    const perspective: Secured<Commit> = await perspectiveCreator.create()(
+      {
+        fromDetails: {
+          headId: commit.id
+          // TODO: add name of previous perspective?
+        }
+      },
+      origin
+    );
 
     const newWiki: Wiki = {
       title: this.wiki.object.title,
-      pages: [...this.wiki.object.pages, perspective.data.createPerspective.id]
+      pages: [...this.wiki.object.pages, perspective.id]
     };
 
     this.wiki = {
@@ -169,7 +193,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     await this.updateContent(newWiki);
   }
 
-  updated (changedProperties: any) {
+  updated(changedProperties: any) {
     if (changedProperties.get('wiki') !== undefined) {
       this.loadPagesData();
     }
@@ -178,7 +202,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async loadPagesData() {
     if (!this.wiki) return;
 
-    const pagesListPromises = this.wiki.object.pages.map(async (pageId) => {
+    const pagesListPromises = this.wiki.object.pages.map(async pageId => {
       const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
       const result = await client.query({
@@ -205,8 +229,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       return {
         id: pageId,
         title: result.data.entity._context.patterns.content._context.patterns.title
-      }
-    })
+      };
+    });
 
     this.pagesList = await Promise.all(pagesListPromises);
   }
@@ -264,8 +288,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     if (this.pagesList.length === 0)
       return html`
-        <div class="row center-content" style="flex: 1; align-items: start; padding-top: 24px;">
-          <span>${this.t('wikis:no-pages-yet')}</span>
+        <div class="empty">
+          <span><i>${this.t('wikis:no-pages-yet')}</i></span>
         </div>
       `;
 
@@ -290,40 +314,46 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <mwc-drawer hasHeader>
-        <span slot="title" @click=${() => this.selectPage(undefined)} style="cursor: pointer;">
-          ${this.wiki.object.title}
-        </span>
-
-        <div class="column light-gray" style="height: 100%;">
-          <div style="flex: 1;">
-            ${this.renderPageList()}
-          </div>
+      <mwc-drawer>
+        <div class="column">
+          <div
+            class="color-bar"
+            style=${styleMap({
+              backgroundColor: this.color
+            })}
+          ></div>
 
           ${this.editable
             ? html`
-                <div class="row">
-                  <mwc-button
-                    raised
-                    icon="note_add"
-                    @click=${() => this.createPage()}
-                    style="flex: 1;"
-                  >
+                <div class="button-row">
+                  <mwc-button outlined icon="note_add" @click=${() => this.createPage()}>
                     ${this.t('wikis:new-page')}
                   </mwc-button>
                 </div>
               `
             : html``}
+          <div>
+            ${this.renderPageList()}
+          </div>
         </div>
 
         <div slot="appContent" class="fill-content">
           ${this.selectedPageHash
             ? html`
-                <wiki-page .pageHash=${this.selectedPageHash}></wiki-page>
+                <wiki-page
+                  @nav-back=${() => this.selectPage(undefined)}
+                  pageHash=${this.selectedPageHash}
+                  color=${this.color ? this.color : ''}
+                >
+                </wiki-page>
               `
             : html`
-                <wiki-home wikiHash=${this.perspective.id} title=${this.wiki.object.title}>
-                  <slot slot="evee" name="evee"></slot>
+                <wiki-home
+                  wikiHash=${this.perspective.id}
+                  title=${this.wiki.object.title}
+                  color=${this.color ? this.color : ''}
+                >
+                  <slot slot="evee-page" name="evee-page"></slot>
                 </wiki-home>
               `}
         </div>
@@ -332,20 +362,37 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   static get styles() {
-    return [ sharedStyles,
+    return [
+      sharedStyles,
       css`
         :host {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
             Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
-          color: #37352f;   
-        }
-        .light-gray {
-          background-color: #f7f6f3;
+          color: #37352f;
         }
         .evee-info {
           height: 40px;
         }
-      `, ];
+        .column {
+          height: 100%;
+          background-color: #f7f6f3;
+        }
+        .color-bar {
+          height: 1vw;
+          width: 100%;
+        }
+        .empty {
+          width: 100%;
+          text-align: center;
+          padding-top: 24px;
+          color: #a2a8aa;
+        }
+        .button-row {
+          margin: 16px 0px 8px 0px;
+          text-align: center;
+          width: 100%;
+        }
+      `
+    ];
   }
-
 }

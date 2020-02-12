@@ -1,13 +1,14 @@
 import { Source } from '@uprtcl/multiplatform';
 import { EveesRemote } from './services/evees.remote';
 import { Secured } from './patterns/default-secured.pattern';
+import { Signed, Hashed } from '@uprtcl/cortex';
 
 export type RemoteMap = (eveesAuthority: string, entityName: string) => Source;
 
 export type RemotesConfig = {
-  map: RemoteMap,
-  defaultCreator: EveesRemote
-}
+  map: RemoteMap;
+  defaultCreator: EveesRemote;
+};
 
 export type Context = string;
 
@@ -40,7 +41,7 @@ export interface UpdateRequest {
 
 export interface Proposal {
   id: string;
-  creatorId?: string,
+  creatorId?: string;
   toPerspectiveId?: string;
   fromPerspectiveId: string;
   updates?: Array<UpdateRequest>;
@@ -51,11 +52,23 @@ export interface Proposal {
 }
 
 export interface ProposalCreatedDetail {
-  proposalId: string
+  proposalId: string;
+  authority: string;
 }
 
 export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
   constructor(eventInitDict?: CustomEventInit<ProposalCreatedDetail>) {
     super('evees-proposal-created', eventInitDict);
   }
+}
+
+export const CREATE_DATA_ACTION = 'CREATE_DATA';
+export const CREATE_COMMIT_ACTION = 'CREATE_COMMIT';
+export const CREATE_AND_INIT_PERSPECTIVE_ACTION = 'CREATE_AND_INIT_PERSPECTIVE';
+export const UPDATE_HEAD_ACTION = 'UPDATE_HEAD';
+
+export interface UprtclAction {
+  type: string;
+  entity?: Hashed<any>;
+  payload: any;
 }

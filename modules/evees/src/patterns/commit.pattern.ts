@@ -8,7 +8,8 @@ import {
   HasLinks,
   Creatable,
   Entity,
-  Signed
+  Signed,
+  Newable
 } from '@uprtcl/cortex';
 import { Secured } from '../patterns/default-secured.pattern';
 import { Lens, HasLenses } from '@uprtcl/lenses';
@@ -16,10 +17,13 @@ import { Lens, HasLenses } from '@uprtcl/lenses';
 import { Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from '../services/evees.remote';
-import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/multiplatform';
+import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { CREATE_COMMIT } from '../graphql/queries';
+import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
+import { CreateCommitArgs } from 'src/services/evees';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
-const creatorId = 'did:hi:ho';
 
 @injectable()
 export class CommitEntity implements Entity {
@@ -80,17 +84,13 @@ export class CommitLens extends CommitEntity implements HasLenses {
 
 @injectable()
 export class CommitPattern extends CommitEntity
-  implements
-    Creatable<
-      { dataId: string; message: string; parentsIds: string[]; timestamp?: number },
-      Signed<Commit>
-    > {
+  implements Creatable<Commit, Signed<Commit>>, Newable<Commit, Signed<Commit>> {
   constructor(
     @inject(EveesBindings.Secured)
     protected secured: Pattern & IsSecure<Secured<Commit>>,
     @multiInject(EveesBindings.EveesRemote) protected remotes: EveesRemote[],
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(secured);
   }
@@ -102,57 +102,50 @@ export class CommitPattern extends CommitEntity
     );
   }
 
-  create = () => async (
-    args:
-      | {
-          dataId: string;
-          message: string;
-          creatorsIds?: string[];
+  create = () => async (args: CreateCommitArgs, source: string) => {
+    args.timestamp = args.timestamp || Date.now();
+    args.message = args.message || `Commit at ${Date.now()}`;
+    args.parentsIds = args.parentsIds || [];
 
-          parentsIds: string[];
-          timestamp?: number;
-        }
-      | undefined,
-    source?: string
-  ) => {
+    const remote = this.remotes.find(r => r.source === source);
+    if (remote === undefined) throw new Error(`remote ${source} not found`);
+    if (!args.creatorsIds) {
+      if (!remote || !remote.userId)
+        throw new Error(
+          'You must be signed in the evees remote you are trying to create the commit on or specify the creators ids'
+        );
+
+      args.creatorsIds = [remote.userId];
+    }
+
+    const commit = await this.new()(args as Commit, remote.hashRecipe);
+    const result = await this.client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        ...args,
+        source: source
+      }
+    });
+    if (result.data.createCommit.id != commit.id)  {
+      throw new Error('unexpected id');
+    };
+    return commit;
+  };
+
+  new = () => async (args: Commit, recipe: CidConfig) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
 
     const timestamp = args.timestamp || Date.now();
-    const creatorsIds = args.creatorsIds || [creatorId];
+    const creatorsIds = args.creatorsIds;
 
     const commitData: Commit = {
       creatorsIds: creatorsIds,
       dataId: args.dataId,
-      message: args.message || `Commit at ${Date.now().toLocaleString()}`,
+      message: args.message,
       timestamp: timestamp,
       parentsIds: args.parentsIds
     };
-    const commit: Secured<Commit> = await this.secured.derive()(commitData);
 
-    if (!source) {
-      if (this.remotes.length === 1) source = this.remotes[0].source;
-      else {
-        const s = this.remotes.find(r => r.source.includes('http'));
-        if (!s) throw new Error('Http source not found');
-        source = s.source;
-      }
-    }
-
-    const remote: EveesRemote | undefined = this.remotes.find(r => r.source === source);
-
-    if (!remote) throw new Error(`Source ${source} not registered`);
-
-    // const task: Task = {
-    //   id: commit.id,
-    //   task: () => remote.cloneCommit(commit)
-    // };
-
-    // this.taskQueue.queueTask(task);
-
-    await remote.cloneCommit(commit);
-
-    await this.discovery.postEntityCreate(remote, commit);
-
-    return commit;
+    return this.secured.derive()(commitData, recipe);
   };
 }

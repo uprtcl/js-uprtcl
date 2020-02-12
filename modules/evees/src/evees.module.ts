@@ -22,13 +22,14 @@ import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs } from './graphql/schema';
 import { eveesResolvers } from './graphql/resolvers';
-import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
+import { OwnerPreservingMergeStrategy } from './merge/owner-preserving.merge-strategy';
 import { PerspectivesList } from './elements/evees-perspectives-list';
 import { EveesPerspective } from './elements/evees-perspective';
-import { EveesInfo } from './elements/evees-info';
+import { EveesInfoPopper } from './elements/evees-info-popper';
 
 import en from '../i18n/en.json';
 import { RemotesConfig } from './types';
+import { EveesInfoPage } from './elements/evees-info-page';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -82,7 +83,7 @@ export class EveesModule extends MicroModule {
 
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.bindings.Evees).to(Evees);
-    container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
+    container.bind(EveesModule.bindings.MergeStrategy).to(OwnerPreservingMergeStrategy);
     container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
   }
 
@@ -92,7 +93,8 @@ export class EveesModule extends MicroModule {
       'evees-commit-history': CommitHistory,
       'evees-perspectives-list': PerspectivesList,
       'evees-perspective': EveesPerspective,
-      'evees-info': EveesInfo
+      'evees-info-popper': EveesInfoPopper,
+      'evees-info-page': EveesInfoPage,
     }),
     new i18nextModule('evees', { en: en }),
     new PatternsModule({

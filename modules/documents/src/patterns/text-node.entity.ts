@@ -1,3 +1,4 @@
+import { ApolloClient } from 'apollo-boost';
 import { html, TemplateResult } from 'lit-element';
 import { injectable, inject, multiInject } from 'inversify';
 
@@ -12,15 +13,26 @@ import {
   HasChildren,
   Entity,
   HasTitle,
-  CortexModule
+  CortexModule,
+  Newable
 } from '@uprtcl/cortex';
 import { DiscoveryService, DiscoveryModule, TaskQueue, Task } from '@uprtcl/multiplatform';
-import { Mergeable, MergeStrategy, mergeStrings, mergeResult, EveesModule } from '@uprtcl/evees';
+import {
+  Mergeable,
+  MergeStrategy,
+  mergeStrings,
+  mergeResult,
+  EveesModule,
+  UprtclAction
+} from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { DocumentsProvider } from '../services/documents.provider';
+import { CREATE_TEXT_NODE } from '../graphql/queries';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -67,7 +79,6 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
         name: 'documents:document',
         type: 'content',
         render: (lensContent: TemplateResult, context: any) => {
-          console.log('[DOCUMENT-ENTITY] render()', { node, context });
           return html`
             <documents-text-node
               .data=${node}
@@ -75,6 +86,8 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
               color=${context.color}
               only-children=${context.onlyChildren}
               level=${context.level}
+              index=${context.index}
+              .genealogy=${context.genealogy}
             >
               ${lensContent}
             </documents-text-node>
@@ -86,8 +99,9 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
 
   merge = (originalNode: Hashed<TextNode>) => async (
     modifications: Hashed<TextNode>[],
-    mergeStrategy: MergeStrategy
-  ): Promise<TextNode> => {
+    mergeStrategy: MergeStrategy,
+    config: any
+  ): Promise<[TextNode, UprtclAction[]]> => {
     const resultText = mergeStrings(
       originalNode.object.text,
       modifications.map(data => data.object.text)
@@ -97,16 +111,20 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
       modifications.map(data => data.object.type)
     );
 
-    const mergedLinks = await mergeStrategy.mergeLinks(
+    const [mergedLinks, actions] = await mergeStrategy.mergeLinks(
       originalNode.object.links,
-      modifications.map(data => data.object.links)
+      modifications.map(data => data.object.links),
+      config
     );
 
-    return {
-      links: mergedLinks,
-      text: resultText,
-      type: resultType
-    };
+    return [
+      {
+        links: mergedLinks,
+        text: resultText,
+        type: resultType
+      },
+      actions
+    ];
   };
 }
 
@@ -150,13 +168,13 @@ export class TextNodeActions extends TextNodeEntity implements HasActions {
 
 @injectable()
 export class TextNodeCreate extends TextNodeEntity
-  implements Creatable<Partial<TextNode>, TextNode> {
+  implements Creatable<Partial<TextNode>, TextNode>, Newable<Partial<TextNode>, TextNode> {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
     @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
-    @multiInject(EveesModule.bindings.PerspectivePattern) protected perspectivePatterns: Pattern[]
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(hashedPattern);
   }
@@ -167,38 +185,37 @@ export class TextNodeCreate extends TextNodeEntity
 
   create = () => async (
     node: Partial<TextNode> | undefined,
-    source?: string
+    source: string
+  ): Promise<Hashed<TextNode>> => {
+    const sourceDep = this.documentsRemotes.find(s => s.source === source);
+    if (!sourceDep) throw new Error(`source connection for ${source} not found`);
+
+    const textNode = await this.new()(node, sourceDep.hashRecipe);
+    const result = await this.client.mutate({
+      mutation: CREATE_TEXT_NODE,
+      variables: {
+        content: textNode.object,
+        source
+      }
+    });
+
+    if (result.data.createTextNode.id != textNode.id) {
+      throw new Error('unexpected id');
+    }
+
+    return textNode;
+  };
+
+  new = () => async (
+    node: Partial<TextNode> | undefined,
+    recipe: CidConfig
   ): Promise<Hashed<TextNode>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
 
-    let remote: DocumentsProvider | undefined;
-    if (source) {
-      remote = this.documentsRemotes.find(documents => documents.source === source);
-    } else {
-      remote = this.documentsRemotes.find(remote => !remote.source.includes('http'));
-    }
-
-    if (!remote) {
-      throw new Error('Could not find remote to create a TextNode in');
-    }
-
     const newTextNode = { links, text, type };
-    
-    // const { id } = await this.hashedPattern.derive()(newTextNode);
-    // const createTextNodeTask: Task = {
-    //   id: id,
-    //   task: () => (remote as DocumentsProvider).createTextNode(newTextNode)
-    // };
-
-    // this.taskQueue.queueTask(createTextNodeTask);
-
-    const id = await remote.createTextNode(newTextNode);
-
-    await this.discovery.postEntityCreate(remote, { id, object: newTextNode });
-
-    return { id, object: newTextNode };
+    return this.hashedPattern.derive()(newTextNode, recipe);
   };
 }
 

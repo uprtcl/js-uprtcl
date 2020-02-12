@@ -2,6 +2,7 @@ import { Secured } from '../patterns/default-secured.pattern';
 import { Source } from '@uprtcl/multiplatform';
 
 import { Commit } from '../types';
+import { ApolloClient, gql } from 'apollo-boost';
 
 interface Path {
   visited: { [commitId: string]: boolean };
@@ -12,7 +13,7 @@ export class FindMostRecentCommonAncestor {
   allCommits: { [key: string]: Secured<Commit> } = {};
   paths: Path[];
 
-  constructor(protected source: Source, commitsIds: string[]) {
+  constructor(protected client: ApolloClient<any>, commitsIds: string[]) {
     this.paths = commitsIds.map(commitId => ({
       visited: {},
       heads: [commitId]
@@ -32,7 +33,7 @@ export class FindMostRecentCommonAncestor {
     const promises = pathToExplore.heads.map(async commitId => {
       let commit: Secured<Commit> | undefined = this.allCommits[commitId];
       if (!commit) {
-        commit = await this.source.get(commitId);
+        commit = await this.getCommit(commitId);
 
         if (!commit) throw new Error('Could not get ancestor commit');
 
@@ -48,6 +49,22 @@ export class FindMostRecentCommonAncestor {
 
     pathToExplore.heads = Array.prototype.concat.apply([], nextCommits);
     return pathToExplore;
+  }
+
+  public async getCommit(commitId: string): Promise<Secured<Commit>> {
+
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${commitId}") {
+          id
+          _context {
+            raw
+          }
+        }
+      }`
+    });
+
+    return { id: commitId, object: JSON.parse(result.data.entity._context.raw) };
   }
 
   public async compute(): Promise<string> {
@@ -71,7 +88,7 @@ export class FindMostRecentCommonAncestor {
 }
 
 export default function findMostRecentCommonAncestor(
-  source: Source
+  client: ApolloClient<any>
 ): (commitsIds: string[]) => Promise<string> {
-  return (commitsIds: string[]) => new FindMostRecentCommonAncestor(source, commitsIds).compute();
+  return (commitsIds: string[]) => new FindMostRecentCommonAncestor(client, commitsIds).compute();
 }

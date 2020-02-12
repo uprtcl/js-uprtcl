@@ -10,7 +10,7 @@ import { PermissionsElement } from './permissions-element';
 import {
   OwnerPermissions
 } from '../services/owner-access-control.service';
-import { CHANGE_OWNER } from '../graphql/queries';
+import { SET_CAN_WRITE } from '../graphql/queries';
 
 export class PermissionsOwner extends moduleConnect(LitElement)
   implements PermissionsElement<OwnerPermissions> {
@@ -58,10 +58,10 @@ export class PermissionsOwner extends moduleConnect(LitElement)
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.mutate({
-      mutation: CHANGE_OWNER,
+      mutation: SET_CAN_WRITE,
       variables: {
         entityId: this.entityId,
-        newOwner: this.newOwnerAddress
+        userId: this.newOwnerAddress
       }
     });
 
@@ -91,10 +91,12 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   render() {
     return html`
       ${this.renderDialog()}
-      <span>${this.t('access-control:owner')}: ${this.permissions.owner}</span>
-      <mwc-button raised icon="swap_horizontal" @click=${() => (this.dialog.open = true)}
-        >${this.t('access-control:transfer-ownership')}</mwc-button
-      >
+      <span><strong>${this.t('access-control:owner')}:</strong> ${this.permissions.owner}</span>
+      ${this.canWrite ? html`
+        <mwc-button raised icon="swap_horizontal" @click=${() => (this.dialog.open = true)}
+          >${this.t('access-control:transfer-ownership')}</mwc-button
+        >` : ''}
+      
     `;
   }
 }

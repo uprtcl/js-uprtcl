@@ -1,19 +1,16 @@
-import {
-  DiscoveryService,
-  DiscoveryModule,
-  TaskQueue,
-  Task,
-  EntityCache
-} from '@uprtcl/multiplatform';
-import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
-import { Secured } from '../patterns/default-secured.pattern';
+import { ApolloClient, gql } from 'apollo-boost';
 
+import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { IsSecure } from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/graphql';
+
+import { Secured } from '../patterns/default-secured.pattern';
 import { Commit, Perspective } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
-import { ApolloClient, gql } from 'apollo-boost';
-import { ApolloClientModule } from '@uprtcl/graphql';
+import { EveesRemote } from '../services/evees.remote';
+import { NewPerspectiveData } from 'src/services/evees.provider';
 
 export const eveesResolvers = {
   Commit: {
@@ -28,10 +25,13 @@ export const eveesResolvers = {
     },
     data(parent) {
       return parent.payload.dataId;
+    },
+    creatorsIds(parent) {
+      return parent.payload.creatorsIds;
     }
   },
   Context: {
-    identifier(parent) {
+    id(parent) {
       return typeof parent === 'string' ? parent : parent.context;
     },
     async perspectives(parent, _, { container }) {
@@ -43,10 +43,10 @@ export const eveesResolvers = {
     }
   },
   UpdateProposal: {
-    toPerspective (parent) {
+    toPerspective(parent) {
       return parent.toPerspectiveId;
     },
-    fromPerspective (parent) {
+    fromPerspective(parent) {
       return parent.fromPerspectiveId;
     }
   },
@@ -79,12 +79,12 @@ export const eveesResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = evees.getPerspectiveProvider(parent);
-      
+
       if (!remote.proposals) return [];
-      
+
       const proposalsIds = await remote.proposals.getProposalsToPerspective(parent.id);
-      const proposalsPromises = proposalsIds.map((proposalId) => {
-        return (remote.proposals as ProposalsProvider).getProposal(proposalId)
+      const proposalsPromises = proposalsIds.map(proposalId => {
+        return (remote.proposals as ProposalsProvider).getProposal(proposalId);
       });
 
       const proposals = await Promise.all(proposalsPromises);
@@ -93,41 +93,44 @@ export const eveesResolvers = {
     }
   },
   Mutation: {
-    async createCommit(_, { dataId, parentsIds, message, source }, { container }) {
-      const patterns: Pattern[] = container.getAll(EveesBindings.CommitPattern);
+    async createCommit(
+      _,
+      { creatorsIds, dataId, parentsIds, message, source, timestamp },
+      { container }
+    ) {
+      const remotes = container.getAll(EveesBindings.EveesRemote);
+      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
+      const secured: IsSecure<any> = container.get(EveesBindings.Secured);
 
-      const creatable: Creatable<any, Signed<Commit>> | undefined = patterns.find(
-        p => ((p as unknown) as Creatable<any, Signed<Commit>>).create
-      ) as Creatable<any, Signed<Commit>> | undefined;
+      const commitData: Commit = {
+        creatorsIds: creatorsIds,
+        dataId: dataId,
+        message: message,
+        timestamp: timestamp,
+        parentsIds: parentsIds
+      };
 
-      if (!creatable) throw new Error(`No creatable pattern registered for perspectives`);
+      const remote: EveesRemote = remotes.find(r => r.source === source);
+      const commit: Secured<Commit> = await secured.derive()(commitData, remote.hashRecipe);
 
-      const commit: Secured<Commit> = await creatable.create()(
-        { dataId, parentsIds, message },
-        source
-      );
+      await remote.cloneCommit(commit);
+      await discovery.postEntityCreate(remote, commit);
 
-      return { id: commit.id, ...commit.object };
+      return {
+        id: commit.id,
+        ...commit.object
+      };
     },
+
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
-      const taskQueue: TaskQueue = container.get(DiscoveryModule.bindings.TaskQueue);
 
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
-      // const updatePerspectiveTask: Task = {
-      //   id: `Update head of ${perspectiveId}`,
-      //   task: async () => {
-      //     await provider.updatePerspectiveDetails(perspectiveId, { headId });
-      //   }
-      // };
-
-      // taskQueue.queueTask(updatePerspectiveTask);
-
       await provider.updatePerspectiveDetails(perspectiveId, { headId });
-      
+
       await discovery.postEntityUpdate(provider, [headId]);
 
       const result = await client.query({
@@ -147,21 +150,45 @@ export const eveesResolvers = {
 
       return { id: perspectiveId, ...perspective, head: { id: headId } };
     },
-    async createPerspective(_, { headId, context, name, authority, recursive }, { container }) {
-      const patterns: Pattern[] = container.getAll(EveesBindings.PerspectivePattern);
 
-      const creatable: Creatable<any, Signed<Perspective>> | undefined = patterns.find(
-        p => ((p as unknown) as Creatable<any, Signed<Perspective>>).create
-      ) as Creatable<any, Signed<Perspective>> | undefined;
+    async createPerspective(
+      _,
+      { creatorId, origin, timestamp, headId, context, name, authority, canWrite },
+      { container }
+    ) {
+      const remotes = container.getAll(EveesBindings.EveesRemote);
+      const secured: IsSecure<any> = container.get(EveesBindings.Secured);
 
-      if (!creatable) throw new Error(`No creatable pattern registered for perspectives`);
+      const remote: EveesRemote = remotes.find(remote => remote.authority === authority);
 
-      const perspective: Secured<Perspective> = await creatable.create()(
-        { name, headId, context, recursive },
-        authority
+      const perspectiveData: Perspective = {
+        creatorId,
+        origin,
+        timestamp
+      };
+      const perspective: Secured<Perspective> = await secured.derive()(
+        perspectiveData,
+        remote.hashRecipe
       );
 
-      return { id: perspective.id, ...perspective.object, head: headId };
+      const newPerspectiveData: NewPerspectiveData = {
+        perspective, 
+        details: { headId, name, context }, 
+        canWrite
+      }
+      await remote.cloneAndInitPerspective(newPerspectiveData);
+
+      return {
+        id: perspective.id,
+        name: name,
+        head: headId,
+        context: context,
+        payload: {
+          creatorId,
+          origin,
+          timestamp
+        }
+      };
     }
   }
 };

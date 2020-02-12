@@ -1,26 +1,32 @@
-import { Secured } from '../patterns/default-secured.pattern';
-import { Source } from '@uprtcl/multiplatform';
+import { ApolloClient, gql } from 'apollo-boost';
 
-import { Commit } from '../types';
-
-export const isAncestorOf = (source: Source) => async (
+export const isAncestorOf = (client: ApolloClient<any>) => async (
   ancestorId: string,
   commitId: string
 ): Promise<boolean> => {
   if (ancestorId === commitId) return true;
 
-  const commit: Secured<Commit> | undefined = await source.get(commitId);
+  const result = await client.query({
+    query: gql`{
+      entity(id: "${commitId}") {
+        id
+        ... on Commit {
+          parentCommits {
+            id
+          }
+        }
+      }
+    }`
+  });
 
-  if (!commit) throw new Error(`Could not fetch commit with id ${commitId} from any source`);
-
-  const parentsIds = commit.object.payload.parentsIds;
+  const parentsIds = result.data.entity.parentCommits.map(p => p.id);
 
   if (parentsIds.includes(ancestorId)) {
     return true;
   } else {
     /** recursive call */
     for (let ix = 0; ix < parentsIds.length; ix++) {
-      if (await isAncestorOf(source)(ancestorId, parentsIds[ix])) {
+      if (await isAncestorOf(client)(ancestorId, parentsIds[ix])) {
         return true;
       }
     }

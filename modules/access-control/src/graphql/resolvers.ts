@@ -5,10 +5,11 @@ import { Authority } from '@uprtcl/multiplatform';
 import { Permissions } from '../properties/permissions';
 import { Updatable } from '../properties/updatable';
 import { OwnerAccessControlService } from 'src/services/owner-access-control.service';
+import { AccessControlService } from '../services/access-control.service';
 
 export const accessControlResolvers = {
   Mutation: {
-    async changeOwner(_, { entityId, newOwner }, { container }) {
+    async setCanWrite(_, { entityId, userId }, { container }) {
       // const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
       // const entity = entityCache.getCachedEntity(entityId);
       const discoveryService: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
@@ -25,16 +26,14 @@ export const accessControlResolvers = {
       if (!updatable)
         throw new Error(`Cannot change owner of ${entityId}: no Updatable pattern implemented`);
 
-      const accessControl: OwnerAccessControlService | undefined = updatable.accessControl(
-        entity
-      ) as OwnerAccessControlService;
+      const accessControl: AccessControlService<any> | undefined = updatable.accessControl(entity);
 
       if (!accessControl)
         throw new Error(
-          `Cannot change owner of ${entityId}: no OwnerAccessControlService associated with this entity`
+          `Cannot set canWrite of ${entityId}: no AccessControlService associated with this entity`
         );
 
-      await accessControl.changeOwner(entityId, newOwner);
+      await accessControl.setCanWrite(entityId, userId);
 
       return entityId;
     }

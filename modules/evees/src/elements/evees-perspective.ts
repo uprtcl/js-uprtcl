@@ -6,13 +6,15 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { UPDATE_HEAD, CREATE_COMMIT } from '../graphql/queries';
+import { UPDATE_HEAD } from '../graphql/queries';
 import { UpdateContentEvent } from './events';
-import { Perspective } from '../types';
+import { Perspective, Commit } from '../types';
 import { EveesRemote } from 'src/services/evees.remote';
 import { EveesBindings } from 'src/bindings';
+import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
+import { CreateCommitArgs, EveesModule } from 'src/uprtcl-evees';
 
-export const DEFAULT_COLOR = '#d9d7d0';
+export const DEFAULT_COLOR = '#d0dae0';
 
 export class EveesPerspective extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVE');
@@ -31,6 +33,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   @property({ type: Number })
   level: number = 0;
+
+  @property({ type: Array })
+  genealogy: string[] = [];
+
+  @property({ type: Number })
+  index: number = 0;
 
   private currentHeadId: string | undefined = undefined;
   private perspective: Secured<Perspective> | undefined = undefined;
@@ -58,7 +66,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   async loadPerspective() {
     this.entityId = undefined;
-this.requestUpdate();
+    this.requestUpdate();
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
@@ -164,6 +172,17 @@ this.requestUpdate();
     }) as EventListener);
   }
 
+  getCreatePattern(symbol) {
+    const patterns: Pattern[] = this.requestAll(symbol);
+    const create: Creatable<any, any> | undefined = (patterns.find(
+      pattern => ((pattern as unknown) as Creatable<any, any>).create
+    ) as unknown) as Creatable<any, any>;
+
+    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
+
+    return create;
+  }
+
   async updateContent(dataId: string) {
     if (!this.perspectiveId) return;
     if (!this.perspective) return;
@@ -179,30 +198,36 @@ this.requestUpdate();
 
     this.entityId = undefined;
 
-    const commitUpdate = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
+    const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
+      EveesModule.bindings.CommitPattern
+    );
+
+    const commit: Secured<Commit> = await createCommit.create()(
+      {
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
-        dataId,
-        source: remote.source
-      }
-    });
+        dataId
+      },
+      remote.source
+    );
 
     const headUpdate = await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.perspectiveId,
-        headId: commitUpdate.data.createCommit.id
+        headId: commit.id
       }
     });
 
-    this.currentHeadId = commitUpdate.data.createCommit.id;
+    this.currentHeadId = commit.id;
     this.entityId = headUpdate.data.updatePerspectiveHead.id;
 
     this.logger.info('updateContent() post', this.entityId);
   }
 
   render() {
+    const newGenealogy = [...this.genealogy];
+    newGenealogy.unshift(this.perspectiveId);
+
     if (this.entityId === undefined || this.perspective === undefined) {
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
@@ -217,15 +242,23 @@ this.requestUpdate();
           perspective: this.perspective,
           color: this.getEveeColor(),
           onlyChildren: this.onlyChildren,
-          level: this.level
+          level: this.level,
+          index: this.index,
+          genealogy: newGenealogy
         }}
       >
-        <evees-info
-          slot="evee"
+        <evees-info-popper
+          slot="evee-popper"
           first-perspective-id=${this.firstPerspectiveId}
           perspective-id=${this.perspectiveId}
           evee-color=${this.getEveeColor()}
-        ></evees-info>
+        ></evees-info-popper>
+        <evees-info-page
+          slot="evee-page"
+          first-perspective-id=${this.firstPerspectiveId}
+          perspective-id=${this.perspectiveId}
+          evee-color=${this.getEveeColor()}
+        ></evees-info-page>
       </cortex-entity>
     `;
   }

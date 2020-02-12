@@ -16,17 +16,13 @@ export interface EthereumProviderOptions {
 
 export abstract class EthereumProvider implements Authority {
   logger = new Logger('EthereumProvider');
-
+  userId?: string | undefined;
   contractInstance!: Contract;
 
   constructor(
     protected ethOptions: EthereumProviderOptions,
     protected ethConnection: EthereumConnection
   ) {}
-
-  get userId() {
-    return this.ethConnection.getCurrentAccount();
-  }
 
   abstract get authority(): string;
 
@@ -41,6 +37,8 @@ export abstract class EthereumProvider implements Authority {
       this.ethOptions.contract.abi,
       contractAddress
     );
+
+    this.userId = this.ethConnection.getCurrentAccount();
   }
 
   /**

@@ -17,4 +17,4 @@ export {
   BasicAdminAccessControlService
 } from './services/basic-admin-control.service';
 
-export { CHANGE_OWNER } from './graphql/queries';
+export { SET_CAN_WRITE } from './graphql/queries';

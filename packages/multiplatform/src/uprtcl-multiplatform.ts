@@ -28,5 +28,5 @@ export { Connection, ConnectionOptions } from './connections/connection';
 export { SocketConnection } from './connections/socket.connection';
 
 /** Utils */
-export { createEntity, entityContent, getIsomorphisms } from './utils/entities';
+export { createEntity, entityContent, getIsomorphisms, computeIdOfEntity } from './utils/entities';
 export { TaskQueue, Task } from './utils/task.queue';

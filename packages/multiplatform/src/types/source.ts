@@ -8,6 +8,7 @@ import { KnownSourcesService } from '../services/known-sources.service';
  */
 export interface Source extends Ready {
   source: string;
+  hashRecipe: any;
 
   /**
    * If the service provider has a known source service associated, any object stored on it

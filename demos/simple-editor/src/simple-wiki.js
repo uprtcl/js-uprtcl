@@ -1,10 +1,8 @@
 import { LitElement, html, property } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { EveesModule, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
-import { WikisModule, CREATE_WIKI } from '@uprtcl/wikis';
-import { CHANGE_OWNER } from '@uprtcl/access-control';
+import { EveesModule, EveesBindings } from '@uprtcl/evees';
+import { WikisModule, WikiBindings } from '@uprtcl/wikis';
 import { DocumentsModule } from '@uprtcl/documents';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
@@ -35,11 +33,17 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.addEventListener('evees-proposal-created', e => console.log(e));
 
-    this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider => provider.source.startsWith('ipfs'));
+    this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider =>
+      provider.source.startsWith('ipfs')
+    );
 
-    this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => provider.source.startsWith('ipfs'));
+    this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider =>
+      provider.source.startsWith('ipfs')
+    );
 
-    this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>  provider.authority.startsWith('eth'));
+    this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
+      provider.authority.startsWith('eth')
+    );
 
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
@@ -52,46 +56,44 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const client = this.request(ApolloClientModule.bindings.Client);
-      const createWiki = await client.mutate({
-        mutation: CREATE_WIKI,
-        variables: {
-          content: {
-            title: 'Genesis Wiki',
-            pages: []
-          },
-          source: this.wikisProvider.source
-        }
-      });
+      const wikipatterns = this.requestAll(WikiBindings.WikiEntity);
+      const wikicreatable = wikipatterns.find(p => p.create);
+      const wiki = await wikicreatable.create()(
+        {
+          title: 'Genesis Wiki',
+          pages: []
+        },
+        this.wikisProvider.source
+      );
 
-      const createCommit = await client.mutate({
-        mutation: CREATE_COMMIT,
-        variables: {
-          dataId: createWiki.data.createWiki.id,
+      const commitpatterns = this.requestAll(EveesBindings.CommitPattern);
+      const commitcreatable = commitpatterns.find(p => p.create);
+      const commit = await commitcreatable.create()(
+        {
+          dataId: wiki.id,
           parentsIds: [],
-          source: this.eveesProvider.source
-        }
-      });
+          message: 'create'
+        },
+        this.eveesProvider.source
+      );
 
-      const createPerspective = await client.mutate({
-        mutation: CREATE_PERSPECTIVE,
-        variables: {
-          headId: createCommit.data.createCommit.id,
-          authority: this.eveesProvider.authority,
-          name: 'master'
-        }
-      });
+      const randint = 0 + Math.floor((10000 - 0) * Math.random());
 
-      const perspectiveId = createPerspective.data.createPerspective.id;
+      const perspectivepatterns = this.requestAll(EveesBindings.PerspectivePattern);
+      const perspectivecreatable = perspectivepatterns.find(p => p.create);
+      const perspective = await perspectivecreatable.create()(
+        {
+          fromDetails: {
+            headId: commit.id,
+            context: `genesis-dao-wiki-${randint}`,
+            name: 'common'
+          },
+          canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
+        },
+        this.eveesProvider.authority
+      );
 
-      /** transfer ownership to the DAO */
-      const changeOwner = await client.mutate({
-        mutation: CHANGE_OWNER,
-        variables: {
-          entityId: perspectiveId,
-          newOwner: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
-        }
-      });
+      const perspectiveId = perspective.id;
 
       window.history.pushState('', '', `/?id=${perspectiveId}`);
     }

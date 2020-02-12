@@ -1,14 +1,20 @@
-import { ApolloClient } from 'apollo-boost';
+import { ApolloClient, gql } from 'apollo-boost';
 import { inject, injectable } from 'inversify';
 
+import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
-import { KnownSourcesService, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
-import { createEntity } from '@uprtcl/multiplatform';
+import { CortexModule, PatternRecognizer, Hashed, Pattern, IsSecure } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Secured } from '../patterns/default-secured.pattern';
-import { UpdateRequest, Commit, RemotesConfig } from '../types';
+import {
+  RemotesConfig,
+  UprtclAction,
+  UpdateRequest,
+  UPDATE_HEAD_ACTION,
+  Commit,
+  CREATE_COMMIT_ACTION,
+  CREATE_DATA_ACTION
+} from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
@@ -16,114 +22,196 @@ import { isAncestorOf } from '../utils/ancestor';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
-import { CREATE_COMMIT } from '../graphql/queries';
+import { CidHashedPattern } from '../patterns/cid-hashed.pattern';
+import { cacheUpdateRequest } from 'src/utils/actions';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
-  updatesList: UpdateRequest[] = [];
-
   constructor(
     @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
     @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryModule.bindings.LocalKnownSources) protected knownSources: KnownSourcesService,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
+    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache,
+    @inject(EveesBindings.Secured) protected secured: Pattern & IsSecure<any>,
+    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern
   ) {}
 
   async mergePerspectives(
     toPerspectiveId: string,
-    fromPerspectiveId: string
-  ): Promise<UpdateRequest[]> {
-    /** initialize list */
-    this.updatesList = [];
-
+    fromPerspectiveId: string,
+    config?: any
+  ): Promise<[string, UprtclAction[]]> {
     const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
-      const remote = await this.evees.getPerspectiveProviderById(id);
-      const details = await remote.getPerspectiveDetails(id);
+      const result = await this.client.query({
+        query: gql`{
+          entity(id: "${id}") {
+          id
+          ... on Perspective {
+            head {
+              id
+            }
+          }
+        }}`
+      });
+      const headId = result.data.entity.head.id;
 
-      if (!details.headId)
-        throw new Error('Cannot merge a perspective that has no head associated');
-      return details.headId;
+      if (!headId) throw new Error('Cannot merge a perspective that has no head associated');
+      return headId;
     });
 
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-    const isAncestor = await isAncestorOf(this.discovery)(fromHeadId, toHeadId);
+    /*     
+    const isAncestor = await isAncestorOf(this.client)(fromHeadId, toHeadId);
+
     if (isAncestor) {
       // All commits to merge from are ancestors of the current one, do nothing
-      return this.updatesList;
+      return [toPerspectiveId, []];
     }
-
+ */
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
-    
-    const mergeCommitId = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, remote.source);
 
-    this.addUpdateRequest({
+    const [mergeCommitId, actions] = await this.mergeCommits(
+      toHeadId,
+      fromHeadId,
+      remote.authority,
+      config
+    );
+
+    const request: UpdateRequest = {
       fromPerspectiveId,
       perspectiveId: toPerspectiveId,
       oldHeadId: toHeadId,
       newHeadId: mergeCommitId
+    };
+    const action = this.buildUpdateAction(request);
+
+    return [toPerspectiveId, [action, ...actions]];
+  }
+
+  protected buildUpdateAction(updateRequest: UpdateRequest): UprtclAction {
+    const updateHead = {
+      type: UPDATE_HEAD_ACTION,
+      payload: updateRequest
+    };
+
+    cacheUpdateRequest(this.client, updateRequest.perspectiveId, updateRequest.newHeadId);
+
+    return updateHead;
+  }
+  protected async loadPerspectiveData(perspectiveId: string): Promise<Hashed<any>> {
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${perspectiveId}") {
+          id
+          ... on Perspective {
+            head {
+              id
+              data {
+                id 
+                _context {
+                  raw
+                }
+              }
+            }
+          }
+        }
+      }`
     });
 
-    return this.updatesList;
-  }
-
-  protected addUpdateRequest(request: UpdateRequest): void {
-    this.updatesList.push(request);
-  }
-
-  protected async loadPerspectiveData(perspectiveId: string): Promise<Hashed<any>> {
-    const remote = await this.evees.getPerspectiveProviderById(perspectiveId);
-    const details = await remote.getPerspectiveDetails(perspectiveId);
-    if (!details.headId)
-      throw new Error(
-        `Error when trying to load data for perspective ${perspectiveId}: perspective has no head associated`
-      );
-
-    return this.loadCommitData(details.headId);
+    const object = JSON.parse(result.data.entity.head.data._context.raw);
+    return {
+      id: result.data.entity.head.data.id,
+      object
+    };
   }
 
   protected async loadCommitData(commitId: string): Promise<Hashed<any>> {
-    const commit: Secured<Commit> | undefined = await this.discovery.get(commitId);
-    if (!commit) throw new Error(`Could not fetch ancestor commit with id ${commitId}`);
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${commitId}") {
+          id
+          data {
+            id
+            _context {
+              raw
+            }
+          }
+        }
+      }`
+    });
 
-    const data = await this.discovery.get(commit.object.payload.dataId);
-    if (!data)
-      throw new Error(`Could not fetch ancestor data with id ${commit.object.payload.dataId}`);
-
-    return data;
+    const object = JSON.parse(result.data.entity.data._context.raw);
+    return {
+      id: result.data.entity.data.id,
+      object
+    };
   }
 
-  async mergeCommits(toCommitId: string, fromCommitId: string, authority: string, source: string): Promise<string> {
+  async mergeCommits(
+    toCommitId: string,
+    fromCommitId: string,
+    authority: string,
+    config: any
+  ): Promise<[string, UprtclAction[]]> {
     const commitsIds = [toCommitId, fromCommitId];
 
-    const ancestorId = await findMostRecentCommonAncestor(this.discovery)(commitsIds);
+    const ancestorId = await findMostRecentCommonAncestor(this.client)(commitsIds);
     const ancestorData: any = await this.loadCommitData(ancestorId);
 
     const datasPromises = commitsIds.map(async commitId => this.loadCommitData(commitId));
 
     const newDatas: any[] = await Promise.all(datasPromises);
 
-    const newData = await this.mergeData(ancestorData, newDatas);
-    
+    const [newData, actions] = await this.mergeData(ancestorData, newDatas, config);
+
+    // TODO: fix inconsistency
     const patternName = this.recognizer.recognize(newData)[0].name;
-    const newDataId = await createEntity(this.recognizer)(newData, this.remotesConfig.map(authority, patternName).source);
 
-    const mergeCommit = await this.client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: newDataId,
-        parentsIds: commitsIds,
-        message: `Merge commits ${commitsIds.toString()}`,
-        source: source
+    const sourceRemote = this.remotesConfig.map(authority, patternName);
+
+    const hashed: Hashed<any> = await this.hashed.derive()(newData, sourceRemote.hashRecipe);
+
+    const newDataAction: UprtclAction = {
+      type: CREATE_DATA_ACTION,
+      entity: hashed,
+      payload: {
+        source: sourceRemote.source
       }
-    });
+    };
+    this.entityCache.cacheEntity(hashed);
 
-    return mergeCommit.data.createCommit.id;
+    const remote = this.evees.getAuthority(authority);
+
+    if (!remote.userId) throw new Error('Cannot create commits in a source you are not signed in');
+
+    const newCommit: Commit = {
+      dataId: hashed.id,
+      parentsIds: commitsIds,
+      message: `Merge commits ${commitsIds.toString()}`,
+      timestamp: Date.now(),
+      creatorsIds: [remote.userId]
+    };
+    const securedCommit = await this.secured.derive()(newCommit, remote.hashRecipe);
+
+    const newCommitAction: UprtclAction = {
+      type: CREATE_COMMIT_ACTION,
+      entity: securedCommit,
+      payload: {
+        source: remote.source
+      }
+    };
+    this.entityCache.cacheEntity(securedCommit);
+
+    return [securedCommit.id, [newCommitAction, newDataAction, ...actions]];
   }
 
-  async mergeData<T extends object>(originalData: T, newDatas: T[]): Promise<T> {
+  async mergeData<T extends object>(
+    originalData: T,
+    newDatas: T[],
+    config: any
+  ): Promise<[T, UprtclAction[]]> {
     const merge: Mergeable | undefined = this.recognizer
       .recognize(originalData)
       .find(prop => !!(prop as Mergeable).merge);
@@ -131,10 +219,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
     if (!merge)
       throw new Error('Cannot merge data that does not implement the Mergeable behaviour');
 
-    return merge.merge(originalData)(newDatas, this);
+    return merge.merge(originalData)(newDatas, this, config);
   }
 
-  async mergeLinks(originalLinks: string[], modificationsLinks: string[][]): Promise<string[]> {
+  async mergeLinks(
+    originalLinks: string[],
+    modificationsLinks: string[][],
+    config
+  ): Promise<[string[], UprtclAction[]]> {
     const allLinks: Dictionary<boolean> = {};
 
     const originalLinksDic = {};
@@ -172,6 +264,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
       }
     }
 
-    return resultLinks.sort((link1, link2) => link1.index - link2.index).map(link => link.link);
+    return [
+      resultLinks.sort((link1, link2) => link1.index - link2.index).map(link => link.link),
+      []
+    ];
   }
 }

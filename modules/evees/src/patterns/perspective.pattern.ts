@@ -1,5 +1,5 @@
 import { html, TemplateResult } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
+import { ApolloClient, gql, from } from 'apollo-boost';
 import { injectable, inject } from 'inversify';
 
 import {
@@ -11,18 +11,30 @@ import {
   HasActions,
   PatternAction,
   Entity,
-  Signed
+  Signed,
+  CortexModule,
+  PatternRecognizer,
+  Newable,
+  Hashed
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import {
+  DiscoveryModule,
+  DiscoveryService,
+  createEntity,
+  EntityCache
+} from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective } from '../types';
+import { Perspective, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
-import { Evees, NewPerspectiveArgs } from '../services/evees';
+import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
+import { CREATE_PERSPECTIVE } from '../graphql/queries';
+import { executeActions, cacheActions } from 'src/utils/actions';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -58,7 +70,17 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
         render: (lensContent: TemplateResult, context: any) => {
           const color: string = context ? (context.color ? context.color : undefined) : undefined;
 
-          const level: number = context ? (context.level ? context.level : 1) : 1;
+          const level: number = context ? (context.level !== undefined ? context.level : 1) : 1;
+          const index: number = context
+            ? context.index !== undefined
+              ? context.index
+              : undefined
+            : undefined;
+          const genealogy: string[] = context
+            ? context.genealogy !== undefined
+              ? context.genealogy
+              : []
+            : [];
 
           const onlyChildren: string = context
             ? context.onlyChildren !== undefined
@@ -66,19 +88,14 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
               : 'false'
             : 'false';
 
-          console.log('[PERSPECTIVE-PATTERN] render()', {
-            perspective,
-            context,
-            onlyChildren,
-            color
-          });
-
           return html`
             <evees-perspective
               perspective-id=${perspective.id}
               evee-color=${color}
               only-children=${onlyChildren}
               level=${level}
+              index=${index}
+              .genealogy=${genealogy}
             >
             </evees-perspective>
           `;
@@ -90,57 +107,76 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
 
 @injectable()
 export class PerspectiveCreate extends PerspectiveEntity
-  implements Creatable<NewPerspectiveArgs, Signed<Perspective>>, HasActions {
+  implements
+    Creatable<CreatePerspectiveArgs, Signed<Perspective>>,
+    Newable<NewPerspectiveArgs, Signed<Perspective>>,
+    HasActions {
   constructor(
     @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
-    @inject(DiscoveryModule.bindings.DiscoveryService)
-    protected discovery: DiscoveryService
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
+    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
   ) {
     super(securedPattern);
   }
 
-  create = () => async (args: NewPerspectiveArgs | undefined, authority?: string) => {
-    const perspective = await this.evees.createPerspective(args || {}, authority);
+  create = () => async (args: CreatePerspectiveArgs, authority: string) => {
+    let fromDetails: PerspectiveDetails = (args as any).fromDetails;
+    if (fromDetails) {
+      fromDetails.context =
+        fromDetails.context || `${Date.now()}.${Math.floor(Math.random() / 1000)}`;
+      fromDetails.name = fromDetails.name || 'master';
 
-    const provider = this.evees.getPerspectiveProvider(perspective.object);
+      const result = await this.evees.computeNewGlobalPerspectiveOps(
+        authority,
+        fromDetails,
+        args.canWrite
+      );
+      const actions = result[1];
+      const perspective = result[0];
 
-    await this.discovery.postEntityCreate(provider, perspective);
+      await cacheActions(actions, this.entityCache, this.client);
+      await executeActions(actions, this.client, this.patternRecognizer);
 
-    return perspective;
+      return perspective;
+    } else {
+      const remote = this.evees.getAuthority(authority);
+
+      const perspective = await this.new()((args as any).newPerspective, remote.hashRecipe);
+      const result = await this.client.mutate({
+        mutation: CREATE_PERSPECTIVE,
+        variables: {
+          creatorId: perspective.object.payload.creatorId,
+          origin: perspective.object.payload.origin,
+          timestamp: perspective.object.payload.timestamp,
+          authority: perspective.object.payload.origin,
+          canWrite: args.canWrite || remote.userId
+        }
+      });
+
+      return perspective;
+    }
+  };
+
+  new = () => async (args: NewPerspectiveArgs, recipe: CidConfig) => {
+    const userId = this.evees.getAuthority(args.autority).userId;
+
+    if (!userId) throw new Error('Cannot create in an authority in which you are not signed in');
+
+    const perspective: Perspective = {
+      creatorId: userId,
+      origin: args.autority,
+      timestamp: args.timestamp || Date.now()
+    };
+
+    return this.securedPattern.derive()(perspective, recipe);
   };
 
   actions = (perspective: Secured<Perspective>): PatternAction[] => {
-    return [
-      {
-        icon: 'call_split',
-        title: 'evees:new-perspective',
-        action: async () => {
-          const remote = this.evees.getPerspectiveProvider(perspective.object);
-          const details = await remote.getPerspectiveDetails(perspective.id);
-
-          const newPerspectiveId = await this.create()(
-            { headId: details.headId, context: details.context },
-            perspective.object.payload.origin
-          );
-          window.history.pushState('', '', `/?id=${newPerspectiveId}`);
-        },
-        type: 'version-control'
-      },
-      {
-        icon: 'merge_type',
-        title: 'evees:merge',
-        action: async () => {
-          const updateRequests = await this.merge.mergePerspectives(
-            perspective.id,
-            'zb2rhcyLxU429tS4CoGYFbtskWPVE1ws6cByhYqjFTaTgivDe'
-          );
-          console.log(updateRequests);
-        },
-        type: 'version-control'
-      }
-    ];
+    return [];
   };
 }
 

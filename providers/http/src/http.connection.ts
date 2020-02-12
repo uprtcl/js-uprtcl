@@ -112,7 +112,7 @@ export class HttpConnection extends Connection {
         return response.json() as Promise<{ data: T }>;
       })
       .then(data => {
-        console.log('[HTTP PUT RESULT] ', url, data);
+        this.logger.log('[HTTP PUT RESULT] ', url, data);
         return data.data;
       });
   }
