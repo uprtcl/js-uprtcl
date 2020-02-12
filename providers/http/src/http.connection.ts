@@ -32,31 +32,30 @@ export class HttpConnection extends Connection {
   }
 
   get authToken(): string | undefined {
-    // const token = localStorage.getItem(this.httpOptions.tokenIdLocal);
-    // if (token != null) {
-    //   return token;
-    // }
+    const token = localStorage.getItem(this.httpOptions.tokenIdLocal);
+    if (token != null) {
+      return token;
+    }
     return '';
   }
 
   set authToken(token: string | undefined) {
-    // if (token != null) {
-    //   localStorage.setItem(this.httpOptions.tokenIdLocal, token);
-    // }
+    if (token != null) {
+      localStorage.setItem(this.httpOptions.tokenIdLocal, token);
+    }
   }
 
   get userId(): string | undefined {
-    // const userId = localStorage.getItem(this.httpOptions.userIdLocal);
-    // if (userId != null) {
-    //   return userId;
-    // }
-    return 'dummy-id';
+    const userId = localStorage.getItem(this.httpOptions.userIdLocal);
+    if (userId != null) {
+      return userId;
+    }
   }
 
   set userId(userId: string | undefined) {
-    // if (userId != null) {
-    //   localStorage.setItem(this.httpOptions.userIdLocal, userId);
-    // }
+    if (userId != null) {
+      localStorage.setItem(this.httpOptions.userIdLocal, userId);
+    }
   }
 
   /**
