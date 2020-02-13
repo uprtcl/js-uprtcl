@@ -144,7 +144,8 @@ export async function executeActions(
           ...action.entity.object.payload,
           ...action.payload.details,
           authority: action.entity.object.payload.origin,
-          canWrite: action.payload.owner
+          canWrite: action.payload.owner,
+          parentId: action.payload.parentId
         }
       });
       if (result.data.createPerspective.id !== action.entity.id) {

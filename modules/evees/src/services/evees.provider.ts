@@ -6,7 +6,8 @@ import { EveesSource } from './evees.source';
 export interface NewPerspectiveData {
   perspective: Secured<Perspective>;
   details: PerspectiveDetails;
-  canWrite?: string
+  canWrite?: string,
+  parentId?: string
 }
 
 export interface EveesProvider extends EveesSource {

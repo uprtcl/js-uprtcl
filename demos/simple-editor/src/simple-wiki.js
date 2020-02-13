@@ -33,18 +33,6 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.addEventListener('evees-proposal-created', e => console.log(e));
 
-    this.wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider =>
-      provider.source.startsWith('ipfs')
-    );
-
-    this.docsProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider =>
-      provider.source.startsWith('ipfs')
-    );
-
-    this.eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
-      provider.authority.startsWith('eth')
-    );
-
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
     });
@@ -53,9 +41,24 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = state[2].split('id=')[1];
     });
 
+    const eveesHttpProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
+      provider.authority.startsWith('http')
+    );
+
+    await eveesHttpProvider.login();
+
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
+      const eveesEthProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
+        provider.authority.startsWith('eth')
+      );
+
+      const wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider =>
+        provider.source.startsWith('ipfs')
+      );
+  
+
       const wikipatterns = this.requestAll(WikiBindings.WikiEntity);
       const wikicreatable = wikipatterns.find(p => p.create);
       const wiki = await wikicreatable.create()(
@@ -63,7 +66,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
           title: 'Genesis Wiki',
           pages: []
         },
-        this.wikisProvider.source
+        wikisProvider.source
       );
 
       const commitpatterns = this.requestAll(EveesBindings.CommitPattern);
@@ -74,7 +77,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
           parentsIds: [],
           message: 'create'
         },
-        this.eveesProvider.source
+        eveesEthProvider.source
       );
 
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
@@ -90,7 +93,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
           },
           canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
         },
-        this.eveesProvider.authority
+        eveesEthProvider.authority
       );
 
       const perspectiveId = perspective.id;

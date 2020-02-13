@@ -1,8 +1,8 @@
-import { HttpProvider, HttpConnection, KnownSourcesHttp } from '@uprtcl/http-provider';
+import { HttpEthAuthProvider, HttpConnection, KnownSourcesHttp } from '@uprtcl/http-provider';
+import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';
-import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { CidConfig } from '@uprtcl/ipfs-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
@@ -11,12 +11,11 @@ import { PerspectiveDetails, Perspective } from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
 import { Secured } from 'src/uprtcl-evees';
 import { KnownSourcesService } from '@uprtcl/multiplatform';
-import { NewPerspectiveArgs } from 'src/services/evees';
 import { NewPerspectiveData } from 'src/services/evees.provider';
 
 const evees_api: string = 'evees-v1';
 
-export class EveesHttp extends HttpProvider implements EveesRemote {
+export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   knownSources: KnownSourcesService;
@@ -28,6 +27,7 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
   constructor(
     host: string,
     protected connection: HttpConnection,
+    protected ethConnection: EthereumConnection,
     hashRecipe: CidConfig
   ) {
     super(
@@ -35,20 +35,17 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
         host: host,
         apiId: evees_api
       },
-      connection
+      connection,
+      ethConnection
     );
 
-    this.accessControl =  new EveesAccessControlHttp();
+    this.accessControl = new EveesAccessControlHttp(host, this.connection);
     this.knownSources= new KnownSourcesHttp(host, this.connection);
     this.hashRecipe = hashRecipe;
   }
 
   ready(): Promise<void> {
     return Promise.resolve();
-  }
-
-  get userId() {
-    return 'anonymous';
   }
 
   get source() {
@@ -60,13 +57,15 @@ export class EveesHttp extends HttpProvider implements EveesRemote {
   }
 
   async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
-    await super.post('/persp', perspective);
+    await super.post('/persp', { perspective });
   }
 
   async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    await this.clonePerspective(perspectiveData.perspective);
-    return this.updatePerspectiveDetails(perspectiveData.perspective.id, perspectiveData.details);
-    // TODO: addEditor
+    await super.post('/persp', {
+      perspective: perspectiveData.perspective, 
+      details: perspectiveData.details,
+      parentId: perspectiveData.parentId
+    });
   }
 
   async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {

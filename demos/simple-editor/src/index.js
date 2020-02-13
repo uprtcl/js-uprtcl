@@ -29,7 +29,7 @@ import { SimpleWiki } from './simple-wiki';
   const ipfsConnection = new IpfsConnection(ipfsConfig);
   const ethConnection = new EthereumConnection({ provider: ethHost });
 
-  const httpEvees = new EveesHttp(c1host, httpConnection, httpCidConfig);
+  const httpEvees = new EveesHttp(c1host, httpConnection, ethConnection, httpCidConfig);
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection, undefined, ipfsCidConfig);
 
   const httpDocuments = new DocumentsHttp(c1host, httpConnection, httpCidConfig);

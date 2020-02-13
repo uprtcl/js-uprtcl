@@ -16,12 +16,12 @@ export interface PostResult {
  * Wrapper over the fetch API
  */
 export class HttpConnection extends Connection {
+
+  authToken: string | undefined = undefined;
+  userId: string | undefined = undefined;
+
   constructor(
-    protected httpOptions: HttpConnectionOptions = {
-      headerIdentifier: 'Authorization',
-      tokenIdLocal: 'http_jwt_token',
-      userIdLocal: 'http_user_id'
-    },
+    protected httpOptions: HttpConnectionOptions,
     options: ConnectionOptions
   ) {
     super(options);
@@ -29,34 +29,6 @@ export class HttpConnection extends Connection {
 
   protected connect(): Promise<void> {
     return Promise.resolve();
-  }
-
-  get authToken(): string | undefined {
-    // const token = localStorage.getItem(this.httpOptions.tokenIdLocal);
-    // if (token != null) {
-    //   return token;
-    // }
-    return '';
-  }
-
-  set authToken(token: string | undefined) {
-    // if (token != null) {
-    //   localStorage.setItem(this.httpOptions.tokenIdLocal, token);
-    // }
-  }
-
-  get userId(): string | undefined {
-    // const userId = localStorage.getItem(this.httpOptions.userIdLocal);
-    // if (userId != null) {
-    //   return userId;
-    // }
-    return 'dummy-id';
-  }
-
-  set userId(userId: string | undefined) {
-    // if (userId != null) {
-    //   localStorage.setItem(this.httpOptions.userIdLocal, userId);
-    // }
   }
 
   /**
@@ -68,7 +40,7 @@ export class HttpConnection extends Connection {
     };
 
     if (this.authToken) {
-      headers[this.httpOptions.headerIdentifier] = this.authToken;
+      headers['Authorization'] = this.authToken;
     }
 
     return headers;

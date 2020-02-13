@@ -154,7 +154,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
           contextHash,
           headId: perspectiveData.details.headId ? perspectiveData.details.headId : zero,
           context: perspectiveData.details.context ? perspectiveData.details.context : '',
-          name: perspectiveData.details.name,
+          name: perspectiveData.details.name ? perspectiveData.details.name : '',
           owner: perspectiveData.canWrite
             ? perspectiveData.canWrite
             : this.ethConnection.getCurrentAccount(),
