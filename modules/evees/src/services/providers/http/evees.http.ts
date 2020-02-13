@@ -57,13 +57,15 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
   }
 
   async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
-    await super.post('/persp', perspective);
+    await super.post('/persp', { perspective });
   }
 
   async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    await this.clonePerspective(perspectiveData.perspective);
-    return this.updatePerspectiveDetails(perspectiveData.perspective.id, perspectiveData.details);
-    // TODO: addEditor
+    await super.post('/persp', {
+      perspective: perspectiveData.perspective, 
+      details: perspectiveData.details,
+      parentId: perspectiveData.parentId
+    });
   }
 
   async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {

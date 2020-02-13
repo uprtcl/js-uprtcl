@@ -24,7 +24,8 @@ export const eveesTypeDefs = gql`
       context: String, 
       name: String, 
       authority: String, 
-      canWrite: String): Perspective!
+      canWrite: String,
+      parentId: String): Perspective!
   }
 
   type Context {

@@ -58,6 +58,7 @@ export const CREATE_PERSPECTIVE = gql`
     $name: String
     $authority: String
     $canWrite: String
+    $parentId: String
   ) {
     createPerspective(
       creatorId: $creatorId
@@ -68,6 +69,7 @@ export const CREATE_PERSPECTIVE = gql`
       name: $name
       authority: $authority
       canWrite: $canWrite
+      parentId: $parentId
     ) {
       id
       name

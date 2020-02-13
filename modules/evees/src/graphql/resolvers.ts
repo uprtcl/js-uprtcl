@@ -153,7 +153,7 @@ export const eveesResolvers = {
 
     async createPerspective(
       _,
-      { creatorId, origin, timestamp, headId, context, name, authority, canWrite },
+      { creatorId, origin, timestamp, headId, context, name, authority, canWrite, parentId },
       { container }
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
@@ -174,7 +174,8 @@ export const eveesResolvers = {
       const newPerspectiveData: NewPerspectiveData = {
         perspective, 
         details: { headId, name, context }, 
-        canWrite
+        canWrite,
+        parentId
       }
       await remote.cloneAndInitPerspective(newPerspectiveData);
 

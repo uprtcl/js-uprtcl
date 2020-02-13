@@ -23,7 +23,6 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import {
   DiscoveryModule,
   DiscoveryService,
-  createEntity,
   EntityCache
 } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
@@ -125,7 +124,8 @@ export class PerspectiveCreate extends PerspectiveEntity
 
   create = () => async (args: CreatePerspectiveArgs, authority: string) => {
     let fromDetails: PerspectiveDetails = (args as any).fromDetails;
-    if (fromDetails) {
+    // TODO, review "if" logic. You might want to craete a new perspective with details but without computing it.
+    if (fromDetails || args.ofPerspectiveId) {
       fromDetails.context =
         fromDetails.context || `${Date.now()}.${Math.floor(Math.random() / 1000)}`;
       fromDetails.name = fromDetails.name || 'master';
@@ -133,7 +133,9 @@ export class PerspectiveCreate extends PerspectiveEntity
       const result = await this.evees.computeNewGlobalPerspectiveOps(
         authority,
         fromDetails,
-        args.canWrite
+        args.ofPerspectiveId,
+        args.canWrite,
+        args.parentId
       );
       const actions = result[1];
       const perspective = result[0];
@@ -153,7 +155,8 @@ export class PerspectiveCreate extends PerspectiveEntity
           origin: perspective.object.payload.origin,
           timestamp: perspective.object.payload.timestamp,
           authority: perspective.object.payload.origin,
-          canWrite: args.canWrite || remote.userId
+          canWrite: args.canWrite || remote.userId,
+          parentId: args.parentId
         }
       });
 

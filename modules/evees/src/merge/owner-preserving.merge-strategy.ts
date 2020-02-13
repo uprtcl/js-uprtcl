@@ -134,10 +134,11 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
             const [perspective, actions] = await this.evees.computeNewGlobalPerspectiveOps(
               targetAuthority,
               {
-                headId,
                 context,
+                headId,
                 name: `from${name ? '-' + name : ''}`
               },
+              undefined,
               targetCanWrite
             );
 

@@ -19,9 +19,9 @@ export interface Perspective {
 }
 
 export interface PerspectiveDetails {
-  name: string;
-  context: string | undefined;
-  headId: string | undefined;
+  name?: string;
+  context?: string | undefined;
+  headId?: string | undefined;
 }
 
 export interface Commit {

@@ -23,7 +23,8 @@ import {
   Commit,
   Evees,
   CreateCommitArgs,
-  NewPerspectiveArgs
+  NewPerspectiveArgs,
+  CreatePerspectiveArgs
 } from '@uprtcl/evees';
 import { TextType, DocumentsModule, htmlToText, TextNode } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -169,13 +170,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       NewPerspectiveArgs,
       Signed<Perspective>
     > = this.getCreatePattern(EveesModule.bindings.PerspectivePattern);
-    const perspective: Secured<Commit> = await perspectiveCreator.create()(
-      {
-        fromDetails: {
-          headId: commit.id
-          // TODO: add name of previous perspective?
-        }
+    const args: CreatePerspectiveArgs =  {
+      fromDetails: {
+        headId: commit.id        
       },
+      parentId: this.perspective.id
+    };
+    const perspective: Secured<Commit> = await perspectiveCreator.create()(
+      args,
       origin
     );
 
