@@ -15,13 +15,14 @@ import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
-  const c1host = 'http://localhost:3100/uprtcl/1';
+  const c1host = 'http://3.12.79.127:3100/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
   const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
 
+  // const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+  // const ipfsConfig = { host: '3.12.79.127', port: 8080, protocol: 'http' };
   const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
-  // const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
   
   const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
 

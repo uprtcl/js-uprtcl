@@ -15,7 +15,7 @@ import '@material/mwc-tab';
 import '@material/mwc-tab-bar';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { AccessControlService, OwnerPermissions } from '@uprtcl/access-control';
 import { Pattern, Creatable, Signed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
@@ -68,6 +68,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   activeTabIndex: number = 0;
+
+  @property({ type: String, attribute: false })
+  forceUpdate: string = 'true';
 
   perspectiveData!: PerspectiveData;
 
@@ -143,6 +146,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     super.connectedCallback();
   }
 
+  reload() {
+    if (this.forceUpdate === 'true') {
+      this.forceUpdate = 'false';
+    } else { 
+      this.forceUpdate === 'true'
+    }
+  }
+
   otherPerspectiveClicked(e: CustomEvent) {
     this.logger.info(`otherPerspectiveClicked() ${e.detail.id}`);
     this.dispatchEvent(
@@ -187,13 +198,16 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     );
 
     if (isProposal) {
-      this.createMergeProposal(fromPerspectiveId, actions);
+      await this.createMergeProposal(fromPerspectiveId, actions);
     } else {
-      this.mergePerspective(actions);
+      await this.mergePerspective(actions);
     }
+
+    /** reload perspectives-list */
+    this.reload();
   }
 
-  async mergePerspective(actions: UprtclAction[]) {
+  async mergePerspective(actions: UprtclAction[]): Promise<void> {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
     const cache: EntityCache = this.request(DiscoveryModule.bindings.EntityCache);
@@ -266,7 +280,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     return Promise.all(executePromises);
   }
 
-  async createMergeProposal(fromPerspectiveId: string, actions: UprtclAction[]) {
+  async createMergeProposal(fromPerspectiveId: string, actions: UprtclAction[]): Promise<void> {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
     const cache: EntityCache = this.request(DiscoveryModule.bindings.EntityCache);

@@ -87,3 +87,20 @@ export const CREATE_PERSPECTIVE = gql`
     }
   }
 `;
+
+// export const CREATE_PROPOSAL = gql`
+//   mutation AddProposal($toPerspectiveId: ID!, $fromPerspectiveId: ID!, $updateRequests: [HeadUpdate!]) {
+//     addProposal(toPerspectiveId: $toPerspectiveId, fromPerspectiveId: $fromPerspectiveId, updateRequests: $updateRequests) {
+//       id
+//       proposals {
+//         id
+//         toPerspective
+//         fromPerspective
+//         updates
+//         authorized
+//         canAuthorize
+//         executed
+//       }
+//     }
+//   }
+// `;

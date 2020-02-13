@@ -25,6 +25,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderOtherPerspectives() {
     return html`
       <evees-perspectives-list
+        force-update=${this.forceUpdate}
         perspective-id=${this.perspectiveId}
         first-perspective-id=${this.firstPerspectiveId}
         @perspective-selected=${this.otherPerspectiveClicked}

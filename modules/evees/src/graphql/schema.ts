@@ -26,6 +26,11 @@ export const eveesTypeDefs = gql`
       authority: String, 
       canWrite: String,
       parentId: String): Perspective!
+
+    # addProposal(
+    #   toPerspectiveId: ID!, 
+    #   fromPerspectiveId: ID!, 
+    #   updateRequests: [HeadUpdate!]): Perspective!
   }
 
   type Context {
@@ -40,17 +45,17 @@ export const eveesTypeDefs = gql`
     newHead: Commit! @discover
   }
 
-  type UpdateProposal {
-    id: ID!
+  # type UpdateProposal {
+  #   id: ID!
     
-    creatorId: String
-    toPerspective: Perspective! @discover
-    fromPerspective: Perspective! @discover
-    updates: [HeadUpdate!]
-    authorized: Boolean,
-    canAuthorize: Boolean,
-    executed: Boolean
-  }
+  #   creatorId: String
+  #   toPerspective: Perspective! @discover
+  #   fromPerspective: Perspective! @discover
+  #   updates: [HeadUpdate!]
+  #   authorized: Boolean,
+  #   canAuthorize: Boolean,
+  #   executed: Boolean
+  # }
 
   type Commit implements Entity {
     id: ID!
@@ -71,7 +76,7 @@ export const eveesTypeDefs = gql`
     name: String
     context: Context
     payload: Payload
-    proposals: [UpdateProposal!]
+    # proposals: [UpdateProposal!]
 
     _context: EntityContext!
   }

@@ -8,6 +8,8 @@ import { Proposal } from '../types';
 import { styleMap } from './evees-info-popper';
 import { DEFAULT_COLOR } from './evees-perspective';
 import { prettyTime, prettyAddress } from './support';
+import { Evees, EveesBindings } from 'src/uprtcl-evees';
+import { ProposalsProvider } from 'src/services/proposals.provider';
 
 interface PerspectiveData {
   id: string;
@@ -42,6 +44,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   @property({ type: String, attribute: false })
   canWrite: Boolean = false;
 
+  @property({ type: String, attribute: 'force-update' })
+  forceUpdate: string = 'true';
+
   async firstUpdated() {
     this.getOtherPersepectivesData();
   }
@@ -56,6 +61,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         }
       })
     );
+  }
+
+  updated(changedProperties) {
+    if(changedProperties.has('forceUpdate') || changedProperties.has('perspectiveId')) {
+      this.logger.log('updating getOtherPersepectivesData')
+      this.getOtherPersepectivesData();
+    }
   }
 
   buttonClicked(perspectiveData: PerspectiveData) {
@@ -156,15 +168,15 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                   }
                 } 
               }
-              proposals {
-                id
-                fromPerspective {
-                  id
-                }
-                authorized
-                canAuthorize
-                executed
-              }
+              # proposals {
+              #   id
+              #   fromPerspective {
+              #     id
+              #   }
+              #   authorized
+              #   canAuthorize
+              #   executed
+              # }
             }
             _context {
               patterns {
@@ -180,17 +192,33 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     /** data on this perspective */
     this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
 
-    const proposals = result.data.entity.proposals.map(
-      (prop): Proposal => {
-        return {
-          id: prop.id,
-          fromPerspectiveId: prop.fromPerspective.id,
-          authorized: prop.authorized,
-          canAuthorize: prop.canAuthorize,
-          executed: prop.exectude
-        };
-      }
-    );
+    // const proposals = result.data.entity.proposals.map(
+    //   (prop): Proposal => {
+    //     return {
+    //       id: prop.id,
+    //       fromPerspectiveId: prop.fromPerspective.id,
+    //       authorized: prop.authorized,
+    //       canAuthorize: prop.canAuthorize,
+    //       executed: prop.exectude
+    //     };
+    //   }
+    // );
+
+    let proposals: Proposal[]; 
+
+    const evees: Evees = this.request(EveesBindings.Evees);
+    const remote = evees.getAuthority(result.data.entity.payload.origin);
+
+    if (!remote.proposals) {
+      proposals = [];
+    } else {
+      const proposalsIds = await remote.proposals.getProposalsToPerspective(this.perspectiveId);
+      const proposalsPromises = proposalsIds.map(proposalId => {
+        return (remote.proposals as ProposalsProvider).getProposal(proposalId);
+      });
+
+      proposals = await Promise.all(proposalsPromises);
+    }
 
     /** data on other perspectives (proposals are injected on them) */
 
