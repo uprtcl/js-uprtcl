@@ -6,7 +6,7 @@ export enum PermissionType {
   Admin = 'Admin'
 }
 
-export interface BasicAdminAccessControl {
+export interface BasicAdminPermissions {
   publicWrite: boolean;
   publicRead: boolean;
   canRead: string[];
@@ -14,8 +14,5 @@ export interface BasicAdminAccessControl {
   canAdmin: string[];
 }
 
-export interface BasicAdminAccessControlService extends AccessControlService<BasicAdminAccessControl> {
-  setPublic(hash: string, value: boolean, type: PermissionType): Promise<void>;
-  addCan(hash: string, newOwnerId: string, type: PermissionType): Promise<void>;
-  removeCan(hash: string, newOwnerId: string, type: PermissionType): Promise<void>;
+export interface BasicAdminAccessControlService extends AccessControlService<BasicAdminPermissions> {
 }

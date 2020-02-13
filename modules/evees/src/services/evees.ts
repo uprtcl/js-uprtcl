@@ -41,6 +41,8 @@ export interface NoHeadPerspectiveArgs {
 }
 
 export type CreatePerspectiveArgs = {
+  parentId?: string;
+  ofPerspectiveId?: string;
   canWrite?: string;
 } & (
   | { newPerspective: NewPerspectiveArgs }
@@ -155,7 +157,9 @@ export class Evees {
   public async computeNewGlobalPerspectiveOps(
     authority: string,
     details: PerspectiveDetails,
-    canWrite?: string
+    ofPerspectiveId?: string,
+    canWrite?: string,
+    parentId?: string
   ): Promise<[Secured<Perspective>, Array<UprtclAction>]> {
     const eveesRemote = this.getAuthority(authority);
 
@@ -164,9 +168,30 @@ export class Evees {
 
     let actions: Array<UprtclAction> = [];
 
+    let headId: string;
+    if (ofPerspectiveId === undefined) {
+      if (!details.headId) throw new Error('headId must be provided if ofPerspectiveId is not provided)');
+      headId = details.headId;
+    } else {
+      const result = await this.client.query({
+        query: gql`{
+          entity(id: "${ofPerspectiveId}") {
+            id
+            ... on Perspective {
+              head {
+                id
+              }
+            }
+          }
+        }`
+      });
+  
+      headId = result.data.entity.head.id;
+    }
+
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${details.headId}") {
+        entity(id: "${headId}") {
           id
           ... on Commit {
             data {
@@ -180,7 +205,6 @@ export class Evees {
       }`
     });
 
-    const headId = result.data.entity.id;
     const dataId = result.data.entity.data.id;
     const dataRaw = JSON.parse(result.data.entity.data._context.raw);
     const dataHashed = { id: dataId, object: dataRaw };
@@ -215,11 +239,10 @@ export class Evees {
 
           const perspectiveDetails: PerspectiveDetails = {
             context: descendantResult.data.entity.context.id,
-            headId: descendantResult.data.entity.head.id,
             name: descendantResult.data.entity.name
           };
 
-          return this.computeNewGlobalPerspectiveOps(authority, perspectiveDetails, canWrite);
+          return this.computeNewGlobalPerspectiveOps(authority, perspectiveDetails, link, canWrite, ofPerspectiveId);
         });
 
         const results = await Promise.all(promises);
@@ -282,7 +305,8 @@ export class Evees {
       entity: perspective,
       payload: {
         details: { headId: newHeadId, name, context: details.context },
-        owner: canWrite || eveesRemote.userId
+        owner: canWrite || eveesRemote.userId,
+        parentId: parentId
       }
     };
 

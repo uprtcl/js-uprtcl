@@ -10,6 +10,7 @@ import { OwnerPattern } from './patterns/owner.pattern';
 import { BasicAdminPattern } from './patterns/basic-admin-control.pattern';
 
 import en from '../i18n/en.json';
+import { PermissionsAdmin } from './elements/permissions-admin';
 
 export class AccessControlModule extends MicroModule {
   static id = Symbol('access-control-module');
@@ -17,7 +18,8 @@ export class AccessControlModule extends MicroModule {
   submodules = [
     new ElementsModule({
       'permissions-for-entity': PermissionsForEntity,
-      'permissions-owner': PermissionsOwner
+      'permissions-owner': PermissionsOwner,
+      'permissions-admin': PermissionsAdmin
     }),
     new i18nextModule('access-control', { en }),
     new GraphQlSchemaModule(accessControlTypes, accessControlResolvers),

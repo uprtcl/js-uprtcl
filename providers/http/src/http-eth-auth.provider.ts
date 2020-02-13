@@ -33,7 +33,7 @@ export class HttpEthAuthProvider extends HttpProvider {
     let signature = await this.ethConnection.signText(`Login to Uprtcl Evees HTTP Server \n\nnonce:${nonce}`, account);
     let token = await this.authorize(account, signature);
 
-    this.connection.userId = account;
+    this.connection.userId = account.toLocaleLowerCase();
     this.connection.authToken = 'Bearer ' + token.jwt;
   }
 }

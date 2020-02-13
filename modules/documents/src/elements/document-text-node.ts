@@ -221,7 +221,8 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
       {
         fromDetails: {
           headId: commit.id
-        }
+        },
+        parentId: this.perspective.id
       },
       origin
     );
