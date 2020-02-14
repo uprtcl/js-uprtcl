@@ -323,27 +323,34 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       action => action.payload.perspectiveId,
       async (authority, actions) => {
         
-        debugger
-        
-        const result = await client.mutate({
-          mutation: CREATE_PROPOSAL,
-          variables: {
-            toPerspectiveId: this.perspectiveId, 
-            fromPerspectiveId: fromPerspectiveId, 
-            updateRequests: actions.map(action => action.payload)
-          }
-        });
+        // const result = await client.mutate({
+        //   mutation: CREATE_PROPOSAL,
+        //   variables: {
+        //     toPerspectiveId: this.perspectiveId, 
+        //     fromPerspectiveId: fromPerspectiveId, 
+        //     updateRequests: actions.map(action => action.payload)
+        //   }
+        // });
 
-        this.logger.info('created proposal', { result });
+        const remote = evees.getAuthority(authority);
+        if (!remote.proposals) throw new Error('remote cant handle proposals');
 
-        // this.dispatchEvent(
-        //   new ProposalCreatedEvent({
-        //     detail: { proposalId, authority },
-        //     cancelable: true,
-        //     composed: true,
-        //     bubbles: true
-        //   })
-        // );
+        const proposalId = await remote.proposals.createProposal(
+          fromPerspectiveId,
+          this.perspectiveId,
+          actions.map(action => action.payload)
+        );
+
+        this.logger.info('created proposal', { proposalId, actions });
+
+        this.dispatchEvent(
+          new ProposalCreatedEvent({
+            detail: { proposalId, authority },
+            cancelable: true,
+            composed: true,
+            bubbles: true
+          })
+        );
       }
     );
   }

@@ -8,8 +8,6 @@ import { Proposal } from '../types';
 import { styleMap } from './evees-info-popper';
 import { DEFAULT_COLOR } from './evees-perspective';
 import { prettyTime, prettyAddress } from './support';
-import { Evees, EveesBindings } from 'src/uprtcl-evees';
-import { ProposalsProvider } from 'src/services/proposals.provider';
 
 interface PerspectiveData {
   id: string;
@@ -18,6 +16,7 @@ interface PerspectiveData {
   creatorId: string;
   timestamp: number;
   proposal: Proposal | undefined;
+  publicRead: boolean;
 }
 
 const MERGE_ACTION: string = 'Merge';
@@ -25,6 +24,8 @@ const PENDING_ACTION: string = 'Pending';
 const AUTHORIZE_ACTION: string = 'Authorize';
 const EXECUTE_ACTION: string = 'Execute';
 const MERGE_PROPOSAL_ACTION: string = 'Propose Merge';
+const PRIVATE_PERSPECTIVE: string = 'Private';
+const MERGE_EXECUTED: string = 'Merged';
 
 export class PerspectivesList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
@@ -71,7 +72,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   buttonClicked(perspectiveData: PerspectiveData) {
-    switch (this.getProposalAction(perspectiveData.proposal)) {
+    switch (this.getProposalAction(perspectiveData)) {
       case MERGE_ACTION:
         this.dispatchEvent(
           new CustomEvent('merge-perspective', {
@@ -124,12 +125,23 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     }
   }
 
-  getProposalAction(proposal: Proposal | undefined): string {
+  getProposalActionDisaled(perspectiveData) {
+    const action = this.getProposalAction(perspectiveData);
+    return [PENDING_ACTION, PRIVATE_PERSPECTIVE, MERGE_EXECUTED].includes(action);
+  }
+
+  getProposalAction(perspectiveData: PerspectiveData): string {
+    const proposal = perspectiveData.proposal;
+
     if (proposal === undefined) {
       if (this.canWrite) {
         return MERGE_ACTION;
       } else {
-        return MERGE_PROPOSAL_ACTION;
+        if (perspectiveData.publicRead) {
+          return MERGE_PROPOSAL_ACTION;
+        } else {
+          return PRIVATE_PERSPECTIVE;
+        }
       }
     }
 
@@ -140,8 +152,15 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         return PENDING_ACTION;
       }
     } else {
-      return EXECUTE_ACTION;
+      if (!proposal.updates) return MERGE_EXECUTED;
+
+      if (proposal.updates.find(update => update.executed) !== undefined) {
+        return EXECUTE_ACTION;
+      } else {
+        return MERGE_EXECUTED;
+      }
     }
+
   }
 
   getOtherPersepectivesData = async () => {
@@ -166,6 +185,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                     timestamp
                     origin
                   }
+                  _context {
+                    patterns {
+                      accessControl {
+                        permissions
+                      }
+                    }
+                  }
                 } 
               }
               proposals {
@@ -176,6 +202,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                 authorized
                 canAuthorize
                 executed
+                updates
               }
             }
             _context {
@@ -219,7 +246,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           creatorId: perspective.payload.creatorId,
           timestamp: perspective.payload.timestamp,
           origin: perspective.payload.origin,
-          proposal: thisProposal
+          proposal: thisProposal,
+          publicRead: perspective._context.patterns.accessControl.permissions.publicRead ? perspective._context.patterns.accessControl.permissions.publicRead : true
         };
       });
 
@@ -291,9 +319,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                             icon="call_merge"
                             class="merge-button"
                             @click=${() => this.buttonClicked(perspectiveData)}
-                            label=${this.getProposalAction(perspectiveData.proposal)}
-                            .disabled=${this.getProposalAction(perspectiveData.proposal) ===
-                              PENDING_ACTION}
+                            label=${this.getProposalAction(perspectiveData)}
+                            .disabled=${this.getProposalActionDisaled(perspectiveData)}
                           ></mwc-button>
                         </div>
                       </div>

@@ -197,7 +197,6 @@ export const eveesResolvers = {
       { toPerspectiveId, fromPerspectiveId, updateRequests },
       { container }
     ) {
-      debugger
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = await evees.getPerspectiveProviderById(toPerspectiveId);

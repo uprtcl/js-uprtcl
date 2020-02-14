@@ -15,7 +15,8 @@ import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
-  const c1host = 'http://3.12.79.127:3100/uprtcl/1';
+  // const c1host = 'http://3.12.79.127:3100/uprtcl/1';
+  const c1host = 'http://localhost:3100/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
   const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
