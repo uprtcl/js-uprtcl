@@ -42,14 +42,14 @@ export const eveesResolvers = {
       return evees.getContextPerspectives(context);
     }
   },
-  // UpdateProposal: {
-  //   toPerspective(parent) {
-  //     return parent.toPerspectiveId;
-  //   },
-  //   fromPerspective(parent) {
-  //     return parent.fromPerspectiveId;
-  //   }
-  // },
+  UpdateProposal: {
+    toPerspective(parent) {
+      return parent.toPerspectiveId;
+    },
+    fromPerspective(parent) {
+      return parent.fromPerspectiveId;
+    }
+  },
   Perspective: {
     async head(parent, _, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
@@ -74,23 +74,23 @@ export const eveesResolvers = {
       const details = await remote.getPerspectiveDetails(parent.id);
 
       return details && details.context;
+    },
+    async proposals(parent, _, { container }) {
+      const evees: Evees = container.get(EveesBindings.Evees);
+
+      const remote = evees.getPerspectiveProvider(parent);
+
+      if (!remote.proposals) return [];
+
+      const proposalsIds = await remote.proposals.getProposalsToPerspective(parent.id);
+      const proposalsPromises = proposalsIds.map(proposalId => {
+        return (remote.proposals as ProposalsProvider).getProposal(proposalId);
+      });
+
+      const proposals = await Promise.all(proposalsPromises);
+
+      return proposals;
     }
-    // async proposals(parent, _, { container }) {
-    //   const evees: Evees = container.get(EveesBindings.Evees);
-
-    //   const remote = evees.getPerspectiveProvider(parent);
-
-    //   if (!remote.proposals) return [];
-
-    //   const proposalsIds = await remote.proposals.getProposalsToPerspective(parent.id);
-    //   const proposalsPromises = proposalsIds.map(proposalId => {
-    //     return (remote.proposals as ProposalsProvider).getProposal(proposalId);
-    //   });
-
-    //   const proposals = await Promise.all(proposalsPromises);
-
-    //   return proposals;
-    // }
   },
   Mutation: {
     async createCommit(
@@ -172,8 +172,8 @@ export const eveesResolvers = {
       );
 
       const newPerspectiveData: NewPerspectiveData = {
-        perspective, 
-        details: { headId, name, context }, 
+        perspective,
+        details: { headId, name, context },
         canWrite,
         parentId
       }
@@ -190,39 +190,37 @@ export const eveesResolvers = {
           timestamp
         }
       };
+    },
+
+    async addProposal(
+      _,
+      { toPerspectiveId, fromPerspectiveId, updateRequests },
+      { container }
+    ) {
+      debugger
+      const evees: Evees = container.get(EveesBindings.Evees);
+
+      const remote = await evees.getPerspectiveProviderById(toPerspectiveId);
+      if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+      const proposalId = await remote.proposals.createProposal(
+        fromPerspectiveId,
+        toPerspectiveId,
+        updateRequests
+      );
+
+      return {
+        id: toPerspectiveId,
+        proposals: {
+          id: proposalId
+          // toPerspective: toPerspectiveId,
+          // fromPerspective: fromPerspectiveId,
+          // updates: updateRequests,
+          // authorized: false,
+          // canAuthorize: false,
+          // executed: false
+        }
+      };
     }
-
-    // async addProposal(
-    //   _,
-    //   { toPerspectiveId, fromPerspectiveId, updateRequests },
-    //   { container }
-    // ) {
-    //   debugger
-    //   const evees: Evees = container.get(EveesBindings.Evees);
-      
-    //   const remote = await evees.getPerspectiveProviderById(toPerspectiveId);
-    //   if (!remote.proposals) throw new Error('remote cant handle proposals');
-
-    //   const proposalId = await remote.proposals.createProposal(
-    //     fromPerspectiveId,
-    //     toPerspectiveId,
-    //     updateRequests
-    //   );
-
-    //   return {
-    //     id: toPerspectiveId,
-    //     proposals: [
-    //       {
-    //         id: proposalId,
-    //         toPerspective: toPerspectiveId,
-    //         fromPerspective: fromPerspectiveId,
-    //         updates: updateRequests,
-    //         authorized: false,
-    //         canAuthorize: false,
-    //         executed: false
-    //       }
-    //     ]
-    //   };
-    // }
   }
 };

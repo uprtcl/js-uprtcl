@@ -168,15 +168,15 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                   }
                 } 
               }
-              # proposals {
-              #   id
-              #   fromPerspective {
-              #     id
-              #   }
-              #   authorized
-              #   canAuthorize
-              #   executed
-              # }
+              proposals {
+                id
+                fromPerspective {
+                  id
+                }
+                authorized
+                canAuthorize
+                executed
+              }
             }
             _context {
               patterns {
@@ -192,33 +192,17 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     /** data on this perspective */
     this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
 
-    // const proposals = result.data.entity.proposals.map(
-    //   (prop): Proposal => {
-    //     return {
-    //       id: prop.id,
-    //       fromPerspectiveId: prop.fromPerspective.id,
-    //       authorized: prop.authorized,
-    //       canAuthorize: prop.canAuthorize,
-    //       executed: prop.exectude
-    //     };
-    //   }
-    // );
-
-    let proposals: Proposal[]; 
-
-    const evees: Evees = this.request(EveesBindings.Evees);
-    const remote = evees.getAuthority(result.data.entity.payload.origin);
-
-    if (!remote.proposals) {
-      proposals = [];
-    } else {
-      const proposalsIds = await remote.proposals.getProposalsToPerspective(this.perspectiveId);
-      const proposalsPromises = proposalsIds.map(proposalId => {
-        return (remote.proposals as ProposalsProvider).getProposal(proposalId);
-      });
-
-      proposals = await Promise.all(proposalsPromises);
-    }
+    const proposals = result.data.entity.proposals.map(
+      (prop): Proposal => {
+        return {
+          id: prop.id,
+          fromPerspectiveId: prop.fromPerspective.id,
+          authorized: prop.authorized,
+          canAuthorize: prop.canAuthorize,
+          executed: prop.exectude
+        };
+      }
+    );
 
     /** data on other perspectives (proposals are injected on them) */
 

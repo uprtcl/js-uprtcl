@@ -33,7 +33,7 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
-import { UPDATE_HEAD } from '../graphql/queries';
+import { UPDATE_HEAD, CREATE_PROPOSAL } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees, CreatePerspectiveArgs } from '../services/evees';
 
@@ -322,25 +322,28 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       actions.filter(a => a.type === UPDATE_HEAD_ACTION),
       action => action.payload.perspectiveId,
       async (authority, actions) => {
-        const remote = evees.getAuthority(authority);
-        if (!remote.proposals) throw new Error('remote cant handle proposals');
+        
+        debugger
+        
+        const result = await client.mutate({
+          mutation: CREATE_PROPOSAL,
+          variables: {
+            toPerspectiveId: this.perspectiveId, 
+            fromPerspectiveId: fromPerspectiveId, 
+            updateRequests: actions.map(action => action.payload)
+          }
+        });
 
-        const proposalId = await remote.proposals.createProposal(
-          fromPerspectiveId,
-          this.perspectiveId,
-          actions.map(action => action.payload)
-        );
+        this.logger.info('created proposal', { result });
 
-        this.logger.info('created proposal', { proposalId, actions });
-
-        this.dispatchEvent(
-          new ProposalCreatedEvent({
-            detail: { proposalId, authority },
-            cancelable: true,
-            composed: true,
-            bubbles: true
-          })
-        );
+        // this.dispatchEvent(
+        //   new ProposalCreatedEvent({
+        //     detail: { proposalId, authority },
+        //     cancelable: true,
+        //     composed: true,
+        //     bubbles: true
+        //   })
+        // );
       }
     );
   }
