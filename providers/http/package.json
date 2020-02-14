@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@uprtcl/cortex": "^0.0.4-alpha4",
-    "@uprtcl/ethereum-provider": "0.0.4-alpha2",
+    "@uprtcl/ethereum-provider": "0.0.4-alpha4",
     "@uprtcl/micro-orchestrator": "^0.0.4-alpha4",
     "@uprtcl/multiplatform": "^0.0.4-alpha4",
     "reflect-metadata": "^0.1.13",
