@@ -154,7 +154,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     } else {
       if (!proposal.updates) return MERGE_EXECUTED;
 
-      if (proposal.updates.find(update => update.executed) !== undefined) {
+      if (!proposal.executed) {
         return EXECUTE_ACTION;
       } else {
         return MERGE_EXECUTED;
