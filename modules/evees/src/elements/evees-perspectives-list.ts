@@ -104,7 +104,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             bubbles: true,
             composed: true,
             detail: {
-              proposalId: perspectiveData.proposal.id
+              proposalId: perspectiveData.proposal.id,
+              perspectiveId: this.perspectiveId,
             }
           })
         );
@@ -117,7 +118,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             bubbles: true,
             composed: true,
             detail: {
-              proposalId: perspectiveData.proposal.id
+              proposalId: perspectiveData.proposal.id,
+              perspectiveId: this.perspectiveId
             }
           })
         );
@@ -125,13 +127,15 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     }
   }
 
-  getProposalActionDisaled(perspectiveData) {
+  getProposalActionDisaled(perspectiveData: PerspectiveData) {
     const action = this.getProposalAction(perspectiveData);
-    return [PENDING_ACTION, PRIVATE_PERSPECTIVE, MERGE_EXECUTED].includes(action);
+    return [PENDING_ACTION, PRIVATE_PERSPECTIVE, MERGE_EXECUTED, MERGE_ACTION].includes(action);
   }
 
   getProposalAction(perspectiveData: PerspectiveData): string {
     const proposal = perspectiveData.proposal;
+
+    debugger
 
     if (proposal === undefined) {
       if (this.canWrite) {
@@ -152,8 +156,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         return PENDING_ACTION;
       }
     } else {
-      if (!proposal.updates) return MERGE_EXECUTED;
-
       if (!proposal.executed) {
         return EXECUTE_ACTION;
       } else {
@@ -247,7 +249,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           timestamp: perspective.payload.timestamp,
           origin: perspective.payload.origin,
           proposal: thisProposal,
-          publicRead: perspective._context.patterns.accessControl.permissions.publicRead ? perspective._context.patterns.accessControl.permissions.publicRead : true
+          publicRead: perspective._context.patterns.accessControl.permissions.publicRead !== undefined ? perspective._context.patterns.accessControl.permissions.publicRead : true
         };
       });
 

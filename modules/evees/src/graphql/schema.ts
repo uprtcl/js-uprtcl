@@ -30,7 +30,16 @@ export const eveesTypeDefs = gql`
     addProposal(
       toPerspectiveId: ID!, 
       fromPerspectiveId: ID!, 
-      updateRequests: [HeadUpdateInput!]): Perspective!
+      updateRequests: [HeadUpdateInput!]): UpdateProposal!
+
+    authorizeProposal(
+      proposalId: ID!, 
+      perspectiveId: ID!, 
+      authorize: Boolean!): UpdateProposal!
+
+    executeProposal(
+      proposalId: ID!, 
+      perspectiveId: ID!): UpdateProposal!
   }
 
   type Context {

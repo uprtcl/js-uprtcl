@@ -33,7 +33,7 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
-import { UPDATE_HEAD, CREATE_PROPOSAL } from '../graphql/queries';
+import { UPDATE_HEAD, CREATE_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees, CreatePerspectiveArgs } from '../services/evees';
 
@@ -323,23 +323,16 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       action => action.payload.perspectiveId,
       async (authority, actions) => {
         
-        // const result = await client.mutate({
-        //   mutation: CREATE_PROPOSAL,
-        //   variables: {
-        //     toPerspectiveId: this.perspectiveId, 
-        //     fromPerspectiveId: fromPerspectiveId, 
-        //     updateRequests: actions.map(action => action.payload)
-        //   }
-        // });
+        const result = await client.mutate({
+          mutation: CREATE_PROPOSAL,
+          variables: {
+            toPerspectiveId: this.perspectiveId, 
+            fromPerspectiveId: fromPerspectiveId, 
+            updateRequests: actions.map(action => action.payload)
+          }
+        });
 
-        const remote = evees.getAuthority(authority);
-        if (!remote.proposals) throw new Error('remote cant handle proposals');
-
-        const proposalId = await remote.proposals.createProposal(
-          fromPerspectiveId,
-          this.perspectiveId,
-          actions.map(action => action.payload)
-        );
+        const proposalId = result.data.addProposal.id;
 
         this.logger.info('created proposal', { proposalId, actions });
 
@@ -357,26 +350,38 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async authorizeProposal(e: CustomEvent) {
     const proposalId = e.detail.proposalId;
+    const perspectiveId = e.detail.perspectiveId;
 
-    const evees: Evees = this.request(EveesModule.bindings.Evees);
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
-    const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
-
-    if (!remote.proposals) throw new Error('remote cant handle proposals');
-
-    await remote.proposals.acceptProposal(proposalId);
+    const result = await client.mutate({
+      mutation: AUTHORIZE_PROPOSAL,
+      variables: {
+        proposalId: proposalId, 
+        perspectiveId: perspectiveId,
+        authorize: true
+      }
+    });
 
     this.logger.info('accepted proposal', { proposalId });
+
+    this.reload();
   }
 
   async executeProposal(e: CustomEvent) {
+
     const proposalId = e.detail.proposalId;
-    const evees: Evees = this.request(EveesModule.bindings.Evees);
+    const perspectiveId = e.detail.perspectiveId;
 
-    const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
-    if (!remote.proposals) throw new Error('remote cant handle proposals');
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
-    await remote.proposals.executeProposal(proposalId);
+    const result = await client.mutate({
+      mutation: EXECUTE_PROPOSAL,
+      variables: {
+        proposalId: proposalId, 
+        perspectiveId: perspectiveId
+      }
+    });
 
     this.logger.info('accepted proposal', { proposalId });
   }
