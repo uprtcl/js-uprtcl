@@ -384,6 +384,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
 
     this.logger.info('accepted proposal', { proposalId });
+
+    this.reload();
   }
 
   getCreatePattern(symbol) {

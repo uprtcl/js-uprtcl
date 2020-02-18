@@ -120,7 +120,7 @@ export const AUTHORIZE_PROPOSAL = gql`
 
 export const EXECUTE_PROPOSAL = gql`
   mutation ExecuteProposal($proposalId: ID!, $perspectiveId: ID!) {
-    execute(proposalId: $proposalId, perspectiveId: $perspectiveId) {
+    executeProposal(proposalId: $proposalId, perspectiveId: $perspectiveId) {
       id
       toPerspective {
         id

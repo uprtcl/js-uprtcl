@@ -135,8 +135,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   getProposalAction(perspectiveData: PerspectiveData): string {
     const proposal = perspectiveData.proposal;
 
-    debugger
-
     if (proposal === undefined) {
       if (this.canWrite) {
         return MERGE_ACTION;
@@ -228,7 +226,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           fromPerspectiveId: prop.fromPerspective.id,
           authorized: prop.authorized,
           canAuthorize: prop.canAuthorize,
-          executed: prop.exectude
+          executed: prop.executed
         };
       }
     );

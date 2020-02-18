@@ -265,8 +265,6 @@ export const eveesResolvers = {
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
       const evees: Evees = container.get(EveesBindings.Evees);
 
-      debugger
-
       const perspectiveResult = await client.query({
         query: gql`{
         entity(id: "${perspectiveId}") {
@@ -287,6 +285,7 @@ export const eveesResolvers = {
       
       return {
         id: proposalId,
+        toPerspectiveId: perspectiveId,
         executed: true,
       }
 
