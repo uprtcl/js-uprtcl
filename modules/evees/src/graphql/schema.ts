@@ -26,6 +26,20 @@ export const eveesTypeDefs = gql`
       authority: String, 
       canWrite: String,
       parentId: String): Perspective!
+
+    addProposal(
+      toPerspectiveId: ID!, 
+      fromPerspectiveId: ID!, 
+      updateRequests: [HeadUpdateInput!]): UpdateProposal!
+
+    authorizeProposal(
+      proposalId: ID!, 
+      perspectiveId: ID!, 
+      authorize: Boolean!): UpdateProposal!
+
+    executeProposal(
+      proposalId: ID!, 
+      perspectiveId: ID!): UpdateProposal!
   }
 
   type Context {
@@ -38,6 +52,14 @@ export const eveesTypeDefs = gql`
     oldHead: Commit! @discover
     toPerspective: Perspective! @discover
     newHead: Commit! @discover
+  }
+
+  # Exact match to UpdateRequest typescript type
+  input HeadUpdateInput {
+    fromPerspectiveId: String
+    oldHeadId: String
+    perspectiveId: String
+    newHeadId: String
   }
 
   type UpdateProposal {

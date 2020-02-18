@@ -172,8 +172,8 @@ export const eveesResolvers = {
       );
 
       const newPerspectiveData: NewPerspectiveData = {
-        perspective, 
-        details: { headId, name, context }, 
+        perspective,
+        details: { headId, name, context },
         canWrite,
         parentId
       }
@@ -190,6 +190,105 @@ export const eveesResolvers = {
           timestamp
         }
       };
+    },
+
+    async addProposal(
+      _,
+      { toPerspectiveId, fromPerspectiveId, updateRequests },
+      { container }
+    ) {
+      const evees: Evees = container.get(EveesBindings.Evees);
+
+      const remote = await evees.getPerspectiveProviderById(toPerspectiveId);
+      if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+      const proposalId = await remote.proposals.createProposal(
+        fromPerspectiveId,
+        toPerspectiveId,
+        updateRequests
+      );
+
+      return {
+        id: proposalId,
+        toPerspectiveId: toPerspectiveId,
+        fromPerspectiveId: fromPerspectiveId,
+        updates: updateRequests,
+        authorized: false,
+        canAuthorize: false,
+        executed: false
+      }
+    },
+
+    async authorizeProposal(
+      _,
+      { proposalId, perspectiveId, authorize },
+      { container }
+    ) {
+
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
+      const evees: Evees = container.get(EveesBindings.Evees);
+
+      const perspectiveResult = await client.query({
+        query: gql`{
+        entity(id: "${perspectiveId}") {
+          id
+          _context {
+            raw
+          }
+        }
+      }`
+      });
+
+      const perspective = JSON.parse(perspectiveResult.data.entity._context.raw);
+
+      const remote = evees.getAuthority(perspective.payload.origin);
+      if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+      if (authorize) {
+        await remote.proposals.acceptProposal(proposalId);
+      } else {
+        await remote.proposals.declineProposal(proposalId);
+      }
+
+      return {
+        id: proposalId,
+        authorized: authorize,
+      }
+
+    },
+    async executeProposal(
+      _,
+      { proposalId, perspectiveId },
+      { container }
+    ) {
+
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
+      const evees: Evees = container.get(EveesBindings.Evees);
+
+      const perspectiveResult = await client.query({
+        query: gql`{
+        entity(id: "${perspectiveId}") {
+          id
+          _context {
+            raw
+          }
+        }
+      }`
+      });
+
+      const perspective = JSON.parse(perspectiveResult.data.entity._context.raw);
+
+      const remote = evees.getAuthority(perspective.payload.origin);
+      if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+      await remote.proposals.executeProposal(proposalId);
+      
+      return {
+        id: proposalId,
+        toPerspectiveId: perspectiveId,
+        executed: true,
+      }
+
     }
   }
 };

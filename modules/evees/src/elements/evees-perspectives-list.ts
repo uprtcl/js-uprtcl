@@ -16,6 +16,7 @@ interface PerspectiveData {
   creatorId: string;
   timestamp: number;
   proposal: Proposal | undefined;
+  publicRead: boolean;
 }
 
 const MERGE_ACTION: string = 'Merge';
@@ -23,6 +24,8 @@ const PENDING_ACTION: string = 'Pending';
 const AUTHORIZE_ACTION: string = 'Authorize';
 const EXECUTE_ACTION: string = 'Execute';
 const MERGE_PROPOSAL_ACTION: string = 'Propose Merge';
+const PRIVATE_PERSPECTIVE: string = 'Private';
+const MERGE_EXECUTED: string = 'Merged';
 
 export class PerspectivesList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
@@ -42,6 +45,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   @property({ type: String, attribute: false })
   canWrite: Boolean = false;
 
+  @property({ type: String, attribute: 'force-update' })
+  forceUpdate: string = 'true';
+
   async firstUpdated() {
     this.getOtherPersepectivesData();
   }
@@ -58,8 +64,15 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     );
   }
 
+  updated(changedProperties) {
+    if(changedProperties.has('forceUpdate') || changedProperties.has('perspectiveId')) {
+      this.logger.log('updating getOtherPersepectivesData')
+      this.getOtherPersepectivesData();
+    }
+  }
+
   buttonClicked(perspectiveData: PerspectiveData) {
-    switch (this.getProposalAction(perspectiveData.proposal)) {
+    switch (this.getProposalAction(perspectiveData)) {
       case MERGE_ACTION:
         this.dispatchEvent(
           new CustomEvent('merge-perspective', {
@@ -91,7 +104,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             bubbles: true,
             composed: true,
             detail: {
-              proposalId: perspectiveData.proposal.id
+              proposalId: perspectiveData.proposal.id,
+              perspectiveId: this.perspectiveId,
             }
           })
         );
@@ -104,7 +118,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             bubbles: true,
             composed: true,
             detail: {
-              proposalId: perspectiveData.proposal.id
+              proposalId: perspectiveData.proposal.id,
+              perspectiveId: this.perspectiveId
             }
           })
         );
@@ -112,12 +127,23 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     }
   }
 
-  getProposalAction(proposal: Proposal | undefined): string {
+  getProposalActionDisaled(perspectiveData: PerspectiveData) {
+    const action = this.getProposalAction(perspectiveData);
+    return [PENDING_ACTION, PRIVATE_PERSPECTIVE, MERGE_EXECUTED, MERGE_ACTION].includes(action);
+  }
+
+  getProposalAction(perspectiveData: PerspectiveData): string {
+    const proposal = perspectiveData.proposal;
+
     if (proposal === undefined) {
       if (this.canWrite) {
         return MERGE_ACTION;
       } else {
-        return MERGE_PROPOSAL_ACTION;
+        if (perspectiveData.publicRead) {
+          return MERGE_PROPOSAL_ACTION;
+        } else {
+          return PRIVATE_PERSPECTIVE;
+        }
       }
     }
 
@@ -128,8 +154,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         return PENDING_ACTION;
       }
     } else {
-      return EXECUTE_ACTION;
+      if (!proposal.executed) {
+        return EXECUTE_ACTION;
+      } else {
+        return MERGE_EXECUTED;
+      }
     }
+
   }
 
   getOtherPersepectivesData = async () => {
@@ -154,6 +185,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                     timestamp
                     origin
                   }
+                  _context {
+                    patterns {
+                      accessControl {
+                        permissions
+                      }
+                    }
+                  }
                 } 
               }
               proposals {
@@ -164,6 +202,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                 authorized
                 canAuthorize
                 executed
+                updates
               }
             }
             _context {
@@ -187,7 +226,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           fromPerspectiveId: prop.fromPerspective.id,
           authorized: prop.authorized,
           canAuthorize: prop.canAuthorize,
-          executed: prop.exectude
+          executed: prop.executed
         };
       }
     );
@@ -207,7 +246,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           creatorId: perspective.payload.creatorId,
           timestamp: perspective.payload.timestamp,
           origin: perspective.payload.origin,
-          proposal: thisProposal
+          proposal: thisProposal,
+          publicRead: perspective._context.patterns.accessControl.permissions.publicRead !== undefined ? perspective._context.patterns.accessControl.permissions.publicRead : true
         };
       });
 
@@ -279,9 +319,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                             icon="call_merge"
                             class="merge-button"
                             @click=${() => this.buttonClicked(perspectiveData)}
-                            label=${this.getProposalAction(perspectiveData.proposal)}
-                            .disabled=${this.getProposalAction(perspectiveData.proposal) ===
-                              PENDING_ACTION}
+                            label=${this.getProposalAction(perspectiveData)}
+                            .disabled=${this.getProposalActionDisaled(perspectiveData)}
                           ></mwc-button>
                         </div>
                       </div>
