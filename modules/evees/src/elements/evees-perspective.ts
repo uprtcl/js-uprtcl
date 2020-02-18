@@ -144,6 +144,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       this.updateContent(e.detail.dataId);
     }) as EventListener);
 
+    this.addEventListener('refresh-content', ((e: CustomEvent) => {
+      this.logger.info('CATCHED EVENT: refresh-content ', { perspectiveId: this.perspectiveId, e });
+      e.stopPropagation();
+      this.loadPerspective();
+    }) as EventListener);
+
     this.addEventListener('checkout-perspective', ((e: CustomEvent) => {
       this.logger.info('CATCHED EVENT: checkout-perspective ', {
         perspectiveId: this.perspectiveId,

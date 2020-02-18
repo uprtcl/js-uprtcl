@@ -385,6 +385,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.logger.info('accepted proposal', { proposalId });
 
+    this.dispatchEvent(
+      new CustomEvent('refresh-content', {
+        cancelable: true,
+        composed: true,
+        bubbles: true
+      })
+    );
+
     this.reload();
   }
 

@@ -124,6 +124,12 @@ export const EXECUTE_PROPOSAL = gql`
       id
       toPerspective {
         id
+        head {
+          id
+          data {
+            id
+          }
+        }
       }
       executed
     }
