@@ -76,7 +76,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if(changedProperties.has('forceUpdate') || changedProperties.has('perspectiveId')) {
+    if(changedProperties.has('forceUpdate')) {
       this.logger.log('updating getOtherPersepectivesData')
       this.getOtherPersepectivesData();
     }
@@ -177,6 +177,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   getOtherPersepectivesData = async () => {
     this.loading = true;
 
+    this.logger.info('getOtherPersepectivesData this.request')
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`{

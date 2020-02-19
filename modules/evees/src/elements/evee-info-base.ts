@@ -69,6 +69,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ attribute: false })
   activeTabIndex: number = 0;
 
+  @property({ attribute: false })
+  publicRead: boolean = true;
+
   @property({ type: String, attribute: false })
   forceUpdate: string = 'true';
 
@@ -138,12 +141,21 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       }
     };
 
+    this.publicRead = this.perspectiveData.permissions.publicRead !== undefined ? this.perspectiveData.permissions.publicRead : true;
+
     this.logger.info('load', { perspectiveData: this.perspectiveData });
     this.loading = false;
   }
 
+  
   connectedCallback() {
     super.connectedCallback();
+  
+    this.addEventListener('permissions-updated', ((e: CustomEvent) => {
+      this.logger.info('CATCHED EVENT: permissions-updated ', { perspectiveId: this.perspectiveId, e });
+      e.stopPropagation();
+      this.load();
+    }) as EventListener);
   }
 
   reload() {
@@ -154,31 +166,31 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
   }
 
-  otherPerspectiveClicked(e: CustomEvent) {
-    this.logger.info(`otherPerspectiveClicked() ${e.detail.id}`);
+  otherPerspectiveClicked(perspectiveId: string) {
+    this.logger.info(`otherPerspectiveClicked() ${perspectiveId}`);
     this.dispatchEvent(
       new CustomEvent('checkout-perspective', {
         bubbles: true,
         composed: true,
         detail: {
-          perspectiveId: e.detail.id
+          perspectiveId: perspectiveId
         }
       })
     );
   }
 
-  async otherPerspectiveMerge(fromPerspectiveId: string, isProposal: boolean) {
+  async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string, isProposal: boolean) {
     this.logger.info(
-      `merge ${fromPerspectiveId} on ${this.perspectiveId} - isProposal: ${isProposal}`
+      `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
     );
 
     const merge: MergeStrategy = this.request(EveesBindings.MergeStrategy);
 
     const evees: Evees = this.request(EveesModule.bindings.Evees);
-    const remote = evees.getAuthority(this.perspectiveData.perspective.origin);
+    const remote = await evees.getPerspectiveProviderById(toPerspectiveId);
 
     const accessControl = remote.accessControl as AccessControlService<OwnerPermissions>;
-    const permissions = await accessControl.getPermissions(this.perspectiveId);
+    const permissions = await accessControl.getPermissions(toPerspectiveId);
 
     if (!permissions.owner) {
       // TODO: ownerPreserving merge should be changed to permissionPreserving merge
@@ -192,19 +204,23 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       targetCanWrite: permissions.owner
     };
     const [perspectiveId, actions] = await merge.mergePerspectives(
-      this.perspectiveId,
+      toPerspectiveId,
       fromPerspectiveId,
       config
     );
 
     if (isProposal) {
-      await this.createMergeProposal(fromPerspectiveId, actions);
+      await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, actions);
     } else {
       await this.mergePerspective(actions);
     }
 
-    /** reload perspectives-list */
-    this.reload();
+    if (this.perspectiveId !== toPerspectiveId) {
+      this.otherPerspectiveClicked(toPerspectiveId);
+    } else {
+      /** reload perspectives-list */
+      this.reload();
+    }
   }
 
   async mergePerspective(actions: UprtclAction[]): Promise<void> {
@@ -280,7 +296,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     return Promise.all(executePromises);
   }
 
-  async createMergeProposal(fromPerspectiveId: string, actions: UprtclAction[]): Promise<void> {
+  async createMergeProposal(fromPerspectiveId: string, toPerspectiveId: string, actions: UprtclAction[]): Promise<void> {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
     const cache: EntityCache = this.request(DiscoveryModule.bindings.EntityCache);
@@ -326,7 +342,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         const result = await client.mutate({
           mutation: CREATE_PROPOSAL,
           variables: {
-            toPerspectiveId: this.perspectiveId, 
+            toPerspectiveId: toPerspectiveId, 
             fromPerspectiveId: fromPerspectiveId, 
             updateRequests: actions.map(action => action.payload)
           }
@@ -444,6 +460,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         bubbles: true
       })
     );
+  }
+
+  async proposeMergeClicked() {
+    await this.otherPerspectiveMerge(this.perspectiveId, this.firstPerspectiveId, true);
   }
 
   perspectiveTextColor() {

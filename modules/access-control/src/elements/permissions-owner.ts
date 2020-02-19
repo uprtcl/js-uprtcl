@@ -68,6 +68,12 @@ export class PermissionsOwner extends moduleConnect(LitElement)
 
     this.permissions = result.data.changeOwner._context.patterns.accessControl.permissions;
     this.canWrite = result.data.changeOwner._context.patterns.accessControl.canWrite;
+
+    this.dispatchEvent(new CustomEvent('permissions-updated', {
+      bubbles: true,
+      composed: true,
+      cancelable: true
+    }))
   }
 
   renderDialog() {

@@ -43,6 +43,8 @@ export class IpfsConnection extends Connection {
       this.client.dag.put(buffer, putConfig).then((result: object) => {
         clearTimeout(timeout);
         resolve(result);
+      }).catch((e) => {
+        this.logger.error(`Error putting object on IPFS on attempt: ${attempt}`, { e, client: this.client, buffer, putConfig })
       });
     });
   }
