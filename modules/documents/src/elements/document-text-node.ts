@@ -173,6 +173,7 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
         headId: commit.id
       }
     });
+
   }
 
   getLevel() {

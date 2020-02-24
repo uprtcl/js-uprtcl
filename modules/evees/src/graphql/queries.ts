@@ -87,3 +87,51 @@ export const CREATE_PERSPECTIVE = gql`
     }
   }
 `;
+
+export const CREATE_PROPOSAL = gql`
+  mutation AddProposal($toPerspectiveId: ID!, $fromPerspectiveId: ID!, $updateRequests: [HeadUpdateInput!]) {
+    addProposal(toPerspectiveId: $toPerspectiveId, fromPerspectiveId: $fromPerspectiveId, updateRequests: $updateRequests) {
+      id
+      toPerspective {
+        id
+        proposals {
+          id
+        }
+      }
+      fromPerspective {
+        id
+      }
+      updates
+      authorized
+      canAuthorize
+      executed
+    }
+  }
+`;
+
+export const AUTHORIZE_PROPOSAL = gql`
+  mutation AuthorizeProposal($proposalId: ID!, $perspectiveId: ID!, $authorize: Boolean!) {
+    authorizeProposal(proposalId: $proposalId, perspectiveId: $perspectiveId, authorize: $authorize) {
+      id
+      authorized
+    }
+  }
+`;
+
+export const EXECUTE_PROPOSAL = gql`
+  mutation ExecuteProposal($proposalId: ID!, $perspectiveId: ID!) {
+    executeProposal(proposalId: $proposalId, perspectiveId: $perspectiveId) {
+      id
+      toPerspective {
+        id
+        head {
+          id
+          data {
+            id
+          }
+        }
+      }
+      executed
+    }
+  }
+`;

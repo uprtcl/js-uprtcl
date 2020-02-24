@@ -10,7 +10,7 @@ import { EveesEthereum } from './evees.ethereum';
 export interface EthHeadUpdate {
   perspectiveIdHash: string;
   headId: string;
-  executed: number;
+  executed: string;
 }
 
 export interface EthMergeRequest {
@@ -88,7 +88,7 @@ export class ProposalsEthereum implements ProposalsProvider {
         return {
           perspectiveIdHash: await hashCid(update.perspectiveId),
           headId: update.newHeadId,
-          executed: 0
+          executed: "0"
         };
       }
     );
@@ -166,7 +166,8 @@ export class ProposalsEthereum implements ProposalsProvider {
     });
 
     const updates = await Promise.all(updatesPromises);
-    const executed = (ethHeadUpdates.find(update => update.executed === 0) === undefined);
+    
+    const executed = (ethHeadUpdates.find(update => update.executed === "0") === undefined);
     const canAuthorize = (this.ethProvider.userId !== undefined) ? 
       (request.owner.toLocaleLowerCase() === this.ethProvider.userId.toLocaleLowerCase()) :
       false;

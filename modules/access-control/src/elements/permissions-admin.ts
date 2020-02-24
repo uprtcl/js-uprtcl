@@ -65,6 +65,12 @@ export class PermissionsAdmin extends moduleConnect(LitElement) implements Permi
     this.permissions = result.data.setPublicRead._context.patterns.accessControl.permissions;
     this.canWrite = result.data.setPublicRead._context.patterns.accessControl.canWrite;
     this.loadPermissions();
+
+    this.dispatchEvent(new CustomEvent('permissions-updated', {
+      bubbles: true,
+      composed: true,
+      cancelable: true
+    }))
   }
 
   render() {

@@ -25,11 +25,12 @@ export class EveesInfoPage extends EveesInfoBase {
   renderOtherPerspectives() {
     return html`
       <evees-perspectives-list
+        force-update=${this.forceUpdate}
         perspective-id=${this.perspectiveId}
         first-perspective-id=${this.firstPerspectiveId}
-        @perspective-selected=${this.otherPerspectiveClicked}
-        @merge-perspective=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, false)}
-        @create-proposal=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, true)}
+        @perspective-selected=${(e) => this.otherPerspectiveClicked(e.detail.id)}
+        @merge-perspective=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
+        @create-proposal=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, true)}
         @authorize-proposal=${this.authorizeProposal}
         @execute-proposal=${this.executeProposal}
       ></evees-perspectives-list>
@@ -39,96 +40,75 @@ export class EveesInfoPage extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        <permissions-for-entity hash=${this.perspectiveId}></permissions-for-entity>
+        <permissions-for-entity 
+          hash=${this.perspectiveId}>
+        </permissions-for-entity>
       </div>
     `;
   }
 
   render() {
+    if (this.perspectiveData === undefined) return html``;
     return html`
-      ${this.perspectiveData ?
-        html`
-        <div class="container">
-          <div class="column">
-            <div class="section">
-              <div class="section-header" style=${styleMap({
-                color: this.eveeColor
-              })}>
-                ${this.perspectiveTitle()}
-              </div>
-              <div class="section-content">
-                <div class="description info-text">
-                  <div style="margin-bottom: 16px">
-                    ${!this.perspectiveData.canWrite ? html`
-                      <p>
-                        <span>You can't edit this perspective, but you can create a new one!</span>
-                      </p>` : html`
-                      <p>
-                        <span>You can create and edit new pages! <br><br>When you are done, checkout the "Accepted Perspective" and make a "Propose Merge".</span>
-                      </p>
-                      `}
-                  </div>
-                  ${!this.perspectiveData.canWrite ? html`
-                    <mwc-button
-                      outlined
-                      icon="call_split"
-                      @click=${this.newPerspectiveClicked}
-                      label="new perspective"
-                    ></mwc-button>` : ''}
-                </div>
-                <div class="other-perspectives">
-                  ${this.renderOtherPerspectives()}
-                </div>
-                ${this.perspectiveData.canWrite ? html`
-                  <mwc-button
-                    outlined
-                    icon="call_split"
-                    @click=${this.newPerspectiveClicked}
-                    label="new perspective"
-                  ></mwc-button>` : ''}
-              </div>
+      <div class="container">
+        <div class="column">
+          <div class="section">
+            <div class="section-header" style=${styleMap({color: this.eveeColor})}>
+              ${this.perspectiveTitle()}
             </div>
-
-            <div class="section">
-              <div class="section-header">
-                Access Control
-              </div>
-              <div class="section-content info-text">
-                ${this.renderPermissions()}
-              </div>
-
-              <!-- <div class="technical-details">
-                <div class="card-container">
-                  <div class="card tech-card">
-                    <table class="tech-table">
-                      <tr>
-                        <td class="prop-name">perspective-id:</td>
-                        <td class="prop-value">${this.perspectiveData.id}</td>
-                      </tr>
-                      <tr>
-                        <td class="prop-name">context:</td>
-                        <td class="prop-value">${this.perspectiveData.details.context}</td>
-                      </tr>
-                      <tr>
-                        <td class="prop-name">origin:</td>
-                        <td class="prop-value">${this.perspectiveData.perspective.origin}</td>
-                      </tr>
-                      <tr>
-                        <td class="prop-name">head:</td>
-                        <td class="prop-value">${this.perspectiveData.details.headId}</td>
-                      </tr>
-                      <tr>
-                        <td class="prop-name">data:</td>
-                        <td class="prop-value">${this.perspectiveData.data.id}</td>
-                      </tr>
-                    </table>
-                  </div>
+            <div class="section-content">
+              <div class="description info-text">
+                <div>
+                  ${!this.perspectiveData.canWrite ? html`
+                      <p style="margin-bottom: 16px">
+                        <span>You can't edit this perspective, but you can create a new one!</span>
+                      </p>
+                      <mwc-button
+                        outlined
+                        icon="call_split"
+                        @click=${this.newPerspectiveClicked}
+                        label="new perspective"
+                      ></mwc-button>
+                    ` : html`
+                      <p style="margin-bottom: 16px">
+                        <span>You can edit this perspective<br><br>${this.publicRead ? 
+                          html`Propose a merge to the accepted perspective!` : 
+                          html`When you are done, make it public (below) and then propose a merge`}</span>
+                      </p>
+                      <mwc-button
+                        .disabled=${!this.publicRead}
+                        outlined
+                        icon="call_merge"
+                        @click=${this.proposeMergeClicked}
+                        label="Propose Merge"
+                      ></mwc-button>
+                    ` 
+                  }
                 </div>
-              </div> -->
-
+              </div>
+              <div class="other-perspectives">
+                ${this.renderOtherPerspectives()}
+              </div>
+              ${this.perspectiveData.canWrite ? html`
+                <mwc-button
+                  outlined
+                  icon="call_split"
+                  @click=${this.newPerspectiveClicked}
+                  label="new perspective"
+                ></mwc-button>` : ''}
+            </div>
           </div>
-        </div>` : ''}
-    `;
+
+          <div class="section">
+            <div class="section-header">
+              Access Control
+            </div>
+            <div class="section-content info-text">
+              ${this.renderPermissions()}
+            </div>
+        </div>
+      </div>
+    </div>`;
   }
 
   static get styles() {
