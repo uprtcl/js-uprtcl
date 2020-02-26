@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
+import { ITypedef } from 'graphql-tools';
 
-export const discoveryTypeDefs = gql`
+export const discoveryTypeDefs: ITypedef = gql`
   extend type EntityContext {
     source: String!
   }
