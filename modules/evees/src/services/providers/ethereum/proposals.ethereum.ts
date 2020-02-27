@@ -40,13 +40,13 @@ export class ProposalsEthereum implements ProposalsProvider {
   logger = new Logger('PROPOSALS-ETHEREUM');
 
   constructor(
-    protected ethProvider: EveesEthereum,
+    protected uprtclProposals: EthereumContract,
     protected ipfsSource: IpfsSource,
     protected accessControl: EveesAccessControlEthereum
   ) {}
 
   async ready(): Promise<void> {
-    await Promise.all([this.ethProvider.ready(), this.ipfsSource.ready()]);
+    await Promise.all([this.uprtclProposals.ready(), this.ipfsSource.ready()]);
   }
 
   async createProposal(
@@ -98,7 +98,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     const toPerspectiveIdHash = await hashCid(toPerspectiveId);
     const fromPerspectiveIdHash = await hashCid(fromPerspectiveId);
 
-    await this.ethProvider.send(INIT_REQUEST, [
+    await this.uprtclProposals.send(INIT_REQUEST, [
       toPerspectiveIdHash,
       fromPerspectiveIdHash,
       accessData.owner,
@@ -110,7 +110,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     ]);
 
     /** check logs to get the requestId (batchId) */
-    const createdEvents = await this.ethProvider.contractInstance.getPastEvents(
+    const createdEvents = await this.uprtclProposals.contractInstance.getPastEvents(
       'MergeRequestCreated',
       {
         filter: {
@@ -134,11 +134,11 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('getProposal() - pre', { requestId });
 
-    const request: EthMergeRequest = await this.ethProvider.call(
+    const request: EthMergeRequest = await this.uprtclProposals.call(
       GET_REQUEST, 
       [ requestId ]);
 
-    let requestCreatedEvents = await this.ethProvider.contractInstance.getPastEvents(
+    let requestCreatedEvents = await this.uprtclProposals.contractInstance.getPastEvents(
       'MergeRequestCreated',
       {
         filter: {
@@ -157,7 +157,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     const ethHeadUpdates = request.headUpdates;
 
     const updatesPromises = ethHeadUpdates.map(async (ethUpdateRequest) => {
-      const perspectiveId = await this.ethProvider.hashToId(ethUpdateRequest.perspectiveIdHash);
+      const perspectiveId = await this.uprtclProposals.hashToId(ethUpdateRequest.perspectiveIdHash);
 
       return {
         perspectiveId: perspectiveId,
@@ -168,8 +168,8 @@ export class ProposalsEthereum implements ProposalsProvider {
     const updates = await Promise.all(updatesPromises);
     
     const executed = (ethHeadUpdates.find(update => update.executed === "0") === undefined);
-    const canAuthorize = (this.ethProvider.userId !== undefined) ? 
-      (request.owner.toLocaleLowerCase() === this.ethProvider.userId.toLocaleLowerCase()) :
+    const canAuthorize = (this.uprtclProposals.connection.getCurrentAccount() !== undefined) ? 
+      (request.owner.toLocaleLowerCase() === this.uprtclProposals.connection.getCurrentAccount().toLocaleLowerCase()) :
       false;
 
     const proposal: Proposal = {
@@ -194,7 +194,7 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('getProposalsToPerspective() - pre', { perspectiveId });
 
-    let requestsCreatedEvents = await this.ethProvider.contractInstance.getPastEvents(
+    let requestsCreatedEvents = await this.uprtclProposals.contractInstance.getPastEvents(
       'MergeRequestCreated', {
         filter: { toPerspectiveIdHash: await hashCid(perspectiveId) },
         fromBlock: 0
@@ -231,7 +231,7 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('acceptProposal()', { proposalId });
 
-    await this.ethProvider.send(AUTHORIZE_REQUEST, [
+    await this.uprtclProposals.send(AUTHORIZE_REQUEST, [
       proposalId,
       1
     ]);
@@ -242,7 +242,7 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('acceptProposal()', { proposalId });
 
-    await this.ethProvider.send(EXECUTE_REQUEST, [
+    await this.uprtclProposals.send(EXECUTE_REQUEST, [
       proposalId
     ]);
   }

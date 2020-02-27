@@ -6,7 +6,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EthereumConnection } from './ethereum.connection';
 
-export interface EthereumProviderOptions {
+export interface EthereumContractOptions {
   contract: {
     abi: AbiItem[] | AbiItem;
     networks: { [key: string]: { address: string } };
@@ -14,31 +14,26 @@ export interface EthereumProviderOptions {
   contractAddress?: string;
 }
 
-export abstract class EthereumProvider implements Authority {
+export abstract class EthereumContract {
   logger = new Logger('EthereumProvider');
-  userId?: string | undefined;
   contractInstance!: Contract;
 
   constructor(
-    protected ethOptions: EthereumProviderOptions,
-    protected ethConnection: EthereumConnection
+    protected options: EthereumContractOptions,
+    protected connection: EthereumConnection
   ) {}
 
-  abstract get authority(): string;
-
   async ready() {
-    await this.ethConnection.ready();
+    await this.connection.ready();
 
     const contractAddress =
-      this.ethOptions.contractAddress ||
-      this.ethOptions.contract.networks[this.ethConnection.networkId].address;
+      this.options.contractAddress ||
+      this.options.contract.networks[this.connection.networkId].address;
 
-    this.contractInstance = new this.ethConnection.web3.eth.Contract(
-      this.ethOptions.contract.abi,
+    this.contractInstance = new this.connection.web3.eth.Contract(
+      this.options.contract.abi,
       contractAddress
     );
-
-    this.userId = this.ethConnection.getCurrentAccount();
   }
 
   /**
@@ -49,7 +44,7 @@ export abstract class EthereumProvider implements Authority {
       // let gasEstimated = await this.uprtclInstance.methods[funcName](...pars).estimateGas()
 
       let sendPars = {
-        from: this.ethConnection.getCurrentAccount(),
+        from: this.connection.getCurrentAccount(),
         gas: 750000
       };
       this.logger.log(`CALLING ${funcName}`, pars, sendPars);
@@ -85,7 +80,7 @@ export abstract class EthereumProvider implements Authority {
    */
   public async call(funcName: string, pars: any[]): Promise<any> {
     return this.contractInstance.methods[funcName](...pars).call({
-      from: this.ethConnection.getCurrentAccount()
+      from: this.connection.getCurrentAccount()
     });
   }
 }

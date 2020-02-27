@@ -6,9 +6,11 @@ import {
 } from '@uprtcl/ethereum-provider';
 import { IpfsSource, IpfsConnection, sortObject, CidConfig } from '@uprtcl/ipfs-provider';
 import { Hashed } from '@uprtcl/cortex';
-import { KnownSourcesService } from '@uprtcl/multiplatform';
+import { KnownSourcesService, Authority } from '@uprtcl/multiplatform';
 
-import * as EveesContractArtifact from './uprtcl-contract.json';
+import * as UprtclRoot from './contracts-json/UprtclRoot.json';
+import * as UprtclDetails from './contracts-json/UprtclDetails.json';
+import * as UprtclProposals from './contracts-json/UprtclProposals.json';
 
 import { Secured } from '../../../patterns/default-secured.pattern';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
@@ -38,7 +40,7 @@ export interface NewEthPerspectiveData {
   perspectiveId: string;
 }
 
-export class EveesEthereum extends EthereumProvider implements EveesRemote {
+export class EveesEthereum implements EveesRemote, Authority {
   logger: Logger = new Logger('EveesEtereum');
 
   ipfsSource: IpfsSource;
@@ -48,16 +50,26 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   knownSources?: KnownSourcesService | undefined;
   hashRecipe: CidConfig;
 
+  uprtclRoot: EthereumContract;
+  uprtclDetails: EthereumContract;
+  uprtclProposals: EthereumContract;
+
   constructor(
     protected ethConnection: EthereumConnection,
+    uprtclRootOptions: EthereumProviderOptions = { contract: UprtclRoot as any },
+    uprtclDetailsOptions: EthereumProviderOptions = { contract: UprtclRoot as any },
+    uprtclProposalsOptions: EthereumProviderOptions = { contract: UprtclRoot as any },
     ipfsConnection: IpfsConnection,
-    ethOptions: EthereumProviderOptions = { contract: EveesContractArtifact as any },
     hashRecipe: CidConfig
   ) {
-    super(ethOptions, ethConnection);
+    
+    this.uprtclRoot = new EthereumContract(uprtclRootOptions, ethConnection);
+    this.uprtclDetails = new EthereumContract(uprtclDetailsOptions, ethConnection);
+    this.uprtclProposals = new EthereumContract(uprtclProposalsOptions, ethConnection);
+
     this.ipfsSource = new IpfsSource(ipfsConnection, hashRecipe);
-    this.accessControl = new EveesAccessControlEthereum(this);
-    this.proposals = new ProposalsEthereum(this, this.ipfsSource, this.accessControl);
+    this.accessControl = new EveesAccessControlEthereum(uprtclRoot);
+    this.proposals = new ProposalsEthereum(uprtclProposals, this.ipfsSource, this.accessControl);
     this.hashRecipe = hashRecipe;
   }
 
@@ -118,7 +130,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     }
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
-    await this.send(ADD_PERSP, [
+    await this.uprtclDetails.send(ADD_PERSP, [
       perspectiveIdHash,
       contextHash,
       details.headId ? details.headId : '',
@@ -166,7 +178,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     const ethPerspectivesData = await Promise.all(ethPerspectivesDataPromises);
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
-    await this.send(ADD_PERSP_BATCH, [ethPerspectivesData]);
+    await this.uprtclRoot.send(ADD_PERSP_BATCH, [ethPerspectivesData]);
   }
 
   /**
@@ -191,7 +203,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
     const perspectiveIdHash = await hashCid(perspectiveId);
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
-    await this.send(ADD_PERSP, [
+    await this.uprtclRoot.send(ADD_PERSP, [
       perspectiveIdHash,
       '0x' + new Array(32).fill(0).join(''),
       '',
@@ -233,7 +245,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
       contextHash = await hashText(details.context);
     }
 
-    await this.send(UPDATE_PERSP_DETAILS, [
+    await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
       perspectiveIdHash,
       contextHash,
       details.headId || '',
@@ -244,7 +256,7 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
 
   async hashToId(perspectiveIdHash: string) {
     /** check the creation event to reverse map the cid */
-    const perspectiveAddedEvents = await this.contractInstance.getPastEvents('PerspectiveAdded', {
+    const perspectiveAddedEvents = await this.uprtclRoot.getPastEvents('PerspectiveCreated', {
       filter: { perspectiveIdHash: perspectiveIdHash },
       fromBlock: 0
     });
@@ -261,8 +273,8 @@ export class EveesEthereum extends EthereumProvider implements EveesRemote {
   async getContextPerspectives(context: string): Promise<string[]> {
     const contextHash = await hashText(context);
 
-    let perspectiveContextUpdatedEvents = await this.contractInstance.getPastEvents(
-      'PerspectiveAdded',
+    let perspectiveContextUpdatedEvents = await this.uprtclRoot.getPastEvents(
+      'PerspectiveDetailsSet',
       {
         filter: { contextHash: contextHash },
         fromBlock: 0
