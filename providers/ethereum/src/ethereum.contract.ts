@@ -14,14 +14,18 @@ export interface EthereumContractOptions {
   contractAddress?: string;
 }
 
-export abstract class EthereumContract {
-  logger = new Logger('EthereumProvider');
+export class EthereumContract {
+  logger = new Logger('EthereumContract');
   contractInstance!: Contract;
 
   constructor(
     protected options: EthereumContractOptions,
     protected connection: EthereumConnection
   ) {}
+
+  get userId () {
+    return this.connection.getCurrentAccount();
+  }
 
   async ready() {
     await this.connection.ready();
@@ -41,11 +45,11 @@ export abstract class EthereumContract {
    */
   public send(funcName: string, pars: any[]): Promise<any> {
     return new Promise(async (resolve, reject) => {
-      // let gasEstimated = await this.uprtclInstance.methods[funcName](...pars).estimateGas()
+      let gasEstimated = await this.contractInstance.methods[funcName](...pars).estimateGas()
 
       let sendPars = {
         from: this.connection.getCurrentAccount(),
-        gas: 750000
+        gas: gasEstimated*1.5
       };
       this.logger.log(`CALLING ${funcName}`, pars, sendPars);
 

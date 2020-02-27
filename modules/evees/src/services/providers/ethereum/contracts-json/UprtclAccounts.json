@@ -3830,14 +3830,33 @@
   },
   "networks": {
     "3333": {
-      "events": {},
+      "events": {
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+        }
+      },
       "links": {},
       "address": "0x27D44c7337ce4D67b7cd573e9c36bDEED2b2162a",
       "transactionHash": "0x8e191718e15bfdae07d86840b3160efcd5d7cd8636e0094e993b639940456f25"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2020-02-27T12:07:58.791Z",
+  "updatedAt": "2020-02-27T17:32:37.381Z",
   "devdoc": {
     "methods": {
       "isOwner()": {
