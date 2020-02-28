@@ -9,7 +9,7 @@ export class ElementsModule extends MicroModule {
   async onLoad(): Promise<void> {
     const tags = Object.keys(this.elements);
 
-    tags.forEach(async tag => {
+    tags.forEach(tag => {
       const element = this.elements[tag];
       customElements.define(tag, element);
     });

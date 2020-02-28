@@ -18,13 +18,19 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@open-wc/testing": "^0.11.1",
-    "@open-wc/testing-karma": "^3.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-decorators": "^7.8.3",
+    "@babel/preset-typescript": "^7.8.3",
+    "@open-wc/testing": "^2.5.4",
+    "@open-wc/testing-karma": "^3.2.43",
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-json": "^4.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.11.0",
+    "browserify": "^16.5.0",
+    "deepmerge": "^3.2.0",
+    "es-dev-commonjs-transformer": "^0.1.1",
     "rimraf": "^2.6.2",
     "rollup": "^1.29.0",
     "rollup-plugin-sourcemaps": "^0.5.0",
@@ -32,7 +38,8 @@
     "temp-dir": "^2.0.0",
     "typedoc": "^0.15.6",
     "typedoc-plugin-markdown": "^2.2.14",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.4",
+    "watchify": "^3.11.1"
   },
   "keywords": [
     "micro-frontends",

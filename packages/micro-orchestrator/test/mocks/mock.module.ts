@@ -1,13 +1,13 @@
-import { MicroModule } from '../../src/modules/micro.module';
+import { interfaces } from 'inversify';
 
-export class MockModule implements MicroModule {
-  async onLoad(): Promise<void> {}
+import { MicroModule } from '../../src/orchestrator/micro.module';
 
-  async onUnload(): Promise<void> {}
-  getDependencies(): string[] {
-    return [];
-  }
-  getId(): string {
-    return 'mock';
+export class MockModule extends MicroModule {
+  static id: string = 'mock';
+
+  dependencies: string[] = [];
+
+  async onLoad(container: interfaces.Container): Promise<void> {
+    container.bind('mock-id').toConstantValue(5);
   }
 }
