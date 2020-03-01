@@ -85,6 +85,7 @@ export class MicroOrchestrator {
    */
   private async loadDependencies(microModule: MicroModule): Promise<Array<MicroModule>> {
     const promises = microModule.dependencies.map(async dep => {
+      console.log('container', this.container);
       const module = await this.moduleProvider(this.container)(dep);
       await this.loadModule(module);
       return module;

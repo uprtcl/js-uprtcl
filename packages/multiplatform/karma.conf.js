@@ -1,26 +1,61 @@
 /* eslint-disable import/no-extraneous-dependencies */
-const { createDefaultConfig } = require('@open-wc/testing-karma');
-const deepmerge = require('deepmerge');
+const rollupConfig = require('./rollup.config');
 
-module.exports = config => {
-  config.set(
-    deepmerge(createDefaultConfig(config), {
-      // see the karma-esm docs for all options
-      esm: {
-        babel: true,
-        nodeResolve: true,
-        fileExtensions: ['.ts'],
-        preserveSymlinks: true
-      },
+module.exports = config =>
+  config.set({
+    browsers: ['Chrome'],
 
-      files: [
-        {
-          pattern: config.grep ? config.grep : './test/**/*.test.ts',
-          type: 'module'
+    coverageIstanbulReporter: {
+      thresholds: {
+        global: {
+          statements: 0,
+          lines: 0,
+          branches: 0,
+          functions: 0
         }
-      ]
-    })
-  );
+      }
+    },
 
-  return config;
-};
+    preprocessors: {
+      'test/**/*.test.ts': ['rollup']
+    },
+    rollupPreprocessor: {
+      ...rollupConfig,
+      external: [],
+      output: {
+        format: 'es', // Helps prevent naming collisions.
+        name: 'uprtclmultiplatform' // Required for 'iife' format.
+      }
+    },
+    logLevel: config.LOG_DEBUG,
+
+    plugins: [
+      // resolve plugins relative to this config so that they don't always need to exist
+      // at the top level
+      require.resolve('karma-mocha'),
+      require.resolve('karma-mocha-reporter'),
+      require.resolve('karma-source-map-support'),
+      require.resolve('karma-coverage-istanbul-reporter'),
+      require.resolve('karma-snapshot'),
+      require.resolve('karma-mocha-snapshot'),
+      require.resolve('karma-chrome-launcher'),
+
+      // fallback: resolve any karma- plugins
+      'karma-*'
+    ],
+    frameworks: ['mocha', 'snapshot', 'mocha-snapshot', 'source-map-support'],
+
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-setuid-sandbox']
+      }
+    },
+    files: [
+      {
+        pattern: config.grep ? config.grep : 'test/**/*.test.ts',
+        type: 'module',
+        watched: false
+      }
+    ]
+  });

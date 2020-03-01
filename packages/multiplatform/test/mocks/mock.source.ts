@@ -1,9 +1,12 @@
-import { Dictionary } from 'lodash-es';
+import { Dictionary } from '@uprtcl/micro-orchestrator';
+import { Hashed } from '@uprtcl/cortex';
 
-import { Source, Hashed } from '../../src/uprtcl-cortex';
+import { Source } from '../../src/types/source';
 
 export class MockSource implements Source {
+  hashRecipe: any;
   objects: Dictionary<Hashed<any>> = {};
+  source = '';
 
   async ready(): Promise<void> {}
 

@@ -7,31 +7,34 @@ module.exports = config => {
   const defaultConfig = createDefaultConfig(config);
   config.set(
     deepmerge(defaultConfig, {
+      coverageIstanbulReporter: {
+        thresholds: {
+          global: {
+            statements: 0,
+            lines: 0,
+            branches: 0,
+            functions: 0,
+          },
+        },
+      },
       // see the karma-esm docs for all options
       esm: {
         babel: true,
         nodeResolve: true,
-        fileExtensions: ['.ts'],
-        preserveSymLinks: true,
+        fileExtensions: ['.ts', '.mjs'],
         responseTransformers: [
           cjsTransformer([
             ...defaultConfig.esm.babelModernExclude,
             '**/node_modules/@open-wc/**/*',
-            '**/node_modules/chai-dom/**/*',
-            '**/node_modules/sinon-chai/**/*',
-            '**/node_modules/graphql/**/*'
+            '**/node_modules/chai/**/*',
+            '**/node_modules/sinon-chai/**/*'
           ])
         ]
       },
 
-      logLevel: config.LOG_DEBUG,
-
-      basePath: '../../',
-
       files: [
-        { pattern: './tools/global-test-variables.js', type: 'module' },
         {
-          pattern: config.grep ? config.grep : './packages/common/test/**/*.test.ts',
+          pattern: config.grep ? config.grep : 'test/**/*.test.ts',
           type: 'module'
         }
       ]

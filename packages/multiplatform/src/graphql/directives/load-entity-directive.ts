@@ -6,7 +6,7 @@ import { Hashed } from '@uprtcl/cortex';
 import { NamedDirective } from '@uprtcl/graphql';
 
 import { Source } from '../../types/source';
-import { MultiplatformBindings } from 'src/bindings';
+import { MultiplatformBindings } from '../../bindings';
 import { EntityCache } from '../entity-cache';
 
 export abstract class LoadEntityDirective extends NamedDirective {

@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.ts",
-    "build": "npm run clean && rollup -c rollup.config.ts",
+    "build": "npm run clean && rollup -c rollup.config.js",
     "test": "karma start --coverage",
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
@@ -23,14 +23,21 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-decorators": "^7.8.3",
+    "@babel/preset-typescript": "^7.8.3",
     "@open-wc/testing": "^0.11.1",
     "@open-wc/testing-karma": "^3.0.0",
+    "@rollup/plugin-alias": "^3.0.1",
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-json": "^4.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
+    "@rollup/plugin-replace": "^2.3.1",
     "@types/lodash-es": "^4.17.3",
     "@types/node": "^10.11.0",
+    "es-dev-commonjs-transformer": "^0.1.1",
     "graphql": "^14.6.0",
+    "karma-rollup-preprocessor": "^7.0.3",
     "rimraf": "^2.6.2",
     "rollup": "^1.29.0",
     "rollup-plugin-sourcemaps": "^0.5.0",

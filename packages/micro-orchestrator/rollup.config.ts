@@ -48,5 +48,5 @@ export default {
     // Resolve source maps to the original source
     sourceMaps()
   ],
-  preserveSymlinks: true
+  preserveSymlinks: false
 };
