@@ -3,7 +3,7 @@ import { MicroOrchestrator } from '../src/orchestrator/micro-orchestrator';
 import { MockModule } from './mocks/mock.module';
 
 describe('load a mock module', () => {
-  let orchestrator: MicroOrchestrator = undefined;
+  let orchestrator: MicroOrchestrator;
 
   beforeEach(() => {
     orchestrator = new MicroOrchestrator();

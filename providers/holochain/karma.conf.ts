@@ -1,17 +1,20 @@
-/* eslint-disable import/no-extraneous-dependencies */
+const replace = require('@rollup/plugin-replace');
 const rollupConfig = require('./rollup.config');
 
 module.exports = config =>
   config.set({
-    browsers: ['Chrome'],
-
+    browsers: ['ChromeHeadlessNoSandbox'],
+    // ## code coverage config
     coverageIstanbulReporter: {
+      reports: ['lcovonly', 'text-summary'],
+      combineBrowserReports: true,
+      skipFilesWithNoCoverage: false,
       thresholds: {
         global: {
-          statements: 0,
-          lines: 0,
-          branches: 0,
-          functions: 0
+          statements: 80,
+          branches: 80,
+          functions: 80,
+          lines: 80
         }
       }
     },
@@ -23,11 +26,13 @@ module.exports = config =>
       ...rollupConfig,
       external: [],
       output: {
-        format: 'es', // Helps prevent naming collisions.
-        name: 'uprtclmultiplatform' // Required for 'iife' format.
+        format: 'iife', // Helps prevent naming collisions.
+        name: 'uprtclholochainprovider', // Required for 'iife' format.,
+        sourcemap: true
       }
     },
-    logLevel: config.LOG_DEBUG,
+    singleRun: true,
+    concurrency: Infinity,
 
     plugins: [
       // resolve plugins relative to this config so that they don't always need to exist
@@ -44,7 +49,15 @@ module.exports = config =>
       'karma-*'
     ],
     frameworks: ['mocha', 'snapshot', 'mocha-snapshot', 'source-map-support'],
+    reporters: ['mocha', 'coverage-istanbul'],
+    colors: true,
 
+    mochaReporter: {
+      showDiff: true
+    },
+    logLevel: config.LOG_INFO,
+
+    restartOnFileChange: true,
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',

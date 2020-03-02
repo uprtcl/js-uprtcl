@@ -3,7 +3,6 @@ const commonjs = require('@rollup/plugin-commonjs');
 const sourceMaps = require('rollup-plugin-sourcemaps');
 const typescript = require('rollup-plugin-typescript2');
 const json = require('@rollup/plugin-json');
-const replace = require('@rollup/plugin-replace');
 
 const pkg = require('./package.json');
 
@@ -16,16 +15,11 @@ module.exports = {
     { file: pkg.module, format: 'es', sourcemap: true }
   ],
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash-es')
-  external: [],
+  external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],
   watch: {
     include: 'src/**'
   },
   plugins: [
-    replace({
-      'var _2 = require(".");': 'var _2 = {extendResolversFromInterfaces: require("./extendResolversFromInterfaces").default,checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
-      'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = require(".");': 'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = {checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
-      delimiters: ['', '']
-    }),
     // Allow json resolution
     json(),
     // Compile TypeScript files
@@ -40,8 +34,7 @@ module.exports = {
     // https://github.com/rollup/@rollup/plugin-node-resolve#usage
     resolve({
       browser: true,
-      preferBuiltins: false,
-      dedupe: ['graphql-tools', 'graphql', 'apollo-boost']
+      preferBuiltins: false
     }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs({
@@ -49,7 +42,14 @@ module.exports = {
         'apollo-boost': ['gql', 'ApolloClient'],
         '../graphql/node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema'],
         'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema']
-      }
+      },
+      exclude: [
+        '**/node_modules/mocha/**/*',
+        '**/node_modules/chai/**/*',
+        '**/node_modules/sinon-chai/**/*',
+        '**/node_modules/chai-dom/**/*',
+        '**/node_modules/core-js-bundle/**/*'
+      ]
     }),
 
     // Resolve source maps to the original source

@@ -124,13 +124,17 @@ export class DiscoveryService implements Source {
         }
         `
       });
-      const links = result.data.entity._context.patterns.links.map(l => l.id);
 
-      // Discover the known sources from the links
-      const linksPromises = links.map(link =>
-        discoverKnownSources(this.localKnownSources)(link, source)
-      );
-      await Promise.all(linksPromises);
+      const linksResult = result.data.entity._context.patterns.links;
+      if (linksResult) {
+        const links = linksResult.map(l => l.id);
+
+        // Discover the known sources from the links
+        const linksPromises = links.map(link =>
+          discoverKnownSources(this.localKnownSources)(link, source)
+        );
+        await Promise.all(linksPromises);
+      }
     });
 
     if (!object) {

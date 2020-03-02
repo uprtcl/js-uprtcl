@@ -1,16 +1,14 @@
 import { ApolloClient } from 'apollo-boost';
 import gql from 'graphql-tag';
+import { expect } from '@open-wc/testing';
 
-import { CortexModule, PatternsModule } from '@uprtcl/cortex';
+import { CortexModule } from '@uprtcl/cortex';
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { MockSource } from '../mocks/mock.source';
 import { DiscoveryModule } from '../../src/discovery.module';
 import { SourcesBindings } from '../../src/bindings';
-
-import { Container } from 'inversify';
-import { MockPattern } from '../mocks/mock.pattern';
 import { MockModule } from '../mocks/mock.module';
 
 const object1 = {
@@ -25,21 +23,18 @@ describe('basic GraphQl entity', () => {
     source = new MockSource();
     source.addObject('hash1', object1);
 
-    const container = new Container();
-    container.bind(SourcesBindings.Source).to(MockSource);
-
     orchestrator = new MicroOrchestrator();
     orchestrator.container.bind(SourcesBindings.Source).toConstantValue(source);
 
     await orchestrator.loadModules([
       new ApolloClientModule(),
       new CortexModule(),
-      new MockModule(),
-      new DiscoveryModule()
+      new DiscoveryModule(),
+      new MockModule()
     ]);
   });
 
-  it('graphql loads and entity given its id', async () => {
+  it('graphql loads an entity given its id', async () => {
     const client: ApolloClient<any> = orchestrator.container.get(
       ApolloClientModule.bindings.Client
     );
@@ -57,6 +52,12 @@ describe('basic GraphQl entity', () => {
       `
     });
 
-    console.log(result);
+    expect(result.data).to.deep.equal({
+      entity: {
+        id: 'hash1',
+        __typename: 'Mock',
+        _context: { raw: '{"test":"test"}', __typename: 'EntityContext' }
+      }
+    });
   });
 });

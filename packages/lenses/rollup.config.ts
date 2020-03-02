@@ -1,14 +1,14 @@
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import sourceMaps from 'rollup-plugin-sourcemaps';
-import typescript from 'rollup-plugin-typescript2';
-import json from '@rollup/plugin-json';
+const resolve = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const sourceMaps = require('rollup-plugin-sourcemaps');
+const typescript = require('rollup-plugin-typescript2');
+const json = require('@rollup/plugin-json');
 
 const pkg = require('./package.json');
 
 const libraryName = 'uprtcl-lenses';
 
-export default {
+module.exports = {
   input: `src/${libraryName}.ts`,
   output: [
     { file: pkg.main, name: libraryName, format: 'umd', sourcemap: true },
@@ -20,25 +20,28 @@ export default {
     include: 'src/**'
   },
   plugins: [
-    // Allow json resolution
     json(),
-    // Compile TypeScript files
     typescript({
       objectHashIgnoreUnknownHack: true,
 
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
     }),
-    // Allow node_modules resolution, so you can use 'external' to control
-    // which external modules to include in the bundle
-    // https://github.com/rollup/@rollup/plugin-node-resolve#usage
     resolve(),
-    // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs({
-      include: /node_modules/
+      namedExports: {
+        'apollo-boost': ['gql', 'ApolloClient'],
+        '../graphql/node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema'],
+        'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema']
+      },
+      exclude: [
+        '**/node_modules/mocha/**/*',
+        '**/node_modules/chai/**/*',
+        '**/node_modules/sinon-chai/**/*',
+        '**/node_modules/chai-dom/**/*',
+        '**/node_modules/core-js-bundle/**/*'
+      ]
     }),
-
-    // Resolve source maps to the original source
     sourceMaps()
   ],
   preserveSymlinks: true
