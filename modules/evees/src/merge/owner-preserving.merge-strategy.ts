@@ -147,7 +147,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
             /** for each new perspective that is created,
              *  craete a new commit and data
              * (should be a clone but we dont have "clone" mutations and the id
-             *  changes when you create the same entity on another remote)  */
+             *  can change when you create the same entity on another remote)  */
             for (let ix = 0; ix < actions.length; ix++) {
               const action = actions[ix];
               if (action.type !== CREATE_AND_INIT_PERSPECTIVE_ACTION) break;

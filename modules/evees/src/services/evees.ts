@@ -189,6 +189,17 @@ export class Evees {
       headId = result.data.entity.head.id;
     }
 
+    // Create the perspective id
+    const perspectiveData: Perspective = {
+      creatorId: eveesRemote.userId,
+      origin: eveesRemote.authority,
+      timestamp: Date.now()
+    };
+    const perspective: Secured<Perspective> = await this.secured.derive()(
+      perspectiveData,
+      eveesRemote.hashRecipe
+    );
+
     const result = await this.client.query({
       query: gql`{
         entity(id: "${headId}") {
@@ -242,7 +253,7 @@ export class Evees {
             name: descendantResult.data.entity.name
           };
 
-          return this.computeNewGlobalPerspectiveOps(authority, perspectiveDetails, link, canWrite, ofPerspectiveId);
+          return this.computeNewGlobalPerspectiveOps(authority, perspectiveDetails, link, canWrite, perspective.id);
         });
 
         const results = await Promise.all(promises);
@@ -289,17 +300,7 @@ export class Evees {
         actions.push(newCommitAction);
       }
     }
-    // Create the perspective
-    const perspectiveData: Perspective = {
-      creatorId: eveesRemote.userId,
-      origin: eveesRemote.authority,
-      timestamp: Date.now()
-    };
-    const perspective: Secured<Perspective> = await this.secured.derive()(
-      perspectiveData,
-      eveesRemote.hashRecipe
-    );
-
+    
     const newPerspectiveAction: UprtclAction = {
       type: CREATE_AND_INIT_PERSPECTIVE_ACTION,
       entity: perspective,

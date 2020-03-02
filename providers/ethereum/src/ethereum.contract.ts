@@ -6,7 +6,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EthereumConnection } from './ethereum.connection';
 
-export interface EthereumProviderOptions {
+export interface EthereumContractOptions {
   contract: {
     abi: AbiItem[] | AbiItem;
     networks: { [key: string]: { address: string } };
@@ -14,31 +14,30 @@ export interface EthereumProviderOptions {
   contractAddress?: string;
 }
 
-export abstract class EthereumProvider implements Authority {
-  logger = new Logger('EthereumProvider');
-  userId?: string | undefined;
+export class EthereumContract {
+  logger = new Logger('EthereumContract');
   contractInstance!: Contract;
 
   constructor(
-    protected ethOptions: EthereumProviderOptions,
-    protected ethConnection: EthereumConnection
+    protected options: EthereumContractOptions,
+    protected connection: EthereumConnection
   ) {}
 
-  abstract get authority(): string;
+  get userId () {
+    return this.connection.getCurrentAccount();
+  }
 
   async ready() {
-    await this.ethConnection.ready();
+    await this.connection.ready();
 
     const contractAddress =
-      this.ethOptions.contractAddress ||
-      this.ethOptions.contract.networks[this.ethConnection.networkId].address;
+      this.options.contractAddress ||
+      this.options.contract.networks[this.connection.networkId].address;
 
-    this.contractInstance = new this.ethConnection.web3.eth.Contract(
-      this.ethOptions.contract.abi,
+    this.contractInstance = new this.connection.web3.eth.Contract(
+      this.options.contract.abi,
       contractAddress
     );
-
-    this.userId = this.ethConnection.getCurrentAccount();
   }
 
   /**
@@ -46,15 +45,23 @@ export abstract class EthereumProvider implements Authority {
    */
   public send(funcName: string, pars: any[]): Promise<any> {
     return new Promise(async (resolve, reject) => {
-      // let gasEstimated = await this.uprtclInstance.methods[funcName](...pars).estimateGas()
 
-      let sendPars = {
-        from: this.ethConnection.getCurrentAccount(),
-        gas: 750000
+      const caller = this.contractInstance.methods[funcName];
+      if (!caller) {
+        throw new Error(`Function "${funcName}" not found on smart contract`);
+      }
+
+      const _from = this.connection.getCurrentAccount();
+
+      const gasEstimated = await caller(...pars).estimateGas({ from: _from })
+
+      const sendPars = {
+        from: _from,
+        gas: Math.floor(gasEstimated*1.2)
       };
       this.logger.log(`CALLING ${funcName}`, pars, sendPars);
 
-      this.contractInstance.methods[funcName](...pars)
+      caller(...pars)
         .send(sendPars)
         .once('transactionHash', (transactionHash: any) => {
           this.logger.info(`TX HASH ${funcName} `, { transactionHash, pars });
@@ -84,8 +91,14 @@ export abstract class EthereumProvider implements Authority {
    * Simple call function for the holding contract
    */
   public async call(funcName: string, pars: any[]): Promise<any> {
-    return this.contractInstance.methods[funcName](...pars).call({
-      from: this.ethConnection.getCurrentAccount()
+    const caller = this.contractInstance.methods[funcName];
+    
+    if (!caller) {
+      throw new Error(`Function "${funcName}" not found on smart contract`);
+    }
+
+    return caller(...pars).call({
+      from: this.connection.getCurrentAccount()
     });
   }
 }

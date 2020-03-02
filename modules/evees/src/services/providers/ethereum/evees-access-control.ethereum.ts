@@ -1,15 +1,15 @@
-import { EthereumProvider } from '@uprtcl/ethereum-provider';
+import { EthereumContract } from '@uprtcl/ethereum-provider';
 import { OwnerAccessControlService, OwnerPermissions } from '@uprtcl/access-control';
 
-import { GET_PERSP_DETAILS, UPDATE_OWNER, hashCid } from './common';
+import { UPDATE_OWNER, GET_PERSP, GET_PERSP_HASH } from './common';
 
 export class EveesAccessControlEthereum implements OwnerAccessControlService {
-  constructor(protected ethProvider: EthereumProvider) {}
+  constructor(protected uprtclRoot: EthereumContract) {}
 
   async changeOwner(hash: string, newOwnerId: string): Promise<void> {
-    const perspectiveIdHash = await hashCid(hash);
+    const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [hash]);
 
-    await this.ethProvider.send(UPDATE_OWNER, [perspectiveIdHash, newOwnerId]);
+    await this.uprtclRoot.send(UPDATE_OWNER, [perspectiveIdHash, newOwnerId]);
   }
 
   async setCanWrite(hash: string, userId: string): Promise<void> {
@@ -17,9 +17,9 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
   }
 
   private async getOwner(hash: string): Promise<string> {
-    const perspectiveIdHash = await hashCid(hash);
+    const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [hash]);
 
-    const perspective: { owner: string } = await this.ethProvider.call(GET_PERSP_DETAILS, [
+    const perspective: { owner: string } = await this.uprtclRoot.call(GET_PERSP, [
       perspectiveIdHash
     ]);
     return perspective.owner.toLowerCase();
