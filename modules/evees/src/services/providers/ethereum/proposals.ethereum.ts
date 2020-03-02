@@ -4,38 +4,16 @@ import { EthereumContract } from '@uprtcl/ethereum-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { UpdateRequest, Proposal } from '../../../types';
-import { hashCid, INIT_PROPOSAL, GET_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL } from './common';
+import { INIT_PROPOSAL, GET_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL, GET_PERSP_HASH, cidToHex32, bytes32ToCid, GET_PROPOSAL_ID } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
-import { hashToId } from './evees.ethereum';
+import { hashToId, ZERO_HEX_32 } from './evees.ethereum';
 
 export interface EthHeadUpdate {
   perspectiveIdHash: string;
-  headId: string;
+  headCid1: string;
+  headCid0: string;
   executed: string;
 }
-
-export interface EthMergeRequest {
-  id?: string;
-  toPerspectiveId: string;
-  fromPerspectiveId: string;
-  owner: string;
-  nonce?: number;
-  headUpdates: EthHeadUpdate[];
-  approvedAddresses: string[];
-  status?: string;
-  authorized?: string;
-}
-
-export interface EthRequestCreatedEvent {
-  toPerspectiveIdHash: string,
-  fromPerspectiveIdHash: string,
-  nonce: number,
-  requestId: string,
-  toPerspectiveId: string,
-  fromPerspectiveId: string,
-  creator: string
-}
-
 export class ProposalsEthereum implements ProposalsProvider {
   
   logger = new Logger('PROPOSALS-ETHEREUM');
@@ -87,9 +65,12 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const ethHeadUpdatesPromises = headUpdates.map(
       async (update): Promise<EthHeadUpdate> => {
+        const headCidParts = update.newHeadId ? cidToHex32(update.newHeadId) : [ZERO_HEX_32, ZERO_HEX_32];
+
         return {
-          perspectiveIdHash: await hashCid(update.perspectiveId),
-          headId: update.newHeadId,
+          perspectiveIdHash: await this.uprtclRoot.call(GET_PERSP_HASH, [update.perspectiveId]),
+          headCid1: headCidParts[0],
+          headCid0: headCidParts[1],
           executed: "0"
         };
       }
@@ -97,12 +78,9 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const ethHeadUpdates = await Promise.all(ethHeadUpdatesPromises);
 
-    const toPerspectiveIdHash = await hashCid(toPerspectiveId);
-    const fromPerspectiveIdHash = await hashCid(fromPerspectiveId);
-
     const proposal = {
-      toPerspectiveIdHash: toPerspectiveIdHash, 
-      fromPerspectiveIdHash: fromPerspectiveIdHash, 
+      toPerspectiveId: toPerspectiveId, 
+      fromPerspectiveId: fromPerspectiveId, 
       owner: accessData.owner, 
       nonce: nonce, 
       headUpdates: ethHeadUpdates, 
@@ -113,21 +91,8 @@ export class ProposalsEthereum implements ProposalsProvider {
       proposal, this.uprtclProposals.userId
     ]);
 
-    /** check logs to get the requestId (batchId) */
-    const createdEvents = await this.uprtclProposals.contractInstance.getPastEvents(
-      'MergeRequestCreated',
-      {
-        filter: {
-          toPerspectiveIdHash: toPerspectiveIdHash,
-          fromPerspectiveIdHash: fromPerspectiveIdHash
-        },
-        fromBlock: 0
-      }
-    );
-
-    const requestId = createdEvents.filter(e => parseInt(e.returnValues.nonce) === nonce)[0]
-      .returnValues.requestId;
-
+    const requestId = this.uprtclProposals.call(GET_PROPOSAL_ID, [toPerspectiveId, fromPerspectiveId, nonce]);
+    
     this.logger.info('createProposal() - post', { requestId, headUpdates });
 
     return requestId;
@@ -138,49 +103,33 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('getProposal() - pre', { requestId });
 
-    const request: EthMergeRequest = await this.uprtclProposals.call(
+    const request = await this.uprtclProposals.call(
       GET_PROPOSAL, 
       [ requestId ]);
-
-    let requestCreatedEvents = await this.uprtclProposals.contractInstance.getPastEvents(
-      'MergeRequestCreated',
-      {
-        filter: {
-          requestId,
-        },
-        fromBlock: 0
-      }
-    );
-
-    if (requestCreatedEvents.length === 0) {
-      throw new Error(`Request creationg event not found for ${requestId}`);
-    }
-
-    const requestEventValues = (requestCreatedEvents[0].returnValues as EthRequestCreatedEvent);
     
     const ethHeadUpdates = request.headUpdates;
 
     const updatesPromises = ethHeadUpdates.map(async (ethUpdateRequest) => {
       const perspectiveId = await hashToId(this.uprtclRoot, ethUpdateRequest.perspectiveIdHash);
-
+      const headId = bytes32ToCid([ethUpdateRequest.headCid1, ethUpdateRequest.headCid0]);
       return {
         perspectiveId: perspectiveId,
-        newHeadId: ethUpdateRequest.headId
+        newHeadId: headId
       }
     });
 
-    const updates = await Promise.all(updatesPromises);
+    const updates: any = await Promise.all(updatesPromises);
     
-    const executed = (ethHeadUpdates.find(update => update.executed === "0") === undefined);
+    const executed = (ethHeadUpdates.find((update:any) => update.executed === "0") === undefined);
     const canAuthorize = (this.uprtclProposals.userId !== undefined) ? 
       (request.owner.toLocaleLowerCase() === this.uprtclProposals.userId.toLocaleLowerCase()) :
       false;
 
     const proposal: Proposal = {
       id: requestId,
-      creatorId: requestEventValues.creator,
-      toPerspectiveId: requestEventValues.toPerspectiveId,
-      fromPerspectiveId: requestEventValues.fromPerspectiveId,
+      creatorId: '',
+      toPerspectiveId: request.toPerspectiveId,
+      fromPerspectiveId: request.fromPerspectiveId,
       updates: updates,
       status: request.status === '1',
       authorized: request.authorized === '1',
@@ -199,14 +148,14 @@ export class ProposalsEthereum implements ProposalsProvider {
     this.logger.info('getProposalsToPerspective() - pre', { perspectiveId });
 
     let requestsCreatedEvents = await this.uprtclProposals.contractInstance.getPastEvents(
-      'MergeRequestCreated', {
-        filter: { toPerspectiveIdHash: await hashCid(perspectiveId) },
+      'ProposalCreated', {
+        filter: { toPerspectiveIdHash: await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]) },
         fromBlock: 0
       }
     )
 
     const requestsIds = requestsCreatedEvents.map((event) => {
-      return event.returnValues.requestId;
+      return event.returnValues.proposalId;
     })
 
     this.logger.info('getProposalsToPerspective() - post', { requestsIds });
@@ -244,7 +193,7 @@ export class ProposalsEthereum implements ProposalsProvider {
   async executeProposal(proposalId: string[]): Promise<void> {
     await this.ready();
 
-    this.logger.info('acceptProposal()', { proposalId });
+    this.logger.info('executeProposal()', { proposalId });
 
     await this.uprtclProposals.send(EXECUTE_PROPOSAL, [
       proposalId

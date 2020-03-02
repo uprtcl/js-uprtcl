@@ -45,15 +45,23 @@ export class EthereumContract {
    */
   public send(funcName: string, pars: any[]): Promise<any> {
     return new Promise(async (resolve, reject) => {
-      let gasEstimated = await this.contractInstance.methods[funcName](...pars).estimateGas()
 
-      let sendPars = {
-        from: this.connection.getCurrentAccount(),
-        gas: gasEstimated*1.5
+      const caller = this.contractInstance.methods[funcName];
+      if (!caller) {
+        throw new Error(`Function "${funcName}" not found on smart contract`);
+      }
+
+      const _from = this.connection.getCurrentAccount();
+
+      const gasEstimated = await caller(...pars).estimateGas({ from: _from })
+
+      const sendPars = {
+        from: _from,
+        gas: Math.floor(gasEstimated*1.2)
       };
       this.logger.log(`CALLING ${funcName}`, pars, sendPars);
 
-      this.contractInstance.methods[funcName](...pars)
+      caller(...pars)
         .send(sendPars)
         .once('transactionHash', (transactionHash: any) => {
           this.logger.info(`TX HASH ${funcName} `, { transactionHash, pars });
@@ -83,7 +91,13 @@ export class EthereumContract {
    * Simple call function for the holding contract
    */
   public async call(funcName: string, pars: any[]): Promise<any> {
-    return this.contractInstance.methods[funcName](...pars).call({
+    const caller = this.contractInstance.methods[funcName];
+    
+    if (!caller) {
+      throw new Error(`Function "${funcName}" not found on smart contract`);
+    }
+
+    return caller(...pars).call({
       from: this.connection.getCurrentAccount()
     });
   }

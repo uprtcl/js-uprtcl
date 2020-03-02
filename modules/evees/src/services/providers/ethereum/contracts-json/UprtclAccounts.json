@@ -3852,11 +3852,11 @@
       },
       "links": {},
       "address": "0x27D44c7337ce4D67b7cd573e9c36bDEED2b2162a",
-      "transactionHash": "0x8e191718e15bfdae07d86840b3160efcd5d7cd8636e0094e993b639940456f25"
+      "transactionHash": "0x3c91c223d63b562183b1823fc83528d50f2a4abe4b72decaa7c7fab8dd6b24c9"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2020-02-27T17:32:37.381Z",
+  "updatedAt": "2020-02-28T17:15:41.510Z",
   "devdoc": {
     "methods": {
       "isOwner()": {
