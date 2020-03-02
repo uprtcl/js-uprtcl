@@ -103,6 +103,7 @@ export async function executeActions(
   /** optimistic pre-fill the cache */
   const createDataPromises = actions
     .filter(a => a.type === CREATE_DATA_ACTION)
+    .reverse()
     .map(async (action: UprtclAction) => {
       if (!action.entity) throw new Error('entity undefined');
 
@@ -116,6 +117,7 @@ export async function executeActions(
 
   const createCommitsPromises = actions
     .filter(a => a.type === CREATE_COMMIT_ACTION)
+    .reverse()
     .map(async (action: UprtclAction) => {
       if (!action.entity) throw new Error('entity undefined');
       const result = await client.mutate({
@@ -135,6 +137,7 @@ export async function executeActions(
 
   const createPerspectivesPromises = actions
     .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION)
+    .reverse()
     .map(async (action: UprtclAction) => {
       if (!action.entity) throw new Error('entity undefined');
       
