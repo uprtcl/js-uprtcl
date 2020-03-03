@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
+import { DocumentNode } from 'graphql';
 
-export const eveesTypeDefs = gql`
+export const eveesTypeDefs: DocumentNode = gql`
   scalar Date
 
   extend type Mutation {

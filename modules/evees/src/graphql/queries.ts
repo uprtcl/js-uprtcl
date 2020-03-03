@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
+import { DocumentNode } from 'graphql';
 
-export const UPDATE_HEAD = gql`
+export const UPDATE_HEAD: DocumentNode = gql`
   mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID!) {
     updatePerspectiveHead(perspectiveId: $perspectiveId, headId: $headId) {
       id
@@ -17,7 +18,7 @@ export const UPDATE_HEAD = gql`
   }
 `;
 
-export const CREATE_COMMIT = gql`
+export const CREATE_COMMIT: DocumentNode = gql`
   mutation CreateCommit(
     $creatorsIds: [String]
     $dataId: ID!
@@ -48,7 +49,7 @@ export const CREATE_COMMIT = gql`
   }
 `;
 
-export const CREATE_PERSPECTIVE = gql`
+export const CREATE_PERSPECTIVE: DocumentNode = gql`
   mutation CreatePerspective(
     $creatorId: String
     $origin: String
@@ -88,9 +89,17 @@ export const CREATE_PERSPECTIVE = gql`
   }
 `;
 
-export const CREATE_PROPOSAL = gql`
-  mutation AddProposal($toPerspectiveId: ID!, $fromPerspectiveId: ID!, $updateRequests: [HeadUpdateInput!]) {
-    addProposal(toPerspectiveId: $toPerspectiveId, fromPerspectiveId: $fromPerspectiveId, updateRequests: $updateRequests) {
+export const CREATE_PROPOSAL: DocumentNode = gql`
+  mutation AddProposal(
+    $toPerspectiveId: ID!
+    $fromPerspectiveId: ID!
+    $updateRequests: [HeadUpdateInput!]
+  ) {
+    addProposal(
+      toPerspectiveId: $toPerspectiveId
+      fromPerspectiveId: $fromPerspectiveId
+      updateRequests: $updateRequests
+    ) {
       id
       toPerspective {
         id
@@ -109,16 +118,20 @@ export const CREATE_PROPOSAL = gql`
   }
 `;
 
-export const AUTHORIZE_PROPOSAL = gql`
+export const AUTHORIZE_PROPOSAL: DocumentNode = gql`
   mutation AuthorizeProposal($proposalId: ID!, $perspectiveId: ID!, $authorize: Boolean!) {
-    authorizeProposal(proposalId: $proposalId, perspectiveId: $perspectiveId, authorize: $authorize) {
+    authorizeProposal(
+      proposalId: $proposalId
+      perspectiveId: $perspectiveId
+      authorize: $authorize
+    ) {
       id
       authorized
     }
   }
 `;
 
-export const EXECUTE_PROPOSAL = gql`
+export const EXECUTE_PROPOSAL: DocumentNode = gql`
   mutation ExecuteProposal($proposalId: ID!, $perspectiveId: ID!) {
     executeProposal(proposalId: $proposalId, perspectiveId: $perspectiveId) {
       id

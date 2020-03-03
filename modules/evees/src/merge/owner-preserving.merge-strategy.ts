@@ -13,10 +13,9 @@ import {
   Commit
 } from '../types';
 import { RecursiveContextMergeStrategy } from './recursive-context.merge-strategy';
-import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import gql from 'graphql-tag';
-import { Secured } from 'src/patterns/default-secured.pattern';
-import { cacheActions } from 'src/utils/actions';
+import { Secured } from '../patterns/default-secured.pattern';
+import { cacheActions } from '../utils/actions';
 
 export interface OwnerPreservingConfig {
   targetCanWrite: string;

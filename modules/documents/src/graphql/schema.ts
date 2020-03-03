@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
+import { DocumentNode } from 'graphql';
 
-export const documentsTypeDefs = gql`
+export const documentsTypeDefs: DocumentNode = gql`
   extend type Patterns {
     title: String
   }

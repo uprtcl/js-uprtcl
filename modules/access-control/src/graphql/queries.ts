@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
+import { DocumentNode } from 'graphql';
 
-export const SET_CAN_WRITE = gql`
+export const SET_CAN_WRITE: DocumentNode = gql`
   mutation setCanWrite($entityId: ID!, $userId: ID!) {
     setCanWrite(entityId: $entityId, userId: $userId) {
       id

@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
+import { DocumentNode } from 'graphql';
 
-export const lensesSchema = gql`
+export const lensesSchema: DocumentNode = gql`
   scalar Function
 
   extend type Patterns {

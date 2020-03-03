@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
+import { DocumentNode } from 'graphql';
 
-export const accessControlTypes = gql`
+export const accessControlTypes: DocumentNode = gql`
   extend type Patterns {
     accessControl: AccessControl
   }
