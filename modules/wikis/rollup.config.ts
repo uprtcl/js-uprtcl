@@ -23,6 +23,7 @@ module.exports = {
     json(),
     typescript({
       objectHashIgnoreUnknownHack: true,
+      abortOnError: false,
 
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`

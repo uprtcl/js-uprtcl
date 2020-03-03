@@ -25,6 +25,7 @@ module.exports = {
     // Compile TypeScript files
     typescript({
       objectHashIgnoreUnknownHack: true,
+      abortOnError: false,
 
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
