@@ -1,4 +1,4 @@
-import { gql } from 'apollo-boost';
+import gql from 'graphql-tag';
 
 export const CREATE_WIKI = gql`
   mutation CreateWiki($content: WikiInput!, $source: String) {
