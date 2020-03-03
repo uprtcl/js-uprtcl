@@ -1,4 +1,4 @@
-import { gql } from 'apollo-boost';
+import gql from 'graphql-tag';
 
 export const documentsTypeDefs = gql`
   extend type Patterns {

@@ -1,4 +1,4 @@
-import { gql } from 'apollo-boost';
+import gql from 'graphql-tag';
 
 export const UPDATE_HEAD = gql`
   mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID!) {
