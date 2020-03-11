@@ -1,11 +1,12 @@
-import { MicroModule, Dictionary, Constructor } from '@uprtcl/micro-orchestrator';
+import { MicroModule, Dictionary, Constructor, ElementsModule } from '@uprtcl/micro-orchestrator';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { PatternsModule, Hashed, Pattern } from '@uprtcl/cortex';
+import { SourcesModule } from '@uprtcl/multiplatform';
 
 import { mockSchema } from './mock.schema';
 import { MockPattern } from './mock.pattern';
-import { SourcesModule } from '../../src/sources.module';
 import { MockSource } from './mock.source';
+import { MockElement } from './mock-element';
 
 export class MockModule extends MicroModule {
   constructor(
@@ -16,6 +17,7 @@ export class MockModule extends MicroModule {
   }
 
   submodules = [
+    new ElementsModule({ 'mock-element': MockElement }),
     new GraphQlSchemaModule(mockSchema),
     new PatternsModule({ [Symbol('mock')]: [MockPattern, ...this.initialPatterns] }),
     new SourcesModule([

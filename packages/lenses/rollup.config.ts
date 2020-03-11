@@ -28,12 +28,33 @@ module.exports = {
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
     }),
-    resolve(),
+    resolve({
+      browser: true,
+      preferBuiltins: false,
+      dedupe: [
+        '@uprtcl/cortex',
+        '@uprtcl/graphql',
+        '@uprtcl/multiplatform',
+        '@uprtcl/micro-orchestrator'
+      ]
+    }),
     commonjs({
       namedExports: {
         'apollo-boost': ['gql', 'ApolloClient'],
         '../graphql/node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema'],
-        'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema']
+        'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema'],
+        'node_modules/@uprtcl/graphql/node_modules/graphql-tools/dist/index.js': [
+          'makeExecutableSchema'
+        ],
+        'node_modules/@uprtcl/cortex/node_modules/@uprtcl/graphql/node_modules/graphql-tools/dist/index.js': [
+          'makeExecutableSchema'
+        ],
+        'node_modules/@uprtcl/multiplatform/node_modules/@uprtcl/cortex/node_modules/@uprtcl/graphql/node_modules/graphql-tools/dist/index.js': [
+          'makeExecutableSchema'
+        ],
+        'node_modules/@uprtcl/multiplatform/node_modules/@uprtcl/graphql/node_modules/graphql-tools/dist/index.js': [
+          'makeExecutableSchema'
+        ]
       },
       exclude: [
         '**/node_modules/mocha/**/*',

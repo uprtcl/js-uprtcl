@@ -8,7 +8,7 @@ import { ApolloClientModule, ApolloClient, gql } from '@uprtcl/graphql';
 
 import { PermissionsElement } from './permissions-element';
 import { SET_PUBLIC_READ } from '../graphql/queries';
-import { BasicAdminPermissions } from 'src/services/basic-admin-control.service';
+import { BasicAdminPermissions } from '../services/basic-admin-control.service';
 
 export class PermissionsAdmin extends moduleConnect(LitElement) implements PermissionsElement<BasicAdminPermissions> {
 

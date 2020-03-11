@@ -32,6 +32,7 @@ module.exports = config =>
       },
       plugins: [
         replace({
+          'process.env.NODE_ENV': '"production"',
           'var _2 = require(".");':
             'var _2 = {extendResolversFromInterfaces: require("./extendResolversFromInterfaces").default,checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
           'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = require(".");':

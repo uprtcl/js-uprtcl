@@ -1,7 +1,7 @@
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 
-import { Source } from '../../src/types/source';
+import { Source } from '@uprtcl/multiplatform';
 
 export class MockSource implements Source {
   hashRecipe: any;

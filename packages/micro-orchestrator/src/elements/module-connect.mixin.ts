@@ -59,7 +59,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
       } else {
         throw new Error(
           `Dependency ${String(dependency)} could not be loaded:
-          make sure that this element is included inside a <module-container> super element`
+          make sure that this element is included inside a <module-container> super element and the dependency exists`
         );
       }
     }

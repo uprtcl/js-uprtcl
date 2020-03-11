@@ -6,9 +6,7 @@ import { CortexModule } from '@uprtcl/cortex';
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { MockSource } from '../mocks/mock.source';
 import { DiscoveryModule } from '../../src/discovery.module';
-import { SourcesBindings } from '../../src/bindings';
 import { MockModule } from '../mocks/mock.module';
 
 const object1 = {
@@ -17,20 +15,15 @@ const object1 = {
 
 describe('basic GraphQl entity', () => {
   let orchestrator: MicroOrchestrator;
-  let source: MockSource;
 
   beforeEach(async () => {
-    source = new MockSource();
-    source.addObject('hash1', object1);
-
     orchestrator = new MicroOrchestrator();
-    orchestrator.container.bind(SourcesBindings.Source).toConstantValue(source);
 
     await orchestrator.loadModules([
       new ApolloClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
-      new MockModule()
+      new MockModule({ hash1: { id: 'hash1', object: object1 } })
     ]);
   });
 
