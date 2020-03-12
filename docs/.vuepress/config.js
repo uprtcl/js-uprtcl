@@ -1,11 +1,3 @@
-let micro = require('../packages/micro-orchestrator/api/sidebar.json');
-micro = micro
-  .filter(ele => !ele.title.includes('Modules'))
-  .map(arr => ({
-    ...arr,
-    children: arr.children.map(child => '/packages/micro-orchestrator/api/' + child)
-  }));
-
 const guideSidebar = [
   ['/', 'Home'],
   ['/guide/', 'Introduction']
@@ -25,8 +17,7 @@ module.exports = {
         ['', 'Home'],
         {
           title: '@uprtcl/micro-orchestrator',
-          collapsable: true,
-          children: [{ title: 'API reference', collapsable: true, children: micro }]
+          collapsable: true
         }
       ]
     },
