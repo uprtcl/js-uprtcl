@@ -49,6 +49,7 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.11.0",
     "graphql": "^14.6.0",
+    "graphql-tools": "^4.0.7",
     "karma": "^4.4.1",
     "karma-rollup-preprocessor": "^7.0.3",
     "lodash-es": "^4.17.15",

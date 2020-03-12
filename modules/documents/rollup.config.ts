@@ -51,7 +51,9 @@ module.exports = {
       namedExports: {
         'apollo-boost': ['gql', 'ApolloClient'],
         'graphql-tools': ['makeExecutableSchema'],
-        'node_modules/@uprtcl/evees/node_modules/cids/src/index.js': ['CID']
+        'node_modules/@uprtcl/evees/node_modules/cids/src/index.js': ['CID'],
+        'fast-json-stable-stringify': ['stringify'],
+        'node_modules/graphql-tools/dist/index.js,': ['makeExecutableSchema']
       },
       exclude: [
         '**/node_modules/mocha/**/*',
@@ -64,5 +66,6 @@ module.exports = {
 
     // Resolve source maps to the original source
     sourceMaps()
-  ]
+  ],
+  preserveSymlinks: true
 };
