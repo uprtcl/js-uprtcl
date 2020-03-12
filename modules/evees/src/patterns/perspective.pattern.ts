@@ -124,7 +124,7 @@ export class PerspectiveCreate extends PerspectiveEntity
 
   create = () => async (args: CreatePerspectiveArgs, authority: string) => {
     let fromDetails: PerspectiveDetails = (args as any).fromDetails;
-    // TODO, review "if" logic. You might want to craete a new perspective with details but without computing it.
+    // TODO, review "if" logic. You might want to create a new perspective with details but without computing it.
     if (fromDetails || args.ofPerspectiveId) {
       fromDetails.context =
         fromDetails.context || `${Date.now()}.${Math.floor(Math.random() / 1000)}`;

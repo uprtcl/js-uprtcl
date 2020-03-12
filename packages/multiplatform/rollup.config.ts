@@ -35,14 +35,14 @@ module.exports = {
     // https://github.com/rollup/@rollup/plugin-node-resolve#usage
     resolve({
       browser: true,
-      preferBuiltins: false
+      preferBuiltins: false,
+      dedupe: ['graphql-tools']
     }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs({
       namedExports: {
         'apollo-boost': ['gql', 'ApolloClient'],
-        '../graphql/node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema'],
-        'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema']
+        'graphql-tools': ['makeExecutableSchema']
       },
       exclude: [
         '**/node_modules/mocha/**/*',

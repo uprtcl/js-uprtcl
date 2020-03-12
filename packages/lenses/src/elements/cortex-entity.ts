@@ -8,13 +8,17 @@ export class CortexEntity extends CortexEntityBase {
     return sharedStyles;
   }
 
-  forwardSlots():TemplateResult[] {
-    let slots:TemplateResult[] = [];
+  forwardSlots(): TemplateResult[] {
+    let slots: TemplateResult[] = [];
 
     for (const el of this.children) {
       const slotName = el.getAttribute('slot');
       if (slotName) {
-        slots.push(html`<slot name=${slotName} slot=${slotName}></slot>`);
+        slots.push(
+          html`
+            <slot name=${slotName} slot=${slotName}></slot>
+          `
+        );
       }
     }
 
@@ -54,9 +58,7 @@ export class CortexEntity extends CortexEntityBase {
         ? html`
             <cortex-loading-placeholder></cortex-loading-placeholder>
           `
-        : html`
-            ${this.renderLens()}
-          `}
+        : this.renderLens()}
     `;
   }
 }

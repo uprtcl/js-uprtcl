@@ -1,5 +1,7 @@
 const replace = require('@rollup/plugin-replace');
 const rollupConfig = require('./rollup.config');
+const builtins = require('rollup-plugin-node-builtins');
+const globals = require('rollup-plugin-node-globals');
 
 module.exports = config =>
   config.set({
@@ -38,6 +40,8 @@ module.exports = config =>
             'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = {checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
           delimiters: ['', '']
         }),
+        globals(),
+        builtins(),
         ...rollupConfig.plugins
       ]
     },

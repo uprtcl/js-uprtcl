@@ -35,26 +35,14 @@ module.exports = {
         '@uprtcl/cortex',
         '@uprtcl/graphql',
         '@uprtcl/multiplatform',
-        '@uprtcl/micro-orchestrator'
+        '@uprtcl/micro-orchestrator',
+        'graphql-tools'
       ]
     }),
     commonjs({
       namedExports: {
         'apollo-boost': ['gql', 'ApolloClient'],
-        '../graphql/node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema'],
-        'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema'],
-        'node_modules/@uprtcl/graphql/node_modules/graphql-tools/dist/index.js': [
-          'makeExecutableSchema'
-        ],
-        'node_modules/@uprtcl/cortex/node_modules/@uprtcl/graphql/node_modules/graphql-tools/dist/index.js': [
-          'makeExecutableSchema'
-        ],
-        'node_modules/@uprtcl/multiplatform/node_modules/@uprtcl/cortex/node_modules/@uprtcl/graphql/node_modules/graphql-tools/dist/index.js': [
-          'makeExecutableSchema'
-        ],
-        'node_modules/@uprtcl/multiplatform/node_modules/@uprtcl/graphql/node_modules/graphql-tools/dist/index.js': [
-          'makeExecutableSchema'
-        ]
+        'graphql-tools': ['makeExecutableSchema']
       },
       exclude: [
         '**/node_modules/mocha/**/*',

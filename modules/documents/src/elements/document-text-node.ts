@@ -18,11 +18,12 @@ import {
   Commit,
   EveesRemote,
   Evees,
-  UpdateContentEvent,
+  UPDATE_HEAD,
+  CreatePerspectiveArgs,
+  Perspective,
   CreateCommitArgs
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { UPDATE_HEAD, CreatePerspectiveArgs, Perspective } from '@uprtcl/evees';
 
 import { TextNode, TextType } from '../types';
 import { DocumentsModule } from '../documents.module';
@@ -125,13 +126,6 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
 
     const dataId = textNode.id;
 
-    this.dispatchEvent(
-      new CustomEvent('update-content', {
-        bubbles: true,
-        composed: true,
-        detail: { dataId }
-      })
-    );
     this.logger.info('updateContent', { newContent, dataId });
   }
 
@@ -173,7 +167,6 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
         headId: commit.id
       }
     });
-
   }
 
   getLevel() {

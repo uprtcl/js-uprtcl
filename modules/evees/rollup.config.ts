@@ -5,8 +5,6 @@ const typescript = require('rollup-plugin-typescript2');
 const json = require('@rollup/plugin-json');
 
 const pkg = require('./package.json');
-pkg.dependencies['@redux-saga/core'] = '';
-pkg.dependencies['@redux-saga/core/effects'] = '';
 
 const libraryName = 'uprtcl-evees';
 
@@ -35,13 +33,14 @@ module.exports = {
     // Allow node_modules resolution, so you can use 'external' to control
     // which external modules to include in the bundle
     // https://github.com/rollup/@rollup/plugin-node-resolve#usage
-    resolve(),
+    resolve({
+      dedupe: ['graphql-tools']
+    }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs({
       namedExports: {
         'apollo-boost': ['gql', 'ApolloClient'],
-        '../graphql/node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema'],
-        'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema']
+        'graphql-tools': ['makeExecutableSchema'],
       },
       exclude: [
         '**/node_modules/mocha/**/*',

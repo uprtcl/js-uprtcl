@@ -34,8 +34,7 @@ module.exports = {
     commonjs({
       namedExports: {
         'apollo-boost': ['gql', 'ApolloClient'],
-        '../graphql/node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema'],
-        'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema']
+        'graphql-tools': ['makeExecutableSchema']
       },
       exclude: [
         '**/node_modules/mocha/**/*',
@@ -48,7 +47,7 @@ module.exports = {
     // Allow node_modules resolution, so you can use 'external' to control
     // which external modules to include in the bundle
     // https://github.com/rollup/@rollup/plugin-node-resolve#usage
-    resolve(),
+    resolve({ browser: true, preferBuiltins: false, dedupe: ['graphql-tools'] }),
 
     // Resolve source maps to the original source
     sourceMaps()
