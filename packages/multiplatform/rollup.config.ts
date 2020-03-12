@@ -36,7 +36,7 @@ module.exports = {
     resolve({
       browser: true,
       preferBuiltins: false,
-      dedupe: ['graphql-tools']
+      dedupe: ['graphql-tools', 'graphql']
     }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs({

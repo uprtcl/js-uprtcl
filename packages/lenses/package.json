@@ -41,6 +41,8 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.11.0",
     "graphql": "^14.6.0",
+    "graphql-tag": "^2.10.3",
+    "graphql-tools": "^4.0.7",
     "karma": "^4.4.1",
     "karma-rollup-preprocessor": "^7.0.3",
     "lit-html": "^1.1.2",

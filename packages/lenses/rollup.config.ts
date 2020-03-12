@@ -36,13 +36,31 @@ module.exports = {
         '@uprtcl/graphql',
         '@uprtcl/multiplatform',
         '@uprtcl/micro-orchestrator',
-        'graphql-tools'
+        'graphql-tools',
+        'lit-element',
+        'graphql',
+        'graphql-tag'
       ]
     }),
     commonjs({
+      include: [
+        '**/node_modules/cids/**/*',
+        '**/node_modules/fast-json-stable-stringify/**',
+        '**/node_modules/zen-observable/**',
+        '**/node_modules/inversify/**',
+        '**/node_modules/graphql-tag/**',
+        '**/node_modules/cbor-js/**',
+        '**/node_modules/web3/**',
+        '**/node_modules/@holochain/**',
+        '**/node_modules/ipfs-http-client/**',
+        '**/node_modules/multihashing-async/**',
+        '**/node_modules/graphql-tools/**',
+        /node_modules/
+      ],
       namedExports: {
         'apollo-boost': ['gql', 'ApolloClient'],
-        'graphql-tools': ['makeExecutableSchema']
+        'graphql-tools': ['makeExecutableSchema'],
+        'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema']
       },
       exclude: [
         '**/node_modules/mocha/**/*',

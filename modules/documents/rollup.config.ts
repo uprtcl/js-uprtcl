@@ -64,6 +64,5 @@ module.exports = {
 
     // Resolve source maps to the original source
     sourceMaps()
-  ],
-  preserveSymlinks: true
+  ]
 };
