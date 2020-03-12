@@ -32,17 +32,20 @@ import {
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 import { ProposalsProvider } from '../../proposals.provider';
-import { NewPerspectiveData } from 'src/services/evees.provider.js';
+import { NewPerspectiveData } from '../../evees.provider';
 
 const evees_if = 'evees-v0';
-export const ZERO_HEX_32 = '0x' + new Array(32).fill(0).join('')
+export const ZERO_HEX_32 = '0x' + new Array(32).fill(0).join('');
 
-export const hashToId = async  (uprtclRoot: EthereumContract, perspectiveIdHash: string) => {
+export const hashToId = async (uprtclRoot: EthereumContract, perspectiveIdHash: string) => {
   /** check the creation event to reverse map the cid */
-  const perspectiveAddedEvents = await uprtclRoot.contractInstance.getPastEvents('PerspectiveCreated', {
-    filter: { perspectiveIdHash: perspectiveIdHash },
-    fromBlock: 0
-  });
+  const perspectiveAddedEvents = await uprtclRoot.contractInstance.getPastEvents(
+    'PerspectiveCreated',
+    {
+      filter: { perspectiveIdHash: perspectiveIdHash },
+      fromBlock: 0
+    }
+  );
 
   /** one event should exist only */
   const perspectiveAddedEvent = perspectiveAddedEvents[0];
@@ -52,7 +55,7 @@ export const hashToId = async  (uprtclRoot: EthereumContract, perspectiveIdHash:
   }
 
   return perspectiveAddedEvent.returnValues.perspectiveId;
-}
+};
 
 export class EveesEthereum implements EveesRemote, Authority {
   logger: Logger = new Logger('EveesEtereum');
@@ -75,21 +78,27 @@ export class EveesEthereum implements EveesRemote, Authority {
     uprtclDetailsOptions: EthereumContractOptions = { contract: UprtclDetails as any },
     uprtclProposalsOptions: EthereumContractOptions = { contract: UprtclProposals as any }
   ) {
-    
     this.uprtclRoot = new EthereumContract(uprtclRootOptions, ethConnection);
     this.uprtclDetails = new EthereumContract(uprtclDetailsOptions, ethConnection);
     this.uprtclProposals = new EthereumContract(uprtclProposalsOptions, ethConnection);
 
     this.ipfsSource = new IpfsSource(ipfsConnection, hashRecipe);
     this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot);
-    this.proposals = new ProposalsEthereum(this.uprtclRoot, this.uprtclProposals, this.ipfsSource, this.accessControl);
+    this.proposals = new ProposalsEthereum(
+      this.uprtclRoot,
+      this.uprtclProposals,
+      this.ipfsSource,
+      this.accessControl
+    );
     this.hashRecipe = hashRecipe;
   }
 
   get authority() {
-    return `eth-${
-      this.ethConnection.networkId
-    }:${evees_if}:${this.uprtclRoot.contractInstance.options.address? this.uprtclRoot.contractInstance.options.address.toLocaleLowerCase():''}`;
+    return `eth-${this.ethConnection.networkId}:${evees_if}:${
+      this.uprtclRoot.contractInstance.options.address
+        ? this.uprtclRoot.contractInstance.options.address.toLocaleLowerCase()
+        : ''
+    }`;
   }
 
   get userId() {
@@ -112,10 +121,11 @@ export class EveesEthereum implements EveesRemote, Authority {
    */
   async ready(): Promise<void> {
     await Promise.all([
-      this.uprtclRoot.ready(), 
-      this.uprtclDetails.ready(), 
+      this.uprtclRoot.ready(),
+      this.uprtclDetails.ready(),
       this.uprtclProposals.ready(),
-      this.ipfsSource.ready()]);
+      this.ipfsSource.ready()
+    ]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
@@ -141,20 +151,20 @@ export class EveesEthereum implements EveesRemote, Authority {
 
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);
-    
+
     const headCidParts = details.headId ? cidToHex32(details.headId) : [ZERO_HEX_32, ZERO_HEX_32];
-    
+
     const newPerspective = {
       perspectiveId: perspectiveId,
       headCid1: headCidParts[0],
       headCid0: headCidParts[1],
-      owner: canWrite ? canWrite : this.ethConnection.getCurrentAccount(),
-    }
+      owner: canWrite ? canWrite : this.ethConnection.getCurrentAccount()
+    };
 
     const newDetails = {
       context: details.context ? details.context : '',
-      name: details.name ? details.name : '',
-    }
+      name: details.name ? details.name : ''
+    };
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     await this.uprtclDetails.send(INIT_PERSP, [
@@ -172,20 +182,23 @@ export class EveesEthereum implements EveesRemote, Authority {
 
     const ethPerspectivesDataPromises = newPerspectivesData.map(
       async (perspectiveData): Promise<any> => {
-
-        const headCidParts = perspectiveData.details.headId ? cidToHex32(perspectiveData.details.headId) : [ZERO_HEX_32, ZERO_HEX_32];
+        const headCidParts = perspectiveData.details.headId
+          ? cidToHex32(perspectiveData.details.headId)
+          : [ZERO_HEX_32, ZERO_HEX_32];
 
         const perspective = {
           perspectiveId: perspectiveData.perspective.id,
           headCid1: headCidParts[0],
           headCid0: headCidParts[1],
-          owner: perspectiveData.canWrite ? perspectiveData.canWrite : this.ethConnection.getCurrentAccount(),
-        }
+          owner: perspectiveData.canWrite
+            ? perspectiveData.canWrite
+            : this.ethConnection.getCurrentAccount()
+        };
 
         const details = {
           context: perspectiveData.details.context,
           name: ''
-        }
+        };
 
         return { perspective, details };
       }
@@ -194,8 +207,10 @@ export class EveesEthereum implements EveesRemote, Authority {
     const ethPerspectivesData = await Promise.all(ethPerspectivesDataPromises);
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
-    await this.uprtclDetails.send(INIT_PERSP_BATCH, 
-      [ethPerspectivesData, this.ethConnection.getCurrentAccount()]);
+    await this.uprtclDetails.send(INIT_PERSP_BATCH, [
+      ethPerspectivesData,
+      this.ethConnection.getCurrentAccount()
+    ]);
   }
 
   /**
@@ -222,12 +237,12 @@ export class EveesEthereum implements EveesRemote, Authority {
       headCid1: ZERO_HEX_32,
       headCid0: ZERO_HEX_32,
       owner: this.ethConnection.getCurrentAccount()
-    }
+    };
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     await this.uprtclRoot.send(CREATE_PERSP, [
       newPerspective,
-      this.ethConnection.getCurrentAccount(),
+      this.ethConnection.getCurrentAccount()
     ]);
 
     this.logger.log(`[ETH] addPerspective - TX minted`);
@@ -305,16 +320,12 @@ export class EveesEthereum implements EveesRemote, Authority {
   async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
     const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
 
-    const details = await this.uprtclDetails.call(GET_PERSP_DETAILS, [
-      perspectiveIdHash
-    ]);
+    const details = await this.uprtclDetails.call(GET_PERSP_DETAILS, [perspectiveIdHash]);
 
-    const ethPerspective = await this.uprtclRoot.call(GET_PERSP, [
-      perspectiveIdHash
-    ]);
+    const ethPerspective = await this.uprtclRoot.call(GET_PERSP, [perspectiveIdHash]);
 
     const headId = bytes32ToCid([ethPerspective.headCid1, ethPerspective.headCid0]);
-    
+
     return { name: details.name, context: details.context, headId: headId };
   }
 }

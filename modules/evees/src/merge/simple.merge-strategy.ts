@@ -18,12 +18,11 @@ import {
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
-import { isAncestorOf } from '../utils/ancestor';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
 import { CidHashedPattern } from '../patterns/cid-hashed.pattern';
-import { cacheUpdateRequest } from 'src/utils/actions';
+import { cacheUpdateRequest } from '../utils/actions';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {

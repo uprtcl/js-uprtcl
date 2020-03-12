@@ -14,7 +14,7 @@ import { DocumentsProvider } from './services/documents.provider';
 import { documentsTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 
-import en from '../i18n/en.json';
+import en from './i18n/en.json';
 import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
 import { DocumentsBindings } from './bindings';
 

@@ -155,7 +155,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       this.getTextNodeSource(origin).source
     );
 
-    const commitCreator: Creatable<CreateCommitArgs, Commit> = this.getCreatePattern(
+    const commitCreator: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
       EveesModule.bindings.CommitPattern
     );
     const commit: Secured<Commit> = await commitCreator.create()(
@@ -167,19 +167,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
 
     const perspectiveCreator: Creatable<
-      NewPerspectiveArgs,
+      CreatePerspectiveArgs,
       Signed<Perspective>
     > = this.getCreatePattern(EveesModule.bindings.PerspectivePattern);
-    const args: CreatePerspectiveArgs =  {
+    const args: CreatePerspectiveArgs = {
       fromDetails: {
-        headId: commit.id        
+        headId: commit.id
       },
       parentId: this.perspective.id
     };
-    const perspective: Secured<Commit> = await perspectiveCreator.create()(
-      args,
-      origin
-    );
+    const perspective: Secured<Perspective> = await perspectiveCreator.create()(args, origin);
 
     const newWiki: Wiki = {
       title: this.wiki.object.title,
@@ -238,6 +235,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
+    if (!this.perspective) throw new Error('Perspective cannot be undefined');
+
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.query({
@@ -310,7 +309,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   render() {
-    if (!this.wiki)
+    if (!this.wiki || !this.perspective)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;

@@ -18,6 +18,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { AccessControlService, OwnerPermissions } from '@uprtcl/access-control';
 import { Pattern, Creatable, Signed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 
 import {
   UpdateRequest,
@@ -38,9 +39,8 @@ import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees, CreatePerspectiveArgs } from '../services/evees';
 
 import { OwnerPreservingConfig } from '../merge/owner-preserving.merge-strategy';
-import { executeActions, cacheActions } from 'src/utils/actions';
-import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
-import { NewPerspectiveData } from 'src/services/evees.provider';
+import { executeActions, cacheActions } from '../utils/actions';
+import { NewPerspectiveData } from '../services/evees.provider';
 
 interface PerspectiveData {
   id: string;

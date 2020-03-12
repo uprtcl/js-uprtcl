@@ -4,15 +4,16 @@ import { randomColor } from 'randomcolor';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
+import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
 
 import { Secured } from '../patterns/default-secured.pattern';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { UpdateContentEvent } from './events';
 import { Perspective, Commit } from '../types';
-import { EveesRemote } from 'src/services/evees.remote';
-import { EveesBindings } from 'src/bindings';
-import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
-import { CreateCommitArgs, EveesModule } from 'src/uprtcl-evees';
+import { EveesRemote } from '../services/evees.remote';
+import { EveesBindings } from '../bindings';
+import { CreateCommitArgs } from '../services/evees';
+
 
 export const DEFAULT_COLOR = '#d0dae0';
 
@@ -205,7 +206,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     this.entityId = undefined;
 
     const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
-      EveesModule.bindings.CommitPattern
+      EveesBindings.CommitPattern
     );
 
     const commit: Secured<Commit> = await createCommit.create()(

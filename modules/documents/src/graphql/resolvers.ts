@@ -1,5 +1,5 @@
 import { DocumentsProvider } from '../services/documents.provider';
-import { DocumentsBindings } from 'src/bindings';
+import { DocumentsBindings } from '../bindings';
 
 export const resolvers = {
   Mutation: {

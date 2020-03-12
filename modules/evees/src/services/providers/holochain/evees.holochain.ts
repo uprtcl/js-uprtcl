@@ -7,7 +7,7 @@ import { KnownSourcesService } from '@uprtcl/multiplatform';
 import { Secured } from '../../../patterns/default-secured.pattern';
 import { Perspective, Commit, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
-import { NewPerspectiveData } from 'src/services/evees.provider';
+import { NewPerspectiveData } from '../../evees.provider';
 
 @injectable()
 export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {

@@ -33,7 +33,7 @@ import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
-import { executeActions, cacheActions } from 'src/utils/actions';
+import { executeActions, cacheActions } from '../utils/actions';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 

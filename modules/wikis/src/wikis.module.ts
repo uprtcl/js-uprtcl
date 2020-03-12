@@ -11,7 +11,7 @@ import { resolvers } from './graphql/resolvers';
 import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
 
-import en from '../i18n/en.json';
+import en from './i18n/en.json';
 import { WikiBindings } from './bindings';
 
 /**

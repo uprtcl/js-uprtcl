@@ -13,7 +13,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "noImplicitAny": false,
-    "declarationDir": "dist/types",
     "typeRoots": ["node_modules/@types"],
     "esModuleInterop": true,
     "resolveJsonModule": true,

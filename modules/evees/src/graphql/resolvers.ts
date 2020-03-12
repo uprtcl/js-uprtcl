@@ -10,7 +10,7 @@ import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
-import { NewPerspectiveData } from 'src/services/evees.provider';
+import { NewPerspectiveData } from '../services/evees.provider';
 
 export const eveesResolvers = {
   Commit: {

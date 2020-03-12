@@ -11,17 +11,17 @@ import {
   Signed,
   Newable
 } from '@uprtcl/cortex';
-import { Secured } from '../patterns/default-secured.pattern';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
+import { Secured } from '../patterns/default-secured.pattern';
 import { Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from '../services/evees.remote';
 import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 import { CREATE_COMMIT } from '../graphql/queries';
 import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
-import { CreateCommitArgs } from 'src/services/evees';
-import { CidConfig } from '@uprtcl/ipfs-provider';
+import { CreateCommitArgs } from '../services/evees';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 

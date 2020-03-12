@@ -9,7 +9,7 @@ import { PermissionsOwner } from './elements/permissions-owner';
 import { OwnerPattern } from './patterns/owner.pattern';
 import { BasicAdminPattern } from './patterns/basic-admin-control.pattern';
 
-import en from '../i18n/en.json';
+import en from './i18n/en.json';
 import { PermissionsAdmin } from './elements/permissions-admin';
 
 export class AccessControlModule extends MicroModule {

@@ -5,15 +5,29 @@ import {
   Perspective,
   Secured,
   Commit,
-  PerspectiveDetails
+  PerspectiveDetails,
+  EveesRemote
 } from '@uprtcl/evees';
 import { Hashed } from '@uprtcl/cortex';
 
-export class MockEveesProvider implements EveesProvider {
+export class MockEveesProvider implements EveesRemote {
   constructor(
     public entities: Dictionary<Hashed<any>> = {},
     public details: Dictionary<PerspectiveDetails> = {}
   ) {}
+  accessControl = undefined;
+  proposals = undefined;
+
+  authority = 'mock-authority';
+
+  userId = undefined;
+
+  source: string = 'mock-source';
+  hashRecipe: any;
+
+  ready(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 
   async get(hash: string): Promise<Hashed<any>> {
     return this.entities[hash];

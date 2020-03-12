@@ -5,13 +5,13 @@ import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprt
 import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/multiplatform';
+import { CidConfig } from '@uprtcl/ipfs-provider';
+import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
 
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
 import { WikisProvider } from '../services/wikis.provider';
-import { CREATE_WIKI } from 'src/graphql/queries';
-import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
-import { CidConfig } from '@uprtcl/ipfs-provider';
+import { CREATE_WIKI } from '../graphql/queries';
 
 const propertyOrder = ['title', 'pages'];
 

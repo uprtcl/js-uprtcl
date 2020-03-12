@@ -1,7 +1,8 @@
 import { injectable, inject } from 'inversify';
 
 import { Hashed, Hashable, Signed, Signable, IsSecure, Pattern } from '@uprtcl/cortex';
-import { EveesBindings } from 'src/bindings';
+
+import { EveesBindings } from '../bindings';
 
 export type Secured<T = any> = Hashed<Signed<T>>;
 

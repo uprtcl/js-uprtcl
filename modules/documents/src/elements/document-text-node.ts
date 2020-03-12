@@ -23,11 +23,11 @@ import {
   Perspective,
   CreateCommitArgs
 } from '@uprtcl/evees';
+import { Source, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { TextNode, TextType } from '../types';
 import { DocumentsModule } from '../documents.module';
-import { Source, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import {
   CreateSyblingEvent,
   AddSyblingsEvent,
@@ -92,6 +92,8 @@ export class DocumentTextNode extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
+    if (!this.perspective) throw new Error('Perspective is undefined');
+
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`

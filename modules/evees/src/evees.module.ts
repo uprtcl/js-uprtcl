@@ -27,7 +27,7 @@ import { PerspectivesList } from './elements/evees-perspectives-list';
 import { EveesPerspective } from './elements/evees-perspective';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
-import en from '../i18n/en.json';
+import en from './i18n/en.json';
 import { RemotesConfig } from './types';
 import { EveesInfoPage } from './elements/evees-info-page';
 

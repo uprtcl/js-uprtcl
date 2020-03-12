@@ -1,6 +1,5 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { multiInject, injectable, inject } from 'inversify';
-import { isEqual } from 'lodash-es';
 
 import {
   PatternRecognizer,
@@ -10,14 +9,8 @@ import {
   CortexModule,
   Signed
 } from '@uprtcl/cortex';
-import {
-  KnownSourcesService,
-  DiscoveryService,
-  DiscoveryModule,
-  TaskQueue
-} from '@uprtcl/multiplatform';
+import { KnownSourcesService, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { computeIdOfEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Secured } from '../patterns/default-secured.pattern';
@@ -33,7 +26,7 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
-import { CidHashedPattern } from 'src/patterns/cid-hashed.pattern';
+import { CidHashedPattern } from '../patterns/cid-hashed.pattern';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -170,7 +163,8 @@ export class Evees {
 
     let headId: string;
     if (ofPerspectiveId === undefined) {
-      if (!details.headId) throw new Error('headId must be provided if ofPerspectiveId is not provided)');
+      if (!details.headId)
+        throw new Error('headId must be provided if ofPerspectiveId is not provided)');
       headId = details.headId;
     } else {
       const result = await this.client.query({
@@ -185,7 +179,7 @@ export class Evees {
           }
         }`
       });
-  
+
       headId = result.data.entity.head.id;
     }
 
@@ -253,7 +247,13 @@ export class Evees {
             name: descendantResult.data.entity.name
           };
 
-          return this.computeNewGlobalPerspectiveOps(authority, perspectiveDetails, link, canWrite, perspective.id);
+          return this.computeNewGlobalPerspectiveOps(
+            authority,
+            perspectiveDetails,
+            link,
+            canWrite,
+            perspective.id
+          );
         });
 
         const results = await Promise.all(promises);
@@ -300,7 +300,7 @@ export class Evees {
         actions.push(newCommitAction);
       }
     }
-    
+
     const newPerspectiveAction: UprtclAction = {
       type: CREATE_AND_INIT_PERSPECTIVE_ACTION,
       entity: perspective,

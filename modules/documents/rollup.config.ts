@@ -30,11 +30,28 @@ module.exports = {
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
     }),
+    // Allow node_modules resolution, so you can use 'external' to control
+    // which external modules to include in the bundle
+    // https://github.com/rollup/@rollup/plugin-node-resolve#usage
+    resolve({ browser: true, preferBuiltins: false, dedupe: ['graphql-tools'] }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs({
+      include: [
+        '**/node_modules/cids/**/*',
+        '**/node_modules/fast-json-stable-stringify/**',
+        '**/node_modules/zen-observable/**',
+        '**/node_modules/inversify/**',
+        '**/node_modules/graphql-tag/**',
+        '**/node_modules/cbor-js/**',
+        '**/node_modules/web3/**',
+        '**/node_modules/@holochain/**',
+        '**/node_modules/ipfs-http-client/**',
+        '**/node_modules/multihashing-async/**'
+      ],
       namedExports: {
         'apollo-boost': ['gql', 'ApolloClient'],
-        'graphql-tools': ['makeExecutableSchema']
+        'graphql-tools': ['makeExecutableSchema'],
+        'node_modules/@uprtcl/evees/node_modules/cids/src/index.js': ['CID']
       },
       exclude: [
         '**/node_modules/mocha/**/*',
@@ -44,10 +61,6 @@ module.exports = {
         '**/node_modules/core-js-bundle/**/*'
       ]
     }),
-    // Allow node_modules resolution, so you can use 'external' to control
-    // which external modules to include in the bundle
-    // https://github.com/rollup/@rollup/plugin-node-resolve#usage
-    resolve({ browser: true, preferBuiltins: false, dedupe: ['graphql-tools'] }),
 
     // Resolve source maps to the original source
     sourceMaps()

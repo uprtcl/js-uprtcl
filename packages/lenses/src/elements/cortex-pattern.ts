@@ -2,7 +2,8 @@ import { LitElement, property, html } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
-import { HasLenses } from 'src/properties/has-lenses';
+
+import { HasLenses } from '../properties/has-lenses';
 
 export class CortexPattern extends moduleConnect(LitElement) {
   @property()

@@ -9,9 +9,9 @@ import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
 import { PerspectiveDetails, Perspective } from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
-import { Secured } from 'src/uprtcl-evees';
 import { KnownSourcesService } from '@uprtcl/multiplatform';
-import { NewPerspectiveData } from 'src/services/evees.provider';
+import { NewPerspectiveData } from '../../evees.provider';
+import { Secured } from '../../../patterns/default-secured.pattern';
 
 const evees_api: string = 'evees-v1';
 
