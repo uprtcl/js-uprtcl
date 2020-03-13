@@ -7,7 +7,7 @@ actionText: Get Started →
 actionLink: /guides/
 features:
   - title: A new way to share ideas
-    details: Ideas can live on different platforms and in different forms. They can be linked, reused and extended by anyone.
+    details: Ideas can live on different platforms and exist in different forms. They can be linked, reused and extended by anyone.
   - title: Generic, modular & flexible
     details: Download and install all the modules you need, and compose them to build whole web apps with powerful features out of the box.
   - title: Extensible by nature
