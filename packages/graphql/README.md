@@ -5,6 +5,10 @@ These are \_Prtcl `micro-orchestrator` wrapper modules:
 - `ApolloClientModule`: basic module that registers the `ApolloClient` to be available to any external modules
 - `GraphQlSchemaModule`: building-block module that can extend the basic schema incldued in `ApolloClientModule`, with new type definitions, resolvers or directives. This lets you build whole graphql applications by composing different GraqhQl schema definitions.
 
+## Documentation
+
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
+
 ## Install
 
 ```bash

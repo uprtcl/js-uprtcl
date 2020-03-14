@@ -2,6 +2,10 @@
 
 This package contains services, modules and GraphQl directives that help resolve generic content-addressable linking between entities. It also helps traverse entity links accross platforms.
 
+## Documentation
+
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
+
 ## Install
 
 ```bash

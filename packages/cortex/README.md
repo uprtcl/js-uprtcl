@@ -47,6 +47,10 @@ These are the transitions that Cortex wants to support in the web:
 - "The server controls the data" to "**data can be transformed and stored in any platform **you** choose**"
 - "Every application has to reimplement the wheel" to "**building applications by reusing frontend+backend modules already implemented**"
 
+## Documentation
+
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
+
 ## Install
 
 ```bash

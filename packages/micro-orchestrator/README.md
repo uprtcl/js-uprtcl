@@ -9,6 +9,10 @@ It uses:
 * `InversifyJs` for all dependency management.
 * `LitElement` to define custom elements.
 
+## Documentation
+
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
+
 ## Install
 
 ```bash

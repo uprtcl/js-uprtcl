@@ -2,9 +2,13 @@
 
 This package provides a basic lenses rendering engine for the `@uprtcl/cortex` framework. Cortex needs a rendering engine of this type in order for it to work in the frontend.
 
-This module declares and exposes the native HTMLElements:
+This module declares and exposes this native HTMLElement:
 
 - `<cortex-entity>`: entry point of the engine. This element takes a `hash` property, and is responsible for fetching, recognizing, and rendering the object in the appropiate lens.
+
+## Documentation
+
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
 
 ## Install
 
