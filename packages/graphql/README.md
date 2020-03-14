@@ -1,5 +1,7 @@
 # @uprtcl/graphql
 
+[![](https://img.shields.io/npm/v/@uprtcl/graphql)](https://www.npmjs.com/package/@uprtcl/graphql)
+
 These are \_Prtcl `micro-orchestrator` wrapper modules:
 
 - `ApolloClientModule`: basic module that registers the `ApolloClient` to be available to any external modules

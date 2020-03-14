@@ -1,5 +1,7 @@
 # @uprtcl/micro-orchestrator
 
+[![](https://img.shields.io/npm/v/@uprtcl/micro-orchestrator)](https://www.npmjs.com/package/@uprtcl/micro-orchestrator)
+
 `Micro-orchestrator` is a new library to help coordinate different frontend modules, to build entire applications from small building blocks. This micro-modules can depend on one another,
 
 It's inspired by the `micro-frontends` pattern, and wants to extend it to enable micro modules grouped by funcionality, that can interact from one another with or without clearly defined boundaries.

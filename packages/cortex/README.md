@@ -1,5 +1,7 @@
 # @uprtcl/cortex
 
+[![](https://img.shields.io/npm/v/@uprtcl/cortex)](https://www.npmjs.com/package/@uprtcl/cortex)
+
 The **Cortex** framework: a new way to build web-applications.
 
 At its core, Cortex does what brains do: **recognize patterns**. Its main building block is a _pattern_: a kind of object that implements certain behaviour.
@@ -11,9 +13,9 @@ Consider this example in a project management app:
 
 Both types of _entity_ implement a date _pattern_.
 
-This makes it possible to render both types of objects in a calendar element. Or maybe a Kanban board, in which some entities implement a _status pattern_. Or maybe they can be transformed to similar objects in different apps. 
+This makes it possible to render both types of objects in a calendar element. Or maybe a Kanban board, in which some entities implement a _status pattern_. Or maybe they can be transformed to similar objects in different apps.
 
-This is all possible provided that we can recognize which patterns each object implements, in its own way. 
+This is all possible provided that we can recognize which patterns each object implements, in its own way.
 
 That's what Cortex does, in a generic, modular and pluggable way.
 
@@ -64,7 +66,7 @@ Cortex modules are groups of patterns, lenses and services that are prepared to 
 To use a module, import it, configure it and load it in the `micro-orchestrator`. Example with the `@uprtcl/documents` module.
 
 ```ts
-import { documentsModule, DocumentsIpfs, DocumentsBindings} from '@uprtcl/documents';
+import { documentsModule, DocumentsIpfs, DocumentsBindings } from '@uprtcl/documents';
 
 const documentsProvider = new DocumentsIpfs({
   host: 'ipfs.infura.io',

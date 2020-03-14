@@ -1,5 +1,7 @@
 # @uprtcl/redux
 
+[![](https://img.shields.io/npm/v/@uprtcl/redux)](https://www.npmjs.com/package/@uprtcl/redux)
+
 These are \_Prtcl `micro-orchestrator`'s modules to integrate redux in your applications.
 
 ## Install

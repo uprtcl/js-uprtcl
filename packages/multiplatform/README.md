@@ -1,5 +1,7 @@
 # @uprtcl/multiplatform
 
+[![](https://img.shields.io/npm/v/@uprtcl/multiplatform)](https://www.npmjs.com/package/@uprtcl/multiplatform)
+
 This package contains services, modules and GraphQl directives that help resolve generic content-addressable linking between entities. It also helps traverse entity links accross platforms.
 
 ## Documentation

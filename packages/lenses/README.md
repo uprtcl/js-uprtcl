@@ -1,5 +1,7 @@
 # @uprtcl/lenses
 
+[![](https://img.shields.io/npm/v/@uprtcl/lenses)](https://www.npmjs.com/package/@uprtcl/lenses)
+
 This package provides a basic lenses rendering engine for the `@uprtcl/cortex` framework. Cortex needs a rendering engine of this type in order for it to work in the frontend.
 
 This module declares and exposes this native HTMLElement:

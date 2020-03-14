@@ -1,4 +1,6 @@
-# \_Prtcl web client monorepo
+# \_Prtcl infrastructure monorepo
+
+[![](https://img.shields.io/npm/v/@uprtcl/micro-orchestrator)](https://www.npmjs.com/package/@uprtcl/micro-orchestrator)
 
 [![CircleCI](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop.svg?style=shield)](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop)
 
