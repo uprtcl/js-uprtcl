@@ -10,10 +10,12 @@ This documentation is a WIP effort, [feedback or contributions](https://github.c
 
 There are different ways of integrating _Prtcl in your app. This guide covers 4 approaches with ascending level of depth and difficulty:
 
-1. [How to install and use micro-modules](use/how-to-install-micro-orchestrator): only install, configure and use the modules that fit your requirements, and develop your app on top of those.
+1. [How to install and use micro-modules](use/how-to-install-micro-orchestrator): **only install, configure and use the modules that fit your requirements**, and develop your app on top of those.
 2. [How to use the evees module](evees/how-to-use-the-evees-module): **evees** (or *Evolving entities*) are at the core of how the _Prtcl creates and evolves ideas; learn how to load and use them into your app.
+3. [How to build a micro-module](develop/how-to-build-a-micro-module): appropriated if you want to create a **small group of services or elements that should be able to be reused** by other `MicroOrchestrator` applications.  
+4. [How to build a cortex-module](cortex/what-is-cortex): **add a new type of entity** that can be referenced and is interoperable together with all other modules that implement **pattern behaviour**.
 
-Choose the approach that fits
+Choose the approach that fits better your needs. It is recommended to start from only using `MicroModules`, and progressively learn how to develop them in depth.
 
 ## Reusable modules
 
