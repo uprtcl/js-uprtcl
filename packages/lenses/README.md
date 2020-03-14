@@ -1,7 +1,5 @@
 # @uprtcl/lenses
 
-> \_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
-
 This package provides a basic lenses rendering engine for the `@uprtcl/cortex` framework. Cortex needs a rendering engine of this type in order for it to work in the frontend.
 
 This module declares and exposes the native HTMLElements:
