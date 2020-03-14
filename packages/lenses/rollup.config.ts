@@ -36,7 +36,8 @@ module.exports = {
         '@uprtcl/graphql',
         '@uprtcl/multiplatform',
         '@uprtcl/micro-orchestrator',
-        'graphql-tools'
+        'graphql-tools',
+        'graphql'
       ]
     }),
     commonjs({

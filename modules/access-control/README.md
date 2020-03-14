@@ -14,20 +14,13 @@ npm install @uprtcl/documents
 
 ## Usage
 
+This module is mainly used as a dependency for `@uprtcl/evees`.
 Import the module, instantiate it with its appropiate configuration, and load it:
 
 ```ts
-import { documentsModule, DocumentsIpfs, DocumentsBindings} from '@uprtcl/documents';
+import { AccessControlModule} from '@uprtcl/access-control';
 
-const documentsProvider = new DocumentsIpfs({
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https'
-});
+const accessControl = new AccessControlModule();
 
-const docs = documentsModule([{ service: documentsProvider }]);
-await orchestrator.loadModules({
-  id: DocumentsBindings.Module,
-  module: docs
-});
+await orchestrator.loadModules([accessControl]);
 ```
