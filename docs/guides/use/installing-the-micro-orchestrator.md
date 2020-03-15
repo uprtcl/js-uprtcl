@@ -1,4 +1,4 @@
-# How to install `micro-orchestrator`
+# Installing the MicroOrchestrator
 
 The [`MicroOrchestrator`](https://github.com/uprtcl/js-uprtcl/tree/develop/packages/cortex) is the base point of any application built with the `_Prtcl` infrastructure. It's the base package that provides modules loading, dependency injection and deduplication of common module dependencies.
 

@@ -1,26 +1,25 @@
-# How to load micro-modules
+# Loading MicroModules
 
-## MicroModules
+## About MicroModules
 
-`MicroModules` are a flexible and composable way of **registering dependencies globally** within two main registries:
+`MicroModules` are a flexible and composable way of **adding a slice of functionality** to your web application. One of their main functions is to **register dependencies globally** within two main registries:
 
 - The container inside the `micro-orchestrator`
 - The `customElements` registry present in the browser
 
-[`MicroModules`](https://github.com/uprtcl/js-uprtcl/blob/develop/packages/micro-orchestrator/src/orchestrator/micro.module.ts) have these properties:
+### Dependencies
 
-- `id`: a unique identifier, which means that there should be only one instance of that module in the application.
-- `bindings`: identify all the bindings that this module has registered to the `micro-orchestrator` container during initialization.
-- `dependencies`: identifier of all the modules that this module depends on. They need to be present when the module is loaded.
-- `submodules`: all the modules that compose this bigger module. They will be loaded just before the present module is.
+One of the main features of `MicroModules` is that they can declare dependencies and submodules. This is to make sure that multiple modules can depend on the same base one, without loading the base module every time that we include a dependant module.
 
-This means that we should be careful when importing and using `MicroModules`. **If we try to load a module without having already loaded its dependencies, the module loading will fail**. This is to make sure that more than one module can depend on the same base one, without loading the base module every time that we include a dependant module.
+This means that we should be careful when importing and using them. **If we try to load a module without having already loaded its dependencies, the module loading will fail**. This applies to all submodules as well: any dependency specified by a submodule must be present in the application for the module to load.
+
+### Functionality
 
 Each `MicroModule` **functionally acts as a coherent unit** composed of different parts that can work together to cover certain functionality, often dealing with a common domain of data.
 
 For example, some modules **could register GraphQl schema parts** that query documents and some **backend provider** for those documents, and also **custom elements that query documents** data and are able to display it.
 
-## Install and load `MicroModules`
+## Installing and loading `MicroModules`
 
 Every `MicroModule` will have different configuration processes, dependencies or requirements. In general terms, we can follow this process:
 

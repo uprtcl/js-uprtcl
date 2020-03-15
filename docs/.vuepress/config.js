@@ -1,25 +1,25 @@
 const guidesSidebar = [
   ['/guides/', 'Introduction'],
   {
-    title: 'How to install and use micro-modules',
+    title: 'Using MicroModules',
     collapsable: true,
     children: [
-      '/guides/use/how-to-install-micro-orchestrator',
-      '/guides/use/how-to-load-micro-modules'
+      '/guides/use/installing-the-micro-orchestrator',
+      '/guides/use/loading-micro-modules'
     ]
   },
   {
-    title: 'How to use the Evees module',
+    title: 'Using the Evees module',
     collapsable: true,
-    children: ['/guides/evees/how-to-use-the-evees-module']
+    children: ['/guides/evees/using-the-evees-module']
   },
   {
-    title: 'How to develop a module',
+    title: 'Developing a MicroModule',
     collapsable: true,
-    children: ['/guides/develop/how-to-build-a-micro-module']
+    children: ['/guides/develop/developing-micro-modules']
   },
   {
-    title: 'How to develop Cortex modules',
+    title: 'Developing Cortex modules',
     collapsable: true,
     children: [
       '/guides/cortex/what-is-cortex',
@@ -28,8 +28,8 @@ const guidesSidebar = [
         title: 'Building blocks',
         collapsable: true,
         children: [
-          '/guides/cortex/building-blocks/how-to-develop-patterns',
-          '/guides/cortex/building-blocks/how-to-develop-lenses'
+          '/guides/cortex/building-blocks/patterns',
+          '/guides/cortex/building-blocks/lenses'
         ]
       }
     ]
