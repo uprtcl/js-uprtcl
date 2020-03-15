@@ -1,8 +1,10 @@
 # @uprtcl/holochain-provider
 
->_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
-
 This node package includes basic _Prtcl provider wrappers around @holochain/hc-web-client. These services include standard funcionality like a retry mechanism, or a `ready()` function to wait for them to be ready.
+
+## Documentation
+
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
 
 ## Install
 

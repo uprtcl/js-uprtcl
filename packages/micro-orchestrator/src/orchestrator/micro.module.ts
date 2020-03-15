@@ -29,6 +29,8 @@ export abstract class MicroModule {
 
   /**
    * Loading callback for the module to load
+   * This is the only required function to be defined in any `MicroModule`
+   * 
    * When this method is called, you can assume:
    *  - All dependencies will be available and loaded (you can get other module's types with `container.get()`)
    *  - All submodules will be loaded
@@ -36,7 +38,7 @@ export abstract class MicroModule {
    *  - All types declared by this module are available in the container (bind them using `container.bind()`)
    * @param container the global container of the application
    */
-  async onLoad(container: interfaces.Container): Promise<void> {}
+  abstract async onLoad(container: interfaces.Container): Promise<void>;
 
   /**
    * Unload callback for the module: use this to free resources

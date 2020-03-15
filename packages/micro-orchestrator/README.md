@@ -1,12 +1,19 @@
 # @uprtcl/micro-orchestrator
 
->_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+[![](https://img.shields.io/npm/v/@uprtcl/micro-orchestrator)](https://www.npmjs.com/package/@uprtcl/micro-orchestrator)
 
-`Micro-orchestrator` is a new library to help coordinate different frontend modules, to build entire applications from small building blocks. This micro-modules can depend on one another,
+`MicroOrchestrator` is a small new library to help coordinate different frontend modules, to build entire applications from small building blocks. This `MicroModules` can depend on one another, or be built by composing different submodules.
 
 It's inspired by the `micro-frontends` pattern, and wants to extend it to enable micro modules grouped by funcionality, that can interact from one another with or without clearly defined boundaries.
 
-It uses `InversifyJs` for all dependency management.
+To achieve this, it uses:
+
+* `InversifyJs` for all dependency management.
+* `LitElement` to define custom elements.
+
+## Documentation
+
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
 
 ## Install
 
@@ -16,33 +23,26 @@ npm install @uprtcl/micro-orchestrator
 
 ## Usage
 
-### Usage from the application
-
-#### Instantiate `micro-orchestrator`
+### Instantiate `micro-orchestrator`
 
 A single instance of `micro-orchestrator` should be created on the top level of the consuming application.
 
 ```ts
-import { MicroOrchestrator, ReduxStoreModule } from '@uprtcl/micro-orchestrator';
+import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
+import { ReduxStoreModule } from '@uprtcl/redux';
 import { MyModule } from 'third-party-library';
 
 const orchestrator = new MicroOrchestrator();
 
-await orchestrator.loadModules(
-  {
-    id: 'myModule',
-    module: MyModule
-  },
-  {
-    id: ReduxBindings.Module,
-    module: ReduxStoreModule
-  }
-);
+const myModule = new MyModule();
+const reduxModule = new ReduxStoreModule();
+
+await orchestrator.loadModules([myModule, reduxModule]);
 
 // Module functionality ready to be used here
 ```
 
-#### Requesting a dependency from an element
+### Requesting a dependency from an element
 
 In your `html` code, include the `<module-container>` element as the top level element where you want to use the `micro-orchestrator` funcionality.
 
@@ -60,9 +60,10 @@ In its detail, you need to specify the identifier of the dependencies you want t
 
 ```ts
 import { RequestDependencyEvent } from '@uprtcl/micro-orchestrator';
+import { ReduxStoreModule } from '@uprtcl/redux';
 
 const event = new RequestDependencyEvent({
-  detail: { request: [ReduxBindings.Store] },
+  detail: { request: [ReduxStoreModule.bindings.Store] },
   composed: true,
   bubbles: true
 });
@@ -75,19 +76,20 @@ const reduxStore = event.dependencies[0];
 Or if you are building a native HTMLElement (or any subtype) you can use the simple `moduleConnect()` mixin, which provides a helper `request()` function.
 
 ```ts
-import { moduleConnect, ReduxBindings} from '@uprtcl/micro-orchestrator';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { ReduxStoreModule } from '@uprtcl/redux';
 
 export class MyCustomElement extends moduleConnect(HTMLElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.reduxStore = this.request(ReduxBindings.Store);
+    this.reduxStore = this.request(ReduxStoreModule.bindings.Store);
 
     // Do things with reduxStore...
   }
 }
 ```
 
-### Building your own module
+## Building your own module
 
-TBD
+Go to our [documentation page](https://uprtcl.github.io/js-uprtcl/guides/develop/developing-micro-modules.html).
