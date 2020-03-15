@@ -25,7 +25,9 @@ import { Pattern } from '@uprtcl/cortex';
 export class TextPattern implements Pattern {
   recognize(object: any): boolean {
     return (
-      typeof object === 'object' && object.text !== undefined && typeof object.text === 'string'
+      typeof object === 'object' && 
+      object.text !== undefined && 
+      typeof object.text === 'string'
     );
   }
 }

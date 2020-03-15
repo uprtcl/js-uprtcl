@@ -56,6 +56,8 @@ For now, all lenses are defined using [LitElement](https://lit-element.polymer-p
 
 We now need to define a `MicroModule` that groups our patterns and our elements, because the lens pattern assumes that there is a `<text-lens-element></text-lens-element>` registered in the `customElements` registry. Go to [Registering a pattern to be recognized](/guides/cortex/loading-cortex.html#registering-a-pattern-to-be-recognized) to see an example.
 
+After this lens is registered, it will be used by [`<cortex-entity>`](/guides/using-the-evees-module.html#using-cortex-entity) to render entities that this pattern is able to recognize.
+
 ## Requesting dependencies from a customElement
 
 To request dependencies from within a custom element, you can use the [`moduleConnect`](https://github.com/uprtcl/js-uprtcl/blob/develop/packages/micro-orchestrator/src/elements/module-connect.mixin.ts), which will provide the `request()` method from inside your element to get any dependency registered in the inversify `container`.
@@ -109,17 +111,3 @@ export class TextLens extends moduleConnect(LitElement) {
   }
 }
 ```
-
-## <cortex-entity>
-
-There is a special custom element defined in [`@uprtcl/lenses`](https://uprtcl.github.io/js-uprtcl/modules/packages/uprtcl-lenses.html): `<cortex-entity>`.
-
-This element takes as an input a `hash` value, and is able to:
-
-1. **Fetch the object** identified with the given hash from the registered `Sources`.
-2. **Recognize which patterns** does the object implement, and in particular which `lenses` are registered.
-3. Picks and **renders a lens** to display the given object.
-
-In practice, this makes `<cortex-entity>` a dynamic rendering engine, in which the instantiator of the element doesn't need to now anything about the entity they want to render other than its hash.
-
-> In the future, as new ways of referencing objects appear, this may change. Eg, you may need to include the source identifier for `<cortex-entity>` to be able to fetch the object.

@@ -5,11 +5,7 @@ const guidesSidebar = [
     collapsable: true,
     children: ['/guides/use/installing-the-micro-orchestrator', '/guides/use/loading-micro-modules']
   },
-  {
-    title: 'Using the Evees module',
-    collapsable: true,
-    children: ['/guides/evees/using-the-evees-module']
-  },
+  '/guides/using-the-evees-module',
   '/guides/developing-micro-modules',
   {
     title: 'Developing Cortex modules',
@@ -69,14 +65,7 @@ const modulesSidebar = [
   '/modules/other-modules'
 ];
 
-const resourcesSidebar = [
-  ['https://uprtcl.io', 'Landing page'],
-  ['https://github.com/uprtcl/spec', 'Spec'],
-  '/resources/videos',
-  '/resources/glossary',
-  '/resources/faq',
-  ['https://t.me/joinchat/F5CuUBQMjbKTxLkWTd_jDg', 'Telegram Devs Group']
-];
+const resourcesSidebar = ['/resources/videos', '/resources/glossary', '/resources/faq'];
 
 module.exports = {
   title: '_Prtcl',

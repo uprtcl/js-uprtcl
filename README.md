@@ -47,7 +47,7 @@ To run the demo from `demo/simple-editor`:
 2. Run the [http provider](https://github.com/uprtcl/js-uprtcl-server) in the background.
 3. Run `npm run dev` in the root folder of this repository.
 
-And go to http://localhost:8080.
+And go to http://localhost:8080. Refer to [simple-editor](https://github.com/uprtcl/js-uprtcl/tree/develop/demos/simple-editor) for more advanced instructions.
 
 ## Packages
 
