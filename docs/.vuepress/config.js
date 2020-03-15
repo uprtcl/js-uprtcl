@@ -22,9 +22,12 @@ const guidesSidebar = [
         children: [
           '/guides/cortex/building-blocks/patterns',
           '/guides/cortex/building-blocks/lenses',
-          '/guides/cortex/building-blocks/sources'
+          '/guides/cortex/building-blocks/sources',
+          '/guides/cortex/building-blocks/graphql-schemas'
         ]
-      }
+      },
+      '/guides/cortex/loading-cortex',
+      '/guides/cortex/using-the-pattern-recognizer'
     ]
   }
 ];
