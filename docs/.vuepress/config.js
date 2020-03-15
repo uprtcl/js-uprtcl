@@ -10,12 +10,13 @@ const guidesSidebar = [
     collapsable: true,
     children: ['/guides/evees/using-the-evees-module']
   },
-  '/guides/develop/developing-micro-modules',
+  '/guides/developing-micro-modules',
   {
     title: 'Developing Cortex modules',
     collapsable: true,
     children: [
       '/guides/cortex/what-is-cortex',
+      '/guides/cortex/loading-cortex',
       {
         title: 'Building blocks',
         collapsable: true,
@@ -26,7 +27,7 @@ const guidesSidebar = [
           '/guides/cortex/building-blocks/graphql-schemas'
         ]
       },
-      '/guides/cortex/loading-cortex',
+      '/guides/cortex/loading-building-blocks',
       '/guides/cortex/using-the-pattern-recognizer'
     ]
   }

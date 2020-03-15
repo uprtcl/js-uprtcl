@@ -40,9 +40,11 @@ Patterns can include **properties**: any kind of function to implement different
 This is what a pattern with some properties looks like:
 
 ```ts
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
 import { html } from 'lit-element';
 import { Pattern, HasActions, HasContent } from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { ApolloClient } from 'apollo-boost';
 
 @injectable()
 export class TextPattern implements Pattern {
@@ -62,6 +64,9 @@ export class TextContent extends TextPattern implements HasContent {
 
 @injectable()
 export class TextActions extends TextPattern implements HasActions {
+  // We can inject any registered dependency with the inject annotation from inversify
+  constructor(@inject(ApolloClientModule.bindings.Client) client: ApolloClient) {}
+
   actions = (object: { text: string }): PatternAction[] => {
     return [
       {
