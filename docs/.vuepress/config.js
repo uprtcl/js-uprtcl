@@ -16,13 +16,13 @@ const guidesSidebar = [
     collapsable: true,
     children: [
       '/guides/cortex/what-is-cortex',
-      '/guides/cortex/what-does-cortex-enable',
       {
         title: 'Building blocks',
         collapsable: true,
         children: [
           '/guides/cortex/building-blocks/patterns',
-          '/guides/cortex/building-blocks/lenses'
+          '/guides/cortex/building-blocks/lenses',
+          '/guides/cortex/building-blocks/sources'
         ]
       }
     ]
