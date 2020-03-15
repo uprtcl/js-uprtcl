@@ -2,11 +2,11 @@
 
 [![](https://img.shields.io/npm/v/@uprtcl/micro-orchestrator)](https://www.npmjs.com/package/@uprtcl/micro-orchestrator)
 
-`Micro-orchestrator` is a new library to help coordinate different frontend modules, to build entire applications from small building blocks. This micro-modules can depend on one another,
+`MicroOrchestrator` is a small new library to help coordinate different frontend modules, to build entire applications from small building blocks. This `MicroModules` can depend on one another, or be built by composing different submodules.
 
 It's inspired by the `micro-frontends` pattern, and wants to extend it to enable micro modules grouped by funcionality, that can interact from one another with or without clearly defined boundaries.
 
-It uses:
+To achieve this, it uses:
 
 * `InversifyJs` for all dependency management.
 * `LitElement` to define custom elements.
@@ -92,4 +92,4 @@ export class MyCustomElement extends moduleConnect(HTMLElement) {
 
 ## Building your own module
 
-Go to our [documentation page](https://uprtcl.github.io/js-uprtcl/guides/develop/how-to-build-a-micro-module.html).
+Go to our [documentation page](https://uprtcl.github.io/js-uprtcl/guides/develop/developing-micro-modules.html).

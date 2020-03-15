@@ -3,21 +3,14 @@ const guidesSidebar = [
   {
     title: 'Using MicroModules',
     collapsable: true,
-    children: [
-      '/guides/use/installing-the-micro-orchestrator',
-      '/guides/use/loading-micro-modules'
-    ]
+    children: ['/guides/use/installing-the-micro-orchestrator', '/guides/use/loading-micro-modules']
   },
   {
     title: 'Using the Evees module',
     collapsable: true,
     children: ['/guides/evees/using-the-evees-module']
   },
-  {
-    title: 'Developing a MicroModule',
-    collapsable: true,
-    children: ['/guides/develop/developing-micro-modules']
-  },
+  '/guides/develop/developing-micro-modules',
   {
     title: 'Developing Cortex modules',
     collapsable: true,
