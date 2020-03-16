@@ -24,6 +24,8 @@ import { SimpleWiki } from './simple-wiki';
   const c1host = 'http://localhost:3100/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
+  const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+
   const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
 
   const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
@@ -44,10 +46,10 @@ import { SimpleWiki } from './simple-wiki';
   const remoteMap = (eveesAuthority, entityName) => {
     if (eveesAuthority === ethEvees.authority) {
       if (entityName === 'Wiki') return ipfsWikis;
-      else if (entityName === 'TextNode') return ipfsDocuments;
+      else if (entityName === 'TextNode') return ipfsStore;
     } else {
       if (entityName === 'Wiki') return httpWikis;
-      else if (entityName === 'TextNode') return httpDocuments;
+      else if (entityName === 'TextNode') return httpStore;
     }
   };
   const remotesConfig = {
