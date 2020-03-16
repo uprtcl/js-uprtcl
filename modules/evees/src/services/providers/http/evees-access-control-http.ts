@@ -16,13 +16,17 @@ export class EveesAccessControlHttp extends HttpProvider implements BasicAdminAc
 			connection
 		);
 	}
-
+	
 	async getPermissions(hash: string): Promise<BasicAdminPermissions | undefined> {
 		return super.getObject<BasicAdminPermissions>(`/permissions/${hash}`);
 	}
 
 	async setPermissions(hash: string, permissions: BasicAdminPermissions) {
-		return super.put(`/permissions/${hash}`, permissions);
+		await super.put(`/permissions/${hash}`, permissions);
+	}
+
+	setCanWrite(hash: string, userId: string): Promise<void> {
+		throw new Error("Method not implemented.");
 	}
 
 }
