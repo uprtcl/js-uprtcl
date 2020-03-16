@@ -192,6 +192,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const accessControl = remote.accessControl as AccessControlService<OwnerPermissions>;
     const permissions = await accessControl.getPermissions(toPerspectiveId);
 
+    if (permissions  === undefined) throw new Error('target perspective dont have permissions control');
+    
     if (!permissions.owner) {
       // TODO: ownerPreserving merge should be changed to permissionPreserving merge
       throw new Error(

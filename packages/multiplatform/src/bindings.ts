@@ -8,3 +8,7 @@ export const MultiplatformBindings = {
 export const SourcesBindings = {
   Source: Symbol('discovery-source')
 };
+
+export const StoresBindings = {
+  Store: Symbol('discovery-store')
+};

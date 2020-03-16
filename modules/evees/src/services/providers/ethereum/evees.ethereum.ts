@@ -4,7 +4,7 @@ import {
   EthereumContractOptions,
   EthereumContract
 } from '@uprtcl/ethereum-provider';
-import { IpfsSource, IpfsConnection, sortObject, CidConfig } from '@uprtcl/ipfs-provider';
+import { IpfsStore, IpfsConnection, sortObject, CidConfig } from '@uprtcl/ipfs-provider';
 import { Hashed } from '@uprtcl/cortex';
 import { KnownSourcesService, Authority } from '@uprtcl/multiplatform';
 
@@ -60,7 +60,7 @@ export const hashToId = async (uprtclRoot: EthereumContract, perspectiveIdHash: 
 export class EveesEthereum implements EveesRemote, Authority {
   logger: Logger = new Logger('EveesEtereum');
 
-  ipfsSource: IpfsSource;
+  ipfsStore: IpfsStore;
   accessControl: EveesAccessControlEthereum;
   proposals: ProposalsProvider;
   knownSources?: KnownSourcesService | undefined;
@@ -82,12 +82,11 @@ export class EveesEthereum implements EveesRemote, Authority {
     this.uprtclDetails = new EthereumContract(uprtclDetailsOptions, ethConnection);
     this.uprtclProposals = new EthereumContract(uprtclProposalsOptions, ethConnection);
 
-    this.ipfsSource = new IpfsSource(ipfsConnection, hashRecipe);
+    this.ipfsStore = new IpfsStore(ipfsConnection, hashRecipe);
     this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot);
     this.proposals = new ProposalsEthereum(
       this.uprtclRoot,
       this.uprtclProposals,
-      this.ipfsSource,
       this.accessControl
     );
     this.hashRecipe = hashRecipe;
@@ -106,14 +105,14 @@ export class EveesEthereum implements EveesRemote, Authority {
   }
 
   get source() {
-    return this.ipfsSource.source;
+    return this.ipfsStore.source;
   }
 
   /**
    * @override
    */
-  public get<T>(hash: string): Promise<Hashed<T> | undefined> {
-    return this.ipfsSource.get(hash);
+  public get(hash: string): Promise<Hashed<object> | undefined> {
+    return this.ipfsStore.get(hash);
   }
 
   /**
@@ -124,12 +123,12 @@ export class EveesEthereum implements EveesRemote, Authority {
       this.uprtclRoot.ready(),
       this.uprtclDetails.ready(),
       this.uprtclProposals.ready(),
-      this.ipfsSource.ready()
+      this.ipfsStore.ready()
     ]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspectiveId = await this.ipfsSource.addObject(sortObject(secured.object));
+    const perspectiveId = await this.ipfsStore.put(sortObject(secured.object));
     this.logger.log(`[ETH] persistPerspectiveEntity - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
@@ -223,7 +222,7 @@ export class EveesEthereum implements EveesRemote, Authority {
     if (!perspective.origin) throw new Error('origin cannot be empty');
 
     /** Store the perspective data in the data layer */
-    const perspectiveId = await this.ipfsSource.addObject(sortObject(secured.object));
+    const perspectiveId = await this.ipfsStore.put(sortObject(secured.object));
     this.logger.log(`[ETH] createPerspective - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
@@ -255,7 +254,7 @@ export class EveesEthereum implements EveesRemote, Authority {
     const commit = sortObject(secured.object);
     /** Store the perspective data in the data layer */
 
-    let commitId = await this.ipfsSource.addObject(commit);
+    let commitId = await this.ipfsStore.put(commit);
     this.logger.log(`[ETH] createCommit - added to IPFS`, commitId, commit);
 
     if (secured.id && secured.id != commitId) {

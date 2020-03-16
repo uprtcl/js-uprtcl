@@ -16,7 +16,7 @@ import {
   CortexModule,
   Newable
 } from '@uprtcl/cortex';
-import { DiscoveryService, DiscoveryModule, TaskQueue, Task } from '@uprtcl/multiplatform';
+import { DiscoveryService, DiscoveryModule, TaskQueue, Task, Store } from '@uprtcl/multiplatform';
 import {
   Mergeable,
   MergeStrategy,
@@ -27,10 +27,9 @@ import {
 } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
+import { StoresModule } from '@uprtcl/multiplatform';
 
 import { TextNode, TextType } from '../types';
-import { DocumentsBindings } from '../bindings';
-import { DocumentsProvider } from '../services/documents.provider';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { CidConfig } from '@uprtcl/ipfs-provider';
 
@@ -173,7 +172,7 @@ export class TextNodeCreate extends TextNodeEntity
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
-    @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
+    @multiInject(StoresModule.bindings.Store) protected stores: Array<Store>,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(hashedPattern);
@@ -187,10 +186,10 @@ export class TextNodeCreate extends TextNodeEntity
     node: Partial<TextNode> | undefined,
     source: string
   ): Promise<Hashed<TextNode>> => {
-    const sourceDep = this.documentsRemotes.find(s => s.source === source);
-    if (!sourceDep) throw new Error(`source connection for ${source} not found`);
+    const store = this.stores.find(s => s.source === source);
+    if (!store) throw new Error(`store for ${source} not found`);
 
-    const textNode = await this.new()(node, sourceDep.hashRecipe);
+    const textNode = await this.new()(node, store.hashRecipe);
     const result = await this.client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {

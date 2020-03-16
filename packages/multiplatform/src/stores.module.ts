@@ -5,7 +5,7 @@ import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { DiscoveryModule } from './discovery.module';
 import { Source } from './types/source';
 import { Ready } from './types/ready';
-import { SourcesBindings } from './bindings';
+import { StoresBindings, SourcesBindings } from './bindings';
 import { Store } from './types/store';
 
 /**
@@ -25,7 +25,7 @@ import { Store } from './types/store';
 export class StoresModule extends MicroModule {
   dependencies = [DiscoveryModule.id];
 
-  static bindings = SourcesBindings;
+  static bindings = StoresBindings;
 
   constructor(protected stores: Array<{ symbol: symbol; store: Store }>) {
     super();
@@ -47,11 +47,13 @@ export class StoresModule extends MicroModule {
 
     // Initialize all the sources
     for (const symbolSource of this.stores) {
-      const source = symbolSource.store;
+      const store = symbolSource.store;
 
-      container.bind<Source>(SourcesBindings.Source).toConstantValue(source);
-      container.bind<Source>(symbolSource.symbol).toConstantValue(source);
-      container.bind<Source>(source.source).toConstantValue(source);
+      container.bind<Source>(SourcesBindings.Source).toConstantValue(store);
+      
+      container.bind<Store>(StoresBindings.Store).toConstantValue(store);
+      container.bind<Store>(symbolSource.symbol).toConstantValue(store);
+      container.bind<Store>(store.source).toConstantValue(store);
     }
   }
 }

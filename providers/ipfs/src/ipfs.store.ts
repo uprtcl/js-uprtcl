@@ -95,7 +95,7 @@ export class IpfsStore implements Store {
   /**
    * Retrieves the object with the given hash from IPFS
    */
-  public async get(hash: string): Promise<Hashed<object> | undefined> {
+  async get(hash: string): Promise<Hashed<object> | undefined> {
     /** recursively try */
     return this.ipfsConnection
       .tryGet(hash, 500, 0)

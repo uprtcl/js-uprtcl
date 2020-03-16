@@ -1,9 +1,9 @@
-import { DocumentsBindings } from '../bindings';
+import { Store, StoresModule } from '@uprtcl/multiplatform';
 
 export const resolvers = {
   Mutation: {
     async createTextNode(_, { content, source }, { container }) {
-      const stores: Store[] = container.getAll(DocumentsBindings.DocumentsRemote);
+      const stores: Store[] = container.getAll(StoresModule.bindings.Store);
 
       const store = stores.find(d => d.source === source);
 
