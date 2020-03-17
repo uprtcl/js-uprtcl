@@ -31,7 +31,7 @@ export class WikisHttp extends HttpProvider implements WikisProvider {
   }
 
   async createWiki(wiki: Wiki, hash: string): Promise<string> {
-    const result = await super.post(`/data`, {
+    const result = await super.httpPost(`/data`, {
       id: hash,
       object: wiki
     });

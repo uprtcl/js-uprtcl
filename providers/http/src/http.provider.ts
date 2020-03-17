@@ -30,11 +30,11 @@ export class HttpProvider implements Authority {
     return this.connection.getWithPut<T>(this.options.host + url, body);
   }
 
-  put(url: string, body: any): Promise<PostResult> {
+  httpPut(url: string, body: any): Promise<PostResult> {
     return this.connection.put(this.options.host + url, body);
   }
 
-  post(url: string, body: any): Promise<PostResult> {
+  httpPost(url: string, body: any): Promise<PostResult> {
     return this.connection.post(this.options.host + url, body);
   }
 }

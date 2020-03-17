@@ -101,7 +101,7 @@ export class DiscoveryService implements Source {
   ): Promise<Hashed<O> | undefined> {
     const source = this.getSource(sourceName);
 
-    const object: Hashed<O> | undefined = await source.get(hash);
+    const object: Hashed<O> | undefined = await source.get(hash) as Hashed<O>;
 
     if (!object) return undefined;
 

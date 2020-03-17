@@ -57,11 +57,11 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
   }
 
   async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
-    await super.post('/persp', { perspective });
+    await super.httpPost('/persp', { perspective });
   }
 
   async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    await super.post('/persp', {
+    await super.httpPost('/persp', {
       perspective: perspectiveData.perspective, 
       details: perspectiveData.details,
       parentId: perspectiveData.parentId
@@ -74,14 +74,14 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
   }
 
   async cloneCommit(commit: any): Promise<void> {
-    await super.post('/commit', commit);
+    await super.httpPost('/commit', commit);
   }
 
   async updatePerspectiveDetails(
     perspectiveId: string,
     details: Partial<PerspectiveDetails>
   ): Promise<void> {
-    await super.put(`/persp/${perspectiveId}/details`, details);
+    await super.httpPut(`/persp/${perspectiveId}/details`, details);
   }
 
   getContextPerspectives(context: string): Promise<string[]> {

@@ -23,7 +23,7 @@ export class KnownSourcesHttp extends HttpProvider implements KnownSourcesServic
   }
 
   async addKnownSources(hash: string, sources: string[]): Promise<void> {
-    await super.put(`/discovery/${hash}`, sources);
+    await super.httpPut(`/discovery/${hash}`, sources);
   }
 
   async removeKnownSource(hash: string, source: string): Promise<void> {

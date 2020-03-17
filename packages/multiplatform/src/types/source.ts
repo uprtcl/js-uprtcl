@@ -23,5 +23,5 @@ export interface Source extends Ready {
    * @param hash the hash identifying the object
    * @returns the object if found, otherwise undefined
    */
-  get<T extends object>(hash: string): Promise<Hashed<T> | undefined>;
+  get(hash: string): Promise<Hashed<object> | undefined>;
 }
