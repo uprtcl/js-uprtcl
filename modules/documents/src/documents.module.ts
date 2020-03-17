@@ -52,6 +52,8 @@ export class DocumentsModule extends MicroModule {
     super();
   }
 
+  async onLoad() {}
+
   submodules = [
     new GraphQlSchemaModule(documentsTypeDefs, resolvers),
     new i18nextModule('documents', { en: en }),

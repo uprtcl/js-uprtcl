@@ -1,89 +1,51 @@
-# @uprtcl/cortex
+# @uprtcl/multiplatform
 
->_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+[![](https://img.shields.io/npm/v/@uprtcl/multiplatform)](https://www.npmjs.com/package/@uprtcl/multiplatform)
 
-The **Cortex** framework: a new way to build web-applications.
+This package contains services, modules and GraphQl directives that help resolve generic content-addressable linking between entities. It also helps traverse entity links accross platforms.
 
-At its core, Cortex does what brains do: **recognize patterns**. Its main building block is a _pattern_: a kind of object that implements certain behaviour.
+## Documentation
 
-Consider this example in a project management app:
-
-- Events have their specific information and a date.
-- Tasks have their own specific information and also a date.
-
-Both types of _entity_ implement a date _pattern_.
-
-This makes it possible to render both types of objects in a calendar element. Or maybe a Kanban board, in which some entities implement a _status pattern_. Or maybe they can be transformed to similar objects in different apps. 
-
-This is all possible provided that we can recognize which patterns each object implements, in its own way. 
-
-That's what Cortex does, in a generic, modular and pluggable way.
-
-Cortex **enables**:
-
-- Connections from the front-end to different backends, and interoperability between them
-- Pattern recognition: fetch generic JSON objects and add specific behaviour to them
-- Interoperability of data between applications
-- Reinterpretation and transformation of applications data
-
-Cortex is **specially tuned** for:
-
-- Applications that use content-addressable objects in its data storage layer
-- Web3 and decentralized applications
-- Microservice architecture in centralized servers
-
-## Vision
-
-In its infancy, the web had the HTML document as its basic unit of storing information, it was designed as a documentation archive. It used links to navigate between those documents. Links address documents by location, and gives all the power of changing them to the external server owner, which stores private data from all its users.
-
-Nowadays, the web follows a very different pattern. The basic unit of information are rows of object information stored in databases. HTML documents are just a way of displaying mostly dynamic information.
-
-**If** we can build a way to develop generic applications that only assume relationships between content addressable content, lots of very different modules can be composed to form complex relationships of information and then...
-
-...we can **envision a world** in which the users choose which micro modules to install in their own personalized applications to interpret and store their own data.
-
-These are the transitions that Cortex wants to support in the web:
-
-- "Location addressing" to "**content addressing**"
-- "Computer files" to "**generic JSON objects**"
-- "The server controls the data" to "**data can be transformed and stored in any platform **you** choose**"
-- "Every application has to reimplement the wheel" to "**building applications by reusing frontend+backend modules already implemented**"
-
-## Dependencies
-
-This module depends on `@uprtcl/micro-orchestrator` to declare `MicroModule` classes, but can be used without those modules.
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
 
 ## Install
 
 ```bash
-npm install @uprtcl/cortex
+npm install @uprtcl/multiplatform
 ```
 
 ## Usage
 
-Cortex modules are groups of patterns, lenses and services that are prepared to be used together.
-
-### Using Cortex modules
-
-Import it, configure it and load it in the `micro-orchestrator`. Example with the `@uprtcl/documents` module.
+Import the `DiscoveryModule` and load it in the `micro-orchestrator`.
 
 ```ts
-import { documentsModule, DocumentsIpfs, DocumentsBindings} from '@uprtcl/documents';
+import { DiscoveryModule } from '@uprtcl/multiplatform';
 
-const documentsProvider = new DocumentsIpfs({
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https'
-});
-
-const docs = documentsModule([documentsProvider]);
-
-await orchestrator.loadModules({
-  id: DocumentsBindings.Module,
-  module: docs
-});
+await orchestrator.loadModule(new DiscoveryModule());
 ```
 
-### Developing a Cortex module
+Now you can add multiple `SourcesModule` to register new sources into your application. This will make all content-addressable object retrievable through that source integrated into the application, and they can automatically be referenced by any other entity to fetch and resolve them.
 
-TBD
+```ts
+import { MicroModule } from '@uprtcl/micro-orchestrator';
+import { SourcesModule } from '@uprtcl/multiplatform';
+import { IpfsConnection, IpfsSource } from '@uprtcl/ipfs-provider';
+
+const ipfsConnection = new IpfsConnection(ipfsConfig);
+const ipfsSource = new IpfsSource(ipfsConnection);
+
+export class TestModule extends MicroModule {
+  static id = Symbol('test-module');
+
+  submodules = [new SourcesModule(ipfsSource)];
+}
+```
+
+Add that module to the `micro-orchestrator`:
+
+```ts
+import { TestModule } from './test-module';
+
+await orchestrator.loadModule(new TestModule());
+```
+

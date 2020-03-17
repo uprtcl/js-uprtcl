@@ -50,6 +50,8 @@ export class WikisModule extends MicroModule {
     super();
   }
 
+  async onLoad() {}
+
   submodules = [
     new GraphQlSchemaModule(wikiTypeDefs, resolvers),
     new i18nextModule('wikis', { en: en }),

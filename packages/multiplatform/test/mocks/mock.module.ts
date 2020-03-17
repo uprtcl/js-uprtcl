@@ -15,6 +15,8 @@ export class MockModule extends MicroModule {
     super();
   }
 
+  async onLoad() {}
+
   submodules = [
     new GraphQlSchemaModule(mockSchema),
     new PatternsModule({ [Symbol('mock')]: [MockPattern, ...this.initialPatterns] }),

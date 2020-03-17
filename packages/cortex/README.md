@@ -1,6 +1,6 @@
 # @uprtcl/cortex
 
->_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
+[![](https://img.shields.io/npm/v/@uprtcl/cortex)](https://www.npmjs.com/package/@uprtcl/cortex)
 
 The **Cortex** framework: a new way to build web-applications.
 
@@ -8,14 +8,14 @@ At its core, Cortex does what brains do: **recognize patterns**. Its main buildi
 
 Consider this example in a project management app:
 
-- Events have their specific information and a date.
-- Tasks have their own specific information and also a date.
+- **Events** have their specific information and **a date**.
+- **Tasks** have their own specific information and **also a date**.
 
 Both types of _entity_ implement a date _pattern_.
 
-This makes it possible to render both types of objects in a calendar element. Or maybe a Kanban board, in which some entities implement a _status pattern_. Or maybe they can be transformed to similar objects in different apps. 
+This makes it possible to render both types of objects in a calendar element. Or maybe a Kanban board, in which some entities implement a _status pattern_. Or maybe they can be transformed to similar objects in different apps.
 
-This is all possible provided that we can recognize which patterns each object implements, in its own way. 
+This is all possible provided that we can recognize which patterns each object implements, in its own way.
 
 That's what Cortex does, in a generic, modular and pluggable way.
 
@@ -49,9 +49,9 @@ These are the transitions that Cortex wants to support in the web:
 - "The server controls the data" to "**data can be transformed and stored in any platform **you** choose**"
 - "Every application has to reimplement the wheel" to "**building applications by reusing frontend+backend modules already implemented**"
 
-## Dependencies
+## Documentation
 
-This module depends on `@uprtcl/micro-orchestrator` to declare `MicroModule` classes, but can be used without those modules.
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
 
 ## Install
 
@@ -63,12 +63,10 @@ npm install @uprtcl/cortex
 
 Cortex modules are groups of patterns, lenses and services that are prepared to be used together.
 
-### Using Cortex modules
-
-Import it, configure it and load it in the `micro-orchestrator`. Example with the `@uprtcl/documents` module.
+To use a module, import it, configure it and load it in the `micro-orchestrator`. Example with the `@uprtcl/documents` module.
 
 ```ts
-import { documentsModule, DocumentsIpfs, DocumentsBindings} from '@uprtcl/documents';
+import { documentsModule, DocumentsIpfs, DocumentsBindings } from '@uprtcl/documents';
 
 const documentsProvider = new DocumentsIpfs({
   host: 'ipfs.infura.io',
@@ -83,7 +81,3 @@ await orchestrator.loadModules({
   module: docs
 });
 ```
-
-### Developing a Cortex module
-
-TBD

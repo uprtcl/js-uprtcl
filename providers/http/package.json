@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/http-provider",
-  "version": "0.0.4-alpha5",
+  "version": "0.0.5-alpha2",
   "description": "_Prtcl provider wrappers around the native fetch api",
   "homepage": "https://uprtcl.io",
   "scripts": {

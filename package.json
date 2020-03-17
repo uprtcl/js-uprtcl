@@ -13,10 +13,8 @@
     "dev": "lerna run dev --parallel",
     "test": "lerna run test",
     "test:watch": "lerna run test:watch --parallel",
-    "docs:dev": "cd docs && vuepress dev",
+    "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "docs:build1": "rimraf node_modules/typedoc/node_modules/typescript && typedoc",
-    "docs:build2": "ts-node tools/build-api-docs.ts",
     "docs:deploy": "ts-node tools/gh-pages-publish",
     "semantic-release": "semantic-release",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare"

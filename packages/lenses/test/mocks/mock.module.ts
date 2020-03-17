@@ -15,6 +15,8 @@ export class MockModule extends MicroModule {
   ) {
     super();
   }
+  
+  async onLoad() {}
 
   submodules = [
     new ElementsModule({ 'mock-element': MockElement }),

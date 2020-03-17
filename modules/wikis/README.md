@@ -1,8 +1,10 @@
 # @uprtcl/wikis
 
-> \_Prtcl resources: [Overview](https://github.com/uprtcl/spec/wiki), [Spec](https://github.com/uprtcl/spec), [Dev guide](https://github.com/uprtcl/js-uprtcl/wiki), [API reference](https://uprtcl.github.io/js-uprtcl/)
-
 This cortex module implements patterns, services and lenses to interact with wiki-like objects.
+
+## Documentation
+
+Visit our [documentation site](https://uprtcl.github.io/js-uprtcl).
 
 ## Install
 
