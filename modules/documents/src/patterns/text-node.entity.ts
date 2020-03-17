@@ -81,9 +81,9 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
           return html`
             <documents-text-node
               .data=${node}
-              .perspective=${context.perspective}
-              color=${context.color}
-              only-children=${context.onlyChildren}
+              ref=${context.ref}
+              authority=${context.authority}
+              color=${context.color} 
               level=${context.level}
               index=${context.index}
               .genealogy=${context.genealogy}
@@ -124,44 +124,6 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
       },
       actions
     ];
-  };
-}
-
-@injectable()
-export class TextNodeActions extends TextNodeEntity implements HasActions {
-  constructor(
-    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
-  ) {
-    super(hashedPattern);
-  }
-
-  actions = (node: Hashed<TextNode>): PatternAction[] => {
-    const textNode = node.object;
-
-    if (textNode.type === TextType.Paragraph) {
-      return [
-        {
-          icon: 'title',
-          title: 'documents:to_title',
-          action: (changeContent: (newContent: any) => void) => {
-            changeContent({ ...textNode, type: TextType.Title });
-          },
-          type: 'formatting'
-        }
-      ];
-    } else {
-      return [
-        {
-          icon: 'text_fields',
-          title: 'documents:to_paragraph',
-          action: (changeContent: (newContent: any) => void) => {
-            changeContent({ ...textNode, type: TextType.Paragraph });
-          },
-          type: 'formatting'
-        }
-      ];
-    }
   };
 }
 

@@ -246,10 +246,8 @@ export class EveesPerspective extends moduleConnect(LitElement) {
         hash=${this.entityId}
         lens-type="content"
         .context=${{
-          perspective: this.perspective,
+          ref: this.perspective.id,
           color: this.getEveeColor(),
-          onlyChildren: this.onlyChildren,
-          level: this.level,
           index: this.index,
           genealogy: newGenealogy
         }}
