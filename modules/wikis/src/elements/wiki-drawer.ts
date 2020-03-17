@@ -133,7 +133,7 @@ export class WikiDrawer extends EveeContent<Wiki>{
   }
 
   render() {
-    this.logger.log('render()')
+    this.logger.log('render()', { data: this.data, ref: this.ref, editable: this.editable })
     if (!this.data || !this.ref)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>

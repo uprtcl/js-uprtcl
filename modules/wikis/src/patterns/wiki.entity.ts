@@ -82,7 +82,7 @@ export class WikiCommon extends WikiEntity implements HasLenses {
         type: 'content',
         render: (lensContent: TemplateResult, context: any) => html`
           <wiki-drawer
-            .wiki=${wiki}
+            .data=${wiki}
             .ref=${context.ref}
             color=${context.color}
             .selectedPageHash=${context.selectedPageHash}

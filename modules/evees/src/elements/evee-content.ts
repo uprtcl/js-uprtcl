@@ -29,8 +29,10 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
   @property({ type: String })
   color: string | undefined = undefined;
 
-  protected authority: string = '';
+  @property({ type: Boolean })
   protected editable: Boolean = false;
+
+  protected authority: string = '';
   protected currentHeadId: string | undefined = undefined;
 
   abstract symbol: symbol | undefined;
@@ -72,7 +74,9 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
         entity(id: "${this.ref}") {
           id
           ... on Perspective {
-            origin
+            payload {
+              origin
+            }
             head {
               id
             }
@@ -88,7 +92,7 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
       }`
     });
 
-    this.authority = result.data.entity.origin;
+    this.authority = result.data.entity.payload.origin;
     this.currentHeadId = result.data.entity.head.id;
     this.editable = result.data.entity._context.patterns.accessControl.canWrite;
   }
@@ -246,6 +250,8 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
   }
 
   connectedCallback() {
+    super.connectedCallback();
+
     this.addEventListener(CREATE_SYBLING_TAG, ((e: CreateSyblingEvent) => {
       if (!this.data) return;
 
