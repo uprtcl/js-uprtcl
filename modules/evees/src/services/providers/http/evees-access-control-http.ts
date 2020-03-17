@@ -16,7 +16,7 @@ export class EveesAccessControlHttp extends HttpProvider implements BasicAdminAc
 			connection
 		);
 	}
-	
+
 	setCanWrite(hash: string, userId: string): Promise<void> {
 		throw new Error("Method not implemented.");
 	}
@@ -26,7 +26,7 @@ export class EveesAccessControlHttp extends HttpProvider implements BasicAdminAc
 	}
 
 	async setPermissions(hash: string, permissions: BasicAdminPermissions) {
-		await super.put(`/permissions/${hash}`, permissions);
+		await super.httpPut(`/permissions/${hash}`, permissions);
 	}
 
 }
