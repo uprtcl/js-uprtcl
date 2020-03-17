@@ -5,7 +5,7 @@ import { UPDATE_OWNER, GET_PERSP, GET_PERSP_HASH } from './common';
 
 export class EveesAccessControlEthereum implements OwnerAccessControlService {
   constructor(protected uprtclRoot: EthereumContract) {}
-
+  
   async changeOwner(hash: string, newOwnerId: string): Promise<void> {
     const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [hash]);
 
@@ -28,5 +28,9 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
   async getPermissions(hash: string): Promise<OwnerPermissions | undefined> {
     let owner = await this.getOwner(hash);
     return { owner };
+  }
+
+  setPermissions(hash: string, newPersmissions: OwnerPermissions): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }
