@@ -203,8 +203,6 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
     this.logger.info('updateContent() pre', dataId);
 
-    this.entityId = undefined;
-
     const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
       EveesBindings.CommitPattern
     );

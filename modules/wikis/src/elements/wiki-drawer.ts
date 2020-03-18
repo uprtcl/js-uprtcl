@@ -16,13 +16,14 @@ import '@material/mwc-ripple';
 import {
   EveeContent
 } from '@uprtcl/evees';
-import { htmlToText } from '@uprtcl/documents';
+import { htmlToText, TextType, DocumentsModule } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
 import { Hashed } from '@uprtcl/cortex';
+import { WikiBindings } from 'src/bindings';
 
 export class WikiDrawer extends EveeContent<Wiki>{
   
@@ -34,15 +35,10 @@ export class WikiDrawer extends EveeContent<Wiki>{
   @property({ type: Object, attribute: false })
   pagesList: Array<{ title: string; id: string }> | undefined = undefined;
 
-  symbol: symbol | undefined;
+  symbol: symbol | undefined = WikiBindings.WikiEntity;
   
   getEmptyEntity(): Wiki {
     throw new Error("Method not implemented.");
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.logger.log('connectedCallback()');
   }
 
   updated(changedProperties: any) {
@@ -105,6 +101,16 @@ export class WikiDrawer extends EveeContent<Wiki>{
     this.selectedPageHash = pageHash;
   }
 
+  newPage() {
+    const pageContent = {
+      text: '<h1>New page</h1>',
+      type: TextType.Title,
+      links: []
+    };
+
+    this.createChild(pageContent, DocumentsModule.bindings.TextNodeEntity);
+  }
+
   renderPageList() {
     if (!this.pagesList)
       return html`
@@ -152,7 +158,7 @@ export class WikiDrawer extends EveeContent<Wiki>{
           ${this.editable
             ? html`
                 <div class="button-row">
-                  <mwc-button outlined icon="note_add" @click=${() => this.createChild(this.getEmptyEntity())}>
+                  <mwc-button outlined icon="note_add" @click=${this.newPage}>
                     ${this.t('wikis:new-page')}
                   </mwc-button>
                 </div>

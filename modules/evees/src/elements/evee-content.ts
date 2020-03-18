@@ -3,7 +3,7 @@ import { ApolloClient } from 'apollo-boost';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Source, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
-import { Entity, Pattern, Creatable, Hashed, Signed, HasChildren } from '@uprtcl/cortex';
+import { Entity, Pattern, Creatable, Hashed, Signed, HasChildren, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 import { ApolloClientModule, gql } from '@uprtcl/graphql';
 
 import { RemotesConfig, Commit, Perspective } from '../types';
@@ -38,22 +38,33 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
   abstract symbol: symbol | undefined;
   abstract getEmptyEntity(): T;
 
-  get level():number {
+  get level(): number {
     return this.genealogy.length;
   }
 
-  getSource(eveesAuthority: string): Source {
-    if(this.symbol === undefined) throw new Error('Symbold undefined');
-    
+  getSource(eveesAuthority: string, symbol: symbol): Source {
+
     const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
 
-    const entities: Entity[] = this.requestAll(this.symbol);
+    const entities: Entity[] = this.requestAll(symbol);
     const entityName = entities[0].name;
 
     return remotesConfig.map(eveesAuthority, entityName);
   }
 
-  getCreatePattern(symbol) {
+  getCreatePatternOfObject(object: object) {
+    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
+
+    const create: Creatable<any, any> | undefined = recognizer
+      .recognize(object)
+      .find(prop => !!(prop as Creatable<any, any>).create);
+
+    if (!create) throw new Error(`No creatable pattern registered for object ${JSON.stringify(object)}`);
+
+    return create;
+  }
+
+  getCreatePatternOfSymbol(symbol: symbol) {
     const patterns: Pattern[] = this.requestAll(symbol);
     const create: Creatable<any, any> | undefined = (patterns.find(
       pattern => ((pattern as unknown) as Creatable<any, any>).create
@@ -62,6 +73,29 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
     if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
 
     return create;
+  }
+
+  getHasChildrenPatternOfObject(object: object) {
+    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
+
+    const hasChildren: HasChildren | undefined = recognizer
+      .recognize(object)
+      .find(prop => !!(prop as HasChildren).getChildrenLinks);
+
+    if (!hasChildren) throw new Error(`No hasChildren pattern registered for object ${JSON.stringify(object)}`);
+
+    return hasChildren;
+  }
+
+  getHasChildrenPatternOfSymbol(symbol: symbol) {
+    const patterns: Pattern[] = this.requestAll(symbol);
+    const hasChildren: HasChildren<any> | undefined = (patterns.find(
+      pattern => ((pattern as unknown) as HasChildren<any>).create
+    ) as unknown) as HasChildren<any>;
+
+    if (!hasChildren) throw new Error(`No hasChildren pattern registered for a ${patterns[0].name}`);
+
+    return hasChildren;
   }
 
   async updateRefData() {
@@ -97,24 +131,24 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
     this.editable = result.data.entity._context.patterns.accessControl.canWrite;
   }
 
-  async createEntity(content: T) : Promise<Hashed<T>> {
-    const creatable: Creatable<T, T> | undefined= this.getCreatePattern(this.symbol);
+  async createEntity(content: object, symbol: symbol): Promise<Hashed<T>> {
+    const creatable: Creatable<any, any> | undefined = this.getCreatePatternOfObject(content);
     if (creatable === undefined) throw new Error('Creatable pattern not found for this entity');
-    return creatable.create()(content, this.getSource(this.authority).source);
+    return creatable.create()(content, this.getSource(this.authority, symbol).source);
   }
 
-  async createEvee(content: T) : Promise<string> {
+  async createEvee(content: object, symbol: symbol): Promise<string> {
     if (!this.authority) throw new Error('Authority undefined');
 
     const eveesRemotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
-    const remote = eveesRemotes.find(r => r.authority === origin);
+    const remote = eveesRemotes.find(r => r.authority === this.authority);
 
-    if (!remote) throw new Error(`Remote not found for authority ${origin}`);
+    if (!remote) throw new Error(`Remote not found for authority ${this.authority}`);
 
-    const creatable: Creatable<Partial<T>, T> = this.getCreatePattern(this.symbol);
-    const object = await creatable.create()(content, this.getSource(origin).source);
+    const creatable = this.getCreatePatternOfSymbol(symbol);
+    const object = await creatable.create()(content, this.getSource(this.authority, symbol).source);
 
-    const creatableCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
+    const creatableCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePatternOfSymbol(
       EveesBindings.CommitPattern
     );
     const commit = await creatableCommit.create()(
@@ -128,8 +162,8 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
     const creatablePerspective: Creatable<
       CreatePerspectiveArgs,
       Signed<Perspective>
-    > = this.getCreatePattern(EveesBindings.PerspectivePattern);
-    
+    > = this.getCreatePatternOfSymbol(EveesBindings.PerspectivePattern);
+
     const perspective = await creatablePerspective.create()(
       {
         fromDetails: {
@@ -144,7 +178,9 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
   }
 
   async updateContent(newContent: T) {
-    const object =  await this.createEntity(newContent);
+    if (this.symbol === undefined) throw new Error('this.symbol undefined');
+
+    const object = await this.createEntity(newContent as unknown as object, this.symbol);
 
     const dataId = object.id;
 
@@ -152,34 +188,27 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
 
     /* evees content creates the entity and then evees perspective is the one that 
        updates the perspective head */
-    this.dispatchEvent(new UpdateContentEvent({detail: {dataId}}));
+    this.dispatchEvent(new UpdateContentEvent({
+      bubbles: true,
+      composed: true,
+      detail: { dataId }
+    }));
   }
 
-  getHasChildrenPattern(symbol) {
-    const patterns: Pattern[] = this.requestAll(symbol);
-    const hasChildren: HasChildren<T> | undefined = (patterns.find(
-      pattern => ((pattern as unknown) as HasChildren<T>).create
-    ) as unknown) as HasChildren<T>;
-
-    if (!hasChildren) throw new Error(`No hasChildren pattern registered for a ${patterns[0].name}`);
-
-    return hasChildren;
+  getChildren(data: object) {
+    return this.getHasChildrenPatternOfObject(data).getChildrenLinks(data);
   }
 
-  getChildren(data: T) {
-    return this.getHasChildrenPattern(this.symbol).getChildrenLinks(data);
-  }
-
-  replaceChildren(data: T, links: string[]) {
+  replaceChildren(data: object, links: string[]) {
     if (!this.data) throw new Error('data undefined');
-    return this.getHasChildrenPattern(this.symbol).replaceChildrenLinks(data)(links);
+    return this.getHasChildrenPatternOfObject(data).replaceChildrenLinks(data)(links);
   }
 
-  async createChild(newNode: T, index?: number) {
+  async createChild(newNode: object, symbol: symbol, index?: number) {
     if (!this.data) return;
-    
-    const newLink = await this.createEvee(newNode);
-    const links = this.getChildren(this.data.object);
+
+    const newLink = await this.createEvee(newNode, symbol);
+    const links = this.getChildren(this.data as unknown as object);
 
     index = index || 0;
     let newLinks: string[] = [...links];
@@ -190,14 +219,14 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
       newLinks.splice(index, 0, newLink);
     }
 
-    const newContent = this.replaceChildren(this.data.object, newLinks);
+    const newContent = this.replaceChildren(this.data as unknown as object, newLinks);
 
     this.logger.info('createChild()', newContent);
 
-    this.updateContent(newContent);
+    this.updateContent(newContent.object);
   }
 
-  createSibling() {
+  createSibling(object: object, symbol: symbol) {
     if (!this.data) return;
 
     this.logger.info('createSibling()', { dataId: this.data ? this.data.id : undefined });
@@ -206,6 +235,8 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
         bubbles: true,
         composed: true,
         detail: {
+          object: object,
+          symbol: symbol,
           startedOnElementId: this.data.id,
           index: this.index + 1
         }
@@ -217,8 +248,8 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
     if (!this.data) return;
 
     /** children are added to the bottom by default */
-    const oldLinks = this.getChildren(this.data.object);
-    
+    const oldLinks = this.getChildren(this.data.object as unknown as object);
+
     index = index || oldLinks.length;
     let newLinks: string[] = [...oldLinks];
     if (index >= oldLinks.length) {
@@ -227,15 +258,15 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
       newLinks.splice(index, 0, ...links);
     }
 
-    const newContent = this.replaceChildren(this.data.object, newLinks);
+    const newContent = this.replaceChildren(this.data.object as unknown as object, newLinks);
 
     this.updateContent(newContent);
   }
 
   removeChildren(fromIndex?: number, toIndex?: number) {
     if (!this.data) throw new Error('data is undefined');
-    
-    const oldLinks = this.getChildren(this.data.object);
+
+    const oldLinks = this.getChildren(this.data.object as unknown as object);
 
     /** children are added to the bottom by default */
     fromIndex = fromIndex || 0;
@@ -244,7 +275,7 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
     let newLinks: string[] = [...oldLinks];
     newLinks.splice(fromIndex, toIndex - fromIndex + 1);
 
-    const newContent = this.replaceChildren(this.data.object, newLinks);
+    const newContent = this.replaceChildren(this.data.object as unknown as object, newLinks);
 
     this.updateContent(newContent);
   }
@@ -262,7 +293,7 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
 
       // At this point this should be the text node that is the parent of the source of the event.
       e.stopPropagation();
-      this.createChild(this.getEmptyEntity(), e.detail.index);
+      this.createChild(e.detail.object, e.detail.symbol, e.detail.index);
     }) as EventListener);
 
     this.addEventListener(ADD_SYBLINGS_TAG, ((e: AddSyblingsEvent) => {

@@ -41,13 +41,14 @@ export class DocumentTextNode extends EveeContent<TextNode> {
 
   enterPressed() {
     if (!this.data) return;
+    if (!this.symbol) throw new Error('this.symbol undefined');
 
     this.logger.info('enterPressed()', { data: this.data });
 
     if (this.data.object.type === TextType.Title) {
-      this.createChild(this.getEmptyEntity());
+      this.createChild(this.getEmptyEntity(), this.symbol);
     } else {
-      this.createSibling();
+      this.createSibling(this.getEmptyEntity(), this.symbol);
     }
   }
 

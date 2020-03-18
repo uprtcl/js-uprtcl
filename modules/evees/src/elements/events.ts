@@ -3,18 +3,20 @@ export type UpdateContentArgs = {
 };
 
 export type CreateSyblingArgs = {
-  startedOnElementId: string,
+  startedOnElementId: string;
+  object: object;
+  symbol: symbol;
   index?: number;
 };
 
 export type AddSyblingsArgs = {
-  startedOnElementId: string,
+  startedOnElementId: string;
   index?: number;
   elementIds: string[];
 };
 
 export type RemoveSyblingsArgs = {
-  startedOnElementId: string,
+  startedOnElementId: string;
   fromIndex?: number;
   toIndex?: number;
 };
