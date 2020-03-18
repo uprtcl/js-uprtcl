@@ -263,7 +263,7 @@ export class Evees {
         const newLinks = results.map(r => r[0].id);
 
         const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
-        const dataSource = this.remotesConfig.map(eveesRemote.authority, hasChildren.name);
+        const dataSource = this.remotesConfig.map(eveesRemote.authority);
 
         const newHasheData = await this.hashed.derive()(newData.object, dataSource.hashRecipe);
 

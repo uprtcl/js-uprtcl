@@ -1,11 +1,10 @@
 import { PatternsModule } from '@uprtcl/cortex';
-import { SourcesModule } from '@uprtcl/multiplatform';
+import { StoresModule, Store } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
 import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
-import { WikisRemote } from './services/wikis.remote';
 import { wikiTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 import { WikiPage } from './elements/wiki-page';
@@ -46,7 +45,7 @@ export class WikisModule extends MicroModule {
 
   static bindings = WikiBindings;
 
-  constructor(protected wikisRemotes: WikisRemote[]) {
+  constructor(protected stores: Store[]) {
     super();
   }
 
@@ -55,10 +54,10 @@ export class WikisModule extends MicroModule {
   submodules = [
     new GraphQlSchemaModule(wikiTypeDefs, resolvers),
     new i18nextModule('wikis', { en: en }),
-    new SourcesModule(
-      this.wikisRemotes.map(remote => ({
+    new StoresModule(
+      this.stores.map(store => ({
         symbol: WikisModule.bindings.WikisRemote,
-        source: remote
+        store: store
       }))
     ),
     new ElementsModule({

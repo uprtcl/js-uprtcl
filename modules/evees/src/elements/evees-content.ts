@@ -42,14 +42,9 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     return this.genealogy.length;
   }
 
-  getSource(eveesAuthority: string, symbol: symbol): Source {
-
+  getStore(eveesAuthority: string): Source {
     const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
-
-    const entities: Entity[] = this.requestAll(symbol);
-    const entityName = entities[0].name;
-
-    return remotesConfig.map(eveesAuthority, entityName);
+    return remotesConfig.map(eveesAuthority);
   }
 
   getCreatePatternOfObject(object: object) {
@@ -134,7 +129,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   async createEntity(content: object, symbol: symbol): Promise<Hashed<T>> {
     const creatable: Creatable<any, any> | undefined = this.getCreatePatternOfObject(content);
     if (creatable === undefined) throw new Error('Creatable pattern not found for this entity');
-    return creatable.create()(content, this.getSource(this.authority, symbol).source);
+    return creatable.create()(content, this.getStore(this.authority).source);
   }
 
   async createEvee(content: object, symbol: symbol): Promise<string> {
@@ -146,7 +141,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     if (!remote) throw new Error(`Remote not found for authority ${this.authority}`);
 
     const creatable = this.getCreatePatternOfSymbol(symbol);
-    const object = await creatable.create()(content, this.getSource(this.authority, symbol).source);
+    const object = await creatable.create()(content, this.getStore(this.authority).source);
 
     const creatableCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePatternOfSymbol(
       EveesBindings.CommitPattern

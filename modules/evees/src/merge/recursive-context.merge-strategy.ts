@@ -230,8 +230,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (!remote.userId)
       throw new Error('Cannot create perspectives in a remote you are not signed in');
 
-    const patternName = this.recognizer.recognize(data)[0].name;
-    const dataSource = this.remotesConfig.map(remote.authority, patternName);
+    const dataSource = this.remotesConfig.map(remote.authority);
 
     const newHasheData = await this.hashed.derive()(data, dataSource.hashRecipe);
 

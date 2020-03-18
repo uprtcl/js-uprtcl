@@ -1,7 +1,7 @@
 import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { LensesModule, LensSelectorPlugin, ActionsPlugin } from '@uprtcl/lenses';
 import { DocumentsModule } from '@uprtcl/documents';
-import { WikisIpfs, WikisModule, WikisHttp } from '@uprtcl/wikis';
+import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
 import { AccessControlModule } from '@uprtcl/access-control';
@@ -40,16 +40,11 @@ import { SimpleWiki } from './simple-wiki';
   const ipfsStore = new IpfsStore(ipfsConnection, ipfsCidConfig);
   const httpStore = new HttpStore(c1host, httpConnection, httpCidConfig);
 
-  const httpWikis = new WikisHttp(c1host, httpConnection, httpCidConfig);
-  const ipfsWikis = new WikisIpfs(ipfsConnection, ipfsCidConfig);
-
-  const remoteMap = (eveesAuthority, entityName) => {
+  const remoteMap = (eveesAuthority) => {
     if (eveesAuthority === ethEvees.authority) {
-      if (entityName === 'Wiki') return ipfsWikis;
-      else if (entityName === 'TextNode') return ipfsStore;
+      return ipfsStore;
     } else {
-      if (entityName === 'Wiki') return httpWikis;
-      else if (entityName === 'TextNode') return httpStore;
+      return httpStore;
     }
   };
   const remotesConfig = {
@@ -61,7 +56,7 @@ import { SimpleWiki } from './simple-wiki';
 
   const documents = new DocumentsModule([ipfsStore, httpStore]);
 
-  const wikis = new WikisModule([ipfsWikis, httpWikis]);
+  const wikis = new WikisModule([ipfsStore, httpStore]);
 
   const lenses = new LensesModule({
     'lens-selector': new LensSelectorPlugin(),

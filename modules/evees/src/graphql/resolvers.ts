@@ -1,6 +1,6 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { DiscoveryService, DiscoveryModule, Store, StoresModule } from '@uprtcl/multiplatform';
 import { IsSecure } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -292,3 +292,15 @@ export const eveesResolvers = {
     }
   }
 };
+
+export const contentCreateResolver = async (content, source, container) => {
+  const stores: Store[] = container.getAll(StoresModule.bindings.Store);
+
+  const store = stores.find(d => d.source === source);
+
+  if (!store) throw new Error(`No store registered for source ${source}`);
+
+  const id = await store.put(content);
+
+  return { id, ...content };
+}

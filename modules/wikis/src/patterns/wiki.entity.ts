@@ -4,13 +4,11 @@ import { injectable, inject, multiInject } from 'inversify';
 import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
 import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
-import { DiscoveryModule, DiscoveryService, TaskQueue, Task } from '@uprtcl/multiplatform';
+import { DiscoveryModule, DiscoveryService, TaskQueue, Task, Store, StoresModule } from '@uprtcl/multiplatform';
 import { CidConfig } from '@uprtcl/ipfs-provider';
 import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
 
 import { Wiki } from '../types';
-import { WikiBindings } from '../bindings';
-import { WikisProvider } from '../services/wikis.provider';
 import { CREATE_WIKI } from '../graphql/queries';
 
 const propertyOrder = ['title', 'pages'];
@@ -101,7 +99,7 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @multiInject(WikiBindings.WikisRemote) protected wikisRemotes: WikisProvider[]
+    @multiInject(StoresModule.bindings.Store) protected stores: Array<Store>,
   ) {
     super(hashedPattern);
   }
@@ -111,10 +109,10 @@ export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, W
   }
 
   create = () => async (wiki: Partial<Wiki>, source: string): Promise<Hashed<Wiki>> => {
-    const sourceDep = this.wikisRemotes.find(s => s.source === source);
-    if (!sourceDep) throw new Error(`source connection for ${source} not found`);
+    const store = this.stores.find(s => s.source === source);
+    if (!store) throw new Error(`store for ${source} not found`);
 
-    const hashedWiki = await this.new()(wiki, sourceDep.hashRecipe);
+    const hashedWiki = await this.new()(wiki, store.hashRecipe);
     const result = await this.client.mutate({
       mutation: CREATE_WIKI,
       variables: {
