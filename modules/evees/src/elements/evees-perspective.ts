@@ -29,14 +29,11 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'evee-color' })
   eveeColor: string = 'undefined';
 
-  @property({ type: String, attribute: 'only-children' })
-  onlyChildren: string = 'false';
-
-  @property({ type: Number })
-  level: number = 0;
-
   @property({ type: Array })
   genealogy: string[] = [];
+
+  @property({ type: Array, attribute: false })
+  newGenealogy: string[] = [];
 
   @property({ type: Number })
   index: number = 0;
@@ -50,9 +47,14 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   firstUpdated() {
     this.logger.info('firstUpdated()', {
       firtPerspectiveId: this.firstPerspectiveId,
-      onlyChildren: this.onlyChildren
+      genealogy: this.genealogy
     });
+    
     this.perspectiveId = this.firstPerspectiveId;
+
+    this.newGenealogy = [...this.genealogy];
+    this.newGenealogy.unshift(this.perspectiveId);
+
     this.loadPerspective();
   }
 
@@ -66,7 +68,6 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   }
 
   async loadPerspective() {
-    this.entityId = undefined;
     this.requestUpdate();
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
@@ -230,9 +231,6 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   }
 
   render() {
-    const newGenealogy = [...this.genealogy];
-    newGenealogy.unshift(this.perspectiveId);
-
     if (this.entityId === undefined || this.perspective === undefined) {
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
@@ -247,7 +245,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
           ref: this.perspective.id,
           color: this.getEveeColor(),
           index: this.index,
-          genealogy: newGenealogy
+          genealogy: this.newGenealogy
         }}
       >
         <evees-info-popper

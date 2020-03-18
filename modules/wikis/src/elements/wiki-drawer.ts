@@ -139,7 +139,7 @@ export class WikiDrawer extends EveeContent<Wiki>{
   }
 
   render() {
-    this.logger.log('render()', { data: this.data, ref: this.ref, editable: this.editable })
+    this.logger.log('render()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level });
     if (!this.data || !this.ref)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
@@ -211,6 +211,7 @@ export class WikiDrawer extends EveeContent<Wiki>{
         }
         .color-bar {
           height: 1vw;
+          max-height: 5px;
           width: 100%;
         }
         .empty {

@@ -39,6 +39,10 @@ export class DocumentTextNode extends EveeContent<TextNode> {
     await this.updateRefData();
   }
 
+  updated() {
+    this.logger.log('updated()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
+  }
+
   enterPressed() {
     if (!this.data) return;
     if (!this.symbol) throw new Error('this.symbol undefined');
@@ -198,6 +202,7 @@ export class DocumentTextNode extends EveeContent<TextNode> {
   }
 
   render() {
+    this.logger.log('render()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level });
     if (!this.data)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
