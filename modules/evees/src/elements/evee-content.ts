@@ -17,7 +17,7 @@ export abstract class EveeContent<T> extends moduleConnect(LitElement) {
   @property({ type: Object })
   data: Hashed<T> | undefined = undefined;
 
-  @property({ type: Object })
+  @property({ type: String })
   ref: string | undefined = undefined;
 
   @property({ type: Array })

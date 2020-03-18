@@ -29,7 +29,7 @@ export class DocumentTextNode extends EveeContent<TextNode> {
 
   getEmptyEntity() {
     return {
-      text: '<p></p>',
+      text: '<p>empty</p>',
       type: TextType.Paragraph,
       links: []
     }

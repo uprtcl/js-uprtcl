@@ -82,9 +82,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
             <documents-text-node
               .data=${node}
               ref=${context.ref}
-              authority=${context.authority}
               color=${context.color} 
-              level=${context.level}
               index=${context.index}
               .genealogy=${context.genealogy}
             >
