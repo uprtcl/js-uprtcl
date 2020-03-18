@@ -230,6 +230,7 @@ export class EveesInfoPopper extends EveesInfoBase {
       }
       .color-bar {
         height: 1vw;
+        max-height: 5px;
         width: 100%;
         margin-bottom: 1vw;
         border-top-right-radius: 4px;

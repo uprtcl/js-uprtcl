@@ -46,7 +46,10 @@ export { PerspectivesList } from './elements/evees-perspectives-list';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesPerspective } from './elements/evees-perspective';
-export { UpdateContentEvent, UpdateContentArgs } from './elements/events';
+export { EveesContent } from './elements/evees-content';
+export { UpdateContentEvent, UpdateContentArgs, RemoveChildrenEvent, AddSyblingsEvent } from './elements/events';
+
+
 
 /** Queries */
 export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE } from './graphql/queries';

@@ -29,30 +29,33 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'evee-color' })
   eveeColor: string = 'undefined';
 
-  @property({ type: String, attribute: 'only-children' })
-  onlyChildren: string = 'false';
-
-  @property({ type: Number })
-  level: number = 0;
-
   @property({ type: Array })
   genealogy: string[] = [];
+
+  @property({ type: Array, attribute: false })
+  newGenealogy: string[] = [];
 
   @property({ type: Number })
   index: number = 0;
 
+  @property()
+  private entityId: string | undefined = undefined;
+
   private currentHeadId: string | undefined = undefined;
   private perspective: Secured<Perspective> | undefined = undefined;
 
-  @property()
-  private entityId: string | undefined = undefined;
 
   firstUpdated() {
     this.logger.info('firstUpdated()', {
       firtPerspectiveId: this.firstPerspectiveId,
-      onlyChildren: this.onlyChildren
+      genealogy: this.genealogy
     });
+    
     this.perspectiveId = this.firstPerspectiveId;
+
+    this.newGenealogy = [...this.genealogy];
+    this.newGenealogy.unshift(this.perspectiveId);
+
     this.loadPerspective();
   }
 
@@ -66,12 +69,13 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   }
 
   async loadPerspective() {
-    this.entityId = undefined;
     this.requestUpdate();
 
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     this.logger.info('loadPerspective() pre', this.perspectiveId);
+
+    this.entityId = undefined;
 
     const result = await client.query({
       query: gql`
@@ -203,8 +207,6 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
     this.logger.info('updateContent() pre', dataId);
 
-    this.entityId = undefined;
-
     const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
       EveesBindings.CommitPattern
     );
@@ -226,15 +228,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     });
 
     this.currentHeadId = commit.id;
-    this.entityId = headUpdate.data.updatePerspectiveHead.id;
+    this.entityId = dataId;
 
     this.logger.info('updateContent() post', this.entityId);
   }
 
   render() {
-    const newGenealogy = [...this.genealogy];
-    newGenealogy.unshift(this.perspectiveId);
-
     if (this.entityId === undefined || this.perspective === undefined) {
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
@@ -246,12 +245,10 @@ export class EveesPerspective extends moduleConnect(LitElement) {
         hash=${this.entityId}
         lens-type="content"
         .context=${{
-          perspective: this.perspective,
+          ref: this.perspective.id,
           color: this.getEveeColor(),
-          onlyChildren: this.onlyChildren,
-          level: this.level,
           index: this.index,
-          genealogy: newGenealogy
+          genealogy: this.newGenealogy
         }}
       >
         <evees-info-popper
