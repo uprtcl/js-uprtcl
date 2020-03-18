@@ -14,7 +14,7 @@ import '@material/mwc-top-app-bar';
 import '@material/mwc-ripple';
 
 import {
-  EveeContent
+  EveesContent
 } from '@uprtcl/evees';
 import { htmlToText, TextType, DocumentsModule } from '@uprtcl/documents';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -25,7 +25,7 @@ import { Wiki } from '../types';
 import { Hashed } from '@uprtcl/cortex';
 import { WikiBindings } from 'src/bindings';
 
-export class WikiDrawer extends EveeContent<Wiki>{
+export class WikiDrawer extends EveesContent<Wiki>{
   
   logger = new Logger('WIKI-DRAWER');
 

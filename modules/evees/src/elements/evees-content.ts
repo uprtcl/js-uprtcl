@@ -11,8 +11,8 @@ import { EveesModule } from '../evees.module';
 import { EveesRemote, EveesBindings, CreateCommitArgs, CreatePerspectiveArgs, UpdateContentEvent } from '../uprtcl-evees';
 import { CreateSyblingEvent, CREATE_SYBLING_TAG, ADD_SYBLINGS_TAG, AddSyblingsEvent, RemoveChildrenEvent, REMOVE_CHILDREN_TAG } from './events';
 
-export abstract class EveeContent<T> extends moduleConnect(LitElement) {
-  logger = new Logger('EVEE-CONTENT');
+export abstract class EveesContent<T> extends moduleConnect(LitElement) {
+  logger = new Logger('EVEES-CONTENT');
 
   @property({ type: Object })
   data: Hashed<T> | undefined = undefined;

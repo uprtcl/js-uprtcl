@@ -38,11 +38,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   @property({ type: Number })
   index: number = 0;
 
+  @property()
+  private entityId: string | undefined = undefined;
+
   private currentHeadId: string | undefined = undefined;
   private perspective: Secured<Perspective> | undefined = undefined;
 
-  @property()
-  private entityId: string | undefined = undefined;
 
   firstUpdated() {
     this.logger.info('firstUpdated()', {
@@ -73,6 +74,8 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     this.logger.info('loadPerspective() pre', this.perspectiveId);
+
+    this.entityId = undefined;
 
     const result = await client.query({
       query: gql`
@@ -225,7 +228,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     });
 
     this.currentHeadId = commit.id;
-    this.entityId = headUpdate.data.updatePerspectiveHead.id;
+    this.entityId = dataId;
 
     this.logger.info('updateContent() post', this.entityId);
   }

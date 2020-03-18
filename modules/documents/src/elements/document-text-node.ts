@@ -8,7 +8,7 @@ export const styleMap = style => {
   }, '');
 };
 
-import { EveeContent } from '@uprtcl/evees';
+import { EveesContent } from '@uprtcl/evees';
 import { AddSyblingsEvent, RemoveChildrenEvent } from '@uprtcl/evees';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
@@ -16,7 +16,7 @@ import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { Hashed } from '@uprtcl/cortex';
 
-export class DocumentTextNode extends EveeContent<TextNode> {
+export class DocumentTextNode extends EveesContent<TextNode> {
   
   logger = new Logger('DOCUMENT-TEXT-NODE');
 
@@ -44,6 +44,8 @@ export class DocumentTextNode extends EveeContent<TextNode> {
   }
 
   enterPressed() {
+    this.commit();
+    
     if (!this.data) return;
     if (!this.symbol) throw new Error('this.symbol undefined');
 
@@ -56,22 +58,26 @@ export class DocumentTextNode extends EveeContent<TextNode> {
     }
   }
 
-  timeout: any = undefined;
-
   editorContentChanged(e) {
-    if (!this.data) return;
+    this.currentText = e.detail.content;
+  }
 
-    const newContent = {
+  commit() {
+    if(!this.data) return;
+    if(!this.currentText) return;
+
+    this.focused = false;
+
+    const newContent: TextNode = {
       ...this.data.object,
-      text: e.detail.content
+      text: this.currentText
     };
 
-    this.currentText = e.detail.content;
-    if (this.timeout) clearTimeout(this.timeout);
+    this.updateContent(newContent);
+  }
 
-    this.timeout = setTimeout(() => {
-      this.updateContent(newContent);
-    }, 400);
+  editorBlur() {
+    this.commit()
   }
 
   async changeType(e: CustomEvent) {
@@ -228,7 +234,7 @@ export class DocumentTextNode extends EveeContent<TextNode> {
               level=${this.level}
               editable=${this.editable ? 'true' : 'false'}
               @focus=${() => (this.focused = true)}
-              @blur=${() => (this.focused = false)}
+              @blur=${this.editorBlur}
               @content-changed=${this.editorContentChanged}
               @enter-pressed=${this.enterPressed}
               @change-type=${this.changeType}

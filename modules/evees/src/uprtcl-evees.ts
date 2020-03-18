@@ -46,7 +46,7 @@ export { PerspectivesList } from './elements/evees-perspectives-list';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesPerspective } from './elements/evees-perspective';
-export { EveeContent } from './elements/evee-content';
+export { EveesContent } from './elements/evees-content';
 export { UpdateContentEvent, UpdateContentArgs, RemoveChildrenEvent, AddSyblingsEvent } from './elements/events';
 
 
