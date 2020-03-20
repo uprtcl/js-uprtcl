@@ -14,6 +14,13 @@ export const UPDATE_HEAD: DocumentNode = gql`
       payload {
         origin
       }
+      _context {
+        patterns {
+          content {
+            id
+          }
+        }
+      }
     }
   }
 `;

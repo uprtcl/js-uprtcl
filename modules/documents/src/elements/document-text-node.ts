@@ -78,7 +78,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   editorBlur() {
-    this.commit()
+    this.commit();
   }
 
   async changeType(e: CustomEvent) {

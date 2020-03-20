@@ -48,6 +48,8 @@ export class WikiDrawer extends EveesContent<Wiki>{
   }
 
   async loadPagesData() {
+    this.logger.log('loadPagesData()');
+
     const wiki = this.data as Hashed<Wiki>;
 
     const pagesListPromises = wiki.object.pages.map(async pageId => {
@@ -80,6 +82,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
     });
 
     this.pagesList = await Promise.all(pagesListPromises);
+    this.logger.log('loadPagesData()', { pagesList: this.pagesList });    
   }
 
   async firstUpdated() {
@@ -175,6 +178,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
             ? html`
                 <wiki-page
                   @nav-back=${() => this.selectPage(undefined)}
+                  @page-title-changed=${() => this.loadPagesData()}
                   pageHash=${this.selectedPageHash}
                   color=${this.color ? this.color : ''}
                 >

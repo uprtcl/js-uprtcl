@@ -8,7 +8,7 @@ import { Pattern, Creatable, Signed } from '@uprtcl/cortex';
 
 import { Secured } from '../patterns/default-secured.pattern';
 import { UPDATE_HEAD } from '../graphql/queries';
-import { UpdateContentEvent } from './events';
+import { UpdateContentEvent, ContentUpdatedEvent } from './events';
 import { Perspective, Commit } from '../types';
 import { EveesRemote } from '../services/evees.remote';
 import { EveesBindings } from '../bindings';
@@ -231,6 +231,15 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     this.entityId = dataId;
 
     this.logger.info('updateContent() post', this.entityId);
+
+    /** let upper levels know something changed */
+    if (this.genealogy.length === 0) {
+      this.dispatchEvent(new ContentUpdatedEvent({
+        bubbles: true,
+        composed: true,
+        detail: { perspectiveId: this.perspectiveId }
+      }));
+    }
   }
 
   render() {

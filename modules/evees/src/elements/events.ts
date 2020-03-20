@@ -1,3 +1,7 @@
+export type ContentUpdatedArgs = {
+  perspectiveId: string;
+};
+
 export type UpdateContentArgs = {
   dataId: string;
 };
@@ -25,6 +29,7 @@ export const CREATE_SYBLING_TAG = 'create-sybling';
 export const ADD_SYBLINGS_TAG = 'add-syblings';
 export const REMOVE_CHILDREN_TAG = 'remove-children';
 export const UPDATE_CONTENT_TAG = 'update-content';
+export const CONTENT_UPDATED_TAG = 'content-updated';
 
 export class UpdateContentEvent extends CustomEvent<UpdateContentArgs> {
   constructor(init: CustomEventInit<UpdateContentArgs>) {
@@ -49,6 +54,13 @@ export class RemoveChildrenEvent extends CustomEvent<RemoveSyblingsArgs> {
     super(REMOVE_CHILDREN_TAG, init);
   }
 }
+
+export class ContentUpdatedEvent extends CustomEvent<ContentUpdatedArgs> {
+  constructor(init: CustomEventInit<ContentUpdatedArgs>) {
+    super(CONTENT_UPDATED_TAG, init);
+  }
+}
+
 
 
 
