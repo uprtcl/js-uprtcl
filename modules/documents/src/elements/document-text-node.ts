@@ -36,6 +36,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   };
 
   async firstUpdated() {
+    super.firstUpdated();
     await this.updateRefData();
   }
 
@@ -43,7 +44,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     this.logger.log('updated()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
   }
 
-  enterPressed() {
+  async enterPressed() {
     this.commit();
     
     if (!this.data) return;
@@ -52,7 +53,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     this.logger.info('enterPressed()', { data: this.data });
 
     if (this.data.object.type === TextType.Title) {
-      this.createChild(this.getEmptyEntity(), this.symbol);
+      await this.createChild(this.getEmptyEntity(), this.symbol);
     } else {
       this.createSibling(this.getEmptyEntity(), this.symbol);
     }

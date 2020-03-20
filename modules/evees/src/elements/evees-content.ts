@@ -41,16 +41,31 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   get level(): number {
     return this.genealogy.length;
   }
+  
+  protected remotesConfig: RemotesConfig | undefined = undefined;
+  protected recognizer: PatternRecognizer | undefined = undefined;
+  protected patterns: Pattern[] | undefined = undefined;
+  protected client: ApolloClient<any> | undefined = undefined;
+  protected eveesRemotes: EveesRemote[] | undefined = undefined;
+  protected discovery: DiscoveryService | undefined = undefined;
 
-  getStore(eveesAuthority: string): Source {
-    const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
-    return remotesConfig.map(eveesAuthority);
+  firstUpdated() {
+    /** read all dependencies once for efficiency and to prevent unmounted requests */
+    this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
+    this.recognizer = this.request(CortexModule.bindings.Recognizer);
+    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.discovery = this.request(DiscoveryModule.bindings.DiscoveryService);
+  }
+
+  getStore(eveesAuthority: string): Source | undefined {
+    if (!this.remotesConfig) return undefined;
+    return this.remotesConfig.map(eveesAuthority);
   }
 
   getCreatePatternOfObject(object: object) {
-    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
-
-    const create: Creatable<any, any> | undefined = recognizer
+    if (!this.recognizer) return undefined;
+    const create: Creatable<any, any> | undefined = this.recognizer
       .recognize(object)
       .find(prop => !!(prop as Creatable<any, any>).create);
 
@@ -71,9 +86,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   getHasChildrenPatternOfObject(object: object) {
-    const recognizer: PatternRecognizer = this.request(CortexModule.bindings.Recognizer);
-
-    const hasChildren: HasChildren | undefined = recognizer
+    if (!this.recognizer) return undefined;
+    const hasChildren: HasChildren | undefined = this.recognizer
       .recognize(object)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
@@ -95,9 +109,9 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
   async updateRefData() {
     if (!this.ref) throw new Error('Ref is undefined');
+    if (!this.client) throw new Error('client is undefined');
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const result = await client.query({
+    const result = await this.client.query({
       query: gql`
       {
         entity(id: "${this.ref}") {
@@ -127,21 +141,25 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   async createEntity(content: object, symbol: symbol): Promise<Hashed<T>> {
-    const creatable: Creatable<any, any> | undefined = this.getCreatePatternOfObject(content);
+    const creatable: Creatable<any, any> | undefined = this.getCreatePatternOfSymbol(symbol);
     if (creatable === undefined) throw new Error('Creatable pattern not found for this entity');
-    return creatable.create()(content, this.getStore(this.authority).source);
+    const store = this.getStore(this.authority);
+    if (!store) throw new Error('store is undefined');
+    return creatable.create()(content, store.source);
   }
 
   async createEvee(content: object, symbol: symbol): Promise<string> {
     if (!this.authority) throw new Error('Authority undefined');
+    if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
 
-    const eveesRemotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
-    const remote = eveesRemotes.find(r => r.authority === this.authority);
+    const remote = this.eveesRemotes.find(r => r.authority === this.authority);
 
     if (!remote) throw new Error(`Remote not found for authority ${this.authority}`);
 
     const creatable = this.getCreatePatternOfSymbol(symbol);
-    const object = await creatable.create()(content, this.getStore(this.authority).source);
+    const store = this.getStore(this.authority);
+    if (!store) throw new Error('store is undefined');
+    const object = await creatable.create()(content, store.source);
 
     const creatableCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePatternOfSymbol(
       EveesBindings.CommitPattern
@@ -191,12 +209,18 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   getChildren(data: object) {
-    return this.getHasChildrenPatternOfObject(data).getChildrenLinks(data);
+    const hasChildren = this.getHasChildrenPatternOfObject(data);
+    if (!hasChildren) throw new Error('hasChildren is undefined');
+
+    return hasChildren.getChildrenLinks(data);
   }
 
   replaceChildren(data: object, links: string[]) {
     if (!this.data) throw new Error('data undefined');
-    return this.getHasChildrenPatternOfObject(data).replaceChildrenLinks(data)(links);
+    const hasChildren = this.getHasChildrenPatternOfObject(data);
+    if (!hasChildren) throw new Error('hasChildren is undefined');
+
+    return hasChildren.replaceChildrenLinks(data)(links);
   }
 
   async createChild(newNode: object, symbol: symbol, index?: number) {
@@ -319,8 +343,9 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   async getPerspectiveDataId(perspectiveId: string): Promise<string> {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const result = await client.query({
+    if(!this.client) throw new Error('client undefined');
+
+    const result = await this.client.query({
       query: gql`
       {
         entity(id: "${perspectiveId}") {
@@ -343,8 +368,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   async getData(dataId: string): Promise<Hashed<object> | undefined> {
-    const discovery: DiscoveryService = this.request(DiscoveryModule.bindings.DiscoveryService);
-    return discovery.get(dataId);
+    if (!this.discovery) throw new Error('discovery undefined');
+    return this.discovery.get(dataId);
   }
 
   async getPerspectiveData(perspectiveId: string): Promise<Hashed<object> | undefined> {

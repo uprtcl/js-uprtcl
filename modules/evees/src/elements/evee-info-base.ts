@@ -205,6 +205,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       targetAuthority: remote.authority,
       targetCanWrite: permissions.owner
     };
+    
     const [perspectiveId, actions] = await merge.mergePerspectives(
       toPerspectiveId,
       fromPerspectiveId,

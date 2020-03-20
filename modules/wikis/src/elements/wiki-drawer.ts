@@ -51,9 +51,8 @@ export class WikiDrawer extends EveesContent<Wiki>{
     const wiki = this.data as Hashed<Wiki>;
 
     const pagesListPromises = wiki.object.pages.map(async pageId => {
-      const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-
-      const result = await client.query({
+      if (!this.client) throw new Error('client is undefined');
+      const result = await this.client.query({
         query: gql`
         {
           entity(id: "${pageId}") {
@@ -84,6 +83,8 @@ export class WikiDrawer extends EveesContent<Wiki>{
   }
 
   async firstUpdated() {
+    super.firstUpdated();
+
     this.logger.log('firstUpdated()');
     this.updateRefData();
     this.loadPagesData();

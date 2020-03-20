@@ -68,6 +68,10 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const jsonData = result.data.entity.head.data._context.raw;
 
     const dataObject = JSON.parse(jsonData);
+    if (result.data.entity.head == null) {
+      throw new Error(`head null reading perspective ${perspectiveId}`);
+    }
+    
     const dataId = result.data.entity.head.data.id;
     const data = { id: dataId, object: dataObject };
 
