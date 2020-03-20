@@ -150,6 +150,13 @@ export const eveesResolvers = {
 
       return { id: perspectiveId, ...perspective, head: { id: headId } };
     },
+    
+    async deletePerspective(parent, { perspectiveId }, { container }) {
+      const evees: Evees = container.get(EveesBindings.Evees);
+      const remote = await evees.getPerspectiveProviderById(perspectiveId);
+      await remote.deletePerspective(perspectiveId);
+      return { id: perspectiveId };
+    },
 
     async createPerspective(
       _,

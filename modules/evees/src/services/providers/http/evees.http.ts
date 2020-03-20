@@ -43,7 +43,7 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     this.knownSources= new KnownSourcesHttp(host, this.connection);
     this.hashRecipe = hashRecipe;
   }
-
+  
   ready(): Promise<void> {
     return Promise.resolve();
   }
@@ -84,11 +84,15 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     await super.httpPut(`/persp/${perspectiveId}/details`, details);
   }
 
-  getContextPerspectives(context: string): Promise<string[]> {
+  async getContextPerspectives(context: string): Promise<string[]> {
     return super.getWithPut<any[]>(`/persp`, { context: context });
   }
 
-  getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
+  async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
     return super.getObject<PerspectiveDetails>(`/persp/${perspectiveId}/details`);
+  }
+
+  async deletePerspective(perspectiveId: string): Promise<void> {
+    await super.httpDelete(`/persp/${perspectiveId}`);
   }
 }

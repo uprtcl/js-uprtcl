@@ -107,6 +107,24 @@ export class HttpConnection extends Connection {
     return this.putOrPost(url, body, 'POST');
   }
 
+  public async delete(url: string): Promise<PostResult> {
+    this.logger.log(`[HTTP DELETE]`, url);
+    return fetch(url, {
+      method: 'DELETE',
+      headers: {
+        ...this.headers,
+        Accept: 'application/json'
+      }
+    })
+      .then(response => {
+        return response.json() as Promise<PostResult>;
+      })
+      .then(data => {
+        this.logger.log('[HTTP POST RESULT]', url, data);
+        return (data as unknown) as PostResult;
+      });
+  }
+
   /**
    * Execute a PUT or POST request
    * @param url url to make the request to

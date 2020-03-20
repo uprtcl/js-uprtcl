@@ -27,7 +27,8 @@ import {
   GET_PERSP,
   bytes32ToCid,
   GET_PERSP_HASH,
-  INIT_PERSP_BATCH
+  INIT_PERSP_BATCH,
+  UPDATE_OWNER
 } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
@@ -326,5 +327,24 @@ export class EveesEthereum implements EveesRemote, Authority {
     const headId = bytes32ToCid([ethPerspective.headCid1, ethPerspective.headCid0]);
 
     return { name: details.name, context: details.context, headId: headId };
+  }
+
+  async deletePerspective(perspectiveId: string): Promise<void> {
+    const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
+    let contextHash = ZERO_HEX_32;
+
+    /** set null values */
+    await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
+      perspectiveIdHash,
+      contextHash,
+      '',
+      '',
+      ''
+    ]);
+
+    /** set null owner (cannot be undone) */
+    const ZERO_ADD = '0x' + new Array(40).fill(0).join('');
+    await this.uprtclRoot.send(UPDATE_OWNER, [perspectiveIdHash, ZERO_ADD]);
+
   }
 }

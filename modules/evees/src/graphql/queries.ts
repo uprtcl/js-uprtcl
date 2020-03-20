@@ -18,6 +18,14 @@ export const UPDATE_HEAD: DocumentNode = gql`
   }
 `;
 
+export const DELETE_PERSPECTIVE: DocumentNode = gql`
+  mutation DeletePerspective($perspectiveId: ID!) {
+    deletePerspective(perspectiveId: $perspectiveId) {
+      id
+    }
+  }
+`;
+
 export const CREATE_COMMIT: DocumentNode = gql`
   mutation CreateCommit(
     $creatorsIds: [String]

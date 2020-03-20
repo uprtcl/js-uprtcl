@@ -37,4 +37,8 @@ export class HttpProvider implements Authority {
   httpPost(url: string, body: any): Promise<PostResult> {
     return this.connection.post(this.options.host + url, body);
   }
+
+  httpDelete(url: string): Promise<PostResult> {
+    return this.connection.delete(this.options.host + url);
+  }
 }

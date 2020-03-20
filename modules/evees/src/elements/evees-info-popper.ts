@@ -15,7 +15,7 @@ export class EveesInfoPopper extends EveesInfoBase {
   show: Boolean = false;
 
   firstUpdated() {
-    this.load();
+    super.firstUpdated();
   }
 
   showClicked() {

@@ -6,8 +6,8 @@ export const eveesTypeDefs: DocumentNode = gql`
 
   extend type Mutation {
     updatePerspectiveHead(
-        perspectiveId: ID!, 
-        headId: ID!): Perspective!
+      perspectiveId: ID!, 
+      headId: ID!): Perspective!
 
     createCommit(
       creatorsIds: [String], 
@@ -27,6 +27,9 @@ export const eveesTypeDefs: DocumentNode = gql`
       authority: String, 
       canWrite: String,
       parentId: String): Perspective!
+
+    deletePerspective(
+      perspectiveId: ID!): Perspective!
 
     addProposal(
       toPerspectiveId: ID!, 
