@@ -23,15 +23,15 @@ export class WikiDrawerItem extends moduleConnect(LitElement) {
 
   render() {
     return html`
-      <mwc-list-item @click=${this.elementClicked} hasMeta>
-        <span>${this.text}</span>
+      <div class="item-row" @click=${this.elementClicked}>
+        <div class="text-container">${this.text}</div>
         <mwc-icon @click=${this.showDropDownClicked} slot="meta">more_vert</mwc-icon>
         ${this.showDropdown ? 
           html`
             <mwc-card class="info-box">
               <slot>I AM A MENU</slot>
             </mwc-card>` : ''}        
-      </mwc-list-item>
+      </div>
     `
   }
 
@@ -41,16 +41,22 @@ export class WikiDrawerItem extends moduleConnect(LitElement) {
         position: relative;
       }
       
-      mwc-list-item {
-        overflow: visible;
+      .item-row {
+        width: 100%;
+        display: flex;
+      }
+
+      .text-container {
+        padding-left: 16px;
+        flex-grow:1;
       }
 
       .info-box {
         width: auto;
         z-index: 20;
         position: absolute;
-        right: 10px;
-        top: 45px;
+        right: 0px;
+        top: 0px;
         width: 200px;
       }`
   }
