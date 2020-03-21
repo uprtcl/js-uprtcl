@@ -10,18 +10,17 @@ export const styleMap = style => {
 };
 
 import '@material/mwc-drawer';
-import '@material/mwc-icon';
 
 import {
   EveesContent
 } from '@uprtcl/evees';
 import { htmlToText, TextType, DocumentsModule } from '@uprtcl/documents';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
+import { Hashed } from '@uprtcl/cortex';
+import { MenuConfig } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
-import { Hashed } from '@uprtcl/cortex';
 import { WikiBindings } from 'src/bindings';
 
 export class WikiDrawer extends EveesContent<Wiki>{
@@ -114,6 +113,22 @@ export class WikiDrawer extends EveesContent<Wiki>{
     this.createChild(pageContent, DocumentsModule.bindings.TextNodeEntity);
   }
 
+  optionOnPage(pageIndex: number, option: string) {
+    switch (option) {
+      case 'move-up': 
+        this.moveChildElement(pageIndex, pageIndex - 1);
+        break;
+      
+      case 'move-down': 
+        this.moveChildElement(pageIndex, pageIndex + 1);
+        break;
+
+      case 'remove': 
+        this.removeChildElement(pageIndex);
+        break;
+    }
+  }
+
   renderPageList() {
     if (!this.pagesList)
       return html`
@@ -129,9 +144,32 @@ export class WikiDrawer extends EveesContent<Wiki>{
 
     return html`
       <mwc-list>
-        ${this.pagesList.map(page => {
+        ${this.pagesList.map((page, ix) => {
+          const menuConfig: MenuConfig = {
+            'move-up': {
+              disabled: ix === 0,
+              text: 'move up',
+              graphic: 'arrow_upward'
+            },
+            'move-down': {
+              disabled: ix === ((this.pagesList as any[]).length - 1),
+              text: 'move down',
+              graphic: 'arrow_downward'
+            },
+            'remove': {
+              disabled: false,
+              text: 'remove',
+              graphic: 'clear'
+            },
+          }
+          this.logger.log(`rendering page title ${page.id}`, menuConfig);
           return html`
-            <wiki-drawer-item text=${htmlToText(page.title)}></wiki-drawer-item>
+            <evees-list-item 
+              text=${htmlToText(page.title)} 
+              @item-click=${() => this.selectPage(page.id)}
+              @option-click=${(e) => this.optionOnPage(ix, e.detail.option)}
+              .config=${menuConfig}>
+            </evees-list-item>
           `;
         })}
       </mwc-list>
