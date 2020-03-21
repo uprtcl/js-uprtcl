@@ -10,8 +10,7 @@ export const styleMap = style => {
 };
 
 import '@material/mwc-drawer';
-import '@material/mwc-top-app-bar';
-import '@material/mwc-ripple';
+import '@material/mwc-icon';
 
 import {
   EveesContent
@@ -131,11 +130,8 @@ export class WikiDrawer extends EveesContent<Wiki>{
     return html`
       <mwc-list>
         ${this.pagesList.map(page => {
-          let text = htmlToText(page.title);
           return html`
-            <mwc-list-item @click=${() => this.selectPage(page.id)}>
-              ${text}
-            </mwc-list-item>
+            <wiki-drawer-item text=${htmlToText(page.title)}></wiki-drawer-item>
           `;
         })}
       </mwc-list>

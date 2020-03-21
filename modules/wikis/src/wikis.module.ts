@@ -12,6 +12,7 @@ import { WikiHome } from './elements/wiki-home';
 
 import en from './i18n/en.json';
 import { WikiBindings } from './bindings';
+import { WikiDrawerItem } from './elements/wiki-drawer-item';
 
 /**
  * Configure a wikis module with the given providers
@@ -63,7 +64,8 @@ export class WikisModule extends MicroModule {
     new ElementsModule({
       'wiki-drawer': WikiDrawer,
       'wiki-page': WikiPage,
-      'wiki-home': WikiHome
+      'wiki-home': WikiHome,
+      'wiki-drawer-item': WikiDrawerItem
     }),
     new PatternsModule({
       [WikisModule.bindings.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
