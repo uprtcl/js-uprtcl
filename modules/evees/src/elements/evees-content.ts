@@ -263,6 +263,41 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     );
   }
 
+  async moveChildElement(index: number, onIndex: number) {
+    if (!this.data) return;
+
+    const links = this.getChildren(this.data as unknown as object);
+    const elementId = links[index];
+
+    let newLinks: string[] = [...links];
+    /** remove */
+    newLinks.splice(index, 1);
+    newLinks.splice(onIndex, 0, elementId);
+
+    const newContent = this.replaceChildren(this.data as unknown as object, newLinks);
+
+    this.logger.info('moveChildElement()', newContent);
+
+    this.updateContent(newContent.object);
+  }
+
+  async removeChildElement(index: number) {
+    if (!this.data) return;
+
+    const links = this.getChildren(this.data as unknown as object);
+    const elementId = links[index];
+
+    let newLinks: string[] = [...links];
+    /** remove */
+    newLinks.splice(index, 1);
+
+    const newContent = this.replaceChildren(this.data as unknown as object, newLinks);
+
+    this.logger.info('removeChildElement()', newContent);
+
+    this.updateContent(newContent.object);
+  }
+
   addChildren(links: string[], index?: number) {
     if (!this.data) return;
 

@@ -49,6 +49,9 @@ export { EveesPerspective } from './elements/evees-perspective';
 export { EveesContent } from './elements/evees-content';
 export { UpdateContentEvent, UpdateContentArgs, RemoveChildrenEvent, AddSyblingsEvent, ContentUpdatedEvent, CONTENT_UPDATED_TAG } from './elements/events';
 
+/** UI support components */
+export { MenuConfig } from './elements/common-ui/evees-options-menu'
+
 /** Queries */
 export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE } from './graphql/queries';
 export { contentCreateResolver } from './graphql/resolvers';
