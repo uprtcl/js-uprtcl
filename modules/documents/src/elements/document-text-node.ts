@@ -15,6 +15,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { Hashed } from '@uprtcl/cortex';
+import { htmlToText } from 'src/uprtcl-documents';
 
 export class DocumentTextNode extends EveesContent<TextNode> {
   
@@ -29,7 +30,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
   getEmptyEntity() {
     return {
-      text: '<p>empty</p>',
+      text: '<p></p>',
       type: TextType.Paragraph,
       links: []
     }
@@ -38,10 +39,13 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   async firstUpdated() {
     super.firstUpdated();
     await this.updateRefData();
+    if (this.data !== undefined) {
+      this.currentText = this.data.object.text;
+    }
   }
 
-  updated() {
-    this.logger.log('updated()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
+  updated(changedProperties: Map<string, any>) {
+    this.logger.log('updated()', { changedProperties, data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
   }
 
   async enterPressed() {
@@ -59,6 +63,25 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
   }
 
+  async backspacePressed() {
+    this.logger.log('backspacePressed()', this.currentText);
+    let empty = false;
+    if (this.currentText === undefined) {
+      empty = true;
+    };
+
+    if (!empty) {
+      const text = htmlToText(this.currentText as string);
+      empty = text === '';
+    }
+    
+    this.logger.log('backspacePressed()', { empty } );
+    
+    if (empty) {
+      this.removeFromParent();
+    }
+  }
+
   editorContentChanged(e) {
     this.currentText = e.detail.content;
   }
@@ -66,8 +89,6 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   commit() {
     if(!this.data) return;
     if(!this.currentText) return;
-
-    this.focused = false;
 
     const newContent: TextNode = {
       ...this.data.object,
@@ -77,8 +98,13 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     this.updateContent(newContent);
   }
 
-  editorBlur() {
-    this.commit();
+  editorFocusChanged(focused: boolean) {
+    if (focused) {
+      this.focused = true;
+    } else {
+      this.focused = false;
+      this.commit();
+    }
   }
 
   async changeType(e: CustomEvent) {
@@ -232,12 +258,13 @@ export class DocumentTextNode extends EveesContent<TextNode> {
             <documents-text-node-editor
               type=${this.data.object.type}
               init=${this.data.object.text}
+              focus-init=${'true'}
               level=${this.level}
               editable=${this.editable ? 'true' : 'false'}
-              @focus=${() => (this.focused = true)}
-              @blur=${this.editorBlur}
+              @focus-changed=${(e) => (this.editorFocusChanged(e.detail.value))}
               @content-changed=${this.editorContentChanged}
               @enter-pressed=${this.enterPressed}
+              @backspace-pressed=${this.backspacePressed}
               @change-type=${this.changeType}
             ></documents-text-node-editor>
           </div>

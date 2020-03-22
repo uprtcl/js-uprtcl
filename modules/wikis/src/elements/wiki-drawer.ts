@@ -2,6 +2,7 @@ import { property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
+
 export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
@@ -105,7 +106,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
 
   newPage() {
     const pageContent = {
-      text: '<h1>New page</h1>',
+      text: '<h1><br></h1>',
       type: TextType.Title,
       links: []
     };
@@ -163,9 +164,12 @@ export class WikiDrawer extends EveesContent<Wiki>{
             },
           }
           this.logger.log(`rendering page title ${page.id}`, menuConfig);
+          const text = htmlToText(page.title);
+          const empty = text === '';
           return html`
             <evees-list-item 
-              text=${htmlToText(page.title)} 
+              class=${empty ? 'title-empty' : '' }
+              text=${empty ? 'untitled' : text} 
               @item-click=${() => this.selectPage(page.id)}
               @option-click=${(e) => this.optionOnPage(ix, e.detail.option)}
               .config=${menuConfig}>
@@ -252,6 +256,10 @@ export class WikiDrawer extends EveesContent<Wiki>{
           height: 1vw;
           max-height: 5px;
           width: 100%;
+        }
+        .title-empty {
+          color: #a2a8aa;
+          font-style: italic;
         }
         .empty {
           width: 100%;

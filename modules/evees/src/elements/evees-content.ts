@@ -9,7 +9,7 @@ import { ApolloClientModule, gql } from '@uprtcl/graphql';
 import { RemotesConfig, Commit, Perspective } from '../types';
 import { EveesModule } from '../evees.module';
 import { EveesRemote, EveesBindings, CreateCommitArgs, CreatePerspectiveArgs, UpdateContentEvent } from '../uprtcl-evees';
-import { CreateSyblingEvent, CREATE_SYBLING_TAG, ADD_SYBLINGS_TAG, AddSyblingsEvent, RemoveChildrenEvent, REMOVE_CHILDREN_TAG } from './events';
+import { CreateSyblingEvent, CREATE_SYBLING_TAG, ADD_SYBLINGS_TAG, AddSyblingsEvent, RemoveChildrenEvent, REMOVE_CHILDREN_TAG, RemoveChildEvent, REMOVE_CHILD_TAG } from './events';
 
 export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-CONTENT');
@@ -263,6 +263,22 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     );
   }
 
+  removeFromParent() {
+    if (!this.data) return;
+
+    this.logger.info('removeFromParent()', { dataId: this.data ? this.data.id : undefined });
+    this.dispatchEvent(
+      new RemoveChildEvent({
+        bubbles: true,
+        composed: true,
+        detail: {
+          startedOnElementId: this.data.id,
+          index: this.index
+        }
+      })
+    );
+  }
+
   async moveChildElement(index: number, onIndex: number) {
     if (!this.data) return;
 
@@ -375,6 +391,20 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
       e.stopPropagation();
       this.removeChildren(e.detail.fromIndex, e.detail.toIndex);
     }) as EventListener);
+
+    this.addEventListener(REMOVE_CHILD_TAG, ((e: RemoveChildEvent) => {
+      if (!this.data) return;
+
+      this.logger.info(`CATCHED EVENT: ${RemoveChildEvent.name}`, { dataId: this.data.id, e });
+
+      // TODO: this.addEventListener listens  this.dispatchEvent ???
+      if (e.detail.startedOnElementId === this.data.id) return;
+
+      // At this point this should be the text node that is the parent of the source of the event.
+      e.stopPropagation();
+      this.removeChildElement(e.detail.index);
+    }) as EventListener);
+    
   }
 
   async getPerspectiveDataId(perspectiveId: string): Promise<string> {

@@ -69,9 +69,11 @@ export class EveesOptionsMenu extends LitElement {
 
       mwc-icon {
         user-select: none;
+        color: #a2a8aa;
       }
 
       .info-box {
+        color: rgba(0, 0, 0, 0.87);
         width: auto;
         z-index: 20;
         position: absolute;

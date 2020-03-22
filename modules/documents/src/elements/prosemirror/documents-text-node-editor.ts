@@ -1,5 +1,7 @@
 import { LitElement, html, css, property } from 'lit-element';
 
+import { Logger } from '@uprtcl/micro-orchestrator';
+
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { toggleMark } from 'prosemirror-commands';
@@ -13,8 +15,12 @@ import { blockSchema } from './schema-block';
 import { iconsStyle } from './icons.css';
 import { icons } from './icons';
 import { TextType } from '../../types';
+import { runInThisContext } from 'vm';
 
 export class DocumentTextNodeEditor extends LitElement {
+
+  logger = new Logger('DOCUMENTS-TEXT-NODE-EDITOR');
+
   editor: any = {};
 
   @property({ type: String })
@@ -22,9 +28,12 @@ export class DocumentTextNodeEditor extends LitElement {
 
   @property({ type: String })
   init!: string;
-
+  
   @property({ type: String })
   editable: string = 'true';
+
+  @property({ type: String, attribute: 'focus-init' })
+  focusInit: string = 'false';
 
   @property({ type: Number })
   level: number = 0;
@@ -78,9 +87,29 @@ export class DocumentTextNodeEditor extends LitElement {
     });
   }
 
-  onEnter() {
+  onEnter(state, dispatch) {
+    /** split */
+    const newState = state.apply(state.tr.split(state.selection.$cursor.pos));
+    
+    /** remove second part */
+    const secondPart = newState.doc.content.content.splice(1, 1);
+
+    /* dispatch its content upwards */
+    this.editor.view.updateState(newState);
+
     this.dispatchEvent(new CustomEvent('enter-pressed'));
     return true;
+  }
+
+  onBackspace() {
+    this.dispatchEvent(new CustomEvent('backspace-pressed'));
+    return false;
+  }
+
+  isEditable() {
+    if (this === undefined) return true; /** prosemirror is calling this before the component is mounted or something */
+    const editable = this.editable ? this.editable === 'true' : true
+    return editable;
   }
 
   firstUpdated() {
@@ -116,7 +145,10 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.state = EditorState.create({
       schema: this.editor.schema,
       doc: doc,
-      plugins: [keymap({ Enter: (state, dispatch) => this.onEnter() })]
+      plugins: [keymap({ 
+        Enter: (state, dispatch) => this.onEnter(state, dispatch),
+        Backspace: (state, dispatch) => this.onBackspace()
+      })]
     });
 
     if (this.shadowRoot == null) return;
@@ -124,9 +156,17 @@ export class DocumentTextNodeEditor extends LitElement {
 
     this.editor.view = new EditorView(container, {
       state: this.editor.state,
-      editable: () => this.editable === 'true',
-      dispatchTransaction: transaction => this.handleTransaction(transaction)
+      editable: this.isEditable,
+      dispatchTransaction: transaction => this.handleTransaction(transaction),
+      handleDOMEvents: {
+        'focus': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: true } }))},
+        'blur': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: false } }))}
+      }
     });
+
+    if (this.focusInit === 'true') {
+      this.editor.view.focus();
+    }
   }
 
   handleTransaction(transaction: any) {
@@ -139,8 +179,10 @@ export class DocumentTextNodeEditor extends LitElement {
     let newState = this.editor.view.state.apply(transaction);
 
     let contentChanged = !newState.doc.eq(this.editor.view.state.doc);
-
     this.editor.view.updateState(newState);
+
+    this.logger.log('handleTransaction()', { selected: this.selected, newState, contentChanged } );    
+
     if (!contentChanged) return;
 
     /** doc changed */
@@ -233,6 +275,14 @@ export class DocumentTextNodeEditor extends LitElement {
   menuItemClick(markType: any) {
     this.preventHide = false;
     toggleMark(markType)(this.editor.view.state, this.editor.view.dispatch);
+  }
+
+  editorFocused() {
+    this.logger.log('editor focused');
+  }
+
+  editorBlured() {
+    this.logger.log('editor blured');
   }
 
   render() {
