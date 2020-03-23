@@ -2,10 +2,27 @@
   "contractName": "UprtclHomePerspectives",
   "abi": [
     {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "suAddress",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "bool"
+        }
+      ],
+      "name": "setSuperUser",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "constant": true,
       "inputs": [
         {
-          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -13,9 +30,45 @@
       "name": "homePerspectives",
       "outputs": [
         {
-          "internalType": "string",
           "name": "",
           "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
         }
       ],
       "payable": false,
@@ -26,7 +79,56 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "address",
+          "name": "suAddress",
+          "type": "address"
+        }
+      ],
+      "name": "isSuperUser",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
           "name": "owner",
           "type": "address"
         }
@@ -34,7 +136,6 @@
       "name": "getHomePerspective",
       "outputs": [
         {
-          "internalType": "string",
           "name": "home",
           "type": "string"
         }
@@ -47,37 +148,54 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "string",
+          "name": "perspectiveId",
+          "type": "string"
+        },
+        {
+          "name": "msgSender",
+          "type": "address"
+        }
+      ],
+      "name": "setHomePerspectiveSuperUser",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
           "name": "perspectiveId",
           "type": "string"
         }
       ],
-      "name": "setHomePerspective",
+      "name": "setHomePerspectivePublic",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"getHomePerspective\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"home\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"homePerspectives\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"string\",\"name\":\"perspectiveId\",\"type\":\"string\"}],\"name\":\"setHomePerspective\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspetives.sol\":\"UprtclHomePerspectives\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspetives.sol\":{\"keccak256\":\"0x6d33a24d090af2b1772650942d24ce23a313f90d5429515772a12b48c95619fb\",\"urls\":[\"bzz-raw://fb9c923eb65aff841ddd24ffd90f13c5ccb28fdc61ef08e2f5948362ed449ed5\",\"dweb:/ipfs/Qmefbh7sb3eM8D33YUReyckSQJkNK6yMFAzEezax9wVCpL\"]}},\"version\":1}",
-  "bytecode": "0x608060405234801561001057600080fd5b506103ab806100206000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80632c7bfd76146100465780635b041086146100e1578063eb5e06c314610107575b600080fd5b61006c6004803603602081101561005c57600080fd5b50356001600160a01b0316610179565b6040805160208082528351818301528351919283929083019185019080838360005b838110156100a657818101518382015260200161008e565b50505050905090810190601f1680156100d35780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b61006c600480360360208110156100f757600080fd5b50356001600160a01b0316610222565b6101776004803603602081101561011d57600080fd5b81019060208101813564010000000081111561013857600080fd5b82018360208201111561014a57600080fd5b8035906020019184600183028401116401000000008311171561016c57600080fd5b5090925090506102bc565b005b6001600160a01b0381166000908152602081815260409182902080548351601f60026000196101006001861615020190931692909204918201849004840281018401909452808452606093928301828280156102165780601f106101eb57610100808354040283529160200191610216565b820191906000526020600020905b8154815290600101906020018083116101f957829003601f168201915b50505050509050919050565b600060208181529181526040908190208054825160026001831615610100026000190190921691909104601f8101859004850282018501909352828152929091908301828280156102b45780601f10610289576101008083540402835291602001916102b4565b820191906000526020600020905b81548152906001019060200180831161029757829003601f168201915b505050505081565b3360009081526020819052604090206102d69083836102db565b505050565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061031c5782800160ff19823516178555610349565b82800160010185558215610349579182015b8281111561034957823582559160200191906001019061032e565b50610355929150610359565b5090565b61037391905b80821115610355576000815560010161035f565b9056fea265627a7a72315820c934726ab7ebc0056f08dc3dfc1af7dca9a229a62e16c8d7c755b16f130667a164736f6c63430005100032",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c80632c7bfd76146100465780635b041086146100e1578063eb5e06c314610107575b600080fd5b61006c6004803603602081101561005c57600080fd5b50356001600160a01b0316610179565b6040805160208082528351818301528351919283929083019185019080838360005b838110156100a657818101518382015260200161008e565b50505050905090810190601f1680156100d35780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b61006c600480360360208110156100f757600080fd5b50356001600160a01b0316610222565b6101776004803603602081101561011d57600080fd5b81019060208101813564010000000081111561013857600080fd5b82018360208201111561014a57600080fd5b8035906020019184600183028401116401000000008311171561016c57600080fd5b5090925090506102bc565b005b6001600160a01b0381166000908152602081815260409182902080548351601f60026000196101006001861615020190931692909204918201849004840281018401909452808452606093928301828280156102165780601f106101eb57610100808354040283529160200191610216565b820191906000526020600020905b8154815290600101906020018083116101f957829003601f168201915b50505050509050919050565b600060208181529181526040908190208054825160026001831615610100026000190190921691909104601f8101859004850282018501909352828152929091908301828280156102b45780601f10610289576101008083540402835291602001916102b4565b820191906000526020600020905b81548152906001019060200180831161029757829003601f168201915b505050505081565b3360009081526020819052604090206102d69083836102db565b505050565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061031c5782800160ff19823516178555610349565b82800160010185558215610349579182015b8281111561034957823582559160200191906001019061032e565b50610355929150610359565b5090565b61037391905b80821115610355576000815560010161035f565b9056fea265627a7a72315820c934726ab7ebc0056f08dc3dfc1af7dca9a229a62e16c8d7c755b16f130667a164736f6c63430005100032",
-  "sourceMap": "33:366:10:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;33:366:10;;;;;;;",
-  "deployedSourceMap": "33:366:10:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;33:366:10;;;;;;;;;;;;;;;;;;;;;;;;;;;;;128:133;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;128:133:10;-1:-1:-1;;;;;128:133:10;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:100:-1;33:3;30:1;27:10;8:100;;;90:11;;;84:18;71:11;;;64:39;52:2;45:10;8:100;;;12:14;128:133:10;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;71:50;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;71:50:10;-1:-1:-1;;;;;71:50:10;;:::i;267:129::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;267:129:10;;;;;;;;21:11:-1;5:28;;2:2;;;46:1;43;36:12;2:2;267:129:10;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;267:129:10;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;-1:-1;267:129:10;;-1:-1:-1;267:129:10;-1:-1:-1;267:129:10;:::i;:::-;;128:133;-1:-1:-1;;;;;231:23:10;;:16;:23;;;;;;;;;;;;224:30;;;;;;-1:-1:-1;;224:30:10;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;194:18;;224:30;;;231:23;224:30;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;128:133;;;:::o;71:50::-;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;71:50:10;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;267:129::-;362:10;345:16;:28;;;;;;;;;;:44;;376:13;;345:44;:::i;:::-;;267:129;;:::o;33:366::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;33:366:10;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;33:366:10;;;-1:-1:-1;33:366:10;:::i;:::-;;;:::o;:::-;;;;;;;;;;;;;;;;;;;;:::o",
-  "source": "pragma solidity >=0.5.0 <0.6.0;\n\ncontract UprtclHomePerspectives {\n    mapping(address => string) public homePerspectives;\n\n    function getHomePerspective(address owner) external view returns (string memory home) {\n        return homePerspectives[owner];\n    }\n\n    function setHomePerspective(string calldata perspectiveId) external {\n        homePerspectives[msg.sender] = perspectiveId;\n    }\n\n}\n",
-  "sourcePath": "/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspetives.sol",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.8+commit.23d335f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"getHomePerspective\",\"outputs\":[{\"name\":\"home\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"suAddress\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"bool\"}],\"name\":\"setSuperUser\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"}],\"name\":\"homePerspectives\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"isOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"perspectiveId\",\"type\":\"string\"},{\"name\":\"msgSender\",\"type\":\"address\"}],\"name\":\"setHomePerspectiveSuperUser\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"perspectiveId\",\"type\":\"string\"}],\"name\":\"setHomePerspectivePublic\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"suAddress\",\"type\":\"address\"}],\"name\":\"isSuperUser\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"}],\"devdoc\":{\"methods\":{\"isOwner()\":{\"details\":\"Returns true if the caller is the current owner.\"},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner.     * NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspectives.sol\":\"UprtclHomePerspectives\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/pepo/pr/uprtcl/eth-uprtcl/contracts/Context.sol\":{\"keccak256\":\"0x90a3995645af7562d84b9d69363ffa5ae7217714ab61e951bf7bc450f40e4061\",\"urls\":[\"bzzr://51482c01bddf23793bddee43b60ab9578a62948a4f2082def24ea792a553b055\"]},\"/home/pepo/pr/uprtcl/eth-uprtcl/contracts/HasSuperUsers.sol\":{\"keccak256\":\"0x3c0b02ba1ee7db42c3a92f6ff958e0093d668b68fb021fcac2a2b36dc847a6bb\",\"urls\":[\"bzzr://23325670aa7252e55116273f4a5020de260dc8dd87d935f7036dc7f8ba2425af\"]},\"/home/pepo/pr/uprtcl/eth-uprtcl/contracts/Ownable.sol\":{\"keccak256\":\"0x4c324cbeb9fb22b32c1896024abfe04737c7634ed7e0aa7792d3e23f6f036ea7\",\"urls\":[\"bzzr://433fb4f53ea81399648df2c7e0e43527ff6dcb770516f97ba763ed51a6e03f2a\"]},\"/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspectives.sol\":{\"keccak256\":\"0x80740cd11150ee5ab429fb74618d1341e86ce63013bb0ebc7616025d302387e1\",\"urls\":[\"bzzr://fbc1d0c1d8c3a9cb030f5ea7363d19b22c5599789a1423916fe4b0ecef89cae9\"]}},\"version\":1}",
+  "bytecode": "0x608060405261001261005f60201b60201c565b600080546001600160a01b0319166001600160a01b03928316178082556040519216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908290a3610063565b3390565b6108ee806100726000396000f3fe608060405234801561001057600080fd5b506004361061009e5760003560e01c80638f32d59b116100665780638f32d59b146101c05780639b49baf8146101dc578063b05097b514610255578063cd784d1b146102c5578063f2fde38b146102eb5761009e565b80632c7bfd76146100a357806345655b4e1461013e5780635b0410861461016e578063715018a6146101945780638da5cb5b1461019c575b600080fd5b6100c9600480360360208110156100b957600080fd5b50356001600160a01b0316610311565b6040805160208082528351818301528351919283929083019185019080838360005b838110156101035781810151838201526020016100eb565b50505050905090810190601f1680156101305780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b61016c6004803603604081101561015457600080fd5b506001600160a01b03813516906020013515156103ba565b005b6100c96004803603602081101561018457600080fd5b50356001600160a01b0316610441565b61016c6104da565b6101a4610580565b604080516001600160a01b039092168252519081900360200190f35b6101c8610590565b604080519115158252519081900360200190f35b61016c600480360360408110156101f257600080fd5b81019060208101813564010000000081111561020d57600080fd5b82018360208201111561021f57600080fd5b8035906020019184600183028401116401000000008311171561024157600080fd5b9193509150356001600160a01b03166105b4565b61016c6004803603602081101561026b57600080fd5b81019060208101813564010000000081111561028657600080fd5b82018360208201111561029857600080fd5b803590602001918460018302840111640100000000831117156102ba57600080fd5b509092509050610641565b6101c8600480360360208110156102db57600080fd5b50356001600160a01b0316610686565b61016c6004803603602081101561030157600080fd5b50356001600160a01b03166106a4565b6001600160a01b038116600090815260026020818152604092839020805484516001821615610100026000190190911693909304601f810183900483028401830190945283835260609390918301828280156103ae5780601f10610383576101008083540402835291602001916103ae565b820191906000526020600020905b81548152906001019060200180831161039157829003601f168201915b50505050509050919050565b6103c2610590565b6104165760408051600160e51b62461bcd02815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b6001600160a01b03919091166000908152600160205260409020805460ff1916911515919091179055565b600260208181526000928352604092839020805484516001821615610100026000190190911693909304601f81018390048302840183019094528383529192908301828280156104d25780601f106104a7576101008083540402835291602001916104d2565b820191906000526020600020905b8154815290600101906020018083116104b557829003601f168201915b505050505081565b6104e2610590565b6105365760408051600160e51b62461bcd02815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b6000546001600160a01b03165b90565b600080546001600160a01b03166105a561070c565b6001600160a01b031614905090565b6105bd33610686565b6105fb57604051600160e51b62461bcd02815260040180806020018281038252602881526020018061089b6028913960400191505060405180910390fd5b61063c83838080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250859250610710915050565b505050565b61068282828080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250339250610710915050565b5050565b6001600160a01b031660009081526001602052604090205460ff1690565b6106ac610590565b6107005760408051600160e51b62461bcd02815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b61070981610739565b50565b3390565b6001600160a01b0381166000908152600260209081526040909120835161063c928501906107dc565b6001600160a01b03811661078157604051600160e51b62461bcd0281526004018080602001828103825260268152602001806108756026913960400191505060405180910390fd5b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061081d57805160ff191683800117855561084a565b8280016001018555821561084a579182015b8281111561084a57825182559160200191906001019061082f565b5061085692915061085a565b5090565b61058d91905b80821115610856576000815560010161086056fe4f776e61626c653a206e6577206f776e657220697320746865207a65726f2061646472657373486173537570657255736572733a2063616c6c6572206973206e6f74206120737570657255736572a165627a7a72305820b8cdd1ad288565beadbc1c8db55a41d53f6903bde593d3c40cd0b70107099f890029",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061009e5760003560e01c80638f32d59b116100665780638f32d59b146101c05780639b49baf8146101dc578063b05097b514610255578063cd784d1b146102c5578063f2fde38b146102eb5761009e565b80632c7bfd76146100a357806345655b4e1461013e5780635b0410861461016e578063715018a6146101945780638da5cb5b1461019c575b600080fd5b6100c9600480360360208110156100b957600080fd5b50356001600160a01b0316610311565b6040805160208082528351818301528351919283929083019185019080838360005b838110156101035781810151838201526020016100eb565b50505050905090810190601f1680156101305780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b61016c6004803603604081101561015457600080fd5b506001600160a01b03813516906020013515156103ba565b005b6100c96004803603602081101561018457600080fd5b50356001600160a01b0316610441565b61016c6104da565b6101a4610580565b604080516001600160a01b039092168252519081900360200190f35b6101c8610590565b604080519115158252519081900360200190f35b61016c600480360360408110156101f257600080fd5b81019060208101813564010000000081111561020d57600080fd5b82018360208201111561021f57600080fd5b8035906020019184600183028401116401000000008311171561024157600080fd5b9193509150356001600160a01b03166105b4565b61016c6004803603602081101561026b57600080fd5b81019060208101813564010000000081111561028657600080fd5b82018360208201111561029857600080fd5b803590602001918460018302840111640100000000831117156102ba57600080fd5b509092509050610641565b6101c8600480360360208110156102db57600080fd5b50356001600160a01b0316610686565b61016c6004803603602081101561030157600080fd5b50356001600160a01b03166106a4565b6001600160a01b038116600090815260026020818152604092839020805484516001821615610100026000190190911693909304601f810183900483028401830190945283835260609390918301828280156103ae5780601f10610383576101008083540402835291602001916103ae565b820191906000526020600020905b81548152906001019060200180831161039157829003601f168201915b50505050509050919050565b6103c2610590565b6104165760408051600160e51b62461bcd02815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b6001600160a01b03919091166000908152600160205260409020805460ff1916911515919091179055565b600260208181526000928352604092839020805484516001821615610100026000190190911693909304601f81018390048302840183019094528383529192908301828280156104d25780601f106104a7576101008083540402835291602001916104d2565b820191906000526020600020905b8154815290600101906020018083116104b557829003601f168201915b505050505081565b6104e2610590565b6105365760408051600160e51b62461bcd02815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b600080546040516001600160a01b03909116907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0908390a3600080546001600160a01b0319169055565b6000546001600160a01b03165b90565b600080546001600160a01b03166105a561070c565b6001600160a01b031614905090565b6105bd33610686565b6105fb57604051600160e51b62461bcd02815260040180806020018281038252602881526020018061089b6028913960400191505060405180910390fd5b61063c83838080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250859250610710915050565b505050565b61068282828080601f016020809104026020016040519081016040528093929190818152602001838380828437600092019190915250339250610710915050565b5050565b6001600160a01b031660009081526001602052604090205460ff1690565b6106ac610590565b6107005760408051600160e51b62461bcd02815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e6572604482015290519081900360640190fd5b61070981610739565b50565b3390565b6001600160a01b0381166000908152600260209081526040909120835161063c928501906107dc565b6001600160a01b03811661078157604051600160e51b62461bcd0281526004018080602001828103825260268152602001806108756026913960400191505060405180910390fd5b600080546040516001600160a01b03808516939216917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e091a3600080546001600160a01b0319166001600160a01b0392909216919091179055565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061081d57805160ff191683800117855561084a565b8280016001018555821561084a579182015b8281111561084a57825182559160200191906001019061082f565b5061085692915061085a565b5090565b61058d91905b80821115610856576000815560010161086056fe4f776e61626c653a206e6577206f776e657220697320746865207a65726f2061646472657373486173537570657255736572733a2063616c6c6572206973206e6f74206120737570657255736572a165627a7a72305820b8cdd1ad288565beadbc1c8db55a41d53f6903bde593d3c40cd0b70107099f890029",
+  "sourceMap": "64:740:11:-;;;710:12:4;:10;;;:12;;:::i;:::-;701:6;:21;;-1:-1:-1;;;;;;701:21:4;-1:-1:-1;;;;;701:21:4;;;;;;;737:40;;770:6;;;737:40;;701:6;;737:40;64:740:11;;788:96:0;867:10;788:96;:::o;64:740:11:-;;;;;;;",
+  "deployedSourceMap": "64:740:11:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;64:740:11;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;176:133;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;176:133:11;-1:-1:-1;;;;;176:133:11;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:100:-1;33:3;30:1;27:10;8:100;;;90:11;;;84:18;71:11;;;64:39;52:2;45:10;8:100;;;12:14;176:133:11;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;393:116:1;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;;;;;;393:116:1;;;;;;;;;;:::i;:::-;;119:50:11;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;119:50:11;-1:-1:-1;;;;;119:50:11;;:::i;1653:137:4:-;;;:::i;860:85::-;;;:::i;:::-;;;;-1:-1:-1;;;;;860:85:4;;;;;;;;;;;;;;1219:92;;;:::i;:::-;;;;;;;;;;;;;;;;;;473:179:11;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;473:179:11;;;;;;;;21:11:-1;5:28;;2:2;;;46:1;43;36:12;2:2;473:179:11;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;473:179:11;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;473:179:11;;-1:-1:-1;473:179:11;-1:-1:-1;473:179:11;-1:-1:-1;;;;;473:179:11;;:::i;658:144::-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;658:144:11;;;;;;;;21:11:-1;5:28;;2:2;;;46:1;43;36:12;2:2;658:144:11;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;658:144:11;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;-1:-1;658:144:11;;-1:-1:-1;658:144:11;-1:-1:-1;658:144:11;:::i;275:112:1:-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;275:112:1;-1:-1:-1;;;;;275:112:1;;:::i;1939:115:4:-;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;1939:115:4;-1:-1:-1;;;;;1939:115:4;;:::i;176:133:11:-;-1:-1:-1;;;;;279:23:11;;;;;;:16;:23;;;;;;;;;272:30;;;;;;;;;;-1:-1:-1;;272:30:11;;;;;;;;;;;;;;;;;;;;;;;;;;242:18;;279:23;;272:30;;279:23;272:30;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;176:133;;;:::o;393:116:1:-;1072:9:4;:7;:9::i;:::-;1064:54;;;;;-1:-1:-1;;;;;1064:54:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;473:21:1;;;;;;;;:10;:21;;;;;:29;;-1:-1:-1;;473:29:1;;;;;;;;;;393:116::o;119:50:11:-;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;119:50:11;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;1653:137:4:-;1072:9;:7;:9::i;:::-;1064:54;;;;;-1:-1:-1;;;;;1064:54:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1751:1;1735:6;;1714:40;;-1:-1:-1;;;;;1735:6:4;;;;1714:40;;1751:1;;1714:40;1781:1;1764:19;;-1:-1:-1;;;;;;1764:19:4;;;1653:137::o;860:85::-;898:15;932:6;-1:-1:-1;;;;;932:6:4;860:85;;:::o;1219:92::-;1259:4;1298:6;;-1:-1:-1;;;;;1298:6:4;1282:12;:10;:12::i;:::-;-1:-1:-1;;;;;1282:22:4;;1275:29;;1219:92;:::o;473:179:11:-;183:23:1;195:10;183:11;:23::i;:::-;175:76;;;;-1:-1:-1;;;;;175:76:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;593:52:11;620:13;;593:52;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;81:16;;74:27;;;;-1:-1;635:9:11;;-1:-1:-1;593:26:11;;-1:-1:-1;;593:52:11:i;:::-;473:179;;;:::o;658:144::-;742:53;769:13;;742:53;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;81:16;;74:27;;;;-1:-1;784:10:11;;-1:-1:-1;742:26:11;;-1:-1:-1;;742:53:11:i;:::-;658:144;;:::o;275:112:1:-;-1:-1:-1;;;;;359:21:1;336:4;359:21;;;:10;:21;;;;;;;;;275:112::o;1939:115:4:-;1072:9;:7;:9::i;:::-;1064:54;;;;;-1:-1:-1;;;;;1064:54:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2019:28;2038:8;2019:18;:28::i;:::-;1939:115;:::o;788:96:0:-;867:10;788:96;:::o;315:152:11:-;-1:-1:-1;;;;;417:27:11;;;;;;:16;:27;;;;;;;;:43;;;;;;;;:::i;2155:233:4:-;-1:-1:-1;;;;;2236:22:4;;2228:73;;;;-1:-1:-1;;;;;2228:73:4;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2337:6;;;2316:38;;-1:-1:-1;;;;;2316:38:4;;;;2337:6;;;2316:38;;;2364:6;:17;;-1:-1:-1;;;;;;2364:17:4;-1:-1:-1;;;;;2364:17:4;;;;;;;;;;2155:233::o;64:740:11:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;64:740:11;;;-1:-1:-1;64:740:11;:::i;:::-;;;:::o;:::-;;;;;;;;;;;;;;;;;",
+  "source": "pragma solidity >=0.5.0 <0.6.0;\n\nimport \"./HasSuperUsers.sol\";\n\ncontract UprtclHomePerspectives is HasSuperUsers {\n    mapping(address => string) public homePerspectives;\n\n    function getHomePerspective(address owner) external view returns (string memory home) {\n        return homePerspectives[owner];\n    }\n\n    function setHomePerspectiveInternal(string memory perspectiveId, address msgSender) private {\n        homePerspectives[msgSender] = perspectiveId;\n    }\n\n    function setHomePerspectiveSuperUser(string calldata perspectiveId, address msgSender) external onlySuperUser {\n        setHomePerspectiveInternal(perspectiveId, msgSender);\n    }\n\n    function setHomePerspectivePublic(string calldata perspectiveId) external {\n        setHomePerspectiveInternal(perspectiveId, msg.sender);\n    }\n}",
+  "sourcePath": "/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspectives.sol",
   "ast": {
-    "absolutePath": "/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspetives.sol",
+    "absolutePath": "/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspectives.sol",
     "exportedSymbols": {
       "UprtclHomePerspectives": [
-        1973
+        2143
       ]
     },
-    "id": 1974,
+    "id": 2144,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1943,
+        "id": 2082,
         "literals": [
           "solidity",
           ">=",
@@ -88,28 +206,65 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:31:10"
+        "src": "0:31:11"
       },
       {
-        "baseContracts": [],
-        "contractDependencies": [],
+        "absolutePath": "/home/pepo/pr/uprtcl/eth-uprtcl/contracts/HasSuperUsers.sol",
+        "file": "./HasSuperUsers.sol",
+        "id": 2083,
+        "nodeType": "ImportDirective",
+        "scope": 2144,
+        "sourceUnit": 77,
+        "src": "33:29:11",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 2084,
+              "name": "HasSuperUsers",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 76,
+              "src": "99:13:11",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_HasSuperUsers_$76",
+                "typeString": "contract HasSuperUsers"
+              }
+            },
+            "id": 2085,
+            "nodeType": "InheritanceSpecifier",
+            "src": "99:13:11"
+          }
+        ],
+        "contractDependencies": [
+          76,
+          316,
+          26
+        ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1973,
+        "id": 2143,
         "linearizedBaseContracts": [
-          1973
+          2143,
+          76,
+          316,
+          26
         ],
         "name": "UprtclHomePerspectives",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 1947,
+            "id": 2089,
             "name": "homePerspectives",
             "nodeType": "VariableDeclaration",
-            "scope": 1973,
-            "src": "71:50:10",
+            "scope": 2143,
+            "src": "119:50:11",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -117,28 +272,28 @@
               "typeString": "mapping(address => string)"
             },
             "typeName": {
-              "id": 1946,
+              "id": 2088,
               "keyType": {
-                "id": 1944,
+                "id": 2086,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
-                "src": "79:7:10",
+                "src": "127:7:11",
                 "typeDescriptions": {
                   "typeIdentifier": "t_address",
                   "typeString": "address"
                 }
               },
               "nodeType": "Mapping",
-              "src": "71:26:10",
+              "src": "119:26:11",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_address_$_t_string_storage_$",
                 "typeString": "mapping(address => string)"
               },
               "valueType": {
-                "id": 1945,
+                "id": 2087,
                 "name": "string",
                 "nodeType": "ElementaryTypeName",
-                "src": "90:6:10",
+                "src": "138:6:11",
                 "typeDescriptions": {
                   "typeIdentifier": "t_string_storage_ptr",
                   "typeString": "string"
@@ -150,35 +305,35 @@
           },
           {
             "body": {
-              "id": 1958,
+              "id": 2100,
               "nodeType": "Block",
-              "src": "214:47:10",
+              "src": "262:47:11",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
                     "baseExpression": {
                       "argumentTypes": null,
-                      "id": 1954,
+                      "id": 2096,
                       "name": "homePerspectives",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1947,
-                      "src": "231:16:10",
+                      "referencedDeclaration": 2089,
+                      "src": "279:16:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_mapping$_t_address_$_t_string_storage_$",
                         "typeString": "mapping(address => string storage ref)"
                       }
                     },
-                    "id": 1956,
+                    "id": 2098,
                     "indexExpression": {
                       "argumentTypes": null,
-                      "id": 1955,
+                      "id": 2097,
                       "name": "owner",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1949,
-                      "src": "248:5:10",
+                      "referencedDeclaration": 2091,
+                      "src": "296:5:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -189,37 +344,37 @@
                     "isPure": false,
                     "lValueRequested": false,
                     "nodeType": "IndexAccess",
-                    "src": "231:23:10",
+                    "src": "279:23:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage",
                       "typeString": "string storage ref"
                     }
                   },
-                  "functionReturnParameters": 1953,
-                  "id": 1957,
+                  "functionReturnParameters": 2095,
+                  "id": 2099,
                   "nodeType": "Return",
-                  "src": "224:30:10"
+                  "src": "272:30:11"
                 }
               ]
             },
             "documentation": null,
-            "id": 1959,
+            "id": 2101,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "getHomePerspective",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1950,
+              "id": 2092,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1949,
+                  "id": 2091,
                   "name": "owner",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1959,
-                  "src": "156:13:10",
+                  "scope": 2101,
+                  "src": "204:13:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -227,10 +382,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1948,
+                    "id": 2090,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "156:7:10",
+                    "src": "204:7:11",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -241,19 +396,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "155:15:10"
+              "src": "203:15:11"
             },
             "returnParameters": {
-              "id": 1953,
+              "id": 2095,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1952,
+                  "id": 2094,
                   "name": "home",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1959,
-                  "src": "194:18:10",
+                  "scope": 2101,
+                  "src": "242:18:11",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -261,10 +416,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 1951,
+                    "id": 2093,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "194:6:10",
+                    "src": "242:6:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -274,24 +429,24 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "193:20:10"
+              "src": "241:20:11"
             },
-            "scope": 1973,
-            "src": "128:133:10",
+            "scope": 2143,
+            "src": "176:133:11",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           },
           {
             "body": {
-              "id": 1971,
+              "id": 2114,
               "nodeType": "Block",
-              "src": "335:61:10",
+              "src": "407:60:11",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 1969,
+                    "id": 2112,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -300,45 +455,29 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 1964,
+                        "id": 2108,
                         "name": "homePerspectives",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1947,
-                        "src": "345:16:10",
+                        "referencedDeclaration": 2089,
+                        "src": "417:16:11",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_string_storage_$",
                           "typeString": "mapping(address => string storage ref)"
                         }
                       },
-                      "id": 1967,
+                      "id": 2110,
                       "indexExpression": {
                         "argumentTypes": null,
-                        "expression": {
-                          "argumentTypes": null,
-                          "id": 1965,
-                          "name": "msg",
-                          "nodeType": "Identifier",
-                          "overloadedDeclarations": [],
-                          "referencedDeclaration": 3738,
-                          "src": "362:3:10",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_magic_message",
-                            "typeString": "msg"
-                          }
-                        },
-                        "id": 1966,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "sender",
-                        "nodeType": "MemberAccess",
-                        "referencedDeclaration": null,
-                        "src": "362:10:10",
+                        "id": 2109,
+                        "name": "msgSender",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2105,
+                        "src": "434:9:11",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_address_payable",
-                          "typeString": "address payable"
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
                         }
                       },
                       "isConstant": false,
@@ -346,7 +485,7 @@
                       "isPure": false,
                       "lValueRequested": true,
                       "nodeType": "IndexAccess",
-                      "src": "345:28:10",
+                      "src": "417:27:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_string_storage",
                         "typeString": "string storage ref"
@@ -356,47 +495,225 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 1968,
+                      "id": 2111,
                       "name": "perspectiveId",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1961,
-                      "src": "376:13:10",
+                      "referencedDeclaration": 2103,
+                      "src": "447:13:11",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_string_calldata_ptr",
-                        "typeString": "string calldata"
+                        "typeIdentifier": "t_string_memory_ptr",
+                        "typeString": "string memory"
                       }
                     },
-                    "src": "345:44:10",
+                    "src": "417:43:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage",
                       "typeString": "string storage ref"
                     }
                   },
-                  "id": 1970,
+                  "id": 2113,
                   "nodeType": "ExpressionStatement",
-                  "src": "345:44:10"
+                  "src": "417:43:11"
                 }
               ]
             },
             "documentation": null,
-            "id": 1972,
+            "id": 2115,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
-            "name": "setHomePerspective",
+            "name": "setHomePerspectiveInternal",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1962,
+              "id": 2106,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1961,
+                  "id": 2103,
                   "name": "perspectiveId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1972,
-                  "src": "295:29:10",
+                  "scope": 2115,
+                  "src": "351:27:11",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 2102,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "351:6:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2105,
+                  "name": "msgSender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2115,
+                  "src": "380:17:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2104,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "380:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "350:48:11"
+            },
+            "returnParameters": {
+              "id": 2107,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "407:0:11"
+            },
+            "scope": 2143,
+            "src": "315:152:11",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 2129,
+              "nodeType": "Block",
+              "src": "583:69:11",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 2125,
+                        "name": "perspectiveId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2117,
+                        "src": "620:13:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_calldata_ptr",
+                          "typeString": "string calldata"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 2126,
+                        "name": "msgSender",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2119,
+                        "src": "635:9:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_string_calldata_ptr",
+                          "typeString": "string calldata"
+                        },
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 2124,
+                      "name": "setHomePerspectiveInternal",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 2115,
+                      "src": "593:26:11",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_string_memory_ptr_$_t_address_$returns$__$",
+                        "typeString": "function (string memory,address)"
+                      }
+                    },
+                    "id": 2127,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "593:52:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 2128,
+                  "nodeType": "ExpressionStatement",
+                  "src": "593:52:11"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 2130,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 2122,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 2121,
+                  "name": "onlySuperUser",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 47,
+                  "src": "569:13:11",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "569:13:11"
+              }
+            ],
+            "name": "setHomePerspectiveSuperUser",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2120,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2117,
+                  "name": "perspectiveId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2130,
+                  "src": "510:29:11",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
@@ -404,10 +721,184 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 1960,
+                    "id": 2116,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "295:6:10",
+                    "src": "510:6:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2119,
+                  "name": "msgSender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2130,
+                  "src": "541:17:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2118,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "541:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "509:50:11"
+            },
+            "returnParameters": {
+              "id": 2123,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "583:0:11"
+            },
+            "scope": 2143,
+            "src": "473:179:11",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 2141,
+              "nodeType": "Block",
+              "src": "732:70:11",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 2136,
+                        "name": "perspectiveId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2132,
+                        "src": "769:13:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_calldata_ptr",
+                          "typeString": "string calldata"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 2137,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3989,
+                          "src": "784:3:11",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 2138,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": null,
+                        "src": "784:10:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_string_calldata_ptr",
+                          "typeString": "string calldata"
+                        },
+                        {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      ],
+                      "id": 2135,
+                      "name": "setHomePerspectiveInternal",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 2115,
+                      "src": "742:26:11",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_string_memory_ptr_$_t_address_$returns$__$",
+                        "typeString": "function (string memory,address)"
+                      }
+                    },
+                    "id": 2139,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "742:53:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 2140,
+                  "nodeType": "ExpressionStatement",
+                  "src": "742:53:11"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 2142,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setHomePerspectivePublic",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2133,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2132,
+                  "name": "perspectiveId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2142,
+                  "src": "692:29:11",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 2131,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "692:6:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -417,39 +908,39 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "294:31:10"
+              "src": "691:31:11"
             },
             "returnParameters": {
-              "id": 1963,
+              "id": 2134,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "335:0:10"
+              "src": "732:0:11"
             },
-            "scope": 1973,
-            "src": "267:129:10",
+            "scope": 2143,
+            "src": "658:144:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 1974,
-        "src": "33:366:10"
+        "scope": 2144,
+        "src": "64:740:11"
       }
     ],
-    "src": "0:400:10"
+    "src": "0:804:11"
   },
   "legacyAST": {
-    "absolutePath": "/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspetives.sol",
+    "absolutePath": "/home/pepo/pr/uprtcl/eth-uprtcl/contracts/UprtclHomePerspectives.sol",
     "exportedSymbols": {
       "UprtclHomePerspectives": [
-        1973
+        2143
       ]
     },
-    "id": 1974,
+    "id": 2144,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1943,
+        "id": 2082,
         "literals": [
           "solidity",
           ">=",
@@ -460,28 +951,65 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:31:10"
+        "src": "0:31:11"
       },
       {
-        "baseContracts": [],
-        "contractDependencies": [],
+        "absolutePath": "/home/pepo/pr/uprtcl/eth-uprtcl/contracts/HasSuperUsers.sol",
+        "file": "./HasSuperUsers.sol",
+        "id": 2083,
+        "nodeType": "ImportDirective",
+        "scope": 2144,
+        "sourceUnit": 77,
+        "src": "33:29:11",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 2084,
+              "name": "HasSuperUsers",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 76,
+              "src": "99:13:11",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_HasSuperUsers_$76",
+                "typeString": "contract HasSuperUsers"
+              }
+            },
+            "id": 2085,
+            "nodeType": "InheritanceSpecifier",
+            "src": "99:13:11"
+          }
+        ],
+        "contractDependencies": [
+          76,
+          316,
+          26
+        ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 1973,
+        "id": 2143,
         "linearizedBaseContracts": [
-          1973
+          2143,
+          76,
+          316,
+          26
         ],
         "name": "UprtclHomePerspectives",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 1947,
+            "id": 2089,
             "name": "homePerspectives",
             "nodeType": "VariableDeclaration",
-            "scope": 1973,
-            "src": "71:50:10",
+            "scope": 2143,
+            "src": "119:50:11",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -489,28 +1017,28 @@
               "typeString": "mapping(address => string)"
             },
             "typeName": {
-              "id": 1946,
+              "id": 2088,
               "keyType": {
-                "id": 1944,
+                "id": 2086,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
-                "src": "79:7:10",
+                "src": "127:7:11",
                 "typeDescriptions": {
                   "typeIdentifier": "t_address",
                   "typeString": "address"
                 }
               },
               "nodeType": "Mapping",
-              "src": "71:26:10",
+              "src": "119:26:11",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_address_$_t_string_storage_$",
                 "typeString": "mapping(address => string)"
               },
               "valueType": {
-                "id": 1945,
+                "id": 2087,
                 "name": "string",
                 "nodeType": "ElementaryTypeName",
-                "src": "90:6:10",
+                "src": "138:6:11",
                 "typeDescriptions": {
                   "typeIdentifier": "t_string_storage_ptr",
                   "typeString": "string"
@@ -522,35 +1050,35 @@
           },
           {
             "body": {
-              "id": 1958,
+              "id": 2100,
               "nodeType": "Block",
-              "src": "214:47:10",
+              "src": "262:47:11",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
                     "baseExpression": {
                       "argumentTypes": null,
-                      "id": 1954,
+                      "id": 2096,
                       "name": "homePerspectives",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1947,
-                      "src": "231:16:10",
+                      "referencedDeclaration": 2089,
+                      "src": "279:16:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_mapping$_t_address_$_t_string_storage_$",
                         "typeString": "mapping(address => string storage ref)"
                       }
                     },
-                    "id": 1956,
+                    "id": 2098,
                     "indexExpression": {
                       "argumentTypes": null,
-                      "id": 1955,
+                      "id": 2097,
                       "name": "owner",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1949,
-                      "src": "248:5:10",
+                      "referencedDeclaration": 2091,
+                      "src": "296:5:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -561,37 +1089,37 @@
                     "isPure": false,
                     "lValueRequested": false,
                     "nodeType": "IndexAccess",
-                    "src": "231:23:10",
+                    "src": "279:23:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage",
                       "typeString": "string storage ref"
                     }
                   },
-                  "functionReturnParameters": 1953,
-                  "id": 1957,
+                  "functionReturnParameters": 2095,
+                  "id": 2099,
                   "nodeType": "Return",
-                  "src": "224:30:10"
+                  "src": "272:30:11"
                 }
               ]
             },
             "documentation": null,
-            "id": 1959,
+            "id": 2101,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
             "name": "getHomePerspective",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1950,
+              "id": 2092,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1949,
+                  "id": 2091,
                   "name": "owner",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1959,
-                  "src": "156:13:10",
+                  "scope": 2101,
+                  "src": "204:13:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -599,10 +1127,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1948,
+                    "id": 2090,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "156:7:10",
+                    "src": "204:7:11",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -613,19 +1141,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "155:15:10"
+              "src": "203:15:11"
             },
             "returnParameters": {
-              "id": 1953,
+              "id": 2095,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1952,
+                  "id": 2094,
                   "name": "home",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1959,
-                  "src": "194:18:10",
+                  "scope": 2101,
+                  "src": "242:18:11",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -633,10 +1161,10 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 1951,
+                    "id": 2093,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "194:6:10",
+                    "src": "242:6:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -646,24 +1174,24 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "193:20:10"
+              "src": "241:20:11"
             },
-            "scope": 1973,
-            "src": "128:133:10",
+            "scope": 2143,
+            "src": "176:133:11",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           },
           {
             "body": {
-              "id": 1971,
+              "id": 2114,
               "nodeType": "Block",
-              "src": "335:61:10",
+              "src": "407:60:11",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 1969,
+                    "id": 2112,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -672,45 +1200,29 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 1964,
+                        "id": 2108,
                         "name": "homePerspectives",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 1947,
-                        "src": "345:16:10",
+                        "referencedDeclaration": 2089,
+                        "src": "417:16:11",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_address_$_t_string_storage_$",
                           "typeString": "mapping(address => string storage ref)"
                         }
                       },
-                      "id": 1967,
+                      "id": 2110,
                       "indexExpression": {
                         "argumentTypes": null,
-                        "expression": {
-                          "argumentTypes": null,
-                          "id": 1965,
-                          "name": "msg",
-                          "nodeType": "Identifier",
-                          "overloadedDeclarations": [],
-                          "referencedDeclaration": 3738,
-                          "src": "362:3:10",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_magic_message",
-                            "typeString": "msg"
-                          }
-                        },
-                        "id": 1966,
-                        "isConstant": false,
-                        "isLValue": false,
-                        "isPure": false,
-                        "lValueRequested": false,
-                        "memberName": "sender",
-                        "nodeType": "MemberAccess",
-                        "referencedDeclaration": null,
-                        "src": "362:10:10",
+                        "id": 2109,
+                        "name": "msgSender",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2105,
+                        "src": "434:9:11",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_address_payable",
-                          "typeString": "address payable"
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
                         }
                       },
                       "isConstant": false,
@@ -718,7 +1230,7 @@
                       "isPure": false,
                       "lValueRequested": true,
                       "nodeType": "IndexAccess",
-                      "src": "345:28:10",
+                      "src": "417:27:11",
                       "typeDescriptions": {
                         "typeIdentifier": "t_string_storage",
                         "typeString": "string storage ref"
@@ -728,47 +1240,225 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 1968,
+                      "id": 2111,
                       "name": "perspectiveId",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 1961,
-                      "src": "376:13:10",
+                      "referencedDeclaration": 2103,
+                      "src": "447:13:11",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_string_calldata_ptr",
-                        "typeString": "string calldata"
+                        "typeIdentifier": "t_string_memory_ptr",
+                        "typeString": "string memory"
                       }
                     },
-                    "src": "345:44:10",
+                    "src": "417:43:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage",
                       "typeString": "string storage ref"
                     }
                   },
-                  "id": 1970,
+                  "id": 2113,
                   "nodeType": "ExpressionStatement",
-                  "src": "345:44:10"
+                  "src": "417:43:11"
                 }
               ]
             },
             "documentation": null,
-            "id": 1972,
+            "id": 2115,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
-            "name": "setHomePerspective",
+            "name": "setHomePerspectiveInternal",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1962,
+              "id": 2106,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1961,
+                  "id": 2103,
                   "name": "perspectiveId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1972,
-                  "src": "295:29:10",
+                  "scope": 2115,
+                  "src": "351:27:11",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 2102,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "351:6:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2105,
+                  "name": "msgSender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2115,
+                  "src": "380:17:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2104,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "380:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "350:48:11"
+            },
+            "returnParameters": {
+              "id": 2107,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "407:0:11"
+            },
+            "scope": 2143,
+            "src": "315:152:11",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "private"
+          },
+          {
+            "body": {
+              "id": 2129,
+              "nodeType": "Block",
+              "src": "583:69:11",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 2125,
+                        "name": "perspectiveId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2117,
+                        "src": "620:13:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_calldata_ptr",
+                          "typeString": "string calldata"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 2126,
+                        "name": "msgSender",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2119,
+                        "src": "635:9:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_string_calldata_ptr",
+                          "typeString": "string calldata"
+                        },
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      ],
+                      "id": 2124,
+                      "name": "setHomePerspectiveInternal",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 2115,
+                      "src": "593:26:11",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_string_memory_ptr_$_t_address_$returns$__$",
+                        "typeString": "function (string memory,address)"
+                      }
+                    },
+                    "id": 2127,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "593:52:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 2128,
+                  "nodeType": "ExpressionStatement",
+                  "src": "593:52:11"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 2130,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 2122,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 2121,
+                  "name": "onlySuperUser",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 47,
+                  "src": "569:13:11",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "569:13:11"
+              }
+            ],
+            "name": "setHomePerspectiveSuperUser",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2120,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2117,
+                  "name": "perspectiveId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2130,
+                  "src": "510:29:11",
                   "stateVariable": false,
                   "storageLocation": "calldata",
                   "typeDescriptions": {
@@ -776,10 +1466,184 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 1960,
+                    "id": 2116,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "295:6:10",
+                    "src": "510:6:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2119,
+                  "name": "msgSender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2130,
+                  "src": "541:17:11",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2118,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "541:7:11",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "509:50:11"
+            },
+            "returnParameters": {
+              "id": 2123,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "583:0:11"
+            },
+            "scope": 2143,
+            "src": "473:179:11",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 2141,
+              "nodeType": "Block",
+              "src": "732:70:11",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 2136,
+                        "name": "perspectiveId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2132,
+                        "src": "769:13:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_calldata_ptr",
+                          "typeString": "string calldata"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 2137,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3989,
+                          "src": "784:3:11",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 2138,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": null,
+                        "src": "784:10:11",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_string_calldata_ptr",
+                          "typeString": "string calldata"
+                        },
+                        {
+                          "typeIdentifier": "t_address_payable",
+                          "typeString": "address payable"
+                        }
+                      ],
+                      "id": 2135,
+                      "name": "setHomePerspectiveInternal",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 2115,
+                      "src": "742:26:11",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_string_memory_ptr_$_t_address_$returns$__$",
+                        "typeString": "function (string memory,address)"
+                      }
+                    },
+                    "id": 2139,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "742:53:11",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 2140,
+                  "nodeType": "ExpressionStatement",
+                  "src": "742:53:11"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 2142,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setHomePerspectivePublic",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 2133,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2132,
+                  "name": "perspectiveId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2142,
+                  "src": "692:29:11",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 2131,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "692:6:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -789,49 +1653,56 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "294:31:10"
+              "src": "691:31:11"
             },
             "returnParameters": {
-              "id": 1963,
+              "id": 2134,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "335:0:10"
+              "src": "732:0:11"
             },
-            "scope": 1973,
-            "src": "267:129:10",
+            "scope": 2143,
+            "src": "658:144:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 1974,
-        "src": "33:366:10"
+        "scope": 2144,
+        "src": "64:740:11"
       }
     ],
-    "src": "0:400:10"
+    "src": "0:804:11"
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
   },
   "networks": {
-    "4": {
-      "events": {},
-      "links": {},
-      "address": "0x512a37ebbB131e58A3E8b10Cd1Fa43981446Bf43",
-      "transactionHash": "0x67045ca3b61a21a20155cb183f597c3a2073a54bf0ad14e60847226cfb14994a"
-    },
     "3333": {
       "events": {},
       "links": {},
       "address": "0x59d3631c86BbE35EF041872d502F218A39FBa150",
-      "transactionHash": "0x0f8c9088e87d6dd32c7e274d3b35c1546f19ed70660daca728f64277bd897d4a"
+      "transactionHash": "0xf1c49dc69a973da673440f7910b27e5ffde24b0828c2c5f69745afb1f435e552"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2020-03-16T21:31:30.811Z",
+  "updatedAt": "2020-03-23T20:40:10.076Z",
   "devdoc": {
-    "methods": {}
+    "methods": {
+      "isOwner()": {
+        "details": "Returns true if the caller is the current owner."
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner.     * NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    }
   },
   "userdoc": {
     "methods": {}
