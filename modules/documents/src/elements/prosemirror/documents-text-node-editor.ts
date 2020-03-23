@@ -118,8 +118,8 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   isEditable() {
-    if (this === undefined) return true; /** prosemirror is calling this before the component is mounted or something */
-    const editable = this.editable ? this.editable === 'true' : true
+    this.logger.log(`isEditable()`, { editable: this.editable });
+    const editable = this.editable !== undefined ? this.editable === 'true' : false
     return editable;
   }
 
@@ -167,7 +167,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
     this.editor.view = new EditorView(container, {
       state: this.editor.state,
-      editable: this.isEditable,
+      editable: () => this.isEditable(),
       dispatchTransaction: transaction => this.handleTransaction(transaction),
       handleDOMEvents: {
         'focus': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: true } }))},
@@ -218,6 +218,16 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   updated(changedProperties: Map<string, any>) {
+    this.logger.log('updated()', { changedProperties });
+
+    if (changedProperties.has('editable')) {
+      this.logger.log('has editable', { view: this.editor.view });
+      if (this.editor.view) {
+        this.logger.log('will fucking updated!', { thisvieweditable: this.editor.view.editable, thiseditable: this.editable });
+        this.editor.view.setProps({ 'contenteditable': this.editable });
+      }
+    }
+
     if (changedProperties.has('showUrl') && this.showUrl && this.shadowRoot != null) {
       const input = this.shadowRoot.getElementById('URL_INPUT');
       if (input) {
