@@ -37,6 +37,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   };
 
   async firstUpdated() {
+    this.logger.log('firstUpdated()');
+    
     super.firstUpdated();
     await this.updateRefData();
     if (this.data !== undefined) {

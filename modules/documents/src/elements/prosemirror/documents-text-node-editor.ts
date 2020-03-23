@@ -3,7 +3,7 @@ import { LitElement, html, css, property } from 'lit-element';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EditorState } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
+import { EditorView, TextSelection } from 'prosemirror-view';
 import { toggleMark } from 'prosemirror-commands';
 import { DOMParser, DOMSerializer } from 'prosemirror-model';
 import { keymap } from 'prosemirror-keymap';
@@ -89,15 +89,26 @@ export class DocumentTextNodeEditor extends LitElement {
 
   onEnter(state, dispatch) {
     /** split */
-    const newState = state.apply(state.tr.split(state.selection.$cursor.pos));
+    debugger
+
+    let tr = state.tr
+    if (state.selection instanceof TextSelection) tr.deleteSelection();
+
+    const newState = state.apply(state.tr.split(state.selection.$cursor.pos));  
     
     /** remove second part */
-    const secondPart = newState.doc.content.content.splice(1, 1);
+    const secondPart = newState.doc.content.content[1];
+    newState.doc.content.content = newState.doc.content.content[0];
+
+    const fragment = this.editor.serializer.serializeFragment(secondPart);
+    const temp = document.createElement('div');
+    temp.appendChild(fragment);
+    const content = temp.innerHTML;
 
     /* dispatch its content upwards */
     this.editor.view.updateState(newState);
 
-    this.dispatchEvent(new CustomEvent('enter-pressed'));
+    this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { content }}));
     return true;
   }
 
@@ -195,11 +206,12 @@ export class DocumentTextNodeEditor extends LitElement {
     const fragment = this.editor.serializer.serializeFragment(newState.doc);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
+    const content = temp.innerHTML;
 
     this.dispatchEvent(
       new CustomEvent('content-changed', {
         detail: {
-          content: temp.innerHTML
+          content: content
         }
       })
     );
