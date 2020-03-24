@@ -26,38 +26,38 @@ export class DocumentTextNodeEditor extends LitElement {
 
   logger = new Logger('DOCUMENTS-TEXT-NODE-EDITOR');
 
-  editor: any = {};
-
+  
   @property({ type: String })
   type!: string;
-
+  
   @property({ type: String })
   init!: string;
   
   @property({ type: String })
   editable: string = 'true';
-
+  
   @property({ type: String, attribute: 'focus-init' })
   focusInit: string = 'false';
-
+  
   @property({ type: Number })
   level: number = 0;
-
+  
   @property({ type: String })
   placeholder: string | undefined = undefined;
-
+  
   @property({ type: Boolean, attribute: false })
   showMenu: Boolean = false;
-
+  
   @property({ type: Boolean, attribute: false })
   selected: Boolean = false;
-
+  
   @property({ type: Boolean, attribute: false })
   showUrl: Boolean = false;
-
+  
   @property({ type: Boolean, attribute: false })
   empty: Boolean = false;
-
+  
+  editor: any = {};
   preventHide: Boolean = false;
   content: any | undefined = undefined;
 
@@ -129,6 +129,15 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   firstUpdated() {
+    this.initEditor();
+  }
+
+  initEditor() {
+    if (this.editor && this.editor.view) { 
+      this.editor.view.destroy();
+      this.editor = {};
+    }
+
     this.editor.schema = this.type === TextType.Title ? titleSchema : blockSchema;
 
     /** convert HTML string to doc state */
@@ -225,12 +234,8 @@ export class DocumentTextNodeEditor extends LitElement {
   updated(changedProperties: Map<string, any>) {
     this.logger.log('updated()', { changedProperties });
 
-    if (changedProperties.has('editable')) {
-      this.logger.log('has editable', { view: this.editor.view });
-      if (this.editor.view) {
-        this.logger.log('will fucking updated!', { thisvieweditable: this.editor.view.editable, thiseditable: this.editable });
-        this.editor.view.setProps({ 'contenteditable': this.editable });
-      }
+    if (changedProperties.has('editable') || changedProperties.has('type') || changedProperties.has('init')) {
+      this.initEditor();
     }
 
     if (changedProperties.has('showUrl') && this.showUrl && this.shadowRoot != null) {

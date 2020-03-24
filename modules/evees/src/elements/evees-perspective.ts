@@ -254,6 +254,8 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   }
 
   render() {
+    this.logger.info('render()', { perspective: this.perspective });
+
     if (this.entityId === undefined || this.perspective === undefined) {
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>

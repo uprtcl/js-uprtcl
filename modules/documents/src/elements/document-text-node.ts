@@ -112,6 +112,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   async changeType(e: CustomEvent) {
     if (!this.data) return;
 
+    await this.commit();
+
     const newType = e.detail.type;
     let newContent: TextNode;
 
@@ -196,20 +198,6 @@ export class DocumentTextNode extends EveesContent<TextNode> {
                     until = youngerSyblings.length;
                   }
 
-                  /** remove these paragraphs from parent */
-                  this.dispatchEvent(
-                    new RemoveChildrenEvent({
-                      bubbles: true,
-                      cancelable: true,
-                      composed: true,
-                      detail: {
-                        startedOnElementId: this.data.id,
-                        fromIndex: this.index + 1,
-                        toIndex: this.index + 1 + until
-                      }
-                    })
-                  );
-
                   const nextParagraphs = [...youngerSyblings];
                   nextParagraphs.slice(0, until);
 
@@ -225,12 +213,25 @@ export class DocumentTextNode extends EveesContent<TextNode> {
                     ...newContent,
                     links: newLinks
                   };
+
+                  this.updateContentLocal(newContent);
+
+                  /** remove these paragraphs from parent */
+                  this.dispatchEvent(
+                    new RemoveChildrenEvent({
+                      bubbles: true,
+                      cancelable: true,
+                      composed: true,
+                      detail: {
+                        startedOnElementId: this.data.id,
+                        fromIndex: this.index + 1,
+                        toIndex: this.index + 1 + until
+                      }
+                    })
+                  );
                 }
               }
             }
-
-            this.updateContentLocal(newContent);
-
             return;
         }
     }
