@@ -28,7 +28,8 @@ import {
   bytes32ToCid,
   GET_PERSP_HASH,
   INIT_PERSP_BATCH,
-  UPDATE_OWNER
+  UPDATE_OWNER,
+  UPDATED_HEAD
 } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
@@ -37,6 +38,7 @@ import { NewPerspectiveData } from '../../evees.provider';
 
 const evees_if = 'evees-v0';
 export const ZERO_HEX_32 = '0x' + new Array(32).fill(0).join('');
+export const ZERO_ADDRESS = '0x' + new Array(40).fill(0).join('');
 
 export const hashToId = async (uprtclRoot: EthereumContract, perspectiveIdHash: string) => {
   /** check the creation event to reverse map the cid */
@@ -271,19 +273,27 @@ export class EveesEthereum implements EveesRemote, Authority {
     details: PerspectiveDetails
   ): Promise<void> {
     const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
-    let contextHash = ZERO_HEX_32;
 
-    if (details.context) {
-      contextHash = await hashText(details.context);
+    if(details.headId !== undefined || details.name !== undefined) {
+      await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
+        perspectiveIdHash,
+        {
+          context: details.context ? details.context : '',
+          name: details.name ? details.name : ''
+        }
+      ]);
     }
 
-    await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
-      perspectiveIdHash,
-      contextHash,
-      details.headId || '',
-      details.context || '',
-      details.name || ''
-    ]);
+    if(details.headId !== undefined) {
+      const headCidParts = cidToHex32(details.headId);
+
+      await this.uprtclDetails.send(UPDATED_HEAD, [
+        perspectiveIdHash,
+        headCidParts[0], 
+        headCidParts[1], 
+        ZERO_ADDRESS
+      ]);
+    }
   }
 
   async hashToId(hash: string) {

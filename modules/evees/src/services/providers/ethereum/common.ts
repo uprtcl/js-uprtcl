@@ -8,6 +8,7 @@ export const GET_PERSP = 'getPerspective(bytes32)';
 export const CREATE_PERSP = `createPerspective(${newPerspStr},address)`;
 export const UPDATE_OWNER = 'changePerspectiveOwner(bytes32,address)';
 export const CREATE_PERSP_BATCH = `createPerspectiveBatch(${newPerspStr}[],address)`;
+export const UPDATED_HEAD = `updateHead(bytes32,bytes32,bytes32,address)`;
 
 const perspDetailsStr = '(string,string)';
 const initPerspStr = `(${newPerspStr},${perspDetailsStr})`;
@@ -23,7 +24,7 @@ const proposalStr = `(string,string,address,uint256,${headUpdate}[],address[])`;
 export const INIT_PROPOSAL = `initProposal(${proposalStr},address)`;
 export const GET_PROPOSAL = 'getProposal(bytes32)';
 export const EXECUTE_PROPOSAL = 'executeProposal(bytes32)';
-export const AUTHORIZE_PROPOSAL = 'setProposalAuthorized(bytes32,uint8)';
+export const AUTHORIZE_PROPOSAL = 'authorizeProposal(bytes32,uint8,bool)';
 export const GET_PROPOSAL_ID = 'getProposalId(string,string,uint256)';
 
 export const hashText = async (text: string) => {

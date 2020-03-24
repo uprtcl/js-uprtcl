@@ -184,7 +184,8 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     await this.uprtclProposals.send(AUTHORIZE_PROPOSAL, [
       proposalId,
-      1
+      1,
+      true
     ]);
   }
 
