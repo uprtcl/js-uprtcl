@@ -40,7 +40,17 @@ export class WikiDrawer extends EveesContent<Wiki>{
     throw new Error("Method not implemented.");
   }
 
+  async firstUpdated() {
+    super.firstUpdated();
+
+    this.logger.log('firstUpdated()', { data: this.data, dataInit: this.dataInit });
+
+    this.updateRefData();
+    this.loadPagesData();
+  }
+
   updated(changedProperties: any) {
+    this.logger.log('updated()', { changedProperties, data: this.data, dataInit: this.dataInit });
     if (changedProperties.get('data') !== undefined) {
       this.loadPagesData();
     }
@@ -48,6 +58,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
 
   async loadPagesData() {
     this.logger.log('loadPagesData()');
+    if (!this.data) return;
 
     const wiki = this.data as Hashed<Wiki>;
 
@@ -82,14 +93,6 @@ export class WikiDrawer extends EveesContent<Wiki>{
 
     this.pagesList = await Promise.all(pagesListPromises);
     this.logger.log('loadPagesData()', { pagesList: this.pagesList });    
-  }
-
-  async firstUpdated() {
-    super.firstUpdated();
-
-    this.logger.log('firstUpdated()');
-    this.updateRefData();
-    this.loadPagesData();
   }
 
   selectPage(pageHash: string | undefined) {

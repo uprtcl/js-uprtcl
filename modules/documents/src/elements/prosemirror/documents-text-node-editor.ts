@@ -2,9 +2,9 @@ import { LitElement, html, css, property } from 'lit-element';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { EditorState } from 'prosemirror-state';
-import { EditorView, TextSelection } from 'prosemirror-view';
-import { toggleMark } from 'prosemirror-commands';
+import { EditorState, TextSelection } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+import { toggleMark, splitBlock } from 'prosemirror-commands';
 import { DOMParser, DOMSerializer } from 'prosemirror-model';
 import { keymap } from 'prosemirror-keymap';
 
@@ -15,7 +15,12 @@ import { blockSchema } from './schema-block';
 import { iconsStyle } from './icons.css';
 import { icons } from './icons';
 import { TextType } from '../../types';
-import { runInThisContext } from 'vm';
+
+const splitBlockTr = (state) => {
+  let transaction: any;
+  splitBlock(state, (tr) => { transaction = tr } )
+  return transaction;
+}
 
 export class DocumentTextNodeEditor extends LitElement {
 
@@ -88,28 +93,28 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   onEnter(state, dispatch) {
-    /** split */
-    debugger
-
-    let tr = state.tr
-    if (state.selection instanceof TextSelection) tr.deleteSelection();
-
-    const newState = state.apply(state.tr.split(state.selection.$cursor.pos));  
+    /** simulate splitBlock */
+    const spliTr = splitBlockTr(state)
+    let newState = state.apply(spliTr);
+    
+    /** reset cursor */
+    const resetCursor = newState.tr.setSelection(TextSelection.create(newState.doc, 0));
+    newState = newState.apply(resetCursor);
     
     /** remove second part */
-    const secondPart = newState.doc.content.content[1];
-    newState.doc.content.content = newState.doc.content.content[0];
+    const secondPart = newState.doc.content.content.splice(1, 1);
+    
+    /* dispatch its content upwards */
+    this.editor.view.updateState(newState);
 
     const fragment = this.editor.serializer.serializeFragment(secondPart);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
     const content = temp.innerHTML;
 
-    /* dispatch its content upwards */
-    this.editor.view.updateState(newState);
-
     this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { content }}));
-    return true;
+    
+    return false;
   }
 
   onBackspace() {
@@ -168,7 +173,7 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.view = new EditorView(container, {
       state: this.editor.state,
       editable: () => this.isEditable(),
-      dispatchTransaction: transaction => this.handleTransaction(transaction),
+      dispatchTransaction: transaction => this.dispatchTransaction(transaction),
       handleDOMEvents: {
         'focus': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: true } }))},
         'blur': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: false } }))}
@@ -180,7 +185,7 @@ export class DocumentTextNodeEditor extends LitElement {
     }
   }
 
-  handleTransaction(transaction: any) {
+  dispatchTransaction(transaction: any) {
     if (!transaction.curSelection.empty) {
       this.selected = true;
     } else {

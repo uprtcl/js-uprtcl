@@ -8,13 +8,16 @@ import { ApolloClientModule, gql } from '@uprtcl/graphql';
 
 import { RemotesConfig, Commit, Perspective } from '../types';
 import { EveesModule } from '../evees.module';
-import { EveesRemote, EveesBindings, CreateCommitArgs, CreatePerspectiveArgs, UpdateContentEvent } from '../uprtcl-evees';
+import { EveesRemote, EveesBindings, CreateCommitArgs, CreatePerspectiveArgs, UpdateContentEvent, Secured, UPDATE_HEAD } from '../uprtcl-evees';
 import { CreateSyblingEvent, CREATE_SYBLING_TAG, ADD_SYBLINGS_TAG, AddSyblingsEvent, RemoveChildrenEvent, REMOVE_CHILDREN_TAG, RemoveChildEvent, REMOVE_CHILD_TAG } from './events';
 
 export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-CONTENT');
 
-  @property({ type: Object })
+  @property({ type: Object, attribute: 'data' })
+  dataInit: Hashed<T> | undefined = undefined;
+
+  @property({ type: Object, attribute: false })
   data: Hashed<T> | undefined = undefined;
 
   @property({ type: String })
@@ -56,6 +59,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.discovery = this.request(DiscoveryModule.bindings.DiscoveryService);
+
+    this.data = this.dataInit;
   }
 
   getStore(eveesAuthority: string): Source | undefined {
@@ -75,6 +80,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   getCreatePatternOfSymbol(symbol: symbol) {
+    this.logger.log(`getCreatePatternOfSymbol(${symbol.toString()})`);
+
     const patterns: Pattern[] = this.requestAll(symbol);
     const create: Creatable<any, any> | undefined = (patterns.find(
       pattern => ((pattern as unknown) as Creatable<any, any>).create
@@ -97,6 +104,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   getHasChildrenPatternOfSymbol(symbol: symbol) {
+    this.logger.log(`getHasChildrenPatternOfSymbol(${symbol.toString()})`);
+
     const patterns: Pattern[] = this.requestAll(symbol);
     const hasChildren: HasChildren<any> | undefined = (patterns.find(
       pattern => ((pattern as unknown) as HasChildren<any>).create
@@ -208,6 +217,40 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     }));
   }
 
+  async updateContentLocal(newContent: T): Promise<void> {
+    if (!this.data) throw new Error('undefined data');
+    if (!this.eveesRemotes) throw new Error('eveesRemotes data');
+    if (this.symbol === undefined) throw new Error('this.symbol undefined');
+    if (!this.client) throw new Error('client is undefined');
+    
+    const object = await this.createEntity(newContent as unknown as object, this.symbol);
+    const remote = this.eveesRemotes.find(r => r.authority === origin);
+    if (!remote) throw new Error('remote undefined');;
+
+    const creatableCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePatternOfSymbol(
+      EveesModule.bindings.CommitPattern
+    );
+    
+    const commit: Secured<Commit> = await creatableCommit.create()(
+      {
+        parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
+        dataId: object.id
+      },
+      remote.source
+    );
+
+    const headUpdate = await this.client.mutate({
+      mutation: UPDATE_HEAD,
+      variables: {
+        perspectiveId: this.ref,
+        headId: commit.id
+      }
+    });
+
+    /** local update of data */
+    this.data = object;
+  }
+
   getChildren(data: object) {
     const hasChildren = this.getHasChildrenPatternOfObject(data);
     if (!hasChildren) throw new Error('hasChildren is undefined');
@@ -242,7 +285,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
     this.logger.info('createChild()', newContent);
 
-    this.updateContent(newContent.object);
+    this.updateContentLocal(newContent.object);
   }
 
   createSibling(object: object, symbol: symbol) {
@@ -294,7 +337,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
     this.logger.info('moveChildElement()', newContent);
 
-    this.updateContent(newContent.object);
+    this.updateContentLocal(newContent.object);
   }
 
   async removeChildElement(index: number) {
@@ -311,7 +354,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
     this.logger.info('removeChildElement()', newContent);
 
-    this.updateContent(newContent.object);
+    this.updateContentLocal(newContent.object);
   }
 
   addChildren(links: string[], index?: number) {
@@ -330,7 +373,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
     const newContent = this.replaceChildren(this.data.object as unknown as object, newLinks);
 
-    this.updateContent(newContent);
+    this.updateContentLocal(newContent);
   }
 
   removeChildren(fromIndex?: number, toIndex?: number) {
@@ -347,7 +390,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
     const newContent = this.replaceChildren(this.data.object as unknown as object, newLinks);
 
-    this.updateContent(newContent);
+    this.updateContentLocal(newContent);
   }
 
   connectedCallback() {

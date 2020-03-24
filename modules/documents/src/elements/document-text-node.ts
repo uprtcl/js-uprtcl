@@ -51,7 +51,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   async enterPressed() {
-    this.commit();
+    await this.commit();
     
     if (!this.data) return;
     if (!this.symbol) throw new Error('this.symbol undefined');
@@ -88,7 +88,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     this.currentText = e.detail.content;
   }
 
-  commit() {
+  async commit() {
     if(!this.data) return;
     if(!this.currentText) return;
 
@@ -97,7 +97,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
       text: this.currentText
     };
 
-    this.updateContent(newContent);
+    await this.updateContentLocal(newContent);
   }
 
   editorFocusChanged(focused: boolean) {
@@ -135,7 +135,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               type: newType
             };
 
-            this.updateContent(newContent);
+            this.updateContentLocal(newContent);
 
             /** add as syblings */
             this.dispatchEvent(
@@ -229,7 +229,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               }
             }
 
-            this.updateContent(newContent);
+            this.updateContentLocal(newContent);
 
             return;
         }
