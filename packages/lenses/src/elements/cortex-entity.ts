@@ -47,6 +47,8 @@ export class CortexEntity extends CortexEntityBase {
    * @returns the rendered selected lens
    */
   renderLens() {
+    this.logger.info('renderLens()', { context: this.context });
+
     if (!this.selectedLens) return html``;
 
     return this.selectedLens.render(this.renderSlotPlugins(), this.context);

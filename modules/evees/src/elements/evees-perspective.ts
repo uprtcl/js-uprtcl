@@ -44,8 +44,15 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   private currentHeadId: string | undefined = undefined;
   private perspective: Secured<Perspective> | undefined = undefined;
 
+  protected client: ApolloClient<any> | undefined = undefined;
+  protected commitPatterns: Pattern[] | undefined = undefined;
+  protected eveesRemotes: EveesRemote[] | undefined = undefined;
 
   firstUpdated() {
+    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.commitPatterns = this.requestAll(EveesBindings.CommitPattern);
+    this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
+
     this.logger.info('firstUpdated()', {
       firtPerspectiveId: this.firstPerspectiveId,
       genealogy: this.genealogy
@@ -69,15 +76,15 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   }
 
   async loadPerspective() {
-    this.requestUpdate();
+    if (!this.client) throw new Error('client is undefined');
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    this.requestUpdate();
 
     this.logger.info('loadPerspective() pre', this.perspectiveId);
 
     this.entityId = undefined;
 
-    const result = await client.query({
+    const result = await this.client.query({
       query: gql`
       {
         entity(id: "${this.perspectiveId}") {
@@ -183,8 +190,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
-  getCreatePattern(symbol) {
-    const patterns: Pattern[] = this.requestAll(symbol);
+  filterCreatePattern(patterns) {
     const create: Creatable<any, any> | undefined = (patterns.find(
       pattern => ((pattern as unknown) as Creatable<any, any>).create
     ) as unknown) as Creatable<any, any>;
@@ -194,22 +200,27 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     return create;
   }
 
+  getCommitCreatePattern() {
+    if(!this.commitPatterns) throw new Error('commitPatterns undefined');
+    return this.filterCreatePattern(this.commitPatterns);
+  }
+
   async updateContent(dataId: string) {
     if (!this.perspectiveId) return;
     if (!this.perspective) return;
+
+    if (!this.client) throw new Error('client is undefined');
+    if(!this.eveesRemotes) throw new Error('eveesRemotes undefined');
+
     const origin = this.perspective.object.payload.origin;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const remotes: EveesRemote[] = this.requestAll(EveesBindings.EveesRemote);
-    const remote = remotes.find(r => r.authority === origin);
+    const remote = this.eveesRemotes.find(r => r.authority === origin);
 
     if (!remote) return;
 
     this.logger.info('updateContent() pre', dataId);
 
-    const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
-      EveesBindings.CommitPattern
-    );
+    const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCommitCreatePattern();
 
     const commit: Secured<Commit> = await createCommit.create()(
       {
@@ -219,7 +230,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
       remote.source
     );
 
-    const headUpdate = await client.mutate({
+    const headUpdate = await this.client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.perspectiveId,
@@ -243,6 +254,8 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   }
 
   render() {
+    this.logger.info('render()', { perspective: this.perspective });
+
     if (this.entityId === undefined || this.perspective === undefined) {
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>

@@ -8,7 +8,7 @@ const pDOM = ["p", 0], blockquoteDOM = ["blockquote", 0], hrDOM = ["hr"],
 export const nodes = {
   // :: NodeSpec The top level document node.
   doc: {
-    content: "block"
+    content: "block+"
   },
 
   // :: NodeSpec A plain paragraph textblock. Represented in the DOM

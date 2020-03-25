@@ -5,7 +5,7 @@ import { Schema } from "prosemirror-model"
 export const nodes = {
   // :: NodeSpec The top level document node.
   doc: {
-    content: "heading"
+    content: "heading+"
   },
 
   // :: NodeSpec A heading textblock, with a `level` attribute that

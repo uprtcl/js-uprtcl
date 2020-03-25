@@ -2,6 +2,7 @@ import { property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
+
 export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
@@ -39,7 +40,17 @@ export class WikiDrawer extends EveesContent<Wiki>{
     throw new Error("Method not implemented.");
   }
 
+  async firstUpdated() {
+    super.firstUpdated();
+
+    this.logger.log('firstUpdated()', { data: this.data, dataInit: this.dataInit });
+
+    this.updateRefData();
+    this.loadPagesData();
+  }
+
   updated(changedProperties: any) {
+    this.logger.log('updated()', { changedProperties, data: this.data, dataInit: this.dataInit });
     if (changedProperties.get('data') !== undefined) {
       this.loadPagesData();
     }
@@ -47,6 +58,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
 
   async loadPagesData() {
     this.logger.log('loadPagesData()');
+    if (!this.data) return;
 
     const wiki = this.data as Hashed<Wiki>;
 
@@ -83,14 +95,6 @@ export class WikiDrawer extends EveesContent<Wiki>{
     this.logger.log('loadPagesData()', { pagesList: this.pagesList });    
   }
 
-  async firstUpdated() {
-    super.firstUpdated();
-
-    this.logger.log('firstUpdated()');
-    this.updateRefData();
-    this.loadPagesData();
-  }
-
   selectPage(pageHash: string | undefined) {
     this.dispatchEvent(
       new CustomEvent('page-selected', {
@@ -105,7 +109,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
 
   newPage() {
     const pageContent = {
-      text: '<h1>New page</h1>',
+      text: '<h1><br></h1>',
       type: TextType.Title,
       links: []
     };
@@ -163,9 +167,12 @@ export class WikiDrawer extends EveesContent<Wiki>{
             },
           }
           this.logger.log(`rendering page title ${page.id}`, menuConfig);
+          const text = htmlToText(page.title);
+          const empty = text === '';
           return html`
             <evees-list-item 
-              text=${htmlToText(page.title)} 
+              class=${empty ? 'title-empty' : '' }
+              text=${empty ? 'untitled' : text} 
               @item-click=${() => this.selectPage(page.id)}
               @option-click=${(e) => this.optionOnPage(ix, e.detail.option)}
               .config=${menuConfig}>
@@ -252,6 +259,10 @@ export class WikiDrawer extends EveesContent<Wiki>{
           height: 1vw;
           max-height: 5px;
           width: 100%;
+        }
+        .title-empty {
+          color: #a2a8aa;
+          font-style: italic;
         }
         .empty {
           width: 100%;

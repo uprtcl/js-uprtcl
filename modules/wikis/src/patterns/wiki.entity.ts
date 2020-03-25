@@ -1,6 +1,7 @@
 import { html, TemplateResult } from 'lit-element';
 import { injectable, inject, multiInject } from 'inversify';
 
+import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
 import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
@@ -12,6 +13,8 @@ import { Wiki } from '../types';
 import { CREATE_WIKI } from '../graphql/queries';
 
 const propertyOrder = ['title', 'pages'];
+
+const logger = new Logger('WIKI-ENTITY');
 
 @injectable()
 export class WikiEntity implements Entity {
@@ -78,16 +81,19 @@ export class WikiCommon extends WikiEntity implements HasLenses {
       {
         name: 'Wiki',
         type: 'content',
-        render: (lensContent: TemplateResult, context: any) => html`
-          <wiki-drawer
-            .data=${wiki}
-            .ref=${context.ref}
-            color=${context.color}
-            .selectedPageHash=${context.selectedPageHash}
-          >
-            ${lensContent}
-          </wiki-drawer>
-        `
+        render: (lensContent: TemplateResult, context: any) => {
+          logger.info('lenses() - Wiki', { wiki, lensContent, context });
+          return html`
+            <wiki-drawer
+              .data=${wiki}
+              .ref=${context.ref}
+              color=${context.color}
+              .selectedPageHash=${context.selectedPageHash}
+            >
+              ${lensContent}
+            </wiki-drawer>
+          `;
+        }
       }
     ];
   };

@@ -2,54 +2,89 @@
   "contractName": "UprtclProposals",
   "abi": [
     {
-      "anonymous": false,
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "factor_num",
+      "outputs": [
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
+          "name": "",
+          "type": "uint256"
         }
       ],
-      "name": "OwnershipTransferred",
-      "type": "event"
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
     },
     {
-      "anonymous": false,
-      "inputs": [
+      "constant": true,
+      "inputs": [],
+      "name": "minFee",
+      "outputs": [
         {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "toPerspectiveIdHash",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "fromPerspectiveIdHash",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "proposalId",
-          "type": "bytes32"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "creator",
-          "type": "address"
+          "name": "",
+          "type": "uint256"
         }
       ],
-      "name": "ProposalCreated",
-      "type": "event"
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "proposals",
+      "outputs": [
+        {
+          "name": "toPerspectiveId",
+          "type": "string"
+        },
+        {
+          "name": "fromPerspectiveId",
+          "type": "string"
+        },
+        {
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "name": "nonce",
+          "type": "uint256"
+        },
+        {
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "name": "authorized",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "suAddress",
+          "type": "address"
+        },
+        {
+          "name": "value",
+          "type": "bool"
+        }
+      ],
+      "name": "setSuperUser",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
     },
     {
       "constant": true,
@@ -57,50 +92,31 @@
       "name": "factor_den",
       "outputs": [
         {
-          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
       ],
       "payable": false,
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "constant": true,
       "inputs": [],
-      "name": "factor_num",
+      "name": "owner",
       "outputs": [
         {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "",
           "type": "address"
-        }
-      ],
-      "name": "fees",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "fee",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "balance",
-          "type": "uint256"
         }
       ],
       "payable": false,
@@ -113,7 +129,6 @@
       "name": "isOwner",
       "outputs": [
         {
-          "internalType": "bool",
           "name": "",
           "type": "bool"
         }
@@ -149,70 +164,8 @@
       "name": "minFee",
       "outputs": [
         {
-          "internalType": "uint256",
           "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address payable",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "proposals",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "toPerspectiveId",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "fromPerspectiveId",
-          "type": "string"
-        },
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "nonce",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint8",
-          "name": "status",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint8",
-          "name": "authorized",
-          "type": "uint8"
+          "type": "bool"
         }
       ],
       "payable": false,
@@ -221,15 +174,70 @@
     },
     {
       "constant": false,
-      "inputs": [],
-      "name": "renounceOwnership",
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": false,
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "fees",
+      "outputs": [
+        {
+          "name": "fee",
+          "type": "uint256"
+        },
+        {
+          "name": "balance",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "toPerspectiveIdHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "name": "fromPerspectiveIdHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "name": "proposalId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "creator",
+          "type": "address"
+        }
+      ],
+      "name": "ProposalCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
       "inputs": [
         {
           "internalType": "address",
@@ -257,17 +265,13 @@
           "type": "address"
         }
       ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "name": "OwnershipTransferred",
+      "type": "event"
     },
     {
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract UprtclRoot",
           "name": "_uprtclRoot",
           "type": "address"
         }
@@ -282,17 +286,14 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "string",
           "name": "toPerspectiveId",
           "type": "string"
         },
         {
-          "internalType": "string",
           "name": "fromPerspectiveId",
           "type": "string"
         },
         {
-          "internalType": "uint256",
           "name": "nonce",
           "type": "uint256"
         }
@@ -300,7 +301,6 @@
       "name": "getProposalId",
       "outputs": [
         {
-          "internalType": "bytes32",
           "name": "proposalId",
           "type": "bytes32"
         }
@@ -313,7 +313,6 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "uint256",
           "name": "_minFee",
           "type": "uint256"
         }
@@ -328,7 +327,6 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "uint256",
           "name": "_factor_num",
           "type": "uint256"
         }
@@ -343,7 +341,6 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "uint256",
           "name": "_factor_den",
           "type": "uint256"
         }
@@ -360,64 +357,52 @@
         {
           "components": [
             {
-              "internalType": "string",
               "name": "toPerspectiveId",
               "type": "string"
             },
             {
-              "internalType": "string",
               "name": "fromPerspectiveId",
               "type": "string"
             },
             {
-              "internalType": "address",
               "name": "owner",
               "type": "address"
             },
             {
-              "internalType": "uint256",
               "name": "nonce",
               "type": "uint256"
             },
             {
               "components": [
                 {
-                  "internalType": "bytes32",
                   "name": "perspectiveIdHash",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "bytes32",
                   "name": "headCid1",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "bytes32",
                   "name": "headCid0",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "uint8",
                   "name": "executed",
                   "type": "uint8"
                 }
               ],
-              "internalType": "struct UprtclProposals.HeadUpdate[]",
               "name": "headUpdates",
               "type": "tuple[]"
             },
             {
-              "internalType": "address[]",
               "name": "approvedAddresses",
               "type": "address[]"
             }
           ],
-          "internalType": "struct UprtclProposals.NewProposal",
           "name": "newProposal",
           "type": "tuple"
         },
         {
-          "internalType": "address",
           "name": "account",
           "type": "address"
         }
@@ -432,34 +417,28 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "bytes32",
           "name": "proposalId",
           "type": "bytes32"
         },
         {
           "components": [
             {
-              "internalType": "bytes32",
               "name": "perspectiveIdHash",
               "type": "bytes32"
             },
             {
-              "internalType": "bytes32",
               "name": "headCid1",
               "type": "bytes32"
             },
             {
-              "internalType": "bytes32",
               "name": "headCid0",
               "type": "bytes32"
             },
             {
-              "internalType": "uint8",
               "name": "executed",
               "type": "uint8"
             }
           ],
-          "internalType": "struct UprtclProposals.HeadUpdate[]",
           "name": "headUpdates",
           "type": "tuple[]"
         }
@@ -474,12 +453,10 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "bytes32",
           "name": "proposalId",
           "type": "bytes32"
         },
         {
-          "internalType": "uint8",
           "name": "status",
           "type": "uint8"
         }
@@ -494,12 +471,10 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "bytes32",
           "name": "proposalId",
           "type": "bytes32"
         },
         {
-          "internalType": "uint8",
           "name": "authorized",
           "type": "uint8"
         },
@@ -549,7 +524,6 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "bytes32",
           "name": "proposalId",
           "type": "bytes32"
         }
@@ -564,12 +538,10 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "bytes32",
           "name": "proposalId",
           "type": "bytes32"
         },
         {
-          "internalType": "uint256[]",
           "name": "indexes",
           "type": "uint256[]"
         }
@@ -584,7 +556,6 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "bytes32",
           "name": "proposalId",
           "type": "bytes32"
         }
@@ -594,69 +565,56 @@
         {
           "components": [
             {
-              "internalType": "string",
               "name": "toPerspectiveId",
               "type": "string"
             },
             {
-              "internalType": "string",
               "name": "fromPerspectiveId",
               "type": "string"
             },
             {
-              "internalType": "address",
               "name": "owner",
               "type": "address"
             },
             {
-              "internalType": "uint256",
               "name": "nonce",
               "type": "uint256"
             },
             {
               "components": [
                 {
-                  "internalType": "bytes32",
                   "name": "perspectiveIdHash",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "bytes32",
                   "name": "headCid1",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "bytes32",
                   "name": "headCid0",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "uint8",
                   "name": "executed",
                   "type": "uint8"
                 }
               ],
-              "internalType": "struct UprtclProposals.HeadUpdate[]",
               "name": "headUpdates",
               "type": "tuple[]"
             },
             {
-              "internalType": "address[]",
               "name": "approvedAddresses",
               "type": "address[]"
             },
             {
-              "internalType": "uint8",
               "name": "status",
               "type": "uint8"
             },
             {
-              "internalType": "uint8",
               "name": "authorized",
               "type": "uint8"
             }
           ],
-          "internalType": "struct UprtclProposals.Proposal",
           "name": "proposal",
           "type": "tuple"
         }
@@ -8224,8 +8182,7 @@
                         "id": 2732,
                         "isConstant": false,
                         "isLValue": false,
-                        "isPure": true,
-                        "kind": "string",
+                        "isPure": false,
                         "lValueRequested": false,
                         "nodeType": "Literal",
                         "src": "6669:46:12",
@@ -8239,6 +8196,14 @@
                     ],
                     "expression": {
                       "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        },
                         {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -8258,8 +8223,8 @@
                       "referencedDeclaration": 3993,
                       "src": "6607:7:12",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
-                        "typeString": "function (bool,string memory) pure"
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_uint8_$_t_bool_$_t_address_$returns$__$",
+                        "typeString": "function (bytes32,uint8,bool,address)"
                       }
                     },
                     "id": 2733,
@@ -8345,7 +8310,31 @@
                       "lValueRequested": false,
                       "leftHandSide": {
                         "argumentTypes": null,
-                        "expression": {
+                        "commonType": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        "id": 2731,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 2728,
+                          "name": "msgSender",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 2718,
+                          "src": "6628:9:12",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
                           "argumentTypes": null,
                           "id": 2738,
                           "name": "proposal",
@@ -8940,8 +8929,8 @@
                     "nodeType": "FunctionCall",
                     "src": "7204:116:12",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_tuple$__$",
-                      "typeString": "tuple()"
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
                     }
                   },
                   "id": 2782,
@@ -9600,8 +9589,8 @@
                     "nodeType": "FunctionCall",
                     "src": "7672:47:12",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_tuple$__$",
-                      "typeString": "tuple()"
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_memory",
+                      "typeString": "uint256[] memory"
                     }
                   },
                   "id": 2832,
@@ -10352,7 +10341,7 @@
                             "isConstant": false,
                             "isLValue": true,
                             "isPure": false,
-                            "lValueRequested": false,
+                            "lValueRequested": true,
                             "nodeType": "IndexAccess",
                             "src": "8456:11:12",
                             "typeDescriptions": {
@@ -19222,6 +19211,59 @@
                   },
                   "value": null,
                   "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2716,
+                  "name": "execute",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2760,
+                  "src": "6497:12:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 2715,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "6497:4:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 2718,
+                  "name": "msgSender",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 2760,
+                  "src": "6511:17:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 2717,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "6511:7:12",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
                 }
               ],
               "src": "6458:71:12"
@@ -21761,7 +21803,7 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.16+commit.9c3226ce.Emscripten.clang"
+    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
   },
   "networks": {
     "4": {

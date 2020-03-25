@@ -1,8 +1,10 @@
 import { LitElement, html, css, property } from 'lit-element';
 
-import { EditorState } from 'prosemirror-state';
+import { Logger } from '@uprtcl/micro-orchestrator';
+
+import { EditorState, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import { toggleMark } from 'prosemirror-commands';
+import { toggleMark, splitBlock } from 'prosemirror-commands';
 import { DOMParser, DOMSerializer } from 'prosemirror-model';
 import { keymap } from 'prosemirror-keymap';
 
@@ -14,36 +16,48 @@ import { iconsStyle } from './icons.css';
 import { icons } from './icons';
 import { TextType } from '../../types';
 
-export class DocumentTextNodeEditor extends LitElement {
-  editor: any = {};
+const splitBlockTr = (state) => {
+  let transaction: any;
+  splitBlock(state, (tr) => { transaction = tr } )
+  return transaction;
+}
 
+export class DocumentTextNodeEditor extends LitElement {
+
+  logger = new Logger('DOCUMENTS-TEXT-NODE-EDITOR');
+
+  
   @property({ type: String })
   type!: string;
-
+  
   @property({ type: String })
   init!: string;
-
+  
   @property({ type: String })
   editable: string = 'true';
-
+  
+  @property({ type: String, attribute: 'focus-init' })
+  focusInit: string = 'false';
+  
   @property({ type: Number })
   level: number = 0;
-
+  
   @property({ type: String })
   placeholder: string | undefined = undefined;
-
+  
   @property({ type: Boolean, attribute: false })
   showMenu: Boolean = false;
-
+  
   @property({ type: Boolean, attribute: false })
   selected: Boolean = false;
-
+  
   @property({ type: Boolean, attribute: false })
   showUrl: Boolean = false;
-
+  
   @property({ type: Boolean, attribute: false })
   empty: Boolean = false;
-
+  
+  editor: any = {};
   preventHide: Boolean = false;
   content: any | undefined = undefined;
 
@@ -78,12 +92,52 @@ export class DocumentTextNodeEditor extends LitElement {
     });
   }
 
-  onEnter() {
-    this.dispatchEvent(new CustomEvent('enter-pressed'));
-    return true;
+  onEnter(state, dispatch) {
+    /** simulate splitBlock */
+    const spliTr = splitBlockTr(state)
+    let newState = state.apply(spliTr);
+    
+    /** reset cursor */
+    const resetCursor = newState.tr.setSelection(TextSelection.create(newState.doc, 0));
+    newState = newState.apply(resetCursor);
+    
+    /** remove second part */
+    const secondPart = newState.doc.content.content.splice(1, 1);
+    
+    /* dispatch its content upwards */
+    this.editor.view.updateState(newState);
+
+    const fragment = this.editor.serializer.serializeFragment(secondPart);
+    const temp = document.createElement('div');
+    temp.appendChild(fragment);
+    const tail = temp.innerHTML;
+
+    this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { tail }}));
+    
+    return false;
+  }
+
+  onBackspace() {
+    this.dispatchEvent(new CustomEvent('backspace-pressed'));
+    return false;
+  }
+
+  isEditable() {
+    this.logger.log(`isEditable()`, { editable: this.editable });
+    const editable = this.editable !== undefined ? this.editable === 'true' : false
+    return editable;
   }
 
   firstUpdated() {
+    this.initEditor();
+  }
+
+  initEditor() {
+    if (this.editor && this.editor.view) { 
+      this.editor.view.destroy();
+      this.editor = {};
+    }
+
     this.editor.schema = this.type === TextType.Title ? titleSchema : blockSchema;
 
     /** convert HTML string to doc state */
@@ -116,7 +170,10 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.state = EditorState.create({
       schema: this.editor.schema,
       doc: doc,
-      plugins: [keymap({ Enter: (state, dispatch) => this.onEnter() })]
+      plugins: [keymap({ 
+        Enter: (state, dispatch) => this.onEnter(state, dispatch),
+        Backspace: (state, dispatch) => this.onBackspace()
+      })]
     });
 
     if (this.shadowRoot == null) return;
@@ -124,12 +181,20 @@ export class DocumentTextNodeEditor extends LitElement {
 
     this.editor.view = new EditorView(container, {
       state: this.editor.state,
-      editable: () => this.editable === 'true',
-      dispatchTransaction: transaction => this.handleTransaction(transaction)
+      editable: () => this.isEditable(),
+      dispatchTransaction: transaction => this.dispatchTransaction(transaction),
+      handleDOMEvents: {
+        'focus': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: true } }))},
+        'blur': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: false } }))}
+      }
     });
+
+    if (this.focusInit === 'true') {
+      this.editor.view.focus();
+    }
   }
 
-  handleTransaction(transaction: any) {
+  dispatchTransaction(transaction: any) {
     if (!transaction.curSelection.empty) {
       this.selected = true;
     } else {
@@ -139,8 +204,10 @@ export class DocumentTextNodeEditor extends LitElement {
     let newState = this.editor.view.state.apply(transaction);
 
     let contentChanged = !newState.doc.eq(this.editor.view.state.doc);
-
     this.editor.view.updateState(newState);
+
+    this.logger.log('handleTransaction()', { selected: this.selected, newState, contentChanged } );    
+
     if (!contentChanged) return;
 
     /** doc changed */
@@ -153,17 +220,24 @@ export class DocumentTextNodeEditor extends LitElement {
     const fragment = this.editor.serializer.serializeFragment(newState.doc);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
+    const content = temp.innerHTML;
 
     this.dispatchEvent(
       new CustomEvent('content-changed', {
         detail: {
-          content: temp.innerHTML
+          content: content
         }
       })
     );
   }
 
   updated(changedProperties: Map<string, any>) {
+    this.logger.log('updated()', { changedProperties });
+
+    if (changedProperties.has('editable') || changedProperties.has('type') || changedProperties.has('init')) {
+      this.initEditor();
+    }
+
     if (changedProperties.has('showUrl') && this.showUrl && this.shadowRoot != null) {
       const input = this.shadowRoot.getElementById('URL_INPUT');
       if (input) {
@@ -233,6 +307,14 @@ export class DocumentTextNodeEditor extends LitElement {
   menuItemClick(markType: any) {
     this.preventHide = false;
     toggleMark(markType)(this.editor.view.state, this.editor.view.dispatch);
+  }
+
+  editorFocused() {
+    this.logger.log('editor focused');
+  }
+
+  editorBlured() {
+    this.logger.log('editor blured');
   }
 
   render() {

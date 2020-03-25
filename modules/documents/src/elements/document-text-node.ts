@@ -15,6 +15,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { Hashed } from '@uprtcl/cortex';
+import { htmlToText } from 'src/uprtcl-documents';
 
 export class DocumentTextNode extends EveesContent<TextNode> {
   
@@ -29,33 +30,84 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
   getEmptyEntity() {
     return {
-      text: '<p>empty</p>',
+      text: '<p></p>',
       type: TextType.Paragraph,
       links: []
     }
   };
 
+  initNode(text: string, type: TextType ) {
+    /** init a node with the provided text guranteeing either the <p> or <h1> external tag
+     *  is consistent with the request type */
+    const temp = document.createElement('template');
+    temp.innerHTML = text.trim();
+
+    if (temp.content.firstElementChild == null) {
+      return this.getEmptyEntity();
+    }
+
+    const innerHTML = temp.content.firstElementChild.innerHTML;
+    
+    let newText;
+    if (type === TextType.Paragraph) {
+      newText = `<p>${innerHTML}</p>`
+    } else {
+      newText = `<h1>${innerHTML}</h1>`
+    }
+
+    return {
+      text: newText,
+      type: type,
+      links: []
+    }
+  }
+
   async firstUpdated() {
+    this.logger.log('firstUpdated()');
+    
     super.firstUpdated();
     await this.updateRefData();
+    if (this.data !== undefined) {
+      this.currentText = this.data.object.text;
+    }
   }
 
-  updated() {
-    this.logger.log('updated()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
+  updated(changedProperties: Map<string, any>) {
+    this.logger.log('updated()', { changedProperties, data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
   }
 
-  async enterPressed() {
-    this.commit();
+  async enterPressed(e: CustomEvent) {
+    await this.commit();
     
     if (!this.data) return;
     if (!this.symbol) throw new Error('this.symbol undefined');
 
-    this.logger.info('enterPressed()', { data: this.data });
+    const tail = e.detail.tail;
+    this.logger.info('enterPressed()', { data: this.data, tail });
 
     if (this.data.object.type === TextType.Title) {
-      await this.createChild(this.getEmptyEntity(), this.symbol);
+      await this.createChild(this.initNode(tail, TextType.Paragraph), this.symbol);
     } else {
-      this.createSibling(this.getEmptyEntity(), this.symbol);
+      this.createSibling(this.initNode(tail, TextType.Paragraph), this.symbol);
+    }
+  }
+
+  async backspacePressed() {
+    this.logger.log('backspacePressed()', this.currentText);
+    let empty = false;
+    if (this.currentText === undefined) {
+      empty = true;
+    };
+
+    if (!empty) {
+      const text = htmlToText(this.currentText as string);
+      empty = text === '';
+    }
+    
+    this.logger.log('backspacePressed()', { empty } );
+    
+    if (empty) {
+      this.removeFromParent();
     }
   }
 
@@ -63,26 +115,31 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     this.currentText = e.detail.content;
   }
 
-  commit() {
+  async commit() {
     if(!this.data) return;
     if(!this.currentText) return;
-
-    this.focused = false;
 
     const newContent: TextNode = {
       ...this.data.object,
       text: this.currentText
     };
 
-    this.updateContent(newContent);
+    await this.updateContentLocal(newContent);
   }
 
-  editorBlur() {
-    this.commit();
+  editorFocusChanged(focused: boolean) {
+    if (focused) {
+      this.focused = true;
+    } else {
+      this.focused = false;
+      this.commit();
+    }
   }
 
   async changeType(e: CustomEvent) {
     if (!this.data) return;
+
+    await this.commit();
 
     const newType = e.detail.type;
     let newContent: TextNode;
@@ -107,7 +164,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               type: newType
             };
 
-            this.updateContent(newContent);
+            this.updateContentLocal(newContent);
 
             /** add as syblings */
             this.dispatchEvent(
@@ -168,20 +225,6 @@ export class DocumentTextNode extends EveesContent<TextNode> {
                     until = youngerSyblings.length;
                   }
 
-                  /** remove these paragraphs from parent */
-                  this.dispatchEvent(
-                    new RemoveChildrenEvent({
-                      bubbles: true,
-                      cancelable: true,
-                      composed: true,
-                      detail: {
-                        startedOnElementId: this.data.id,
-                        fromIndex: this.index + 1,
-                        toIndex: this.index + 1 + until
-                      }
-                    })
-                  );
-
                   const nextParagraphs = [...youngerSyblings];
                   nextParagraphs.slice(0, until);
 
@@ -197,12 +240,25 @@ export class DocumentTextNode extends EveesContent<TextNode> {
                     ...newContent,
                     links: newLinks
                   };
+
+                  this.updateContentLocal(newContent);
+
+                  /** remove these paragraphs from parent */
+                  this.dispatchEvent(
+                    new RemoveChildrenEvent({
+                      bubbles: true,
+                      cancelable: true,
+                      composed: true,
+                      detail: {
+                        startedOnElementId: this.data.id,
+                        fromIndex: this.index + 1,
+                        toIndex: this.index + 1 + until
+                      }
+                    })
+                  );
                 }
               }
             }
-
-            this.updateContent(newContent);
-
             return;
         }
     }
@@ -232,12 +288,13 @@ export class DocumentTextNode extends EveesContent<TextNode> {
             <documents-text-node-editor
               type=${this.data.object.type}
               init=${this.data.object.text}
+              focus-init=${'true'}
               level=${this.level}
               editable=${this.editable ? 'true' : 'false'}
-              @focus=${() => (this.focused = true)}
-              @blur=${this.editorBlur}
+              @focus-changed=${(e) => (this.editorFocusChanged(e.detail.value))}
               @content-changed=${this.editorContentChanged}
               @enter-pressed=${this.enterPressed}
+              @backspace-pressed=${this.backspacePressed}
               @change-type=${this.changeType}
             ></documents-text-node-editor>
           </div>
