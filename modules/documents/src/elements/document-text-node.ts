@@ -36,6 +36,32 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
   };
 
+  initNode(text: string, type: TextType ) {
+    /** init a node with the provided text guranteeing either the <p> or <h1> external tag
+     *  is consistent with the request type */
+    const temp = document.createElement('template');
+    temp.innerHTML = text.trim();
+
+    if (temp.content.firstElementChild == null) {
+      return this.getEmptyEntity();
+    }
+
+    const innerHTML = temp.content.firstElementChild.innerHTML;
+    
+    let newText;
+    if (type === TextType.Paragraph) {
+      newText = `<p>${innerHTML}</p>`
+    } else {
+      newText = `<h1>${innerHTML}</h1>`
+    }
+
+    return {
+      text: newText,
+      type: type,
+      links: []
+    }
+  }
+
   async firstUpdated() {
     this.logger.log('firstUpdated()');
     
@@ -50,18 +76,19 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     this.logger.log('updated()', { changedProperties, data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
   }
 
-  async enterPressed() {
+  async enterPressed(e: CustomEvent) {
     await this.commit();
     
     if (!this.data) return;
     if (!this.symbol) throw new Error('this.symbol undefined');
 
-    this.logger.info('enterPressed()', { data: this.data });
+    const tail = e.detail.tail;
+    this.logger.info('enterPressed()', { data: this.data, tail });
 
     if (this.data.object.type === TextType.Title) {
-      await this.createChild(this.getEmptyEntity(), this.symbol);
+      await this.createChild(this.initNode(tail, TextType.Paragraph), this.symbol);
     } else {
-      this.createSibling(this.getEmptyEntity(), this.symbol);
+      this.createSibling(this.initNode(tail, TextType.Paragraph), this.symbol);
     }
   }
 

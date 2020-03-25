@@ -110,9 +110,9 @@ export class DocumentTextNodeEditor extends LitElement {
     const fragment = this.editor.serializer.serializeFragment(secondPart);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
-    const content = temp.innerHTML;
+    const tail = temp.innerHTML;
 
-    this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { content }}));
+    this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { tail }}));
     
     return false;
   }
