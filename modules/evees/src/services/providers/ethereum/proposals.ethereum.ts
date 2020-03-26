@@ -1,4 +1,3 @@
-import { IpfsSource } from '@uprtcl/ipfs-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { EthereumContract } from '@uprtcl/ethereum-provider';
 
@@ -21,12 +20,11 @@ export class ProposalsEthereum implements ProposalsProvider {
   constructor(
     protected uprtclRoot: EthereumContract,
     protected uprtclProposals: EthereumContract,
-    protected ipfsSource: IpfsSource,
     protected accessControl: EveesAccessControlEthereum
   ) {}
 
   async ready(): Promise<void> {
-    await Promise.all([this.uprtclProposals.ready(), this.ipfsSource.ready()]);
+    await Promise.all([this.uprtclProposals.ready()]);
   }
 
   async createProposal(
@@ -186,7 +184,8 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     await this.uprtclProposals.send(AUTHORIZE_PROPOSAL, [
       proposalId,
-      1
+      1,
+      true
     ]);
   }
 

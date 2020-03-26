@@ -55,6 +55,7 @@ export class WikiHome extends moduleConnect(LitElement) {
 
       .color-bar {
           height: 1vw;
+          max-height: 5px;
           width: 100%;
           margin-bottom: 1vw;
         }

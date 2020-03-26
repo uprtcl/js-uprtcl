@@ -3,7 +3,7 @@ import { EveesRemote } from './services/evees.remote';
 import { Secured } from './patterns/default-secured.pattern';
 import { Signed, Hashed } from '@uprtcl/cortex';
 
-export type RemoteMap = (eveesAuthority: string, entityName: string) => Source;
+export type RemoteMap = (eveesAuthority: string) => Source;
 
 export type RemotesConfig = {
   map: RemoteMap;

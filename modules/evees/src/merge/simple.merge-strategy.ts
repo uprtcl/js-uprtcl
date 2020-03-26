@@ -166,9 +166,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const [newData, actions] = await this.mergeData(ancestorData, newDatas, config);
 
     // TODO: fix inconsistency
-    const patternName = this.recognizer.recognize(newData)[0].name;
-
-    const sourceRemote = this.remotesConfig.map(authority, patternName);
+    const sourceRemote = this.remotesConfig.map(authority);
 
     const hashed: Hashed<any> = await this.hashed.derive()(newData, sourceRemote.hashRecipe);
 

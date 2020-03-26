@@ -11,7 +11,7 @@ import { EveesInfoBase } from './evee-info-base';
 export class EveesInfoPage extends EveesInfoBase {
 
   firstUpdated() {
-    this.load();
+    super.firstUpdated();
   }
 
   perspectiveTitle() {
@@ -106,9 +106,25 @@ export class EveesInfoPage extends EveesInfoBase {
             <div class="section-content info-text">
               ${this.renderPermissions()}
             </div>
+          </div>
+
+          ${this.perspectiveData.canWrite ? html`
+            <div class="section">
+              <div class="section-header">
+                Delete
+              </div>
+              <div class="section-content info-text">
+                <mwc-button
+                  outlined
+                  icon="delete_forever"
+                  @click=${() => this.delete()}
+                  label="Delete"
+                ></mwc-button>
+              </div>
+            </div>` : ''}
+
         </div>
-      </div>
-    </div>`;
+      </div>`;
   }
 
   static get styles() {

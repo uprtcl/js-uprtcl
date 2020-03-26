@@ -12,11 +12,15 @@ export const styleMap = style => {
 import { TextNode } from '@uprtcl/documents';
 import { sharedStyles } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+import { ContentUpdatedEvent, CONTENT_UPDATED_TAG } from '@uprtcl/evees';
 
 import '@material/mwc-top-app-bar';
 
 export class WikiPage extends moduleConnect(LitElement) {
+  
+  logger = new Logger('WIKI-PAGE');
+
   @property({ type: String })
   pageHash!: string;
 
@@ -28,6 +32,16 @@ export class WikiPage extends moduleConnect(LitElement) {
 
   back() {
     this.dispatchEvent(new CustomEvent('nav-back'));
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener(CONTENT_UPDATED_TAG, ((e: ContentUpdatedEvent) => {
+      this.logger.info('CATCHED EVENT: content-updated ', { pageHash: this.pageHash, e });
+      e.stopPropagation();
+      this.dispatchEvent(new CustomEvent('page-title-changed', { detail: { pageId: e.detail.perspectiveId }}));
+    }) as EventListener);
   }
 
   async firstUpdated() {
@@ -97,6 +111,7 @@ export class WikiPage extends moduleConnect(LitElement) {
         }
         .color-bar {
           height: 1vw;
+          max-height: 5px;
           width: 100%;
           margin-bottom: 1vw;
         }

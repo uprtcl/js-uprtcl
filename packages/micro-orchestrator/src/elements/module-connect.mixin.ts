@@ -36,7 +36,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
     ): T[][] {
       if (!this.isConnected) {
         throw new Error(
-          `Element ${(this as any).tagName} is not connected yet: you can only use request() and requestAll() after the element has been initialized and connected to the DOM (e.g. firstUpdated() in LitElement)`
+          `Element ${(this as any).tagName} is requesting dependency "${dependency.toString()}", but is not connected yet: you can only use request() and requestAll() after the element has been initialized and connected to the DOM (e.g. firstUpdated() in LitElement)`
         );
       }
 

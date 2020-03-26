@@ -1,16 +1,14 @@
-import { SourcesModule } from '@uprtcl/multiplatform';
+import { StoresModule, Store } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { ElementsModule, i18nextModule, MicroModule, Dictionary } from '@uprtcl/micro-orchestrator';
+import { ElementsModule, i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { DocumentTextNode } from './elements/document-text-node';
 import {
-  TextNodeActions,
   TextNodeCreate,
   TextNodePatterns,
   TextNodeTitle
 } from './patterns/text-node.entity';
-import { DocumentsProvider } from './services/documents.provider';
 import { documentsTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 
@@ -19,7 +17,7 @@ import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-no
 import { DocumentsBindings } from './bindings';
 
 /**
- * Configure a documents module with the given service providers
+ * Configure a documents module with the given stores
  *
  * Depends on these modules being present: LensesModule, CortexModule, DiscoveryModule, i18nBaseModule
  *
@@ -43,14 +41,14 @@ import { DocumentsBindings } from './bindings';
  *
  * @category CortexModule
  *
- * @param documentsRemote an array of remotes of documents
+ * @param stores an array of stores where documents can be put and retrieved
  */
 export class DocumentsModule extends MicroModule {
   static id = Symbol('documents-module');
 
   static bindings = DocumentsBindings;
 
-  constructor(protected documentsRemotes: DocumentsProvider[]) {
+  constructor(protected stores: Store[]) {
     super();
   }
 
@@ -59,10 +57,10 @@ export class DocumentsModule extends MicroModule {
   submodules = [
     new GraphQlSchemaModule(documentsTypeDefs, resolvers),
     new i18nextModule('documents', { en: en }),
-    new SourcesModule(
-      this.documentsRemotes.map(remote => ({
+    new StoresModule(
+      this.stores.map(store => ({
         symbol: DocumentsModule.bindings.DocumentsRemote,
-        source: remote
+        store: store
       }))
     ),
     new ElementsModule({
@@ -71,7 +69,6 @@ export class DocumentsModule extends MicroModule {
     }),
     new PatternsModule({
       [DocumentsModule.bindings.TextNodeEntity]: [
-        TextNodeActions,
         TextNodeCreate,
         TextNodePatterns,
         TextNodeTitle

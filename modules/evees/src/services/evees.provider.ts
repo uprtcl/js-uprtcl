@@ -12,6 +12,14 @@ export interface NewPerspectiveData {
 
 export interface EveesProvider extends EveesSource {
 
+
+  /**
+   * Delete a perspective, it is expected that, once called, 
+   
+   * @param perspectiveId: TBW
+   */
+  deletePerspective(perspectiveId: string): Promise<void>;
+
   /**
    * Clone a perspective, set its details and forces a user canWrite in the service. 
    

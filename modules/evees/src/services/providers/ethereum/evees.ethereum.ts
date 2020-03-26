@@ -4,7 +4,7 @@ import {
   EthereumContractOptions,
   EthereumContract
 } from '@uprtcl/ethereum-provider';
-import { IpfsSource, IpfsConnection, sortObject, CidConfig } from '@uprtcl/ipfs-provider';
+import { IpfsStore, IpfsConnection, sortObject, CidConfig } from '@uprtcl/ipfs-provider';
 import { Hashed } from '@uprtcl/cortex';
 import { KnownSourcesService, Authority } from '@uprtcl/multiplatform';
 
@@ -27,7 +27,9 @@ import {
   GET_PERSP,
   bytes32ToCid,
   GET_PERSP_HASH,
-  INIT_PERSP_BATCH
+  INIT_PERSP_BATCH,
+  UPDATE_OWNER,
+  UPDATED_HEAD
 } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
@@ -36,6 +38,7 @@ import { NewPerspectiveData } from '../../evees.provider';
 
 const evees_if = 'evees-v0';
 export const ZERO_HEX_32 = '0x' + new Array(32).fill(0).join('');
+export const ZERO_ADDRESS = '0x' + new Array(40).fill(0).join('');
 
 export const hashToId = async (uprtclRoot: EthereumContract, perspectiveIdHash: string) => {
   /** check the creation event to reverse map the cid */
@@ -60,7 +63,7 @@ export const hashToId = async (uprtclRoot: EthereumContract, perspectiveIdHash: 
 export class EveesEthereum implements EveesRemote, Authority {
   logger: Logger = new Logger('EveesEtereum');
 
-  ipfsSource: IpfsSource;
+  ipfsStore: IpfsStore;
   accessControl: EveesAccessControlEthereum;
   proposals: ProposalsProvider;
   knownSources?: KnownSourcesService | undefined;
@@ -82,12 +85,11 @@ export class EveesEthereum implements EveesRemote, Authority {
     this.uprtclDetails = new EthereumContract(uprtclDetailsOptions, ethConnection);
     this.uprtclProposals = new EthereumContract(uprtclProposalsOptions, ethConnection);
 
-    this.ipfsSource = new IpfsSource(ipfsConnection, hashRecipe);
+    this.ipfsStore = new IpfsStore(ipfsConnection, hashRecipe);
     this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot);
     this.proposals = new ProposalsEthereum(
       this.uprtclRoot,
       this.uprtclProposals,
-      this.ipfsSource,
       this.accessControl
     );
     this.hashRecipe = hashRecipe;
@@ -106,14 +108,14 @@ export class EveesEthereum implements EveesRemote, Authority {
   }
 
   get source() {
-    return this.ipfsSource.source;
+    return this.ipfsStore.source;
   }
 
   /**
    * @override
    */
-  public get<T>(hash: string): Promise<Hashed<T> | undefined> {
-    return this.ipfsSource.get(hash);
+  public get(hash: string): Promise<Hashed<object> | undefined> {
+    return this.ipfsStore.get(hash);
   }
 
   /**
@@ -124,12 +126,12 @@ export class EveesEthereum implements EveesRemote, Authority {
       this.uprtclRoot.ready(),
       this.uprtclDetails.ready(),
       this.uprtclProposals.ready(),
-      this.ipfsSource.ready()
+      this.ipfsStore.ready()
     ]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspectiveId = await this.ipfsSource.addObject(sortObject(secured.object));
+    const perspectiveId = await this.ipfsStore.put(sortObject(secured.object));
     this.logger.log(`[ETH] persistPerspectiveEntity - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
@@ -223,7 +225,7 @@ export class EveesEthereum implements EveesRemote, Authority {
     if (!perspective.origin) throw new Error('origin cannot be empty');
 
     /** Store the perspective data in the data layer */
-    const perspectiveId = await this.ipfsSource.addObject(sortObject(secured.object));
+    const perspectiveId = await this.ipfsStore.put(sortObject(secured.object));
     this.logger.log(`[ETH] createPerspective - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
@@ -255,7 +257,7 @@ export class EveesEthereum implements EveesRemote, Authority {
     const commit = sortObject(secured.object);
     /** Store the perspective data in the data layer */
 
-    let commitId = await this.ipfsSource.addObject(commit);
+    let commitId = await this.ipfsStore.put(commit);
     this.logger.log(`[ETH] createCommit - added to IPFS`, commitId, commit);
 
     if (secured.id && secured.id != commitId) {
@@ -271,19 +273,27 @@ export class EveesEthereum implements EveesRemote, Authority {
     details: PerspectiveDetails
   ): Promise<void> {
     const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
-    let contextHash = ZERO_HEX_32;
 
-    if (details.context) {
-      contextHash = await hashText(details.context);
+    if(details.headId !== undefined || details.name !== undefined) {
+      await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
+        perspectiveIdHash,
+        {
+          context: details.context ? details.context : '',
+          name: details.name ? details.name : ''
+        }
+      ]);
     }
 
-    await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
-      perspectiveIdHash,
-      contextHash,
-      details.headId || '',
-      details.context || '',
-      details.name || ''
-    ]);
+    if(details.headId !== undefined) {
+      const headCidParts = cidToHex32(details.headId);
+
+      await this.uprtclDetails.send(UPDATED_HEAD, [
+        perspectiveIdHash,
+        headCidParts[0], 
+        headCidParts[1], 
+        ZERO_ADDRESS
+      ]);
+    }
   }
 
   async hashToId(hash: string) {
@@ -327,5 +337,24 @@ export class EveesEthereum implements EveesRemote, Authority {
     const headId = bytes32ToCid([ethPerspective.headCid1, ethPerspective.headCid0]);
 
     return { name: details.name, context: details.context, headId: headId };
+  }
+
+  async deletePerspective(perspectiveId: string): Promise<void> {
+    const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
+    let contextHash = ZERO_HEX_32;
+
+    /** set null values */
+    await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
+      perspectiveIdHash,
+      contextHash,
+      '',
+      '',
+      ''
+    ]);
+
+    /** set null owner (cannot be undone) */
+    const ZERO_ADD = '0x' + new Array(40).fill(0).join('');
+    await this.uprtclRoot.send(UPDATE_OWNER, [perspectiveIdHash, ZERO_ADD]);
+
   }
 }

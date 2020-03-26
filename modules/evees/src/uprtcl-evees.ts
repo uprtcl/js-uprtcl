@@ -46,10 +46,15 @@ export { PerspectivesList } from './elements/evees-perspectives-list';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesPerspective } from './elements/evees-perspective';
-export { UpdateContentEvent, UpdateContentArgs } from './elements/events';
+export { EveesContent } from './elements/evees-content';
+export { UpdateContentEvent, UpdateContentArgs, RemoveChildrenEvent, AddSyblingsEvent, ContentUpdatedEvent, CONTENT_UPDATED_TAG } from './elements/events';
+
+/** UI support components */
+export { MenuConfig } from './elements/common-ui/evees-options-menu'
 
 /** Queries */
 export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE } from './graphql/queries';
+export { contentCreateResolver } from './graphql/resolvers';
 
 /** Patterns */
 export { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';

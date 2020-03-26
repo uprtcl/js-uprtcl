@@ -68,6 +68,10 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const jsonData = result.data.entity.head.data._context.raw;
 
     const dataObject = JSON.parse(jsonData);
+    if (result.data.entity.head == null) {
+      throw new Error(`head null reading perspective ${perspectiveId}`);
+    }
+    
     const dataId = result.data.entity.head.data.id;
     const data = { id: dataId, object: dataObject };
 
@@ -230,8 +234,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (!remote.userId)
       throw new Error('Cannot create perspectives in a remote you are not signed in');
 
-    const patternName = this.recognizer.recognize(data)[0].name;
-    const dataSource = this.remotesConfig.map(remote.authority, patternName);
+    const dataSource = this.remotesConfig.map(remote.authority);
 
     const newHasheData = await this.hashed.derive()(data, dataSource.hashRecipe);
 

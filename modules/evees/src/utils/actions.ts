@@ -135,28 +135,30 @@ export async function executeActions(
 
   await Promise.all(createCommitsPromises);
 
-  const createPerspectivesPromises = actions
-    .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION)
-    .reverse()
-    .map(async (action: UprtclAction) => {
-      if (!action.entity) throw new Error('entity undefined');
-      
-      const result = await client.mutate({
-        mutation: CREATE_PERSPECTIVE,
-        variables: {
-          ...action.entity.object.payload,
-          ...action.payload.details,
-          authority: action.entity.object.payload.origin,
-          canWrite: action.payload.owner,
-          parentId: action.payload.parentId
-        }
-      });
-      if (result.data.createPerspective.id !== action.entity.id) {
-        throw new Error(
-          `created commit id ${result.data.createPerspective.id} not as expected ${action.entity.id}`
-        );
+  const createPerspective = async (action: UprtclAction) => {
+    if (!action.entity) throw new Error('entity undefined');
+
+    const result = await client.mutate({
+      mutation: CREATE_PERSPECTIVE,
+      variables: {
+        ...action.entity.object.payload,
+        ...action.payload.details,
+        authority: action.entity.object.payload.origin,
+        canWrite: action.payload.owner,
+        parentId: action.payload.parentId
       }
     });
+    if (result.data.createPerspective.id !== action.entity.id) {
+      throw new Error(
+        `created commit id ${result.data.createPerspective.id} not as expected ${action.entity.id}`
+      );
+    }
+  }
 
-  await Promise.all(createPerspectivesPromises);
+   /** must run sequentially since new perspectives 
+   *  permissions depend on previous ones */
+  await actions
+    .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION)
+    .reverse()
+    .reduce((promise, action) => promise.then(_ => createPerspective(action)), Promise.resolve());
 }

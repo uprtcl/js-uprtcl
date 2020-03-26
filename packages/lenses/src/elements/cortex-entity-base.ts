@@ -28,6 +28,11 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   @property({ attribute: false })
   protected selectedLens!: Lens | undefined;
 
+  protected client: ApolloClient<any> | undefined = undefined;
+
+  firstUpdated() {
+    this.client = this.request(ApolloClientModule.bindings.Client);
+  }
   connectedCallback() {
     super.connectedCallback();
 
@@ -39,12 +44,12 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
   }
 
   async loadEntity(hash: string): Promise<void> {
+    if (!this.client) throw new Error('client undefined');
+    
     this.selectedLens = undefined;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-
     // We are also loading the content to have it cached in case the lens wants it
-    const result = await client.query({
+    const result = await this.client.query({
       query: gql`
       {
         entity(id: "${hash}") {

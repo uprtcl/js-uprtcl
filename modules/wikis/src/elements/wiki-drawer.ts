@@ -1,4 +1,4 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
@@ -10,50 +10,22 @@ export const styleMap = style => {
 };
 
 import '@material/mwc-drawer';
-import '@material/mwc-top-app-bar';
-import '@material/mwc-ripple';
 
 import {
-  UPDATE_HEAD,
-  RemotesConfig,
-  EveesModule,
-  EveesRemote,
-  Secured,
-  Perspective,
-  Commit,
-  Evees,
-  CreateCommitArgs,
-  NewPerspectiveArgs,
-  CreatePerspectiveArgs
+  EveesContent
 } from '@uprtcl/evees';
-import { TextType, DocumentsModule, htmlToText, TextNode } from '@uprtcl/documents';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+import { htmlToText, TextType, DocumentsModule } from '@uprtcl/documents';
+import { Logger } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
+import { Hashed } from '@uprtcl/cortex';
+import { MenuConfig } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
-import { Entity, Hashed, Creatable, Pattern, Signed } from '@uprtcl/cortex';
-import { Source } from '@uprtcl/multiplatform';
-import { WikisModule } from '../wikis.module';
-import { WikiBindings } from '../bindings';
+import { WikiBindings } from 'src/bindings';
 
-export class WikiDrawer extends moduleConnect(LitElement) {
+export class WikiDrawer extends EveesContent<Wiki>{
+  
   logger = new Logger('WIKI-DRAWER');
-
-  @property({ type: Object })
-  wiki: Hashed<Wiki> | undefined = undefined;
-
-  @property({ type: Object })
-  perspective: Secured<Perspective> | undefined = undefined;
-
-  @property({ type: String })
-  color: string | undefined = undefined;
-
-  @property({ type: Number })
-  level: number = 0;
-
-  @property({ type: Boolean, attribute: false })
-  editable: Boolean = false;
 
   @property({ type: String })
   selectedPageHash: string | undefined = undefined;
@@ -61,150 +33,26 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Object, attribute: false })
   pagesList: Array<{ title: string; id: string }> | undefined = undefined;
 
-  currentContent: any;
-  private currentHeadId: string | undefined = undefined;
-
-  getTextNodeSource(eveesAuthority: string): Source {
-    const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
-
-    const textNodeEntity: Entity[] = this.requestAll(DocumentsModule.bindings.TextNodeEntity);
-    const name = textNodeEntity[0].name;
-
-    return remotesConfig.map(eveesAuthority, name);
-  }
-
-  getWikiSource(eveesAuthority: string): Source {
-    const remotesConfig: RemotesConfig = this.request(EveesModule.bindings.RemotesConfig);
-
-    const wikiEntity: Entity[] = this.requestAll(WikisModule.bindings.WikiEntity);
-    const name = wikiEntity[0].name;
-
-    return remotesConfig.map(eveesAuthority, name);
-  }
-
-  getCreatePattern(symbol) {
-    const patterns: Pattern[] = this.requestAll(symbol);
-    const create: Creatable<any, any> | undefined = (patterns.find(
-      pattern => ((pattern as unknown) as Creatable<any, any>).create
-    ) as unknown) as Creatable<any, any>;
-
-    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
-
-    return create;
-  }
-
-  async updateContent(newContent: Wiki): Promise<void> {
-    if (!this.perspective) return;
-
-    const createWiki: Creatable<Partial<Wiki>, Wiki> = this.getCreatePattern(
-      WikiBindings.WikiEntity
-    );
-    const createCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
-      EveesModule.bindings.CommitPattern
-    );
-
-    const evees: Evees = this.request(EveesModule.bindings.Evees);
-
-    const origin = this.perspective.object.payload.origin;
-    const wikiHashed: Hashed<Wiki> = await createWiki.create()(
-      newContent,
-      this.getWikiSource(origin).source
-    );
-
-    const commit: Secured<Commit> = await createCommit.create()(
-      {
-        parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
-        dataId: wikiHashed.id
-      },
-      evees.getPerspectiveProvider(this.perspective.object).source
-    );
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const headUpdate = await client.mutate({
-      mutation: UPDATE_HEAD,
-      variables: {
-        perspectiveId: this.perspective.id,
-        headId: commit.id
-      }
-    });
-  }
-
-  async createPage() {
-    if (!this.wiki) return;
-    if (!this.perspective) return;
-
-    this.pagesList = undefined;
-
-    const origin = this.perspective.object.payload.origin;
-
-    const eveesRemotes: EveesRemote[] = this.requestAll(EveesModule.bindings.EveesRemote);
-    const remote = eveesRemotes.find(r => r.authority === origin);
-
-    if (!remote) throw new Error(`Remote not found for authority ${origin}`);
-
-    const pageContent = {
-      text: '<h1>New page</h1>',
-      type: TextType.Title,
-      links: []
-    };
-
-    const nodeCreator: Creatable<Partial<TextNode>, TextNode> = this.getCreatePattern(
-      DocumentsModule.bindings.TextNodeEntity
-    );
-    const hashedNode: Hashed<TextNode> = await nodeCreator.create()(
-      pageContent,
-      this.getTextNodeSource(origin).source
-    );
-
-    const commitCreator: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePattern(
-      EveesModule.bindings.CommitPattern
-    );
-    const commit: Secured<Commit> = await commitCreator.create()(
-      {
-        dataId: hashedNode.id,
-        parentsIds: []
-      },
-      remote.source
-    );
-
-    const perspectiveCreator: Creatable<
-      CreatePerspectiveArgs,
-      Signed<Perspective>
-    > = this.getCreatePattern(EveesModule.bindings.PerspectivePattern);
-    const args: CreatePerspectiveArgs = {
-      fromDetails: {
-        headId: commit.id
-      },
-      parentId: this.perspective.id
-    };
-    const perspective: Secured<Perspective> = await perspectiveCreator.create()(args, origin);
-
-    const newWiki: Wiki = {
-      title: this.wiki.object.title,
-      pages: [...this.wiki.object.pages, perspective.id]
-    };
-
-    this.wiki = {
-      ...this.wiki,
-      object: newWiki
-    };
-
-    this.logger.info('createPage()', newWiki);
-    await this.updateContent(newWiki);
+  symbol: symbol | undefined = WikiBindings.WikiEntity;
+  
+  getEmptyEntity(): Wiki {
+    throw new Error("Method not implemented.");
   }
 
   updated(changedProperties: any) {
-    if (changedProperties.get('wiki') !== undefined) {
+    if (changedProperties.get('data') !== undefined) {
       this.loadPagesData();
     }
   }
 
   async loadPagesData() {
-    if (!this.wiki) return;
+    this.logger.log('loadPagesData()');
 
-    const pagesListPromises = this.wiki.object.pages.map(async pageId => {
-      const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const wiki = this.data as Hashed<Wiki>;
 
-      const result = await client.query({
+    const pagesListPromises = wiki.object.pages.map(async pageId => {
+      if (!this.client) throw new Error('client is undefined');
+      const result = await this.client.query({
         query: gql`
         {
           entity(id: "${pageId}") {
@@ -232,40 +80,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     });
 
     this.pagesList = await Promise.all(pagesListPromises);
+    this.logger.log('loadPagesData()', { pagesList: this.pagesList });    
   }
 
   async firstUpdated() {
-    if (!this.perspective) throw new Error('Perspective cannot be undefined');
+    super.firstUpdated();
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-
-    const result = await client.query({
-      query: gql`
-      {
-        entity(id: "${this.perspective.id}") {
-          id
-          _context {
-            patterns {
-              accessControl {
-                canWrite
-              }
-            }
-          }
-          ... on Perspective {
-            payload {
-              origin
-            }
-            head {
-              id
-            }
-          }
-        }
-      }`
-    });
-
-    this.currentHeadId = result.data.entity.head.id;
-    this.editable = result.data.entity._context.patterns.accessControl.canWrite;
-
+    this.logger.log('firstUpdated()');
+    this.updateRefData();
     this.loadPagesData();
   }
 
@@ -279,6 +101,32 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
 
     this.selectedPageHash = pageHash;
+  }
+
+  newPage() {
+    const pageContent = {
+      text: '<h1>New page</h1>',
+      type: TextType.Title,
+      links: []
+    };
+
+    this.createChild(pageContent, DocumentsModule.bindings.TextNodeEntity);
+  }
+
+  optionOnPage(pageIndex: number, option: string) {
+    switch (option) {
+      case 'move-up': 
+        this.moveChildElement(pageIndex, pageIndex - 1);
+        break;
+      
+      case 'move-down': 
+        this.moveChildElement(pageIndex, pageIndex + 1);
+        break;
+
+      case 'remove': 
+        this.removeChildElement(pageIndex);
+        break;
+    }
   }
 
   renderPageList() {
@@ -296,12 +144,32 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return html`
       <mwc-list>
-        ${this.pagesList.map(page => {
-          let text = htmlToText(page.title);
+        ${this.pagesList.map((page, ix) => {
+          const menuConfig: MenuConfig = {
+            'move-up': {
+              disabled: ix === 0,
+              text: 'move up',
+              graphic: 'arrow_upward'
+            },
+            'move-down': {
+              disabled: ix === ((this.pagesList as any[]).length - 1),
+              text: 'move down',
+              graphic: 'arrow_downward'
+            },
+            'remove': {
+              disabled: false,
+              text: 'remove',
+              graphic: 'clear'
+            },
+          }
+          this.logger.log(`rendering page title ${page.id}`, menuConfig);
           return html`
-            <mwc-list-item @click=${() => this.selectPage(page.id)}>
-              ${text}
-            </mwc-list-item>
+            <evees-list-item 
+              text=${htmlToText(page.title)} 
+              @item-click=${() => this.selectPage(page.id)}
+              @option-click=${(e) => this.optionOnPage(ix, e.detail.option)}
+              .config=${menuConfig}>
+            </evees-list-item>
           `;
         })}
       </mwc-list>
@@ -309,7 +177,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   render() {
-    if (!this.wiki || !this.perspective)
+    this.logger.log('render()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level });
+    if (!this.data || !this.ref)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
@@ -327,7 +196,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           ${this.editable
             ? html`
                 <div class="button-row">
-                  <mwc-button outlined icon="note_add" @click=${() => this.createPage()}>
+                  <mwc-button outlined icon="note_add" @click=${this.newPage}>
                     ${this.t('wikis:new-page')}
                   </mwc-button>
                 </div>
@@ -343,6 +212,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             ? html`
                 <wiki-page
                   @nav-back=${() => this.selectPage(undefined)}
+                  @page-title-changed=${() => this.loadPagesData()}
                   pageHash=${this.selectedPageHash}
                   color=${this.color ? this.color : ''}
                 >
@@ -350,8 +220,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               `
             : html`
                 <wiki-home
-                  wikiHash=${this.perspective.id}
-                  title=${this.wiki.object.title}
+                  wikiHash=${this.ref}
+                  title=${this.data.object.title}
                   color=${this.color ? this.color : ''}
                 >
                   <slot slot="evee-page" name="evee-page"></slot>
@@ -380,6 +250,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .color-bar {
           height: 1vw;
+          max-height: 5px;
           width: 100%;
         }
         .empty {

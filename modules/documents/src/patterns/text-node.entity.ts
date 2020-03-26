@@ -16,7 +16,7 @@ import {
   CortexModule,
   Newable
 } from '@uprtcl/cortex';
-import { DiscoveryService, DiscoveryModule, TaskQueue, Task } from '@uprtcl/multiplatform';
+import { DiscoveryService, DiscoveryModule, TaskQueue, Task, Store } from '@uprtcl/multiplatform';
 import {
   Mergeable,
   MergeStrategy,
@@ -27,10 +27,9 @@ import {
 } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
+import { StoresModule } from '@uprtcl/multiplatform';
 
 import { TextNode, TextType } from '../types';
-import { DocumentsBindings } from '../bindings';
-import { DocumentsProvider } from '../services/documents.provider';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { CidConfig } from '@uprtcl/ipfs-provider';
 
@@ -82,10 +81,8 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
           return html`
             <documents-text-node
               .data=${node}
-              .perspective=${context.perspective}
-              color=${context.color}
-              only-children=${context.onlyChildren}
-              level=${context.level}
+              ref=${context.ref}
+              color=${context.color} 
               index=${context.index}
               .genealogy=${context.genealogy}
             >
@@ -129,51 +126,13 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
 }
 
 @injectable()
-export class TextNodeActions extends TextNodeEntity implements HasActions {
-  constructor(
-    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
-  ) {
-    super(hashedPattern);
-  }
-
-  actions = (node: Hashed<TextNode>): PatternAction[] => {
-    const textNode = node.object;
-
-    if (textNode.type === TextType.Paragraph) {
-      return [
-        {
-          icon: 'title',
-          title: 'documents:to_title',
-          action: (changeContent: (newContent: any) => void) => {
-            changeContent({ ...textNode, type: TextType.Title });
-          },
-          type: 'formatting'
-        }
-      ];
-    } else {
-      return [
-        {
-          icon: 'text_fields',
-          title: 'documents:to_paragraph',
-          action: (changeContent: (newContent: any) => void) => {
-            changeContent({ ...textNode, type: TextType.Paragraph });
-          },
-          type: 'formatting'
-        }
-      ];
-    }
-  };
-}
-
-@injectable()
 export class TextNodeCreate extends TextNodeEntity
   implements Creatable<Partial<TextNode>, TextNode>, Newable<Partial<TextNode>, TextNode> {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
     @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
-    @multiInject(DocumentsBindings.DocumentsRemote) protected documentsRemotes: DocumentsProvider[],
+    @multiInject(StoresModule.bindings.Store) protected stores: Array<Store>,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(hashedPattern);
@@ -187,10 +146,10 @@ export class TextNodeCreate extends TextNodeEntity
     node: Partial<TextNode> | undefined,
     source: string
   ): Promise<Hashed<TextNode>> => {
-    const sourceDep = this.documentsRemotes.find(s => s.source === source);
-    if (!sourceDep) throw new Error(`source connection for ${source} not found`);
+    const store = this.stores.find(s => s.source === source);
+    if (!store) throw new Error(`store for ${source} not found`);
 
-    const textNode = await this.new()(node, sourceDep.hashRecipe);
+    const textNode = await this.new()(node, store.hashRecipe);
     const result = await this.client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {

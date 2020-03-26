@@ -14,6 +14,21 @@ export const UPDATE_HEAD: DocumentNode = gql`
       payload {
         origin
       }
+      _context {
+        patterns {
+          content {
+            id
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const DELETE_PERSPECTIVE: DocumentNode = gql`
+  mutation DeletePerspective($perspectiveId: ID!) {
+    deletePerspective(perspectiveId: $perspectiveId) {
+      id
     }
   }
 `;

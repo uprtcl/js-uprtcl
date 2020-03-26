@@ -30,6 +30,8 @@ import { EveesInfoPopper } from './elements/evees-info-popper';
 import en from './i18n/en.json';
 import { RemotesConfig } from './types';
 import { EveesInfoPage } from './elements/evees-info-page';
+import { ItemWithMenu } from './elements/common-ui/evees-list-item';
+import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -95,6 +97,8 @@ export class EveesModule extends MicroModule {
       'evees-perspective': EveesPerspective,
       'evees-info-popper': EveesInfoPopper,
       'evees-info-page': EveesInfoPage,
+      'evees-list-item': ItemWithMenu,
+      'evees-options-menu': EveesOptionsMenu
     }),
     new i18nextModule('evees', { en: en }),
     new PatternsModule({

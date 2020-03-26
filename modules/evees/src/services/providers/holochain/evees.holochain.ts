@@ -11,7 +11,7 @@ import { NewPerspectiveData } from '../../evees.provider';
 
 @injectable()
 export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {
-  
+    
   knownSources?: KnownSourcesService | undefined;
   userId?: string | undefined;
   zome: string = 'evees';
@@ -116,5 +116,9 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
     const promises = newPerspectivesData.map(perspectiveData => this.cloneAndInitPerspective(perspectiveData));
     await Promise.all(promises);
+  }
+
+  deletePerspective(perspectiveId: string): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }
