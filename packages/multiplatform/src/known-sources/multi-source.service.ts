@@ -1,4 +1,4 @@
-import { multiInject, inject, injectable, id } from 'inversify';
+import { multiInject, inject, injectable } from 'inversify';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { PatternRecognizer, Hashed, CortexModule, Pattern, HasLinks } from '@uprtcl/cortex';
@@ -11,7 +11,7 @@ import { raceToSuccess, discoverKnownSources } from './discovery.utils';
 import { MultiplatformBindings, CASBindings } from '../bindings';
 
 @injectable()
-export class DiscoveryService implements CASSource {
+export class MultiSourceService implements CASSource {
   protected logger = new Logger('DiscoveryService');
 
   services: Dictionary<CASSource>;
@@ -50,7 +50,7 @@ export class DiscoveryService implements CASSource {
   }
 
   /**
-   * @returns gets the upl of all the services
+   * @returns gets the casID of all the sources
    */
   public getAllCASIds(): string[] {
     return Object.keys(this.services);
@@ -60,7 +60,7 @@ export class DiscoveryService implements CASSource {
    * @returns gets all the services
    */
   public getAllCASSources(): CASSource[] {
-    return Object.keys(this.services).map(upl => this.services[upl]);
+    return Object.keys(this.services).map(casID => this.services[casID]);
   }
 
   /**
@@ -69,20 +69,20 @@ export class DiscoveryService implements CASSource {
    * @param source the source name that identifies the service provider
    * @returns the source identified with the given name
    */
-  public getSource(source: string | undefined): CASSource {
+  public getSource(casID: string | undefined): CASSource {
     const sources: string[] = this.getAllCASIds();
 
-    if (!source) {
+    if (!casID) {
       if (sources.length === 1) {
-        source = sources[0];
+        casID = sources[0];
       } else
         throw new Error(
-          'There is more than one registered service provider, you must provide the upl for the service provider you wish to interact with'
+          'There is more than one registered service provider, you must provide the casID for the service provider you wish to interact with'
         );
     }
 
-    const serviceProvider = this.services[source];
-    if (!serviceProvider) throw new Error(`No service provider was found for name ${source}`);
+    const serviceProvider = this.services[casID];
+    if (!serviceProvider) throw new Error(`No service provider was found for casID ${casID}`);
 
     return serviceProvider;
   }
@@ -97,10 +97,10 @@ export class DiscoveryService implements CASSource {
   public async getFromSource<O extends object>(
     hash: string,
     casID: string | undefined
-  ): Promise<Hashed<O> | undefined> {
+  ): Promise<O | undefined> {
     const source = this.getSource(casID);
 
-    const object: Hashed<O> | undefined = await source.get(hash) as Hashed<O>;
+    const object: O | undefined = await source.get(hash) as O;
 
     if (!object) return undefined;
 
@@ -151,7 +151,7 @@ export class DiscoveryService implements CASSource {
    * @param hash the hash of the object to retrieve
    * @returns the object if found, otherwise undefined
    */
-  public async get<O extends object>(hash: string): Promise<Hashed<O> | undefined> {
+  public async get<O extends object>(hash: string): Promise<O | undefined> {
     let knownSources: string[] | undefined = undefined;
 
     // If there is only one source, use that to get the object
@@ -169,7 +169,7 @@ export class DiscoveryService implements CASSource {
       return object ? Promise.resolve(object) : Promise.reject();
     };
 
-    let promises: Array<Promise<Hashed<O>>>;
+    let promises: Array<Promise<O>>;
     if (knownSources) {
       // Try to retrieve the object from any of the known sources
       promises = knownSources.map(tryGetFromSource);
@@ -180,7 +180,7 @@ export class DiscoveryService implements CASSource {
 
     try {
       // Get first resolved object
-      const object: Hashed<O> = await raceToSuccess<Hashed<O>>(promises);
+      const object: O = await raceToSuccess<O>(promises);
       return object;
     } catch (e) {
       this.logger.warn('All sources failed to get the hash', hash, ' with error ', e);

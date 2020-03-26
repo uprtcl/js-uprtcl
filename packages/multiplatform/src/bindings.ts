@@ -1,6 +1,5 @@
 export const MultiplatformBindings = {
-  DiscoveryService: Symbol('discovery-service'),
-  TaskQueue: Symbol('task-queue'),
+  MultiSourceService: Symbol('multi-source-service'),
   EntityCache: Symbol('entity-cache'),
   LocalKnownSources: Symbol('local-known-sources')
 };

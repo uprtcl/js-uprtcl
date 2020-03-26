@@ -1,18 +1,22 @@
 import { CASSource } from './cas-source';
+import { CidConfig } from './cid-config';
 
 /**
  * A CASStore is a CASSource that can also store generic objects, returning their hash
  */
 export interface CASStore extends CASSource {
-  hashRecipe: any;
+  /**
+   * Configuration with which to create objects in this store
+   */
+  cidConfig: CidConfig;
 
   /**
-   * Put the given object and returns its hash, as computed by the service
+   * Create the given object and returns its hash, as computed by the service
    * 
    * @param object the object to store
-   * @param hash the hash of the object to get the hashRecipe from, if not given the default hashRecipe will be used to calculate the has
+   * @param hash (optional) the hash of the object with which it will be stored. If not given the default cidConfig will be used to calculate the hash.
    * @returns the hash of the object
    * @throws error if a hash was provided and it didn't match the generated hash
    */
-  put(object: object, hash?: string): Promise<string>;
+  create(object: object, hash?: string): Promise<string>;
 }

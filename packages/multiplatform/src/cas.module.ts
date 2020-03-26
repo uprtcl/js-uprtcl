@@ -9,7 +9,7 @@ import { CASBindings } from './bindings';
 import { CASStore } from './types/cas-store';
 
 /**
- * This module registers the given sources and makes them available to be used by the `DiscoveryModule`
+ * This module registers the given CASSources and makes them available to be used by the `DiscoveryModule`
  *
  * Example usage:
  *
@@ -47,10 +47,10 @@ export class CASModule extends MicroModule {
     // Initialize all the sources
     for (const source of this.casSources) {
       container.bind<CASSource>(CASBindings.CASSource).toConstantValue(source);
-      container.bind<CASSource>(source.source).toConstantValue(source);
+      container.bind<CASSource>(source.casID).toConstantValue(source);
 
-      if ((source as CASStore).put) {
-        container.bind<CASStore>(CASBindings.CASStore).toConstantValue((source as CASStore));
+      if (typeof (source as CASStore).create === 'function') {
+        container.bind<CASStore>(CASBindings.CASStore).toConstantValue(source as CASStore);
       }
     }
   }

@@ -3,7 +3,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { KnownSourcesService } from '../services/known-sources.service';
+import { KnownSourcesService } from '../known-sources/known-sources.service';
 
 @injectable()
 export class KnownSourcesApollo implements KnownSourcesService {
@@ -19,13 +19,13 @@ export class KnownSourcesApollo implements KnownSourcesService {
           entity(id: "${hash}") {
             id
             _context {
-              source
+              casID
             }
           }
         }
         `
       });
-      return [result.entity._context.source];
+      return [result.entity._context.casID];
     } catch (e) {
       return undefined;
     }
@@ -38,7 +38,7 @@ export class KnownSourcesApollo implements KnownSourcesService {
           id: hash,
           _context: {
             __typename: 'EntityContext',
-            source: sources[0]
+            casID: sources[0]
           }
         }
       }

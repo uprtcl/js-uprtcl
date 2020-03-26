@@ -1,5 +1,5 @@
 import { Ready } from './ready';
-import { KnownSourcesService } from '../services/known-sources.service';
+import { KnownSourcesService } from '../known-sources/known-sources.service';
 
 /**
  * A CASource (Content Addressable Storage Source) is a service that implements a standard function `get`,
@@ -10,7 +10,7 @@ export interface CASSource extends Ready {
 
   /**
    * If the service provider has a known source service associated, any object stored on it
-   * can be linked to/from other sources
+   * can be linked to other sources
    */
   knownSources?: KnownSourcesService;
 
