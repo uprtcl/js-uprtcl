@@ -109,8 +109,6 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   async enterPressed(e: CustomEvent) {
-    await this.commitText();
-
     if (!this.data) return;
     if (!this.symbol) throw new Error('this.symbol undefined');
 
@@ -183,6 +181,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
   editorContentChanged(e) {
     this.currentText = e.detail.content;
+    this.commitText();
   }
 
   async commitText() {

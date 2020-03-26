@@ -32,7 +32,7 @@ export const APPEND_ACTION = 'append';
 
 export class DocumentTextNodeEditor extends LitElement {
 
-  logger = new Logger('DOCUMENTS-TEXT-NODE-EDITOR');
+  logger = new Logger('DOCUMENT-TEXT-NODE-EDITOR');
 
 
   @property({ type: String })
@@ -202,19 +202,18 @@ export class DocumentTextNodeEditor extends LitElement {
 
   onEnter(state, dispatch) {
     /** simulate splitBlock */
-    const spliTr = splitBlockTr(state)
-    let newState = state.apply(spliTr);
+    const splitTr = state.tr.split(state.selection.$cursor.pos);
 
-    /** reset cursor */
-    const resetCursor = newState.tr.setSelection(TextSelection.create(newState.doc, 0));
-    newState = newState.apply(resetCursor);
+    /** applied just to get the second part, the actual transaction
+     * is applied in dispatch */
+    const newState = state.apply(splitTr);
+    const secondPart = newState.doc.content.content[1];
+    
+    dispatch(
+      splitTr
+      .delete(state.selection.$cursor.pos, state.doc.nodeSize));
 
-    /** remove second part */
-    const secondPart = newState.doc.content.content.splice(1, 1);
-
-    /* dispatch its content (without type tag) upwards */
-    this.editor.view.updateState(newState);
-
+    /** send event to parent */
     const fragment = this.editor.serializer.serializeFragment(secondPart);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
