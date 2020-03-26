@@ -1,7 +1,7 @@
 import { PatternRecognizer, HasLinks } from '@uprtcl/cortex';
 
 import { KnownSourcesService } from './known-sources.service';
-import { Source } from '../types/source';
+import { CASSource } from '../types/cas-source';
 
 /**
  * Recognize the patterns from the object and get its links
@@ -31,7 +31,7 @@ export const linksFromObject = (recognizer: PatternRecognizer) => async <O exten
  */
 export const discoverKnownSources = (localKnownSources: KnownSourcesService) => async (
   hash: string,
-  source: Source
+  source: CASSource
 ): Promise<void> => {
   if (!source.knownSources) return;
 
@@ -45,7 +45,7 @@ export const discoverKnownSources = (localKnownSources: KnownSourcesService) => 
 export const discoverLinksKnownSources = (
   recognizer: PatternRecognizer,
   localKnownSources: KnownSourcesService
-) => async (object: object, source: Source): Promise<void> => {
+) => async (object: object, source: CASSource): Promise<void> => {
   // Get the links
   const links = await linksFromObject(recognizer)(object);
 

@@ -29,13 +29,13 @@ export class EntityCache {
     }
   }
 
-  cacheEntity(entity: Hashed<any>): void {
+  cacheEntity(entityId: string, entity: any): void {
     const patterns = this.recognizer.recognize(entity);
     const name = patterns.find(p => p.name).name;
 
     this.client.cache.writeQuery({
       query: gql`{
-        entity(id: "${entity.id}") {
+        entity(id: "${entityId}") {
           id
           _context {
             raw
@@ -49,7 +49,7 @@ export class EntityCache {
           id: entity.id,
           _context: {
             __typename: 'EntityContext',
-            raw: JSON.stringify(entity.object)
+            raw: JSON.stringify(entity)
           }
         }
       }

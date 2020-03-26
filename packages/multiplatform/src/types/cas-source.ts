@@ -1,14 +1,12 @@
-import { Hashed } from '@uprtcl/cortex';
 import { Ready } from './ready';
 import { KnownSourcesService } from '../services/known-sources.service';
 
 /**
- * A source is a service that implements a standard function `get`,
+ * A CASource (Content Addressable Storage Source) is a service that implements a standard function `get`,
  * which receives the hash of the object and returns it
  */
-export interface Source extends Ready {
-  source: string;
-  hashRecipe: any;
+export interface CASSource extends Ready {
+  casID: string;
 
   /**
    * If the service provider has a known source service associated, any object stored on it
@@ -23,5 +21,5 @@ export interface Source extends Ready {
    * @param hash the hash identifying the object
    * @returns the object if found, otherwise undefined
    */
-  get(hash: string): Promise<Hashed<object> | undefined>;
+  get(hash: string): Promise<object | undefined>;
 }

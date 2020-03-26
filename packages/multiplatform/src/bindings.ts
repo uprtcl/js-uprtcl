@@ -5,10 +5,7 @@ export const MultiplatformBindings = {
   LocalKnownSources: Symbol('local-known-sources')
 };
 
-export const SourcesBindings = {
-  Source: Symbol('discovery-source')
-};
-
-export const StoresBindings = {
-  Store: Symbol('discovery-store')
+export const CASBindings = {
+  CASSource: Symbol('cas-source'),
+  CASStore: Symbol('cas-store')
 };

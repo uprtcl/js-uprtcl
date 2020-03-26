@@ -5,12 +5,12 @@ import { ApolloCache } from 'apollo-cache';
 import { Hashed } from '@uprtcl/cortex';
 import { NamedDirective } from '@uprtcl/graphql';
 
-import { Source } from '../../types/source';
+import { CASSource } from '../../types/cas-source';
 import { MultiplatformBindings } from '../../bindings';
 import { EntityCache } from '../entity-cache';
 
 export abstract class LoadEntityDirective extends NamedDirective {
-  protected abstract getSource(container: interfaces.Container): Source;
+  protected abstract getCASSource(container: interfaces.Container): CASSource;
 
   public visitFieldDefinition(field: GraphQLField<any, any>, detail) {
     let defaultResolver = field.resolve;
@@ -28,7 +28,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
       if (!entityId) return null;
 
-      const source = this.getSource(context.container);
+      const source = this.getCASSource(context.container);
       const entityCache: EntityCache = context.container.get(MultiplatformBindings.EntityCache);
 
       if (typeof entityId === 'string') return this.loadEntity(entityId, entityCache, source);
@@ -41,7 +41,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
   protected async loadEntity(
     entityId: string,
     entityCache: EntityCache,
-    source: Source
+    source: CASSource
   ): Promise<Hashed<any> | undefined> {
     const cachedEntity = entityCache.getCachedEntity(entityId);
 
@@ -50,15 +50,15 @@ export abstract class LoadEntityDirective extends NamedDirective {
     if (entityCache.pendingLoads[entityId]) return entityCache.pendingLoads[entityId];
 
     const promise = async () => {
-      const entity: Hashed<any> | undefined = await source.get(entityId);
+      const entity: any | undefined = await source.get(entityId);
 
       if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
 
-      entityCache.cacheEntity(entity);
+      entityCache.cacheEntity(entityId, entity);
 
       entityCache.pendingLoads[entityId] = undefined;
 
-      return { id: entityId, ...entity.object };
+      return { id: entityId, ...entity };
     };
 
     entityCache.pendingLoads[entityId] = promise();

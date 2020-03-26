@@ -1,10 +1,10 @@
 import { interfaces } from 'inversify';
 
-import { Source } from '../../types/source';
+import { CASSource } from '../../types/cas-source';
 import { LoadEntityDirective } from './load-entity-directive';
 
-export class SourceDirective extends LoadEntityDirective {
-  protected getSource(container: interfaces.Container): Source {
+export class CASSourceDirective extends LoadEntityDirective {
+  protected getCASSource(container: interfaces.Container): CASSource {
     return container.get(this.args.source);
   }
 

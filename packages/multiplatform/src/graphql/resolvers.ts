@@ -1,8 +1,6 @@
 import { PatternRecognizer, CortexModule, Hashed } from '@uprtcl/cortex';
 
-import { DiscoveryService } from '../services/discovery.service';
-import { DiscoveryModule } from '../discovery.module';
-import { getIsomorphisms, entityContent } from '../utils/entities';
+import { getIsomorphisms } from '../utils/entities';
 import { ApolloClient, gql } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
 

@@ -1,11 +1,11 @@
 import { interfaces } from 'inversify';
 
 import { MultiplatformBindings } from '../../bindings';
-import { Source } from '../../types/source';
+import { CASSource } from '../../types/cas-source';
 import { LoadEntityDirective } from './load-entity-directive';
 
 export class DiscoverDirective extends LoadEntityDirective {
-  protected getSource(container: interfaces.Container): Source {
+  protected getCASSource(container: interfaces.Container): CASSource {
     return container.get(MultiplatformBindings.DiscoveryService);
   }
 

@@ -5,19 +5,18 @@ import { PatternRecognizer, Hashed, CortexModule, Pattern, HasLinks } from '@upr
 import { Dictionary, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Source } from '../types/source';
+import { CASSource } from '../types/cas-source';
 import { KnownSourcesService } from './known-sources.service';
 import { raceToSuccess, discoverKnownSources } from './discovery.utils';
-import { MultiplatformBindings, SourcesBindings } from '../bindings';
+import { MultiplatformBindings, CASBindings } from '../bindings';
 
 @injectable()
-export class DiscoveryService implements Source {
+export class DiscoveryService implements CASSource {
   protected logger = new Logger('DiscoveryService');
 
-  services: Dictionary<Source>;
+  services: Dictionary<CASSource>;
 
-  source = '';
-  hashRecipe = {};
+  casID = '';
 
   /**
    * @param recognizer the pattern recognizer to interact with the objects and their links
@@ -30,12 +29,12 @@ export class DiscoveryService implements Source {
     public localKnownSources: KnownSourcesService,
     @inject(ApolloClientModule.bindings.Client)
     public client: ApolloClient<any>,
-    @multiInject(SourcesBindings.Source)
-    sources: Array<Source>
+    @multiInject(CASBindings.CASSource)
+    sources: Array<CASSource>
   ) {
     // Build the sources dictionary from the resulting names
     this.services = sources.reduce(
-      (services, service) => ({ ...services, [service.source]: service }),
+      (services, service) => ({ ...services, [service.casID]: service }),
       {}
     );
   }
@@ -53,14 +52,14 @@ export class DiscoveryService implements Source {
   /**
    * @returns gets the upl of all the services
    */
-  public getAllSourceNames(): string[] {
+  public getAllCASIds(): string[] {
     return Object.keys(this.services);
   }
 
   /**
    * @returns gets all the services
    */
-  public getAllSources(): Source[] {
+  public getAllCASSources(): CASSource[] {
     return Object.keys(this.services).map(upl => this.services[upl]);
   }
 
@@ -70,8 +69,8 @@ export class DiscoveryService implements Source {
    * @param source the source name that identifies the service provider
    * @returns the source identified with the given name
    */
-  public getSource(source: string | undefined): Source {
-    const sources: string[] = this.getAllSourceNames();
+  public getSource(source: string | undefined): CASSource {
+    const sources: string[] = this.getAllCASIds();
 
     if (!source) {
       if (sources.length === 1) {
@@ -97,9 +96,9 @@ export class DiscoveryService implements Source {
    */
   public async getFromSource<O extends object>(
     hash: string,
-    sourceName: string | undefined
+    casID: string | undefined
   ): Promise<Hashed<O> | undefined> {
-    const source = this.getSource(sourceName);
+    const source = this.getSource(casID);
 
     const object: Hashed<O> | undefined = await source.get(hash) as Hashed<O>;
 
@@ -140,7 +139,7 @@ export class DiscoveryService implements Source {
     if (!object) {
       // Object retrieval succeeded but object was not found,
       // remove from the known sources
-      await this.localKnownSources.removeKnownSource(hash, source.source);
+      await this.localKnownSources.removeKnownSource(hash, source.casID);
     }
 
     return object;
@@ -156,7 +155,7 @@ export class DiscoveryService implements Source {
     let knownSources: string[] | undefined = undefined;
 
     // If there is only one source, use that to get the object
-    const sources = this.getAllSourceNames();
+    const sources = this.getAllCASIds();
 
     if (sources.length === 1) {
       knownSources = sources;
@@ -176,7 +175,7 @@ export class DiscoveryService implements Source {
       promises = knownSources.map(tryGetFromSource);
     } else {
       // We had no known sources for the hash, try to get the object from any known sources service
-      promises = this.getAllSourceNames().map(tryGetFromSource);
+      promises = this.getAllCASIds().map(tryGetFromSource);
     }
 
     try {
@@ -197,7 +196,7 @@ export class DiscoveryService implements Source {
    * @param source
    * @param links
    */
-  public async postEntityUpdate(source: Source, links: string[]): Promise<void> {
+  public async postEntityUpdate(source: CASSource, links: string[]): Promise<void> {
     const knownSourcesService = source.knownSources;
     if (!knownSourcesService) return;
 
@@ -207,7 +206,7 @@ export class DiscoveryService implements Source {
 
       // If the only known source is the name of the source itself, we don't need to tell the provider
       const sameSource =
-        knownSources && knownSources.length === 1 && knownSources[0] === source.source;
+        knownSources && knownSources.length === 1 && knownSources[0] === source.casID;
 
       if (knownSources && !sameSource) {
         await knownSourcesService.addKnownSources(link, knownSources);
@@ -224,12 +223,12 @@ export class DiscoveryService implements Source {
    * @param links
    */
   public async postEntityCreate<O extends Object>(
-    source: Source,
+    source: CASSource,
     entity: Hashed<O>
   ): Promise<void> {
-    const sourceName = source.source;
+    const casID = source.casID;
 
-    await this.localKnownSources.addKnownSources(entity.id, [sourceName]);
+    await this.localKnownSources.addKnownSources(entity.id, [casID]);
 
     const patterns: Pattern[] = this.recognizer.recognize(entity);
 

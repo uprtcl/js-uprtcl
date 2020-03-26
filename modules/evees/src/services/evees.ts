@@ -9,7 +9,7 @@ import {
   CortexModule,
   Signed
 } from '@uprtcl/cortex';
-import { KnownSourcesService, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { KnownSourcesService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -68,8 +68,6 @@ export class Evees {
     @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern,
     @inject(DiscoveryModule.bindings.LocalKnownSources)
     public knownSources: KnownSourcesService,
-    @inject(DiscoveryModule.bindings.DiscoveryService)
-    protected discoveryService: DiscoveryService,
     @multiInject(EveesBindings.EveesRemote)
     protected eveesRemotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client)

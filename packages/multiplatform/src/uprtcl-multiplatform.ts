@@ -4,8 +4,8 @@ import 'reflect-metadata';
 /** Services */
 export { Authority } from './types/authority';
 export { Ready } from './types/ready';
-export { Source } from './types/source';
-export { Store } from './types/store';
+export { CASSource } from './types/cas-source';
+export { CASStore } from './types/cas-store';
 
 export { KnownSourcesService } from './services/known-sources.service';
 
@@ -22,8 +22,7 @@ export {
 
 /** Modules */
 export { DiscoveryModule } from './discovery.module';
-export { SourcesModule } from './sources.module';
-export { StoresModule } from './stores.module';
+export { CASModule } from './cas.module';
 
 /** Connections */
 export { Connection, ConnectionOptions } from './connections/connection';

@@ -75,6 +75,15 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     }
   }
 
+  getDataQuery(){
+    return gql`
+      ... on TextNode {
+        text
+        type
+      }
+    `
+  }
+
   async loadPerspective() {
     if (!this.client) throw new Error('client is undefined');
 
@@ -100,10 +109,23 @@ export class EveesPerspective extends moduleConnect(LitElement) {
               ... on Commit {
                 data {
                   id
+
+                  ${this.getDataQuery()}
                 }
               }
             }
           }
+
+          ... on Commit {
+            data {
+              id 
+
+              ${this.getDataQuery()}
+            }
+          }
+
+
+          ${this.getDataQuery()}
         }
       }
       `
