@@ -114,7 +114,10 @@ export class WikiDrawer extends EveesContent<Wiki>{
       links: []
     };
 
-    this.createChild(pageContent, DocumentsModule.bindings.TextNodeEntity);
+    this.createChild(
+      pageContent, 
+      DocumentsModule.bindings.TextNodeEntity, 
+      this.data ? this.data.object.pages.length : 0);
   }
 
   optionOnPage(pageIndex: number, option: string) {
@@ -200,6 +203,10 @@ export class WikiDrawer extends EveesContent<Wiki>{
             })}
           ></div>
 
+          <div>
+            ${this.renderPageList()}
+          </div>
+
           ${this.editable
             ? html`
                 <div class="button-row">
@@ -209,9 +216,6 @@ export class WikiDrawer extends EveesContent<Wiki>{
                 </div>
               `
             : html``}
-          <div>
-            ${this.renderPageList()}
-          </div>
         </div>
 
         <div slot="appContent" class="fill-content">

@@ -4,7 +4,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EditorState, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import { toggleMark, splitBlock } from 'prosemirror-commands';
+import { toggleMark, splitBlock, joinBackward } from 'prosemirror-commands';
 import { DOMParser, DOMSerializer } from 'prosemirror-model';
 import { keymap } from 'prosemirror-keymap';
 
@@ -18,45 +18,59 @@ import { TextType } from '../../types';
 
 const splitBlockTr = (state) => {
   let transaction: any;
-  splitBlock(state, (tr) => { transaction = tr } )
+  splitBlock(state, (tr) => { transaction = tr })
   return transaction;
 }
+
+const joinBackwardTr = (state) => {
+  let transaction: any;
+  joinBackward(state, (tr) => { transaction = tr })
+  return transaction;
+}
+
+export const APPEND_ACTION = 'append';
 
 export class DocumentTextNodeEditor extends LitElement {
 
   logger = new Logger('DOCUMENTS-TEXT-NODE-EDITOR');
 
-  
+
   @property({ type: String })
   type!: string;
-  
+
   @property({ type: String })
   init!: string;
-  
+
   @property({ type: String })
   editable: string = 'true';
-  
+
+  @property({ type: String, attribute: 'toggle-action' })
+  toggleAction: string = 'true';
+
+  @property({ type: Object })
+  action: any = {};
+
   @property({ type: String, attribute: 'focus-init' })
   focusInit: string = 'false';
-  
+
   @property({ type: Number })
   level: number = 0;
-  
+
   @property({ type: String })
   placeholder: string | undefined = undefined;
-  
+
   @property({ type: Boolean, attribute: false })
   showMenu: Boolean = false;
-  
+
   @property({ type: Boolean, attribute: false })
   selected: Boolean = false;
-  
+
   @property({ type: Boolean, attribute: false })
   showUrl: Boolean = false;
-  
+
   @property({ type: Boolean, attribute: false })
   empty: Boolean = false;
-  
+
   editor: any = {};
   preventHide: Boolean = false;
   content: any | undefined = undefined;
@@ -92,147 +106,18 @@ export class DocumentTextNodeEditor extends LitElement {
     });
   }
 
-  onEnter(state, dispatch) {
-    /** simulate splitBlock */
-    const spliTr = splitBlockTr(state)
-    let newState = state.apply(spliTr);
-    
-    /** reset cursor */
-    const resetCursor = newState.tr.setSelection(TextSelection.create(newState.doc, 0));
-    newState = newState.apply(resetCursor);
-    
-    /** remove second part */
-    const secondPart = newState.doc.content.content.splice(1, 1);
-    
-    /* dispatch its content upwards */
-    this.editor.view.updateState(newState);
-
-    const fragment = this.editor.serializer.serializeFragment(secondPart);
-    const temp = document.createElement('div');
-    temp.appendChild(fragment);
-    const tail = temp.innerHTML;
-
-    this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { tail }}));
-    
-    return false;
-  }
-
-  onBackspace() {
-    this.dispatchEvent(new CustomEvent('backspace-pressed'));
-    return false;
-  }
-
-  isEditable() {
-    this.logger.log(`isEditable()`, { editable: this.editable });
-    const editable = this.editable !== undefined ? this.editable === 'true' : false
-    return editable;
-  }
-
   firstUpdated() {
     this.initEditor();
   }
 
-  initEditor() {
-    if (this.editor && this.editor.view) { 
-      this.editor.view.destroy();
-      this.editor = {};
-    }
-
-    this.editor.schema = this.type === TextType.Title ? titleSchema : blockSchema;
-
-    /** convert HTML string to doc state */
-    let htmlString = this.init.trim();
-
-    /** sorry, we work with HTML... */
-    if (!htmlString.startsWith('<')) {
-      if (this.type === TextType.Title) {
-        htmlString = `<h1>${htmlString}</h1>`;
-      } else {
-        htmlString = `<p>${htmlString}</p>`;
-      }
-    }
-
-    let temp = document.createElement('template');
-    temp.innerHTML = htmlString;
-    const element = temp.content.firstChild;
-
-    this.editor.parser = DOMParser.fromSchema(this.editor.schema);
-    this.editor.serializer = DOMSerializer.fromSchema(this.editor.schema);
-
-    const doc = this.editor.parser.parse(element);
-
-    /** the heading level for render is given by the `level` attribute,
-     * not the heading tag (which is always <h1> in the data text) */
-    if (doc.content.content[0].type.name === 'heading') {
-      doc.content.content[0].attrs.level = this.level;
-    }
-
-    this.editor.state = EditorState.create({
-      schema: this.editor.schema,
-      doc: doc,
-      plugins: [keymap({ 
-        Enter: (state, dispatch) => this.onEnter(state, dispatch),
-        Backspace: (state, dispatch) => this.onBackspace()
-      })]
-    });
-
-    if (this.shadowRoot == null) return;
-    const container = this.shadowRoot.getElementById('editor-content');
-
-    this.editor.view = new EditorView(container, {
-      state: this.editor.state,
-      editable: () => this.isEditable(),
-      dispatchTransaction: transaction => this.dispatchTransaction(transaction),
-      handleDOMEvents: {
-        'focus': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: true } }))},
-        'blur': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: false } }))}
-      }
-    });
-
-    if (this.focusInit === 'true') {
-      this.editor.view.focus();
-    }
-  }
-
-  dispatchTransaction(transaction: any) {
-    if (!transaction.curSelection.empty) {
-      this.selected = true;
-    } else {
-      this.selected = false;
-    }
-
-    let newState = this.editor.view.state.apply(transaction);
-
-    let contentChanged = !newState.doc.eq(this.editor.view.state.doc);
-    this.editor.view.updateState(newState);
-
-    this.logger.log('handleTransaction()', { selected: this.selected, newState, contentChanged } );    
-
-    if (!contentChanged) return;
-
-    /** doc changed */
-
-    /** make sure heading is <h1> */
-    if (newState.doc.content.content[0].type.name === 'heading') {
-      newState.doc.content.content[0].attrs.level = 1;
-    }
-
-    const fragment = this.editor.serializer.serializeFragment(newState.doc);
-    const temp = document.createElement('div');
-    temp.appendChild(fragment);
-    const content = temp.innerHTML;
-
-    this.dispatchEvent(
-      new CustomEvent('content-changed', {
-        detail: {
-          content: content
-        }
-      })
-    );
-  }
-
   updated(changedProperties: Map<string, any>) {
     this.logger.log('updated()', { changedProperties });
+
+    if (changedProperties.has('toggleAction')) {
+      if (changedProperties.get('toggleAction') !== undefined) {
+        this.runAction(this.action);
+      }
+    }
 
     if (changedProperties.has('editable') || changedProperties.has('type') || changedProperties.has('init')) {
       this.initEditor();
@@ -254,6 +139,221 @@ export class DocumentTextNodeEditor extends LitElement {
         this.showMenu = true;
       }
     }
+  }
+
+  runAction(action: any) {
+    switch (action.name) {
+      case APPEND_ACTION:
+        this.appendContent(action.pars.content)
+        break;
+
+      default:
+        throw new Error(`unexpected action ${action.name}`);
+    }
+  }
+
+  getValidInnerHTML(text: string) {
+    if (text.startsWith('<')) { 
+      const temp = document.createElement('template');
+      temp.innerHTML = text.trim();
+      if (temp.firstElementChild == null) {
+        return '';
+      }
+      temp.firstElementChild.innerHTML;
+    } else {
+      return text;
+    }
+  }
+
+  getValidDocHtml(text: string) {
+    const innerHTML = this.getValidInnerHTML(text);
+    let tag;
+    if (this.editor.state.doc.content.content[0].type.name === 'heading') {
+      tag = 'h1';
+    } else {
+      tag = 'p';
+    }
+    return `<${tag}>${innerHTML}</${tag}>`;
+  }
+
+  getSlice(text: string) {
+    const htmlString = this.getValidDocHtml(text);
+    if (!htmlString) return undefined;
+    
+    let temp = document.createElement('template');
+    temp.innerHTML = htmlString;
+
+    return temp.content.firstChild;
+  }
+
+  appendContent(content: string) {
+    this.logger.log('appending content', content);
+    const sliceNode = this.getSlice(content);
+    const slice = this.editor.parser.parseSlice(sliceNode);
+    
+    const end = this.editor.state.doc.content.content[0].nodeSize;
+    
+    // .setSelection(TextSelection.create(this.editor.state.doc, end-1))
+
+    this.editor.view.dispatch(
+      this.editor.state.tr
+      .replace(end-1, end-1, slice));
+  }
+
+  onEnter(state, dispatch) {
+    /** simulate splitBlock */
+    const spliTr = splitBlockTr(state)
+    let newState = state.apply(spliTr);
+
+    /** reset cursor */
+    const resetCursor = newState.tr.setSelection(TextSelection.create(newState.doc, 0));
+    newState = newState.apply(resetCursor);
+
+    /** remove second part */
+    const secondPart = newState.doc.content.content.splice(1, 1);
+
+    /* dispatch its content (without type tag) upwards */
+    this.editor.view.updateState(newState);
+
+    const fragment = this.editor.serializer.serializeFragment(secondPart);
+    const temp = document.createElement('div');
+    temp.appendChild(fragment);
+    const content = temp.innerHTML;
+    
+    this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { content } }));
+
+    return false;
+  }
+
+  onBackspace(state) {
+    if (state.selection.$cursor.pos === 1) {
+      const content = this.state2Html(state);
+      this.dispatchEvent(new CustomEvent('backspace-on-start', {
+        bubbles: true, 
+        composed: true, 
+        detail: {
+          content
+        }
+      }));
+      return true;
+    }
+    return false;
+  }
+
+  isEditable() {
+    this.logger.log(`isEditable()`, { editable: this.editable });
+    const editable = this.editable !== undefined ? this.editable === 'true' : false
+    return editable;
+  }
+
+  initEditor() {
+    if (this.editor && this.editor.view) {
+      this.editor.view.destroy();
+      this.editor = {};
+      this.logger.log(`initEditor() - Initializing editor`);
+    }
+
+    this.editor.schema = this.type === TextType.Title ? titleSchema : blockSchema;
+    this.editor.parser = DOMParser.fromSchema(this.editor.schema);
+    this.editor.serializer = DOMSerializer.fromSchema(this.editor.schema);
+
+    const doc = this.html2doc(this.init);
+
+    /** the heading level for render is given by the `level` attribute,
+     * not the heading tag (which is always <h1> in the data text) */
+    if (doc.content.content[0].type.name === 'heading') {
+      doc.content.content[0].attrs.level = this.level;
+    }
+
+    this.editor.state = EditorState.create({
+      schema: this.editor.schema,
+      doc: doc,
+      plugins: [keymap({
+        Enter: (state, dispatch) => this.onEnter(state, dispatch),
+        Backspace: (state, dispatch) => this.onBackspace(state)
+      })]
+    });
+
+    if (this.shadowRoot == null) return;
+    const container = this.shadowRoot.getElementById('editor-content');
+
+    this.editor.view = new EditorView(container, {
+      state: this.editor.state,
+      editable: () => this.isEditable(),
+      dispatchTransaction: transaction => this.dispatchTransaction(transaction),
+      handleDOMEvents: {
+        'focus': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: true } })) },
+        'blur': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: false } })) }
+      }
+    });
+
+    if (this.focusInit === 'true') {
+      this.editor.view.focus();
+    }
+  }
+
+  state2Html(state) {
+    const fragment = this.editor.serializer.serializeFragment(state.doc);
+    const temp = document.createElement('div');
+    temp.appendChild(fragment);
+    return temp.innerHTML;
+  }
+
+  html2doc(text: string) {
+    /** convert HTML string to doc state */
+    let htmlString = text.trim();
+
+    /** sorry, text must be converted to HTML */
+    if (!htmlString.startsWith('<')) {
+      if (this.type === TextType.Title) {
+        htmlString = `<h1>${htmlString}</h1>`;
+      } else {
+        htmlString = `<p>${htmlString}</p>`;
+      }
+    }
+
+    let temp = document.createElement('template');
+    temp.innerHTML = htmlString;
+    const element = temp.content.firstChild;
+
+    return this.editor.parser.parse(element);
+  }
+
+  dispatchTransaction(transaction: any) {
+    if (!transaction.curSelection.empty) {
+      this.selected = true;
+    } else {
+      this.selected = false;
+    }
+
+    const content = this.state2Html(this.editor.view.state);
+    let newState = this.editor.view.state.apply(transaction);
+
+    let contentChanged = !newState.doc.eq(this.editor.view.state.doc);
+    this.editor.view.updateState(newState);
+
+    this.logger.log('dispatchTransaction()', { selected: this.selected, newState, contentChanged, transaction });
+
+    if (!contentChanged) return;
+
+    /** doc changed */
+
+    /** make sure heading is <h1> */
+    if (newState.doc.content.content[0].type.name === 'heading') {
+      newState.doc.content.content[0].attrs.level = 1;
+    }
+
+    const newContent = this.state2Html(newState);
+
+    this.logger.log(`dispatchTransaction() - content-changed`, {content, newContent});
+
+    this.dispatchEvent(
+      new CustomEvent('content-changed', {
+        detail: {
+          content: newContent
+        }
+      })
+    );
   }
 
   typeClick() {
@@ -327,7 +427,7 @@ export class DocumentTextNodeEditor extends LitElement {
                 ${this.type === TextType.Title ? 'text' : 'Title'}
               </div>
               ${this.type !== TextType.Title
-                ? html`
+            ? html`
                     <div
                       class="btn btn-square btn-large"
                       @click=${() => this.menuItemClick(this.editor.schema.marks.strong)}
@@ -335,7 +435,7 @@ export class DocumentTextNodeEditor extends LitElement {
                       ${icons.bold}
                     </div>
                   `
-                : ''}
+            : ''}
               <div
                 class="btn btn-square btn-large"
                 @click=${() => this.menuItemClick(this.editor.schema.marks.em)}
@@ -346,7 +446,7 @@ export class DocumentTextNodeEditor extends LitElement {
                 ${icons.link}
               </div>
               ${this.showUrl
-                ? html`
+            ? html`
                     <div class="inp">
                       <input placeholder="url" id="URL_INPUT" />
                       <div @click=${this.linkCancelled} class="btn btn-small">
@@ -357,16 +457,16 @@ export class DocumentTextNodeEditor extends LitElement {
                       </div>
                     </div>
                   `
-                : ''}
+            : ''}
             </div>
           `
         : ''}
       <div id="editor-content" class="editor-content">
         ${this.empty
-          ? html`
+        ? html`
               ${this.placeholder ? this.placeholder : ''}
             `
-          : ''}
+        : ''}
       </div>
     `;
   }

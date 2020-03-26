@@ -85,6 +85,8 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
               color=${context.color} 
               index=${context.index}
               .genealogy=${context.genealogy}
+              toggle-action=${context.toggleAction}
+              .action=${context.action}
             >
               ${lensContent}
             </documents-text-node>

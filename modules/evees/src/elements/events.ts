@@ -28,6 +28,7 @@ export type RemoveSyblingsArgs = {
 export type RemoveChildArgs = {
   startedOnElementId: string;
   index: number;
+  content?: string;
 }
 
 export const CREATE_SYBLING_TAG = 'create-sybling';

@@ -310,7 +310,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     );
   }
 
-  removeFromParent() {
+  removeFromParent(content: string | undefined) {
     if (!this.data) return;
 
     this.logger.info('removeFromParent()', { dataId: this.data ? this.data.id : undefined });
@@ -320,7 +320,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
         composed: true,
         detail: {
           startedOnElementId: this.data.id,
-          index: this.index
+          index: this.index,
+          content: content
         }
       })
     );
@@ -344,16 +345,14 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     this.updateContentLocal(newContent.object);
   }
 
-  async removeChildElement(index: number) {
+  async removeChildElement(index: number, content?: string) {
     if (!this.data) return;
 
     const links = this.getChildren(this.data as unknown as object);
-    const elementId = links[index];
-
+    
     let newLinks: string[] = [...links];
-    /** remove */
+    /** remove child */
     newLinks.splice(index, 1);
-
     const newContent = this.replaceChildren(this.data as unknown as object, newLinks);
 
     this.logger.info('removeChildElement()', newContent);
@@ -449,7 +448,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
       // At this point this should be the text node that is the parent of the source of the event.
       e.stopPropagation();
-      this.removeChildElement(e.detail.index);
+      this.removeChildElement(e.detail.index, e.detail.content);
     }) as EventListener);
     
   }

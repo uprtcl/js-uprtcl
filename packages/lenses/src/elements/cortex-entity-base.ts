@@ -92,7 +92,7 @@ export class CortexEntityBase extends moduleConnect(LitElement) {
 
   updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
-
+    
     if (changedProperties.has('hash') && this.hash && this.hash !== changedProperties.get('hash')) {
       this.loadEntity(this.hash);
     }

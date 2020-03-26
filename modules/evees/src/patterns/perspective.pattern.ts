@@ -87,6 +87,8 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
               evee-color=${color}
               index=${index}
               .genealogy=${genealogy}
+              toggle-action=${context ? context.toggleAction : 'false'}
+              .action=${context ? context.action : {}}
             >
             </evees-perspective>
           `;

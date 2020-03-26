@@ -26,6 +26,8 @@ export class EveesOptionsMenu extends LitElement {
   optionClicked(key: string, e) {
     e.stopPropagation();
 
+    this.showDropdown = false;
+
     this.dispatchEvent(new CustomEvent('option-click', {
       bubbles: true,
       composed: true,

@@ -16,13 +16,31 @@ import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { Hashed } from '@uprtcl/cortex';
 import { htmlToText } from 'src/uprtcl-documents';
+import { APPEND_ACTION } from './prosemirror/documents-text-node-editor';
 
 export class DocumentTextNode extends EveesContent<TextNode> {
-  
+
   logger = new Logger('DOCUMENT-TEXT-NODE');
 
   @property({ type: Boolean, attribute: false })
   focused: Boolean = false;
+
+  @property({ type: String, attribute: 'toggle-action' })
+  toggleAction = 'false';
+
+  @property({ type: Object})
+  action = {};
+
+  @property({ type: String, attribute: false })
+  toggleActionToChild: string = 'true';
+
+  @property({ type: String, attribute: false })
+  toggleActionToEditor: string = 'true';
+
+  actionToEditor = {};
+
+  actionOnIx: number = 0;
+  actionToChild: any = {};
 
   symbol: symbol | undefined = DocumentsBindings.TextNodeEntity;
 
@@ -36,18 +54,11 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
   };
 
-  initNode(text: string, type: TextType ) {
+  initNode(text: string, type: TextType) {
     /** init a node with the provided text guranteeing either the <p> or <h1> external tag
      *  is consistent with the request type */
-    const temp = document.createElement('template');
-    temp.innerHTML = text.trim();
+    const innerHTML = this.nodeInnerHTML(text);
 
-    if (temp.content.firstElementChild == null) {
-      return this.getEmptyEntity();
-    }
-
-    const innerHTML = temp.content.firstElementChild.innerHTML;
-    
     let newText;
     if (type === TextType.Paragraph) {
       newText = `<p>${innerHTML}</p>`
@@ -64,7 +75,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
   async firstUpdated() {
     this.logger.log('firstUpdated()');
-    
+
     super.firstUpdated();
     await this.updateRefData();
     if (this.data !== undefined) {
@@ -73,51 +84,112 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   updated(changedProperties: Map<string, any>) {
+    super.updated(changedProperties);
+    
+    if (changedProperties.has('toggleAction')) {
+      if (changedProperties.get('toggleAction') !== undefined) {
+        this.runAction(this.action);
+      }
+    }
+
     this.logger.log('updated()', { changedProperties, data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
   }
 
-  async enterPressed(e: CustomEvent) {
-    await this.commit();
-    
-    if (!this.data) return;
-    if (!this.symbol) throw new Error('this.symbol undefined');
+  runAction(action: any) {
+    if (!action) return;
 
-    const tail = e.detail.tail;
-    this.logger.info('enterPressed()', { data: this.data, tail });
+    switch (action.name) {
+      case APPEND_ACTION:
+        this.sendActionToEditor(action);
+        break;
 
-    if (this.data.object.type === TextType.Title) {
-      await this.createChild(this.initNode(tail, TextType.Paragraph), this.symbol);
-    } else {
-      this.createSibling(this.initNode(tail, TextType.Paragraph), this.symbol);
+      default:
+        throw new Error(`unexpected action ${action.name}`);
     }
   }
 
-  async backspacePressed() {
-    this.logger.log('backspacePressed()', this.currentText);
-    let empty = false;
-    if (this.currentText === undefined) {
-      empty = true;
-    };
+  async enterPressed(e: CustomEvent) {
+    await this.commitText();
 
-    if (!empty) {
-      const text = htmlToText(this.currentText as string);
-      empty = text === '';
+    if (!this.data) return;
+    if (!this.symbol) throw new Error('this.symbol undefined');
+
+    const content = e.detail.content;
+    this.logger.info('enterPressed()', { data: this.data, content });
+
+    if (this.data.object.type === TextType.Title) {
+      await this.createChild(this.initNode(content, TextType.Paragraph), this.symbol);
+    } else {
+      this.createSibling(this.initNode(content, TextType.Paragraph), this.symbol);
     }
-    
-    this.logger.log('backspacePressed()', { empty } );
-    
-    if (empty) {
-      this.removeFromParent();
+  }
+
+  /** get the x in <p>x</p> or <h1>x</h1>*/
+  nodeInnerHTML(text: string) {
+    const temp = document.createElement('template');
+    temp.innerHTML = text.trim();
+
+    if (temp.content.firstElementChild == null) {
+      return '';
     }
+
+    return temp.content.firstElementChild.innerHTML;
+  }
+
+  async backspaceOnStart(e: CustomEvent) {
+    await this.commitText();
+
+    this.logger.log('backspaceOnStart()', { currentText: this.currentText, e });
+    const innerHTML = this.nodeInnerHTML(e.detail.content)
+    
+    this.removeFromParent(innerHTML);
+  }
+
+  // @Overwrite
+  async removeChildElement(index: number, content: string) {
+    /** remove child */
+    super.removeChildElement(index, content);
+
+    if (!this.data) throw new Error('this.data undefined');
+
+    /** put the content on the node above it */
+    if (index === 0) {
+      /** if it was the first sub-element, append content to this node (which was the parent) */
+      this.sendActionToEditor({ 
+        name: APPEND_ACTION, 
+        pars: { content } });
+    } else {
+      /** if it was not first element, append content to sybling of element at index*/
+      this.sendActionToChild(
+        index-1, {
+          name: APPEND_ACTION,
+          pars: { content }
+        })
+    }
+  }
+
+  /** I need to communicate with the editor from here... */
+  sendActionToChild(ix: number, action: object) {
+    this.actionOnIx = ix;
+    this.actionToChild = action;
+    this.toggleActionToChild = this.toggleActionToChild === 'true' ? 'false' : 'true';
+  }
+
+  /** I need to communicate with the editor from here... */
+  sendActionToEditor(action: object) {
+    this.actionToEditor = action;
+    this.toggleActionToEditor = this.toggleActionToEditor === 'true' ? 'false' : 'true';
   }
 
   editorContentChanged(e) {
     this.currentText = e.detail.content;
   }
 
-  async commit() {
-    if(!this.data) return;
-    if(!this.currentText) return;
+  async commitText() {
+    if (!this.data) return;
+    if (!this.currentText) return;
+
+    if (this.data.object.text === this.currentText) return;
 
     const newContent: TextNode = {
       ...this.data.object,
@@ -132,14 +204,14 @@ export class DocumentTextNode extends EveesContent<TextNode> {
       this.focused = true;
     } else {
       this.focused = false;
-      this.commit();
+      this.commitText();
     }
   }
 
   async changeType(e: CustomEvent) {
     if (!this.data) return;
 
-    await this.commit();
+    await this.commitText();
 
     const newType = e.detail.type;
     let newContent: TextNode;
@@ -241,8 +313,6 @@ export class DocumentTextNode extends EveesContent<TextNode> {
                     links: newLinks
                   };
 
-                  this.updateContentLocal(newContent);
-
                   /** remove these paragraphs from parent */
                   this.dispatchEvent(
                     new RemoveChildrenEvent({
@@ -259,6 +329,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
                 }
               }
             }
+
+            this.updateContentLocal(newContent);
             return;
         }
     }
@@ -291,10 +363,12 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               focus-init=${'true'}
               level=${this.level}
               editable=${this.editable ? 'true' : 'false'}
+              toggle-action=${this.toggleActionToEditor}
+              .action=${this.actionToEditor}
               @focus-changed=${(e) => (this.editorFocusChanged(e.detail.value))}
               @content-changed=${this.editorContentChanged}
               @enter-pressed=${this.enterPressed}
-              @backspace-pressed=${this.backspacePressed}
+              @backspace-on-start=${this.backspaceOnStart}
               @change-type=${this.changeType}
             ></documents-text-node-editor>
           </div>
@@ -304,15 +378,16 @@ export class DocumentTextNode extends EveesContent<TextNode> {
         </div>
 
         <div class="node-children">
-          ${this.data.object.links.map(
-            (link, ix) => html`
+          ${this.data.object.links.map((link, ix) => html`
               <cortex-entity
                 hash=${link}
                 lens-type="evee"
                 .context=${{
                   color: this.color,
                   index: ix,
-                  genealogy: this.genealogy
+                  genealogy: this.genealogy,
+                  toggleAction: this.toggleActionToChild,
+                  action: this.actionOnIx === ix ? this.actionToChild : undefined
                 }}
               >
               </cortex-entity>

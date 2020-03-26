@@ -38,6 +38,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
   @property({ type: Number })
   index: number = 0;
 
+  @property({ type: String, attribute: 'toggle-action' })
+  toggleAction = 'false';
+
+  @property({ type: Object})
+  action = {};
+
   @property()
   private entityId: string | undefined = undefined;
 
@@ -270,7 +276,9 @@ export class EveesPerspective extends moduleConnect(LitElement) {
           ref: this.perspective.id,
           color: this.getEveeColor(),
           index: this.index,
-          genealogy: this.newGenealogy
+          genealogy: this.newGenealogy,
+          toggleAction: this.toggleAction,
+          action: this.action
         }}
       >
         <evees-info-popper
