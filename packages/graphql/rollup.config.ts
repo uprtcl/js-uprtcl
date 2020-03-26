@@ -1,4 +1,3 @@
-const resolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const sourceMaps = require('rollup-plugin-sourcemaps');
 const typescript = require('rollup-plugin-typescript2');
@@ -15,7 +14,6 @@ module.exports = {
     { file: pkg.module, format: 'es', sourcemap: true }
   ],
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash-es')
-  external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],
   watch: {
     include: 'src/**'
   },
@@ -42,7 +40,6 @@ module.exports = {
         '**/node_modules/core-js-bundle/**/*'
       ]
     }),
-    resolve(),
 
     sourceMaps()
   ],
