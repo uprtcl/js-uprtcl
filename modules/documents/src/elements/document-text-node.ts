@@ -16,7 +16,7 @@ import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { Hashed } from '@uprtcl/cortex';
 import { htmlToText } from 'src/uprtcl-documents';
-import { APPEND_ACTION } from './prosemirror/documents-text-node-editor';
+import { APPEND_ACTION, FOCUS_ACTION } from './prosemirror/documents-text-node-editor';
 
 export class DocumentTextNode extends EveesContent<TextNode> {
 
@@ -92,7 +92,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
       }
     }
 
-    this.logger.log('updated()', { changedProperties, data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
+    // this.logger.log('updated()', { changedProperties, data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
   }
 
   runAction(action: any) {
@@ -100,6 +100,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
     switch (action.name) {
       case APPEND_ACTION:
+      case FOCUS_ACTION:
         this.sendActionToEditor(action);
         break;
 
@@ -137,12 +138,107 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   async backspaceOnStart(e: CustomEvent) {
+    if (this.level === 1) return;
+
     await this.commitText();
 
     this.logger.log('backspaceOnStart()', { currentText: this.currentText, e });
     const innerHTML = this.nodeInnerHTML(e.detail.content)
     
     this.removeFromParent(innerHTML);
+  }
+
+  selectBackward(index: number) {
+    if (index === 0) {
+      this.sendActionToEditor({ 
+        name: FOCUS_ACTION, 
+        pars: { } });
+    } else {
+      /** if it was not first element, append content to sybling of element at index*/
+      this.sendActionToChild(
+        index-1, {
+          name: FOCUS_ACTION,
+          pars: { }
+        })
+    }
+  }
+
+  selectDownward(index: number) {
+    if (!this.data) return;
+
+    if (index < this.data.object.links.length - 1) {
+      /** select next sybling downwards */
+      this.sendActionToChild(
+        index+1, {
+          name: FOCUS_ACTION,
+          pars: { }
+        })
+    } else {
+      // TODO
+    }
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener('select-backward', ((e: CustomEvent) => {
+      if (!this.data) return;
+
+      this.logger.info(`CATCHED EVENT: select-backward`, { dataId: this.data.id, e });
+
+      // TODO: this.addEventListener listens  this.dispatchEvent ???
+      if (e.detail.startedOnElementId === this.data.id) return;
+
+      // At this point this should be the text node that is the parent of the source of the event.
+      e.stopPropagation();
+      this.selectBackward(e.detail.index);
+    }) as EventListener);
+
+    this.addEventListener('select-downward', ((e: CustomEvent) => {
+      if (!this.data) return;
+
+      this.logger.info(`CATCHED EVENT: select-downward`, { dataId: this.data.id, e });
+
+      // TODO: this.addEventListener listens  this.dispatchEvent ???
+      if (e.detail.startedOnElementId === this.data.id) return;
+
+      // At this point this should be the text node that is the parent of the source of the event.
+      e.stopPropagation();
+      this.selectDownward(e.detail.index);
+    }) as EventListener);
+  }
+
+  async keyupOnStart(e: CustomEvent) {
+    if (!this.data) return;
+    this.logger.info(`dispatching: select-backward`, { dataId: this.data.id });
+    this.dispatchEvent(new CustomEvent('select-backward', { 
+      bubbles: true, 
+      composed: true, 
+      detail: { 
+        index: this.index,
+        startedOnElementId: this.data.id
+      } }))
+  }
+
+  async keydownOnEnd(e: CustomEvent) {
+    if (!this.data) return;
+    this.logger.info(`dispatching: select-downward`, { dataId: this.data.id });
+    
+    if (this.data.object.type === TextType.Title) {
+      this.sendActionToChild(0, {
+        name: FOCUS_ACTION,
+        pars: { }
+      });
+    } else {
+      this.dispatchEvent(new CustomEvent('select-downward', { 
+        bubbles: true, 
+        composed: true, 
+        detail: { 
+          index: this.index,
+          startedOnElementId: this.data.id
+        } 
+      }))
+    }
   }
 
   // @Overwrite
@@ -338,7 +434,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   render() {
-    this.logger.log('render()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level });
+    // this.logger.log('render()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level });
     if (!this.data)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
@@ -370,6 +466,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               @content-changed=${this.editorContentChanged}
               @enter-pressed=${this.enterPressed}
               @backspace-on-start=${this.backspaceOnStart}
+              @keyup-on-start=${this.keyupOnStart}
+              @keydown-on-end=${this.keydownOnEnd}
               @change-type=${this.changeType}
             ></documents-text-node-editor>
           </div>

@@ -6,7 +6,6 @@ import { EditorState, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { toggleMark, splitBlock, joinBackward } from 'prosemirror-commands';
 import { DOMParser, DOMSerializer } from 'prosemirror-model';
-import { keymap } from 'prosemirror-keymap';
 
 import { styles } from './prosemirror.css';
 import { titleSchema } from './schema-title';
@@ -16,19 +15,8 @@ import { iconsStyle } from './icons.css';
 import { icons } from './icons';
 import { TextType } from '../../types';
 
-const splitBlockTr = (state) => {
-  let transaction: any;
-  splitBlock(state, (tr) => { transaction = tr })
-  return transaction;
-}
-
-const joinBackwardTr = (state) => {
-  let transaction: any;
-  joinBackward(state, (tr) => { transaction = tr })
-  return transaction;
-}
-
 export const APPEND_ACTION = 'append';
+export const FOCUS_ACTION = 'focus';
 
 export class DocumentTextNodeEditor extends LitElement {
 
@@ -111,7 +99,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   updated(changedProperties: Map<string, any>) {
-    this.logger.log('updated()', { changedProperties });
+    // this.logger.log('updated()', { changedProperties });
 
     if (changedProperties.has('toggleAction')) {
       if (changedProperties.get('toggleAction') !== undefined) {
@@ -124,7 +112,7 @@ export class DocumentTextNodeEditor extends LitElement {
     }
 
     if (changedProperties.has('init')) {
-      this.logger.info('updated() - init', {thisinit: this.init, changedPropertiesinit: changedProperties.get('init')});
+      // this.logger.info('updated() - init', {thisinit: this.init, changedPropertiesinit: changedProperties.get('init')});
       if (changedProperties.get('init') == undefined) {
         /** only reinitialize the first time init changes */
         this.initEditor();
@@ -154,6 +142,12 @@ export class DocumentTextNodeEditor extends LitElement {
       case APPEND_ACTION:
         this.appendContent(action.pars.content)
         break;
+
+      case FOCUS_ACTION:
+        this.logger.log('focusing()')
+        this.editor.view.focus();
+        break;
+  
 
       default:
         throw new Error(`unexpected action ${action.name}`);
@@ -207,43 +201,73 @@ export class DocumentTextNodeEditor extends LitElement {
       .replace(end-1, end-1, slice));
   }
 
-  onEnter(state, dispatch) {
-    /** simulate splitBlock */
-    const splitTr = state.tr.split(state.selection.$cursor.pos);
-
-    /** applied just to get the second part, the actual transaction
-     * is applied in dispatch */
-    const newState = state.apply(splitTr);
-    const secondPart = newState.doc.content.content[1];
+  keydown(view, event) {
     
-    dispatch(
-      splitTr
-      .delete(state.selection.$cursor.pos, state.doc.nodeSize));
+    /** enter */
+    if (event.keyCode === 13) {
+      event.preventDefault();
 
-    /** send event to parent */
-    const fragment = this.editor.serializer.serializeFragment(secondPart);
-    const temp = document.createElement('div');
-    temp.appendChild(fragment);
-    const content = temp.innerHTML;
-    
-    this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { content } }));
+      /** simulate splitBlock */
+      const splitTr = view.state.tr.split(view.state.selection.$cursor.pos);
 
-    return false;
-  }
+      /** applied just to get the second part, the actual transaction
+       * is applied in dispatch */
+      const newState = view.state.apply(splitTr);
+      const secondPart = newState.doc.content.content[1];
+      
+      view.dispatch(
+        splitTr
+        .delete(view.state.selection.$cursor.pos, view.state.doc.nodeSize));
 
-  onBackspace(state) {
-    if (state.selection.$cursor.pos === 1) {
-      const content = this.state2Html(state);
-      this.dispatchEvent(new CustomEvent('backspace-on-start', {
-        bubbles: true, 
-        composed: true, 
-        detail: {
-          content
-        }
-      }));
-      return true;
+      /** send event to parent */
+      const fragment = this.editor.serializer.serializeFragment(secondPart);
+      const temp = document.createElement('div');
+      temp.appendChild(fragment);
+      const content = temp.innerHTML;
+      
+      this.logger.log('enter-pressed');
+      this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { content } }));
+      
+      return;
     }
-    return false;
+
+    /** backspace */
+    if (event.keyCode === 8) {
+      if (view.state.selection.$cursor.pos === 1) {
+        event.preventDefault();
+
+        const content = this.state2Html(view.state);
+        this.logger.log('backspace-on-start');
+        this.dispatchEvent(new CustomEvent('backspace-on-start', {
+          bubbles: true, 
+          composed: true, 
+          detail: {
+            content
+          }
+        }));
+      }
+      return;
+    }
+
+    /** arrow up */
+    if (event.keyCode === 38) {
+      if (view.state.selection.$cursor.pos === 1) {
+        event.preventDefault();
+        this.logger.log('dispatching keyup-on-start');
+        this.dispatchEvent(new CustomEvent('keyup-on-start'));
+        return;
+      }
+    }
+
+    /** arrow down */
+    if (event.keyCode === 40) {
+      debugger
+      if (view.state.selection.$cursor.pos >= view.state.doc.content.content[0].nodeSize - 1) {
+        event.preventDefault();
+        this.dispatchEvent(new CustomEvent('keydown-on-end'));
+        return;
+      }
+    }
   }
 
   isEditable() {
@@ -274,10 +298,7 @@ export class DocumentTextNodeEditor extends LitElement {
     const state = EditorState.create({
       schema: schema,
       doc: doc,
-      plugins: [keymap({
-        Enter: (state, dispatch) => this.onEnter(state, dispatch),
-        Backspace: (state, dispatch) => this.onBackspace(state)
-      })]
+      plugins: []
     });
 
     if (this.shadowRoot == null) return;
@@ -289,7 +310,8 @@ export class DocumentTextNodeEditor extends LitElement {
       dispatchTransaction: transaction => this.dispatchTransaction(transaction),
       handleDOMEvents: {
         'focus': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: true } })) },
-        'blur': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: false } })) }
+        'blur': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: false } })) },
+        'keydown': (view, event) => this.keydown(view, event)
       }
     });
 
@@ -429,19 +451,21 @@ export class DocumentTextNodeEditor extends LitElement {
         ? html`
             <div class="top-menu">
               <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
-              <div class="btn btn-text" @click=${this.typeClick}>
-                ${this.type === TextType.Title ? 'text' : 'Title'}
-              </div>
-              ${this.type !== TextType.Title
-            ? html`
-                    <div
-                      class="btn btn-square btn-large"
-                      @click=${() => this.menuItemClick(this.editor.state.schema.marks.strong)}
-                    >
-                      ${icons.bold}
-                    </div>
-                  `
-            : ''}
+              ${this.level > 1 ? html`
+                <div class="btn btn-text" @click=${this.typeClick}>
+                  ${this.type === TextType.Title ? 'text' : 'Title'}
+                </div>
+              ` : ''}
+              
+              ${this.type !== TextType.Title ? 
+                html`
+                  <div
+                    class="btn btn-square btn-large"
+                    @click=${() => this.menuItemClick(this.editor.state.schema.marks.strong)}
+                  >
+                    ${icons.bold}
+                  </div>
+                ` : ''}
               <div
                 class="btn btn-square btn-large"
                 @click=${() => this.menuItemClick(this.editor.state.schema.marks.em)}
