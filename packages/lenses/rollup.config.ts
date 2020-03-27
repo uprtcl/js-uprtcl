@@ -1,4 +1,3 @@
-const resolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const sourceMaps = require('rollup-plugin-sourcemaps');
 const typescript = require('rollup-plugin-typescript2');
@@ -27,20 +26,6 @@ module.exports = {
 
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
-    }),
-    resolve({
-      browser: true,
-      preferBuiltins: false,
-      dedupe: [
-        '@uprtcl/cortex',
-        '@uprtcl/graphql',
-        '@uprtcl/multiplatform',
-        '@uprtcl/micro-orchestrator',
-        'graphql-tools',
-        'lit-element',
-        'graphql',
-        'graphql-tag'
-      ]
     }),
     commonjs({
       include: [

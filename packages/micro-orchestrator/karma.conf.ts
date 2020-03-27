@@ -1,3 +1,4 @@
+const resolve = require('@rollup/plugin-node-resolve');
 const replace = require('@rollup/plugin-replace');
 const rollupConfig = require('./rollup.config');
 
@@ -24,6 +25,7 @@ module.exports = config =>
     },
     rollupPreprocessor: {
       ...rollupConfig,
+      plugins: [...rollupConfig.plugins, resolve()],
       external: [],
       output: {
         format: 'iife', // Helps prevent naming collisions.

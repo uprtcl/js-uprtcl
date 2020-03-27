@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import { gql } from 'apollo-boost';
 import { DocumentNode } from 'graphql';
 
 export const discoveryTypeDefs: DocumentNode = gql`

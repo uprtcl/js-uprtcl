@@ -1,3 +1,5 @@
+const commonjs = require('@rollup/plugin-commonjs');
+const resolve = require('@rollup/plugin-node-resolve');
 const replace = require('@rollup/plugin-replace');
 const rollupConfig = require('./rollup.config');
 
@@ -24,7 +26,6 @@ module.exports = config =>
     },
     rollupPreprocessor: {
       ...rollupConfig,
-      external: [],
       output: {
         format: 'iife', // Helps prevent naming collisions.
         name: 'uprtclevees', // Required for 'iife' format.,
@@ -38,7 +39,23 @@ module.exports = config =>
             'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = {checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
           delimiters: ['', '']
         }),
-        ...rollupConfig.plugins
+        ...rollupConfig.plugins,
+        commonjs({
+          namedExports: {
+            'apollo-boost': ['gql', 'ApolloClient'],
+            'graphql-tools': ['makeExecutableSchema']
+          },
+          exclude: [
+            '**/node_modules/mocha/**/*',
+            '**/node_modules/chai/**/*',
+            '**/node_modules/sinon-chai/**/*',
+            '**/node_modules/chai-dom/**/*',
+            '**/node_modules/core-js-bundle/**/*'
+          ]
+        }),
+        resolve({
+          dedupe: ['graphql-tools']
+        })
       ]
     },
     singleRun: true,

@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/http-provider",
-  "version": "0.0.5-alpha4",
+  "version": "0.0.5-alpha.5",
   "description": "_Prtcl provider wrappers around the native fetch api",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,11 +11,11 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.0.5-alpha4",
-    "@uprtcl/ethereum-provider": "^0.0.5-alpha4",
-    "@uprtcl/ipfs-provider": "^0.0.5-alpha4",
-    "@uprtcl/micro-orchestrator": "^0.0.5-alpha4",
-    "@uprtcl/multiplatform": "^0.0.5-alpha4",
+    "@uprtcl/cortex": "^0.0.5-alpha.5",
+    "@uprtcl/ethereum-provider": "^0.0.5-alpha.5",
+    "@uprtcl/ipfs-provider": "^0.0.5-alpha.5",
+    "@uprtcl/micro-orchestrator": "^0.0.5-alpha.5",
+    "@uprtcl/multiplatform": "^0.0.5-alpha.5",
     "reflect-metadata": "^0.1.13",
     "web3": "^1.2.6"
   },

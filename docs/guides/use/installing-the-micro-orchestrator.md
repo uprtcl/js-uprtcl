@@ -4,7 +4,7 @@ The [`MicroOrchestrator`](https://github.com/uprtcl/js-uprtcl/tree/develop/packa
 
 ## Installation
 
-To install the `micro-orchestrator` in your webapp, just install execute this:
+To include the `micro-orchestrator` in your webapp, just install it with `npm`:
 
 ```bash
 npm install @uprtcl/micro-orchestrator
@@ -12,7 +12,7 @@ npm install @uprtcl/micro-orchestrator
 
 ## Usage
 
-It is recommended that your have only one instance of the `micro-orchestrator`. This follows the Composition Root pattern, in which you declare all modules and functionalities that your application will have only in one file and have that file as close to the root of your application as possible.
+It is recommended that your have only one instance of the `micro-orchestrator`. This follows the *Composition Root pattern*, in which you declare all modules and functionalities that your application will have only in one file and have that file as close to the root of your application as possible.
 
 This avoids having multiple places in which modules are loaded and imported, which can make it difficult to reason about all your dependencies.
 

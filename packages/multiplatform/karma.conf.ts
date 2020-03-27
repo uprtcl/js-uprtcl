@@ -1,3 +1,4 @@
+const resolve = require('@rollup/plugin-node-resolve');
 const replace = require('@rollup/plugin-replace');
 const rollupConfig = require('./rollup.config');
 
@@ -38,7 +39,12 @@ module.exports = config =>
             'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = {checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
           delimiters: ['', '']
         }),
-        ...rollupConfig.plugins
+        ...rollupConfig.plugins,
+        resolve({
+          browser: true,
+          preferBuiltins: false,
+          dedupe: ['graphql-tools', 'graphql']
+        })
       ]
     },
     singleRun: true,

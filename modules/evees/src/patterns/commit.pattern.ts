@@ -1,5 +1,6 @@
 import { injectable, inject, multiInject } from 'inversify';
 import { html, TemplateResult } from 'lit-element';
+import { ApolloClient } from 'apollo-boost';
 
 import {
   Pattern,
@@ -20,7 +21,7 @@ import { EveesBindings } from '../bindings';
 import { EveesRemote } from '../services/evees.remote';
 import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 import { CREATE_COMMIT } from '../graphql/queries';
-import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { CreateCommitArgs } from '../services/evees';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
@@ -126,9 +127,9 @@ export class CommitPattern extends CommitEntity
         source: source
       }
     });
-    if (result.data.createCommit.id != commit.id)  {
+    if (result.data.createCommit.id != commit.id) {
       throw new Error('unexpected id');
-    };
+    }
     return commit;
   };
 
