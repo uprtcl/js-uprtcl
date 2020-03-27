@@ -19,7 +19,7 @@ import { Secured } from '../patterns/default-secured.pattern';
 import { Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from '../services/evees.remote';
-import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { DiscoveryModule, MultiSourceService } from '@uprtcl/multiplatform';
 import { CREATE_COMMIT } from '../graphql/queries';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CreateCommitArgs } from '../services/evees';
@@ -90,7 +90,7 @@ export class CommitPattern extends CommitEntity
     @inject(EveesBindings.Secured)
     protected secured: Pattern & IsSecure<Secured<Commit>>,
     @multiInject(EveesBindings.EveesRemote) protected remotes: EveesRemote[],
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.bindings.MultiSourceService) protected multiSource: MultiSourceService,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
   ) {
     super(secured);

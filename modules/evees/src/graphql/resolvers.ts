@@ -1,6 +1,6 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { DiscoveryService, DiscoveryModule, Store, StoresModule } from '@uprtcl/multiplatform';
+import { MultiSourceService, DiscoveryModule, Store, StoresModule } from '@uprtcl/multiplatform';
 import { IsSecure } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -99,7 +99,7 @@ export const eveesResolvers = {
       { container }
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
-      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
+      const multiSource: MultiSourceService = container.get(DiscoveryModule.bindings.MultiSourceService);
       const secured: IsSecure<any> = container.get(EveesBindings.Secured);
 
       const commitData: Commit = {
@@ -114,7 +114,7 @@ export const eveesResolvers = {
       const commit: Secured<Commit> = await secured.derive()(commitData, remote.hashRecipe);
 
       await remote.cloneCommit(commit);
-      await discovery.postEntityCreate(remote, commit);
+      await multiSource.postEntityCreate(remote, commit);
 
       return {
         id: commit.id,
@@ -124,14 +124,14 @@ export const eveesResolvers = {
 
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
-      const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
+      const multiSource: MultiSourceService = container.get(DiscoveryModule.bindings.MultiSourceService);
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
 
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
       await provider.updatePerspectiveDetails(perspectiveId, { headId });
 
-      await discovery.postEntityUpdate(provider, [headId]);
+      await multiSource.postEntityUpdate(provider, [headId]);
 
       const result = await client.query({
         query: gql`{

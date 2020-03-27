@@ -5,7 +5,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
 import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
-import { DiscoveryModule, DiscoveryService, TaskQueue, Task, Store, StoresModule } from '@uprtcl/multiplatform';
+import { DiscoveryModule, MultiSourceService, TaskQueue, Task, Store, StoresModule } from '@uprtcl/multiplatform';
 import { CidConfig } from '@uprtcl/ipfs-provider';
 import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
 
@@ -102,7 +102,7 @@ export class WikiCommon extends WikiEntity implements HasLenses {
 @injectable()
 export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, Wiki> {
   constructor(
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.bindings.MultiSourceService) protected multiSource: MultiSourceService,
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
     @multiInject(StoresModule.bindings.Store) protected stores: Array<Store>,

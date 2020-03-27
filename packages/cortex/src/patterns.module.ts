@@ -12,7 +12,7 @@ import { Pattern } from './pattern';
  * Example usage:
  *
  * ```ts
- * class EveesModule extends PatternsModule {
+ * class EveesModule extends MicroModule {
  *
  *   ...
  *
@@ -23,7 +23,7 @@ import { Pattern } from './pattern';
 export class PatternsModule extends MicroModule {
   dependencies = [CortexModule.id];
 
-  static bindings= {
+  static bindings = {
     Pattern: Symbol('pattern')
   };
 

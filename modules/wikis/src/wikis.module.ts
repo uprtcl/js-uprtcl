@@ -16,7 +16,7 @@ import { WikiBindings } from './bindings';
 /**
  * Configure a wikis module with the given providers
  *
- * Depends on: lensesModule, PatternsModule, discoveryModule
+ * Depends on: lensesModule, PatternsModule, multiSourceModule
  *
  * Example usage:
  *

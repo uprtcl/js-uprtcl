@@ -23,7 +23,7 @@ describe('basic GraphQl entity', () => {
       new ApolloClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
-      new MockModule({ hash1: { id: 'hash1', object: object1 } })
+      new MockModule({ hash1: object1 })
     ]);
   });
 

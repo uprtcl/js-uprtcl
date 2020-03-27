@@ -2,7 +2,7 @@ import { LitElement, property } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Source, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { Source, MultiSourceService, DiscoveryModule } from '@uprtcl/multiplatform';
 import {
   Pattern,
   Creatable,
@@ -58,7 +58,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   protected patterns: Pattern[] | undefined = undefined;
   protected client: ApolloClient<any> | undefined = undefined;
   protected eveesRemotes: EveesRemote[] | undefined = undefined;
-  protected discovery: DiscoveryService | undefined = undefined;
+  protected multiSource: MultiSourceService | undefined = undefined;
 
   firstUpdated() {
     /** read all dependencies once for efficiency and to prevent unmounted requests */
@@ -66,7 +66,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    this.discovery = this.request(DiscoveryModule.bindings.DiscoveryService);
+    this.multiSource = this.request(DiscoveryModule.bindings.MultiSourceService);
 
     if (this.dataInit) {
       this.data = {...this.dataInit};
@@ -494,8 +494,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   async getData(dataId: string): Promise<Hashed<object> | undefined> {
-    if (!this.discovery) throw new Error('discovery undefined');
-    return this.discovery.get(dataId);
+    if (!this.multiSource) throw new Error('multiSource undefined');
+    return this.multiSource.get(dataId);
   }
 
   async getPerspectiveData(perspectiveId: string): Promise<Hashed<object> | undefined> {

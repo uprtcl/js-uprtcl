@@ -53,13 +53,13 @@ export class TestSource implements Source {
 ```
 
 2. Make sure that the base [`DiscoveryModule`](https://github.com/uprtcl/js-uprtcl/blob/develop/packages/multiplatform/src/discovery.module.ts) is instantiated and loaded in the `MicroOrchestrator`.
-3. Create a [`SourcesModule`](https://github.com/uprtcl/js-uprtcl/blob/develop/packages/multiplatform/src/sources.module.ts) and initialize it with your `Source`. Instantiate and load the `SourceModule`.
+3. Create a [`CASModule`](https://github.com/uprtcl/js-uprtcl/blob/develop/packages/multiplatform/src/cas.module.ts) and initialize it with your `CASModule`. Instantiate and load the `CASModule`.
 
 ```ts
-import { SourceModule } from '@uprtcl/multiplatform';
+import { CASModule } from '@uprtcl/multiplatform';
 import { TestSource } from './test-source';
 
-const sourcesModule = new SourcesModule([new TestSource()]);
+const sourcesModule = new CASModule([new TestSource()]);
 
 // ... MicroOrchestrator initialization and loading of base modules
 

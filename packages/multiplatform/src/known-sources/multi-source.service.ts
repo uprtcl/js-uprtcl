@@ -12,7 +12,7 @@ import { MultiplatformBindings, CASBindings } from '../bindings';
 
 @injectable()
 export class MultiSourceService implements CASSource {
-  protected logger = new Logger('DiscoveryService');
+  protected logger = new Logger('MultiSourceService');
 
   services: Dictionary<CASSource>;
 

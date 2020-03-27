@@ -12,7 +12,7 @@ import {
   HasTitle,
   Newable
 } from '@uprtcl/cortex';
-import { DiscoveryService, DiscoveryModule, TaskQueue, Store } from '@uprtcl/multiplatform';
+import { MultiSourceService, DiscoveryModule, TaskQueue, Store } from '@uprtcl/multiplatform';
 import {
   Mergeable,
   MergeStrategy,
@@ -126,7 +126,7 @@ export class TextNodeCreate extends TextNodeEntity
   implements Creatable<Partial<TextNode>, TextNode>, Newable<Partial<TextNode>, TextNode> {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.bindings.MultiSourceService) protected multiSource: MultiSourceService,
     @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
     @multiInject(StoresModule.bindings.Store) protected stores: Array<Store>,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>

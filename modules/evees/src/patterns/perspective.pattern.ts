@@ -22,7 +22,7 @@ import { CidConfig } from '@uprtcl/ipfs-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import {
   DiscoveryModule,
-  DiscoveryService,
+  MultiSourceService,
   EntityCache
 } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
@@ -106,7 +106,7 @@ export class PerspectiveCreate extends PerspectiveEntity
     @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
+    @inject(DiscoveryModule.bindings.MultiSourceService) protected multiSource: MultiSourceService,
     @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
     @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache

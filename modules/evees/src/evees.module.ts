@@ -1,8 +1,8 @@
 import { interfaces } from 'inversify';
 
-import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
+import { ElementsModule, MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
-import { SourcesModule } from '@uprtcl/multiplatform';
+import { CASModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { AccessControlModule } from '@uprtcl/access-control';
 
@@ -79,7 +79,10 @@ export class EveesModule extends MicroModule {
 
   static bindings = EveesBindings;
 
-  constructor(protected eveesProviders: Array<EveesRemote>, protected remotesConfig: RemotesConfig) {
+  constructor(
+    protected eveesProviders: Array<EveesRemote>,
+    protected remotesConfig: RemotesConfig
+  ) {
     super();
   }
 
@@ -87,6 +90,10 @@ export class EveesModule extends MicroModule {
     container.bind(EveesModule.bindings.Evees).to(Evees);
     container.bind(EveesModule.bindings.MergeStrategy).to(OwnerPreservingMergeStrategy);
     container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
+
+    for (const remote of this.eveesProviders) {
+      container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
+    }
   }
 
   submodules = [
@@ -113,11 +120,6 @@ export class EveesModule extends MicroModule {
       ],
       [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
     }),
-    new SourcesModule(
-      this.eveesProviders.map(evees => ({
-        symbol: EveesModule.bindings.EveesRemote,
-        source: evees
-      }))
-    )
+    new CASModule(this.eveesProviders)
   ];
 }

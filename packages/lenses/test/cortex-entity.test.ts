@@ -23,7 +23,7 @@ describe('<cortex-entity>', () => {
       new ApolloClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
-      new MockModule({ hash1: { id: 'hash1', object: object1 } }),
+      new MockModule({ hash1: object1 }),
       new LensesModule({})
     ]);
   });
@@ -47,12 +47,9 @@ describe('<cortex-entity>', () => {
       'Never stopped loading'
     );
 
-    expect(cortexEntity).shadowDom.to.equal(
-      '<mock-element></mock-element>'
-    );
+    expect(cortexEntity).shadowDom.to.equal('<mock-element></mock-element>');
 
     const mock = cortexEntity.shadowRoot.firstElementChild;
-    expect(mock).shadowDom.to.equal('<span>Mock content: testing</span>')
-
+    expect(mock).shadowDom.to.equal('<span>Mock content: testing</span>');
   });
 });

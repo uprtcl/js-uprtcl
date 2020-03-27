@@ -1,5 +1,5 @@
 import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
-import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { DiscoveryModule, MultiSourceService } from '@uprtcl/multiplatform';
 import { Authority } from '@uprtcl/multiplatform';
 
 import { Permissions } from '../properties/permissions';
@@ -10,8 +10,8 @@ import { BasicAdminPermissions } from '../services/basic-admin-control.service';
 export const accessControlResolvers = {
   Mutation: {
     async setCanWrite(_, { entityId, userId }, { container }) {
-      const discoveryService: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
-      const entity: any = await discoveryService.get(entityId);
+      const multiSourceService: MultiSourceService = container.get(DiscoveryModule.bindings.MultiSourceService);
+      const entity: any = await multiSourceService.get(entityId);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
@@ -36,8 +36,8 @@ export const accessControlResolvers = {
       return entityId;
     },
     async setPublicRead(_,{ entityId, value}, { container }) {
-      const discoveryService: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
-      const entity: any = await discoveryService.get(entityId);
+      const multiSourceService: MultiSourceService = container.get(DiscoveryModule.bindings.MultiSourceService);
+      const entity: any = await multiSourceService.get(entityId);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 

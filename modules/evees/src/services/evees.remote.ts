@@ -1,10 +1,10 @@
-import { Authority, Source } from '@uprtcl/multiplatform';
+import { Authority, CASSource } from '@uprtcl/multiplatform';
 import { AccessControlService } from '@uprtcl/access-control';
 
 import { EveesProvider } from './evees.provider';
 import { ProposalsProvider } from './proposals.provider';
 
-export interface EveesRemote extends EveesProvider, Authority, Source {
+export interface EveesRemote extends EveesProvider, Authority, CASSource {
   /** Access Control */
   accessControl: AccessControlService<any> | undefined;
 

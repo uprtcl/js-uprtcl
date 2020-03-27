@@ -2,7 +2,7 @@
 
 In order to register your building blocks (patterns, lenses, sources...) and make them available to all other modules and elements, you have two ways:
 
-- Instantiate and load the individual modules (`PatternsModule`, `SourcesModule`, `GraphQlSchemaModule` and `ElementsModule`) directly:
+- Instantiate and load the individual modules (`PatternsModule`, `CASModule`, `GraphQlSchemaModule` and `ElementsModule`) directly:
 
 ```ts
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
@@ -29,7 +29,7 @@ await orchestrator.loadModule(patternsModule);
 ```ts
 import { MicroModule, ElementsModule } from '@uprtcl/micro-orchestrator';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { SourcesModule } from '@uprtcl/multiplatform';
+import { CASModule } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
 
 import { TextLenses, TextActions } from './text-patterns';
@@ -48,7 +48,7 @@ export class TextModule extends MicroModule {
 
   submodules = [
     new GraphQlSchemaModule(typeDefs, resolvers),
-    new SourcesModule([new LocalSource()]),
+    new CASModule([new LocalSource()]),
     new ElementsModule({
       'text-lens-element': TextLensElement
     }),

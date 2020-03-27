@@ -1,13 +1,12 @@
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { Hashed } from '@uprtcl/cortex';
 
-import { Source } from '@uprtcl/multiplatform';
+import { CASSource } from '@uprtcl/multiplatform';
 
-export class MockSource implements Source {
-  hashRecipe: any;
-  source = '';
+export class MockSource implements CASSource {
+  casID = '';
 
-  constructor(protected objects: Dictionary<Hashed<any>> = {}) {}
+  constructor(protected objects: Dictionary<any> = {}) {}
 
   async ready(): Promise<void> {}
 
@@ -16,9 +15,6 @@ export class MockSource implements Source {
   }
 
   addObject(hash: string, object: object): void {
-    this.objects[hash] = <Hashed<any>>{
-      id: hash,
-      object
-    };
+    this.objects[hash] = object;
   }
 }
