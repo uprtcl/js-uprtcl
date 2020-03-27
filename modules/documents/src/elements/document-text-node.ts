@@ -124,14 +124,16 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
   /** get the x in <p>x</p> or <h1>x</h1>*/
   nodeInnerHTML(text: string) {
-    const temp = document.createElement('template');
-    temp.innerHTML = text.trim();
-
-    if (temp.content.firstElementChild == null) {
-      return '';
+    if (text.startsWith('<')) { 
+      const temp = document.createElement('template');
+      temp.innerHTML = text.trim();
+      if (temp.content.firstElementChild == null) {
+        return '';
+      }
+      return temp.content.firstElementChild.innerHTML;
+    } else {
+      return text;
     }
-
-    return temp.content.firstElementChild.innerHTML;
   }
 
   async backspaceOnStart(e: CustomEvent) {

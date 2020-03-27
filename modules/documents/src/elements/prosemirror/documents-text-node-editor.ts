@@ -119,8 +119,16 @@ export class DocumentTextNodeEditor extends LitElement {
       }
     }
 
-    if (changedProperties.has('editable') || changedProperties.has('type') || changedProperties.has('init')) {
+    if (changedProperties.has('editable') || changedProperties.has('type')) {
       this.initEditor();
+    }
+
+    if (changedProperties.has('init')) {
+      this.logger.info('updated() - init', {thisinit: this.init, changedPropertiesinit: changedProperties.get('init')});
+      if (changedProperties.get('init') == undefined) {
+        /** only reinitialize the first time init changes */
+        this.initEditor();
+      }
     }
 
     if (changedProperties.has('showUrl') && this.showUrl && this.shadowRoot != null) {
@@ -156,10 +164,10 @@ export class DocumentTextNodeEditor extends LitElement {
     if (text.startsWith('<')) { 
       const temp = document.createElement('template');
       temp.innerHTML = text.trim();
-      if (temp.firstElementChild == null) {
+      if (temp.content.firstElementChild == null) {
         return '';
       }
-      temp.firstElementChild.innerHTML;
+      return temp.content.firstElementChild.innerHTML;
     } else {
       return text;
     }
@@ -168,7 +176,7 @@ export class DocumentTextNodeEditor extends LitElement {
   getValidDocHtml(text: string) {
     const innerHTML = this.getValidInnerHTML(text);
     let tag;
-    if (this.editor.state.doc.content.content[0].type.name === 'heading') {
+    if (this.editor.view.state.doc.content.content[0].type.name === 'heading') {
       tag = 'h1';
     } else {
       tag = 'p';
@@ -188,15 +196,14 @@ export class DocumentTextNodeEditor extends LitElement {
 
   appendContent(content: string) {
     this.logger.log('appending content', content);
+
     const sliceNode = this.getSlice(content);
     const slice = this.editor.parser.parseSlice(sliceNode);
     
-    const end = this.editor.state.doc.content.content[0].nodeSize;
-    
-    // .setSelection(TextSelection.create(this.editor.state.doc, end-1))
+    const end = this.editor.view.state.doc.content.content[0].nodeSize;
 
     this.editor.view.dispatch(
-      this.editor.state.tr
+      this.editor.view.state.tr
       .replace(end-1, end-1, slice));
   }
 
@@ -252,9 +259,9 @@ export class DocumentTextNodeEditor extends LitElement {
       this.logger.log(`initEditor() - Initializing editor`);
     }
 
-    this.editor.schema = this.type === TextType.Title ? titleSchema : blockSchema;
-    this.editor.parser = DOMParser.fromSchema(this.editor.schema);
-    this.editor.serializer = DOMSerializer.fromSchema(this.editor.schema);
+    const schema = this.type === TextType.Title ? titleSchema : blockSchema;
+    this.editor.parser = DOMParser.fromSchema(schema);
+    this.editor.serializer = DOMSerializer.fromSchema(schema);
 
     const doc = this.html2doc(this.init);
 
@@ -264,8 +271,8 @@ export class DocumentTextNodeEditor extends LitElement {
       doc.content.content[0].attrs.level = this.level;
     }
 
-    this.editor.state = EditorState.create({
-      schema: this.editor.schema,
+    const state = EditorState.create({
+      schema: schema,
       doc: doc,
       plugins: [keymap({
         Enter: (state, dispatch) => this.onEnter(state, dispatch),
@@ -277,7 +284,7 @@ export class DocumentTextNodeEditor extends LitElement {
     const container = this.shadowRoot.getElementById('editor-content');
 
     this.editor.view = new EditorView(container, {
-      state: this.editor.state,
+      state: state,
       editable: () => this.isEditable(),
       dispatchTransaction: transaction => this.dispatchTransaction(transaction),
       handleDOMEvents: {
@@ -393,7 +400,7 @@ export class DocumentTextNodeEditor extends LitElement {
       valid = false;
     }
     if (valid) {
-      toggleMark(this.editor.schema.marks.link, { href })(
+      toggleMark(this.editor.state.schema.marks.link, { href })(
         this.editor.view.state,
         this.editor.view.dispatch
       );
@@ -429,7 +436,7 @@ export class DocumentTextNodeEditor extends LitElement {
             ? html`
                     <div
                       class="btn btn-square btn-large"
-                      @click=${() => this.menuItemClick(this.editor.schema.marks.strong)}
+                      @click=${() => this.menuItemClick(this.editor.state.schema.marks.strong)}
                     >
                       ${icons.bold}
                     </div>
@@ -437,7 +444,7 @@ export class DocumentTextNodeEditor extends LitElement {
             : ''}
               <div
                 class="btn btn-square btn-large"
-                @click=${() => this.menuItemClick(this.editor.schema.marks.em)}
+                @click=${() => this.menuItemClick(this.editor.state.schema.marks.em)}
               >
                 ${icons.em}
               </div>

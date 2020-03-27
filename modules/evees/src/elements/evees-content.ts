@@ -295,7 +295,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   createSibling(object: object, symbol: symbol) {
     if (!this.data) return;
 
-    this.logger.info('createSibling()', { dataId: this.data ? this.data.id : undefined });
+    this.logger.info('createSibling()', { dataId: this.data ? this.data.id : undefined, object });
     this.dispatchEvent(
       new CreateSyblingEvent({
         bubbles: true,
