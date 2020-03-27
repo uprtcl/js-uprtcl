@@ -1,5 +1,5 @@
-import { Property } from '../pattern';
+import { Behaviour } from '../types/behaviour';
 
-export interface Cloneable<T> extends Property<T> {
+export interface Cloneable<T> extends Behaviour<T> {
   clone: (pattern: any) => Promise<string>;
 }

@@ -1,42 +1,41 @@
 import { merge } from 'lodash-es';
 
-import { PatternRecognizer } from '../recognizer/pattern.recognizer';
+import { PatternRecognizer } from '../recognizer/pattern-recognizer';
 import { CortexBindings } from '../bindings';
-import { Pattern, Entity } from '../pattern';
-import { Hashed } from '../properties/hashable';
+import { Pattern } from '../types/pattern';
+import { Entity } from '../types/entity';
 
 export const cortexResolvers = {
   Entity: {
     async __resolveType(parent, { container }, info) {
-      const entity = hashedFromGraphQlObject(parent);
+      const entity = entityFromGraphQlObject(parent);
 
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 
-      const patterns: Pattern[] = recognizer.recognize(entity);
+      const patterns: Pattern<any>[] = recognizer.recognize(entity);
 
-      const entities: Entity[] = patterns.filter(p => (p as Entity).name) as Entity[];
+      const types: string[] = patterns.map(p => p.type).filter(t => !!t) as string[];
 
-      if (entities.length === 0) {
+      if (types.length === 0) {
         throw new Error(`No entity found to recognize object ${JSON.stringify(entity)}`);
       }
 
-      const abmiguousError =
-        entities.length > 1 && !entities.every(entity => entity.name === entities[0].name);
+      const abmiguousError = types.length > 1 && !types.every(t => types[0]);
 
       if (abmiguousError) {
         throw new Error(
-          `Ambiguous error recognizing entity: ${parent.toString()}. These two entites recognized the object ${entities.toString()}`
+          `Ambiguous error recognizing entity: ${parent.toString()}. These two types recognized the object ${types.toString()}`
         );
       }
-      return entities[0].name;
+      return types[0];
     }
   },
   EntityContext: {
     raw(parent) {
-      return JSON.stringify(hashedFromGraphQlObject(parent).object);
+      return JSON.stringify(entityFromGraphQlObject(parent).entity);
     },
     async patterns(parent, args, { container }, info) {
-      const entity = hashedFromGraphQlObject(parent);
+      const entity = entityFromGraphQlObject(parent);
 
       const isGraphQlField = (key: string) =>
         key !== 'accessControl' && Object.keys(info.returnType.ofType._fields).includes(key);
@@ -63,18 +62,18 @@ export const cortexResolvers = {
   }
 };
 
-export function hashedFromGraphQlObject(parent): Hashed<any> {
+export function entityFromGraphQlObject(parent): Entity<any> {
   const id = parent.id;
 
-  let object = {};
+  let entity = {};
 
   for (const key of Object.keys(parent)) {
-    if (key !== 'id') object[key] = parent[key];
+    if (key !== 'id') entity[key] = parent[key];
   }
 
   return {
     id,
-    object
+    entity
   };
 }
 

@@ -1,4 +1,4 @@
-import { Property } from '../pattern';
+import { Behaviour } from '../types/behaviour';
 
 export interface PatternAction {
   icon: string;
@@ -7,7 +7,7 @@ export interface PatternAction {
   type?: string;
 }
 
-export interface HasActions<T = any> extends Property<T> {
+export interface HasActions<T = any> extends Behaviour<T> {
   /**
    * @returns the actions available for the given object
    */

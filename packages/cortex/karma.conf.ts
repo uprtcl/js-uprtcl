@@ -25,6 +25,7 @@ module.exports = config =>
     },
     rollupPreprocessor: {
       ...rollupConfig,
+      external: [],
       output: {
         format: 'iife', // Helps prevent naming collisions.
         name: 'uprtclcortex', // Required for 'iife' format.,
@@ -39,7 +40,19 @@ module.exports = config =>
           delimiters: ['', '']
         }),
         ...rollupConfig.plugins,
-        resolve({ browser: true, preferBuiltins: false })
+        resolve({
+          browser: true,
+          preferBuiltins: false,
+          dedupe: [
+            '@uprtcl/cortex',
+            '@uprtcl/graphql',
+            '@uprtcl/multiplatform',
+            '@uprtcl/micro-orchestrator',
+            'graphql-tools',
+            'graphql',
+            'graphql-tag'
+          ]
+        })
       ]
     },
     singleRun: true,

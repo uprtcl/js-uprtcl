@@ -1,5 +1,5 @@
-import { Property } from '../pattern';
+import { Behaviour } from '../types/behaviour';
 
-export interface HasTitle<T = any> extends Property<T> {
+export interface HasTitle<T = any> extends Behaviour<T> {
   title: (pattern: T) => string;
 }

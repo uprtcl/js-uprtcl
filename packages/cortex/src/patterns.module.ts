@@ -1,9 +1,10 @@
 import { interfaces } from 'inversify';
 
-import { MicroModule, Constructor, Dictionary } from '@uprtcl/micro-orchestrator';
+import { MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { CortexModule } from './cortex.module';
-import { Pattern } from './pattern';
+import { Pattern } from './types/pattern';
+import { Behaviour } from './types/behaviour';
 
 /**
  * This is a convenience MicroModule class that depends on `CortexModule` and registers the given set of patterns
@@ -23,21 +24,30 @@ import { Pattern } from './pattern';
 export class PatternsModule extends MicroModule {
   dependencies = [CortexModule.id];
 
-  static bindings = {
-    Pattern: Symbol('pattern')
-  };
-
-  constructor(protected patterns: Dictionary<Array<Constructor<Pattern>>>) {
+  constructor(protected patterns: Array<Pattern<any>>) {
     super();
   }
 
   async onLoad(container: interfaces.Container): Promise<void> {
     // Initialize all the patterns
-    const patterns = this.patterns;
-    for (const symbol of Object.getOwnPropertySymbols(patterns)) {
-      for (const p of patterns[symbol as any]) {
-        container.bind<Pattern>(PatternsModule.bindings.Pattern).to(p);
-        container.bind(symbol).to(p);
+    for (const pattern of this.patterns) {
+      const dynamicCreator = (ctx: interfaces.Context) => {
+        const behaviours: Array<Behaviour<any>> = pattern.behaviourCreators.map(prop =>
+          ctx.container.resolve(prop)
+        );
+
+        return <Pattern<any>>{
+          ...pattern,
+          recognize: pattern.recognize,
+          behaviours
+        };
+      };
+      container.bind<Pattern<any>>(CortexModule.bindings.Pattern).toDynamicValue(dynamicCreator);
+
+      const type = pattern.type;
+
+      if (type) {
+        container.bind<Pattern<any>>(type).toDynamicValue(dynamicCreator);
       }
     }
   }

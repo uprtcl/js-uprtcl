@@ -20,11 +20,7 @@ import {
 import { Updatable } from '@uprtcl/access-control';
 import { CidConfig } from '@uprtcl/ipfs-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import {
-  DiscoveryModule,
-  MultiSourceService,
-  EntityCache
-} from '@uprtcl/multiplatform';
+import { DiscoveryModule, MultiSourceService, EntityCache } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Secured } from '../patterns/default-secured.pattern';
@@ -100,8 +96,7 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
 export class PerspectiveCreate extends PerspectiveEntity
   implements
     Creatable<CreatePerspectiveArgs, Signed<Perspective>>,
-    Newable<NewPerspectiveArgs, Signed<Perspective>>,
-    HasActions {
+    Newable<NewPerspectiveArgs, Signed<Perspective>> {
   constructor(
     @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees,
@@ -168,10 +163,6 @@ export class PerspectiveCreate extends PerspectiveEntity
     };
 
     return this.securedPattern.derive()(perspective, recipe);
-  };
-
-  actions = (perspective: Secured<Perspective>): PatternAction[] => {
-    return [];
   };
 }
 

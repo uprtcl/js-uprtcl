@@ -1,5 +1,5 @@
 import { Property } from '@uprtcl/cortex';
 
-export interface Permissions<T> extends Property<T> {
+export interface Permissions<T> extends Behaviour<T> {
   canWrite: (permissions: T) => (userId: string | undefined) => boolean;
 }

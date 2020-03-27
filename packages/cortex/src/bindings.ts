@@ -1,3 +1,4 @@
 export const CortexBindings = {
-  Recognizer: Symbol('pattern-recognizer')
+  Recognizer: Symbol('pattern-recognizer'),
+  Pattern: Symbol('pattern')
 };

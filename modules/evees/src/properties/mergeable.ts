@@ -3,7 +3,7 @@ import { Property } from '@uprtcl/cortex';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { UprtclAction } from '../types';
 
-export interface Mergeable<T = any> extends Property<T> {
+export interface Mergeable<T = any> extends Behaviour<T> {
   merge: (
     ancestor: T
   ) => (

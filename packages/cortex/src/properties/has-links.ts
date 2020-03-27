@@ -1,6 +1,6 @@
-import { Property } from '../pattern';
+import { Behaviour } from '../types/behaviour';
 
-export interface HasLinks<T = any> extends Property<T> {
+export interface HasLinks<T = any> extends Behaviour<T> {
   links: (pattern: T) => Promise<string[]>;
 }
 

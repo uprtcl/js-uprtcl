@@ -37,7 +37,10 @@ module.exports = {
         '**/node_modules/sinon-chai/**/*',
         '**/node_modules/chai-dom/**/*',
         '**/node_modules/core-js-bundle/**/*'
-      ]
+      ],
+      namedExports: {
+        'graphql-tools': ['makeExecutableSchema']
+      }
     }),
 
     // Resolve source maps to the original source

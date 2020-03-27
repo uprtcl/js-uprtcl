@@ -1,6 +1,6 @@
-import { Property } from '../pattern';
-import { Hashed } from './hashable';
+import { Behaviour } from '../types/behaviour';
+import { Entity } from '../types/entity';
 
-export interface Creatable<A, O> extends Property<any> {
-  create: () => (args: A, source: string) => Promise<Hashed<O>>;
+export interface Creatable<A, O> extends Behaviour<any> {
+  create: () => (args: A, casID: string) => Promise<Entity<O>>;
 }

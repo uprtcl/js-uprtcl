@@ -1,5 +1,5 @@
-import { Property } from '../pattern';
+import { Behaviour } from '../types/behaviour';
 
-export interface IsValid<T = any> extends Property<T> {
+export interface IsValid<T = any> extends Behaviour<T> {
   validate: (pattern: T) => Promise<boolean>;
 }
