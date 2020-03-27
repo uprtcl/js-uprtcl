@@ -4,19 +4,15 @@ import { injectable, inject, multiInject } from 'inversify';
 
 import {
   Pattern,
-  HasActions,
-  PatternAction,
   Hashed,
   Hashable,
   Creatable,
-  PatternRecognizer,
   HasChildren,
   Entity,
   HasTitle,
-  CortexModule,
   Newable
 } from '@uprtcl/cortex';
-import { DiscoveryService, DiscoveryModule, TaskQueue, Task, Store } from '@uprtcl/multiplatform';
+import { DiscoveryService, DiscoveryModule, TaskQueue, Store } from '@uprtcl/multiplatform';
 import {
   Mergeable,
   MergeStrategy,

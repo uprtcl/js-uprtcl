@@ -1,4 +1,3 @@
-const resolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const sourceMaps = require('rollup-plugin-sourcemaps');
 const typescript = require('rollup-plugin-typescript2');
@@ -40,10 +39,6 @@ module.exports = {
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
     }),
-    // Allow node_modules resolution, so you can use 'external' to control
-    // which external modules to include in the bundle
-    // https://github.com/rollup/@rollup/plugin-node-resolve#usage
-    resolve(),
     commonjs({
       exclude: [
         '**/node_modules/mocha/**/*',

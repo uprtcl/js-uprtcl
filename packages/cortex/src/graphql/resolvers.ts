@@ -1,4 +1,4 @@
-import { merge, cloneDeepWith } from 'lodash-es';
+import { merge } from 'lodash-es';
 
 import { PatternRecognizer } from '../recognizer/pattern.recognizer';
 import { CortexBindings } from '../bindings';

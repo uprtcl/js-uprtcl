@@ -1,3 +1,5 @@
+const commonjs = require('@rollup/plugin-commonjs');
+const resolve = require('@rollup/plugin-node-resolve');
 const replace = require('@rollup/plugin-replace');
 const rollupConfig = require('./rollup.config');
 const builtins = require('rollup-plugin-node-builtins');
@@ -42,7 +44,39 @@ module.exports = config =>
         }),
         globals(),
         builtins(),
-        ...rollupConfig.plugins
+        ...rollupConfig.plugins,
+        // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
+        commonjs({
+          include: [
+            '**/node_modules/cids/**/*',
+            '**/node_modules/fast-json-stable-stringify/**',
+            '**/node_modules/zen-observable/**',
+            '**/node_modules/inversify/**',
+            '**/node_modules/graphql-tag/**',
+            '**/node_modules/cbor-js/**',
+            '**/node_modules/web3/**',
+            '**/node_modules/@holochain/**',
+            '**/node_modules/ipfs-http-client/**',
+            '**/node_modules/multihashing-async/**'
+          ],
+          namedExports: {
+            'apollo-boost': ['gql', 'ApolloClient'],
+            'graphql-tools': ['makeExecutableSchema'],
+            'node_modules/@uprtcl/evees/node_modules/cids/src/index.js': ['CID'],
+            'fast-json-stable-stringify': ['stringify'],
+            'node_modules/graphql-tools/dist/index.js,': ['makeExecutableSchema'],
+            'prosemirror-model': ['Schema']
+          },
+          exclude: [
+            '**/node_modules/mocha/**/*',
+            '**/node_modules/chai/**/*',
+            '**/node_modules/sinon-chai/**/*',
+            '**/node_modules/chai-dom/**/*',
+            '**/node_modules/core-js-bundle/**/*'
+          ]
+        }),
+
+        resolve({ browser: true, preferBuiltins: false, dedupe: ['graphql-tools'] })
       ]
     },
     singleRun: true,
