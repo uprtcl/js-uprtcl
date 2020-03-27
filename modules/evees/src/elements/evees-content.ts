@@ -1,15 +1,36 @@
-import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
+import { LitElement, property } from 'lit-element';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Source, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
-import { Entity, Pattern, Creatable, Hashed, Signed, HasChildren, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
-import { ApolloClientModule, gql } from '@uprtcl/graphql';
+import {
+  Pattern,
+  Creatable,
+  Hashed,
+  Signed,
+  HasChildren,
+  PatternRecognizer,
+  CortexModule
+} from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { RemotesConfig, Commit, Perspective } from '../types';
 import { EveesModule } from '../evees.module';
-import { EveesRemote, EveesBindings, CreateCommitArgs, CreatePerspectiveArgs, UpdateContentEvent } from '../uprtcl-evees';
-import { CreateSyblingEvent, CREATE_SYBLING_TAG, ADD_SYBLINGS_TAG, AddSyblingsEvent, RemoveChildrenEvent, REMOVE_CHILDREN_TAG } from './events';
+import {
+  EveesRemote,
+  EveesBindings,
+  CreateCommitArgs,
+  CreatePerspectiveArgs,
+  UpdateContentEvent
+} from '../uprtcl-evees';
+import {
+  CreateSyblingEvent,
+  CREATE_SYBLING_TAG,
+  ADD_SYBLINGS_TAG,
+  AddSyblingsEvent,
+  RemoveChildrenEvent,
+  REMOVE_CHILDREN_TAG
+} from './events';
 
 export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-CONTENT');
@@ -41,7 +62,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   get level(): number {
     return this.genealogy.length;
   }
-  
+
   protected remotesConfig: RemotesConfig | undefined = undefined;
   protected recognizer: PatternRecognizer | undefined = undefined;
   protected patterns: Pattern[] | undefined = undefined;
@@ -69,7 +90,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
       .recognize(object)
       .find(prop => !!(prop as Creatable<any, any>).create);
 
-    if (!create) throw new Error(`No creatable pattern registered for object ${JSON.stringify(object)}`);
+    if (!create)
+      throw new Error(`No creatable pattern registered for object ${JSON.stringify(object)}`);
 
     return create;
   }
@@ -91,7 +113,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
       .recognize(object)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
-    if (!hasChildren) throw new Error(`No hasChildren pattern registered for object ${JSON.stringify(object)}`);
+    if (!hasChildren)
+      throw new Error(`No hasChildren pattern registered for object ${JSON.stringify(object)}`);
 
     return hasChildren;
   }
@@ -102,7 +125,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
       pattern => ((pattern as unknown) as HasChildren<any>).create
     ) as unknown) as HasChildren<any>;
 
-    if (!hasChildren) throw new Error(`No hasChildren pattern registered for a ${patterns[0].name}`);
+    if (!hasChildren)
+      throw new Error(`No hasChildren pattern registered for a ${patterns[0].name}`);
 
     return hasChildren;
   }
@@ -161,9 +185,10 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     if (!store) throw new Error('store is undefined');
     const object = await creatable.create()(content, store.source);
 
-    const creatableCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getCreatePatternOfSymbol(
-      EveesBindings.CommitPattern
-    );
+    const creatableCommit: Creatable<
+      CreateCommitArgs,
+      Signed<Commit>
+    > = this.getCreatePatternOfSymbol(EveesBindings.CommitPattern);
     const commit = await creatableCommit.create()(
       {
         parentsIds: [],
@@ -193,7 +218,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   async updateContent(newContent: T) {
     if (this.symbol === undefined) throw new Error('this.symbol undefined');
 
-    const object = await this.createEntity(newContent as unknown as object, this.symbol);
+    const object = await this.createEntity((newContent as unknown) as object, this.symbol);
 
     const dataId = object.id;
 
@@ -201,11 +226,13 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
     /* evees content creates the entity and then evees perspective is the one that 
        updates the perspective head */
-    this.dispatchEvent(new UpdateContentEvent({
-      bubbles: true,
-      composed: true,
-      detail: { dataId }
-    }));
+    this.dispatchEvent(
+      new UpdateContentEvent({
+        bubbles: true,
+        composed: true,
+        detail: { dataId }
+      })
+    );
   }
 
   getChildren(data: object) {
@@ -227,7 +254,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     if (!this.data) return;
 
     const newLink = await this.createEvee(newNode, symbol);
-    const links = this.getChildren(this.data as unknown as object);
+    const links = this.getChildren((this.data as unknown) as object);
 
     index = index || 0;
     let newLinks: string[] = [...links];
@@ -238,7 +265,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
       newLinks.splice(index, 0, newLink);
     }
 
-    const newContent = this.replaceChildren(this.data as unknown as object, newLinks);
+    const newContent = this.replaceChildren((this.data as unknown) as object, newLinks);
 
     this.logger.info('createChild()', newContent);
 
@@ -266,7 +293,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   async moveChildElement(index: number, onIndex: number) {
     if (!this.data) return;
 
-    const links = this.getChildren(this.data as unknown as object);
+    const links = this.getChildren((this.data as unknown) as object);
     const elementId = links[index];
 
     let newLinks: string[] = [...links];
@@ -274,7 +301,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     newLinks.splice(index, 1);
     newLinks.splice(onIndex, 0, elementId);
 
-    const newContent = this.replaceChildren(this.data as unknown as object, newLinks);
+    const newContent = this.replaceChildren((this.data as unknown) as object, newLinks);
 
     this.logger.info('moveChildElement()', newContent);
 
@@ -284,14 +311,14 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   async removeChildElement(index: number) {
     if (!this.data) return;
 
-    const links = this.getChildren(this.data as unknown as object);
+    const links = this.getChildren((this.data as unknown) as object);
     const elementId = links[index];
 
     let newLinks: string[] = [...links];
     /** remove */
     newLinks.splice(index, 1);
 
-    const newContent = this.replaceChildren(this.data as unknown as object, newLinks);
+    const newContent = this.replaceChildren((this.data as unknown) as object, newLinks);
 
     this.logger.info('removeChildElement()', newContent);
 
@@ -302,7 +329,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     if (!this.data) return;
 
     /** children are added to the bottom by default */
-    const oldLinks = this.getChildren(this.data.object as unknown as object);
+    const oldLinks = this.getChildren((this.data.object as unknown) as object);
 
     index = index || oldLinks.length;
     let newLinks: string[] = [...oldLinks];
@@ -312,7 +339,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
       newLinks.splice(index, 0, ...links);
     }
 
-    const newContent = this.replaceChildren(this.data.object as unknown as object, newLinks);
+    const newContent = this.replaceChildren((this.data.object as unknown) as object, newLinks);
 
     this.updateContent(newContent);
   }
@@ -320,7 +347,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   removeChildren(fromIndex?: number, toIndex?: number) {
     if (!this.data) throw new Error('data is undefined');
 
-    const oldLinks = this.getChildren(this.data.object as unknown as object);
+    const oldLinks = this.getChildren((this.data.object as unknown) as object);
 
     /** children are added to the bottom by default */
     fromIndex = fromIndex || 0;
@@ -329,7 +356,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     let newLinks: string[] = [...oldLinks];
     newLinks.splice(fromIndex, toIndex - fromIndex + 1);
 
-    const newContent = this.replaceChildren(this.data.object as unknown as object, newLinks);
+    const newContent = this.replaceChildren((this.data.object as unknown) as object, newLinks);
 
     this.updateContent(newContent);
   }
@@ -378,7 +405,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   async getPerspectiveDataId(perspectiveId: string): Promise<string> {
-    if(!this.client) throw new Error('client undefined');
+    if (!this.client) throw new Error('client undefined');
 
     const result = await this.client.query({
       query: gql`
@@ -411,5 +438,4 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     const dataId = await this.getPerspectiveDataId(perspectiveId);
     return this.getData(dataId);
   }
-
 }

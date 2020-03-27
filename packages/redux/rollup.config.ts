@@ -1,4 +1,3 @@
-const resolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const sourceMaps = require('rollup-plugin-sourcemaps');
 const typescript = require('rollup-plugin-typescript2');
@@ -41,10 +40,6 @@ module.exports = {
         '**/node_modules/core-js-bundle/**/*'
       ]
     }),
-    // Allow node_modules resolution, so you can use 'external' to control
-    // which external modules to include in the bundle
-    // https://github.com/rollup/@rollup/plugin-node-resolve#usage
-    resolve(),
 
     // Resolve source maps to the original source
     sourceMaps()
