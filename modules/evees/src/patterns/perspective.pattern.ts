@@ -34,8 +34,11 @@ import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/ev
 import { MergeStrategy } from '../merge/merge-strategy';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import { executeActions, cacheActions } from '../utils/actions';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
+
+const logger = new Logger('PERSPECTIVE-ENTITY');
 
 @injectable()
 export class PerspectiveEntity implements Entity {
@@ -80,6 +83,8 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
               ? context.genealogy
               : []
             : [];
+
+          // logger.log('lenses: evees:evee-perspective - render()', { perspective, lensContent, context });
 
           return html`
             <evees-perspective

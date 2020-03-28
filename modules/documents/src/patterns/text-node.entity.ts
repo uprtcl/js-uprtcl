@@ -28,12 +28,15 @@ import {
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { StoresModule } from '@uprtcl/multiplatform';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { TextNode, TextType } from '../types';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { CidConfig } from '@uprtcl/ipfs-provider';
 
 const propertyOrder = ['text', 'type', 'links'];
+
+const logger = new Logger('TEXT-NODE-ENTITY');
 
 @injectable()
 export class TextNodeEntity implements Entity {
@@ -78,6 +81,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasCh
         name: 'documents:document',
         type: 'content',
         render: (lensContent: TemplateResult, context: any) => {
+          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <documents-text-node
               .data=${node}

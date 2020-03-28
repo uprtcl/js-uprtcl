@@ -9,7 +9,7 @@ import { ApolloClientModule, gql } from '@uprtcl/graphql';
 import { RemotesConfig, Commit, Perspective } from '../types';
 import { EveesModule } from '../evees.module';
 import { EveesRemote, EveesBindings, CreateCommitArgs, CreatePerspectiveArgs, UpdateContentEvent, Secured, UPDATE_HEAD } from '../uprtcl-evees';
-import { CreateSyblingEvent, CREATE_SYBLING_TAG, ADD_SYBLINGS_TAG, AddSyblingsEvent, RemoveChildrenEvent, REMOVE_CHILDREN_TAG, RemoveChildEvent, REMOVE_CHILD_TAG } from './events';
+import { CreateSyblingEvent, CREATE_SYBLING_TAG, ADD_SYBLINGS_TAG, AddSyblingsEvent, RemoveChildrenEvent, REMOVE_CHILDREN_TAG, RemoveChildEvent, REMOVE_CHILD_TAG, LiftChildEvent, LIFT_CHILD_TAG, PutChildEvent, PUT_CHILD_TAG } from './events';
 
 export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-CONTENT');
@@ -62,6 +62,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
     if (this.dataInit) {
       this.data = {...this.dataInit};
+      this.logger.log(`firstUpdated()`, { thisdata: this.data, thisdatainit: this.dataInit });
     }
   }
 
@@ -225,11 +226,11 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     if (this.symbol === undefined) throw new Error('this.symbol undefined');
     if (!this.client) throw new Error('client is undefined');
 
-    this.logger.info('updateContentLocal()', { newContent });
-    
     const object = await this.createEntity(newContent as unknown as object, this.symbol);
+    
     /** local update of data */
     this.data = {...object};
+    this.logger.info('updateContentLocal()', { thisdata: this.data, thisref: this.ref, newContent });
 
     const remote = this.eveesRemotes.find(r => r.authority === this.authority);
     if (!remote) throw new Error('remote undefined');;
@@ -310,7 +311,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     );
   }
 
-  removeFromParent(content: string | undefined) {
+  removeFromParent(content: string | undefined, lift: string[]) {
     if (!this.data) return;
 
     this.logger.info('removeFromParent()', { dataId: this.data ? this.data.id : undefined });
@@ -321,7 +322,25 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
         detail: {
           startedOnElementId: this.data.id,
           index: this.index,
-          content: content
+          content: content,
+          lift: lift
+        }
+      })
+    );
+  }
+
+  putOnParent(elementId: string, index: number) {
+    if (!this.data) return;
+
+    this.logger.info('putOnParent()', { dataId: this.data ? this.data.id : undefined });
+    this.dispatchEvent(
+      new PutChildEvent({
+        bubbles: true,
+        composed: true,
+        detail: {
+          startedOnElementId: this.data.id,
+          elementId: elementId,
+          index: index
         }
       })
     );
@@ -345,19 +364,69 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     this.updateContentLocal(newContent.object);
   }
 
-  async removeChildElement(index: number, content?: string) {
+  async removeChildElement(index: number, content?: string, lift?: string[]) {
     if (!this.data) return;
 
     const links = this.getChildren(this.data as unknown as object);
     
     let newLinks: string[] = [...links];
-    /** remove child */
-    newLinks.splice(index, 1);
+    
+    /** insert elements to be lifted */
+    if (lift) {
+      newLinks.splice(index, 1, ...lift)
+    } else {
+      newLinks.splice(index, 1)
+    }
+
     const newContent = this.replaceChildren(this.data as unknown as object, newLinks);
 
     this.logger.info('removeChildElement()', newContent);
 
     this.updateContentLocal(newContent.object);
+  }
+
+  async liftChildElement(index: number) {
+    /** remove as child */
+    const links = this.getChildren(this.data as unknown as object);
+    const elementId = links[index];
+
+    this.removeChildElement(index, '');
+    /** puts the child as first younger sybling of this element */
+    this.putOnParent(elementId, this.index + 1);
+  }
+
+  async putChildElement(elementId: string, index: number) {
+    
+    const links = this.getChildren(this.data as unknown as object);
+    let newLinks = [...links];
+
+    if (0 <= index && index < newLinks.length) {
+      newLinks.splice(index, 0, elementId);
+    } else if (index == newLinks.length) {
+      /* accept length as index and interpret as push */
+      newLinks.push(elementId);
+    }
+
+    const newContent = this.replaceChildren(this.data as unknown as object, newLinks);
+
+    this.updateContentLocal(newContent.object);
+  }
+
+  /** tells the parent to lift its i-th child, which is this node */
+  lift() {
+    if (!this.data) return;
+
+    this.logger.info('lift()', { dataId: this.data ? this.data.id : undefined });
+    this.dispatchEvent(
+      new LiftChildEvent({
+        bubbles: true,
+        composed: true,
+        detail: {
+          startedOnElementId: this.data.id,
+          index: this.index
+        }
+      })
+    );
   }
 
   addChildren(links: string[], index?: number) {
@@ -448,7 +517,33 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
       // At this point this should be the text node that is the parent of the source of the event.
       e.stopPropagation();
-      this.removeChildElement(e.detail.index, e.detail.content);
+      this.removeChildElement(e.detail.index, e.detail.content, e.detail.lift);
+    }) as EventListener);
+
+    this.addEventListener(LIFT_CHILD_TAG, ((e: LiftChildEvent) => {
+      if (!this.data) return;
+
+      this.logger.info(`CATCHED EVENT: ${LiftChildEvent.name}`, { dataId: this.data.id, e });
+
+      // TODO: this.addEventListener listens  this.dispatchEvent ???
+      if (e.detail.startedOnElementId === this.data.id) return;
+
+      // At this point this should be the text node that is the parent of the source of the event.
+      e.stopPropagation();
+      this.liftChildElement(e.detail.index);
+    }) as EventListener);
+
+    this.addEventListener(PUT_CHILD_TAG, ((e: PutChildEvent) => {
+      if (!this.data) return;
+
+      this.logger.info(`CATCHED EVENT: ${LiftChildEvent.name}`, { dataId: this.data.id, e });
+
+      // TODO: this.addEventListener listens  this.dispatchEvent ???
+      if (e.detail.startedOnElementId === this.data.id) return;
+
+      // At this point this should be the text node that is the parent of the source of the event.
+      e.stopPropagation();
+      this.putChildElement(e.detail.elementId, e.detail.index);
     }) as EventListener);
     
   }

@@ -29,6 +29,18 @@ export type RemoveChildArgs = {
   startedOnElementId: string;
   index: number;
   content?: string;
+  lift?: string[];
+}
+
+export type LiftChildArgs = {
+  startedOnElementId: string;
+  index: number;
+}
+
+export type PutChildArgs = {
+  startedOnElementId: string;
+  elementId: string;
+  index: number;
 }
 
 export const CREATE_SYBLING_TAG = 'create-sybling';
@@ -37,6 +49,8 @@ export const REMOVE_CHILDREN_TAG = 'remove-children';
 export const UPDATE_CONTENT_TAG = 'update-content';
 export const CONTENT_UPDATED_TAG = 'content-updated';
 export const REMOVE_CHILD_TAG = 'remove-child';
+export const LIFT_CHILD_TAG = 'lift-child';
+export const PUT_CHILD_TAG = 'put-child';
 
 export class UpdateContentEvent extends CustomEvent<UpdateContentArgs> {
   constructor(init: CustomEventInit<UpdateContentArgs>) {
@@ -73,6 +87,19 @@ export class RemoveChildEvent extends CustomEvent<RemoveChildArgs> {
     super(REMOVE_CHILD_TAG, init);
   }
 }
+
+export class PutChildEvent extends CustomEvent<PutChildArgs> {
+  constructor(init: CustomEventInit<PutChildArgs>) {
+    super(PUT_CHILD_TAG, init);
+  }
+}
+
+export class LiftChildEvent extends CustomEvent<LiftChildArgs> {
+  constructor(init: CustomEventInit<LiftChildArgs>) {
+    super(LIFT_CHILD_TAG, init);
+  }
+}
+
 
 
 

@@ -108,14 +108,16 @@ export class DocumentTextNodeEditor extends LitElement {
     }
 
     if (changedProperties.has('editable') || changedProperties.has('type')) {
+      // this.logger.info('updated() - editable || type', {editable: this.editable, type: this.type, changedProperties});
       this.initEditor();
-    }
-
-    if (changedProperties.has('init')) {
-      // this.logger.info('updated() - init', {thisinit: this.init, changedPropertiesinit: changedProperties.get('init')});
-      if (changedProperties.get('init') == undefined) {
-        /** only reinitialize the first time init changes */
-        this.initEditor();
+    } else {
+      if (changedProperties.has('init')) {
+        // this.logger.info('updated() - init', {thisinit: this.init, changedPropertiesinit: changedProperties.get('init')});
+        if (changedProperties.get('init') == undefined) {
+          /** only reinitialize the first time init changes */
+          this.initEditor();
+          return;
+        }
       }
     }
 
@@ -138,6 +140,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   runAction(action: any) {
+    this.logger.log('runAction()', { action });
     switch (action.name) {
       case APPEND_ACTION:
         this.appendContent(action.pars.content)
@@ -261,7 +264,6 @@ export class DocumentTextNodeEditor extends LitElement {
 
     /** arrow down */
     if (event.keyCode === 40) {
-      debugger
       if (view.state.selection.$cursor.pos >= view.state.doc.content.content[0].nodeSize - 1) {
         event.preventDefault();
         this.dispatchEvent(new CustomEvent('keydown-on-end'));
@@ -280,7 +282,7 @@ export class DocumentTextNodeEditor extends LitElement {
     if (this.editor && this.editor.view) {
       this.editor.view.destroy();
       this.editor = {};
-      this.logger.log(`initEditor() - Initializing editor`);
+      this.logger.log(`initEditor() - Initializing editor`, { init: this.init });
     }
 
     const schema = this.type === TextType.Title ? titleSchema : blockSchema;
@@ -395,6 +397,10 @@ export class DocumentTextNodeEditor extends LitElement {
     );
   }
 
+  reduceHeading() {
+    this.dispatchEvent(new CustomEvent('lift-heading', {}))
+  }
+
   linkClick() {
     this.preventHide = true;
     this.showUrl = !this.showUrl;
@@ -422,7 +428,7 @@ export class DocumentTextNodeEditor extends LitElement {
       valid = false;
     }
     if (valid) {
-      toggleMark(this.editor.state.schema.marks.link, { href })(
+      toggleMark(this.editor.view.state.schema.marks.link, { href })(
         this.editor.view.state,
         this.editor.view.dispatch
       );
@@ -451,24 +457,30 @@ export class DocumentTextNodeEditor extends LitElement {
         ? html`
             <div class="top-menu">
               <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
-              ${this.level > 1 ? html`
-                <div class="btn btn-text" @click=${this.typeClick}>
-                  ${this.type === TextType.Title ? 'text' : 'Title'}
+              ${this.level > 2 && this.type === TextType.Title ? html`
+                <div class="btn btn-text" @click=${this.reduceHeading}>
+                  ${`H${this.level - 1}`}
                 </div>
               ` : ''}
-              
+
+              ${this.level > 1 ? html`
+                <div class="btn btn-text" @click=${this.typeClick}>
+                  ${this.type === TextType.Title ? 'text' : `H${this.level}`}
+                </div>
+              ` : ''}
+
               ${this.type !== TextType.Title ? 
                 html`
                   <div
                     class="btn btn-square btn-large"
-                    @click=${() => this.menuItemClick(this.editor.state.schema.marks.strong)}
+                    @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.strong)}
                   >
                     ${icons.bold}
                   </div>
                 ` : ''}
               <div
                 class="btn btn-square btn-large"
-                @click=${() => this.menuItemClick(this.editor.state.schema.marks.em)}
+                @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.em)}
               >
                 ${icons.em}
               </div>

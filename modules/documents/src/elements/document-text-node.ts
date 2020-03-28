@@ -138,14 +138,15 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   async backspaceOnStart(e: CustomEvent) {
+    if (!this.data) return;
     if (this.level === 1) return;
 
     await this.commitText();
 
     this.logger.log('backspaceOnStart()', { currentText: this.currentText, e });
     const innerHTML = this.nodeInnerHTML(e.detail.content)
-    
-    this.removeFromParent(innerHTML);
+    /** */
+    this.removeFromParent(innerHTML, this.data.object.links);
   }
 
   selectBackward(index: number) {
@@ -241,10 +242,17 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
   }
 
-  // @Overwrite
-  async removeChildElement(index: number, content: string) {
+  liftHeading() {
+    if (!this.data) return;
+    if (this.data.object.type !== TextType.Title) return;
+
+    this.lift();
+  }
+
+  // @Override
+  async removeChildElement(index: number, content: string, lift: string[]) {
     /** remove child */
-    super.removeChildElement(index, content);
+    super.removeChildElement(index, content, lift);
 
     if (!this.data) throw new Error('this.data undefined');
 
@@ -328,9 +336,9 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
             /** remove childrent */
             newContent = {
-              ...this.data.object,
+              text: `<p>${this.nodeInnerHTML(this.data.object.text)}</p>`,
+              type: TextType.Paragraph,
               links: [],
-              type: newType
             };
 
             this.updateContentLocal(newContent);
@@ -362,8 +370,9 @@ export class DocumentTextNode extends EveesContent<TextNode> {
            * children of the new title. */
           case TextType.Title:
             let newContent: TextNode = {
-              ...this.data.object,
-              type: newType
+              text: `<h1>${this.nodeInnerHTML(this.data.object.text)}</h1>`,
+              type: TextType.Title,
+              links: []
             };
 
             /** read parent to get syblings */
@@ -468,6 +477,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               @backspace-on-start=${this.backspaceOnStart}
               @keyup-on-start=${this.keyupOnStart}
               @keydown-on-end=${this.keydownOnEnd}
+              @lift-heading=${this.liftHeading}
               @change-type=${this.changeType}
             ></documents-text-node-editor>
           </div>
