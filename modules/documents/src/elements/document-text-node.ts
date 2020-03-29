@@ -99,17 +99,16 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
     switch (action.name) {
       case APPEND_ACTION:
-        this.sendActionToEditor(action);
-        break;
-
       case FOCUS_ACTION:
         const last = action.pars.last !== undefined ? action.pars.last : false;
         if(!last) {
           this.sendActionToEditor(action);
         } else {
-          const links = this.getChildren(this.data);
           if (this.data.object.links.length === 0) {
             this.sendActionToEditor(action);
+            if (action.pars.siblings) {
+              this.spliceParent(action.pars.siblings, this.index + 1);
+            }
           } else {
             this.sendActionToChild(this.data.object.links.length - 1, action);
           }
@@ -121,7 +120,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
   }
 
-  async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string) {
+  async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string, liftBackwards?: string[]) {
     const result = await super.spliceChildren(elements, index, toIndex);
 
     if (appendBackwards && (index !== undefined)) {
@@ -135,7 +134,11 @@ export class DocumentTextNode extends EveesContent<TextNode> {
         this.sendActionToChild(
           index - 1, {
             name: APPEND_ACTION,
-            pars: { content: appendBackwards }
+            pars: { 
+              content: appendBackwards,
+              siblings: liftBackwards,
+              last: true
+            }
           })
       }
     }
@@ -331,6 +334,38 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
   }
 
+  async getYoungerParagraphs() {
+    if (this.genealogy.length <= 1) return [];
+    
+    const parentData = await this.getPerspectiveData(this.genealogy[1]) as Hashed<TextNode>;
+    if (!parentData) return [];
+
+    const youngerSyblings = parentData.object.links.splice(this.index + 1);
+
+    const syblingsDataPromises = youngerSyblings.map(async id => {
+      const data = await this.getPerspectiveData(id) as Hashed<TextNode>;
+
+      if (!data) return true;
+      if (!data.object.type) return true;
+      if (data.object.type !== TextType.Paragraph) return true;
+
+      /** return true if element is not a paragraph */
+      return false;
+    });
+
+    const syblingsData = await Promise.all(syblingsDataPromises);
+
+    /** return the index first non paragraph element */
+    let until = syblingsData.findIndex(e => e);
+
+    if (until === -1) {
+      until = youngerSyblings.length;
+    }
+
+    let nextParagraphs = [...youngerSyblings];
+    return nextParagraphs.slice(0, until);
+  }
+
   async changeType(e: CustomEvent) {
     if (!this.data) return;
 
@@ -394,69 +429,17 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               links: []
             };
 
+            await this.updateContentLocal(newContent);
+
             /** read parent to get syblings */
-            if (this.genealogy.length > 1) {
-              const parentData = await this.getPerspectiveData(this.genealogy[1]) as Hashed<TextNode>;
+            const nextParagraphs = await this.getYoungerParagraphs();
 
-              if (parentData !== undefined) {
-                const youngerSyblings = parentData.object.links.splice(this.index + 1);
+            /** add paragraphs as children */
+            await this.spliceChildren(nextParagraphs);
 
-                if (youngerSyblings.length > 0) {
-                  const syblingsDataPromises = youngerSyblings.map(async id => {
-                    const data = await this.getPerspectiveData(id) as Hashed<TextNode>;
-
-                    if (!data) return true;
-                    if (!data.object.type) return true;
-                    if (data.object.type !== TextType.Paragraph) return true;
-
-                    /** return true if element is not a paragraph */
-                    return false;
-                  });
-
-                  const syblingsData = await Promise.all(syblingsDataPromises);
-
-                  /** return the index first non paragraph element */
-                  let until = syblingsData.findIndex(e => e);
-
-                  if (until === -1) {
-                    until = youngerSyblings.length;
-                  }
-
-                  const nextParagraphs = [...youngerSyblings];
-                  nextParagraphs.slice(0, until);
-
-                  /** add this paragraphs as children of this node */
-                  let newLinks: string[] = [...this.data.object.links];
-                  if (this.index >= this.data.object.links.length) {
-                    newLinks.push(...nextParagraphs);
-                  } else {
-                    newLinks.splice(this.index, 0, ...nextParagraphs);
-                  }
-
-                  newContent = {
-                    ...newContent,
-                    links: newLinks
-                  };
-
-                  /** remove these paragraphs from parent */
-                  this.dispatchEvent(
-                    new SpliceChildrenEvent({
-                      bubbles: true,
-                      cancelable: true,
-                      composed: true,
-                      detail: {
-                        startedOnElementId: this.data.id,
-                        elements: [],
-                        index: this.index + 1,
-                        toIndex: this.index + 1 + until
-                      }
-                    })
-                  );
-                }
-              }
-            }
-
-            this.updateContent(newContent);
+            /** remove paragraphs from parent */
+            await this.spliceParent([], this.index + 1, this.index + 1 + nextParagraphs.length);
+                  
             return;
         }
     }

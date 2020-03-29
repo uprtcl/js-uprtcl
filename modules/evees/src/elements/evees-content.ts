@@ -79,7 +79,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
       // At this point this should be the text node that is the parent of the source of the event.
       e.stopPropagation();
-      this.spliceChildren(e.detail.elements, e.detail.index, e.detail.toIndex, e.detail.appendBackwards);
+      this.spliceChildren(e.detail.elements, e.detail.index, e.detail.toIndex, e.detail.appendBackwards, e.detail.liftBackwards);
     }) as EventListener);
 
     this.addEventListener(LIFT_CHILDREN_TAG, ((e: LiftChildrenEvent) => {
@@ -294,7 +294,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     return hasChildren.getChildrenLinks(data);
   }
 
-  async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string) {
+  async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string, liftBackwards?: string[]) {
     const result = await this.spliceChildrenOf(this.data, elements, index, toIndex);
     await this.updateContentLocal(result.entity.object);
     return result;
@@ -364,11 +364,12 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
         bubbles: true,
         composed: true,
         detail: {
-          elements: lift,
+          elements: [],
           startedOnElementId: this.data.id,
           index: this.index,
           toIndex: this.index + 1,
-          appendBackwards: content 
+          appendBackwards: content,
+          liftBackwards: lift 
         }
       })
     );
