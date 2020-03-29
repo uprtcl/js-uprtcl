@@ -95,11 +95,25 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
   runAction(action: any) {
     if (!action) return;
+    if (!this.data) return;
 
     switch (action.name) {
       case APPEND_ACTION:
-      case FOCUS_ACTION:
         this.sendActionToEditor(action);
+        break;
+
+      case FOCUS_ACTION:
+        const last = action.pars.last !== undefined ? action.pars.last : false;
+        if(!last) {
+          this.sendActionToEditor(action);
+        } else {
+          const links = this.getChildren(this.data);
+          if (this.data.object.links.length === 0) {
+            this.sendActionToEditor(action);
+          } else {
+            this.sendActionToChild(this.data.object.links.length - 1, action);
+          }
+        }
         break;
 
       default:
@@ -179,7 +193,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
       this.sendActionToChild(
         index-1, {
           name: FOCUS_ACTION,
-          pars: { }
+          pars: { last: true }
         })
     }
   }
@@ -190,12 +204,19 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     if (index < this.data.object.links.length - 1) {
       /** select next sybling downwards */
       this.sendActionToChild(
-        index+1, {
+        index + 1, {
           name: FOCUS_ACTION,
           pars: { }
         })
     } else {
-      // TODO
+      this.dispatchEvent(new CustomEvent('select-downward', { 
+        bubbles: true, 
+        composed: true, 
+        detail: { 
+          index: this.index,
+          startedOnElementId: this.data.id
+        } 
+      }));
     }
   }
 
