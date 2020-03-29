@@ -107,21 +107,21 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
   }
 
-  spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string) {
-    const result = super.spliceChildren(elements, index, toIndex);
+  async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string) {
+    const result = await super.spliceChildren(elements, index, toIndex);
 
-    if (appendBackwards && index) {
+    if (appendBackwards && (index !== undefined)) {
       if (index === 0) {
         /** if it was the first sub-element, append content to this node (which was the parent) */
         this.sendActionToEditor({ 
           name: APPEND_ACTION, 
-          pars: { appendBackwards } });
+          pars: { content: appendBackwards } });
       } else {
         /** if it was not first element, append content to sybling of element at index*/
         this.sendActionToChild(
           index - 1, {
             name: APPEND_ACTION,
-            pars: { appendBackwards }
+            pars: { content: appendBackwards }
           })
       }
     }
@@ -137,7 +137,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     this.logger.info('enterPressed()', { data: this.data, content });
 
     if (this.data.object.type === TextType.Title) {
-      await this.createChild(this.initNode(content, TextType.Paragraph), this.symbol);
+      this.createChild(this.initNode(content, TextType.Paragraph), this.symbol, 0);
     } else {
       this.createSibling(this.initNode(content, TextType.Paragraph), this.symbol);
     }

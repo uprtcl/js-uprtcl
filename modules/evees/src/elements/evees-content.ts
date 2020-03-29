@@ -296,7 +296,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
   async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string) {
     const result = await this.spliceChildrenOf(this.data, elements, index, toIndex);
-    this.updateContentLocal(result.entity.object);
+    await this.updateContentLocal(result.entity.object);
     return result;
   }
 
@@ -307,8 +307,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     const currentChildren = hasChildren.getChildrenLinks(data);
 
     elements = elements || [];
-    index = index || currentChildren.length;
-    toIndex = toIndex || currentChildren.length;
+    index = index !== undefined ? index : currentChildren.length;
+    toIndex = toIndex !== undefined ? toIndex : index;
 
     /** create objects if elements is not an id */
     const create = elements.map(el => {
@@ -332,7 +332,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     if (!this.data) return;
 
     const newLink = await this.createEvee(newEntity, symbol);
-    const { entity } = await this.spliceChildren([newLink]);
+    const { entity } = await this.spliceChildren([newLink], index);
 
     this.logger.info('createChild()', entity);
     this.updateContentLocal(entity.object);
