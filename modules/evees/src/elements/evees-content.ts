@@ -9,7 +9,7 @@ import { ApolloClientModule, gql } from '@uprtcl/graphql';
 import { RemotesConfig, Commit, Perspective } from '../types';
 import { EveesModule } from '../evees.module';
 import { EveesRemote, EveesBindings, CreateCommitArgs, CreatePerspectiveArgs, UpdateContentEvent, Secured, UPDATE_HEAD } from '../uprtcl-evees';
-import { SpliceChildrenEvent, SPLICE_CHILDREN_TAG, LiftChildrenEvent } from './events';
+import { SpliceChildrenEvent, SPLICE_CHILDREN_TAG, LiftChildrenEvent, LIFT_CHILDREN_TAG } from './events';
 
 export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-CONTENT');
@@ -80,6 +80,19 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
       // At this point this should be the text node that is the parent of the source of the event.
       e.stopPropagation();
       this.spliceChildren(e.detail.elements, e.detail.index, e.detail.toIndex, e.detail.appendBackwards);
+    }) as EventListener);
+
+    this.addEventListener(LIFT_CHILDREN_TAG, ((e: LiftChildrenEvent) => {
+      if (!this.data) return;
+
+      this.logger.info(`CATCHED EVENT: ${LiftChildrenEvent.name}`, { dataId: this.data.id, e });
+
+      // TODO: this.addEventListener listens  this.dispatchEvent ???
+      if (e.detail.startedOnElementId === this.data.id) return;
+
+      // At this point this should be the text node that is the parent of the source of the event.
+      e.stopPropagation();
+      this.liftChildElement(e.detail.index);
     }) as EventListener);
 
   }
@@ -387,6 +400,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   async liftChildElement(index: number) {
     /** remove as child */
     const { removed } = await this.spliceChildren([], index, index + 1);
+    /** add to parent */
     this.spliceParent(removed, this.index + 1);
   }
 

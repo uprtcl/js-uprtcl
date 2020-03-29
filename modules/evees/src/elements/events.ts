@@ -22,7 +22,7 @@ export type LiftChildrenArgs = {
 
 export const UPDATE_CONTENT_TAG = 'update-content';
 export const SPLICE_CHILDREN_TAG = 'splice-children';
-export const LIFT_CHILD_TAG = 'lift-children';
+export const LIFT_CHILDREN_TAG = 'lift-children';
 export const CONTENT_UPDATED_TAG = 'content-updated';
 
 export class UpdateContentEvent extends CustomEvent<UpdateContentArgs> {
@@ -39,7 +39,7 @@ export class SpliceChildrenEvent extends CustomEvent<SpliceChildrenArgs> {
 
 export class LiftChildrenEvent extends CustomEvent<LiftChildrenArgs> {
   constructor(init: CustomEventInit<LiftChildrenArgs>) {
-    super(LIFT_CHILD_TAG, init);
+    super(LIFT_CHILDREN_TAG, init);
   }
 }
 
