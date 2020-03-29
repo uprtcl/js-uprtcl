@@ -386,19 +386,24 @@ export class DocumentTextNodeEditor extends LitElement {
     );
   }
 
-  typeClick() {
-    const newType = this.type === TextType.Title ? TextType.Paragraph : TextType.Title;
-    this.dispatchEvent(
-      new CustomEvent('change-type', {
-        detail: {
-          type: newType
-        }
-      })
-    );
+  toHeading() {
+    this.changeType(TextType.Title);
+  }
+
+  toParagraph() {
+    this.changeType(TextType.Paragraph);
   }
 
   reduceHeading() {
     this.dispatchEvent(new CustomEvent('lift-heading', {}))
+  }
+
+  changeType(type: TextType) {
+    this.dispatchEvent(
+      new CustomEvent('change-type', {
+        detail: { type}
+      })
+    );
   }
 
   linkClick() {
@@ -451,64 +456,82 @@ export class DocumentTextNodeEditor extends LitElement {
     this.logger.log('editor blured');
   }
 
+  renderUrlMenu() {
+    return html`
+      <div class="inp">
+        <input placeholder="url" id="URL_INPUT" />
+        <div @click=${this.linkCancelled} class="btn btn-small">
+          ${icons.cross}
+        </div>
+        <div @click=${this.linkConfirmed} class="btn btn-small">
+          ${icons.check}
+        </div>
+      </div>
+    `
+  }
+
+  renderLevelControllers() {
+    return html`
+      <!-- left level button -->
+      ${this.level > 1 ? 
+        this.type === TextType.Paragraph ? html`
+          <div class="btn btn-text" @click=${this.toHeading}>
+            h${this.level}
+          </div>` : (
+            this.level > 2 ? html`
+            <div class="btn btn-text" @click=${this.reduceHeading}>
+              h${this.level - 1}
+            </div>` : '') : ''}
+      
+      <!-- center button -->
+      <div class="btn-text btn-current">
+        ${this.type === TextType.Title ? `h${this.level}` : 'text'}
+      </div>
+
+      <!-- right level button -->
+      ${((this.level > 1) && (this.type === TextType.Title)) ? html`
+        <div class="btn btn-text" @click=${this.toParagraph}>
+          text
+        </div>` : ''}
+    `;
+  }
+
+  renderMenu() {
+    return html`
+      <div class="top-menu">
+        <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
+        
+        ${this.renderLevelControllers()}
+
+        ${this.type !== TextType.Title ? 
+          html`
+            <div
+              class="btn btn-square btn-large"
+              @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.strong)}
+            >
+              ${icons.bold}
+            </div>
+          ` : ''}
+        <div
+          class="btn btn-square btn-large"
+          @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.em)}
+        >
+          ${icons.em}
+        </div>
+
+        <div class="btn btn-square btn-small" @click=${this.linkClick}>
+          ${icons.link}
+        </div>
+
+        ${this.showUrl ? this.renderUrlMenu() : ''}
+      </div>`
+  }
+
   render() {
     return html`
-      ${this.showMenu
-        ? html`
-            <div class="top-menu">
-              <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
-              ${this.level > 2 && this.type === TextType.Title ? html`
-                <div class="btn btn-text" @click=${this.reduceHeading}>
-                  ${`H${this.level - 1}`}
-                </div>
-              ` : ''}
-
-              ${this.level > 1 ? html`
-                <div class="btn btn-text" @click=${this.typeClick}>
-                  ${this.type === TextType.Title ? 'text' : `H${this.level}`}
-                </div>
-              ` : ''}
-
-              ${this.type !== TextType.Title ? 
-                html`
-                  <div
-                    class="btn btn-square btn-large"
-                    @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.strong)}
-                  >
-                    ${icons.bold}
-                  </div>
-                ` : ''}
-              <div
-                class="btn btn-square btn-large"
-                @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.em)}
-              >
-                ${icons.em}
-              </div>
-              <div class="btn btn-square btn-small" @click=${this.linkClick}>
-                ${icons.link}
-              </div>
-              ${this.showUrl
-            ? html`
-                    <div class="inp">
-                      <input placeholder="url" id="URL_INPUT" />
-                      <div @click=${this.linkCancelled} class="btn btn-small">
-                        ${icons.cross}
-                      </div>
-                      <div @click=${this.linkConfirmed} class="btn btn-small">
-                        ${icons.check}
-                      </div>
-                    </div>
-                  `
-            : ''}
-            </div>
-          `
-        : ''}
+      ${this.showMenu ? this.renderMenu() : ''}
       <div id="editor-content" class="editor-content">
-        ${this.empty
-        ? html`
-              ${this.placeholder ? this.placeholder : ''}
-            `
-        : ''}
+        ${this.empty ? this.placeholder ? this.placeholder : '' : ''}
       </div>
     `;
   }
@@ -560,6 +583,11 @@ export class DocumentTextNodeEditor extends LitElement {
           color: white;
           padding: 12px 16px;
           font-weight: bold;
+        }
+
+        .btn-current {
+          text-decoration: underline;
+          color: #9292a5;
         }
 
         .btn-square {

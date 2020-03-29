@@ -8,14 +8,12 @@ export const styleMap = style => {
   }, '');
 };
 
-import { EveesContent } from '@uprtcl/evees';
-import { AddSyblingsEvent, RemoveChildrenEvent } from '@uprtcl/evees';
+import { EveesContent, SpliceChildrenEvent } from '@uprtcl/evees';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
 import { Hashed } from '@uprtcl/cortex';
-import { htmlToText } from 'src/uprtcl-documents';
 import { APPEND_ACTION, FOCUS_ACTION } from './prosemirror/documents-text-node-editor';
 
 export class DocumentTextNode extends EveesContent<TextNode> {
@@ -107,6 +105,28 @@ export class DocumentTextNode extends EveesContent<TextNode> {
       default:
         throw new Error(`unexpected action ${action.name}`);
     }
+  }
+
+  spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string) {
+    const result = super.spliceChildren(elements, index, toIndex);
+
+    if (appendBackwards && index) {
+      if (index === 0) {
+        /** if it was the first sub-element, append content to this node (which was the parent) */
+        this.sendActionToEditor({ 
+          name: APPEND_ACTION, 
+          pars: { appendBackwards } });
+      } else {
+        /** if it was not first element, append content to sybling of element at index*/
+        this.sendActionToChild(
+          index - 1, {
+            name: APPEND_ACTION,
+            pars: { appendBackwards }
+          })
+      }
+    }
+
+    return result;
   }
 
   async enterPressed(e: CustomEvent) {
@@ -249,29 +269,6 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     this.lift();
   }
 
-  // @Override
-  async removeChildElement(index: number, content: string, lift: string[]) {
-    /** remove child */
-    super.removeChildElement(index, content, lift);
-
-    if (!this.data) throw new Error('this.data undefined');
-
-    /** put the content on the node above it */
-    if (index === 0) {
-      /** if it was the first sub-element, append content to this node (which was the parent) */
-      this.sendActionToEditor({ 
-        name: APPEND_ACTION, 
-        pars: { content } });
-    } else {
-      /** if it was not first element, append content to sybling of element at index*/
-      this.sendActionToChild(
-        index-1, {
-          name: APPEND_ACTION,
-          pars: { content }
-        })
-    }
-  }
-
   /** I need to communicate with the editor from here... */
   sendActionToChild(ix: number, action: object) {
     this.actionOnIx = ix;
@@ -341,18 +338,19 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               links: [],
             };
 
-            this.updateContentLocal(newContent);
+            this.updateContent(newContent);
 
             /** add as syblings */
             this.dispatchEvent(
-              new AddSyblingsEvent({
+              new SpliceChildrenEvent({
                 bubbles: true,
                 cancelable: true,
                 composed: true,
                 detail: {
                   startedOnElementId: this.data.id,
-                  elementIds: links,
-                  index: this.index + 1
+                  elements: [this.ref].concat(links),
+                  index: this.index,
+                  toIndex: this.index + 1
                 }
               })
             );
@@ -421,13 +419,14 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
                   /** remove these paragraphs from parent */
                   this.dispatchEvent(
-                    new RemoveChildrenEvent({
+                    new SpliceChildrenEvent({
                       bubbles: true,
                       cancelable: true,
                       composed: true,
                       detail: {
                         startedOnElementId: this.data.id,
-                        fromIndex: this.index + 1,
+                        elements: [],
+                        index: this.index + 1,
                         toIndex: this.index + 1 + until
                       }
                     })
@@ -436,7 +435,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               }
             }
 
-            this.updateContentLocal(newContent);
+            this.updateContent(newContent);
             return;
         }
     }

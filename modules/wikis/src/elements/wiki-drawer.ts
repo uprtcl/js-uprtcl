@@ -131,7 +131,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
         break;
 
       case 'remove': 
-        this.removeChildElement(pageIndex);
+        this.spliceChildren([], pageIndex, pageIndex + 1);
         break;
     }
   }

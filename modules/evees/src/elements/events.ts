@@ -6,51 +6,24 @@ export type UpdateContentArgs = {
   dataId: string;
 };
 
-export type CreateSyblingArgs = {
+export type SpliceChildrenArgs = {
   startedOnElementId: string;
-  object: object;
-  symbol: symbol;
+  elements: any[];
   index?: number;
-};
-
-export type AddSyblingsArgs = {
-  startedOnElementId: string;
-  index?: number;
-  elementIds: string[];
-};
-
-export type RemoveSyblingsArgs = {
-  startedOnElementId: string;
-  fromIndex?: number;
   toIndex?: number;
-};
-
-export type RemoveChildArgs = {
-  startedOnElementId: string;
-  index: number;
-  content?: string;
-  lift?: string[];
+  appendBackwards?: string
 }
 
-export type LiftChildArgs = {
+export type LiftChildrenArgs = {
   startedOnElementId: string;
   index: number;
+  toIndex: number;
 }
 
-export type PutChildArgs = {
-  startedOnElementId: string;
-  elementId: string;
-  index: number;
-}
-
-export const CREATE_SYBLING_TAG = 'create-sybling';
-export const ADD_SYBLINGS_TAG = 'add-syblings';
-export const REMOVE_CHILDREN_TAG = 'remove-children';
 export const UPDATE_CONTENT_TAG = 'update-content';
+export const SPLICE_CHILDREN_TAG = 'splice-children';
+export const LIFT_CHILD_TAG = 'lift-children';
 export const CONTENT_UPDATED_TAG = 'content-updated';
-export const REMOVE_CHILD_TAG = 'remove-child';
-export const LIFT_CHILD_TAG = 'lift-child';
-export const PUT_CHILD_TAG = 'put-child';
 
 export class UpdateContentEvent extends CustomEvent<UpdateContentArgs> {
   constructor(init: CustomEventInit<UpdateContentArgs>) {
@@ -58,21 +31,15 @@ export class UpdateContentEvent extends CustomEvent<UpdateContentArgs> {
   }
 }
 
-export class CreateSyblingEvent extends CustomEvent<CreateSyblingArgs> {
-  constructor(init: CustomEventInit<CreateSyblingArgs>) {
-    super(CREATE_SYBLING_TAG, init);
+export class SpliceChildrenEvent extends CustomEvent<SpliceChildrenArgs> {
+  constructor(init: CustomEventInit<SpliceChildrenArgs>) {
+    super(SPLICE_CHILDREN_TAG, init);
   }
 }
 
-export class AddSyblingsEvent extends CustomEvent<AddSyblingsArgs> {
-  constructor(init: CustomEventInit<AddSyblingsArgs>) {
-    super(ADD_SYBLINGS_TAG, init);
-  }
-}
-
-export class RemoveChildrenEvent extends CustomEvent<RemoveSyblingsArgs> {
-  constructor(init: CustomEventInit<RemoveSyblingsArgs>) {
-    super(REMOVE_CHILDREN_TAG, init);
+export class LiftChildrenEvent extends CustomEvent<LiftChildrenArgs> {
+  constructor(init: CustomEventInit<LiftChildrenArgs>) {
+    super(LIFT_CHILD_TAG, init);
   }
 }
 
@@ -82,23 +49,6 @@ export class ContentUpdatedEvent extends CustomEvent<ContentUpdatedArgs> {
   }
 }
 
-export class RemoveChildEvent extends CustomEvent<RemoveChildArgs> {
-  constructor(init: CustomEventInit<RemoveChildArgs>) {
-    super(REMOVE_CHILD_TAG, init);
-  }
-}
-
-export class PutChildEvent extends CustomEvent<PutChildArgs> {
-  constructor(init: CustomEventInit<PutChildArgs>) {
-    super(PUT_CHILD_TAG, init);
-  }
-}
-
-export class LiftChildEvent extends CustomEvent<LiftChildArgs> {
-  constructor(init: CustomEventInit<LiftChildArgs>) {
-    super(LIFT_CHILD_TAG, init);
-  }
-}
 
 
 

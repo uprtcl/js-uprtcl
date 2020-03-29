@@ -47,7 +47,7 @@ export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesPerspective } from './elements/evees-perspective';
 export { EveesContent } from './elements/evees-content';
-export { UpdateContentEvent, UpdateContentArgs, RemoveChildrenEvent, AddSyblingsEvent, ContentUpdatedEvent, CONTENT_UPDATED_TAG } from './elements/events';
+export { UpdateContentEvent, UpdateContentArgs, ContentUpdatedEvent, SpliceChildrenEvent, CONTENT_UPDATED_TAG } from './elements/events';
 
 /** UI support components */
 export { MenuConfig } from './elements/common-ui/evees-options-menu'
