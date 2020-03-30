@@ -107,7 +107,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
           if (this.data.object.links.length === 0) {
             this.sendActionToEditor(action);
             if (action.pars.siblings) {
-              this.spliceParent(action.pars.siblings, this.index + 1);
+              this.spliceParent(action.pars.siblings, this.index + 1, undefined, undefined, this.index + 1);
             }
           } else {
             this.sendActionToChild(this.data.object.links.length - 1, action);
@@ -120,10 +120,10 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
   }
 
-  async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string, liftBackwards?: string[]) {
+  async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string, liftBackwards?: string[], focusAfter?: number) {
     const result = await super.spliceChildren(elements, index, toIndex);
 
-    if ((appendBackwards || liftBackwards) && (index !== undefined)) {
+    if ((appendBackwards !== undefined || liftBackwards !== undefined) && (index !== undefined)) {
       if (index === 0) {
         /** if it was the first sub-element, append content to this node (which was the parent) */
         this.sendActionToEditor({ 
@@ -141,6 +141,10 @@ export class DocumentTextNode extends EveesContent<TextNode> {
             }
           })
       }
+    } else {
+      if (focusAfter !== undefined) {
+        this.sendActionToChild(focusAfter, { name: FOCUS_ACTION, pars: {} })
+      }
     }
 
     return result;
@@ -154,7 +158,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     this.logger.info('enterPressed()', { data: this.data, content });
 
     if (this.data.object.type === TextType.Title) {
-      this.createChild(this.initNode(content, TextType.Paragraph), this.symbol, 0);
+      await this.createChild(this.initNode(content, TextType.Paragraph), this.symbol, 0);
+      this.sendActionToChild(0, { name: FOCUS_ACTION, pars: {} });
     } else {
       this.createSibling(this.initNode(content, TextType.Paragraph), this.symbol);
     }
@@ -360,7 +365,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
           elements: [],
           index: this.index,
           toIndex: this.index + 1,
-          liftBackwards: [this.ref].concat(links),
+          liftBackwards: [this.ref].concat(links)
         }
       })
     );
@@ -382,6 +387,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
     /** add paragraphs as children */
     await this.spliceChildren(nextParagraphs);
+
+    this.sendActionToEditor({name: FOCUS_ACTION, pars: {}});
 
     /** remove paragraphs from parent */
     this.spliceParent([], this.index + 1, this.index + 1 + nextParagraphs.length);
@@ -523,6 +530,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
       .node-content {
         flex-grow: 1;
+        padding-right: 10px;
       }
 
       .content-editable {

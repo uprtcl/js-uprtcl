@@ -11,8 +11,9 @@ export type SpliceChildrenArgs = {
   elements: any[];
   index?: number;
   toIndex?: number;
-  appendBackwards?: string
-  liftBackwards?: string[]
+  appendBackwards?: string;
+  liftBackwards?: string[];
+  focusAfter?: number;
 }
 
 export type LiftChildrenArgs = {

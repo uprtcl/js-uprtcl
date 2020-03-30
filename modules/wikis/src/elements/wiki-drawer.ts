@@ -269,7 +269,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
             : html``}
         </div>
 
-        <div slot="appContent" class="fill-content">
+        <div slot="appContent" class="app-content">
           ${this.selectedPageIx !== undefined
             ? html`
                 <wiki-page
@@ -302,6 +302,13 @@ export class WikiDrawer extends EveesContent<Wiki>{
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
             Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
           color: #37352f;
+          --mdc-theme-primary: #2196F3;
+        }
+        .app-content {
+          height: 100%;
+          width: 100%;
+          flex: 1 1 0;
+          overflow: auto;
         }
         .evee-info {
           height: 40px;
@@ -329,9 +336,13 @@ export class WikiDrawer extends EveesContent<Wiki>{
           color: #a2a8aa;
         }
         .button-row {
-          margin: 16px 0px 8px 0px;
           text-align: center;
-          width: 100%;
+          width: calc(100% - 20px);
+          padding: 16px 10px 8px 10px;
+          display: flex;
+        }
+        .button-row mwc-button {
+          flex-grow: 1;
         }
       `
     ];

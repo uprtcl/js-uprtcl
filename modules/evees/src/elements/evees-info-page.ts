@@ -77,6 +77,7 @@ export class EveesInfoPage extends EveesInfoBase {
                       </p>
                       <mwc-button
                         .disabled=${!this.publicRead}
+                        class="bottom-button"
                         outlined
                         icon="call_merge"
                         @click=${this.proposeMergeClicked}
@@ -91,6 +92,7 @@ export class EveesInfoPage extends EveesInfoBase {
               </div>
               ${this.perspectiveData.canWrite ? html`
                 <mwc-button
+                  class="bottom-button"
                   outlined
                   icon="call_split"
                   @click=${this.newPerspectiveClicked}
@@ -116,6 +118,7 @@ export class EveesInfoPage extends EveesInfoBase {
               <div class="section-content info-text">
                 <mwc-button
                   outlined
+                  class="bottom-button"
                   icon="delete_forever"
                   @click=${() => this.delete()}
                   label="Delete"
@@ -129,6 +132,11 @@ export class EveesInfoPage extends EveesInfoBase {
 
   static get styles() {
     return css`
+
+      mwc-button {
+        width: 220px;
+      }
+
       p {
         margin: 0;
       }
@@ -162,6 +170,9 @@ export class EveesInfoPage extends EveesInfoBase {
       }
       .info-text {
         color: #4e585c;
+      }
+      .bottom-button {
+        margin: 32px 0px;
       }
       .other-perspectives {
         border-top: solid 1px #cccccc;

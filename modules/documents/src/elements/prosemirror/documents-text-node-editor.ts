@@ -201,7 +201,14 @@ export class DocumentTextNodeEditor extends LitElement {
 
     this.editor.view.dispatch(
       this.editor.view.state.tr
-      .replace(end-1, end-1, slice));
+        .replace(end-1, end, slice));
+
+    this.editor.view.dispatch(
+      this.editor.view.state.tr
+        .setSelection(TextSelection.near(this.editor.view.state.doc.resolve(end-1)))
+    );
+
+    this.editor.view.focus();
   }
 
   keydown(view, event) {

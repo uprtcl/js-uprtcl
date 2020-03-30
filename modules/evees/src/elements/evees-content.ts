@@ -79,7 +79,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
 
       // At this point this should be the text node that is the parent of the source of the event.
       e.stopPropagation();
-      this.spliceChildren(e.detail.elements, e.detail.index, e.detail.toIndex, e.detail.appendBackwards, e.detail.liftBackwards);
+      this.spliceChildren(e.detail.elements, e.detail.index, e.detail.toIndex, e.detail.appendBackwards, e.detail.liftBackwards, e.detail.focusAfter);
     }) as EventListener);
 
     this.addEventListener(LIFT_CHILDREN_TAG, ((e: LiftChildrenEvent) => {
@@ -294,7 +294,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     return hasChildren.getChildrenLinks(data);
   }
 
-  async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string, liftBackwards?: string[]) {
+  async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string, liftBackwards?: string[], focusAfter?: number) {
     const result = await this.spliceChildrenOf(this.data, elements, index, toIndex);
     await this.updateContentLocal(result.entity.object);
     return result;
@@ -335,7 +335,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     const { entity } = await this.spliceChildren([newLink], index);
 
     this.logger.info('createChild()', entity);
-    this.updateContentLocal(entity.object);
+    await this.updateContentLocal(entity.object);
+    return
   }
 
   createSibling(object: object, symbol: symbol) {
@@ -349,7 +350,8 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
         detail: {
           elements: [{object, symbol}],
           startedOnElementId: this.data.id,
-          index: this.index + 1
+          index: this.index + 1,
+          focusAfter: this.index + 1
         }
       })
     );
@@ -375,7 +377,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     );
   }
 
-  spliceParent(elements: string[], index?: number, toIndex?: number, appendBackwards?: string) {
+  spliceParent(elements: string[], index?: number, toIndex?: number, appendBackwards?: string, focusAfter?: number) {
     if (!this.data) return;
 
     this.logger.info('putOnParent()', { dataId: this.data ? this.data.id : undefined });
@@ -385,7 +387,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
         composed: true,
         detail: {
           startedOnElementId: this.data.id,
-          elements, index, toIndex, appendBackwards
+          elements, index, toIndex, appendBackwards, focusAfter
         }
       })
     );
