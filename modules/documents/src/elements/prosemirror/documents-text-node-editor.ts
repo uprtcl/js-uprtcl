@@ -509,26 +509,27 @@ export class DocumentTextNodeEditor extends LitElement {
 
   renderLevelControllers() {
     return html`
+
+      <!-- current level -->
+      <div class="btn-text btn-current">
+        <span>${this.type === TextType.Title ? `h${this.level}` : 'text'}</span>
+      </div>
+
       <!-- left level button -->
       ${this.level > 1 ? 
         this.type === TextType.Paragraph ? html`
           <div class="btn btn-text" @click=${this.toHeading}>
-            h${this.level}
+            <span>h${this.level}</span>
           </div>` : (
             this.level > 2 ? html`
             <div class="btn btn-text" @click=${this.reduceHeading}>
-              h${this.level - 1}
+              <span>h${this.level - 1}</span>
             </div>` : '') : ''}
       
-      <!-- center button -->
-      <div class="btn-text btn-current">
-        ${this.type === TextType.Title ? `h${this.level}` : 'text'}
-      </div>
-
       <!-- right level button -->
       ${((this.level > 1) && (this.type === TextType.Title)) ? html`
         <div class="btn btn-text" @click=${this.toParagraph}>
-          text
+          <span>text</span>
         </div>` : ''}
     `;
   }
@@ -624,6 +625,7 @@ export class DocumentTextNodeEditor extends LitElement {
         .btn-current {
           text-decoration: underline;
           color: #9292a5;
+          user-select: none;
         }
 
         .btn-square {
@@ -647,7 +649,7 @@ export class DocumentTextNodeEditor extends LitElement {
         }
 
         .inp input {
-          height: 40px;
+          height: 38px;
           font-size: 14px;
           padding-left: 12px;
           border: none;

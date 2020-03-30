@@ -380,7 +380,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   spliceParent(elements: string[], index?: number, toIndex?: number, appendBackwards?: string, focusAfter?: number) {
     if (!this.data) return;
 
-    this.logger.info('putOnParent()', { dataId: this.data ? this.data.id : undefined });
+    this.logger.info('spliceParent()', { dataId: this.data ? this.data.id : undefined, elements, index, appendBackwards, focusAfter });
     this.dispatchEvent(
       new SpliceChildrenEvent({
         bubbles: true,
@@ -424,7 +424,6 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
       })
     );
   }
-
   
   async getPerspectiveDataId(perspectiveId: string): Promise<string> {
     if(!this.client) throw new Error('client undefined');

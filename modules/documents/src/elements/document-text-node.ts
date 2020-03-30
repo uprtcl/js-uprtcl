@@ -134,8 +134,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
         } else {
           if (this.data.object.links.length === 0) {
             this.sendActionToEditor(action);
-            if (action.pars.siblings) {
-              this.spliceParent(action.pars.siblings, this.index + 1, undefined, undefined, this.index + 1);
+            if (action.name === APPEND_ACTION && action.pars.siblings.length > 0) {
+              this.spliceParent(action.pars.siblings, this.index + 1);
             }
           } else {
             this.sendActionToChild(this.data.object.links.length - 1, action);
@@ -215,7 +215,6 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
     this.logger.log('backspaceOnStart()', { currentText: this.currentText, e });
     const innerHTML = this.nodeInnerHTML(e.detail.content)
-    /** */
     this.removeFromParent(innerHTML, this.data.object.links);
   }
 
@@ -491,7 +490,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     let contentClasses = this.data.object.type === TextType.Paragraph ? ['paragraph'] : ['title'];
     contentClasses.push('content-editable');
 
-    const focusInit = (this.level === 1) && (this.empty) ? 'true' : 'false';
+    const focusInit = ((this.level === 1) && (this.empty)) ? 'true' : 'false';
 
     return html`
       <div
