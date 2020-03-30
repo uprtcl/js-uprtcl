@@ -28,8 +28,8 @@ export class WikiDrawer extends EveesContent<Wiki>{
   
   logger = new Logger('WIKI-DRAWER');
 
-  @property({ type: String })
-  selectedPageHash: string | undefined = undefined;
+  @property({ type: Number })
+  selectedPageIx: number | undefined = undefined;
 
   @property({ type: Object, attribute: false })
   pagesList: Array<{ title: string; id: string }> | undefined = undefined;
@@ -95,43 +95,86 @@ export class WikiDrawer extends EveesContent<Wiki>{
     this.logger.log('loadPagesData()', { pagesList: this.pagesList });    
   }
 
-  selectPage(pageHash: string | undefined) {
+  selectPage(ix: number | undefined) {
+    if (!this.data) return;
+
+    this.selectedPageIx = ix;
+    
+    if (this.selectedPageIx === undefined) {
+      return;
+    }
+
     this.dispatchEvent(
       new CustomEvent('page-selected', {
         detail: {
-          pageId: pageHash
+          pageId: this.data.object.pages[this.selectedPageIx]
         }
       })
     );
-
-    this.selectedPageHash = pageHash;
   }
 
-  newPage() {
+  async newPage() {
     const pageContent = {
       text: '<h1><br></h1>',
       type: TextType.Title,
       links: []
     };
 
-    this.createChild(
+    const ix = this.data ? this.data.object.pages.length : 0;
+    await this.createChild(
       pageContent, 
       DocumentsModule.bindings.TextNodeEntity, 
-      this.data ? this.data.object.pages.length : 0);
+      );
+
+    this.selectedPageIx = ix;
   }
 
-  optionOnPage(pageIndex: number, option: string) {
+  async movePage(fromIndex: number, toIndex: number) {
+    await this.moveChildElement(fromIndex, toIndex);
+    
+    if (this.selectedPageIx === undefined) return;
+
+    /** this page was moved */
+    if (fromIndex === this.selectedPageIx) {
+      this.selectPage(toIndex);
+    } else {
+      /** a non selected page was moved to the selected index */
+      if (toIndex === this.selectedPageIx) {
+        this.selectPage(fromIndex);
+      }
+    }
+
+  }
+
+  async removePage(pageIndex: number) {
+    this.spliceChildren([], pageIndex, pageIndex + 1);
+
+    if (this.selectedPageIx === undefined) return;
+
+    /** this page was removed */
+    if (pageIndex === this.selectedPageIx) {
+      this.selectPage(undefined);
+    }
+
+    /** a younger page was removed */
+    if (pageIndex < this.selectedPageIx) {
+      this.selectedPageIx = this.selectedPageIx - 1;
+    }
+
+  }
+
+  async optionOnPage(pageIndex: number, option: string) {
     switch (option) {
       case 'move-up': 
-        this.moveChildElement(pageIndex, pageIndex - 1);
+        this.movePage(pageIndex, pageIndex - 1);
         break;
       
       case 'move-down': 
-        this.moveChildElement(pageIndex, pageIndex + 1);
+        this.movePage(pageIndex, pageIndex + 1);
         break;
 
       case 'remove': 
-        this.spliceChildren([], pageIndex, pageIndex + 1);
+        this.removePage(pageIndex)
         break;
     }
   }
@@ -169,14 +212,22 @@ export class WikiDrawer extends EveesContent<Wiki>{
               graphic: 'clear'
             },
           }
-          this.logger.log(`rendering page title ${page.id}`, menuConfig);
+          // this.logger.log(`rendering page title ${page.id}`, menuConfig);
           const text = htmlToText(page.title);
           const empty = text === '';
+          const selected = this.selectedPageIx === ix;
+
+          let classes: string[] = [];
+
+          if (empty) classes.push('title-empty');
+          if (selected) classes.push('title-selected');
+
           return html`
             <evees-list-item 
-              class=${empty ? 'title-empty' : '' }
-              text=${empty ? 'untitled' : text} 
-              @item-click=${() => this.selectPage(page.id)}
+              class=${classes.join(' ')}
+              text=${empty ? 'untitled' : text}
+              selected=${selected ? 'true' : 'false'}
+              @item-click=${() => this.selectPage(ix)}
               @option-click=${(e) => this.optionOnPage(ix, e.detail.option)}
               .config=${menuConfig}>
             </evees-list-item>
@@ -219,12 +270,12 @@ export class WikiDrawer extends EveesContent<Wiki>{
         </div>
 
         <div slot="appContent" class="fill-content">
-          ${this.selectedPageHash
+          ${this.selectedPageIx !== undefined
             ? html`
                 <wiki-page
                   @nav-back=${() => this.selectPage(undefined)}
                   @page-title-changed=${() => this.loadPagesData()}
-                  pageHash=${this.selectedPageHash}
+                  pageHash=${this.data.object.pages[this.selectedPageIx]}
                   color=${this.color ? this.color : ''}
                 >
                 </wiki-page>
@@ -267,6 +318,9 @@ export class WikiDrawer extends EveesContent<Wiki>{
         .title-empty {
           color: #a2a8aa;
           font-style: italic;
+        }
+        .title-selected {
+          font-weight: bold;
         }
         .empty {
           width: 100%;

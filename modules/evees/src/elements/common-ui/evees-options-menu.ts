@@ -67,6 +67,8 @@ export class EveesOptionsMenu extends LitElement {
     return css`
       :host {
         position: relative;
+        display: flex;
+        flex-direction: column;
       }
 
       mwc-icon {

@@ -395,7 +395,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     /** remove */
     const { removed } = await this.spliceChildren([], index, index + 1);
     /** add */
-    this.spliceChildren(removed, index);
+    await this.spliceChildren(removed, onIndex);
   }
 
   async liftChildElement(index: number) {

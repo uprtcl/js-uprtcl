@@ -470,7 +470,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
             <documents-text-node-editor
               type=${this.data.object.type}
               init=${this.data.object.text}
-              focus-init=${'true'}
+              focus-init=${'false'}
               level=${this.level}
               editable=${this.editable ? 'true' : 'false'}
               toggle-action=${this.toggleActionToEditor}
