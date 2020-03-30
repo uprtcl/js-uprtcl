@@ -195,7 +195,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
   /** get the x in <p>x</p> or <h1>x</h1>*/
   nodeInnerHTML(text: string) {
-    if (text.startsWith('<')) { 
+    if (text.startsWith('<h1') || text.startsWith('<p')) { 
       const temp = document.createElement('template');
       temp.innerHTML = text.trim();
       if (temp.content.firstElementChild == null) {

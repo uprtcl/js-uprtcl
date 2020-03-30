@@ -281,6 +281,32 @@ export class DocumentTextNodeEditor extends LitElement {
         return;
       }
     }
+
+    /** (B)old */
+    /** backspace */
+    if (event.keyCode === 66) {
+      if (event.ctrlKey === true) {
+        event.preventDefault();
+        toggleMark(this.editor.view.state.schema.marks.strong)(this.editor.view.state, this.editor.view.dispatch);
+      }
+      return;
+    }
+
+    if (event.keyCode === 74) {
+      if (event.ctrlKey === true) {
+        event.preventDefault();
+        toggleMark(this.editor.view.state.schema.marks.em)(this.editor.view.state, this.editor.view.dispatch);
+      }
+      return;
+    }
+
+    if (event.keyCode === 75) {
+      if (event.ctrlKey === true) {
+        event.preventDefault();
+        this.linkClick();
+      }
+      return;
+    }
   }
 
   isEditable() {
