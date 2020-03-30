@@ -107,6 +107,13 @@ export class DocumentTextNodeEditor extends LitElement {
       }
     }
 
+    if (changedProperties.has('focusInit')) {
+      if (this.focusInit === 'true') {
+        this.editor.view.focus();
+      }
+    }
+    
+
     if (changedProperties.has('editable') || changedProperties.has('type')) {
       // this.logger.info('updated() - editable || type', {editable: this.editable, type: this.type, changedProperties});
       this.initEditor();

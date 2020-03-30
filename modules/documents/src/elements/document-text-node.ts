@@ -35,6 +35,9 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   @property({ type: String, attribute: false })
   toggleActionToEditor: string = 'true';
 
+  @property({ type: Boolean, attribute: false})
+  empty: Boolean = false;
+
   actionToEditor = {};
 
   actionOnIx: number = 0;
@@ -79,6 +82,16 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     if (this.data !== undefined) {
       this.currentText = this.data.object.text;
     }
+    this.updateEmpty();
+  }
+
+  updateEmpty() {
+    if (this.data) {
+      const innerHTML = this.nodeInnerHTML(this.data.object.text).trim();
+      this.empty = innerHTML === '' || innerHTML === '<br>';
+    } else {
+      this.empty = true;
+    }
   }
 
   updated(changedProperties: Map<string, any>) {
@@ -87,6 +100,12 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     if (changedProperties.has('toggleAction')) {
       if (changedProperties.get('toggleAction') !== undefined) {
         this.runAction(this.action);
+      }
+    }
+
+    if (changedProperties.has('data')) {
+      if (changedProperties.get('data') !== undefined) {
+        this.updateEmpty();
       }
     }
 
@@ -463,6 +482,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     let contentClasses = this.data.object.type === TextType.Paragraph ? ['paragraph'] : ['title'];
     contentClasses.push('content-editable');
 
+    const focusInit = (this.level === 1) && (this.empty) ? 'true' : 'false';
+
     return html`
       <div
         class="row"
@@ -477,7 +498,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
             <documents-text-node-editor
               type=${this.data.object.type}
               init=${this.data.object.text}
-              focus-init=${'false'}
+              focus-init=${focusInit}
               level=${this.level}
               editable=${this.editable ? 'true' : 'false'}
               toggle-action=${this.toggleActionToEditor}

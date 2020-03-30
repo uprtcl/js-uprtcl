@@ -115,7 +115,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
 
   async newPage() {
     const pageContent = {
-      text: '<h1><br></h1>',
+      text: '<h1></h1>',
       type: TextType.Title,
       links: []
     };
