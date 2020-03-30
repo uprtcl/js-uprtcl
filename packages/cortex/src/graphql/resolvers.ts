@@ -12,22 +12,7 @@ export const cortexResolvers = {
 
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 
-      const patterns: Pattern<any>[] = recognizer.recognize(entity);
-
-      const types: string[] = patterns.map(p => p.type).filter(t => !!t) as string[];
-
-      if (types.length === 0) {
-        throw new Error(`No entity found to recognize object ${JSON.stringify(entity)}`);
-      }
-
-      const abmiguousError = types.length > 1 && !types.every(t => types[0]);
-
-      if (abmiguousError) {
-        throw new Error(
-          `Ambiguous error recognizing entity: ${parent.toString()}. These two types recognized the object ${types.toString()}`
-        );
-      }
-      return types[0];
+      return recognizer.recognizeEntityType(entity);
     }
   },
   EntityContext: {

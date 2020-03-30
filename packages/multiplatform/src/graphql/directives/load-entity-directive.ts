@@ -1,8 +1,7 @@
 import { GraphQLField } from 'graphql';
 import { interfaces } from 'inversify';
-import { ApolloCache } from 'apollo-cache';
 
-import { Hashed } from '@uprtcl/cortex';
+import { Entity } from '@uprtcl/cortex';
 import { NamedDirective } from '@uprtcl/graphql';
 
 import { CASSource } from '../../types/cas-source';
@@ -42,7 +41,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
     entityId: string,
     entityCache: EntityCache,
     source: CASSource
-  ): Promise<Hashed<any> | undefined> {
+  ): Promise<any | undefined> {
     const cachedEntity = entityCache.getCachedEntity(entityId);
 
     if (cachedEntity) return cachedEntity;
@@ -54,7 +53,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
       if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
 
-      entityCache.cacheEntity(entityId, entity);
+      entityCache.cacheEntity(entityId, { id: entityId, entity, casID: source.casID });
 
       entityCache.pendingLoads[entityId] = undefined;
 

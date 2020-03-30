@@ -1,4 +1,5 @@
-import { PatternRecognizer, Creatable } from '@uprtcl/cortex';
+import { PatternRecognizer, Creatable, Pattern } from '@uprtcl/cortex';
+import { Behaviour } from '@uprtcl/cortex/dist/types/types/behaviour';
 
 /**
  * Generically create the given data and retrieve its hashed it
@@ -8,11 +9,11 @@ import { PatternRecognizer, Creatable } from '@uprtcl/cortex';
  */
 export const createEntity = (recognizer: PatternRecognizer) => async <T extends object>(
   data: T,
-  usl: string
+  casID: string
 ): Promise<string> => {
-  const creatable: Creatable<T, any> | undefined = recognizer
-    .recognize(data)
-    .find(prop => !!(prop as Creatable<T, any>).create);
+  const behaviours: Behaviour<T>[] = recognizer.recognizeBehaviours(data);
+
+  const creatable = behaviours.find(b => !!(b as Creatable<T, any>).create);
 
   if (!creatable) {
     throw new Error(
@@ -22,6 +23,6 @@ export const createEntity = (recognizer: PatternRecognizer) => async <T extends 
     );
   }
 
-  const hashed = await creatable.create()(data, usl);
-  return hashed.id;
+  const entity = await creatable.create()(data, casID);
+  return entity.id;
 };

@@ -6,7 +6,7 @@ import { Behaviour } from './behaviour';
  * A pattern is a behaviour that a certain kind of object implements
  */
 export abstract class Pattern<T> {
-  constructor(public behaviourCreators: Array<Constructor<Behaviour<T>>>) {}
+  constructor(private behaviourCreators: Array<Constructor<Behaviour<T>>>) {}
 
   abstract recognize(object: any): boolean;
 

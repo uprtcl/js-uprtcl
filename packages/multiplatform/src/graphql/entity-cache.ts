@@ -2,20 +2,19 @@ import { injectable, inject } from 'inversify';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { Hashed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 
 @injectable()
 export class EntityCache {
-
-  pendingLoads: Dictionary<Promise<any> | undefined> = {}
+  pendingLoads: Dictionary<Promise<any> | undefined> = {};
 
   constructor(
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
   ) {}
 
-  getCachedEntity(entityId: string): Hashed<any> | undefined {
+  getCachedEntity(entityId: string): any | undefined {
     try {
       const data = this.client.cache['data'].data;
       const cachedObject = data[`$${entityId}._context`];
@@ -29,9 +28,15 @@ export class EntityCache {
     }
   }
 
-  cacheEntity(entityId: string, entity: any): void {
+  cacheEntity(entityId: string, entity: Entity<any>): void {
     const patterns = this.recognizer.recognize(entity);
-    const name = patterns.find(p => p.name).name;
+    const typedEntity = patterns.find(p => p.type);
+
+    if (!typedEntity) {
+      throw new Error(`No pattern found to recognize entity ${JSON.stringify(entity)}`);
+    }
+
+    const name = typedEntity.type;
 
     this.client.cache.writeQuery({
       query: gql`{
@@ -49,11 +54,10 @@ export class EntityCache {
           id: entity.id,
           _context: {
             __typename: 'EntityContext',
-            raw: JSON.stringify(entity)
+            raw: JSON.stringify(entity.entity)
           }
         }
       }
     });
   }
-
 }

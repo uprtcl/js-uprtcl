@@ -1,4 +1,4 @@
-import { PatternRecognizer, HasLinks } from '@uprtcl/cortex';
+import { PatternRecognizer, HasLinks, Entity, Pattern } from '@uprtcl/cortex';
 
 import { KnownSourcesService } from './known-sources.service';
 import { CASSource } from '../types/cas-source';
@@ -9,15 +9,19 @@ import { CASSource } from '../types/cas-source';
  * @param object the object
  * @returns the links implemented from the object
  */
-export const linksFromObject = (recognizer: PatternRecognizer) => async <O extends object>(
-  object: O
+export const linksFromEntity = (recognizer: PatternRecognizer) => async <O extends object>(
+  entity: Entity<O>
 ): Promise<string[]> => {
   // Recognize all patterns from object
-  const hasLinks: Array<HasLinks<O>> = recognizer
-    .recognize(object)
-    .filter(prop => !!(prop as HasLinks<O>).links);
+  const patterns: Pattern<Entity<O>>[] = recognizer.recognize(entity);
 
-  const promises = hasLinks.map(async has => has.links(object));
+  const hasLinks = patterns.map(
+    p => p.behaviours.filter(b => (b as HasLinks<Entity<O>>).links) as HasLinks<Entity<O>>[]
+  );
+
+  const promises = ([] as HasLinks<Entity<O>>[])
+    .concat(...hasLinks)
+    .map(async has => has.links(entity));
 
   const links: string[][] = await Promise.all(promises);
 
@@ -45,9 +49,9 @@ export const discoverKnownSources = (localKnownSources: KnownSourcesService) => 
 export const discoverLinksKnownSources = (
   recognizer: PatternRecognizer,
   localKnownSources: KnownSourcesService
-) => async (object: object, source: CASSource): Promise<void> => {
+) => async (entity: Entity<any>, source: CASSource): Promise<void> => {
   // Get the links
-  const links = await linksFromObject(recognizer)(object);
+  const links = await linksFromEntity(recognizer)(entity);
 
   // Discover the known sources from the links
   const linksPromises = links.map(link => discoverKnownSources(localKnownSources)(link, source));

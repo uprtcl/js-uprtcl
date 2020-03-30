@@ -1,7 +1,7 @@
 import { multiInject, inject, injectable } from 'inversify';
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { PatternRecognizer, Hashed, CortexModule, Pattern, HasLinks } from '@uprtcl/cortex';
+import { PatternRecognizer, CortexModule, Pattern, HasLinks, Entity } from '@uprtcl/cortex';
 import { Dictionary, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -100,7 +100,7 @@ export class MultiSourceService implements CASSource {
   ): Promise<O | undefined> {
     const source = this.getSource(casID);
 
-    const object: O | undefined = await source.get(hash) as O;
+    const object: O | undefined = (await source.get(hash)) as O;
 
     if (!object) return undefined;
 
@@ -222,15 +222,14 @@ export class MultiSourceService implements CASSource {
    * @param source
    * @param links
    */
-  public async postEntityCreate<O extends Object>(
-    source: CASSource,
-    entity: Hashed<O>
-  ): Promise<void> {
-    const casID = source.casID;
+  public async postEntityCreate<O extends Object>(entity: Entity<O>): Promise<void> {
+    if (!entity.casID) {
+      throw new Error('casID for the entity is required and none was provided');
+    }
 
-    await this.localKnownSources.addKnownSources(entity.id, [casID]);
+    await this.localKnownSources.addKnownSources(entity.id, [entity.casID]);
 
-    const patterns: Pattern[] = this.recognizer.recognize(entity);
+    const patterns: Pattern<any>[] = this.recognizer.recognize(entity);
 
     const hasLinks: HasLinks[] = (patterns.filter(
       p => ((p as unknown) as HasLinks).links
@@ -242,6 +241,6 @@ export class MultiSourceService implements CASSource {
 
     const links = ([] as string[]).concat(...linksArray);
 
-    await this.postEntityUpdate(source, links);
+    await this.postEntityUpdate(this.getSource(entity.casID), links);
   }
 }

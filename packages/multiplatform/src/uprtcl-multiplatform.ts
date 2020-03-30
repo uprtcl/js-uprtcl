@@ -25,7 +25,7 @@ export { SocketConnection } from './connections/socket.connection';
 export { createEntity } from './utils/entities';
 
 export {
-  linksFromObject,
+  linksFromEntity,
   getUplToDiscover,
   discoverKnownSources,
   discoverLinksKnownSources

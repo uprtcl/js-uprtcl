@@ -2,10 +2,10 @@ import { Pattern } from '@uprtcl/cortex';
 import { injectable } from 'inversify';
 
 @injectable()
-export class MockPattern implements Pattern {
+export class MockPattern extends Pattern<any> {
   recognize() {
     return true;
   }
 
-  name = 'Mock';
+  type = 'Mock';
 }
