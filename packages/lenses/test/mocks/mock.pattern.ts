@@ -1,24 +1,26 @@
 import { injectable } from 'inversify';
-import { html, TemplateResult } from 'lit-html';
+import { html } from 'lit-html';
 
-import { Pattern } from '@uprtcl/cortex';
+import { Pattern, Entity } from '@uprtcl/cortex';
 
-import { HasLenses } from '../../src/properties/has-lenses';
+import { HasLenses } from '../../src/behaviours/has-lenses';
 
-@injectable()
-export class MockPattern implements Pattern, HasLenses {
+export class MockPattern extends Pattern<any> {
   recognize() {
     return true;
   }
 
-  name = 'Mock';
+  type = 'Mock';
+}
 
-  lenses = (entity: any) => [
+@injectable()
+export class Lenses implements HasLenses<Entity<any>> {
+  lenses = (entity: Entity<any>) => [
     {
       name: 'content',
-      render: (lensContent: TemplateResult, context: any) =>
+      render: (context: any) =>
         html`
-          <mock-element .content=${entity.object.test}></mock-element>
+          <mock-element .content=${entity.entity.test}></mock-element>
         `
     }
   ];

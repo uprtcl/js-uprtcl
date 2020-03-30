@@ -3,7 +3,7 @@ import { LitElement, property, html } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
-import { HasLenses } from '../properties/has-lenses';
+import { HasLenses } from '../behaviours/has-lenses';
 
 export class CortexPattern extends moduleConnect(LitElement) {
   @property()
@@ -20,8 +20,9 @@ export class CortexPattern extends moduleConnect(LitElement) {
   }
 
   getLens() {
-    const patterns = this.recognizer.recognize(this.pattern);
-    const hasLenses: HasLenses | undefined = patterns.find(p => (p as HasLenses).lenses);
+    const hasLenses: HasLenses<any> | undefined = this.recognizer
+      .recognizeBehaviours(this.pattern)
+      .find(p => (p as HasLenses<any>).lenses);
 
     if (!hasLenses)
       throw new Error(
@@ -35,7 +36,7 @@ export class CortexPattern extends moduleConnect(LitElement) {
   render() {
     const lens = this.getLens()[0];
     return html`
-      ${lens.render(html``, this.context)}
+      ${lens.render(this.context)}
     `;
   }
 }

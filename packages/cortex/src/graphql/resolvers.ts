@@ -2,8 +2,8 @@ import { merge } from 'lodash-es';
 
 import { PatternRecognizer } from '../recognizer/pattern-recognizer';
 import { CortexBindings } from '../bindings';
-import { Pattern } from '../types/pattern';
 import { Entity } from '../types/entity';
+import { Behaviour } from '../types/behaviour';
 
 export const cortexResolvers = {
   Entity: {
@@ -26,9 +26,9 @@ export const cortexResolvers = {
         key !== 'accessControl' && Object.keys(info.returnType.ofType._fields).includes(key);
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 
-      const patterns = recognizer.recognize(entity);
+      const behaviours: Behaviour<any>[] = recognizer.recognizeBehaviours(entity);
 
-      const applyedPatterns = patterns.map(pattern => {
+      const applyedPatterns = behaviours.map(pattern => {
         const applyedPattern = {};
 
         for (const key of Object.keys(pattern)) {

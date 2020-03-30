@@ -1,11 +1,7 @@
-import {TemplateResult} from 'lit-element';
-
-import { SlotPlugin } from './plugins/slot.plugin';
+import { TemplateResult } from 'lit-element';
 
 export interface Lens {
   name: string;
-  render: (lensContent: TemplateResult, context: any) => TemplateResult;
+  render: (context: any) => TemplateResult;
   type?: string;
 }
-
-export type LensesPlugin = SlotPlugin;

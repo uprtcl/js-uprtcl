@@ -24,20 +24,20 @@ describe('<cortex-entity>', () => {
       new CortexModule(),
       new DiscoveryModule(),
       new MockModule({ hash1: object1 }),
-      new LensesModule({})
+      new LensesModule()
     ]);
   });
 
   it('<cortex-entity> renders a hash with the appropriate lens', async () => {
     const el: HTMLElement = await fixture(
       html`
-        <module-container><cortex-entity id="test" hash="hash1"></cortex-entity></module-container>
+        <module-container><cortex-entity id="test" link="hash1"></cortex-entity></module-container>
       `
     );
 
     const cortexEntity = el.firstElementChild;
 
-    expect(el).lightDom.to.equal('<cortex-entity id="test" hash="hash1"></cortex-entity>');
+    expect(el).lightDom.to.equal('<cortex-entity id="test" link="hash1"></cortex-entity>');
     expect(cortexEntity).shadowDom.to.equal(
       '<cortex-loading-placeholder></cortex-loading-placeholder>'
     );

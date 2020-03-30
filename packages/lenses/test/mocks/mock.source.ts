@@ -1,5 +1,4 @@
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { Hashed } from '@uprtcl/cortex';
 
 import { CASSource } from '@uprtcl/multiplatform';
 
@@ -10,7 +9,7 @@ export class MockSource implements CASSource {
 
   async ready(): Promise<void> {}
 
-  async get(hash: string): Promise<Hashed<any>> {
+  async get(hash: string): Promise<any> {
     return this.objects[hash];
   }
 

@@ -27,7 +27,7 @@ describe('basic GraphQl entity', () => {
     ]);
   });
 
-  it('graphql loads an entity given its id', async () => {
+  it('graphql loads an entity given its id and recognizes its patterns', async () => {
     const client: ApolloClient<any> = orchestrator.container.get(
       ApolloClientModule.bindings.Client
     );
@@ -39,6 +39,9 @@ describe('basic GraphQl entity', () => {
             id
             _context {
               raw
+              patterns {
+                content
+              }
             }
           }
         }
@@ -49,7 +52,11 @@ describe('basic GraphQl entity', () => {
       entity: {
         id: 'hash1',
         __typename: 'Mock',
-        _context: { raw: '{"test":"test"}', __typename: 'EntityContext' }
+        _context: {
+          raw: '{"test":"test"}',
+          __typename: 'EntityContext',
+          patterns: { content: 'test' }
+        }
       }
     });
   });

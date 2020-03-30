@@ -4,6 +4,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { MockModule } from './mocks/mock.module';
 import { expect } from '@open-wc/testing';
+import gql from 'graphql-tag';
 
 const object1 = {
   test: 'test'
@@ -22,14 +23,19 @@ describe('basic pattern recognition', () => {
     ]);
   });
 
-  it('graphql loads an entity given its id', async () => {
+  it('pattern recognizer recognizes the patterns of an object', async () => {
     const recognizer: PatternRecognizer = orchestrator.container.get(
       CortexModule.bindings.Recognizer
     );
 
-    const properties = recognizer.recognize(object1);
+    const patterns = recognizer.recognize(object1);
 
-    expect(properties.length).to.equal(1);
-    expect(properties[0].behaviours.length).to.equal(1);
+    expect(patterns.length).to.equal(1);
+    expect(patterns[0].behaviours.length).to.equal(1);
+
+    const behaviours = recognizer.recognizeBehaviours(object1);
+
+    expect(behaviours.length).to.equal(1);
   });
+
 });

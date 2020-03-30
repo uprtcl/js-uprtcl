@@ -10,7 +10,7 @@ export class PatternRecognizer {
 
   /**
    * Recognizes which registered patterns match the given object
-   * @param object 
+   * @param object
    */
   public recognize<T>(object: T): Pattern<T>[] {
     if (!object) {
@@ -26,18 +26,19 @@ export class PatternRecognizer {
 
   /**
    * Recognizes all behaviours for the given object, flattening the array
-   * 
+   *
    * @param object object for which to recognize the behaviour
    */
   public recognizeBehaviours<T>(object: T): Behaviour<T>[] {
     const patterns: Pattern<T>[] = this.recognize(object);
 
-    return patterns.map(p => p.behaviours);
+    const behaviours = patterns.map(p => p.behaviours);
+    return ([] as Behaviour<T>[]).concat(...behaviours);
   }
 
   /**
    * Recognizes the type of the given entity
-   * 
+   *
    * @param entity to recognize the type for
    * @throws error if no pattern recognized the given entity
    * @throws error if two patterns with different types recognized the given entity

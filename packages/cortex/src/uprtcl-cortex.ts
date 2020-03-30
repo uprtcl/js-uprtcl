@@ -2,6 +2,7 @@
 import 'reflect-metadata';
 
 /** Patterns */
+export { Behaviour } from './types/behaviour';
 export { Pattern } from './types/pattern';
 export { Entity } from './types/entity';
 export { Cloneable } from './properties/cloneable';
