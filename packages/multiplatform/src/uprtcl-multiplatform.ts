@@ -6,7 +6,7 @@ export { Authority } from './types/authority';
 export { Ready } from './types/ready';
 export { CASSource } from './types/cas-source';
 export { CASStore } from './types/cas-store';
-export { CidConfig } from './types/cid-config';
+export { CidConfig, defaultCidConfig } from './types/cid-config';
 
 export { KnownSourcesService } from './known-sources/known-sources.service';
 

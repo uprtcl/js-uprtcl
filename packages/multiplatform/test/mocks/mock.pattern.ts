@@ -15,6 +15,6 @@ export class MockPattern extends Pattern<any> {
 }
 
 @injectable()
-export class Content implements HasContent<{ test: string }> {
+export class Content implements HasContent<Entity<{ test: string }>> {
   content = async (pattern: Entity<{ test: string }>) => pattern.entity.test;
 }

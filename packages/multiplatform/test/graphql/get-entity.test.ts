@@ -55,7 +55,10 @@ describe('basic GraphQl entity', () => {
         _context: {
           raw: '{"test":"test"}',
           __typename: 'EntityContext',
-          patterns: { content: 'test' }
+          patterns: {
+            __typename: 'Patterns',
+            content: 'test'
+          }
         }
       }
     });

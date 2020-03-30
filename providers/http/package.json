@@ -13,7 +13,6 @@
   "dependencies": {
     "@uprtcl/cortex": "^0.0.5-alpha.5",
     "@uprtcl/ethereum-provider": "^0.0.5-alpha.5",
-    "@uprtcl/ipfs-provider": "^0.0.5-alpha.5",
     "@uprtcl/micro-orchestrator": "^0.0.5-alpha.5",
     "@uprtcl/multiplatform": "^0.0.5-alpha.5",
     "reflect-metadata": "^0.1.13",

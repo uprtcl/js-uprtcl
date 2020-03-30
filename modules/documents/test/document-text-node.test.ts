@@ -71,7 +71,7 @@ describe('<cortex-entity>', () => {
       new ApolloClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
-      new LensesModule({}),
+      new LensesModule(),
       new EveesModule([eveesProvider], remotesConfig),
       new DocumentsModule([documentsProvider])
     ]); */
@@ -80,7 +80,7 @@ describe('<cortex-entity>', () => {
   it('<cortex-entity> with a perspective to a node renders a <documents-text-node>', async () => {
     /*     const el: HTMLElement = await fixture(
       html`
-        <module-container><cortex-entity hash="perspective1"></cortex-entity></module-container>
+        <module-container><cortex-entity link="perspective1"></cortex-entity></module-container>
       `
     );
 
