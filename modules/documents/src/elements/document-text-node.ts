@@ -123,7 +123,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string, liftBackwards?: string[]) {
     const result = await super.spliceChildren(elements, index, toIndex);
 
-    if (appendBackwards && (index !== undefined)) {
+    if ((appendBackwards || liftBackwards) && (index !== undefined)) {
       if (index === 0) {
         /** if it was the first sub-element, append content to this node (which was the parent) */
         this.sendActionToEditor({ 
@@ -135,8 +135,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
           index - 1, {
             name: APPEND_ACTION,
             pars: { 
-              content: appendBackwards,
-              siblings: liftBackwards,
+              content: appendBackwards !== undefined ? appendBackwards : '',
+              siblings: liftBackwards !== undefined ? liftBackwards : [],
               last: true
             }
           })
@@ -334,6 +334,59 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
   }
 
+  titleToParagraph() {
+    if (!this.data) return;
+    if (!this.ref) return;
+
+    const links = this.data.object.links;
+
+    /** remove childrent */
+    const newContent = {
+      text: `<p>${this.nodeInnerHTML(this.data.object.text)}</p>`,
+      type: TextType.Paragraph,
+      links: [],
+    };
+
+    this.updateContent(newContent);
+
+    /** add as syblings */
+    this.dispatchEvent(
+      new SpliceChildrenEvent({
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        detail: {
+          startedOnElementId: this.data.id,
+          elements: [],
+          index: this.index,
+          toIndex: this.index + 1,
+          liftBackwards: [this.ref].concat(links),
+        }
+      })
+    );
+  }
+
+  async paragraphToTitle() {
+    if (!this.data) return;
+
+    const newContent: TextNode = {
+      text: `<h1>${this.nodeInnerHTML(this.data.object.text)}</h1>`,
+      type: TextType.Title,
+      links: []
+    };
+
+    await this.updateContentLocal(newContent);
+
+    /** read parent to get syblings */
+    const nextParagraphs = await this.getYoungerParagraphs();
+
+    /** add paragraphs as children */
+    await this.spliceChildren(nextParagraphs);
+
+    /** remove paragraphs from parent */
+    this.spliceParent([], this.index + 1, this.index + 1 + nextParagraphs.length);
+  }
+
   async getYoungerParagraphs() {
     if (this.genealogy.length <= 1) return [];
     
@@ -368,49 +421,16 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
   async changeType(e: CustomEvent) {
     if (!this.data) return;
-
-    await this.commitText();
-
     const newType = e.detail.type;
-    let newContent: TextNode;
-
+    
     switch (this.data.object.type) {
       case TextType.Title:
         switch (newType) {
-          /** title to title: setting the same view changes nothing */
           case TextType.Title:
             return;
 
-          /** title to paragraph: changing the type of a title to a paragraph
-           *  will move all its subelements as younger siblings of the new typed
-           *  paragraph */
           case TextType.Paragraph:
-            const links = this.data.object.links;
-
-            /** remove childrent */
-            newContent = {
-              text: `<p>${this.nodeInnerHTML(this.data.object.text)}</p>`,
-              type: TextType.Paragraph,
-              links: [],
-            };
-
-            this.updateContent(newContent);
-
-            /** add as syblings */
-            this.dispatchEvent(
-              new SpliceChildrenEvent({
-                bubbles: true,
-                cancelable: true,
-                composed: true,
-                detail: {
-                  startedOnElementId: this.data.id,
-                  elements: [this.ref].concat(links),
-                  index: this.index,
-                  toIndex: this.index + 1
-                }
-              })
-            );
-
+            this.titleToParagraph();
             return;
         }
 
@@ -419,27 +439,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
           case TextType.Paragraph:
             return;
 
-          /** paragraph to title: Changing the type of a paragraph to a title
-           * will move all the younger sibling contexts of the paragraph as
-           * children of the new title. */
           case TextType.Title:
-            let newContent: TextNode = {
-              text: `<h1>${this.nodeInnerHTML(this.data.object.text)}</h1>`,
-              type: TextType.Title,
-              links: []
-            };
-
-            await this.updateContentLocal(newContent);
-
-            /** read parent to get syblings */
-            const nextParagraphs = await this.getYoungerParagraphs();
-
-            /** add paragraphs as children */
-            await this.spliceChildren(nextParagraphs);
-
-            /** remove paragraphs from parent */
-            await this.spliceParent([], this.index + 1, this.index + 1 + nextParagraphs.length);
-                  
+            this.paragraphToTitle();
             return;
         }
     }
