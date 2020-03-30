@@ -248,15 +248,6 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     this.entityId = dataId;
 
     this.logger.info('updateContent() post', this.entityId);
-
-    /** let upper levels know something changed */
-    if (this.genealogy.length === 0) {
-      this.dispatchEvent(new ContentUpdatedEvent({
-        bubbles: true,
-        composed: true,
-        detail: { perspectiveId: this.perspectiveId }
-      }));
-    }
   }
 
   render() {

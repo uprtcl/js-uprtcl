@@ -8,7 +8,7 @@ export const styleMap = style => {
   }, '');
 };
 
-import { EveesContent, SpliceChildrenEvent } from '@uprtcl/evees';
+import { EveesContent, SpliceChildrenEvent, ContentUpdatedEvent } from '@uprtcl/evees';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { TextNode, TextType } from '../types';
@@ -106,6 +106,15 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     if (changedProperties.has('data')) {
       if (changedProperties.get('data') !== undefined) {
         this.updateEmpty();
+        
+        /** let upper levels know something changed */
+        if (this.ref) {
+          this.dispatchEvent(new ContentUpdatedEvent({
+            bubbles: true,
+            composed: true,
+            detail: { ref: this.ref }
+          }));
+        }
       }
     }
 

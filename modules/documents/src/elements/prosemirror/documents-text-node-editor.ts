@@ -44,9 +44,6 @@ export class DocumentTextNodeEditor extends LitElement {
   @property({ type: Number })
   level: number = 0;
 
-  @property({ type: String })
-  placeholder: string | undefined = undefined;
-
   @property({ type: Boolean, attribute: false })
   showMenu: Boolean = false;
 
@@ -545,7 +542,6 @@ export class DocumentTextNodeEditor extends LitElement {
     return html`
       ${this.showMenu ? this.renderMenu() : ''}
       <div id="editor-content" class="editor-content">
-        ${this.empty ? this.placeholder ? this.placeholder : '' : ''}
       </div>
     `;
   }

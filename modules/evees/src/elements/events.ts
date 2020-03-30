@@ -1,5 +1,5 @@
 export type ContentUpdatedArgs = {
-  perspectiveId: string;
+  ref: string;
 };
 
 export type UpdateContentArgs = {
