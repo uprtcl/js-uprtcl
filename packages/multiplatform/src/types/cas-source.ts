@@ -9,12 +9,6 @@ export interface CASSource extends Ready {
   casID: string;
 
   /**
-   * If the service provider has a known source service associated, any object stored on it
-   * can be linked to other sources
-   */
-  knownSources?: KnownSourcesService;
-
-  /**
    * Get the object identified by the given hash,
    * or undefined if it didn't exist in the source
    *

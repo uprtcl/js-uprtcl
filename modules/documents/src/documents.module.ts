@@ -1,14 +1,12 @@
-import { StoresModule, Store } from '@uprtcl/multiplatform';
+import { interfaces } from 'inversify';
+
+import { CASModule, CASStore } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { ElementsModule, i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { DocumentTextNode } from './elements/document-text-node';
-import {
-  TextNodeCreate,
-  TextNodePatterns,
-  TextNodeTitle
-} from './patterns/text-node.entity';
+import { TextNodeCreate, TextNodePatterns, TextNodeTitle } from './patterns/text-node.entity';
 import { documentsTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 
@@ -48,31 +46,30 @@ export class DocumentsModule extends MicroModule {
 
   static bindings = DocumentsBindings;
 
-  constructor(protected stores: Store[]) {
+  constructor(protected stores: Array<CASStore | interfaces.ServiceIdentifier<CASStore>>) {
     super();
   }
 
-  async onLoad() {}
+  async onLoad(container: interfaces.Container) {
+    this.stores.forEach(storeOrId => {
+      const store = (storeOrId as CASStore).casID
+        ? (storeOrId as CASStore)
+        : container.get(storeOrId as interfaces.ServiceIdentifier<CASStore>);
+
+      container.bind<CASStore>(DocumentsModule.bindings.DocumentsRemote).toConstantValue(store);
+    });
+  }
 
   submodules = [
     new GraphQlSchemaModule(documentsTypeDefs, resolvers),
     new i18nextModule('documents', { en: en }),
-    new StoresModule(
-      this.stores.map(store => ({
-        symbol: DocumentsModule.bindings.DocumentsRemote,
-        store: store
-      }))
-    ),
+    new CASModule(this.stores.filter(store => (store as CASStore).casID) as CASStore[]),
     new ElementsModule({
       'documents-text-node': DocumentTextNode,
       'documents-text-node-editor': DocumentTextNodeEditor
     }),
     new PatternsModule({
-      [DocumentsModule.bindings.TextNodeEntity]: [
-        TextNodeCreate,
-        TextNodePatterns,
-        TextNodeTitle
-      ]
+      [DocumentsModule.bindings.TextNodeEntity]: [TextNodeCreate, TextNodePatterns, TextNodeTitle]
     })
   ];
 }

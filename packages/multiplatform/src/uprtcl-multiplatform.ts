@@ -9,6 +9,7 @@ export { CASStore } from './types/cas-store';
 export { CidConfig, defaultCidConfig } from './types/cid-config';
 
 export { KnownSourcesService } from './known-sources/known-sources.service';
+export { KnownSourcesSource } from './known-sources/known-sources.source';
 
 export { MultiSourceService } from './known-sources/multi-source.service';
 export { EntityCache } from './graphql/entity-cache';

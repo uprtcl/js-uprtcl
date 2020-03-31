@@ -9,6 +9,7 @@ import { CASSource } from '../types/cas-source';
 import { KnownSourcesService } from './known-sources.service';
 import { raceToSuccess, discoverKnownSources } from './discovery.utils';
 import { MultiplatformBindings, CASBindings } from '../bindings';
+import { KnownSourcesSource } from './known-sources.source';
 
 @injectable()
 export class MultiSourceService implements CASSource {
@@ -104,6 +105,8 @@ export class MultiSourceService implements CASSource {
 
     if (!object) return undefined;
 
+    if (!(source as KnownSourcesSource).knownSources) return object;
+
     // Get the links
 
     setTimeout(async () => {
@@ -130,7 +133,7 @@ export class MultiSourceService implements CASSource {
 
         // Discover the known sources from the links
         const linksPromises = links.map(link =>
-          discoverKnownSources(this.localKnownSources)(link, source)
+          discoverKnownSources(this.localKnownSources)(link, (source as KnownSourcesSource))
         );
         await Promise.all(linksPromises);
       }
@@ -196,7 +199,7 @@ export class MultiSourceService implements CASSource {
    * @param source
    * @param links
    */
-  public async postEntityUpdate(source: CASSource, links: string[]): Promise<void> {
+  public async postEntityUpdate(source: KnownSourcesSource, links: string[]): Promise<void> {
     const knownSourcesService = source.knownSources;
     if (!knownSourcesService) return;
 
@@ -241,6 +244,10 @@ export class MultiSourceService implements CASSource {
 
     const links = ([] as string[]).concat(...linksArray);
 
-    await this.postEntityUpdate(this.getSource(entity.casID), links);
+    const source = this.getSource(entity.casID);
+
+    if ((source as KnownSourcesSource).knownSources) {
+      await this.postEntityUpdate(source as KnownSourcesSource, links);
+    }
   }
 }

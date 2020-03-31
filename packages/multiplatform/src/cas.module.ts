@@ -7,6 +7,7 @@ import { CASSource } from './types/cas-source';
 import { Ready } from './types/ready';
 import { CASBindings } from './bindings';
 import { CASStore } from './types/cas-store';
+import { KnownSourcesSource } from './known-sources/known-sources.source';
 
 /**
  * This module registers the given CASSources and makes them available to be used by the `DiscoveryModule`
@@ -35,8 +36,8 @@ export class CASModule extends MicroModule {
     const readyPromises = this.casSources.map(source => {
       const services: Ready[] = [source];
 
-      if (source.knownSources) {
-        services.push(source.knownSources);
+      if ((source as KnownSourcesSource).knownSources) {
+        services.push((source as KnownSourcesSource).knownSources);
       }
 
       return Promise.all(services.map(s => s.ready()));

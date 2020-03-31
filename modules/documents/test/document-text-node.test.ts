@@ -66,7 +66,7 @@ describe('<cortex-entity>', () => {
       map: remoteMap,
       defaultCreator: eveesProvider
     };
-    /* 
+
     await orchestrator.loadModules([
       new ApolloClientModule(),
       new CortexModule(),
@@ -74,11 +74,11 @@ describe('<cortex-entity>', () => {
       new LensesModule(),
       new EveesModule([eveesProvider], remotesConfig),
       new DocumentsModule([documentsProvider])
-    ]); */
+    ]);
   });
 
   it('<cortex-entity> with a perspective to a node renders a <documents-text-node>', async () => {
-    /*     const el: HTMLElement = await fixture(
+    const el: HTMLElement = await fixture(
       html`
         <module-container><cortex-entity link="perspective1"></cortex-entity></module-container>
       `
@@ -86,7 +86,7 @@ describe('<cortex-entity>', () => {
 
     const cortexEntity = el.firstElementChild;
 
-    expect(el).lightDom.to.equal('<cortex-entity hash="perspective1"></cortex-entity>');
+    expect(el).lightDom.to.equal('<cortex-entity link="perspective1"></cortex-entity>');
     expect(cortexEntity).shadowDom.to.equal(
       '<cortex-loading-placeholder></cortex-loading-placeholder>'
     );
@@ -100,7 +100,6 @@ describe('<cortex-entity>', () => {
     );
 
     expect(cortexEntity).shadowDom.to.equal('<documents-text-node></documents-text-node');
- */
 
     expect(true).to.be.ok;
   });
