@@ -40,7 +40,7 @@ export class WikiPage extends moduleConnect(LitElement) {
     this.addEventListener(CONTENT_UPDATED_TAG, ((e: ContentUpdatedEvent) => {
       this.logger.info('CATCHED EVENT: content-updated ', { pageHash: this.pageHash, e });
       e.stopPropagation();
-      this.dispatchEvent(new CustomEvent('page-title-changed', { detail: { pageId: e.detail.perspectiveId }}));
+      this.dispatchEvent(new CustomEvent('page-title-changed', { detail: { pageId: e.detail.ref }}));
     }) as EventListener);
   }
 

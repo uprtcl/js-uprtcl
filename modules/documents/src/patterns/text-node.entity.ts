@@ -21,14 +21,16 @@ import {
   EveesModule,
   UprtclAction
 } from '@uprtcl/evees';
-import { Lens, HasLenses, HasTopLenses } from '@uprtcl/lenses';
+import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { StoresModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { TextNode, TextType } from '../types';
+import { TextNode, TextType, DocNodeEventsHandlers } from '../types';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
+import { HasDocNodeLenses, DocNodeLens } from './document-patterns'; 
 import { CidConfig } from '@uprtcl/ipfs-provider';
+import { DocNode } from 'src/elements/document-editor';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -50,7 +52,7 @@ export class TextNodeEntity implements Entity {
 }
 
 @injectable()
-export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasTopLenses, HasChildren, Mergeable {
+export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDocNodeLenses, HasChildren, Mergeable {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
   ) {
@@ -97,26 +99,32 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasTo
   };
 
   /** lenses top is a lense that dont render the node children, leaving the job to an upper node tree controller */
-  lensesTop = (node: Hashed<TextNode>): Lens[] => {
+  docNodeLenses = (node: DocNode): DocNodeLens[] => {
     return [
       {
         name: 'documents:document',
         type: 'content',
-        render: (lensContent: TemplateResult, context: any) => {
+        render: (node: DocNode, events: DocNodeEventsHandlers) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
-            <documents-text-node
-              .data=${node}
-              ref=${context.ref}
-              color=${context.color} 
-              index=${context.index}
-              .genealogy=${context.genealogy}
-              toggle-action=${context.toggleAction}
-              .action=${context.action}
-              hide-children="true"
+            <documents-text-node-editor
+              type=${node.data.object.type}
+              init=${node.data.object.text}
+              level=${node.path.length}
+              editable=${node.editable ? 'true' : 'false'}
+              toggle-action=${node.toggleAction}
+              .action=${node.action}
+              @focus=${events.focus}
+              @blur=${events.blur}
+              @content-changed=${events.contentChanged}
+              @enter-pressed=${events.split}
+              @backspace-on-start=${events.joinBackward}
+              @keyup-on-start=${events.focusBackward}
+              @keydown-on-end=${events.focusDownward}
+              @lift-heading=${events.lift}
+              @change-type=${events.contentChanged}
             >
-              ${lensContent}
-            </documents-text-node>
+            </documents-text-node-editor>
           `;
         }
       }

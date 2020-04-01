@@ -1,4 +1,4 @@
-import {TemplateResult} from 'lit-element';
+import { TemplateResult } from 'lit-element';
 
 import { SlotPlugin } from './plugins/slot.plugin';
 

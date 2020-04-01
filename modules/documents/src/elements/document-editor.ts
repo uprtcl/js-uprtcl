@@ -1,24 +1,21 @@
 import { LitElement, property, html, css } from 'lit-element';
 
+export const styleMap = style => {
+  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    return `${styleString}${propName}:${propValue};`;
+  }, '');
+};
+
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed, Pattern, Creatable, Signed, HasChildren } from '@uprtcl/cortex';
 import { ApolloClientModule, gql, ApolloClient } from '@uprtcl/graphql';
 import { Lens } from '@uprtcl/lenses';
-import { TextType } from 'src/types';
 import { EveesRemote, EveesModule, RemotesConfig, CreateCommitArgs, EveesBindings, CreatePerspectiveArgs, Perspective, Commit } from '@uprtcl/evees';
 import { Source } from '@uprtcl/multiplatform';
-import { KeypressAtEvent, KEYPRESS_AT_TAG } from './events';
 
-export interface DocNode {
-  path: number[],
-  ref: string,
-  authority: string,
-  data: Hashed<any>,
-  topLenses: Lens[],
-  editable: boolean,
-  hasChildren: HasChildren,
-  childrenNodes: DocNode[]
-}
+import { KeypressAtEvent, KEYPRESS_AT_TAG } from './events';
+import { TextType, DocNode } from 'src/types';
 
 export class DocumentEditor extends moduleConnect(LitElement) {
 
@@ -47,13 +44,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.doc = await this.loadNodeRec(this.ref, [0]);
   }
 
-  async loadNodeRec(ref: string, path: number[]) : Promise<DocNode>  {
+  async loadNodeRec(ref: string, path: number[], parent?: DocNode) : Promise<DocNode>  {
     const node = await this.loadNode(ref, path);
+    
     const loadChildren = node.hasChildren.getChildrenLinks(node.data).map(async (child, ix): Promise<DocNode> => {
-      return this.loadNodeRec(child, path.concat([ix]));
+      return this.loadNodeRec(child, path.concat([ix]), node);
     })
 
+    node.parent = parent;
     node.childrenNodes = await Promise.all(loadChildren);
+
     return node;
   }
 
@@ -67,9 +67,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           id
           ... on Perspective {
             payload {
-              creatorId
               origin
-              timestamp
             }
             head {
               id 
@@ -99,24 +97,28 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const editable = result.data.entity._context.patterns.accessControl.canWrite;
     const data = result.data.entity.head.data;
-    const topLenses = result.data.entity._context.patterns.hasTopLenses.topLenses;
-    const children = result.data.entity._context.patterns.hasChildren.children;
+    const origin = result.data.entity.payload.origin;
+    const docNodeLenses = result.data.entity._context.patterns.hasDocNodeLenses.docNodeLenses;
+    const hasChildren = result.data.entity._context.patterns.hasChildren;
 
     const node: DocNode = {
       ref: ref,
       path: path,
-      children: children,
+      hasChildren: hasChildren,
       childrenNodes: [],
       data: data,
-      topLenses: topLenses,
+      docNodeLenses: docNodeLenses,
       editable: editable,
+      authority: origin,
+      focused: false
     }
 
     return node;
   }
 
-  getNodeAt(path: number[]) {
-    if (!this.doc) return undefined;
+  getNodeAt(path: number[]) : DocNode {
+    if (!this.doc) throw new Error(`node not found at ${path}`);
+
     let node = this.doc;
     /** path always starts with [0] */
     path.shift();
@@ -124,7 +126,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     /** visit the node children for every*/
     while(path.length > 0) {
       const ix = path.shift();
-      if (!ix) return undefined;
+      if (!ix) throw new Error(`node not found at ${path}`);
       node = node.childrenNodes[ix];
     }
 
@@ -210,17 +212,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return perspective.id;
   }
 
-  getParentAt(path: number[]) {
-    const parentPath = [...path];
-    parentPath.pop();
-    return this.getNodeAt(parentPath);
-  }
-
   /** node updated as reference */
   async spliceChildren(path: number[], elements: any[] = [], index?: number, count: number = 0): Promise<string[]> {
     const node = this.getNodeAt(path);
-    if (!node) throw new Error(`node not found at ${path}`);
-
+    
     const currentChildren = node.hasChildren.getChildrenLinks(node.data);
     index = index !== undefined ? index : currentChildren.length;
 
@@ -250,43 +245,83 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async createChildAt(path: number[], newEntity: any, symbol: symbol, index?: number) {
     const doc = this.doc as DocNode;
     const node = this.getNodeAt(path);
-    if (!node) throw new Error(`node not found at ${path}`);
-
+    
     const newLink = await this.createEvee(newEntity, symbol, node.authority);
     await this.spliceChildren(path, [newLink], 0);
   }
 
-  enterAt(path: number[], tail: string) {
+  scheduleUpdate() {
+    throw new Error('TBD');
+  }
+
+  focused(path: number[]) {
     const node = this.getNodeAt(path);
-    if (!node) throw Error(`node undefined at path ${path}`);
-    
-    if (node.data.object.type === TextType.Title) {
-      const defaultEntity = this.defaultEntity(tail, TextType.Paragraph);
-      this.createChildAt(path, defaultEntity.data, defaultEntity.symbol, 0);
-    }
+    node.focused = true;
+    this.scheduleUpdate();
   }
 
-  handleKeyPress(e: KeypressAtEvent) {
-    switch (e.detail.keyCode) {
-      case 13: 
-        e.stopPropagation();
-        this.enterAt(e.detail.path, e.detail.tail);
-      break;
-    }
+  blured(path: number[]) {
+    const node = this.getNodeAt(path);
+    node.focused = false;
+    this.scheduleUpdate();
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener(KEYPRESS_AT_TAG, this.handleKeyPress as EventListener);
+  focusBackward(path: number[]) {
+    const node = this.getNodeAt(path);
+    const backwardNode = this.getBackwardNodeAt(path);
+    node.focused = false;
+    backwardNode.focused = true;
   }
 
+  contentChanged(path: number[], content: any) {
+    const node = this.getNodeAt(path);
+    node.data = content;
+    // TODO: persist change
+    this.scheduleUpdate();
+  }
+  
   renderWithCortex(node: DocNode) {
     return html`<cortex-entity hash=${node.ref}></cortex-entity>`;
   }
 
+  renderTopRow(node: DocNode) {
+
+    /** the ref to which the parent is pointing at */
+    const firstRef = node.parent ? node.parent.childrenNodes[node.path[node.path.length - 1]].ref : node.ref;
+    const color = 'red';
+    
+    return html`
+      <div class="row" style=${styleMap({ backgroundColor: node.focused ? '#f7f6f3' : 'transparent' })}>
+        <div class="column">
+          <div class="evee-info">
+            <evees-info-popper 
+              firstPerspectiveId=${firstRef}
+              perspectiveId=${node.ref}
+              eveeColor=${color}
+            ></evees-info-popper>
+          </div>
+          <div class="node-content">
+            ${node.docNodeLenses[0].render(node, {
+              focus: () => this.focused(node.path),
+              blur: () => this.blured(node.path),
+              contentChanged: (content: any) => this.contentChanged(node.path, content),
+              focusBackward: () => this.focusBackward(node.path),
+              focusDownward: () => this.focusDownward(node.path),
+              joinBackward: (tail: string) => this.focusDownward(node.path, tail),
+              lift: () => this.lift(node.path),
+              push: () => this.push(node.path),
+              split: (tail: string) => this.split(node.path, tail),
+            })}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+
   renderHere(node: DocNode) {
     return html`
-      ${node.topLenses[0].render(html``, {})}
+      ${this.renderTopRow(node)}
       ${node.childrenNodes ? node.childrenNodes.map((child) => {
         return this.renderDocNode(child);
       }) : ''}
