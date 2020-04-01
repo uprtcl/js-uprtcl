@@ -9,49 +9,41 @@ import { LensesModule } from '@uprtcl/lenses';
 import { EveesModule } from '@uprtcl/evees';
 
 import { DocumentsModule } from '../src/documents.module';
-import { MockDocumentsProvider } from './mocks/mock-documents-provider';
+import { MockStore } from './mocks/mock-store';
 import { TextType } from '../src/types';
 import { MockEveesProvider } from './mocks/mock-evees-provider';
+import { RemoteMap } from '@uprtcl/evees/dist/types/types';
 
 describe('<cortex-entity>', () => {
   let orchestrator: MicroOrchestrator;
-  let documentsProvider = new MockDocumentsProvider({
+  let documentsProvider = new MockStore({
     node1: {
-      id: 'node1',
-      object: {
-        text: 'node1 content',
-        type: TextType.Paragraph,
-        links: []
-      }
+      text: 'node1 content',
+      type: TextType.Paragraph,
+      links: []
     }
   });
   let eveesProvider = new MockEveesProvider(
     {
       perspective1: {
-        id: 'perspective1',
-        object: {
-          payload: {
-            origin: 'local',
-            creatorId: 'user1',
-            timestamp: 0
-          },
-          proof: { signature: '', type: '' }
-        }
+        payload: {
+          origin: 'local',
+          creatorId: 'user1',
+          timestamp: 0
+        },
+        proof: { signature: '', type: '' }
       },
       commit1: {
-        id: 'commit1',
-        object: {
-          payload: {
-            creatorsIds: ['user1'],
-            timestamp: 0,
-            message: 'commit message',
-            parentsIds: [],
-            dataId: 'node1'
-          },
-          proof: {
-            signature: '',
-            type: ''
-          }
+        payload: {
+          creatorsIds: ['user1'],
+          timestamp: 0,
+          message: 'commit message',
+          parentsIds: [],
+          dataId: 'node1'
+        },
+        proof: {
+          signature: '',
+          type: ''
         }
       }
     },
@@ -61,7 +53,7 @@ describe('<cortex-entity>', () => {
   beforeEach(async () => {
     orchestrator = new MicroOrchestrator();
 
-    const remoteMap = (eveesAuthority, entityName) => documentsProvider;
+    const remoteMap: RemoteMap = eveesAuthority => documentsProvider;
     const remotesConfig = {
       map: remoteMap,
       defaultCreator: eveesProvider

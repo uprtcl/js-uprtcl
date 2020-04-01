@@ -1,9 +1,11 @@
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { CASSource } from '../../src/types/cas-source';
+import { CASStore } from '../../src/types/cas-store';
+import { CidConfig } from '../../src/types/cid-config';
 
-export class MockSource implements CASSource {
+export class MockSource implements CASStore {
   casID = '';
+  cidConfig: CidConfig;
 
   constructor(protected objects: Dictionary<any> = {}) {}
 
@@ -13,7 +15,9 @@ export class MockSource implements CASSource {
     return this.objects[hash];
   }
 
-  addObject(hash: string, object: object): void {
+  async create(object: object, hash: string): Promise<string> {
     this.objects[hash] = <any>object;
+
+    return hash;
   }
 }
