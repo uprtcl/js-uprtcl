@@ -6,7 +6,12 @@ import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { ElementsModule, i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { DocumentTextNode } from './elements/document-text-node';
-import { TextNodeCreate, TextNodePatterns, TextNodeTitle } from './patterns/text-node.entity';
+import {
+  TextNodeCreate,
+  TextNodeCommon,
+  TextNodeTitle,
+  TextNodePattern
+} from './patterns/text-node.pattern';
 import { documentsTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 
@@ -68,8 +73,6 @@ export class DocumentsModule extends MicroModule {
       'documents-text-node': DocumentTextNode,
       'documents-text-node-editor': DocumentTextNodeEditor
     }),
-    new PatternsModule({
-      [DocumentsModule.bindings.TextNodeEntity]: [TextNodeCreate, TextNodePatterns, TextNodeTitle]
-    })
+    new PatternsModule([new TextNodePattern([TextNodeCreate, TextNodeCommon, TextNodeTitle])])
   ];
 }

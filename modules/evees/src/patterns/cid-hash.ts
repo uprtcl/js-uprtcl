@@ -1,19 +1,11 @@
 import multihashing from 'multihashing-async';
 import CBOR from 'cbor-js';
 import CID from 'cids';
-
+import { Signed, Entity } from '@uprtcl/cortex';
 import { sortObject } from '@uprtcl/ipfs-provider';
 import { CidConfig, defaultCidConfig } from '@uprtcl/multiplatform';
-import { Signed, Entity } from '@uprtcl/cortex';
-import { signObject } from './signed';
 
-export function recognizeHashed(object: object) {
-  return (
-    object.hasOwnProperty('id') &&
-    typeof object['id'] === 'string' &&
-    object.hasOwnProperty('object')
-  );
-}
+import { signObject } from './signed';
 
 export async function hashObject(
   object: object,

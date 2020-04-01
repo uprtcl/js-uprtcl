@@ -14,11 +14,10 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
-import { Hashed } from '@uprtcl/cortex';
+import { Entity } from '@uprtcl/cortex';
 import { htmlToText } from 'src/uprtcl-documents';
 
 export class DocumentTextNode extends EveesContent<TextNode> {
-  
   logger = new Logger('DOCUMENT-TEXT-NODE');
 
   @property({ type: Boolean, attribute: false })
@@ -33,10 +32,10 @@ export class DocumentTextNode extends EveesContent<TextNode> {
       text: '<p></p>',
       type: TextType.Paragraph,
       links: []
-    }
-  };
+    };
+  }
 
-  initNode(text: string, type: TextType ) {
+  initNode(text: string, type: TextType) {
     /** init a node with the provided text guranteeing either the <p> or <h1> external tag
      *  is consistent with the request type */
     const temp = document.createElement('template');
@@ -47,24 +46,24 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     }
 
     const innerHTML = temp.content.firstElementChild.innerHTML;
-    
+
     let newText;
     if (type === TextType.Paragraph) {
-      newText = `<p>${innerHTML}</p>`
+      newText = `<p>${innerHTML}</p>`;
     } else {
-      newText = `<h1>${innerHTML}</h1>`
+      newText = `<h1>${innerHTML}</h1>`;
     }
 
     return {
       text: newText,
       type: type,
       links: []
-    }
+    };
   }
 
   async firstUpdated() {
     this.logger.log('firstUpdated()');
-    
+
     super.firstUpdated();
     await this.updateRefData();
     if (this.data !== undefined) {
@@ -73,12 +72,19 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   updated(changedProperties: Map<string, any>) {
-    this.logger.log('updated()', { changedProperties, data: this.data, ref: this.ref, editable: this.editable, level: this.level, genealogy: this.genealogy });
+    this.logger.log('updated()', {
+      changedProperties,
+      data: this.data,
+      ref: this.ref,
+      editable: this.editable,
+      level: this.level,
+      genealogy: this.genealogy
+    });
   }
 
   async enterPressed(e: CustomEvent) {
     await this.commit();
-    
+
     if (!this.data) return;
     if (!this.symbol) throw new Error('this.symbol undefined');
 
@@ -97,15 +103,15 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     let empty = false;
     if (this.currentText === undefined) {
       empty = true;
-    };
+    }
 
     if (!empty) {
       const text = htmlToText(this.currentText as string);
       empty = text === '';
     }
-    
-    this.logger.log('backspacePressed()', { empty } );
-    
+
+    this.logger.log('backspacePressed()', { empty });
+
     if (empty) {
       this.removeFromParent();
     }
@@ -116,8 +122,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   async commit() {
-    if(!this.data) return;
-    if(!this.currentText) return;
+    if (!this.data) return;
+    if (!this.currentText) return;
 
     const newContent: TextNode = {
       ...this.data.object,
@@ -199,18 +205,20 @@ export class DocumentTextNode extends EveesContent<TextNode> {
 
             /** read parent to get syblings */
             if (this.genealogy.length > 1) {
-              const parentData = await this.getPerspectiveData(this.genealogy[1]) as Hashed<TextNode>;
+              const parentData = (await this.getPerspectiveData(this.genealogy[1])) as Entity<
+                TextNode
+              >;
 
               if (parentData !== undefined) {
-                const youngerSyblings = parentData.object.links.splice(this.index + 1);
+                const youngerSyblings = parentData.entity.links.splice(this.index + 1);
 
                 if (youngerSyblings.length > 0) {
                   const syblingsDataPromises = youngerSyblings.map(async id => {
-                    const data = await this.getPerspectiveData(id) as Hashed<TextNode>;
+                    const data = (await this.getPerspectiveData(id)) as Entity<TextNode>;
 
                     if (!data) return true;
-                    if (!data.object.type) return true;
-                    if (data.object.type !== TextType.Paragraph) return true;
+                    if (!data.entity.type) return true;
+                    if (data.entity.type !== TextType.Paragraph) return true;
 
                     /** return true if element is not a paragraph */
                     return false;
@@ -265,7 +273,12 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   }
 
   render() {
-    this.logger.log('render()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level });
+    this.logger.log('render()', {
+      data: this.data,
+      ref: this.ref,
+      editable: this.editable,
+      level: this.level
+    });
     if (!this.data)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
@@ -279,7 +292,6 @@ export class DocumentTextNode extends EveesContent<TextNode> {
         class="row"
         style=${styleMap({ backgroundColor: this.focused ? '#f7f6f3' : 'transparent' })}
       >
-        
         <div class="column">
           <div class="evee-info">
             <slot name="evee-popper"></slot>
@@ -291,7 +303,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
               focus-init=${'true'}
               level=${this.level}
               editable=${this.editable ? 'true' : 'false'}
-              @focus-changed=${(e) => (this.editorFocusChanged(e.detail.value))}
+              @focus-changed=${e => this.editorFocusChanged(e.detail.value)}
               @content-changed=${this.editorContentChanged}
               @enter-pressed=${this.enterPressed}
               @backspace-pressed=${this.backspacePressed}

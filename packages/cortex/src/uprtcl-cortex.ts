@@ -1,10 +1,12 @@
 // Required by inversify
 import 'reflect-metadata';
 
-/** Patterns */
+/** Types */
 export { Behaviour } from './types/behaviour';
 export { Pattern } from './types/pattern';
-export { Entity } from './types/entity';
+export { Entity, recognizeEntity } from './types/entity';
+
+/** Behaviours */
 export { Cloneable } from './properties/cloneable';
 export { Creatable } from './properties/creatable';
 export { Newable } from './properties/newable';

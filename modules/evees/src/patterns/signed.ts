@@ -1,7 +1,4 @@
-import { CidConfig } from '@uprtcl/multiplatform';
 import { Signed, Entity } from '@uprtcl/cortex';
-
-import { hashObject } from './cid-hash';
 
 export function signObject<T>(object: T): Signed<T> {
   return {

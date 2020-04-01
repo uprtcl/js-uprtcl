@@ -71,7 +71,7 @@ export {
   PerspectiveLinks
 } from './patterns/perspective.pattern';
 export { CommitCreate, CommitLens, CommitLinked, CommitPattern } from './patterns/commit.pattern';
-export { Secured, signAndHashObject, hashObject, recognizeHashed } from './patterns/cid-hash';
+export { Secured, signAndHashObject, hashObject } from './patterns/cid-hash';
 export { extractSignedEntity, signObject } from './patterns/signed';
 
 /** Utils */
