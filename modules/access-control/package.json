@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/access-control",
-  "version": "0.0.5-alpha8",
+  "version": "0.0.5-alpha.9",
   "description": "Cortex module implementing access contorl behaviours",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -14,11 +14,11 @@
     "@material/mwc-button": "^0.13.0",
     "@material/mwc-dialog": "^0.13.0",
     "@material/mwc-textfield": "^0.13.0",
-    "@uprtcl/cortex": "^0.0.5-alpha8",
-    "@uprtcl/graphql": "^0.0.5-alpha8",
-    "@uprtcl/lenses": "^0.0.5-alpha8",
-    "@uprtcl/micro-orchestrator": "^0.0.5-alpha8",
-    "@uprtcl/multiplatform": "^0.0.5-alpha8",
+    "@uprtcl/cortex": "^0.0.5-alpha.9",
+    "@uprtcl/graphql": "^0.0.5-alpha.9",
+    "@uprtcl/lenses": "^0.0.5-alpha.9",
+    "@uprtcl/micro-orchestrator": "^0.0.5-alpha.9",
+    "@uprtcl/multiplatform": "^0.0.5-alpha.9",
     "apollo-boost": "^0.4.7",
     "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
@@ -35,7 +35,6 @@
     "@rollup/plugin-replace": "^2.3.1",
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.11.0",
-
     "karma": "^4.4.1",
     "karma-rollup-preprocessor": "^7.0.3",
     "lodash-es": "^4.17.15",
@@ -46,11 +45,10 @@
     "temp-dir": "^2.0.0",
     "typescript": "^3.8.3"
   },
-
   "peerDependencies": {
     "graphql": "^14.6.0"
-  },  
-"contributors": [
+  },
+  "contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",
