@@ -53,7 +53,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
       if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
 
-      entityCache.cacheEntity(entityId, { id: entityId, entity, casID: source.casID });
+      entityCache.cacheEntity({ id: entityId, entity, casID: source.casID });
 
       entityCache.pendingLoads[entityId] = undefined;
 

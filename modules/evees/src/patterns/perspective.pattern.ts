@@ -15,7 +15,7 @@ import {
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CidConfig, DiscoveryModule,  EntityCache } from '@uprtcl/multiplatform';
+import { CidConfig, DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Perspective, PerspectiveDetails } from '../types';
@@ -23,7 +23,8 @@ import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import { executeActions, cacheActions } from '../utils/actions';
-import { extractSignedEntity, signAndHashObject } from './signed';
+import { extractSignedEntity } from './signed';
+import { signAndHashObject } from './cid-hash';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -111,20 +112,20 @@ export class PerspectiveCreate
     } else {
       const remote = this.evees.getAuthority(authority);
 
-      const [hash, perspective] = await this.new()((args as any).newPerspective, remote.cidConfig);
+      const perspective = await this.new()((args as any).newPerspective, remote.cidConfig);
       const result = await this.client.mutate({
         mutation: CREATE_PERSPECTIVE,
         variables: {
-          creatorId: perspective.payload.creatorId,
-          origin: perspective.payload.origin,
-          timestamp: perspective.payload.timestamp,
-          authority: perspective.payload.origin,
+          creatorId: perspective.entity.payload.creatorId,
+          origin: perspective.entity.payload.origin,
+          timestamp: perspective.entity.payload.timestamp,
+          authority: perspective.entity.payload.origin,
           canWrite: args.canWrite || remote.userId,
           parentId: args.parentId
         }
       });
 
-      return [hash, perspective];
+      return perspective;
     }
   };
 

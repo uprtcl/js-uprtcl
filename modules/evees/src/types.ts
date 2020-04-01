@@ -1,9 +1,9 @@
-import { Source } from '@uprtcl/multiplatform';
-import { EveesRemote } from './services/evees.remote';
-import { Secured } from './patterns/default-secured.pattern';
-import { Signed, Hashed } from '@uprtcl/cortex';
+import { CASSource } from '@uprtcl/multiplatform';
+import { Entity } from '@uprtcl/cortex';
 
-export type RemoteMap = (eveesAuthority: string) => Source;
+import { EveesRemote } from './services/evees.remote';
+
+export type RemoteMap = (eveesAuthority: string) => CASSource;
 
 export type RemotesConfig = {
   map: RemoteMap;
@@ -69,6 +69,6 @@ export const UPDATE_HEAD_ACTION = 'UPDATE_HEAD';
 
 export interface UprtclAction {
   type: string;
-  entity?: Hashed<any>;
+  entity?: Entity<any>;
   payload: any;
 }

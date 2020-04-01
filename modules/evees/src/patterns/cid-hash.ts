@@ -4,7 +4,8 @@ import CID from 'cids';
 
 import { sortObject } from '@uprtcl/ipfs-provider';
 import { CidConfig, defaultCidConfig } from '@uprtcl/multiplatform';
-import { Signed } from '@uprtcl/cortex';
+import { Signed, Entity } from '@uprtcl/cortex';
+import { signObject } from './signed';
 
 export function recognizeHashed(object: object) {
   return (
@@ -27,9 +28,14 @@ export async function hashObject(
   return cid.toString();
 }
 
-export interface Hashed<T> {
-  id: string;
-  object: T;
-}
+export type Secured<T> = Entity<Signed<T>>;
 
-export type Secured<T> = Hashed<Signed<T>>;
+export async function signAndHashObject(
+  object: object,
+  cidConfig?: CidConfig
+): Promise<Secured<any>> {
+  const signed = signObject(object);
+  const hash = await hashObject(signed, cidConfig);
+
+  return { id: hash, entity: signed };
+}

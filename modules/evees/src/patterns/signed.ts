@@ -21,13 +21,3 @@ export function extractSignedEntity(object: object): any | undefined {
 
   return entity.payload;
 }
-
-export async function signAndHashObject(
-  object: object,
-  cidConfig?: CidConfig
-): Promise<[string, Signed<any>]> {
-  const signed = signObject(object);
-  const hash = await hashObject(signed, cidConfig);
-
-  return [hash, signed];
-}

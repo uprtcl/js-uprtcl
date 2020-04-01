@@ -221,7 +221,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
 
     const config: OwnerPreservingConfig = {
-      targetAuthority: remote.authority,
+      targetAuthority: remote.authorityID,
       targetCanWrite: permissions.owner
     };
     
@@ -437,12 +437,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   getCreatePattern(symbol) {
-    const patterns: Pattern[] = this.requestAll(symbol);
+    const patterns: Pattern<any>[] = this.requestAll(symbol);
     const create: Creatable<any, any> | undefined = (patterns.find(
       pattern => ((pattern as unknown) as Creatable<any, any>).create
     ) as unknown) as Creatable<any, any>;
 
-    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
+    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].type}`);
 
     return create;
   }
@@ -468,7 +468,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
           context: this.perspectiveData.details.context
         }
       },
-      this.remotesConfig.defaultCreator.authority
+      this.remotesConfig.defaultCreator.authorityID
     );
 
     const newPerspectiveId = perspective.id;

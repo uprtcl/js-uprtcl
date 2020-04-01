@@ -12,7 +12,8 @@ import { EveesBindings } from '../bindings';
 import { EveesRemote } from '../services/evees.remote';
 import { CREATE_COMMIT } from '../graphql/queries';
 import { CreateCommitArgs } from '../services/evees';
-import { extractSignedEntity, signAndHashObject } from './signed';
+import { extractSignedEntity } from './signed';
+import { signAndHashObject } from './cid-hash';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
@@ -97,11 +98,7 @@ export class CommitCreate
     if (result.data.createCommit.id != commit[0]) {
       throw new Error('unexpected id');
     }
-    return {
-      id: commit[0],
-      entity: commit[1],
-      casID
-    };
+    return commit;
   };
 
   new = () => async (args: Commit, recipe: CidConfig) => {

@@ -3,7 +3,7 @@ import { inject, injectable } from 'inversify';
 
 import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { CortexModule, PatternRecognizer, Hashed, Pattern, IsSecure } from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import {
@@ -21,7 +21,7 @@ import { MergeStrategy } from './merge-strategy';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Mergeable } from '../properties/mergeable';
 import { mergeResult } from './utils';
-import { CidHashedPattern } from '../patterns/cid-hashed.pattern';
+import { hashObject, signAndHashObject } from '../patterns/cid-hash';
 import { cacheUpdateRequest } from '../utils/actions';
 
 @injectable()
@@ -31,9 +31,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache,
-    @inject(EveesBindings.Secured) protected secured: Pattern & IsSecure<any>,
-    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern
+    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
   ) {}
 
   async mergePerspectives(
@@ -74,7 +72,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const [mergeCommitId, actions] = await this.mergeCommits(
       toHeadId,
       fromHeadId,
-      remote.authority,
+      remote.authorityID,
       config
     );
 
@@ -99,7 +97,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     return updateHead;
   }
-  protected async loadPerspectiveData(perspectiveId: string): Promise<Hashed<any>> {
+  protected async loadPerspectiveData(perspectiveId: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
         entity(id: "${perspectiveId}") {
@@ -122,11 +120,11 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const object = JSON.parse(result.data.entity.head.data._context.raw);
     return {
       id: result.data.entity.head.data.id,
-      object
+      entity: object
     };
   }
 
-  protected async loadCommitData(commitId: string): Promise<Hashed<any>> {
+  protected async loadCommitData(commitId: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
         entity(id: "${commitId}") {
@@ -144,7 +142,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const object = JSON.parse(result.data.entity.data._context.raw);
     return {
       id: result.data.entity.data.id,
-      object
+      entity: object
     };
   }
 
@@ -168,35 +166,40 @@ export class SimpleMergeStrategy implements MergeStrategy {
     // TODO: fix inconsistency
     const sourceRemote = this.remotesConfig.map(authority);
 
-    const hashed: Hashed<any> = await this.hashed.derive()(newData, sourceRemote.hashRecipe);
+    const hash = await hashObject(newData, sourceRemote.cidConfig);
+
+    const entity: Entity<any> = {
+      id: hash,
+      entity: newData
+    };
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
-      entity: hashed,
+      entity: entity,
       payload: {
-        source: sourceRemote.source
+        source: sourceRemote.casID
       }
     };
-    this.entityCache.cacheEntity(hashed);
+    this.entityCache.cacheEntity(entity);
 
     const remote = this.evees.getAuthority(authority);
 
     if (!remote.userId) throw new Error('Cannot create commits in a source you are not signed in');
 
     const newCommit: Commit = {
-      dataId: hashed.id,
+      dataId: entity.id,
       parentsIds: commitsIds,
       message: `Merge commits ${commitsIds.toString()}`,
       timestamp: Date.now(),
       creatorsIds: [remote.userId]
     };
-    const securedCommit = await this.secured.derive()(newCommit, remote.hashRecipe);
+    const securedCommit = await signAndHashObject(newCommit, remote.cidConfig);
 
     const newCommitAction: UprtclAction = {
       type: CREATE_COMMIT_ACTION,
       entity: securedCommit,
       payload: {
-        source: remote.source
+        source: remote.casID
       }
     };
     this.entityCache.cacheEntity(securedCommit);
@@ -210,7 +213,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     config: any
   ): Promise<[T, UprtclAction[]]> {
     const merge: Mergeable | undefined = this.recognizer
-      .recognize(originalData)
+      .recognizeBehaviours(originalData)
       .find(prop => !!(prop as Mergeable).merge);
 
     if (!merge)

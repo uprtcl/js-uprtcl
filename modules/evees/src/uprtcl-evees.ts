@@ -47,20 +47,32 @@ export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesPerspective } from './elements/evees-perspective';
 export { EveesContent } from './elements/evees-content';
-export { UpdateContentEvent, UpdateContentArgs, RemoveChildrenEvent, AddSyblingsEvent, ContentUpdatedEvent, CONTENT_UPDATED_TAG } from './elements/events';
+export {
+  UpdateContentEvent,
+  UpdateContentArgs,
+  RemoveChildrenEvent,
+  AddSyblingsEvent,
+  ContentUpdatedEvent,
+  CONTENT_UPDATED_TAG
+} from './elements/events';
 
 /** UI support components */
-export { MenuConfig } from './elements/common-ui/evees-options-menu'
+export { MenuConfig } from './elements/common-ui/evees-options-menu';
 
 /** Queries */
 export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE } from './graphql/queries';
 export { contentCreateResolver } from './graphql/resolvers';
 
 /** Patterns */
-export { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';
-export { CommitEntity, CommitLens, CommitLinked, CommitPattern } from './patterns/commit.pattern';
-export { CidHashedPattern, recognizeHashed } from './patterns/cid-hash';
-export { DefaultSignedPattern } from './patterns/signed';
+export {
+  PerspectiveAccessControl,
+  PerspectiveCreate,
+  PerspectivePattern,
+  PerspectiveLinks
+} from './patterns/perspective.pattern';
+export { CommitCreate, CommitLens, CommitLinked, CommitPattern } from './patterns/commit.pattern';
+export { Secured, signAndHashObject, hashObject, recognizeHashed } from './patterns/cid-hash';
+export { extractSignedEntity, signObject } from './patterns/signed';
 
 /** Utils */
 export { isAncestorOf } from './utils/ancestor';

@@ -6,7 +6,8 @@ import {
   IsSecure,
   HasChildren,
   CortexModule,
-  Signed
+  Signed,
+  Entity
 } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -24,6 +25,7 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
+import { Secured, signAndHashObject, hashObject } from '../patterns/cid-hash';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -179,13 +181,10 @@ export class Evees {
     // Create the perspective id
     const perspectiveData: Perspective = {
       creatorId: eveesRemote.userId,
-      origin: eveesRemote.authority,
+      origin: eveesRemote.authorityID,
       timestamp: Date.now()
     };
-    const perspective: Secured<Perspective> = await this.secured.derive()(
-      perspectiveData,
-      eveesRemote.hashRecipe
-    );
+    const perspective: Secured<Perspective> = await signAndHashObject(perspectiveData);
 
     const result = await this.client.query({
       query: gql`{
@@ -205,12 +204,14 @@ export class Evees {
 
     const dataId = result.data.entity.data.id;
     const dataRaw = JSON.parse(result.data.entity.data._context.raw);
-    const dataHashed = { id: dataId, object: dataRaw };
+    const dataHashed = { id: dataId, entity: dataRaw };
 
     let newHeadId = headId;
 
-    const hasChildren: HasChildren | undefined = this.patternRecognizer
-      .recognize(dataHashed)
+    const hasChildren:
+      | HasChildren<Entity<any>>
+      | undefined = this.patternRecognizer
+      .recognizeBehaviours(dataHashed)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (hasChildren) {
@@ -255,40 +256,45 @@ export class Evees {
 
         const newLinks = results.map(r => r[0].id);
 
-        const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
-        const dataSource = this.remotesConfig.map(eveesRemote.authority);
+        const newData: Entity<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
+        const dataSource = this.remotesConfig.map(eveesRemote.authorityID);
 
-        const newHasheData = await this.hashed.derive()(newData.object, dataSource.hashRecipe);
+        const newHash = await hashObject(newData.entity,dataSource.cidConfig)
+
+        const newEntity: Entity<any> = {
+          id: newHash,
+          entity: newData.entity
+        };
 
         const newDataAction: UprtclAction = {
           type: CREATE_DATA_ACTION,
-          entity: newHasheData,
+          entity: newEntity,
           payload: {
-            source: dataSource.source
+            source: dataSource.casID
           }
         };
 
         actions.push(newDataAction);
 
         const newCommit: Commit = {
-          dataId: newHasheData.id,
+          dataId: newHash,
           message: `auto-commit for new perspective ${name}`,
           creatorsIds: [eveesRemote.userId],
           parentsIds: headId ? [headId] : [],
           timestamp: Date.now()
         };
 
-        const securedCommit = await this.secured.derive()(newCommit, eveesRemote.hashRecipe);
+        const entity = await signAndHashObject(newCommit, eveesRemote.cidConfig);
 
         const newCommitAction: UprtclAction = {
           type: CREATE_COMMIT_ACTION,
-          entity: securedCommit,
+          entity: entity,
           payload: {
-            source: eveesRemote.source
+            source: eveesRemote.casID
           }
         };
 
-        newHeadId = securedCommit.id;
+        newHeadId = entity.id;
 
         actions.push(newCommitAction);
       }
