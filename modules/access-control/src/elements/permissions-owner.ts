@@ -1,15 +1,14 @@
 import { LitElement, property, html, query } from 'lit-element';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import '@material/mwc-dialog';
 import '@material/mwc-textfield';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule, ApolloClient, gql } from '@uprtcl/graphql';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { PermissionsElement } from './permissions-element';
-import {
-  OwnerPermissions
-} from '../services/owner-access-control.service';
+import { OwnerPermissions } from '../services/owner-access-control.service';
 import { SET_CAN_WRITE } from '../graphql/queries';
 
 export class PermissionsOwner extends moduleConnect(LitElement)
@@ -69,11 +68,13 @@ export class PermissionsOwner extends moduleConnect(LitElement)
     this.permissions = result.data.changeOwner._context.patterns.accessControl.permissions;
     this.canWrite = result.data.changeOwner._context.patterns.accessControl.canWrite;
 
-    this.dispatchEvent(new CustomEvent('permissions-updated', {
-      bubbles: true,
-      composed: true,
-      cancelable: true
-    }))
+    this.dispatchEvent(
+      new CustomEvent('permissions-updated', {
+        bubbles: true,
+        composed: true,
+        cancelable: true
+      })
+    );
   }
 
   renderDialog() {
@@ -85,7 +86,12 @@ export class PermissionsOwner extends moduleConnect(LitElement)
           initialFocusAttribute
           @input=${e => (this.newOwnerAddress = e.target.value)}
         ></mwc-textfield>
-        <mwc-button @click=${this.changeOwner} dialogAction="ok" slot="primaryAction" .disabled=${!this.newOwnerAddress}>
+        <mwc-button
+          @click=${this.changeOwner}
+          dialogAction="ok"
+          slot="primaryAction"
+          .disabled=${!this.newOwnerAddress}
+        >
           ${this.t('access-control:confirm')}
         </mwc-button>
         <mwc-button dialogAction="cancel" slot="secondaryAction">
@@ -99,13 +105,13 @@ export class PermissionsOwner extends moduleConnect(LitElement)
     return html`
       ${this.renderDialog()}
       <span><strong>${this.t('access-control:owner')}:</strong> ${this.permissions.owner}</span>
-      ${this.canWrite ? html`
-        <mwc-button 
-          outlined 
-          icon="swap_horizontal" 
-          @click=${() => (this.dialog.open = true)}>
-          ${this.t('access-control:transfer-ownership')}
-        </mwc-button>` : ''}      
+      ${this.canWrite
+        ? html`
+            <mwc-button outlined icon="swap_horizontal" @click=${() => (this.dialog.open = true)}>
+              ${this.t('access-control:transfer-ownership')}
+            </mwc-button>
+          `
+        : ''}
     `;
   }
 }

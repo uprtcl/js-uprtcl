@@ -59,9 +59,8 @@ export { contentCreateResolver } from './graphql/resolvers';
 /** Patterns */
 export { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';
 export { CommitEntity, CommitLens, CommitLinked, CommitPattern } from './patterns/commit.pattern';
-export { CidHashedPattern, recognizeHashed } from './patterns/cid-hashed.pattern';
-export { DefaultSignedPattern } from './patterns/default-signed.pattern';
-export { DefaultSecuredPattern, Secured } from './patterns/default-secured.pattern';
+export { CidHashedPattern, recognizeHashed } from './patterns/cid-hash';
+export { DefaultSignedPattern } from './patterns/signed';
 
 /** Utils */
 export { isAncestorOf } from './utils/ancestor';

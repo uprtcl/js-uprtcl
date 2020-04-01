@@ -10,7 +10,7 @@ export abstract class Pattern<T> {
 
   abstract recognize(object: any): boolean;
 
-  type?: string;
+  type: string | undefined;
 
   readonly behaviours: Array<Behaviour<T>> = [];
 }

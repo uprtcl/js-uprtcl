@@ -7,15 +7,17 @@ import { HasLenses } from '@uprtcl/lenses';
 import { Permissions } from '../properties/permissions';
 import { OwnerPermissions } from '../services/owner-access-control.service';
 
-@injectable()
-export class OwnerPattern implements Pattern, HasLenses, Permissions<OwnerPermissions> {
+export class OwnerPattern extends Pattern<OwnerPermissions> {
   recognize = (entity: any) => {
     return (
       (entity as OwnerPermissions).owner !== null &&
       typeof (entity as OwnerPermissions).owner === 'string'
     );
   };
+}
 
+@injectable()
+export class OwnerBehaviour implements HasLenses<OwnerPermissions>, Permissions<OwnerPermissions> {
   canWrite = (entity: OwnerPermissions) => (userId: string | undefined): boolean => {
     return !!userId && entity.owner === userId;
   };
@@ -24,7 +26,7 @@ export class OwnerPattern implements Pattern, HasLenses, Permissions<OwnerPermis
     {
       name: 'owner-access-control',
       type: 'permissions',
-      render: (_, context: any) =>
+      render: (context: any) =>
         html`
           <permissions-owner
             .permissions=${entity}

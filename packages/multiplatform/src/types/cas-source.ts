@@ -6,6 +6,9 @@ import { KnownSourcesService } from '../known-sources/known-sources.service';
  * which receives the hash of the object and returns it
  */
 export interface CASSource extends Ready {
+  /**
+   * Uniquely identifies this CAS source from which to retrieve objects
+   */
   casID: string;
 
   /**

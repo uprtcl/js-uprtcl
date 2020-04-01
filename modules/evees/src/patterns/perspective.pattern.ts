@@ -8,61 +8,46 @@ import {
   IsSecure,
   HasLinks,
   Creatable,
-  HasActions,
-  PatternAction,
   Entity,
   Signed,
   CortexModule,
   PatternRecognizer,
-  Newable,
-  Hashed
+  Newable
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
-import { CidConfig } from '@uprtcl/ipfs-provider';
+import {} from '@uprtcl/ipfs-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { DiscoveryModule, MultiSourceService, EntityCache } from '@uprtcl/multiplatform';
+import { CidConfig, DiscoveryModule, MultiSourceService, EntityCache } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
-import { Secured } from '../patterns/default-secured.pattern';
 import { Perspective, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import { executeActions, cacheActions } from '../utils/actions';
+import { extractSignedEntity, signAndHashObject } from './signed';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
-@injectable()
-export class PerspectiveEntity implements Entity {
-  constructor(@inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>) {}
-  recognize(object: object) {
-    return (
-      this.securedPattern.recognize(object) &&
-      propertyOrder.every(p =>
-        this.securedPattern.extract(object as Secured<Perspective>).hasOwnProperty(p)
-      )
-    );
+export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
+  recognize(entity: object) {
+    const object = extractSignedEntity(entity);
+
+    return object && propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  name = 'Perspective';
+  type = 'Perspective';
 }
 
 @injectable()
-export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
-  constructor(
-    @inject(EveesBindings.Secured)
-    protected securedPattern: Pattern & IsSecure<Secured<Perspective>>
-  ) {
-    super(securedPattern);
-  }
-
-  lenses = (perspective: Secured<Perspective>): Lens[] => {
+export class PerspectiveLens implements HasLenses<Entity<Signed<Perspective>>> {
+  lenses = (perspective: Entity<Signed<Perspective>>): Lens[] => {
     return [
       {
         name: 'evees:evee-perspective',
         type: 'evee',
-        render: (lensContent: TemplateResult, context: any) => {
+        render: (context: any) => {
           const color: string = context ? (context.color ? context.color : undefined) : undefined;
 
           const index: number = context
@@ -93,21 +78,16 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
 }
 
 @injectable()
-export class PerspectiveCreate extends PerspectiveEntity
+export class PerspectiveCreate
   implements
-    Creatable<CreatePerspectiveArgs, Signed<Perspective>>,
-    Newable<NewPerspectiveArgs, Signed<Perspective>> {
+    Creatable<CreatePerspectiveArgs, Entity<Signed<Perspective>>>,
+    Newable<NewPerspectiveArgs, Entity<Signed<Perspective>>> {
   constructor(
-    @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
     @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
-    @inject(DiscoveryModule.bindings.MultiSourceService) protected multiSource: MultiSourceService,
     @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
     @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
-  ) {
-    super(securedPattern);
-  }
+  ) {}
 
   create = () => async (args: CreatePerspectiveArgs, authority: string) => {
     let fromDetails: PerspectiveDetails = (args as any).fromDetails;
@@ -134,20 +114,20 @@ export class PerspectiveCreate extends PerspectiveEntity
     } else {
       const remote = this.evees.getAuthority(authority);
 
-      const perspective = await this.new()((args as any).newPerspective, remote.hashRecipe);
+      const [hash, perspective] = await this.new()((args as any).newPerspective, remote.cidConfig);
       const result = await this.client.mutate({
         mutation: CREATE_PERSPECTIVE,
         variables: {
-          creatorId: perspective.object.payload.creatorId,
-          origin: perspective.object.payload.origin,
-          timestamp: perspective.object.payload.timestamp,
-          authority: perspective.object.payload.origin,
+          creatorId: perspective.payload.creatorId,
+          origin: perspective.payload.origin,
+          timestamp: perspective.payload.timestamp,
+          authority: perspective.payload.origin,
           canWrite: args.canWrite || remote.userId,
           parentId: args.parentId
         }
       });
 
-      return perspective;
+      return [hash, perspective];
     }
   };
 
@@ -162,20 +142,16 @@ export class PerspectiveCreate extends PerspectiveEntity
       timestamp: args.timestamp || Date.now()
     };
 
-    return this.securedPattern.derive()(perspective, recipe);
+    return signAndHashObject(perspective, recipe);
   };
 }
 
 @injectable()
-export class PerspectiveLinks extends PerspectiveEntity implements HasLinks, HasRedirect {
-  constructor(
-    @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
-  ) {
-    super(securedPattern);
-  }
+export class PerspectiveLinks
+  implements HasLinks<Entity<Signed<Perspective>>>, HasRedirect<Entity<Signed<Perspective>>> {
+  constructor(@inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {}
 
-  links = async (perspective: Secured<Perspective>) => {
+  links = async (perspective: Entity<Signed<Perspective>>) => {
     const result = await this.client.query({
       query: gql`{
         entity(id: "${perspective.id}") {
@@ -194,7 +170,7 @@ export class PerspectiveLinks extends PerspectiveEntity implements HasLinks, Has
     return headId ? [headId] : [];
   };
 
-  redirect = async (perspective: Secured<Perspective>) => {
+  redirect = async (perspective: Entity<Signed<Perspective>>) => {
     const result = await this.client.query({
       query: gql`{
         entity(id: "${perspective.id}") {
@@ -213,20 +189,14 @@ export class PerspectiveLinks extends PerspectiveEntity implements HasLinks, Has
 }
 
 @injectable()
-export class PerspectiveAccessControl extends PerspectiveEntity
-  implements Updatable<Secured<Perspective>> {
-  constructor(
-    @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
-    @inject(EveesBindings.Evees) protected evees: Evees
-  ) {
-    super(securedPattern);
-  }
+export class PerspectiveAccessControl implements Updatable<Entity<Signed<Perspective>>> {
+  constructor(@inject(EveesBindings.Evees) protected evees: Evees) {}
 
-  authority = (perspective: Secured<Perspective>) =>
-    this.evees.getPerspectiveProvider(perspective.object);
+  authority = (perspective: Entity<Signed<Perspective>>) =>
+    this.evees.getPerspectiveProvider(perspective.entity);
 
-  accessControl = (perspective: Secured<Perspective>) => {
-    const provider = this.evees.getPerspectiveProvider(perspective.object);
+  accessControl = (perspective: Entity<Signed<Perspective>>) => {
+    const provider = this.evees.getPerspectiveProvider(perspective.entity);
     return provider.accessControl;
   };
 }

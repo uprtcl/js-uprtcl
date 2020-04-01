@@ -6,8 +6,8 @@ import { accessControlTypes } from './graphql/schema';
 import { accessControlResolvers } from './graphql/resolvers';
 import { PermissionsForEntity } from './elements/permissions-for-entity';
 import { PermissionsOwner } from './elements/permissions-owner';
-import { OwnerPattern } from './patterns/owner.pattern';
-import { BasicAdminPattern } from './patterns/basic-admin-control.pattern';
+import { OwnerPattern, OwnerBehaviour } from './patterns/owner.pattern';
+import { BasicAdminPattern, AdminBehaviour } from './patterns/basic-admin-control.pattern';
 
 import en from './i18n/en.json';
 import { PermissionsAdmin } from './elements/permissions-admin';
@@ -25,14 +25,9 @@ export class AccessControlModule extends MicroModule {
     }),
     new i18nextModule('access-control', { en }),
     new GraphQlSchemaModule(accessControlTypes, accessControlResolvers),
-    new PatternsModule({
-      [AccessControlModule.bindings.OwnerPattern]: [OwnerPattern],
-      [AccessControlModule.bindings.BasicAdminPattern]: [BasicAdminPattern]
-    })
+    new PatternsModule([
+      new OwnerPattern([OwnerBehaviour]),
+      new BasicAdminPattern([AdminBehaviour])
+    ])
   ];
-
-  static bindings = {
-    OwnerPattern: Symbol('owner-pattern'),
-    BasicAdminPattern: Symbol('basic-admin-pattern')
-  };
 }

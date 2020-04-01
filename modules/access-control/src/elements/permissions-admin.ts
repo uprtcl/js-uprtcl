@@ -1,23 +1,24 @@
 import { LitElement, property, html, css } from 'lit-element';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import '@material/mwc-dialog';
 import '@material/mwc-textfield';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule, ApolloClient, gql } from '@uprtcl/graphql';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { PermissionsElement } from './permissions-element';
 import { SET_PUBLIC_READ } from '../graphql/queries';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
 
-export class PermissionsAdmin extends moduleConnect(LitElement) implements PermissionsElement<BasicAdminPermissions> {
-
+export class PermissionsAdmin extends moduleConnect(LitElement)
+  implements PermissionsElement<BasicAdminPermissions> {
   @property()
   entityId!: string;
 
   @property()
   permissions!: BasicAdminPermissions;
-  
+
   @property()
   canWrite!: boolean;
 
@@ -66,11 +67,13 @@ export class PermissionsAdmin extends moduleConnect(LitElement) implements Permi
     this.canWrite = result.data.setPublicRead._context.patterns.accessControl.canWrite;
     this.loadPermissions();
 
-    this.dispatchEvent(new CustomEvent('permissions-updated', {
-      bubbles: true,
-      composed: true,
-      cancelable: true
-    }))
+    this.dispatchEvent(
+      new CustomEvent('permissions-updated', {
+        bubbles: true,
+        composed: true,
+        cancelable: true
+      })
+    );
   }
 
   render() {
@@ -80,14 +83,21 @@ export class PermissionsAdmin extends moduleConnect(LitElement) implements Permi
           <strong>${this.t('access-control:owner')}:</strong> ${this.getOwner()}
         </div>
         <div class="row">
-          ${this.canWrite ? html`
-            <p>This perspective is currently ${this.permissions.publicRead ? 'public' : 'private'}<p>
-            <mwc-button 
-              outlined
-              icon="swap_horizontal" 
-              @click=${this.togglePublicRead}>
-              ${!this.permissions.publicRead ? this.t('access-control:make-public') : this.t('access-control:make-private')}
-            </mwc-button>` : ''}
+          ${this.canWrite
+            ? html`
+                <p>
+                  This perspective is currently
+                  ${this.permissions.publicRead ? 'public' : 'private'}
+                </p>
+                <p>
+                  <mwc-button outlined icon="swap_horizontal" @click=${this.togglePublicRead}>
+                    ${!this.permissions.publicRead
+                      ? this.t('access-control:make-public')
+                      : this.t('access-control:make-private')}
+                  </mwc-button>
+                </p>
+              `
+            : ''}
         </div>
       </div>
     `;

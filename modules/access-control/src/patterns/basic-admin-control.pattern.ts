@@ -7,8 +7,7 @@ import { HasLenses } from '@uprtcl/lenses';
 import { Permissions } from '../properties/permissions';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
 
-@injectable()
-export class BasicAdminPattern implements Pattern, HasLenses, Permissions<BasicAdminPermissions> {
+export class BasicAdminPattern extends Pattern<BasicAdminPermissions> {
   recognize = (entity: any) => {
     return (
       (entity as BasicAdminPermissions).publicWrite !== undefined &&
@@ -18,7 +17,11 @@ export class BasicAdminPattern implements Pattern, HasLenses, Permissions<BasicA
       (entity as BasicAdminPermissions).canWrite !== undefined
     );
   };
+}
 
+@injectable()
+export class AdminBehaviour
+  implements HasLenses<BasicAdminPermissions>, Permissions<BasicAdminPermissions> {
   canWrite = (entity: BasicAdminPermissions) => (userId: string | undefined): boolean => {
     if (entity.publicWrite) return true;
     if (!userId) return false;
@@ -31,9 +34,8 @@ export class BasicAdminPattern implements Pattern, HasLenses, Permissions<BasicA
     {
       name: 'basic-admin-access-control',
       type: 'permissions',
-      render: (_, context: any) =>
+      render: (context: any) =>
         html`
-          <!-- <h1>?</h1> -->
           <permissions-admin
             .permissions=${entity}
             .canWrite=${context.canWrite}

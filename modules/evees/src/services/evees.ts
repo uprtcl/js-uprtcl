@@ -3,7 +3,6 @@ import { multiInject, injectable, inject } from 'inversify';
 
 import {
   PatternRecognizer,
-  Hashed,
   IsSecure,
   HasChildren,
   CortexModule,
@@ -13,7 +12,6 @@ import { KnownSourcesService, DiscoveryModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Secured } from '../patterns/default-secured.pattern';
 import {
   Perspective,
   Commit,
@@ -26,7 +24,7 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
-import { CidHashedPattern } from '../patterns/cid-hashed.pattern';
+import { CidHashedPattern } from '../patterns/cid-hash';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
