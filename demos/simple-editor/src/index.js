@@ -1,6 +1,7 @@
 import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { LensesModule, LensSelectorPlugin, ActionsPlugin } from '@uprtcl/lenses';
 import { DocumentsModule } from '@uprtcl/documents';
+import { DocumentsFieldsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
@@ -55,6 +56,7 @@ import { SimpleWiki } from './simple-wiki';
   const evees = new EveesModule([ethEvees, httpEvees], remotesConfig);
 
   const documents = new DocumentsModule([ipfsStore, httpStore]);
+  const documentsFields = new DocumentsFieldsModule([ipfsStore, httpStore]);
 
   const wikis = new WikisModule([ipfsStore, httpStore]);
 

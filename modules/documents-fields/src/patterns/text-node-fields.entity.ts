@@ -21,21 +21,22 @@ import {
   EveesModule,
   UprtclAction
 } from '@uprtcl/evees';
-import { Lens, HasLenses, HasTopLenses } from '@uprtcl/lenses';
+import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { StoresModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { TextType } from "@uprtcl/documents";
 
-import { TextNode, TextType } from '../types';
-import { CREATE_TEXT_NODE } from '../graphql/queries';
+import { TextNodeFields } from '../types';
 import { CidConfig } from '@uprtcl/ipfs-provider';
+import { CREATE_TEXT_FIELDS_NODE } from '../graphql/queries';
 
-const propertyOrder = ['text', 'type', 'links'];
+const propertyOrder = ['text', 'type', 'links', 'fields'];
 
 const logger = new Logger('TEXT-NODE-ENTITY');
 
 @injectable()
-export class TextNodeEntity implements Entity {
+export class TextNodeFieldsEntity implements Entity {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
   ) {}
@@ -46,20 +47,20 @@ export class TextNodeEntity implements Entity {
     return propertyOrder.every(p => node.hasOwnProperty(p));
   }
 
-  name = 'TextNode';
+  name = 'TextNodeFields';
 }
 
 @injectable()
-export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasTopLenses, HasChildren, Mergeable {
+export class TextNodeFieldsPatterns extends TextNodeFieldsEntity implements HasLenses, HasChildren, Mergeable {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
   ) {
     super(hashedPattern);
   }
 
-  replaceChildrenLinks = (node: Hashed<TextNode>) => (
+  replaceChildrenLinks = (node: Hashed<TextNodeFields>) => (
     childrenHashes: string[]
-  ): Hashed<TextNode> => ({
+  ): Hashed<TextNodeFields> => ({
     id: '',
     object: {
       ...node.object,
@@ -67,19 +68,18 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasTo
     }
   });
 
-  getChildrenLinks = (node: Hashed<TextNode>): string[] => node.object.links;
+  getChildrenLinks = (node: Hashed<TextNodeFields>): string[] => node.object.links;
 
-  links = async (node: Hashed<TextNode>) => this.getChildrenLinks(node);
+  links = async (node: Hashed<TextNodeFields>) => this.getChildrenLinks(node);
 
-  lenses = (node: Hashed<TextNode>): Lens[] => {
+  lenses = (node: Hashed<TextNodeFields>): Lens[] => {
     return [
       {
-        name: 'documents:document',
-        type: 'content',
+        name: 'documents:document-fields',
+        type: 'content', // HEY! how can I give priority to this guy?
         render: (lensContent: TemplateResult, context: any) => {
-          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
-            <documents-text-node
+            <documents-text-node-fields
               .data=${node}
               ref=${context.ref}
               color=${context.color} 
@@ -89,45 +89,18 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasTo
               .action=${context.action}
             >
               ${lensContent}
-            </documents-text-node>
+            </documents-text-node-fields>
           `;
         }
       }
     ];
   };
 
-  /** lenses top is a lense that dont render the node children, leaving the job to an upper node tree controller */
-  lensesTop = (node: Hashed<TextNode>): Lens[] => {
-    return [
-      {
-        name: 'documents:document',
-        type: 'content',
-        render: (lensContent: TemplateResult, context: any) => {
-          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
-          return html`
-            <documents-text-node
-              .data=${node}
-              ref=${context.ref}
-              color=${context.color} 
-              index=${context.index}
-              .genealogy=${context.genealogy}
-              toggle-action=${context.toggleAction}
-              .action=${context.action}
-              hide-children="true"
-            >
-              ${lensContent}
-            </documents-text-node>
-          `;
-        }
-      }
-    ];
-  };
-
-  merge = (originalNode: Hashed<TextNode>) => async (
-    modifications: Hashed<TextNode>[],
+  merge = (originalNode: Hashed<TextNodeFields>) => async (
+    modifications: Hashed<TextNodeFields>[],
     mergeStrategy: MergeStrategy,
     config: any
-  ): Promise<[TextNode, UprtclAction[]]> => {
+  ): Promise<[TextNodeFields, UprtclAction[]]> => {
     const resultText = mergeStrings(
       originalNode.object.text,
       modifications.map(data => data.object.text)
@@ -143,11 +116,15 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasTo
       config
     );
 
+    // TODO merge fields ! :)
+    const mergedFields = originalNode.object.fields;
+
     return [
       {
         links: mergedLinks,
         text: resultText,
-        type: resultType
+        type: resultType,
+        fields: mergedFields,
       },
       actions
     ];
@@ -155,8 +132,8 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasTo
 }
 
 @injectable()
-export class TextNodeCreate extends TextNodeEntity
-  implements Creatable<Partial<TextNode>, TextNode>, Newable<Partial<TextNode>, TextNode> {
+export class TextNodeFieldsCreate extends TextNodeFieldsEntity
+  implements Creatable<Partial<TextNodeFields>, TextNodeFields>, Newable<Partial<TextNodeFields>, TextNodeFields> {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
     @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
@@ -172,15 +149,15 @@ export class TextNodeCreate extends TextNodeEntity
   }
 
   create = () => async (
-    node: Partial<TextNode> | undefined,
+    node: Partial<TextNodeFields> | undefined,
     source: string
-  ): Promise<Hashed<TextNode>> => {
+  ): Promise<Hashed<TextNodeFields>> => {
     const store = this.stores.find(s => s.source === source);
     if (!store) throw new Error(`store for ${source} not found`);
 
     const textNode = await this.new()(node, store.hashRecipe);
     const result = await this.client.mutate({
-      mutation: CREATE_TEXT_NODE,
+      mutation: CREATE_TEXT_FIELDS_NODE,
       variables: {
         content: textNode.object,
         source
@@ -195,9 +172,9 @@ export class TextNodeCreate extends TextNodeEntity
   };
 
   new = () => async (
-    node: Partial<TextNode> | undefined,
+    node: Partial<TextNodeFields> | undefined,
     recipe: CidConfig
-  ): Promise<Hashed<TextNode>> => {
+  ): Promise<Hashed<TextNodeFields>> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
@@ -208,6 +185,6 @@ export class TextNodeCreate extends TextNodeEntity
 }
 
 @injectable()
-export class TextNodeTitle extends TextNodeEntity implements HasTitle {
-  title = (textNode: Hashed<TextNode>) => textNode.object.text;
+export class TextNodeFieldsTitle extends TextNodeFieldsEntity implements HasTitle {
+  title = (textNode: Hashed<TextNodeFields>) => textNode.object.text;
 }

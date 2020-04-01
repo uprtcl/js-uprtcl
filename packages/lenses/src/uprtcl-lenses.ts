@@ -9,6 +9,6 @@ export { ActionsPlugin } from './plugins/base/actions.plugin';
 export { CortexEntityBase } from './elements/cortex-entity-base';
 export { CortexEntity } from './elements/cortex-entity';
 export { Lens, LensesPlugin } from './types';
-export { HasLenses } from './properties/has-lenses';
+export { HasLenses, HasTopLenses } from './properties/has-lenses';
 
 export { sharedStyles } from './shared-styles';
