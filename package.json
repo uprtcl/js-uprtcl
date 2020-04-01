@@ -32,7 +32,11 @@
     "typescript": "^3.8.3",
     "vuepress": "^1.2.0"
   },
-  "contributors": [
+
+  "peerDependencies": {
+    "graphql": "^14.6.0"
+  },  
+"contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",

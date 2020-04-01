@@ -15,7 +15,7 @@
     "apollo-boost": "^0.4.7",
     "apollo-cache-persist": "^0.1.1",
     "apollo-link-schema": "^1.2.4",
-    "graphql": "^14.6.0",
+
     "graphql-tools": "^4.0.6",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
@@ -43,7 +43,11 @@
     "ts-loader": "^6.2.1",
     "typescript": "^3.8.3"
   },
-  "contributors": [
+
+  "peerDependencies": {
+    "graphql": "^14.6.0"
+  },  
+"contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",

@@ -35,7 +35,7 @@
     "@rollup/plugin-replace": "^2.3.1",
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.11.0",
-    "graphql": "^14.6.0",
+
     "karma": "^4.4.1",
     "karma-rollup-preprocessor": "^7.0.3",
     "lodash-es": "^4.17.15",
@@ -46,7 +46,11 @@
     "temp-dir": "^2.0.0",
     "typescript": "^3.8.3"
   },
-  "contributors": [
+
+  "peerDependencies": {
+    "graphql": "^14.6.0"
+  },  
+"contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",

@@ -41,7 +41,11 @@
     "ts-loader": "^6.2.1",
     "typescript": "^3.8.3"
   },
-  "contributors": [
+
+  "peerDependencies": {
+    "graphql": "^14.6.0"
+  },  
+"contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",

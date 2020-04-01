@@ -45,7 +45,11 @@
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"
   },
-  "contributors": [
+
+  "peerDependencies": {
+    "graphql": "^14.6.0"
+  },  
+"contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",

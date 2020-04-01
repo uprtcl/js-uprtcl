@@ -2,7 +2,11 @@
   "name": "simple-editor",
   "private": true,
   "version": "0.0.5-alpha8",
-  "contributors": [
+
+  "peerDependencies": {
+    "graphql": "^14.6.0"
+  },  
+"contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",
@@ -44,7 +48,7 @@
     "@uprtcl/wikis": "^0.0.5-alpha8",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "apollo-boost": "^0.4.7",
-    "graphql": "^14.6.0",
+
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.6",
     "lit-element": "^2.2.1",

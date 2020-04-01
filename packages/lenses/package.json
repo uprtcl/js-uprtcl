@@ -40,7 +40,7 @@
     "@types/lodash-es": "^4.17.3",
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.11.0",
-    "graphql": "^14.6.0",
+
     "graphql-tag": "^2.10.3",
     "graphql-tools": "^4.0.7",
     "karma": "^4.4.1",
@@ -57,7 +57,11 @@
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"
   },
-  "contributors": [
+
+  "peerDependencies": {
+    "graphql": "^14.6.0"
+  },  
+"contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",

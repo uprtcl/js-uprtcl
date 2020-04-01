@@ -13,7 +13,7 @@
   "dependencies": {
     "@uprtcl/graphql": "^0.0.5-alpha8",
     "@uprtcl/micro-orchestrator": "^0.0.5-alpha8",
-    "graphql": "^14.6.0",
+
     "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
@@ -51,7 +51,11 @@
   "files": [
     "dist"
   ],
-  "contributors": [
+
+  "peerDependencies": {
+    "graphql": "^14.6.0"
+  },  
+"contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",

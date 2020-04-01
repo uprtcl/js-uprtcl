@@ -55,7 +55,6 @@
     "@types/lodash-es": "^4.17.3",
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.11.0",
-    "graphql": "^14.6.0",
     "install": "^0.13.0",
     "karma": "^4.4.1",
     "karma-rollup-preprocessor": "^7.0.3",
@@ -71,6 +70,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "peerDependencies": {
+    "graphql": "^14.6.0"
   },
   "contributors": [
     {
