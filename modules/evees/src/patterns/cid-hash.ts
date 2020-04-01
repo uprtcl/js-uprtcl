@@ -4,6 +4,7 @@ import CID from 'cids';
 
 import { sortObject } from '@uprtcl/ipfs-provider';
 import { CidConfig, defaultCidConfig } from '@uprtcl/multiplatform';
+import { Signed } from '@uprtcl/cortex';
 
 export function recognizeHashed(object: object) {
   return (
@@ -13,7 +14,10 @@ export function recognizeHashed(object: object) {
   );
 }
 
-export async function hashObject(object: object, config: CidConfig = defaultCidConfig): Promise<string> {
+export async function hashObject(
+  object: object,
+  config: CidConfig = defaultCidConfig
+): Promise<string> {
   const sorted = sortObject(object);
   const buffer = CBOR.encode(sorted);
   const encoded = await multihashing(buffer, config.type);
@@ -22,3 +26,10 @@ export async function hashObject(object: object, config: CidConfig = defaultCidC
 
   return cid.toString();
 }
+
+export interface Hashed<T> {
+  id: string;
+  object: T;
+}
+
+export type Secured<T> = Hashed<Signed<T>>;

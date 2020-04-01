@@ -4,15 +4,14 @@ import {
   EthereumContractOptions,
   EthereumContract
 } from '@uprtcl/ethereum-provider';
-import { IpfsStore, IpfsConnection, sortObject, CidConfig } from '@uprtcl/ipfs-provider';
-import { Hashed } from '@uprtcl/cortex';
-import { KnownSourcesService, Authority } from '@uprtcl/multiplatform';
+import { IpfsStore, sortObject, IpfsConnectionOptions } from '@uprtcl/ipfs-provider';
+import { CidConfig, Authority } from '@uprtcl/multiplatform';
 
 import * as UprtclRoot from './contracts-json/UprtclRoot.json';
 import * as UprtclDetails from './contracts-json/UprtclDetails.json';
 import * as UprtclProposals from './contracts-json/UprtclProposals.json';
 
-import { Secured } from '../../../patterns/default-secured.pattern';
+import { Hashed, Secured } from '../../../patterns/cid-hash';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 import {
@@ -60,7 +59,7 @@ export const hashToId = async (uprtclRoot: EthereumContract, perspectiveIdHash: 
   return perspectiveAddedEvent.returnValues.perspectiveId;
 };
 
-export class EveesEthereum implements EveesRemote, Authority {
+export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
   logger: Logger = new Logger('EveesEtereum');
 
   accessControl: EveesAccessControlEthereum;
@@ -72,12 +71,13 @@ export class EveesEthereum implements EveesRemote, Authority {
 
   constructor(
     protected ethConnection: EthereumConnection,
-    protected ipfsStore: IpfsStore,
+    protected ipfsOptions: IpfsConnectionOptions,
     cidConfig: CidConfig,
     uprtclRootOptions: EthereumContractOptions = { contract: UprtclRoot as any },
     uprtclDetailsOptions: EthereumContractOptions = { contract: UprtclDetails as any },
     uprtclProposalsOptions: EthereumContractOptions = { contract: UprtclProposals as any }
   ) {
+    super(ipfsOptions, cidConfig)
     this.uprtclRoot = new EthereumContract(uprtclRootOptions, ethConnection);
     this.uprtclDetails = new EthereumContract(uprtclDetailsOptions, ethConnection);
     this.uprtclProposals = new EthereumContract(uprtclProposalsOptions, ethConnection);
@@ -88,7 +88,6 @@ export class EveesEthereum implements EveesRemote, Authority {
       this.uprtclProposals,
       this.accessControl
     );
-    this.hashRecipe = hashRecipe;
   }
 
   get authorityID() {
@@ -103,17 +102,6 @@ export class EveesEthereum implements EveesRemote, Authority {
     return this.ethConnection.getCurrentAccount();
   }
 
-  get casID() {
-    return this.ipfsStore.casID;
-  }
-
-  /**
-   * @override
-   */
-  public get(hash: string): Promise<Hashed<object> | undefined> {
-    return this.ipfsStore.get(hash);
-  }
-
   /**
    * @override
    */
@@ -122,12 +110,12 @@ export class EveesEthereum implements EveesRemote, Authority {
       this.uprtclRoot.ready(),
       this.uprtclDetails.ready(),
       this.uprtclProposals.ready(),
-      this.ipfsStore.ready()
+      super.ready()
     ]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspectiveId = await this.ipfsStore.create(secured.object);
+    const perspectiveId = await this.create(secured.object);
     this.logger.log(`[ETH] persistPerspectiveEntity - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
@@ -221,7 +209,7 @@ export class EveesEthereum implements EveesRemote, Authority {
     if (!perspective.origin) throw new Error('origin cannot be empty');
 
     /** Store the perspective data in the data layer */
-    const perspectiveId = await this.ipfsStore.put(sortObject(secured.object));
+    const perspectiveId = await this.create(sortObject(secured.object));
     this.logger.log(`[ETH] createPerspective - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
@@ -253,7 +241,7 @@ export class EveesEthereum implements EveesRemote, Authority {
     const commit = sortObject(secured.object);
     /** Store the perspective data in the data layer */
 
-    let commitId = await this.ipfsStore.put(commit);
+    let commitId = await this.create(commit);
     this.logger.log(`[ETH] createCommit - added to IPFS`, commitId, commit);
 
     if (secured.id && secured.id != commitId) {

@@ -10,6 +10,7 @@ import { KnownSourcesService } from './known-sources.service';
 import { raceToSuccess, discoverKnownSources } from './discovery.utils';
 import { MultiplatformBindings, CASBindings } from '../bindings';
 import { KnownSourcesSource } from './known-sources.source';
+import { defaultCidConfig } from '../types/cid-config';
 
 @injectable()
 export class MultiSourceService implements CASSource {
@@ -18,6 +19,7 @@ export class MultiSourceService implements CASSource {
   services: Dictionary<CASSource>;
 
   casID = '';
+  cidConfig = defaultCidConfig;
 
   /**
    * @param recognizer the pattern recognizer to interact with the objects and their links

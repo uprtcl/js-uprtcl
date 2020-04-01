@@ -1,11 +1,10 @@
-import { html, TemplateResult } from 'lit-element';
-import { ApolloClient, gql, from } from 'apollo-boost';
+import { html } from 'lit-element';
+import { ApolloClient, gql } from 'apollo-boost';
 import { injectable, inject } from 'inversify';
 
 import {
   HasRedirect,
   Pattern,
-  IsSecure,
   HasLinks,
   Creatable,
   Entity,
@@ -15,15 +14,13 @@ import {
   Newable
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
-import {} from '@uprtcl/ipfs-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CidConfig, DiscoveryModule, MultiSourceService, EntityCache } from '@uprtcl/multiplatform';
+import { CidConfig, DiscoveryModule,  EntityCache } from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Perspective, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
-import { MergeStrategy } from '../merge/merge-strategy';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import { executeActions, cacheActions } from '../utils/actions';
 import { extractSignedEntity, signAndHashObject } from './signed';

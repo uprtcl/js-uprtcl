@@ -6,16 +6,14 @@ import { CASModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { AccessControlModule } from '@uprtcl/access-control';
 
-import { DefaultSecuredPattern } from './patterns/default-secured.pattern';
-import { DefaultSignedPattern } from './patterns/default-signed.pattern';
-import { CidHashedPattern } from './patterns/cid-hashed.pattern';
 import {
   PerspectiveLinks,
   PerspectiveLens,
   PerspectiveCreate,
-  PerspectiveAccessControl
+  PerspectiveAccessControl,
+  PerspectivePattern
 } from './patterns/perspective.pattern';
-import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
+import { CommitPattern, CommitLens, CommitLinked, CommitCreate } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
 import { Evees } from './services/evees';
@@ -40,7 +38,7 @@ import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
  *
  * ```ts
  * import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
- * import { IpfsConnection } from '@uprtcl/ipfs-provider';
+ * import { IpfsStore } from '@uprtcl/ipfs-provider';
  * import { HolochainConnection } from '@uprtcl/holochain-provider';
  * import { EthereumConnection } from '@uprtcl/ethereum-provider';
  * import { EveesModule, EveesEthereum, EveesHolochain, EveesBindings } from '@uprtcl/evees';
@@ -108,18 +106,15 @@ export class EveesModule extends MicroModule {
       'evees-options-menu': EveesOptionsMenu
     }),
     new i18nextModule('evees', { en: en }),
-    new PatternsModule({
-      [EveesModule.bindings.Hashed]: [CidHashedPattern],
-      [EveesModule.bindings.Signed]: [DefaultSignedPattern],
-      [EveesModule.bindings.Secured]: [DefaultSecuredPattern],
-      [EveesModule.bindings.PerspectivePattern]: [
+    new PatternsModule([
+      new CommitPattern([CommitLinked, CommitCreate, CommitLens]),
+      new PerspectivePattern([
         PerspectiveLinks,
         PerspectiveLens,
         PerspectiveCreate,
         PerspectiveAccessControl
-      ],
-      [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
-    }),
+      ])
+    ]),
     new CASModule(this.eveesProviders)
   ];
 }

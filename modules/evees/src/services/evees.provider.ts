@@ -2,10 +2,10 @@ import { Signed } from '@uprtcl/cortex';
 
 import { Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesSource } from './evees.source';
+import { Secured } from '../patterns/cid-hash';
 
 export interface NewPerspectiveData {
-  perspectiveId: string;
-  perspective: Signed<Perspective>;
+  perspective: Secured<Perspective>;
   details: PerspectiveDetails;
   canWrite?: string;
   parentId?: string;
@@ -40,14 +40,14 @@ export interface EveesProvider extends EveesSource {
    *
    * @param perspective: the signed perspective to create
    */
-  clonePerspective(perspectiveId: string, perspective: Signed<Perspective>): Promise<void>;
+  clonePerspective(perspective: Secured<Perspective>): Promise<void>;
 
   /**
    * Clone the given commit in the service
    *
    * @param commit: the signed commit to clone
    */
-  cloneCommit(commitId: string, commit: Signed<Commit>): Promise<void>;
+  cloneCommit(commit: Secured<Commit>): Promise<void>;
 
   /** Modifiers */
 

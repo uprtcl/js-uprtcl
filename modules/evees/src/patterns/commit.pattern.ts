@@ -16,7 +16,7 @@ import { extractSignedEntity, signAndHashObject } from './signed';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
-export class CommitEntity extends Pattern<Entity<Signed<Commit>>> {
+export class CommitPattern extends Pattern<Entity<Signed<Commit>>> {
   recognize(entity: object) {
     const object = extractSignedEntity(entity);
 
@@ -63,7 +63,7 @@ export class CommitLens implements HasLenses<Entity<Signed<Commit>>> {
 }
 
 @injectable()
-export class CommitPattern
+export class CommitCreate
   implements Creatable<Commit, Signed<Commit>>, Newable<Commit, Signed<Commit>> {
   constructor(
     @multiInject(EveesBindings.EveesRemote) protected remotes: EveesRemote[],

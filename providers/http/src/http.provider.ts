@@ -22,8 +22,11 @@ export class HttpProvider implements Authority {
     return Promise.resolve();
   }
 
-  getObject<T>(url: string): Promise<T> {
-    return this.connection.get<T>(this.options.host + url);
+  async getObject<T>(url: string): Promise<T> {
+    const object: any = await this.connection.get<T>(this.options.host + url);
+
+    if ((object as { object: any }).object) return object.object as T;
+    return object as T;
   }
 
   getWithPut<T>(url: string, body: any): Promise<T> {

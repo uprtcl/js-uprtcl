@@ -1,5 +1,5 @@
 import { Ready } from './ready';
-import { KnownSourcesService } from '../known-sources/known-sources.service';
+import { CidConfig } from './cid-config';
 
 /**
  * A CASource (Content Addressable Storage Source) is a service that implements a standard function `get`,
@@ -10,6 +10,11 @@ export interface CASSource extends Ready {
    * Uniquely identifies this CAS source from which to retrieve objects
    */
   casID: string;
+  
+  /**
+   * Configuration with which to create objects in this store
+   */
+  cidConfig: CidConfig;
 
   /**
    * Get the object identified by the given hash,

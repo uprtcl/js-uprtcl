@@ -24,7 +24,6 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
-import { CidHashedPattern } from '../patterns/cid-hash';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;
@@ -62,8 +61,6 @@ export class Evees {
 
   constructor(
     @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(EveesBindings.Secured) protected secured: IsSecure<any>,
-    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern,
     @inject(DiscoveryModule.bindings.LocalKnownSources)
     public knownSources: KnownSourcesService,
     @multiInject(EveesBindings.EveesRemote)
@@ -76,12 +73,12 @@ export class Evees {
 
   /** Public functions */
 
-  public getAuthority(authority: String | undefined): EveesRemote {
-    if (!authority && this.eveesRemotes.length === 1) return this.eveesRemotes[0];
+  public getAuthority(authorityID: string | undefined): EveesRemote {
+    if (!authorityID && this.eveesRemotes.length === 1) return this.eveesRemotes[0];
 
-    const remote = this.eveesRemotes.find(remote => remote.authority === authority);
+    const remote = this.eveesRemotes.find(remote => remote.authorityID === authorityID);
 
-    if (!remote) throw new Error(`Authority ${authority}  is not registered`);
+    if (!remote) throw new Error(`Authority ${authorityID}  is not registered`);
 
     return remote;
   }
@@ -124,7 +121,7 @@ export class Evees {
     const promises = this.eveesRemotes.map(async remote => {
       const thisPerspectivesIds = await remote.getContextPerspectives(context);
       thisPerspectivesIds.forEach(pId => {
-        this.knownSources.addKnownSources(pId, [remote.source]);
+        this.knownSources.addKnownSources(pId, [remote.casID]);
       });
       return thisPerspectivesIds;
     });
