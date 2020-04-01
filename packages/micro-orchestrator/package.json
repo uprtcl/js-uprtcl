@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/micro-orchestrator",
-  "version": "0.0.5-alpha8",
+  "version": "0.0.5-alpha8-test",
   "description": "Library to help coordinate different frontend modules to build entire applications from small building blocks",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -50,11 +50,10 @@
   "files": [
     "dist"
   ],
-
   "peerDependencies": {
     "graphql": "^14.6.0"
-  },  
-"contributors": [
+  },
+  "contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",

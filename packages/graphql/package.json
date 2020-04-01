@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/graphql",
-  "version": "0.0.5-alpha8",
+  "version": "0.0.5-alpha8-test",
   "description": "Graphql schemas, resolvers and wrappers to be used with the @uprtcl infrastructure",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,11 +11,10 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/micro-orchestrator": "^0.0.5-alpha8",
+    "@uprtcl/micro-orchestrator": "^0.0.5-alpha8-test",
     "apollo-boost": "^0.4.7",
     "apollo-cache-persist": "^0.1.1",
     "apollo-link-schema": "^1.2.4",
-
     "graphql-tools": "^4.0.6",
     "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
@@ -43,11 +42,10 @@
     "ts-loader": "^6.2.1",
     "typescript": "^3.8.3"
   },
-
   "peerDependencies": {
     "graphql": "^14.6.0"
-  },  
-"contributors": [
+  },
+  "contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",

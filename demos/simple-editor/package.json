@@ -1,12 +1,11 @@
 {
   "name": "simple-editor",
   "private": true,
-  "version": "0.0.5-alpha8",
-
+  "version": "0.0.5-alpha8-test",
   "peerDependencies": {
     "graphql": "^14.6.0"
-  },  
-"contributors": [
+  },
+  "contributors": [
     {
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",
@@ -34,21 +33,20 @@
   "dependencies": {
     "@polymer/app-layout": "^3.0.0",
     "@polymer/polymer": "^3.1.0",
-    "@uprtcl/access-control": "^0.0.5-alpha8",
-    "@uprtcl/cortex": "^0.0.5-alpha8",
-    "@uprtcl/documents": "^0.0.5-alpha8",
-    "@uprtcl/ethereum-provider": "^0.0.5-alpha8",
-    "@uprtcl/evees": "^0.0.5-alpha8",
-    "@uprtcl/graphql": "^0.0.5-alpha8",
-    "@uprtcl/http-provider": "^0.0.5-alpha8",
-    "@uprtcl/ipfs-provider": "^0.0.5-alpha8",
-    "@uprtcl/lenses": "^0.0.5-alpha8",
-    "@uprtcl/micro-orchestrator": "^0.0.5-alpha8",
-    "@uprtcl/multiplatform": "^0.0.5-alpha8",
-    "@uprtcl/wikis": "^0.0.5-alpha8",
+    "@uprtcl/access-control": "^0.0.5-alpha8-test",
+    "@uprtcl/cortex": "^0.0.5-alpha8-test",
+    "@uprtcl/documents": "^0.0.5-alpha8-test",
+    "@uprtcl/ethereum-provider": "^0.0.5-alpha8-test",
+    "@uprtcl/evees": "^0.0.5-alpha8-test",
+    "@uprtcl/graphql": "^0.0.5-alpha8-test",
+    "@uprtcl/http-provider": "^0.0.5-alpha8-test",
+    "@uprtcl/ipfs-provider": "^0.0.5-alpha8-test",
+    "@uprtcl/lenses": "^0.0.5-alpha8-test",
+    "@uprtcl/micro-orchestrator": "^0.0.5-alpha8-test",
+    "@uprtcl/multiplatform": "^0.0.5-alpha8-test",
+    "@uprtcl/wikis": "^0.0.5-alpha8-test",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "apollo-boost": "^0.4.7",
-
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.6",
     "lit-element": "^2.2.1",
