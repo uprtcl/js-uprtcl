@@ -242,10 +242,68 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return removed;
   }
 
-  async createChildAt(path: number[], newEntity: any, symbol: symbol, index?: number) {
-    const doc = this.doc as DocNode;
-    const node = this.getNodeAt(path);
+  /** explore node children at path until the last child of the last child is find 
+   * and returns the path to that element */
+  getLastChildRelPath(path: number[]) {
+    let relPath: number[] = [];
+    let node = this.getNodeAt(path);
     
+    while (node.childrenNodes.length > 0) {
+      const lastChildIx = node.childrenNodes.length - 1;
+      relPath.push(lastChildIx);
+      node = node.childrenNodes[lastChildIx];
+    }
+
+    return path.concat(relPath);
+  }
+
+  getNextSiblingOf(node: DocNode): DocNode | undefined {
+    if (!node.parent) return undefined;
+    const last = node.path[node.path.length - 1];
+    if (last === (node.parent.childrenNodes.length - 1)) {
+      /** this is the last child of its parent */
+      return undefined;
+    } else {
+      /** return the next  */
+      return node.parent.childrenNodes[last + 1];
+    }
+  }
+
+  /** the tree of nodes is falttened, this gets the upper node in that flat list */
+  getDownwardNodeAt(path: number[]) : DocNode | undefined {
+    const node = this.getNodeAt(path);
+
+    if (node.childrenNodes.length > 0) {
+      /** downward is the first child */
+      return node.childrenNodes[0];
+    } else {
+      let nextSibling = this.getNextSiblingOf(node);
+      if (nextSibling) {
+        return nextSibling;
+      } else {
+        if (!node.parent) return undefined;
+        return this.getNextSiblingOf(node.parent);
+      }
+    }
+  }
+
+  getBackwardNodeAt(path: number[]) {
+    const last = path[path.length];
+    if (last === 0) {
+      /** backward is the parent, thus remove the last element in the path */
+      return this.getNodeAt(path).parent;
+    } else {
+      let pathOfBackward = [...path];
+      /** backward is the last child of the upper sybling */
+      const siblingPath = [...pathOfBackward];
+      siblingPath[siblingPath.length - 1] = last - 1;
+      pathOfBackward = this.getLastChildRelPath(siblingPath);
+      return this.getNodeAt(pathOfBackward);
+    }
+  }
+
+  async createChildAt(path: number[], newEntity: any, symbol: symbol, index?: number) {
+    const node = this.getNodeAt(path);
     const newLink = await this.createEvee(newEntity, symbol, node.authority);
     await this.spliceChildren(path, [newLink], 0);
   }
@@ -269,8 +327,21 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   focusBackward(path: number[]) {
     const node = this.getNodeAt(path);
     const backwardNode = this.getBackwardNodeAt(path);
+    if (!backwardNode) return;
+
     node.focused = false;
     backwardNode.focused = true;
+    this.scheduleUpdate();
+  }
+
+  focusDownward(path: number[]) {
+    const node = this.getNodeAt(path);
+    const downwardNode = this.getDownwardNodeAt(path);
+    if (!downwardNode) return;
+
+    node.focused = false;
+    downwardNode.focused = true;
+    this.scheduleUpdate();
   }
 
   contentChanged(path: number[], content: any) {
@@ -278,6 +349,22 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     node.data = content;
     // TODO: persist change
     this.scheduleUpdate();
+  }
+
+  joinBackward(path: number[], tail: string) {
+    throw new Error('TBD');
+  }
+
+  lift(path: number[]) {
+    throw new Error('TBD');
+  }
+
+  push(path: number[]) {
+    throw new Error('TBD');
+  }
+
+  split(path: number[], tail: string) {
+    throw new Error('TBD');
   }
   
   renderWithCortex(node: DocNode) {
@@ -307,7 +394,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               contentChanged: (content: any) => this.contentChanged(node.path, content),
               focusBackward: () => this.focusBackward(node.path),
               focusDownward: () => this.focusDownward(node.path),
-              joinBackward: (tail: string) => this.focusDownward(node.path, tail),
+              joinBackward: (tail: string) => this.joinBackward(node.path, tail),
               lift: () => this.lift(node.path),
               push: () => this.push(node.path),
               split: (tail: string) => this.split(node.path, tail),
@@ -317,7 +404,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       </div>
     `;
   }
-
 
   renderHere(node: DocNode) {
     return html`
@@ -329,7 +415,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderDocNode(node: DocNode) {
-    return node.topLenses.length > 0 ? 
+    return node.docNodeLenses.length > 0 ? 
       this.renderHere(node) : 
       this.renderWithCortex(node);
   }
