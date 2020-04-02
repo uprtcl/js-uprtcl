@@ -1,5 +1,5 @@
 import { Hashed, HasChildren } from "@uprtcl/cortex";
-import { DocNodeLens } from "./patterns/document-patterns";
+import { HasDocNodeLenses } from "./patterns/document-patterns";
 
 export enum TextType {
   Title = 'Title',
@@ -16,9 +16,11 @@ export interface DocNode {
   path: number[],
   ref: string,
   authority: string,
+  headId?: string,
   data: Hashed<any>,
-  docNodeLenses: DocNodeLens[],
+  symbol: symbol,
   editable: boolean,
+  hasDocNodeLenses: HasDocNodeLenses,
   hasChildren: HasChildren,
   parent?: DocNode,
   childrenNodes: DocNode[],

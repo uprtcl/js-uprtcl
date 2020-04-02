@@ -25,16 +25,35 @@ import { Lens, HasLenses } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { StoresModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { CidConfig } from '@uprtcl/ipfs-provider';
 
-import { TextNode, TextType, DocNodeEventsHandlers } from '../types';
+import { TextNode, TextType, DocNodeEventsHandlers, DocNode } from '../types';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { HasDocNodeLenses, DocNodeLens } from './document-patterns'; 
-import { CidConfig } from '@uprtcl/ipfs-provider';
-import { DocNode } from 'src/elements/document-editor';
 
 const propertyOrder = ['text', 'type', 'links'];
 
 const logger = new Logger('TEXT-NODE-ENTITY');
+
+const textToTextNode = (textNode: Hashed<TextNode>, text: string) : Hashed<TextNode> => {
+  return {
+    id: textNode.id, 
+    object: {
+      ...textNode.object,
+      text: text
+    }
+  };
+}
+
+const typeToTextNode = (textNode: Hashed<TextNode>, type: TextType) : Hashed<TextNode> => {
+  return {
+    id: textNode.id, 
+    object: {
+      ...textNode.object,
+      type: type
+    }
+  };
+}
 
 @injectable()
 export class TextNodeEntity implements Entity {
@@ -99,7 +118,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
   };
 
   /** lenses top is a lense that dont render the node children, leaving the job to an upper node tree controller */
-  docNodeLenses = (node: DocNode): DocNodeLens[] => {
+  docNodeLenses = (node?: TextNode): DocNodeLens[] => {
     return [
       {
         name: 'documents:document',
@@ -112,17 +131,15 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
               init=${node.data.object.text}
               level=${node.path.length}
               editable=${node.editable ? 'true' : 'false'}
-              toggle-action=${node.toggleAction}
-              .action=${node.action}
               @focus=${events.focus}
               @blur=${events.blur}
-              @content-changed=${events.contentChanged}
+              @content-changed=${(e) => events.contentChanged(textToTextNode(node.data, e.detail.content))}
               @enter-pressed=${events.split}
               @backspace-on-start=${events.joinBackward}
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}
-              @change-type=${events.contentChanged}
+              @change-type=${(e) => events.contentChanged(typeToTextNode(node.data, e.detail.content))}
             >
             </documents-text-node-editor>
           `;

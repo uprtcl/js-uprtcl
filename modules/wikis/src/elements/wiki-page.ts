@@ -50,7 +50,6 @@ export class WikiPage extends moduleConnect(LitElement) {
       query: gql`{
         entity(id: "${this.pageHash}") {
           id
-
           ... on Perspective {
             head {
               id
@@ -91,12 +90,7 @@ export class WikiPage extends moduleConnect(LitElement) {
 
       <div class="page-content">
         <div class="text-editor">
-          <cortex-entity
-            .hash=${this.pageHash}
-            lens-type="evee"
-            .context=${{ onlyChildren: 'false', color: this.color }}
-          >
-          </cortex-entity>
+          <documents-editor ref=${this.pageHash}></documents-editor>
         </div>
       </div>
     `;

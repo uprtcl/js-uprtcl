@@ -56,7 +56,7 @@ import { SimpleWiki } from './simple-wiki';
   const evees = new EveesModule([ethEvees, httpEvees], remotesConfig);
 
   const documents = new DocumentsModule([ipfsStore, httpStore]);
-  const documentsFields = new DocumentsFieldsModule([ipfsStore, httpStore]);
+  // const documentsFields = new DocumentsFieldsModule([ipfsStore, httpStore]);
 
   const wikis = new WikisModule([ipfsStore, httpStore]);
 

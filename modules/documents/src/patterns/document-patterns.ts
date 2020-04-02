@@ -1,6 +1,6 @@
 import { TemplateResult } from 'lit-element';
 
-import { DocNodeEventsHandlers, DocNode } from '../types';
+import { DocNodeEventsHandlers, DocNode, TextNode } from '../types';
 
 export interface DocNodeLens {
     name: string;
@@ -10,5 +10,5 @@ export interface DocNodeLens {
   
 
 export interface HasDocNodeLenses {
-  docNodeLenses: (node: DocNode) => DocNodeLens[];
+  docNodeLenses: (node?: TextNode) => DocNodeLens[];
 }
