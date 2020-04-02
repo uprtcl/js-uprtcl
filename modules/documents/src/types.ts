@@ -31,7 +31,7 @@ export interface DocNodeEventsHandlers {
   focus: () => void,
   blur: () => void,
   contentChanged: (newContent: any) => void,
-  split: (tail: string) => void,
+  split: (tail: string, asChild: boolean) => void,
   joinBackward: (tail: string) => void,
   focusBackward: () => void,
   focusDownward: () => void,

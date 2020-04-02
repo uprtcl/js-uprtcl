@@ -240,7 +240,7 @@ export class DocumentTextNodeEditor extends LitElement {
       const content = temp.innerHTML;
       
       this.logger.log('enter-pressed');
-      this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { content } }));
+      this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { content, asChild: this.type === TextType.Title } }));
       
       return;
     }

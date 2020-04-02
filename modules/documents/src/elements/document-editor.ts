@@ -18,6 +18,7 @@ import { KeypressAtEvent, KEYPRESS_AT_TAG } from './events';
 import { TextType, DocNode } from 'src/types';
 import { HasDocNodeLenses } from 'src/patterns/document-patterns';
 import { DocumentsBindings } from 'src/bindings';
+import { timingSafeEqual } from 'crypto';
 
 export class DocumentEditor extends moduleConnect(LitElement) {
 
@@ -189,7 +190,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         type: type,
         links: []
       },
-      symbol: 'Symbold'
+      symbol: DocumentsBindings.TextNodeEntity
     }
   }
 
@@ -219,7 +220,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return creatable.create()(content, store.source);
   }
 
-  async commitContentOf(node: DocNode): Promise<void> {
+  async commitContent(node: DocNode): Promise<void> {
     const eveesRemotes = this.eveesRemotes as EveesRemote[];
     const client = this.client as ApolloClient<any>;
     
@@ -275,9 +276,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   /** node updated as reference */
-  async spliceChildren(path: number[], elements: any[] = [], index?: number, count: number = 0): Promise<string[]> {
-    this.logger.log('spliceChildren()', {path, elements, index, count});
-    const node = this.getNodeAt(path);
+  async spliceChildren(node: DocNode, elements: any[] = [], index?: number, count: number = 0): Promise<string[]> {
+    this.logger.log('spliceChildren()', {node, elements, index, count});
     
     const currentChildren = node.hasChildren.getChildrenLinks(node.data);
     index = index !== undefined ? index : currentChildren.length;
@@ -293,7 +293,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const elementsIds = await Promise.all(create);
     const getNewNodes = elementsIds.map(async (ref, ix) => {
-      return this.loadNodeRec(ref, path.concat([(index as number) + ix]));
+      return this.loadNodeRec(ref, node.path.concat([(index as number) + ix]));
     });
     const newNodes = await Promise.all(getNewNodes);
 
@@ -302,22 +302,24 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     node.childrenNodes.splice(index, count, ...newNodes);
     node.data = node.hasChildren.replaceChildrenLinks(node.data)(newChildren);
 
+    this.commitContent(node);
+
     return removed;
   }
 
   /** explore node children at path until the last child of the last child is find 
    * and returns the path to that element */
-  getLastChildRelPath(path: number[]) {
+  getLastChild(node: DocNode) {
     let relPath: number[] = [];
-    let node = this.getNodeAt(path);
-    
-    while (node.childrenNodes.length > 0) {
-      const lastChildIx = node.childrenNodes.length - 1;
+
+    let child = {...node};
+    while (child.childrenNodes.length > 0) {
+      const lastChildIx = child.childrenNodes.length - 1;
       relPath.push(lastChildIx);
-      node = node.childrenNodes[lastChildIx];
+      child = node.childrenNodes[lastChildIx];
     }
 
-    return path.concat(relPath);
+    return child;
   }
 
   getNextSiblingOf(node: DocNode): DocNode | undefined {
@@ -333,9 +335,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   /** the tree of nodes is falttened, this gets the upper node in that flat list */
-  getDownwardNodeAt(path: number[]) : DocNode | undefined {
-    const node = this.getNodeAt(path);
-
+  getDownwardNode(node: DocNode) : DocNode | undefined {
     if (node.childrenNodes.length > 0) {
       /** downward is the first child */
       return node.childrenNodes[0];
@@ -350,54 +350,57 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
   }
 
-  getBackwardNodeAt(path: number[]) {
-    const last = path[path.length];
+  getBackwardNode(node: DocNode) : DocNode | undefined {
+    const last = node.path[node.path.length];
     if (last === 0) {
       /** backward is the parent, thus remove the last element in the path */
-      return this.getNodeAt(path).parent;
+      return undefined
     } else {
-      let pathOfBackward = [...path];
       /** backward is the last child of the upper sybling */
+            let pathOfBackward = [...node.path];
       const siblingPath = [...pathOfBackward];
       siblingPath[siblingPath.length - 1] = last - 1;
-      pathOfBackward = this.getLastChildRelPath(siblingPath);
-      return this.getNodeAt(pathOfBackward);
+      return this.getLastChild(this.getNodeAt(siblingPath));
     }
   }
 
-  async createChildAt(path: number[], newEntity: any, symbol: symbol, index?: number) {
-    this.logger.log('createChildAt()', {path, newEntity, symbol, index});
-
-    const node = this.getNodeAt(path);
+  async createChild(node: DocNode, newEntity: any, symbol: symbol, index?: number) {
+    this.logger.log('createChildAt()', {node, newEntity, symbol, index});
+    
     const newLink = await this.createEvee(newEntity, symbol, node.authority);
-    await this.spliceChildren(path, [newLink], 0);
+    await this.spliceChildren(node, [newLink], 0);
+
+    /** focus child */
+    const child = node.childrenNodes[0];
+
+    if (child.parent) {
+      child.parent.focused = false;
+    } 
+    child.focused = true;
+    
+    this.requestUpdate();
   }
 
   scheduleUpdate() {
     throw new Error('TBD');
   }
 
-  focused(path: number[]) {
-    this.logger.log('focused()', {path});
-
-    const node = this.getNodeAt(path);
+  focused(node: DocNode) {
+    this.logger.log('focused()', {node});
     node.focused = true;
     this.requestUpdate();
   }
 
-  blured(path: number[]) {
-    this.logger.log('blured()', {path});
-
-    const node = this.getNodeAt(path);
+  blured(node: DocNode) {
+    this.logger.log('blured()', {node});
     node.focused = false;
     this.requestUpdate();
   }
 
-  focusBackward(path: number[]) {
-    this.logger.log('focusBackward()', {path});
+  focusBackward(node: DocNode) {
+    this.logger.log('focusBackward()', {node});
 
-    const node = this.getNodeAt(path);
-    const backwardNode = this.getBackwardNodeAt(path);
+    const backwardNode = this.getBackwardNode(node);
     if (!backwardNode) return;
 
     node.focused = false;
@@ -405,11 +408,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
-  focusDownward(path: number[]) {
-    this.logger.log('focusDownward()', {path});
+  focusDownward(node: DocNode) {
+    this.logger.log('focusDownward()', {node});
 
-    const node = this.getNodeAt(path);
-    const downwardNode = this.getDownwardNodeAt(path);
+    const downwardNode = this.getDownwardNode(node);
     if (!downwardNode) return;
 
     node.focused = false;
@@ -417,18 +419,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
-  contentChanged(path: number[], content: any) {
-    this.logger.log('contentChanged()', {path, content});
+  contentChanged(node: DocNode, content: any) {
+    this.logger.log('contentChanged()', {node, content});
 
-    const node = this.getNodeAt(path);
-    
     /** optimistically set node.data */
     node.data = content;
     /** trigger update node content */
-    this.commitContentOf(node);
+    this.commitContent(node);
 
     /** inform the external world if top element */
-    if (path.length === 1) {
+    if (node.path.length === 1) {
       this.dispatchEvent(new ContentUpdatedEvent({
         bubbles: true,
         composed: true,
@@ -438,28 +438,32 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
-  joinBackward(path: number[], tail: string) {
-    this.logger.log('contentChanged()', {path, tail});
+  joinBackward(node: DocNode, tail: string) {
+    this.logger.log('contentChanged()', {node, tail});
 
     throw new Error('TBD');
   }
 
-  lift(path: number[]) {
-    this.logger.log('contentChanged()', {path});
+  lift(node: DocNode) {
+    this.logger.log('contentChanged()', {node});
 
     throw new Error('TBD');
   }
 
-  push(path: number[]) {
-    this.logger.log('push()', {path});
+  push(node: DocNode) {
+    this.logger.log('push()', {node});
 
     throw new Error('TBD');
   }
 
-  split(path: number[], tail: string) {
-    this.logger.log('split()', {path, tail});
-
-    throw new Error('TBD');
+  split(node: DocNode, tail: string, asChild: boolean) {
+    this.logger.log('split()', { node, tail });
+    if (asChild) {
+      const dftEntity = this.defaultEntity(tail, TextType.Paragraph);
+      this.createChild(node, dftEntity.data, dftEntity.symbol, 0);
+    } else {
+      // TODO this.createSiblingAt(path, this.defaultEntity(tail, TextType.Paragraph), DocumentsBindings.TextNodeEntity, 0);
+    }
   }
   
   renderWithCortex(node: DocNode) {
@@ -467,7 +471,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderTopRow(node: DocNode) {
-
     /** the ref to which the parent is pointing at */
     const firstRef = node.parent ? node.parent.childrenNodes[node.path[node.path.length - 1]].ref : node.ref;
     const color = 'red';
@@ -485,15 +488,15 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           </div>
           <div class="node-content">
             ${nodeLense.render(node, {
-              focus: () => this.focused(node.path),
-              blur: () => this.blured(node.path),
-              contentChanged: (content: any) => this.contentChanged(node.path, content),
-              focusBackward: () => this.focusBackward(node.path),
-              focusDownward: () => this.focusDownward(node.path),
-              joinBackward: (tail: string) => this.joinBackward(node.path, tail),
-              lift: () => this.lift(node.path),
-              push: () => this.push(node.path),
-              split: (tail: string) => this.split(node.path, tail),
+              focus: () => this.focused(node),
+              blur: () => this.blured(node),
+              contentChanged: (content: any) => this.contentChanged(node, content),
+              focusBackward: () => this.focusBackward(node),
+              focusDownward: () => this.focusDownward(node),
+              joinBackward: (tail: string) => this.joinBackward(node, tail),
+              lift: () => this.lift(node),
+              push: () => this.push(node),
+              split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
             })}
           </div>
         </div>
