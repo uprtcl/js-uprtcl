@@ -516,7 +516,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async liftChildren(node: DocNode) {
-    
+    if(!node.parent) throw new Error('parent undefined');
+    if(node.ix === undefined) throw new Error('ix undefined');
+
+    /** remove all children */
+    const removed = await this.spliceChildren(node, [], 0, node.childrenNodes.length);
+
+    /** add to parent */
+    this.spliceChildren(node.parent, removed, node.ix + 1);
   }
 
   joinBackward(node: DocNode, tail: string) {
