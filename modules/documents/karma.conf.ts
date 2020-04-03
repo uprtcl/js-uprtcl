@@ -7,7 +7,7 @@ const globals = require('rollup-plugin-node-globals');
 
 module.exports = config =>
   config.set({
-    browsers: ['ChromeHeadlessNoSandbox'],
+    browsers: ['Chrome'],
     // ## code coverage config
     coverageIstanbulReporter: {
       reports: ['lcovonly', 'text-summary'],
@@ -36,6 +36,7 @@ module.exports = config =>
       },
       plugins: [
         replace({
+          'process.env.NODE_ENV': JSON.stringify('production'),
           'var _2 = require(".");':
             'var _2 = {extendResolversFromInterfaces: require("./extendResolversFromInterfaces").default,checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
           'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = require(".");':
@@ -45,27 +46,69 @@ module.exports = config =>
         globals(),
         builtins(),
         ...rollupConfig.plugins,
+
+        resolve({
+          browser: true,
+          preferBuiltins: false,
+          dedupe: [
+            'graphql',
+            'graphql-tag',
+            'graphql-tools',
+            'cids',
+            'cbor-js',
+            'fast-json-stable-stringify',
+            '@holochain/hc-web-client',
+            'multihashing-async',
+            'randomcolor',
+            'inversify',
+            'ipfs-http-client',
+            'zen-observable',
+            'prosemirror-commands',
+            'prosemirror-keymap',
+            'prosemirror-model',
+            'prosemirror-state',
+            'prosemirror-view',
+            'form-data',
+            'deprecated-decorator',
+            'buffer',
+            'web3'
+          ]
+        }),
         // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
         commonjs({
           include: [
             '**/node_modules/cids/**/*',
             '**/node_modules/fast-json-stable-stringify/**',
             '**/node_modules/zen-observable/**',
+            '**/node_modules/form-data/**',
+            '**/node_modules/node-fetch/**',
             '**/node_modules/inversify/**',
+            '**/node_modules/deprecated-decorator/**',
+            '**/node_modules/graphql/**',
             '**/node_modules/graphql-tag/**',
+            '**/node_modules/randomcolor/**',
             '**/node_modules/cbor-js/**',
             '**/node_modules/web3/**',
+            '**/node_modules/rpc-websockets/**',
+            /node_modules\/web3/,
+            '**/node_modules/@babel/**',
             '**/node_modules/@holochain/**',
             '**/node_modules/ipfs-http-client/**',
             '**/node_modules/multihashing-async/**'
           ],
           namedExports: {
             'apollo-boost': ['gql', 'ApolloClient'],
+            buffer: ['buffer'],
+            cids: ['CID'],
+            'cbor-js': ['CBOR'],
+            'multihashing-async': ['default'],
+            'buffer-es6': ['default'],
+            'ipfs-http-client': ['default'],
+            'graphql-tag': ['default'],
             'graphql-tools': ['makeExecutableSchema'],
-            'node_modules/@uprtcl/evees/node_modules/cids/src/index.js': ['CID'],
-            'fast-json-stable-stringify': ['stringify'],
-            'node_modules/graphql-tools/dist/index.js,': ['makeExecutableSchema'],
-            'prosemirror-model': ['Schema']
+            'fast-json-stable-stringify': ['stringify', 'default'],
+            web3: ['default'],
+            'zen-observable': ['default']
           },
           exclude: [
             '**/node_modules/mocha/**/*',
@@ -74,12 +117,10 @@ module.exports = config =>
             '**/node_modules/chai-dom/**/*',
             '**/node_modules/core-js-bundle/**/*'
           ]
-        }),
-
-        resolve({ browser: true, preferBuiltins: false, dedupe: ['graphql-tools'] })
+        })
       ]
     },
-    singleRun: true,
+    singleRun: false,
     concurrency: Infinity,
 
     plugins: [

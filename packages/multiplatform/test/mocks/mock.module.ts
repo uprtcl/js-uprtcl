@@ -5,7 +5,7 @@ import { PatternsModule, Pattern } from '@uprtcl/cortex';
 import { mockSchema } from './mock.schema';
 import { MockPattern, Content } from './mock.pattern';
 import { CASModule } from '../../src/cas.module';
-import { MockSource } from './mock.source';
+import { MockSource } from './mock.store';
 
 export class MockModule extends MicroModule {
   constructor(protected initialObjects: Dictionary<any>) {

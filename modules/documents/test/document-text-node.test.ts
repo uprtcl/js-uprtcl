@@ -6,13 +6,12 @@ import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 import { CortexModule } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
-import { EveesModule } from '@uprtcl/evees';
+import { EveesModule, RemoteMap } from '@uprtcl/evees';
 
 import { DocumentsModule } from '../src/documents.module';
 import { MockStore } from './mocks/mock-store';
 import { TextType } from '../src/types';
 import { MockEveesProvider } from './mocks/mock-evees-provider';
-import { RemoteMap } from '@uprtcl/evees/dist/types/types';
 
 describe('<cortex-entity>', () => {
   let orchestrator: MicroOrchestrator;

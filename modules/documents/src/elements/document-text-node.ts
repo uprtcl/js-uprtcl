@@ -11,11 +11,11 @@ export const styleMap = style => {
 import { EveesContent } from '@uprtcl/evees';
 import { AddSyblingsEvent, RemoveChildrenEvent } from '@uprtcl/evees';
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { Entity } from '@uprtcl/cortex';
 
 import { TextNode, TextType } from '../types';
 import { DocumentsBindings } from '../bindings';
-import { Entity } from '@uprtcl/cortex';
-import { htmlToText } from 'src/uprtcl-documents';
+import { htmlToText } from '../support/documents.support';
 
 export class DocumentTextNode extends EveesContent<TextNode> {
   logger = new Logger('DOCUMENT-TEXT-NODE');

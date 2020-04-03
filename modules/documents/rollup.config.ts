@@ -1,3 +1,4 @@
+const alias = require('@rollup/plugin-alias');
 const sourceMaps = require('rollup-plugin-sourcemaps');
 const typescript = require('rollup-plugin-typescript2');
 const json = require('@rollup/plugin-json');
@@ -28,8 +29,8 @@ module.exports = {
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
     }),
+
     // Resolve source maps to the original source
     sourceMaps()
-  ],
-  preserveSymlinks: true
+  ]
 };

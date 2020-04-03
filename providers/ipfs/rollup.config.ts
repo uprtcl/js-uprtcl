@@ -35,16 +35,7 @@ module.exports = {
     // https://github.com/rollup/@rollup/plugin-node-resolve#usage
     resolve(),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-    commonjs({
-      include: /node_modules/,
-      exclude: [
-        '**/node_modules/mocha/**/*',
-        '**/node_modules/chai/**/*',
-        '**/node_modules/sinon-chai/**/*',
-        '**/node_modules/chai-dom/**/*',
-        '**/node_modules/core-js-bundle/**/*'
-      ]
-    }),
+    commonjs({}),
 
     // Resolve source maps to the original source
     sourceMaps()

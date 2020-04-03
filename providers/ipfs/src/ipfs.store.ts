@@ -15,7 +15,7 @@ import { IpfsConnectionOptions } from './types';
 import { sortObject } from './utils';
 
 export class IpfsStore extends Connection implements CASStore {
-  logger = new Logger('IpfsSource');
+  logger = new Logger('IpfsStore');
   client: any;
 
   casID = 'ipfs';

@@ -1,6 +1,7 @@
 const resolve = require('@rollup/plugin-node-resolve');
 const replace = require('@rollup/plugin-replace');
 const rollupConfig = require('./rollup.config');
+const commonjs = require('@rollup/plugin-commonjs');
 
 module.exports = config =>
   config.set({
@@ -40,6 +41,21 @@ module.exports = config =>
           delimiters: ['', '']
         }),
         ...rollupConfig.plugins,
+        // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
+        commonjs({
+          namedExports: {
+            'apollo-boost': ['gql', 'ApolloClient'],
+            'graphql-tools': ['makeExecutableSchema']
+          },
+          exclude: [
+            '**/node_modules/mocha/**/*',
+            '**/node_modules/chai/**/*',
+            '**/node_modules/sinon-chai/**/*',
+            '**/node_modules/chai-dom/**/*',
+            '**/node_modules/core-js-bundle/**/*'
+          ]
+        }),
+
         resolve({
           browser: true,
           preferBuiltins: false,

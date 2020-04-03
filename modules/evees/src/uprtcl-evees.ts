@@ -8,6 +8,7 @@ export {
   Context,
   PerspectiveDetails,
   RemotesConfig,
+  RemoteMap,
   UprtclAction
 } from './types';
 

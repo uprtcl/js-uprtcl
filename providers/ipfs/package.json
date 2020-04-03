@@ -19,6 +19,7 @@
     "concat-stream": "^2.0.0",
     "inversify": "^5.0.1",
     "ipfs-http-client": "^41.0.0",
+    "multihashing-async": "^0.8.1",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {

@@ -1,16 +1,22 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { MultiSourceService, DiscoveryModule, Store, StoresModule } from '@uprtcl/multiplatform';
-import { IsSecure } from '@uprtcl/cortex';
+import {
+  MultiSourceService,
+  DiscoveryModule,
+  CASStore,
+  CASModule,
+  KnownSourcesSource
+} from '@uprtcl/multiplatform';
+import { IsSecure, Signed } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Secured } from '../patterns/default-secured.pattern';
 import { Commit, Perspective } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
 import { NewPerspectiveData } from '../services/evees.provider';
+import { Secured } from 'src/patterns/cid-hash';
 
 export const eveesResolvers = {
   Commit: {
@@ -99,7 +105,9 @@ export const eveesResolvers = {
       { container }
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
-      const multiSource: MultiSourceService = container.get(DiscoveryModule.bindings.MultiSourceService);
+      const multiSource: MultiSourceService = container.get(
+        DiscoveryModule.bindings.MultiSourceService
+      );
       const secured: IsSecure<any> = container.get(EveesBindings.Secured);
 
       const commitData: Commit = {
@@ -111,27 +119,33 @@ export const eveesResolvers = {
       };
 
       const remote: EveesRemote = remotes.find(r => r.source === source);
-      const commit: Secured<Commit> = await secured.derive()(commitData, remote.hashRecipe);
+      const commit: Secured<Commit> = await secured.derive()(commitData, remote.cidConfig);
+
+      commit.casID = remote.casID;
 
       await remote.cloneCommit(commit);
-      await multiSource.postEntityCreate(remote, commit);
+      await multiSource.postEntityCreate(commit);
 
       return {
         id: commit.id,
-        ...commit.object
+        ...commit.entity
       };
     },
 
     async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
-      const multiSource: MultiSourceService = container.get(DiscoveryModule.bindings.MultiSourceService);
+      const multiSource: MultiSourceService = container.get(
+        DiscoveryModule.bindings.MultiSourceService
+      );
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
 
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
       await provider.updatePerspectiveDetails(perspectiveId, { headId });
 
-      await multiSource.postEntityUpdate(provider, [headId]);
+      if ((provider as unknown as KnownSourcesSource).knownSources) {
+        await multiSource.postEntityUpdate((provider as unknown as KnownSourcesSource), [headId]);
+      }
 
       const result = await client.query({
         query: gql`{
@@ -150,7 +164,7 @@ export const eveesResolvers = {
 
       return { id: perspectiveId, ...perspective, head: { id: headId } };
     },
-    
+
     async deletePerspective(parent, { perspectiveId }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const remote = await evees.getPerspectiveProviderById(perspectiveId);
@@ -175,7 +189,7 @@ export const eveesResolvers = {
       };
       const perspective: Secured<Perspective> = await secured.derive()(
         perspectiveData,
-        remote.hashRecipe
+        remote.cidConfig
       );
 
       const newPerspectiveData: NewPerspectiveData = {
@@ -183,7 +197,7 @@ export const eveesResolvers = {
         details: { headId, name, context },
         canWrite,
         parentId
-      }
+      };
       await remote.cloneAndInitPerspective(newPerspectiveData);
 
       return {
@@ -199,11 +213,7 @@ export const eveesResolvers = {
       };
     },
 
-    async addProposal(
-      _,
-      { toPerspectiveId, fromPerspectiveId, updateRequests },
-      { container }
-    ) {
+    async addProposal(_, { toPerspectiveId, fromPerspectiveId, updateRequests }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = await evees.getPerspectiveProviderById(toPerspectiveId);
@@ -223,15 +233,10 @@ export const eveesResolvers = {
         authorized: false,
         canAuthorize: false,
         executed: false
-      }
+      };
     },
 
-    async authorizeProposal(
-      _,
-      { proposalId, perspectiveId, authorize },
-      { container }
-    ) {
-
+    async authorizeProposal(_, { proposalId, perspectiveId, authorize }, { container }) {
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
       const evees: Evees = container.get(EveesBindings.Evees);
 
@@ -259,16 +264,10 @@ export const eveesResolvers = {
 
       return {
         id: proposalId,
-        authorized: authorize,
-      }
-
+        authorized: authorize
+      };
     },
-    async executeProposal(
-      _,
-      { proposalId, perspectiveId },
-      { container }
-    ) {
-
+    async executeProposal(_, { proposalId, perspectiveId }, { container }) {
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
       const evees: Evees = container.get(EveesBindings.Evees);
 
@@ -289,25 +288,24 @@ export const eveesResolvers = {
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
       await remote.proposals.executeProposal(proposalId);
-      
+
       return {
         id: proposalId,
         toPerspectiveId: perspectiveId,
-        executed: true,
-      }
-
+        executed: true
+      };
     }
   }
 };
 
 export const contentCreateResolver = async (content, source, container) => {
-  const stores: Store[] = container.getAll(StoresModule.bindings.Store);
+  const stores: CASStore[] = container.getAll(CASModule.bindings.CASStore);
 
-  const store = stores.find(d => d.source === source);
+  const store = stores.find(d => d.casID === source);
 
   if (!store) throw new Error(`No store registered for source ${source}`);
 
-  const id = await store.put(content);
+  const id = await store.create(content);
 
   return { id, ...content };
-}
+};
