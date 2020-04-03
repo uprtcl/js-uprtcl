@@ -24,7 +24,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
   @property({ type: Boolean, attribute: false })
   focused: Boolean = false;
 
-  symbol: symbol | undefined = DocumentsBindings.TextNodeEntity;
+  symbol: string | undefined = DocumentsBindings.TextNodeEntity;
 
   currentText: string | undefined = undefined;
 

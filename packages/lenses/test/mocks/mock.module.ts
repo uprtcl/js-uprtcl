@@ -21,7 +21,7 @@ export class MockModule extends MicroModule {
   submodules = [
     new ElementsModule({ 'mock-element': MockElement }),
     new GraphQlSchemaModule(mockSchema),
-    new PatternsModule({ [Symbol('mock')]: [MockPattern, ...this.initialPatterns] }),
+    new PatternsModule({ mock: [MockPattern, ...this.initialPatterns] }),
     new SourcesModule([
       { source: new MockSource(this.initialObjects), symbol: Symbol('mock-source') }
     ])

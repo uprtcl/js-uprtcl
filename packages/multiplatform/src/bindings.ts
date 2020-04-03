@@ -1,14 +1,14 @@
 export const MultiplatformBindings = {
-  DiscoveryService: Symbol('discovery-service'),
-  TaskQueue: Symbol('task-queue'),
-  EntityCache: Symbol('entity-cache'),
-  LocalKnownSources: Symbol('local-known-sources')
+  DiscoveryService: 'discovery-service',
+  TaskQueue: 'task-queue',
+  EntityCache: 'entity-cache',
+  LocalKnownSources: 'local-known-sources'
 };
 
 export const SourcesBindings = {
-  Source: Symbol('discovery-source')
+  Source: 'discovery-source'
 };
 
 export const StoresBindings = {
-  Store: Symbol('discovery-store')
+  Store: 'discovery-store'
 };

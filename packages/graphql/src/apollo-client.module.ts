@@ -14,7 +14,7 @@ import { NamedDirective } from './types';
 export type ApolloClientBuilder = (finalLink: ApolloLink) => ApolloClient<any>;
 
 export class ApolloClientModule extends MicroModule {
-  static id = Symbol('apollo-client-module');
+  static id = 'apollo-client-module';
 
   static bindings = ApolloClientBindings;
 

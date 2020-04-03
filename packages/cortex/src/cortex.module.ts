@@ -11,7 +11,7 @@ import { cortexSchema } from './graphql/schema';
 import { cortexResolvers } from './graphql/resolvers';
 
 export class CortexModule extends MicroModule {
-  static id = Symbol('cortex-module');
+  static id = 'cortex-module';
 
   static bindings = CortexBindings;
 
