@@ -172,8 +172,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     /** visit the node children for every*/
     while(path.length > 0) {
-      const ix = path.shift();
-      if (!ix) throw new Error(`node not found at ${path}`);
+      let ix = path.shift();
+      if (ix === undefined) throw new Error(`node not found at ${path}`);
       node = node.childrenNodes[ix];
     }
 
@@ -337,22 +337,17 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     /** update path of child nodes */
     node.childrenNodes.map((child, ix) => child.path = node.path.concat([ix]));
     node.draft = node.hasChildren.replaceChildrenLinks(node.draft)(newChildren);
-    
+
     return removed;
   }
 
   /** explore node children at path until the last child of the last child is find 
    * and returns the path to that element */
   getLastChild(node: DocNode) {
-    let relPath: number[] = [];
-
-    let child = {...node};
+    let child = node;
     while (child.childrenNodes.length > 0) {
-      const lastChildIx = child.childrenNodes.length - 1;
-      relPath.push(lastChildIx);
-      child = node.childrenNodes[lastChildIx];
+      child = node.childrenNodes[child.childrenNodes.length - 1];
     }
-
     return child;
   }
 
@@ -385,13 +380,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   getBackwardNode(node: DocNode) : DocNode | undefined {
-    const last = node.path[node.path.length];
+    const last = node.path[node.path.length - 1];
     if (last === 0) {
-      /** backward is the parent, thus remove the last element in the path */
-      return undefined
+      /** backward is the parent */
+      return node.parent;
     } else {
       /** backward is the last child of the upper sybling */
-            let pathOfBackward = [...node.path];
+      let pathOfBackward = [...node.path];
       const siblingPath = [...pathOfBackward];
       siblingPath[siblingPath.length - 1] = last - 1;
       return this.getLastChild(this.getNodeAt(siblingPath));
@@ -447,7 +442,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   focusBackward(node: DocNode) {
     this.logger.log('focusBackward()', {node});
-
+    
     const backwardNode = this.getBackwardNode(node);
     if (!backwardNode) return;
 
@@ -458,7 +453,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   focusDownward(node: DocNode) {
     this.logger.log('focusDownward()', {node});
-
+    
     const downwardNode = this.getDownwardNode(node);
     if (!downwardNode) return;
 
