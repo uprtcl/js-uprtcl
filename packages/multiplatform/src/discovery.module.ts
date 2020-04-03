@@ -14,7 +14,7 @@ import { CASSourceDirective } from './graphql/directives/cas-source-directive';
 import { EntityCache } from './graphql/entity-cache';
 
 export class DiscoveryModule extends MicroModule {
-  static id = Symbol('discovery-module');
+  static id = 'discovery-module';
 
   static bindings = MultiplatformBindings;
 

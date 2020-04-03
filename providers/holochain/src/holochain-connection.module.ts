@@ -6,7 +6,7 @@ import { HolochainConnection } from './holochain.connection';
 import { HolochainConnectionBindings } from './bindings';
 
 export class HolochainConnectionModule extends MicroModule {
-  static id = Symbol('holochain-connection-module');
+  static id = 'holochain-connection-module';
 
   static bindings = HolochainConnectionBindings;
 

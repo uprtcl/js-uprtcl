@@ -41,7 +41,7 @@ import { WikiBindings } from './bindings';
  * @param wikisRemote an array of remotes of wikis
  */
 export class WikisModule extends MicroModule {
-  static id = Symbol('wikis-module');
+  static id = 'wikis-module';
 
   static bindings = WikiBindings;
 

@@ -4,11 +4,11 @@ import i18next from 'i18next';
 import { MicroModule } from '../../orchestrator/micro.module';
 
 export class i18nextBaseModule extends MicroModule {
-  static id = Symbol('i18n-base-module');
+  static id = 'i18n-base-module';
 
   static bindings= {
-    Translate: Symbol('i18n-function'),
-    Service: Symbol('i18n-service')
+    Translate: 'i18n-function',
+    Service: 'i18n-service'
   };
 
   async onLoad(container: interfaces.Container): Promise<void> {

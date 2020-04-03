@@ -71,7 +71,7 @@ import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
  * @param localEvees
  */
 export class EveesModule extends MicroModule {
-  static id = Symbol('evees-module');
+  static id = 'evees-module';
 
   dependencies = [AccessControlModule.id];
 
