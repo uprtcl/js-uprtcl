@@ -13,19 +13,19 @@ export interface TextNode {
 }
 
 export interface DocNode {
-  path: number[],
   ref: string,
   authority: string,
-  headId?: string,
   data?: Hashed<any>,
   draft: any,
-  symbol: symbol,
-  editable: boolean,
-  hasDocNodeLenses: HasDocNodeLenses,
-  hasChildren: HasChildren,
-  parent?: DocNode,
   childrenNodes: DocNode[],
-  focused: boolean
+  symbol: symbol,
+  headId?: string,
+  editable: boolean,
+  parent?: DocNode,
+  ix?: number,              // ix on parent
+  focused: boolean,
+  hasDocNodeLenses: HasDocNodeLenses,
+  hasChildren: HasChildren
 }
 
 export interface DocNodeEventsHandlers {

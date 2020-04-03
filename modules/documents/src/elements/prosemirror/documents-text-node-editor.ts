@@ -14,6 +14,7 @@ import { blockSchema } from './schema-block';
 import { iconsStyle } from './icons.css';
 import { icons } from './icons';
 import { TextType } from '../../types';
+import { runInThisContext } from 'vm';
 
 export const APPEND_ACTION = 'append';
 export const FOCUS_ACTION = 'focus';
@@ -22,9 +23,8 @@ export class DocumentTextNodeEditor extends LitElement {
 
   logger = new Logger('DOCUMENT-TEXT-NODE-EDITOR');
 
-
   @property({ type: String })
-  type!: string;
+  type!: TextType;
 
   @property({ type: String })
   init!: string;
@@ -160,7 +160,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   getValidInnerHTML(text: string) {
-    if (text.startsWith('<')) { 
+    if (text.startsWith('<h1') || text.startsWith('<p')) { 
       const temp = document.createElement('template');
       temp.innerHTML = text.trim();
       if (temp.content.firstElementChild == null) {
@@ -174,12 +174,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
   getValidDocHtml(text: string) {
     const innerHTML = this.getValidInnerHTML(text);
-    let tag;
-    if (this.editor.view.state.doc.content.content[0].type.name === 'heading') {
-      tag = 'h1';
-    } else {
-      tag = 'p';
-    }
+    let tag = this.type === TextType.Title ? 'h1': 'p';
     return `<${tag}>${innerHTML}</${tag}>`;
   }
 
@@ -325,7 +320,7 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.serializer = DOMSerializer.fromSchema(schema);
 
     this.currentContent = this.init;
-    const doc = this.html2doc(this.init);
+    const doc = this.html2doc(this.getValidDocHtml(this.init));
 
     /** the heading level for render is given by the `level` attribute,
      * not the heading tag (which is always <h1> in the data text) */
@@ -362,24 +357,13 @@ export class DocumentTextNodeEditor extends LitElement {
     const fragment = this.editor.serializer.serializeFragment(state.doc);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
-    return temp.innerHTML;
+    return (temp.firstElementChild as HTMLElement).innerHTML;
   }
 
   html2doc(text: string) {
     /** convert HTML string to doc state */
-    let htmlString = text.trim();
-
-    /** sorry, text must be converted to HTML */
-    if (!htmlString.startsWith('<')) {
-      if (this.type === TextType.Title) {
-        htmlString = `<h1>${htmlString}</h1>`;
-      } else {
-        htmlString = `<p>${htmlString}</p>`;
-      }
-    }
-
     let temp = document.createElement('template');
-    temp.innerHTML = htmlString;
+    temp.innerHTML = text;
     const element = temp.content.firstChild;
 
     return this.editor.parser.parse(element);
@@ -404,16 +388,11 @@ export class DocumentTextNodeEditor extends LitElement {
 
     /** doc changed */
 
-    /** make sure heading is <h1> */
-    if (newState.doc.content.content[0].type.name === 'heading') {
-      newState.doc.content.content[0].attrs.level = 1;
-    }
-
     const newContent = this.state2Html(newState);
 
     this.logger.log(`dispatchTransaction() - content-changed`, {content, newContent});
 
-    /** local copy of the html represeting the current state */
+    /** local copy of the html (withot the external tag) represeting the current state */
     this.currentContent = newContent;
 
     this.dispatchEvent(

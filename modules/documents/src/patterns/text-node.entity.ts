@@ -49,6 +49,19 @@ const typeToTextNode = (textNode: TextNode, type: TextType) : TextNode => {
   };
 }
 
+const nodeLevel = (node: DocNode) => {
+  let level = 1;
+  let parent : DocNode | undefined = node;
+  parent = parent.parent;
+
+  while (parent !== undefined) {
+    level = level + 1;
+    parent = parent.parent;
+  }
+
+  return level;
+}
+
 @injectable()
 export class TextNodeEntity implements Entity {
   constructor(
@@ -124,7 +137,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
             <documents-text-node-editor
               type=${node.draft.type}
               init=${node.draft.text}
-              level=${node.path.length}
+              level=${nodeLevel(node)}
               editable=${node.editable ? 'true' : 'false'}
               focus-init=${node.focused}
               @focus=${events.focus}
@@ -135,7 +148,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}
-              @change-type=${(e) => events.contentChanged(typeToTextNode(node.draft, e.detail.content))}
+              @change-type=${(e) => events.contentChanged(typeToTextNode(node.draft, e.detail.type))}
             >
             </documents-text-node-editor>
           `;
