@@ -19,6 +19,7 @@ import { TextType, DocNode } from 'src/types';
 import { HasDocNodeLenses } from 'src/patterns/document-patterns';
 import { DocumentsBindings } from 'src/bindings';
 import { timingSafeEqual } from 'crypto';
+import { icons } from './prosemirror/icons';
 
 export class DocumentEditor extends moduleConnect(LitElement) {
 
@@ -333,7 +334,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const removed = newChildren.splice(index, count, ...newNodes.map(node => node.ref));
     node.childrenNodes.splice(index, count, ...newNodes);
 
+    /** update path of child nodes */
+    node.childrenNodes.map((child, ix) => child.path = node.path.concat([ix]));
     node.draft = node.hasChildren.replaceChildrenLinks(node.draft)(newChildren);
+    
     return removed;
   }
 
@@ -519,6 +523,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const firstRef = node.parent ? node.parent.childrenNodes[node.path[node.path.length - 1]].ref : node.ref;
     const color = 'red';
     const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
+    const isPlaceholder = node.data === undefined;
     
     return html`
       <div class="row" style=${styleMap({ backgroundColor: node.focused ? '#f7f6f3' : 'transparent' })}>
@@ -542,6 +547,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               push: () => this.push(node),
               split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
             })}
+            ${false ? html`<div class="node-mark">${icons.add_box}</div>` : ''}
           </div>
         </div>
       </div>
@@ -578,6 +584,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
       .node-content {
         flex: 1 1 0;
+        position: relative;
+      }
+
+      .node-mark {
+        position: absolute;
+        left: -2px;
+        top: 7px;
+        fill: #3a865a;
+      }
+
+      .node-mark svg {
+        height: 14px;
+        width: 14px;
       }
     `;
   }
