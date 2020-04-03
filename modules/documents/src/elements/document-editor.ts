@@ -68,7 +68,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const node = await this.loadNode(ref, path);
     
-    const loadChildren = node.hasChildren.getChildrenLinks(node.data).map(async (child, ix): Promise<DocNode> => {
+    const loadChildren = node.hasChildren.getChildrenLinks(node.draft).map(async (child, ix): Promise<DocNode> => {
       return this.loadNodeRec(child, path.concat([ix]), node);
     })
 
@@ -120,10 +120,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const data = await discovery.get(dataId);
     if (!data) throw Error('Data undefined');
 
-    const hasChildren = this.getPatternOfObject<HasChildren>(data, 'getChildrenLinks');
+    const hasChildren = this.getPatternOfObject<HasChildren>(data.object, 'getChildrenLinks');
     if (!data) throw Error('hasChildren undefined');
 
-    const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(data, 'docNodeLenses');
+    const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(data.object, 'docNodeLenses');
     if (!hasDocNodeLenses) throw Error('docNodeLenses undefined');
 
     // TODO hasChildren hasDocNodeLenses on runtime are the same object :)
@@ -137,6 +137,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       hasChildren: hasChildren,
       childrenNodes: [],
       data: data,
+      draft: {...data.object},
       headId: headId,
       symbol: DocumentsBindings.TextNodeEntity, // TODO: Derive symbol from pattern ?
       hasDocNodeLenses: hasDocNodeLenses,
@@ -224,11 +225,22 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return creatable.create()(content, store.source);
   }
 
-  async commitContent(node: DocNode): Promise<void> {
+  async commitAll() {
+    if (!this.doc) return;
+    this.commitNodeRec(this.doc);
+  }
+
+  async commitNodeRec(node: DocNode) {
+    const commitChildren = node.childrenNodes.map(child => this.commitNodeRec(child));
+    await Promise.all(commitChildren);
+    await this.commitDraft(node);
+  }
+
+  async commitDraft(node: DocNode): Promise<void> {
     const eveesRemotes = this.eveesRemotes as EveesRemote[];
     const client = this.client as ApolloClient<any>;
     
-    const object = await this.createEntity(node.data.object, node.symbol, node.authority);
+    const object = await this.createEntity(node.draft, node.symbol, node.authority);
     const remote = eveesRemotes.find(r => r.authority === node.authority);
     if (!remote) throw new Error('remote undefined');;
 
@@ -279,35 +291,49 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return perspective.id;
   }
 
+  createPlaceholder(ref: string, path: number[], draft: any, symbol: symbol, authority: string, parent: DocNode) : DocNode {
+    const hasChildren = this.getPatternOfObject<HasChildren>(draft, 'getChildrenLinks');
+    const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(draft, 'docNodeLenses');
+    return {
+      draft,
+      childrenNodes: [],
+      hasChildren,
+      hasDocNodeLenses,
+      path,
+      ref,
+      symbol,
+      parent,
+      authority,
+      editable: true,
+      focused: false
+    }
+  }
+
   /** node updated as reference */
   async spliceChildren(node: DocNode, elements: any[] = [], index?: number, count: number = 0): Promise<string[]> {
     this.logger.log('spliceChildren()', {node, elements, index, count});
     
-    const currentChildren = node.hasChildren.getChildrenLinks(node.data);
+    const currentChildren = node.hasChildren.getChildrenLinks(node.draft);
     index = index !== undefined ? index : currentChildren.length;
 
     /** create objects if elements is not an id */
-    const create = elements.map(el => {
+    const getNewNodes = elements.map((el, ix) => {
+      const elIndex = (index as number) + ix;
       if (typeof el !== 'string') {
-        return this.createEvee(el.object, el.symbol, node.authority);
+        const tempRef = node.ref + '-' + elIndex.toString();
+        return Promise.resolve(this.createPlaceholder(tempRef, node.path.concat(elIndex), el.object, el.symbol, node.authority, node));
       } else {
-        return Promise.resolve(el);
+        return this.loadNodeRec(el, node.path.concat(elIndex), node);
       }
     })
 
-    const elementsIds = await Promise.all(create);
-    const getNewNodes = elementsIds.map(async (ref, ix) => {
-      return this.loadNodeRec(ref, node.path.concat([(index as number) + ix]));
-    });
     const newNodes = await Promise.all(getNewNodes);
 
     let newChildren = [...currentChildren];
-    const removed = newChildren.splice(index, count, ...elementsIds);
+    const removed = newChildren.splice(index, count, ...newNodes.map(node => node.ref));
     node.childrenNodes.splice(index, count, ...newNodes);
-    node.data = node.hasChildren.replaceChildrenLinks(node.data)(newChildren);
 
-    this.commitContent(node);
-
+    node.draft = node.hasChildren.replaceChildrenLinks(node.draft)(newChildren);
     return removed;
   }
 
@@ -369,10 +395,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async createChild(node: DocNode, newEntity: any, symbol: symbol, index?: number) {
-    this.logger.log('createChildAt()', {node, newEntity, symbol, index});
+    this.logger.log('createChild()', {node, newEntity, symbol, index});
 
-    const newLink = await this.createEvee(newEntity, symbol, node.authority);
-    await this.spliceChildren(node, [newLink], 0);
+    await this.spliceChildren(node, [{object: newEntity, symbol}], 0);
 
     /** focus child */
     const child = node.childrenNodes[0];
@@ -381,6 +406,21 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       child.parent.focused = false;
     } 
     child.focused = true;
+    
+    this.requestUpdate();
+  }
+
+  async createSibling(node: DocNode, newEntity: any, symbol: symbol) {
+    if (!node.parent) throw new Error('Node dont have a parent');
+    this.logger.log('createSibling()', {node, newEntity, symbol});
+
+    const siblingIx = node.path[node.path.length - 1] + 1;
+    await this.spliceChildren(node.parent, [{object: newEntity, symbol}], siblingIx);
+
+    /** focus sibling */
+    const sibling = node.parent.childrenNodes[siblingIx];
+    node.focused = false;
+    sibling.focused = true;
     
     this.requestUpdate();
   }
@@ -425,11 +465,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   contentChanged(node: DocNode, content: any) {
     this.logger.log('contentChanged()', {node, content});
-
-    /** optimistically set node.data */
-    node.data = content;
-    /** trigger update node content */
-    this.commitContent(node);
+    
+    /** optimistically set node.draft */
+    node.draft = content;
 
     /** inform the external world if top element */
     if (node.path.length === 1) {
@@ -462,11 +500,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   split(node: DocNode, tail: string, asChild: boolean) {
     this.logger.log('split()', { node, tail });
+    
+    const dftEntity = this.defaultEntity(tail, TextType.Paragraph);
+    
     if (asChild) {
-      const dftEntity = this.defaultEntity(tail, TextType.Paragraph);
       this.createChild(node, dftEntity.data, dftEntity.symbol, 0);
     } else {
-      // TODO this.createSiblingAt(path, this.defaultEntity(tail, TextType.Paragraph), DocumentsBindings.TextNodeEntity, 0);
+      this.createSibling(node, dftEntity.data, dftEntity.symbol);
     }
   }
   

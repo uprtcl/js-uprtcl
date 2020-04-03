@@ -35,23 +35,17 @@ const propertyOrder = ['text', 'type', 'links'];
 
 const logger = new Logger('TEXT-NODE-ENTITY');
 
-const textToTextNode = (textNode: Hashed<TextNode>, text: string) : Hashed<TextNode> => {
+const textToTextNode = (textNode: TextNode, text: string) : TextNode => {
   return {
-    id: textNode.id, 
-    object: {
-      ...textNode.object,
-      text: text
-    }
+      ...textNode,
+    text: text
   };
 }
 
-const typeToTextNode = (textNode: Hashed<TextNode>, type: TextType) : Hashed<TextNode> => {
+const typeToTextNode = (textNode: TextNode, type: TextType) : TextNode => {
   return {
-    id: textNode.id, 
-    object: {
-      ...textNode.object,
-      type: type
-    }
+    ...textNode,
+    type: type
   };
 }
 
@@ -78,21 +72,22 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
     super(hashedPattern);
   }
 
-  replaceChildrenLinks = (node: Hashed<TextNode>) => (
+  recognize(object: object): boolean {
+    return propertyOrder.every(p => object.hasOwnProperty(p));
+  }
+
+  replaceChildrenLinks = (node: TextNode) => (
     childrenHashes: string[]
-  ): Hashed<TextNode> => ({
-    id: '',
-    object: {
-      ...node.object,
-      links: childrenHashes
-    }
+  ): TextNode => ({
+    ...node,
+    links: childrenHashes
   });
 
-  getChildrenLinks = (node: Hashed<TextNode>): string[] => node.object.links;
+  getChildrenLinks = (node: TextNode): string[] => node.links;
 
-  links = async (node: Hashed<TextNode>) => this.getChildrenLinks(node);
+  links = async (node: TextNode) => this.getChildrenLinks(node);
 
-  lenses = (node: Hashed<TextNode>): Lens[] => {
+  lenses = (node: TextNode): Lens[] => {
     return [
       {
         name: 'documents:document',
@@ -127,20 +122,20 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <documents-text-node-editor
-              type=${node.data.object.type}
-              init=${node.data.object.text}
+              type=${node.draft.type}
+              init=${node.draft.text}
               level=${node.path.length}
               editable=${node.editable ? 'true' : 'false'}
               focus-init=${node.focused}
               @focus=${events.focus}
               @blur=${events.blur}
-              @content-changed=${(e) => events.contentChanged(textToTextNode(node.data, e.detail.content))}
+              @content-changed=${(e) => events.contentChanged(textToTextNode(node.draft, e.detail.content))}
               @enter-pressed=${(e) => events.split(e.detail.content, e.detail.asChild)}
               @backspace-on-start=${events.joinBackward}
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}
-              @change-type=${(e) => events.contentChanged(typeToTextNode(node.data, e.detail.content))}
+              @change-type=${(e) => events.contentChanged(typeToTextNode(node.draft, e.detail.content))}
             >
             </documents-text-node-editor>
           `;
