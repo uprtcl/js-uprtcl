@@ -58,7 +58,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
   editor: any = {};
   preventHide: Boolean = false;
-  content: any | undefined = undefined;
+  currentContent: string | undefined = undefined;
 
   connectedCallback() {
     super.connectedCallback();
@@ -114,14 +114,12 @@ export class DocumentTextNodeEditor extends LitElement {
     if (changedProperties.has('editable') || changedProperties.has('type')) {
       // this.logger.info('updated() - editable || type', {editable: this.editable, type: this.type, changedProperties});
       this.initEditor();
-    } else {
-      if (changedProperties.has('init')) {
-        // this.logger.info('updated() - init', {thisinit: this.init, changedPropertiesinit: changedProperties.get('init')});
-        if (changedProperties.get('init') == undefined) {
-          /** only reinitialize the first time init changes */
-          this.initEditor();
-          return;
-        }
+    } 
+
+    if (changedProperties.has('init')) {
+      if (this.init !== this.currentContent) {
+        this.initEditor();
+        return;
       }
     }
 
@@ -326,6 +324,7 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.parser = DOMParser.fromSchema(schema);
     this.editor.serializer = DOMSerializer.fromSchema(schema);
 
+    this.currentContent = this.init;
     const doc = this.html2doc(this.init);
 
     /** the heading level for render is given by the `level` attribute,
@@ -413,6 +412,9 @@ export class DocumentTextNodeEditor extends LitElement {
     const newContent = this.state2Html(newState);
 
     this.logger.log(`dispatchTransaction() - content-changed`, {content, newContent});
+
+    /** local copy of the html represeting the current state */
+    this.currentContent = newContent;
 
     this.dispatchEvent(
       new CustomEvent('content-changed', {

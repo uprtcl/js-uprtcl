@@ -50,6 +50,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   updated(changedProperties) {
     this.logger.log('updated()', {ref: this.ref, changedProperties})
+    
+    if (changedProperties.has('ref')) {
+      this.loadDoc();
+    }
   }
 
   async loadDoc() {
@@ -366,7 +370,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async createChild(node: DocNode, newEntity: any, symbol: symbol, index?: number) {
     this.logger.log('createChildAt()', {node, newEntity, symbol, index});
-    
+
     const newLink = await this.createEvee(newEntity, symbol, node.authority);
     await this.spliceChildren(node, [newLink], 0);
 
@@ -520,6 +524,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   render() {
+    this.logger.log('render()', {doc: this.doc});
     if (!this.doc) return '';
     return this.renderDocNode(this.doc);
   }

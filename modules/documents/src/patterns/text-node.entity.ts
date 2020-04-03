@@ -131,6 +131,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
               init=${node.data.object.text}
               level=${node.path.length}
               editable=${node.editable ? 'true' : 'false'}
+              focus-init=${node.focused}
               @focus=${events.focus}
               @blur=${events.blur}
               @content-changed=${(e) => events.contentChanged(textToTextNode(node.data, e.detail.content))}
