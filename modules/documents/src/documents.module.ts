@@ -44,7 +44,7 @@ import { DocumentsBindings } from './bindings';
  * @param stores an array of stores where documents can be put and retrieved
  */
 export class DocumentsModule extends MicroModule {
-  static id = Symbol('documents-module');
+  static id = 'documents-module';
 
   static bindings = DocumentsBindings;
 

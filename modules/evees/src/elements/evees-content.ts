@@ -56,7 +56,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   protected authority: string = '';
   protected currentHeadId: string | undefined = undefined;
 
-  abstract symbol: symbol | undefined;
+  abstract symbol: string | undefined;
   abstract getEmptyEntity(): T;
 
   get level(): number {

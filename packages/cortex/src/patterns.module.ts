@@ -24,7 +24,7 @@ export class PatternsModule extends MicroModule {
   dependencies = [CortexModule.id];
 
   static bindings= {
-    Pattern: Symbol('pattern')
+    Pattern: 'pattern'
   };
 
   constructor(protected patterns: Dictionary<Array<Constructor<Pattern>>>) {
@@ -34,7 +34,7 @@ export class PatternsModule extends MicroModule {
   async onLoad(container: interfaces.Container): Promise<void> {
     // Initialize all the patterns
     const patterns = this.patterns;
-    for (const symbol of Object.getOwnPropertySymbols(patterns)) {
+    for (const symbol of Object.getOwnPropertyNames(patterns)) {
       for (const p of patterns[symbol as any]) {
         container.bind<Pattern>(PatternsModule.bindings.Pattern).to(p);
         container.bind(symbol).to(p);

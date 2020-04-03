@@ -1,11 +1,11 @@
 export const EveesBindings = {
-  PerspectivePattern: Symbol('perspective-pattern'),
-  CommitPattern: Symbol('commit-pattern'),
-  EveesRemote: Symbol('evees-remote'),
-  MergeStrategy: Symbol('merge-strategry'),
-  Evees: Symbol('evees'),
-  RemotesConfig: Symbol('evees'),
-  Hashed: Symbol('core-hashed-pattern'),
-  Secured: Symbol('core-secured-pattern'),
-  Signed: Symbol('core-signed-pattern')
+  PerspectivePattern: 'perspective-pattern',
+  CommitPattern: 'commit-pattern',
+  EveesRemote: 'evees-remote',
+  MergeStrategy: 'merge-strategry',
+  Evees: 'evees',
+  RemotesConfig: 'evees',
+  Hashed: 'core-hashed-pattern',
+  Secured: 'core-secured-pattern',
+  Signed: 'core-signed-pattern'
 };

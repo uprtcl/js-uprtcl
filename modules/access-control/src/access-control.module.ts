@@ -13,7 +13,7 @@ import en from './i18n/en.json';
 import { PermissionsAdmin } from './elements/permissions-admin';
 
 export class AccessControlModule extends MicroModule {
-  static id = Symbol('access-control-module');
+  static id = 'access-control-module';
 
   async onLoad() {}
 
@@ -32,7 +32,7 @@ export class AccessControlModule extends MicroModule {
   ];
 
   static bindings = {
-    OwnerPattern: Symbol('owner-pattern'),
-    BasicAdminPattern: Symbol('basic-admin-pattern')
+    OwnerPattern: 'owner-pattern',
+    BasicAdminPattern: 'basic-admin-pattern'
   };
 }

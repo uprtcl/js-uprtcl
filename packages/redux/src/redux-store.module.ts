@@ -15,7 +15,7 @@ import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { ReduxBindings } from './bindings';
 
 export class ReduxStoreModule extends MicroModule {
-  static id = Symbol('redux-store-module');
+  static id = 'redux-store-module';
 
   static bindings = ReduxBindings;
 
