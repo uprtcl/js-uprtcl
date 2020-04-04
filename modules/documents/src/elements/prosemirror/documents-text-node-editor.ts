@@ -29,6 +29,9 @@ export class DocumentTextNodeEditor extends LitElement {
   @property({ type: String })
   init!: string;
 
+  @property({ type: String, attribute: 'to-append' })
+  toAppend!: string;
+
   @property({ type: String })
   editable: string = 'true';
 
@@ -69,26 +72,6 @@ export class DocumentTextNodeEditor extends LitElement {
       }, 200);
     });
 
-    this.addEventListener('keypress', e => {
-      const key = e.which || e.keyCode;
-      // 13 is enter
-      if (key === 13) {
-        e.preventDefault();
-
-        if (this.showUrl) {
-          this.linkConfirmed();
-        }
-      }
-
-      // 27 is esc
-      if (key === 27) {
-        e.preventDefault();
-
-        this.preventHide = false;
-        this.showUrl = false;
-        this.showMenu = false;
-      }
-    });
   }
 
   firstUpdated() {
@@ -96,7 +79,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   updated(changedProperties: Map<string, any>) {
-    // this.logger.log('updated()', { changedProperties });
+    this.logger.log('updated()', { changedProperties });
 
     if (changedProperties.has('toggleAction')) {
       if (changedProperties.get('toggleAction') !== undefined) {
@@ -109,8 +92,16 @@ export class DocumentTextNodeEditor extends LitElement {
         this.editor.view.focus();
       }
     }
-    
 
+    if (changedProperties.has('toAppend')) {
+      if ((changedProperties.get('toAppend') === undefined) || (changedProperties.get('toAppend') === 'undefined')) {
+        if (this.toAppend !== 'undefined') {
+          this.appendContent(this.toAppend);
+          this.dispatchEvent(new CustomEvent('content-appended'));
+        }
+      }
+    }
+    
     if (changedProperties.has('editable') || changedProperties.has('type')) {
       // this.logger.info('updated() - editable || type', {editable: this.editable, type: this.type, changedProperties});
       this.initEditor();
@@ -133,10 +124,10 @@ export class DocumentTextNodeEditor extends LitElement {
     if (changedProperties.has('selected')) {
       if (!this.selected) {
         if (!this.preventHide) {
-          this.showMenu = false;
+          this.setShowMenu(false);
         }
       } else {
-        this.showMenu = true;
+        this.setShowMenu(true);
       }
     }
   }
@@ -209,6 +200,8 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   keydown(view, event) {
+
+    this.logger.log('keydown()', {keyCode: event.keyCode});
     
     /** enter */
     if (event.keyCode === 13) {
@@ -232,10 +225,25 @@ export class DocumentTextNodeEditor extends LitElement {
       temp.appendChild(fragment);
       const content = temp.innerHTML;
       
-      this.logger.log('enter-pressed');
-      this.dispatchEvent(new CustomEvent('enter-pressed', { detail: { content, asChild: this.type === TextType.Title } }));
+      this.logger.log('enter-pressed', {content});
+      this.dispatchEvent(new CustomEvent('enter-pressed', { 
+        detail: { 
+          content, 
+          asChild: this.type === TextType.Title 
+        } 
+      }));
       
       return;
+    }
+
+    // 27 is esc
+    if (event.keyCode === 27) {
+      if (this.showMenu) {
+        event.preventDefault();
+        this.preventHide = false;
+        this.showUrl = false;
+        this.setShowMenu(false);
+      }
     }
 
     /** backspace */
@@ -244,7 +252,7 @@ export class DocumentTextNodeEditor extends LitElement {
         event.preventDefault();
 
         const content = this.state2Html(view.state);
-        this.logger.log('backspace-on-start');
+        this.logger.log('backspace-on-start', {content});
         this.dispatchEvent(new CustomEvent('backspace-on-start', {
           bubbles: true, 
           composed: true, 
@@ -424,6 +432,53 @@ export class DocumentTextNodeEditor extends LitElement {
     );
   }
 
+  urlKeydown(event) {
+    // 27 is esc
+    if (event.keyCode === 27) {
+      if (this.showMenu) {
+        event.preventDefault();
+        this.linkCancelled();
+      }
+    }
+
+    // 13 is enter
+    if (event.keyCode === 13) {
+      if (this.showMenu) {
+        event.preventDefault();
+        this.linkConfirmed()
+      }
+    }
+  }
+
+  async setShowMenu(value: boolean) {
+    if (!this.shadowRoot) return;
+
+    this.showMenu = value;
+    this.requestUpdate();
+
+    if (value === true) {
+      await this.updateComplete;
+
+      const menu = this.shadowRoot.getElementById('TOP_MENU');
+      if (!menu) return;
+
+      /** listen events */
+      menu.addEventListener('keydown', (event) => {
+        if (event.keyCode === 27) {
+          // 27 is esc
+          event.stopPropagation();
+          this.setShowMenu(false);
+        }
+      })
+
+    } else {
+      if (this.preventHide) {
+        this.editor.view.focus();
+      }
+    }
+    
+  }
+
   linkClick() {
     this.preventHide = true;
     this.showUrl = !this.showUrl;
@@ -432,7 +487,7 @@ export class DocumentTextNodeEditor extends LitElement {
   linkCancelled() {
     this.preventHide = false;
     this.showUrl = false;
-    this.showMenu = false;
+    this.setShowMenu(false);
   }
 
   linkConfirmed() {
@@ -477,13 +532,13 @@ export class DocumentTextNodeEditor extends LitElement {
   renderUrlMenu() {
     return html`
       <div class="inp">
-        <input placeholder="url" id="URL_INPUT" />
-        <div @click=${this.linkCancelled} class="btn btn-small">
+        <input @keydown=${this.urlKeydown} placeholder="url" id="URL_INPUT" />
+        <button @click=${this.linkCancelled} class="btn btn-small">
           ${icons.cross}
-        </div>
-        <div @click=${this.linkConfirmed} class="btn btn-small">
+        </button>
+        <button @click=${this.linkConfirmed} class="btn btn-small">
           ${icons.check}
-        </div>
+        </button>
       </div>
     `
   }
@@ -492,61 +547,62 @@ export class DocumentTextNodeEditor extends LitElement {
     return html`
 
       <!-- current level -->
-      <div class="btn-text btn-current">
+      <button class="btn-text btn-current">
         <span>${this.type === TextType.Title ? `h${this.level}` : 'text'}</span>
-      </div>
+      </button>
 
       <!-- left level button -->
       ${this.level > 1 ? 
         this.type === TextType.Paragraph ? html`
-          <div class="btn btn-text" @click=${this.toHeading}>
+          <button class="btn btn-text" @click=${this.toHeading}>
             <span>h${this.level}</span>
-          </div>` : (
+          </button>` : (
             this.level > 2 ? html`
-            <div class="btn btn-text" @click=${this.reduceHeading}>
+            <button class="btn btn-text" @click=${this.reduceHeading}>
               <span>h${this.level - 1}</span>
-            </div>` : '') : ''}
+            </button>` : '') : ''}
       
       <!-- right level button -->
       ${((this.level > 1) && (this.type === TextType.Title)) ? html`
-        <div class="btn btn-text" @click=${this.toParagraph}>
+        <button class="btn btn-text" @click=${this.toParagraph}>
           <span>text</span>
-        </div>` : ''}
+        </button>` : ''}
     `;
   }
 
   renderMenu() {
     return html`
-      <div class="top-menu">
+      <div class="top-menu" id="TOP_MENU">
         <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
         
         ${this.renderLevelControllers()}
 
         ${this.type !== TextType.Title ? 
           html`
-            <div
+            <button
               class="btn btn-square btn-large"
               @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.strong)}
             >
               ${icons.bold}
-            </div>
+            </button>
           ` : ''}
-        <div
+        <button
           class="btn btn-square btn-large"
           @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.em)}
         >
           ${icons.em}
-        </div>
+        </button>
 
-        <div class="btn btn-square btn-small" @click=${this.linkClick}>
+        <button class="btn btn-square btn-small" @click=${this.linkClick}>
           ${icons.link}
-        </div>
+        </button>
 
         ${this.showUrl ? this.renderUrlMenu() : ''}
       </div>`
   }
 
   render() {
+    this.logger.log('render()', {this: this})
     return html`
       ${this.showMenu ? this.renderMenu() : ''}
       <div id="editor-content" class="editor-content">
@@ -582,6 +638,17 @@ export class DocumentTextNodeEditor extends LitElement {
           border-radius: 10px;
           border: solid 1px #cfcfcf;
           background-color: #28282a;
+        }
+
+        .top-menu button {
+          font-family: inherit;
+          font-size: 100%;
+          line-height: 1.15;
+          margin: 0;
+          overflow: visible;
+          text-transform: none;
+          background-color: transparent;
+          border: 0px;
         }
 
         .btn {

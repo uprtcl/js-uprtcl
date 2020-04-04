@@ -73,6 +73,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     node.parent = parent;
     node.childrenNodes = await Promise.all(loadChildren);
 
+    /** focus if top element */
+    if (this.doc && node.ref === this.doc.ref) {
+      node.focused = true;
+    }
+
     return node;
   }
 
@@ -515,27 +520,71 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     await this.spliceChildren(node, removed);    
   }
 
-  async liftChildren(node: DocNode) {
+  async liftChildren(node: DocNode, index?: number, count?: number) {
     if(!node.parent) throw new Error('parent undefined');
     if(node.ix === undefined) throw new Error('ix undefined');
 
-    /** remove all children */
-    const removed = await this.spliceChildren(node, [], 0, node.childrenNodes.length);
+    /** default to all children */
+    index = index !== undefined ? index : 0;
+    count = count !== undefined ? count : node.childrenNodes.length;
+
+    /** remove children */
+    const removed = await this.spliceChildren(node, [], index, count);
 
     /** add to parent */
-    this.spliceChildren(node.parent, removed, node.ix + 1);
+    await this.spliceChildren(node.parent, removed, node.ix + 1);
   }
 
-  joinBackward(node: DocNode, tail: string) {
-    this.logger.log('contentChanged()', {node, tail});
+  /** content is appended to the node, elements are added as silblings */
+  async appendBackwards(node: DocNode, content: any, elements: DocNode[]) {
+    const backwardNode = this.getBackwardNode(node);
+    if (!backwardNode) throw new Error('backward node not found');
 
-    throw new Error('TBD');
+    if (node.parent === undefined) throw new Error('cant remove node');
+    if (node.ix === undefined) throw new Error('cant remove node');
+
+    /** set the content to append to the backward node */
+    backwardNode.append = content;
+    /** remove this node */
+    await this.spliceChildren(node.parent, [], node.ix, 1);
+
+    if (elements.length > 0) {
+      if (backwardNode.parent !== undefined) {
+        if (backwardNode.ix === undefined) throw new Error('cant append elements');
+          /** add elements as siblings of backward node */
+        await this.spliceChildren(backwardNode.parent, elements, backwardNode.ix + 1)
+      } else {
+          /** add elements as children of backward node */
+        await this.spliceChildren(backwardNode, elements, 0);
+      }
+    }
+    
+    backwardNode.focused = true;
+    node.focused = false;
   }
 
-  lift(node: DocNode) {
-    this.logger.log('contentChanged()', {node});
+  appended(node: DocNode) {
+    node.append = undefined;
+    this.requestUpdate();
+  }
 
-    throw new Error('TBD');
+  async joinBackward(node: DocNode, tail: string) {
+    this.logger.log('joinBackward()', {node, tail});
+
+    /** remove this node children */
+    const removed = await this.spliceChildren(node, [], 0, node.childrenNodes.length);
+    await this.appendBackwards(node, tail, removed);
+
+    this.requestUpdate();
+  }
+
+  async lift(node: DocNode) {
+    if(!node.parent) throw new Error('parent undefined');
+    if(node.ix === undefined) throw new Error('ix undefined');
+    
+    await this.liftChildren(node.parent, node.ix, 1);
+
+    this.requestUpdate();
   }
 
   push(node: DocNode) {
@@ -544,16 +593,18 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     throw new Error('TBD');
   }
 
-  split(node: DocNode, tail: string, asChild: boolean) {
+  async split(node: DocNode, tail: string, asChild: boolean) {
     this.logger.log('split()', { node, tail });
     
     const dftEntity = this.defaultEntity(tail, TextType.Paragraph);
     
     if (asChild) {
-      this.createChild(node, dftEntity.data, dftEntity.symbol, 0);
+      await this.createChild(node, dftEntity.data, dftEntity.symbol, 0);
     } else {
-      this.createSibling(node, dftEntity.data, dftEntity.symbol);
+      await this.createSibling(node, dftEntity.data, dftEntity.symbol);
     }
+
+    this.requestUpdate();
   }
   
   renderWithCortex(node: DocNode) {
@@ -561,6 +612,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderTopRow(node: DocNode) {
+    this.logger.log('renderTopRow()', {node});
     /** the ref to which the parent is pointing at */
     const color = 'red';
     const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
@@ -586,6 +638,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               lift: () => this.lift(node),
               push: () => this.push(node),
               split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
+              appended: () => this.appended(node)
             })}
             ${false ? html`<div class="node-mark">${icons.add_box}</div>` : ''}
           </div>

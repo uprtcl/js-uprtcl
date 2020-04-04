@@ -17,6 +17,7 @@ export interface DocNode {
   authority: string,
   data?: Hashed<any>,
   draft: any,
+  append?: any,              // used by upper layer to tell the docnode lense to append content using its internal appending logic.
   childrenNodes: DocNode[],
   symbol: symbol,
   headId?: string,
@@ -37,6 +38,7 @@ export interface DocNodeEventsHandlers {
   focusBackward: () => void,
   focusDownward: () => void,
   lift: () => void,
-  push: () => void
+  push: () => void,
+  appended: () => void
 }
 
