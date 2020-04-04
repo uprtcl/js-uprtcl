@@ -146,6 +146,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
               @content-changed=${(e) => events.contentChanged(textToTextNode(node.draft, e.detail.content), false)}
               @enter-pressed=${(e) => events.split(e.detail.content, e.detail.asChild)}
               @backspace-on-start=${(e) => events.joinBackward(e.detail.content)}
+              @delete-on-end=${(e) => events.pullDownward()}
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}

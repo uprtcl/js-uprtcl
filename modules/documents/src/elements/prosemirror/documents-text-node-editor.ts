@@ -264,6 +264,18 @@ export class DocumentTextNodeEditor extends LitElement {
       return;
     }
 
+    /** delete */
+    if (event.keyCode === 46) {
+      if (view.state.selection.$cursor.pos >= view.state.doc.content.content[0].nodeSize - 1) {
+        event.preventDefault();
+
+        const content = this.state2Html(view.state);
+        this.logger.log('backspace-on-start', {content});
+        this.dispatchEvent(new CustomEvent('delete-on-end'));
+      }
+      return;
+    }
+
     /** arrow up */
     if (event.keyCode === 38) {
       if (view.state.selection.$cursor.pos === 1) {

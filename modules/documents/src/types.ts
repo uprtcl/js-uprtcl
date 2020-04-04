@@ -35,6 +35,7 @@ export interface DocNodeEventsHandlers {
   contentChanged: (newContent: any, lift: boolean) => void,
   split: (tail: string, asChild: boolean) => void,
   joinBackward: (tail: string) => void,
+  pullDownward: () => void,
   focusBackward: () => void,
   focusDownward: () => void,
   lift: () => void,

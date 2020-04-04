@@ -585,6 +585,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
+  async pullDownward(node: DocNode) {
+    this.logger.log('pullDownward()', {node});
+
+    const next = this.getDownwardNode(node);
+    if (!next) return;
+
+    await this.joinBackward(next, next.draft.text);
+    this.requestUpdate();
+  }
+
   async lift(node: DocNode) {
     if(!node.parent) throw new Error('parent undefined');
     if(node.ix === undefined) throw new Error('ix undefined');
@@ -637,6 +647,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               focusBackward: () => this.focusBackward(node),
               focusDownward: () => this.focusDownward(node),
               joinBackward: (tail: string) => this.joinBackward(node, tail),
+              pullDownward: () => this.pullDownward(node),
               lift: () => this.lift(node),
               split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
               appended: () => this.appended(node)
