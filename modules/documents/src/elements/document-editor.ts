@@ -1,4 +1,5 @@
 import { LitElement, property, html, css } from 'lit-element';
+import * as lodash from 'lodash-es';
 
 export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -18,6 +19,8 @@ import { HasDocNodeLenses } from 'src/patterns/document-patterns';
 import { DocumentsBindings } from 'src/bindings';
 import { icons } from './prosemirror/icons';
 
+const LOGINFO = false;
+
 export class DocumentEditor extends moduleConnect(LitElement) {
 
   logger = new Logger('DOCUMENT-EDITOR');
@@ -27,6 +30,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   @property({ type: Object, attribute: false })
   doc: DocNode | undefined = undefined;
+
+  @property({ type: Boolean, attribute: false })
+  docHasChanges: Boolean = false;
 
   protected client: ApolloClient<any> | undefined = undefined;
   protected eveesRemotes: EveesRemote[] | undefined = undefined;
@@ -41,13 +47,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.discovery = this.request(DiscoveryModule.bindings.DiscoveryService);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
-    this.logger.log('firstUpdated()', this.ref)
+    if (LOGINFO) this.logger.log('firstUpdated()', this.ref)
 
     this.loadDoc();
   }
 
   updated(changedProperties) {
-    this.logger.log('updated()', {ref: this.ref, changedProperties})
+    if (LOGINFO) this.logger.log('updated()', {ref: this.ref, changedProperties})
     
     if (changedProperties.has('ref')) {
       this.loadDoc();
@@ -55,14 +61,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async loadDoc() {
-    this.logger.log('loadDoc()', this.ref);
+    if (LOGINFO) this.logger.log('loadDoc()', this.ref);
 
     if (!this.ref) return;
     this.doc = await this.loadNodeRec(this.ref);
   }
 
   async loadNodeRec(ref: string, ix?: number, parent?: DocNode) : Promise<DocNode>  {
-    this.logger.log('loadNodeRec()', {ref, ix, parent});
+    if (LOGINFO) this.logger.log('loadNodeRec()', {ref, ix, parent});
 
     const node = await this.loadNode(ref, ix);
     
@@ -82,7 +88,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async loadNode(ref: string, ix?: number) : Promise<DocNode> {
-    this.logger.log('loadNode()', {ref, ix});
+    if (LOGINFO) this.logger.log('loadNode()', {ref, ix});
 
     const client = this.client as ApolloClient<any>;
     const discovery = this.discovery as DiscoveryService;
@@ -146,9 +152,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       focused: false
     }
     
-    this.logger.log('loadNode() post', {ref, ix, node});
+    if (LOGINFO) this.logger.log('loadNode() post', {ref, ix, node});
 
     return node;
+  }
+
+  defaultEntity(text: string, type: TextType) {
+    return { 
+      data: { text, type, links: [] },
+      symbol: DocumentsBindings.TextNodeEntity
+    }
   }
 
   getPatternOfObject<T>(object: object, patternName: string): T {
@@ -161,33 +174,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return pattern;
   }
 
-
-  getNodeAt(path: number[]) : DocNode {
-    if (!this.doc) throw new Error(`node not found at ${path}`);
-
-    let node = this.doc;
-    /** path always starts with [0] */
-    path.shift();
-
-    /** visit the node children for every*/
-    while(path.length > 0) {
-      let ix = path.shift();
-      if (ix === undefined) throw new Error(`node not found at ${path}`);
-      node = node.childrenNodes[ix];
-    }
-
-    return node;    
-  }
-
-  defaultEntity(text: string, type: TextType) {
-    return { 
-      data: { text, type, links: [] },
-      symbol: DocumentsBindings.TextNodeEntity
-    }
-  }
-
   getPatternOfSymbol<T>(symbol: symbol, name: string) {
-    this.logger.log(`getPatternOfSymbol(${symbol.toString()})`);
+    if (LOGINFO) this.logger.log(`getPatternOfSymbol(${symbol.toString()})`);
 
     const patterns: Pattern[] = this.requestAll(symbol);
     const create: T | undefined = (patterns.find(
@@ -212,20 +200,64 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return creatable.create()(content, store.source);
   }
 
+  hasChangesAll() {
+    if (!this.doc) return true;
+    return this.hasChangesRec(this.doc);
+  }
+
+  hasChanges(node: DocNode) {
+    if (node.ref === '') return true; // is placeholder
+    if (!node.data) return true;
+    if (!lodash.isEqual(node.data.object, node.draft)) return true;
+    return false;
+  }
+
+  hasChangesRec(node: DocNode) {
+    if (this.hasChanges(node)) return true;
+    const ix = node.childrenNodes.find((child) => this.hasChangesRec(child));
+    if (ix !== undefined) return true;
+    return false;    
+  }
+
+  performUpdate() {
+    this.docHasChanges = this.hasChangesAll();
+    super.performUpdate();
+  }
+
   async commitAll() {
     if (!this.doc) return;
-    this.commitNodeRec(this.doc);
+    await this.commitNodeRec(this.doc);
+    /** reload doc from backend */
+    await this.loadDoc();
+    this.requestUpdate();
   }
 
   async commitNodeRec(node: DocNode) {
     const commitChildren = node.childrenNodes.map(child => this.commitNodeRec(child));
     await Promise.all(commitChildren);
-    await this.commitDraft(node);
+
+    /** set the children with the children refs (which were created above) */
+    node.draft = node.hasChildren.replaceChildrenLinks(node.draft)(node.childrenNodes.map(node => node.ref));
+    
+    /** if its a placeholder create an evee, otherwise make a commit */
+    if (node.ref === undefined || node.ref === '') {
+      node.ref = await this.createEvee(node.draft, node.symbol, node.authority);
+    } else {
+      await this.commitDraft(node);
+    }
   }
 
   async commitDraft(node: DocNode): Promise<void> {
     const eveesRemotes = this.eveesRemotes as EveesRemote[];
     const client = this.client as ApolloClient<any>;
+
+    if ((node.data !== undefined) && lodash.isEqual(node.data.object, node.draft)) {
+      /** dont commit if content has not changed */
+      /** TODO: use the createEntity hash but it would take time as its going to the backend */
+      return;
+    }
+
+    if (LOGINFO) this.logger.info('commitDraft()', {node});
     
     const object = await this.createEntity(node.draft, node.symbol, node.authority);
     const remote = eveesRemotes.find(r => r.authority === node.authority);
@@ -244,14 +276,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
-        perspectiveId: this.ref,
+        perspectiveId: node.ref,
         headId: commit.id
       }
     });
   }
 
   async createEvee(content: object, symbol: symbol, authority: string): Promise<string> {
-    this.logger.log('createEvee()', {content, symbol, authority});
+    if (LOGINFO) this.logger.log('createEvee()', {content, symbol, authority});
 
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     const remote = this.eveesRemotes.find(r => r.authority === authority);
@@ -298,7 +330,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   /** node updated as reference */
   async spliceChildren(node: DocNode, elements: any[] = [], index?: number, count: number = 0): Promise<DocNode[]> {
-    this.logger.log('spliceChildren()', {node, elements, index, count});
+    if (LOGINFO) this.logger.log('spliceChildren()', {node, elements, index, count});
     
     const currentChildren = node.hasChildren.getChildrenLinks(node.draft);
     index = index !== undefined ? index : currentChildren.length;
@@ -309,8 +341,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (typeof el !== 'string') {
         if ((el.object !== undefined) && (el.symbol !== undefined)) {
           /** element is an object from which a DocNode should be create */
-          const tempRef = node.ref + '-' + elIndex.toString();
-          return Promise.resolve(this.createPlaceholder(tempRef, elIndex, el.object, el.symbol, node.authority, node));
+          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, el.symbol, node.authority, node));
         } else {
           /** element is a DocNode, change its path */
           return Promise.resolve(el);
@@ -404,7 +435,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async createChild(node: DocNode, newEntity: any, symbol: symbol, index?: number) {
-    this.logger.log('createChild()', {node, newEntity, symbol, index});
+    if (LOGINFO) this.logger.log('createChild()', {node, newEntity, symbol, index});
 
     await this.spliceChildren(node, [{object: newEntity, symbol}], 0);
 
@@ -423,7 +454,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (!node.parent) throw new Error('Node dont have a parent');
     if (node.ix === undefined) throw new Error('Node dont have an ix');
 
-    this.logger.log('createSibling()', {node, newEntity, symbol});
+    if (LOGINFO) this.logger.log('createSibling()', {node, newEntity, symbol});
 
     await this.spliceChildren(node.parent, [{object: newEntity, symbol}], node.ix + 1);
 
@@ -436,19 +467,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   focused(node: DocNode) {
-    this.logger.log('focused()', {node});
+    if (LOGINFO) this.logger.log('focused()', {node});
     node.focused = true;
     this.requestUpdate();
   }
 
   blured(node: DocNode) {
-    this.logger.log('blured()', {node});
+    if (LOGINFO) this.logger.log('blured()', {node});
     node.focused = false;
     this.requestUpdate();
   }
 
   focusBackward(node: DocNode) {
-    this.logger.log('focusBackward()', {node});
+    if (LOGINFO) this.logger.log('focusBackward()', {node});
     
     const backwardNode = this.getBackwardNode(node);
     if (!backwardNode) return;
@@ -459,7 +490,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   focusDownward(node: DocNode) {
-    this.logger.log('focusDownward()', {node});
+    if (LOGINFO) this.logger.log('focusDownward()', {node});
     
     const downwardNode = this.getDownwardNode(node);
     if (!downwardNode) return;
@@ -470,7 +501,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async contentChanged(node: DocNode, content: any, lift?: boolean) {
-    this.logger.log('contentChanged()', {node, content});
+    if (LOGINFO) this.logger.log('contentChanged()', {node, content});
 
     /** inform the external world if top element */
     if (this.doc && node.ref === this.doc.ref) {
@@ -576,7 +607,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async joinBackward(node: DocNode, tail: string) {
-    this.logger.log('joinBackward()', {node, tail});
+    if (LOGINFO) this.logger.log('joinBackward()', {node, tail});
 
     /** remove this node children */
     const removed = await this.spliceChildren(node, [], 0, node.childrenNodes.length);
@@ -586,7 +617,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async pullDownward(node: DocNode) {
-    this.logger.log('pullDownward()', {node});
+    if (LOGINFO) this.logger.log('pullDownward()', {node});
 
     const next = this.getDownwardNode(node);
     if (!next) return;
@@ -606,7 +637,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   
   async split(node: DocNode, tail: string, asChild: boolean) {
-    this.logger.log('split()', { node, tail });
+    if (LOGINFO) this.logger.log('split()', { node, tail });
     
     const dftEntity = this.defaultEntity(tail, TextType.Paragraph);
     
@@ -624,7 +655,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderTopRow(node: DocNode) {
-    this.logger.log('renderTopRow()', {node});
+    if (LOGINFO) this.logger.log('renderTopRow()', {node});
     /** the ref to which the parent is pointing at */
     const color = 'red';
     const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
@@ -678,13 +709,38 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   render() {
-    this.logger.log('render()', {doc: this.doc});
-    if (!this.doc) return '';
-    return this.renderDocNode(this.doc);
+    if (LOGINFO) this.logger.log('render()', {doc: this.doc});
+    if (!this.doc) return html``;
+
+    return html`
+      <div class="editor-container">
+        <div class="doc-topbar">
+          ${this.docHasChanges ? html`
+            <mwc-button 
+              outlined
+              icon="swap_horizontal" 
+              @click=${() => this.commitAll()}>
+              commit
+            </mwc-button>` : ''}
+        </div>
+        ${this.renderDocNode(this.doc)}
+      </div>
+    `;
   }
 
   static get styles() {
     return css`
+      .editor-container {
+        position: relative;
+        width: 100%;
+      }
+
+      .doc-topbar {
+        position: absolute;
+        top:-20px;
+        right: 0px;
+      }
+
       .column {
         display: flex;
         flex-direction: row;

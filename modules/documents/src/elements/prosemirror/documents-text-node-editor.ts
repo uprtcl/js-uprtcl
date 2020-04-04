@@ -19,6 +19,8 @@ import { runInThisContext } from 'vm';
 export const APPEND_ACTION = 'append';
 export const FOCUS_ACTION = 'focus';
 
+const LOGINFO = false;
+
 export class DocumentTextNodeEditor extends LitElement {
 
   logger = new Logger('DOCUMENT-TEXT-NODE-EDITOR');
@@ -79,7 +81,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   updated(changedProperties: Map<string, any>) {
-    this.logger.log('updated()', { changedProperties });
+    if (LOGINFO) this.logger.log('updated()', { changedProperties });
 
     if (changedProperties.has('toggleAction')) {
       if (changedProperties.get('toggleAction') !== undefined) {
@@ -103,7 +105,7 @@ export class DocumentTextNodeEditor extends LitElement {
     }
     
     if (changedProperties.has('editable') || changedProperties.has('type')) {
-      // this.logger.info('updated() - editable || type', {editable: this.editable, type: this.type, changedProperties});
+      // if (LOGINFO) this.logger.info('updated() - editable || type', {editable: this.editable, type: this.type, changedProperties});
       this.initEditor();
     } 
 
@@ -133,14 +135,14 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   runAction(action: any) {
-    this.logger.log('runAction()', { action });
+    if (LOGINFO) this.logger.log('runAction()', { action });
     switch (action.name) {
       case APPEND_ACTION:
         this.appendContent(action.pars.content)
         break;
 
       case FOCUS_ACTION:
-        this.logger.log('focusing()')
+        if (LOGINFO) this.logger.log('focusing()')
         this.editor.view.focus();
         break;
   
@@ -180,7 +182,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   appendContent(content: string) {
-    this.logger.log('appending content', content);
+    if (LOGINFO) this.logger.log('appending content', content);
 
     const sliceNode = this.getSlice(content);
     const slice = this.editor.parser.parseSlice(sliceNode);
@@ -201,7 +203,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
   keydown(view, event) {
 
-    this.logger.log('keydown()', {keyCode: event.keyCode});
+    if (LOGINFO) this.logger.log('keydown()', {keyCode: event.keyCode});
     
     /** enter */
     if (event.keyCode === 13) {
@@ -225,7 +227,7 @@ export class DocumentTextNodeEditor extends LitElement {
       temp.appendChild(fragment);
       const content = temp.innerHTML;
       
-      this.logger.log('enter-pressed', {content});
+      if (LOGINFO) this.logger.log('enter-pressed', {content});
       this.dispatchEvent(new CustomEvent('enter-pressed', { 
         detail: { 
           content, 
@@ -252,7 +254,7 @@ export class DocumentTextNodeEditor extends LitElement {
         event.preventDefault();
 
         const content = this.state2Html(view.state);
-        this.logger.log('backspace-on-start', {content});
+        if (LOGINFO) this.logger.log('backspace-on-start', {content});
         this.dispatchEvent(new CustomEvent('backspace-on-start', {
           bubbles: true, 
           composed: true, 
@@ -270,7 +272,7 @@ export class DocumentTextNodeEditor extends LitElement {
         event.preventDefault();
 
         const content = this.state2Html(view.state);
-        this.logger.log('backspace-on-start', {content});
+        if (LOGINFO) this.logger.log('backspace-on-start', {content});
         this.dispatchEvent(new CustomEvent('delete-on-end'));
       }
       return;
@@ -280,7 +282,7 @@ export class DocumentTextNodeEditor extends LitElement {
     if (event.keyCode === 38) {
       if (view.state.selection.$cursor.pos === 1) {
         event.preventDefault();
-        this.logger.log('dispatching keyup-on-start');
+        if (LOGINFO) this.logger.log('dispatching keyup-on-start');
         this.dispatchEvent(new CustomEvent('keyup-on-start'));
         return;
       }
@@ -323,7 +325,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   isEditable() {
-    this.logger.log(`isEditable()`, { editable: this.editable });
+    if (LOGINFO) this.logger.log(`isEditable()`, { editable: this.editable });
     const editable = this.editable !== undefined ? this.editable === 'true' : false
     return editable;
   }
@@ -332,7 +334,7 @@ export class DocumentTextNodeEditor extends LitElement {
     if (this.editor && this.editor.view) {
       this.editor.view.destroy();
       this.editor = {};
-      this.logger.log(`initEditor() - Initializing editor`, { init: this.init });
+      if (LOGINFO) this.logger.log(`initEditor() - Initializing editor`, { init: this.init });
     }
 
     const schema = this.type === TextType.Title ? titleSchema : blockSchema;
@@ -402,7 +404,7 @@ export class DocumentTextNodeEditor extends LitElement {
     let contentChanged = !newState.doc.eq(this.editor.view.state.doc);
     this.editor.view.updateState(newState);
 
-    this.logger.log('dispatchTransaction()', { selected: this.selected, newState, contentChanged, transaction });
+    if (LOGINFO) this.logger.log('dispatchTransaction()', { selected: this.selected, newState, contentChanged, transaction });
 
     if (!contentChanged) return;
 
@@ -410,7 +412,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
     const newContent = this.state2Html(newState);
 
-    this.logger.log(`dispatchTransaction() - content-changed`, {content, newContent});
+    if (LOGINFO) this.logger.log(`dispatchTransaction() - content-changed`, {content, newContent});
 
     /** local copy of the html (withot the external tag) represeting the current state */
     this.currentContent = newContent;
@@ -534,11 +536,11 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   editorFocused() {
-    this.logger.log('editor focused');
+    if (LOGINFO) this.logger.log('editor focused');
   }
 
   editorBlured() {
-    this.logger.log('editor blured');
+    if (LOGINFO) this.logger.log('editor blured');
   }
 
   renderUrlMenu() {
@@ -624,7 +626,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   render() {
-    this.logger.log('render()', {this: this})
+    if (LOGINFO) this.logger.log('render()', {this: this})
     return html`
       ${this.showMenu ? this.renderMenu() : ''}
       <div id="editor-content" class="editor-content">
