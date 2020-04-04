@@ -143,13 +143,13 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
               focus-init=${node.focused}
               @focus=${events.focus}
               @blur=${events.blur}
-              @content-changed=${(e) => events.contentChanged(textToTextNode(node.draft, e.detail.content))}
+              @content-changed=${(e) => events.contentChanged(textToTextNode(node.draft, e.detail.content), false)}
               @enter-pressed=${(e) => events.split(e.detail.content, e.detail.asChild)}
               @backspace-on-start=${(e) => events.joinBackward(e.detail.content)}
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}
-              @change-type=${(e) => events.contentChanged(typeToTextNode(node.draft, e.detail.type))}
+              @change-type=${(e) => events.contentChanged(typeToTextNode(node.draft, e.detail.type), e.detail.lift)}
               @content-appended=${events.appended}
             >
             </documents-text-node-editor>

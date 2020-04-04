@@ -32,13 +32,12 @@ export interface DocNode {
 export interface DocNodeEventsHandlers {
   focus: () => void,
   blur: () => void,
-  contentChanged: (newContent: any) => void,
+  contentChanged: (newContent: any, lift: boolean) => void,
   split: (tail: string, asChild: boolean) => void,
   joinBackward: (tail: string) => void,
   focusBackward: () => void,
   focusDownward: () => void,
   lift: () => void,
-  push: () => void,
   appended: () => void
 }
 

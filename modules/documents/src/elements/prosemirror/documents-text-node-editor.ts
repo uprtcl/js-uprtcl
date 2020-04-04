@@ -412,22 +412,22 @@ export class DocumentTextNodeEditor extends LitElement {
     );
   }
 
-  toHeading() {
-    this.changeType(TextType.Title);
+  toHeading(lift: boolean) {
+    this.changeType(TextType.Title, lift);
   }
 
   toParagraph() {
-    this.changeType(TextType.Paragraph);
+    this.changeType(TextType.Paragraph, false);
   }
 
   reduceHeading() {
     this.dispatchEvent(new CustomEvent('lift-heading', {}))
   }
 
-  changeType(type: TextType) {
+  changeType(type: TextType, lift: boolean) {
     this.dispatchEvent(
       new CustomEvent('change-type', {
-        detail: { type}
+        detail: { type, lift }
       })
     );
   }
@@ -543,30 +543,40 @@ export class DocumentTextNodeEditor extends LitElement {
     `
   }
 
+  renderParagraphItems() {
+    return html`
+      ${this.level > 2 ? html`
+        <button class="btn btn-text" @click=${() => this.toHeading(true)}>
+          <span>h${this.level - 1}</span>
+        </button>` : ''}
+      <button class="btn btn-text" @click=${() => this.toHeading(false)}>
+        <span>h${this.level}</span>
+      </button>
+      `;
+  }
+
+  renderHeadingItems() {
+    return this.level > 1 ? html`
+      ${this.level > 2 ? html`
+        <button class="btn btn-text" @click=${() => this.reduceHeading()}>
+          <span>h${this.level - 1}</span>
+        </button>` : ''}
+      <button class="btn btn-text" @click=${this.toParagraph}>
+        <span>text</span>
+      </button>` : '';
+  }
+
   renderLevelControllers() {
     return html`
-
       <!-- current level -->
       <button class="btn-text btn-current">
         <span>${this.type === TextType.Title ? `h${this.level}` : 'text'}</span>
       </button>
 
-      <!-- left level button -->
-      ${this.level > 1 ? 
-        this.type === TextType.Paragraph ? html`
-          <button class="btn btn-text" @click=${this.toHeading}>
-            <span>h${this.level}</span>
-          </button>` : (
-            this.level > 2 ? html`
-            <button class="btn btn-text" @click=${this.reduceHeading}>
-              <span>h${this.level - 1}</span>
-            </button>` : '') : ''}
-      
-      <!-- right level button -->
-      ${((this.level > 1) && (this.type === TextType.Title)) ? html`
-        <button class="btn btn-text" @click=${this.toParagraph}>
-          <span>text</span>
-        </button>` : ''}
+      <!-- level controllers -->
+      ${this.type === TextType.Paragraph ? 
+        this.renderParagraphItems() :
+        this.renderHeadingItems()}
     `;
   }
 

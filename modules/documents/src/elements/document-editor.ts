@@ -435,10 +435,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
-  scheduleUpdate() {
-    throw new Error('TBD');
-  }
-
   focused(node: DocNode) {
     this.logger.log('focused()', {node});
     node.focused = true;
@@ -473,7 +469,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
-  async contentChanged(node: DocNode, content: any) {
+  async contentChanged(node: DocNode, content: any, lift?: boolean) {
     this.logger.log('contentChanged()', {node, content});
 
     /** inform the external world if top element */
@@ -489,12 +485,23 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     node.draft = content;
 
     /** react to type change by manipulating the tree */
+    /** PAR => TITLE */
     if ((oldType === TextType.Paragraph) && (content.type === TextType.Title)) {
-      await this.nestAfter(node);
+      if (lift === undefined || lift === false) {
+        await this.nestAfter(node);
+      } else {
+        if (!node.parent) throw new Error('parent undefined');
+        await this.nestAfter(node);
+        await this.liftChildren(node.parent, node.ix, 1);
+      }
     }
 
+    /** TITLE => PAR */
     if ((oldType === TextType.Title) && (content.type === TextType.Paragraph)) {
-      await this.liftChildren(node);
+      /** remove this node children */
+      const children = await this.spliceChildren(node, [], 0, node.childrenNodes.length);
+      /** append backwards this node with its children as siblings */
+      await this.appendBackwards(node, '', [node].concat(children));
     }
     
     this.requestUpdate();
@@ -587,12 +594,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
-  push(node: DocNode) {
-    this.logger.log('push()', {node});
-
-    throw new Error('TBD');
-  }
-
+  
   async split(node: DocNode, tail: string, asChild: boolean) {
     this.logger.log('split()', { node, tail });
     
@@ -631,12 +633,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
             ${nodeLense.render(node, {
               focus: () => this.focused(node),
               blur: () => this.blured(node),
-              contentChanged: (content: any) => this.contentChanged(node, content),
+              contentChanged: (content: any, lift: boolean) => this.contentChanged(node, content, lift),
               focusBackward: () => this.focusBackward(node),
               focusDownward: () => this.focusDownward(node),
               joinBackward: (tail: string) => this.joinBackward(node, tail),
               lift: () => this.lift(node),
-              push: () => this.push(node),
               split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
               appended: () => this.appended(node)
             })}
