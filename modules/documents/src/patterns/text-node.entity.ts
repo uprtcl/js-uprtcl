@@ -132,7 +132,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
         name: 'documents:document',
         type: 'content',
         render: (node: DocNode, events: DocNodeEventsHandlers) => {
-          logger.log('lenses: documents:document - render()', { node });
+          // logger.log('lenses: documents:document - render()', { node });
           return html`
             <documents-text-node-editor
               type=${node.draft.type}

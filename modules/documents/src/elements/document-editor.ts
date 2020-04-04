@@ -659,7 +659,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     /** the ref to which the parent is pointing at */
     const color = 'red';
     const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
-    
+    const hasIcon = this.hasChanges(node);
+    const icon = node.ref === '' ? icons.add_box : icons.edit;
+
     return html`
       <div class="row">
         <div class="column">
@@ -683,7 +685,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
               appended: () => this.appended(node)
             })}
-            ${false ? html`<div class="node-mark">${icons.add_box}</div>` : ''}
+            ${hasIcon ? html`<div class="node-mark">${icon}</div>` : ''}
           </div>
         </div>
       </div>
@@ -710,7 +712,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   render() {
     if (LOGINFO) this.logger.log('render()', {doc: this.doc});
-    if (!this.doc) return html``;
+    
+    if (!this.doc) {
+      return html`
+        <cortex-loading-placeholder></cortex-loading-placeholder>
+      `;
+    }
 
     return html`
       <div class="editor-container">
@@ -737,8 +744,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
       .doc-topbar {
         position: absolute;
-        top:-20px;
-        right: 0px;
+        top:-55px;
+        right: 35px;
       }
 
       .column {
@@ -753,9 +760,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
       .node-mark {
         position: absolute;
-        left: -2px;
-        top: 7px;
-        fill: #3a865a;
+        top: 0px;
+        left: -6px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        fill: #cfc994;
       }
 
       .node-mark svg {
