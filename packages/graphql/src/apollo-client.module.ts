@@ -28,15 +28,19 @@ export class ApolloClientModule extends MicroModule {
       .toDynamicValue((context: interfaces.Context) => {
         const typeDefs: ITypedef[] = context.container.getAll(GraphQlSchemaBindings.TypeDefs);
         const resolvers: IResolvers[] = context.container.getAll(GraphQlSchemaBindings.Resolvers);
-        const directivesArray: Constructor<NamedDirective>[] = context.container.getAll(
-          GraphQlSchemaBindings.Directive
-        );
 
-        const directives = directivesArray.reduce(
-          (acc, next) => ({ ...acc, [next['directive']]: next }),
-          {}
-        );
+        let directives = {};
+        if (context.container.isBound(GraphQlSchemaBindings.Directive)) {
+          const directivesArray: Constructor<NamedDirective>[] = context.container.getAll(
+            GraphQlSchemaBindings.Directive
+          );
 
+          directives = directivesArray.reduce(
+            (acc, next) => ({ ...acc, [next['directive']]: next }),
+            {}
+          );
+        }
+        
         return makeExecutableSchema({
           typeDefs: [baseTypeDefs, ...typeDefs],
           resolvers: [baseResolvers, ...resolvers],
