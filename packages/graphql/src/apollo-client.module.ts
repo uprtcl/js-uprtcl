@@ -26,8 +26,15 @@ export class ApolloClientModule extends MicroModule {
     container
       .bind(ApolloClientModule.bindings.RootSchema)
       .toDynamicValue((context: interfaces.Context) => {
-        const typeDefs: ITypedef[] = context.container.getAll(GraphQlSchemaBindings.TypeDefs);
-        const resolvers: IResolvers[] = context.container.getAll(GraphQlSchemaBindings.Resolvers);
+        let typeDefs: ITypedef[] = [];
+        let resolvers: IResolvers[] = [];
+
+        if (context.container.isBound(GraphQlSchemaBindings.TypeDefs)) {
+          typeDefs = context.container.getAll(GraphQlSchemaBindings.TypeDefs);
+        }
+        if (context.container.isBound(GraphQlSchemaBindings.Resolvers)) {
+          resolvers = context.container.getAll(GraphQlSchemaBindings.Resolvers);
+        }
 
         let directives = {};
         if (context.container.isBound(GraphQlSchemaBindings.Directive)) {

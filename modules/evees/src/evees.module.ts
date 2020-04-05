@@ -1,6 +1,6 @@
 import { interfaces } from 'inversify';
 
-import { ElementsModule, MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
+import { MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 import { CASModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
@@ -92,19 +92,17 @@ export class EveesModule extends MicroModule {
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
     }
+    customElements.define('evees-commit-history', CommitHistory);
+    customElements.define('evees-perspectives-list', PerspectivesList);
+    customElements.define('evees-perspective', EveesPerspective);
+    customElements.define('evees-info-popper', EveesInfoPopper);
+    customElements.define('evees-info-page', EveesInfoPage);
+    customElements.define('evees-list-item', ItemWithMenu);
+    customElements.define('evees-options-menu', EveesOptionsMenu);
   }
 
   submodules = [
     new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
-    new ElementsModule({
-      'evees-commit-history': CommitHistory,
-      'evees-perspectives-list': PerspectivesList,
-      'evees-perspective': EveesPerspective,
-      'evees-info-popper': EveesInfoPopper,
-      'evees-info-page': EveesInfoPage,
-      'evees-list-item': ItemWithMenu,
-      'evees-options-menu': EveesOptionsMenu
-    }),
     new i18nextModule('evees', { en: en }),
     new PatternsModule([
       new CommitPattern([CommitLinked, CommitCreate, CommitLens]),

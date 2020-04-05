@@ -8,7 +8,6 @@ export { ModuleProvider } from './orchestrator/module-provider';
 export { Constructor, CustomElement, Dictionary } from './types';
 
 /** Elements */
-export { ElementsModule } from './modules/elements.module';
 export { ModuleContainer, RequestDependencyEvent } from './elements/module-container';
 export { moduleConnect, ConnectedElement } from './elements/module-connect.mixin';
 

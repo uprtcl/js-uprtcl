@@ -3,7 +3,7 @@ import { interfaces } from 'inversify';
 import { CASModule, CASStore } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { ElementsModule, i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
+import { i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { DocumentTextNode } from './elements/document-text-node';
 import {
@@ -63,16 +63,14 @@ export class DocumentsModule extends MicroModule {
 
       container.bind<CASStore>(DocumentsModule.bindings.DocumentsRemote).toConstantValue(store);
     });
+    customElements.define('documents-text-node', DocumentTextNode);
+    customElements.define('documents-text-node-editor', DocumentTextNodeEditor);
   }
 
   submodules = [
     new GraphQlSchemaModule(documentsTypeDefs, resolvers),
     new i18nextModule('documents', { en: en }),
     new CASModule(this.stores.filter(store => (store as CASStore).casID) as CASStore[]),
-    new ElementsModule({
-      'documents-text-node': DocumentTextNode,
-      'documents-text-node-editor': DocumentTextNodeEditor
-    }),
     new PatternsModule([new TextNodePattern([TextNodeCreate, TextNodeCommon, TextNodeTitle])])
   ];
 }

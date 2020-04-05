@@ -1,7 +1,7 @@
 import { PatternsModule } from '@uprtcl/cortex';
 import { StoresModule, Store } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
+import { MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
 import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
@@ -49,7 +49,11 @@ export class WikisModule extends MicroModule {
     super();
   }
 
-  async onLoad() {}
+  async onLoad() {
+    customElements.define('wiki-drawer', WikiDrawer);
+    customElements.define('wiki-page', WikiPage);
+    customElements.define('wiki-home', WikiHome);
+  }
 
   submodules = [
     new GraphQlSchemaModule(wikiTypeDefs, resolvers),
@@ -60,11 +64,6 @@ export class WikisModule extends MicroModule {
         store: store
       }))
     ),
-    new ElementsModule({
-      'wiki-drawer': WikiDrawer,
-      'wiki-page': WikiPage,
-      'wiki-home': WikiHome
-    }),
     new PatternsModule({
       [WikisModule.bindings.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
     })

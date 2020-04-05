@@ -15,6 +15,8 @@ export class HolochainConnectionModule extends MicroModule {
   }
 
   async onLoad(container: interfaces.Container) {
+    await this.connection.ready();
+
     container
       .bind(HolochainConnectionModule.bindings.HolochainConnection)
       .toConstantValue(this.connection);

@@ -1,4 +1,4 @@
-import { MicroModule, ElementsModule, i18nextModule } from '@uprtcl/micro-orchestrator';
+import { MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 
@@ -15,14 +15,13 @@ import { PermissionsAdmin } from './elements/permissions-admin';
 export class AccessControlModule extends MicroModule {
   static id = 'access-control-module';
 
-  async onLoad() {}
+  async onLoad() {
+    customElements.define('permissions-for-entity', PermissionsForEntity);
+    customElements.define('permissions-owner', PermissionsOwner);
+    customElements.define('permissions-admin', PermissionsAdmin);
+  }
 
   submodules = [
-    new ElementsModule({
-      'permissions-for-entity': PermissionsForEntity,
-      'permissions-owner': PermissionsOwner,
-      'permissions-admin': PermissionsAdmin
-    }),
     new i18nextModule('access-control', { en }),
     new GraphQlSchemaModule(accessControlTypes, accessControlResolvers),
     new PatternsModule([
