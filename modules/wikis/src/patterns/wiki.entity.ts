@@ -34,33 +34,35 @@ export class WikiEntity implements Entity {
 
 @injectable()
 export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
-  replaceChildrenLinks = (wiki: Hashed<Wiki>) => (childrenHashes: string[]): Hashed<Wiki> => ({
+
+  recognize(object: object): boolean {
+    return propertyOrder.every(p => object.hasOwnProperty(p));
+  }
+
+  replaceChildrenLinks = (wiki: Wiki) => (childrenHashes: string[]): Wiki => ({
     ...wiki,
-    object: {
-      ...wiki.object,
-      pages: childrenHashes
-    }
+    pages: childrenHashes
   });
 
-  getChildrenLinks: (wiki: Hashed<Wiki>) => string[] = (wiki: Hashed<Wiki>): string[] =>
-    wiki.object.pages;
+  getChildrenLinks: (wiki: Wiki) => string[] = (wiki: Wiki): string[] =>
+    wiki.pages;
 
-  links: (wiki: Hashed<Wiki>) => Promise<string[]> = async (wiki: Hashed<Wiki>) =>
+  links: (wiki: Wiki) => Promise<string[]> = async (wiki: Wiki) =>
     this.getChildrenLinks(wiki);
 
-  merge = (originalNode: Hashed<Wiki>) => async (
-    modifications: Hashed<Wiki>[],
+  merge = (originalNode: Wiki) => async (
+    modifications: Wiki[],
     mergeStrategy: MergeStrategy,
     config
   ): Promise<[Wiki, UprtclAction[]]> => {
     const resultTitle = mergeStrings(
-      originalNode.object.title,
-      modifications.map(data => data.object.title)
+      originalNode.title,
+      modifications.map(data => data.title)
     );
 
     const [mergedPages, actions] = await mergeStrategy.mergeLinks(
-      originalNode.object.pages,
-      modifications.map(data => data.object.pages),
+      originalNode.pages,
+      modifications.map(data => data.pages),
       config
     );
 

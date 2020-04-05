@@ -73,7 +73,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const node = await this.loadNode(ref, ix);
     
     const loadChildren = node.hasChildren.getChildrenLinks(node.draft).map(async (child, ix): Promise<DocNode> => {
-      return this.loadNodeRec(child, ix, node);
+      return (child !== undefined && child !== '')? 
+        await this.loadNodeRec(child, ix, node)  :
+        node.childrenNodes[ix]
     })
 
     node.parent = parent;
@@ -89,10 +91,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async loadNode(ref: string, ix?: number) : Promise<DocNode> {
     if (LOGINFO) this.logger.log('loadNode()', {ref, ix});
-
+    
     const client = this.client as ApolloClient<any>;
     const discovery = this.discovery as DiscoveryService;
-
+    
     const result = await client.query({
       query: gql`
       {
@@ -109,6 +111,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   id
                 }
               }
+            }
+            context {
+              id
             }
           }
           _context {
@@ -139,6 +144,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const editable = result.data.entity._context.patterns.accessControl.canWrite;
     const authority = result.data.entity.payload.origin;
+    const context = result.data.entity.context.identifier;
     
     const node: DocNode = {
       ref, ix, hasChildren,
@@ -149,6 +155,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       hasDocNodeLenses,
       editable,
       authority,
+      context,
       focused: false
     }
     
@@ -241,7 +248,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     
     /** if its a placeholder create an evee, otherwise make a commit */
     if (node.ref === undefined || node.ref === '') {
-      node.ref = await this.createEvee(node.draft, node.symbol, node.authority);
+      node.ref = await this.createEvee(node.draft, node.symbol, node.authority, node.context);
     } else {
       await this.commitDraft(node);
     }
@@ -282,7 +289,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     });
   }
 
-  async createEvee(content: object, symbol: symbol, authority: string): Promise<string> {
+  async createEvee(content: object, symbol: symbol, authority: string, context: string): Promise<string> {
     if (LOGINFO) this.logger.log('createEvee()', {content, symbol, authority});
 
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
@@ -303,7 +310,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const creatablePerspective = this.getPatternOfSymbol<Creatable<any,any>>(EveesBindings.PerspectivePattern, 'create');
     const perspective = await creatablePerspective.create()(
-      { fromDetails: { headId: commit.id} , parentId: this.ref },
+      { fromDetails: { headId: commit.id, context } , parentId: this.ref },
       authority
     );
 
@@ -313,6 +320,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   createPlaceholder(ref: string, ix: number, draft: any, symbol: symbol, authority: string, parent: DocNode) : DocNode {
     const hasChildren = this.getPatternOfObject<HasChildren>(draft, 'getChildrenLinks');
     const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(draft, 'docNodeLenses');
+    const context = `${parent.context}-${ix}-${Date.now()}`;
+
     return {
       draft,
       childrenNodes: [],
@@ -323,6 +332,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       symbol,
       parent,
       authority,
+      context,
       editable: true,
       focused: false
     }
@@ -666,11 +676,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            <evees-info-popper 
-              firstPerspectiveId=${''}
-              perspectiveId=${node.ref}
-              eveeColor=${color}
-            ></evees-info-popper>
+            ${node.ref !== '' ? html`
+              <evees-info-popper 
+                first-perspective-id=${''}
+                perspective-id=${node.ref}
+                eveeColor=${color}
+              ></evees-info-popper>` : ''}
           </div>
           <div class="node-content">
             ${nodeLense.render(node, {
@@ -751,6 +762,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .column {
         display: flex;
         flex-direction: row;
+      }
+
+      .evee-info {
+        width: 30px;
       }
 
       .node-content {

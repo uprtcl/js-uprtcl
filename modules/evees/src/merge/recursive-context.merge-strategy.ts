@@ -73,16 +73,15 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     }
     
     const dataId = result.data.entity.head.data.id;
-    const data = { id: dataId, object: dataObject };
-
+    
     this.setPerspective(perspectiveId, context, to);
 
     const hasChildren: HasChildren | undefined = this.recognizer
-      .recognize(data)
+      .recognize(dataObject)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (hasChildren) {
-      const links = hasChildren.getChildrenLinks(data);
+      const links = hasChildren.getChildrenLinks(dataObject);
 
       const promises = links.map(link => this.readPerspective(link, to));
       await Promise.all(promises);
@@ -284,15 +283,15 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     perspectiveId: string,
     config: any
   ): Promise<UprtclAction[]> {
-    const data = await this.loadPerspectiveData(perspectiveId);
+    const { object } = await this.loadPerspectiveData(perspectiveId);
 
     const hasChildren: HasChildren | undefined = this.recognizer
-      .recognize(data)
+      .recognize(object)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (!hasChildren) return [];
 
-    const links = hasChildren.getChildrenLinks(data);
+    const links = hasChildren.getChildrenLinks(object);
 
     if (links.length === 0) return [];
 
@@ -300,9 +299,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     if (!links.every((link, index) => link !== mergedLinks[index])) {
       /** data is Hased -> new Data should be hashed too */
-      const newData = hasChildren.replaceChildrenLinks(data)(mergedLinks) as Hashed<any>;
+      const newObject = hasChildren.replaceChildrenLinks(object)(mergedLinks) as Hashed<any>;
 
-      const actions = await this.updatePerspectiveData(perspectiveId, newData.object);
+      const actions = await this.updatePerspectiveData(perspectiveId, newObject);
       linksActions = linksActions.concat(actions);
     }
 

@@ -29,6 +29,8 @@ export interface PutConfig {
   cidVersion: number
 }
 
+const LOGINFO = false;
+
 export class IpfsStore implements Store {
   logger = new Logger('IpfsSource');
   
@@ -101,7 +103,7 @@ export class IpfsStore implements Store {
       .tryGet(hash, 500, 0)
       .then(raw => {
         let object = CBOR.decode(raw.value.buffer);
-        this.logger.log(`Object retrieved ${hash}`, { raw, object });
+        if (LOGINFO) this.logger.log(`Object retrieved ${hash}`, { raw, object });
         return { id: hash, object: object };
       })
       .catch(e => {

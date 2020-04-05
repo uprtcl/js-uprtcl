@@ -15,6 +15,7 @@ export interface TextNode {
 export interface DocNode {
   ref: string,
   authority: string,
+  context: string,
   data?: Hashed<any>,
   draft: any,
   append?: any,              // used by upper layer to tell the docnode lense to append content using its internal appending logic.

@@ -9,6 +9,8 @@ export interface IpfsConnectionOptions {
   headers?: { [key: string]: string };
 }
 
+const LOGINFO = false;
+
 export class IpfsConnection extends Connection {
   client: any;
 
@@ -28,7 +30,7 @@ export class IpfsConnection extends Connection {
 
   public tryPut(buffer: Buffer, putConfig: object, wait: number, attempt: number): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.logger.log(`Try put. Attempt: ${attempt}`, { client: this.client, buffer, putConfig });
+      if (LOGINFO) this.logger.log(`Try put. Attempt: ${attempt}`, { client: this.client, buffer, putConfig });
 
       let timeout;
       if (attempt < 4) {
@@ -53,7 +55,7 @@ export class IpfsConnection extends Connection {
     let timeout;
 
     return new Promise((resolve, reject) => {
-      this.logger.log(`Trying to get ${hash}. Attempt: ${attempt}`);
+      if (LOGINFO) this.logger.log(`Trying to get ${hash}. Attempt: ${attempt}`);
 
       let found = false;
 

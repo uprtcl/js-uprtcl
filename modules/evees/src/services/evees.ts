@@ -211,17 +211,16 @@ export class Evees {
     });
 
     const dataId = result.data.entity.data.id;
-    const dataRaw = JSON.parse(result.data.entity.data._context.raw);
-    const dataHashed = { id: dataId, object: dataRaw };
-
+    const dataObject = JSON.parse(result.data.entity.data._context.raw);
+    
     let newHeadId = headId;
 
     const hasChildren: HasChildren | undefined = this.patternRecognizer
-      .recognize(dataHashed)
+      .recognize(dataObject)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (hasChildren) {
-      const descendantLinks = hasChildren.getChildrenLinks(dataHashed);
+      const descendantLinks = hasChildren.getChildrenLinks(dataObject);
 
       if (descendantLinks.length > 0) {
         const promises = descendantLinks.map(async link => {
@@ -262,10 +261,10 @@ export class Evees {
 
         const newLinks = results.map(r => r[0].id);
 
-        const newData: Hashed<any> = hasChildren.replaceChildrenLinks(dataHashed)(newLinks);
+        const newObject = hasChildren.replaceChildrenLinks(dataObject)(newLinks);
         const dataSource = this.remotesConfig.map(eveesRemote.authority);
 
-        const newHasheData = await this.hashed.derive()(newData.object, dataSource.hashRecipe);
+        const newHasheData = await this.hashed.derive()(newObject, dataSource.hashRecipe);
 
         const newDataAction: UprtclAction = {
           type: CREATE_DATA_ACTION,

@@ -295,8 +295,9 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
   }
 
   async spliceChildren(elements?: string[], index?: number, toIndex?: number, appendBackwards?: string, liftBackwards?: string[], focusAfter?: number) {
-    const result = await this.spliceChildrenOf(this.data, elements, index, toIndex);
-    await this.updateContentLocal(result.entity.object);
+    if (!this.data) throw new Error('data undefined');
+    const result = await this.spliceChildrenOf(this.data.object, elements, index, toIndex);
+    await this.updateContentLocal(result.entity);
     return result;
   }
 
@@ -335,7 +336,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     const { entity } = await this.spliceChildren([newLink], index);
 
     this.logger.info('createChild()', entity);
-    await this.updateContentLocal(entity.object);
+    await this.updateContentLocal(entity);
     return
   }
 

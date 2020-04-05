@@ -160,23 +160,23 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
     ];
   };
 
-  merge = (originalNode: Hashed<TextNode>) => async (
-    modifications: Hashed<TextNode>[],
+  merge = (originalNode: TextNode) => async (
+    modifications: TextNode[],
     mergeStrategy: MergeStrategy,
     config: any
   ): Promise<[TextNode, UprtclAction[]]> => {
     const resultText = mergeStrings(
-      originalNode.object.text,
-      modifications.map(data => data.object.text)
+      originalNode.text,
+      modifications.map(data => data.text)
     );
     const resultType = mergeResult(
-      originalNode.object.type,
-      modifications.map(data => data.object.type)
+      originalNode.type,
+      modifications.map(data => data.type)
     );
 
     const [mergedLinks, actions] = await mergeStrategy.mergeLinks(
-      originalNode.object.links,
-      modifications.map(data => data.object.links),
+      originalNode.links,
+      modifications.map(data => data.links),
       config
     );
 
