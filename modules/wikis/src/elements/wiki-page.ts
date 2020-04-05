@@ -90,7 +90,10 @@ export class WikiPage extends moduleConnect(LitElement) {
 
       <div class="page-content">
         <div class="text-editor">
-          <documents-editor ref=${this.pageHash}></documents-editor>
+          <documents-editor 
+            ref=${this.pageHash}
+            color=${this.color}>
+          </documents-editor>
         </div>
       </div>
     `;

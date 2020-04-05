@@ -122,14 +122,14 @@ export const eveesResolvers = {
       };
     },
 
-    async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
+    async updatePerspectiveHead(parent, { perspectiveId, headId, context }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
 
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
-      await provider.updatePerspectiveDetails(perspectiveId, { headId });
+      await provider.updatePerspectiveDetails(perspectiveId, { headId, context });
 
       await discovery.postEntityUpdate(provider, [headId]);
 

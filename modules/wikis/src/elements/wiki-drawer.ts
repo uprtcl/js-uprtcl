@@ -51,9 +51,13 @@ export class WikiDrawer extends EveesContent<Wiki>{
 
   updated(changedProperties: any) {
     this.logger.log('updated()', { changedProperties, data: this.data, dataInit: this.dataInit });
-    if (changedProperties.get('data') !== undefined) {
+    
+    super.updated(changedProperties);
+
+    if (changedProperties.has('data')) {
       this.loadPagesData();
     }
+
   }
 
   async loadPagesData() {

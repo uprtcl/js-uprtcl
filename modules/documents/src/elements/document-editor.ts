@@ -34,6 +34,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: Boolean, attribute: false })
   docHasChanges: Boolean = false;
 
+  @property({ type: String })
+  color!: string;
+
+
   protected client: ApolloClient<any> | undefined = undefined;
   protected eveesRemotes: EveesRemote[] | undefined = undefined;
   protected remotesConfig: RemotesConfig | undefined = undefined;
@@ -82,7 +86,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     node.childrenNodes = await Promise.all(loadChildren);
 
     /** focus if top element */
-    if (this.doc && node.ref === this.doc.ref) {
+    if (this.doc && node.ref === this.doc.ref && node.editable) {
       node.focused = true;
     }
 
@@ -144,7 +148,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const editable = result.data.entity._context.patterns.accessControl.canWrite;
     const authority = result.data.entity.payload.origin;
-    const context = result.data.entity.context.identifier;
+    const context = result.data.entity.context.id;
     
     const node: DocNode = {
       ref, ix, hasChildren,
@@ -284,6 +288,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: node.ref,
+        context: node.context,
         headId: commit.id
       }
     });
@@ -667,7 +672,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   renderTopRow(node: DocNode) {
     if (LOGINFO) this.logger.log('renderTopRow()', {node});
     /** the ref to which the parent is pointing at */
-    const color = 'red';
+    const color = this.color;
     const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
     const hasIcon = this.hasChanges(node);
     const icon = node.ref === '' ? icons.add_box : icons.edit;
@@ -678,9 +683,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           <div class="evee-info">
             ${node.ref !== '' ? html`
               <evees-info-popper 
-                first-perspective-id=${''}
+                first-perspective-id=${node.ref}
                 perspective-id=${node.ref}
-                eveeColor=${color}
+                evee-color=${color}
               ></evees-info-popper>` : ''}
           </div>
           <div class="node-content">
