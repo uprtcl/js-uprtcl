@@ -26,8 +26,15 @@ export class ApolloClientModule extends MicroModule {
     container
       .bind(ApolloClientModule.bindings.RootSchema)
       .toDynamicValue((context: interfaces.Context) => {
-        const typeDefs: ITypedef[] = context.container.getAll(GraphQlSchemaBindings.TypeDefs);
-        const resolvers: IResolvers[] = context.container.getAll(GraphQlSchemaBindings.Resolvers);
+        let typeDefs: ITypedef[] = [];
+        let resolvers: IResolvers[] = [];
+
+        if (context.container.isBound(GraphQlSchemaBindings.TypeDefs)) {
+          typeDefs = context.container.getAll(GraphQlSchemaBindings.TypeDefs);
+        }
+        if (context.container.isBound(GraphQlSchemaBindings.Resolvers)) {
+          resolvers = context.container.getAll(GraphQlSchemaBindings.Resolvers);
+        }
 
         let directives = {};
         if (context.container.isBound(GraphQlSchemaBindings.Directive)) {
@@ -40,24 +47,24 @@ export class ApolloClientModule extends MicroModule {
             {}
           );
         }
-        
+
         return makeExecutableSchema({
           typeDefs: [baseTypeDefs, ...typeDefs],
           resolvers: [baseResolvers, ...resolvers],
           inheritResolversFromInterfaces: true,
-          schemaDirectives: directives
+          schemaDirectives: directives,
         });
       });
     const cache = new InMemoryCache({
-      dataIdFromObject: object => {
+      dataIdFromObject: (object) => {
         if (object.__typename === 'Context') return `${object.__typename}:${object.id}`;
         return object.id || null;
       },
       cacheRedirects: {
         Query: {
-          entity: (_, { id }, { getCacheKey }) => getCacheKey({ __typename: '', id: id })
-        }
-      }
+          entity: (_, { id }, { getCacheKey }) => getCacheKey({ __typename: '', id: id }),
+        },
+      },
     });
 
     if (!this.apolloClientBuilder) {
@@ -70,7 +77,7 @@ export class ApolloClientModule extends MicroModule {
         return new ApolloClient({
           cache,
           connectToDevTools: true,
-          link: finalLink
+          link: finalLink,
         });
       };
     }
@@ -86,7 +93,7 @@ export class ApolloClientModule extends MicroModule {
 
         const links = new SchemaLink({
           schema,
-          context: { container: context.container, cache }
+          context: { container: context.container, cache },
         });
 
         client = (this.apolloClientBuilder as ApolloClientBuilder)(links);

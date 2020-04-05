@@ -27,18 +27,21 @@ export function ModuleContainer(container: Container): typeof HTMLElement {
 
         try {
           if (e.detail.multiple)
-            e.dependencies = e.detail.request.map(dep => container.getAll(dep));
-          else e.dependencies = e.detail.request.map(dep => [container.get(dep)]);
-        } catch (e) {
-          console.warn('Trying to request a dependency that is not registered ', e.dependencies);
+            e.dependencies = e.detail.request.map((dep) => container.getAll(dep));
+          else e.dependencies = e.detail.request.map((dep) => [container.get(dep)]);
+        } catch (error) {
+          console.warn(
+            'Trying to request a dependency that is not registered ',
+            e.dependencies,
+            ' error: ',
+            error
+          );
         }
       });
     }
 
     render() {
-      return html`
-        <slot></slot>
-      `;
+      return html` <slot></slot> `;
     }
   }
 

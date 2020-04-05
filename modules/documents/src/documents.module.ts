@@ -1,14 +1,10 @@
 import { StoresModule, Store } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { ElementsModule, i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
+import { i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
 
 import { DocumentTextNode } from './elements/document-text-node';
-import {
-  TextNodeCreate,
-  TextNodePatterns,
-  TextNodeTitle
-} from './patterns/text-node.entity';
+import { TextNodeCreate, TextNodePatterns, TextNodeTitle } from './patterns/text-node.entity';
 import { documentsTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 
@@ -52,27 +48,22 @@ export class DocumentsModule extends MicroModule {
     super();
   }
 
-  async onLoad() {}
+  async onLoad() {
+    customElements.define('documents-text-node', DocumentTextNode);
+    customElements.define('documents-text-node-editor', DocumentTextNodeEditor);
+  }
 
   submodules = [
     new GraphQlSchemaModule(documentsTypeDefs, resolvers),
     new i18nextModule('documents', { en: en }),
     new StoresModule(
-      this.stores.map(store => ({
+      this.stores.map((store) => ({
         symbol: DocumentsModule.bindings.DocumentsRemote,
-        store: store
+        store: store,
       }))
     ),
-    new ElementsModule({
-      'documents-text-node': DocumentTextNode,
-      'documents-text-node-editor': DocumentTextNodeEditor
-    }),
     new PatternsModule({
-      [DocumentsModule.bindings.TextNodeEntity]: [
-        TextNodeCreate,
-        TextNodePatterns,
-        TextNodeTitle
-      ]
-    })
+      [DocumentsModule.bindings.TextNodeEntity]: [TextNodeCreate, TextNodePatterns, TextNodeTitle],
+    }),
   ];
 }

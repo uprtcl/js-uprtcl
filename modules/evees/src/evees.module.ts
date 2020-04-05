@@ -1,6 +1,6 @@
 import { interfaces } from 'inversify';
 
-import { ElementsModule, MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
+import { MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 import { SourcesModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
@@ -13,7 +13,7 @@ import {
   PerspectiveLinks,
   PerspectiveLens,
   PerspectiveCreate,
-  PerspectiveAccessControl
+  PerspectiveAccessControl,
 } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
@@ -90,19 +90,18 @@ export class EveesModule extends MicroModule {
     container.bind(EveesModule.bindings.Evees).to(Evees);
     container.bind(EveesModule.bindings.MergeStrategy).to(OwnerPreservingMergeStrategy);
     container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
+
+    customElements.define('evees-commit-history', CommitHistory);
+    customElements.define('evees-perspectives-list', PerspectivesList);
+    customElements.define('evees-perspective', EveesPerspective);
+    customElements.define('evees-info-popper', EveesInfoPopper);
+    customElements.define('evees-info-page', EveesInfoPage);
+    customElements.define('evees-list-item', ItemWithMenu);
+    customElements.define('evees-options-menu', EveesOptionsMenu);
   }
 
   submodules = [
     new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
-    new ElementsModule({
-      'evees-commit-history': CommitHistory,
-      'evees-perspectives-list': PerspectivesList,
-      'evees-perspective': EveesPerspective,
-      'evees-info-popper': EveesInfoPopper,
-      'evees-info-page': EveesInfoPage,
-      'evees-list-item': ItemWithMenu,
-      'evees-options-menu': EveesOptionsMenu
-    }),
     new i18nextModule('evees', { en: en }),
     new PatternsModule({
       [EveesModule.bindings.Hashed]: [CidHashedPattern],
@@ -112,15 +111,15 @@ export class EveesModule extends MicroModule {
         PerspectiveLinks,
         PerspectiveLens,
         PerspectiveCreate,
-        PerspectiveAccessControl
+        PerspectiveAccessControl,
       ],
-      [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitPattern, CommitLens]
+      [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitPattern, CommitLens],
     }),
     new SourcesModule(
-      this.eveesProviders.map(evees => ({
+      this.eveesProviders.map((evees) => ({
         symbol: EveesModule.bindings.EveesRemote,
-        source: evees
+        source: evees,
       }))
-    )
+    ),
   ];
 }

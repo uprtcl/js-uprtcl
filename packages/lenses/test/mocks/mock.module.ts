@@ -1,4 +1,4 @@
-import { MicroModule, Dictionary, Constructor, ElementsModule } from '@uprtcl/micro-orchestrator';
+import { MicroModule, Dictionary, Constructor } from '@uprtcl/micro-orchestrator';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { PatternsModule, Hashed, Pattern } from '@uprtcl/cortex';
 import { SourcesModule } from '@uprtcl/multiplatform';
@@ -16,10 +16,11 @@ export class MockModule extends MicroModule {
     super();
   }
   
-  async onLoad() {}
+  async onLoad() {
+    customElements.define('mock-element', MockElement)
+  }
 
   submodules = [
-    new ElementsModule({ 'mock-element': MockElement }),
     new GraphQlSchemaModule(mockSchema),
     new PatternsModule({ mock: [MockPattern, ...this.initialPatterns] }),
     new SourcesModule([
