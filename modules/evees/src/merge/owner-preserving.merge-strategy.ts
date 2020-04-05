@@ -62,15 +62,15 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
 
     let newLinks: string[] = [];
 
-    const newData = await this.loadCommitData(updateRequest.newHeadId);
+    const { object } = await this.loadCommitData(updateRequest.newHeadId);
     let newHasChildren: HasChildren | undefined = this.recognizer
-      .recognize(newData)
+      .recognize(object)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (!newHasChildren) {
       newLinks = [];
     } else {
-      newLinks = newHasChildren.getChildrenLinks(newData);
+      newLinks = newHasChildren.getChildrenLinks(object);
     }
 
     /**
@@ -215,14 +215,15 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     const sameLinks =
       newNewLinks.length === newLinks.length &&
       newNewLinks.every((value, index) => value === newLinks[index]);
+
     if (!sameLinks) {
       /** create a new data and commit with the new links and update perspective head */
       if (!newHasChildren) throw new Error('Target data dont have children, cant update its links');
 
-      const newNewData = newHasChildren.replaceChildrenLinks(newData)(newNewLinks) as Hashed<any>;
+      const newNewDataObject = newHasChildren.replaceChildrenLinks(object)(newNewLinks) as Hashed<any>;
       const actions = await this.updatePerspectiveData(
         updateRequest.perspectiveId,
-        newNewData.object
+        newNewDataObject
       );
 
       const globalPerspectiveActions = result.map(r => r[1]);

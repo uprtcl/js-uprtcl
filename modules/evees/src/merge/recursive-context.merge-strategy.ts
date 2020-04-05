@@ -191,7 +191,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
            * only one head update is expected, but two are found. The head
            * of the page is updated but it should not.
            */
-          const actions = await this.mergePerspectiveChildren(finalPerspectiveId as string, config);
+          // const actions = await this.mergePerspectiveChildren(finalPerspectiveId as string, config);
+          const actions = [];
 
           return [finalPerspectiveId as string, actions] as [string, UprtclAction[]];
         }
