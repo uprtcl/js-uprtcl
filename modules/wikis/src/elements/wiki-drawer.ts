@@ -1,4 +1,4 @@
-import { property, html, css } from 'lit-element';
+import { property, html, css, LitElement } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
@@ -10,23 +10,33 @@ export const styleMap = style => {
   }, '');
 };
 
-import '@material/mwc-drawer';
 
-import {
-  EveesContent
-} from '@uprtcl/evees';
-import { htmlToText, TextType, DocumentsModule } from '@uprtcl/documents';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { htmlToText, TextType, DocumentsModule, TextNode, DocumentsBindings } from '@uprtcl/documents';
+import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Hashed } from '@uprtcl/cortex';
-import { MenuConfig } from '@uprtcl/evees';
+import { Hashed, HasChildren, Pattern, Creatable } from '@uprtcl/cortex';
+import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, EveesBindings } from '@uprtcl/evees';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Wiki } from '../types';
-import { WikiBindings } from 'src/bindings';
 
-export class WikiDrawer extends EveesContent<Wiki>{
+import '@material/mwc-drawer';
+import { Source } from '@uprtcl/multiplatform';
+
+const LOGINFO = true;
+
+export class WikiDrawer extends moduleConnect(LitElement) {
   
   logger = new Logger('WIKI-DRAWER');
+
+  @property({ type: String })
+  ref: string | undefined = undefined;
+
+  @property({ type: Object, attribute: false })
+  wiki: Hashed<Wiki> | undefined;
+
+  @property({ type: Object, attribute: false })
+  draft: Wiki | undefined;
 
   @property({ type: Number })
   selectedPageIx: number | undefined = undefined;
@@ -34,39 +44,84 @@ export class WikiDrawer extends EveesContent<Wiki>{
   @property({ type: Object, attribute: false })
   pagesList: Array<{ title: string; id: string }> | undefined = undefined;
 
-  symbol: symbol | undefined = WikiBindings.WikiEntity;
+  authority: string = '';
+  currentHeadId: string | undefined = undefined;
+  editable: boolean = false;
   
-  getEmptyEntity(): Wiki {
-    throw new Error("Method not implemented.");
-  }
+  color: string = '#d0dae0';
+  
+  protected client: ApolloClient<any> | undefined = undefined;
+  protected eveesRemotes: EveesRemote[] | undefined = undefined;
+  protected remotesConfig: RemotesConfig | undefined = undefined;
+
 
   async firstUpdated() {
-    super.firstUpdated();
+    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
 
-    this.logger.log('firstUpdated()', { data: this.data, dataInit: this.dataInit });
+    this.logger.log('firstUpdated()', { ref: this.ref });
+    this.loadWiki();
+  }
 
-    this.updateRefData();
+  async loadWiki() {
+    const client = this.client as ApolloClient<any>;
+
+    const result = await client.query({
+      query: gql`
+      {
+        entity(id: "${this.ref}") {
+          id
+          ... on Perspective {
+            payload {
+              origin
+            }
+            head {
+              id 
+              ... on Commit {
+                data {
+                  id
+                  ... on Wiki {
+                    title
+                    pages
+                  }
+                }
+              }
+            }
+          }
+          _context {
+            patterns {
+              accessControl {
+                canWrite
+              }
+            }
+          }
+        }
+      }`
+    });
+
+    this.authority = result.data.entity.payload.origin;
+    this.currentHeadId = result.data.entity.head.id;
+    this.editable = result.data.entity._context.patterns.accessControl.canWrite;
+    this.wiki = {
+      id: result.data.entity.head.data.id,
+      object: {
+        title: result.data.entity.head.data.title,
+        pages: result.data.entity.head.data.pages
+      }
+    }
+
+    debugger
+
     this.loadPagesData();
   }
 
-  updated(changedProperties: any) {
-    this.logger.log('updated()', { changedProperties, data: this.data, dataInit: this.dataInit });
-    
-    super.updated(changedProperties);
-
-    if (changedProperties.has('data')) {
-      this.loadPagesData();
-    }
-
-  }
-
   async loadPagesData() {
+    if (!this.wiki) return;
+
     this.logger.log('loadPagesData()');
-    if (!this.data) return;
-
-    const wiki = this.data as Hashed<Wiki>;
-
-    const pagesListPromises = wiki.object.pages.map(async pageId => {
+    
+    const pagesListPromises = this.wiki.object.pages.map(async pageId => {
       if (!this.client) throw new Error('client is undefined');
       const result = await this.client.query({
         query: gql`
@@ -100,7 +155,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
   }
 
   selectPage(ix: number | undefined) {
-    if (!this.data) return;
+    if (!this.wiki) return;
 
     this.selectedPageIx = ix;
     
@@ -111,30 +166,90 @@ export class WikiDrawer extends EveesContent<Wiki>{
     this.dispatchEvent(
       new CustomEvent('page-selected', {
         detail: {
-          pageId: this.data.object.pages[this.selectedPageIx]
+          pageId: this.wiki.object.pages[this.selectedPageIx]
         }
       })
     );
   }
 
-  async newPage() {
-    const pageContent = {
-      text: '<h1></h1>',
+  getPatternOfSymbol<T>(symbol: symbol, name: string) {
+    if (LOGINFO) this.logger.log(`getPatternOfSymbol(${symbol.toString()})`);
+
+    const patterns: Pattern[] = this.requestAll(symbol);
+    const create: T | undefined = (patterns.find(
+      pattern => ((pattern as unknown) as T)[name]
+    ) as unknown) as T;
+
+    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
+
+    return create;
+  }
+
+  getStore(eveesAuthority: string): Source | undefined {
+    if (!this.remotesConfig) return undefined;
+    return this.remotesConfig.map(eveesAuthority);
+  }
+
+  async createPage(page: TextNode, authority: string) {
+    if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
+    const remote = this.eveesRemotes.find(r => r.authority === authority);
+
+    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
+
+    const creatable = this.getPatternOfSymbol<Creatable<any,any>>(DocumentsBindings.TextNodeEntity, 'create');
+    const store = this.getStore(authority);
+    if (!store) throw new Error('store is undefined');
+    const object = await creatable.create()(page, store.source);
+
+    const creatableCommit = this.getPatternOfSymbol<Creatable<any,any>>(EveesBindings.CommitPattern, 'create');
+    const commit = await creatableCommit.create()(
+      { parentsIds: [], dataId: object.id },
+      remote.source
+    );
+
+    const creatablePerspective = this.getPatternOfSymbol<Creatable<any,any>>(EveesBindings.PerspectivePattern, 'create');
+    const perspective = await creatablePerspective.create()(
+      { fromDetails: { headId: commit.id, context } , parentId: this.ref },
+      authority
+    );
+
+    return perspective.id;
+  }
+
+  async splicePages(pages: any[], index: number, count: number) {
+    if (!this.draft) return;
+
+    const getPages = pages.map((page) => {
+      if (typeof page !== 'string') {
+        return this.createPage(page, this.authority);
+      } else {
+        return Promise.resolve(page);
+      }
+    });
+
+    const pagesIds = await Promise.all(getPages);
+
+    return this.draft.pages.splice(index, count, ...pagesIds);
+  }
+
+  async newPage(index?: number) {
+    if (!this.wiki) return;
+    const newPage: TextNode = {
+      text: '',
       type: TextType.Title,
       links: []
     };
 
-    const ix = this.data ? this.data.object.pages.length : 0;
-    await this.createChild(
-      pageContent, 
-      DocumentsModule.bindings.TextNodeEntity, 
-      );
+    index = index === undefined ? this.wiki.object.pages.length : index;
 
-    this.selectedPageIx = ix;
+    await this.splicePages([newPage], index, 0);
+
+    this.selectedPageIx = index;
   }
 
   async movePage(fromIndex: number, toIndex: number) {
-    await this.moveChildElement(fromIndex, toIndex);
+    const removed = await this.splicePages([], fromIndex, 1);
+    await this.splicePages(removed as string[], fromIndex, 1);
     
     if (this.selectedPageIx === undefined) return;
 
@@ -147,11 +262,10 @@ export class WikiDrawer extends EveesContent<Wiki>{
         this.selectPage(fromIndex);
       }
     }
-
   }
 
   async removePage(pageIndex: number) {
-    this.spliceChildren([], pageIndex, pageIndex + 1);
+    this.splicePages([], pageIndex, 1);
 
     if (this.selectedPageIx === undefined) return;
 
@@ -242,8 +356,8 @@ export class WikiDrawer extends EveesContent<Wiki>{
   }
 
   render() {
-    this.logger.log('render()', { data: this.data, ref: this.ref, editable: this.editable, level: this.level });
-    if (!this.data || !this.ref)
+    this.logger.log('render()', { wiki: this.wiki, ref: this.ref, editable: this.editable });
+    if (!this.wiki || !this.ref)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
@@ -279,7 +393,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
                 <wiki-page
                   @nav-back=${() => this.selectPage(undefined)}
                   @page-title-changed=${() => this.loadPagesData()}
-                  pageHash=${this.data.object.pages[this.selectedPageIx]}
+                  pageHash=${this.wiki.object.pages[this.selectedPageIx]}
                   color=${this.color ? this.color : ''}
                 >
                 </wiki-page>
@@ -287,7 +401,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
             : html`
                 <wiki-home
                   wikiHash=${this.ref}
-                  title=${this.data.object.title}
+                  title=${this.wiki.object.title}
                   color=${this.color ? this.color : ''}
                 >
                   <slot slot="evee-page" name="evee-page"></slot>

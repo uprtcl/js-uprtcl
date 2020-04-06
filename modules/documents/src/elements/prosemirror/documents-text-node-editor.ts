@@ -467,6 +467,11 @@ export class DocumentTextNodeEditor extends LitElement {
   async setShowMenu(value: boolean) {
     if (!this.shadowRoot) return;
 
+    if (this.editable !== 'true') {
+      this.showMenu = false;
+      return;  
+    }
+
     this.showMenu = value;
     this.requestUpdate();
 

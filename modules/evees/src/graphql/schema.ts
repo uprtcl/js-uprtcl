@@ -8,7 +8,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     updatePerspectiveHead(
       perspectiveId: ID!, 
       headId: ID!
-      headId: String): Perspective!
+      context: String): Perspective!
 
     createCommit(
       creatorsIds: [String], 
