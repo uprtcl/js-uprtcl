@@ -90,7 +90,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     return create;
   }
 
-  getCreatePatternOfSymbol(symbol: symbol) {
+  getCreatePatternOfSymbol(symbol: string) {
     this.logger.log(`getCreatePatternOfSymbol(${symbol.toString()})`);
 
     const patterns: Pattern[] = this.requestAll(symbol);
@@ -115,7 +115,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     return hasChildren;
   }
 
-  getHasChildrenPatternOfSymbol(symbol: symbol) {
+  getHasChildrenPatternOfSymbol(symbol: string) {
     this.logger.log(`getHasChildrenPatternOfSymbol(${symbol.toString()})`);
 
     const patterns: Pattern[] = this.requestAll(symbol);
@@ -162,7 +162,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     this.editable = result.data.entity._context.patterns.accessControl.canWrite;
   }
 
-  async createEntity(content: object, symbol: symbol): Promise<Hashed<T>> {
+  async createEntity(content: object, symbol: string): Promise<Hashed<T>> {
     const creatable: Creatable<any, any> | undefined = this.getCreatePatternOfSymbol(symbol);
     if (creatable === undefined) throw new Error('Creatable pattern not found for this entity');
     const store = this.getStore(this.authority);
@@ -170,7 +170,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     return creatable.create()(content, store.source);
   }
 
-  async createEvee(content: object, symbol: symbol): Promise<string> {
+  async createEvee(content: object, symbol: string): Promise<string> {
     if (!this.authority) throw new Error('Authority undefined');
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
 
@@ -284,7 +284,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     return hasChildren.replaceChildrenLinks(data)(links);
   }
 
-  async createChild(newNode: object, symbol: symbol, index?: number) {
+  async createChild(newNode: object, symbol: string, index?: number) {
     if (!this.data) return;
 
     const newLink = await this.createEvee(newNode, symbol);
@@ -306,7 +306,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     this.updateContentLocal(newContent.object);
   }
 
-  createSibling(object: object, symbol: symbol) {
+  createSibling(object: object, symbol: string) {
     if (!this.data) return;
 
     this.logger.info('createSibling()', { dataId: this.data ? this.data.id : undefined });
@@ -316,7 +316,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
         composed: true,
         detail: {
           object: object,
-          symbol: symbol,
+          symbol: string,
           startedOnElementId: this.data.id,
           index: this.index + 1
         }

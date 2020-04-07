@@ -27,7 +27,7 @@ export class StoresModule extends MicroModule {
 
   static bindings = StoresBindings;
 
-  constructor(protected stores: Array<{ symbol: symbol; store: Store }>) {
+  constructor(protected stores: Array<{ symbol: string; store: Store }>) {
     super();
   }
 

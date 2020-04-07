@@ -9,7 +9,7 @@ export type UpdateContentArgs = {
 export type CreateSyblingArgs = {
   startedOnElementId: string;
   object: object;
-  symbol: symbol;
+  symbol: string;
   index?: number;
 };
 

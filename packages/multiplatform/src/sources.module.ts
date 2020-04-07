@@ -26,7 +26,7 @@ export class SourcesModule extends MicroModule {
 
   static bindings = SourcesBindings;
 
-  constructor(protected sources: Array<{ symbol: symbol; source: Source }>) {
+  constructor(protected sources: Array<{ symbol: string; source: Source }>) {
     super();
   }
 

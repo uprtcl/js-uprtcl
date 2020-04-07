@@ -1,10 +1,11 @@
 import { LitElement, property, html, css } from 'lit-element';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import '@material/mwc-dialog';
 import '@material/mwc-textfield';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule, ApolloClient, gql } from '@uprtcl/graphql';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { PermissionsElement } from './permissions-element';
 import { SET_PUBLIC_READ } from '../graphql/queries';
