@@ -78,8 +78,8 @@ export class PerspectiveLens implements HasLenses<Entity<Signed<Perspective>>> {
 @injectable()
 export class PerspectiveCreate
   implements
-    Creatable<CreatePerspectiveArgs, Entity<Signed<Perspective>>>,
-    Newable<NewPerspectiveArgs, Entity<Signed<Perspective>>> {
+    Creatable<CreatePerspectiveArgs, Signed<Perspective>>,
+    Newable<NewPerspectiveArgs, Signed<Perspective>> {
   constructor(
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,

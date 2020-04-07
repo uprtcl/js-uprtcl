@@ -1,8 +1,8 @@
-import gql from 'graphql-tag';
+import { gql } from 'apollo-boost';
 import { injectable } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { HasChildren, Hashed } from '@uprtcl/cortex';
+import { HasChildren, Entity } from '@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import {
@@ -13,6 +13,7 @@ import {
   CREATE_DATA_ACTION,
   UpdateRequest
 } from '../types';
+import { hashObject, signAndHashObject } from 'src/patterns/cid-hash';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -71,14 +72,14 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (result.data.entity.head == null) {
       throw new Error(`head null reading perspective ${perspectiveId}`);
     }
-    
+
     const dataId = result.data.entity.head.data.id;
     const data = { id: dataId, object: dataObject };
 
     this.setPerspective(perspectiveId, context, to);
 
     const hasChildren: HasChildren | undefined = this.recognizer
-      .recognize(data)
+      .recognizeBehaviours(data)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (hasChildren) {
@@ -234,35 +235,40 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (!remote.userId)
       throw new Error('Cannot create perspectives in a remote you are not signed in');
 
-    const dataSource = this.remotesConfig.map(remote.authority);
+    const dataSource = this.remotesConfig.map(remote.authorityID);
 
-    const newHasheData = await this.hashed.derive()(data, dataSource.hashRecipe);
+    const newDataId = await hashObject(data, dataSource.cidConfig);
+
+    const entity = {
+      id: newDataId,
+      entity: data
+    };
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
-      entity: newHasheData,
+      entity,
       payload: {
-        source: dataSource.source
+        source: dataSource.casID
       }
     };
 
-    this.entityCache.cacheEntity(newHasheData);
+    this.entityCache.cacheEntity(entity);
 
     const commit: Commit = {
-      dataId: newHasheData.id,
+      dataId: entity.id,
       parentsIds: headId ? [headId] : [],
       creatorsIds: [remote.userId],
       message: 'Merge: reference new commits',
       timestamp: Date.now()
     };
 
-    const securedCommit = await this.secured.derive()(commit, remote.hashRecipe);
+    const securedCommit = await signAndHashObject(commit, remote.cidConfig);
 
     const newCommitAction: UprtclAction = {
       type: CREATE_COMMIT_ACTION,
       entity: securedCommit,
       payload: {
-        source: remote.source
+        source: remote.casID
       }
     };
 
@@ -287,7 +293,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const data = await this.loadPerspectiveData(perspectiveId);
 
     const hasChildren: HasChildren | undefined = this.recognizer
-      .recognize(data)
+      .recognizeBehaviours(data)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (!hasChildren) return [];
@@ -300,9 +306,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     if (!links.every((link, index) => link !== mergedLinks[index])) {
       /** data is Hased -> new Data should be hashed too */
-      const newData = hasChildren.replaceChildrenLinks(data)(mergedLinks) as Hashed<any>;
+      const newData = hasChildren.replaceChildrenLinks(data)(mergedLinks) as Entity<any>;
 
-      const actions = await this.updatePerspectiveData(perspectiveId, newData.object);
+      const actions = await this.updatePerspectiveData(perspectiveId, newData.entity);
       linksActions = linksActions.concat(actions);
     }
 

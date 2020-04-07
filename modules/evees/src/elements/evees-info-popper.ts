@@ -7,7 +7,7 @@ export const styleMap = style => {
 };
 
 import { EveesInfoBase } from './evee-info-base';
-import { DEFAULT_COLOR } from './evees-perspective';
+import { DEFAULT_COLOR } from './evees-perspectives-list';
 import { prettyAddress, prettyTime } from './support';
 
 export class EveesInfoPopper extends EveesInfoBase {
@@ -82,9 +82,11 @@ export class EveesInfoPopper extends EveesInfoBase {
         <evees-perspectives-list
           perspective-id=${this.perspectiveId}
           first-perspective-id=${this.firstPerspectiveId}
-          @perspective-selected=${(e) => this.otherPerspectiveClicked(e.detail.id)}
-          @merge-perspective=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
-          @create-proposal=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, true)}
+          @perspective-selected=${e => this.otherPerspectiveClicked(e.detail.id)}
+          @merge-perspective=${e =>
+            this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
+          @create-proposal=${e =>
+            this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, true)}
           @authorize-proposal=${this.authorizeProposal}
           @execute-proposal=${this.executeProposal}
         ></evees-perspectives-list>

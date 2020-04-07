@@ -26,7 +26,7 @@ import { CidConfig } from '@uprtcl/multiplatform';
 
 import { TextNode, TextType } from '../types';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
-import { DocumentsBindings } from 'src/bindings';
+import { DocumentsBindings } from '../bindings';
 
 const propertyOrder = ['text', 'type', 'links'];
 

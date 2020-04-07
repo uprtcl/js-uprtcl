@@ -8,8 +8,7 @@ export const styleMap = style => {
   }, '');
 };
 
-import { EveesContent } from '@uprtcl/evees';
-import { AddSyblingsEvent, RemoveChildrenEvent } from '@uprtcl/evees';
+import { EveesContent, AddSyblingsEvent, RemoveChildrenEvent } from '@uprtcl/evees';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Entity } from '@uprtcl/cortex';
 
@@ -67,7 +66,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     super.firstUpdated();
     await this.updateRefData();
     if (this.data !== undefined) {
-      this.currentText = this.data.object.text;
+      this.currentText = this.data.entity.text;
     }
   }
 
@@ -91,7 +90,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     const tail = e.detail.tail;
     this.logger.info('enterPressed()', { data: this.data, tail });
 
-    if (this.data.object.type === TextType.Title) {
+    if (this.data.entity.type === TextType.Title) {
       await this.createChild(this.initNode(tail, TextType.Paragraph), this.symbol);
     } else {
       this.createSibling(this.initNode(tail, TextType.Paragraph), this.symbol);
@@ -126,7 +125,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     if (!this.currentText) return;
 
     const newContent: TextNode = {
-      ...this.data.object,
+      ...this.data.entity,
       text: this.currentText
     };
 
@@ -150,7 +149,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
     const newType = e.detail.type;
     let newContent: TextNode;
 
-    switch (this.data.object.type) {
+    switch (this.data.entity.type) {
       case TextType.Title:
         switch (newType) {
           /** title to title: setting the same view changes nothing */
@@ -161,11 +160,11 @@ export class DocumentTextNode extends EveesContent<TextNode> {
            *  will move all its subelements as younger siblings of the new typed
            *  paragraph */
           case TextType.Paragraph:
-            const links = this.data.object.links;
+            const links = this.data.entity.links;
 
             /** remove childrent */
             newContent = {
-              ...this.data.object,
+              ...this.data.entity,
               links: [],
               type: newType
             };
@@ -199,7 +198,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
            * children of the new title. */
           case TextType.Title:
             let newContent: TextNode = {
-              ...this.data.object,
+              ...this.data.entity,
               type: newType
             };
 
@@ -237,8 +236,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
                   nextParagraphs.slice(0, until);
 
                   /** add this paragraphs as children of this node */
-                  let newLinks: string[] = [...this.data.object.links];
-                  if (this.index >= this.data.object.links.length) {
+                  let newLinks: string[] = [...this.data.entity.links];
+                  if (this.index >= this.data.entity.links.length) {
                     newLinks.push(...nextParagraphs);
                   } else {
                     newLinks.splice(this.index, 0, ...nextParagraphs);
@@ -284,7 +283,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
 
-    let contentClasses = this.data.object.type === TextType.Paragraph ? ['paragraph'] : ['title'];
+    let contentClasses = this.data.entity.type === TextType.Paragraph ? ['paragraph'] : ['title'];
     contentClasses.push('content-editable');
 
     return html`
@@ -298,8 +297,8 @@ export class DocumentTextNode extends EveesContent<TextNode> {
           </div>
           <div class="node-content">
             <documents-text-node-editor
-              type=${this.data.object.type}
-              init=${this.data.object.text}
+              type=${this.data.entity.type}
+              init=${this.data.entity.text}
               focus-init=${'true'}
               level=${this.level}
               editable=${this.editable ? 'true' : 'false'}
@@ -316,7 +315,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
         </div>
 
         <div class="node-children">
-          ${this.data.object.links.map(
+          ${this.data.entity.links.map(
             (link, ix) => html`
               <cortex-entity
                 hash=${link}

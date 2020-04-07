@@ -1,13 +1,8 @@
-const commonjs = require('@rollup/plugin-commonjs');
-const resolve = require('@rollup/plugin-node-resolve');
-const replace = require('@rollup/plugin-replace');
-const rollupConfig = require('./rollup.config');
-const builtins = require('rollup-plugin-node-builtins');
-const globals = require('rollup-plugin-node-globals');
+const path = require('path');
 
 module.exports = config =>
   config.set({
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadlessNoSandbox'],
     // ## code coverage config
     coverageIstanbulReporter: {
       reports: ['lcovonly', 'text-summary'],
@@ -24,103 +19,37 @@ module.exports = config =>
     },
 
     preprocessors: {
-      'test/**/*.test.ts': ['rollup']
+      'test/**/*.test.ts': ['webpack']
     },
-    rollupPreprocessor: {
-      ...rollupConfig,
-      external: [],
+    webpack: {
+      mode: 'development',
+      entry: './src/uprtcl-documents.ts',
       output: {
-        format: 'iife', // Helps prevent naming collisions.
-        name: 'uprtcldocuments', // Required for 'iife' format.,
-        sourcemap: true
+        filename: 'bundle.js'
       },
-      plugins: [
-        replace({
-          'process.env.NODE_ENV': JSON.stringify('production'),
-          'var _2 = require(".");':
-            'var _2 = {extendResolversFromInterfaces: require("./extendResolversFromInterfaces").default,checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
-          'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = require(".");':
-            'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = {checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
-          delimiters: ['', '']
-        }),
-        globals(),
-        builtins(),
-        ...rollupConfig.plugins,
-
-        resolve({
-          browser: true,
-          preferBuiltins: false,
-          dedupe: [
-            'graphql',
-            'graphql-tag',
-            'graphql-tools',
-            'cids',
-            'cbor-js',
-            'fast-json-stable-stringify',
-            '@holochain/hc-web-client',
-            'multihashing-async',
-            'randomcolor',
-            'inversify',
-            'ipfs-http-client',
-            'zen-observable',
-            'prosemirror-commands',
-            'prosemirror-keymap',
-            'prosemirror-model',
-            'prosemirror-state',
-            'prosemirror-view',
-            'form-data',
-            'deprecated-decorator',
-            'buffer',
-            'web3'
-          ]
-        }),
-        // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-        commonjs({
-          include: [
-            '**/node_modules/cids/**/*',
-            '**/node_modules/fast-json-stable-stringify/**',
-            '**/node_modules/zen-observable/**',
-            '**/node_modules/form-data/**',
-            '**/node_modules/node-fetch/**',
-            '**/node_modules/inversify/**',
-            '**/node_modules/deprecated-decorator/**',
-            '**/node_modules/graphql/**',
-            '**/node_modules/graphql-tag/**',
-            '**/node_modules/randomcolor/**',
-            '**/node_modules/cbor-js/**',
-            '**/node_modules/web3/**',
-            '**/node_modules/rpc-websockets/**',
-            /node_modules\/web3/,
-            '**/node_modules/@babel/**',
-            '**/node_modules/@holochain/**',
-            '**/node_modules/ipfs-http-client/**',
-            '**/node_modules/multihashing-async/**'
-          ],
-          namedExports: {
-            'apollo-boost': ['gql', 'ApolloClient'],
-            buffer: ['buffer'],
-            cids: ['CID'],
-            'cbor-js': ['CBOR'],
-            'multihashing-async': ['default'],
-            'buffer-es6': ['default'],
-            'ipfs-http-client': ['default'],
-            'graphql-tag': ['default'],
-            'graphql-tools': ['makeExecutableSchema'],
-            'fast-json-stable-stringify': ['stringify', 'default'],
-            web3: ['default'],
-            'zen-observable': ['default']
+      resolve: {
+        extensions: ['.mjs', '.js', '.ts', '.json']
+      },
+      devtool: 'inline-source-map',
+      module: {
+        rules: [
+          {
+            test: /\.ts$/,
+            use: 'ts-loader'
           },
-          exclude: [
-            '**/node_modules/mocha/**/*',
-            '**/node_modules/chai/**/*',
-            '**/node_modules/sinon-chai/**/*',
-            '**/node_modules/chai-dom/**/*',
-            '**/node_modules/core-js-bundle/**/*'
-          ]
-        })
-      ]
+          {
+            test: /\.ts$/,
+            exclude: [path.resolve(__dirname, 'test')],
+            enforce: 'post',
+            use: {
+              loader: 'istanbul-instrumenter-loader',
+              options: { esModules: true }
+            }
+          }
+        ]
+      }
     },
-    singleRun: false,
+    singleRun: true,
     concurrency: Infinity,
 
     plugins: [

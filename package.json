@@ -7,7 +7,7 @@
     "url": "https://github.com/uprtcl/js-uprtcl/"
   },
   "scripts": {
-    "bootstrap": "lerna exec -- npm i && lerna link",
+    "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "clean": "lerna clean",
     "dev": "lerna run dev --parallel",

@@ -5,7 +5,7 @@ import { Schema } from 'prosemirror-model';
 export const nodes = {
   // :: NodeSpec The top level document node.
   doc: {
-    content: "heading+"
+    content: 'heading+'
   },
 
   // :: NodeSpec A heading textblock, with a `level` attribute that
@@ -80,4 +80,4 @@ export const marks = {
 //
 // To reuse elements from this schema, extend or read from its
 // `spec.nodes` and `spec.marks` [properties](#model.Schema.spec).
-export const titleSchema = new Schema({ nodes, marks });
+export const titleSchema = new Schema({ nodes: nodes as any, marks: marks as any });

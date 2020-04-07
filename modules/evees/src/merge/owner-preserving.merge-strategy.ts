@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { HasChildren, Hashed, Signed } from '@uprtcl/cortex';
+import { HasChildren, Entity, Signed } from '@uprtcl/cortex';
 
 import {
   UpdateRequest,
@@ -13,9 +13,9 @@ import {
   Commit
 } from '../types';
 import { RecursiveContextMergeStrategy } from './recursive-context.merge-strategy';
-import gql from 'graphql-tag';
-import { Secured } from '../patterns/default-secured.pattern';
+import { gql } from 'apollo-boost';
 import { cacheActions } from '../utils/actions';
+import { Secured, hashObject } from '../patterns/cid-hash';
 
 export interface OwnerPreservingConfig {
   targetCanWrite: string;
@@ -24,7 +24,7 @@ export interface OwnerPreservingConfig {
 
 @injectable()
 export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy {
-  async getEntity(id: string): Promise<Hashed<any>> {
+  async getEntity(id: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
         entity(id: "${id}") {
@@ -37,7 +37,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     });
 
     const object = JSON.parse(result.data.entity._context.raw);
-    return { id, object };
+    return { id, entity: object };
   }
 
   async getOwnerPreservingActions(
@@ -50,7 +50,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     if (updateRequest.oldHeadId) {
       const oldData = await this.loadCommitData(updateRequest.oldHeadId);
       let oldHasChildren: HasChildren | undefined = this.recognizer
-        .recognize(oldData)
+        .recognizeBehaviours(oldData)
         .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
       if (!oldHasChildren) {
@@ -64,7 +64,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
 
     const newData = await this.loadCommitData(updateRequest.newHeadId);
     let newHasChildren: HasChildren | undefined = this.recognizer
-      .recognize(newData)
+      .recognizeBehaviours(newData)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (!newHasChildren) {
@@ -157,21 +157,26 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
               const oldHead: Secured<Commit> | undefined = await this.getEntity(headId);
               if (!oldHead) throw new Error(`Error getting the cached head: ${headId}`);
 
-              const oldData = await this.getEntity(oldHead.object.payload.dataId);
+              const oldData = await this.getEntity(oldHead.entity.payload.dataId);
 
-              const newData = await this.hashed.derive()(oldData.object, remote.hashRecipe);
+              const newDataId = await hashObject(oldData.entity, remote.cidConfig);
+
+              const newData = {
+                id: newDataId,
+                entity: oldData.entity
+              };
               const newDataAction: UprtclAction = {
                 type: CREATE_DATA_ACTION,
                 entity: newData,
                 payload: {
-                  source: remote.source
+                  source: remote.casID
                 }
               };
 
               /** build new head object pointing to new data */
               const newHeadObject: Signed<Commit> = {
                 payload: {
-                  ...oldHead.object.payload,
+                  ...oldHead.entity.payload,
                   dataId: newData.id
                 },
                 proof: {
@@ -180,18 +185,21 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
                 }
               };
 
-              const newHead = await this.hashed.derive()(newHeadObject, remote.hashRecipe);
+              const newHeadId = await hashObject(newHeadObject, remote.cidConfig);
 
               const newCommitAction: UprtclAction = {
                 type: CREATE_COMMIT_ACTION,
-                entity: newHead,
+                entity: {
+                  id: newHeadId,
+                  entity: newHeadObject
+                },
                 payload: {
-                  source: remote.source
+                  source: remote.casID
                 }
               };
 
               /** replace head in headupdate action */
-              actions[ix].payload.details.headId = newHead.id;
+              actions[ix].payload.details.headId = newHeadId;
 
               /** add the new create commit and head actions */
               actions.push(newCommitAction);
@@ -219,10 +227,10 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
       /** create a new data and commit with the new links and update perspective head */
       if (!newHasChildren) throw new Error('Target data dont have children, cant update its links');
 
-      const newNewData = newHasChildren.replaceChildrenLinks(newData)(newNewLinks) as Hashed<any>;
+      const newNewData = newHasChildren.replaceChildrenLinks(newData)(newNewLinks) as Entity<any>;
       const actions = await this.updatePerspectiveData(
         updateRequest.perspectiveId,
-        newNewData.object
+        newNewData.entity
       );
 
       const globalPerspectiveActions = result.map(r => r[1]);
@@ -241,7 +249,6 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     fromPerspectiveId: string,
     config: OwnerPreservingConfig
   ): Promise<[string, UprtclAction[]]> {
-
     this.depth++;
 
     const [finalPerspectiveId, mergeActionsOriginal] = await super.mergePerspectives(

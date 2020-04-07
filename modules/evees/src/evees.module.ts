@@ -22,7 +22,6 @@ import { eveesTypeDefs } from './graphql/schema';
 import { eveesResolvers } from './graphql/resolvers';
 import { OwnerPreservingMergeStrategy } from './merge/owner-preserving.merge-strategy';
 import { PerspectivesList } from './elements/evees-perspectives-list';
-import { EveesPerspective } from './elements/evees-perspective';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
 import en from './i18n/en.json';
@@ -94,7 +93,6 @@ export class EveesModule extends MicroModule {
     }
     customElements.define('evees-commit-history', CommitHistory);
     customElements.define('evees-perspectives-list', PerspectivesList);
-    customElements.define('evees-perspective', EveesPerspective);
     customElements.define('evees-info-popper', EveesInfoPopper);
     customElements.define('evees-info-page', EveesInfoPage);
     customElements.define('evees-list-item', ItemWithMenu);

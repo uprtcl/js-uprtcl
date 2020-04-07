@@ -8,7 +8,6 @@ import {
   PerspectiveDetails,
   EveesRemote
 } from '@uprtcl/evees';
-import { Entity } from '@uprtcl/cortex';
 
 export class MockEveesProvider implements EveesRemote {
   constructor(
@@ -16,20 +15,16 @@ export class MockEveesProvider implements EveesRemote {
     public details: Dictionary<PerspectiveDetails> = {}
   ) {}
 
-  authorityID: string;
+  authorityID: string = '';
   accessControl = undefined;
   proposals = undefined;
-
-  authorityId = 'mock-authority';
 
   userId = undefined;
 
   casID: string = 'mock-source';
   cidConfig: any;
 
-  ready(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
+  async ready(): Promise<void> {}
 
   async get(hash: string): Promise<any> {
     return this.entities[hash];

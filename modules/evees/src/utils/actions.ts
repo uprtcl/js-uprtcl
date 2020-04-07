@@ -1,7 +1,7 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { createEntity, EntityCache } from '@uprtcl/multiplatform';
-import { PatternRecognizer, Hashed } from '@uprtcl/cortex';
+import { PatternRecognizer, Entity } from '@uprtcl/cortex';
 
 import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
 import {
@@ -48,10 +48,10 @@ export async function cacheActions(
 ) {
     const updateCachePromises = actions.map(action => {
     if (action.type === CREATE_AND_INIT_PERSPECTIVE_ACTION && action.entity) {
-      const perspectiveId = ((action.entity as unknown) as Hashed<any>).id;
+      const perspectiveId = ((action.entity as unknown) as Entity<any>).id;
       const headId = action.payload.details.headId;
 
-      const raw = JSON.stringify(action.entity.object);
+      const raw = JSON.stringify(action.entity.entity);
 
       client.cache.writeQuery({
         query: gql`{
@@ -107,7 +107,7 @@ export async function executeActions(
     .map(async (action: UprtclAction) => {
       if (!action.entity) throw new Error('entity undefined');
 
-      const dataId = await createEntity(recognizer)(action.entity.object, action.payload.source);
+      const dataId = await createEntity(recognizer)(action.entity.entity, action.payload.source);
       if (dataId !== action.entity.id) {
         throw new Error(`created entity id ${dataId} not as expected ${action.entity.id}`);
       }
@@ -123,7 +123,7 @@ export async function executeActions(
       const result = await client.mutate({
         mutation: CREATE_COMMIT,
         variables: {
-          ...action.entity.object.payload,
+          ...action.entity.entity.payload,
           source: action.payload.source
         }
       });
@@ -141,9 +141,9 @@ export async function executeActions(
     const result = await client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
-        ...action.entity.object.payload,
+        ...action.entity.entity.payload,
         ...action.payload.details,
-        authority: action.entity.object.payload.origin,
+        authority: action.entity.entity.payload.origin,
         canWrite: action.payload.owner,
         parentId: action.payload.parentId
       }

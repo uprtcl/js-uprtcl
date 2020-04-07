@@ -179,14 +179,14 @@ export class DocumentTextNodeEditor extends LitElement {
     if (this.shadowRoot == null) return;
     const container = this.shadowRoot.getElementById('editor-content');
 
-    this.editor.view = new EditorView(container, {
+    this.editor.view = new EditorView(container as any, {
       state: this.editor.state,
       editable: () => this.isEditable(),
       dispatchTransaction: transaction => this.dispatchTransaction(transaction),
       handleDOMEvents: {
         'focus': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: true } }))},
         'blur': () => { this.dispatchEvent(new CustomEvent('focus-changed', { bubbles: true, composed: true, detail: { value: false } }))}
-      }
+      } as any
     });
 
     if (this.focusInit === 'true') {

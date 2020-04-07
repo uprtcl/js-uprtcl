@@ -6,8 +6,9 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Proposal } from '../types';
 import { styleMap } from './evees-info-popper';
-import { DEFAULT_COLOR } from './evees-perspective';
 import { prettyTime, prettyAddress } from './support';
+
+export const DEFAULT_COLOR = '#d0dae0';
 
 interface PerspectiveData {
   id: string;

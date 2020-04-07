@@ -2,11 +2,12 @@ import { html, fixture, expect } from '@open-wc/testing';
 import { waitUntil } from '@open-wc/testing-helpers';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
+import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { CortexModule } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
 import { EveesModule, RemoteMap } from '@uprtcl/evees';
+import { AccessControlModule } from '@uprtcl/access-control';
 
 import { DocumentsModule } from '../src/documents.module';
 import { MockStore } from './mocks/mock-store';
@@ -59,10 +60,12 @@ describe('<cortex-entity>', () => {
     };
 
     await orchestrator.loadModules([
+      new i18nextBaseModule(),
       new ApolloClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
+      new AccessControlModule(),
       new EveesModule([eveesProvider], remotesConfig),
       new DocumentsModule([documentsProvider])
     ]);
@@ -75,7 +78,7 @@ describe('<cortex-entity>', () => {
       `
     );
 
-    const cortexEntity = el.firstElementChild;
+    const cortexEntity = el.firstElementChild as HTMLElement;
 
     expect(el).lightDom.to.equal('<cortex-entity link="perspective1"></cortex-entity>');
     expect(cortexEntity).shadowDom.to.equal(
@@ -83,10 +86,7 @@ describe('<cortex-entity>', () => {
     );
 
     await waitUntil(
-      () =>
-        cortexEntity &&
-        cortexEntity.shadowRoot &&
-        !cortexEntity.shadowRoot.querySelector('cortex-loading-placeholder'),
+      () => !(cortexEntity.shadowRoot as ShadowRoot).querySelector('cortex-loading-placeholder'),
       'Never stopped loading'
     );
 
