@@ -27,18 +27,16 @@ import { DocumentsBindings } from './bindings';
  * Example usage:
  *
  * ```ts
- * import { IpfsConnection } from '@uprtcl/ipfs-provider';
- * import { DocumentsModule, DocumentsIpfs } from '@uprtcl/documents';
+ * import { IpfsStore } from '@uprtcl/ipfs-provider';
+ * import { DocumentsModule } from '@uprtcl/documents';
  *
- * const ipfsConnection = new IpfsConnection({
+ * const ipfsStore = new IpfsStore({
  *   host: 'ipfs.infura.io',
  *   port: 5001,
  *   protocol: 'https'
  * });
  *
- *  const documentsProvider = new DocumentsIpfs(ipfsConnection);
- *
- * const docs = new DocumentsModule([ documentsProvider ]);
+ * const docs = new DocumentsModule([ ipfsStore ]);
  * await orchestrator.loadModule(docs);
  * ```
  *
@@ -57,9 +55,10 @@ export class DocumentsModule extends MicroModule {
 
   async onLoad(container: interfaces.Container) {
     this.stores.forEach(storeOrId => {
-      const store = (storeOrId as CASStore).casID
-        ? (storeOrId as CASStore)
-        : container.get(storeOrId as interfaces.ServiceIdentifier<CASStore>);
+      const store =
+        typeof storeOrId === 'object' && (storeOrId as CASStore).casID
+          ? (storeOrId as CASStore)
+          : container.get(storeOrId as interfaces.ServiceIdentifier<CASStore>);
 
       container.bind<CASStore>(DocumentsModule.bindings.DocumentsRemote).toConstantValue(store);
     });

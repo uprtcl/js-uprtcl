@@ -16,7 +16,7 @@ export class KnownSourcesApollo implements KnownSourcesService {
       const result: any = this.client.readQuery({
         query: gql`
         {
-          entity(id: "${hash}") {
+          entity(link: "${hash}") {
             id
             _context {
               casID

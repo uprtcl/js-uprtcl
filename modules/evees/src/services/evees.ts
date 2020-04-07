@@ -103,7 +103,7 @@ export class Evees {
     const result = await this.client.query({
       query: gql`
         {
-          entity(id: "${perspectiveId}") {
+          entity(link: "${perspectiveId}") {
             id 
             ... on Perspective {
               payload {
@@ -164,7 +164,7 @@ export class Evees {
     } else {
       const result = await this.client.query({
         query: gql`{
-          entity(id: "${ofPerspectiveId}") {
+          entity(link: "${ofPerspectiveId}") {
             id
             ... on Perspective {
               head {
@@ -188,7 +188,7 @@ export class Evees {
 
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${headId}") {
+        entity(link: "${headId}") {
           id
           ... on Commit {
             data {
@@ -221,7 +221,7 @@ export class Evees {
         const promises = descendantLinks.map(async link => {
           const descendantResult = await this.client.query({
             query: gql`{
-              entity(id: "${link}") {
+              entity(link: "${link}") {
                 id
                 ... on Perspective {
                   head {

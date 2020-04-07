@@ -27,7 +27,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
   async getEntity(id: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${id}") {
+        entity(link: "${id}") {
           id
           _context {
             raw
@@ -86,7 +86,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
           /** TODO: generalize to not-to-perspective links */
           const result = await this.client.query({
             query: gql`{
-              entity(id: "${newLink}") {
+              entity(link: "${newLink}") {
                 id
 
                 ... on Perspective {

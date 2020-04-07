@@ -40,7 +40,7 @@ export class EntityCache {
 
     this.client.cache.writeQuery({
       query: gql`{
-        entity(id: "${entity.id}") {
+        entity(link: "${entity.id}") {
           id
           _context {
             raw

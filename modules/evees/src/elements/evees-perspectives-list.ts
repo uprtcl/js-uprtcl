@@ -182,7 +182,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`{
-          entity(id: "${this.perspectiveId}") {
+          entity(link: "${this.perspectiveId}") {
             id
             ... on Perspective {
               payload {

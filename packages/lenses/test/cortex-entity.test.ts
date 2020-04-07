@@ -23,8 +23,8 @@ describe('<cortex-entity>', () => {
       new ApolloClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
-      new MockModule({ hash1: object1 }),
-      new LensesModule()
+      new LensesModule(),
+      new MockModule({ hash1: object1 })
     ]);
   });
 

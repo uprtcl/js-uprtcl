@@ -15,7 +15,7 @@ export class MockEveesProvider implements EveesRemote {
     public details: Dictionary<PerspectiveDetails> = {}
   ) {}
 
-  authorityID: string = '';
+  authorityID: string = 'local';
   accessControl = undefined;
   proposals = undefined;
 

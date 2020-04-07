@@ -35,7 +35,7 @@ describe('basic GraphQl entity', () => {
     const result = await client.query({
       query: gql`
         {
-          entity(id: "hash1") {
+          entity(link: "hash1") {
             id
             _context {
               raw

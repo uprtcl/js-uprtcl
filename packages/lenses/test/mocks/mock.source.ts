@@ -1,9 +1,10 @@
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 
-import { CASSource } from '@uprtcl/multiplatform';
+import { CASSource, defaultCidConfig } from '@uprtcl/multiplatform';
 
 export class MockSource implements CASSource {
   casID = '';
+  cidConfig = defaultCidConfig;
 
   constructor(protected objects: Dictionary<any> = {}) {}
 

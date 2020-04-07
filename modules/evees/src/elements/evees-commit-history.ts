@@ -31,7 +31,7 @@ export class CommitHistory extends moduleConnect(LitElement) {
     const result = await apolloClient.query({
       query: gql`
       {
-        entity(id: "${this.commitId}") {
+        entity(link: "${this.commitId}") {
           id
           entity {
             ... on Commit {

@@ -25,7 +25,7 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-          entity(id: "${this.hash}") {
+          entity(link: "${this.hash}") {
             id
               _context {
                   patterns {

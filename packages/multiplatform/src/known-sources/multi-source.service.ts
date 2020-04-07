@@ -115,7 +115,7 @@ export class MultiSourceService implements CASSource {
       const result = await this.client.query({
         query: gql`
         {
-          entity(id: "${hash}") {
+          entity(link: "${hash}") {
             id
             _context {
               patterns {

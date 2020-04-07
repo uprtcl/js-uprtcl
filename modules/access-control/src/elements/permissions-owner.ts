@@ -36,7 +36,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`{
-        entity(id: "${this.entityId}") {
+        entity(link: "${this.entityId}") {
           id
           _context {
             patterns {

@@ -48,7 +48,7 @@ export class WikiPage extends moduleConnect(LitElement) {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`{
-        entity(id: "${this.pageHash}") {
+        entity(link: "${this.pageHash}") {
           id
 
           ... on Perspective {

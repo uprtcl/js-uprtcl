@@ -153,7 +153,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     const result = await this.client.query({
       query: gql`
       {
-        entity(id: "${this.ref}") {
+        entity(link: "${this.ref}") {
           id
           ... on Perspective {
             payload {
@@ -491,7 +491,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
     const result = await this.client.query({
       query: gql`
       {
-        entity(id: "${perspectiveId}") {
+        entity(link: "${perspectiveId}") {
           id
           ... on Perspective {
             head {

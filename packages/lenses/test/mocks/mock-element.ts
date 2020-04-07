@@ -2,7 +2,7 @@ import { LitElement, html, property } from 'lit-element';
 
 export class MockElement extends LitElement {
   @property()
-  content: string;
+  content!: string;
 
   render() {
     return html`
