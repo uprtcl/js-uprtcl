@@ -54,7 +54,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
   ): Promise<any | undefined> {
     const cachedEntity = entityCache.getCachedEntity(entityId);
 
-    if (cachedEntity) return cachedEntity;
+    if (cachedEntity) return { id: cachedEntity.id, ...cachedEntity.entity };
 
     if (entityCache.pendingLoads[entityId]) return entityCache.pendingLoads[entityId];
 

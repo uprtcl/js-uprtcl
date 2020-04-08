@@ -7,7 +7,6 @@ import { ITypedef, makeExecutableSchema, IResolvers } from 'graphql-tools';
 import { MicroModule, Constructor } from '@uprtcl/micro-orchestrator';
 
 import { baseTypeDefs } from './base-schema';
-import { baseResolvers } from './base-resolvers';
 import { GraphQlSchemaBindings, ApolloClientBindings } from './bindings';
 import { NamedDirective } from './types';
 
@@ -50,7 +49,7 @@ export class ApolloClientModule extends MicroModule {
 
         return makeExecutableSchema({
           typeDefs: [baseTypeDefs, ...typeDefs],
-          resolvers: [baseResolvers, ...resolvers],
+          resolvers: resolvers,
           inheritResolversFromInterfaces: true,
           schemaDirectives: directives,
         });
@@ -62,7 +61,7 @@ export class ApolloClientModule extends MicroModule {
       },
       cacheRedirects: {
         Query: {
-          entity: (_, { id }, { getCacheKey }) => getCacheKey({ __typename: '', id: id }),
+          entity: (_, { ref }, { getCacheKey }) => getCacheKey({ __typename: '', id: ref }),
         },
       },
     });

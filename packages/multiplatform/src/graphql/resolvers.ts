@@ -26,7 +26,7 @@ export const loadEntity = (apolloClient: ApolloClient<any>) => async (
     {
       entity(ref: "${entityRef}") {
         id
-        __typename
+        
         _context {
           object
           casID

@@ -7,6 +7,12 @@ import { Behaviour } from '../types/behaviour';
 
 export const cortexResolvers = {
   Entity: {
+    id(parent) {
+      return parent.id ? parent.id : parent;
+    },
+    _context(parent) {
+      return parent;
+    },
     async __resolveType(parent, { container }, info) {
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 

@@ -69,7 +69,6 @@ describe('<cortex-entity>', () => {
       new EveesModule([eveesProvider], remotesConfig),
       new DocumentsModule([documentsProvider])
     ]);
-    console.log(orchestrator);
   });
 
   it('<cortex-entity> with a perspective to a node renders a <documents-text-node>', async () => {

@@ -38,7 +38,7 @@ describe('basic GraphQl entity', () => {
       ApolloClientModule.bindings.Client
     );
 
-    const result = await client.query({
+    let result = await client.query({
       query: gql`
         {
           entity(ref: "hash1") {
@@ -69,6 +69,38 @@ describe('basic GraphQl entity', () => {
         }
       }
     });
+    
+    result = await client.query({
+      query: gql`
+        {
+          entity(ref: "hash2") {
+            __typename
+            id
+            _context {
+              object
+              patterns {
+                text
+              }
+            }
+          }
+        }
+      `
+    });
+
+    expect(result.data).to.deep.equal({
+      entity: {
+        id: 'hash2',
+        __typename: 'Mock',
+        _context: {
+          object: objects['hash2'],
+          __typename: 'EntityContext',
+          patterns: {
+            __typename: 'Patterns',
+            text: 'test2'
+          }
+        }
+      }
+    });
   });
 
   it('graphql loads the content of the entity directly through redirects', async () => {
@@ -84,7 +116,6 @@ describe('basic GraphQl entity', () => {
             id
             _context {
               content {
-                __typename
                 id
                 _context {
                   patterns {
@@ -105,7 +136,7 @@ describe('basic GraphQl entity', () => {
         _context: {
           __typename: 'EntityContext',
           content: {
-            __typename: 'MockEntity',
+            __typename: 'Mock',
             id: 'hash2',
             _context: {
               __typename: 'EntityContext',

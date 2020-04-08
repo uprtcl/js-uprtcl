@@ -14,7 +14,7 @@ export class EntityCache {
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
   ) {}
 
-  getCachedEntity(entityId: string): any | undefined {
+  getCachedEntity(entityId: string): Entity<any> | undefined {
     try {
       const data = this.client.cache['data'].data;
       const cachedObject = data[`$${entityId}._context`];
@@ -22,7 +22,7 @@ export class EntityCache {
       if (!cachedObject || !cachedObject.object) return undefined;
 
       const object = cachedObject.object.json;
-      return { id: entityId, ...object };
+      return { id: entityId, entity: object, casID: cachedObject.casID };
     } catch (e) {
       return undefined;
     }
