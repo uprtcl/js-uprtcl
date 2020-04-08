@@ -4,7 +4,7 @@ import { CASStore } from '../../src/types/cas-store';
 import { CidConfig, defaultCidConfig } from '../../src/types/cid-config';
 
 export class MockSource implements CASStore {
-  casID = '';
+  casID = 'local';
   cidConfig: CidConfig = defaultCidConfig;
 
   constructor(protected objects: Dictionary<any> = {}) {}

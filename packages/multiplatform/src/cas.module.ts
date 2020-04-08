@@ -7,7 +7,7 @@ import { CASSource } from './types/cas-source';
 import { Ready } from './types/ready';
 import { CASBindings } from './bindings';
 import { CASStore } from './types/cas-store';
-import { KnownSourcesSource } from './known-sources/known-sources.source';
+import { KnownSourcesSource } from './references/known-sources/known-sources.source';
 
 /**
  * This module registers the given CASSources and makes them available to be used by the `DiscoveryModule`

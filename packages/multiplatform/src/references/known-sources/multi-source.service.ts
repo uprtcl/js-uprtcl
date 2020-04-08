@@ -5,21 +5,17 @@ import { PatternRecognizer, CortexModule, Pattern, HasLinks, Entity } from '@upr
 import { Dictionary, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { CASSource } from '../types/cas-source';
+import { CASSource } from '../../types/cas-source';
 import { KnownSourcesService } from './known-sources.service';
 import { raceToSuccess, discoverKnownSources } from './discovery.utils';
-import { DiscoveryBindings, CASBindings } from '../bindings';
+import { DiscoveryBindings, CASBindings } from '../../bindings';
 import { KnownSourcesSource } from './known-sources.source';
-import { defaultCidConfig } from '../types/cid-config';
 
 @injectable()
-export class MultiSourceService implements CASSource {
+export class MultiSourceService {
   protected logger = new Logger('MultiSourceService');
 
   services: Dictionary<CASSource>;
-
-  casID = '';
-  cidConfig = defaultCidConfig;
 
   /**
    * @param recognizer the pattern recognizer to interact with the objects and their links
@@ -100,20 +96,19 @@ export class MultiSourceService implements CASSource {
   public async getFromSource<O extends object>(
     hash: string,
     casID: string | undefined
-  ): Promise<O | undefined> {
+  ): Promise<Entity<O> | undefined> {
     const source = this.getSource(casID);
 
     const object: O | undefined = (await source.get(hash)) as O;
 
     if (!object) return undefined;
 
-    if (!(source as KnownSourcesSource).knownSources) return object;
+    if ((source as KnownSourcesSource).knownSources) {
+      // Get the links
 
-    // Get the links
-
-    setTimeout(async () => {
-      const result = await this.client.query({
-        query: gql`
+      setTimeout(async () => {
+        const result = await this.client.query({
+          query: gql`
         {
           entity(ref: "${hash}") {
             id
@@ -127,19 +122,20 @@ export class MultiSourceService implements CASSource {
           }
         }
         `
+        });
+
+        const linksResult = result.data.entity._context.patterns.links;
+        if (linksResult) {
+          const links = linksResult.map(l => l.id);
+
+          // Discover the known sources from the links
+          const linksPromises = links.map(link =>
+            discoverKnownSources(this.localKnownSources)(link, source as KnownSourcesSource)
+          );
+          await Promise.all(linksPromises);
+        }
       });
-
-      const linksResult = result.data.entity._context.patterns.links;
-      if (linksResult) {
-        const links = linksResult.map(l => l.id);
-
-        // Discover the known sources from the links
-        const linksPromises = links.map(link =>
-          discoverKnownSources(this.localKnownSources)(link, (source as KnownSourcesSource))
-        );
-        await Promise.all(linksPromises);
-      }
-    });
+    }
 
     if (!object) {
       // Object retrieval succeeded but object was not found,
@@ -147,7 +143,11 @@ export class MultiSourceService implements CASSource {
       await this.localKnownSources.removeKnownSource(hash, source.casID);
     }
 
-    return object;
+    return {
+      id: hash,
+      entity: object,
+      casID
+    };
   }
 
   /**
@@ -156,7 +156,7 @@ export class MultiSourceService implements CASSource {
    * @param hash the hash of the object to retrieve
    * @returns the object if found, otherwise undefined
    */
-  public async get<O extends object>(hash: string): Promise<O | undefined> {
+  public async get<O extends object>(hash: string): Promise<Entity<O> | undefined> {
     let knownSources: string[] | undefined = undefined;
 
     // If there is only one source, use that to get the object
@@ -174,7 +174,7 @@ export class MultiSourceService implements CASSource {
       return object ? Promise.resolve(object) : Promise.reject();
     };
 
-    let promises: Array<Promise<O>>;
+    let promises: Array<Promise<Entity<O>>>;
     if (knownSources) {
       // Try to retrieve the object from any of the known sources
       promises = knownSources.map(tryGetFromSource);
@@ -185,7 +185,7 @@ export class MultiSourceService implements CASSource {
 
     try {
       // Get first resolved object
-      const object: O = await raceToSuccess<O>(promises);
+      const object: Entity<O> = await raceToSuccess<Entity<O>>(promises);
       return object;
     } catch (e) {
       this.logger.warn('All sources failed to get the hash', hash, ' with error ', e);

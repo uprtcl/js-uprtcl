@@ -92,7 +92,7 @@ export class WikiPage extends moduleConnect(LitElement) {
       <div class="page-content">
         <div class="text-editor">
           <cortex-entity
-            .hash=${this.pageHash}
+            .ref=${this.pageHash}
             lens-type="evee"
             .context=${{ onlyChildren: 'false', color: this.color }}
           >

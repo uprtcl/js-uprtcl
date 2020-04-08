@@ -40,6 +40,8 @@ export const redirectEntity = (
     .recognizeBehaviours(entity)
     .find(b => (b as HasRedirect).redirect);
 
+  if (!redirect) return entity;
+
   const redirectRef = await redirect.redirect(entity);
 
   if (!redirectRef) return entity;

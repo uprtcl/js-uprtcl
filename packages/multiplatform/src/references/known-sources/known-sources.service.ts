@@ -1,4 +1,4 @@
-import { Ready } from '../types/ready';
+import { Ready } from '../../types/ready';
 
 export interface KnownSourcesService extends Ready {
   /**

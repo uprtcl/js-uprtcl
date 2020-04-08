@@ -1,7 +1,7 @@
 import { PatternRecognizer, HasLinks, Entity, Pattern } from '@uprtcl/cortex';
 
 import { KnownSourcesService } from './known-sources.service';
-import { CASSource } from '../types/cas-source';
+import { CASSource } from '../../types/cas-source';
 import { KnownSourcesSource } from './known-sources.source';
 
 /**

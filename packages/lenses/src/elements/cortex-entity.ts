@@ -10,8 +10,8 @@ import { Lens } from '../types';
 export class CortexEntity extends moduleConnect(LitElement) {
   logger = new Logger('CORTEX-ENTITY');
 
-  @property()
-  public link!: string;
+  @property({ type: String })
+  public ref!: string;
 
   @property({ attribute: 'lens-type' })
   public lensType!: string;
@@ -35,14 +35,16 @@ export class CortexEntity extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.addEventListener('entity-updated', () => this.loadEntity(this.link));
+    this.addEventListener('entity-updated', () => this.loadEntity(this.ref));
     this.addEventListener<any>(
       'lens-selected',
       (e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)
     );
   }
 
-  async loadEntity(hash: string): Promise<void> {
+  getContentLenses() {}
+
+  async loadEntity(ref: string): Promise<void> {
     if (!this.client) throw new Error('client undefined');
 
     this.selectedLens = undefined;
@@ -51,14 +53,20 @@ export class CortexEntity extends moduleConnect(LitElement) {
     const result = await this.client.query({
       query: gql`
       {
-        entity(ref: "${hash}") {
+        entity(ref: "${ref}") {
           id
           _context {
-            patterns {
-              lenses {
-                name
-                type
-                render
+            object
+            casID
+            content {
+              id
+              
+              patterns {
+                lenses {
+                  name
+                  type
+                  render
+                }
               }
             }
           }
@@ -67,9 +75,17 @@ export class CortexEntity extends moduleConnect(LitElement) {
       `
     });
 
-    const lenses = result.data.entity._context.patterns.lenses.filter(lens => !!lens);
+    const entityResult = result.data.entity;
 
-    this.entity = { id: result.data.id, ...result.data.entity };
+    if (!entityResult) throw new Error(`Could not find entity with reference ${ref}`);
+
+    const lenses = entityResult._context.content.patterns.lenses.filter(lens => !!lens);
+
+    this.entity = {
+      id: entityResult.id,
+      entity: entityResult._context.object,
+      casID: entityResult._context.casID
+    };
 
     if (this.lensType) {
       this.selectedLens = lenses.find(lens => lens.type === this.lensType);
@@ -79,7 +95,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
       this.selectedLens = lenses[0];
     }
 
-    this.logger.info(`Lens selected for entity ${this.link}`, {
+    this.logger.info(`Lens selected for entity ${this.ref}`, {
       selectedLens: this.selectedLens,
       lenses
     });
@@ -88,8 +104,8 @@ export class CortexEntity extends moduleConnect(LitElement) {
   updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
-    if (changedProperties.has('link') && this.link && this.link !== changedProperties.get('link')) {
-      this.loadEntity(this.link);
+    if (changedProperties.has('ref') && this.ref && this.ref !== changedProperties.get('ref')) {
+      this.loadEntity(this.ref);
     }
   }
 
@@ -101,7 +117,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
 
     if (!this.selectedLens) return html``;
 
-    return this.selectedLens.render(this.context);
+    return this.selectedLens.render(this.ref, this.context);
   }
 
   render() {

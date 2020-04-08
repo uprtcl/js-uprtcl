@@ -318,7 +318,7 @@ export class DocumentTextNode extends EveesContent<TextNode> {
           ${this.data.entity.links.map(
             (link, ix) => html`
               <cortex-entity
-                hash=${link}
+                ref=${link}
                 lens-type="evee"
                 .context=${{
                   color: this.color,

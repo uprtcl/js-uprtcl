@@ -8,10 +8,10 @@ export { CASSource } from './types/cas-source';
 export { CASStore } from './types/cas-store';
 export { CidConfig, defaultCidConfig } from './types/cid-config';
 
-export { KnownSourcesService } from './known-sources/known-sources.service';
-export { KnownSourcesSource } from './known-sources/known-sources.source';
+export { KnownSourcesService } from './references/known-sources/known-sources.service';
+export { KnownSourcesSource } from './references/known-sources/known-sources.source';
 
-export { MultiSourceService } from './known-sources/multi-source.service';
+export { MultiSourceService } from './references/known-sources/multi-source.service';
 export { EntityCache } from './graphql/entity-cache';
 
 /** Modules */
@@ -30,4 +30,4 @@ export {
   getUplToDiscover,
   discoverKnownSources,
   discoverLinksKnownSources
-} from './known-sources/discovery.utils';
+} from './references/known-sources/discovery.utils';

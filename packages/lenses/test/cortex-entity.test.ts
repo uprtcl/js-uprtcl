@@ -31,13 +31,13 @@ describe('<cortex-entity>', () => {
   it('<cortex-entity> renders a hash with the appropriate lens', async () => {
     const el: HTMLElement = await fixture(
       html`
-        <module-container><cortex-entity id="test" link="hash1"></cortex-entity></module-container>
+        <module-container><cortex-entity id="test" ref="hash1"></cortex-entity></module-container>
       `
     );
 
     const cortexEntity = el.firstElementChild;
 
-    expect(el).lightDom.to.equal('<cortex-entity id="test" link="hash1"></cortex-entity>');
+    expect(el).lightDom.to.equal('<cortex-entity id="test" ref="hash1"></cortex-entity>');
     expect(cortexEntity).shadowDom.to.equal(
       '<cortex-loading-placeholder></cortex-loading-placeholder>'
     );

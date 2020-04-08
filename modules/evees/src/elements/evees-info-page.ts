@@ -41,7 +41,7 @@ export class EveesInfoPage extends EveesInfoBase {
     return html`
       <div class="perspectives-permissions">
         <permissions-for-entity 
-          hash=${this.perspectiveId}>
+          ref=${this.perspectiveId}>
         </permissions-for-entity>
       </div>
     `;

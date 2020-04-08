@@ -109,7 +109,7 @@ export class EveesInfoPopper extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        <permissions-for-entity hash=${this.perspectiveId}></permissions-for-entity>
+        <permissions-for-entity ref=${this.perspectiveId}></permissions-for-entity>
       </div>
     `;
   }

@@ -74,13 +74,13 @@ describe('<cortex-entity>', () => {
   it('<cortex-entity> with a perspective to a node renders a <documents-text-node>', async () => {
     const el: HTMLElement = await fixture(
       html`
-        <module-container><cortex-entity link="perspective1"></cortex-entity></module-container>
+        <module-container><cortex-entity ref="perspective1"></cortex-entity></module-container>
       `
     );
 
     const cortexEntity = el.firstElementChild as HTMLElement;
 
-    expect(el).lightDom.to.equal('<cortex-entity link="perspective1"></cortex-entity>');
+    expect(el).lightDom.to.equal('<cortex-entity ref="perspective1"></cortex-entity>');
     expect(cortexEntity).shadowDom.to.equal(
       '<cortex-loading-placeholder></cortex-loading-placeholder>'
     );

@@ -1,18 +1,22 @@
 import { interfaces } from 'inversify';
 
 import { MicroModule } from '@uprtcl/micro-orchestrator';
-import { CortexModule } from '@uprtcl/cortex';
+import { CortexModule, Pattern, PatternsModule } from '@uprtcl/cortex';
 import { ApolloClientModule, GraphQlSchemaModule } from '@uprtcl/graphql';
 
-import { MultiSourceService } from './known-sources/multi-source.service';
+import { MultiSourceService } from './references/known-sources/multi-source.service';
 import { DiscoveryBindings } from './bindings';
-import { KnownSourcesService } from './known-sources/known-sources.service';
+import { KnownSourcesService } from './references/known-sources/known-sources.service';
 import { KnownSourcesApollo } from './graphql/known-sources.apollo';
 import { discoveryTypeDefs } from './graphql/schema';
 import { DiscoverDirective } from './graphql/directives/discover-directive';
 import { CASSourceDirective } from './graphql/directives/cas-source-directive';
 import { EntityCache } from './graphql/entity-cache';
 import { resolvers } from './graphql/resolvers';
+import {
+  KnownSourcesRefPattern,
+  KnownSourcesResolver
+} from './references/known-sources/reference.pattern';
 
 export class DiscoveryModule extends MicroModule {
   static id = 'discovery-module';
@@ -21,7 +25,8 @@ export class DiscoveryModule extends MicroModule {
 
   dependencies = [CortexModule.id, ApolloClientModule.id];
   submodules = [
-    new GraphQlSchemaModule(discoveryTypeDefs, resolvers, [DiscoverDirective, CASSourceDirective])
+    new GraphQlSchemaModule(discoveryTypeDefs, resolvers, [DiscoverDirective, CASSourceDirective]),
+    new PatternsModule([new KnownSourcesRefPattern([KnownSourcesResolver])])
   ];
 
   async onLoad(container: interfaces.Container): Promise<void> {

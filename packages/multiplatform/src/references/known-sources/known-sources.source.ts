@@ -1,5 +1,5 @@
 import { KnownSourcesService } from './known-sources.service';
-import { CASSource } from '../types/cas-source';
+import { CASSource } from '../../types/cas-source';
 
 export interface KnownSourcesSource extends CASSource {
   /**

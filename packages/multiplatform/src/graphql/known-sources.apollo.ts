@@ -3,7 +3,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { KnownSourcesService } from '../known-sources/known-sources.service';
+import { KnownSourcesService } from '../references/known-sources/known-sources.service';
 
 @injectable()
 export class KnownSourcesApollo implements KnownSourcesService {
