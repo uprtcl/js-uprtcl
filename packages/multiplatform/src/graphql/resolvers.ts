@@ -1,8 +1,9 @@
-import { CortexModule, Entity, entityFromGraphQlObject } from '@uprtcl/cortex';
-import { redirectEntity } from 'src/utils/entities';
-import { ApolloClient, gql } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { DiscoveryBindings } from 'src/bindings';
+import { CortexModule, Entity, entityFromGraphQlObject } from '@uprtcl/cortex';
+
+import { redirectEntity } from '../utils/entities';
+import { ApolloClient, gql } from 'apollo-boost';
+import { DiscoveryBindings } from '../bindings';
 import { EntityCache } from './entity-cache';
 
 export const resolvers = {

@@ -11,7 +11,6 @@ export { Cloneable } from './behaviours/cloneable';
 export { Creatable } from './behaviours/creatable';
 export { Newable } from './behaviours/newable';
 export { Derivable } from './behaviours/derivable';
-export { Hashable } from './behaviours/hashable';
 export { HasLinks, HasChildren } from './behaviours/has-links';
 export { IsSecure } from './behaviours/is-secure';
 export { Signable, Signed } from './behaviours/signable';

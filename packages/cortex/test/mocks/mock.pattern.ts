@@ -12,5 +12,5 @@ export class MockPattern extends Pattern<{ test: string }> {
 
 @injectable()
 export class Text implements HasText<{ test: string }> {
-  text = async (pattern: { test: string }) => pattern.test;
+  text = (pattern: { test: string }) => pattern.test;
 }

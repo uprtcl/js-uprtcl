@@ -3,7 +3,6 @@ import { multiInject, injectable, inject } from 'inversify';
 
 import {
   PatternRecognizer,
-  IsSecure,
   HasChildren,
   CortexModule,
   Signed,

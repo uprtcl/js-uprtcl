@@ -121,7 +121,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
 
     if (!this.selectedLens) return html``;
 
-    return this.selectedLens.render(this.ref, this.context);
+    return this.selectedLens.render(this.entity, this.context);
   }
 
   render() {

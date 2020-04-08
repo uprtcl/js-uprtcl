@@ -8,12 +8,11 @@ import { AccessControlModule } from '@uprtcl/access-control';
 
 import {
   PerspectiveLinks,
-  PerspectiveLens,
   PerspectiveCreate,
   PerspectiveAccessControl,
   PerspectivePattern
 } from './patterns/perspective.pattern';
-import { CommitPattern, CommitLens, CommitLinked, CommitCreate } from './patterns/commit.pattern';
+import { CommitPattern, CommitLinked, CommitCreate } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
 import { Evees } from './services/evees';
@@ -103,13 +102,8 @@ export class EveesModule extends MicroModule {
     new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
     new i18nextModule('evees', { en: en }),
     new PatternsModule([
-      new CommitPattern([CommitLinked, CommitCreate, CommitLens]),
-      new PerspectivePattern([
-        PerspectiveLinks,
-        PerspectiveLens,
-        PerspectiveCreate,
-        PerspectiveAccessControl
-      ])
+      new CommitPattern([CommitLinked, CommitCreate]),
+      new PerspectivePattern([PerspectiveLinks, PerspectiveCreate, PerspectiveAccessControl])
     ]),
     new CASModule(this.eveesProviders)
   ];

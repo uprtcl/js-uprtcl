@@ -2,7 +2,7 @@ import { interfaces } from 'inversify';
 
 import { LoadEntityDirective } from './load-entity-directive';
 import { Entity, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
-import { ResolveReference } from 'src/behaviours/resolve-reference';
+import { ResolveEntity } from 'src/behaviours/resolve-entity';
 
 export class DiscoverDirective extends LoadEntityDirective {
   protected async resolveEntity(
@@ -11,7 +11,7 @@ export class DiscoverDirective extends LoadEntityDirective {
   ): Promise<Entity<any> | undefined> {
     const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
-    const resolveBehaviours: ResolveReference[] = recognizer.recognizeBehaviours(reference);
+    const resolveBehaviours: ResolveEntity[] = recognizer.recognizeBehaviours(reference);
 
     if (resolveBehaviours.length === 0)
       throw new Error(

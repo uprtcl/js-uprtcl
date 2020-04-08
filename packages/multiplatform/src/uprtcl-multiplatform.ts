@@ -14,6 +14,10 @@ export { KnownSourcesSource } from './references/known-sources/known-sources.sou
 export { MultiSourceService } from './references/known-sources/multi-source.service';
 export { EntityCache } from './graphql/entity-cache';
 
+/** Behaviours */
+export { HasRedirect } from './behaviours/has-redirect';
+export { ResolveEntity } from './behaviours/resolve-entity';
+
 /** Modules */
 export { DiscoveryModule } from './discovery.module';
 export { CASModule } from './cas.module';

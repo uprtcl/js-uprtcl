@@ -35,7 +35,7 @@ describe('<cortex-entity>', () => {
       `
     );
 
-    const cortexEntity = el.firstElementChild;
+    const cortexEntity = el.firstElementChild as any;
 
     expect(el).lightDom.to.equal('<cortex-entity id="test" ref="QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo"></cortex-entity>');
     expect(cortexEntity).shadowDom.to.equal(

@@ -36,7 +36,7 @@ export class CortexPattern extends moduleConnect(LitElement) {
   render() {
     const lens = this.getLens()[0];
     return html`
-      ${lens.render(null, this.context)}
+      ${lens.render(null as any, this.context)}
     `;
   }
 }

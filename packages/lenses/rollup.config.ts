@@ -1,13 +1,12 @@
-const commonjs = require('@rollup/plugin-commonjs');
-const sourceMaps = require('rollup-plugin-sourcemaps');
-const typescript = require('rollup-plugin-typescript2');
-const json = require('@rollup/plugin-json');
+import sourceMaps from 'rollup-plugin-sourcemaps';
+import typescript from 'rollup-plugin-typescript2';
+import json from '@rollup/plugin-json';
 
 const pkg = require('./package.json');
 
 const libraryName = 'uprtcl-lenses';
 
-module.exports = {
+export default {
   input: `src/${libraryName}.ts`,
   output: [
     { file: pkg.main, name: libraryName, format: 'umd', sourcemap: true },
@@ -26,34 +25,6 @@ module.exports = {
 
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
-    }),
-    commonjs({
-      include: [
-        '**/node_modules/cids/**/*',
-        '**/node_modules/fast-json-stable-stringify/**',
-        '**/node_modules/zen-observable/**',
-        '**/node_modules/inversify/**',
-        '**/node_modules/graphql-tag/**',
-        '**/node_modules/cbor-js/**',
-        '**/node_modules/web3/**',
-        '**/node_modules/@holochain/**',
-        '**/node_modules/ipfs-http-client/**',
-        '**/node_modules/multihashing-async/**',
-        '**/node_modules/graphql-tools/**',
-        /node_modules/
-      ],
-      namedExports: {
-        'apollo-boost': ['gql', 'ApolloClient'],
-        'graphql-tools': ['makeExecutableSchema'],
-        'node_modules/graphql-tools/dist/index.js': ['makeExecutableSchema']
-      },
-      exclude: [
-        '**/node_modules/mocha/**/*',
-        '**/node_modules/chai/**/*',
-        '**/node_modules/sinon-chai/**/*',
-        '**/node_modules/chai-dom/**/*',
-        '**/node_modules/core-js-bundle/**/*'
-      ]
     }),
     sourceMaps()
   ],

@@ -63,16 +63,9 @@ export class TextNodeCommon
       {
         name: 'documents:document',
         type: 'content',
-        render: (context: any) => {
+        render: (entity: Entity<any>, context: any) => {
           return html`
-            <documents-text-node
-              .data=${node}
-              ref=${context.ref}
-              color=${context.color}
-              index=${context.index}
-              .genealogy=${context.genealogy}
-            >
-            </documents-text-node>
+            <documents-text-node .data=${node} ref=${entity.id}> </documents-text-node>
           `;
         }
       }

@@ -1,5 +1,4 @@
-const replace = require('@rollup/plugin-replace');
-const rollupConfig = require('./rollup.config');
+const path = require('path');
 
 module.exports = config =>
   config.set({
@@ -11,24 +10,47 @@ module.exports = config =>
       skipFilesWithNoCoverage: false,
       thresholds: {
         global: {
-          statements: 80,
-          branches: 80,
-          functions: 80,
-          lines: 80
+          statements: 10,
+          branches: 10,
+          functions: 10,
+          lines: 10
         }
       }
     },
 
     preprocessors: {
-      'test/**/*.test.ts': ['rollup']
+      'test/**/*.test.ts': ['webpack']
     },
-    rollupPreprocessor: {
-      ...rollupConfig,
-      external: [],
+    webpack: {
+      mode: 'development',
+      entry: `./src/uprtcl-holochain.ts`,
       output: {
-        format: 'iife', // Helps prevent naming collisions.
-        name: 'uprtclholochainprovider', // Required for 'iife' format.,
-        sourcemap: true
+        filename: 'bundle.js'
+      },
+      resolve: {
+        alias: {
+          'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
+          'lit-element': path.resolve(__dirname, './node_modules/lit-element')
+        },
+        extensions: ['.mjs', '.js', '.ts', '.json']
+      },
+      devtool: 'inline-source-map',
+      module: {
+        rules: [
+          {
+            test: /\.ts$/,
+            use: 'ts-loader'
+          },
+          {
+            test: /\.ts$/,
+            exclude: [path.resolve(__dirname, 'test')],
+            enforce: 'post',
+            use: {
+              loader: 'istanbul-instrumenter-loader',
+              options: { esModules: true }
+            }
+          }
+        ]
       }
     },
     singleRun: true,

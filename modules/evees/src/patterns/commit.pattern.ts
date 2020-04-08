@@ -1,10 +1,8 @@
 import { injectable, inject, multiInject } from 'inversify';
-import { html } from 'lit-element';
 import { ApolloClient } from 'apollo-boost';
 
-import { Pattern, HasRedirect, HasLinks, Creatable, Entity, Signed, Newable } from '@uprtcl/cortex';
-import { Lens, HasLenses } from '@uprtcl/lenses';
-import { CidConfig } from '@uprtcl/multiplatform';
+import { Pattern, HasLinks, Creatable, Entity, Signed, Newable } from '@uprtcl/cortex';
+import { HasRedirect, CidConfig } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Commit } from '../types';
@@ -46,21 +44,6 @@ export class CommitLinked
   redirect: (commit: Entity<Signed<Commit>>) => Promise<string | undefined> = async (
     commit: Entity<Signed<Commit>>
   ) => commit.entity.payload.dataId;
-}
-
-@injectable()
-export class CommitLens implements HasLenses<Entity<Signed<Commit>>> {
-  lenses: (commit: Entity<Signed<Commit>>) => Lens[] = (commit: Entity<Signed<Commit>>): Lens[] => {
-    return [
-      {
-        name: 'evees:commit-history',
-        type: 'version-control',
-        render: () => html`
-          <evees-commit-history .headId=${commit.id}></evees-commit-history>
-        `
-      }
-    ];
-  };
 }
 
 @injectable()

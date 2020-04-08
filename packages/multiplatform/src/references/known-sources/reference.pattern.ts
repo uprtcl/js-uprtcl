@@ -2,7 +2,7 @@ import CID from 'cids';
 import { injectable, inject } from 'inversify';
 
 import { Pattern, Entity } from '@uprtcl/cortex';
-import { ResolveReference } from '../../behaviours/resolve-reference';
+import { ResolveEntity } from '../../behaviours/resolve-entity';
 import { MultiSourceService } from './multi-source.service';
 import { DiscoveryBindings } from '../../bindings';
 
@@ -21,7 +21,7 @@ export class KnownSourcesRefPattern extends Pattern<string> {
 }
 
 @injectable()
-export class KnownSourcesResolver implements ResolveReference {
+export class KnownSourcesResolver implements ResolveEntity {
   constructor(
     @inject(DiscoveryBindings.MultiSourceService) protected multiSource: MultiSourceService
   ) {}

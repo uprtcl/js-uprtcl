@@ -17,7 +17,7 @@ import { MockEveesProvider } from './mocks/mock-evees-provider';
 describe('<cortex-entity>', () => {
   let orchestrator: MicroOrchestrator;
   let documentsProvider = new MockStore({
-    node1: {
+    QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN: {
       text: 'node1 content',
       type: TextType.Paragraph,
       links: []
@@ -25,7 +25,7 @@ describe('<cortex-entity>', () => {
   });
   let eveesProvider = new MockEveesProvider(
     {
-      perspective1: {
+      Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw: {
         payload: {
           origin: 'local',
           creatorId: 'user1',
@@ -33,13 +33,13 @@ describe('<cortex-entity>', () => {
         },
         proof: { signature: '', type: '' }
       },
-      commit1: {
+      QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN: {
         payload: {
           creatorsIds: ['user1'],
           timestamp: 0,
           message: 'commit message',
           parentsIds: [],
-          dataId: 'node1'
+          dataId: 'QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN'
         },
         proof: {
           signature: '',
@@ -47,7 +47,11 @@ describe('<cortex-entity>', () => {
         }
       }
     },
-    { perspective1: { headId: 'commit1' } }
+    {
+      Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw: {
+        headId: 'QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN'
+      }
+    }
   );
 
   beforeEach(async () => {
@@ -74,13 +78,17 @@ describe('<cortex-entity>', () => {
   it('<cortex-entity> with a perspective to a node renders a <documents-text-node>', async () => {
     const el: HTMLElement = await fixture(
       html`
-        <module-container><cortex-entity ref="perspective1"></cortex-entity></module-container>
+        <module-container
+          ><cortex-entity ref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></cortex-entity
+        ></module-container>
       `
     );
 
     const cortexEntity = el.firstElementChild as HTMLElement;
 
-    expect(el).lightDom.to.equal('<cortex-entity ref="perspective1"></cortex-entity>');
+    expect(el).lightDom.to.equal(
+      '<cortex-entity ref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></cortex-entity>'
+    );
     expect(cortexEntity).shadowDom.to.equal(
       '<cortex-loading-placeholder></cortex-loading-placeholder>'
     );
@@ -90,7 +98,9 @@ describe('<cortex-entity>', () => {
       'Never stopped loading'
     );
 
-    expect(cortexEntity).shadowDom.to.equal('<documents-text-node></documents-text-node');
+    expect(cortexEntity).shadowDom.to.equal(
+      '<documents-text-node ref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></documents-text-node'
+    );
 
     expect(true).to.be.ok;
   });

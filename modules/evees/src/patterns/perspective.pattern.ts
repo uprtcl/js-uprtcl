@@ -1,9 +1,7 @@
-import { html } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 import { injectable, inject } from 'inversify';
 
 import {
-  HasRedirect,
   Pattern,
   HasLinks,
   Creatable,
@@ -15,8 +13,7 @@ import {
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CidConfig, DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
-import { HasLenses, Lens } from '@uprtcl/lenses';
+import { CidConfig, DiscoveryModule, HasRedirect, EntityCache } from '@uprtcl/multiplatform';
 
 import { Perspective, PerspectiveDetails } from '../types';
 import { EveesBindings } from '../bindings';
@@ -36,43 +33,6 @@ export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
   }
 
   type = 'Perspective';
-}
-
-@injectable()
-export class PerspectiveLens implements HasLenses<Entity<Signed<Perspective>>> {
-  lenses = (perspective: Entity<Signed<Perspective>>): Lens[] => {
-    return [
-      {
-        name: 'evees:evee-perspective',
-        type: 'evee',
-        render: (context: any) => {
-          const color: string = context ? (context.color ? context.color : undefined) : undefined;
-
-          const index: number = context
-            ? context.index !== undefined
-              ? context.index
-              : undefined
-            : undefined;
-
-          const genealogy: string[] = context
-            ? context.genealogy !== undefined
-              ? context.genealogy
-              : []
-            : [];
-
-          return html`
-            <evees-perspective
-              perspective-id=${perspective.id}
-              evee-color=${color}
-              index=${index}
-              .genealogy=${genealogy}
-            >
-            </evees-perspective>
-          `;
-        }
-      }
-    ];
-  };
 }
 
 @injectable()

@@ -70,7 +70,7 @@ export {
   PerspectivePattern,
   PerspectiveLinks
 } from './patterns/perspective.pattern';
-export { CommitCreate, CommitLens, CommitLinked, CommitPattern } from './patterns/commit.pattern';
+export { CommitCreate, CommitLinked, CommitPattern } from './patterns/commit.pattern';
 export { Secured, signAndHashObject, hashObject } from './patterns/cid-hash';
 export { extractSignedEntity, signObject } from './patterns/signed';
 
