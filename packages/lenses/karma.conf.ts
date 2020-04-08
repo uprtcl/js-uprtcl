@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = config =>
   config.set({
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadlessNoSandbox'],
     // ## code coverage config
     coverageIstanbulReporter: {
       reports: ['lcovonly', 'text-summary'],
@@ -29,7 +29,6 @@ module.exports = config =>
       },
       resolve: {
         alias: {
-          'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
           'lit-element': path.resolve(__dirname, './node_modules/lit-element')
         },
         extensions: ['.mjs', '.js', '.ts', '.json']
@@ -53,7 +52,7 @@ module.exports = config =>
         ]
       }
     },
-    singleRun: false,
+    singleRun: true,
     concurrency: Infinity,
 
     plugins: [
@@ -61,7 +60,6 @@ module.exports = config =>
       // at the top level
       require.resolve('karma-mocha'),
       require.resolve('karma-mocha-reporter'),
-      require.resolve('karma-source-map-support'),
       require.resolve('karma-coverage-istanbul-reporter'),
       require.resolve('karma-snapshot'),
       require.resolve('karma-mocha-snapshot'),
@@ -70,7 +68,7 @@ module.exports = config =>
       // fallback: resolve any karma- plugins
       'karma-*'
     ],
-    frameworks: ['mocha', 'snapshot', 'mocha-snapshot', 'source-map-support'],
+    frameworks: ['mocha', 'snapshot', 'mocha-snapshot'],
     reporters: ['mocha', 'coverage-istanbul'],
     colors: true,
 

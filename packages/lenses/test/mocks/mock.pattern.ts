@@ -1,5 +1,5 @@
 import { injectable } from 'inversify';
-import { html } from 'lit-html';
+import { html } from 'lit-element';
 
 import { Pattern, Entity } from '@uprtcl/cortex';
 
