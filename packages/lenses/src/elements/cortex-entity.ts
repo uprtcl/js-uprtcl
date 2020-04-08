@@ -58,6 +58,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
           _context {
             object
             casID
+            
             content {
               id
               

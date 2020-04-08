@@ -6,8 +6,13 @@ import { Pattern, Entity } from '@uprtcl/cortex';
 import { HasLenses } from '../../src/behaviours/has-lenses';
 
 export class MockPattern extends Pattern<any> {
-  recognize() {
-    return true;
+  recognize(object: any) {
+    return (
+      typeof object === 'object' &&
+      object.entity &&
+      object.entity.test &&
+      typeof object.entity.test === 'string'
+    );
   }
 
   type = 'Mock';
