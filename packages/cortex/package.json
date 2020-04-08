@@ -70,6 +70,7 @@
     "url": "https://github.com/uprtcl/js-uprtcl/"
   },
   "license": "MIT",
+  "sideEffects": false,
   "engines": {
     "node": ">=10.0.0"
   },

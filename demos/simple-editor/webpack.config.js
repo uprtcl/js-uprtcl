@@ -10,6 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
 
 module.exports = {
   resolve: {
@@ -44,6 +45,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       chunksSortMode: 'none',
       template: 'index.html'
-    })
+    }),
+    new CompressionPlugin()
   ]
 };

@@ -69,6 +69,7 @@
   "main": "dist/uprtcl-ethereum-provider.umd.js",
   "module": "dist/uprtcl-ethereum-provider.es5.js",
   "typings": "dist/types/uprtcl-ethereum-provider.d.ts",
+  "sideEffects": false,
   "engines": {
     "node": ">=10.0.0"
   },

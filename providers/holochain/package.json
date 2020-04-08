@@ -64,6 +64,7 @@
   "main": "dist/uprtcl-holochain-provider.umd.js",
   "module": "dist/uprtcl-holochain-provider.es5.js",
   "typings": "dist/types/uprtcl-holochain-provider.d.ts",
+  "sideEffects": false,
   "engines": {
     "node": ">=10.0.0"
   },

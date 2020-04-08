@@ -85,6 +85,7 @@
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"
   },
+  "sideEffects": false,
   "engines": {
     "node": ">=10.0.0"
   },

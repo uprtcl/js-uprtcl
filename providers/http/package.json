@@ -66,6 +66,7 @@
   "main": "dist/uprtcl-http-provider.umd.js",
   "module": "dist/uprtcl-http-provider.es5.js",
   "typings": "dist/types/uprtcl-http-provider.d.ts",
+  "sideEffects": false,
   "engines": {
     "node": ">=10.0.0"
   },

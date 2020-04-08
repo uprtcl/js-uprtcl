@@ -69,6 +69,7 @@
   "main": "dist/uprtcl-ipfs-provider.umd.js",
   "module": "dist/uprtcl-ipfs-provider.es5.js",
   "typings": "dist/types/uprtcl-ipfs-provider.d.ts",
+  "sideEffects": false,
   "engines": {
     "node": ">=10.0.0"
   },
