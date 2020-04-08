@@ -61,7 +61,6 @@ module.exports = config =>
       // at the top level
       require.resolve('karma-mocha'),
       require.resolve('karma-mocha-reporter'),
-      require.resolve('karma-source-map-support'),
       require.resolve('karma-coverage-istanbul-reporter'),
       require.resolve('karma-snapshot'),
       require.resolve('karma-mocha-snapshot'),
@@ -70,7 +69,7 @@ module.exports = config =>
       // fallback: resolve any karma- plugins
       'karma-*'
     ],
-    frameworks: ['mocha', 'snapshot', 'mocha-snapshot', 'source-map-support'],
+    frameworks: ['mocha', 'snapshot', 'mocha-snapshot'],
     reporters: ['mocha', 'coverage-istanbul'],
     colors: true,
 

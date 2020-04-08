@@ -1,4 +1,4 @@
-import { AccessControlService } from './access-control.service';
+import { AccessControlService } from '../src/services/access-control.service';
 
 export class AccessControlMock implements AccessControlService<object> {
   canRead(hash: string): Promise<boolean> {

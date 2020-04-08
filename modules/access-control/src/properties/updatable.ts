@@ -1,4 +1,4 @@
-import { Property } from '@uprtcl/cortex';
+import { Behaviour } from '@uprtcl/cortex';
 import { Authority } from '@uprtcl/multiplatform';
 
 import { AccessControlService } from '../services/access-control.service';
