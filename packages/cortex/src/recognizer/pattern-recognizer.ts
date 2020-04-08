@@ -43,7 +43,7 @@ export class PatternRecognizer {
    * @throws error if no pattern recognized the given entity
    * @throws error if two patterns with different types recognized the given entity
    */
-  public recognizeEntityType<T>(entity: Entity<T>): string {
+  public recognizeType<T>(entity: Entity<T>): string {
     const patterns: Pattern<Entity<T>>[] = this.recognize(entity);
 
     const types: string[] = patterns.map(p => p.type).filter(t => !!t) as string[];

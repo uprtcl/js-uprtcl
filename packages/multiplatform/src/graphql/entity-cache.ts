@@ -19,9 +19,9 @@ export class EntityCache {
       const data = this.client.cache['data'].data;
       const cachedObject = data[`$${entityId}._context`];
 
-      if (!cachedObject || !cachedObject.raw) return undefined;
+      if (!cachedObject || !cachedObject.object) return undefined;
 
-      const object = JSON.parse(cachedObject.raw);
+      const object = cachedObject.object.json;
       return { id: entityId, ...object };
     } catch (e) {
       return undefined;
@@ -40,10 +40,10 @@ export class EntityCache {
 
     this.client.cache.writeQuery({
       query: gql`{
-        entity(link: "${entity.id}") {
+        entity(ref: "${entity.id}") {
           id
           _context {
-            raw
+            object
           }
         }
       }`,
@@ -54,7 +54,7 @@ export class EntityCache {
           id: entity.id,
           _context: {
             __typename: 'EntityContext',
-            raw: JSON.stringify(entity.entity)
+            object: entity.entity
           }
         }
       }

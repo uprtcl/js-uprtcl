@@ -6,7 +6,7 @@ export const cortexSchema: DocumentNode = gql`
 
   extend type EntityContext {
     patterns: Patterns!
-    raw: String!
+    object: JSON!
   }
 
   type Patterns {

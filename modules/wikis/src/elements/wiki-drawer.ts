@@ -67,7 +67,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
       const result = await this.client.query({
         query: gql`
         {
-          entity(link: "${pageId}") {
+          entity(ref: "${pageId}") {
             id
             _context {
               patterns {

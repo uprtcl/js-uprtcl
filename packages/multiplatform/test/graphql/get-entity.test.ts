@@ -2,28 +2,34 @@ import { ApolloClient } from 'apollo-boost';
 import gql from 'graphql-tag';
 import { expect } from '@open-wc/testing';
 
-import { CortexModule } from '@uprtcl/cortex';
-import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
+import { CortexModule, Entity } from '@uprtcl/cortex';
+import { MicroOrchestrator, Dictionary } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { DiscoveryModule } from '../../src/discovery.module';
 import { MockModule } from '../mocks/mock.module';
+import { MockEntity } from '../mocks/mock.pattern';
 
-const object1 = {
-  test: 'test'
+const objects: Dictionary<MockEntity> = {
+  hash1: {
+    test: 'test',
+    data: 'hash2'
+  },
+  hash2: {
+    test: 'test2',
+    data: undefined
+  }
 };
 
 describe('basic GraphQl entity', () => {
-  let orchestrator: MicroOrchestrator;
+  let orchestrator: MicroOrchestrator = new MicroOrchestrator();
 
-  beforeEach(async () => {
-    orchestrator = new MicroOrchestrator();
-
+  before(async () => {
     await orchestrator.loadModules([
       new ApolloClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
-      new MockModule({ hash1: object1 })
+      new MockModule(objects)
     ]);
   });
 
@@ -35,12 +41,13 @@ describe('basic GraphQl entity', () => {
     const result = await client.query({
       query: gql`
         {
-          entity(link: "hash1") {
+          entity(ref: "hash1") {
+            __typename
             id
             _context {
-              raw
+              object
               patterns {
-                content
+                text
               }
             }
           }
@@ -53,11 +60,60 @@ describe('basic GraphQl entity', () => {
         id: 'hash1',
         __typename: 'Mock',
         _context: {
-          raw: '{"test":"test"}',
+          object: objects['hash1'],
           __typename: 'EntityContext',
           patterns: {
             __typename: 'Patterns',
-            content: 'test'
+            text: 'test'
+          }
+        }
+      }
+    });
+  });
+
+  it('graphql loads the content of the entity directly through redirects', async () => {
+    const client: ApolloClient<any> = orchestrator.container.get(
+      ApolloClientModule.bindings.Client
+    );
+
+    const result = await client.query({
+      query: gql`
+        {
+          entity(ref: "hash1") {
+            __typename
+            id
+            _context {
+              content {
+                __typename
+                id
+                _context {
+                  patterns {
+                    text
+                  }
+                }
+              }
+            }
+          }
+        }
+      `
+    });
+
+    expect(result.data).to.deep.equal({
+      entity: {
+        id: 'hash1',
+        __typename: 'Mock',
+        _context: {
+          __typename: 'EntityContext',
+          content: {
+            __typename: 'MockEntity',
+            id: 'hash2',
+            _context: {
+              __typename: 'EntityContext',
+              patterns: {
+                __typename: 'Patterns',
+                text: 'test2' 
+              }
+            }
           }
         }
       }

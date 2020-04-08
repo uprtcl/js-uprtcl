@@ -1,5 +1,11 @@
-import { Pattern, HasContent, Entity } from '@uprtcl/cortex';
+import { Pattern, HasText, Entity } from '@uprtcl/cortex';
 import { injectable } from 'inversify';
+import { HasRedirect } from '../../src/behaviours/has-redirect';
+
+export interface MockEntity {
+  test: string;
+  data: string | undefined;
+}
 
 export class MockPattern extends Pattern<any> {
   recognize(object: any) {
@@ -15,6 +21,11 @@ export class MockPattern extends Pattern<any> {
 }
 
 @injectable()
-export class Content implements HasContent<Entity<{ test: string }>> {
-  content = async (pattern: Entity<{ test: string }>) => pattern.entity.test;
+export class Text implements HasText<Entity<MockEntity>> {
+  text = (entity: Entity<MockEntity>) => entity.entity.test;
+}
+
+@injectable()
+export class Redirect implements HasRedirect<Entity<MockEntity>> {
+  redirect = async (entity: Entity<MockEntity>) => entity.entity.data;
 }

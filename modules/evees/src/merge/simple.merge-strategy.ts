@@ -42,7 +42,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
       const result = await this.client.query({
         query: gql`{
-          entity(link: "${id}") {
+          entity(ref: "${id}") {
           id
           ... on Perspective {
             head {
@@ -100,7 +100,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   protected async loadPerspectiveData(perspectiveId: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
-        entity(link: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {
@@ -108,7 +108,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
               data {
                 id 
                 _context {
-                  raw
+                  object
                 }
               }
             }
@@ -117,7 +117,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       }`
     });
 
-    const object = JSON.parse(result.data.entity.head.data._context.raw);
+    const object = result.data.entity.head.data._context.object;
     return {
       id: result.data.entity.head.data.id,
       entity: object
@@ -127,19 +127,19 @@ export class SimpleMergeStrategy implements MergeStrategy {
   protected async loadCommitData(commitId: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
-        entity(link: "${commitId}") {
+        entity(ref: "${commitId}") {
           id
           data {
             id
             _context {
-              raw
+              object
             }
           }
         }
       }`
     });
 
-    const object = JSON.parse(result.data.entity.data._context.raw);
+    const object = result.data.entity.data._context.object;
     return {
       id: result.data.entity.data.id,
       entity: object

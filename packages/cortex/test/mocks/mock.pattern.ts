@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 
-import { Pattern, HasContent } from '../../src/uprtcl-cortex';
+import { Pattern, HasText } from '../../src/uprtcl-cortex';
 
 export class MockPattern extends Pattern<{ test: string }> {
   recognize(object: any) {
@@ -11,6 +11,6 @@ export class MockPattern extends Pattern<{ test: string }> {
 }
 
 @injectable()
-export class Content implements HasContent<{ test: string }> {
-  content = async (pattern: { test: string }) => pattern.test;
+export class Text implements HasText<{ test: string }> {
+  text = async (pattern: { test: string }) => pattern.test;
 }

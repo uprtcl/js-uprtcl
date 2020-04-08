@@ -152,7 +152,7 @@ export class PerspectiveLinks
   links = async (perspective: Entity<Signed<Perspective>>) => {
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${perspective.id}") {
+        entity(ref: "${perspective.id}") {
           id
           ... on Perspective {
             head {
@@ -171,7 +171,7 @@ export class PerspectiveLinks
   redirect = async (perspective: Entity<Signed<Perspective>>) => {
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${perspective.id}") {
+        entity(ref: "${perspective.id}") {
           id
           ... on Perspective {
             head {

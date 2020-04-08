@@ -8,6 +8,6 @@ export const mockSchema = gql`
   }
 
   extend type Patterns {
-    content: String
+    text: String
   }
 `;

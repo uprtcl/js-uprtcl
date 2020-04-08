@@ -44,7 +44,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async readPerspective(perspectiveId: string, to: boolean): Promise<void> {
     const result = await this.client.query({
       query: gql`{
-        entity(link: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {
@@ -52,7 +52,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
               data {
                 id
                 _context {
-                  raw
+                  object
                 }
               }
             }
@@ -66,7 +66,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     });
 
     const context = result.data.entity.context.id;
-    const jsonData = result.data.entity.head.data._context.raw;
+    const jsonData = result.data.entity.head.data._context.object;
 
     const dataObject = JSON.parse(jsonData);
     if (result.data.entity.head == null) {
@@ -121,7 +121,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     } else {
       const result = await this.client.query({
         query: gql`{
-          entity(link: "${perspectiveId}") {
+          entity(ref: "${perspectiveId}") {
             id
             ... on Perspective {
               context{
@@ -213,7 +213,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   ): Promise<Array<UprtclAction>> {
     const result = await this.client.query({
       query: gql`{
-        entity(link: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {

@@ -8,16 +8,14 @@ import { Behaviour } from '../types/behaviour';
 export const cortexResolvers = {
   Entity: {
     async __resolveType(parent, { container }, info) {
-      const entity = entityFromGraphQlObject(parent);
-
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 
-      return recognizer.recognizeEntityType(entity);
+      return recognizer.recognizeType(entityFromGraphQlObject(parent));
     }
   },
   EntityContext: {
-    raw(parent) {
-      return JSON.stringify(entityFromGraphQlObject(parent).entity);
+    object(parent) {
+      return entityFromGraphQlObject(parent).entity;
     },
     async patterns(parent, args, { container }, info) {
       const entity = entityFromGraphQlObject(parent);
@@ -48,6 +46,8 @@ export const cortexResolvers = {
 };
 
 export function entityFromGraphQlObject(parent): Entity<any> {
+  if (parent.id && parent.entity && typeof parent.casID === 'string') return parent;
+
   const id = parent.id;
 
   let entity = {};

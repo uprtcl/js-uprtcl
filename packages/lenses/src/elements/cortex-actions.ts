@@ -41,7 +41,7 @@ export class CortexActions extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-        entity(link: "${this.hash}") {
+        entity(ref: "${this.hash}") {
           id
           _context {
 

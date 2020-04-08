@@ -5,7 +5,7 @@ const commonjs = require('@rollup/plugin-commonjs');
 
 module.exports = config =>
   config.set({
-    browsers: ['ChromeHeadlessNoSandbox'],
+    browsers: ['Chrome'],
     // ## code coverage config
     coverageIstanbulReporter: {
       reports: ['lcovonly', 'text-summary'],
@@ -63,7 +63,7 @@ module.exports = config =>
         })
       ]
     },
-    singleRun: true,
+    singleRun: false,
     concurrency: Infinity,
 
     plugins: [

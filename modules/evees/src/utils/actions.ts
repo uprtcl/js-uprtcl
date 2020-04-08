@@ -19,7 +19,7 @@ export function cacheUpdateRequest(
 ): void {
   client.cache.writeQuery({
     query: gql`{
-      entity(link: "${perspectiveId}") {
+      entity(ref: "${perspectiveId}") {
         id
         ... on Perspective {
           head {
@@ -51,11 +51,11 @@ export async function cacheActions(
       const perspectiveId = ((action.entity as unknown) as Entity<any>).id;
       const headId = action.payload.details.headId;
 
-      const raw = JSON.stringify(action.entity.entity);
+      const object = action.entity.entity;
 
       client.cache.writeQuery({
         query: gql`{
-          entity(link: "${perspectiveId}") {
+          entity(ref: "${perspectiveId}") {
             id
             ... on Perspective {
               head {
@@ -63,7 +63,7 @@ export async function cacheActions(
               }
             }
             _context {
-              raw
+              object
             }
           }
         }`,
@@ -77,7 +77,7 @@ export async function cacheActions(
             },
             _context: {
               __typename: 'EntityContext',
-              raw
+              object
             }
           }
         }

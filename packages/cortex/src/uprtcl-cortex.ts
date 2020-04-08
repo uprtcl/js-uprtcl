@@ -7,23 +7,21 @@ export { Pattern } from './types/pattern';
 export { Entity, recognizeEntity } from './types/entity';
 
 /** Behaviours */
-export { Cloneable } from './properties/cloneable';
-export { Creatable } from './properties/creatable';
-export { Newable } from './properties/newable';
-export { HasContent } from './properties/has-content';
-export { Derivable } from './properties/derivable';
-export { Hashable } from './properties/hashable';
-export { HasLinks, HasChildren } from './properties/has-links';
-export { HasRedirect } from './properties/has-redirect';
-export { IsSecure } from './properties/is-secure';
-export { Signable, Signed } from './properties/signable';
-export { IsValid } from './properties/is-valid';
-export { HasType } from './properties/has-type';
-export { HasTitle } from './properties/has-title';
-export { HasText } from './properties/has-text';
-export { Transformable } from './properties/transformable';
-export { Updatable } from './properties/updatable';
-export { HasActions, PatternAction } from './properties/has-actions';
+export { Cloneable } from './behaviours/cloneable';
+export { Creatable } from './behaviours/creatable';
+export { Newable } from './behaviours/newable';
+export { Derivable } from './behaviours/derivable';
+export { Hashable } from './behaviours/hashable';
+export { HasLinks, HasChildren } from './behaviours/has-links';
+export { IsSecure } from './behaviours/is-secure';
+export { Signable, Signed } from './behaviours/signable';
+export { IsValid } from './behaviours/is-valid';
+export { HasType } from './behaviours/has-type';
+export { HasTitle } from './behaviours/has-title';
+export { HasText } from './behaviours/has-text';
+export { Transformable } from './behaviours/transformable';
+export { Updatable } from './behaviours/updatable';
+export { HasActions, PatternAction } from './behaviours/has-actions';
 
 // Pattern Registry
 export { PatternRecognizer } from './recognizer/pattern-recognizer';

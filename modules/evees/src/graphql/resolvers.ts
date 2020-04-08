@@ -149,16 +149,16 @@ export const eveesResolvers = {
 
       const result = await client.query({
         query: gql`{
-        entity(link: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           _context {
-            raw
+            object
           }
         }
       }`
       });
 
-      const perspective = JSON.parse(result.data.entity._context.raw);
+      const perspective = result.data.entity._context.object;
 
       if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
 
@@ -242,16 +242,16 @@ export const eveesResolvers = {
 
       const perspectiveResult = await client.query({
         query: gql`{
-        entity(link: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           _context {
-            raw
+            object
           }
         }
       }`
       });
 
-      const perspective = JSON.parse(perspectiveResult.data.entity._context.raw);
+      const perspective = perspectiveResult.data.entity._context.object;
 
       const remote = evees.getAuthority(perspective.payload.origin);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
@@ -273,16 +273,16 @@ export const eveesResolvers = {
 
       const perspectiveResult = await client.query({
         query: gql`{
-        entity(link: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           _context {
-            raw
+            object
           }
         }
       }`
       });
 
-      const perspective = JSON.parse(perspectiveResult.data.entity._context.raw);
+      const perspective = perspectiveResult.data.entity._context.object;
 
       const remote = evees.getAuthority(perspective.payload.origin);
       if (!remote.proposals) throw new Error('remote cant handle proposals');

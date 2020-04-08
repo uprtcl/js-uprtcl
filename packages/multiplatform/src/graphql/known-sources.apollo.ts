@@ -16,7 +16,7 @@ export class KnownSourcesApollo implements KnownSourcesService {
       const result: any = this.client.readQuery({
         query: gql`
         {
-          entity(link: "${hash}") {
+          entity(ref: "${hash}") {
             id
             _context {
               casID
@@ -31,10 +31,11 @@ export class KnownSourcesApollo implements KnownSourcesService {
     }
   }
 
-  async addKnownSources(hash: string, sources: string[]): Promise<void> {
+  async addKnownSources(hash: string, sources: string[], typename?: string): Promise<void> {
     this.client.writeData({
       data: {
         entity: {
+          __typename: typename,
           id: hash,
           _context: {
             __typename: 'EntityContext',

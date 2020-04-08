@@ -1,4 +1,4 @@
-export const MultiplatformBindings = {
+export const DiscoveryBindings = {
   MultiSourceService: 'multi-source-service',
   EntityCache: 'entity-cache',
   LocalKnownSources: 'local-known-sources'

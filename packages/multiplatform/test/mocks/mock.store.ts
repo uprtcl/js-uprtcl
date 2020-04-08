@@ -1,11 +1,11 @@
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { CASStore } from '../../src/types/cas-store';
-import { CidConfig } from '../../src/types/cid-config';
+import { CidConfig, defaultCidConfig } from '../../src/types/cid-config';
 
 export class MockSource implements CASStore {
   casID = '';
-  cidConfig: CidConfig;
+  cidConfig: CidConfig = defaultCidConfig;
 
   constructor(protected objects: Dictionary<any> = {}) {}
 

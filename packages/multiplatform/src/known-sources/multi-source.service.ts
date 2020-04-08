@@ -8,7 +8,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { CASSource } from '../types/cas-source';
 import { KnownSourcesService } from './known-sources.service';
 import { raceToSuccess, discoverKnownSources } from './discovery.utils';
-import { MultiplatformBindings, CASBindings } from '../bindings';
+import { DiscoveryBindings, CASBindings } from '../bindings';
 import { KnownSourcesSource } from './known-sources.source';
 import { defaultCidConfig } from '../types/cid-config';
 
@@ -28,7 +28,7 @@ export class MultiSourceService implements CASSource {
    */
   constructor(
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(MultiplatformBindings.LocalKnownSources)
+    @inject(DiscoveryBindings.LocalKnownSources)
     public localKnownSources: KnownSourcesService,
     @inject(ApolloClientModule.bindings.Client)
     public client: ApolloClient<any>,
@@ -115,7 +115,7 @@ export class MultiSourceService implements CASSource {
       const result = await this.client.query({
         query: gql`
         {
-          entity(link: "${hash}") {
+          entity(ref: "${hash}") {
             id
             _context {
               patterns {

@@ -3,7 +3,7 @@ import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { PatternsModule, Pattern } from '@uprtcl/cortex';
 
 import { mockSchema } from './mock.schema';
-import { MockPattern, Content } from './mock.pattern';
+import { MockPattern, Redirect, Text } from './mock.pattern';
 import { CASModule } from '../../src/cas.module';
 import { MockSource } from './mock.store';
 
@@ -16,7 +16,7 @@ export class MockModule extends MicroModule {
 
   submodules = [
     new GraphQlSchemaModule(mockSchema),
-    new PatternsModule([new MockPattern([Content])]),
+    new PatternsModule([new MockPattern([Redirect, Text])]),
     new CASModule([new MockSource(this.initialObjects)])
   ];
 }
