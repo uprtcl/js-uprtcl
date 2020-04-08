@@ -62,11 +62,13 @@ export class CortexEntity extends moduleConnect(LitElement) {
             content {
               id
               
-              patterns {
-                lenses {
-                  name
-                  type
-                  render
+              _context {
+                patterns {
+                  lenses {
+                    name
+                    type
+                    render
+                  }
                 }
               }
             }
@@ -76,11 +78,12 @@ export class CortexEntity extends moduleConnect(LitElement) {
       `
     });
 
+    if (!result.data || !result.data.entity)
+      throw new Error(`Could not find entity with reference ${ref}`);
+
     const entityResult = result.data.entity;
 
-    if (!entityResult) throw new Error(`Could not find entity with reference ${ref}`);
-
-    const lenses = entityResult._context.content.patterns.lenses.filter(lens => !!lens);
+    const lenses = entityResult._context.content._context.patterns.lenses.filter(lens => !!lens);
 
     this.entity = {
       id: entityResult.id,

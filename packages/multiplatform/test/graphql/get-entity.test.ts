@@ -45,6 +45,7 @@ describe('basic GraphQl entity', () => {
             __typename
             id
             _context {
+              casID
               object
               patterns {
                 text
@@ -60,6 +61,7 @@ describe('basic GraphQl entity', () => {
         id: 'QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo',
         __typename: 'Mock',
         _context: {
+          casID: 'local',
           object: objects['QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo'],
           __typename: 'EntityContext',
           patterns: {
@@ -77,6 +79,7 @@ describe('basic GraphQl entity', () => {
             __typename
             id
             _context {
+              casID
               object
               patterns {
                 text
@@ -92,6 +95,7 @@ describe('basic GraphQl entity', () => {
         id: 'QmbN42sxsBz59gD5eLfaFkehZbBDUTYYcu6PMHZUhRgCZK',
         __typename: 'Mock',
         _context: {
+          casID: 'local',
           object: objects['QmbN42sxsBz59gD5eLfaFkehZbBDUTYYcu6PMHZUhRgCZK'],
           __typename: 'EntityContext',
           patterns: {

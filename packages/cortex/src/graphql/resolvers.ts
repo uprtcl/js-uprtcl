@@ -4,6 +4,7 @@ import { PatternRecognizer } from '../recognizer/pattern-recognizer';
 import { CortexBindings } from '../bindings';
 import { Entity } from '../types/entity';
 import { Behaviour } from '../types/behaviour';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 export const cortexResolvers = {
   Entity: {
