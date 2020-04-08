@@ -333,7 +333,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   getPerspectiveActionDisaled(perspectiveData: PerspectiveData) {
-    return false;
+    return perspectiveData.publicRead !== undefined ? !perspectiveData.publicRead : true;
   }
 
   getProposalActionDisaled(proposal: Proposal) {

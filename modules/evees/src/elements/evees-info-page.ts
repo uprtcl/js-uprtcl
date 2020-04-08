@@ -1,4 +1,4 @@
-import { html, css } from 'lit-element';
+import { html, css, property } from 'lit-element';
 export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
@@ -7,21 +7,60 @@ export const styleMap = style => {
 };
 
 import { EveesInfoBase } from './evee-info-base';
+import { prettyAddress } from './support';
+import { UPDATE_HEAD } from 'src/graphql/queries';
+import { ApolloClient } from 'apollo-boost';
+
+const NAME_FIELD = 'NAME_FIELD';
 
 export class EveesInfoPage extends EveesInfoBase {
+
+  @property({type: Boolean, attribute: false})
+  showEditName: boolean = false;
 
   firstUpdated() {
     super.firstUpdated();
   }
 
   perspectiveTitle() {
+    if (!this.perspectiveData) return this.perspectiveId;
+
     if (this.perspectiveId === this.firstPerspectiveId) {
       return 'Official Version';
-    } else {
-      return `Draft`;
-    }
+    } 
+
+    const hasName = this.perspectiveData.details.name !== undefined && this.perspectiveData.details.name !== '';
+    const name = html`${this.perspectiveData.details.name}`;
+    const defaultName = html`by ${prettyAddress(this.perspectiveData.perspective.creatorId)}`;
+
+    const rename = html`<mwc-icon-button class="edit-btn" icon="edit" @click=${this.editNameClicked}></mwc-icon-button>`;
+    
+    return html`Draft ${hasName ? name : defaultName} ${rename}`;
   }
 
+  async editNameClicked() {
+    this.showEditName = true;
+  }
+
+  async saveName() {
+    if (!this.shadowRoot) return;
+    const client = this.client as ApolloClient<any>
+    const input = this.shadowRoot.getElementById('DRAFT_NAME') as any;
+    const newName = input.value;
+
+    this.showEditName = false;
+
+    await client.mutate({
+      mutation: UPDATE_HEAD,
+      variables: {
+        perspectiveId: this.perspectiveId,
+        name: newName
+      }
+    });
+
+    this.load();    
+  }
+  
   renderOtherPerspectives() {
     return html`
       <evees-perspectives-list
@@ -47,6 +86,32 @@ export class EveesInfoPage extends EveesInfoBase {
     `;
   }
 
+  renderEditNameForm() {
+    return html`
+      <div class="row">
+        <mwc-textfield
+          outlined
+          id="DRAFT_NAME"
+          value=${this.perspectiveData.details.name as string} 
+          label="Draft Name">
+        </mwc-textfield>
+      </div>
+      <div class="row">
+        <mwc-button
+          outlined
+          icon="clear"
+          @click=${() => this.showEditName = false}
+          label="Cancel"
+        ></mwc-button>
+        <mwc-button
+          outlined
+          icon="done"
+          @click=${this.saveName}
+          label="Save"
+        ></mwc-button>
+      </div>`;
+  }
+
   render() {
     if (this.perspectiveData === undefined) return html``;
     return html`
@@ -56,6 +121,10 @@ export class EveesInfoPage extends EveesInfoBase {
             <div class="section-header perspective-header" style=${styleMap({'border-color': this.eveeColor})}>
               ${this.perspectiveTitle()}
             </div>
+            ${this.showEditName ? html`
+            <div>
+              ${this.renderEditNameForm()}
+            </div>` : ''}
             <div class="section-content">
               <div class="info-text">
                 ${!this.perspectiveData.canWrite ? 
@@ -169,12 +238,21 @@ export class EveesInfoPage extends EveesInfoBase {
         border-radius: 4px;
         overflow: hidden;
         background-color: white;
+        position: relative;
       }
       .section-header {
         font-weight: bold;
         padding: 1.5vw 0px 0.8vw 0px; 
         font-size: 1.6em;
         border-style: solid 2px;
+      }
+      .edit-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+      }
+      .row mwc-textfield{
+        margin: 30px 0px;
       }
       .perspective-header {
         border-top-style: solid;
