@@ -1,6 +1,5 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html } from 'lit-element';
-import { randomColor } from 'randomcolor';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -13,9 +12,8 @@ import { Perspective, Commit } from '../types';
 import { EveesRemote } from '../services/evees.remote';
 import { EveesBindings } from '../bindings';
 import { CreateCommitArgs } from '../services/evees';
+import { eveeColor, DEFAULT_COLOR } from './support';
 
-
-export const DEFAULT_COLOR = '#d0dae0';
 
 export class EveesPerspective extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVE');
@@ -150,7 +148,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     const base = this.eveeColor !== 'undefined' ? this.eveeColor : DEFAULT_COLOR;
     return this.perspectiveId === this.firstPerspectiveId
       ? base
-      : randomColor({ seed: this.perspectiveId });
+      : eveeColor(this.perspectiveId);
   }
 
   connectedCallback() {

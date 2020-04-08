@@ -20,6 +20,8 @@ import { AccessControlService, OwnerPermissions } from '@uprtcl/access-control';
 import { Pattern, Creatable, Signed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 
+import { prettyAddress, prettyTime } from './support';
+
 import {
   UpdateRequest,
   RemotesConfig,
@@ -519,4 +521,96 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       <mwc-circular-progress></mwc-circular-progress>
     `;
   }
+
+  renderInfo() {
+    return html`
+      <div class="perspective-details">
+        <p class="summary">
+          This Evee was created by ${prettyAddress(this.perspectiveData.perspective.creatorId)}
+          ${prettyTime(this.perspectiveData.perspective.timestamp)}
+        </p>
+
+        <div class="technical-details">
+          <div class="card-container">
+            <div class="card tech-card">
+              <table class="tech-table">
+                <tr>
+                  <td class="prop-name">perspective-id:</td>
+                  <td class="prop-value">${this.perspectiveData.id}</td>
+                </tr>
+                <tr>
+                  <td class="prop-name">context:</td>
+                  <td class="prop-value">${this.perspectiveData.details.context}</td>
+                </tr>
+                <tr>
+                  <td class="prop-name">origin:</td>
+                  <td class="prop-value">${this.perspectiveData.perspective.origin}</td>
+                </tr>
+                <tr>
+                  <td class="prop-name">head:</td>
+                  <td class="prop-value">${this.perspectiveData.details.headId}</td>
+                </tr>
+                <tr>
+                  <td class="prop-name">data:</td>
+                  <td class="prop-value">${this.perspectiveData.data.id}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  static get styles() {
+    return [css`
+      .perspective-details {
+        padding: 5px;
+      }
+      
+      .summary {
+        margin: 0 auto;
+        padding: 32px 32px;
+        max-width: 300px;
+        text-align: center;
+      }
+
+      .card-container {
+        flex-grow: 1;
+        display: flex;
+        padding: 10px;
+      }
+
+      .card {
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        border: solid 1px #cccccc;
+        border-radius: 3px;
+      }
+
+      .technical-details {
+        max-width: 640px;
+        margin: 0 auto;
+      }
+
+      .tech-card {
+        width: 100%;
+        padding: 16px 32px;
+        text-align: center;
+      }
+
+      .tech-table .prop-name {
+        text-align: right;
+        font-weight: bold;
+      }
+
+      .tech-table .prop-value {
+        font-family: Lucida Console, Monaco, monospace;
+        font-size: 12px;
+        text-align: left;
+      }
+    `];
+  }
+
 }

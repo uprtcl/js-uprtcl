@@ -14,14 +14,14 @@ export const styleMap = style => {
 import { htmlToText, TextType, DocumentsModule, TextNode, DocumentsBindings } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Hashed, HasChildren, Pattern, Creatable } from '@uprtcl/cortex';
-import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, EveesBindings } from '@uprtcl/evees';
+import { Hashed, Pattern, Creatable } from '@uprtcl/cortex';
+import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, EveesBindings, eveeColor, DEFAULT_COLOR } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
+import { Source } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
 import '@material/mwc-drawer';
-import { Source } from '@uprtcl/multiplatform';
 
 const LOGINFO = true;
 
@@ -29,7 +29,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   
   logger = new Logger('WIKI-DRAWER');
 
-  @property({ type: String })
+  @property({ type: String, attribute: 'ref' })
+  firstRef: string | undefined = undefined;
+
+  @property({ type: String, attribute: false })
   ref: string | undefined = undefined;
 
   @property({ type: Object, attribute: false })
@@ -48,20 +51,35 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   currentHeadId: string | undefined = undefined;
   editable: boolean = false;
   
-  color: string = '#d0dae0';
-  
   protected client: ApolloClient<any> | undefined = undefined;
   protected eveesRemotes: EveesRemote[] | undefined = undefined;
   protected remotesConfig: RemotesConfig | undefined = undefined;
-
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
 
+    this.ref = this.firstRef;
     this.logger.log('firstUpdated()', { ref: this.ref });
+
     this.loadWiki();
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('ref')) {
+      if (changedProperties.get('ref') !== undefined) {
+        this.loadWiki();
+      }
+    }
+  }
+
+  color() {
+    if (this.firstRef === this.ref) {
+      return DEFAULT_COLOR;
+    } else {
+      return eveeColor(this.ref as string);
+    }
   }
 
   async loadWiki() {
@@ -111,9 +129,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }
     }
 
-    debugger
+    this.logger.log('loadWiki()', { this: this, result });
 
     this.loadPagesData();
+
+    this.requestUpdate();
   }
 
   async loadPagesData() {
@@ -297,6 +317,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
+      this.ref = event.detail.perspectiveId;
+    })  as EventListener);
+  }
+
   renderPageList() {
     if (!this.pagesList)
       return html`
@@ -404,7 +432,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   title=${this.wiki.object.title}
                   color=${this.color ? this.color : ''}
                 >
-                  <slot slot="evee-page" name="evee-page"></slot>
+                  <evees-info-page 
+                    slot="evee-page"
+                    first-perspective-id=${this.firstRef as string}
+                    perspective-id=${this.ref}
+                    evee-color=${this.color()}
+                  ></evees-info-page>
                 </wiki-home>
               `}
         </div>
