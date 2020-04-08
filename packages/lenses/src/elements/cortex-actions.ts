@@ -1,6 +1,5 @@
 import { LitElement, html, property, query, PropertyValues, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-import { flatMap } from 'lodash-es';
 import { Menu } from '@material/mwc-menu';
 import '@material/mwc-list/mwc-list-item';
 import '@authentic/mwc-tooltip';
@@ -45,18 +44,16 @@ export class CortexActions extends moduleConnect(LitElement) {
           id
           _context {
 
-            patterns {
-              isomorphisms {
-                id
-                _context {
+            content {
+              id
+              _context {
 
-                  patterns {
-                    actions {
-                      title
-                      icon
-                      action
-                      type
-                    }
+                patterns {
+                  actions {
+                    title
+                    icon
+                    action
+                    type
                   }
                 }
               }
@@ -67,9 +64,7 @@ export class CortexActions extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.entity._context.patterns.isomorphisms;
-
-    const actions: PatternAction[] = flatMap(isomorphisms.reverse(), iso => iso._context.patterns.actions);
+    const actions: PatternAction[] = result.data.entity._context.content._context.patterns.actions;
 
     this.actions = {};
 

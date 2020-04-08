@@ -1,4 +1,3 @@
-import { flatMap } from 'lodash-es';
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, query, css, PropertyValues } from 'lit-element';
 
@@ -41,18 +40,15 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
         entity(ref: "${this.hash}") {
           id
           _context {
+            content {
+              id
+              _context {
 
-            patterns {
-              isomorphisms {
-                id
-                _context {
-
-                  patterns {
-                    lenses {
-                      type
-                      name
-                      render
-                    }
+                patterns {
+                  lenses {
+                    type
+                    name
+                    render
                   }
                 }
               }
@@ -63,9 +59,8 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
       `
     });
 
-    const isomorphisms = result.data.entity._context.patterns.isomorphisms;
+    const lenses = result.data.entity._context.content._context.patterns.lenses;
 
-    const lenses = flatMap(isomorphisms.reverse(), iso => iso._context.patterns.lenses);
     this.lenses = lenses.filter(iso => !!iso);
   }
 
