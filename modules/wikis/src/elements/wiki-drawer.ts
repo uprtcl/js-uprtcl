@@ -34,7 +34,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
   @property({ type: Object, attribute: false })
   pagesList: Array<{ title: string; id: string }> | undefined = undefined;
 
-  symbol: symbol | undefined = WikiBindings.WikiEntity;
+  symbol: string | undefined = WikiBindings.WikiEntity;
   
   getEmptyEntity(): Wiki {
     throw new Error("Method not implemented.");
