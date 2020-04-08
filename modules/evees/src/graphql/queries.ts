@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { DocumentNode } from 'graphql';
 
 export const UPDATE_HEAD: DocumentNode = gql`
-  mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID, $context: String, , $name: String) {
+  mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID, $context: String, $name: String) {
     updatePerspectiveHead(perspectiveId: $perspectiveId, headId: $headId, context: $context, name: $name) {
       id
       head {

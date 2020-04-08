@@ -127,9 +127,13 @@ export const eveesResolvers = {
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
 
+      debugger
+
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
       await provider.updatePerspectiveDetails(perspectiveId, { headId, context, name });
+      /** needed to return the current values in case one of the inputs is undefined */
+      const detailsRead = await provider.getPerspectiveDetails(perspectiveId);
 
       await discovery.postEntityUpdate(provider, [headId]);
 
@@ -148,7 +152,17 @@ export const eveesResolvers = {
 
       if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
 
-      return { id: perspectiveId, ...perspective, head: { id: headId } };
+      return { 
+        id: perspectiveId, 
+        ...perspective, 
+        head: { 
+          id: detailsRead.headId 
+        }, 
+        context: { 
+          id: detailsRead.context 
+        }, 
+        name: detailsRead.name 
+      };
     },
     
     async deletePerspective(parent, { perspectiveId }, { container }) {

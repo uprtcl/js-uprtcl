@@ -14,14 +14,15 @@ export const styleMap = style => {
 import { htmlToText, TextType, DocumentsModule, TextNode, DocumentsBindings } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Hashed, Pattern, Creatable } from '@uprtcl/cortex';
-import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, EveesBindings, eveeColor, DEFAULT_COLOR } from '@uprtcl/evees';
+import { Hashed, Pattern, Creatable, Signed } from '@uprtcl/cortex';
+import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, EveesBindings, eveeColor, DEFAULT_COLOR, CreateCommitArgs, Commit, Secured, UPDATE_HEAD } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { Source } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
 import '@material/mwc-drawer';
+import { WikiBindings } from 'src/bindings';
 
 const LOGINFO = true;
 
@@ -37,9 +38,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ type: Object, attribute: false })
   wiki: Hashed<Wiki> | undefined;
-
-  @property({ type: Object, attribute: false })
-  draft: Wiki | undefined;
 
   @property({ type: Number })
   selectedPageIx: number | undefined = undefined;
@@ -221,7 +219,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!store) throw new Error('store is undefined');
     const object = await creatable.create()(page, store.source);
 
-    const creatableCommit = this.getPatternOfSymbol<Creatable<any,any>>(EveesBindings.CommitPattern, 'create');
+    const creatableCommit = this.getPatternOfSymbol<Creatable<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
     const commit = await creatableCommit.create()(
       { parentsIds: [], dataId: object.id },
       remote.source
@@ -229,15 +227,51 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const creatablePerspective = this.getPatternOfSymbol<Creatable<any,any>>(EveesBindings.PerspectivePattern, 'create');
     const perspective = await creatablePerspective.create()(
-      { fromDetails: { headId: commit.id, context } , parentId: this.ref },
+      { fromDetails: { headId: commit.id } , parentId: this.ref },
       authority
     );
 
     return perspective.id;
   }
 
+  async updateContent(newWiki: Wiki) {
+    const client = this.client as ApolloClient<any>;
+    const eveesRemotes = this.eveesRemotes as EveesRemote[];
+    const remote = eveesRemotes.find(r => r.authority === this.authority);
+    if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
+
+    const creatable = this.getPatternOfSymbol<Creatable<any,any>>(WikiBindings.WikiEntity, 'create');
+    const store = this.getStore(this.authority);
+    if (!store) throw Error(`Store not found for authority ${this.authority}`);
+
+    const createdWiki = await creatable.create()(newWiki, store.source);
+
+    const creatableCommit = this.getPatternOfSymbol<Creatable<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
+    const commit: Secured<Commit> = await creatableCommit.create()(
+      { 
+        parentsIds: this.currentHeadId ? [this.currentHeadId] : [], 
+        dataId: createdWiki.id 
+      },
+      remote.source
+    );
+
+    await client.mutate({
+      mutation: UPDATE_HEAD,
+      variables: {
+        perspectiveId: this.ref,
+        headId: commit.id
+      }
+    });
+
+    this.currentHeadId = commit.id;
+    
+    this.logger.info('updateContent()', {createdWiki});
+
+    this.loadWiki();
+  }
+
   async splicePages(pages: any[], index: number, count: number) {
-    if (!this.draft) return;
+    if (!this.wiki) return { entity: undefined, removed: [] };
 
     const getPages = pages.map((page) => {
       if (typeof page !== 'string') {
@@ -249,11 +283,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const pagesIds = await Promise.all(getPages);
 
-    return this.draft.pages.splice(index, count, ...pagesIds);
+    const newObject = {...this.wiki.object};
+    const removed = newObject.pages.splice(index, count, ...pagesIds);
+
+    return {
+      entity: newObject,
+      removed
+    };
   }
 
   async newPage(index?: number) {
     if (!this.wiki) return;
+    debugger
+
     const newPage: TextNode = {
       text: '',
       type: TextType.Title,
@@ -262,13 +304,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     index = index === undefined ? this.wiki.object.pages.length : index;
 
-    await this.splicePages([newPage], index, 0);
-
+    const result = await this.splicePages([newPage], index, 0);
+    if (!result.entity) throw Error('problem with splice pages');
+    
+    await this.updateContent(result.entity);
+    
     this.selectedPageIx = index;
   }
 
   async movePage(fromIndex: number, toIndex: number) {
-    const removed = await this.splicePages([], fromIndex, 1);
+    const { removed } = await this.splicePages([], fromIndex, 1);
     await this.splicePages(removed as string[], fromIndex, 1);
     
     if (this.selectedPageIx === undefined) return;
@@ -407,7 +452,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           ${this.editable
             ? html`
                 <div class="button-row">
-                  <mwc-button outlined icon="note_add" @click=${this.newPage}>
+                  <mwc-button outlined icon="note_add" @click=${() => this.newPage()}>
                     ${this.t('wikis:new-page')}
                   </mwc-button>
                 </div>
@@ -422,7 +467,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   @nav-back=${() => this.selectPage(undefined)}
                   @page-title-changed=${() => this.loadPagesData()}
                   pageHash=${this.wiki.object.pages[this.selectedPageIx]}
-                  color=${this.color ? this.color : ''}
+                  color=${this.color() ? this.color() : ''}
                 >
                 </wiki-page>
               `

@@ -37,7 +37,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
-
   protected client: ApolloClient<any> | undefined = undefined;
   protected eveesRemotes: EveesRemote[] | undefined = undefined;
   protected remotesConfig: RemotesConfig | undefined = undefined;
