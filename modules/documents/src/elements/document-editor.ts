@@ -291,6 +291,15 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         headId: commit.id
       }
     });
+
+    /** inform the external world if top element */
+    if (this.doc && node.ref === this.doc.ref) {
+      this.dispatchEvent(new ContentUpdatedEvent({
+        bubbles: true,
+        composed: true,
+        detail: { ref: this.ref as string }
+      }));
+    }
   }
 
   async createEvee(content: object, symbol: symbol, authority: string, context: string): Promise<string> {
@@ -517,15 +526,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async contentChanged(node: DocNode, content: any, lift?: boolean) {
     if (LOGINFO) this.logger.log('contentChanged()', {node, content});
 
-    /** inform the external world if top element */
-    if (this.doc && node.ref === this.doc.ref) {
-      this.dispatchEvent(new ContentUpdatedEvent({
-        bubbles: true,
-        composed: true,
-        detail: { ref: this.ref as string }
-      }));
-    }
-
     const oldType = node.draft.type;
     node.draft = content;
 
@@ -740,7 +740,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           ${this.docHasChanges ? html`
             <mwc-button 
               outlined
-              icon="swap_horizontal" 
+              icon="save_alt" 
               @click=${() => this.commitAll()}>
               commit
             </mwc-button>` : ''}

@@ -24,7 +24,7 @@ import { Wiki } from '../types';
 import '@material/mwc-drawer';
 import { WikiBindings } from 'src/bindings';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   
@@ -99,7 +99,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   id
                   ... on Wiki {
                     title
-                    pages
+                    pages {
+                      id
+                    }
                   }
                 }
               }
@@ -123,7 +125,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       id: result.data.entity.head.data.id,
       object: {
         title: result.data.entity.head.data.title,
-        pages: result.data.entity.head.data.pages
+        pages: result.data.entity.head.data.pages.map(p => p.id)
       }
     }
 
