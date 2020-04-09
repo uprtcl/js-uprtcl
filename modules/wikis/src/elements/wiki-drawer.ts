@@ -294,8 +294,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async newPage(index?: number) {
     if (!this.wiki) return;
-    debugger
-
+    
     const newPage: TextNode = {
       text: '',
       type: TextType.Title,

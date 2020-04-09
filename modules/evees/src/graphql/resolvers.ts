@@ -127,8 +127,6 @@ export const eveesResolvers = {
       const discovery: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
       const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
 
-      debugger
-
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
       await provider.updatePerspectiveDetails(perspectiveId, { headId, context, name });
