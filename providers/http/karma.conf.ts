@@ -23,15 +23,11 @@ module.exports = config =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-documents.ts`,
+      entry: `./src/uprtcl-http-provider.ts`,
       output: {
         filename: 'bundle.js'
       },
       resolve: {
-        alias: {
-          'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
-          'lit-element': path.resolve(__dirname, './node_modules/lit-element')
-        },
         extensions: ['.mjs', '.js', '.ts', '.json']
       },
       devtool: 'inline-source-map',
