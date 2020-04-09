@@ -97,6 +97,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     
     const client = this.client as ApolloClient<any>;
     const discovery = this.discovery as DiscoveryService;
+    const recognizer = this.recognizer as PatternRecognizer;
     
     const result = await client.query({
       query: gql`
@@ -130,12 +131,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       }`
     });
 
-    const entity = await discovery.get(ref);
+    const entity = await discovery.get(ref) as object;
 
-    const pattern = recognizer
-      .recognize(object)
+    const pattern = recognizer.recognize(entity);
 
-    entityType
+    const isPerspective = true;
+
+    const entityType= EntityType.Perspective;
 
     const dataId = result.data.entity.head.data.id;
     const headId = result.data.entity.head.id;
@@ -310,7 +312,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async updateEvee(node: DocNode): Promise<void> {
     const client = this.client as ApolloClient<any>;
     const store = await this.getStore(node.authority);
-    const commit = await this.createCommit(node.draft, node.symbol, node.headId, store.source);
+    const commit = await this.createCommit(node.draft, node.symbol, store.source, node.headId ? [node.headId] : []);
 
     await client.mutate({
       mutation: UPDATE_HEAD,
@@ -341,7 +343,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return perspective.id;
   }
 
-  createPlaceholder(ref: string, ix: number, draft: any, symbol: symbol, authority: string, parent: DocNode) : DocNode {
+  createPlaceholder(ref: string, ix: number, draft: any, symbol: symbol, authority: string, parent: DocNode, entityType: EntityType) : DocNode {
     const hasChildren = this.getPatternOfObject<HasChildren>(draft, 'getChildrenLinks');
     const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(draft, 'docNodeLenses');
     const context = `${parent.context}-${ix}-${Date.now()}`;
@@ -351,6 +353,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       childrenNodes: [],
       hasChildren,
       hasDocNodeLenses,
+      entityType,
       ix,
       ref,
       symbol,
@@ -375,7 +378,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (typeof el !== 'string') {
         if ((el.object !== undefined) && (el.symbol !== undefined)) {
           /** element is an object from which a DocNode should be create */
-          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, el.symbol, node.authority, node));
+          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, el.symbol, node.authority, node, EntityType.Perspective));
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);
@@ -761,7 +764,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
             <mwc-button 
               outlined
               icon="swap_horizontal" 
-              @click=${() => this.commitAll()}>
+              @click=${() => this.persistAll()}>
               commit
             </mwc-button>` : ''}
         </div>
