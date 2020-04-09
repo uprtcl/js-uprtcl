@@ -8,7 +8,3 @@ export { htmlToText } from './support/documents.support';
 
 // Module
 export { DocumentsModule } from './documents.module';
-
-export { CREATE_TEXT_NODE } from './graphql/queries';
-
-
