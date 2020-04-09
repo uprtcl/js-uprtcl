@@ -224,7 +224,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return pattern;
   }
 
-  getPatternOfSymbol<T>(symbol: symbol, name: string) {
+  getPatternOfSymbol<T>(symbol: string, name: string) {
     if (LOGINFO) this.logger.log(`getPatternOfSymbol(${symbol.toString()})`);
 
     const patterns: Pattern[] = this.requestAll(symbol);
@@ -315,13 +315,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }   
   }
 
-  async createEntity<T>(content: object, symbol: symbol, source: string): Promise<Hashed<T>> {
+  async createEntity<T>(content: object, symbol: string, source: string): Promise<Hashed<T>> {
     const creatable: Creatable<any, any> | undefined = this.getPatternOfSymbol<Creatable<any,any>>(symbol, 'create');
     if (creatable === undefined) throw new Error('Creatable pattern not found for this entity');
     return creatable.create()(content, source);
   }
 
-  async createCommit(content: object, symbol: symbol, authority: string, parentsIds?: string[]) : Promise<Hashed<Signed<Commit>>> {
+  async createCommit(content: object, symbol: string, authority: string, parentsIds?: string[]) : Promise<Hashed<Signed<Commit>>> {
     const eveesRemotes = this.eveesRemotes as EveesRemote[];
 
     const store = this.getStore(authority);
@@ -366,7 +366,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
   }
 
-  async createEvee(content: object, symbol: symbol, authority: string, context: string): Promise<string> {
+  async createEvee(content: object, symbol: string, authority: string, context: string): Promise<string> {
     if (LOGINFO) this.logger.log('createEvee()', {content, symbol, authority});
 
     const commit = await this.createCommit(content, symbol, authority);
@@ -384,7 +384,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return perspective.id;
   }
 
-  createPlaceholder(ref: string, ix: number, draft: any, symbol: symbol, authority: string, parent: DocNode, entityType: EntityType) : DocNode {
+  createPlaceholder(ref: string, ix: number, draft: any, symbol: string, authority: string, parent: DocNode, entityType: EntityType) : DocNode {
     const hasChildren = this.getPatternOfObject<HasChildren>(draft, 'getChildrenLinks');
     const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(draft, 'docNodeLenses');
     const context = `${parent.context}-${ix}-${Date.now()}`;
@@ -512,7 +512,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
   }
 
-  async createChild(node: DocNode, newEntity: any, symbol: symbol, index?: number) {
+  async createChild(node: DocNode, newEntity: any, symbol: string, index?: number) {
     if (LOGINFO) this.logger.log('createChild()', {node, newEntity, symbol, index});
 
     await this.spliceChildren(node, [{object: newEntity, symbol}], 0);
@@ -528,7 +528,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
-  async createSibling(node: DocNode, newEntity: any, symbol: symbol) {
+  async createSibling(node: DocNode, newEntity: any, symbol: string) {
     if (!node.parent) throw new Error('Node dont have a parent');
     if (node.ix === undefined) throw new Error('Node dont have an ix');
 

@@ -1,5 +1,6 @@
 import { html, TemplateResult } from 'lit-element';
 import { injectable, inject, multiInject } from 'inversify';
+import { ApolloClient } from 'apollo-boost';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
@@ -7,10 +8,10 @@ import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } fro
 import { HasLenses, Lens } from '@uprtcl/lenses';
 import { DiscoveryModule, DiscoveryService, TaskQueue, Task, Store, StoresModule } from '@uprtcl/multiplatform';
 import { CidConfig } from '@uprtcl/ipfs-provider';
-import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
 
 import { Wiki } from '../types';
 import { CREATE_WIKI } from '../graphql/queries';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 const propertyOrder = ['title', 'pages'];
 

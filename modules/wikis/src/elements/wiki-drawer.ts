@@ -192,7 +192,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
-  getPatternOfSymbol<T>(symbol: symbol, name: string) {
+  getPatternOfSymbol<T>(symbol: string, name: string) {
     if (LOGINFO) this.logger.log(`getPatternOfSymbol(${symbol.toString()})`);
 
     const patterns: Pattern[] = this.requestAll(symbol);
