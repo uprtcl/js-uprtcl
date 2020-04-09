@@ -12,9 +12,16 @@ export interface TextNode {
   links: string[];
 }
 
+export enum EntityType {
+  Perspective = "perspective",
+  Commit = "commit",
+  Data = "data"
+}
+
 export interface DocNode {
   ref: string,
   authority: string,
+  entityType: EntityType,
   context: string,
   data?: Hashed<any>,
   draft: any,

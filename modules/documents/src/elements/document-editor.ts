@@ -11,10 +11,10 @@ export const styleMap = style => {
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed, Pattern, Creatable, Signed, HasChildren, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { ApolloClientModule, gql, ApolloClient } from '@uprtcl/graphql';
-import { EveesRemote, EveesModule, RemotesConfig, CreateCommitArgs, EveesBindings, CreatePerspectiveArgs, Perspective, Commit, Secured, UPDATE_HEAD, ContentUpdatedEvent } from '@uprtcl/evees';
+import { EveesRemote, EveesModule, RemotesConfig, CreateCommitArgs, EveesBindings, Commit, UPDATE_HEAD, ContentUpdatedEvent } from '@uprtcl/evees';
 import { Source, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 
-import { TextType, DocNode, TextNode } from 'src/types';
+import { TextType, DocNode, TextNode, EntityType } from 'src/types';
 import { HasDocNodeLenses } from 'src/patterns/document-patterns';
 import { DocumentsBindings } from 'src/bindings';
 import { icons } from './prosemirror/icons';
@@ -76,7 +76,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const node = await this.loadNode(ref, ix);
     
     const loadChildren = node.hasChildren.getChildrenLinks(node.draft).map(async (child, ix): Promise<DocNode> => {
-      return (child !== undefined && child !== '')? 
+      return (child !== undefined && child !== '') ? 
         await this.loadNodeRec(child, ix, node)  :
         node.childrenNodes[ix]
     })
@@ -97,6 +97,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     
     const client = this.client as ApolloClient<any>;
     const discovery = this.discovery as DiscoveryService;
+    const recognizer = this.recognizer as PatternRecognizer;
     
     const result = await client.query({
       query: gql`
@@ -130,6 +131,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       }`
     });
 
+    const entity = await discovery.get(ref) as object;
+
+    const pattern = recognizer.recognize(entity);
+
+    const isPerspective = true;
+
+    const entityType= EntityType.Perspective;
+
     const dataId = result.data.entity.head.data.id;
     const headId = result.data.entity.head.id;
 
@@ -150,9 +159,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const context = result.data.entity.context.id;
     
     const node: DocNode = {
-      ref, ix, hasChildren,
+      ref, 
+      ix, 
+      hasChildren,
       childrenNodes: [],
-      data, draft: {...data.object},
+      data, 
+      draft: {...data.object},
+      entityType,
       headId,
       symbol: DocumentsBindings.TextNodeEntity, // TODO: Derive symbol from pattern ?
       hasDocNodeLenses,
@@ -197,17 +210,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return create;
   }
 
-  getStore(eveesAuthority: string): Source | undefined {
-    if (!this.remotesConfig) return undefined;
+  getStore(eveesAuthority: string): Source {
+    if (!this.remotesConfig) throw new Error('remotes config undefined');
     return this.remotesConfig.map(eveesAuthority);
-  }
-
-  async createEntity<T>(content: object, symbol: symbol, authority: string): Promise<Hashed<T>> {
-    const creatable: Creatable<any, any> | undefined = this.getPatternOfSymbol<Creatable<any,any>>(symbol, 'create');
-    if (creatable === undefined) throw new Error('Creatable pattern not found for this entity');
-    const store = this.getStore(authority);
-    if (!store) throw new Error('store is undefined');
-    return creatable.create()(content, store.source);
   }
 
   hasChangesAll() {
@@ -234,54 +239,87 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     super.performUpdate();
   }
 
-  async commitAll() {
+  async persistAll() {
     if (!this.doc) return;
-    await this.commitNodeRec(this.doc);
+    await this.persistNodeRec(this.doc);
     /** reload doc from backend */
     await this.loadDoc();
     this.requestUpdate();
   }
 
-  async commitNodeRec(node: DocNode) {
-    const commitChildren = node.childrenNodes.map(child => this.commitNodeRec(child));
-    await Promise.all(commitChildren);
+  async persistNodeRec(node: DocNode) {
+    const persistChildren = node.childrenNodes.map(child => this.persistNodeRec(child));
+    await Promise.all(persistChildren);
 
     /** set the children with the children refs (which were created above) */
     node.draft = node.hasChildren.replaceChildrenLinks(node.draft)(node.childrenNodes.map(node => node.ref));
     
-    /** if its a placeholder create an evee, otherwise make a commit */
-    if (node.ref === undefined || node.ref === '') {
-      node.ref = await this.createEvee(node.draft, node.symbol, node.authority, node.context);
-    } else {
-      await this.commitDraft(node);
-    }
+    await this.persistNode(node);
   }
 
-  async commitDraft(node: DocNode): Promise<void> {
+  async persistNode(node: DocNode) {
+
+    const isPlaceholder = node.ref === undefined || node.ref === '';
+    
+    if (!isPlaceholder && (node.data !== undefined) && lodash.isEqual(node.data.object, node.draft)) {
+      /** nothing to persist here */
+      return 
+    }
+
+    /** if its a placeholder create an object, otherwise make a commit */
+    switch (node.entityType) { 
+      case EntityType.Perspective:
+        if (isPlaceholder) {
+          node.ref = await this.createEvee(node.draft, node.symbol, node.authority, node.context);
+        } else {
+          this.updateEvee(node);
+        }
+        break;
+      
+      case EntityType.Commit: 
+        const commit = await this.createCommit(node.draft, node.symbol, node.authority, node.parent ? [node.parent.ref] : []);
+        node.ref = commit.id;
+        break;
+
+      case EntityType.Data:
+        const store = this.getStore(node.authority);
+        const data = await this.createEntity(node.draft, node.symbol, store.source);
+        node.ref = data.id;
+        break;
+    }   
+  }
+
+  async createEntity<T>(content: object, symbol: symbol, source: string): Promise<Hashed<T>> {
+    const creatable: Creatable<any, any> | undefined = this.getPatternOfSymbol<Creatable<any,any>>(symbol, 'create');
+    if (creatable === undefined) throw new Error('Creatable pattern not found for this entity');
+    return creatable.create()(content, source);
+  }
+
+  async createCommit(content: object, symbol: symbol, authority: string, parentsIds?: string[]) : Promise<Hashed<Signed<Commit>>> {
+    const eveesRemotes = this.eveesRemotes as EveesRemote[];
+
+    const store = this.getStore(authority);
+    const object = await this.createEntity(content, symbol, store.source);
+   
+    const remote = eveesRemotes.find(r => r.authority === authority);
+    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
+
+    const creatableCommit = this.getPatternOfSymbol<Creatable<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
+    const commit = await creatableCommit.create()(
+      { parentsIds, dataId: object.id },
+      remote.source
+    );
+
+    if (LOGINFO) this.logger.info('createCommit()', {content});
+
+    return commit;
+  }
+
+  async updateEvee(node: DocNode): Promise<void> {
     const eveesRemotes = this.eveesRemotes as EveesRemote[];
     const client = this.client as ApolloClient<any>;
 
-    if ((node.data !== undefined) && lodash.isEqual(node.data.object, node.draft)) {
-      /** dont commit if content has not changed */
-      /** TODO: use the createEntity hash but it would take time as its going to the backend */
-      return;
-    }
-
-    if (LOGINFO) this.logger.info('commitDraft()', {node});
-    
-    const object = await this.createEntity(node.draft, node.symbol, node.authority);
-    const remote = eveesRemotes.find(r => r.authority === node.authority);
-    if (!remote) throw new Error('remote undefined');;
-
-    const creatableCommit: Creatable<CreateCommitArgs, Signed<Commit>> = this.getPatternOfSymbol<Creatable<any,any>>(EveesModule.bindings.CommitPattern, 'create');
-    
-    const commit: Secured<Commit> = await creatableCommit.create()(
-      {
-        parentsIds: node.headId ? [node.headId] : [],
-        dataId: object.id
-      },
-      remote.source
-    );
+    const commit = await this.createCommit(node.draft, node.symbol, node.authority, node.headId ? [node.headId] : []);
 
     await client.mutate({
       mutation: UPDATE_HEAD,
@@ -305,21 +343,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async createEvee(content: object, symbol: symbol, authority: string, context: string): Promise<string> {
     if (LOGINFO) this.logger.log('createEvee()', {content, symbol, authority});
 
+    const commit = await this.createCommit(content, symbol, authority);
+
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     const remote = this.eveesRemotes.find(r => r.authority === authority);
-
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
-
-    const creatable = this.getPatternOfSymbol<Creatable<any,any>>(symbol, 'create');
-    const store = this.getStore(authority);
-    if (!store) throw new Error('store is undefined');
-    const object = await creatable.create()(content, store.source);
-
-    const creatableCommit = this.getPatternOfSymbol<Creatable<any,any>>(EveesBindings.CommitPattern, 'create');
-    const commit = await creatableCommit.create()(
-      { parentsIds: [], dataId: object.id },
-      remote.source
-    );
 
     const creatablePerspective = this.getPatternOfSymbol<Creatable<any,any>>(EveesBindings.PerspectivePattern, 'create');
     const perspective = await creatablePerspective.create()(
@@ -330,7 +358,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return perspective.id;
   }
 
-  createPlaceholder(ref: string, ix: number, draft: any, symbol: symbol, authority: string, parent: DocNode) : DocNode {
+  createPlaceholder(ref: string, ix: number, draft: any, symbol: symbol, authority: string, parent: DocNode, entityType: EntityType) : DocNode {
     const hasChildren = this.getPatternOfObject<HasChildren>(draft, 'getChildrenLinks');
     const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(draft, 'docNodeLenses');
     const context = `${parent.context}-${ix}-${Date.now()}`;
@@ -340,6 +368,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       childrenNodes: [],
       hasChildren,
       hasDocNodeLenses,
+      entityType,
       ix,
       ref,
       symbol,
@@ -364,9 +393,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (typeof el !== 'string') {
         if ((el.object !== undefined) && (el.symbol !== undefined)) {
           /** element is an object from which a DocNode should be create */
-          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, el.symbol, node.authority, node));
+          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, el.symbol, node.authority, node, EntityType.Perspective));
         } else {
-          /** element is a DocNode, change its path */
+          /** element is a DocNode */
           return Promise.resolve(el);
         }
       } else {
@@ -668,9 +697,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     this.addEventListener('keydown', (event) => {
       if (event.keyCode === 83) {
-        event.preventDefault();
         if (event.ctrlKey === true) {
-          this.commitAll();
+          event.preventDefault();
+          this.persistAll();
         }
       }
     })
@@ -754,7 +783,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
             <mwc-button 
               outlined
               icon="save_alt" 
-              @click=${() => this.commitAll()}>
+              @click=${() => this.persistAll()}>
               commit
             </mwc-button>` : ''}
         </div>
