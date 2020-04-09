@@ -79,18 +79,16 @@ Adding submodules is easy as well, adding the `submodules` property:
 
 ```ts
 import { interfaces } from 'inversify';
-import { CortexModule } from '@uprtcl/cortex';
-import { MicroModule, ElementsModule } from '@uprtcl/micro-orchestrator';
-import { CustomElement } from './custom-element';
+import { CortexModule, PatternsModule } from '@uprtcl/cortex';
+import { MicroModule } from '@uprtcl/micro-orchestrator';
+import { CustomPattern } from './custom-pattern';
 
 export class MyModule extends MicroModule {
   dependencies = [CortexModule.id];
 
-  submodules = [
-    new ElementsModule({
-      'custom-element-tag': CustomElement
-    })
-  ];
+  get submodules() {
+    return [new PatternsModule([new CustomPattern()])];
+  }
 
   // This function will be executed when the module is being loaded
   public async onLoad(container: interfaces.Container): Promise<void> {
@@ -101,7 +99,7 @@ export class MyModule extends MicroModule {
 
 This will load all submodules before executing the `onLoad` function of our module. If any of the submodules specifies an `id` it will only get loaded once: multiple loads of a module with the same `id` will only execute the `onLoad` function once.
 
-### 4. Define module bindings and register services (optional) 
+### 4. Define module bindings and register services (optional)
 
 Every module **can register services, functions or any type of object inside the `Container`**. This objects will be made **available to any other module, as well as to all custom elements** defined inside the `customElements` registry.
 
@@ -111,6 +109,7 @@ When the `onLoad` method is called, you can assume:
 - All submodules will be loaded
 
 After this method is called, other modules will assume:
+
 - All `bindings` declared by this module are available in the container (bind them using `container.bind()`)
 
 ```ts
@@ -119,21 +118,19 @@ import { interfaces } from 'inversify';
 import { CortexModule } from '@uprtcl/cortex';
 import { MicroModule, ElementsModule } from '@uprtcl/micro-orchestrator';
 
-import { CustomElement } from './custom-element';
+import { CustomPattern } from './custom-pattern';
 import { HttpService } from './http-service';
 
 export class MyModule extends MicroModule {
   dependencies = [CortexModule.id];
 
-  submodules = [
-    new ElementsModule({
-      'custom-element-tag': CustomElement
-    })
-  ];
+  get submodules() {
+    return [new PatternsModule([new CustomPattern()])];
+  }
 
   static bindings = {
-    BackendService: Symbol('http-service')
-  }
+    BackendService: 'http-service'
+  };
 
   // This function will be executed when the module is being loaded
   public async onLoad(container: interfaces.Container): Promise<void> {
@@ -157,25 +154,23 @@ This has some consequences:
 import { interfaces } from 'inversify';
 
 import { CortexModule } from '@uprtcl/cortex';
-import { MicroModule, ElementsModule } from '@uprtcl/micro-orchestrator';
+import { MicroModule } from '@uprtcl/micro-orchestrator';
 
-import { CustomElement } from './custom-element';
+import { CustomPattern } from './custom-pattern';
 import { HttpService } from './http-service';
 
 export class MyModule extends MicroModule {
-  static id = Symbol('my-module')
+  static id = 'my-module';
 
   dependencies = [CortexModule.id];
 
-  submodules = [
-    new ElementsModule({
-      'custom-element-tag': CustomElement
-    })
-  ];
+  get submodules() {
+    return [new PatternsModule([new CustomPattern()])];
+  }
 
   static bindings = {
-    BackendService: Symbol('http-service')
-  }
+    BackendService: 'http-service'
+  };
 
   // This function will be executed when the module is being loaded
   public async onLoad(container: interfaces.Container): Promise<void> {

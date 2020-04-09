@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = config =>
   config.set({
-    browsers: ['ChromeHeadlessNoSandbox'],
+    browsers: ['Chrome'],
     // ## code coverage config
     coverageIstanbulReporter: {
       reports: ['lcovonly', 'text-summary'],
@@ -29,6 +29,7 @@ module.exports = config =>
       },
       resolve: {
         alias: {
+          '@material/mwc-icon': path.resolve(__dirname, './node_modules/@material/mwc-icon'),
           'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
           'lit-element': path.resolve(__dirname, './node_modules/lit-element')
         },
@@ -53,7 +54,7 @@ module.exports = config =>
         ]
       }
     },
-    singleRun: true,
+    singleRun: false,
     concurrency: Infinity,
 
     plugins: [

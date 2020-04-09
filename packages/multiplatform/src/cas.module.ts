@@ -19,7 +19,9 @@ import { KnownSourcesSource } from './references/known-sources/known-sources.sou
  *
  *   ...
  *
- *   submodules = [new CASModule([source1, source2])];
+ *   get submodules() {
+ *     return [new CASModule([source1, source2])];
+ *   }
  * }
  * ```
  */

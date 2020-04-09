@@ -37,7 +37,9 @@ const ipfsSource = new IpfsSource(ipfsConnection);
 export class TestModule extends MicroModule {
   static id = Symbol('test-module');
 
-  submodules = [new CASModule(ipfsSource)];
+  get submodules() {
+    return [new CASModule(ipfsSource)];
+  }
 }
 ```
 

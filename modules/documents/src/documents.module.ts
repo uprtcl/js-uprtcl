@@ -40,9 +40,7 @@ import { DocumentsBindings } from './bindings';
  * await orchestrator.loadModule(docs);
  * ```
  *
- * @category CortexModule
- *
- * @param stores an array of stores where documents can be put and retrieved
+ * @param CASStores an array of stores where documents can be put and retrieved
  */
 export class DocumentsModule extends EveesContentModule {
   static id = 'documents-module';

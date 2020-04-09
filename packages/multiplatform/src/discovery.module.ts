@@ -24,10 +24,15 @@ export class DiscoveryModule extends MicroModule {
   static bindings = DiscoveryBindings;
 
   dependencies = [CortexModule.id, ApolloClientModule.id];
-  submodules = [
-    new GraphQlSchemaModule(discoveryTypeDefs, resolvers, [DiscoverDirective, CASSourceDirective]),
-    new PatternsModule([new KnownSourcesRefPattern([KnownSourcesResolver])])
-  ];
+  get submodules() {
+    return [
+      new GraphQlSchemaModule(discoveryTypeDefs, resolvers, [
+        DiscoverDirective,
+        CASSourceDirective
+      ]),
+      new PatternsModule([new KnownSourcesRefPattern([KnownSourcesResolver])])
+    ];
+  }
 
   async onLoad(container: interfaces.Container): Promise<void> {
     container

@@ -12,7 +12,9 @@ import { LensSelector } from './types';
 
 export class LensesModule extends MicroModule {
   dependencies = [CortexModule.id];
-  submodules = [new GraphQlSchemaModule(lensesSchema, {})];
+  get submodules() {
+    return [new GraphQlSchemaModule(lensesSchema, {})];
+  }
 
   constructor(defaultLensSelector: LensSelector = lenses => lenses[0]) {
     super();

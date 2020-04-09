@@ -12,14 +12,16 @@ export class MockModule extends MicroModule {
   constructor(protected initialObjects: Dictionary<any>) {
     super();
   }
-  
+
   async onLoad() {
-    customElements.define('mock-element', MockElement)
+    customElements.define('mock-element', MockElement);
   }
 
-  submodules = [
-    new GraphQlSchemaModule(mockSchema),
-    new PatternsModule([new MockPattern([Lenses])]),
-    new CASModule([new MockSource(this.initialObjects)])
-  ];
+  get submodules() {
+    return [
+      new GraphQlSchemaModule(mockSchema),
+      new PatternsModule([new MockPattern([Lenses])]),
+      new CASModule([new MockSource(this.initialObjects)])
+    ];
+  }
 }

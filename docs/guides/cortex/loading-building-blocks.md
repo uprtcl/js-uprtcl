@@ -27,7 +27,7 @@ await orchestrator.loadModule(patternsModule);
 - Declare all the modules you need as submodules, part of a bigger module:
 
 ```ts
-import { MicroModule, ElementsModule } from '@uprtcl/micro-orchestrator';
+import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { CASModule } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
@@ -41,21 +41,18 @@ export class TextModule extends MicroModule {
   static id = Symbol('text-module');
 
   static bindings = {
-    TextPattern: [Symbol('text-pattern')]
+    TextPattern: 'text-pattern'
   };
 
   async onLoad() {}
 
-  submodules = [
-    new GraphQlSchemaModule(typeDefs, resolvers),
-    new CASModule([new LocalSource()]),
-    new ElementsModule({
-      'text-lens-element': TextLensElement
-    }),
-    new PatternsModule({
-      [TextModule.bindings.TextPattern]: [TextLenses, TextActions]
-    })
-  ];
+  get submodules() {
+    [
+      new GraphQlSchemaModule(typeDefs, resolvers),
+      new CASModule([new LocalSource()]),
+      new PatternsModule([new TextPattern([TextLenses, TextActions])])
+    ];
+  }
 }
 ```
 

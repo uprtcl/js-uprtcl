@@ -17,7 +17,9 @@ import { Behaviour } from './types/behaviour';
  *
  *   ...
  *
- *   submodules = [new PatternsModule({[EveesBindings.PerspectivePattern]: patterns: [PerspectivePattern]})];
+ *   get submodules() {
+ *     return [new PatternsModule([new PerspectivePattern()])];
+ *   }
  * }
  * ```
  */

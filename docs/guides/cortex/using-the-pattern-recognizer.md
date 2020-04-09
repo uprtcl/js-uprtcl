@@ -37,7 +37,7 @@ import gql from 'graphql-tag';
 
 export const typeDef = gql`
   extend type Patterns {
-    content: String
+    text: String
   }
 `;
 ```
@@ -70,9 +70,8 @@ export class TextLens extends moduleConnect(LitElement) {
           id
 
           _context {
-              patterns {
-                content
-              }
+            patterns {
+              text
             }
           }
         }
@@ -80,7 +79,7 @@ export class TextLens extends moduleConnect(LitElement) {
       `
     });
 
-    this.content = result.data.entity._context.patterns.content;
+    this.text = result.data.entity._context.patterns.text;
   }
 
   render() {

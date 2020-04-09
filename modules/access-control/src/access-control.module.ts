@@ -21,12 +21,14 @@ export class AccessControlModule extends MicroModule {
     customElements.define('permissions-admin', PermissionsAdmin);
   }
 
-  submodules = [
-    new i18nextModule('access-control', { en }),
-    new GraphQlSchemaModule(accessControlTypes, accessControlResolvers),
-    new PatternsModule([
-      new OwnerPattern([OwnerBehaviour]),
-      new BasicAdminPattern([AdminBehaviour])
-    ])
-  ];
+  get submodules() {
+    return [
+      new i18nextModule('access-control', { en }),
+      new GraphQlSchemaModule(accessControlTypes, accessControlResolvers),
+      new PatternsModule([
+        new OwnerPattern([OwnerBehaviour]),
+        new BasicAdminPattern([AdminBehaviour])
+      ])
+    ];
+  }
 }

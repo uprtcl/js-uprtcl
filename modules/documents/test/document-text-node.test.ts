@@ -102,6 +102,5 @@ describe('<cortex-entity>', () => {
       '<documents-text-node ref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></documents-text-node'
     );
 
-    expect(true).to.be.ok;
   });
 });

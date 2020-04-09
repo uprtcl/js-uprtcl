@@ -30,5 +30,7 @@ export class CortexModule extends MicroModule {
       });
   }
 
-  submodules = [new GraphQlSchemaModule(cortexSchema, cortexResolvers)];
+  get submodules() {
+    return [new GraphQlSchemaModule(cortexSchema, cortexResolvers)];
+  }
 }

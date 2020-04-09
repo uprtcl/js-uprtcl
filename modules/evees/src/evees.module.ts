@@ -98,13 +98,15 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-options-menu', EveesOptionsMenu);
   }
 
-  submodules = [
-    new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
-    new i18nextModule('evees', { en: en }),
-    new PatternsModule([
-      new CommitPattern([CommitLinked, CommitCreate]),
-      new PerspectivePattern([PerspectiveLinks, PerspectiveCreate, PerspectiveAccessControl])
-    ]),
-    new CASModule(this.eveesProviders)
-  ];
+  get submodules() {
+    return [
+      new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
+      new i18nextModule('evees', { en: en }),
+      new PatternsModule([
+        new CommitPattern([CommitLinked, CommitCreate]),
+        new PerspectivePattern([PerspectiveLinks, PerspectiveCreate, PerspectiveAccessControl])
+      ]),
+      new CASModule(this.eveesProviders)
+    ];
+  }
 }
