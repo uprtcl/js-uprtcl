@@ -209,8 +209,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     );
 
     /** data on other perspectives (proposals are injected on them) */
-    this.pendingProposals = proposals.filter(proposal => proposal.executed === 0);
-    this.mergedProposals = proposals.filter(proposal => proposal.executed === 1);
+    this.pendingProposals = proposals.filter(proposal => proposal.executed !== true);
+    this.mergedProposals = proposals.filter(proposal => proposal.executed === true);
 
     this.loadingProposals = false;
 
@@ -333,11 +333,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   getPerspectiveActionDisaled(perspectiveData: PerspectiveData) {
-    return perspectiveData.publicRead !== undefined ? !perspectiveData.publicRead : true;
+    return [PRIVATE_PERSPECTIVE].includes(this.getPerspectiveAction(perspectiveData));
   }
 
   getProposalActionDisaled(proposal: Proposal) {
-    return false;
+    return [PENDING_ACTION, MERGE_EXECUTED].includes(this.getProposalAction(proposal));
   }
 
   renderLoading() {
@@ -391,6 +391,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         <div class="perspective-title">
           <mwc-list-item
             graphic="small"
+            disabled
           >
             <div
               slot="graphic"

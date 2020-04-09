@@ -648,7 +648,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     this.requestUpdate();
   }
-
   
   async split(node: DocNode, tail: string, asChild: boolean) {
     if (LOGINFO) this.logger.log('split()', { node, tail });
@@ -662,6 +661,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
 
     this.requestUpdate();
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener('keydown', (event) => {
+      if (event.keyCode === 83) {
+        event.preventDefault();
+        if (event.ctrlKey === true) {
+          this.commitAll();
+        }
+      }
+    })
+
   }
   
   renderWithCortex(node: DocNode) {
