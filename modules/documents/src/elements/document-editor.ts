@@ -258,7 +258,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async persistNode(node: DocNode) {
-
     const isPlaceholder = node.ref === undefined || node.ref === '';
     
     if (!isPlaceholder && (node.data !== undefined) && lodash.isEqual(node.data.object, node.draft)) {
@@ -272,7 +271,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         if (isPlaceholder) {
           node.ref = await this.createEvee(node.draft, node.symbol, node.authority, node.context);
         } else {
-          this.updateEvee(node);
+          await this.updateEvee(node);
         }
         break;
       
