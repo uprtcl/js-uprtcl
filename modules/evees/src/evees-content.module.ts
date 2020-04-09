@@ -26,7 +26,7 @@ export abstract class EveesContentModule extends MicroModule {
     });
   }
 
-  get submodules() {
+  get submodules(): MicroModule[] {
     return [new CASModule(this.stores.filter(store => (store as CASStore).casID) as CASStore[])];
   }
 }
