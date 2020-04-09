@@ -39,7 +39,8 @@ export class WikiHome extends moduleConnect(LitElement) {
       .page-container {
         text-align: center;
         background-color: #e8ecec;
-        height: 100%;
+        height: auto;
+        min-height: 100%;
       }
 
       .row {

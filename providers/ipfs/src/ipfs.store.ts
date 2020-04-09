@@ -29,6 +29,8 @@ export interface PutConfig {
   cidVersion: number
 }
 
+const LOGINFO = false;
+
 export class IpfsStore implements Store {
   logger = new Logger('IpfsSource');
   
@@ -76,14 +78,14 @@ export class IpfsStore implements Store {
   private async putIpfs(object: object, putConfig: PutConfig) {
     const sorted = sortObject(object);
     const buffer = CBOR.encode(sorted);
-    this.logger.log(`Trying to add object:`, {object, sorted, buffer});
+    if (LOGINFO) this.logger.log(`Trying to add object:`, {object, sorted, buffer});
 
     /** recursively try */
     return this.ipfsConnection
       .tryPut(buffer, putConfig, 500, 0)
       .then((result: any) => {
         let hashString = result.toString(this.hashRecipe.base);
-        this.logger.log(`Object stored`, { object, sorted, buffer, hashString });
+        if (LOGINFO) this.logger.log(`Object stored`, { object, sorted, buffer, hashString });
         return hashString;
       })
       .catch(e => {
@@ -101,7 +103,7 @@ export class IpfsStore implements Store {
       .tryGet(hash, 500, 0)
       .then(raw => {
         let object = CBOR.decode(raw.value.buffer);
-        this.logger.log(`Object retrieved ${hash}`, { raw, object });
+        if (LOGINFO) this.logger.log(`Object retrieved ${hash}`, { raw, object });
         return { id: hash, object: object };
       })
       .catch(e => {

@@ -15,6 +15,7 @@ export function recognizeHashed(object: object) {
   );
 }
 
+const LOGINFO = false;
 const logger = new Logger('CidHashedPattern');
 
 @injectable()
@@ -31,7 +32,7 @@ export class CidHashedPattern implements Pattern, Hashable<any>, Transformable<[
 
     const cid = new CID(config.version, config.codec, encoded, config.base);
 
-    logger.log(`hashed object:`, {object, sorted, buffer, config, cid, cidStr: cid.toString()});
+    if (LOGINFO) logger.log(`hashed object:`, {object, sorted, buffer, config, cid, cidStr: cid.toString()});
 
     return cid.toString();
   }

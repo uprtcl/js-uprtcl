@@ -40,7 +40,7 @@ export class WikiPage extends moduleConnect(LitElement) {
     this.addEventListener(CONTENT_UPDATED_TAG, ((e: ContentUpdatedEvent) => {
       this.logger.info('CATCHED EVENT: content-updated ', { pageHash: this.pageHash, e });
       e.stopPropagation();
-      this.dispatchEvent(new CustomEvent('page-title-changed', { detail: { pageId: e.detail.perspectiveId }}));
+      this.dispatchEvent(new CustomEvent('page-title-changed', { detail: { pageId: e.detail.ref }}));
     }) as EventListener);
   }
 
@@ -50,7 +50,6 @@ export class WikiPage extends moduleConnect(LitElement) {
       query: gql`{
         entity(id: "${this.pageHash}") {
           id
-
           ... on Perspective {
             head {
               id
@@ -91,12 +90,10 @@ export class WikiPage extends moduleConnect(LitElement) {
 
       <div class="page-content">
         <div class="text-editor">
-          <cortex-entity
-            .hash=${this.pageHash}
-            lens-type="evee"
-            .context=${{ onlyChildren: 'false', color: this.color }}
-          >
-          </cortex-entity>
+          <documents-editor 
+            ref=${this.pageHash}
+            color=${this.color}>
+          </documents-editor>
         </div>
       </div>
     `;

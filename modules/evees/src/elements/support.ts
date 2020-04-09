@@ -1,4 +1,5 @@
 import { html } from "lit-element";
+import { randomColor } from 'randomcolor';
 
 const MT2D = 30;
 const D2H = 24;
@@ -48,4 +49,10 @@ export const prettyAddress = (address: string) => {
     <span style="font-family: Lucida Console, Monaco, monospace; background-color: #d0d8db; padding: 3px 6px; font-size: 14px; border-radius: 3px; margin-right: 6px;">
       ${address.substr(0,4)}...${address.substr(address.length - 3, address.length)}
     </span>`;
+}
+
+export const DEFAULT_COLOR = '#d0dae0';
+
+export const eveeColor = (perspectiveId: string) => {
+  return randomColor({ seed: perspectiveId })
 }

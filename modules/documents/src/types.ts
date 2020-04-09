@@ -1,3 +1,6 @@
+import { Hashed, HasChildren } from "@uprtcl/cortex";
+import { HasDocNodeLenses } from "./patterns/document-patterns";
+
 export enum TextType {
   Title = 'Title',
   Paragraph = 'Paragraph'
@@ -8,3 +11,42 @@ export interface TextNode {
   type: TextType;
   links: string[];
 }
+
+export enum EntityType {
+  Perspective = "perspective",
+  Commit = "commit",
+  Data = "data"
+}
+
+export interface DocNode {
+  ref: string,
+  authority: string,
+  entityType: EntityType,
+  context?: string,
+  data?: Hashed<any>,
+  draft: any,
+  append?: any,              // used by upper layer to tell the docnode lense to append content using its internal appending logic.
+  childrenNodes: DocNode[],
+  symbol: symbol,
+  headId?: string,
+  editable: boolean,
+  parent?: DocNode,
+  ix?: number,              // ix on parent
+  focused: boolean,
+  hasDocNodeLenses: HasDocNodeLenses,
+  hasChildren: HasChildren
+}
+
+export interface DocNodeEventsHandlers {
+  focus: () => void,
+  blur: () => void,
+  contentChanged: (newContent: any, lift: boolean) => void,
+  split: (tail: string, asChild: boolean) => void,
+  joinBackward: (tail: string) => void,
+  pullDownward: () => void,
+  focusBackward: () => void,
+  focusDownward: () => void,
+  lift: () => void,
+  appended: () => void
+}
+

@@ -1766,7 +1766,8 @@
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event"
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
         }
       },
       "links": {},
@@ -1774,9 +1775,8 @@
       "transactionHash": "0xd2c7a3fd0f3d946a29ba709c23858a581b860439bc3e50d7ad3f8f06afd692d7"
     }
   },
-  "schemaVersion": "3.0.23",
-  "updatedAt": "2020-04-01T08:24:29.618Z",
-  "networkType": "ethereum",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2020-04-09T16:09:28.795Z",
   "devdoc": {
     "methods": {
       "isOwner()": {

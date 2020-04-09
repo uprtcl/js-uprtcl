@@ -163,7 +163,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDatas: any[] = await Promise.all(datasPromises);
 
-    const [newData, actions] = await this.mergeData(ancestorData, newDatas, config);
+    const [newData, actions] = await this.mergeData(ancestorData.object, newDatas.map(data => data.object), config);
 
     // TODO: fix inconsistency
     const sourceRemote = this.remotesConfig.map(authority);
@@ -214,7 +214,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       .find(prop => !!(prop as Mergeable).merge);
 
     if (!merge)
-      throw new Error('Cannot merge data that does not implement the Mergeable behaviour');
+      throw new Error(`Cannot merge data ${JSON.stringify(originalData)} that does not implement the Mergeable behaviour`);
 
     return merge.merge(originalData)(newDatas, this, config);
   }

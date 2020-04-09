@@ -1,16 +1,21 @@
 import { StoresModule, Store } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
+import { i18nextModule, MicroModule, ElementsModule } from '@uprtcl/micro-orchestrator';
 
-import { DocumentTextNode } from './elements/document-text-node';
-import { TextNodeCreate, TextNodePatterns, TextNodeTitle } from './patterns/text-node.entity';
+import {
+  TextNodeCreate,
+  TextNodePatterns,
+  TextNodeTitle
+} from './patterns/text-node.entity';
 import { documentsTypeDefs } from './graphql/schema';
 import { resolvers } from './graphql/resolvers';
 
 import en from './i18n/en.json';
 import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
 import { DocumentsBindings } from './bindings';
+import { DocumentEditor } from './elements/document-editor';
+import { DocumentTextNode } from './elements/document-text-node';
 
 /**
  * Configure a documents module with the given stores
@@ -62,6 +67,10 @@ export class DocumentsModule extends MicroModule {
         store: store,
       }))
     ),
+    new ElementsModule({
+      'documents-editor': DocumentEditor,
+      'documents-text-node-editor': DocumentTextNodeEditor
+    }),
     new PatternsModule({
       [DocumentsModule.bindings.TextNodeEntity]: [TextNodeCreate, TextNodePatterns, TextNodeTitle],
     }),

@@ -47,10 +47,11 @@ export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesPerspective } from './elements/evees-perspective';
 export { EveesContent } from './elements/evees-content';
-export { UpdateContentEvent, UpdateContentArgs, RemoveChildrenEvent, AddSyblingsEvent, ContentUpdatedEvent, CONTENT_UPDATED_TAG } from './elements/events';
+export { UpdateContentEvent, UpdateContentArgs, ContentUpdatedEvent, SpliceChildrenEvent, CONTENT_UPDATED_TAG } from './elements/events';
 
 /** UI support components */
-export { MenuConfig } from './elements/common-ui/evees-options-menu'
+export { MenuConfig } from './elements/common-ui/evees-options-menu';
+export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
 export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE } from './graphql/queries';

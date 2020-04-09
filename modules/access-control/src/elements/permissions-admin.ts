@@ -94,8 +94,12 @@ export class PermissionsAdmin extends moduleConnect(LitElement) implements Permi
     `;
   }
 
-  get styles() {
+  static get styles() {
     return css`
+      mwc-button {
+        width: 220px;
+      }
+
       .title {
         margin-bottom: 32px;
       }

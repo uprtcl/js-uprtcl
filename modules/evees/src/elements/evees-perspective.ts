@@ -1,6 +1,5 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html } from 'lit-element';
-import { randomColor } from 'randomcolor';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -13,9 +12,8 @@ import { Perspective, Commit } from '../types';
 import { EveesRemote } from '../services/evees.remote';
 import { EveesBindings } from '../bindings';
 import { CreateCommitArgs } from '../services/evees';
+import { eveeColor, DEFAULT_COLOR } from './support';
 
-
-export const DEFAULT_COLOR = '#d0dae0';
 
 export class EveesPerspective extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVE');
@@ -37,6 +35,12 @@ export class EveesPerspective extends moduleConnect(LitElement) {
 
   @property({ type: Number })
   index: number = 0;
+
+  @property({ type: String, attribute: 'toggle-action' })
+  toggleAction = 'false';
+
+  @property({ type: Object})
+  action = {};
 
   @property()
   private entityId: string | undefined = undefined;
@@ -144,7 +148,7 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     const base = this.eveeColor !== 'undefined' ? this.eveeColor : DEFAULT_COLOR;
     return this.perspectiveId === this.firstPerspectiveId
       ? base
-      : randomColor({ seed: this.perspectiveId });
+      : eveeColor(this.perspectiveId);
   }
 
   connectedCallback() {
@@ -242,15 +246,6 @@ export class EveesPerspective extends moduleConnect(LitElement) {
     this.entityId = dataId;
 
     this.logger.info('updateContent() post', this.entityId);
-
-    /** let upper levels know something changed */
-    if (this.genealogy.length === 0) {
-      this.dispatchEvent(new ContentUpdatedEvent({
-        bubbles: true,
-        composed: true,
-        detail: { perspectiveId: this.perspectiveId }
-      }));
-    }
   }
 
   render() {
@@ -270,7 +265,9 @@ export class EveesPerspective extends moduleConnect(LitElement) {
           ref: this.perspective.id,
           color: this.getEveeColor(),
           index: this.index,
-          genealogy: this.newGenealogy
+          genealogy: this.newGenealogy,
+          toggleAction: this.toggleAction,
+          action: this.action
         }}
       >
         <evees-info-popper
