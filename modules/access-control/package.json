@@ -1,7 +1,7 @@
 {
   "name": "@uprtcl/access-control",
   "version": "0.0.6-alpha.5",
-  "description": "Cortex module implementing access contorl behaviours",
+  "description": "Cortex module implementing access control behaviours",
   "homepage": "https://uprtcl.io",
   "scripts": {
     "clean": "rimraf dist",
