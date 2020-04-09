@@ -25,7 +25,6 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { CidConfig } from '@uprtcl/multiplatform';
 
 import { TextNode, TextType } from '../types';
-import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { DocumentsBindings } from '../bindings';
 
 const propertyOrder = ['text', 'type', 'links'];
@@ -104,8 +103,7 @@ export class TextNodeCommon
 }
 
 @injectable()
-export class TextNodeCreate
-  implements Creatable<Partial<TextNode>, TextNode>, Newable<Partial<TextNode>, TextNode> {
+export class TextNodeCreate implements Newable<Partial<TextNode>, TextNode> {
   constructor(
     @multiInject(DocumentsBindings.DocumentsRemote) protected stores: Array<CASStore>,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
@@ -114,29 +112,6 @@ export class TextNodeCreate
   recognize(object: object): boolean {
     return propertyOrder.every(p => object.hasOwnProperty(p));
   }
-
-  create = () => async (
-    node: Partial<TextNode> | undefined,
-    casID: string
-  ): Promise<Entity<TextNode>> => {
-    const store = this.stores.find(s => s.casID === casID);
-    if (!store) throw new Error(`store for ${casID} not found`);
-
-    const textNode = await this.new()(node, store.cidConfig);
-    const result = await this.client.mutate({
-      mutation: CREATE_TEXT_NODE,
-      variables: {
-        content: textNode.entity,
-        source: casID
-      }
-    });
-
-    if (result.data.createTextNode.id != textNode.id) {
-      throw new Error('unexpected id');
-    }
-
-    return textNode;
-  };
 
   new = () => async (
     node: Partial<TextNode> | undefined,

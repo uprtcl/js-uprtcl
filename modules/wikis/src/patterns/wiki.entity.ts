@@ -1,66 +1,55 @@
-import { html, TemplateResult } from 'lit-element';
-import { injectable, inject, multiInject } from 'inversify';
+import { html } from 'lit-element';
+import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
-import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
+import { Pattern, Entity, recognizeEntity, HasChildren } from '@uprtcl/cortex';
+import { Mergeable, hashObject, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
-import { DiscoveryModule, MultiSourceService, TaskQueue, Task, Store, StoresModule } from '@uprtcl/multiplatform';
-import { CidConfig } from '@uprtcl/ipfs-provider';
-import { ApolloClientModule, ApolloClient } from '@uprtcl/graphql';
+import { CidConfig } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
-import { CREATE_WIKI } from '../graphql/queries';
 
 const propertyOrder = ['title', 'pages'];
 
 const logger = new Logger('WIKI-ENTITY');
 
-@injectable()
-export class WikiEntity implements Entity {
-  constructor(
-    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
-  ) {}
-
+export class WikiEntity extends Pattern<Wiki> {
   recognize(object: object): boolean {
-    if (!this.hashedPattern.recognize(object)) return false;
-
-    const node = this.hashedPattern.extract(object as Hashed<any>);
-    return propertyOrder.every(p => node.hasOwnProperty(p));
+    return recognizeEntity(object) && propertyOrder.every(p => object.entity.hasOwnProperty(p));
   }
 
   name = 'Wiki';
 }
 
 @injectable()
-export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
-  replaceChildrenLinks = (wiki: Hashed<Wiki>) => (childrenHashes: string[]): Hashed<Wiki> => ({
+export class WikiLinks implements HasChildren<Entity<Wiki>>, Mergeable<Entity<Wiki>> {
+  replaceChildrenLinks = (wiki: Entity<Wiki>) => (childrenHashes: string[]): Entity<Wiki> => ({
     ...wiki,
-    object: {
-      ...wiki.object,
+    entity: {
+      ...wiki.entity,
       pages: childrenHashes
     }
   });
 
-  getChildrenLinks: (wiki: Hashed<Wiki>) => string[] = (wiki: Hashed<Wiki>): string[] =>
-    wiki.object.pages;
+  getChildrenLinks: (wiki: Entity<Wiki>) => string[] = (wiki: Entity<Wiki>): string[] =>
+    wiki.entity.pages;
 
-  links: (wiki: Hashed<Wiki>) => Promise<string[]> = async (wiki: Hashed<Wiki>) =>
+  links: (wiki: Entity<Wiki>) => Promise<string[]> = async (wiki: Entity<Wiki>) =>
     this.getChildrenLinks(wiki);
 
-  merge = (originalNode: Hashed<Wiki>) => async (
-    modifications: Hashed<Wiki>[],
+  merge = (originalNode: Entity<Wiki>) => async (
+    modifications: Entity<Wiki>[],
     mergeStrategy: MergeStrategy,
     config
   ): Promise<[Wiki, UprtclAction[]]> => {
     const resultTitle = mergeStrings(
-      originalNode.object.title,
-      modifications.map(data => data.object.title)
+      originalNode.entity.title,
+      modifications.map(data => data.entity.title)
     );
 
     const [mergedPages, actions] = await mergeStrategy.mergeLinks(
-      originalNode.object.pages,
-      modifications.map(data => data.object.pages),
+      originalNode.entity.pages,
+      modifications.map(data => data.entity.pages),
       config
     );
 
@@ -75,71 +64,38 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
 }
 
 @injectable()
-export class WikiCommon extends WikiEntity implements HasLenses {
-  lenses = (wiki: Hashed<Wiki>): Lens[] => {
+export class WikiCommon implements HasLenses<Entity<Wiki>> {
+  lenses = (wiki: Entity<Wiki>): Lens[] => {
     return [
       {
         name: 'Wiki',
         type: 'content',
-        render: (lensContent: TemplateResult, context: any) => {
-          logger.info('lenses() - Wiki', { wiki, lensContent, context });
+        render: (entity: Entity<any>, context: any) => {
+          logger.info('lenses() - Wiki', { wiki, context });
           return html`
             <wiki-drawer
               .data=${wiki}
-              .ref=${context.ref}
+              .ref=${entity.id}
               color=${context.color}
               .selectedPageHash=${context.selectedPageHash}
             >
-              ${lensContent}
             </wiki-drawer>
           `;
         }
       }
     ];
   };
-}
 
-@injectable()
-export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, Wiki> {
-  constructor(
-    @inject(DiscoveryModule.bindings.MultiSourceService) protected multiSource: MultiSourceService,
-    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @multiInject(StoresModule.bindings.Store) protected stores: Array<Store>,
-  ) {
-    super(hashedPattern);
-  }
-
-  recognize(object: object): boolean {
-    return propertyOrder.every(p => object.hasOwnProperty(p));
-  }
-
-  create = () => async (wiki: Partial<Wiki>, source: string): Promise<Hashed<Wiki>> => {
-    const store = this.stores.find(s => s.source === source);
-    if (!store) throw new Error(`store for ${source} not found`);
-
-    const hashedWiki = await this.new()(wiki, store.hashRecipe);
-    const result = await this.client.mutate({
-      mutation: CREATE_WIKI,
-      variables: {
-        content: hashedWiki.object,
-        source
-      }
-    });
-    // TODO: Comment this
-    if (result.data.createWiki.id != hashedWiki.id) {
-      throw new Error('unexpected id');
-    }
-
-    return { id: result.data.createWiki.id, object: hashedWiki.object };
-  };
-
-  new = () => async (node: Partial<Wiki>, config: CidConfig): Promise<Hashed<Wiki>> => {
+  new = () => async (node: Partial<Wiki>, config: CidConfig): Promise<Entity<Wiki>> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
 
     const newWiki = { pages, title };
+    const hash = await hashObject(newWiki, config);
 
-    return this.hashedPattern.derive()(newWiki, config);
+    return {
+      id: hash,
+      entity: newWiki
+    };
   };
 }

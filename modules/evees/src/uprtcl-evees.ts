@@ -30,6 +30,7 @@ export {
 } from './services/evees';
 
 export { EveesModule } from './evees.module';
+export { EveesContentModule } from './evees-content.module';
 
 /** Merge */
 export { Mergeable } from './properties/mergeable';

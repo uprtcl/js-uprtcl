@@ -18,11 +18,11 @@ import {
 import { htmlToText, TextType, DocumentsModule } from '@uprtcl/documents';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Hashed } from '@uprtcl/cortex';
+import { Entity } from '@uprtcl/cortex';
 import { MenuConfig } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
-import { WikiBindings } from 'src/bindings';
+import { WikiBindings } from '../bindings';
 
 export class WikiDrawer extends EveesContent<Wiki>{
   
@@ -60,9 +60,9 @@ export class WikiDrawer extends EveesContent<Wiki>{
     this.logger.log('loadPagesData()');
     if (!this.data) return;
 
-    const wiki = this.data as Hashed<Wiki>;
+    const wiki = this.data as Entity<Wiki>;
 
-    const pagesListPromises = wiki.object.pages.map(async pageId => {
+    const pagesListPromises = wiki.entity.pages.map(async pageId => {
       if (!this.client) throw new Error('client is undefined');
       const result = await this.client.query({
         query: gql`
@@ -228,7 +228,7 @@ export class WikiDrawer extends EveesContent<Wiki>{
             : html`
                 <wiki-home
                   wikiHash=${this.ref}
-                  title=${this.data.object.title}
+                  title=${this.data.entity.title}
                   color=${this.color ? this.color : ''}
                 >
                   <slot slot="evee-page" name="evee-page"></slot>

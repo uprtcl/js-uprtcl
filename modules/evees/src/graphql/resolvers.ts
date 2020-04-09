@@ -1,4 +1,5 @@
 import { ApolloClient, gql } from 'apollo-boost';
+import { IResolvers } from 'graphql-tools';
 
 import {
   MultiSourceService,
@@ -16,9 +17,9 @@ import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
 import { NewPerspectiveData } from '../services/evees.provider';
-import { Secured } from 'src/patterns/cid-hash';
+import { Secured } from '../patterns/cid-hash';
 
-export const eveesResolvers = {
+export const eveesResolvers: IResolvers = {
   Commit: {
     message(parent) {
       return parent.payload.message;
@@ -143,8 +144,8 @@ export const eveesResolvers = {
 
       await provider.updatePerspectiveDetails(perspectiveId, { headId });
 
-      if ((provider as unknown as KnownSourcesSource).knownSources) {
-        await multiSource.postEntityUpdate((provider as unknown as KnownSourcesSource), [headId]);
+      if (((provider as unknown) as KnownSourcesSource).knownSources) {
+        await multiSource.postEntityUpdate((provider as unknown) as KnownSourcesSource, [headId]);
       }
 
       const result = await client.query({

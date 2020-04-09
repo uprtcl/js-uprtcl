@@ -11,14 +11,6 @@ export const wikiTypeDefs: DocumentNode = gql`
     _context: EntityContext!
   }
 
-  input WikiInput {
-    title: String!
-    pages: [ID!]!
-  }
-
-  extend type Mutation {
-    createWiki(content: WikiInput!, source: String): Wiki!
-  }
 `;
 
 /* 

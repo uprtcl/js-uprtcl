@@ -3,7 +3,6 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { Menu } from '@material/mwc-menu';
 import '@material/mwc-list/mwc-list-item';
 import '@authentic/mwc-tooltip';
-import '@material/mwc-icon-button';
 import '@material/mwc-button';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';

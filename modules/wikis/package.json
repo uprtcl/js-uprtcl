@@ -16,7 +16,6 @@
     "@material/mwc-checkbox": "^0.14.1",
     "@material/mwc-drawer": "^0.14.1",
     "@material/mwc-fab": "^0.14.1",
-    "@material/mwc-icon": "^0.14.1",
     "@material/mwc-list": "^0.14.1",
     "@material/mwc-radio": "^0.14.1",
     "@material/mwc-ripple": "^0.14.1",
