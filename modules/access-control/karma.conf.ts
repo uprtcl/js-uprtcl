@@ -34,7 +34,6 @@ module.exports = config =>
         },
         extensions: ['.mjs', '.js', '.ts', '.json']
       },
-      devtool: 'inline-source-map',
       module: {
         rules: [
           {

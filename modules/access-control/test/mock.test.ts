@@ -1,4 +1,4 @@
-import { html, fixture, expect } from '@open-wc/testing';
+import { expect } from '@open-wc/testing';
 
 describe('<uprtcl-common>', () => {
   it('has a default property title', async () => {
