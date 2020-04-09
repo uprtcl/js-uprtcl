@@ -73,7 +73,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async loadNodeRec(ref: string, ix?: number, parent?: DocNode) : Promise<DocNode>  {
     if (LOGINFO) this.logger.log('loadNodeRec()', {ref, ix, parent});
 
-    const node = await this.loadNode(ref, ix);
+    const node = await this.loadNode(ref, parent, ix);
     
     const loadChildren = node.hasChildren.getChildrenLinks(node.draft).map(async (child, ix): Promise<DocNode> => {
       return (child !== undefined && child !== '') ? 
@@ -92,55 +92,88 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return node;
   }
 
-  async loadNode(ref: string, ix?: number) : Promise<DocNode> {
+  async loadNode(ref: string, parent?: DocNode, ix?: number) : Promise<DocNode> {
     if (LOGINFO) this.logger.log('loadNode()', {ref, ix});
     
     const client = this.client as ApolloClient<any>;
     const discovery = this.discovery as DiscoveryService;
     const recognizer = this.recognizer as PatternRecognizer;
     
-    const result = await client.query({
-      query: gql`
-      {
-        entity(id: "${ref}") {
-          id
-          ... on Perspective {
-            payload {
-              origin
+    const entity = await discovery.get(ref) as object;
+    const pattern = recognizer.recognize(entity);
+    
+    let entityType: EntityType | undefined;
+    let editable = false;
+    let authority: string | undefined = undefined;
+    let context: string | undefined = undefined;
+    let dataId: string | undefined = undefined;
+    let headId: string | undefined = undefined;
+
+    if (pattern.findIndex(p => p.name === "Perspective") !== -1) {
+      entityType = EntityType.Perspective;
+      const result = await client.query({
+        query: gql`
+        {
+          entity(id: "${ref}") {
+            id
+            ... on Perspective {
+              payload {
+                origin
+              }
+              head {
+                id 
+                ... on Commit {
+                  data {
+                    id
+                  }
+                }
+              }
+              context {
+                id
+              }
             }
-            head {
-              id 
-              ... on Commit {
-                data {
-                  id
+            _context {
+              patterns {
+                accessControl {
+                  canWrite
                 }
               }
             }
-            context {
-              id
-            }
           }
-          _context {
-            patterns {
-              accessControl {
-                canWrite
+        }`
+      });
+      editable = result.data.entity._context.patterns.accessControl.canWrite;
+      authority = result.data.entity.payload.origin;
+      context = result.data.entity.context.id;
+      dataId = result.data.entity.head.data.id;
+      headId = result.data.entity.head.id;
+    }
+
+    if (pattern.findIndex(p => p.name === "Commit") !== -1) {
+      if (!parent) throw new Error('Commit must have a parent');
+
+      entityType = EntityType.Commit;
+      const result = await client.query({
+        query: gql`
+        {
+          entity(id: "${ref}") {
+            id
+            ... on Commit {
+              data {
+                id
               }
             }
           }
-        }
-      }`
-    });
+        }`
+      });
 
-    const entity = await discovery.get(ref) as object;
+      editable = parent.editable;
+      authority = parent.authority;
+      dataId = result.data.entity.data.id;
+      headId = this.ref;
+    }
 
-    const pattern = recognizer.recognize(entity);
-
-    const isPerspective = true;
-
-    const entityType= EntityType.Perspective;
-
-    const dataId = result.data.entity.head.data.id;
-    const headId = result.data.entity.head.id;
+    if (!dataId || !entityType || !authority) throw Error(`data not loaded for ref ${this.ref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
     const data = await discovery.get(dataId);
@@ -152,12 +185,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(data.object, 'docNodeLenses');
     if (!hasDocNodeLenses) throw Error('docNodeLenses undefined');
 
-    // TODO hasChildren hasDocNodeLenses on runtime are the same object :)
-
-    const editable = result.data.entity._context.patterns.accessControl.canWrite;
-    const authority = result.data.entity.payload.origin;
-    const context = result.data.entity.context.id;
-    
     const node: DocNode = {
       ref, 
       ix, 
@@ -269,7 +296,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     switch (node.entityType) { 
       case EntityType.Perspective:
         if (isPlaceholder) {
-          node.ref = await this.createEvee(node.draft, node.symbol, node.authority, node.context);
+          node.ref = await this.createEvee(node.draft, node.symbol, node.authority, node.context as string);
         } else {
           await this.updateEvee(node);
         }
@@ -392,7 +419,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (typeof el !== 'string') {
         if ((el.object !== undefined) && (el.symbol !== undefined)) {
           /** element is an object from which a DocNode should be create */
-          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, el.symbol, node.authority, node, EntityType.Perspective));
+          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, el.symbol, node.authority, node, EntityType.Commit));
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);
@@ -721,7 +748,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            ${node.ref !== '' ? html`
+            ${((node.ref !== '') && (node.entityType === EntityType.Perspective)) ? html`
               <evees-info-popper 
                 first-perspective-id=${node.ref}
                 perspective-id=${node.ref}
