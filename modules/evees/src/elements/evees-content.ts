@@ -334,7 +334,7 @@ export abstract class EveesContent<T> extends moduleConnect(LitElement) {
         composed: true,
         detail: {
           object: object,
-          symbol: string,
+          symbol: symbol,
           startedOnElementId: this.data.id,
           index: this.index + 1
         }

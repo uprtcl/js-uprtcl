@@ -1,4 +1,4 @@
-import { Property } from '@uprtcl/cortex';
+import { Behaviour } from '@uprtcl/cortex';
 
 import { MergeStrategy } from '../merge/merge-strategy';
 import { UprtclAction } from '../types';

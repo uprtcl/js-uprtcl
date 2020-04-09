@@ -34,7 +34,6 @@ module.exports = config =>
         },
         extensions: ['.mjs', '.js', '.ts', '.json']
       },
-      devtool: 'inline-source-map',
       module: {
         rules: [
           {
@@ -61,7 +60,6 @@ module.exports = config =>
       // at the top level
       require.resolve('karma-mocha'),
       require.resolve('karma-mocha-reporter'),
-      require.resolve('karma-source-map-support'),
       require.resolve('karma-coverage-istanbul-reporter'),
       require.resolve('karma-snapshot'),
       require.resolve('karma-mocha-snapshot'),
