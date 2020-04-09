@@ -54,6 +54,7 @@ export class DocumentsModule extends MicroModule {
 
   async onLoad() {
     customElements.define('documents-text-node-editor', DocumentTextNodeEditor);
+    customElements.define('documents-editor', DocumentEditor);
   }
 
   submodules = [

@@ -1,5 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
+import { ApolloClient, gql } from 'apollo-boost';
 import * as lodash from 'lodash-es';
+
 
 export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -10,7 +12,7 @@ export const styleMap = style => {
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Hashed, Pattern, Creatable, Signed, HasChildren, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
-import { ApolloClientModule, gql, ApolloClient } from '@uprtcl/graphql';
+import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesRemote, EveesModule, RemotesConfig, CreateCommitArgs, EveesBindings, Commit, UPDATE_HEAD, ContentUpdatedEvent } from '@uprtcl/evees';
 import { Source, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 
