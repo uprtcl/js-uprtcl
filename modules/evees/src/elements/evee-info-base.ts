@@ -203,6 +203,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string, isProposal: boolean) {
     if(!this.evees) throw new Error('evees undefined');
     if(!this.merge) throw new Error('merge undefined');
+
+    debugger
     
     this.logger.info(
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`

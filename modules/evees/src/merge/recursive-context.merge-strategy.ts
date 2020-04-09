@@ -1,8 +1,11 @@
 import gql from 'graphql-tag';
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
+import { ApolloClient } from 'apollo-boost';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { HasChildren, Hashed } from '@uprtcl/cortex';
+import { HasChildren, Hashed, CortexModule, PatternRecognizer, Pattern, IsSecure } from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { DiscoveryService, DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import {
@@ -11,8 +14,11 @@ import {
   UPDATE_HEAD_ACTION,
   CREATE_COMMIT_ACTION,
   CREATE_DATA_ACTION,
-  UpdateRequest
+  UpdateRequest,
+  RemotesConfig
 } from '../types';
+import { EveesBindings } from '../bindings';
+import { Evees, CidHashedPattern } from '../uprtcl-evees';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -22,6 +28,25 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }>;
 
   allPerspectives!: Dictionary<string>;
+
+  constructor(
+    @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
+    @inject(EveesBindings.Evees) protected evees: Evees,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
+    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache,
+    @inject(EveesBindings.Secured) protected secured: Pattern & IsSecure<any>,
+    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern,
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService) {
+      
+      super(remotesConfig, evees, recognizer, client, entityCache, secured, hashed);
+  }
+
+  async isPerspective(id: string): Promise<boolean> {
+    const entity = await this.discovery.get(id) as object;
+    const pattern = this.recognizer.recognize(entity);
+    return pattern.findIndex(p => p.name === "Perspective") !== -1;
+  }
 
   setPerspective(perspectiveId: string, context: string, to: boolean): void {
     if (!this.perspectivesByContext[context]) {
@@ -83,7 +108,15 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (hasChildren) {
       const links = hasChildren.getChildrenLinks(dataObject);
 
-      const promises = links.map(link => this.readPerspective(link, to));
+      const promises = links.map(async (link) => {
+        const isPerspective = await this.isPerspective(link);
+        if (isPerspective) {
+          this.readPerspective(link, to)
+        } else {
+          Promise.resolve();
+        }
+      });
+      
       await Promise.all(promises);
     }
   }
@@ -141,33 +174,44 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     }
   }
 
+  async getLinkMergeId(link: string) {
+    const isPerspective = await this.isPerspective(link);
+    if (isPerspective) {
+      return this.getPerspectiveContext(link);
+    } else {
+      return Promise.resolve(link);
+    }
+  } 
+
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
     config: any
   ): Promise<[string[], UprtclAction[]]> {
-    const originalPromises = originalLinks.map(link => this.getPerspectiveContext(link));
+    /** The context is used as Merge ID for perspective to have a context-based merge. For othe
+     * type of entities, like commits or data, the link itself is used is mergeId */
+    const originalPromises = originalLinks.map(link => this.getLinkMergeId(link));
     const modificationsPromises = modificationsLinks.map(links =>
-      links.map(link => this.getPerspectiveContext(link))
+      links.map(link => this.getLinkMergeId(link))
     );
 
-    const originalContexts = await Promise.all(originalPromises);
-    const modificationsContexts = await Promise.all(
+    const originalMergeIds = await Promise.all(originalPromises);
+    const modificationsMergeIds = await Promise.all(
       modificationsPromises.map(promises => Promise.all(promises))
     );
 
-    const [contextIdLinks, actions] = await super.mergeLinks(
-      originalContexts,
-      modificationsContexts,
+    const [mergeIdLinks, actions] = await super.mergeLinks(
+      originalMergeIds,
+      modificationsMergeIds,
       config
     );
 
     const dictionary = this.perspectivesByContext;
 
-    const promises: Array<Promise<[string, UprtclAction[]]>> = contextIdLinks.map(
-      async contextId => {
-        const perspectivesByContext = dictionary[contextId];
-
+    const promises: Array<Promise<[string, UprtclAction[]]>> = mergeIdLinks.map(
+      async mergeId => {
+        const perspectivesByContext = dictionary[mergeId];
+        
         const needsSubperspectiveMerge =
           perspectivesByContext && perspectivesByContext.to && perspectivesByContext.from;
 

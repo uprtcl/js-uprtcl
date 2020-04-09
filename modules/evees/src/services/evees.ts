@@ -124,6 +124,12 @@ export class Evees {
     return this.getAuthority(perspectiveOrigin);
   }
 
+  public async isPerspective(id: string): Promise<boolean> {
+    const entity = await this.discoveryService.get(id) as object;
+    const pattern = this.patternRecognizer.recognize(entity);
+    return pattern.findIndex(p => p.name === "Perspective") !== -1;
+  }
+
   public async getContextPerspectives(context: string): Promise<string[]> {
     const promises = this.eveesRemotes.map(async remote => {
       const thisPerspectivesIds = await remote.getContextPerspectives(context);
@@ -155,6 +161,11 @@ export class Evees {
     parentId?: string
   ): Promise<[Secured<Perspective>, Array<UprtclAction>]> {
     const eveesRemote = this.getAuthority(authority);
+
+    if (ofPerspectiveId) {
+      const isPerspective = await this.isPerspective(ofPerspectiveId);
+      if (!isPerspective) throw new Error(`Entity ${ofPerspectiveId} is not compatible with perspective pattern`);
+    }
 
     if (!eveesRemote.userId)
       throw new Error(`Cannot create perspectives on remotes you aren't signed in`);
@@ -210,7 +221,6 @@ export class Evees {
       }`
     });
 
-    const dataId = result.data.entity.data.id;
     const dataObject = JSON.parse(result.data.entity.data._context.raw);
     
     let newHeadId = headId;
@@ -223,7 +233,12 @@ export class Evees {
       const descendantLinks = hasChildren.getChildrenLinks(dataObject);
 
       if (descendantLinks.length > 0) {
-        const promises = descendantLinks.map(async link => {
+        const promises = descendantLinks.map(async (link):Promise<[Secured<Perspective>, Array<UprtclAction>] | string> => {
+          const isPerspective = await this.isPerspective(link);
+
+          /** if not a perspective return the link as id and empty actions */
+          if (!isPerspective) return Promise.resolve(link);
+
           const descendantResult = await this.client.query({
             query: gql`{
               entity(id: "${link}") {
@@ -257,9 +272,9 @@ export class Evees {
 
         const results = await Promise.all(promises);
 
-        actions = actions.concat(...results.map(r => r[1]));
-
-        const newLinks = results.map(r => r[0].id);
+        /** concatenate the actions of the  */
+        actions = actions.concat(...results.map(r => (r as any).length ? (r as any)[1] : []));
+        const newLinks = results.map(r => (r as any).length ? (r as any)[0].id : r);
 
         const newObject = hasChildren.replaceChildrenLinks(dataObject)(newLinks);
         const dataSource = this.remotesConfig.map(eveesRemote.authority);
