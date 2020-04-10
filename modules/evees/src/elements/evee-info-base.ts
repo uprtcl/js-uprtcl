@@ -17,7 +17,7 @@ import '@material/mwc-tab-bar';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { AccessControlService, OwnerPermissions } from '@uprtcl/access-control';
-import { Pattern, Creatable, Signed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { Pattern, Create, Signed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 
 import { prettyAddress, prettyTime } from './support';
@@ -440,9 +440,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   getCreatePattern(symbol) {
     const patterns: Pattern<any>[] = this.requestAll(symbol);
-    const create: Creatable<any, any> | undefined = (patterns.find(
-      pattern => ((pattern as unknown) as Creatable<any, any>).create
-    ) as unknown) as Creatable<any, any>;
+    const create: Create<any, any> | undefined = (patterns.find(
+      pattern => ((pattern as unknown) as Create<any, any>).create
+    ) as unknown) as Create<any, any>;
 
     if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].type}`);
 
@@ -458,7 +458,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       throw new Error('Cannot create a perspective that does not have a headId');
 
     /** new perspectives are always created in one evees remote */
-    const createPerspective: Creatable<
+    const createPerspective: Create<
       CreatePerspectiveArgs,
       Signed<Perspective>
     > = this.getCreatePattern(EveesModule.bindings.PerspectivePattern);

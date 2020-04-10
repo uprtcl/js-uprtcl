@@ -33,7 +33,7 @@ export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
 
 /** Merge */
-export { Mergeable } from './behaviours/merge';
+export { Merge } from './behaviours/merge';
 
 export { MergeStrategy } from './merge/merge-strategy';
 export { SimpleMergeStrategy } from './merge/simple.merge-strategy';

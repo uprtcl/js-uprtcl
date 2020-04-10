@@ -2,10 +2,9 @@ import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Pattern, Entity, recognizeEntity, HasChildren } from '@uprtcl/cortex';
-import { Mergeable, hashObject, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
+import { Pattern, Entity, recognizeEntity, HasChildren, New } from '@uprtcl/cortex';
+import { Merge, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
-import { CidConfig } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
@@ -18,11 +17,11 @@ export class WikiEntity extends Pattern<Wiki> {
     return recognizeEntity(object) && propertyOrder.every(p => object.entity.hasOwnProperty(p));
   }
 
-  name = 'Wiki';
+  type = 'Wiki';
 }
 
 @injectable()
-export class WikiLinks implements HasChildren<Entity<Wiki>>, Mergeable<Entity<Wiki>> {
+export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>> {
   replaceChildrenLinks = (wiki: Entity<Wiki>) => (childrenHashes: string[]): Entity<Wiki> => ({
     ...wiki,
     entity: {
@@ -64,7 +63,7 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Mergeable<Entity<Wi
 }
 
 @injectable()
-export class WikiCommon implements HasLenses<Entity<Wiki>> {
+export class WikiCommon implements HasLenses<Entity<Wiki>>, New<Partial<Wiki>, Wiki> {
   lenses = (wiki: Entity<Wiki>): Lens[] => {
     return [
       {
@@ -86,16 +85,10 @@ export class WikiCommon implements HasLenses<Entity<Wiki>> {
     ];
   };
 
-  new = () => async (node: Partial<Wiki>, config: CidConfig): Promise<Entity<Wiki>> => {
+  new = () => async (node: Partial<Wiki>): Promise<Wiki> => {
     const pages = node && node.pages ? node.pages : [];
     const title = node && node.title ? node.title : '';
 
-    const newWiki = { pages, title };
-    const hash = await hashObject(newWiki, config);
-
-    return {
-      id: hash,
-      entity: newWiki
-    };
+    return { pages, title };
   };
 }

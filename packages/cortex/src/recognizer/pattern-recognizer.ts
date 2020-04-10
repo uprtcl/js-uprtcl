@@ -37,6 +37,18 @@ export class PatternRecognizer {
   }
 
   /**
+   * Gets all the behaviours that the pattern with the given type implements
+   *
+   * @param type type of the pattern of which to return the behaviours
+   */
+  public getTypeBehaviours<T>(type: string): Behaviour<T>[] {
+    const patterns =  this.patterns.filter(pattern => pattern.type === type);
+
+    const behaviours = patterns.map(p => p.behaviours);
+    return ([] as Behaviour<T>[]).concat(...behaviours);
+  }
+
+  /**
    * Recognizes the type of the given entity
    *
    * @param entity to recognize the type for

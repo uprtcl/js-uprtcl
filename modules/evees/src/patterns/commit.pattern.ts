@@ -82,7 +82,7 @@ export class CommitCreate implements Create<Commit, Signed<Commit>>, New<Commit,
     if (result.data.createCommit.id != commitId) {
       throw new Error('unexpected id');
     }
-    return { id: commitId, entity: commitObject };
+    return { id: commitId, entity: commitObject, casID };
   };
 
   new = () => async (args: Commit) => {

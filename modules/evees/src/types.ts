@@ -3,7 +3,7 @@ import { Entity } from '@uprtcl/cortex';
 
 import { EveesRemote } from './services/evees.remote';
 
-export type RemoteMap = (eveesAuthority: string) => CASSource;
+export type RemoteMap = (eveesAuthority: string, contentType: string) => CASSource;
 
 export type RemotesConfig = {
   map: RemoteMap;

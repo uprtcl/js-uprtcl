@@ -1,8 +1,7 @@
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, Entity, entityFromGraphQlObject } from '@uprtcl/cortex';
 
-import { redirectEntity } from '../utils/entities';
-import { ApolloClient, gql } from 'apollo-boost';
+import { redirectEntity, loadEntity } from '../utils/entities';
 import { DiscoveryBindings } from '../bindings';
 import { EntityCache } from './entity-cache';
 
@@ -29,33 +28,4 @@ export const resolvers = {
       return { id: redirectedEntity.id, ...redirectedEntity.entity };
     }
   }
-};
-
-export const loadEntity = (apolloClient: ApolloClient<any>) => async (
-  entityRef: string
-): Promise<Entity<any> | undefined> => {
-  const result = await apolloClient.query({
-    query: gql`
-    {
-      entity(ref: "${entityRef}") {
-        id
-        
-        _context {
-          object
-          casID
-        }
-      }
-    }
-    `
-  });
-
-  if (!result.data.entity) return undefined;
-
-  const entity = result.data.entity._context.object;
-
-  return {
-    id: result.data.entity.id,
-    entity: entity,
-    casID: result.data.entity._context.casID
-  };
 };

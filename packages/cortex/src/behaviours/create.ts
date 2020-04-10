@@ -2,5 +2,5 @@ import { Behaviour } from '../types/behaviour';
 import { Entity } from '../types/entity';
 
 export interface Create<A, O> extends Behaviour<any> {
-  create: (object: O) => (args: A, casID: string) => Promise<Entity<O>>;
+  create: () => (args: A, casID: string) => Promise<Entity<O>>;
 }

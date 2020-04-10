@@ -12,10 +12,3 @@ export const wikiTypeDefs: DocumentNode = gql`
   }
 
 `;
-
-/* 
-export const wikisSchema = makeExecutableSchema({
-  typeDefs: [baseTypeDefs, wikiTypeDefs],
-  resolvers: baseResolvers
-});
- */

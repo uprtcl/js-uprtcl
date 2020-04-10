@@ -14,13 +14,13 @@ export const styleMap = style => {
 import { htmlToText, TextType, TextNode, DocumentsBindings } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Entity, Pattern, Creatable, Signed } from '@uprtcl/cortex';
-import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, CreateCommitArgs, Commit, EveesBindings, UPDATE_HEAD, Secured } from '@uprtcl/evees';
+import { Entity, Pattern, Create, Signed } from '@uprtcl/cortex';
+import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, CreateCommitArgs, Commit, EveesBindings, UPDATE_HEAD, Secured, eveeColor } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { DEFAULT_COLOR } from '@uprtcl/evees/dist/types/elements/evees-perspectives-list';
+import { DEFAULT_COLOR } from '@uprtcl/evees';
 import { CASSource } from '@uprtcl/multiplatform';
 
 const LOGINFO = false;
@@ -140,7 +140,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.logger.log('loadPagesData()');
     
-    const pagesListPromises = this.wiki.object.pages.map(async pageId => {
+    const pagesListPromises = this.wiki.entity.pages.map(async pageId => {
       if (!this.client) throw new Error('client is undefined');
       const result = await this.client.query({
         query: gql`
@@ -199,7 +199,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       pattern => ((pattern as unknown) as T)[name]
     ) as unknown) as T;
 
-    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
+    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].type}`);
 
     return create;
   }
@@ -215,18 +215,18 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const creatable = this.getPatternOfSymbol<Creatable<any,any>>(DocumentsBindings.TextNodeEntity, 'create');
+    const creatable = this.getPatternOfSymbol<Create<any,any>>(DocumentsBindings.TextNodeEntity, 'create');
     const store = this.getStore(authority);
     if (!store) throw new Error('store is undefined');
     const object = await creatable.create()(page, store.casID);
 
-    const creatableCommit = this.getPatternOfSymbol<Creatable<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
+    const creatableCommit = this.getPatternOfSymbol<Create<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
     const commit = await creatableCommit.create()(
       { parentsIds: [], dataId: object.id },
       remote.casID
     );
 
-    const creatablePerspective = this.getPatternOfSymbol<Creatable<any,any>>(EveesBindings.PerspectivePattern, 'create');
+    const creatablePerspective = this.getPatternOfSymbol<Create<any,any>>(EveesBindings.PerspectivePattern, 'create');
     const perspective = await creatablePerspective.create()(
       { fromDetails: { headId: commit.id } , parentId: this.ref },
       authority
@@ -241,13 +241,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const remote = eveesRemotes.find(r => r.authorityID === this.authority);
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
-    const creatable = this.getPatternOfSymbol<Creatable<any,any>>(WikiBindings.WikiEntity, 'create');
+    const creatable = this.getPatternOfSymbol<Create<any,any>>(WikiBindings.WikiEntity, 'create');
     const store = this.getStore(this.authority);
     if (!store) throw Error(`Store not found for authority ${this.authority}`);
 
     const createdWiki = await creatable.create()(newWiki, store.casID);
 
-    const creatableCommit = this.getPatternOfSymbol<Creatable<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
+    const creatableCommit = this.getPatternOfSymbol<Create<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
     const commit: Secured<Commit> = await creatableCommit.create()(
       { 
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [], 
@@ -475,7 +475,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 <wiki-home
                   wikiHash=${this.ref}
                   title=${this.wiki.entity.title}
-                  color=${this.color ? this.color : ''}
+                  color=${this.color() ? this.color() : ''}
                 >
                   <evees-info-page 
                     slot="evee-page"

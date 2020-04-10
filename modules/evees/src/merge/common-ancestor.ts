@@ -1,6 +1,7 @@
-import { Commit } from '../types';
 import { ApolloClient, gql } from 'apollo-boost';
-import { Secured } from '../patterns/cid-hash';
+
+import { Commit } from '../types';
+import { Secured } from '../utils/cid-hash';
 
 interface Path {
   visited: { [commitId: string]: boolean };

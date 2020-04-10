@@ -1,31 +1,11 @@
-import { ApolloClient } from 'apollo-boost';
 import { html } from 'lit-element';
-import { injectable, inject, multiInject } from 'inversify';
+import { injectable } from 'inversify';
 
-import {
-  Pattern,
-  recognizeEntity,
-  Creatable,
-  HasChildren,
-  Entity,
-  HasTitle,
-  Newable
-} from '@uprtcl/cortex';
-import { CASStore } from '@uprtcl/multiplatform';
-import {
-  Mergeable,
-  MergeStrategy,
-  mergeStrings,
-  mergeResult,
-  UprtclAction,
-  hashObject
-} from '@uprtcl/evees';
+import { Pattern, recognizeEntity, HasChildren, Entity, HasTitle, New } from '@uprtcl/cortex';
+import { Merge, MergeStrategy, mergeStrings, mergeResult, UprtclAction } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { CidConfig } from '@uprtcl/multiplatform';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
-import { DocumentsBindings } from '../bindings';
 import { DocNodeLens } from './document-patterns';
 
 const propertyOrder = ['text', 'type', 'links'];
@@ -70,7 +50,7 @@ export class TextNodeCommon
   implements
     HasLenses<Entity<TextNode>>,
     HasChildren<Entity<TextNode>>,
-    Mergeable<Entity<TextNode>> {
+    Merge<Entity<TextNode>> {
   replaceChildrenLinks = (node: Entity<TextNode>) => (
     childrenHashes: string[]
   ): Entity<TextNode> => ({
@@ -126,14 +106,16 @@ export class TextNodeCommon
               focus-init=${node.focused}
               @focus=${events.focus}
               @blur=${events.blur}
-              @content-changed=${(e) => events.contentChanged(textToTextNode(node.draft, e.detail.content), false)}
-              @enter-pressed=${(e) => events.split(e.detail.content, e.detail.asChild)}
-              @backspace-on-start=${(e) => events.joinBackward(e.detail.content)}
-              @delete-on-end=${(e) => events.pullDownward()}
+              @content-changed=${e =>
+                events.contentChanged(textToTextNode(node.draft, e.detail.content), false)}
+              @enter-pressed=${e => events.split(e.detail.content, e.detail.asChild)}
+              @backspace-on-start=${e => events.joinBackward(e.detail.content)}
+              @delete-on-end=${e => events.pullDownward()}
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}
-              @change-type=${(e) => events.contentChanged(typeToTextNode(node.draft, e.detail.type), e.detail.lift)}
+              @change-type=${e =>
+                events.contentChanged(typeToTextNode(node.draft, e.detail.type), e.detail.lift)}
               @content-appended=${events.appended}
             >
             </documents-text-node-editor>
@@ -142,7 +124,7 @@ export class TextNodeCommon
       }
     ];
   };
-  
+
   merge = (originalNode: Entity<TextNode>) => async (
     modifications: Entity<TextNode>[],
     mergeStrategy: MergeStrategy,
@@ -175,27 +157,13 @@ export class TextNodeCommon
 }
 
 @injectable()
-export class TextNodeCreate implements Newable<Partial<TextNode>, TextNode> {
-  constructor(
-    @multiInject(DocumentsBindings.DocumentsRemote) protected stores: Array<CASStore>,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
-  ) {}
-
-  recognize(object: object): boolean {
-    return propertyOrder.every(p => object.hasOwnProperty(p));
-  }
-
-  new = () => async (
-    node: Partial<TextNode> | undefined,
-    recipe: CidConfig
-  ): Promise<Entity<TextNode>> => {
+export class TextNodeNew implements New<Partial<TextNode>, TextNode> {
+  new = () => async (node: Partial<TextNode> | undefined): Promise<TextNode> => {
     const links = node && node.links ? node.links : [];
     const text = node && node.text ? node.text : '';
     const type = node && node.type ? node.type : TextType.Paragraph;
 
-    const newTextNode = { links, text, type };
-    const hash = await hashObject(newTextNode, recipe);
-    return { id: hash, entity: newTextNode };
+    return { links, text, type };
   };
 }
 

@@ -1,13 +1,11 @@
 import { interfaces } from 'inversify';
 
-import { CASModule, CASStore } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
+import { i18nextModule } from '@uprtcl/micro-orchestrator';
 import { EveesContentModule } from '@uprtcl/evees';
 
 import {
-  TextNodeCreate,
   TextNodeCommon,
   TextNodeTitle,
   TextNodePattern
@@ -60,7 +58,7 @@ export class DocumentsModule extends EveesContentModule {
       ...super.submodules,
       new GraphQlSchemaModule(documentsTypeDefs, {}),
       new i18nextModule('documents', { en: en }),
-      new PatternsModule([new TextNodePattern([TextNodeCreate, TextNodeCommon, TextNodeTitle])])
+      new PatternsModule([new TextNodePattern([TextNodeCommon, TextNodeTitle])])
     ];
   }
 }
