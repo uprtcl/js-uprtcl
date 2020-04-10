@@ -739,7 +739,8 @@
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event"
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
         },
         "0x9096b4564a2bafa0ceef5b1e2a3726b6c688e97d8231050b488716d3c5d06328": {
           "anonymous": false,
@@ -758,7 +759,8 @@
             }
           ],
           "name": "PerspectiveCreated",
-          "type": "event"
+          "type": "event",
+          "signature": "0x9096b4564a2bafa0ceef5b1e2a3726b6c688e97d8231050b488716d3c5d06328"
         }
       },
       "links": {},
@@ -766,9 +768,8 @@
       "transactionHash": "0x1500e5c969f545604261ae3331155911f2f0092c369198c217d5264d02d49479"
     }
   },
-  "schemaVersion": "3.0.23",
-  "updatedAt": "2020-04-01T08:24:29.558Z",
-  "networkType": "ethereum",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2020-04-09T16:09:28.743Z",
   "devdoc": {
     "methods": {
       "isOwner()": {

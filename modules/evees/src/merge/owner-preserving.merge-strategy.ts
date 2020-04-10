@@ -223,6 +223,7 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     const sameLinks =
       newNewLinks.length === newLinks.length &&
       newNewLinks.every((value, index) => value === newLinks[index]);
+
     if (!sameLinks) {
       /** create a new data and commit with the new links and update perspective head */
       if (!newHasChildren) throw new Error('Target data dont have children, cant update its links');

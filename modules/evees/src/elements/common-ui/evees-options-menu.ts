@@ -26,6 +26,8 @@ export class EveesOptionsMenu extends LitElement {
   optionClicked(key: string, e) {
     e.stopPropagation();
 
+    this.showDropdown = false;
+
     this.dispatchEvent(new CustomEvent('option-click', {
       bubbles: true,
       composed: true,
@@ -65,6 +67,8 @@ export class EveesOptionsMenu extends LitElement {
     return css`
       :host {
         position: relative;
+        display: flex;
+        flex-direction: column;
       }
 
       mwc-icon {

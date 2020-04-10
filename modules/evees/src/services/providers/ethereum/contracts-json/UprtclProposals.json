@@ -93,14 +93,44 @@
       "name": "fees",
       "outputs": [
         {
-          "internalType": "uint256",
-          "name": "fee",
+          "name": "toPerspectiveId",
+          "type": "string"
+        },
+        {
+          "name": "fromPerspectiveId",
+          "type": "string"
+        },
+        {
+          "name": "toHeadId",
+          "type": "string"
+        },
+        {
+          "name": "fromHeadId",
+          "type": "string"
+        },
+        {
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "name": "nonce",
           "type": "uint256"
         },
         {
-          "internalType": "uint256",
-          "name": "balance",
-          "type": "uint256"
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "name": "authorized",
+          "type": "uint8"
+        },
+        {
+          "name": "rejected",
+          "type": "uint8"
+        },
+        {
+          "name": "withdrawn",
+          "type": "uint8"
         }
       ],
       "payable": false,
@@ -370,7 +400,14 @@
               "type": "string"
             },
             {
-              "internalType": "address",
+              "name": "toHeadId",
+              "type": "string"
+            },
+            {
+              "name": "fromHeadId",
+              "type": "string"
+            },
+            {
               "name": "owner",
               "type": "address"
             },
@@ -554,6 +591,34 @@
           "type": "bytes32"
         }
       ],
+      "name": "rejectProposal",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "proposalId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "withdrawProposal",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "proposalId",
+          "type": "bytes32"
+        }
+      ],
       "name": "executeProposalExternal",
       "outputs": [],
       "payable": false,
@@ -604,7 +669,14 @@
               "type": "string"
             },
             {
-              "internalType": "address",
+              "name": "toHeadId",
+              "type": "string"
+            },
+            {
+              "name": "fromHeadId",
+              "type": "string"
+            },
+            {
               "name": "owner",
               "type": "address"
             },
@@ -653,6 +725,14 @@
             {
               "internalType": "uint8",
               "name": "authorized",
+              "type": "uint8"
+            },
+            {
+              "name": "rejected",
+              "type": "uint8"
+            },
+            {
+              "name": "withdrawn",
               "type": "uint8"
             }
           ],
@@ -800,7 +880,8 @@
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event"
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
         },
         "0x7172667a4024e27a0d3a896c8ba72947ebed1a0bb37d5c6aaff808c4f6b574ef": {
           "anonymous": false,
@@ -831,17 +912,17 @@
             }
           ],
           "name": "ProposalCreated",
-          "type": "event"
+          "type": "event",
+          "signature": "0x7172667a4024e27a0d3a896c8ba72947ebed1a0bb37d5c6aaff808c4f6b574ef"
         }
       },
       "links": {},
       "address": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550",
-      "transactionHash": "0x5091956f2a0dac9c7c9d10fc78d5c41ad3fbd98f0c381999f2799cd3022eaeac"
+      "transactionHash": "0x572e6b5120b47fcd09cb634d68a3ca9b8930b8195c685d319f139787a376f52d"
     }
   },
-  "schemaVersion": "3.0.23",
-  "updatedAt": "2020-04-01T08:24:29.581Z",
-  "networkType": "ethereum",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2020-04-09T16:09:28.762Z",
   "devdoc": {
     "methods": {
       "isOwner()": {

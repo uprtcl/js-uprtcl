@@ -133,7 +133,7 @@ export const eveesResolvers: IResolvers = {
       };
     },
 
-    async updatePerspectiveHead(parent, { perspectiveId, headId }, { container }) {
+    async updatePerspectiveHead(parent, { perspectiveId, headId, context, name }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const multiSource: MultiSourceService = container.get(
         DiscoveryModule.bindings.MultiSourceService
@@ -142,7 +142,9 @@ export const eveesResolvers: IResolvers = {
 
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
-      await provider.updatePerspectiveDetails(perspectiveId, { headId });
+      await provider.updatePerspectiveDetails(perspectiveId, { headId, context, name });
+      /** needed to return the current values in case one of the inputs is undefined */
+      const detailsRead = await provider.getPerspectiveDetails(perspectiveId);
 
       if (((provider as unknown) as KnownSourcesSource).knownSources) {
         await multiSource.postEntityUpdate((provider as unknown) as KnownSourcesSource, [headId]);
@@ -163,7 +165,17 @@ export const eveesResolvers: IResolvers = {
 
       if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
 
-      return { id: perspectiveId, ...perspective, head: { id: headId } };
+      return { 
+        id: perspectiveId, 
+        ...perspective, 
+        head: { 
+          id: detailsRead.headId 
+        }, 
+        context: { 
+          id: detailsRead.context 
+        }, 
+        name: detailsRead.name 
+      };
     },
 
     async deletePerspective(parent, { perspectiveId }, { container }) {

@@ -108,7 +108,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return html`
       ${!this.loading
         ? html`
-            <cortex-entity ref=${this.rootHash}></cortex-entity>
+            <wiki-drawer ref=${this.rootHash}></wiki-drawer>
           `
         : html`
             Loading...

@@ -1,4 +1,4 @@
-import { html, css } from 'lit-element';
+import { html, css, property } from 'lit-element';
 export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
@@ -7,21 +7,60 @@ export const styleMap = style => {
 };
 
 import { EveesInfoBase } from './evee-info-base';
+import { prettyAddress } from './support';
+import { UPDATE_HEAD } from 'src/graphql/queries';
+import { ApolloClient } from 'apollo-boost';
+
+const NAME_FIELD = 'NAME_FIELD';
 
 export class EveesInfoPage extends EveesInfoBase {
+
+  @property({type: Boolean, attribute: false})
+  showEditName: boolean = false;
 
   firstUpdated() {
     super.firstUpdated();
   }
 
   perspectiveTitle() {
+    if (!this.perspectiveData) return this.perspectiveId;
+
     if (this.perspectiveId === this.firstPerspectiveId) {
-      return 'Accepted Perspective';
-    } else {
-      return `Another Perspective`;
-    }
+      return 'Official Version';
+    } 
+
+    const hasName = this.perspectiveData.details.name !== undefined && this.perspectiveData.details.name !== '';
+    const name = html`${this.perspectiveData.details.name}`;
+    const defaultName = html`by ${prettyAddress(this.perspectiveData.perspective.creatorId)}`;
+
+    const rename = html`<mwc-icon-button class="edit-btn" icon="edit" @click=${this.editNameClicked}></mwc-icon-button>`;
+    
+    return html`Draft ${hasName ? name : defaultName} ${rename}`;
   }
 
+  async editNameClicked() {
+    this.showEditName = true;
+  }
+
+  async saveName() {
+    if (!this.shadowRoot) return;
+    const client = this.client as ApolloClient<any>
+    const input = this.shadowRoot.getElementById('DRAFT_NAME') as any;
+    const newName = input.value;
+
+    this.showEditName = false;
+
+    await client.mutate({
+      mutation: UPDATE_HEAD,
+      variables: {
+        perspectiveId: this.perspectiveId,
+        name: newName
+      }
+    });
+
+    this.load();    
+  }
+  
   renderOtherPerspectives() {
     return html`
       <evees-perspectives-list
@@ -47,50 +86,87 @@ export class EveesInfoPage extends EveesInfoBase {
     `;
   }
 
+  renderEditNameForm() {
+    return html`
+      <div class="row">
+        <mwc-textfield
+          outlined
+          id="DRAFT_NAME"
+          value=${this.perspectiveData.details.name as string} 
+          label="Draft Name">
+        </mwc-textfield>
+      </div>
+      <div class="row">
+        <mwc-button
+          outlined
+          icon="clear"
+          @click=${() => this.showEditName = false}
+          label="Cancel"
+        ></mwc-button>
+        <mwc-button
+          outlined
+          icon="done"
+          @click=${this.saveName}
+          label="Save"
+        ></mwc-button>
+      </div>`;
+  }
+
   render() {
     if (this.perspectiveData === undefined) return html``;
     return html`
       <div class="container">
         <div class="column">
           <div class="section">
-            <div class="section-header" style=${styleMap({color: this.eveeColor})}>
+            <div class="section-header perspective-header" style=${styleMap({'border-color': this.eveeColor})}>
               ${this.perspectiveTitle()}
             </div>
+            ${this.showEditName ? html`
+            <div>
+              ${this.renderEditNameForm()}
+            </div>` : ''}
             <div class="section-content">
-              <div class="description info-text">
-                <div>
-                  ${!this.perspectiveData.canWrite ? html`
-                      <p style="margin-bottom: 16px">
-                        <span>You can't edit this perspective, but you can create a new one!</span>
-                      </p>
-                      <mwc-button
-                        outlined
-                        icon="call_split"
-                        @click=${this.newPerspectiveClicked}
-                        label="new perspective"
-                      ></mwc-button>
-                    ` : html`
-                      <p style="margin-bottom: 16px">
-                        <span>You can edit this perspective<br><br>${this.publicRead ? 
-                          html`Propose a merge to the accepted perspective!` : 
-                          html`When you are done, make it public (below) and then propose a merge`}</span>
-                      </p>
-                      <mwc-button
-                        .disabled=${!this.publicRead}
-                        outlined
-                        icon="call_merge"
-                        @click=${this.proposeMergeClicked}
-                        label="Propose Merge"
-                      ></mwc-button>
-                    ` 
-                  }
-                </div>
+              <div class="info-text">
+                ${!this.perspectiveData.canWrite ? 
+                  html`
+                    <p style="margin-bottom: 16px">
+                      <span>You can't directly edit this version, but you can create a new draft proposal!</span>
+                    </p>
+                  ` : html`
+                    <p style="margin-bottom: 16px">
+                      <span>You can edit this draft<br><br>${this.publicRead ? 
+                        html`Propose an update to the official version!` : 
+                        html`When you are done, make it public (below) and then propose an update to the official version`}</span>
+                    </p>`
+                }
+              </div>
+              <div class="action-button">    
+                ${this.perspectiveData.canWrite ? 
+                  html`
+                    <mwc-button
+                      .disabled=${!this.publicRead}
+                      class="bottom-button"
+                      outlined
+                      icon="call_merge"
+                      @click=${this.proposeMergeClicked}
+                      label="Propose Update"
+                    ></mwc-button>` 
+                  : html`
+                    <mwc-button
+                      outlined
+                      class="bottom-button"
+                      icon="call_split"
+                      @click=${this.newPerspectiveClicked}
+                      label="new draft"
+                    ></mwc-button>`
+                }
               </div>
               <div class="other-perspectives">
                 ${this.renderOtherPerspectives()}
               </div>
               ${this.perspectiveData.canWrite ? html`
                 <mwc-button
+                  class="bottom-button"
                   outlined
                   icon="call_split"
                   @click=${this.newPerspectiveClicked}
@@ -108,6 +184,15 @@ export class EveesInfoPage extends EveesInfoBase {
             </div>
           </div>
 
+          <div class="section">
+            <div class="section-header">
+              Evee Info
+            </div>
+            <div class="section-content info-text">
+              ${this.renderInfo()}
+            </div>
+          </div>
+          
           ${this.perspectiveData.canWrite ? html`
             <div class="section">
               <div class="section-header">
@@ -116,6 +201,7 @@ export class EveesInfoPage extends EveesInfoBase {
               <div class="section-content info-text">
                 <mwc-button
                   outlined
+                  class="bottom-button"
                   icon="delete_forever"
                   @click=${() => this.delete()}
                   label="Delete"
@@ -128,7 +214,12 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   static get styles() {
-    return css`
+    return super.styles.concat([css`
+
+      mwc-button {
+        width: 220px;
+      }
+
       p {
         margin: 0;
       }
@@ -147,6 +238,7 @@ export class EveesInfoPage extends EveesInfoBase {
         border-radius: 4px;
         overflow: hidden;
         background-color: white;
+        position: relative;
       }
       .section-header {
         font-weight: bold;
@@ -154,14 +246,28 @@ export class EveesInfoPage extends EveesInfoBase {
         font-size: 1.6em;
         border-style: solid 2px;
       }
+      .edit-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+      }
+      .row mwc-textfield{
+        margin: 30px 0px;
+      }
+      .perspective-header {
+        border-top-style: solid;
+        border-top-width: 5px;
+      }
       .section-content {
         padding: 2.2vw 0px 2.2vw 0px;
       }
-      .description {
-        padding: 0px 2.5vw;
-      }
       .info-text {
         color: #4e585c;
+        padding: 0px 2.5vw;
+        min-height: 75px;
+      }
+      .action-button {
+        margin: 32px 0px;
       }
       .other-perspectives {
         border-top: solid 1px #cccccc;
@@ -170,6 +276,6 @@ export class EveesInfoPage extends EveesInfoBase {
         display: flex;
         flex-direction: column;
       }
-    `;
+    `]);
   }
 }

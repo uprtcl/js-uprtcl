@@ -8,7 +8,6 @@ import { SimpleMergeStrategy } from './simple.merge-strategy';
 import {
   Commit,
   UprtclAction,
-  UPDATE_HEAD_ACTION,
   CREATE_COMMIT_ACTION,
   CREATE_DATA_ACTION,
   UpdateRequest
@@ -66,15 +65,14 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     });
 
     const context = result.data.entity.context.id;
-    const jsonData = result.data.entity.head.data._context.object;
 
-    const dataObject = JSON.parse(jsonData);
     if (result.data.entity.head == null) {
       throw new Error(`head null reading perspective ${perspectiveId}`);
     }
 
+    const dataObject = result.data.entity.head.data._context.object;
     const dataId = result.data.entity.head.data.id;
-    const data = { id: dataId, object: dataObject };
+    const data = { id: dataId, entity: dataObject };
 
     this.setPerspective(perspectiveId, context, to);
 
@@ -83,7 +81,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (hasChildren) {
-      const links = hasChildren.getChildrenLinks(data);
+      const links = hasChildren.getChildrenLinks(dataObject);
 
       const promises = links.map(link => this.readPerspective(link, to));
       await Promise.all(promises);
@@ -193,7 +191,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
            * only one head update is expected, but two are found. The head
            * of the page is updated but it should not.
            */
-          const actions = await this.mergePerspectiveChildren(finalPerspectiveId as string, config);
+          // const actions = await this.mergePerspectiveChildren(finalPerspectiveId as string, config);
+          const actions = [];
 
           return [finalPerspectiveId as string, actions] as [string, UprtclAction[]];
         }

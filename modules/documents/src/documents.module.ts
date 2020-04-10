@@ -6,7 +6,6 @@ import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
 import { EveesContentModule } from '@uprtcl/evees';
 
-import { DocumentTextNode } from './elements/document-text-node';
 import {
   TextNodeCreate,
   TextNodeCommon,
@@ -18,6 +17,7 @@ import { documentsTypeDefs } from './graphql/schema';
 import en from './i18n/en.json';
 import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
 import { DocumentsBindings } from './bindings';
+import { DocumentEditor } from './elements/document-editor';
 
 /**
  * Configure a documents module with the given stores
@@ -51,8 +51,8 @@ export class DocumentsModule extends EveesContentModule {
 
   async onLoad(container: interfaces.Container) {
     super.onLoad(container);
-    customElements.define('documents-text-node', DocumentTextNode);
     customElements.define('documents-text-node-editor', DocumentTextNodeEditor);
+    customElements.define('documents-editor', DocumentEditor);
   }
 
   get submodules() {

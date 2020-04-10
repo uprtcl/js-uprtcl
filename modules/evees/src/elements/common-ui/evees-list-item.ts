@@ -9,6 +9,9 @@ export class ItemWithMenu extends LitElement {
   @property({ type: String })
   text: string = '';
 
+  @property({ type: String })
+  selected: string = 'false';
+
   @property({ type: Object })
   config: MenuConfig = {};
 
@@ -30,8 +33,12 @@ export class ItemWithMenu extends LitElement {
   }
 
   render() {
+    let classes: string[] = [];
+    classes.push('item-row');
+    if (this.selected === 'true') classes.push('item-selected');
+
     return html`
-      <div class="item-row" @click=${this.elementClicked}>
+      <div class=${classes.join(' ')} @click=${this.elementClicked}>
         <div class="text-container">${this.text}</div>
         <evees-options-menu @option-click=${this.optionClicked} .config=${this.config}></evees-options-menu>       
       </div>
@@ -56,6 +63,10 @@ export class ItemWithMenu extends LitElement {
         transition: all 0.1s ease-in;
       }
 
+      .item-selected {
+        background-color: #e8ecec;
+      }
+
       .item-row:hover {
         background-color: #e8ecec;
       }
@@ -63,6 +74,8 @@ export class ItemWithMenu extends LitElement {
       .text-container {
         padding-left: 16px;
         flex-grow:1;
+        display: flex;
+        flex-direction: column;
       }
     `
   }
