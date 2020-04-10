@@ -21,9 +21,9 @@ export interface OwnerPreservingConfig {
   targetCanWrite: string;
   targetAuthority: string;
 }
-
 @injectable()
 export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy {
+  
   async getEntity(id: string): Promise<Hashed<any>> {
     const result = await this.client.query({
       query: gql`{
@@ -40,197 +40,302 @@ export class OwnerPreservingMergeStrategy extends RecursiveContextMergeStrategy 
     return { id, object };
   }
 
+  async getOwnerPreservingLink(
+    link: string,
+    targetAuthority: string, 
+    targetCanWrite: string) : Promise<NodeActions> {
+
+    const isPerspective = await this.isPattern(link, "Perspective");
+    if (isPerspective) {
+      return this.createOwnerPreservingPerspective(link, targetAuthority, targetCanWrite);
+    } else {
+      const isCommit = await this.isPattern(link, "Commit");
+      if (isCommit) {
+        return this.createOwnerPreservingCommit(link, targetAuthority, targetCanWrite);
+      } else {
+        return this.createOwnerPreservingEntity(link, targetAuthority, targetCanWrite);
+      }
+    }
+  }
+
+  async createOwnerPreservingPerspective(
+    id: string, 
+    targetAuthority: string, 
+    targetCanWrite: string): Promise<NodeActions> {
+      
+    let fork = false;
+
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${id}") {
+          id
+
+          ... on Perspective {
+            payload {
+              origin
+            }
+            head {
+              id
+            }
+            context {
+              id
+            }
+            name
+          }
+
+          _context {
+            patterns {
+              accessControl {
+                permissions
+                canWrite
+              }
+            }
+          }
+        }
+      }`
+    });
+    const authority = result.data.entity.payload.origin;
+    const canWrite = result.data.entity._context.patterns.accessControl.canWrite;
+    const headId = result.data.entity.head.id;
+    const name = result.data.entity.name;
+    const context = result.data.entity.context.id;
+
+    if (authority !== targetAuthority) {
+      /** if different remote, then fork */
+      fork = true;
+    } else {
+      if (!canWrite) {
+        fork = true;
+      }
+    }
+
+    if (fork) {
+      /** create a global perspective of the link and set as the new link */
+      const [perspective, actions] = await this.evees.computeNewGlobalPerspectiveOps(
+        targetAuthority,
+        {
+          context,
+          headId,
+          name: `from${name ? '-' + name : ''}`
+        },
+        undefined,
+        targetCanWrite
+      );
+
+      await cacheActions(actions, this.entityCache, this.client);
+
+      /** for each new perspective that is created,
+       *  craete a new commit and data
+       * (should be a clone but we dont have "clone" mutations and the id
+       *  can change when you create the same entity on another remote)  */
+      for (let ix = 0; ix < actions.length; ix++) {
+        const action = actions[ix];
+        if (action.type !== CREATE_AND_INIT_PERSPECTIVE_ACTION) break;
+
+        const headId = action.payload.details.headId;
+        const remote = this.evees.getAuthority(targetAuthority);
+
+        const oldHead: Secured<Commit> | undefined = await this.getEntity(headId);
+        if (!oldHead) throw new Error(`Error getting the cached head: ${headId}`);
+
+        const oldData = await this.getEntity(oldHead.object.payload.dataId);
+
+        const newData = await this.hashed.derive()(oldData.object, remote.hashRecipe);
+        const newDataAction: UprtclAction = {
+          type: CREATE_DATA_ACTION,
+          entity: newData,
+          payload: {
+            source: remote.source
+          }
+        };
+
+        /** build new head object pointing to new data */
+        const newHeadObject: Signed<Commit> = {
+          payload: {
+            ...oldHead.object.payload,
+            dataId: newData.id
+          },
+          proof: {
+            type: '',
+            signature: ''
+          }
+        };
+
+        const newHead = await this.hashed.derive()(newHeadObject, remote.hashRecipe);
+
+        const newCommitAction: UprtclAction = {
+          type: CREATE_COMMIT_ACTION,
+          entity: newHead,
+          payload: {
+            source: remote.source
+          }
+        };
+
+        /** replace head in headupdate action */
+        actions[ix].payload.details.headId = newHead.id;
+
+        /** add the new create commit and head actions */
+        actions.push(newCommitAction);
+        actions.push(newDataAction);
+      }
+
+      return {
+        id: perspective.id, 
+        actions
+      };
+
+    } else {
+
+      return { 
+        id, 
+        actions: []
+      };
+    }
+  }
+
+  async createOwnerPreservingCommit(
+    link: string, 
+    targetAuthority: string, 
+    targetCanWrite: string) : Promise<NodeActions> {
+
+    const commit = this.discovery.get(link) as unknown as Hashed<Signed<Commit>>;
+    const remote = this.evees.getAuthority(targetAuthority);
+
+    const dataId = commit.object.payload.dataId;
+    const dataResult = await this.createOwnerPreservingEntity(dataId, targetAuthority, targetCanWrite);
+
+    /** build new head object pointing to new data */
+    const newHeadObject: Signed<Commit> = {
+      payload: {
+        ...commit.object.payload,
+        dataId: dataResult.id
+      },
+      proof: {
+        type: '',
+        signature: ''
+      }
+    };
+
+    const newHead = await this.hashed.derive()(newHeadObject, remote.hashRecipe);
+
+    const newCommitAction: UprtclAction = {
+      type: CREATE_COMMIT_ACTION,
+      entity: newHead,
+      payload: {
+        source: remote.source
+      }
+    };
+
+    return {
+      id: newHead.id, 
+      actions: [newCommitAction].concat(dataResult.actions)
+    }
+  }
+
+  /** It takes an entity and makes sure all its children are either cloned or branched in the targetAuthority and are owned
+   * by the targetCanWrite. The data entity id might change because the targetAuthority hashRecipe is different or because
+   * there new (owner preserving) perspectives were created insde the data object */
+  async createOwnerPreservingEntity(id: string, targetAuthority: string, targetCanWrite: string) : Promise<NodeActions>{
+    const data = await this.discovery.get(id);
+    if (!data) throw new Error(`data ${id} not found`);
+
+    /** createOwnerPreservingEntity of children */
+    const oldLinks = this.getEntityChildren(data);
+    const getOwnerPreservingLinks = oldLinks.map(link => this.getOwnerPreservingLink(link, targetAuthority, targetCanWrite))
+    const newLinksNodeActions = await Promise.all(getOwnerPreservingLinks);
+    const newLinks = newLinksNodeActions.map(node => node.id);
+
+    const newObject = this.replaceEntityChildren(data, newLinks);
+
+    const source = this.remotesConfig.map(targetAuthority);
+    const newData = await this.hashed.derive()(newObject, source.hashRecipe);
+
+    const newDataAction: UprtclAction = {
+      type: CREATE_DATA_ACTION,
+      entity: newData,
+      payload: {
+        source: source.source
+      }
+    };
+
+    return {
+      id: newData.id,
+      actions: [newDataAction].concat(...newLinksNodeActions.map(node => node.actions))
+    }    
+  }
+
+  getEntityChildren(entity: object) {
+    let hasChildren: HasChildren | undefined = this.recognizer
+      .recognize(entity)
+      .find(prop => !!(prop as HasChildren).getChildrenLinks);
+
+    if (!hasChildren) {
+      return [];
+    } else {
+      return hasChildren.getChildrenLinks(entity);
+    }
+  }
+
+  replaceEntityChildren(entity: object, newLinks: string[]) {
+    let hasChildren: HasChildren | undefined = this.recognizer
+      .recognize(entity)
+      .find(prop => !!(prop as HasChildren).getChildrenLinks);
+
+    if (!hasChildren) {
+      return [];
+    } else {
+      return hasChildren.replaceChildrenLinks(entity)(newLinks);
+    }
+  }
+
   async getOwnerPreservingActions(
     updateRequest: UpdateRequest,
     targetAuthority: string,
     targetCanWrite: string
-  ): Promise<Array<UprtclAction>> {
+  ): Promise<UprtclAction[]> {
     let oldLinks: string[] = [];
 
     if (updateRequest.oldHeadId) {
       const oldData = await this.loadCommitData(updateRequest.oldHeadId);
-      let oldHasChildren: HasChildren | undefined = this.recognizer
-        .recognize(oldData)
-        .find(prop => !!(prop as HasChildren).getChildrenLinks);
-
-      if (!oldHasChildren) {
-        oldLinks = [];
-      } else {
-        oldLinks = oldHasChildren.getChildrenLinks(oldData);
-      }
+      oldLinks = this.getEntityChildren(oldData);
     }
 
-    let newLinks: string[] = [];
-
-    const { object } = await this.loadCommitData(updateRequest.newHeadId);
-    let newHasChildren: HasChildren | undefined = this.recognizer
-      .recognize(object)
-      .find(prop => !!(prop as HasChildren).getChildrenLinks);
-
-    if (!newHasChildren) {
-      newLinks = [];
-    } else {
-      newLinks = newHasChildren.getChildrenLinks(object);
-    }
+    const data = await this.loadCommitData(updateRequest.newHeadId);
+    const newLinks = this.getEntityChildren(data.object);
 
     /**
      * Check for each newLink that was not an old link if the authority and canWrite are the
      * target, if not, create a global perspective on the targetAuthority where targetCanWrite canWrite
      */
-
     const newNewLinksPromises = newLinks.map(
-      async (newLink): Promise<[string, Array<UprtclAction>]> => {
+      async (newLink): Promise<NodeActions> => {
         if (!oldLinks.includes(newLink)) {
-          let fork = false;
-
-          /** TODO: generalize to not-to-perspective links */
-          const result = await this.client.query({
-            query: gql`{
-              entity(id: "${newLink}") {
-                id
-
-                ... on Perspective {
-                  payload {
-                    origin
-                  }
-                  head {
-                    id
-                  }
-                  context {
-                    id
-                  }
-                  name
-                }
-
-                _context {
-                  patterns {
-                    accessControl {
-                      permissions
-                      canWrite
-                    }
-                  }
-                }
-              }
-            }`
-          });
-          const authority = result.data.entity.payload.origin;
-          const canWrite = result.data.entity._context.patterns.accessControl.canWrite;
-          const headId = result.data.entity.head.id;
-          const name = result.data.entity.name;
-          const context = result.data.entity.context.id;
-
-          if (authority !== targetAuthority) {
-            /** if different remote, then fork */
-            fork = true;
-          } else {
-            if (!canWrite) {
-              fork = true;
-            }
-          }
-
-          if (fork) {
-            /** create a global perspective of the link and set as the new link */
-            const [perspective, actions] = await this.evees.computeNewGlobalPerspectiveOps(
-              targetAuthority,
-              {
-                context,
-                headId,
-                name: `from${name ? '-' + name : ''}`
-              },
-              undefined,
-              targetCanWrite
-            );
-
-            await cacheActions(actions, this.entityCache, this.client);
-
-            /** for each new perspective that is created,
-             *  craete a new commit and data
-             * (should be a clone but we dont have "clone" mutations and the id
-             *  can change when you create the same entity on another remote)  */
-            for (let ix = 0; ix < actions.length; ix++) {
-              const action = actions[ix];
-              if (action.type !== CREATE_AND_INIT_PERSPECTIVE_ACTION) break;
-
-              const headId = action.payload.details.headId;
-              const remote = this.evees.getAuthority(targetAuthority);
-
-              const oldHead: Secured<Commit> | undefined = await this.getEntity(headId);
-              if (!oldHead) throw new Error(`Error getting the cached head: ${headId}`);
-
-              const oldData = await this.getEntity(oldHead.object.payload.dataId);
-
-              const newData = await this.hashed.derive()(oldData.object, remote.hashRecipe);
-              const newDataAction: UprtclAction = {
-                type: CREATE_DATA_ACTION,
-                entity: newData,
-                payload: {
-                  source: remote.source
-                }
-              };
-
-              /** build new head object pointing to new data */
-              const newHeadObject: Signed<Commit> = {
-                payload: {
-                  ...oldHead.object.payload,
-                  dataId: newData.id
-                },
-                proof: {
-                  type: '',
-                  signature: ''
-                }
-              };
-
-              const newHead = await this.hashed.derive()(newHeadObject, remote.hashRecipe);
-
-              const newCommitAction: UprtclAction = {
-                type: CREATE_COMMIT_ACTION,
-                entity: newHead,
-                payload: {
-                  source: remote.source
-                }
-              };
-
-              /** replace head in headupdate action */
-              actions[ix].payload.details.headId = newHead.id;
-
-              /** add the new create commit and head actions */
-              actions.push(newCommitAction);
-              actions.push(newDataAction);
-            }
-
-            return [perspective.id, actions];
-          }
-
-          /** if fork false, simple return the same link */
-          return [newLink, []];
+          return this.getOwnerPreservingLink(newLink, targetAuthority, targetCanWrite);
         } else {
-          return [newLink, []];
+          return { id: newLink, actions: [] };
         }
       }
     );
 
-    const result = await Promise.all(newNewLinksPromises);
-    const newNewLinks = result.map(r => r[0]);
+    const linksNodeActions = await Promise.all(newNewLinksPromises);
 
-    const sameLinks =
-      newNewLinks.length === newLinks.length &&
-      newNewLinks.every((value, index) => value === newLinks[index]);
+    const newNewLinks = linksNodeActions.map(node => node.id);
+    const newObject = this.replaceEntityChildren(data.object, newNewLinks);
+    
+    const source = this.remotesConfig.map(targetAuthority);
+    const newData = await this.hashed.derive()(newObject, source.hashRecipe);
 
-    if (!sameLinks) {
-      /** create a new data and commit with the new links and update perspective head */
-      if (!newHasChildren) throw new Error('Target data dont have children, cant update its links');
-
-      const newNewDataObject = newHasChildren.replaceChildrenLinks(object)(newNewLinks) as Hashed<any>;
+    if (newData.id !== data.id) {
+      /** create a new commit with the new links and update perspective head */
       const actions = await this.updatePerspectiveData(
         updateRequest.perspectiveId,
-        newNewDataObject
+        newData.object
       );
 
-      const globalPerspectiveActions = result.map(r => r[1]);
-      return actions.concat(...globalPerspectiveActions);
+      /** add actions  */
+      return actions.concat(...linksNodeActions.map(node => node.actions));
     } else {
       const action = this.buildUpdateAction(updateRequest);
-
       return [action];
     }
   }

@@ -42,10 +42,10 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       super(remotesConfig, evees, recognizer, client, entityCache, secured, hashed);
   }
 
-  async isPerspective(id: string): Promise<boolean> {
+  async isPattern(id: string, name: string): Promise<boolean> {
     const entity = await this.discovery.get(id) as object;
     const pattern = this.recognizer.recognize(entity);
-    return pattern.findIndex(p => p.name === "Perspective") !== -1;
+    return pattern.findIndex(p => p.name === name) !== -1;
   }
 
   setPerspective(perspectiveId: string, context: string, to: boolean): void {
@@ -109,7 +109,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       const links = hasChildren.getChildrenLinks(dataObject);
 
       const promises = links.map(async (link) => {
-        const isPerspective = await this.isPerspective(link);
+        const isPerspective = await this.isPattern(link, "Perspective");
         if (isPerspective) {
           this.readPerspective(link, to)
         } else {
@@ -175,7 +175,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   async getLinkMergeId(link: string) {
-    const isPerspective = await this.isPerspective(link);
+    const isPerspective = await this.isPattern(link, "Perspective");
     if (isPerspective) {
       return this.getPerspectiveContext(link);
     } else {
