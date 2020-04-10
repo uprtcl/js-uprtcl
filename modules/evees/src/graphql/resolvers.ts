@@ -8,7 +8,7 @@ import {
   CASModule,
   KnownSourcesSource
 } from '@uprtcl/multiplatform';
-import { IsSecure, Signed } from '@uprtcl/cortex';
+import { Entity, Signed } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Commit, Perspective } from '../types';
@@ -17,7 +17,8 @@ import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
 import { NewPerspectiveData } from '../services/evees.provider';
-import { Secured } from '../patterns/cid-hash';
+import { Secured, hashObject } from '../utils/cid-hash';
+import { signObject } from 'src/utils/signed';
 
 export const eveesResolvers: IResolvers = {
   Commit: {
@@ -105,11 +106,13 @@ export const eveesResolvers: IResolvers = {
       { creatorsIds, dataId, parentsIds, message, source, timestamp },
       { container }
     ) {
-      const remotes = container.getAll(EveesBindings.EveesRemote);
+      const remotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
       const multiSource: MultiSourceService = container.get(
         DiscoveryModule.bindings.MultiSourceService
       );
-      const secured: IsSecure<any> = container.get(EveesBindings.Secured);
+      const remote: EveesRemote | undefined= remotes.find(r => r.casID === source);
+
+      if (!remote) throw new Error(`Evees Remote with casID was not registered ${source}`)
 
       const commitData: Commit = {
         creatorsIds: creatorsIds,
@@ -119,10 +122,14 @@ export const eveesResolvers: IResolvers = {
         parentsIds: parentsIds
       };
 
-      const remote: EveesRemote = remotes.find(r => r.source === source);
-      const commit: Secured<Commit> = await secured.derive()(commitData, remote.cidConfig);
+      const signed: Signed<Commit> = signObject(commitData);
+      const commitId: string = await hashObject(signed, remote.cidConfig);
 
-      commit.casID = remote.casID;
+      const commit: Secured<Commit> = {
+        id: commitId,
+        entity: signed,
+        casID: remote.casID
+      }
 
       await remote.cloneCommit(commit);
       await multiSource.postEntityCreate(commit);
@@ -165,16 +172,16 @@ export const eveesResolvers: IResolvers = {
 
       if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
 
-      return { 
-        id: perspectiveId, 
-        ...perspective, 
-        head: { 
-          id: detailsRead.headId 
-        }, 
-        context: { 
-          id: detailsRead.context 
-        }, 
-        name: detailsRead.name 
+      return {
+        id: perspectiveId,
+        ...perspective,
+        head: {
+          id: detailsRead.headId
+        },
+        context: {
+          id: detailsRead.context
+        },
+        name: detailsRead.name
       };
     },
 
@@ -191,7 +198,6 @@ export const eveesResolvers: IResolvers = {
       { container }
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
-      const secured: IsSecure<any> = container.get(EveesBindings.Secured);
 
       const remote: EveesRemote = remotes.find(remote => remote.authority === authority);
 
@@ -200,10 +206,13 @@ export const eveesResolvers: IResolvers = {
         origin,
         timestamp
       };
-      const perspective: Secured<Perspective> = await secured.derive()(
-        perspectiveData,
-        remote.cidConfig
-      );
+      const signed: Signed<Perspective> = signObject(perspectiveData);
+      const perspectiveId: string = await hashObject(signed, remote.cidConfig);
+      const perspective: Secured<Perspective> = {
+        id: perspectiveId,
+        entity: signed,
+        casID: remote.casID
+      };
 
       const newPerspectiveData: NewPerspectiveData = {
         perspective,

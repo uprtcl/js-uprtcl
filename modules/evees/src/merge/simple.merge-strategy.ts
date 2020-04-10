@@ -19,9 +19,9 @@ import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
 import findMostRecentCommonAncestor from './common-ancestor';
-import { Mergeable } from '../properties/mergeable';
+import { Mergeable } from '../behaviours/merge';
 import { mergeResult } from './utils';
-import { hashObject, signAndHashObject } from '../patterns/cid-hash';
+import { hashObject, signAndHashObject } from '../utils/cid-hash';
 import { cacheUpdateRequest } from '../utils/actions';
 
 @injectable()

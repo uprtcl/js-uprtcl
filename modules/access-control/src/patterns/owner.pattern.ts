@@ -4,7 +4,7 @@ import { injectable } from 'inversify';
 import { Pattern } from '@uprtcl/cortex';
 import { HasLenses } from '@uprtcl/lenses';
 
-import { Permissions } from '../properties/permissions';
+import { Permissions } from '../behaviours/permissions';
 import { OwnerPermissions } from '../services/owner-access-control.service';
 
 export class OwnerPattern extends Pattern<OwnerPermissions> {

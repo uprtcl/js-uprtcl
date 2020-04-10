@@ -9,7 +9,7 @@ import { EveesRemote } from '../../evees.remote';
 import { PerspectiveDetails, Perspective, Commit } from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
 import { NewPerspectiveData } from '../../evees.provider';
-import { Secured } from '../../../patterns/cid-hash';
+import { Secured } from '../../../utils/cid-hash';
 
 const evees_api: string = 'evees-v1';
 

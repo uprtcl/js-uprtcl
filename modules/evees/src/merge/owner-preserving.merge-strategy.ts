@@ -15,7 +15,7 @@ import {
 import { RecursiveContextMergeStrategy } from './recursive-context.merge-strategy';
 import { gql } from 'apollo-boost';
 import { cacheActions } from '../utils/actions';
-import { Secured, hashObject } from '../patterns/cid-hash';
+import { Secured, hashObject } from '../utils/cid-hash';
 
 export interface OwnerPreservingConfig {
   targetCanWrite: string;

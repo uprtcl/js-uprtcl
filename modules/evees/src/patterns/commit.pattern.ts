@@ -1,7 +1,7 @@
 import { injectable, inject, multiInject } from 'inversify';
 import { ApolloClient } from 'apollo-boost';
 
-import { Pattern, HasLinks, Creatable, Entity, Signed, Newable } from '@uprtcl/cortex';
+import { Pattern, HasLinks, Create, Entity, Signed, New } from '@uprtcl/cortex';
 import { HasRedirect, CidConfig } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -10,8 +10,8 @@ import { EveesBindings } from '../bindings';
 import { EveesRemote } from '../services/evees.remote';
 import { CREATE_COMMIT } from '../graphql/queries';
 import { CreateCommitArgs } from '../services/evees';
-import { extractSignedEntity } from './signed';
-import { signAndHashObject } from './cid-hash';
+import { extractSignedEntity, signObject } from '../utils/signed';
+import { hashObject } from 'src/utils/cid-hash';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
@@ -47,8 +47,7 @@ export class CommitLinked
 }
 
 @injectable()
-export class CommitCreate
-  implements Creatable<Commit, Signed<Commit>>, Newable<Commit, Signed<Commit>> {
+export class CommitCreate implements Create<Commit, Signed<Commit>>, New<Commit, Signed<Commit>> {
   constructor(
     @multiInject(EveesBindings.EveesRemote) protected remotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
@@ -70,7 +69,9 @@ export class CommitCreate
       args.creatorsIds = [remote.userId];
     }
 
-    const commit = await this.new()(args as Commit, remote.cidConfig);
+    const commitObject: Signed<Commit> = await this.new()(args as Commit);
+    const commitId = await hashObject(commitObject);
+
     const result = await this.client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
@@ -78,13 +79,13 @@ export class CommitCreate
         source: casID
       }
     });
-    if (result.data.createCommit.id != commit[0]) {
+    if (result.data.createCommit.id != commitId) {
       throw new Error('unexpected id');
     }
-    return commit;
+    return { id: commitId, entity: commitObject };
   };
 
-  new = () => async (args: Commit, recipe: CidConfig) => {
+  new = () => async (args: Commit) => {
     if (!args) throw new Error('Cannot create commit without specifying its details');
 
     const timestamp = args.timestamp || Date.now();
@@ -98,6 +99,6 @@ export class CommitCreate
       parentsIds: args.parentsIds
     };
 
-    return signAndHashObject(commitData, recipe);
+    return signObject(commitData);
   };
 }

@@ -12,7 +12,7 @@ import {
   CREATE_DATA_ACTION,
   UpdateRequest
 } from '../types';
-import { hashObject, signAndHashObject } from '../patterns/cid-hash';
+import { hashObject, signAndHashObject } from '../utils/cid-hash';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {

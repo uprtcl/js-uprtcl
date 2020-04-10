@@ -24,7 +24,7 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
-import { Secured, signAndHashObject, hashObject } from '../patterns/cid-hash';
+import { Secured, signAndHashObject, hashObject } from '../utils/cid-hash';
 
 export interface NoHeadPerspectiveArgs {
   name?: string;

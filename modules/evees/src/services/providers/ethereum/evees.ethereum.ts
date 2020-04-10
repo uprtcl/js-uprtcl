@@ -11,7 +11,7 @@ import * as UprtclRoot from './contracts-json/UprtclRoot.json';
 import * as UprtclDetails from './contracts-json/UprtclDetails.json';
 import * as UprtclProposals from './contracts-json/UprtclProposals.json';
 
-import { Secured } from '../../../patterns/cid-hash';
+import { Secured } from '../../../utils/cid-hash';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 import {

@@ -4,12 +4,12 @@ import { injectable, inject } from 'inversify';
 import {
   Pattern,
   HasLinks,
-  Creatable,
+  Create,
   Entity,
   Signed,
   CortexModule,
   PatternRecognizer,
-  Newable
+  New
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -20,8 +20,8 @@ import { EveesBindings } from '../bindings';
 import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
 import { CREATE_PERSPECTIVE } from '../graphql/queries';
 import { executeActions, cacheActions } from '../utils/actions';
-import { extractSignedEntity } from './signed';
-import { signAndHashObject } from './cid-hash';
+import { extractSignedEntity, signObject } from '../utils/signed';
+import { signAndHashObject, hashObject } from '../utils/cid-hash';
 
 export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
 
@@ -38,8 +38,8 @@ export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
 @injectable()
 export class PerspectiveCreate
   implements
-    Creatable<CreatePerspectiveArgs, Signed<Perspective>>,
-    Newable<NewPerspectiveArgs, Signed<Perspective>> {
+    Create<CreatePerspectiveArgs, Signed<Perspective>>,
+    New<NewPerspectiveArgs, Signed<Perspective>> {
   constructor(
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
@@ -72,7 +72,10 @@ export class PerspectiveCreate
     } else {
       const remote = this.evees.getAuthority(authority);
 
-      const perspective = await this.new()((args as any).newPerspective, remote.cidConfig);
+      const perspectiveObject = await this.new()((args as any).newPerspective);
+      const perspectiveId = await hashObject(perspectiveObject, remote.cidConfig);
+      const perspective = { id: perspectiveId, entity: perspectiveObject };
+
       const result = await this.client.mutate({
         mutation: CREATE_PERSPECTIVE,
         variables: {
@@ -89,7 +92,7 @@ export class PerspectiveCreate
     }
   };
 
-  new = () => async (args: NewPerspectiveArgs, recipe: CidConfig) => {
+  new = () => async (args: NewPerspectiveArgs) => {
     const userId = this.evees.getAuthority(args.autority).userId;
 
     if (!userId) throw new Error('Cannot create in an authority in which you are not signed in');
@@ -100,7 +103,7 @@ export class PerspectiveCreate
       timestamp: args.timestamp || Date.now()
     };
 
-    return signAndHashObject(perspective, recipe);
+    return signObject(perspective);
   };
 }
 

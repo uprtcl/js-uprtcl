@@ -2,8 +2,8 @@ import { PatternRecognizer, CortexModule, Entity } from '@uprtcl/cortex';
 import { DiscoveryModule, MultiSourceService } from '@uprtcl/multiplatform';
 import { Authority } from '@uprtcl/multiplatform';
 
-import { Permissions } from '../properties/permissions';
-import { Updatable } from '../properties/updatable';
+import { Permissions } from '../behaviours/permissions';
+import { Updatable } from '../behaviours/updatable';
 import { AccessControlService } from '../services/access-control.service';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
 

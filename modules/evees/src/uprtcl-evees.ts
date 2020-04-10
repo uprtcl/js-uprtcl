@@ -33,7 +33,7 @@ export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
 
 /** Merge */
-export { Mergeable } from './properties/mergeable';
+export { Mergeable } from './behaviours/merge';
 
 export { MergeStrategy } from './merge/merge-strategy';
 export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
@@ -65,8 +65,8 @@ export {
   PerspectiveLinks
 } from './patterns/perspective.pattern';
 export { CommitCreate, CommitLinked, CommitPattern } from './patterns/commit.pattern';
-export { Secured, signAndHashObject, hashObject } from './patterns/cid-hash';
-export { extractSignedEntity, signObject } from './patterns/signed';
+export { Secured, signAndHashObject, hashObject } from './utils/cid-hash';
+export { extractSignedEntity, signObject } from './utils/signed';
 
 /** Utils */
 export { isAncestorOf } from './utils/ancestor';

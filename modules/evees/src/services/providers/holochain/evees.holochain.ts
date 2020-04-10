@@ -7,7 +7,7 @@ import { KnownSourcesService, defaultCidConfig } from '@uprtcl/multiplatform';
 import { Perspective, Commit, PerspectiveDetails } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 import { NewPerspectiveData } from '../../evees.provider';
-import { Secured } from '../../../patterns/cid-hash';
+import { Secured } from '../../../utils/cid-hash';
 
 @injectable()
 export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {

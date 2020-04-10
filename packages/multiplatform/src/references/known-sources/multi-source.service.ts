@@ -232,8 +232,6 @@ export class MultiSourceService {
       throw new Error('casID for the entity is required and none was provided');
     }
 
-    await this.localKnownSources.addKnownSources(entity.id, [entity.casID]);
-
     const patterns: Pattern<any>[] = this.recognizer.recognize(entity);
 
     const hasLinks: HasLinks[] = (patterns.filter(

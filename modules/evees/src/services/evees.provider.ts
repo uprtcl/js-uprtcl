@@ -2,7 +2,7 @@ import { Signed } from '@uprtcl/cortex';
 
 import { Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesSource } from './evees.source';
-import { Secured } from '../patterns/cid-hash';
+import { Secured } from '../utils/cid-hash';
 
 export interface NewPerspectiveData {
   perspective: Secured<Perspective>;
