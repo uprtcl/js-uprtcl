@@ -12,17 +12,15 @@ import { CidHashedPattern } from './patterns/cid-hashed.pattern';
 import {
   PerspectiveLinks,
   PerspectiveLens,
-  PerspectiveCreate,
   PerspectiveAccessControl,
 } from './patterns/perspective.pattern';
-import { CommitPattern, CommitLens, CommitLinked } from './patterns/commit.pattern';
+import { CommitLens, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs } from './graphql/schema';
 import { eveesResolvers } from './graphql/resolvers';
-import { OwnerPreservingMergeStrategy } from './merge/owner-preserving.merge-strategy';
 import { PerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
@@ -31,6 +29,7 @@ import { RemotesConfig } from './types';
 import { EveesInfoPage } from './elements/evees-info-page';
 import { ItemWithMenu } from './elements/common-ui/evees-list-item';
 import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
+import { RecursiveContextMergeStrategy } from './uprtcl-evees';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -87,7 +86,7 @@ export class EveesModule extends MicroModule {
 
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.bindings.Evees).to(Evees);
-    container.bind(EveesModule.bindings.MergeStrategy).to(OwnerPreservingMergeStrategy);
+    container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
     container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
 
     customElements.define('evees-commit-history', CommitHistory);
@@ -108,10 +107,9 @@ export class EveesModule extends MicroModule {
       [EveesModule.bindings.PerspectivePattern]: [
         PerspectiveLinks,
         PerspectiveLens,
-        PerspectiveCreate,
         PerspectiveAccessControl,
       ],
-      [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitPattern, CommitLens],
+      [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitLens],
     }),
     new SourcesModule(
       this.eveesProviders.map((evees) => ({

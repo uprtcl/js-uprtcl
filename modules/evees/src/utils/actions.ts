@@ -143,7 +143,7 @@ export async function executeActions(
       variables: {
         ...action.entity.object.payload,
         ...action.payload.details,
-        authority: action.entity.object.payload.origin,
+        authority: action.entity.object.payload.authority,
         canWrite: action.payload.owner,
         parentId: action.payload.parentId
       }

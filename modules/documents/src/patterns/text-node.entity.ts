@@ -30,6 +30,7 @@ import { CidConfig } from '@uprtcl/ipfs-provider';
 import { TextNode, TextType, DocNodeEventsHandlers, DocNode } from '../types';
 import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { HasDocNodeLenses, DocNodeLens } from './document-patterns'; 
+import { NodeActions } from '@uprtcl/evees';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -164,7 +165,7 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
     modifications: TextNode[],
     mergeStrategy: MergeStrategy,
     config: any
-  ): Promise<[TextNode, UprtclAction[]]> => {
+  ): Promise<NodeActions<TextNode>> => {
     const resultText = mergeStrings(
       originalNode.text,
       modifications.map(data => data.text)
@@ -174,73 +175,22 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
       modifications.map(data => data.type)
     );
 
-    const [mergedLinks, actions] = await mergeStrategy.mergeLinks(
+    const mergedLinks = await mergeStrategy.mergeLinks(
       originalNode.links,
       modifications.map(data => data.links),
       config
     );
 
-    return [
-      {
-        links: mergedLinks,
+    const allActions = ([] as UprtclAction[]).concat(...mergedLinks.map(node => node.actions));
+    
+    return {
+      new: {
+        links: mergedLinks.map(node => node.new),
         text: resultText,
         type: resultType
       },
-      actions
-    ];
-  };
-}
-
-@injectable()
-export class TextNodeCreate extends TextNodeEntity
-  implements Creatable<Partial<TextNode>, TextNode>, Newable<Partial<TextNode>, TextNode> {
-  constructor(
-    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(DiscoveryModule.bindings.TaskQueue) protected taskQueue: TaskQueue,
-    @multiInject(StoresModule.bindings.Store) protected stores: Array<Store>,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
-  ) {
-    super(hashedPattern);
-  }
-
-  recognize(object: object): boolean {
-    return propertyOrder.every(p => object.hasOwnProperty(p));
-  }
-
-  create = () => async (
-    node: Partial<TextNode> | undefined,
-    source: string
-  ): Promise<Hashed<TextNode>> => {
-    const store = this.stores.find(s => s.source === source);
-    if (!store) throw new Error(`store for ${source} not found`);
-
-    const textNode = await this.new()(node, store.hashRecipe);
-    const result = await this.client.mutate({
-      mutation: CREATE_TEXT_NODE,
-      variables: {
-        content: textNode.object,
-        source
-      }
-    });
-
-    if (result.data.createTextNode.id != textNode.id) {
-      throw new Error('unexpected id');
-    }
-
-    return textNode;
-  };
-
-  new = () => async (
-    node: Partial<TextNode> | undefined,
-    recipe: CidConfig
-  ): Promise<Hashed<TextNode>> => {
-    const links = node && node.links ? node.links : [];
-    const text = node && node.text ? node.text : '';
-    const type = node && node.type ? node.type : TextType.Paragraph;
-
-    const newTextNode = { links, text, type };
-    return this.hashedPattern.derive()(newTextNode, recipe);
+      actions: allActions
+    };
   };
 }
 

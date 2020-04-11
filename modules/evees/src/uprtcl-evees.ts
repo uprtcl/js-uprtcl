@@ -8,7 +8,8 @@ export {
   Context,
   PerspectiveDetails,
   RemotesConfig,
-  UprtclAction
+  UprtclAction,
+  NodeActions
 } from './types';
 
 /** Services interfaces */
@@ -21,13 +22,7 @@ export { EveesHolochain } from './services/providers/holochain/evees.holochain';
 export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
 export { EveesHttp } from './services/providers/http/evees.http';
 
-export {
-  Evees,
-  NewPerspectiveArgs,
-  CreatePerspectiveArgs,
-  CreateCommitArgs
-} from './services/evees';
-
+export { Evees } from './services/evees';
 export { EveesModule } from './evees.module';
 
 /** Merge */
@@ -36,7 +31,6 @@ export { Mergeable } from './properties/mergeable';
 export { MergeStrategy } from './merge/merge-strategy';
 export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
-export { OwnerPreservingMergeStrategy } from './merge/owner-preserving.merge-strategy';
 export { mergeStrings, mergeResult } from './merge/utils';
 export { EveesBindings } from './bindings';
 
@@ -57,7 +51,7 @@ export { contentCreateResolver } from './graphql/resolvers';
 
 /** Patterns */
 export { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';
-export { CommitEntity, CommitLens, CommitLinked, CommitPattern } from './patterns/commit.pattern';
+export { CommitEntity, CommitLens, CommitLinked } from './patterns/commit.pattern';
 export { CidHashedPattern, recognizeHashed } from './patterns/cid-hashed.pattern';
 export { DefaultSignedPattern } from './patterns/default-signed.pattern';
 export { DefaultSecuredPattern, Secured } from './patterns/default-secured.pattern';

@@ -12,21 +12,20 @@ export const eveesTypeDefs: DocumentNode = gql`
       name: String): Perspective!
 
     createCommit(
-      creatorsIds: [String], 
       dataId: ID!, 
       parentsIds: [ID!]!, 
+      creatorsIds: [String], 
       message: String, 
-      source: String, 
-      timestamp: Date!): Commit!
+      source: String!, 
+      timestamp: Date): Commit!
 
     createPerspective(
-      creatorId: String!,
-      origin: String!, 
-      timestamp: Date!,
+      authority: String!, 
+      creatorId: String,
+      timestamp: Date,
       headId: ID, 
       context: String, 
       name: String, 
-      authority: String, 
       canWrite: String,
       parentId: String): Perspective!
 
@@ -105,7 +104,7 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   type Payload {
-    origin: String
+    authority: String
     creatorId: String
     timestamp: Date
   }

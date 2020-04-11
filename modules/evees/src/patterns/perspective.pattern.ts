@@ -7,36 +7,19 @@ import {
   Pattern,
   IsSecure,
   HasLinks,
-  Creatable,
-  HasActions,
-  PatternAction,
-  Entity,
-  Signed,
-  CortexModule,
-  PatternRecognizer,
-  Newable,
-  Hashed
+  Entity  
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
-import { CidConfig } from '@uprtcl/ipfs-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import {
-  DiscoveryModule,
-  DiscoveryService,
-  EntityCache
-} from '@uprtcl/multiplatform';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Secured } from '../patterns/default-secured.pattern';
-import { Perspective, PerspectiveDetails } from '../types';
+import { Perspective } from '../types';
 import { EveesBindings } from '../bindings';
-import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
-import { MergeStrategy } from '../merge/merge-strategy';
-import { CREATE_PERSPECTIVE } from '../graphql/queries';
-import { executeActions, cacheActions } from '../utils/actions';
+import { Evees } from '../services/evees';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
+export const propertyOrder = ['authority', 'creatorId', 'timestamp'];
 
 const logger = new Logger('PERSPECTIVE-ENTITY');
 
@@ -100,85 +83,6 @@ export class PerspectiveLens extends PerspectiveEntity implements HasLenses {
         }
       }
     ];
-  };
-}
-
-@injectable()
-export class PerspectiveCreate extends PerspectiveEntity
-  implements
-    Creatable<CreatePerspectiveArgs, Signed<Perspective>>,
-    Newable<NewPerspectiveArgs, Signed<Perspective>>,
-    HasActions {
-  constructor(
-    @inject(EveesBindings.Secured) protected securedPattern: Pattern & IsSecure<any>,
-    @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(EveesBindings.MergeStrategy) protected merge: MergeStrategy,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
-  ) {
-    super(securedPattern);
-  }
-
-  create = () => async (args: CreatePerspectiveArgs, authority: string) => {
-    let fromDetails: PerspectiveDetails = (args as any).fromDetails;
-    // TODO, review "if" logic. You might want to create a new perspective with details but without computing it.
-    if (fromDetails || args.ofPerspectiveId) {
-      fromDetails.context =
-        fromDetails.context || `${Date.now()}.${Math.floor(Math.random() / 1000)}`;
-      fromDetails.name = fromDetails.name || 'master';
-
-      const result = await this.evees.computeNewGlobalPerspectiveOps(
-        authority,
-        fromDetails,
-        args.ofPerspectiveId,
-        args.canWrite,
-        args.parentId
-      );
-      const actions = result[1];
-      const perspective = result[0];
-
-      await cacheActions(actions, this.entityCache, this.client);
-      await executeActions(actions, this.client, this.patternRecognizer);
-
-      return perspective;
-    } else {
-      const remote = this.evees.getAuthority(authority);
-
-      const perspective = await this.new()((args as any).newPerspective, remote.hashRecipe);
-      const result = await this.client.mutate({
-        mutation: CREATE_PERSPECTIVE,
-        variables: {
-          creatorId: perspective.object.payload.creatorId,
-          origin: perspective.object.payload.origin,
-          timestamp: perspective.object.payload.timestamp,
-          authority: perspective.object.payload.origin,
-          canWrite: args.canWrite || remote.userId,
-          parentId: args.parentId
-        }
-      });
-
-      return perspective;
-    }
-  };
-
-  new = () => async (args: NewPerspectiveArgs, recipe: CidConfig) => {
-    const userId = this.evees.getAuthority(args.autority).userId;
-
-    if (!userId) throw new Error('Cannot create in an authority in which you are not signed in');
-
-    const perspective: Perspective = {
-      creatorId: userId,
-      origin: args.autority,
-      timestamp: args.timestamp || Date.now()
-    };
-
-    return this.securedPattern.derive()(perspective, recipe);
-  };
-
-  actions = (perspective: Secured<Perspective>): PatternAction[] => {
-    return [];
   };
 }
 

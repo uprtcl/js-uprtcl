@@ -6,8 +6,9 @@ export interface MergeStrategy {
    */
   mergePerspectives(
     toPerspectiveId: string,
-    fromPerspectiveId: string
-  ): Promise<NodeActions>;
+    fromPerspectiveId: string,
+    config: any
+  ): Promise<NodeActions<string>>;
 
   /**
    * @returns the id of the resulting merge commit
@@ -15,8 +16,9 @@ export interface MergeStrategy {
   mergeCommits(
     toCommitId: string,
     fromCommitId: string,
-    dataSource: string
-  ): Promise<NodeActions>;
+    dataSource: string,
+    config: any
+  ): Promise<NodeActions<string>>;
 
   /**
    * Merges the links to other entities appropiately
@@ -24,6 +26,7 @@ export interface MergeStrategy {
    */
   mergeLinks(
     originalLinks: string[],
-    modificationsLinks: string[][]
-  ): Promise<NodeActions[]>;
+    modificationsLinks: string[][],
+    config: any
+  ): Promise<NodeActions<any>[]>;
 }

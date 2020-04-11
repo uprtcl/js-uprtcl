@@ -12,6 +12,7 @@ import { CidConfig } from '@uprtcl/ipfs-provider';
 import { Wiki } from '../types';
 import { CREATE_WIKI } from '../graphql/queries';
 import { ApolloClientModule } from '@uprtcl/graphql';
+import { NodeActions } from '@uprtcl/evees';
 
 const propertyOrder = ['title', 'pages'];
 
@@ -55,25 +56,27 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
     modifications: Wiki[],
     mergeStrategy: MergeStrategy,
     config
-  ): Promise<[Wiki, UprtclAction[]]> => {
+  ): Promise<NodeActions<Wiki>> => {
     const resultTitle = mergeStrings(
       originalNode.title,
       modifications.map(data => data.title)
     );
 
-    const [mergedPages, actions] = await mergeStrategy.mergeLinks(
+    const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.pages,
       modifications.map(data => data.pages),
       config
     );
 
-    return [
-      {
-        pages: mergedPages,
+    const allActions = ([] as UprtclAction[]).concat(...mergedPages.map(node => node.actions));
+    
+    return {
+      new: {
+        pages: mergedPages.map(node => node.new),
         title: resultTitle
       },
-      actions
-    ];
+      actions: allActions
+    };
   };
 }
 
