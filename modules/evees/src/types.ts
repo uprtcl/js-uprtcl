@@ -72,3 +72,8 @@ export interface UprtclAction {
   entity?: Hashed<any>;
   payload: any;
 }
+
+export interface NodeActions <T>{
+  id: T,
+  actions: UprtclAction[]
+}

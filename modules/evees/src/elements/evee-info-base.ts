@@ -224,16 +224,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       );
     }
 
-    const config: OwnerPreservingConfig = {
-      targetAuthority: remote.authority,
-      targetCanWrite: permissions.owner
-    };
-    
-    const [perspectiveId, actions] = await this.merge.mergePerspectives(
+    const mergeResult = await this.merge.mergePerspectives(
       toPerspectiveId,
-      fromPerspectiveId,
-      config
+      fromPerspectiveId
     );
+
+    const ownerPreservingResult = await this.evees.forceTreeAuthority(mergeResult, remote.authority, permissions.owner);
 
     if (isProposal) {
       await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, actions);

@@ -22,7 +22,8 @@ import {
   UprtclAction,
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
-  CREATE_AND_INIT_PERSPECTIVE_ACTION
+  CREATE_AND_INIT_PERSPECTIVE_ACTION,
+  NodeActions
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
@@ -63,13 +64,13 @@ export class Evees {
   logger = new Logger('evees');
 
   constructor(
-    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(EveesBindings.Secured) protected secured: IsSecure<any>,
     @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern,
     @inject(DiscoveryModule.bindings.LocalKnownSources)
     public knownSources: KnownSourcesService,
     @inject(DiscoveryModule.bindings.DiscoveryService)
-    protected discoveryService: DiscoveryService,
+    protected discovery: DiscoveryService,
     @multiInject(EveesBindings.EveesRemote)
     protected eveesRemotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client)
@@ -125,8 +126,8 @@ export class Evees {
   }
 
   public async isPerspective(id: string): Promise<boolean> {
-    const entity = await this.discoveryService.get(id) as object;
-    const pattern = this.patternRecognizer.recognize(entity);
+    const entity = await this.discovery.get(id) as object;
+    const pattern = this.recognizer.recognize(entity);
     return pattern.findIndex(p => p.name === "Perspective") !== -1;
   }
 
@@ -144,189 +145,197 @@ export class Evees {
     return ([] as string[]).concat(...perspectivesIds);
   }
 
-  /** Creators */
+  async isPattern(id: string, name: string): Promise<boolean> {
+    const entity = await this.discovery.get(id) as object;
+    const pattern = this.recognizer.recognize(entity);
+    return pattern.findIndex(p => p.name === name) !== -1;
+  }
 
   /**
-   * Creates a new perspective with the given arguments,
-   * creating the context, data and commit if necessary
-   *
-   * @param args the properties of the perspectives
-   * @param upl provider to which to create the perspective, needed if there is more than one provider
+   * receives an entity id and compute the actions that will
+   * result on this entity being forked on a target authority 
+   * with a target owner (canWrite).
+   * 
+   * it also makes sure that all entities are clonned
+   * on the target authority default store.
+   * 
+   * recursively fork entity children 
    */
-  public async computeNewGlobalPerspectiveOps(
+  public async fork(
+    id: string,
     authority: string,
-    details: PerspectiveDetails,
-    ofPerspectiveId?: string,
-    canWrite?: string,
-    parentId?: string
-  ): Promise<[Secured<Perspective>, Array<UprtclAction>]> {
-    const eveesRemote = this.getAuthority(authority);
+    canWrite: string,
+    parentId?: string,
+    context?: string,
+    name?: string
+  ): Promise<NodeActions> {
 
-    if (ofPerspectiveId) {
-      const isPerspective = await this.isPerspective(ofPerspectiveId);
-      if (!isPerspective) throw new Error(`Entity ${ofPerspectiveId} is not compatible with perspective pattern`);
-    }
-
-    if (!eveesRemote.userId)
-      throw new Error(`Cannot create perspectives on remotes you aren't signed in`);
-
-    let actions: Array<UprtclAction> = [];
-
-    let headId: string;
-    if (ofPerspectiveId === undefined) {
-      if (!details.headId)
-        throw new Error('headId must be provided if ofPerspectiveId is not provided)');
-      headId = details.headId;
+    const isPerspective = await this.isPattern(id, "Perspective");
+    if (isPerspective) {
+      return this.forkPerspective(id, authority, canWrite);
     } else {
-      const result = await this.client.query({
-        query: gql`{
-          entity(id: "${ofPerspectiveId}") {
-            id
-            ... on Perspective {
-              head {
-                id
-              }
-            }
-          }
-        }`
-      });
-
-      headId = result.data.entity.head.id;
+      const isCommit = await this.isPattern(id, "Commit");
+      if (isCommit) {
+        return this.forkCommit(id, authority, canWrite);
+      } else {
+        return this.forkEntity(id, authority, canWrite);
+      }
     }
+  }
 
-    // Create the perspective id
-    const perspectiveData: Perspective = {
-      creatorId: eveesRemote.userId,
-      origin: eveesRemote.authority,
-      timestamp: Date.now()
-    };
-    const perspective: Secured<Perspective> = await this.secured.derive()(
-      perspectiveData,
-      eveesRemote.hashRecipe
-    );
+  getEntityChildren(entity: object) {
+    let hasChildren: HasChildren | undefined = this.recognizer
+      .recognize(entity)
+      .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
+    if (!hasChildren) {
+      return [];
+    } else {
+      return hasChildren.getChildrenLinks(entity);
+    }
+  }
+
+  replaceEntityChildren(entity: object, newLinks: string[]) {
+    let hasChildren: HasChildren | undefined = this.recognizer
+      .recognize(entity)
+      .find(prop => !!(prop as HasChildren).getChildrenLinks);
+
+    if (!hasChildren) {
+      return [];
+    } else {
+      return hasChildren.replaceChildrenLinks(entity)(newLinks);
+    }
+  }
+
+  public async forkPerspective(
+    perspectiveId: string, 
+    authority: string, 
+    canWrite: string,
+    context?: string,
+    name?: string,
+    parentId?: string): Promise<NodeActions> {
+      
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${headId}") {
+        entity(id: "${perspectiveId}") {
           id
-          ... on Commit {
-            data {
+          ... on Perspective {
+            head {
               id
-              _context {
-                raw
-              }
             }
           }
         }
       }`
     });
 
-    const dataObject = JSON.parse(result.data.entity.data._context.raw);
+    const headId = result.data.entity.head.id;
+
+    const forkCommit = await this.forkCommit(headId, authority, canWrite);
+    const eveesRemote = this.getAuthority(authority);
+
+    const object: Perspective = {
+      creatorId: eveesRemote.userId ? eveesRemote.userId : '',
+      origin: eveesRemote.authority,
+      timestamp: Date.now()
+    };
+
+    const perspective: Secured<Perspective> = await this.secured.derive()(
+      object,
+      eveesRemote.hashRecipe
+    );
     
-    let newHeadId = headId;
-
-    const hasChildren: HasChildren | undefined = this.patternRecognizer
-      .recognize(dataObject)
-      .find(prop => !!(prop as HasChildren).getChildrenLinks);
-
-    if (hasChildren) {
-      const descendantLinks = hasChildren.getChildrenLinks(dataObject);
-
-      if (descendantLinks.length > 0) {
-        const promises = descendantLinks.map(async (link):Promise<[Secured<Perspective>, Array<UprtclAction>] | string> => {
-          const isPerspective = await this.isPerspective(link);
-
-          /** if not a perspective return the link as id and empty actions */
-          if (!isPerspective) return Promise.resolve(link);
-
-          const descendantResult = await this.client.query({
-            query: gql`{
-              entity(id: "${link}") {
-                id
-                ... on Perspective {
-                  head {
-                    id
-                  }
-                  name
-                  context {
-                    id
-                  }
-                }
-              }
-            }`
-          });
-
-          const perspectiveDetails: PerspectiveDetails = {
-            context: descendantResult.data.entity.context.id,
-            name: descendantResult.data.entity.name
-          };
-
-          return this.computeNewGlobalPerspectiveOps(
-            authority,
-            perspectiveDetails,
-            link,
-            canWrite,
-            perspective.id
-          );
-        });
-
-        const results = await Promise.all(promises);
-
-        /** concatenate the actions of the  */
-        actions = actions.concat(...results.map(r => (r as any).length ? (r as any)[1] : []));
-        const newLinks = results.map(r => (r as any).length ? (r as any)[0].id : r);
-
-        const newObject = hasChildren.replaceChildrenLinks(dataObject)(newLinks);
-        const dataSource = this.remotesConfig.map(eveesRemote.authority);
-
-        const newHasheData = await this.hashed.derive()(newObject, dataSource.hashRecipe);
-
-        const newDataAction: UprtclAction = {
-          type: CREATE_DATA_ACTION,
-          entity: newHasheData,
-          payload: {
-            source: dataSource.source
-          }
-        };
-
-        actions.push(newDataAction);
-
-        const newCommit: Commit = {
-          dataId: newHasheData.id,
-          message: `auto-commit for new perspective ${name}`,
-          creatorsIds: [eveesRemote.userId],
-          parentsIds: headId ? [headId] : [],
-          timestamp: Date.now()
-        };
-
-        const securedCommit = await this.secured.derive()(newCommit, eveesRemote.hashRecipe);
-
-        const newCommitAction: UprtclAction = {
-          type: CREATE_COMMIT_ACTION,
-          entity: securedCommit,
-          payload: {
-            source: eveesRemote.source
-          }
-        };
-
-        newHeadId = securedCommit.id;
-
-        actions.push(newCommitAction);
-      }
-    }
-
     const newPerspectiveAction: UprtclAction = {
       type: CREATE_AND_INIT_PERSPECTIVE_ACTION,
       entity: perspective,
       payload: {
-        details: { headId: newHeadId, name, context: details.context },
-        owner: canWrite || eveesRemote.userId,
-        parentId: parentId
+        details: { headId: forkCommit.id, name, context },
+        owner: canWrite,
+        parentId
       }
     };
 
-    actions.push(newPerspectiveAction);
+    return {
+      id: perspective.id,
+      actions: [newPerspectiveAction].concat(forkCommit.actions)
+    }
+  }
 
-    return [perspective, actions];
+  public async forkCommit(
+    commitId: string, 
+    authority: string, 
+    canWrite: string): Promise<NodeActions> {
+
+    const commit = this.discovery.get(commitId) as unknown as Hashed<Signed<Commit>>;
+    const remote = this.getAuthority(authority);
+
+    const dataId = commit.object.payload.dataId;
+    const dataFork = await this.forkEntity(dataId, authority, canWrite);
+
+    const eveesRemote = this.getAuthority(authority);
+
+    /** build new head object pointing to new data */
+    const newCommit: Signed<Commit> = {
+      payload: {
+        creatorsIds: eveesRemote.userId ? [eveesRemote.userId] : [''],
+        dataId: dataFork.id,
+        message: `autocommit to fork ${commitId}`,
+        parentsIds: commit.object.payload.parentsIds,
+        timestamp: Date.now()
+      },
+      proof: {
+        type: '',
+        signature: ''
+      }
+    };
+
+    const newHead = await this.hashed.derive()(newCommit, remote.hashRecipe);
+
+    const newCommitAction: UprtclAction = {
+      type: CREATE_COMMIT_ACTION,
+      entity: newHead,
+      payload: {
+        source: remote.source
+      }
+    };
+
+    return {
+      id: newHead.id, 
+      actions: [newCommitAction].concat(dataFork.actions)
+    }
+  }
+
+  public async forkEntity(
+    entityId: string, 
+    authority: string, 
+    canWrite: string): Promise<NodeActions> {
+
+    const data = await this.discovery.get(entityId);
+    if (!data) throw new Error(`data ${entityId} not found`);
+
+    /** createOwnerPreservingEntity of children */
+    const oldLinks = this.getEntityChildren(data);
+
+    const getLinksForks = oldLinks.map(link => this.fork(link, authority, canWrite))
+    
+    const newLinksNodeActions = await Promise.all(getLinksForks);
+    const newLinks = newLinksNodeActions.map(node => node.id);
+
+    const newObject = this.replaceEntityChildren(data, newLinks);
+
+    const source = this.remotesConfig.map(authority);
+    const newData = await this.hashed.derive()(newObject, source.hashRecipe);
+
+    const newDataAction: UprtclAction = {
+      type: CREATE_DATA_ACTION,
+      entity: newData,
+      payload: {
+        source: source.source
+      }
+    };
+
+    return {
+      id: newData.id,
+      actions: [newDataAction].concat(...newLinksNodeActions.map(node => node.actions))
+    } 
   }
 }

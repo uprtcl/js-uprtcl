@@ -8,7 +8,6 @@ export interface Mergeable<T = any> extends Property<T> {
     ancestor: T
   ) => (
     modifications: any[],
-    strategy: MergeStrategy,
-    config: any
+    strategy: MergeStrategy
   ) => Promise<[any, UprtclAction[]]>;
 }
