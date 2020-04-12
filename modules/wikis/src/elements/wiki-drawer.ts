@@ -11,18 +11,17 @@ export const styleMap = style => {
 };
 
 
-import { htmlToText, TextType, TextNode, CREATE_TEXT_NODE } from '@uprtcl/documents';
+import { htmlToText, TextType, TextNode } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 import { Hashed } from '@uprtcl/cortex';
-import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, eveeColor, DEFAULT_COLOR, UPDATE_HEAD, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
+import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, eveeColor, DEFAULT_COLOR, UPDATE_HEAD, CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { Source } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
 import '@material/mwc-drawer';
-import { CREATE_WIKI } from 'src/uprtcl-wikis';
 
 const LOGINFO = false;
 
@@ -125,6 +124,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.authority = result.data.entity.payload.authority;
     this.currentHeadId = result.data.entity.head.id;
     this.editable = result.data.entity._context.patterns.accessControl.canWrite;
+    this.context = result.data.entity.context.id;
+
     this.wiki = {
       id: result.data.entity.head.data.id,
       object: {
@@ -212,9 +213,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!store) throw new Error('store is undefined');
     
     const createTextNode = await this.client.mutate({
-      mutation: CREATE_TEXT_NODE,
+      mutation: CREATE_ENTITY,
       variables: {
-        content: page,
+        content: JSON.stringify(page),
         source: store.source
       }
     });
@@ -229,15 +230,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     });
 
     const headId = createCommit.data.createCommit.id;
-    const randint = 0 + Math.floor((10000 - 0) * Math.random());
-
+    
     const createPerspective = await this.client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
         authority: this.authority,
         headId: headId,
         parentId: this.ref,
-        context: `${this.context}-${randint}`,
+        context: `${this.context}_${Date.now()}`,
         source: remote.source
       }
     });
@@ -253,9 +253,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!store) throw new Error('store is undefined');
     
     const createWiki = await client.mutate({
-      mutation: CREATE_WIKI,
+      mutation: CREATE_ENTITY,
       variables: {
-        content: newWiki,
+        content: JSON.stringify(newWiki),
         source: store.source
       }
     });

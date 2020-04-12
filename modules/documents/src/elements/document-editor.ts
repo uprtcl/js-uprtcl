@@ -11,16 +11,15 @@ export const styleMap = style => {
 };
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Hashed, Pattern, Creatable, Signed, HasChildren, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { Pattern, HasChildren, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { EveesRemote, EveesModule, RemotesConfig, EveesBindings, Commit, UPDATE_HEAD, ContentUpdatedEvent, CREATE_COMMIT, CREATE_PERSPECTIVE } from '@uprtcl/evees';
+import { EveesRemote, EveesModule, RemotesConfig,UPDATE_HEAD, ContentUpdatedEvent, CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '@uprtcl/evees';
 import { Source, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode, TextNode, EntityType } from 'src/types';
 import { HasDocNodeLenses } from 'src/patterns/document-patterns';
 import { DocumentsBindings } from 'src/bindings';
 import { icons } from './prosemirror/icons';
-import { CREATE_TEXT_NODE } from 'src/graphql/queries';
 
 const LOGINFO = false;
 
@@ -322,9 +321,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     // TODO, replace for a single CREATE mutation
       const createTextNode = await client.mutate({
-      mutation: CREATE_TEXT_NODE,
+      mutation: CREATE_ENTITY,
       variables: {
-        content: content,
+        content: JSON.stringify(content),
         source: source
       }
     });

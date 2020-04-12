@@ -46,8 +46,7 @@ export { MenuConfig } from './elements/common-ui/evees-options-menu';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
-export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE } from './graphql/queries';
-export { contentCreateResolver } from './graphql/resolvers';
+export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
 
 /** Patterns */
 export { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';

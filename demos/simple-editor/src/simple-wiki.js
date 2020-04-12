@@ -1,8 +1,8 @@
 import { LitElement, html } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule, CREATE_PERSPECTIVE, CREATE_COMMIT } from '@uprtcl/evees';
-import { WikisModule, CREATE_WIKI } from '@uprtcl/wikis';
+import { EveesModule, CREATE_PERSPECTIVE, CREATE_COMMIT, CREATE_ENTITY } from '@uprtcl/evees';
+import { WikisModule } from '@uprtcl/wikis';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
@@ -61,15 +61,17 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       const client = this.request(ApolloClientModule.bindings.Client);
 
       const createWiki = await client.mutate({
-        mutation: CREATE_WIKI,
+        mutation: CREATE_ENTITY,
         variables: {
-          content: {
+          content: JSON.stringify({
             title: 'Genesis Wiki',
             pages: []
-          },
+          }),
           source: wikisProvider.source
         }
       });
+
+      debugger
   
       const createCommit = await client.mutate({
         mutation: CREATE_COMMIT,

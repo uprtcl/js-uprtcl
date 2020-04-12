@@ -37,6 +37,14 @@ export const DELETE_PERSPECTIVE: DocumentNode = gql`
   }
 `;
 
+export const CREATE_ENTITY: DocumentNode = gql`
+  mutation CreateEntity($content: String!, $source: ID) {
+    createEntity(content: $content, source: $source) {
+      id
+    }
+  }
+`;
+
 export const CREATE_COMMIT: DocumentNode = gql`
   mutation CreateCommit(
     $dataId: ID!

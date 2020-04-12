@@ -250,10 +250,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async mergePerspective(actions: UprtclAction[]): Promise<void> {
     if(!this.cache) throw new Error('cache undefined');
     if(!this.client) throw new Error('client undefined');
-    if(!this.recognizer) throw new Error('recognizer undefined');
-
+    
     await cacheActions(actions, this.cache, this.client);
-    await executeActions(actions, this.client, this.recognizer);
+    await executeActions(actions, this.client);
 
     const updateRequests = actions.filter(a => a.type === UPDATE_HEAD_ACTION).map(a => a.payload);
 
@@ -325,16 +324,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async createMergeProposal(fromPerspectiveId: string, toPerspectiveId: string, actions: UprtclAction[]): Promise<void> {
     if(!this.client) throw new Error('client undefined');
     if(!this.cache) throw new Error('cache undefined');
-    if(!this.recognizer) throw new Error('recognizer undefined');
     
-
     await cacheActions(actions, this.cache, this.client);
 
     /** create commits and data */
     const dataActions = actions.filter(a =>
       [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type)
     );
-    await executeActions(dataActions, this.client, this.recognizer);
+    await executeActions(dataActions, this.client);
 
     await this.executeActionsBatched(
       actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION),
@@ -454,14 +451,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (!this.client) throw new Error('client undefined');
     if (!this.evees) throw new Error('evees-undefined');
     if (!this.cache) throw new Error('cache-undefined');
-    if (!this.recognizer) throw new Error('recognizer-undefined');
     
     this.loading = true;
 
     const forkPerspective = await this.evees.forkPerspective(this.perspectiveId);
 
     await cacheActions(forkPerspective.actions, this.cache, this.client);
-    await executeActions(forkPerspective.actions, this.client, this.recognizer);
+    await executeActions(forkPerspective.actions, this.client);
     
     this.checkoutPerspective(forkPerspective.new);
 

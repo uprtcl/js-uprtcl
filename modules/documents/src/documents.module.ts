@@ -8,7 +8,6 @@ import {
   TextNodeTitle
 } from './patterns/text-node.entity';
 import { documentsTypeDefs } from './graphql/schema';
-import { resolvers } from './graphql/resolvers';
 
 import en from './i18n/en.json';
 import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
@@ -57,7 +56,7 @@ export class DocumentsModule extends MicroModule {
   }
 
   submodules = [
-    new GraphQlSchemaModule(documentsTypeDefs, resolvers),
+    new GraphQlSchemaModule(documentsTypeDefs),
     new i18nextModule('documents', { en: en }),
     new StoresModule(
       this.stores.map((store) => ({

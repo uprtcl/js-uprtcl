@@ -11,6 +11,8 @@ export const eveesTypeDefs: DocumentNode = gql`
       context: String,
       name: String): Perspective!
 
+    createEntity(content: String!, source: ID): ID!
+
     createCommit(
       dataId: ID!, 
       parentsIds: [ID!]!, 

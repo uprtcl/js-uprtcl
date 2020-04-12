@@ -176,6 +176,16 @@ export const eveesResolvers = {
       return { id: perspectiveId };
     },
 
+    async createEntity(_, { content, source }, { container }) {
+      const stores: Store[] = container.getAll(StoresModule.bindings.Store);
+      const store = stores.find(d => d.source === source);
+    
+      if (!store) throw new Error(`No store registered for source ${source}`);
+      const id = await store.put(JSON.parse(content));
+    
+      return id;
+    },
+
     async createPerspective(
       _,
       { authority, creatorId, timestamp, headId, context, name, canWrite, parentId },
@@ -319,15 +329,3 @@ export const eveesResolvers = {
     }
   }
 };
-
-export const contentCreateResolver = async (content, source, container) => {
-  const stores: Store[] = container.getAll(StoresModule.bindings.Store);
-
-  const store = stores.find(d => d.source === source);
-
-  if (!store) throw new Error(`No store registered for source ${source}`);
-
-  const id = await store.put(content);
-
-  return { id, ...content };
-}

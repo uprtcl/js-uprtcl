@@ -22,13 +22,9 @@ import {
   UprtclAction
 } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { StoresModule } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { CidConfig } from '@uprtcl/ipfs-provider';
 
 import { TextNode, TextType, DocNodeEventsHandlers, DocNode } from '../types';
-import { CREATE_TEXT_NODE } from '../graphql/queries';
 import { HasDocNodeLenses, DocNodeLens } from './document-patterns'; 
 import { NodeActions } from '@uprtcl/evees';
 

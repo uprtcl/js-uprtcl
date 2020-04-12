@@ -141,7 +141,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
     }
 
-    return super.mergePerspectives(toPerspectiveId, fromPerspectiveId);
+    return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
   }
 
   private async getPerspectiveContext(perspectiveId: string): Promise<string> {
