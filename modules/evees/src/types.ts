@@ -13,7 +13,7 @@ export type RemotesConfig = {
 export type Context = string;
 
 export interface Perspective {
-  origin: string;
+  authority: string;
   creatorId: string;
   timestamp: number;
 }
@@ -71,4 +71,9 @@ export interface UprtclAction {
   type: string;
   entity?: Hashed<any>;
   payload: any;
+}
+
+export interface NodeActions <T>{
+  new: T,
+  actions: UprtclAction[]
 }

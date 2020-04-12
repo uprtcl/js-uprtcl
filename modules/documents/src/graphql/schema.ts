@@ -21,13 +21,4 @@ export const documentsTypeDefs: DocumentNode = gql`
     _context: EntityContext!
   }
 
-  input TextNodeInput {
-    text: String!
-    type: TextType!
-    links: [String!]!
-  }
-
-  extend type Mutation {
-    createTextNode(content: TextNodeInput!, source: ID): TextNode!
-  }
 `;

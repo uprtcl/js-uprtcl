@@ -4,9 +4,8 @@ import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
-import { WikiCommon, WikiLinks, WikiCreate } from './patterns/wiki.entity';
+import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
 import { wikiTypeDefs } from './graphql/schema';
-import { resolvers } from './graphql/resolvers';
 import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
 
@@ -56,7 +55,7 @@ export class WikisModule extends MicroModule {
   }
 
   submodules = [
-    new GraphQlSchemaModule(wikiTypeDefs, resolvers),
+    new GraphQlSchemaModule(wikiTypeDefs),
     new i18nextModule('wikis', { en: en }),
     new StoresModule(
       this.stores.map(store => ({
@@ -65,7 +64,7 @@ export class WikisModule extends MicroModule {
       }))
     ),
     new PatternsModule({
-      [WikisModule.bindings.WikiEntity]: [WikiCommon, WikiLinks, WikiCreate]
+      [WikisModule.bindings.WikiEntity]: [WikiCommon, WikiLinks]
     })
   ];
 }

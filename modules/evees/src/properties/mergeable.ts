@@ -1,7 +1,7 @@
 import { Property } from '@uprtcl/cortex';
 
 import { MergeStrategy } from '../merge/merge-strategy';
-import { UprtclAction } from '../types';
+import { NodeActions } from '../types';
 
 export interface Mergeable<T = any> extends Property<T> {
   merge: (
@@ -10,5 +10,5 @@ export interface Mergeable<T = any> extends Property<T> {
     modifications: any[],
     strategy: MergeStrategy,
     config: any
-  ) => Promise<[any, UprtclAction[]]>;
+  ) => Promise<NodeActions<any>>;
 }

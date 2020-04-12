@@ -51,8 +51,8 @@ export const prettyAddress = (address: string) => {
     </span>`;
 }
 
-export const DEFAULT_COLOR = '#d0dae0';
+export const DEFAULT_COLOR: string = '#d0dae0';
 
-export const eveeColor = (perspectiveId: string) => {
+export const eveeColor = (perspectiveId: string):string => {
   return randomColor({ seed: perspectiveId })
 }

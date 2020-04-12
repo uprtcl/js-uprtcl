@@ -149,7 +149,7 @@ export class EveesEthereum implements EveesRemote, Authority {
     const canWrite = perspectiveData.canWrite;
 
     /** validate */
-    if (!secured.object.payload.origin) throw new Error('origin cannot be empty');
+    if (!secured.object.payload.authority) throw new Error('authority cannot be empty');
 
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);
@@ -222,7 +222,7 @@ export class EveesEthereum implements EveesRemote, Authority {
     let perspective = secured.object.payload;
 
     /** validate */
-    if (!perspective.origin) throw new Error('origin cannot be empty');
+    if (!perspective.authority) throw new Error('authority cannot be empty');
 
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.ipfsStore.put(sortObject(secured.object));

@@ -11,9 +11,9 @@ export const styleMap = style => {
 };
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Hashed, Pattern, Creatable, Signed, HasChildren, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { Pattern, HasChildren, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { EveesRemote, EveesModule, RemotesConfig, CreateCommitArgs, EveesBindings, Commit, UPDATE_HEAD, ContentUpdatedEvent } from '@uprtcl/evees';
+import { EveesRemote, EveesModule, RemotesConfig,UPDATE_HEAD, ContentUpdatedEvent, CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '@uprtcl/evees';
 import { Source, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode, TextNode, EntityType } from 'src/types';
@@ -120,7 +120,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
             id
             ... on Perspective {
               payload {
-                origin
+                authority
               }
               head {
                 id 
@@ -145,7 +145,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         }`
       });
       editable = result.data.entity._context.patterns.accessControl.canWrite;
-      authority = result.data.entity.payload.origin;
+      authority = result.data.entity.payload.authority;
       context = result.data.entity.context.id;
       dataId = result.data.entity.head.data.id;
       headId = result.data.entity.head.id;
@@ -196,7 +196,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       draft: {...data.object},
       entityType,
       headId,
-      symbol: DocumentsBindings.TextNodeEntity, // TODO: Derive symbol from pattern ?
       hasDocNodeLenses,
       editable,
       authority,
@@ -298,63 +297,77 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     switch (node.entityType) { 
       case EntityType.Perspective:
         if (isPlaceholder) {
-          node.ref = await this.createEvee(node.draft, node.symbol, node.authority, node.context as string);
+          node.ref = await this.createEvee(node.draft, node.authority, node.context as string);
         } else {
           await this.updateEvee(node);
         }
         break;
       
       case EntityType.Commit: 
-        const commit = await this.createCommit(node.draft, node.symbol, node.authority, node.parent ? [node.parent.ref] : []);
-        node.ref = commit.id;
+        const commitId = await this.createCommit(node.draft, node.authority, node.parent ? [node.parent.ref] : []);
+        node.ref = commitId;
         break;
 
       case EntityType.Data:
         const store = this.getStore(node.authority);
-        const data = await this.createEntity(node.draft, node.symbol, store.source);
-        node.ref = data.id;
+        const dataId = await this.createEntity(node.draft, store.source);
+        node.ref = dataId;
         break;
     }   
   }
 
-  async createEntity<T>(content: object, symbol: string, source: string): Promise<Hashed<T>> {
-    const creatable: Creatable<any, any> | undefined = this.getPatternOfSymbol<Creatable<any,any>>(symbol, 'create');
-    if (creatable === undefined) throw new Error('Creatable pattern not found for this entity');
-    return creatable.create()(content, source);
+  async createEntity(content: any, source: string): Promise<string> {
+    const client = this.client as ApolloClient<any>;
+
+    // TODO, replace for a single CREATE mutation
+      const createTextNode = await client.mutate({
+      mutation: CREATE_ENTITY,
+      variables: {
+        content: JSON.stringify(content),
+        source: source
+      }
+    });
+    // }
+
+    return createTextNode.data.createEntity;
   }
 
-  async createCommit(content: object, symbol: string, authority: string, parentsIds?: string[]) : Promise<Hashed<Signed<Commit>>> {
+  async createCommit(content: object, authority: string, parentsIds?: string[]) : Promise<string> {
     const eveesRemotes = this.eveesRemotes as EveesRemote[];
+    const client = this.client as ApolloClient<any>;
 
     const store = this.getStore(authority);
-    const object = await this.createEntity(content, symbol, store.source);
+    const objectId = await this.createEntity(content, store.source);
    
     const remote = eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const creatableCommit = this.getPatternOfSymbol<Creatable<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
-    const commit = await creatableCommit.create()(
-      { parentsIds, dataId: object.id },
-      remote.source
-    );
+    const createCommit = await client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        dataId: objectId,
+        parentsIds,
+        source: remote.source
+      }
+    });
 
     if (LOGINFO) this.logger.info('createCommit()', {content});
 
-    return commit;
+    return createCommit.data.createCommit.id;
   }
 
   async updateEvee(node: DocNode): Promise<void> {
     const eveesRemotes = this.eveesRemotes as EveesRemote[];
     const client = this.client as ApolloClient<any>;
 
-    const commit = await this.createCommit(node.draft, node.symbol, node.authority, node.headId ? [node.headId] : []);
+    const commitId = await this.createCommit(node.draft, node.authority, node.headId ? [node.headId] : []);
 
     await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: node.ref,
         context: node.context,
-        headId: commit.id
+        headId: commitId
       }
     });
 
@@ -368,25 +381,31 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
   }
 
-  async createEvee(content: object, symbol: string, authority: string, context: string): Promise<string> {
-    if (LOGINFO) this.logger.log('createEvee()', {content, symbol, authority});
+  async createEvee(content: object, authority: string, context: string): Promise<string> {
+    const client = this.client as ApolloClient<any>;
+    
+    if (LOGINFO) this.logger.log('createEvee()', {content, authority});
 
-    const commit = await this.createCommit(content, symbol, authority);
+    const commitId = await this.createCommit(content, authority);
 
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const creatablePerspective = this.getPatternOfSymbol<Creatable<any,any>>(EveesBindings.PerspectivePattern, 'create');
-    const perspective = await creatablePerspective.create()(
-      { fromDetails: { headId: commit.id, context } , parentId: this.ref },
-      authority
-    );
+    const createPerspective = await client.mutate({
+      mutation: CREATE_PERSPECTIVE,
+      variables: {
+        headId: commitId,
+        context,
+        parentId: this.ref,
+        source: remote.source
+      }
+    });
 
-    return perspective.id;
+    return createPerspective.data.createPerspective.id;
   }
 
-  createPlaceholder(ref: string, ix: number, draft: any, symbol: string, authority: string, parent: DocNode, entityType: EntityType) : DocNode {
+  createPlaceholder(ref: string, ix: number, draft: any, authority: string, parent: DocNode, entityType: EntityType) : DocNode {
     const hasChildren = this.getPatternOfObject<HasChildren>(draft, 'getChildrenLinks');
     const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(draft, 'docNodeLenses');
     const context = `${parent.context}-${ix}-${Date.now()}`;
@@ -399,7 +418,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       entityType,
       ix,
       ref,
-      symbol,
       parent,
       authority,
       context,
@@ -421,7 +439,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (typeof el !== 'string') {
         if ((el.object !== undefined) && (el.symbol !== undefined)) {
           /** element is an object from which a DocNode should be create */
-          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, el.symbol, node.authority, node, EntityType.Commit));
+          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, node.authority, node, EntityType.Commit));
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);

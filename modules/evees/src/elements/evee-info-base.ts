@@ -36,11 +36,10 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
-import { UPDATE_HEAD, CREATE_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL, DELETE_PERSPECTIVE } from '../graphql/queries';
+import { UPDATE_HEAD, CREATE_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL, DELETE_PERSPECTIVE, CREATE_PERSPECTIVE } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
-import { Evees, CreatePerspectiveArgs } from '../services/evees';
+import { Evees } from '../services/evees';
 
-import { OwnerPreservingConfig } from '../merge/owner-preserving.merge-strategy';
 import { executeActions, cacheActions } from '../utils/actions';
 import { NewPerspectiveData } from '../services/evees.provider';
 
@@ -127,7 +126,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
               }
               name
               payload {
-                origin
+                authority
                 creatorId
                 timestamp
               }
@@ -222,21 +221,22 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       );
     }
 
-    const config: OwnerPreservingConfig = {
-      targetAuthority: remote.authority,
-      targetCanWrite: permissions.owner
-    };
-    
-    const [perspectiveId, actions] = await this.merge.mergePerspectives(
+    const config = {
+      forceOwner: true,
+      authority: remote.authority,
+      canWrite: permissions.owner
+    }
+
+    const mergeResult = await this.merge.mergePerspectives(
       toPerspectiveId,
       fromPerspectiveId,
       config
     );
 
     if (isProposal) {
-      await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, actions);
+      await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, mergeResult.actions);
     } else {
-      await this.mergePerspective(actions);
+      await this.mergePerspective(mergeResult.actions);
     }
 
     if (this.perspectiveId !== toPerspectiveId) {
@@ -250,10 +250,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async mergePerspective(actions: UprtclAction[]): Promise<void> {
     if(!this.cache) throw new Error('cache undefined');
     if(!this.client) throw new Error('client undefined');
-    if(!this.recognizer) throw new Error('recognizer undefined');
-
+    
     await cacheActions(actions, this.cache, this.client);
-    await executeActions(actions, this.client, this.recognizer);
+    await executeActions(actions, this.client);
 
     const updateRequests = actions.filter(a => a.type === UPDATE_HEAD_ACTION).map(a => a.payload);
 
@@ -272,7 +271,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await Promise.all(updateHeadsPromises);
   }
 
-  /** executes a given function for each group of actions on perspectives of the same origin */
+  /** executes a given function for each group of actions on perspectives of the same authority */
   async executeActionsBatched(
     actions: UprtclAction[],
     actionToPerspectiveId: (string) => Promise<string>,
@@ -290,7 +289,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
               id
               ... on Perspective {
                 payload {
-                  origin
+                  authority
                 }
               }
             }
@@ -299,7 +298,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       });
 
       return {
-        origin: result.data.entity.payload.origin,
+        authority: result.data.entity.payload.authority,
         action: action
       };
     });
@@ -309,10 +308,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const actionsByAuthority = {};
 
     for (var i = 0; i < authoritiesData.length; i++) {
-      if (!actionsByAuthority[authoritiesData[i].origin]) {
-        actionsByAuthority[authoritiesData[i].origin] = [];
+      if (!actionsByAuthority[authoritiesData[i].authority]) {
+        actionsByAuthority[authoritiesData[i].authority] = [];
       }
-      actionsByAuthority[authoritiesData[i].origin].push(authoritiesData[i].action);
+      actionsByAuthority[authoritiesData[i].authority].push(authoritiesData[i].action);
     }
 
     const executePromises = Object.keys(actionsByAuthority).map(async (authority: string) => {
@@ -325,16 +324,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async createMergeProposal(fromPerspectiveId: string, toPerspectiveId: string, actions: UprtclAction[]): Promise<void> {
     if(!this.client) throw new Error('client undefined');
     if(!this.cache) throw new Error('cache undefined');
-    if(!this.recognizer) throw new Error('recognizer undefined');
     
-
     await cacheActions(actions, this.cache, this.client);
 
     /** create commits and data */
     const dataActions = actions.filter(a =>
       [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type)
     );
-    await executeActions(dataActions, this.client, this.recognizer);
+    await executeActions(dataActions, this.client);
 
     await this.executeActionsBatched(
       actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION),
@@ -450,33 +447,21 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async newPerspectiveClicked() {
-    if(!this.remotesConfig) throw new Error('remotesConfig undefined');
-
+    if (!this.remotesConfig) throw new Error('remotesConfig undefined');
+    if (!this.client) throw new Error('client undefined');
+    if (!this.evees) throw new Error('evees-undefined');
+    if (!this.cache) throw new Error('cache-undefined');
+    
     this.loading = true;
 
-    if (!this.perspectiveData.details.headId)
-      throw new Error('Cannot create a perspective that does not have a headId');
+    const forkPerspective = await this.evees.forkPerspective(this.perspectiveId);
 
-    /** new perspectives are always created in one evees remote */
-    const createPerspective: Creatable<
-      CreatePerspectiveArgs,
-      Signed<Perspective>
-    > = this.getCreatePattern(EveesModule.bindings.PerspectivePattern);
-
-    const perspective = await createPerspective.create()(
-      {
-        fromDetails: {
-          headId: this.perspectiveData.details.headId,
-          context: this.perspectiveData.details.context
-        }
-      },
-      this.remotesConfig.defaultCreator.authority
-    );
-
-    const newPerspectiveId = perspective.id;
+    await cacheActions(forkPerspective.actions, this.cache, this.client);
+    await executeActions(forkPerspective.actions, this.client);
     
-    this.checkoutPerspective(newPerspectiveId);
-    this.logger.info('newPerspectiveClicked() - perspective created', { newPerspectiveId });
+    this.checkoutPerspective(forkPerspective.new);
+
+    this.logger.info('newPerspectiveClicked() - perspective created', { id: forkPerspective.new });
   }
 
   checkoutPerspective(perspectiveId: string) {
@@ -543,8 +528,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
                   <td class="prop-value">${this.perspectiveData.details.context}</td>
                 </tr>
                 <tr>
-                  <td class="prop-name">origin:</td>
-                  <td class="prop-value">${this.perspectiveData.perspective.origin}</td>
+                  <td class="prop-name">authority:</td>
+                  <td class="prop-value">${this.perspectiveData.perspective.authority}</td>
                 </tr>
                 <tr>
                   <td class="prop-name">head:</td>

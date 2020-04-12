@@ -3,7 +3,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { createEntity, EntityCache } from '@uprtcl/multiplatform';
 import { PatternRecognizer, Hashed } from '@uprtcl/cortex';
 
-import { CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
+import { CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '../graphql/queries';
 import {
   UprtclAction,
   CREATE_DATA_ACTION,
@@ -97,8 +97,7 @@ export async function cacheActions(
 
 export async function executeActions(
   actions: UprtclAction[],
-  client: ApolloClient<any>,
-  recognizer: PatternRecognizer
+  client: ApolloClient<any>
 ): Promise<void> {
   /** optimistic pre-fill the cache */
   const createDataPromises = actions
@@ -107,7 +106,16 @@ export async function executeActions(
     .map(async (action: UprtclAction) => {
       if (!action.entity) throw new Error('entity undefined');
 
-      const dataId = await createEntity(recognizer)(action.entity.object, action.payload.source);
+      const mutation = await client.mutate({
+        mutation: CREATE_ENTITY,
+        variables: {
+          content: JSON.stringify(action.entity.object),
+          source: action.payload.source
+        }
+      });
+
+      const dataId = mutation.data.createEntity;
+
       if (dataId !== action.entity.id) {
         throw new Error(`created entity id ${dataId} not as expected ${action.entity.id}`);
       }
@@ -143,7 +151,7 @@ export async function executeActions(
       variables: {
         ...action.entity.object.payload,
         ...action.payload.details,
-        authority: action.entity.object.payload.origin,
+        authority: action.entity.object.payload.authority,
         canWrite: action.payload.owner,
         parentId: action.payload.parentId
       }

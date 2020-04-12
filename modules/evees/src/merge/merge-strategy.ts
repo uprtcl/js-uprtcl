@@ -1,4 +1,4 @@
-import { UprtclAction } from '../types';
+import { NodeActions } from '../types';
 
 export interface MergeStrategy {
   /**
@@ -7,8 +7,8 @@ export interface MergeStrategy {
   mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config?: any
-  ): Promise<[string, UprtclAction[]]>;
+    config: any
+  ): Promise<NodeActions<string>>;
 
   /**
    * @returns the id of the resulting merge commit
@@ -17,8 +17,8 @@ export interface MergeStrategy {
     toCommitId: string,
     fromCommitId: string,
     dataSource: string,
-    config?: any
-  ): Promise<[string, UprtclAction[]]>;
+    config: any
+  ): Promise<NodeActions<string>>;
 
   /**
    * Merges the links to other entities appropiately
@@ -27,6 +27,6 @@ export interface MergeStrategy {
   mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
-    config?: any
-  ): Promise<[string[], UprtclAction[]]>;
+    config: any
+  ): Promise<NodeActions<any>[]>;
 }

@@ -1,17 +1,13 @@
 import { html, TemplateResult } from 'lit-element';
-import { injectable, inject, multiInject } from 'inversify';
-import { ApolloClient } from 'apollo-boost';
+import { injectable, inject } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Pattern, Hashed, Hashable, Entity, Creatable, HasChildren } from '@uprtcl/cortex';
+import { Pattern, Hashed, Hashable, Entity, HasChildren } from '@uprtcl/cortex';
 import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
-import { DiscoveryModule, DiscoveryService, TaskQueue, Task, Store, StoresModule } from '@uprtcl/multiplatform';
-import { CidConfig } from '@uprtcl/ipfs-provider';
 
 import { Wiki } from '../types';
-import { CREATE_WIKI } from '../graphql/queries';
-import { ApolloClientModule } from '@uprtcl/graphql';
+import { NodeActions } from '@uprtcl/evees';
 
 const propertyOrder = ['title', 'pages'];
 
@@ -55,25 +51,27 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
     modifications: Wiki[],
     mergeStrategy: MergeStrategy,
     config
-  ): Promise<[Wiki, UprtclAction[]]> => {
+  ): Promise<NodeActions<Wiki>> => {
     const resultTitle = mergeStrings(
       originalNode.title,
       modifications.map(data => data.title)
     );
 
-    const [mergedPages, actions] = await mergeStrategy.mergeLinks(
+    const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.pages,
       modifications.map(data => data.pages),
       config
     );
 
-    return [
-      {
-        pages: mergedPages,
+    const allActions = ([] as UprtclAction[]).concat(...mergedPages.map(node => node.actions));
+    
+    return {
+      new: {
+        pages: mergedPages.map(node => node.new),
         title: resultTitle
       },
-      actions
-    ];
+      actions: allActions
+    };
   };
 }
 
@@ -99,50 +97,5 @@ export class WikiCommon extends WikiEntity implements HasLenses {
         }
       }
     ];
-  };
-}
-
-@injectable()
-export class WikiCreate extends WikiEntity implements Creatable<Partial<Wiki>, Wiki> {
-  constructor(
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService,
-    @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @multiInject(StoresModule.bindings.Store) protected stores: Array<Store>,
-  ) {
-    super(hashedPattern);
-  }
-
-  recognize(object: object): boolean {
-    return propertyOrder.every(p => object.hasOwnProperty(p));
-  }
-
-  create = () => async (wiki: Partial<Wiki>, source: string): Promise<Hashed<Wiki>> => {
-    const store = this.stores.find(s => s.source === source);
-    if (!store) throw new Error(`store for ${source} not found`);
-
-    const hashedWiki = await this.new()(wiki, store.hashRecipe);
-    const result = await this.client.mutate({
-      mutation: CREATE_WIKI,
-      variables: {
-        content: hashedWiki.object,
-        source
-      }
-    });
-    // TODO: Comment this
-    if (result.data.createWiki.id != hashedWiki.id) {
-      throw new Error('unexpected id');
-    }
-
-    return { id: result.data.createWiki.id, object: hashedWiki.object };
-  };
-
-  new = () => async (node: Partial<Wiki>, config: CidConfig): Promise<Hashed<Wiki>> => {
-    const pages = node && node.pages ? node.pages : [];
-    const title = node && node.title ? node.title : '';
-
-    const newWiki = { pages, title };
-
-    return this.hashedPattern.derive()(newWiki, config);
   };
 }

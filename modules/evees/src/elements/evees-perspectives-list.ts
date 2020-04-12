@@ -11,7 +11,7 @@ import { prettyTime, prettyAddress, eveeColor } from './support';
 interface PerspectiveData {
   id: string;
   name: string;
-  origin: string;
+  authority: string;
   creatorId: string;
   timestamp: number;
   publicRead: boolean;
@@ -104,7 +104,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             id
             ... on Perspective {
               payload {
-                origin
+                authority
               }
               context {
                 id
@@ -114,7 +114,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                   payload {
                     creatorId
                     timestamp
-                    origin
+                    authority
                   }
                   _context {
                     patterns {
@@ -152,7 +152,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           name: perspective.name,
           creatorId: perspective.payload.creatorId,
           timestamp: perspective.payload.timestamp,
-          origin: perspective.payload.origin,
+          authority: perspective.payload.authority,
           publicRead: publicRead
         };
       });

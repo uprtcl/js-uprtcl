@@ -31,7 +31,7 @@ describe('<cortex-entity>', () => {
         id: 'perspective1',
         object: {
           payload: {
-            origin: 'local',
+            authority: 'local',
             creatorId: 'user1',
             timestamp: 0
           },

@@ -4,12 +4,10 @@ import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
 
 import {
-  TextNodeCreate,
   TextNodePatterns,
   TextNodeTitle
 } from './patterns/text-node.entity';
 import { documentsTypeDefs } from './graphql/schema';
-import { resolvers } from './graphql/resolvers';
 
 import en from './i18n/en.json';
 import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
@@ -58,7 +56,7 @@ export class DocumentsModule extends MicroModule {
   }
 
   submodules = [
-    new GraphQlSchemaModule(documentsTypeDefs, resolvers),
+    new GraphQlSchemaModule(documentsTypeDefs),
     new i18nextModule('documents', { en: en }),
     new StoresModule(
       this.stores.map((store) => ({
@@ -67,7 +65,7 @@ export class DocumentsModule extends MicroModule {
       }))
     ),
     new PatternsModule({
-      [DocumentsModule.bindings.TextNodeEntity]: [TextNodeCreate, TextNodePatterns, TextNodeTitle],
+      [DocumentsModule.bindings.TextNodeEntity]: [TextNodePatterns, TextNodeTitle],
     }),
   ];
 }
