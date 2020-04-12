@@ -70,11 +70,11 @@ export const CREATE_COMMIT: DocumentNode = gql`
 
 export const CREATE_PERSPECTIVE: DocumentNode = gql`
   mutation CreatePerspective(
-    $authority: String
+    $authority: String!
     $creatorId: String
     $timestamp: Date
     $headId: ID
-    $context: String
+    $context: String!
     $name: String
     $canWrite: String
     $parentId: String

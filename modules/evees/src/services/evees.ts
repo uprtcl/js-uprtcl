@@ -174,7 +174,7 @@ export class Evees {
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (!hasChildren) {
-      return [];
+      throw new Error(`entity dont hasChildren ${JSON.stringify(entity)}`);
     } else {
       return hasChildren.replaceChildrenLinks(entity)(newLinks);
     }
@@ -198,12 +198,16 @@ export class Evees {
             head {
               id
             }
+            context {
+              id
+            }
           }
         }
       }`
     });
 
     const headId = result.data.entity.head.id;
+    const context = result.data.entity.context.id;
 
     const forkCommit = await this.forkCommit(headId, eveesRemote.authority, canWrite);
     
@@ -239,7 +243,7 @@ export class Evees {
     authority: string, 
     canWrite: string): Promise<NodeActions<string>> {
 
-    const commit = this.discovery.get(commitId) as unknown as Hashed<Signed<Commit>>;
+    const commit = await this.discovery.get(commitId) as Hashed<Signed<Commit>>;
     const remote = this.getAuthority(authority);
 
     const dataId = commit.object.payload.dataId;
@@ -294,7 +298,7 @@ export class Evees {
     const newLinksNodeActions = await Promise.all(getLinksForks);
     const newLinks = newLinksNodeActions.map(node => node.new);
 
-    const newObject = this.replaceEntityChildren(data, newLinks);
+    const newObject = this.replaceEntityChildren(data.object, newLinks);
 
     const source = this.remotesConfig.map(authority);
     const newData = await this.hashed.derive()(newObject, source.hashRecipe);

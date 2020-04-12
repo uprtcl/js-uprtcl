@@ -29,7 +29,7 @@ export class EveesInfoPage extends EveesInfoBase {
       return 'Official Version';
     } 
 
-    const hasName = this.perspectiveData.details.name !== undefined && this.perspectiveData.details.name !== '';
+    const hasName = this.perspectiveData.details.name !== undefined && this.perspectiveData.details.name !== null && this.perspectiveData.details.name !== '';
     const name = html`${this.perspectiveData.details.name}`;
     const defaultName = html`by ${prettyAddress(this.perspectiveData.perspective.creatorId)}`;
 

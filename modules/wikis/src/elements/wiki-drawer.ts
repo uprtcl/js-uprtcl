@@ -46,6 +46,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   pagesList: Array<{ title: string; id: string }> | undefined = undefined;
 
   authority: string = '';
+  context: string = '';
   currentHeadId: string | undefined = undefined;
   editable: boolean = false;
   
@@ -105,6 +106,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   }
                 }
               }
+            }
+            context {
+              id
             }
           }
           _context {
@@ -210,8 +214,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const createTextNode = await this.client.mutate({
       mutation: CREATE_TEXT_NODE,
       variables: {
-        object: page,
-        source: remote.source
+        content: page,
+        source: store.source
       }
     });
 
@@ -224,11 +228,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }
     });
 
+    const headId = createCommit.data.createCommit.id;
+    const randint = 0 + Math.floor((10000 - 0) * Math.random());
+
     const createPerspective = await this.client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
-        headId: createCommit.data.createCommit.id,
+        authority: this.authority,
+        headId: headId,
         parentId: this.ref,
+        context: `${this.context}-${randint}`,
         source: remote.source
       }
     });
@@ -246,7 +255,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const createWiki = await client.mutate({
       mutation: CREATE_WIKI,
       variables: {
-        object: newWiki,
+        content: newWiki,
         source: store.source
       }
     });
@@ -257,21 +266,23 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const createCommit = await client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
-        dataId: createWiki.data.id,
+        dataId: createWiki.data.createWiki.id,
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [], 
         source: remote.source
       }
     });
 
+    const headId = createCommit.data.createCommit.id;
+
     await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.ref,
-        headId: createCommit.data.id
+        headId: headId
       }
     });
 
-    this.currentHeadId = createWiki.data.id;
+    this.currentHeadId = headId;
     
     this.logger.info('updateContent()', newWiki);
 
