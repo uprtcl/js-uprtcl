@@ -529,7 +529,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .column {
           height: 100%;
-          background-color: #f7f6f3;
+          background-image: linear-gradient(to bottom, #f7f6f3FF, #f7f6f300);
         }
         .color-bar {
           height: 1vw;
