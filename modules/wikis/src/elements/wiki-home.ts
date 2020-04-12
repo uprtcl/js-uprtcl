@@ -38,7 +38,7 @@ export class WikiHome extends moduleConnect(LitElement) {
     return css`
       .page-container {
         text-align: center;
-        background-color: #e8ecec;
+        background-image: linear-gradient(to bottom, #e8ececFF, #e8ecec00);
         height: auto;
         min-height: 100%;
       }

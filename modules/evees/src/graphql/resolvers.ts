@@ -197,6 +197,7 @@ export const eveesResolvers = {
       const remote: EveesRemote = remotes.find(remote => remote.authority === authority);
       creatorId = creatorId !== undefined ? creatorId : remote.userId !== undefined? remote.userId : '';
       timestamp = timestamp !== undefined ? timestamp : Date.now();
+      name = (name !== undefined && name != null) ? name : '';
 
       const perspectiveData: Perspective = {
         creatorId,

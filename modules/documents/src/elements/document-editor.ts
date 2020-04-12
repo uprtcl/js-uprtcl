@@ -303,8 +303,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         }
         break;
       
-      case EntityType.Commit: 
-        const commitId = await this.createCommit(node.draft, node.authority, node.parent ? [node.parent.ref] : []);
+      case EntityType.Commit:
+        const commitParents = isPlaceholder ? [] : node.headId ? [node.headId] : [];
+        const commitId = await this.createCommit(node.draft, node.authority, commitParents);
         node.ref = commitId;
         break;
 
