@@ -291,7 +291,7 @@ export class Evees {
     if (!data) throw new Error(`data ${entityId} not found`);
 
     /** createOwnerPreservingEntity of children */
-    const oldLinks = this.getEntityChildren(data);
+    const oldLinks = this.getEntityChildren(data.object);
 
     const getLinksForks = oldLinks.map(link => this.fork(link, authority, canWrite))
 
