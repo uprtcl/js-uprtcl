@@ -92,7 +92,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         }
       });
 
-      const perspectiveId = createPerspective.data.id;
+      const perspectiveId = createPerspective.data.createPerspective.id;
 
       window.history.pushState('', '', `/?id=${perspectiveId}`);
     }

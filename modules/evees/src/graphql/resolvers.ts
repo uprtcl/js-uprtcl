@@ -185,6 +185,8 @@ export const eveesResolvers = {
       const secured: IsSecure<any> = container.get(EveesBindings.Secured);
 
       const remote: EveesRemote = remotes.find(remote => remote.authority === authority);
+      creatorId = creatorId !== undefined ? creatorId : remote.userId !== undefined? remote.userId : '';
+      timestamp = timestamp !== undefined ? timestamp : Date.now();
 
       const perspectiveData: Perspective = {
         creatorId,
