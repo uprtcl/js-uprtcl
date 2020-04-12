@@ -134,7 +134,6 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     config: any
   ): Promise<NodeActions<string>> {
     let root = false;
-    debugger
     if (!this.perspectivesByContext) {
       root = true;
       this.perspectivesByContext = {};
