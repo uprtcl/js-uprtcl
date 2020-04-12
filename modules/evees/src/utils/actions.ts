@@ -114,7 +114,7 @@ export async function executeActions(
         }
       });
 
-      const dataId = mutation.data.createTextNode.id;
+      const dataId = mutation.data.createEntity;
 
       if (dataId !== action.entity.id) {
         throw new Error(`created entity id ${dataId} not as expected ${action.entity.id}`);

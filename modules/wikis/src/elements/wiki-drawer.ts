@@ -223,7 +223,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const createCommit = await this.client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
-        dataId: createTextNode.data.createTextNode.id,
+        dataId: createTextNode.data.createEntity,
         parentsIds: [],
         source: remote.source
       }
@@ -266,7 +266,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const createCommit = await client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
-        dataId: createWiki.data.createWiki.id,
+        dataId: createWiki.data.createEntity,
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [], 
         source: remote.source
       }

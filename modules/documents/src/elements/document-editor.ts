@@ -329,7 +329,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     });
     // }
 
-    return createTextNode.data.createTextNode.id;
+    return createTextNode.data.createEntity;
   }
 
   async createCommit(content: object, authority: string, parentsIds?: string[]) : Promise<string> {

@@ -71,12 +71,10 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         }
       });
 
-      debugger
-  
       const createCommit = await client.mutate({
         mutation: CREATE_COMMIT,
         variables: {
-          dataId: createWiki.data.createWiki.id,
+          dataId: createWiki.data.createEntity,
           parentsIds: [],
           source: eveesEthProvider.source
         }
