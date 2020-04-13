@@ -58,10 +58,6 @@ describe('<cortex-entity>', () => {
     orchestrator = new MicroOrchestrator();
 
     const remoteMap: RemoteMap = eveesAuthority => documentsProvider;
-    const remotesConfig = {
-      map: remoteMap,
-      defaultCreator: eveesProvider
-    };
 
     await orchestrator.loadModules([
       new i18nextBaseModule(),
@@ -70,7 +66,7 @@ describe('<cortex-entity>', () => {
       new DiscoveryModule(),
       new LensesModule(),
       new AccessControlModule(),
-      new EveesModule([eveesProvider], remotesConfig),
+      new EveesModule([eveesProvider], eveesProvider, remoteMap),
       new DocumentsModule([documentsProvider])
     ]);
   });
@@ -101,6 +97,5 @@ describe('<cortex-entity>', () => {
     expect(cortexEntity).shadowDom.to.equal(
       '<documents-text-node ref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></documents-text-node'
     );
-
   });
 });
