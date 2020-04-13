@@ -1,8 +1,10 @@
-import { gql } from 'apollo-boost';
-import { injectable } from 'inversify';
+import { gql, ApolloClient } from 'apollo-boost';
+import { injectable, inject } from 'inversify';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { HasChildren, Entity } from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { EntityCache, DiscoveryModule, loadEntity } from '@uprtcl/multiplatform';
+import { HasChildren, CortexModule, Entity, PatternRecognizer } from '@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import {
@@ -16,7 +18,7 @@ import {
 } from '../types';
 import { hashObject, signAndHashObject } from '../utils/cid-hash';
 import { EveesBindings } from '../bindings';
-import { Evees, CidHashedPattern } from '../uprtcl-evees';
+import { Evees } from '../uprtcl-evees';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -32,16 +34,13 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache,
-    @inject(EveesBindings.Secured) protected secured: Pattern & IsSecure<any>,
-    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService) {
-      
-      super(remotesConfig, evees, recognizer, client, entityCache, secured, hashed);
+    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
+  ) {
+    super(remotesConfig, evees, recognizer, client, entityCache);
   }
 
   async isPattern(id: string, name: string): Promise<boolean> {
-    const entity = await this.discovery.get(id) as object;
+    const entity = (await loadEntity(this.client, id)) as object;
     const pattern = this.recognizer.recognize(entity);
     return pattern.findIndex(p => p.name === name) !== -1;
   }
@@ -106,15 +105,15 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (hasChildren) {
       const links = hasChildren.getChildrenLinks(dataObject);
 
-      const promises = links.map(async (link) => {
-        const isPerspective = await this.isPattern(link, "Perspective");
+      const promises = links.map(async link => {
+        const isPerspective = await this.isPattern(link, 'Perspective');
         if (isPerspective) {
-          this.readPerspective(link, to)
+          this.readPerspective(link, to);
         } else {
           Promise.resolve();
         }
       });
-      
+
       await Promise.all(promises);
     }
   }
@@ -173,13 +172,13 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   async getLinkMergeId(link: string) {
-    const isPerspective = await this.isPattern(link, "Perspective");
+    const isPerspective = await this.isPattern(link, 'Perspective');
     if (isPerspective) {
       return this.getPerspectiveContext(link);
     } else {
       return Promise.resolve(link);
     }
-  } 
+  }
 
   async checkPerspectiveAndOwner(perspectiveId: string, authority: string, canWrite: string) {
     const result = await this.client.query({
@@ -219,26 +218,21 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       modificationsPromises.map(promises => Promise.all(promises))
     );
 
-    const mergedLinks = await super.mergeLinks(
-      originalMergeIds,
-      modificationsMergeIds,
-      config
-    );
+    const mergedLinks = await super.mergeLinks(originalMergeIds, modificationsMergeIds, config);
 
     const dictionary = this.perspectivesByContext;
 
     const mergeLinks = mergedLinks.map(
       async (mergeResult): Promise<NodeActions<string>> => {
-        
         const perspectivesByContext = dictionary[mergeResult.new];
 
         if (perspectivesByContext) {
-
           const needsSubperspectiveMerge = perspectivesByContext.to && perspectivesByContext.from;
 
           if (needsSubperspectiveMerge) {
-            /** Two perspectives of the same context are merged, keeping the "to" perspecive id, 
-             *  and updating its head */            
+            /** Two perspectives of the same context are merged, keeping the "to" perspecive id,
+             *  and updating its head */
+
             const { actions } = await this.mergePerspectives(
               perspectivesByContext.to as string,
               perspectivesByContext.from as string,
@@ -246,62 +240,61 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
             );
 
             return {
-              new: perspectivesByContext.to as string, 
+              new: perspectivesByContext.to as string,
               actions: actions.concat(...mergeResult.actions)
-            } 
+            };
           } else {
-                        
             if (perspectivesByContext.to) {
               /** if the perspective is only present in the "to", just keep it */
               return {
                 new: perspectivesByContext.to,
                 actions: []
-              }
+              };
             } else {
-              /** otherwise, if merge config.forceOwner and this perspective is only present in the 
-               * "from", a fork may be created to make sure the final perspective is in the target authority 
-               * and canWrite (TODO: canWrite will be replaced by a "copy permissions from element"  or 
-               * something */ 
-              
+              /** otherwise, if merge config.forceOwner and this perspective is only present in the
+               * "from", a fork may be created to make sure the final perspective is in the target authority
+               * and canWrite (TODO: canWrite will be replaced by a "copy permissions from element"  or
+               * something */
+
               if (config.forceOwner) {
-                
                 const isInternal = await this.checkPerspectiveAndOwner(
-                  perspectivesByContext.from as string, 
-                  config.authority, 
-                  config.canWrite);
+                  perspectivesByContext.from as string,
+                  config.authority,
+                  config.canWrite
+                );
 
                 if (!isInternal) {
                   const newPerspectiveActions = await this.evees.forkPerspective(
-                    perspectivesByContext.from as string, 
-                    config.authority, 
-                    config.canWrite);
+                    perspectivesByContext.from as string,
+                    config.authority,
+                    config.canWrite
+                  );
 
                   return newPerspectiveActions;
-
                 } else {
                   return {
                     new: perspectivesByContext.from as string,
                     actions: []
-                  }
+                  };
                 }
               } else {
                 return {
                   new: perspectivesByContext.from as string,
                   actions: []
-                }
-              } 
+                };
+              }
             }
           }
         }
         return {
           new: mergeResult.new,
           actions: []
-        }
+        };
       }
     );
 
     const mergeResults = await Promise.all(mergeLinks);
-    
+
     return mergeResults;
   }
 
@@ -383,5 +376,4 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     return [updateHead, newCommitAction, newDataAction];
   }
-  
 }
