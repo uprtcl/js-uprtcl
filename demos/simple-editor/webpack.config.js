@@ -16,7 +16,9 @@ module.exports = {
     alias: {
       'lit-element': path.resolve('./node_modules/lit-element'),
       graphql: path.resolve('./node_modules/graphql'),
-      'lit-html': path.resolve('./node_modules/lit-html')
+      'lit-html': path.resolve('./node_modules/lit-html'),
+      '@material': path.resolve('./node_modules/@material'),
+      '@authentic': path.resolve('./node_modules/@authentic')
     }
   },
   entry: ['babel-polyfill', './src/index.js'],

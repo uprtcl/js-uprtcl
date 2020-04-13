@@ -459,7 +459,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           <div
             class="color-bar"
             style=${styleMap({
-              backgroundColor: this.color
+              backgroundColor: this.color()
             })}
           ></div>
 

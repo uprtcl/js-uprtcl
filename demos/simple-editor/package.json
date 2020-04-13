@@ -42,6 +42,23 @@
     "@uprtcl/micro-orchestrator": "^0.0.6-alpha.6",
     "@uprtcl/multiplatform": "^0.0.6-alpha.6",
     "@uprtcl/wikis": "^0.0.6-alpha.6",
+    "@authentic/mwc-card": "^0.9.0",
+    "@authentic/mwc-circular-progress": "^0.9.0",
+    "@authentic/mwc-ripple": "^0.9.0",
+    "@material/mwc-button": "^0.13.0",
+    "@material/mwc-icon": "^0.13.0",
+    "@material/mwc-icon-button": "^0.13.0",
+    "@material/mwc-linear-progress": "^0.13.0",
+    "@material/mwc-list": "^0.13.0",
+    "@material/mwc-menu": "^0.13.0",
+    "@material/mwc-tab": "^0.13.0",
+    "@material/mwc-tab-bar": "^0.13.0",
+    "@material/mwc-top-app-bar": "^0.13.0",
+    "@authentic/mwc-tooltip": "^0.9.0",
+    "@material/mwc-dialog": "^0.13.0",
+    "@material/mwc-drawer": "^0.14.1",
+    "@material/mwc-textfield": "^0.13.0",
+    "@material/dom": "=5.0.0-canary.a1a0deb3e.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "apollo-boost": "^0.4.7",
     "graphql": "^14.6.0",
@@ -79,4 +96,5 @@
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.4"
   }
+
 }
