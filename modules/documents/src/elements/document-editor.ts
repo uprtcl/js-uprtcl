@@ -15,8 +15,8 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import {
   EveesRemote,
   EveesModule,
-  RemotesConfig,
   UPDATE_HEAD,
+  RemoteMap,
   ContentUpdatedEvent,
   CREATE_COMMIT,
   CREATE_PERSPECTIVE,
@@ -48,13 +48,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
-  protected remotesConfig!: RemotesConfig;
+  protected remotesMap!: RemoteMap;
   protected recognizer!: PatternRecognizer;
 
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
+    this.remotesMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.ref);
@@ -222,8 +222,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   getStore(eveesAuthority: string, type: string): CASSource {
-    if (!this.remotesConfig) throw new Error('remotes config undefined');
-    return this.remotesConfig.map(eveesAuthority, type);
+    if (!this.remotesMap) throw new Error('remotes config undefined');
+    const remote = this.eveesRemotes.find(r => r.authorityID === eveesAuthority);
+
+    if (!remote) throw new Error(`Could not find evees remote with authority ID ${eveesAuthority}`);
+
+    return this.remotesMap(remote, type);
   }
 
   hasChangesAll() {

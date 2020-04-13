@@ -53,7 +53,6 @@ export class DocumentsModule extends EveesContentModule {
     customElements.define('documents-editor', DocumentEditor);
   }
 
-<<<<<<< HEAD
   get submodules() {
     return [
       ...super.submodules,
@@ -62,19 +61,4 @@ export class DocumentsModule extends EveesContentModule {
       new PatternsModule([new TextNodePattern([TextNodeCommon, TextNodeTitle])])
     ];
   }
-=======
-  submodules = [
-    new GraphQlSchemaModule(documentsTypeDefs),
-    new i18nextModule('documents', { en: en }),
-    new StoresModule(
-      this.stores.map((store) => ({
-        symbol: DocumentsModule.bindings.DocumentsRemote,
-        store: store,
-      }))
-    ),
-    new PatternsModule({
-      [DocumentsModule.bindings.TextNodeEntity]: [TextNodePatterns, TextNodeTitle],
-    }),
-  ];
->>>>>>> develop
 }

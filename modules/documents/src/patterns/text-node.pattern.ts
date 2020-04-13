@@ -2,7 +2,7 @@ import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
 import { Pattern, recognizeEntity, HasChildren, Entity, HasTitle, New } from '@uprtcl/cortex';
-import { Merge, MergeStrategy, mergeStrings, mergeResult, UprtclAction } from '@uprtcl/evees';
+import { Merge, MergeStrategy, mergeStrings, mergeResult, UprtclAction, NodeActions } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
@@ -130,7 +130,7 @@ export class TextNodeCommon
     modifications: Entity<TextNode>[],
     mergeStrategy: MergeStrategy,
     config: any
-  ): Promise<[TextNode, UprtclAction[]]> => {
+  ): Promise<NodeActions<TextNode>> => {
     const resultText = mergeStrings(
       originalNode.object.text,
       modifications.map(data => data.object.text)
@@ -140,20 +140,22 @@ export class TextNodeCommon
       modifications.map(data => data.object.type)
     );
 
-    const [mergedLinks, actions] = await mergeStrategy.mergeLinks(
+    const mergedLinks = await mergeStrategy.mergeLinks(
       originalNode.object.links,
       modifications.map(data => data.object.links),
       config
     );
 
-    return [
-      {
-        links: mergedLinks,
+    const allActions = ([] as UprtclAction[]).concat(...mergedLinks.map(node => node.actions));
+    
+    return {
+      new: {
+        links: mergedLinks.map(node => node.new),
         text: resultText,
         type: resultType
       },
-      actions
-    ];
+      actions: allActions
+    };
   };
 }
 
