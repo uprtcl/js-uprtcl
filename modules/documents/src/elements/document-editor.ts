@@ -10,16 +10,24 @@ export const styleMap = style => {
 };
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Pattern, HasChildren, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { Pattern, HasChildren, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { EveesRemote, EveesModule, RemotesConfig,UPDATE_HEAD, ContentUpdatedEvent, CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '@uprtcl/evees';
-import { Source, DiscoveryModule, DiscoveryService, loadEntity } from '@uprtcl/multiplatform';
+import {
+  EveesRemote,
+  EveesModule,
+  RemotesConfig,
+  UPDATE_HEAD,
+  ContentUpdatedEvent,
+  CREATE_COMMIT,
+  CREATE_PERSPECTIVE,
+  CREATE_ENTITY
+} from '@uprtcl/evees';
+import { loadEntity, CASSource } from '@uprtcl/multiplatform';
 
-import { TextType, DocNode, TextNode, EntityType } from 'src/types';
-import { HasDocNodeLenses } from 'src/patterns/document-patterns';
-import { DocumentsBindings } from 'src/bindings';
+import { TextType, DocNode, TextNode } from '../types';
+import { HasDocNodeLenses } from '../patterns/document-patterns';
 import { icons } from './prosemirror/icons';
-import { TextNodePattern } from '../patterns/text-node.pattern';
+import { DocumentsBindings } from '../bindings';
 
 const LOGINFO = false;
 
@@ -37,9 +45,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   @property({ type: String })
   color!: string;
-
-  private COMMIT_TYPE = new CommitPattern([]).type;
-  private PERSPECTIVE_TYPE = new PerspectivePattern([]).type;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -101,7 +106,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const recognizer = this.recognizer;
 
-    const entity = await loadEntity(this.client)(ref);
+    const entity = await loadEntity(this.client, ref);
 
     let entityType: string = recognizer.recognizeType(entity);
     let editable = false;
@@ -110,7 +115,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     let dataId: string | undefined = undefined;
     let headId: string | undefined = undefined;
 
-    if (entityType === this.PERSPECTIVE_TYPE) {
+    if (entityType === EveesModule.bindings.PerspectiveType) {
       const result = await this.client.query({
         query: gql`
         {
@@ -143,7 +148,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         }`
       });
       editable = result.data.entity._context.patterns.accessControl.canWrite;
-      authority = result.data.entity.payload.authority;
+      authorityID = result.data.entity.payload.authority;
       context = result.data.entity.context.id;
       dataId = result.data.entity.head.data.id;
       headId = result.data.entity.head.id;
@@ -175,7 +180,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (!dataId || !entityType || !authorityID) throw Error(`data not loaded for ref ${this.ref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
-    const data = await loadEntity(this.client, dataId);
+    const data: Entity<any> | undefined = await loadEntity(this.client, dataId);
     if (!data) throw Error('Data undefined');
 
     const hasChildren: HasChildren = this.recognizer
@@ -212,16 +217,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   defaultEntity(text: string, type: TextType) {
     return {
       data: { text, type, links: [] },
-      entityType: new TextNodePattern([]).type
+      entityType: DocumentsBindings.TextNodeType
     };
-  }
-
-  createPatternOf(entityType: string): Create<any, any> {
-    const create: Create<any, any> | undefined = this.recognizer
-      .getTypeBehaviours(entityType)
-      .find(b => (b as Create<any, any>).create);
-    if (!create) throw new Error(`No create pattern is registered for entity type ${entityType}`);
-    return create;
   }
 
   getStore(eveesAuthority: string, type: string): CASSource {
@@ -283,33 +280,43 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     /** if its a placeholder create an object, otherwise make a commit */
     switch (node.entityType) {
-      case this.PERSPECTIVE_TYPE:
+      case EveesModule.bindings.PerspectiveType:
         if (isPlaceholder) {
-          node.ref = await this.createEvee(node.draft, node.authority, node.context as string);
+          node.ref = await this.createEvee(
+            node.draft,
+            node.entityType,
+            node.authorityID,
+            node.context as string
+          );
         } else {
           await this.updateEvee(node);
         }
         break;
-      
-      case EntityType.Commit:
+
+      case EveesModule.bindings.CommitType:
         const commitParents = isPlaceholder ? [] : node.headId ? [node.headId] : [];
-        const commitId = await this.createCommit(node.draft, node.authority, commitParents);
+        const commitId = await this.createCommit(
+          node.draft,
+          node.entityType,
+          node.authorityID,
+          commitParents
+        );
         node.ref = commitId;
         break;
 
-      case EntityType.Data:
-        const store = this.getStore(node.authority);
-        const dataId = await this.createEntity(node.draft, store.source);
+      default:
+        const store = this.getStore(node.authorityID, node.entityType);
+        const dataId = await this.createEntity(node.draft, store.casID);
         node.ref = dataId;
         break;
-    }   
+    }
   }
 
   async createEntity(content: any, source: string): Promise<string> {
     const client = this.client as ApolloClient<any>;
 
     // TODO, replace for a single CREATE mutation
-      const createTextNode = await client.mutate({
+    const createTextNode = await client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
         content: JSON.stringify(content),
@@ -321,14 +328,18 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return createTextNode.data.createEntity;
   }
 
-  async createCommit(content: object, authority: string, parentsIds?: string[]) : Promise<string> {
-    const eveesRemotes = this.eveesRemotes as EveesRemote[];
+  async createCommit(
+    content: object,
+    type: string,
+    authority: string,
+    parentsIds?: string[]
+  ): Promise<string> {
     const client = this.client as ApolloClient<any>;
 
-    const store = this.getStore(authority);
-    const objectId = await this.createEntity(content, store.source);
-   
-    const remote = eveesRemotes.find(r => r.authority === authority);
+    const store = this.getStore(authority, type);
+    const objectId = await this.createEntity(content, store.casID);
+
+    const remote = this.eveesRemotes.find(r => r.authorityID === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
     const createCommit = await client.mutate({
@@ -336,7 +347,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       variables: {
         dataId: objectId,
         parentsIds,
-        source: remote.source
+        source: remote.casID
       }
     });
 
@@ -349,7 +360,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const eveesRemotes = this.eveesRemotes as EveesRemote[];
     const client = this.client as ApolloClient<any>;
 
-    const commitId = await this.createCommit(node.draft, node.authority, node.headId ? [node.headId] : []);
+    const commitId = await this.createCommit(
+      node.draft,
+      node.entityType,
+      node.authorityID,
+      node.headId ? [node.headId] : []
+    );
 
     await client.mutate({
       mutation: UPDATE_HEAD,
@@ -372,12 +388,17 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
   }
 
-  async createEvee(content: object, authority: string, context: string): Promise<string> {
+  async createEvee(
+    content: object,
+    type: string,
+    authority: string,
+    context: string
+  ): Promise<string> {
     const client = this.client as ApolloClient<any>;
-    
-    if (LOGINFO) this.logger.log('createEvee()', {content, authority});
 
-    const commitId = await this.createCommit(content, authority);
+    if (LOGINFO) this.logger.log('createEvee()', { content, authority });
+
+    const commitId = await this.createCommit(content, type, authority);
 
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     const remote = this.eveesRemotes.find(r => r.authorityID === authority);
@@ -389,16 +410,27 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         headId: commitId,
         context,
         parentId: this.ref,
-        source: remote.source
+        source: remote.casID
       }
     });
 
     return createPerspective.data.createPerspective.id;
   }
 
-  createPlaceholder(ref: string, ix: number, draft: any, authority: string, parent: DocNode, entityType: EntityType) : DocNode {
-    const hasChildren = this.getPatternOfObject<HasChildren>(draft, 'getChildrenLinks');
-    const hasDocNodeLenses = this.getPatternOfObject<HasDocNodeLenses>(draft, 'docNodeLenses');
+  createPlaceholder(
+    ref: string,
+    ix: number,
+    draft: any,
+    authorityID: string,
+    parent: DocNode,
+    entityType: string
+  ): DocNode {
+    const hasChildren = this.recognizer
+      .recognizeBehaviours(draft)
+      .find(b => (b as HasChildren).getChildrenLinks);
+    const hasDocNodeLenses = this.recognizer
+      .recognizeBehaviours(draft)
+      .find(b => (b as HasDocNodeLenses).docNodeLenses);
     const context = `${parent.context}-${ix}-${Date.now()}`;
 
     return {
@@ -435,7 +467,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (typeof el !== 'string') {
         if (el.object !== undefined && el.entityType !== undefined) {
           /** element is an object from which a DocNode should be create */
-          return Promise.resolve(this.createPlaceholder('', elIndex, el.object, node.authority, node, EntityType.Commit));
+          return Promise.resolve(
+            this.createPlaceholder(
+              '',
+              elIndex,
+              el.object,
+              node.authorityID,
+              node,
+              EveesModule.bindings.CommitType
+            )
+          );
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);

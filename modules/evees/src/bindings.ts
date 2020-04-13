@@ -1,6 +1,6 @@
 export const EveesBindings = {
-  PerspectivePattern: 'perspective-pattern',
-  CommitPattern: 'commit-pattern',
+  PerspectiveType: 'Perspective',
+  CommitType: 'Commit',
   EveesRemote: 'evees-remote',
   MergeStrategy: 'merge-strategry',
   Evees: 'evees',

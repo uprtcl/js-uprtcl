@@ -1,17 +1,18 @@
+import { Container } from 'inversify';
+
 import { PatternsModule } from '@uprtcl/cortex';
 import { EveesContentModule } from '@uprtcl/evees';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
+import { i18nextModule } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
-import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
+import { WikiCommon, WikiLinks, WikiEntity } from './patterns/wiki.entity';
 import { wikiTypeDefs } from './graphql/schema';
 import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
 
 import en from './i18n/en.json';
 import { WikiBindings } from './bindings';
-import { interfaces, Container } from 'inversify';
 
 /**
  * Configure a wikis module with the given providers

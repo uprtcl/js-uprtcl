@@ -16,7 +16,7 @@ import {
   RemotesConfig,
   NodeActions
 } from '../types';
-import { hashObject, signAndHashObject } from '../utils/cid-hash';
+import { hashObject, signAndHashObject, deriveEntity } from '../utils/cid-hash';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../uprtcl-evees';
 
@@ -309,6 +309,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
           ... on Perspective {
             head {
               id
+              data {
+                id
+              }
             }
             payload {
               authority
@@ -320,20 +323,16 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const authority = result.data.entity.payload.authority;
     const headId = result.data.entity.head.id;
+    const type = this.recognizer.recognizeType(data);
 
     const remote = this.evees.getAuthority(authority);
 
     if (!remote.userId)
       throw new Error('Cannot create perspectives in a remote you are not signed in');
 
-    const dataSource = this.remotesConfig.map(remote.authorityID);
+    const dataSource = this.remotesConfig.map(remote.authorityID, type);
 
-    const newDataId = await hashObject(data, dataSource.cidConfig);
-
-    const entity = {
-      id: newDataId,
-      entity: data
-    };
+    const entity = await deriveEntity(data, dataSource.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,

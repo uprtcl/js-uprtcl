@@ -7,6 +7,7 @@ import { Lens, HasLenses } from '@uprtcl/lenses';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
 import { DocNodeLens } from './document-patterns';
+import { DocumentsBindings } from '../bindings';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -42,7 +43,7 @@ export class TextNodePattern extends Pattern<Entity<TextNode>> {
     return recognizeEntity(entity) && propertyOrder.every(p => entity.object.hasOwnProperty(p));
   }
 
-  type = 'TextNode';
+  type = DocumentsBindings.TextNodeType;
 }
 
 @injectable()

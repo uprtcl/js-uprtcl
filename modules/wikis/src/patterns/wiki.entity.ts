@@ -2,12 +2,13 @@ import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Pattern, Entity, HasChildren } from '@uprtcl/cortex';
-import { MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
+import { Pattern, Entity, HasChildren, recognizeEntity } from '@uprtcl/cortex';
+import { MergeStrategy, mergeStrings, UprtclAction, Merge } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
+import { NodeActions } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
-import { NodeActions } from '@uprtcl/evees';
+import { WikiBindings } from '../bindings';
 
 const propertyOrder = ['title', 'pages'];
 
@@ -18,7 +19,7 @@ export class WikiEntity extends Pattern<Wiki> {
     return recognizeEntity(entity) && propertyOrder.every(p => entity.object.hasOwnProperty(p));
   }
 
-  type = 'Wiki';
+  type = WikiBindings.WikiType;
 }
 
 @injectable()

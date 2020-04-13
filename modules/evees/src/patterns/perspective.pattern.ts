@@ -1,18 +1,15 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { injectable, inject } from 'inversify';
 
-import {
-  Pattern,
-  HasLinks,
-  Entity,  
-  Signed
-} from '@uprtcl/cortex';
+import { Pattern, HasLinks, Entity, Signed } from '@uprtcl/cortex';
+import { HasRedirect } from '@uprtcl/multiplatform';
 import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Perspective } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
+import { extractSignedEntity } from '../utils/signed';
 
 export const propertyOrder = ['authority', 'creatorId', 'timestamp'];
 
@@ -23,15 +20,12 @@ export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
     return object && propertyOrder.every(p => object.hasOwnProperty(p));
   }
 
-  type = 'Perspective';
+  type = EveesBindings.PerspectiveType;
 }
 
 @injectable()
 export class PerspectiveLinks implements HasLinks, HasRedirect {
-  constructor(
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
-  ) {
-  }
+  constructor(@inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {}
 
   links = async (perspective: Entity<Signed<Perspective>>) => {
     const result = await this.client.query({

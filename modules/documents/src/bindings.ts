@@ -1,4 +1,4 @@
 export const DocumentsBindings = {
-  TextNodeEntity: 'text-node-entity',
+  TextNodeType: 'TextNode',
   DocumentsRemote: 'documents-remote'
 };

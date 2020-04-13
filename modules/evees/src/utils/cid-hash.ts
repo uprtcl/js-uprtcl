@@ -29,5 +29,16 @@ export async function signAndHashObject(
   const signed = signObject(object);
   const hash = await hashObject(signed, cidConfig);
 
-  return { id: hash, entity: signed };
+  return { id: hash, object: signed };
+}
+
+export async function deriveEntity<O extends object>(
+  object: O,
+  config: CidConfig = defaultCidConfig
+): Promise<Entity<O>> {
+  const hash = await hashObject(object, config);
+  return {
+    id: hash,
+    object
+  };
 }

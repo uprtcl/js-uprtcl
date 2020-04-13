@@ -20,9 +20,9 @@ import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
 import findMostRecentCommonAncestor from './common-ancestor';
-import { Mergeable } from '../behaviours/merge';
+import { Merge } from '../behaviours/merge';
 import { mergeResult } from './utils';
-import { hashObject, signAndHashObject } from '../utils/cid-hash';
+import { hashObject, signAndHashObject, deriveEntity } from '../utils/cid-hash';
 import { cacheUpdateRequest } from '../utils/actions';
 
 @injectable()
@@ -70,12 +70,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
  */
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
 
-    const mergeResult = await this.mergeCommits(
-      toHeadId,
-      fromHeadId,
-      remote.authorityID,
-      config
-    );
+    const mergeResult = await this.mergeCommits(toHeadId, fromHeadId, remote.authorityID, config);
 
     const request: UpdateRequest = {
       fromPerspectiveId,
@@ -86,7 +81,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const action = this.buildUpdateAction(request);
 
     return {
-      new: toPerspectiveId, 
+      new: toPerspectiveId,
       actions: [action, ...mergeResult.actions]
     };
   }
@@ -124,7 +119,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const object = result.data.entity.head.data._context.object;
     return {
       id: result.data.entity.head.data.id,
-      entity: object
+      object
     };
   }
 
@@ -146,7 +141,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const object = result.data.entity.data._context.object;
     return {
       id: result.data.entity.data.id,
-      entity: object
+      object
     };
   }
 
@@ -165,10 +160,15 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDatas: any[] = await Promise.all(datasPromises);
 
-    const mergedData = await this.mergeData(ancestorData.object, newDatas.map(data => data.object), config);
+    const mergedData = await this.mergeData(
+      ancestorData.object,
+      newDatas.map(data => data.object),
+      config
+    );
 
-    // TODO: fix inconsistency
-    const sourceRemote = this.remotesConfig.map(authority);
+    const type = this.recognizer.recognizeType(ancestorData);
+
+    const sourceRemote = this.remotesConfig.map(authority, type);
 
     const entity = await deriveEntity(mergedData.new, sourceRemote.cidConfig);
 
@@ -204,7 +204,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     this.entityCache.cacheEntity(securedCommit);
 
     return {
-      new: securedCommit.id, 
+      new: securedCommit.id,
       actions: [newCommitAction, newDataAction, ...mergedData.actions]
     };
   }
@@ -214,12 +214,16 @@ export class SimpleMergeStrategy implements MergeStrategy {
     newDatas: T[],
     config: any
   ): Promise<NodeActions<T>> {
-    const merge: Mergeable | undefined = this.recognizer
+    const merge: Merge | undefined = this.recognizer
       .recognizeBehaviours(originalData)
-      .find(prop => !!(prop as Mergeable).merge);
+      .find(prop => !!(prop as Merge).merge);
 
     if (!merge)
-      throw new Error(`Cannot merge data ${JSON.stringify(originalData)} that does not implement the Mergeable behaviour`);
+      throw new Error(
+        `Cannot merge data ${JSON.stringify(
+          originalData
+        )} that does not implement the Mergeable behaviour`
+      );
 
     return merge.merge(originalData)(newDatas, this, config);
   }
@@ -266,8 +270,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
       }
     }
 
-    const sortedLinks = resultLinks.sort((link1, link2) => link1.index - link2.index).map(link => link.link);
-    
-    return sortedLinks.map((link):NodeActions<string> => {return { new: link, actions: [] }});
+    const sortedLinks = resultLinks
+      .sort((link1, link2) => link1.index - link2.index)
+      .map(link => link.link);
+
+    return sortedLinks.map(
+      (link): NodeActions<string> => {
+        return { new: link, actions: [] };
+      }
+    );
   }
 }
