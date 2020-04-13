@@ -32,6 +32,7 @@ module.exports = config =>
           '@material/mwc-icon': path.resolve(__dirname, './node_modules/@material/mwc-icon'),
           'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
           'lit-element': path.resolve(__dirname, './node_modules/lit-element'),
+          'apollo-boost': path.resolve(__dirname, './node_modules/apollo-boost'),
           'apollo-client': path.resolve(__dirname, './node_modules/apollo-client')
         },
         extensions: ['.mjs', '.js', '.ts', '.json']
