@@ -59,7 +59,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     await Promise.all(verifyPromises);
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
-    const nonce = 0;
+    const nonce = Date.now();
 
     const ethHeadUpdatesPromises = headUpdates.map(
       async (update): Promise<EthHeadUpdate> => {

@@ -9,7 +9,8 @@ export {
   PerspectiveDetails,
   RemotesConfig,
   RemoteMap,
-  UprtclAction
+  UprtclAction,
+  NodeActions
 } from './types';
 
 /** Services interfaces */
@@ -22,13 +23,7 @@ export { EveesHolochain } from './services/providers/holochain/evees.holochain';
 export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
 export { EveesHttp } from './services/providers/http/evees.http';
 
-export {
-  Evees,
-  NewPerspectiveArgs,
-  CreatePerspectiveArgs,
-  CreateCommitArgs
-} from './services/evees';
-
+export { Evees } from './services/evees';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
 
@@ -38,7 +33,6 @@ export { Merge } from './behaviours/merge';
 export { MergeStrategy } from './merge/merge-strategy';
 export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
-export { OwnerPreservingMergeStrategy } from './merge/owner-preserving.merge-strategy';
 export { mergeStrings, mergeResult } from './merge/utils';
 export { EveesBindings } from './bindings';
 
@@ -54,17 +48,15 @@ export { MenuConfig } from './elements/common-ui/evees-options-menu';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
-export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE } from './graphql/queries';
-export { contentCreateResolver } from './graphql/resolvers';
+export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
 
 /** Patterns */
 export {
   PerspectiveAccessControl,
-  PerspectiveCreate,
   PerspectivePattern,
   PerspectiveLinks
 } from './patterns/perspective.pattern';
-export { CommitCreate, CommitLinked, CommitPattern } from './patterns/commit.pattern';
+export { CommitLinked, CommitPattern } from './patterns/commit.pattern';
 export { Secured, signAndHashObject, hashObject } from './utils/cid-hash';
 export { extractSignedEntity, signObject } from './utils/signed';
 

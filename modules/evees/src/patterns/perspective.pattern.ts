@@ -4,26 +4,16 @@ import { injectable, inject } from 'inversify';
 import {
   Pattern,
   HasLinks,
-  Create,
-  Entity,
-  Signed,
-  CortexModule,
-  PatternRecognizer,
-  New
+  Entity  
 } from '@uprtcl/cortex';
 import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CidConfig, DiscoveryModule, HasRedirect, EntityCache } from '@uprtcl/multiplatform';
 
-import { Perspective, PerspectiveDetails } from '../types';
+import { Perspective } from '../types';
 import { EveesBindings } from '../bindings';
-import { Evees, NewPerspectiveArgs, CreatePerspectiveArgs } from '../services/evees';
-import { CREATE_PERSPECTIVE } from '../graphql/queries';
-import { executeActions, cacheActions } from '../utils/actions';
-import { extractSignedEntity, signObject } from '../utils/signed';
-import { signAndHashObject, hashObject } from '../utils/cid-hash';
+import { Evees } from '../services/evees';
 
-export const propertyOrder = ['origin', 'creatorId', 'timestamp'];
+export const propertyOrder = ['authority', 'creatorId', 'timestamp'];
 
 export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
   recognize(entity: object) {
@@ -36,81 +26,11 @@ export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
 }
 
 @injectable()
-export class PerspectiveCreate
-  implements
-    Create<CreatePerspectiveArgs, Signed<Perspective>>,
-    New<NewPerspectiveArgs, Signed<Perspective>> {
+export class PerspectiveLinks implements HasLinks, HasRedirect {
   constructor(
-    @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
-  ) {}
-
-  create = () => async (args: CreatePerspectiveArgs, authority: string) => {
-    let fromDetails: PerspectiveDetails = (args as any).fromDetails;
-    // TODO, review "if" logic. You might want to create a new perspective with details but without computing it.
-    if (fromDetails || args.ofPerspectiveId) {
-      fromDetails.context =
-        fromDetails.context || `${Date.now()}.${Math.floor(Math.random() / 1000)}`;
-      fromDetails.name = fromDetails.name || 'master';
-
-      const result = await this.evees.computeNewGlobalPerspectiveOps(
-        authority,
-        fromDetails,
-        args.ofPerspectiveId,
-        args.canWrite,
-        args.parentId
-      );
-      const actions = result[1];
-      const perspective = result[0];
-
-      await cacheActions(actions, this.entityCache, this.client);
-      await executeActions(actions, this.client, this.patternRecognizer);
-
-      return perspective;
-    } else {
-      const remote = this.evees.getAuthority(authority);
-
-      const perspectiveObject = await this.new()((args as any).newPerspective);
-      const perspectiveId = await hashObject(perspectiveObject, remote.cidConfig);
-      const perspective = { id: perspectiveId, entity: perspectiveObject };
-
-      const result = await this.client.mutate({
-        mutation: CREATE_PERSPECTIVE,
-        variables: {
-          creatorId: perspective.entity.payload.creatorId,
-          origin: perspective.entity.payload.origin,
-          timestamp: perspective.entity.payload.timestamp,
-          authority: perspective.entity.payload.origin,
-          canWrite: args.canWrite || remote.userId,
-          parentId: args.parentId
-        }
-      });
-
-      return perspective;
-    }
-  };
-
-  new = () => async (args: NewPerspectiveArgs) => {
-    const userId = this.evees.getAuthority(args.autority).userId;
-
-    if (!userId) throw new Error('Cannot create in an authority in which you are not signed in');
-
-    const perspective: Perspective = {
-      creatorId: userId,
-      origin: args.autority,
-      timestamp: args.timestamp || Date.now()
-    };
-
-    return signObject(perspective);
-  };
-}
-
-@injectable()
-export class PerspectiveLinks
-  implements HasLinks<Entity<Signed<Perspective>>>, HasRedirect<Entity<Signed<Perspective>>> {
-  constructor(@inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {}
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>
+  ) {
+  }
 
   links = async (perspective: Entity<Signed<Perspective>>) => {
     const result = await this.client.query({

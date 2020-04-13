@@ -13,7 +13,8 @@ import {
   UPDATE_HEAD_ACTION,
   Commit,
   CREATE_COMMIT_ACTION,
-  CREATE_DATA_ACTION
+  CREATE_DATA_ACTION,
+  NodeActions
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
@@ -38,7 +39,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config?: any
-  ): Promise<[string, UprtclAction[]]> {
+  ): Promise<NodeActions<string>> {
     const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
       const result = await this.client.query({
         query: gql`{
@@ -69,7 +70,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
  */
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
 
-    const [mergeCommitId, actions] = await this.mergeCommits(
+    const mergeResult = await this.mergeCommits(
       toHeadId,
       fromHeadId,
       remote.authorityID,
@@ -80,11 +81,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
       fromPerspectiveId,
       perspectiveId: toPerspectiveId,
       oldHeadId: toHeadId,
-      newHeadId: mergeCommitId
+      newHeadId: mergeResult.new
     };
     const action = this.buildUpdateAction(request);
 
-    return [toPerspectiveId, [action, ...actions]];
+    return {
+      new: toPerspectiveId, 
+      actions: [action, ...mergeResult.actions]
+    };
   }
 
   protected buildUpdateAction(updateRequest: UpdateRequest): UprtclAction {
@@ -151,7 +155,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromCommitId: string,
     authority: string,
     config: any
-  ): Promise<[string, UprtclAction[]]> {
+  ): Promise<NodeActions<string>> {
     const commitsIds = [toCommitId, fromCommitId];
 
     const ancestorId = await findMostRecentCommonAncestor(this.client)(commitsIds);
@@ -161,17 +165,12 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDatas: any[] = await Promise.all(datasPromises);
 
-    const [newData, actions] = await this.mergeData(ancestorData.object, newDatas.map(data => data.object), config);
+    const mergedData = await this.mergeData(ancestorData.object, newDatas.map(data => data.object), config);
 
     // TODO: fix inconsistency
     const sourceRemote = this.remotesConfig.map(authority);
 
-    const hash = await hashObject(newData, sourceRemote.cidConfig);
-
-    const entity: Entity<any> = {
-      id: hash,
-      entity: newData
-    };
+    const entity = await deriveEntity(mergedData.new, sourceRemote.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
@@ -204,14 +203,17 @@ export class SimpleMergeStrategy implements MergeStrategy {
     };
     this.entityCache.cacheEntity(securedCommit);
 
-    return [securedCommit.id, [newCommitAction, newDataAction, ...actions]];
+    return {
+      new: securedCommit.id, 
+      actions: [newCommitAction, newDataAction, ...mergedData.actions]
+    };
   }
 
   async mergeData<T extends object>(
     originalData: T,
     newDatas: T[],
     config: any
-  ): Promise<[T, UprtclAction[]]> {
+  ): Promise<NodeActions<T>> {
     const merge: Mergeable | undefined = this.recognizer
       .recognizeBehaviours(originalData)
       .find(prop => !!(prop as Mergeable).merge);
@@ -225,8 +227,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
-    config
-  ): Promise<[string[], UprtclAction[]]> {
+    config: any
+  ): Promise<NodeActions<string>[]> {
     const allLinks: Dictionary<boolean> = {};
 
     const originalLinksDic = {};
@@ -264,9 +266,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
       }
     }
 
-    return [
-      resultLinks.sort((link1, link2) => link1.index - link2.index).map(link => link.link),
-      []
-    ];
+    const sortedLinks = resultLinks.sort((link1, link2) => link1.index - link2.index).map(link => link.link);
+    
+    return sortedLinks.map((link):NodeActions<string> => {return { new: link, actions: [] }});
   }
 }

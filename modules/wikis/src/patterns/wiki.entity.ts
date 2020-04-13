@@ -2,11 +2,12 @@ import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Pattern, Entity, recognizeEntity, HasChildren, New } from '@uprtcl/cortex';
-import { Merge, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
+import { Pattern, Entity, HasChildren } from '@uprtcl/cortex';
+import { MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
+import { NodeActions } from '@uprtcl/evees';
 
 const propertyOrder = ['title', 'pages'];
 
@@ -40,30 +41,33 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     modifications: Entity<Wiki>[],
     mergeStrategy: MergeStrategy,
     config
-  ): Promise<[Wiki, UprtclAction[]]> => {
+  ): Promise<NodeActions<Wiki>> => {
     const resultTitle = mergeStrings(
       originalNode.entity.title,
       modifications.map(data => data.entity.title)
     );
 
-    const [mergedPages, actions] = await mergeStrategy.mergeLinks(
+    // TODO: add entity
+    const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.entity.pages,
       modifications.map(data => data.entity.pages),
       config
     );
 
-    return [
-      {
-        pages: mergedPages,
+    const allActions = ([] as UprtclAction[]).concat(...mergedPages.map(node => node.actions));
+    
+    return {
+      new: {
+        pages: mergedPages.map(node => node.new),
         title: resultTitle
       },
-      actions
-    ];
+      actions: allActions
+    };
   };
 }
 
 @injectable()
-export class WikiCommon implements HasLenses<Entity<Wiki>>, New<Partial<Wiki>, Wiki> {
+export class WikiCommon implements HasLenses<Entity<Wiki>> {
   lenses = (wiki: Entity<Wiki>): Lens[] => {
     return [
       {
@@ -83,12 +87,5 @@ export class WikiCommon implements HasLenses<Entity<Wiki>>, New<Partial<Wiki>, W
         }
       }
     ];
-  };
-
-  new = () => async (node: Partial<Wiki>): Promise<Wiki> => {
-    const pages = node && node.pages ? node.pages : [];
-    const title = node && node.title ? node.title : '';
-
-    return { pages, title };
   };
 }

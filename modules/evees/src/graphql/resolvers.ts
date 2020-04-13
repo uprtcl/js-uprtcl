@@ -103,7 +103,7 @@ export const eveesResolvers: IResolvers = {
   Mutation: {
     async createCommit(
       _,
-      { creatorsIds, dataId, parentsIds, message, source, timestamp },
+      { dataId, parentsIds, message, source, timestamp },
       { container }
     ) {
       const remotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
@@ -114,6 +114,11 @@ export const eveesResolvers: IResolvers = {
 
       if (!remote) throw new Error(`Evees Remote with casID was not registered ${source}`)
 
+      message = message !== undefined ? message : '';
+      timestamp = timestamp !== undefined ? timestamp : Date.now();
+      
+      const creatorsIds = [remote.userId !== undefined ? remote.userId : ''];
+      
       const commitData: Commit = {
         creatorsIds: creatorsIds,
         dataId: dataId,
@@ -192,18 +197,31 @@ export const eveesResolvers: IResolvers = {
       return { id: perspectiveId };
     },
 
+    async createEntity(_, { content, source }, { container }) {
+      const stores: Store[] = container.getAll(StoresModule.bindings.Store);
+      const store = stores.find(d => d.source === source);
+    
+      if (!store) throw new Error(`No store registered for source ${source}`);
+      const id = await store.put(JSON.parse(content));
+    
+      return id;
+    },
+
     async createPerspective(
       _,
-      { creatorId, origin, timestamp, headId, context, name, authority, canWrite, parentId },
+      { authority, creatorId, timestamp, headId, context, name, canWrite, parentId },
       { container }
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
 
       const remote: EveesRemote = remotes.find(remote => remote.authority === authority);
+      creatorId = creatorId !== undefined ? creatorId : remote.userId !== undefined? remote.userId : '';
+      timestamp = timestamp !== undefined ? timestamp : Date.now();
+      name = (name !== undefined && name != null) ? name : '';
 
       const perspectiveData: Perspective = {
         creatorId,
-        origin,
+        authority,
         timestamp
       };
       const signed: Signed<Perspective> = signObject(perspectiveData);
@@ -229,7 +247,7 @@ export const eveesResolvers: IResolvers = {
         context: context,
         payload: {
           creatorId,
-          origin,
+          authority,
           timestamp
         }
       };
@@ -275,7 +293,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspective = perspectiveResult.data.entity._context.object;
 
-      const remote = evees.getAuthority(perspective.payload.origin);
+      const remote = evees.getAuthority(perspective.payload.authority);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
       if (authorize) {
@@ -306,7 +324,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspective = perspectiveResult.data.entity._context.object;
 
-      const remote = evees.getAuthority(perspective.payload.origin);
+      const remote = evees.getAuthority(perspective.payload.authority);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
       await remote.proposals.executeProposal(proposalId);
@@ -318,16 +336,4 @@ export const eveesResolvers: IResolvers = {
       };
     }
   }
-};
-
-export const contentCreateResolver = async (content, source, container) => {
-  const stores: CASStore[] = container.getAll(CASModule.bindings.CASStore);
-
-  const store = stores.find(d => d.casID === source);
-
-  if (!store) throw new Error(`No store registered for source ${source}`);
-
-  const id = await store.create(content);
-
-  return { id, ...content };
 };

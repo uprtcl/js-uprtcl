@@ -10,9 +10,13 @@ import {
   UprtclAction,
   CREATE_COMMIT_ACTION,
   CREATE_DATA_ACTION,
-  UpdateRequest
+  UpdateRequest,
+  RemotesConfig,
+  NodeActions
 } from '../types';
 import { hashObject, signAndHashObject } from '../utils/cid-hash';
+import { EveesBindings } from '../bindings';
+import { Evees, CidHashedPattern } from '../uprtcl-evees';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -22,6 +26,25 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }>;
 
   allPerspectives!: Dictionary<string>;
+
+  constructor(
+    @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
+    @inject(EveesBindings.Evees) protected evees: Evees,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
+    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache,
+    @inject(EveesBindings.Secured) protected secured: Pattern & IsSecure<any>,
+    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern,
+    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService) {
+      
+      super(remotesConfig, evees, recognizer, client, entityCache, secured, hashed);
+  }
+
+  async isPattern(id: string, name: string): Promise<boolean> {
+    const entity = await this.discovery.get(id) as object;
+    const pattern = this.recognizer.recognize(entity);
+    return pattern.findIndex(p => p.name === name) !== -1;
+  }
 
   setPerspective(perspectiveId: string, context: string, to: boolean): void {
     if (!this.perspectivesByContext[context]) {
@@ -83,7 +106,15 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (hasChildren) {
       const links = hasChildren.getChildrenLinks(dataObject);
 
-      const promises = links.map(link => this.readPerspective(link, to));
+      const promises = links.map(async (link) => {
+        const isPerspective = await this.isPattern(link, "Perspective");
+        if (isPerspective) {
+          this.readPerspective(link, to)
+        } else {
+          Promise.resolve();
+        }
+      });
+      
       await Promise.all(promises);
     }
   }
@@ -100,8 +131,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config?: any
-  ): Promise<[string, UprtclAction[]]> {
+    config: any
+  ): Promise<NodeActions<string>> {
     let root = false;
     if (!this.perspectivesByContext) {
       root = true;
@@ -141,69 +172,137 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     }
   }
 
+  async getLinkMergeId(link: string) {
+    const isPerspective = await this.isPattern(link, "Perspective");
+    if (isPerspective) {
+      return this.getPerspectiveContext(link);
+    } else {
+      return Promise.resolve(link);
+    }
+  } 
+
+  async checkPerspectiveAndOwner(perspectiveId: string, authority: string, canWrite: string) {
+    const result = await this.client.query({
+      query: gql`{
+        entity(id: "${perspectiveId}") {
+          id
+          ... on Perspective { payload { authority} }
+          _context { patterns { accessControl { permissions} } }
+        }
+      }`
+    });
+
+    const thisAuthority = result.data.entity.payload.authority;
+    const owner = result.data.entity._context.patterns.accessControl.permissions.owner;
+
+    if (authority !== thisAuthority) {
+      return false;
+    } else {
+      return canWrite === owner;
+    }
+  }
+
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
     config: any
-  ): Promise<[string[], UprtclAction[]]> {
-    const originalPromises = originalLinks.map(link => this.getPerspectiveContext(link));
+  ): Promise<NodeActions<string>[]> {
+    /** The context is used as Merge ID for perspective to have a context-based merge. For othe
+     * type of entities, like commits or data, the link itself is used is mergeId */
+    const originalPromises = originalLinks.map(link => this.getLinkMergeId(link));
     const modificationsPromises = modificationsLinks.map(links =>
-      links.map(link => this.getPerspectiveContext(link))
+      links.map(link => this.getLinkMergeId(link))
     );
 
-    const originalContexts = await Promise.all(originalPromises);
-    const modificationsContexts = await Promise.all(
+    const originalMergeIds = await Promise.all(originalPromises);
+    const modificationsMergeIds = await Promise.all(
       modificationsPromises.map(promises => Promise.all(promises))
     );
 
-    const [contextIdLinks, actions] = await super.mergeLinks(
-      originalContexts,
-      modificationsContexts,
+    const mergedLinks = await super.mergeLinks(
+      originalMergeIds,
+      modificationsMergeIds,
       config
     );
 
     const dictionary = this.perspectivesByContext;
 
-    const promises: Array<Promise<[string, UprtclAction[]]>> = contextIdLinks.map(
-      async contextId => {
-        const perspectivesByContext = dictionary[contextId];
+    const mergeLinks = mergedLinks.map(
+      async (mergeResult): Promise<NodeActions<string>> => {
+        
+        const perspectivesByContext = dictionary[mergeResult.new];
 
-        const needsSubperspectiveMerge =
-          perspectivesByContext && perspectivesByContext.to && perspectivesByContext.from;
+        if (perspectivesByContext) {
 
-        if (needsSubperspectiveMerge) {
-          // We need to merge the new perspectives with the original perspective
-          const [_, actions] = await this.mergePerspectives(
-            perspectivesByContext.to as string,
-            perspectivesByContext.from as string,
-            config
-          );
+          const needsSubperspectiveMerge = perspectivesByContext.to && perspectivesByContext.from;
 
-          // The final perspective has not changed
-          return [perspectivesByContext.to as string, actions] as [string, UprtclAction[]];
-        } else {
-          const finalPerspectiveId = perspectivesByContext.to
-            ? perspectivesByContext.to
-            : perspectivesByContext.from;
+          if (needsSubperspectiveMerge) {
+            /** Two perspectives of the same context are merged, keeping the "to" perspecive id, 
+             *  and updating its head */            
+            const { actions } = await this.mergePerspectives(
+              perspectivesByContext.to as string,
+              perspectivesByContext.from as string,
+              config
+            );
 
-          /** TODO: why is this needed? its creating abug when merging wiki
-           * with one page and one paragraph into a wiki without pages.
-           * only one head update is expected, but two are found. The head
-           * of the page is updated but it should not.
-           */
-          // const actions = await this.mergePerspectiveChildren(finalPerspectiveId as string, config);
-          const actions = [];
+            return {
+              new: perspectivesByContext.to as string, 
+              actions: actions.concat(...mergeResult.actions)
+            } 
+          } else {
+                        
+            if (perspectivesByContext.to) {
+              /** if the perspective is only present in the "to", just keep it */
+              return {
+                new: perspectivesByContext.to,
+                actions: []
+              }
+            } else {
+              /** otherwise, if merge config.forceOwner and this perspective is only present in the 
+               * "from", a fork may be created to make sure the final perspective is in the target authority 
+               * and canWrite (TODO: canWrite will be replaced by a "copy permissions from element"  or 
+               * something */ 
+              
+              if (config.forceOwner) {
+                
+                const isInternal = await this.checkPerspectiveAndOwner(
+                  perspectivesByContext.from as string, 
+                  config.authority, 
+                  config.canWrite);
 
-          return [finalPerspectiveId as string, actions] as [string, UprtclAction[]];
+                if (!isInternal) {
+                  const newPerspectiveActions = await this.evees.forkPerspective(
+                    perspectivesByContext.from as string, 
+                    config.authority, 
+                    config.canWrite);
+
+                  return newPerspectiveActions;
+
+                } else {
+                  return {
+                    new: perspectivesByContext.from as string,
+                    actions: []
+                  }
+                }
+              } else {
+                return {
+                  new: perspectivesByContext.from as string,
+                  actions: []
+                }
+              } 
+            }
+          }
+        }
+        return {
+          new: mergeResult.new,
+          actions: []
         }
       }
     );
 
-    const result = await Promise.all(promises);
-    const links = result.map(r => r[0]);
-    const subActions = result.map(r => r[1]);
-
-    return [links, actions.concat(...subActions)];
+    const mergeResults = await Promise.all(mergeLinks);
+    
+    return mergeResults;
   }
 
   protected async updatePerspectiveData(
@@ -219,17 +318,17 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
               id
             }
             payload {
-              origin
+              authority
             }
           }
         }
       }`
     });
 
-    const origin = result.data.entity.payload.origin;
+    const authority = result.data.entity.payload.authority;
     const headId = result.data.entity.head.id;
 
-    const remote = this.evees.getAuthority(origin);
+    const remote = this.evees.getAuthority(authority);
 
     if (!remote.userId)
       throw new Error('Cannot create perspectives in a remote you are not signed in');
@@ -284,33 +383,5 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     return [updateHead, newCommitAction, newDataAction];
   }
-
-  private async mergePerspectiveChildren(
-    perspectiveId: string,
-    config: any
-  ): Promise<UprtclAction[]> {
-    const data = await this.loadPerspectiveData(perspectiveId);
-
-    const hasChildren: HasChildren | undefined = this.recognizer
-      .recognizeBehaviours(data)
-      .find(prop => !!(prop as HasChildren).getChildrenLinks);
-
-    if (!hasChildren) return [];
-
-    const links = hasChildren.getChildrenLinks(data);
-
-    if (links.length === 0) return [];
-
-    let [mergedLinks, linksActions] = await this.mergeLinks(links, [links], config);
-
-    if (!links.every((link, index) => link !== mergedLinks[index])) {
-      /** data is Hased -> new Data should be hashed too */
-      const newData = hasChildren.replaceChildrenLinks(data)(mergedLinks) as Entity<any>;
-
-      const actions = await this.updatePerspectiveData(perspectiveId, newData.entity);
-      linksActions = linksActions.concat(actions);
-    }
-
-    return linksActions;
-  }
+  
 }

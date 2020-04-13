@@ -13,21 +13,21 @@ export interface TextNode {
 }
 
 export interface DocNode {
-  ref: string;
-  authorityID: string;
-  context?: string;
-  data?: Entity<any>;
-  draft: any;
-  append?: any; // used by upper layer to tell the docnode lense to append content using its internal appending logic.
-  childrenNodes: DocNode[];
-  entityType: 'Perspective' | 'Commit' | string;
-  headId?: string;
-  editable: boolean;
-  parent?: DocNode;
-  ix?: number; // ix on parent
-  focused: boolean;
-  hasDocNodeLenses: HasDocNodeLenses;
-  hasChildren: HasChildren;
+  ref: string,
+  authority: string,
+  entityType: EntityType,
+  context?: string,
+  data?: Hashed<any>,
+  draft: any,
+  append?: any,              // used by upper layer to tell the docnode lense to append content using its internal appending logic.
+  childrenNodes: DocNode[],
+  headId?: string,
+  editable: boolean,
+  parent?: DocNode,
+  ix?: number,              // ix on parent
+  focused: boolean,
+  hasDocNodeLenses: HasDocNodeLenses,
+  hasChildren: HasChildren
 }
 
 export interface DocNodeEventsHandlers {

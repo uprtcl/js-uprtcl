@@ -1,9 +1,9 @@
-import { LitElement, html, property } from 'lit-element';
+import { LitElement, html } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule, EveesBindings } from '@uprtcl/evees';
-import { WikisModule, WikiBindings } from '@uprtcl/wikis';
-import { DocumentsModule } from '@uprtcl/documents';
+import { EveesModule, CREATE_PERSPECTIVE, CREATE_COMMIT, CREATE_ENTITY } from '@uprtcl/evees';
+import { WikisModule } from '@uprtcl/wikis';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
   static get properties() {
@@ -57,46 +57,42 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       const wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider =>
         provider.source.startsWith('ipfs')
       );
-  
 
-      const wikipatterns = this.requestAll(WikiBindings.WikiEntity);
-      const wikicreatable = wikipatterns.find(p => p.create);
-      const wiki = await wikicreatable.create()(
-        {
-          title: 'Genesis Wiki',
-          pages: []
-        },
-        wikisProvider.source
-      );
+      const client = this.request(ApolloClientModule.bindings.Client);
 
-      const commitpatterns = this.requestAll(EveesBindings.CommitPattern);
-      const commitcreatable = commitpatterns.find(p => p.create);
-      const commit = await commitcreatable.create()(
-        {
-          dataId: wiki.id,
+      const createWiki = await client.mutate({
+        mutation: CREATE_ENTITY,
+        variables: {
+          content: JSON.stringify({
+            title: 'Genesis Wiki',
+            pages: []
+          }),
+          source: wikisProvider.source
+        }
+      });
+
+      const createCommit = await client.mutate({
+        mutation: CREATE_COMMIT,
+        variables: {
+          dataId: createWiki.data.createEntity,
           parentsIds: [],
-          message: 'create'
-        },
-        eveesEthProvider.source
-      );
+          source: eveesEthProvider.source
+        }
+      });
 
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
+  
+      const createPerspective = await client.mutate({
+        mutation: CREATE_PERSPECTIVE,
+        variables: {
+          headId: createCommit.data.createCommit.id,
+          context: `genesis-dao-wiki-${randint}`,
+          canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
+          authority: eveesEthProvider.authority
+        }
+      });
 
-      const perspectivepatterns = this.requestAll(EveesBindings.PerspectivePattern);
-      const perspectivecreatable = perspectivepatterns.find(p => p.create);
-      const perspective = await perspectivecreatable.create()(
-        {
-          fromDetails: {
-            headId: commit.id,
-            context: `genesis-dao-wiki-${randint}`,
-            name: 'common'
-          },
-          canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
-        },
-        eveesEthProvider.authority
-      );
-
-      const perspectiveId = perspective.id;
+      const perspectiveId = createPerspective.data.createPerspective.id;
 
       window.history.pushState('', '', `/?id=${perspectiveId}`);
     }

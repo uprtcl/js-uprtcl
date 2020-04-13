@@ -1,7 +1,7 @@
 import { Behaviour } from '@uprtcl/cortex';
 
 import { MergeStrategy } from '../merge/merge-strategy';
-import { UprtclAction } from '../types';
+import { NodeActions } from '../types';
 
 export interface Merge<T = any> extends Behaviour<T> {
   merge: (
@@ -10,5 +10,5 @@ export interface Merge<T = any> extends Behaviour<T> {
     modifications: any[],
     strategy: MergeStrategy,
     config: any
-  ) => Promise<[any, UprtclAction[]]>;
+  ) => Promise<NodeActions<any>>;
 }

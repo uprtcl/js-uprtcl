@@ -11,17 +11,17 @@ export const styleMap = style => {
 };
 
 
-import { htmlToText, TextType, TextNode, DocumentsBindings } from '@uprtcl/documents';
+import { htmlToText, TextType, TextNode } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Entity, Pattern, Create, Signed } from '@uprtcl/cortex';
-import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, CreateCommitArgs, Commit, EveesBindings, UPDATE_HEAD, Secured, eveeColor } from '@uprtcl/evees';
+import { Hashed } from '@uprtcl/cortex';
+import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, eveeColor, DEFAULT_COLOR, UPDATE_HEAD, CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '@uprtcl/evees';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { Source } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
-import { WikiBindings } from '../bindings';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { DEFAULT_COLOR } from '@uprtcl/evees';
-import { CASSource } from '@uprtcl/multiplatform';
+
+import '@material/mwc-drawer';
 
 const LOGINFO = false;
 
@@ -45,6 +45,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   pagesList: Array<{ title: string; id: string }> | undefined = undefined;
 
   authority: string = '';
+  context: string = '';
   currentHeadId: string | undefined = undefined;
   editable: boolean = false;
   
@@ -89,7 +90,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           id
           ... on Perspective {
             payload {
-              origin
+              authority
             }
             head {
               id 
@@ -105,6 +106,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 }
               }
             }
+            context {
+              id
+            }
           }
           _context {
             patterns {
@@ -117,9 +121,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }`
     });
 
-    this.authority = result.data.entity.payload.origin;
+    this.authority = result.data.entity.payload.authority;
     this.currentHeadId = result.data.entity.head.id;
     this.editable = result.data.entity._context.patterns.accessControl.canWrite;
+    this.context = result.data.entity.context.id;
+
     this.wiki = {
       id: result.data.entity.head.data.id,
       entity: {
@@ -191,19 +197,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
-  getPatternOfSymbol<T>(symbol: string, name: string) {
-    if (LOGINFO) this.logger.log(`getPatternOfSymbol(${symbol.toString()})`);
-
-    const patterns: Pattern<any>[] = this.requestAll(symbol);
-    const create: T | undefined = (patterns.find(
-      pattern => ((pattern as unknown) as T)[name]
-    ) as unknown) as T;
-
-    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].type}`);
-
-    return create;
-  }
-
   getStore(eveesAuthority: string): CASSource | undefined {
     if (!this.remotesConfig) return undefined;
     return this.remotesConfig.map(eveesAuthority);
@@ -211,62 +204,87 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async createPage(page: TextNode, authority: string) {
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
-    const remote = this.eveesRemotes.find(r => r.authorityID === authority);
+    if (!this.client) throw new Error('client undefined');
 
+    const remote = this.eveesRemotes.find(r => r.authorityID === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const creatable = this.getPatternOfSymbol<Create<any,any>>(DocumentsBindings.TextNodeEntity, 'create');
     const store = this.getStore(authority);
     if (!store) throw new Error('store is undefined');
-    const object = await creatable.create()(page, store.casID);
+    
+    const createTextNode = await this.client.mutate({
+      mutation: CREATE_ENTITY,
+      variables: {
+        content: JSON.stringify(page),
+        source: store.source
+      }
+    });
 
-    const creatableCommit = this.getPatternOfSymbol<Create<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
-    const commit = await creatableCommit.create()(
-      { parentsIds: [], dataId: object.id },
-      remote.casID
-    );
+    const createCommit = await this.client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        dataId: createTextNode.data.createEntity,
+        parentsIds: [],
+        source: remote.source
+      }
+    });
 
-    const creatablePerspective = this.getPatternOfSymbol<Create<any,any>>(EveesBindings.PerspectivePattern, 'create');
-    const perspective = await creatablePerspective.create()(
-      { fromDetails: { headId: commit.id } , parentId: this.ref },
-      authority
-    );
+    const headId = createCommit.data.createCommit.id;
+    
+    const createPerspective = await this.client.mutate({
+      mutation: CREATE_PERSPECTIVE,
+      variables: {
+        authority: this.authority,
+        headId: headId,
+        parentId: this.ref,
+        context: `${this.context}_${Date.now()}`,
+        source: remote.source
+      }
+    });
 
-    return perspective.id;
+    return createPerspective.data.createPerspective.id;
   }
 
   async updateContent(newWiki: Wiki) {
     const client = this.client as ApolloClient<any>;
     const eveesRemotes = this.eveesRemotes as EveesRemote[];
-    const remote = eveesRemotes.find(r => r.authorityID === this.authority);
+    
+    const store = this.getStore(this.authority);
+    if (!store) throw new Error('store is undefined');
+    
+    const createWiki = await client.mutate({
+      mutation: CREATE_ENTITY,
+      variables: {
+        content: JSON.stringify(newWiki),
+        source: store.source
+      }
+    });
+
+    const remote = eveesRemotes.find(r => r.authority === this.authority);
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
-    const creatable = this.getPatternOfSymbol<Create<any,any>>(WikiBindings.WikiEntity, 'create');
-    const store = this.getStore(this.authority);
-    if (!store) throw Error(`Store not found for authority ${this.authority}`);
-
-    const createdWiki = await creatable.create()(newWiki, store.casID);
-
-    const creatableCommit = this.getPatternOfSymbol<Create<CreateCommitArgs, Signed<Commit>>>(EveesBindings.CommitPattern, 'create');
-    const commit: Secured<Commit> = await creatableCommit.create()(
-      { 
+    const createCommit = await client.mutate({
+      mutation: CREATE_COMMIT,
+      variables: {
+        dataId: createWiki.data.createEntity,
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [], 
-        dataId: createdWiki.id 
-      },
-      remote.casID
-    );
+        source: remote.source
+      }
+    });
+
+    const headId = createCommit.data.createCommit.id;
 
     await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.ref,
-        headId: commit.id
+        headId: headId
       }
     });
 
-    this.currentHeadId = commit.id;
+    this.currentHeadId = headId;
     
-    this.logger.info('updateContent()', {createdWiki});
+    this.logger.info('updateContent()', newWiki);
 
     this.loadWiki();
   }
@@ -475,7 +493,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 <wiki-home
                   wikiHash=${this.ref}
                   title=${this.wiki.entity.title}
-                  color=${this.color() ? this.color() : ''}
+                  color=${this.color()}
                 >
                   <evees-info-page 
                     slot="evee-page"
@@ -511,7 +529,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .column {
           height: 100%;
-          background-color: #f7f6f3;
+          background-image: linear-gradient(to bottom, #f7f6f3FF, #f7f6f300);
         }
         .color-bar {
           height: 1vw;

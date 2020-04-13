@@ -4,7 +4,7 @@ import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
-import { WikiCommon, WikiLinks, WikiEntity } from './patterns/wiki.entity';
+import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
 import { wikiTypeDefs } from './graphql/schema';
 import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';

@@ -16,7 +16,7 @@ export const UPDATE_HEAD: DocumentNode = gql`
       }
       name
       payload {
-        origin
+        authority
       }
       _context {
         patterns {
@@ -37,19 +37,27 @@ export const DELETE_PERSPECTIVE: DocumentNode = gql`
   }
 `;
 
+export const CREATE_ENTITY: DocumentNode = gql`
+  mutation CreateEntity($content: String!, $source: ID) {
+    createEntity(content: $content, source: $source) {
+      id
+    }
+  }
+`;
+
 export const CREATE_COMMIT: DocumentNode = gql`
   mutation CreateCommit(
-    $creatorsIds: [String]
     $dataId: ID!
     $parentsIds: [ID!]!
+    $creatorsIds: [String]
     $message: String
-    $source: String
+    $source: String!
     $timestamp: Date
   ) {
     createCommit(
-      creatorsIds: $creatorsIds
       dataId: $dataId
       parentsIds: $parentsIds
+      creatorsIds: $creatorsIds
       message: $message
       source: $source
       timestamp: $timestamp
@@ -70,24 +78,22 @@ export const CREATE_COMMIT: DocumentNode = gql`
 
 export const CREATE_PERSPECTIVE: DocumentNode = gql`
   mutation CreatePerspective(
+    $authority: String!
     $creatorId: String
-    $origin: String
     $timestamp: Date
     $headId: ID
-    $context: String
+    $context: String!
     $name: String
-    $authority: String
     $canWrite: String
     $parentId: String
   ) {
     createPerspective(
+      authority: $authority
       creatorId: $creatorId
-      origin: $origin
       timestamp: $timestamp
       headId: $headId
       context: $context
       name: $name
-      authority: $authority
       canWrite: $canWrite
       parentId: $parentId
     ) {
@@ -101,7 +107,7 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
       }
       payload {
         creatorId
-        origin
+        authority
         timestamp
       }
     }
