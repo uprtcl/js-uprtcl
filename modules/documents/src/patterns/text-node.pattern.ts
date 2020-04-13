@@ -76,11 +76,6 @@ export class TextNodeCommon
             <documents-text-node
               .data=${node}
               ref=${entity.id}
-              color=${context.color}
-              index=${context.index}
-              .genealogy=${context.genealogy}
-              toggle-action=${context.toggleAction}
-              .action=${context.action}
             >
             </documents-text-node>
           `;
@@ -156,17 +151,6 @@ export class TextNodeCommon
       },
       actions: allActions
     };
-  };
-}
-
-@injectable()
-export class TextNodeNew implements New<Partial<TextNode>, TextNode> {
-  new = () => async (node: Partial<TextNode> | undefined): Promise<TextNode> => {
-    const links = node && node.links ? node.links : [];
-    const text = node && node.text ? node.text : '';
-    const type = node && node.type ? node.type : TextType.Paragraph;
-
-    return { links, text, type };
   };
 }
 
