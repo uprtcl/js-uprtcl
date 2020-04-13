@@ -145,7 +145,7 @@ export class MultiSourceService {
 
     return {
       id: hash,
-      entity: object,
+      object,
       casID
     };
   }
