@@ -7,14 +7,14 @@ import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import {
-  RemotesConfig,
   UprtclAction,
   UpdateRequest,
   UPDATE_HEAD_ACTION,
   Commit,
   CREATE_COMMIT_ACTION,
   CREATE_DATA_ACTION,
-  NodeActions
+  NodeActions,
+  RemoteMap
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
@@ -29,7 +29,7 @@ import { deriveSecured } from 'src/utils/signed';
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(
-    @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
+    @inject(EveesBindings.RemoteMap) protected remoteMap: RemoteMap,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
@@ -168,8 +168,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     );
 
     const type = this.recognizer.recognizeType(ancestorData);
+    const remote = this.evees.getAuthority(authority);
 
-    const sourceRemote = this.remotesConfig.map(authority, type);
+    const sourceRemote = this.remoteMap(remote, type);
 
     const entity = await deriveEntity(mergedData.new, sourceRemote.cidConfig);
 
@@ -181,8 +182,6 @@ export class SimpleMergeStrategy implements MergeStrategy {
       }
     };
     this.entityCache.cacheEntity(entity);
-
-    const remote = this.evees.getAuthority(authority);
 
     if (!remote.userId) throw new Error('Cannot create commits in a source you are not signed in');
 

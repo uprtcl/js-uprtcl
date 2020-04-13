@@ -22,7 +22,7 @@ import { PerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
 import en from './i18n/en.json';
-import { RemotesConfig } from './types';
+import { RemoteMap, defaultRemoteMap } from './types';
 import { EveesInfoPage } from './elements/evees-info-page';
 import { ItemWithMenu } from './elements/common-ui/evees-list-item';
 import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
@@ -76,7 +76,8 @@ export class EveesModule extends MicroModule {
 
   constructor(
     protected eveesProviders: Array<EveesRemote>,
-    protected remotesConfig: RemotesConfig
+    protected defaultRemote: EveesRemote,
+    protected remoteMap: RemoteMap = defaultRemoteMap
   ) {
     super();
   }
@@ -84,7 +85,8 @@ export class EveesModule extends MicroModule {
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.bindings.Evees).to(Evees);
     container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
-    container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
+    container.bind(EveesModule.bindings.DefaultRemote).toConstantValue(this.defaultRemote);
+    container.bind(EveesModule.bindings.RemoteMap).toConstantValue(this.remoteMap);
 
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);

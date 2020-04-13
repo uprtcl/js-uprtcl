@@ -1,14 +1,11 @@
-import { CASSource } from '@uprtcl/multiplatform';
 import { Entity } from '@uprtcl/cortex';
-
 import { EveesRemote } from './services/evees.remote';
+import { CASSource } from '@uprtcl/multiplatform';
 
-export type RemoteMap = (eveesAuthority: string, contentType: string) => CASSource;
+export type RemoteMap = (eveesAuthority: EveesRemote, contentType: string) => CASSource;
 
-export type RemotesConfig = {
-  map: RemoteMap;
-  defaultCreator: EveesRemote;
-};
+export const defaultRemoteMap: RemoteMap = (eveesAuthority: EveesRemote, contentType: string) =>
+  eveesAuthority;
 
 export type Context = string;
 
@@ -73,7 +70,7 @@ export interface UprtclAction {
   payload: any;
 }
 
-export interface NodeActions <T>{
-  new: T,
-  actions: UprtclAction[]
+export interface NodeActions<T> {
+  new: T;
+  actions: UprtclAction[];
 }

@@ -24,7 +24,7 @@ import { prettyAddress, prettyTime } from './support';
 
 import {
   UpdateRequest,
-  RemotesConfig,
+  RemoteMap,
   ProposalCreatedEvent,
   Perspective,
   PerspectiveDetails,
@@ -36,7 +36,14 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
-import { UPDATE_HEAD, CREATE_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL, DELETE_PERSPECTIVE, CREATE_PERSPECTIVE } from '../graphql/queries';
+import {
+  UPDATE_HEAD,
+  CREATE_PROPOSAL,
+  AUTHORIZE_PROPOSAL,
+  EXECUTE_PROPOSAL,
+  DELETE_PERSPECTIVE,
+  CREATE_PERSPECTIVE
+} from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
@@ -78,12 +85,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   perspectiveData!: PerspectiveData;
 
-  protected client: ApolloClient<any> | undefined = undefined;
-  protected merge: MergeStrategy  | undefined = undefined;
-  protected evees: Evees | undefined = undefined;
-  protected recognizer: PatternRecognizer | undefined = undefined;
-  protected cache: EntityCache | undefined = undefined;
-  protected remotesConfig: RemotesConfig | undefined = undefined;
+  protected client!: ApolloClient<any>;
+  protected merge!: MergeStrategy;
+  protected evees!: Evees;
+  protected recognizer!: PatternRecognizer;
+  protected cache!: EntityCache;
+  protected remoteMap!: RemoteMap;
 
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -91,7 +98,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.evees = this.request(EveesModule.bindings.Evees);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
-    this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
+    this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
 
     this.load();
   }
@@ -104,7 +111,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async load() {
-    if(!this.client) throw new Error('client undefined');
+    if (!this.client) throw new Error('client undefined');
 
     this.loading = true;
     const result = await this.client.query({
@@ -161,18 +168,23 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       }
     };
 
-    this.publicRead = this.perspectiveData.permissions.publicRead !== undefined ? this.perspectiveData.permissions.publicRead : true;
+    this.publicRead =
+      this.perspectiveData.permissions.publicRead !== undefined
+        ? this.perspectiveData.permissions.publicRead
+        : true;
 
     this.logger.info('load', { perspectiveData: this.perspectiveData });
     this.loading = false;
   }
 
-  
   connectedCallback() {
     super.connectedCallback();
-  
+
     this.addEventListener('permissions-updated', ((e: CustomEvent) => {
-      this.logger.info('CATCHED EVENT: permissions-updated ', { perspectiveId: this.perspectiveId, e });
+      this.logger.info('CATCHED EVENT: permissions-updated ', {
+        perspectiveId: this.perspectiveId,
+        e
+      });
       e.stopPropagation();
       this.load();
     }) as EventListener);
@@ -181,8 +193,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   reload() {
     if (this.forceUpdate === 'true') {
       this.forceUpdate = 'false';
-    } else { 
-      this.forceUpdate === 'true'
+    } else {
+      this.forceUpdate === 'true';
     }
   }
 
@@ -199,10 +211,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     );
   }
 
-  async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string, isProposal: boolean) {
-    if(!this.evees) throw new Error('evees undefined');
-    if(!this.merge) throw new Error('merge undefined');
-    
+  async otherPerspectiveMerge(
+    fromPerspectiveId: string,
+    toPerspectiveId: string,
+    isProposal: boolean
+  ) {
+    if (!this.evees) throw new Error('evees undefined');
+    if (!this.merge) throw new Error('merge undefined');
+
     this.logger.info(
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
     );
@@ -212,8 +228,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const accessControl = remote.accessControl as AccessControlService<OwnerPermissions>;
     const permissions = await accessControl.getPermissions(toPerspectiveId);
 
-    if (permissions  === undefined) throw new Error('target perspective dont have permissions control');
-    
+    if (permissions === undefined)
+      throw new Error('target perspective dont have permissions control');
+
     if (!permissions.owner) {
       // TODO: ownerPreserving merge should be changed to permissionPreserving merge
       throw new Error(
@@ -225,7 +242,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       forceOwner: true,
       authority: remote.authorityID,
       canWrite: permissions.owner
-    }
+    };
 
     const mergeResult = await this.merge.mergePerspectives(
       toPerspectiveId,
@@ -248,16 +265,16 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async mergePerspective(actions: UprtclAction[]): Promise<void> {
-    if(!this.cache) throw new Error('cache undefined');
-    if(!this.client) throw new Error('client undefined');
-    
+    if (!this.cache) throw new Error('cache undefined');
+    if (!this.client) throw new Error('client undefined');
+
     await cacheActions(actions, this.cache, this.client);
     await executeActions(actions, this.client);
 
     const updateRequests = actions.filter(a => a.type === UPDATE_HEAD_ACTION).map(a => a.payload);
 
     const updateHeadsPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {
-      if(!this.client) throw new Error('client undefined');
+      if (!this.client) throw new Error('client undefined');
 
       await this.client.mutate({
         mutation: UPDATE_HEAD,
@@ -278,7 +295,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     executeActionsOnAuthority: (authority: string, actions: UprtclAction[]) => Promise<void>
   ) {
     const authoritiesPromises = actions.map(async (action: UprtclAction) => {
-      if(!this.client) throw new Error('client undefined');
+      if (!this.client) throw new Error('client undefined');
 
       const perspectiveId = actionToPerspectiveId(action);
 
@@ -321,10 +338,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     return Promise.all(executePromises);
   }
 
-  async createMergeProposal(fromPerspectiveId: string, toPerspectiveId: string, actions: UprtclAction[]): Promise<void> {
-    if(!this.client) throw new Error('client undefined');
-    if(!this.cache) throw new Error('cache undefined');
-    
+  async createMergeProposal(
+    fromPerspectiveId: string,
+    toPerspectiveId: string,
+    actions: UprtclAction[]
+  ): Promise<void> {
+    if (!this.client) throw new Error('client undefined');
+    if (!this.cache) throw new Error('cache undefined');
+
     await cacheActions(actions, this.cache, this.client);
 
     /** create commits and data */
@@ -337,7 +358,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION),
       action => action.entity.id,
       async (authority, actions) => {
-        if(!this.evees) throw new Error('evees undefined');
+        if (!this.evees) throw new Error('evees undefined');
         const remote = this.evees.getAuthority(authority);
 
         const perspectivesData = actions.map(
@@ -362,13 +383,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       actions.filter(a => a.type === UPDATE_HEAD_ACTION),
       action => action.payload.perspectiveId,
       async (authority, actions) => {
-        if(!this.client) throw new Error('client undefined');
-        
+        if (!this.client) throw new Error('client undefined');
+
         const result = await this.client.mutate({
           mutation: CREATE_PROPOSAL,
           variables: {
-            toPerspectiveId: toPerspectiveId, 
-            fromPerspectiveId: fromPerspectiveId, 
+            toPerspectiveId: toPerspectiveId,
+            fromPerspectiveId: fromPerspectiveId,
             updateRequests: actions.map(action => action.payload)
           }
         });
@@ -390,14 +411,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async authorizeProposal(e: CustomEvent) {
-    if(!this.client) throw new Error('client undefined');
+    if (!this.client) throw new Error('client undefined');
 
     const proposalId = e.detail.proposalId;
     const perspectiveId = e.detail.perspectiveId;
     const result = await this.client.mutate({
       mutation: AUTHORIZE_PROPOSAL,
       variables: {
-        proposalId: proposalId, 
+        proposalId: proposalId,
         perspectiveId: perspectiveId,
         authorize: true
       }
@@ -409,7 +430,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async executeProposal(e: CustomEvent) {
-    if(!this.client) throw new Error('client undefined');
+    if (!this.client) throw new Error('client undefined');
 
     const proposalId = e.detail.proposalId;
     const perspectiveId = e.detail.perspectiveId;
@@ -417,7 +438,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const result = await this.client.mutate({
       mutation: EXECUTE_PROPOSAL,
       variables: {
-        proposalId: proposalId, 
+        proposalId: proposalId,
         perspectiveId: perspectiveId
       }
     });
@@ -447,18 +468,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async newPerspectiveClicked() {
-    if (!this.remotesConfig) throw new Error('remotesConfig undefined');
-    if (!this.client) throw new Error('client undefined');
-    if (!this.evees) throw new Error('evees-undefined');
-    if (!this.cache) throw new Error('cache-undefined');
-    
+
     this.loading = true;
 
     const forkPerspective = await this.evees.forkPerspective(this.perspectiveId);
 
     await cacheActions(forkPerspective.actions, this.cache, this.client);
     await executeActions(forkPerspective.actions, this.client);
-    
+
     this.checkoutPerspective(forkPerspective.new);
 
     this.logger.info('newPerspectiveClicked() - perspective created', { id: forkPerspective.new });
@@ -489,7 +506,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async delete() {
-    if(!this.client) throw new Error('client undefined');
+    if (!this.client) throw new Error('client undefined');
 
     await this.client.mutate({
       mutation: DELETE_PERSPECTIVE,
@@ -548,54 +565,55 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   static get styles() {
-    return [css`
-      .perspective-details {
-        padding: 5px;
-      }
-      
-      .summary {
-        margin: 0 auto;
-        padding: 32px 32px;
-        max-width: 300px;
-        text-align: center;
-      }
+    return [
+      css`
+        .perspective-details {
+          padding: 5px;
+        }
 
-      .card-container {
-        flex-grow: 1;
-        display: flex;
-        padding: 10px;
-      }
+        .summary {
+          margin: 0 auto;
+          padding: 32px 32px;
+          max-width: 300px;
+          text-align: center;
+        }
 
-      .card {
-        flex: 1;
-        width: 100%;
-        height: 100%;
-        border: solid 1px #cccccc;
-        border-radius: 3px;
-      }
+        .card-container {
+          flex-grow: 1;
+          display: flex;
+          padding: 10px;
+        }
 
-      .technical-details {
-        max-width: 640px;
-        margin: 0 auto;
-      }
+        .card {
+          flex: 1;
+          width: 100%;
+          height: 100%;
+          border: solid 1px #cccccc;
+          border-radius: 3px;
+        }
 
-      .tech-card {
-        width: 100%;
-        padding: 16px 32px;
-        text-align: center;
-      }
+        .technical-details {
+          max-width: 640px;
+          margin: 0 auto;
+        }
 
-      .tech-table .prop-name {
-        text-align: right;
-        font-weight: bold;
-      }
+        .tech-card {
+          width: 100%;
+          padding: 16px 32px;
+          text-align: center;
+        }
 
-      .tech-table .prop-value {
-        font-family: Lucida Console, Monaco, monospace;
-        font-size: 12px;
-        text-align: left;
-      }
-    `];
+        .tech-table .prop-name {
+          text-align: right;
+          font-weight: bold;
+        }
+
+        .tech-table .prop-value {
+          font-family: Lucida Console, Monaco, monospace;
+          font-size: 12px;
+          text-align: left;
+        }
+      `
+    ];
   }
-
 }

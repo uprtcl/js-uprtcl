@@ -1,7 +1,7 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { multiInject, injectable, inject } from 'inversify';
 
-import { PatternRecognizer, HasChildren, CortexModule, Signed, Entity } from '@uprtcl/cortex';
+import { PatternRecognizer, HasChildren, CortexModule, Signed } from '@uprtcl/cortex';
 import { KnownSourcesService, DiscoveryModule, loadEntity } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -9,17 +9,17 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import {
   Perspective,
   Commit,
-  RemotesConfig,
   UprtclAction,
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
   CREATE_AND_INIT_PERSPECTIVE_ACTION,
-  NodeActions
+  NodeActions,
+  RemoteMap
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
 import { Secured, deriveEntity } from '../utils/cid-hash';
-import { deriveSecured } from 'src/utils/signed';
+import { deriveSecured } from '../utils/signed';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -36,8 +36,10 @@ export class Evees {
     protected eveesRemotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client)
     protected client: ApolloClient<any>,
-    @inject(EveesBindings.RemotesConfig)
-    protected remotesConfig: RemotesConfig
+    @inject(EveesBindings.DefaultRemote)
+    protected defaultRemote: EveesRemote,
+    @inject(EveesBindings.RemoteMap)
+    protected remoteMap: RemoteMap
   ) {}
 
   /** Public functions */
@@ -174,8 +176,7 @@ export class Evees {
     name?: string,
     parentId?: string
   ): Promise<NodeActions<string>> {
-    const eveesRemote =
-      authority !== undefined ? this.getAuthority(authority) : this.remotesConfig.defaultCreator;
+    const eveesRemote = authority !== undefined ? this.getAuthority(authority) : this.defaultRemote;
     canWrite =
       canWrite !== undefined
         ? canWrite
@@ -210,10 +211,7 @@ export class Evees {
       timestamp: Date.now()
     };
 
-    const perspective: Secured<Perspective> = await deriveSecured(
-      object,
-      eveesRemote.cidConfig
-    );
+    const perspective: Secured<Perspective> = await deriveSecured(object, eveesRemote.cidConfig);
 
     const newPerspectiveAction: UprtclAction = {
       type: CREATE_AND_INIT_PERSPECTIVE_ACTION,
@@ -291,7 +289,12 @@ export class Evees {
 
     const newObject = this.replaceEntityChildren(data, newLinks);
 
-    const source = this.remotesConfig.map(authority, type);
+    const remote = this.eveesRemotes.find(r => r.authorityID === authority);
+
+    if (!remote)
+      throw new Error(`Could not find registered evees remote for authority with ID ${authority}`);
+
+    const source = this.remoteMap(remote, type);
 
     const newData = await deriveEntity(newObject.object, source.cidConfig);
 

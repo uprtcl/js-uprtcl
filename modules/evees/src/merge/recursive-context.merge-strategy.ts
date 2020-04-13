@@ -13,7 +13,7 @@ import {
   CREATE_COMMIT_ACTION,
   CREATE_DATA_ACTION,
   UpdateRequest,
-  RemotesConfig,
+  RemoteMap,
   NodeActions
 } from '../types';
 import { deriveEntity } from '../utils/cid-hash';
@@ -28,16 +28,6 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }>;
 
   allPerspectives!: Dictionary<string>;
-
-  constructor(
-    @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
-    @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
-  ) {
-    super(remotesConfig, evees, recognizer, client, entityCache);
-  }
 
   async isPattern(id: string, type: string): Promise<boolean> {
     const entity = (await loadEntity(this.client, id)) as object;
@@ -330,7 +320,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     if (!remote.userId)
       throw new Error('Cannot create perspectives in a remote you are not signed in');
 
-    const dataSource = this.remotesConfig.map(remote.authorityID, type);
+    const dataSource = this.remoteMap(remote, type);
 
     const entity = await deriveEntity(data, dataSource.cidConfig);
 

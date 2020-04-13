@@ -7,7 +7,6 @@ export {
   Perspective,
   Context,
   PerspectiveDetails,
-  RemotesConfig,
   RemoteMap,
   UprtclAction,
   NodeActions
