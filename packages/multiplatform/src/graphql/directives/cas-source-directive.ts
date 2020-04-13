@@ -11,11 +11,11 @@ export class CASSourceDirective extends LoadEntityDirective {
   ): Promise<Entity<any> | undefined> {
     const source: CASSource = container.get(this.args.source);
 
-    const entity = await source.get(reference);
-    if (!entity) return undefined;
+    const object = await source.get(reference);
+    if (!object) return undefined;
     return {
       id: reference,
-      entity,
+      object,
       casID: source.casID
     };
   }

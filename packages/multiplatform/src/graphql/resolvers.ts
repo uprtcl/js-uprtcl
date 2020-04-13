@@ -22,7 +22,7 @@ export const resolvers = {
       const recognizer = container.get(CortexModule.bindings.Recognizer);
       const client = container.get(ApolloClientModule.bindings.Client);
 
-      const redirectedEntity = await redirectEntity(recognizer, ref => loadEntity(client)(ref))(
+      const redirectedEntity = await redirectEntity(recognizer, ref => loadEntity(client, ref))(
         entityId
       );
       return { id: redirectedEntity.id, ...redirectedEntity.object };
