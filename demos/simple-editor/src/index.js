@@ -35,13 +35,10 @@ import { SimpleWiki } from './simple-wiki';
   const httpEvees = new EveesHttp(c1host, httpConnection, ethConnection, httpCidConfig);
   const ethEvees = new EveesEthereum(ethConnection, ipfsConnection, ipfsCidConfig);
 
-  const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
-  const httpStore = new HttpStore(c1host, httpConnection, httpCidConfig);
-
   const evees = new EveesModule([ethEvees, httpEvees], httpEvees);
-  const documents = new DocumentsModule([ipfsStore, httpStore]);
-
-  const wikis = new WikisModule([ipfsStore, httpStore]);
+  
+  const documents = new DocumentsModule();
+  const wikis = new WikisModule();
 
   const lenses = new LensesModule();
 

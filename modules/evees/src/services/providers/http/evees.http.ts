@@ -39,17 +39,25 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     this.accessControl = new EveesAccessControlHttp(host, this.connection);
     this.knownSources = new KnownSourcesHttp(host, this.connection);
   }
-
+  
   ready(): Promise<void> {
     return Promise.resolve();
   }
 
   get casID() {
-    return `http:source:${this.options.host}`;
+    return `http:store:${this.options.host}`;
   }
 
   async get<T>(hash: string): Promise<T> {
     return super.getObject<T>(`/get/${hash}`);
+  }
+
+  async create(object: object, hash?: string | undefined): Promise<string> {
+    const result = await super.httpPost(`/data`, {
+      id: '',
+      object: object
+    });
+    return result.elementIds[0];
   }
 
   async clonePerspective(perspective: Secured<Perspective>): Promise<void> {

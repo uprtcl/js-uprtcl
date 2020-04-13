@@ -18,13 +18,13 @@ import {
   MenuConfig,
   EveesRemote,
   EveesModule,
-  RemotesConfig,
   eveeColor,
   DEFAULT_COLOR,
   UPDATE_HEAD,
   CREATE_COMMIT,
   CREATE_PERSPECTIVE,
-  CREATE_ENTITY
+  CREATE_ENTITY,
+  RemoteMap
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CASSource } from '@uprtcl/multiplatform';
@@ -61,12 +61,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
-  protected remotesConfig!: RemotesConfig;
+  protected remoteMap!: RemoteMap;
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
+    this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
 
     this.ref = this.firstRef;
     this.logger.log('firstUpdated()', { ref: this.ref });
@@ -205,9 +205,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
-  getStore(eveesAuthority: string, type: string): CASSource | undefined {
-    if (!this.remotesConfig) return undefined;
-    return this.remotesConfig.map(eveesAuthority, type);
+  getStore(authorityID: string, type: string): CASSource | undefined {
+    const remote = this.eveesRemotes.find(r => r.authorityID === authorityID);
+    if (!remote) throw new Error(`Remote not found for authority ${authorityID}`);
+    return this.remoteMap(remote);
   }
 
   async createPage(page: TextNode, authority: string) {

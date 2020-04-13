@@ -2,9 +2,9 @@ import { Entity } from '@uprtcl/cortex';
 import { EveesRemote } from './services/evees.remote';
 import { CASSource } from '@uprtcl/multiplatform';
 
-export type RemoteMap = (eveesAuthority: EveesRemote, contentType: string) => CASSource;
+export type RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) => CASSource;
 
-export const defaultRemoteMap: RemoteMap = (eveesAuthority: EveesRemote, contentType: string) =>
+export const defaultRemoteMap: RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) =>
   eveesAuthority;
 
 export type Context = string;

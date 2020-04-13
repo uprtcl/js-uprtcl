@@ -11,7 +11,7 @@ import { Secured } from '../../../utils/cid-hash';
 
 @injectable()
 export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {
-    
+      
   knownSources?: KnownSourcesService | undefined;
   userId?: string | undefined;
   zome: string = 'evees';
@@ -48,6 +48,10 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
     return this.call('get_entry', {
       address: id
     });
+  }
+
+  create(object: object, hash?: string | undefined): Promise<string> {
+    throw new Error("Method not implemented.");
   }
 
   /**

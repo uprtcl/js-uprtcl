@@ -1,7 +1,7 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { createEntity, EntityCache } from '@uprtcl/multiplatform';
-import { PatternRecognizer, Entity } from '@uprtcl/cortex';
+import { EntityCache } from '@uprtcl/multiplatform';
+import { Entity } from '@uprtcl/cortex';
 
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '../graphql/queries';
 import {
