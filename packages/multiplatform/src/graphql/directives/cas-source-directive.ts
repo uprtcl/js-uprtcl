@@ -1,8 +1,9 @@
 import { interfaces } from 'inversify';
 
+import { Entity } from '@uprtcl/cortex';
+
 import { CASSource } from '../../types/cas-source';
 import { LoadEntityDirective } from './load-entity-directive';
-import { Entity } from '@uprtcl/cortex';
 
 export class CASSourceDirective extends LoadEntityDirective {
   protected async resolveEntity(

@@ -18,6 +18,8 @@ export class KnownSourcesRefPattern extends Pattern<string> {
       return false;
     }
   }
+  
+  type: string | undefined = undefined;
 }
 
 @injectable()

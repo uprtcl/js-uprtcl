@@ -27,7 +27,7 @@ export { Connection, ConnectionOptions } from './connections/connection';
 export { SocketConnection } from './connections/socket.connection';
 
 /** Utils */
-export { createEntity, loadEntity } from './utils/entities';
+export { loadEntity } from './utils/entities';
 
 export {
   linksFromEntity,
