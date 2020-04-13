@@ -132,7 +132,7 @@ export const eveesResolvers: IResolvers = {
 
       const commit: Secured<Commit> = {
         id: commitId,
-        entity: signed,
+        object: signed,
         casID: remote.casID
       }
 
@@ -198,11 +198,11 @@ export const eveesResolvers: IResolvers = {
     },
 
     async createEntity(_, { content, source }, { container }) {
-      const stores: Store[] = container.getAll(StoresModule.bindings.Store);
-      const store = stores.find(d => d.source === source);
+      const stores: CASStore[] = container.getAll(CASModule.bindings.Store);
+      const store = stores.find(d => d.casID === source);
     
       if (!store) throw new Error(`No store registered for source ${source}`);
-      const id = await store.put(JSON.parse(content));
+      const id = await store.create(JSON.parse(content));
     
       return id;
     },

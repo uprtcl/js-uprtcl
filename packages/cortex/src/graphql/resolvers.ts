@@ -21,7 +21,7 @@ export const cortexResolvers = {
   },
   EntityContext: {
     object(parent) {
-      return entityFromGraphQlObject(parent).entity;
+      return entityFromGraphQlObject(parent).object;
     },
     async patterns(parent, args, { container }, info) {
       const entity = entityFromGraphQlObject(parent);
@@ -52,19 +52,19 @@ export const cortexResolvers = {
 };
 
 export function entityFromGraphQlObject(parent): Entity<any> {
-  if (parent.id && parent.entity && typeof parent.casID === 'string') return parent;
+  if (parent.id && parent.object && typeof parent.casID === 'string') return parent;
 
   const id = parent.id;
 
-  let entity = {};
+  let object = {};
 
   for (const key of Object.keys(parent)) {
-    if (key !== 'id') entity[key] = parent[key];
+    if (key !== 'id') object[key] = parent[key];
   }
 
   return {
     id,
-    entity
+    object
   };
 }
 

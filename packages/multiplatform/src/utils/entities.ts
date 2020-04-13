@@ -49,10 +49,10 @@ export const redirectEntity = (
   return redirectEntity(recognizer, loadEntity)(redirectRef);
 };
 
-
-export const loadEntity = (apolloClient: ApolloClient<any>) => async (
+export async function loadEntity<T>(
+  apolloClient: ApolloClient<any>,
   entityRef: string
-): Promise<Entity<any> | undefined> => {
+): Promise<Entity<T> | undefined> {
   const result = await apolloClient.query({
     query: gql`
     {
@@ -77,4 +77,4 @@ export const loadEntity = (apolloClient: ApolloClient<any>) => async (
     entity: entity,
     casID: result.data.entity._context.casID
   };
-};
+}

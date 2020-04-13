@@ -9,9 +9,9 @@ export class MockPattern extends Pattern<any> {
   recognize(object: any) {
     return (
       typeof object === 'object' &&
-      object.entity &&
-      object.entity.test &&
-      typeof object.entity.test === 'string'
+      object.object &&
+      object.object.test &&
+      typeof object.object.test === 'string'
     );
   }
 
@@ -25,7 +25,7 @@ export class Lenses implements HasLenses<Entity<any>> {
       name: 'content',
       render: (context: any) =>
         html`
-          <mock-element .content=${entity.entity.test}></mock-element>
+          <mock-element .content=${entity.object.test}></mock-element>
         `
     }
   ];

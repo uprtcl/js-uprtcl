@@ -25,7 +25,7 @@ export const resolvers = {
       const redirectedEntity = await redirectEntity(recognizer, ref => loadEntity(client)(ref))(
         entityId
       );
-      return { id: redirectedEntity.id, ...redirectedEntity.entity };
+      return { id: redirectedEntity.id, ...redirectedEntity.object };
     }
   }
 };

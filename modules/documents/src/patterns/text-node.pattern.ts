@@ -38,8 +38,8 @@ const nodeLevel = (node: DocNode) => {
 };
 
 export class TextNodePattern extends Pattern<Entity<TextNode>> {
-  recognize(object: object): boolean {
-    return recognizeEntity(object) && propertyOrder.every(p => object.entity.hasOwnProperty(p));
+  recognize(entity: object): boolean {
+    return recognizeEntity(entity) && propertyOrder.every(p => entity.object.hasOwnProperty(p));
   }
 
   type = 'TextNode';
@@ -55,13 +55,13 @@ export class TextNodeCommon
     childrenHashes: string[]
   ): Entity<TextNode> => ({
     id: '',
-    entity: {
-      ...node.entity,
+    object: {
+      ...node.object,
       links: childrenHashes
     }
   });
 
-  getChildrenLinks = (node: Entity<TextNode>): string[] => node.entity.links;
+  getChildrenLinks = (node: Entity<TextNode>): string[] => node.object.links;
 
   links = async (node: Entity<TextNode>) => this.getChildrenLinks(node);
 
@@ -131,17 +131,17 @@ export class TextNodeCommon
     config: any
   ): Promise<[TextNode, UprtclAction[]]> => {
     const resultText = mergeStrings(
-      originalNode.entity.text,
-      modifications.map(data => data.entity.text)
+      originalNode.object.text,
+      modifications.map(data => data.object.text)
     );
     const resultType = mergeResult(
-      originalNode.entity.type,
-      modifications.map(data => data.entity.type)
+      originalNode.object.type,
+      modifications.map(data => data.object.type)
     );
 
     const [mergedLinks, actions] = await mergeStrategy.mergeLinks(
-      originalNode.entity.links,
-      modifications.map(data => data.entity.links),
+      originalNode.object.links,
+      modifications.map(data => data.object.links),
       config
     );
 
@@ -169,5 +169,5 @@ export class TextNodeNew implements New<Partial<TextNode>, TextNode> {
 
 @injectable()
 export class TextNodeTitle implements HasTitle<Entity<TextNode>> {
-  title = (textNode: Entity<TextNode>) => textNode.entity.text;
+  title = (textNode: Entity<TextNode>) => textNode.object.text;
 }

@@ -14,8 +14,8 @@ const propertyOrder = ['title', 'pages'];
 const logger = new Logger('WIKI-ENTITY');
 
 export class WikiEntity extends Pattern<Wiki> {
-  recognize(object: object): boolean {
-    return recognizeEntity(object) && propertyOrder.every(p => object.entity.hasOwnProperty(p));
+  recognize(entity: object): boolean {
+    return recognizeEntity(entity) && propertyOrder.every(p => entity.object.hasOwnProperty(p));
   }
 
   type = 'Wiki';
@@ -25,14 +25,14 @@ export class WikiEntity extends Pattern<Wiki> {
 export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>> {
   replaceChildrenLinks = (wiki: Entity<Wiki>) => (childrenHashes: string[]): Entity<Wiki> => ({
     ...wiki,
-    entity: {
-      ...wiki.entity,
+    object: {
+      ...wiki.object,
       pages: childrenHashes
     }
   });
 
   getChildrenLinks: (wiki: Entity<Wiki>) => string[] = (wiki: Entity<Wiki>): string[] =>
-    wiki.entity.pages;
+    wiki.object.pages;
 
   links: (wiki: Entity<Wiki>) => Promise<string[]> = async (wiki: Entity<Wiki>) =>
     this.getChildrenLinks(wiki);
@@ -43,14 +43,14 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     config
   ): Promise<NodeActions<Wiki>> => {
     const resultTitle = mergeStrings(
-      originalNode.entity.title,
-      modifications.map(data => data.entity.title)
+      originalNode.object.title,
+      modifications.map(data => data.object.title)
     );
 
     // TODO: add entity
     const mergedPages = await mergeStrategy.mergeLinks(
-      originalNode.entity.pages,
-      modifications.map(data => data.entity.pages),
+      originalNode.object.pages,
+      modifications.map(data => data.object.pages),
       config
     );
 

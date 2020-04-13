@@ -1,7 +1,7 @@
 export interface Entity<T> {
   // Hash
   id: string;
-  entity: T;
+  object: T;
   casID?: string;
 }
 
@@ -10,5 +10,5 @@ export function recognizeEntity(object: any): object is Entity<any> {
   return (typeof object === 'object' &&
     entity.id &&
     typeof entity.id === 'string' &&
-    entity.entity !== null) as boolean;
+    entity.object !== null) as boolean;
 }

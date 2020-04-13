@@ -44,7 +44,7 @@ export class FindMostRecentCommonAncestor {
     });
 
     const commits = await Promise.all(promises);
-    const nextCommits = commits.map(commit => commit.entity.payload.parentsIds);
+    const nextCommits = commits.map(commit => commit.object.payload.parentsIds);
 
     pathToExplore.heads = Array.prototype.concat.apply([], nextCommits);
     return pathToExplore;
@@ -62,7 +62,7 @@ export class FindMostRecentCommonAncestor {
       }`
     });
 
-    return { id: commitId, entity: result.data.entity._context.object };
+    return { id: commitId, object: result.data.entity._context.object };
   }
 
   public async compute(): Promise<string> {

@@ -115,7 +115,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspectiveId = await this.create(secured.entity);
+    const perspectiveId = await this.create(secured.object);
     this.logger.log(`[ETH] persistPerspectiveEntity - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
@@ -203,13 +203,13 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
    * @override
    */
   async clonePerspective(secured: Secured<Perspective>): Promise<void> {
-    let perspective = secured.entity.payload;
+    let perspective = secured.object.payload;
 
     /** validate */
     if (!perspective.authority) throw new Error('authority cannot be empty');
 
     /** Store the perspective data in the data layer */
-    const perspectiveId = await this.create(sortObject(secured.entity));
+    const perspectiveId = await this.create(sortObject(secured.object));
     this.logger.log(`[ETH] createPerspective - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
@@ -238,7 +238,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
    * @override
    */
   async cloneCommit(secured: Secured<Commit>): Promise<void> {
-    const commit = sortObject(secured.entity);
+    const commit = sortObject(secured.object);
     /** Store the perspective data in the data layer */
 
     let commitId = await this.create(commit);

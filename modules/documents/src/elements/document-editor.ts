@@ -13,7 +13,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, HasChildren, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesRemote, EveesModule, RemotesConfig,UPDATE_HEAD, ContentUpdatedEvent, CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '@uprtcl/evees';
-import { Source, DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { Source, DiscoveryModule, DiscoveryService, loadEntity } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode, TextNode, EntityType } from 'src/types';
 import { HasDocNodeLenses } from 'src/patterns/document-patterns';
@@ -175,7 +175,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (!dataId || !entityType || !authorityID) throw Error(`data not loaded for ref ${this.ref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
-    const data = await loadEntity(this.client)(dataId);
+    const data = await loadEntity(this.client, dataId);
     if (!data) throw Error('Data undefined');
 
     const hasChildren: HasChildren = this.recognizer
@@ -194,7 +194,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       hasChildren,
       childrenNodes: [],
       data,
-      draft: { ...data.entity },
+      draft: { ...data.object },
       entityType,
       headId,
       hasDocNodeLenses,
@@ -237,7 +237,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   hasChanges(node: DocNode) {
     if (node.ref === '') return true; // is placeholder
     if (!node.data) return true;
-    if (!isEqual(node.data.entity, node.draft)) return true;
+    if (!isEqual(node.data.object, node.draft)) return true;
     return false;
   }
 
@@ -276,7 +276,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async persistNode(node: DocNode) {
     const isPlaceholder = node.ref === undefined || node.ref === '';
 
-    if (!isPlaceholder && node.data !== undefined && isEqual(node.data.entity, node.draft)) {
+    if (!isPlaceholder && node.data !== undefined && isEqual(node.data.object, node.draft)) {
       /** nothing to persist here */
       return;
     }

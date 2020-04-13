@@ -11,9 +11,9 @@ export class MockPattern extends Pattern<any> {
   recognize(object: any) {
     return (
       typeof object === 'object' &&
-      object.entity &&
-      object.entity.test &&
-      typeof object.entity.test === 'string'
+      object.object &&
+      object.object.test &&
+      typeof object.object.test === 'string'
     );
   }
 
@@ -22,10 +22,10 @@ export class MockPattern extends Pattern<any> {
 
 @injectable()
 export class Text implements HasText<Entity<MockEntity>> {
-  text = (entity: Entity<MockEntity>) => entity.entity.test;
+  text = (entity: Entity<MockEntity>) => entity.object.test;
 }
 
 @injectable()
 export class Redirect implements HasRedirect<Entity<MockEntity>> {
-  redirect = async (entity: Entity<MockEntity>) => entity.entity.data;
+  redirect = async (entity: Entity<MockEntity>) => entity.object.data;
 }

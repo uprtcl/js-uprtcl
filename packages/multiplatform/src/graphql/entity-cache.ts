@@ -22,7 +22,7 @@ export class EntityCache {
       if (!cachedObject || !cachedObject.object) return undefined;
 
       const object = cachedObject.object.json;
-      return { id: entityId, entity: object, casID: cachedObject.casID };
+      return { id: entityId, object, casID: cachedObject.casID };
     } catch (e) {
       return undefined;
     }
@@ -54,7 +54,7 @@ export class EntityCache {
           id: entity.id,
           _context: {
             __typename: 'EntityContext',
-            object: entity.entity
+            object: entity.object
           }
         }
       }

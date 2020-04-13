@@ -56,7 +56,7 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
     await this.call('clone_perspective', {
       previous_address: perspective.id,
-      perspective: perspective.entity
+      perspective: perspective.object
     });
   }
 
@@ -66,7 +66,7 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   async cloneCommit(commit: Secured<Commit>): Promise<void> {
     await this.call('clone_commit', {
       perspective_address: commit.id,
-      commit: commit.entity
+      commit: commit.object
     });
   }
 

@@ -44,7 +44,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
     const cachedEntity = entityCache.getCachedEntity(entityId);
 
-    if (cachedEntity) return { id: cachedEntity.id, ...cachedEntity.entity };
+    if (cachedEntity) return { id: cachedEntity.id, ...cachedEntity.object };
 
     if (entityCache.pendingLoads[entityId]) return entityCache.pendingLoads[entityId];
 
@@ -63,7 +63,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
       entityCache.pendingLoads[entityId] = undefined;
 
-      return { id: entityId, ...entity.entity };
+      return { id: entityId, ...entity.object };
     };
 
     entityCache.pendingLoads[entityId] = promise();

@@ -1,14 +1,8 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { multiInject, injectable, inject } from 'inversify';
 
-import {
-  PatternRecognizer,
-  HasChildren,
-  CortexModule,
-  Signed,
-  Entity
-} from '@uprtcl/cortex';
-import { KnownSourcesService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { PatternRecognizer, HasChildren, CortexModule, Signed, Entity } from '@uprtcl/cortex';
+import { KnownSourcesService, DiscoveryModule, loadEntity } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -20,10 +14,11 @@ import {
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
   CREATE_AND_INIT_PERSPECTIVE_ACTION,
-  NodeActions,
+  NodeActions
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
+import { hashObject, Secured, signAndHashObject } from '../utils/cid-hash';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -91,9 +86,9 @@ export class Evees {
   }
 
   public async isPerspective(id: string): Promise<boolean> {
-    const entity = await this.discovery.get(id) as object;
-    const pattern = this.recognizer.recognize(entity);
-    return pattern.findIndex(p => p.name === "Perspective") !== -1;
+    const entity = await loadEntity(this.client, id);
+    const type = this.recognizer.recognizeType(entity);
+    return type === 'Perspective';
   }
 
   public async getContextPerspectives(context: string): Promise<string[]> {
@@ -111,20 +106,20 @@ export class Evees {
   }
 
   async isPattern(id: string, name: string): Promise<boolean> {
-    const entity = await this.discovery.get(id) as object;
+    const entity = await loadEntity(this.client, id);
     const pattern = this.recognizer.recognize(entity);
     return pattern.findIndex(p => p.name === name) !== -1;
   }
 
   /**
    * receives an entity id and compute the actions that will
-   * result on this entity being forked on a target authority 
+   * result on this entity being forked on a target authority
    * with a target owner (canWrite).
-   * 
+   *
    * it also makes sure that all entities are clonned
    * on the target authority default store.
-   * 
-   * recursively fork entity children 
+   *
+   * recursively fork entity children
    */
   public async fork(
     id: string,
@@ -134,12 +129,11 @@ export class Evees {
     context?: string,
     name?: string
   ): Promise<NodeActions<string>> {
-
-    const isPerspective = await this.isPattern(id, "Perspective");
+    const isPerspective = await this.isPattern(id, 'Perspective');
     if (isPerspective) {
       return this.forkPerspective(id, authority, canWrite);
     } else {
-      const isCommit = await this.isPattern(id, "Commit");
+      const isCommit = await this.isPattern(id, 'Commit');
       if (isCommit) {
         return this.forkCommit(id, authority, canWrite);
       } else {
@@ -173,14 +167,20 @@ export class Evees {
   }
 
   public async forkPerspective(
-    perspectiveId: string, 
-    authority?: string, 
+    perspectiveId: string,
+    authority?: string,
     canWrite?: string,
     name?: string,
-    parentId?: string): Promise<NodeActions<string>> {
-
-    const eveesRemote = authority !== undefined ? this.getAuthority(authority) : this.remotesConfig.defaultCreator;
-    canWrite = canWrite !== undefined ? canWrite : eveesRemote.userId !== undefined ? eveesRemote.userId : '';
+    parentId?: string
+  ): Promise<NodeActions<string>> {
+    const eveesRemote =
+      authority !== undefined ? this.getAuthority(authority) : this.remotesConfig.defaultCreator;
+    canWrite =
+      canWrite !== undefined
+        ? canWrite
+        : eveesRemote.userId !== undefined
+        ? eveesRemote.userId
+        : '';
 
     const result = await this.client.query({
       query: gql`{
@@ -201,16 +201,19 @@ export class Evees {
     const headId = result.data.entity.head.id;
     const context = result.data.entity.context.id;
 
-    const forkCommit = await this.forkCommit(headId, eveesRemote.authority, canWrite);
-    
+    const forkCommit = await this.forkCommit(headId, eveesRemote.authorityID, canWrite);
+
     const object: Perspective = {
       creatorId: eveesRemote.userId ? eveesRemote.userId : '',
-      authority: eveesRemote.authority,
+      authority: eveesRemote.authorityID,
       timestamp: Date.now()
     };
 
-    const perspective: Secured<Perspective> = await signAndHashObject(object, eveesRemote.cidConfig);
-    
+    const perspective: Secured<Perspective> = await signAndHashObject(
+      object,
+      eveesRemote.cidConfig
+    );
+
     const newPerspectiveAction: UprtclAction = {
       type: CREATE_AND_INIT_PERSPECTIVE_ACTION,
       entity: perspective,
@@ -224,15 +227,15 @@ export class Evees {
     return {
       new: perspective.id,
       actions: [newPerspectiveAction].concat(forkCommit.actions)
-    }
+    };
   }
 
   public async forkCommit(
-    commitId: string, 
-    authority: string, 
-    canWrite: string): Promise<NodeActions<string>> {
-
-    const commit = await loadEntity(commitId);
+    commitId: string,
+    authority: string,
+    canWrite: string
+  ): Promise<NodeActions<string>> {
+    const commit = await loadEntity(this.client, commitId);
     const remote = this.getAuthority(authority);
 
     const dataId = commit.object.payload.dataId;
@@ -255,7 +258,7 @@ export class Evees {
       }
     };
 
-    const newHash = await hashObject(newData.entity,dataSource.cidConfig)
+    const newHash = await hashObject(newData.object, dataSource.cidConfig);
 
     const newCommitAction: UprtclAction = {
       type: CREATE_COMMIT_ACTION,
@@ -266,23 +269,23 @@ export class Evees {
     };
 
     return {
-      new: newHead.id, 
+      new: newHead.id,
       actions: [newCommitAction].concat(dataFork.actions)
-    }
+    };
   }
 
   public async forkEntity(
-    entityId: string, 
-    authority: string, 
-    canWrite: string): Promise<NodeActions<string>> {
-
-    const data = await loadEntity(entityId);
+    entityId: string,
+    authority: string,
+    canWrite: string
+  ): Promise<NodeActions<string>> {
+    const data = await loadEntity(this.client, entityId);
     if (!data) throw new Error(`data ${entityId} not found`);
 
     /** createOwnerPreservingEntity of children */
     const oldLinks = this.getEntityChildren(data.object);
 
-    const getLinksForks = oldLinks.map(link => this.fork(link, authority, canWrite))
+    const getLinksForks = oldLinks.map(link => this.fork(link, authority, canWrite));
 
     const newLinksNodeActions = await Promise.all(getLinksForks);
     const newLinks = newLinksNodeActions.map(node => node.new);
@@ -290,20 +293,20 @@ export class Evees {
     const newObject = this.replaceEntityChildren(data.object, newLinks);
 
     const source = this.remotesConfig.map(authority);
-    
-    const newData = await hashObject(newObject, source.hashRecipe);
+
+    const newData = await hashObject(newObject, source.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
       entity: newData,
       payload: {
-        source: source.source
+        source: source.casID
       }
     };
 
     return {
       new: newData.id,
       actions: [newDataAction].concat(...newLinksNodeActions.map(node => node.actions))
-    } 
+    };
   }
 }

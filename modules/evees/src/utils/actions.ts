@@ -51,7 +51,7 @@ export async function cacheActions(
       const perspectiveId = ((action.entity as unknown) as Entity<any>).id;
       const headId = action.payload.details.headId;
 
-      const object = action.entity.entity;
+      const object = action.entity.object;
 
       client.cache.writeQuery({
         query: gql`{
@@ -109,7 +109,7 @@ export async function executeActions(
       const mutation = await client.mutate({
         mutation: CREATE_ENTITY,
         variables: {
-          content: JSON.stringify(action.entity.entity),
+          content: JSON.stringify(action.entity.object),
           source: action.payload.source
         }
       });
@@ -131,7 +131,7 @@ export async function executeActions(
       const result = await client.mutate({
         mutation: CREATE_COMMIT,
         variables: {
-          ...action.entity.entity.payload,
+          ...action.entity.object.payload,
           source: action.payload.source
         }
       });
@@ -149,9 +149,9 @@ export async function executeActions(
     const result = await client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
-        ...action.entity.entity.payload,
+        ...action.entity.object.payload,
         ...action.payload.details,
-        authority: action.entity.entity.payload.authority,
+        authority: action.entity.object.payload.authority,
         canWrite: action.payload.owner,
         parentId: action.payload.parentId
       }

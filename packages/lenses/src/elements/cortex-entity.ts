@@ -87,7 +87,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
 
     this.entity = {
       id: entityResult.id,
-      entity: entityResult._context.object,
+      object: entityResult._context.object,
       casID: entityResult._context.casID
     };
 

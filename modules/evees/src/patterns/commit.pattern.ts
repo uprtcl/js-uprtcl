@@ -3,10 +3,12 @@ import { injectable, inject, multiInject } from 'inversify';
 import {
   Pattern,
   HasLinks,
-  Entity  
+  Entity,  
+  Signed
 } from '@uprtcl/cortex';
 
 import { Commit } from '../types';
+import { extractSignedEntity } from '../utils/signed';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
 
@@ -24,7 +26,7 @@ export class CommitPattern extends Pattern<Entity<Signed<Commit>>> {
 export class CommitLinked implements HasLinks<Entity<Signed<Commit>>>, HasRedirect<Entity<Signed<Commit>>> {
   links: (commit: Entity<Signed<Commit>>) => Promise<string[]> = async (
     commit: Entity<Signed<Commit>>
-  ): Promise<string[]> => [commit.entity.payload.dataId, ...commit.entity.payload.parentsIds];
+  ): Promise<string[]> => [commit.object.payload.dataId, ...commit.object.payload.parentsIds];
 
   getChildrenLinks: (commit: Entity<Signed<Commit>>) => string[] = (
     commit: Entity<Signed<Commit>>
@@ -37,5 +39,5 @@ export class CommitLinked implements HasLinks<Entity<Signed<Commit>>>, HasRedire
 
   redirect: (commit: Entity<Signed<Commit>>) => Promise<string | undefined> = async (
     commit: Entity<Signed<Commit>>
-  ) => commit.entity.payload.dataId;
+  ) => commit.object.payload.dataId;
 }

@@ -17,7 +17,7 @@ import { sharedStyles } from '@uprtcl/lenses';
 import { Hashed } from '@uprtcl/cortex';
 import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, eveeColor, DEFAULT_COLOR, UPDATE_HEAD, CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { Source } from '@uprtcl/multiplatform';
+import { Source, CASSource } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
@@ -191,7 +191,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.dispatchEvent(
       new CustomEvent('page-selected', {
         detail: {
-          pageId: this.wiki.entity.pages[this.selectedPageIx]
+          pageId: this.wiki.object.pages[this.selectedPageIx]
         }
       })
     );
@@ -216,7 +216,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_ENTITY,
       variables: {
         content: JSON.stringify(page),
-        source: store.source
+        source: store.casID
       }
     });
 
@@ -225,7 +225,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       variables: {
         dataId: createTextNode.data.createEntity,
         parentsIds: [],
-        source: remote.source
+        source: remote.casID
       }
     });
 
@@ -238,7 +238,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         headId: headId,
         parentId: this.ref,
         context: `${this.context}_${Date.now()}`,
-        source: remote.source
+        source: remote.casID
       }
     });
 
@@ -302,7 +302,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const pagesIds = await Promise.all(getPages);
 
-    const newObject = {...this.wiki.entity};
+    const newObject = {...this.wiki.object};
     const removed = newObject.pages.splice(index, count, ...pagesIds);
 
     return {
@@ -320,7 +320,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       links: []
     };
 
-    index = index === undefined ? this.wiki.entity.pages.length : index;
+    index = index === undefined ? this.wiki.object.pages.length : index;
 
     const result = await this.splicePages([newPage], index, 0);
     if (!result.entity) throw Error('problem with splice pages');
@@ -484,7 +484,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 <wiki-page
                   @nav-back=${() => this.selectPage(undefined)}
                   @page-title-changed=${() => this.loadPagesData()}
-                  pageHash=${this.wiki.entity.pages[this.selectedPageIx]}
+                  pageHash=${this.wiki.object.pages[this.selectedPageIx]}
                   color=${this.color() ? this.color() : ''}
                 >
                 </wiki-page>
@@ -492,7 +492,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             : html`
                 <wiki-home
                   wikiHash=${this.ref}
-                  title=${this.wiki.entity.title}
+                  title=${this.wiki.object.title}
                   color=${this.color()}
                 >
                   <evees-info-page 
