@@ -18,7 +18,7 @@ import {
 } from '../types';
 import { deriveEntity } from '../utils/cid-hash';
 import { EveesBindings } from '../bindings';
-import { Evees } from '../uprtcl-evees';
+import { Evees, deriveSecured } from '../uprtcl-evees';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -332,7 +332,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const dataSource = this.remotesConfig.map(remote.authorityID, type);
 
-    const entity = await deriveEntity(data, dataSource);
+    const entity = await deriveEntity(data, dataSource.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
@@ -352,7 +352,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       timestamp: Date.now()
     };
 
-    const securedCommit = await signAndHashObject(commit, remote.cidConfig);
+    const securedCommit = await deriveSecured(commit, remote.cidConfig);
 
     const newCommitAction: UprtclAction = {
       type: CREATE_COMMIT_ACTION,
