@@ -41,7 +41,13 @@ export { CommitHistory } from './elements/evees-commit-history';
 export { PerspectivesList } from './elements/evees-perspectives-list';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
-export { UpdateContentEvent, UpdateContentArgs, ContentUpdatedEvent, SpliceChildrenEvent, CONTENT_UPDATED_TAG } from './elements/events';
+export {
+  UpdateContentEvent,
+  UpdateContentArgs,
+  ContentUpdatedEvent,
+  SpliceChildrenEvent,
+  CONTENT_UPDATED_TAG
+} from './elements/events';
 
 /** UI support components */
 export { MenuConfig } from './elements/common-ui/evees-options-menu';
@@ -57,8 +63,8 @@ export {
   PerspectiveLinks
 } from './patterns/perspective.pattern';
 export { CommitLinked, CommitPattern } from './patterns/commit.pattern';
-export { Secured, signAndHashObject, hashObject } from './utils/cid-hash';
-export { extractSignedEntity, signObject } from './utils/signed';
+export { Secured, hashObject, deriveEntity } from './utils/cid-hash';
+export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';
 
 /** Utils */
 export { isAncestorOf } from './utils/ancestor';

@@ -17,8 +17,8 @@ import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
 import { NewPerspectiveData } from '../services/evees.provider';
-import { Secured, hashObject } from '../utils/cid-hash';
-import { signObject } from 'src/utils/signed';
+import { Secured } from '../utils/cid-hash';
+import { deriveSecured } from '../utils/signed';
 
 export const eveesResolvers: IResolvers = {
   Commit: {
@@ -101,24 +101,20 @@ export const eveesResolvers: IResolvers = {
     }
   },
   Mutation: {
-    async createCommit(
-      _,
-      { dataId, parentsIds, message, source, timestamp },
-      { container }
-    ) {
+    async createCommit(_, { dataId, parentsIds, message, source, timestamp }, { container }) {
       const remotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
       const multiSource: MultiSourceService = container.get(
         DiscoveryModule.bindings.MultiSourceService
       );
-      const remote: EveesRemote | undefined= remotes.find(r => r.casID === source);
+      const remote: EveesRemote | undefined = remotes.find(r => r.casID === source);
 
-      if (!remote) throw new Error(`Evees Remote with casID was not registered ${source}`)
+      if (!remote) throw new Error(`Evees Remote with casID was not registered ${source}`);
 
       message = message !== undefined ? message : '';
       timestamp = timestamp !== undefined ? timestamp : Date.now();
-      
+
       const creatorsIds = [remote.userId !== undefined ? remote.userId : ''];
-      
+
       const commitData: Commit = {
         creatorsIds: creatorsIds,
         dataId: dataId,
@@ -127,21 +123,14 @@ export const eveesResolvers: IResolvers = {
         parentsIds: parentsIds
       };
 
-      const signed: Signed<Commit> = signObject(commitData);
-      const commitId: string = await hashObject(signed, remote.cidConfig);
-
-      const commit: Secured<Commit> = {
-        id: commitId,
-        object: signed,
-        casID: remote.casID
-      }
+      const commit: Secured<Commit> = await deriveSecured(commitData, remote.cidConfig);
 
       await remote.cloneCommit(commit);
       await multiSource.postEntityCreate(commit);
 
       return {
         id: commit.id,
-        ...commit.entity
+        ...commit.object
       };
     },
 
@@ -198,12 +187,12 @@ export const eveesResolvers: IResolvers = {
     },
 
     async createEntity(_, { content, source }, { container }) {
-      const stores: CASStore[] = container.getAll(CASModule.bindings.Store);
+      const stores: CASStore[] = container.getAll(CASModule.bindings.CASStore);
       const store = stores.find(d => d.casID === source);
-    
+
       if (!store) throw new Error(`No store registered for source ${source}`);
       const id = await store.create(JSON.parse(content));
-    
+
       return id;
     },
 
@@ -215,22 +204,21 @@ export const eveesResolvers: IResolvers = {
       const remotes = container.getAll(EveesBindings.EveesRemote);
 
       const remote: EveesRemote = remotes.find(remote => remote.authority === authority);
-      creatorId = creatorId !== undefined ? creatorId : remote.userId !== undefined? remote.userId : '';
+      creatorId =
+        creatorId !== undefined ? creatorId : remote.userId !== undefined ? remote.userId : '';
       timestamp = timestamp !== undefined ? timestamp : Date.now();
-      name = (name !== undefined && name != null) ? name : '';
+      name = name !== undefined && name != null ? name : '';
 
       const perspectiveData: Perspective = {
         creatorId,
         authority,
         timestamp
       };
-      const signed: Signed<Perspective> = signObject(perspectiveData);
-      const perspectiveId: string = await hashObject(signed, remote.cidConfig);
-      const perspective: Secured<Perspective> = {
-        id: perspectiveId,
-        entity: signed,
-        casID: remote.casID
-      };
+
+      const perspective: Secured<Perspective> = await deriveSecured(
+        perspectiveData,
+        remote.cidConfig
+      );
 
       const newPerspectiveData: NewPerspectiveData = {
         perspective,

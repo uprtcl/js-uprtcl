@@ -16,7 +16,7 @@ import {
   RemotesConfig,
   NodeActions
 } from '../types';
-import { hashObject, signAndHashObject, deriveEntity } from '../utils/cid-hash';
+import { deriveEntity } from '../utils/cid-hash';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../uprtcl-evees';
 
@@ -39,10 +39,10 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     super(remotesConfig, evees, recognizer, client, entityCache);
   }
 
-  async isPattern(id: string, name: string): Promise<boolean> {
+  async isPattern(id: string, type: string): Promise<boolean> {
     const entity = (await loadEntity(this.client, id)) as object;
-    const pattern = this.recognizer.recognize(entity);
-    return pattern.findIndex(p => p.name === name) !== -1;
+    const recongnizedType = this.recognizer.recognizeType(entity);
+    return type === recongnizedType;
   }
 
   setPerspective(perspectiveId: string, context: string, to: boolean): void {
@@ -332,7 +332,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const dataSource = this.remotesConfig.map(remote.authorityID, type);
 
-    const entity = await deriveEntity(data, dataSource.cidConfig);
+    const entity = await deriveEntity(data, dataSource);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,

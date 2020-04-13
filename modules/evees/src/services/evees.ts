@@ -18,7 +18,8 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
-import { hashObject, Secured, signAndHashObject } from '../utils/cid-hash';
+import { Secured, deriveEntity } from '../utils/cid-hash';
+import { deriveSecured } from 'src/utils/signed';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -28,7 +29,7 @@ export class Evees {
   logger = new Logger('evees');
 
   constructor(
-    @inject(CortexModule.bindings.Recognizer) protected patternRecognizer: PatternRecognizer,
+    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(DiscoveryModule.bindings.LocalKnownSources)
     public knownSources: KnownSourcesService,
     @multiInject(EveesBindings.EveesRemote)
@@ -105,10 +106,10 @@ export class Evees {
     return ([] as string[]).concat(...perspectivesIds);
   }
 
-  async isPattern(id: string, name: string): Promise<boolean> {
+  async isPattern(id: string, type: string): Promise<boolean> {
     const entity = await loadEntity(this.client, id);
-    const pattern = this.recognizer.recognize(entity);
-    return pattern.findIndex(p => p.name === name) !== -1;
+    const recognizedType = this.recognizer.recognizeType(entity);
+    return type === recognizedType;
   }
 
   /**
@@ -129,11 +130,11 @@ export class Evees {
     context?: string,
     name?: string
   ): Promise<NodeActions<string>> {
-    const isPerspective = await this.isPattern(id, 'Perspective');
+    const isPerspective = await this.isPattern(id, EveesBindings.PerspectiveType);
     if (isPerspective) {
       return this.forkPerspective(id, authority, canWrite);
     } else {
-      const isCommit = await this.isPattern(id, 'Commit');
+      const isCommit = await this.isPattern(id, EveesBindings.CommitType);
       if (isCommit) {
         return this.forkCommit(id, authority, canWrite);
       } else {
@@ -209,7 +210,7 @@ export class Evees {
       timestamp: Date.now()
     };
 
-    const perspective: Secured<Perspective> = await signAndHashObject(
+    const perspective: Secured<Perspective> = await deriveSecured(
       object,
       eveesRemote.cidConfig
     );
@@ -235,7 +236,9 @@ export class Evees {
     authority: string,
     canWrite: string
   ): Promise<NodeActions<string>> {
-    const commit = await loadEntity(this.client, commitId);
+    const commit: Secured<Commit> | undefined = await loadEntity(this.client, commitId);
+    if (!commit) throw new Error(`Could not find commit with id ${commitId}`);
+
     const remote = this.getAuthority(authority);
 
     const dataId = commit.object.payload.dataId;
@@ -244,21 +247,15 @@ export class Evees {
     const eveesRemote = this.getAuthority(authority);
 
     /** build new head object pointing to new data */
-    const newCommit: Signed<Commit> = {
-      payload: {
-        creatorsIds: eveesRemote.userId ? [eveesRemote.userId] : [''],
-        dataId: dataFork.new,
-        message: `autocommit to fork ${commitId} on authority ${authority}`,
-        parentsIds: [commit.id],
-        timestamp: Date.now()
-      },
-      proof: {
-        type: '',
-        signature: ''
-      }
+    const newCommit: Commit = {
+      creatorsIds: eveesRemote.userId ? [eveesRemote.userId] : [''],
+      dataId: dataFork.new,
+      message: `autocommit to fork ${commitId} on authority ${authority}`,
+      parentsIds: [commit.id],
+      timestamp: Date.now()
     };
 
-    const newHash = await hashObject(newData.object, dataSource.cidConfig);
+    const newHead: Secured<Commit> = await deriveSecured(newCommit, remote.cidConfig);
 
     const newCommitAction: UprtclAction = {
       type: CREATE_COMMIT_ACTION,
@@ -283,18 +280,20 @@ export class Evees {
     if (!data) throw new Error(`data ${entityId} not found`);
 
     /** createOwnerPreservingEntity of children */
-    const oldLinks = this.getEntityChildren(data.object);
+    const oldLinks = this.getEntityChildren(data);
+
+    const type = this.recognizer.recognizeType(data);
 
     const getLinksForks = oldLinks.map(link => this.fork(link, authority, canWrite));
 
     const newLinksNodeActions = await Promise.all(getLinksForks);
     const newLinks = newLinksNodeActions.map(node => node.new);
 
-    const newObject = this.replaceEntityChildren(data.object, newLinks);
+    const newObject = this.replaceEntityChildren(data, newLinks);
 
-    const source = this.remotesConfig.map(authority);
+    const source = this.remotesConfig.map(authority, type);
 
-    const newData = await hashObject(newObject, source.cidConfig);
+    const newData = await deriveEntity(newObject.object, source.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,

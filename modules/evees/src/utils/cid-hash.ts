@@ -3,9 +3,7 @@ import CBOR from 'cbor-js';
 import CID from 'cids';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { sortObject } from '@uprtcl/ipfs-provider';
-import { CidConfig, defaultCidConfig } from '@uprtcl/multiplatform';
-
-import { signObject } from './signed';
+import { CidConfig, defaultCidConfig, CASSource } from '@uprtcl/multiplatform';
 
 export async function hashObject(
   object: object,
@@ -22,16 +20,6 @@ export async function hashObject(
 
 export type Secured<T> = Entity<Signed<T>>;
 
-export async function signAndHashObject(
-  object: object,
-  cidConfig?: CidConfig
-): Promise<Secured<any>> {
-  const signed = signObject(object);
-  const hash = await hashObject(signed, cidConfig);
-
-  return { id: hash, object: signed };
-}
-
 export async function deriveEntity<O extends object>(
   object: O,
   config: CidConfig = defaultCidConfig
@@ -39,6 +27,7 @@ export async function deriveEntity<O extends object>(
   const hash = await hashObject(object, config);
   return {
     id: hash,
-    object
+    object,
+    casID: undefined
   };
 }

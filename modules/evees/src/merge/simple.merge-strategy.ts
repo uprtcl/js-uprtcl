@@ -22,8 +22,9 @@ import { MergeStrategy } from './merge-strategy';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Merge } from '../behaviours/merge';
 import { mergeResult } from './utils';
-import { hashObject, signAndHashObject, deriveEntity } from '../utils/cid-hash';
+import { deriveEntity } from '../utils/cid-hash';
 import { cacheUpdateRequest } from '../utils/actions';
+import { deriveSecured } from 'src/utils/signed';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
@@ -192,7 +193,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       timestamp: Date.now(),
       creatorsIds: [remote.userId]
     };
-    const securedCommit = await signAndHashObject(newCommit, remote.cidConfig);
+    const securedCommit = await deriveSecured(newCommit, remote.cidConfig);
 
     const newCommitAction: UprtclAction = {
       type: CREATE_COMMIT_ACTION,
