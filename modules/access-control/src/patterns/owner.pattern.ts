@@ -14,6 +14,8 @@ export class OwnerPattern extends Pattern<OwnerPermissions> {
       typeof (entity as OwnerPermissions).owner === 'string'
     );
   };
+
+  type = undefined;
 }
 
 @injectable()

@@ -17,6 +17,8 @@ export class BasicAdminPattern extends Pattern<BasicAdminPermissions> {
       (entity as BasicAdminPermissions).canWrite !== undefined
     );
   };
+
+  type = undefined;
 }
 
 @injectable()
