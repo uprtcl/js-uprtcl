@@ -42,7 +42,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     });
 
     const eveesHttpProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
-      provider.authority.startsWith('http')
+      provider.authorityID.startsWith('http')
     );
 
     await eveesHttpProvider.login();
@@ -51,11 +51,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
       const eveesEthProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
-        provider.authority.startsWith('eth')
-      );
-
-      const wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider =>
-        provider.source.startsWith('ipfs')
+        provider.authorityID.startsWith('eth')
       );
 
       const client = this.request(ApolloClientModule.bindings.Client);
@@ -67,7 +63,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
             title: 'Genesis Wiki',
             pages: []
           }),
-          source: wikisProvider.source
+          source: eveesEthProvider.casID
         }
       });
 
@@ -76,7 +72,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         variables: {
           dataId: createWiki.data.createEntity,
           parentsIds: [],
-          source: eveesEthProvider.source
+          source: eveesEthProvider.casID
         }
       });
 
@@ -88,7 +84,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
           headId: createCommit.data.createCommit.id,
           context: `genesis-dao-wiki-${randint}`,
           canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
-          authority: eveesEthProvider.authority
+          authority: eveesEthProvider.authorityID
         }
       });
 

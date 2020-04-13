@@ -5,7 +5,7 @@ import { CASStore, CASModule } from '@uprtcl/multiplatform';
 import { EveesModule } from './evees.module';
 
 export abstract class EveesContentModule extends MicroModule {
-  constructor(protected stores: Array<CASStore | interfaces.ServiceIdentifier<CASStore>>) {
+  constructor(protected stores: Array<CASStore | interfaces.ServiceIdentifier<CASStore>> = []) {
     super();
   }
 
