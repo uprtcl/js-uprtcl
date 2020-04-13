@@ -13,7 +13,7 @@ export function signObject<T>(object: T): Signed<T> {
 }
 
 export function extractSignedEntity(object: object): any | undefined {
-  if (!(object.hasOwnProperty('id') && object.hasOwnProperty('entity'))) return undefined;
+  if (!(object.hasOwnProperty('id') && object.hasOwnProperty('object'))) return undefined;
 
   const entity = (object as Entity<any>).object;
   if (!(entity.hasOwnProperty('proof') && entity.hasOwnProperty('payload'))) return undefined;
