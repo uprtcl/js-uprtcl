@@ -70,11 +70,11 @@ export async function loadEntity<T>(
 
   if (!result.data.entity) return undefined;
 
-  const entity = result.data.entity._context.object;
+  const object = result.data.entity._context.object;
 
   return {
     id: result.data.entity.id,
-    entity: entity,
+    object,
     casID: result.data.entity._context.casID
   };
 }
