@@ -1,19 +1,19 @@
 import { PatternRecognizer, CortexModule, Entity } from '@uprtcl/cortex';
 import { DiscoveryModule, MultiSourceService } from '@uprtcl/multiplatform';
-import { Authority } from '@uprtcl/multiplatform';
+import { Authority, loadEntity } from '@uprtcl/multiplatform';
 
 import { Permissions } from '../behaviours/permissions';
 import { Updatable } from '../behaviours/updatable';
 import { AccessControlService } from '../services/access-control.service';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
+import { ApolloClient } from 'apollo-boost';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 export const accessControlResolvers = {
   Mutation: {
     async setCanWrite(_, { entityId, userId }, { container }) {
-      const multiSourceService: MultiSourceService = container.get(
-        DiscoveryModule.bindings.MultiSourceService
-      );
-      const entity: any = await multiSourceService.get(entityId);
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
+      const entity: Entity<any> | undefined = await loadEntity(client, entityId);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
@@ -38,10 +38,8 @@ export const accessControlResolvers = {
       return entityId;
     },
     async setPublicRead(_, { entityId, value }, { container }) {
-      const multiSourceService: MultiSourceService = container.get(
-        DiscoveryModule.bindings.MultiSourceService
-      );
-      const entity: any = await multiSourceService.get(entityId);
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
+      const entity: Entity<any> | undefined = await loadEntity(client, entityId);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
