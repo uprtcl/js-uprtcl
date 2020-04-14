@@ -17,15 +17,16 @@ npm install @uprtcl/documents
 Import the module, instantiate it with its appropiate configuration, and load it:
 
 ```ts
-import { DocumentsModule, DocumentsIpfs } from '@uprtcl/documents';
+import { IpfsStore } from '@uprtcl/ipfs-provider';
+import { DocumentsModule } from '@uprtcl/documents';
 
-const documentsProvider = new DocumentsIpfs({
+const ipfsStore = new IpfsStore({
   host: 'ipfs.infura.io',
   port: 5001,
   protocol: 'https'
 });
 
-const docs = new DocumentsModule([documentsProvider]);
+const docs = new DocumentsModule([ ipfsStore ]);
 await orchestrator.loadModule(docs);
 ```
 

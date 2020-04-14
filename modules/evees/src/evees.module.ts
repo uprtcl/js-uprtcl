@@ -36,36 +36,34 @@ import { RecursiveContextMergeStrategy } from './uprtcl-evees';
  * ```ts
  * import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
  * import { IpfsStore } from '@uprtcl/ipfs-provider';
- * import { HolochainConnection } from '@uprtcl/holochain-provider';
+ * import { HttpConnection } from '@uprtcl/http-provider';
  * import { EthereumConnection } from '@uprtcl/ethereum-provider';
- * import { EveesModule, EveesEthereum, EveesHolochain, EveesBindings } from '@uprtcl/evees';
- *
- * const ipfsConnection = new IpfsConnection({
- *   host: 'ipfs.infura.io',
- *   port: 5001,
- *   protocol: 'https'
- * });
+ * import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
+ * 
+ * const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+ * 
+ * const cidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
  *
  * // Don't put anything on host to get from Metamask's ethereum provider
  * const ethConnection = new EthereumConnection({});
  *
- * const eveesEth = new EveesEthereum(ethConnection, ipfsConnection);
+ * const eveesEth = new EveesEthereum(ethConnection, ipfsConfig, cidConfig);
  *
- * const hcConnection = new HolochainConnection({ host: 'ws://localhost:8888' });
+ * const httpConnection = new HttpConnection();
  *
- * const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
+ * const httpEvees = new EveesHttp('http://localhost:3100/uprtcl/1', httpConnection, ethConnection, cidConfig);
  *
- * const evees = new EveesModule([eveesHolochain, eveesEth]);
+ * const evees = new EveesModule([httpEvees, eveesEth], httpEvees);
  *
  * const orchestrator = new MicroOrchestrator();
  *
  * await orchestrator.loadModule(evees);
  * ```
  *
- * @category CortexModule
  *
- * @param eveesProviders
- * @param localEvees
+ * @param eveesProviders array of remote services that implement Evees behaviour
+ * @param defaultRemote default remote service to which to create Perspective and Commits
+ * @param remoteMap optional map between the given evees remotes and the CASSources to create the data to by default
  */
 export class EveesModule extends MicroModule {
   static id = 'evees-module';

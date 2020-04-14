@@ -38,7 +38,7 @@ import { DocumentEditor } from './elements/document-editor';
  * await orchestrator.loadModule(docs);
  * ```
  *
- * @param CASStores an array of stores where documents can be put and retrieved
+ * @param stores an array of CASStores in which the documents objects can be stored/retrieved from
  */
 export class DocumentsModule extends EveesContentModule {
   static id = 'documents-module';

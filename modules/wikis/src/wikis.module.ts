@@ -23,23 +23,21 @@ import { WikiBindings } from './bindings';
  *
  * ```ts
  * import { IpfsStore } from '@uprtcl/ipfs-provider';
- * import { wikisModule, WikisTypes, WikisIpfs } from '@uprtcl/wikis';
- *
- * const ipfsConnection = new IpfsConnection({
+ * import { WikisModule, WikisTypes } from '@uprtcl/wikis';
+ * 
+ * const ipfsStore = new IpfsStore({
  *   host: 'ipfs.infura.io',
  *   port: 5001,
  *   protocol: 'https'
  * });
  *
- *  const wikisProvider = new wikisIpfs(ipfsConnection);
- *
- * const wikis = new WikisModule([ wikisProvider ]);
+ * const wikis = new WikisModule([ ipfsStore ]);
  * await orchestrator.loadModule(wikis);
  * ```
  *
  * @category CortexModule
  *
- * @param wikisRemote an array of remotes of wikis
+ * @param stores an array of CASStores in which the wiki objects can be stored/retrieved from
  */
 export class WikisModule extends EveesContentModule {
   static id = 'wikis-module';
