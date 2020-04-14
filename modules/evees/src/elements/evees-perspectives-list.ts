@@ -333,7 +333,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   getPerspectiveActionDisaled(perspectiveData: PerspectiveData) {
-    return [PRIVATE_PERSPECTIVE].includes(this.getPerspectiveAction(perspectiveData));
+    return [MERGE_ACTION, PRIVATE_PERSPECTIVE].includes(this.getPerspectiveAction(perspectiveData));
   }
 
   getProposalActionDisaled(proposal: Proposal) {

@@ -156,7 +156,7 @@ export class EveesInfoPage extends EveesInfoBase {
                   outlined
                   icon="call_split"
                   @click=${this.newPerspectiveClicked}
-                  label="new perspective"
+                  label="new draft"
                 ></mwc-button>` : ''}
             </div>
           </div>
