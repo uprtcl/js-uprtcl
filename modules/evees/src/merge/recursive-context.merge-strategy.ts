@@ -173,7 +173,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async checkPerspectiveAndOwner(perspectiveId: string, authority: string, canWrite: string) {
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective { payload { authority} }
           _context { patterns { accessControl { permissions} } }

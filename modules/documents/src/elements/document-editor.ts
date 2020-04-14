@@ -119,7 +119,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       const result = await this.client.query({
         query: gql`
         {
-          entity(id: "${ref}") {
+          entity(ref: "${ref}") {
             id
             ... on Perspective {
               payload {
@@ -160,7 +160,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       const result = await this.client.query({
         query: gql`
         {
-          entity(id: "${ref}") {
+          entity(ref: "${ref}") {
             id
             ... on Commit {
               data {

@@ -94,7 +94,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const result = await this.client.query({
       query: gql`
       {
-        entity(id: "${this.ref}") {
+        entity(ref: "${this.ref}") {
           id
           ... on Perspective {
             payload {

@@ -186,7 +186,7 @@ export class Evees {
 
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {
