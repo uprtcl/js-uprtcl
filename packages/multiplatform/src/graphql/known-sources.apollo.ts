@@ -32,10 +32,9 @@ export class KnownSourcesApollo implements KnownSourcesService {
   }
 
   async addKnownSources(hash: string, sources: string[], typename?: string): Promise<void> {
-    this.client.writeData({
+    const entity = {
       data: {
         entity: {
-          __typename: typename,
           id: hash,
           _context: {
             __typename: 'EntityContext',
@@ -43,7 +42,11 @@ export class KnownSourcesApollo implements KnownSourcesService {
           }
         }
       }
-    });
+    };
+    if (typename) {
+      entity.data.entity['__typename'] = typename;
+    }
+    this.client.writeData(entity);
   }
 
   removeKnownSource(hash: string, casID: string): Promise<void> {
