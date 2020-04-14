@@ -1,7 +1,7 @@
 ---
 home: true
 heroImage: /uprtcl.png
-heroText: Like Git, but for ideas
+heroText: "Like Git, but for ideas"
 tagline: 
 actionText: Get Started →
 actionLink: /guides/

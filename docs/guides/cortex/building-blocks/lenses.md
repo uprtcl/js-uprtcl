@@ -9,7 +9,7 @@ import { Pattern } from '@uprtcl/cortex';
 import { HasLenses } from '@uprtcl/lenses';
 
 @injectable()
-export class TextPattern implements Pattern {
+export class TextPattern extends Pattern<{ text: string; }> {
   recognize(object: any): boolean {
     return (
       typeof object === 'object' && object.text !== undefined && typeof object.text === 'string'
@@ -18,7 +18,7 @@ export class TextPattern implements Pattern {
 }
 
 @injectable()
-export class TextLenses extends TextPattern implements HasLenses {
+export class TextLenses implements HasLenses {
   lenses = (object: { text: string }): Lens[] => {
     return [
       {

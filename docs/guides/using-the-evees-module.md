@@ -1,13 +1,13 @@
 # Using the Evees module
 
+If you haven't yet, read the [\_Prtcl spec](https://github.com/uprtcl/spec) to know about the \_Prtcl and its possibilites.
+
 Loading and using the `EveesModule` together with your "data" module has several advantadges:
 
 - It provides **out of the box updating, forking and merging content-addressable data**.
 - It provides automatic **version control history**.
 - It provides an **updatable hash** by which you can reference content that is self updating.
 - [TBD] It will provide automatic signature check.
-
-> If you haven't yet, read the [\_Prtcl spec](https://github.com/uprtcl/spec) to know about the \_Prtcl and its possibilites.
 
 `Evees` are content-agnostic: each commit can point to any kind of content-addressable entity. This enables the creation of multiple modules that **implement different types of data** to be pointed to from a `Commit`.
 
@@ -24,22 +24,21 @@ import { HolochainConnection } from '@uprtcl/holochain-provider';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { EveesModule, EveesEthereum, EveesHolochain, EveesBindings } from '@uprtcl/evees';
 
-const ipfsConnection = new IpfsConnection({
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https'
-});
+const httpHost = 'http://localhost:3100/uprtcl/1';
+const ethHost = '';
+const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
 
-// Don't put anything on host to get from Metamask's ethereum provider
-const ethConnection = new EthereumConnection({});
+const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
 
-const eveesEth = new EveesEthereum(ethConnection, ipfsConnection);
+const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
 
-const hcConnection = new HolochainConnection({ host: 'ws://localhost:8888' });
+const httpConnection = new HttpConnection();
+const ethConnection = new EthereumConnection({ provider: ethHost });
 
-const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
+const httpEvees = new EveesHttp(httpHost, httpConnection, ethConnection, httpCidConfig);
+const ethEvees = new EveesEthereum(ethConnection, ipfsConfig, ipfsCidConfig);
 
-const evees = new EveesModule([eveesHolochain, eveesEth]);
+const evees = new EveesModule([ethEvees, httpEvees], httpEvees);
 
 const orchestrator = new MicroOrchestrator();
 
@@ -82,13 +81,13 @@ You can see the complete schema and all the mutations available [here](https://g
 
 ## Using Evees
 
-After loading the `EveesModule` and all its dependencies, and also the "data" modules you want to include, all the infrastructure is set for you to declare any custom element defined in any of those modules inside your web application:
+After loading the `EveesModule` and all its dependencies, and also the [any of the available "data" modules](/modules/modules/uprtcl-documents) you want to include, all the infrastructure is set for you to declare any custom element defined in any of those modules inside your web application:
 
 ```html
 <body>
   <module-container>
     <!-- Any kind of custom element defined in the modules or in your app is available here -->
-    <wiki-drawer .wiki="${WIKI}"></wiki-drawer>
+    <wiki-drawer .ref="${perspectiveId}"></wiki-drawer>
   </module-container>
 </body>
 ```
@@ -99,23 +98,23 @@ You can see our [simple-editor demo](https://github.com/uprtcl/js-uprtcl/tree/de
 
 There is a special built-in custom element defined in [`@uprtcl/lenses`](https://uprtcl.github.io/js-uprtcl/modules/packages/uprtcl-lenses.html): `<cortex-entity>`.
 
-This element takes as an input a `hash` value, and is able to:
+This element takes as an **input a `ref` (*entity reference*) value**, and is able to:
 
-1. **Fetch the object** identified with the given hash from the registered `Sources`.
-2. **Recognize which patterns** does the object implement, and in particular which `lenses` are registered.
+1. **Fetch the entity** with the given entity reference identified with the given hash from the registered `CASSources`.
+2. **Recognize which behaviours** does the object implement, and in particular which `lenses` are registered.
 3. Picks and **renders a lens** to display the given object.
 
-In practice, this makes `<cortex-entity>` a dynamic rendering engine, in which the instantiator of the element doesn't need to now anything about the entity they want to render other than its hash.
+In practice, this makes `<cortex-entity>` a **dynamic rendering engine**, in which the instantiator of the element **doesn't need to now anything about the entity they want to render** other than have access to its reference.
 
-> In the future, as new ways of referencing objects appear, this may change. Eg, you may need to include the source identifier for `<cortex-entity>` to be able to fetch the object.
+> In the future, the possibility of adding new kinds of entity references or links will be enabled. This means that you will be able to define different kind of "links" from one content-addressable entity to another in your system or application.
 
 ## Building a "data" module for Evees
 
 Refer to [Developing a Cortex Module](/guides/cortex/what-is-cortex) to know how to fully develop a cortex module for your data structures. The additional steps needed to integrate your entities with `Evees` are:
 
-- Implement the [Mergeable property](https://github.com/uprtcl/js-uprtcl/blob/develop/modules/evees/src/graphql/schema.ts) for all entities that can be referenced from a Commit ([example](https://github.com/uprtcl/js-uprtcl/blob/master/modules/documents/src/patterns/text-node.entity.ts)).
-- Implement the [HasChildren property](https://github.com/uprtcl/js-uprtcl/blob/develop/packages/cortex/src/properties/has-links.ts) for all entities that can be referenced from a Commit, returning the list of hashes that reference "children" entities ([example](https://github.com/uprtcl/js-uprtcl/blob/master/modules/wikis/src/patterns/wiki.entity.ts)).
-- Register all necessary [sources](/guides/cortex/building-blocks/sources) to be able to retrieve all your entities.
+- Implement the [Merge behaviour](https://github.com/uprtcl/js-uprtcl/blob/master/modules/evees/src/behaviours/merge.ts) for all entities that can be referenced from a Commit ([example](https://github.com/uprtcl/js-uprtcl/blob/master/modules/documents/src/patterns/text-node.pattern.ts)).
+- Implement the [HasChildren behaviour](https://github.com/uprtcl/js-uprtcl/blob/develop/packages/cortex/src/behaviour/has-links.ts) for all entities that can be referenced from a Commit, returning the list of hashes that reference "children" entities ([example](https://github.com/uprtcl/js-uprtcl/blob/master/modules/wikis/src/patterns/wiki.entity.ts)).
+- Register all necessary [CASSources](/guides/cortex/building-blocks/sources) to be able to retrieve all your entities.
 - [Create a GraphQl schema](/guides/cortex/building-blocks/graphql-schemas) extension in which your data types implement the `Entity` type.
 
 ## List of built-in modules with compatible with Evees
