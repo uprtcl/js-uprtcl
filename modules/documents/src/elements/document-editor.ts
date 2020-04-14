@@ -22,6 +22,7 @@ import { DocumentsBindings } from 'src/bindings';
 import { icons } from './prosemirror/icons';
 
 const LOGINFO = false;
+const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
 
 export class DocumentEditor extends moduleConnect(LitElement) {
 
@@ -769,7 +770,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            ${((node.ref !== '') && (node.entityType === EntityType.Perspective)) ? html`
+            ${(false) ? html`
               <evees-info-popper 
                 first-perspective-id=${node.ref}
                 perspective-id=${node.ref}
@@ -807,7 +808,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   renderDocNode(node: DocNode) {
     return html`
-      <div style=${styleMap({ backgroundColor: node.focused ? '#f7f6f3' : 'transparent' })}>
+      <div style=${styleMap({ backgroundColor: node.focused ? SELECTED_BACKGROUND : 'transparent' })}>
         ${node.hasDocNodeLenses.docNodeLenses().length > 0 ? 
           this.renderHere(node) : 
           this.renderWithCortex(node)}
@@ -874,7 +875,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: center;
-        fill: #cfc994;
+        fill: rgb(80,80,80,0.2);
       }
 
       .node-mark svg {

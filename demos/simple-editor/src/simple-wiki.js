@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit-element';
+import { LitElement, html, css } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { EveesModule, CREATE_PERSPECTIVE, CREATE_COMMIT, CREATE_ENTITY } from '@uprtcl/evees';
@@ -104,11 +104,24 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return html`
       ${!this.loading
         ? html`
-            <wiki-drawer ref=${this.rootHash}></wiki-drawer>
+            <div class="app-mock">
+              <wiki-drawer ref=${this.rootHash}></wiki-drawer>
+            </div>
           `
         : html`
             Loading...
           `}
     `;
+  }
+
+  static get styles() {
+    return css`
+    .app-mock {
+      padding: 50px 80px;
+      min-height: calc(100vh - 100px);
+      display: flex;
+      flex-direction: column;
+      background-color: #bdc6e0;
+    }`;
   }
 }
