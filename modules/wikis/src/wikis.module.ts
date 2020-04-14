@@ -6,7 +6,7 @@ import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { i18nextModule } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
-import { WikiCommon, WikiLinks, WikiEntity } from './patterns/wiki.entity';
+import { WikiCommon, WikiLinks, WikiPattern } from './patterns/wiki.pattern';
 import { wikiTypeDefs } from './graphql/schema';
 import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
@@ -60,7 +60,7 @@ export class WikisModule extends EveesContentModule {
       ...super.submodules,
       new GraphQlSchemaModule(wikiTypeDefs, {}),
       new i18nextModule('wikis', { en: en }),
-      new PatternsModule([new WikiEntity([WikiCommon, WikiLinks])])
+      new PatternsModule([new WikiPattern([WikiCommon, WikiLinks])])
     ];
   }
 }
