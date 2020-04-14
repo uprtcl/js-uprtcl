@@ -9,16 +9,14 @@ import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternsModule } from '@uprtcl/cortex';
 
-import { TextLenses, TextActions } from './text-patterns';
+import { TextLenses, TextActions, TextPattern } from './text-patterns';
 
 const orchestrator = new MicroOrchestrator();
 
 await orchestrator.loadModules([new ApolloClientModule(), new CortexModule()]);
 
 // Instantiate PatternsModule
-const patternsModule = new PattersModule({
-  [Symbol('text-pattern')]: [TextLenses, TextActions]
-});
+const patternsModule = new PatternsModule([new TextPattern([TextActions, TextContent])])
 
 // Load the PatternsModule directly
 await orchestrator.loadModule(patternsModule);
@@ -32,16 +30,16 @@ import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { CASModule } from '@uprtcl/multiplatform';
 import { PatternsModule } from '@uprtcl/cortex';
 
-import { TextLenses, TextActions } from './text-patterns';
+import { TextLenses, TextActions, TextPattern } from './text-patterns';
 import { TextLensElement } from './text-lens-element';
 import { LocalSource } from './text-source';
 import { typeDefs, resolvers } from './graphql';
 
 export class TextModule extends MicroModule {
-  static id = Symbol('text-module');
+  static id = 'text-module';
 
   static bindings = {
-    TextPattern: 'text-pattern'
+    TextType: 'Text'
   };
 
   async onLoad() {}

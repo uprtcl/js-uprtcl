@@ -1,6 +1,6 @@
 # Lenses
 
-Lenses **are just [custom elements](https://developers.google.com/web/fundamentals/web-components/customelements) that know how to render an entity** recognized with Cortex.
+Lenses **are just [custom elements](https://developers.google.com/web/fundamentals/web-components/customelements) that know how to render a pattern** recognized with Cortex.
 
 To add a lens to our pattern recognition engine, implement the `HasLens` property in a pattern:
 
@@ -8,18 +8,25 @@ To add a lens to our pattern recognition engine, implement the `HasLens` propert
 import { Pattern } from '@uprtcl/cortex';
 import { HasLenses } from '@uprtcl/lenses';
 
-@injectable()
-export class TextPattern extends Pattern<{ text: string; }> {
+export interface Text {
+  text: string;
+}
+
+export class TextPattern extends Pattern<Text> {
   recognize(object: any): boolean {
     return (
-      typeof object === 'object' && object.text !== undefined && typeof object.text === 'string'
+      typeof object === 'object' && 
+      object.text !== undefined && 
+      typeof object.text === 'string'
     );
   }
+
+  type: string | undefined = undefined;
 }
 
 @injectable()
-export class TextLenses implements HasLenses {
-  lenses = (object: { text: string }): Lens[] => {
+export class TextLenses implements HasLenses<Text> {
+  lenses = (object: Text): Lens[] => {
     return [
       {
         name: 'Simple span lens',
