@@ -17,10 +17,10 @@ npm install @uprtcl/ipfs-provider
 Import the appropriate connection you would like to use, and make a new instance of it by passing its configuration:
 
 ```ts
-import { IpfsConnection } from '@uprtcl/ipfs-provider';
+import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
-const ipfsConnection = new IpfsConnection(ipfsConfig);
+const ipfsStore = new IpfsStore(ipfsConfig);
 
-await ipfsConnection.ready();
+await ipfsStore.ready();
 ```

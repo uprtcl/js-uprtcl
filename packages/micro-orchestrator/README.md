@@ -92,4 +92,4 @@ export class MyCustomElement extends moduleConnect(HTMLElement) {
 
 ## Building your own module
 
-Go to our [documentation page](https://uprtcl.github.io/js-uprtcl/guides/develop/developing-micro-modules.html).
+Learn more about developing your own `MicroModule` in our [documentation page](https://uprtcl.github.io/js-uprtcl/guides/develop/developing-micro-modules.html).
