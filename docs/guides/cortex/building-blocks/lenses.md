@@ -1,6 +1,6 @@
 # Lenses
 
-Lenses **are just [custom elements](https://developers.google.com/web/fundamentals/web-components/customelements) that know how to render an entity** recognized with Cortex.
+Lenses **are just [custom elements](https://developers.google.com/web/fundamentals/web-components/customelements) that know how to render a pattern** recognized with Cortex.
 
 To add a lens to our pattern recognition engine, implement the `HasLens` property in a pattern:
 
