@@ -10,7 +10,7 @@ export interface HttpProviderOptions {
 export class HttpProvider implements Authority {
   constructor(protected options: HttpProviderOptions, protected connection: HttpConnection) {}
 
-  get authorityID(): string {
+  get authority(): string {
     return `http:${this.options.apiId}:${this.options.host}`;
   }
 

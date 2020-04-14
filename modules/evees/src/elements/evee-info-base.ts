@@ -240,7 +240,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const config = {
       forceOwner: true,
-      authority: remote.authorityID,
+      authority: remote.authority,
       canWrite: permissions.owner
     };
 

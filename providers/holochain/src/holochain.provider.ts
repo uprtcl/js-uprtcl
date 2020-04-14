@@ -15,7 +15,7 @@ export type EntryResult<T extends object = any> = {
 
 @injectable()
 export abstract class HolochainProvider implements Authority {
-  authorityID!: string;
+  authority!: string;
 
   abstract instance: string;
   abstract zome: string;

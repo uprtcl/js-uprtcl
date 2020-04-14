@@ -42,7 +42,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     });
 
     const eveesHttpProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
-      provider.authorityID.startsWith('http')
+      provider.authority.startsWith('http')
     );
 
     await eveesHttpProvider.login();
@@ -51,7 +51,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
       const eveesEthProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
-        provider.authorityID.startsWith('eth')
+        provider.authority.startsWith('eth')
       );
 
       debugger
@@ -86,7 +86,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
           headId: createCommit.data.createCommit.id,
           context: `genesis-dao-wiki-${randint}`,
           canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
-          authorityID: eveesEthProvider.authorityID
+          authority: eveesEthProvider.authority
         }
       });
 

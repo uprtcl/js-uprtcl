@@ -102,6 +102,7 @@ export const eveesResolvers: IResolvers = {
   },
   Mutation: {
     async createCommit(_, { dataId, parentsIds, message, casID, timestamp }, { container }) {
+      debugger
       const remotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
       const multiSource: MultiSourceService = container.get(
         DiscoveryModule.bindings.MultiSourceService
@@ -124,8 +125,10 @@ export const eveesResolvers: IResolvers = {
       };
 
       const commit: Secured<Commit> = await deriveSecured(commitData, remote.cidConfig);
-
+      
       await remote.cloneCommit(commit);
+
+      commit.casID = remote.casID;
       await multiSource.postEntityCreate(commit);
 
       return {

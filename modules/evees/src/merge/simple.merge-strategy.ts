@@ -71,7 +71,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
  */
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
 
-    const mergeResult = await this.mergeCommits(toHeadId, fromHeadId, remote.authorityID, config);
+    const mergeResult = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, config);
 
     const request: UpdateRequest = {
       fromPerspectiveId,

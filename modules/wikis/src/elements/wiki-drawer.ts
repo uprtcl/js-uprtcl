@@ -205,9 +205,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
-  getStore(authorityID: string, type: string): CASSource | undefined {
-    const remote = this.eveesRemotes.find(r => r.authorityID === authorityID);
-    if (!remote) throw new Error(`Remote not found for authority ${authorityID}`);
+  getStore(authority: string, type: string): CASSource | undefined {
+    const remote = this.eveesRemotes.find(r => r.authority === authority);
+    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
     return this.remoteMap(remote);
   }
 
@@ -215,7 +215,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
 
-    const remote = this.eveesRemotes.find(r => r.authorityID === authority);
+    const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
     const store = this.getStore(authority, DocumentsModule.bindings.TextNodeType);
@@ -266,7 +266,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       }
     });
 
-    const remote = this.eveesRemotes.find(r => r.authorityID === this.authority);
+    const remote = this.eveesRemotes.find(r => r.authority === this.authority);
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
     const createCommit = await this.client.mutate({

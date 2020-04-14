@@ -14,7 +14,7 @@ export interface TextNode {
 
 export interface DocNode {
   ref: string,
-  authorityID: string,
+  authority: string,
   entityType: string,
   context?: string,
   data?: Entity<any>,

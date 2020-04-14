@@ -90,7 +90,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
     );
   }
 
-  get authorityID() {
+  get authority() {
     return `eth-${this.ethConnection.networkId}:${evees_if}:${
       this.uprtclRoot.contractInstance.options.address
         ? this.uprtclRoot.contractInstance.options.address.toLocaleLowerCase()

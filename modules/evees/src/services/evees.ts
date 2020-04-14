@@ -44,12 +44,12 @@ export class Evees {
 
   /** Public functions */
 
-  public getAuthority(authorityID: string | undefined): EveesRemote {
-    if (!authorityID && this.eveesRemotes.length === 1) return this.eveesRemotes[0];
+  public getAuthority(authority: string | undefined): EveesRemote {
+    if (!authority && this.eveesRemotes.length === 1) return this.eveesRemotes[0];
 
-    const remote = this.eveesRemotes.find(remote => remote.authorityID === authorityID);
+    const remote = this.eveesRemotes.find(remote => remote.authority === authority);
 
-    if (!remote) throw new Error(`Authority ${authorityID}  is not registered`);
+    if (!remote) throw new Error(`Authority ${authority}  is not registered`);
 
     return remote;
   }
@@ -203,11 +203,11 @@ export class Evees {
     const headId = result.data.entity.head.id;
     const context = result.data.entity.context.id;
 
-    const forkCommit = await this.forkCommit(headId, eveesRemote.authorityID, canWrite);
+    const forkCommit = await this.forkCommit(headId, eveesRemote.authority, canWrite);
 
     const object: Perspective = {
       creatorId: eveesRemote.userId ? eveesRemote.userId : '',
-      authority: eveesRemote.authorityID,
+      authority: eveesRemote.authority,
       timestamp: Date.now()
     };
 
@@ -289,7 +289,7 @@ export class Evees {
 
     const newObject = this.replaceEntityChildren(data, newLinks);
 
-    const remote = this.eveesRemotes.find(r => r.authorityID === authority);
+    const remote = this.eveesRemotes.find(r => r.authority === authority);
 
     if (!remote)
       throw new Error(`Could not find registered evees remote for authority with ID ${authority}`);
