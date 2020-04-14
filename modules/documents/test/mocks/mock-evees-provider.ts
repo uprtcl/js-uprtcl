@@ -14,6 +14,10 @@ export class MockEveesProvider implements EveesRemote {
     public entities: Dictionary<any> = {},
     public details: Dictionary<PerspectiveDetails> = {}
   ) {}
+  
+  create(object: object, hash?: string): Promise<string> {
+    throw new Error('Method not implemented.');
+  }
 
   authorityID: string = 'local';
   accessControl = undefined;
