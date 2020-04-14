@@ -98,7 +98,7 @@ export class Evees {
     const promises = this.eveesRemotes.map(async remote => {
       const thisPerspectivesIds = await remote.getContextPerspectives(context);
       thisPerspectivesIds.forEach(pId => {
-        this.knownSources.addKnownSources(pId, [remote.casID]);
+        this.knownSources.addKnownSources(pId, [remote.casID], EveesBindings.PerspectiveType);
       });
       return thisPerspectivesIds;
     });

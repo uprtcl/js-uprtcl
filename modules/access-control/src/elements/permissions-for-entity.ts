@@ -6,7 +6,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class PermissionsForEntity extends moduleConnect(LitElement) {
   @property()
-  public hash!: String;
+  public ref!: String;
 
   @property()
   private permissions: String | undefined;
@@ -25,7 +25,7 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-          entity(ref: "${this.hash}") {
+          entity(ref: "${this.ref}") {
             id
               _context {
                   patterns {
@@ -53,7 +53,7 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
     return html`
       <cortex-pattern
         .pattern=${this.permissions}
-        .context=${{ canWrite: this.canWrite, entityId: this.hash }}
+        .context=${{ canWrite: this.canWrite, entityId: this.ref }}
       ></cortex-pattern>
     `;
   }

@@ -28,7 +28,7 @@ export class OwnerBehaviour implements HasLenses<OwnerPermissions>, Permissions<
     {
       name: 'owner-access-control',
       type: 'permissions',
-      render: (context: any) =>
+      render: (_, context: any) =>
         html`
           <permissions-owner
             .permissions=${entity}
