@@ -4,7 +4,7 @@ Until now, we have seen how to create patterns and integrate them inside the `Ap
 
 ## Manual usage
 
-The `PatternRecognizer` is a small class that contains all `Patterns` registered with all the `MicroModules`. It then **exposes utility functions that return all the patterns and behaviours that recognize any given object**. See the API for the [`PatternRecognizer`](https://github.com/uprtcl/js-uprtcl/blob/master/packages/cortex/src/recognizer/pattern.recognizer.ts) class to see all available functions.
+The `PatternRecognizer` is a small class that contains all `Patterns` registered with all the `MicroModules` you have loaded in your app. It then **exposes utility functions that return all the patterns and behaviours that recognize any given object**. See the API for the [`PatternRecognizer`](https://github.com/uprtcl/js-uprtcl/blob/master/packages/cortex/src/recognizer/pattern.recognizer.ts) class to see all available functions.
 
 You can request it from anywhere, and use it:
 
