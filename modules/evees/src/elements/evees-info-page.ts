@@ -223,7 +223,7 @@ export class EveesInfoPage extends EveesInfoBase {
         margin-bottom: 36px;
         border-radius: 4px;
         overflow: hidden;
-        background-color: white;
+        background-color: rgb(255,255,255,0.6);
         position: relative;
       }
       .section-header {

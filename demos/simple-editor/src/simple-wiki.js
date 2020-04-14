@@ -121,7 +121,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       min-height: calc(100vh - 100px);
       display: flex;
       flex-direction: column;
-      background-color: white;
+      background-color: #bdc6e0;
     }`;
   }
 }

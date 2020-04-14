@@ -463,7 +463,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
               </mwc-list>
             `
           : html`
-              <div class="empty"><i>No other perspectives found for this Evee</i></div>
+              <div class="empty"><i>No drafts found</i></div>
             `}
       `;
   }

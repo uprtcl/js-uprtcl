@@ -64,7 +64,7 @@ export class ItemWithMenu extends LitElement {
       }
 
       .item-selected {
-        background-color: #e8ecec;
+        background-color: rgb(200,200,200,0.2);
       }
 
       .item-row:hover {
