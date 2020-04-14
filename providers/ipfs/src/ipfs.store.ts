@@ -14,6 +14,12 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { IpfsConnectionOptions } from './types';
 import { sortObject } from './utils';
 
+export interface PutConfig {
+  format: string,
+  hashAlg: string,
+  cidVersion: number
+}
+
 export class IpfsStore extends Connection implements CASStore {
   logger = new Logger('IpfsStore');
   client: any;
@@ -96,26 +102,25 @@ export class IpfsStore extends Connection implements CASStore {
   /**
    * Adds a raw js object to IPFS with the given cid configuration
    */
-  create(object: object, hash?: string): Promise<string> {
-    const cidConfig = this.cidConfig;
-    if (hash) {
-      const cid = new CID(hash);
-      const mh = multihashing.multihash.decode(cid.multihash);
-      cidConfig.type = mh.name;
-    }
-
-    return this.putIpfs(object, cidConfig);
+  create(object: object): Promise<string> {
+    return this.putIpfs(object);
   }
 
-  private async putIpfs(object: object, cidConfig: CidConfig) {
+  private async putIpfs(object: object) {
     const sorted = sortObject(object);
     const buffer = CBOR.encode(sorted);
     this.logger.log(`Trying to add object:`, { object, sorted, buffer });
 
+    let putConfig: PutConfig = {
+      format: this.cidConfig.codec,
+      hashAlg: this.cidConfig.type,
+      cidVersion: this.cidConfig.version
+    };
+
     /** recursively try */
-    return this.tryPut(buffer, cidConfig, 500, 0)
+    return this.tryPut(buffer, putConfig, 500, 0)
       .then((result: any) => {
-        let hashString = result.toString(cidConfig.base || this.cidConfig.base);
+        let hashString = result.toString(this.cidConfig.base);
         this.logger.log(`Object stored`, { object, sorted, buffer, hashString });
         return hashString;
       })

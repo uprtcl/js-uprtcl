@@ -178,12 +178,12 @@ export class SimpleMergeStrategy implements MergeStrategy {
       type: CREATE_DATA_ACTION,
       entity: entity,
       payload: {
-        source: sourceRemote.casID
+        casID: sourceRemote.casID
       }
     };
     this.entityCache.cacheEntity(entity);
 
-    if (!remote.userId) throw new Error('Cannot create commits in a source you are not signed in');
+    if (!remote.userId) throw new Error('Cannot create commits in a casID you are not signed in');
 
     const newCommit: Commit = {
       dataId: entity.id,
@@ -198,7 +198,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       type: CREATE_COMMIT_ACTION,
       entity: securedCommit,
       payload: {
-        source: remote.casID
+        casID: remote.casID
       }
     };
     this.entityCache.cacheEntity(securedCommit);

@@ -1,9 +1,8 @@
 import { GraphQLField } from 'graphql';
-import { interfaces, Container } from 'inversify';
+import { Container } from 'inversify';
 
 import { NamedDirective } from '@uprtcl/graphql';
 
-import { CASSource } from '../../types/cas-source';
 import { DiscoveryBindings } from '../../bindings';
 import { EntityCache } from '../entity-cache';
 import { KnownSourcesService } from 'src/references/known-sources/known-sources.service';

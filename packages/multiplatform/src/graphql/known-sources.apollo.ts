@@ -46,7 +46,7 @@ export class KnownSourcesApollo implements KnownSourcesService {
     });
   }
 
-  removeKnownSource(hash: string, source: string): Promise<void> {
+  removeKnownSource(hash: string, casID: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

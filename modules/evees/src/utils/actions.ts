@@ -110,7 +110,7 @@ export async function executeActions(
         mutation: CREATE_ENTITY,
         variables: {
           content: JSON.stringify(action.entity.object),
-          source: action.payload.source
+          casID: action.payload.casID
         }
       });
 
@@ -132,7 +132,7 @@ export async function executeActions(
         mutation: CREATE_COMMIT,
         variables: {
           ...action.entity.object.payload,
-          source: action.payload.source
+          casID: action.payload.casID
         }
       });
       const headId = result.data.createCommit.id;

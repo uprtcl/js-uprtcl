@@ -316,7 +316,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
   }
 
-  async createEntity(content: any, source: string): Promise<string> {
+  async createEntity(content: any, casID: string): Promise<string> {
     const client = this.client as ApolloClient<any>;
 
     // TODO, replace for a single CREATE mutation
@@ -324,7 +324,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       mutation: CREATE_ENTITY,
       variables: {
         content: JSON.stringify(content),
-        source: source
+        casID: casID
       }
     });
     // }
@@ -351,7 +351,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       variables: {
         dataId: objectId,
         parentsIds,
-        source: remote.casID
+        casID: remote.casID
       }
     });
 
@@ -414,7 +414,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         headId: commitId,
         context,
         parentId: this.ref,
-        source: remote.casID
+        casID: remote.casID
       }
     });
 

@@ -225,7 +225,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_ENTITY,
       variables: {
         content: JSON.stringify(page),
-        source: store.casID
+        casID: store.casID
       }
     });
 
@@ -234,7 +234,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       variables: {
         dataId: createTextNode.data.createEntity,
         parentsIds: [],
-        source: remote.casID
+        casID: remote.casID
       }
     });
 
@@ -247,7 +247,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         headId: headId,
         parentId: this.ref,
         context: `${this.context}_${Date.now()}`,
-        source: remote.casID
+        casID: remote.casID
       }
     });
 
@@ -262,7 +262,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       mutation: CREATE_ENTITY,
       variables: {
         content: JSON.stringify(newWiki),
-        source: store.casID
+        casID: store.casID
       }
     });
 
@@ -274,7 +274,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       variables: {
         dataId: createWiki.data.createEntity,
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
-        source: remote.casID
+        casID: remote.casID
       }
     });
 

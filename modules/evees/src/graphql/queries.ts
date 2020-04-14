@@ -38,8 +38,8 @@ export const DELETE_PERSPECTIVE: DocumentNode = gql`
 `;
 
 export const CREATE_ENTITY: DocumentNode = gql`
-  mutation CreateEntity($content: String!, $source: ID) {
-    createEntity(content: $content, source: $source) {
+  mutation CreateEntity($content: String!, $casID: ID) {
+    createEntity(content: $content, casID: $casID) {
       id
     }
   }
@@ -51,7 +51,7 @@ export const CREATE_COMMIT: DocumentNode = gql`
     $parentsIds: [ID!]!
     $creatorsIds: [String]
     $message: String
-    $source: String!
+    $casID: String!
     $timestamp: Date
   ) {
     createCommit(
@@ -59,7 +59,7 @@ export const CREATE_COMMIT: DocumentNode = gql`
       parentsIds: $parentsIds
       creatorsIds: $creatorsIds
       message: $message
-      source: $source
+      casID: $casID
       timestamp: $timestamp
     ) {
       id

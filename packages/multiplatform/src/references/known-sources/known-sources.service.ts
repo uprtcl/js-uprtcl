@@ -13,12 +13,12 @@ export interface KnownSourcesService extends Ready {
    * @param hash hash of the object
    * @param sources sources to add
    */
-  addKnownSources(hash: string, sources: string[], type?: string): Promise<void>;
+  addKnownSources(hash: string, casIDs: string[], type?: string): Promise<void>;
 
   /**
    * Removes the given source from the list of known sources of the given hash
    * @param hash hash of the object
    * @param source source to remove
    */
-  removeKnownSource(hash: string, source: string): Promise<void>;
+  removeKnownSource(hash: string, casID: string): Promise<void>;
 }

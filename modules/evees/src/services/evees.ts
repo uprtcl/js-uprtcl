@@ -259,7 +259,7 @@ export class Evees {
       type: CREATE_COMMIT_ACTION,
       entity: newHead,
       payload: {
-        source: remote.casID
+        casID: remote.casID
       }
     };
 
@@ -294,15 +294,15 @@ export class Evees {
     if (!remote)
       throw new Error(`Could not find registered evees remote for authority with ID ${authority}`);
 
-    const source = this.remoteMap(remote, type);
+    const store = this.remoteMap(remote, type);
 
-    const newData = await deriveEntity(newObject.object, source.cidConfig);
+    const newData = await deriveEntity(newObject.object, store.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
       entity: newData,
       payload: {
-        source: source.casID
+        casID: store.casID
       }
     };
 

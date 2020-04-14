@@ -101,14 +101,14 @@ export const eveesResolvers: IResolvers = {
     }
   },
   Mutation: {
-    async createCommit(_, { dataId, parentsIds, message, source, timestamp }, { container }) {
+    async createCommit(_, { dataId, parentsIds, message, casID, timestamp }, { container }) {
       const remotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
       const multiSource: MultiSourceService = container.get(
         DiscoveryModule.bindings.MultiSourceService
       );
-      const remote: EveesRemote | undefined = remotes.find(r => r.casID === source);
+      const remote: EveesRemote | undefined = remotes.find(r => r.casID === casID);
 
-      if (!remote) throw new Error(`Evees Remote with casID was not registered ${source}`);
+      if (!remote) throw new Error(`Evees Remote with casID was not registered ${casID}`);
 
       message = message !== undefined ? message : '';
       timestamp = timestamp !== undefined ? timestamp : Date.now();
@@ -186,11 +186,11 @@ export const eveesResolvers: IResolvers = {
       return { id: perspectiveId };
     },
 
-    async createEntity(_, { content, source }, { container }) {
+    async createEntity(_, { content, casID }, { container }) {
       const stores: CASStore[] = container.getAll(CASModule.bindings.CASStore);
-      const store = stores.find(d => d.casID === source);
+      const store = stores.find(d => d.casID === casID);
 
-      if (!store) throw new Error(`No store registered for source ${source}`);
+      if (!store) throw new Error(`No store registered for casID ${casID}`);
       const id = await store.create(JSON.parse(content));
 
       return id;

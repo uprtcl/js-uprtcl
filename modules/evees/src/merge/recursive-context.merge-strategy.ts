@@ -328,7 +328,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       type: CREATE_DATA_ACTION,
       entity,
       payload: {
-        source: dataSource.casID
+        casID: dataSource.casID
       }
     };
 
@@ -348,7 +348,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       type: CREATE_COMMIT_ACTION,
       entity: securedCommit,
       payload: {
-        source: remote.casID
+        casID: remote.casID
       }
     };
 
