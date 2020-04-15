@@ -48,6 +48,5 @@ module.exports = {
       chunksSortMode: 'none',
       template: 'index.html'
     }),
-    new CompressionPlugin()
   ]
 };
