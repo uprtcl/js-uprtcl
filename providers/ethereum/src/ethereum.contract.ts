@@ -47,6 +47,8 @@ export class EthereumContract {
    */
   public send(funcName: string, pars: any[]): Promise<any> {
     return new Promise(async (resolve, reject) => {
+
+      this.logger.log(`CALLING ${funcName}`, pars);
       
       const caller = this.contractInstance.methods[funcName];
       if (!caller) {
@@ -64,8 +66,7 @@ export class EthereumContract {
         from: _from,
         gas: Math.floor(gasEstimated)
       };
-      this.logger.log(`CALLING ${funcName}`, pars, sendPars);
-
+      
       caller(...pars)
         .send(sendPars)
         .once('transactionHash', (transactionHash: any) => {
