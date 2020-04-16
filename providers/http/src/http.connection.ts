@@ -13,20 +13,44 @@ export interface PostResult {
 }
 
 const LOGINFO = false;
+/** TODO: two modules that instanciate two http connections will conflict */
 
 /**
  * Wrapper over the fetch API
  */
 export class HttpConnection extends Connection {
 
-  authToken: string | undefined = undefined;
+  /** used to keep the token in memory in case tokenId is undefined */
+  private tokenMem: string | undefined = undefined;
   userId: string | undefined = undefined;
 
   constructor(
     protected httpOptions: HttpConnectionOptions,
-    options: ConnectionOptions
+    options: ConnectionOptions, 
+    protected tokenId: string | null = 'HTTP_AUTH_TOKEN'
   ) {
     super(options);
+  }
+
+  public get authToken() : string | undefined {
+    if (this.tokenId == null) return this.tokenMem;
+
+    const token = localStorage.getItem(this.tokenId);
+    if (token === null) return undefined;
+    return token
+  }
+
+  public set authToken(token: string | undefined) {
+    if (this.tokenId == null) {
+      this.tokenMem = token;
+      return;
+    }
+
+    if (token !== undefined) {
+      localStorage.setItem(this.tokenId, token);
+    } else {
+      localStorage.removeItem(this.tokenId);
+    }
   }
 
   protected connect(): Promise<void> {

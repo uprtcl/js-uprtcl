@@ -42,7 +42,7 @@ export class WikiHome extends moduleConnect(LitElement) {
       }
 
       .evee-info {
-        margin-top: 6vw;
+        margin-top: 4vw;
       }
 
       .row {
