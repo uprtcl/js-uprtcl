@@ -29,11 +29,18 @@ export class HttpEthAuthProvider extends HttpProvider {
     return this.connection.get<boolean>(this.options.host + `/user/${userId}/isAuthorized`);
   }
 
+  async logout(): Promise<void> {
+    this.connection.userId = undefined;
+    this.connection.authToken = undefined;
+  }
+
   async login(): Promise<void> {
     await this.ethConnection.ready();
     
     const account = this.ethConnection.accounts[0].toLocaleLowerCase();
     const currentToken = this.connection.authToken;
+
+    TBD
     
     if (currentToken !== undefined) {
       let isAuthorized = false;
