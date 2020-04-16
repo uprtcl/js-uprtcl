@@ -5,16 +5,25 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class PermissionsForEntity extends moduleConnect(LitElement) {
-  @property()
-  public hash!: String;
+  @property({type: String})
+  public hash!: string;
 
-  @property()
-  private permissions: String | undefined;
-  @property()
+  @property({type: Object, attribute: false})
+  private permissions: string | undefined;
+
+  @property({type: Boolean, attribute: false})
   private canWrite: boolean | undefined;
 
   firstUpdated() {
     this.loadPermissions();
+  }
+
+  updated(changedProperties) {
+    if(changedProperties.has('hash')) {
+      if(changedProperties.get('hash') !== undefined) {
+        this.loadPermissions();
+      }
+    }
   }
 
   async loadPermissions() {

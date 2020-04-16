@@ -189,7 +189,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                 authorized
                 canAuthorize
                 executed
-                updates
               }
             }
           }
