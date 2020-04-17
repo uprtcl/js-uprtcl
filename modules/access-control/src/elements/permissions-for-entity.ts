@@ -6,7 +6,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class PermissionsForEntity extends moduleConnect(LitElement) {
   @property({type: String})
-  public hash!: string;
+  public ref!: string;
 
   @property({type: Object, attribute: false})
   private permissions: string | undefined;
@@ -19,8 +19,8 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if(changedProperties.has('hash')) {
-      if(changedProperties.get('hash') !== undefined) {
+    if(changedProperties.has('ref')) {
+      if(changedProperties.get('ref') !== undefined) {
         this.loadPermissions();
       }
     }
