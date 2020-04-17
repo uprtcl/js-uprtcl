@@ -137,14 +137,15 @@ export class EveesInfoPage extends EveesInfoBase {
                       @click=${this.proposeMergeClicked}
                       label="Propose Update"
                     ></mwc-button>` 
-                  : html`
-                    <mwc-button
-                      outlined
-                      class="bottom-button"
-                      icon="call_split"
-                      @click=${this.newPerspectiveClicked}
-                      label="new draft"
-                    ></mwc-button>`
+                  : (this.isLogged ? 
+                    html`
+                      <mwc-button
+                        outlined
+                        class="bottom-button"
+                        icon="call_split"
+                        @click=${this.newPerspectiveClicked}
+                        label="new draft"
+                      ></mwc-button>` : '')
                 }
               </div>
               <div class="other-perspectives">

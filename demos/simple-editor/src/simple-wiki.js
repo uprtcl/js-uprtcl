@@ -4,6 +4,7 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { EveesModule, CREATE_PERSPECTIVE, CREATE_COMMIT, CREATE_ENTITY } from '@uprtcl/evees';
 import { WikisModule } from '@uprtcl/wikis';
 import { ApolloClientModule } from '@uprtcl/graphql';
+import { HttpProviderModule } from '@uprtcl/http-provider';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
   static get properties() {
@@ -41,11 +42,10 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = state[2].split('id=')[1];
     });
 
-    const eveesHttpProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
-      provider.authority.startsWith('http')
-    );
+    const eveesHttpProvider = this.request(HttpProviderModule.bindings.httpEthAuthProvider);
 
-    await eveesHttpProvider.login();
+    /** eth connection must be provided */
+    await eveesHttpProvider.connect();
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];

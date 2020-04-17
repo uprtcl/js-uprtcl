@@ -21,12 +21,12 @@ export class HttpRemoteLoginWidget extends moduleConnect(LitElement) {
     this.loadServices()
   }
 
-  loadServices() {
+  async loadServices() {
     if (this.authority !== undefined) return;
     this.eveesHttpProvider = this.request(HttpEthAuthProviderBindings.httpEthAuthProvider);
     
     if (this.eveesHttpProvider === undefined) throw Error('this.eveesHttpProvider undefined');
-    this.isAuthorized = this.eveesHttpProvider.isAuthorized();
+    this.isAuthorized = await this.eveesHttpProvider.isAuthorized();
   }
 
   updated(changedProperties) {
