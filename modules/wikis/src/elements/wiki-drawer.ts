@@ -460,8 +460,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <mwc-drawer>
-        <div class="column">
+      <div class="app-drawer">
+
+        <div class="app-navbar">
           <div
             class="color-bar"
             style=${styleMap({
@@ -484,7 +485,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             : html``}
         </div>
 
-        <div slot="appContent" class="app-content">
+        <div class="app-content">
           ${this.selectedPageIx !== undefined
             ? html`
                 <wiki-page
@@ -510,7 +511,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 </wiki-home>
               `}
         </div>
-      </mwc-drawer>
+      </div>
     `;
   }
 
@@ -519,23 +520,31 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       sharedStyles,
       css`
         :host {
+          display: flex;
+          flex: 1 1 0;
+          flex-direction: column;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
             Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
           color: #37352f;
           --mdc-theme-primary: #2196f3;
         }
-        .app-content {
-          height: 100%;
-          width: 100%;
+        .app-drawer {
           flex: 1 1 0;
-          overflow: auto;
+          display: flex;
+          flex-direction: horizontal;
+        }
+        .app-navbar {
+          width: 260px;
+        }
+        .app-content {
+          flex: 1 1 0;
+          border-left: solid #cccccc 1px;
         }
         .evee-info {
           height: 40px;
         }
         .column {
           height: 100%;
-          background-image: linear-gradient(to bottom, #f7f6f3ff, #f7f6f300);
         }
         .color-bar {
           height: 1vw;

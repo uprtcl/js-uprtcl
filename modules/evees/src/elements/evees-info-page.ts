@@ -118,7 +118,7 @@ export class EveesInfoPage extends EveesInfoBase {
       <div class="container">
         <div class="column">
           <div class="section">
-            <div class="section-header perspective-header" style=${styleMap({'border-color': this.eveeColor})}>
+            <div class="section-header">
               ${this.perspectiveTitle()}
             </div>
             ${this.showEditName ? html`
@@ -126,20 +126,6 @@ export class EveesInfoPage extends EveesInfoBase {
               ${this.renderEditNameForm()}
             </div>` : ''}
             <div class="section-content">
-              <div class="info-text">
-                ${!this.perspectiveData.canWrite ? 
-                  html`
-                    <p style="margin-bottom: 16px">
-                      <span>You can't directly edit this version, but you can create a new draft proposal!</span>
-                    </p>
-                  ` : html`
-                    <p style="margin-bottom: 16px">
-                      <span>You can edit this draft<br><br>${this.publicRead ? 
-                        html`Propose an update to the official version!` : 
-                        html`When you are done, make it public (below) and then propose an update to the official version`}</span>
-                    </p>`
-                }
-              </div>
               <div class="action-button">    
                 ${this.perspectiveData.canWrite ? 
                   html`
@@ -170,7 +156,7 @@ export class EveesInfoPage extends EveesInfoBase {
                   outlined
                   icon="call_split"
                   @click=${this.newPerspectiveClicked}
-                  label="new perspective"
+                  label="new draft"
                 ></mwc-button>` : ''}
             </div>
           </div>
@@ -184,7 +170,7 @@ export class EveesInfoPage extends EveesInfoBase {
             </div>
           </div>
 
-          <div class="section">
+          <!-- <div class="section">
             <div class="section-header">
               Evee Info
             </div>
@@ -192,7 +178,7 @@ export class EveesInfoPage extends EveesInfoBase {
               ${this.renderInfo()}
             </div>
           </div>
-          
+           -->
           ${this.perspectiveData.canWrite ? html`
             <div class="section">
               <div class="section-header">
@@ -237,7 +223,7 @@ export class EveesInfoPage extends EveesInfoBase {
         margin-bottom: 36px;
         border-radius: 4px;
         overflow: hidden;
-        background-color: white;
+        background-color: rgb(255,255,255,0.6);
         position: relative;
       }
       .section-header {
@@ -267,7 +253,7 @@ export class EveesInfoPage extends EveesInfoBase {
         min-height: 75px;
       }
       .action-button {
-        margin: 32px 0px;
+        margin-bottom: 32px;
       }
       .other-perspectives {
         border-top: solid 1px #cccccc;

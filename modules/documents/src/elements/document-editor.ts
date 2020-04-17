@@ -30,6 +30,7 @@ import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
 
 const LOGINFO = false;
+const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
 
 export class DocumentEditor extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
@@ -813,15 +814,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            ${node.ref !== '' && node.entityType === 'Perspective'
-              ? html`
-                  <evees-info-popper
-                    first-perspective-id=${node.ref}
-                    perspective-id=${node.ref}
-                    evee-color=${color}
-                  ></evees-info-popper>
-                `
-              : ''}
+            ${(false) ? html`
+              <evees-info-popper 
+                first-perspective-id=${node.ref}
+                perspective-id=${node.ref}
+                evee-color=${color}
+              ></evees-info-popper>` : ''}
           </div>
           <div class="node-content">
             ${nodeLense.render(node, {
@@ -861,12 +859,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   renderDocNode(node: DocNode) {
     return html`
-      <div style=${styleMap({ backgroundColor: node.focused ? '#f7f6f3' : 'transparent' })}>
-        ${node.hasDocNodeLenses.docNodeLenses().length > 0
-          ? this.renderHere(node)
-          : this.renderWithCortex(node)}
-      </div>
-    `;
+      <div style=${styleMap({ backgroundColor: node.focused ? SELECTED_BACKGROUND : 'transparent' })}>
+        ${node.hasDocNodeLenses.docNodeLenses().length > 0 ? 
+          this.renderHere(node) : 
+          this.renderWithCortex(node)}
+      </div>`;
   }
 
   render() {
@@ -929,7 +926,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: center;
-        fill: #cfc994;
+        fill: rgb(80,80,80,0.2);
       }
 
       .node-mark svg {

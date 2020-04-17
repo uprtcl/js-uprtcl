@@ -20,7 +20,7 @@ export const INIT_PERSP_BATCH = `initPerspectiveBatch(${initPerspStr}[],address)
 
 
 const headUpdate = `(bytes32,bytes32,bytes32,uint8)`;
-const proposalStr = `(string,string,string,string,address,uint256,${headUpdate}[],address[])`;
+const proposalStr = `(string,string,address,uint256,${headUpdate}[],address[])`;
 export const INIT_PROPOSAL = `initProposal(${proposalStr},address)`;
 export const GET_PROPOSAL = 'getProposal(bytes32)';
 export const EXECUTE_PROPOSAL = 'executeProposal(bytes32)';

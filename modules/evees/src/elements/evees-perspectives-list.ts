@@ -190,7 +190,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                 authorized
                 canAuthorize
                 executed
-                updates
               }
             }
           }
@@ -334,7 +333,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   getPerspectiveActionDisaled(perspectiveData: PerspectiveData) {
-    return [PRIVATE_PERSPECTIVE].includes(this.getPerspectiveAction(perspectiveData));
+    return [MERGE_ACTION, PRIVATE_PERSPECTIVE].includes(this.getPerspectiveAction(perspectiveData));
   }
 
   getProposalActionDisaled(proposal: Proposal) {
@@ -464,7 +463,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
               </mwc-list>
             `
           : html`
-              <div class="empty"><i>No other perspectives found for this Evee</i></div>
+              <div class="empty"><i>No drafts found</i></div>
             `}
       `;
   }

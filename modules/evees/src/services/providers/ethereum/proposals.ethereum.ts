@@ -79,8 +79,6 @@ export class ProposalsEthereum implements ProposalsProvider {
     const proposal = {
       toPerspectiveId: toPerspectiveId, 
       fromPerspectiveId: fromPerspectiveId, 
-      toHeadId: '',
-      fromHeadId: '',
       owner: accessData.owner, 
       nonce: nonce, 
       headUpdates: ethHeadUpdates, 

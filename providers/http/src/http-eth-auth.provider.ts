@@ -25,15 +25,32 @@ export class HttpEthAuthProvider extends HttpProvider {
     return this.connection.getWithPut<{jwt: string}>(this.options.host + `/user/${userId}/authorize`, {signature});
   }
 
+  async isAuthorized(userId: string) {
+    return this.connection.get<boolean>(this.options.host + `/user/${userId}/isAuthorized`);
+  }
+
   async login(): Promise<void> {
     await this.ethConnection.ready();
+    
+    const account = this.ethConnection.accounts[0].toLocaleLowerCase();
+    const currentToken = this.connection.authToken;
+    
+    if (currentToken !== undefined) {
+      let isAuthorized = false;
+      try {
+        isAuthorized = await this.isAuthorized(account);
+        this.connection.userId = account;
+        if (isAuthorized) return;
+      } catch (e) {
+        this.connection.authToken = undefined;
+      }
+    }
 
-    const account = this.ethConnection.accounts[0];
-    let nonce = await this.getNonce(account);
-    let signature = await this.ethConnection.signText(`Login to Uprtcl Evees HTTP Server \n\nnonce:${nonce}`, account);
-    let token = await this.authorize(account, signature);
+    const nonce = await this.getNonce(account);
+    const signature = await this.ethConnection.signText(`Login to Uprtcl Evees HTTP Server \n\nnonce:${nonce}`, account);
+    const token = await this.authorize(account, signature);
 
-    this.connection.userId = account.toLocaleLowerCase();
+    this.connection.userId = account;
     this.connection.authToken = 'Bearer ' + token.jwt;
   }
 }
