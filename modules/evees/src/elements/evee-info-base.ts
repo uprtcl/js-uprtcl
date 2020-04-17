@@ -464,7 +464,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     
     this.loading = true;
 
-    const forkPerspective = await this.evees.forkPerspective(this.perspectiveId);
+    const forkPerspective = await this.evees.forkPerspective(this.perspectiveId, remoteConfig);
 
     await cacheActions(forkPerspective.actions, this.cache, this.client);
     await executeActions(forkPerspective.actions, this.client);

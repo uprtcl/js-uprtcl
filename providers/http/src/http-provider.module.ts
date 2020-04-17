@@ -10,8 +10,7 @@ export class HttpProviderModule extends MicroModule {
 
   static bindings = HttpEthAuthProviderBindings;
 
-  async onLoad(container: interfaces.Container): Promise<void> {
-    container.bind(HttpProviderModule.bindings.httpEthAuthProvider).to(HttpEthAuthProvider);
+  async onLoad(container: interfaces.Container): Promise<void> {container.bind(HttpProviderModule.bindings.httpEthAuthProvider).to(HttpEthAuthProvider);
     customElements.define('http-eth-auth-widget', HttpRemoteLoginWidget);
   }
 

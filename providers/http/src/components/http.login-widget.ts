@@ -23,7 +23,9 @@ export class HttpRemoteLoginWidget extends moduleConnect(LitElement) {
 
   async loadServices() {
     if (this.authority !== undefined) return;
-    this.eveesHttpProvider = this.request(HttpEthAuthProviderBindings.httpEthAuthProvider);
+    const remote = request AuthorityBinding .filter ()...
+
+    this.eveesHttpProvider = remote
     
     if (this.eveesHttpProvider === undefined) throw Error('this.eveesHttpProvider undefined');
     this.isAuthorized = await this.eveesHttpProvider.isAuthorized();

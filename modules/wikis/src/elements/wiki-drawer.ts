@@ -501,6 +501,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                     first-perspective-id=${this.firstRef as string}
                     perspective-id=${this.ref}
                     evee-color=${this.color()}
+                    dedaultRemote;...  <loginwideget authrity=${}
                   ></evees-info-page>
                 </wiki-home>
               `}
