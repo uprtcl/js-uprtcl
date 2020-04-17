@@ -57,7 +57,7 @@ Orchestrates micro modules in one single web application, following the micro-fr
 
 ### [Cortex](https://github.com/uprtcl/js-uprtcl/tree/master/packages/cortex)
 
-Implements the Cortex framework, its building blocks and controllers.
+Base modules that make up the Cortex framework, its building blocks and controllers.
 
 ### [Multiplatform](https://github.com/uprtcl/js-uprtcl/tree/master/packages/multiplatform)
 
