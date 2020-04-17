@@ -31,6 +31,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ type: String, attribute: 'ref' })
   firstRef: string | undefined = undefined;
+  
+  @property({ type: String, attribute: 'default-authority'})
+  defaultAuthority: string | undefined = undefined;
 
   @property({ type: String, attribute: false })
   ref: string | undefined = undefined;
@@ -59,6 +62,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
 
     this.ref = this.firstRef;
+
     this.logger.log('firstUpdated()', { ref: this.ref });
 
     this.loadWiki();
@@ -501,7 +505,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                     first-perspective-id=${this.firstRef as string}
                     perspective-id=${this.ref}
                     evee-color=${this.color()}
-                    dedaultRemote;...  <loginwideget authrity=${}
+                    default-authority=${this.defaultAuthority}
                   ></evees-info-page>
                 </wiki-home>
               `}

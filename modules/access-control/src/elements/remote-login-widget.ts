@@ -1,9 +1,8 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from "@uprtcl/micro-orchestrator";
-import { HttpEthAuthProvider } from '../http-eth-auth.provider';
-import { HttpEthAuthProviderBindings } from '../bindings';
-import { HttpProvider } from 'src/http.provider';
+import { AccessControlModule } from 'src/access-control.module';
+import { Authority } from '../types/authority';
 
 export class HttpRemoteLoginWidget extends moduleConnect(LitElement) {
 
@@ -15,38 +14,35 @@ export class HttpRemoteLoginWidget extends moduleConnect(LitElement) {
   @property({ type: Boolean, attribute: false })
   isAuthorized: boolean = false;
 
-  protected eveesHttpProvider: HttpEthAuthProvider | undefined = undefined;
+  protected remote: Authority | undefined = undefined;
 
   firstUpdated() {
-    this.loadServices()
+    this.loadRemote()
   }
 
-  async loadServices() {
+  async loadRemote() {
     if (this.authority !== undefined) return;
-    const remote = request AuthorityBinding .filter ()...
-
-    this.eveesHttpProvider = remote
-    
-    if (this.eveesHttpProvider === undefined) throw Error('this.eveesHttpProvider undefined');
-    this.isAuthorized = await this.eveesHttpProvider.isAuthorized();
+    const remotes = this.requestAll(AccessControlModule.bindings.Authority) as Authority[];
+    this.remote = remotes.filter((remote) => remote.authority === this.authority);
+    this.isAuthorized = this.remote.userId !== undefined;
   }
 
   updated(changedProperties) {
     if (changedProperties.has('authority')) {
-      this.loadServices();
+      this.loadRemote();
     }
   }
 
   async loginClicked() {
-    if (this.eveesHttpProvider === undefined) throw Error('this.eveesHttpProvider undefined');
+    if (this.remote === undefined) throw Error('this.remoge undefined');
 
     if (!this.isAuthorized) {
-      await this.eveesHttpProvider.login();
+      await this.remote.login();
     } else {
-      await this.eveesHttpProvider.logout();
+      await this.remote.logout();
     }
 
-    this.loadServices();
+    this.loadRemote();
   }
 
   render() {

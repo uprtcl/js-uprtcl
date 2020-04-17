@@ -42,7 +42,6 @@ import { Evees } from '../services/evees';
 
 import { executeActions, cacheActions } from '../utils/actions';
 import { NewPerspectiveData } from '../services/evees.provider';
-import { HttpProviderModule, HttpEthAuthProvider } from '@uprtcl/http-provider';
 
 interface PerspectiveData {
   id: string;
@@ -61,6 +60,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   @property({ type: String, attribute: 'first-perspective-id' })
   firstPerspectiveId!: string;
+
+  @property({ type: String, attribute: 'default-authority'})
+  defaultAuthority: string | undefined = undefined;
 
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
@@ -89,8 +91,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected cache: EntityCache | undefined = undefined;
   protected remotesConfig: RemotesConfig | undefined = undefined;
 
-  protected httpProvider: HttpEthAuthProvider | undefined = undefined;
-
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.merge = this.request(EveesBindings.MergeStrategy);
@@ -98,8 +98,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
     this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
-    this.httpProvider = this.request(HttpProviderModule.bindings.httpEthAuthProvider);
-
+  
     this.load();
   }
 
@@ -112,7 +111,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async load() {
     if(!this.client) throw new Error('client undefined');
-    if(!this.httpProvider) throw new Error('this.httpProvider undefined');
     
     this.loading = true;
     const result = await this.client.query({
@@ -170,8 +168,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     };
 
     this.publicRead = this.perspectiveData.permissions.publicRead !== undefined ? this.perspectiveData.permissions.publicRead : true;
-
-    this.isLogged = this.httpProvider.isConnected();
 
     this.logger.info('load', { perspectiveData: this.perspectiveData });
     this.loading = false;
@@ -464,7 +460,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     
     this.loading = true;
 
-    const forkPerspective = await this.evees.forkPerspective(this.perspectiveId, remoteConfig);
+    const forkPerspective = await this.evees.forkPerspective(this.perspectiveId, this.defaultAuthority);
 
     await cacheActions(forkPerspective.actions, this.cache, this.client);
     await executeActions(forkPerspective.actions, this.client);

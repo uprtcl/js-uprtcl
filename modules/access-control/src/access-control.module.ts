@@ -33,5 +33,6 @@ export class AccessControlModule extends MicroModule {
   static bindings = {
     OwnerPattern: 'owner-pattern',
     BasicAdminPattern: 'basic-admin-pattern',
+    Authority: 'authority'
   };
 }

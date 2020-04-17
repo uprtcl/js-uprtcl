@@ -22,27 +22,39 @@ export class HttpEthAuthProvider extends HttpProvider {
     super(options, connection);
   }
 
-  /** connect to the ethConnection */
   async connect() {
     await this.ethConnection.ready();
+    
+    /** keep a copy of the current ethConnection account */
     this.account = this.ethConnection.accounts[0].toLocaleLowerCase();
+
+    /** chech if HTTP authToken is available */
+    const currentToken = this.connection.authToken;
+
+    if (currentToken !== undefined) {
+      try {
+        /** if there is a token, check if the token is valid */
+        const isAuthorized = await this.isLogged();
+        if (isAuthorized) return;
+      } catch (e) {
+        this.connection.authToken = undefined;
+      }
+    }
   }
 
-  isConnected() {
-    return this.account !== undefined;
+  isLogged() {
+    if (this.userId === undefined) return false;
+    return this.connection.get<boolean>(this.options.host + `/user/${this.userId}/isAuthorized`);
   }
 
   async getNonce() {
+    if (this.account === undefined) throw Error('account undefined');
     return this.connection.get<string>(this.options.host + `/user/${this.account}/nonce`);
   }
 
   async authorize(signature: string) {
+    if (this.account === undefined) throw Error('account undefined');
     return this.connection.getWithPut<{jwt: string}>(this.options.host + `/user/${this.account}/authorize`, {signature});
-  }
-
-  async isAuthorized() {
-    if (!this.account) throw Error('Ethereum account is not yet specified');
-    return this.connection.get<boolean>(this.options.host + `/user/${this.account}/isAuthorized`);
   }
 
   async logout(): Promise<void> {
@@ -51,21 +63,8 @@ export class HttpEthAuthProvider extends HttpProvider {
   }
 
   async login(): Promise<void> {
-    if (!this.account) throw Error('Ethereum account is not yet specified');
-
-    const currentToken = this.connection.authToken;
-
-    if (currentToken !== undefined) {
-      let isAuthorized = false;
-      try {
-        isAuthorized = await this.isAuthorized();
-        this.connection.userId = this.account;
-        if (isAuthorized) return;
-      } catch (e) {
-        this.connection.authToken = undefined;
-      }
-    }
-
+    if (this.account === undefined) throw Error('account undefined');
+    
     const nonce = await this.getNonce();
     const signature = await this.ethConnection.signText(`Login to Uprtcl Evees HTTP Server \n\nnonce:${nonce}`, this.account);
     const token = await this.authorize(signature);

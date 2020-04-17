@@ -89,7 +89,10 @@ export class EveesModule extends MicroModule {
     container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
     container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
 
-    this.eveesProviders.map register as authority binding
+    this.eveesProviders.map((evees) => ({
+      symbol: AccessControlModule.bindings.Authority,
+      source: evees,
+    }))
 
     customElements.define('evees-commit-history', CommitHistory);
     customElements.define('evees-perspectives-list', PerspectivesList);
