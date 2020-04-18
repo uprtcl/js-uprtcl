@@ -25,8 +25,6 @@ export function ModuleContainer(container: Container): typeof HTMLElement {
       this.addEventListener<any>('request-dependency', (e: RequestDependencyEvent) => {
         e.stopPropagation();
 
-        debugger
-
         try {
           if (e.detail.multiple)
             e.dependencies = e.detail.request.map((dep) => container.getAll(dep));

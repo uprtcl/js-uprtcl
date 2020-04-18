@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
 
 import { Hashed } from '@uprtcl/cortex';
-import { Authority } from '@uprtcl/multiplatform';
+import { Authority } from '@uprtcl/access-control';
 import { Constructor } from '@uprtcl/micro-orchestrator';
 
 import { HolochainConnection } from './holochain.connection';
@@ -24,7 +24,9 @@ export abstract class HolochainProvider implements Authority {
     @inject(HolochainConnectionBindings.HolochainConnection)
     protected connection: HolochainConnection
   ) {}
-
+ 
+  userId?: string | undefined;
+  
   /**
    * @override
    */
@@ -65,6 +67,17 @@ export abstract class HolochainProvider implements Authority {
       .map(entry => this.parseEntryResult<T>(this.parseResponse(entry)))
       .filter(entry => entry != undefined) as Array<EntryResult<T>>;
   }
+
+  isLogged(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  login(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  logout(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
 }
 
 export function createHolochainProvider(

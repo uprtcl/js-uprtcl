@@ -1,6 +1,8 @@
 // Required by inversify
 import 'reflect-metadata';
 
+export { Authority } from './types/authority';
+
 /** Access Control */
 export { Updatable } from './properties/updatable';
 export { Permissions } from './properties/permissions';

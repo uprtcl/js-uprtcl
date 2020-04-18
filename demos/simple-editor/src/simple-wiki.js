@@ -10,7 +10,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   static get properties() {
     return {
       rootHash: { type: String },
-      loading: { type: Boolean, attribute: false }
+      loading: { type: Boolean, attribute: false },
+      defaultAuthority: { type: String }
     };
   }
 
@@ -42,10 +43,13 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = state[2].split('id=')[1];
     });
 
-    const eveesHttpProvider = this.request(HttpProviderModule.bindings.httpEthAuthProvider);
+    const eveesHttpProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider =>
+      provider.authority.startsWith('http')
+    );
 
-    /** eth connection must be provided */
     await eveesHttpProvider.connect();
+
+    this.defaultAuthority = eveesHttpProvider.authority;
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
@@ -105,7 +109,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       ${!this.loading
         ? html`
             <div class="app-mock">
-              <wiki-drawer ref=${this.rootHash}></wiki-drawer>
+              <wiki-drawer ref=${this.rootHash} default-authority=${this.defaultAuthority}></wiki-drawer>
             </div>
           `
         : html`

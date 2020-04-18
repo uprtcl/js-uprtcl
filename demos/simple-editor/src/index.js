@@ -8,7 +8,7 @@ import { AccessControlModule } from '@uprtcl/access-control';
 import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
 
 import { IpfsConnection, IpfsStore } from '@uprtcl/ipfs-provider';
-import { HttpConnection, HttpStore, HttpProviderModule } from '@uprtcl/http-provider';
+import { HttpConnection, HttpStore } from '@uprtcl/http-provider';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
@@ -70,7 +70,6 @@ import { SimpleWiki } from './simple-wiki';
     new DiscoveryModule(),
     lenses,
     new AccessControlModule(),
-    new HttpProviderModule(),
     evees,
     documents,
     wikis

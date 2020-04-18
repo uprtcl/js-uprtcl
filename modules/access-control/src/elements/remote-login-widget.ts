@@ -4,7 +4,7 @@ import { moduleConnect, Logger } from "@uprtcl/micro-orchestrator";
 import { AccessControlModule } from 'src/access-control.module';
 import { Authority } from '../types/authority';
 
-export class HttpRemoteLoginWidget extends moduleConnect(LitElement) {
+export class RemoteLoginWidget extends moduleConnect(LitElement) {
 
   logger = new Logger('EVEES-INFO');
 
@@ -23,7 +23,10 @@ export class HttpRemoteLoginWidget extends moduleConnect(LitElement) {
   async loadRemote() {
     if (this.authority !== undefined) return;
     const remotes = this.requestAll(AccessControlModule.bindings.Authority) as Authority[];
-    this.remote = remotes.filter((remote) => remote.authority === this.authority);
+    
+    this.remote = remotes.find(remote => remote.authority === this.authority);
+    if (this.remote === undefined) throw new Error(`remote not found for authority ${this.authority}`);
+    
     this.isAuthorized = this.remote.userId !== undefined;
   }
 

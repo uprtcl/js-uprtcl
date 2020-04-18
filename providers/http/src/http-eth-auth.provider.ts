@@ -30,7 +30,7 @@ export class HttpEthAuthProvider extends HttpProvider {
 
     /** chech if HTTP authToken is available */
     const currentToken = this.connection.authToken;
-
+    
     if (currentToken !== undefined) {
       try {
         /** if there is a token, check if the token is valid */
@@ -42,7 +42,7 @@ export class HttpEthAuthProvider extends HttpProvider {
     }
   }
 
-  isLogged() {
+  async isLogged() {
     if (this.userId === undefined) return false;
     return this.connection.get<boolean>(this.options.host + `/user/${this.userId}/isAuthorized`);
   }

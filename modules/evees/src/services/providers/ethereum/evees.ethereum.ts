@@ -6,7 +6,7 @@ import {
 } from '@uprtcl/ethereum-provider';
 import { IpfsStore, IpfsConnection, sortObject, CidConfig } from '@uprtcl/ipfs-provider';
 import { Hashed } from '@uprtcl/cortex';
-import { KnownSourcesService, Authority } from '@uprtcl/multiplatform';
+import { KnownSourcesService } from '@uprtcl/multiplatform';
 
 import * as UprtclRoot from './contracts-json/UprtclRoot.json';
 import * as UprtclDetails from './contracts-json/UprtclDetails.json';
@@ -35,6 +35,7 @@ import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 import { ProposalsProvider } from '../../proposals.provider';
 import { NewPerspectiveData } from '../../evees.provider';
+import { Authority } from '@uprtcl/access-control';
 
 const evees_if = 'evees-v0';
 export const ZERO_HEX_32 = '0x' + new Array(32).fill(0).join('');
@@ -94,7 +95,7 @@ export class EveesEthereum implements EveesRemote, Authority {
     );
     this.hashRecipe = hashRecipe;
   }
-
+  
   get authority() {
     return `eth-${this.ethConnection.networkId}:${evees_if}:${
       this.uprtclRoot.contractInstance.options.address
@@ -356,5 +357,15 @@ export class EveesEthereum implements EveesRemote, Authority {
     const ZERO_ADD = '0x' + new Array(40).fill(0).join('');
     await this.uprtclRoot.send(UPDATE_OWNER, [perspectiveIdHash, ZERO_ADD]);
 
+  }
+
+  isLogged(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  login(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  logout(): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }

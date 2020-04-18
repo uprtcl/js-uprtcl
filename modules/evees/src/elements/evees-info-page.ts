@@ -112,6 +112,47 @@ export class EveesInfoPage extends EveesInfoBase {
       </div>`;
   }
 
+  renderPerspectiveActions() {
+    return html`
+      <div class="section-content">
+        <div class="action-button">    
+          ${this.perspectiveData.canWrite ? 
+            html`
+              <mwc-button
+                .disabled=${!this.publicRead}
+                class="bottom-button"
+                outlined
+                icon="call_merge"
+                @click=${this.proposeMergeClicked}
+                label="Propose Update"
+              ></mwc-button>` 
+            : (this.isLogged ? 
+              html`
+                <mwc-button
+                  outlined
+                  class="bottom-button"
+                  icon="call_split"
+                  @click=${this.newPerspectiveClicked}
+                  label="new draft"
+                ></mwc-button>` : '')
+          }
+        </div>
+        <div class="other-perspectives">
+          ${this.renderOtherPerspectives()}
+        </div>
+        ${this.perspectiveData.canWrite ? html`
+          <mwc-button
+            class="bottom-button"
+            outlined
+            icon="call_split"
+            @click=${this.newPerspectiveClicked}
+            label="new draft"
+          ></mwc-button>` : ''
+        
+        WORK IN PROGRESS}
+      </div>`
+  }
+
   render() {
     if (this.perspectiveData === undefined) return html``;
     return html`
@@ -122,44 +163,11 @@ export class EveesInfoPage extends EveesInfoBase {
               ${this.perspectiveTitle()}
             </div>
             ${this.showEditName ? html`
-            <div>
-              ${this.renderEditNameForm()}
-            </div>` : ''}
-            <div class="section-content">
-              <div class="action-button">    
-                ${this.perspectiveData.canWrite ? 
-                  html`
-                    <mwc-button
-                      .disabled=${!this.publicRead}
-                      class="bottom-button"
-                      outlined
-                      icon="call_merge"
-                      @click=${this.proposeMergeClicked}
-                      label="Propose Update"
-                    ></mwc-button>` 
-                  : (this.isLogged ? 
-                    html`
-                      <mwc-button
-                        outlined
-                        class="bottom-button"
-                        icon="call_split"
-                        @click=${this.newPerspectiveClicked}
-                        label="new draft"
-                      ></mwc-button>` : '')
-                }
-              </div>
-              <div class="other-perspectives">
-                ${this.renderOtherPerspectives()}
-              </div>
-              ${this.perspectiveData.canWrite ? html`
-                <mwc-button
-                  class="bottom-button"
-                  outlined
-                  icon="call_split"
-                  @click=${this.newPerspectiveClicked}
-                  label="new draft"
-                ></mwc-button>` : ''}
-            </div>
+              <div>
+                ${this.renderEditNameForm()}
+              </div>` : ''
+            }
+            ${this.renderPerspectiveActions()}
           </div>
 
           <div class="section">
@@ -244,6 +252,11 @@ export class EveesInfoPage extends EveesInfoBase {
       .perspective-header {
         border-top-style: solid;
         border-top-width: 5px;
+      }
+      .remote-login {
+        position: absolute;
+        top: 10px;
+        right: 10px;
       }
       .section-content {
         padding: 2.2vw 0px 2.2vw 0px;

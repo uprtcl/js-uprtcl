@@ -42,6 +42,7 @@ import { Evees } from '../services/evees';
 
 import { executeActions, cacheActions } from '../utils/actions';
 import { NewPerspectiveData } from '../services/evees.provider';
+import { EveesRemote } from 'src/uprtcl-evees';
 
 interface PerspectiveData {
   id: string;
@@ -98,6 +99,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
     this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
+    const defaultRemote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(remote => remote.authority === this.defaultAuthority);
+
+    if (defaultRemote === undefined) throw new Error(`cant find default remote ${this.defaultAuthority}`);
+    this.isLogged = defaultRemote.userId !== undefined;
   
     this.load();
   }
