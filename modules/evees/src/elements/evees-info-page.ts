@@ -23,6 +23,26 @@ export class EveesInfoPage extends EveesInfoBase {
     super.firstUpdated();
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener('keydown', (event) => {
+      if (event.keyCode === 27) {
+        // 27 is esc
+        this.showEditName = false;
+      }
+
+      if (event.keyCode === 13) {
+        // 13 is enter
+        if (this.showEditName) {
+          this.saveName();
+        }
+      }
+    })
+
+
+  }
+
   perspectiveTitle() {
     if (!this.perspectiveData) return this.perspectiveId;
 
@@ -64,6 +84,10 @@ export class EveesInfoPage extends EveesInfoBase {
     switch (e.detail.key) {
       case 'logout':
         this.logout();
+        break;
+        
+      case 'login':
+        this.login();
         break;
       
       case 'edit':
@@ -164,11 +188,20 @@ export class EveesInfoPage extends EveesInfoBase {
       }
     }
 
-    contextConfig['logout'] = {
-      disabled: !this.isLogged,
-      graphic: 'exit_to_app',
-      text: 'logout'
+    if (this.isLogged) {
+      contextConfig['logout'] = {
+        disabled: false,
+        graphic: 'exit_to_app',
+        text: 'logout'
+      }
+    } else {
+      contextConfig['login'] = {
+        disabled: false,
+        graphic: 'account_box',
+        text: 'login'
+      }
     }
+    
 
     const contextButton = html`
       <div class="context-menu">
@@ -282,7 +315,7 @@ export class EveesInfoPage extends EveesInfoBase {
         right: 20px;
       }
       .row mwc-textfield{
-        margin: 30px 0px;
+        margin: 0px 0px 24px 0px;
       }
       .perspective-header {
         border-top-style: solid;

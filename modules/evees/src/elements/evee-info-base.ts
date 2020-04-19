@@ -175,8 +175,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.publicRead = this.perspectiveData.permissions.publicRead !== undefined ? this.perspectiveData.permissions.publicRead : true;
   
     this.logger.info('load', { perspectiveData: this.perspectiveData });
-
     this.isLogged = this.defaultRemote.userId !== undefined;
+
+    this.reload();
+
     this.loading = false;
   }
 
