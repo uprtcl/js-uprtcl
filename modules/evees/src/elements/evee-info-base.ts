@@ -16,8 +16,8 @@ import '@material/mwc-tab-bar';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { AccessControlService, OwnerPermissions } from '@uprtcl/access-control';
-import { Pattern, Creatable, Signed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { AccessControlService, OwnerPermissions, SET_PUBLIC_READ } from '@uprtcl/access-control';
+import { Pattern, Creatable, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 
 import { prettyAddress, prettyTime } from './support';
@@ -91,6 +91,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected recognizer: PatternRecognizer | undefined = undefined;
   protected cache: EntityCache | undefined = undefined;
   protected remotesConfig: RemotesConfig | undefined = undefined;
+  protected defaultRemote: EveesRemote | undefined = undefined;
 
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -99,23 +100,22 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
     this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
-    const defaultRemote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(remote => remote.authority === this.defaultAuthority);
+    this.defaultRemote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(remote => remote.authority === this.defaultAuthority);
 
-    if (defaultRemote === undefined) throw new Error(`cant find default remote ${this.defaultAuthority}`);
-    this.isLogged = defaultRemote.userId !== undefined;
-  
+    
     this.load();
   }
-
+  
   updated(changedProperties) {
     if (changedProperties.get('perspectiveId') !== undefined) {
       this.logger.info('updated() reload', { changedProperties });
       this.load();
     }
   }
-
+  
   async load() {
     if(!this.client) throw new Error('client undefined');
+    if (this.defaultRemote === undefined) throw new Error(`cant find default remote ${this.defaultAuthority}`);
     
     this.loading = true;
     const result = await this.client.query({
@@ -173,8 +173,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     };
 
     this.publicRead = this.perspectiveData.permissions.publicRead !== undefined ? this.perspectiveData.permissions.publicRead : true;
-
+  
     this.logger.info('load', { perspectiveData: this.perspectiveData });
+
+    this.isLogged = this.defaultRemote.userId !== undefined;
     this.loading = false;
   }
 
@@ -208,6 +210,33 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         }
       })
     );
+  }
+
+  async login() {
+    if (this.defaultRemote === undefined) throw new Error('default remote undefined');
+    await this.defaultRemote.login();
+
+    this.load();
+  }
+
+  async logout() {
+    if (this.defaultRemote === undefined) throw new Error('default remote undefined');
+    await this.defaultRemote.logout();
+
+    this.load();
+  }
+
+  async makePublic() {
+    if(!this.client) throw new Error('client undefined');
+    const result = await this.client.mutate({
+      mutation: SET_PUBLIC_READ,
+      variables: {
+        entityId: this.perspectiveId,
+        value: true
+      }
+    });
+
+    this.load();
   }
 
   async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string, isProposal: boolean) {

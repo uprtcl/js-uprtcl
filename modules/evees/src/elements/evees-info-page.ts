@@ -10,6 +10,7 @@ import { EveesInfoBase } from './evee-info-base';
 import { prettyAddress } from './support';
 import { UPDATE_HEAD } from 'src/graphql/queries';
 import { ApolloClient } from 'apollo-boost';
+import { MenuConfig } from './common-ui/evees-options-menu';
 
 const NAME_FIELD = 'NAME_FIELD';
 
@@ -33,9 +34,7 @@ export class EveesInfoPage extends EveesInfoBase {
     const name = html`${this.perspectiveData.details.name}`;
     const defaultName = html`by ${prettyAddress(this.perspectiveData.perspective.creatorId)}`;
 
-    const rename = html`<mwc-icon-button class="edit-btn" icon="edit" @click=${this.editNameClicked}></mwc-icon-button>`;
-    
-    return html`Draft ${hasName ? name : defaultName} ${rename}`;
+    return html`Draft ${hasName ? name : defaultName}`;
   }
 
   async editNameClicked() {
@@ -59,6 +58,18 @@ export class EveesInfoPage extends EveesInfoBase {
     });
 
     this.load();    
+  }
+
+  optionClicked(e) {
+    switch (e.detail.key) {
+      case 'logout':
+        this.logout();
+        break;
+      
+      case 'edit':
+        this.editNameClicked();
+        break;
+    }
   }
   
   renderOtherPerspectives() {
@@ -113,44 +124,65 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   renderPerspectiveActions() {
-    return html`
-      <div class="section-content">
-        <div class="action-button">    
-          ${this.perspectiveData.canWrite ? 
-            html`
-              <mwc-button
-                .disabled=${!this.publicRead}
-                class="bottom-button"
-                outlined
-                icon="call_merge"
-                @click=${this.proposeMergeClicked}
-                label="Propose Update"
-              ></mwc-button>` 
-            : (this.isLogged ? 
-              html`
-                <mwc-button
-                  outlined
-                  class="bottom-button"
-                  icon="call_split"
-                  @click=${this.newPerspectiveClicked}
-                  label="new draft"
-                ></mwc-button>` : '')
+    /** most likely action button */
+    const actionButton = html`
+      <div class="action-button">    
+        ${this.firstPerspectiveId !== this.perspectiveId ? (
+          this.publicRead ? html`
+            <mwc-button outlined
+              icon="call_merge"
+              @click=${this.proposeMergeClicked}
+              label="Propose Update"
+            ></mwc-button>` : html`
+            <mwc-button outlined
+              icon="accessibility"
+              @click=${this.makePublic}
+              label="Make Public"
+            ></mwc-button>`
+        ) : (this.isLogged ? 
+          html`
+            <mwc-button outlined
+              icon="call_split"
+              @click=${this.newPerspectiveClicked}
+              label="new draft"
+            ></mwc-button>` : html`
+            <mwc-button outlined
+              icon="account_box"
+              @click=${this.login}
+              label="login"
+            ></mwc-button>`)
           }
-        </div>
-        <div class="other-perspectives">
-          ${this.renderOtherPerspectives()}
-        </div>
-        ${this.perspectiveData.canWrite ? html`
-          <mwc-button
-            class="bottom-button"
-            outlined
-            icon="call_split"
-            @click=${this.newPerspectiveClicked}
-            label="new draft"
-          ></mwc-button>` : ''
-        
-        WORK IN PROGRESS}
-      </div>`
+      </div>`;
+
+    const contextConfig: MenuConfig = {};
+
+    if (this.perspectiveData.canWrite) {
+      contextConfig['edit'] = {
+        disabled: false,
+        graphic: 'edit',
+        text: 'edit'
+      }
+    }
+
+    contextConfig['logout'] = {
+      disabled: !this.isLogged,
+      graphic: 'exit_to_app',
+      text: 'logout'
+    }
+
+    const contextButton = html`
+      <div class="context-menu">
+          <evees-options-menu 
+            .config=${contextConfig} 
+            @option-click=${this.optionClicked}>
+          </evees-options-menu>
+      </div>
+    `;
+
+    return html`
+      ${this.showEditName ? '' : actionButton}
+      ${contextButton}
+      `;
   }
 
   render() {
@@ -159,15 +191,27 @@ export class EveesInfoPage extends EveesInfoBase {
       <div class="container">
         <div class="column">
           <div class="section">
+            
             <div class="section-header">
               ${this.perspectiveTitle()}
             </div>
-            ${this.showEditName ? html`
-              <div>
-                ${this.renderEditNameForm()}
-              </div>` : ''
-            }
-            ${this.renderPerspectiveActions()}
+
+            <div class="section-content">
+            
+              ${this.showEditName ? html`
+                <div>
+                  ${this.renderEditNameForm()}
+                </div>` : ''
+              }
+              
+              ${this.renderPerspectiveActions()}
+              
+              <div class="other-perspectives">
+                ${this.renderOtherPerspectives()}
+              </div>
+
+            </div>
+
           </div>
 
           <div class="section">
@@ -179,15 +223,6 @@ export class EveesInfoPage extends EveesInfoBase {
             </div>
           </div>
 
-          <!-- <div class="section">
-            <div class="section-header">
-              Evee Info
-            </div>
-            <div class="section-content info-text">
-              ${this.renderInfo()}
-            </div>
-          </div>
-           -->
           ${this.perspectiveData.canWrite ? html`
             <div class="section">
               <div class="section-header">
@@ -253,7 +288,7 @@ export class EveesInfoPage extends EveesInfoBase {
         border-top-style: solid;
         border-top-width: 5px;
       }
-      .remote-login {
+      .context-menu {
         position: absolute;
         top: 10px;
         right: 10px;
