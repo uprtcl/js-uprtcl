@@ -17,8 +17,8 @@ export const GET_PERSP_DETAILS = 'getPerspectiveDetails(bytes32)';
 export const INIT_PERSP = `initPerspective(${initPerspStr},address)`;
 export const INIT_PERSP_BATCH = `initPerspectiveBatch(${initPerspStr}[],address)`;
 
-const headUpdate = `(bytes32,bytes32,bytes32,uint8)`;
-const proposalStr = `(string,string,address,uint256,${headUpdate}[],address[])`;
+const headUpdate = `(bytes32,bytes32,bytes32,string,string)`;
+const proposalStr = `(string,string,string,string,address,uint256,${headUpdate}[],address[])`;
 export const INIT_PROPOSAL = `initProposal(${proposalStr},address)`;
 export const GET_PROPOSAL = 'getProposal(bytes32)';
 export const EXECUTE_PROPOSAL = 'executeProposal(bytes32)';
@@ -81,7 +81,7 @@ export const bytes32ToCid = (bytes) => {
   const cidHex0 = bytes[1].substring(2); /** LSB */
 
   const cidHex = cidHex1.concat(cidHex0).replace(/^0+/, '');
-  if (cidHex === '') return undefined;
+  if (cidHex === '') return '';
 
   const cidBufferWithBase = Buffer.from(cidHex, 'hex');
 
@@ -121,4 +121,52 @@ export const getPerspectiveContext = async (uprtclDetails, perspectiveIdHash) =>
   const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber) ? 1 : -1).pop();
   
   return last.returnValues.context;
+}
+
+export interface ProposalDetails {
+  toPerspectiveId: string,
+  fromPerspectiveId: string,
+  toHeadId: string,
+  fromHeadId: string,
+  nonce: number
+}
+
+export const getProposalDetails = async (uprtclProposals, proposalId) : Promise<ProposalDetails> => {
+  const events = await uprtclProposals.getPastEvents('ProposalCreated', {
+    filter: { proposalId },
+    fromBlock: 0
+  });
+
+  if (events.length !== 1) throw Error('One proposal created event expected');
+  
+  const e = events[0];
+
+  return {
+    toPerspectiveId: e.returnValues.toPerspectiveId,
+    fromPerspectiveId: e.returnValues.fromPerspectiveId,
+    toHeadId: e.returnValues.toHeadId,
+    fromHeadId: e.returnValues.fromHeadId,
+    nonce: e.returnValues.fromHeadId
+  }
+}
+
+export interface HeadUpdateDetails {
+  fromPerspectiveId: string,
+  fromHeadId: string,
+}
+
+export const getHeadUpdateDetails = async (uprtclProposals, proposalId, perspectiveIdHash) : Promise<HeadUpdateDetails> => {
+  const events = await uprtclProposals.getPastEvents('HeadUpdateAdded', {
+    filter: { proposalId, perspectiveIdHash },
+    fromBlock: 0
+  });
+
+  if (events.length !== 1) throw Error('One headupte per perspective and proposal expected');
+  
+  const e = events[0];
+
+  return {
+    fromPerspectiveId: e.returnValues.fromPerspectiveId,
+    fromHeadId: e.returnValues.fromHeadId
+  }
 }

@@ -244,6 +244,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string, isProposal: boolean) {
     if(!this.evees) throw new Error('evees undefined');
     if(!this.merge) throw new Error('merge undefined');
+    if(!this.client) throw new Error('client undefined');
     
     this.logger.info(
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
@@ -275,8 +276,39 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       config
     );
 
+    const resultTo = await this.client.query({
+      query: gql`
+        {
+          entity(id: "${toPerspectiveId}") {
+            id
+            ... on Perspective {
+              head {
+                id
+              }
+            }
+          }
+        }
+      `});
+
+    const resultFrom = await this.client.query({
+      query: gql`
+        {
+          entity(id: "${fromPerspectiveId}") {
+            id
+            ... on Perspective {
+              head {
+                id
+              }
+            }
+          }
+        }
+      `});
+    
+    const toHeadId = resultTo.data.entity.head.id;
+    const fromHeadId = resultFrom.data.entity.head.id;
+
     if (isProposal) {
-      await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, mergeResult.actions);
+      await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, fromHeadId, toHeadId, mergeResult.actions);
     } else {
       await this.mergePerspective(mergeResult.actions);
     }
@@ -363,7 +395,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     return Promise.all(executePromises);
   }
 
-  async createMergeProposal(fromPerspectiveId: string, toPerspectiveId: string, actions: UprtclAction[]): Promise<void> {
+  async createMergeProposal(
+    fromPerspectiveId: string, 
+    toPerspectiveId: string, 
+    fromHeadId: string, 
+    toHeadId: string, 
+    actions: UprtclAction[]): Promise<void> {
+
     if(!this.client) throw new Error('client undefined');
     if(!this.cache) throw new Error('cache undefined');
     
@@ -409,8 +447,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         const result = await this.client.mutate({
           mutation: CREATE_PROPOSAL,
           variables: {
-            toPerspectiveId: toPerspectiveId, 
-            fromPerspectiveId: fromPerspectiveId, 
+            toPerspectiveId, 
+            fromPerspectiveId, 
+            toHeadId,
+            fromHeadId,
             updateRequests: actions.map(action => action.payload)
           }
         });

@@ -44,6 +44,8 @@ export interface Proposal {
   creatorId?: string;
   toPerspectiveId?: string;
   fromPerspectiveId: string;
+  toHeadId?: string;
+  fromHeadId?: string;
   updates?: Array<UpdateRequest>;
   status?: boolean;
   authorized?: boolean;
