@@ -154,7 +154,26 @@ export class TextNodeCommon
   };
 }
 
+
 @injectable()
-export class TextNodeTitle implements HasTitle<Entity<TextNode>> {
+export class TextNodeTitle implements HasTitle, HasDiffLenses {
   title = (textNode: Entity<TextNode>) => textNode.object.text;
+
+  diffLenses = (node?: TextNode): DiffLens[] => {
+    return [
+      {
+        name: 'documents:document-diff',
+        type: 'diff',
+        render: (newEntity: TextNode, oldEntity: TextNode) => {
+          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
+          return html`
+            <documents-text-node-diff
+              .newData=${newEntity}
+              .oldData=${oldEntity}>
+            </documents-text-node-diff>
+          `;
+        }
+      }
+    ];
+  };
 }
