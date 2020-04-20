@@ -36,7 +36,7 @@ export class AdminBehaviour
     {
       name: 'basic-admin-access-control',
       type: 'permissions',
-      render: (context: any) =>
+      render: (_, context: any) =>
         html`
           <permissions-admin
             .permissions=${entity}
