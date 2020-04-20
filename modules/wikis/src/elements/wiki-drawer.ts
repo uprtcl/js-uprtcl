@@ -41,6 +41,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ type: String, attribute: 'ref' })
   firstRef: string | undefined = undefined;
+  
+  @property({ type: String, attribute: 'default-authority'})
+  defaultAuthority: string | undefined = undefined;
 
   @property({ type: String, attribute: false })
   ref: string | undefined = undefined;
@@ -69,6 +72,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
 
     this.ref = this.firstRef;
+
     this.logger.log('firstUpdated()', { ref: this.ref });
 
     this.loadWiki();
@@ -296,7 +300,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async splicePages(pages: any[], index: number, count: number) {
-    if (!this.wiki) return { entity: undefined, removed: [] };
+    if (!this.wiki) throw new Error('wiki undefined');
 
     const getPages = pages.map(page => {
       if (typeof page !== 'string') {
@@ -338,8 +342,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async movePage(fromIndex: number, toIndex: number) {
     const { removed } = await this.splicePages([], fromIndex, 1);
-    await this.splicePages(removed as string[], fromIndex, 1);
+    const { entity } = await this.splicePages(removed as string[], fromIndex, 1);
 
+    await this.updateContent(entity);
+    
     if (this.selectedPageIx === undefined) return;
 
     /** this page was moved */
@@ -354,8 +360,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async removePage(pageIndex: number) {
-    this.splicePages([], pageIndex, 1);
-
+    const { entity } = await this.splicePages([], pageIndex, 1);
+    await this.updateContent(entity);
+    
     if (this.selectedPageIx === undefined) return;
 
     /** this page was removed */
@@ -507,6 +514,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                     first-perspective-id=${this.firstRef as string}
                     perspective-id=${this.ref}
                     evee-color=${this.color()}
+                    default-authority=${this.defaultAuthority as string}
                   ></evees-info-page>
                 </wiki-home>
               `}

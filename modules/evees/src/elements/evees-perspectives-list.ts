@@ -3,11 +3,13 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Proposal } from '../types';
+import { Proposal, UpdateRequest } from '../types';
 import { styleMap } from './evees-info-popper';
 import { prettyTime, prettyAddress, eveeColor } from './support';
 
 export const DEFAULT_COLOR = '#d0dae0';
+import '@material/mwc-dialog';
+import '@material/mwc-button';
 
 interface PerspectiveData {
   id: string;
@@ -57,6 +59,12 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   @property({ type: String, attribute: false })
   canWrite: Boolean = false;
+
+  @property({ type: String, attribute: false })
+  showDiff: Boolean = false;
+
+  @property({ type: Object, attribute: false })
+  updatesForDiff: UpdateRequest[] | undefined = undefined;
 
   @property({ type: String, attribute: 'force-update' })
   forceUpdate: string = 'true';
@@ -190,6 +198,20 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                 authorized
                 canAuthorize
                 executed
+                updates {
+                  toPerspective {
+                    id
+                  }
+                  fromPerspective {
+                    id
+                  }
+                  oldHead {
+                    id 
+                  }
+                  newHead {
+                    id
+                  }
+                }
               }
             }
           }
@@ -198,12 +220,22 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
     const proposals = result.data.entity.proposals.map(
       (prop): Proposal => {
+        const updates = prop.updates.map(update => { 
+          return {
+            perspectiveId: update.toPerspective.id,
+            fromPerspectiveId: update.fromPerspective.id,
+            oldHeadId: update.oldHead.id,
+            newHeadId: update.newHead.id
+          }
+        });
+
         return {
           id: prop.id,
           fromPerspectiveId: prop.fromPerspective.id,
           authorized: prop.authorized,
           canAuthorize: prop.canAuthorize,
-          executed: prop.executed
+          executed: prop.executed,
+          updates
         };
       }
     );
@@ -217,14 +249,21 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     this.logger.info('getProposals()', { proposals });
   };
 
+  showProposalChanges(proposal: Proposal) {
+    this.updatesForDiff = proposal.updates;
+    this.showDiff = true;
+    this.logger.log('Show changes for', this, proposal);
+    
+  }
+
   perspectiveTitle(perspectivesData: PerspectiveData) {
     return html`
       ${perspectivesData.name !== ''
         ? html`
             <strong>${perspectivesData.name}</strong>
           `
-        : 'created'}
-      by ${prettyAddress(perspectivesData.creatorId)} ${prettyTime(perspectivesData.timestamp)}
+        : ''}
+      by ${prettyAddress(perspectivesData.creatorId)}
     `;
   }
 
@@ -238,7 +277,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   proposalTitle(proposal: Proposal) {
     const perspectiveData = this.perspectivesData.find(p => p.id === proposal.fromPerspectiveId);
-    if (perspectiveData) return this.perspectiveTitle(perspectiveData);
+    if (perspectiveData) return html`${this.perspectiveTitle(perspectiveData)}`;
     return '';
   }
 
@@ -390,9 +429,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       <div class="list-row">
         <div class="perspective-title">
           <mwc-list-item
-            graphic="small"
-            disabled
-          >
+            @click=${() => this.showProposalChanges(proposal)}
+            graphic="small">
             <div
               slot="graphic"
               class="perspective-mark"
@@ -409,7 +447,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         </div>
         <div class="perspective-action">
           <mwc-button
-            class="merge-button"
             icon="call_merge"
             class="merge-button"
             @click=${() => this.proposalButtonClicked(proposal)}
@@ -449,6 +486,25 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     proposal => this.renderProposalRow(proposal))}` : '';
   }
 
+  // TODO, Array of objects as attribute needs to use JSON.stringify...
+  renderDiff() {
+    this.logger.log('renderDiff()', { updatesForDiff: this.updatesForDiff });
+    return html`
+      <div class="modal">
+        <div class="modal-content">
+          <div class="diff-container">
+            <evees-update-diff .updates=${this.updatesForDiff as UpdateRequest[]}></evees-update-diff>
+          </div>
+          <mwc-button
+            @click=${() => this.showDiff = false}
+            slot="primaryAction"
+            dialogAction="close">
+            Close
+          </mwc-button>
+        </div>
+      </div>`;
+  }
+
   render() {
     return (this.loadingPerspectives || this.loadingProposals) ? 
       this.renderLoading() : 
@@ -465,6 +521,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           : html`
               <div class="empty"><i>No drafts found</i></div>
             `}
+        ${this.showDiff ? this.renderDiff() : ''}
       `;
   }
 
@@ -480,6 +537,30 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         flex-direction: row;
         align-items: center;
         flex: 1;
+      }
+      .modal {
+        position: fixed;
+        z-index: 100;
+        height: 100%;
+        width: 100%;
+        background-color: #b8b8b86d;
+        left: 0;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .modal-content {
+        max-width: 90vw;
+        margin: 0 auto;
+        min-width: 60vw;
+        padding: 3vw 3vw;
+        background-color: white;
+        border-radius: 4px;
+        box-shadow: 10px 10px 67px 0px rgba(0,0,0,0.75);
+      }
+      .diff-container {
+        margin-bottom: 3vw;
       }
 
       .loading-container {

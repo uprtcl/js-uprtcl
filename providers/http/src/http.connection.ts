@@ -22,34 +22,56 @@ export class HttpConnection extends Connection {
 
   /** used to keep the token in memory in case tokenId is undefined */
   private tokenMem: string | undefined = undefined;
-  userId: string | undefined = undefined;
-
+  private userIdMem: string | undefined = undefined;
+  
   constructor(
     protected httpOptions: HttpConnectionOptions,
     options: ConnectionOptions, 
-    protected tokenId: string | null = 'HTTP_AUTH_TOKEN'
+    protected tokenStorageId: string | null = 'HTTP_AUTH_TOKEN',
+    protected userStorageId: string | null = 'HTTP_USER_ID'
   ) {
     super(options);
   }
 
   public get authToken() : string | undefined {
-    if (this.tokenId == null) return this.tokenMem;
+    if (this.tokenStorageId == null) return this.tokenMem;
 
-    const token = localStorage.getItem(this.tokenId);
+    const token = localStorage.getItem(this.tokenStorageId);
     if (token === null) return undefined;
     return token
   }
 
   public set authToken(token: string | undefined) {
-    if (this.tokenId == null) {
+    if (this.tokenStorageId == null) {
       this.tokenMem = token;
       return;
     }
 
     if (token !== undefined) {
-      localStorage.setItem(this.tokenId, token);
+      localStorage.setItem(this.tokenStorageId, token);
     } else {
-      localStorage.removeItem(this.tokenId);
+      localStorage.removeItem(this.tokenStorageId);
+    }
+  }
+
+  public get userId() : string | undefined {
+    if (this.userStorageId == null) return this.tokenMem;
+
+    const userId = localStorage.getItem(this.userStorageId);
+    if (userId === null) return undefined;
+    return userId
+  }
+
+  public set userId(userId: string | undefined) {
+    if (this.userStorageId == null) {
+      this.userIdMem = userId;
+      return;
+    }
+
+    if (userId !== undefined) {
+      localStorage.setItem(this.userStorageId, userId);
+    } else {
+      localStorage.removeItem(this.userStorageId);
     }
   }
 

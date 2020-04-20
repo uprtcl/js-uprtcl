@@ -125,4 +125,5 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   deletePerspective(perspectiveId: string): Promise<void> {
     throw new Error("Method not implemented.");
   }
+
 }

@@ -16,6 +16,7 @@ import en from './i18n/en.json';
 import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
 import { DocumentsBindings } from './bindings';
 import { DocumentEditor } from './elements/document-editor';
+import { TextNodeDiff } from './elements/document-text-node-diff';
 
 /**
  * Configure a documents module with the given stores
@@ -51,6 +52,7 @@ export class DocumentsModule extends EveesContentModule {
     super.onLoad(container);
     customElements.define('documents-text-node-editor', DocumentTextNodeEditor);
     customElements.define('documents-editor', DocumentEditor);
+    customElements.define('documents-text-node-diff', TextNodeDiff);
   }
 
   get submodules() {

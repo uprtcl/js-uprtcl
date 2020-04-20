@@ -56,6 +56,26 @@ export const eveesResolvers: IResolvers = {
     },
     fromPerspective(parent) {
       return parent.fromPerspectiveId;
+    },
+    toHead(parent) {
+      return parent.toPerspectiveId;
+    },
+    fromHead(parent) {
+      return parent.fromPerspectiveId;
+    }
+  },
+  HeadUpdate: {
+    toPerspective(parent) {
+      return parent.perspectiveId;
+    },
+    fromPerspective(parent) {
+      return parent.fromPerspectiveId;
+    },
+    newHead(parent) {
+      return parent.newHeadId;
+    },
+    oldHead(parent) {
+      return parent.oldHeadId;
     }
   },
   Perspective: {
@@ -243,7 +263,11 @@ export const eveesResolvers: IResolvers = {
       };
     },
 
-    async addProposal(_, { toPerspectiveId, fromPerspectiveId, updateRequests }, { container }) {
+    async addProposal(
+      _,
+      { toPerspectiveId, fromPerspectiveId, toHeadId, fromHeadId, updateRequests },
+      { container }
+    ) {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = await evees.getPerspectiveProviderById(toPerspectiveId);
@@ -252,13 +276,15 @@ export const eveesResolvers: IResolvers = {
       const proposalId = await remote.proposals.createProposal(
         fromPerspectiveId,
         toPerspectiveId,
+        fromHeadId,
+        toHeadId,
         updateRequests
       );
 
       return {
         id: proposalId,
-        toPerspectiveId: toPerspectiveId,
-        fromPerspectiveId: fromPerspectiveId,
+        toPerspectiveId,
+        fromPerspectiveId,
         updates: updateRequests,
         authorized: false,
         canAuthorize: false,

@@ -14,6 +14,8 @@ export interface ProposalsProvider {
   createProposal(
     fromPerspectiveId: string,
     toPerspectiveId: string,
+    fromHeadId: string,
+    toHeadId: string,
     updates: UpdateRequest[]
   ): Promise<string>;
 

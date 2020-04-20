@@ -11,6 +11,7 @@ import { BasicAdminPattern, AdminBehaviour } from './patterns/basic-admin-contro
 
 import en from './i18n/en.json';
 import { PermissionsAdmin } from './elements/permissions-admin';
+import { RemoteLoginWidget } from './elements/remote-login-widget';
 
 export class AccessControlModule extends MicroModule {
   static id = 'access-control-module';
@@ -19,6 +20,7 @@ export class AccessControlModule extends MicroModule {
     customElements.define('permissions-for-entity', PermissionsForEntity);
     customElements.define('permissions-owner', PermissionsOwner);
     customElements.define('permissions-admin', PermissionsAdmin);
+    customElements.define('remote-login-widget', RemoteLoginWidget);
   }
 
   get submodules() {
@@ -31,4 +33,8 @@ export class AccessControlModule extends MicroModule {
       ])
     ];
   }
+
+  static bindings = {
+    Authority: 'authority'
+  };
 }

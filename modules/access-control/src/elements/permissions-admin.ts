@@ -16,10 +16,10 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
   @property()
   entityId!: string;
 
-  @property()
+  @property({ type: Object, attribute: false })
   permissions!: BasicAdminPermissions;
-
-  @property()
+  
+  @property({ type: Boolean, attribute: false })
   canWrite!: boolean;
 
   firstUpdated() {

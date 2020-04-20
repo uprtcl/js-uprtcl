@@ -1,6 +1,9 @@
+import { TemplateResult } from 'lit-element';
+
 import { Entity } from '@uprtcl/cortex';
-import { EveesRemote } from './services/evees.remote';
 import { CASSource } from '@uprtcl/multiplatform';
+
+import { EveesRemote } from './services/evees.remote';
 
 export type RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) => CASSource;
 
@@ -41,6 +44,8 @@ export interface Proposal {
   creatorId?: string;
   toPerspectiveId?: string;
   fromPerspectiveId: string;
+  toHeadId?: string;
+  fromHeadId?: string;
   updates?: Array<UpdateRequest>;
   status?: boolean;
   authorized?: boolean;
@@ -73,4 +78,13 @@ export interface UprtclAction {
 export interface NodeActions<T> {
   new: T;
   actions: UprtclAction[];
+}
+
+export interface DiffLens {
+  name: string;
+  render: (newEntity: any, oldEntity: any) => TemplateResult;
+  type?: string;
+}
+export interface HasDiffLenses {
+  diffLenses: (newEntity: any, oldEntity: any) => DiffLens[];
 }

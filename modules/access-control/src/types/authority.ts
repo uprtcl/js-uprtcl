@@ -8,4 +8,11 @@ export interface Authority extends Ready {
   authority: string;
 
   userId?: string | undefined;
+
+  /** **checks** if the current userId is correctly logged in the remote */
+  isLogged():Promise<boolean>;
+  /** sets userId  */
+  login():Promise<void>;
+  /** removes userId (set it as undefined)  */
+  logout():Promise<void>;
 }

@@ -3,7 +3,7 @@ import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Entity, HasChildren, recognizeEntity } from '@uprtcl/cortex';
-import { MergeStrategy, mergeStrings, UprtclAction, Merge } from '@uprtcl/evees';
+import { MergeStrategy, mergeStrings, UprtclAction, Merge, HasDiffLenses, DiffLens } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 import { NodeActions } from '@uprtcl/evees';
 
@@ -68,7 +68,8 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
 }
 
 @injectable()
-export class WikiCommon implements HasLenses<Entity<Wiki>> {
+export class WikiCommon implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
+  
   lenses = (wiki: Entity<Wiki>): Lens[] => {
     return [
       {
@@ -84,6 +85,24 @@ export class WikiCommon implements HasLenses<Entity<Wiki>> {
               .selectedPageHash=${context.selectedPageHash}
             >
             </wiki-drawer>
+          `;
+        }
+      }
+    ];
+  };
+
+  diffLenses = (node?: Entity<Wiki>): DiffLens[] => {
+    return [
+      {
+        name: 'wikis:wiki-diff',
+        type: 'diff',
+        render: (newEntity: Entity<Wiki>, oldEntity: Entity<Wiki>) => {
+          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
+          return html`
+            <wiki-diff
+              .newData=${newEntity}
+              .oldData=${oldEntity}>
+            </wiki-diff>
           `;
         }
       }

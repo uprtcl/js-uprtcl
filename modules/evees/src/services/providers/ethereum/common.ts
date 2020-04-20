@@ -4,23 +4,21 @@ import CID from 'cids';
 /** Function signatures */
 const newPerspStr = '(string,bytes32,bytes32,address)';
 export const GET_PERSP_HASH = 'getPerspectiveIdHash(string)';
-export const GET_PERSP = 'getPerspective(bytes32)';
+export const GET_PERSP_OWNER = 'getPerspectiveOwner(bytes32)';
 export const CREATE_PERSP = `createPerspective(${newPerspStr},address)`;
 export const UPDATE_OWNER = 'changePerspectiveOwner(bytes32,address)';
 export const CREATE_PERSP_BATCH = `createPerspectiveBatch(${newPerspStr}[],address)`;
 export const UPDATED_HEAD = `updateHead(bytes32,bytes32,bytes32,address)`;
 
-const perspDetailsStr = '(string,string)';
-const initPerspStr = `(${newPerspStr},${perspDetailsStr})`;
+const initPerspStr = `(${newPerspStr},string)`;
 export const GET_CONTEXT_HASH = 'getContextHash(string)';
-export const UPDATE_PERSP_DETAILS = `setPerspectiveDetails(bytes32,${perspDetailsStr})`;
+export const UPDATE_PERSP_DETAILS = `setPerspectiveDetails(bytes32,string)`;
 export const GET_PERSP_DETAILS = 'getPerspectiveDetails(bytes32)';
 export const INIT_PERSP = `initPerspective(${initPerspStr},address)`;
 export const INIT_PERSP_BATCH = `initPerspectiveBatch(${initPerspStr}[],address)`;
 
-
-const headUpdate = `(bytes32,bytes32,bytes32,uint8)`;
-const proposalStr = `(string,string,address,uint256,${headUpdate}[],address[])`;
+const headUpdate = `(bytes32,bytes32,bytes32,string,string)`;
+const proposalStr = `(string,string,string,string,address,uint256,${headUpdate}[],address[])`;
 export const INIT_PROPOSAL = `initProposal(${proposalStr},address)`;
 export const GET_PROPOSAL = 'getProposal(bytes32)';
 export const EXECUTE_PROPOSAL = 'executeProposal(bytes32)';
@@ -83,7 +81,7 @@ export const bytes32ToCid = (bytes) => {
   const cidHex0 = bytes[1].substring(2); /** LSB */
 
   const cidHex = cidHex1.concat(cidHex0).replace(/^0+/, '');
-  if (cidHex === '') return undefined;
+  if (cidHex === '') return '';
 
   const cidBufferWithBase = Buffer.from(cidHex, 'hex');
 
@@ -96,4 +94,79 @@ export const bytes32ToCid = (bytes) => {
   const cid = new CID(cidBuffer);
 
   return cid.toBaseEncodedString(multibaseName);
+}
+
+export const getPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
+  const events = await uprtclRoot.getPastEvents('PerspectiveHeadUpdated', {
+    filter: { perspectiveIdHash: perspectiveIdHash },
+    fromBlock: 0
+  });
+
+  const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber) ? 1 : -1).pop();
+
+  return {
+    headCid1: last.returnValues.headCid1,
+    headCid0: last.returnValues.headCid0
+  }
+}
+
+export const getPerspectiveContext = async (uprtclDetails, perspectiveIdHash) => {
+  const events = await uprtclDetails.getPastEvents('PerspectiveDetailsSet', {
+    filter: { perspectiveIdHash: perspectiveIdHash },
+    fromBlock: 0
+  });
+
+  if (events.length === 0) return '';
+
+  const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber) ? 1 : -1).pop();
+  
+  return last.returnValues.context;
+}
+
+export interface ProposalDetails {
+  toPerspectiveId: string,
+  fromPerspectiveId: string,
+  toHeadId: string,
+  fromHeadId: string,
+  nonce: number
+}
+
+export const getProposalDetails = async (uprtclProposals, proposalId) : Promise<ProposalDetails> => {
+  const events = await uprtclProposals.getPastEvents('ProposalCreated', {
+    filter: { proposalId },
+    fromBlock: 0
+  });
+
+  if (events.length !== 1) throw Error('One proposal created event expected');
+  
+  const e = events[0];
+
+  return {
+    toPerspectiveId: e.returnValues.toPerspectiveId,
+    fromPerspectiveId: e.returnValues.fromPerspectiveId,
+    toHeadId: e.returnValues.toHeadId,
+    fromHeadId: e.returnValues.fromHeadId,
+    nonce: e.returnValues.fromHeadId
+  }
+}
+
+export interface HeadUpdateDetails {
+  fromPerspectiveId: string,
+  fromHeadId: string,
+}
+
+export const getHeadUpdateDetails = async (uprtclProposals, proposalId, perspectiveIdHash) : Promise<HeadUpdateDetails> => {
+  const events = await uprtclProposals.getPastEvents('HeadUpdateAdded', {
+    filter: { proposalId, perspectiveIdHash },
+    fromBlock: 0
+  });
+
+  if (events.length !== 1) throw Error('One headupte per perspective and proposal expected');
+  
+  const e = events[0];
+
+  return {
+    fromPerspectiveId: e.returnValues.fromPerspectiveId,
+    fromHeadId: e.returnValues.fromHeadId
+  }
 }

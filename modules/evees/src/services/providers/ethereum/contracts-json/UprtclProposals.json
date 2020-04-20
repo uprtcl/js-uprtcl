@@ -40,20 +40,8 @@
       "name": "proposals",
       "outputs": [
         {
-          "name": "toPerspectiveId",
-          "type": "string"
-        },
-        {
-          "name": "fromPerspectiveId",
-          "type": "string"
-        },
-        {
           "name": "owner",
           "type": "address"
-        },
-        {
-          "name": "nonce",
-          "type": "uint256"
         },
         {
           "name": "status",
@@ -61,6 +49,14 @@
         },
         {
           "name": "authorized",
+          "type": "uint8"
+        },
+        {
+          "name": "rejected",
+          "type": "uint8"
+        },
+        {
+          "name": "withdrawn",
           "type": "uint8"
         }
       ],
@@ -213,11 +209,63 @@
         },
         {
           "indexed": false,
+          "name": "toPerspectiveId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "fromPerspectiveId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "toHeadId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "fromHeadId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "nonce",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
           "name": "creator",
           "type": "address"
         }
       ],
       "name": "ProposalCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "proposalId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "name": "perspectiveIdHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "fromPerspectiveId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "fromHeadId",
+          "type": "string"
+        }
+      ],
+      "name": "HeadUpdateAdded",
       "type": "event"
     },
     {
@@ -334,6 +382,14 @@
               "type": "string"
             },
             {
+              "name": "toHeadId",
+              "type": "string"
+            },
+            {
+              "name": "fromHeadId",
+              "type": "string"
+            },
+            {
               "name": "owner",
               "type": "address"
             },
@@ -356,8 +412,12 @@
                   "type": "bytes32"
                 },
                 {
-                  "name": "executed",
-                  "type": "uint8"
+                  "name": "fromPerspectiveId",
+                  "type": "string"
+                },
+                {
+                  "name": "fromHeadId",
+                  "type": "string"
                 }
               ],
               "name": "headUpdates",
@@ -404,8 +464,12 @@
               "type": "bytes32"
             },
             {
-              "name": "executed",
-              "type": "uint8"
+              "name": "fromPerspectiveId",
+              "type": "string"
+            },
+            {
+              "name": "fromHeadId",
+              "type": "string"
             }
           ],
           "name": "headUpdates",
@@ -492,6 +556,34 @@
           "type": "bytes32"
         }
       ],
+      "name": "rejectProposal",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "proposalId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "withdrawProposal",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "proposalId",
+          "type": "bytes32"
+        }
+      ],
       "name": "executeProposalExternal",
       "outputs": [],
       "payable": false,
@@ -529,20 +621,8 @@
         {
           "components": [
             {
-              "name": "toPerspectiveId",
-              "type": "string"
-            },
-            {
-              "name": "fromPerspectiveId",
-              "type": "string"
-            },
-            {
               "name": "owner",
               "type": "address"
-            },
-            {
-              "name": "nonce",
-              "type": "uint256"
             },
             {
               "components": [
@@ -576,6 +656,14 @@
             },
             {
               "name": "authorized",
+              "type": "uint8"
+            },
+            {
+              "name": "rejected",
+              "type": "uint8"
+            },
+            {
+              "name": "withdrawn",
               "type": "uint8"
             }
           ],
@@ -760,15 +848,96 @@
           "name": "ProposalCreated",
           "type": "event",
           "signature": "0x7172667a4024e27a0d3a896c8ba72947ebed1a0bb37d5c6aaff808c4f6b574ef"
+        },
+        "0x887b6b2688e70065ea92520acf8e6153a2cf80b2ec02264d0efbc097db7b0166": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "toPerspectiveIdHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "name": "fromPerspectiveIdHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "name": "proposalId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "name": "toPerspectiveId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "fromPerspectiveId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "toHeadId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "fromHeadId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "name": "creator",
+              "type": "address"
+            }
+          ],
+          "name": "ProposalCreated",
+          "type": "event",
+          "signature": "0x887b6b2688e70065ea92520acf8e6153a2cf80b2ec02264d0efbc097db7b0166"
+        },
+        "0x767a7e7936e539a742cd167c602bcca46c55ab47f49b2660c3a1bc7dcafc1b96": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "proposalId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "name": "perspectiveIdHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "name": "fromPerspectiveId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "name": "fromHeadId",
+              "type": "string"
+            }
+          ],
+          "name": "HeadUpdateAdded",
+          "type": "event",
+          "signature": "0x767a7e7936e539a742cd167c602bcca46c55ab47f49b2660c3a1bc7dcafc1b96"
         }
       },
       "links": {},
       "address": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550",
-      "transactionHash": "0xdb520f5c57eddd72f9e2bdb96ed6cada258ddf7ac9867e945a040714e7941267"
+      "transactionHash": "0xab5e894370c55cdcd3d47be0e34a9c523a1d7b267630a1c137fbb2007b013b61"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2020-04-15T16:35:28.969Z",
+  "updatedAt": "2020-04-19T18:12:16.158Z",
   "devdoc": {
     "methods": {
       "isOwner()": {
@@ -787,7 +956,7 @@
   },
   "userdoc": {
     "methods": {
-      "addUpdatesToProposal(bytes32,(bytes32,bytes32,bytes32,uint8)[])": {
+      "addUpdatesToProposal(bytes32,(bytes32,bytes32,bytes32,string,string)[])": {
         "notice": "Add one or more headUpdate elements to an existing proposal "
       }
     }

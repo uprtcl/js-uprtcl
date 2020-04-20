@@ -1,13 +1,14 @@
+import { ApolloClient } from 'apollo-boost';
+
 import { PatternRecognizer, CortexModule, Entity } from '@uprtcl/cortex';
-import { DiscoveryModule, MultiSourceService } from '@uprtcl/multiplatform';
-import { Authority, loadEntity } from '@uprtcl/multiplatform';
+import { loadEntity } from '@uprtcl/multiplatform';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Permissions } from '../behaviours/permissions';
 import { Updatable } from '../behaviours/updatable';
 import { AccessControlService } from '../services/access-control.service';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
-import { ApolloClient } from 'apollo-boost';
-import { ApolloClientModule } from '@uprtcl/graphql';
+import { Authority } from '../types/authority';
 
 export const accessControlResolvers = {
   Mutation: {

@@ -2,139 +2,13 @@
   "contractName": "UprtclDetails",
   "abi": [
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "perspectiveIdHash",
-          "type": "bytes32"
-        },
-        {
-          "indexed": true,
-          "internalType": "bytes32",
-          "name": "contextHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "PerspectiveDetailsSet",
-      "type": "event"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "isOwner",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "suAddress",
-          "type": "address"
-        }
-      ],
-      "name": "isSuperUser",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address payable",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "perspectivesDetails",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "context",
-          "type": "string"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "constant": false,
       "inputs": [
         {
-          "internalType": "address",
           "name": "suAddress",
           "type": "address"
         },
         {
-          "internalType": "bool",
           "name": "value",
           "type": "bool"
         }
@@ -147,9 +21,64 @@
     },
     {
       "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
       "inputs": [
         {
-          "internalType": "address payable",
+          "name": "suAddress",
+          "type": "address"
+        }
+      ],
+      "name": "isSuperUser",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
           "name": "newOwner",
           "type": "address"
         }
@@ -161,10 +90,48 @@
       "type": "function"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "perspectiveIdHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "name": "contextHash",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "context",
+          "type": "string"
+        }
+      ],
+      "name": "PerspectiveDetailsSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
       "constant": false,
       "inputs": [
         {
-          "internalType": "contract UprtclRoot",
           "name": "_uprtclRoot",
           "type": "address"
         }
@@ -179,7 +146,6 @@
       "constant": true,
       "inputs": [
         {
-          "internalType": "string",
           "name": "context",
           "type": "string"
         }
@@ -187,7 +153,6 @@
       "name": "getContextHash",
       "outputs": [
         {
-          "internalType": "bytes32",
           "name": "contextHash",
           "type": "bytes32"
         }
@@ -200,26 +165,12 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "bytes32",
           "name": "perspectiveIdHash",
           "type": "bytes32"
         },
         {
-          "components": [
-            {
-              "internalType": "string",
-              "name": "name",
-              "type": "string"
-            },
-            {
-              "internalType": "string",
-              "name": "context",
-              "type": "string"
-            }
-          ],
-          "internalType": "struct SharedPerspectiveDetails.PerspectiveDetails",
-          "name": "newDetails",
-          "type": "tuple"
+          "name": "context",
+          "type": "string"
         }
       ],
       "name": "setPerspectiveDetails",
@@ -232,29 +183,14 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "bytes32",
           "name": "perspectiveIdHash",
           "type": "bytes32"
         },
         {
-          "components": [
-            {
-              "internalType": "string",
-              "name": "name",
-              "type": "string"
-            },
-            {
-              "internalType": "string",
-              "name": "context",
-              "type": "string"
-            }
-          ],
-          "internalType": "struct SharedPerspectiveDetails.PerspectiveDetails",
-          "name": "newDetails",
-          "type": "tuple"
+          "name": "context",
+          "type": "string"
         },
         {
-          "internalType": "address",
           "name": "msgSender",
           "type": "address"
         }
@@ -266,32 +202,6 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "perspectiveIdHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "getPerspectiveDetails",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "context",
-          "type": "string"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "constant": false,
       "inputs": [
         {
@@ -299,54 +209,34 @@
             {
               "components": [
                 {
-                  "internalType": "string",
                   "name": "perspectiveId",
                   "type": "string"
                 },
                 {
-                  "internalType": "bytes32",
                   "name": "headCid1",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "bytes32",
                   "name": "headCid0",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "address",
                   "name": "owner",
                   "type": "address"
                 }
               ],
-              "internalType": "struct UprtclRoot.NewPerspective",
               "name": "perspective",
               "type": "tuple"
             },
             {
-              "components": [
-                {
-                  "internalType": "string",
-                  "name": "name",
-                  "type": "string"
-                },
-                {
-                  "internalType": "string",
-                  "name": "context",
-                  "type": "string"
-                }
-              ],
-              "internalType": "struct SharedPerspectiveDetails.PerspectiveDetails",
-              "name": "details",
-              "type": "tuple"
+              "name": "context",
+              "type": "string"
             }
           ],
-          "internalType": "struct UprtclDetails.InitPerspective",
           "name": "perspectiveData",
           "type": "tuple"
         },
         {
-          "internalType": "address",
           "name": "account",
           "type": "address"
         }
@@ -365,54 +255,34 @@
             {
               "components": [
                 {
-                  "internalType": "string",
                   "name": "perspectiveId",
                   "type": "string"
                 },
                 {
-                  "internalType": "bytes32",
                   "name": "headCid1",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "bytes32",
                   "name": "headCid0",
                   "type": "bytes32"
                 },
                 {
-                  "internalType": "address",
                   "name": "owner",
                   "type": "address"
                 }
               ],
-              "internalType": "struct UprtclRoot.NewPerspective",
               "name": "perspective",
               "type": "tuple"
             },
             {
-              "components": [
-                {
-                  "internalType": "string",
-                  "name": "name",
-                  "type": "string"
-                },
-                {
-                  "internalType": "string",
-                  "name": "context",
-                  "type": "string"
-                }
-              ],
-              "internalType": "struct SharedPerspectiveDetails.PerspectiveDetails",
-              "name": "details",
-              "type": "tuple"
+              "name": "context",
+              "type": "string"
             }
           ],
-          "internalType": "struct UprtclDetails.InitPerspective[]",
           "name": "perspectivesData",
           "type": "tuple[]"
         },
         {
-          "internalType": "address",
           "name": "account",
           "type": "address"
         }
@@ -424,6 +294,11 @@
       "type": "function"
     }
   ],
+
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+  },
   "networks": {
     "4": {
       "events": {
@@ -556,15 +431,38 @@
           "name": "PerspectiveDetailsSet",
           "type": "event",
           "signature": "0x54d694087b2b7af3574607f1c7957f264e43dae2cd138a793dc22d407fac002b"
+        },
+        "0x6c9aea0d74ee0825117310c02b08c081cb33d88db58edef5517d54b9cfabaacf": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "perspectiveIdHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "name": "contextHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "name": "context",
+              "type": "string"
+            }
+          ],
+          "name": "PerspectiveDetailsSet",
+          "type": "event",
+          "signature": "0x6c9aea0d74ee0825117310c02b08c081cb33d88db58edef5517d54b9cfabaacf"
         }
       },
       "links": {},
       "address": "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B",
-      "transactionHash": "0x01bfa0c5de1d2d8c23f85234fb970760a93915565da1c53d71ac6f93e9e8f969"
+      "transactionHash": "0xbf3608483a9df3088f6dbf8971857534027a8b3ec5a557c57e56b3b215f055d5"
     }
   },
   "schemaVersion": "3.0.11",
-  "updatedAt": "2020-04-15T16:35:28.957Z",
+  "updatedAt": "2020-04-19T18:12:16.149Z",
   "devdoc": {
     "methods": {
       "isOwner()": {
