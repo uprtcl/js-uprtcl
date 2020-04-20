@@ -3,7 +3,7 @@ import { gql, ApolloClient } from 'apollo-boost';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { Hashed } from '@uprtcl/cortex';
+import { Entity } from '@uprtcl/cortex';
 
 import { Wiki } from '../types';
 
@@ -16,10 +16,10 @@ export class WikiDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ attribute: false })
-  newData?: Hashed<Wiki>;
+  newData?: Entity<Wiki>;
 
   @property({ attribute: false })
-  oldData?: Hashed<Wiki>;
+  oldData?: Entity<Wiki>;
 
   @property({ attribute: false })
   loading: boolean = true;
@@ -73,8 +73,8 @@ export class WikiDiff extends moduleConnect(LitElement) {
   async loadChanges() {
     this.loading = true;
 
-    const newData = this.newData as Hashed<Wiki>;
-    const oldData = this.oldData as Hashed<Wiki>;
+    const newData = this.newData as Entity<Wiki>;
+    const oldData = this.oldData as Entity<Wiki>;
         
     const newPagesRefs = newData.object.pages.filter(page => !oldData.object.pages.includes(page));
     const deletedPagesRefs = oldData.object.pages.filter(page => !newData.object.pages.includes(page));

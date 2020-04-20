@@ -6,20 +6,19 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
 import { UpdateRequest, HasDiffLenses } from '../types';
-import { DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { DiscoveryService, DiscoveryModule, loadEntity } from '@uprtcl/multiplatform';
 
 const LOGINFO = true;
 
 export interface NodeDiff {
-  toRef: string,
-  fromRef?: string,
-  oldData: Hashed<any>,
-  newData: Hashed<any>,
-  hasDiffLenses: HasDiffLenses,
+  toRef: string;
+  fromRef?: string;
+  oldData: Hashed<any>;
+  newData: Hashed<any>;
+  hasDiffLenses: HasDiffLenses;
 }
 
 export class UpdatedDiff extends moduleConnect(LitElement) {
-
   logger = new Logger('EVEES-DIFF');
 
   @property({ attribute: false })
@@ -31,13 +30,11 @@ export class UpdatedDiff extends moduleConnect(LitElement) {
   nodes: Dictionary<NodeDiff> = {};
 
   protected client: ApolloClient<any> | undefined = undefined;
-  protected discovery: DiscoveryService | undefined = undefined;
   protected recognizer: PatternRecognizer | undefined = undefined;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', { updates: this.updates });
     this.client = this.request(ApolloClientModule.bindings.Client);
-    this.discovery = this.request(DiscoveryModule.bindings.DiscoveryService);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     this.loadNodes();
@@ -57,19 +54,21 @@ export class UpdatedDiff extends moduleConnect(LitElement) {
   }
 
   getPatternOfObject<T>(object: object, patternName: string): T {
-    const recognizer = this.recognizer as PatternRecognizer
+    const recognizer = this.recognizer as PatternRecognizer;
     const pattern: T | undefined = recognizer
       .recognize(object)
       .find(prop => !!(prop as T)[patternName]);
 
-    if (!pattern) throw new Error(`No "${patternName}" pattern registered for object ${JSON.stringify(object)}`);
+    if (!pattern)
+      throw new Error(
+        `No "${patternName}" pattern registered for object ${JSON.stringify(object)}`
+      );
     return pattern;
   }
 
-  async loadUpdate(update: UpdateRequest) : Promise<void> {
+  async loadUpdate(update: UpdateRequest): Promise<void> {
     const client = this.client as ApolloClient<any>;
-    const discovery = this.discovery as DiscoveryService;
-    
+
     const resultNew = await client.query({
       query: gql`
       {
@@ -83,9 +82,9 @@ export class UpdatedDiff extends moduleConnect(LitElement) {
         }
       }`
     });
-    
+
     const newDataId = resultNew.data.entity.data.id;
-    const newData = await discovery.get(newDataId);
+    const newData = await loadEntity(client, newDataId);
 
     if (!newData) throw new Error('data undefined');
 
@@ -102,9 +101,9 @@ export class UpdatedDiff extends moduleConnect(LitElement) {
         }
       }`
     });
-    
+
     const oldDataId = resultOld.data.entity.data.id;
-    const oldData = await discovery.get(oldDataId);
+    const oldData = await loadEntity(client, oldDataId);
 
     if (!oldData) throw new Error('data undefined');
 
@@ -112,19 +111,19 @@ export class UpdatedDiff extends moduleConnect(LitElement) {
     if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
 
     const node: NodeDiff = {
-      toRef: update.perspectiveId, 
-      fromRef: update.fromPerspectiveId, 
+      toRef: update.perspectiveId,
+      fromRef: update.fromPerspectiveId,
       newData,
       oldData,
       hasDiffLenses
-    }
-    
-    if (LOGINFO) this.logger.log('loadNode()', {update, node});
+    };
+
+    if (LOGINFO) this.logger.log('loadNode()', { update, node });
     this.nodes[update.perspectiveId] = node;
   }
 
   renderUpdatedDiff(ref: string) {
-    // TODO: review if old data needs to be 
+    // TODO: review if old data needs to be
     const node = this.nodes[ref];
 
     const nodeLense = node.hasDiffLenses.diffLenses()[0];
@@ -136,7 +135,7 @@ export class UpdatedDiff extends moduleConnect(LitElement) {
   }
 
   render() {
-    if (this.loading ) {
+    if (this.loading) {
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
