@@ -508,7 +508,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                     first-perspective-id=${this.firstRef as string}
                     perspective-id=${this.ref}
                     evee-color=${this.color()}
-                    default-authority=${this.defaultAuthority}
+                    default-authority=${this.defaultAuthority as string}
                   ></evees-info-page>
                 </wiki-home>
               `}

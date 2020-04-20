@@ -17,8 +17,8 @@ import '@material/mwc-tab-bar';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { AccessControlService, OwnerPermissions, SET_PUBLIC_READ } from '@uprtcl/access-control';
-import { Pattern, Creatable, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
-import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
+import { Pattern, Creatable, CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
+import { DiscoveryModule, EntityCache, DiscoveryService } from '@uprtcl/multiplatform';
 
 import { prettyAddress, prettyTime } from './support';
 
@@ -50,7 +50,7 @@ interface PerspectiveData {
   details: PerspectiveDetails;
   canWrite: Boolean;
   permissions: any;
-  data: { id: string };
+  data: Hashed<any>;
 }
 
 export class EveesInfoBase extends moduleConnect(LitElement) {
@@ -92,6 +92,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected cache: EntityCache | undefined = undefined;
   protected remotesConfig: RemotesConfig | undefined = undefined;
   protected defaultRemote: EveesRemote | undefined = undefined;
+  protected discovery: DiscoveryService | undefined = undefined;
 
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -100,9 +101,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
     this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
-    this.defaultRemote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(remote => remote.authority === this.defaultAuthority);
-
+    this.discovery = this.request(DiscoveryModule.bindings.DiscoveryService);
     
+    if (this.defaultAuthority !== undefined) {
+      this.defaultRemote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(remote => remote.authority === this.defaultAuthority);
+    }
+
     this.load();
   }
   
@@ -115,8 +119,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   
   async load() {
     if(!this.client) throw new Error('client undefined');
-    if (this.defaultRemote === undefined) throw new Error(`cant find default remote ${this.defaultAuthority}`);
-    
+    if(!this.discovery) throw new Error('discovery undefined');
+
     this.loading = true;
     const result = await this.client.query({
       query: gql`
@@ -156,7 +160,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
 
     const accessControl = result.data.entity._context.patterns.accessControl;
+    const data = await this.discovery.get(result.data.entity.head.data.id);
 
+    if (!data) throw new Error('data undefined');
+    
     this.perspectiveData = {
       id: result.data.entity.id,
       details: {
@@ -167,15 +174,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       perspective: result.data.entity.payload,
       canWrite: accessControl ? accessControl.canWrite : true,
       permissions: accessControl ? accessControl.permissions : undefined,
-      data: {
-        id: result.data.entity.head.data.id
-      }
+      data
     };
 
     this.publicRead = this.perspectiveData.permissions.publicRead !== undefined ? this.perspectiveData.permissions.publicRead : true;
   
     this.logger.info('load', { perspectiveData: this.perspectiveData });
-    this.isLogged = this.defaultRemote.userId !== undefined;
+    this.isLogged = this.defaultRemote !== undefined ? (this.defaultRemote.userId !== undefined) : false;
 
     this.reload();
 
@@ -592,11 +597,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   renderInfo() {
     return html`
       <div class="perspective-details">
-        <p class="summary">
-          This Evee was created by ${prettyAddress(this.perspectiveData.perspective.creatorId)}
-          ${prettyTime(this.perspectiveData.perspective.timestamp)}
-        </p>
-
         <div class="technical-details">
           <div class="card-container">
             <div class="card tech-card">
@@ -618,8 +618,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
                   <td class="prop-value">${this.perspectiveData.details.headId}</td>
                 </tr>
                 <tr>
-                  <td class="prop-name">data:</td>
+                  <td class="prop-name">data id:</td>
                   <td class="prop-value">${this.perspectiveData.data.id}</td>
+                </tr>
+                <tr>
+                  <td class="prop-name">data:</td>
+                  <td class="prop-value">${JSON.stringify(this.perspectiveData.data.object)}</td>
                 </tr>
               </table>
             </div>

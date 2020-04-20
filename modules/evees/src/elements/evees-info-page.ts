@@ -272,6 +272,16 @@ export class EveesInfoPage extends EveesInfoBase {
               </div>
             </div>` : ''}
 
+          <div class="section">
+            <div class="section-header">
+              Evee Info
+            </div>
+            <div class="section-content info-text">
+              ${this.renderInfo()}
+            </div>
+          </div>
+          
+
         </div>
       </div>`;
   }
