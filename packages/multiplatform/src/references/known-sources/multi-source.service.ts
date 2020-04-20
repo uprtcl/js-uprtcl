@@ -116,6 +116,7 @@ export class MultiSourceService {
               patterns {
                 links {
                   id
+                  __typename
                 }
               }
             }
@@ -126,11 +127,13 @@ export class MultiSourceService {
 
         const linksResult = result.data.entity._context.patterns.links;
         if (linksResult) {
-          const links = linksResult.map(l => l.id);
-
           // Discover the known sources from the links
-          const linksPromises = links.map(link =>
-            discoverKnownSources(this.localKnownSources)(link, source as KnownSourcesSource)
+          const linksPromises = linksResult.map(link =>
+            discoverKnownSources(this.localKnownSources)(
+              link.id,
+              link.type,
+              source as KnownSourcesSource
+            )
           );
           await Promise.all(linksPromises);
         }
