@@ -36,17 +36,26 @@ export class KnownSourcesApollo implements KnownSourcesService {
       data: {
         entity: {
           id: hash,
+          __typename: typename,
           _context: {
-            __typename: 'EntityContext',
             casID: sources[0]
           }
         }
       }
     };
-    if (typename) {
-      entity.data.entity['__typename'] = typename;
-    }
-    this.client.writeData(entity);
+
+    this.client.writeQuery({
+      query: gql`{
+        entity(ref: "${hash}") {
+          id
+          __typename
+          _context {
+            casID
+          }
+        }
+      }`,
+      data: entity
+    });
   }
 
   removeKnownSource(hash: string, casID: string): Promise<void> {

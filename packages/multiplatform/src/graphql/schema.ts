@@ -11,6 +11,6 @@ export const discoveryTypeDefs: DocumentNode = gql`
   directive @source(casID: String!) on FIELD_DEFINITION
 
   extend type Query {
-    entity(ref: ID!): Entity! @discover
+    entity(ref: ID!): Entity @discover
   }
 `;

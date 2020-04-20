@@ -32,7 +32,6 @@ export async function loadEntity<T>(
     {
       entity(ref: "${entityRef}") {
         id
-        
         _context {
           object
           casID

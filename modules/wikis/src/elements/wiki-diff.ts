@@ -43,7 +43,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
       const result = await client.query({
         query: gql`
           {
-            entity(id: "${ref}") {
+            entity(ref: "${ref}") {
               id
               _context {
                 patterns {

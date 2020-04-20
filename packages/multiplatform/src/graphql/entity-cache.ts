@@ -29,32 +29,28 @@ export class EntityCache {
   }
 
   cacheEntity(entity: Entity<any>): void {
-    const patterns = this.recognizer.recognize(entity);
-    const typedEntity = patterns.find(p => p.type);
+    const type = this.recognizer.recognizeType(entity);
 
-    if (!typedEntity) {
-      throw new Error(`No pattern found to recognize entity ${JSON.stringify(entity)}`);
-    }
-
-    const name = typedEntity.type;
-
-    this.client.cache.writeQuery({
+    this.client.writeQuery({
       query: gql`{
         entity(ref: "${entity.id}") {
+          __typename
           id
           _context {
             object
+            casID
           }
         }
       }`,
 
       data: {
         entity: {
-          __typename: name,
+          __typename: type,
           id: entity.id,
           _context: {
             __typename: 'EntityContext',
-            object: entity.object
+            object: entity.object,
+            casID: entity.casID
           }
         }
       }

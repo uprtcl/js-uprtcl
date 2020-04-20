@@ -42,12 +42,12 @@ describe('basic GraphQl entity', () => {
       query: gql`
         {
           entity(ref: "QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo") {
-            __typename
             id
             _context {
               casID
               object
               patterns {
+                __typename
                 text
               }
             }
@@ -79,6 +79,7 @@ describe('basic GraphQl entity', () => {
             __typename
             id
             _context {
+              __typename
               casID
               object
               patterns {

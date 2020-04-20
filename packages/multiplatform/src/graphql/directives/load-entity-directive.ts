@@ -36,10 +36,6 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
   protected async loadEntity(entityId: string, container: Container): Promise<any | undefined> {
     const entityCache: EntityCache = container.get(DiscoveryBindings.EntityCache);
-    const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
-    const localKnownSources: KnownSourcesService = container.get(
-      DiscoveryBindings.LocalKnownSources
-    );
 
     const cachedEntity = entityCache.getCachedEntity(entityId);
 
@@ -51,12 +47,6 @@ export abstract class LoadEntityDirective extends NamedDirective {
       const entity: Entity<any> | undefined = await this.resolveEntity(container, entityId);
 
       if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
-
-      const type = recognizer.recognizeType(entity);
-
-      if (entity.casID) {
-        await localKnownSources.addKnownSources(entityId, [entity.casID], type);
-      }
 
       entityCache.cacheEntity(entity);
 

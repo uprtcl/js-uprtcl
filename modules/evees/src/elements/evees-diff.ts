@@ -73,7 +73,7 @@ export class UpdatedDiff extends moduleConnect(LitElement) {
     const resultNew = await client.query({
       query: gql`
       {
-        entity(id: "${update.newHeadId}") {
+        entity(ref: "${update.newHeadId}") {
           id 
           ... on Commit {
             data {
@@ -92,7 +92,7 @@ export class UpdatedDiff extends moduleConnect(LitElement) {
     const resultOld = await client.query({
       query: gql`
       {
-        entity(id: "${update.oldHeadId}") {
+        entity(ref: "${update.oldHeadId}") {
           id 
           ... on Commit {
             data {

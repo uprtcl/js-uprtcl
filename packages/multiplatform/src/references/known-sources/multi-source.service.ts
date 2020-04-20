@@ -131,7 +131,7 @@ export class MultiSourceService {
           const linksPromises = linksResult.map(link =>
             discoverKnownSources(this.localKnownSources)(
               link.id,
-              link.type,
+              link.__typename,
               source as KnownSourcesSource
             )
           );

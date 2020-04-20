@@ -59,7 +59,6 @@ export class ApolloClientModule extends MicroModule {
         if (object.__typename === 'Context') return `${object.__typename}:${object.id}`;
         return object.id || null;
       },
-      addTypename: false,
       cacheRedirects: {
         Query: {
           entity: (_, { ref }, { getCacheKey }) => getCacheKey({ __typename: '', id: ref }),
