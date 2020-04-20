@@ -9,7 +9,9 @@ export {
   PerspectiveDetails,
   RemotesConfig,
   UprtclAction,
-  NodeActions
+  NodeActions,
+  HasDiffLenses,
+  DiffLens
 } from './types';
 
 /** Services interfaces */

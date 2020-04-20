@@ -27,10 +27,18 @@ export class HttpEthAuthProvider extends HttpProvider {
     
     /** keep a copy of the current ethConnection account */
     this.account = this.ethConnection.accounts[0].toLocaleLowerCase();
+    
+    const currentUserId = this.userId;
+    
+    if (currentUserId !== undefined) {
+      if (currentUserId !== this.account) {
+        await this.logout();
+      }
+    }
 
     /** chech if HTTP authToken is available */
     const currentToken = this.connection.authToken;
-    
+
     if (currentToken !== undefined) {
       try {
         /** if there is a token, check if the token is valid */

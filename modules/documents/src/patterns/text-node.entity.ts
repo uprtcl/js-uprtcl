@@ -6,13 +6,10 @@ import {
   Pattern,
   Hashed,
   Hashable,
-  Creatable,
   HasChildren,
   Entity,
   HasTitle,
-  Newable
 } from '@uprtcl/cortex';
-import { DiscoveryService, DiscoveryModule, TaskQueue, Store } from '@uprtcl/multiplatform';
 import {
   Mergeable,
   MergeStrategy,
@@ -23,10 +20,10 @@ import {
 } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { NodeActions, HasDiffLenses, DiffLens } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocNodeEventsHandlers, DocNode } from '../types';
 import { HasDocNodeLenses, DocNodeLens } from './document-patterns'; 
-import { NodeActions } from '@uprtcl/evees';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -75,7 +72,7 @@ export class TextNodeEntity implements Entity {
 }
 
 @injectable()
-export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDocNodeLenses, HasChildren, Mergeable {
+export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDocNodeLenses, HasDiffLenses, HasChildren, Mergeable {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
   ) {
@@ -116,6 +113,24 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
             >
               ${lensContent}
             </documents-text-node>
+          `;
+        }
+      }
+    ];
+  };
+
+  diffLenses = (node?: TextNode): DiffLens[] => {
+    return [
+      {
+        name: 'documents:document-diff',
+        type: 'diff',
+        render: (newEntity: TextNode, oldEntity: TextNode) => {
+          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
+          return html`
+            <documents-text-node-diff
+              .newData=${newEntity}
+              .oldData=${oldEntity}>
+            </documents-text-node-diff>
           `;
         }
       }

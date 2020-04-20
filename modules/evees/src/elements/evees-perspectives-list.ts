@@ -429,7 +429,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       <div class="list-row">
         <div class="perspective-title">
           <mwc-list-item
-            graphic="small"          >
+            @click=${() => this.showProposalChanges(proposal)}
+            graphic="small">
             <div
               slot="graphic"
               class="perspective-mark"
@@ -445,12 +446,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           </mwc-list-item>
         </div>
         <div class="perspective-action">
-          <mwc-button
-            icon="compare"
-            class="merge-button"
-            @click=${() => this.showProposalChanges(proposal)}
-            label='changes'
-          ></mwc-button>
           <mwc-button
             icon="call_merge"
             class="merge-button"
@@ -497,7 +492,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     return html`
       <div class="modal">
         <div class="modal-content">
-          <evees-update-diff head-updates=${JSON.stringify(this.updatesForDiff)}></evees-update-diff>
+          <div class="diff-container">
+            <evees-update-diff .updates=${this.updatesForDiff as UpdateRequest[]}></evees-update-diff>
+          </div>
           <mwc-button
             @click=${() => this.showDiff = false}
             slot="primaryAction"
@@ -554,9 +551,16 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         justify-content: center;
       }
       .modal-content {
+        max-width: 90vw;
+        margin: 0 auto;
+        min-width: 60vw;
+        padding: 3vw 3vw;
         background-color: white;
         border-radius: 4px;
         box-shadow: 10px 10px 67px 0px rgba(0,0,0,0.75);
+      }
+      .diff-container {
+        margin-bottom: 3vw;
       }
 
       .loading-container {
