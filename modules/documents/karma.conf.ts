@@ -29,7 +29,9 @@ module.exports = config =>
       },
       resolve: {
         alias: {
+          '@material/mwc-button': path.resolve(__dirname, './node_modules/@material/mwc-button'),
           '@material/mwc-icon': path.resolve(__dirname, './node_modules/@material/mwc-icon'),
+          '@material/mwc-dialog': path.resolve(__dirname, './node_modules/@material/mwc-dialog'),
           'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
           'lit-element': path.resolve(__dirname, './node_modules/lit-element'),
           'apollo-boost': path.resolve(__dirname, './node_modules/apollo-boost'),
