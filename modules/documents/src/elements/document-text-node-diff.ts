@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Hashed } from '@uprtcl/cortex';
+import { Entity } from '@uprtcl/cortex';
 
 import { TextNode } from '../types';
 
@@ -12,10 +12,10 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ attribute: false })
-  newData?: Hashed<TextNode>;
+  newData?: Entity<TextNode>;
 
   @property({ attribute: false })
-  oldData?: Hashed<TextNode>;
+  oldData?: Entity<TextNode>;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', { newData: this.newData, oldData: this.oldData });

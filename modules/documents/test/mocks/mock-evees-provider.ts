@@ -15,6 +15,16 @@ export class MockEveesProvider implements EveesRemote {
     public details: Dictionary<PerspectiveDetails> = {}
   ) {}
   
+  isLogged(): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
+  login(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  logout(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  
   create(object: object, hash?: string): Promise<string> {
     throw new Error('Method not implemented.');
   }
