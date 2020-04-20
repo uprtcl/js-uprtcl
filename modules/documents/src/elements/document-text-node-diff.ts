@@ -12,10 +12,10 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ attribute: false })
-  newData?: TextNode;
+  newData?: Hashed<TextNode>;
 
   @property({ attribute: false })
-  oldData?: TextNode;
+  oldData?: Hashed<TextNode>;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', { newData: this.newData, oldData: this.oldData });
@@ -29,8 +29,8 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
     }
 
     return html`
-      <div>${this.newData.text}</div>
-      <div>${this.oldData.text}</div>
+      <div>${this.newData.id} - ${this.newData.object.text}</div>
+      <div>${this.oldData.id} - ${this.oldData.object.text}</div>
     `;
   }
 

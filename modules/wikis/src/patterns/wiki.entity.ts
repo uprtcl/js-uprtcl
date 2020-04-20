@@ -30,7 +30,7 @@ export class WikiEntity implements Entity {
 }
 
 @injectable()
-export class WikiLinks extends WikiEntity implements HasChildren, Mergeable, HasDiffLenses {
+export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
 
   recognize(object: object): boolean {
     return propertyOrder.every(p => object.hasOwnProperty(p));
@@ -76,7 +76,7 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable, Has
 }
 
 @injectable()
-export class WikiCommon extends WikiEntity implements HasLenses {
+export class WikiCommon extends WikiEntity implements HasLenses, HasDiffLenses {
   
   lenses = (wiki: Hashed<Wiki>): Lens[] => {
     return [

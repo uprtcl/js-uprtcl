@@ -85,9 +85,9 @@ export class WikiDiff extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
-  renderPage(page: PageDetails) {
+  renderPage(page: PageDetails, classes: string[]) {
     return html`
-      <div class="page-row">
+      <div class=${['page-row'].concat(classes).join(' ')}>
         ${page.title}
         <!-- <cortex-entity hash=${page.ref}></cortex-entity> -->
       </div>
@@ -108,13 +108,13 @@ export class WikiDiff extends moduleConnect(LitElement) {
       ${newPages.length > 0 ? html`
         <div class="pages-list">
           <div class="page-list-title">Pages Added</div>
-          ${newPages.map(page => this.renderPage(page))}
+          ${newPages.map(page => this.renderPage(page, ['page-added']))}
         </div>` : ''}
 
       ${deletedPages.length > 0 ? html`
         <div class="pages-list">
           <div class="page-list-title">Pages Removed</div>
-          ${deletedPages.map(page => this.renderPage(page))}
+          ${deletedPages.map(page => this.renderPage(page, ['page-removed']))}
         </div>` : ''}
     `;
   }
@@ -131,9 +131,14 @@ export class WikiDiff extends moduleConnect(LitElement) {
       }
       .page-row {
         padding: 2vw;
-        background-color: #abdaab;
         border-radius: 3px;
-        font-size: 20px;
+        margin-bottom: 16px;
+      }
+      .page-added {
+        background-color: #abdaab;
+      }
+      .page-removed {
+        background-color: #dab6ab;
       }
     `;
   }

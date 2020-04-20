@@ -294,7 +294,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async splicePages(pages: any[], index: number, count: number) {
-    if (!this.wiki) return { entity: undefined, removed: [] };
+    if (!this.wiki) throw new Error('wiki undefined');
 
     const getPages = pages.map((page) => {
       if (typeof page !== 'string') {
@@ -336,7 +336,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async movePage(fromIndex: number, toIndex: number) {
     const { removed } = await this.splicePages([], fromIndex, 1);
-    await this.splicePages(removed as string[], fromIndex, 1);
+    const { entity } = await this.splicePages(removed as string[], fromIndex, 1);
+
+    await this.updateContent(entity);
     
     if (this.selectedPageIx === undefined) return;
 
@@ -352,8 +354,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async removePage(pageIndex: number) {
-    this.splicePages([], pageIndex, 1);
-
+    const { entity } = await this.splicePages([], pageIndex, 1);
+    await this.updateContent(entity);
+    
     if (this.selectedPageIx === undefined) return;
 
     /** this page was removed */

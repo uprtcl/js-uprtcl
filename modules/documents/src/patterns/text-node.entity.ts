@@ -72,7 +72,7 @@ export class TextNodeEntity implements Entity {
 }
 
 @injectable()
-export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDocNodeLenses, HasDiffLenses, HasChildren, Mergeable {
+export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDocNodeLenses, HasChildren, Mergeable {
   constructor(
     @inject(EveesModule.bindings.Hashed) protected hashedPattern: Pattern & Hashable<any>
   ) {
@@ -113,24 +113,6 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
             >
               ${lensContent}
             </documents-text-node>
-          `;
-        }
-      }
-    ];
-  };
-
-  diffLenses = (node?: TextNode): DiffLens[] => {
-    return [
-      {
-        name: 'documents:document-diff',
-        type: 'diff',
-        render: (newEntity: TextNode, oldEntity: TextNode) => {
-          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
-          return html`
-            <documents-text-node-diff
-              .newData=${newEntity}
-              .oldData=${oldEntity}>
-            </documents-text-node-diff>
           `;
         }
       }
@@ -206,6 +188,24 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
 }
 
 @injectable()
-export class TextNodeTitle extends TextNodeEntity implements HasTitle {
+export class TextNodeTitle extends TextNodeEntity implements HasTitle, HasDiffLenses {
   title = (textNode: Hashed<TextNode>) => textNode.object.text;
+
+  diffLenses = (node?: TextNode): DiffLens[] => {
+    return [
+      {
+        name: 'documents:document-diff',
+        type: 'diff',
+        render: (newEntity: TextNode, oldEntity: TextNode) => {
+          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
+          return html`
+            <documents-text-node-diff
+              .newData=${newEntity}
+              .oldData=${oldEntity}>
+            </documents-text-node-diff>
+          `;
+        }
+      }
+    ];
+  };
 }
