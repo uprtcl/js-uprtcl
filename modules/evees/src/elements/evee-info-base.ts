@@ -17,7 +17,7 @@ import '@material/mwc-tab-bar';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { AccessControlService, OwnerPermissions, SET_PUBLIC_READ } from '@uprtcl/access-control';
-import { Pattern, Create, Signed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { Pattern, Create, Signed, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
 
 import { prettyAddress, prettyTime } from './support';
@@ -57,7 +57,7 @@ interface PerspectiveData {
   details: PerspectiveDetails;
   canWrite: Boolean;
   permissions: any;
-  data: Hashed<any>;
+  data: Entity<any>;
 }
 
 export class EveesInfoBase extends moduleConnect(LitElement) {

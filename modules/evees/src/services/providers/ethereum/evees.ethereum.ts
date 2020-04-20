@@ -4,7 +4,7 @@ import {
   EthereumContractOptions,
   EthereumContract
 } from '@uprtcl/ethereum-provider';
-import { IpfsStore, sortObject } from '@uprtcl/ipfs-provider';
+import { IpfsStore, sortObject, IpfsConnectionOptions } from '@uprtcl/ipfs-provider';
 import { CidConfig } from '@uprtcl/multiplatform';
 
 import * as UprtclRoot from './contracts-json/UprtclRoot.json';
