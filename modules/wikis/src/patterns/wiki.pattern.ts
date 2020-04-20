@@ -91,7 +91,7 @@ export class WikiCommon implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity
     ];
   };
 
-  diffLenses = (node?: Entity<Wiki>): DiffLens[] => {
+  diffLenses = (): DiffLens[] => {
     return [
       {
         name: 'wikis:wiki-diff',

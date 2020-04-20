@@ -1,6 +1,6 @@
 import { TemplateResult } from 'lit-element';
 
-import { Entity } from '@uprtcl/cortex';
+import { Entity, Behaviour } from '@uprtcl/cortex';
 import { CASSource } from '@uprtcl/multiplatform';
 
 import { EveesRemote } from './services/evees.remote';
@@ -85,6 +85,7 @@ export interface DiffLens {
   render: (newEntity: any, oldEntity: any) => TemplateResult;
   type?: string;
 }
-export interface HasDiffLenses {
-  diffLenses: (newEntity: any, oldEntity: any) => DiffLens[];
+
+export interface HasDiffLenses<T = any> extends Behaviour<T> {
+  diffLenses: () => DiffLens[];
 }
