@@ -3,7 +3,7 @@ import { injectable, inject } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Hashed, Hashable, Entity, HasChildren } from '@uprtcl/cortex';
-import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction } from '@uprtcl/evees';
+import { Mergeable, EveesModule, MergeStrategy, mergeStrings, UprtclAction, DiffLens, HasDiffLenses } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
@@ -76,7 +76,8 @@ export class WikiLinks extends WikiEntity implements HasChildren, Mergeable {
 }
 
 @injectable()
-export class WikiCommon extends WikiEntity implements HasLenses {
+export class WikiCommon extends WikiEntity implements HasLenses, HasDiffLenses {
+  
   lenses = (wiki: Hashed<Wiki>): Lens[] => {
     return [
       {
@@ -93,6 +94,24 @@ export class WikiCommon extends WikiEntity implements HasLenses {
             >
               ${lensContent}
             </wiki-drawer>
+          `;
+        }
+      }
+    ];
+  };
+
+  diffLenses = (node?: Hashed<Wiki>): DiffLens[] => {
+    return [
+      {
+        name: 'wikis:wiki-diff',
+        type: 'diff',
+        render: (newEntity: Hashed<Wiki>, oldEntity: Hashed<Wiki>) => {
+          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
+          return html`
+            <wiki-diff
+              .newData=${newEntity}
+              .oldData=${oldEntity}>
+            </wiki-diff>
           `;
         }
       }

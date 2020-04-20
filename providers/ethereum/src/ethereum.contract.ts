@@ -1,7 +1,7 @@
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 
-import { Authority } from '@uprtcl/multiplatform';
+import { Authority } from '@uprtcl/access-control';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EthereumConnection } from './ethereum.connection';

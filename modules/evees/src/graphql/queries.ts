@@ -117,12 +117,16 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
 export const CREATE_PROPOSAL: DocumentNode = gql`
   mutation AddProposal(
     $toPerspectiveId: ID!
-    $fromPerspectiveId: ID!
+    $fromPerspectiveId: ID!,
+    $toHeadId: ID!
+    $fromHeadId: ID!
     $updateRequests: [HeadUpdateInput!]
   ) {
     addProposal(
       toPerspectiveId: $toPerspectiveId
       fromPerspectiveId: $fromPerspectiveId
+      toHeadId: $toHeadId
+      fromHeadId: $fromHeadId
       updateRequests: $updateRequests
     ) {
       id

@@ -1,11 +1,11 @@
 import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
-import { Authority } from '@uprtcl/multiplatform';
 
 import { Permissions } from '../properties/permissions';
 import { Updatable } from '../properties/updatable';
 import { AccessControlService } from '../services/access-control.service';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
+import { Authority } from '../types/authority';
 
 export const accessControlResolvers = {
   Mutation: {

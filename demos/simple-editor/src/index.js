@@ -1,7 +1,6 @@
 import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { LensesModule, LensSelectorPlugin, ActionsPlugin } from '@uprtcl/lenses';
 import { DocumentsModule } from '@uprtcl/documents';
-import { DocumentsFieldsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
@@ -28,7 +27,6 @@ import { SimpleWiki } from './simple-wiki';
   const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
 
   const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
-
   const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
 
   const httpConnection = new HttpConnection();

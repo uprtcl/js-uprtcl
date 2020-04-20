@@ -1,4 +1,4 @@
-import { Authority } from '@uprtcl/multiplatform';
+import { Authority } from '@uprtcl/access-control';
 
 import { HttpConnection, PostResult } from './http.connection';
 
@@ -9,7 +9,7 @@ export interface HttpProviderOptions {
 
 export class HttpProvider implements Authority {
   constructor(protected options: HttpProviderOptions, protected connection: HttpConnection) {}
-
+  
   get authority(): string {
     return `http:${this.options.apiId}:${this.options.host}`;
   }
@@ -41,4 +41,15 @@ export class HttpProvider implements Authority {
   httpDelete(url: string): Promise<PostResult> {
     return this.connection.delete(this.options.host + url);
   }
+
+  isLogged(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  login(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  logout(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
 }

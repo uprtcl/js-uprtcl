@@ -2,7 +2,6 @@
 import 'reflect-metadata';
 
 /** Services */
-export { Authority } from './types/authority';
 export { Ready } from './types/ready';
 export { Source } from './types/source';
 export { Store } from './types/store';

@@ -1,6 +1,8 @@
 // Required by inversify
 import 'reflect-metadata';
 
+export { Authority } from './types/authority';
+
 /** Access Control */
 export { Updatable } from './properties/updatable';
 export { Permissions } from './properties/permissions';
@@ -17,4 +19,4 @@ export {
   BasicAdminAccessControlService
 } from './services/basic-admin-control.service';
 
-export { SET_CAN_WRITE } from './graphql/queries';
+export { SET_CAN_WRITE, SET_PUBLIC_READ } from './graphql/queries';

@@ -30,6 +30,7 @@ import { EveesInfoPage } from './elements/evees-info-page';
 import { ItemWithMenu } from './elements/common-ui/evees-list-item';
 import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
 import { RecursiveContextMergeStrategy } from './uprtcl-evees';
+import { UpdatedDiff } from './elements/evees-diff';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -89,12 +90,18 @@ export class EveesModule extends MicroModule {
     container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
     container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
 
+    this.eveesProviders.map((evees) => ({
+      symbol: AccessControlModule.bindings.Authority,
+      source: evees,
+    }))
+
     customElements.define('evees-commit-history', CommitHistory);
     customElements.define('evees-perspectives-list', PerspectivesList);
     customElements.define('evees-info-popper', EveesInfoPopper);
     customElements.define('evees-info-page', EveesInfoPage);
     customElements.define('evees-list-item', ItemWithMenu);
     customElements.define('evees-options-menu', EveesOptionsMenu);
+    customElements.define('evees-update-diff', UpdatedDiff)
   }
 
   submodules = [

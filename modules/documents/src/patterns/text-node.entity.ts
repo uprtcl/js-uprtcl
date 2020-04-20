@@ -6,13 +6,10 @@ import {
   Pattern,
   Hashed,
   Hashable,
-  Creatable,
   HasChildren,
   Entity,
   HasTitle,
-  Newable
 } from '@uprtcl/cortex';
-import { DiscoveryService, DiscoveryModule, TaskQueue, Store } from '@uprtcl/multiplatform';
 import {
   Mergeable,
   MergeStrategy,
@@ -23,10 +20,10 @@ import {
 } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { NodeActions, HasDiffLenses, DiffLens } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocNodeEventsHandlers, DocNode } from '../types';
 import { HasDocNodeLenses, DocNodeLens } from './document-patterns'; 
-import { NodeActions } from '@uprtcl/evees';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -191,6 +188,24 @@ export class TextNodePatterns extends TextNodeEntity implements HasLenses, HasDo
 }
 
 @injectable()
-export class TextNodeTitle extends TextNodeEntity implements HasTitle {
+export class TextNodeTitle extends TextNodeEntity implements HasTitle, HasDiffLenses {
   title = (textNode: Hashed<TextNode>) => textNode.object.text;
+
+  diffLenses = (node?: TextNode): DiffLens[] => {
+    return [
+      {
+        name: 'documents:document-diff',
+        type: 'diff',
+        render: (newEntity: TextNode, oldEntity: TextNode) => {
+          // logger.log('lenses: documents:document - render()', { node, lensContent, context });
+          return html`
+            <documents-text-node-diff
+              .newData=${newEntity}
+              .oldData=${oldEntity}>
+            </documents-text-node-diff>
+          `;
+        }
+      }
+    ];
+  };
 }
