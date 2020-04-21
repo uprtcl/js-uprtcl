@@ -36,10 +36,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
 
   @property({ type: String })
-  ref: string | undefined = undefined;
+  ref!: string;
+
+  @property({ type: String })
+  editable: string = 'true';
 
   @property({ type: Object, attribute: false })
-  doc: DocNode | undefined = undefined;
+  doc!: DocNode;
 
   @property({ type: Boolean, attribute: false })
   docHasChanges: Boolean = false;
@@ -111,10 +114,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     let entityType: string = recognizer.recognizeType(entity);
     let editable = false;
-    let authority: string | undefined = undefined;
-    let context: string | undefined = undefined;
-    let dataId: string | undefined = undefined;
-    let headId: string | undefined = undefined;
+    let authority!: string;
+    let context!: string;
+    let dataId!: string;
+    let headId!: string;
 
     if (entityType === EveesModule.bindings.PerspectiveType) {
       const result = await this.client.query({
@@ -153,32 +156,38 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       context = result.data.entity.context.id;
       dataId = result.data.entity.head.data.id;
       headId = result.data.entity.head.id;
-    }
-
-    if (entityType === 'Commit') {
-      if (!parent) throw new Error('Commit must have a parent');
-
-      const result = await this.client.query({
-        query: gql`
-        {
-          entity(ref: "${ref}") {
-            id
-            ... on Commit {
-              data {
-                id
+    } else {
+      if (entityType === 'Commit') {
+        if (!parent) throw new Error('Commit must have a parent');
+  
+        const result = await this.client.query({
+          query: gql`
+          {
+            entity(ref: "${ref}") {
+              id
+              ... on Commit {
+                data {
+                  id
+                }
               }
             }
-          }
-        }`
-      });
-
-      editable = parent.editable;
-      authority = parent.authority;
-      dataId = result.data.entity.data.id;
-      headId = this.ref;
+          }`
+        });
+  
+        editable = parent.editable;
+        authority = parent.authority;
+        dataId = result.data.entity.data.id;
+        headId = this.ref;
+      } else {
+        entityType = 'Data';
+        editable = false;
+        authority = '';
+        dataId = this.ref;
+        headId = '';
+      }
     }
 
-    if (!dataId || !entityType || !authority) throw Error(`data not loaded for ref ${this.ref}`);
+    if (!dataId || !entityType) throw Error(`data not loaded for ref ${this.ref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
     const data: Entity<any> | undefined = await loadEntity(this.client, dataId);
@@ -193,6 +202,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!hasChildren) throw Error('hasChildren undefined');
     if (!hasDocNodeLenses) throw Error('hasDocNodeLenses undefined');
+
+    /** disable editable */
+    if (this.editable !== 'true') {
+      editable = false;
+    }
 
     const node: DocNode = {
       ref,

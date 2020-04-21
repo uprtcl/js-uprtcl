@@ -29,12 +29,40 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
     }
 
     return html`
-      <div>${this.newData.id} - ${this.newData.object.text}</div>
-      <div>${this.oldData.id} - ${this.oldData.object.text}</div>
+      <div class="page-edited-title">Page Updated</div>
+      <div class="document-container old-page">
+        <documents-editor ref=${this.oldData.id}></documents-editor>
+      </div>
+      <div class="document-container new-page">
+        <documents-editor ref=${this.newData.id}></documents-editor>
+      </div>
     `;
   }
 
   static get styles() {
-    return css``;
+    return css`
+      :host {
+        text-align: left;
+      }
+      .page-edited-title {
+        font-weight: bold;
+        margin-bottom: 9px;
+        color: gray;
+      }
+      .document-container {
+        padding: 2vw;
+        border-radius: 3px;
+        margin-bottom: 16px;
+      }
+      .editor-container {
+        border-radius: 3px;
+      }
+      .new-page {
+        background-color: #abdaab;
+      }
+      .old-page {
+        background-color: #dab6ab;
+      }
+    `;
   }
 }

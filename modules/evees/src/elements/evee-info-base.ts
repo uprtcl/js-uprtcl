@@ -32,7 +32,8 @@ import {
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
   CREATE_AND_INIT_PERSPECTIVE_ACTION,
-  UPDATE_HEAD_ACTION
+  UPDATE_HEAD_ACTION,
+  Commit
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
@@ -57,6 +58,7 @@ interface PerspectiveData {
   details: PerspectiveDetails;
   canWrite: Boolean;
   permissions: any;
+  head: Entity<Commit>;
   data: Entity<any>;
 }
 
@@ -165,9 +167,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const accessControl = result.data.entity._context.patterns.accessControl;
     const data = await loadEntity(this.client, result.data.entity.head.data.id);
+    const head = await loadEntity(this.client, result.data.entity.head.id) as Entity<Commit>;
 
     if (!data) throw new Error('data undefined');
-    
+    if (!head) throw new Error('head undefined');
+
     this.perspectiveData = {
       id: result.data.entity.id,
       details: {
@@ -178,6 +182,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       perspective: result.data.entity.payload,
       canWrite: accessControl ? accessControl.canWrite : true,
       permissions: accessControl ? accessControl.permissions : undefined,
+      head,
       data
     };
 
@@ -618,15 +623,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
                 </tr>
                 <tr>
                   <td class="prop-name">head:</td>
-                  <td class="prop-value">${this.perspectiveData.details.headId}</td>
-                </tr>
-                <tr>
-                  <td class="prop-name">data id:</td>
-                  <td class="prop-value">${this.perspectiveData.data.id}</td>
+                  <td class="prop-value">${JSON.stringify(this.perspectiveData.head)}</td>
                 </tr>
                 <tr>
                   <td class="prop-name">data:</td>
-                  <td class="prop-value">${JSON.stringify(this.perspectiveData.data.object)}</td>
+                  <td class="prop-value">${JSON.stringify(this.perspectiveData.data)}</td>
                 </tr>
               </table>
             </div>

@@ -46,13 +46,11 @@ export class WikiDiff extends moduleConnect(LitElement) {
             entity(ref: "${ref}") {
               id
               _context {
-                patterns {
-                  content {
-                    id
-                    _context {
-                      patterns {
-                        title
-                      }
+                content {
+                  id
+                  _context {
+                    patterns {
+                      title
                     }
                   }
                 }
@@ -63,7 +61,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
       return {
         ref,
-        title: result.data.entity._context.patterns.content._context.patterns.title
+        title: result.data.entity._context.content._context.patterns.title
       }
     });
 
@@ -88,8 +86,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
   renderPage(page: PageDetails, classes: string[]) {
     return html`
       <div class=${['page-row'].concat(classes).join(' ')}>
-        ${page.title}
-        <!-- <cortex-entity hash=${page.ref}></cortex-entity> -->
+        <documents-editor ref=${page.ref} editable="false"></documents-editor>
       </div>
     `;
   }
