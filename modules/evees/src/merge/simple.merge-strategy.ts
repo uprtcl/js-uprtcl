@@ -162,8 +162,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const newDatas: any[] = await Promise.all(datasPromises);
 
     const mergedData = await this.mergeData(
-      ancestorData.object,
-      newDatas.map(data => data.object),
+      ancestorData,
+      newDatas,
       config
     );
 

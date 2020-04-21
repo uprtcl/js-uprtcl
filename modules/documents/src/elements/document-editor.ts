@@ -83,7 +83,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const node = await this.loadNode(ref, parent, ix);
 
-    const loadChildren = node.hasChildren.getChildrenLinks(node.draft).map(
+    const loadChildren = node.hasChildren.getChildrenLinks({ id: '', object: node.draft }).map(
       async (child, ix): Promise<DocNode> => {
         return child !== undefined && child !== ''
           ? await this.loadNodeRec(child, ix, node)
@@ -95,7 +95,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     node.childrenNodes = await Promise.all(loadChildren);
 
     /** focus if top element */
-    if (this.doc && node.ref === this.doc.ref && node.editable) {
+    if ((node.ref === this.ref) && node.editable) {
       node.focused = true;
     }
 
@@ -268,9 +268,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     await Promise.all(persistChildren);
 
     /** set the children with the children refs (which were created above) */
-    node.draft = node.hasChildren.replaceChildrenLinks(node.draft)(
+    const {object} = node.hasChildren.replaceChildrenLinks({ id: '', object: node.draft })(
       node.childrenNodes.map(node => node.ref)
     );
+    node.draft = object;
 
     await this.persistNode(node);
   }
@@ -278,7 +279,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async persistNode(node: DocNode) {
     const isPlaceholder = node.ref === undefined || node.ref === '';
 
-    if (!isPlaceholder && node.data !== undefined && isEqual(node.data.object, node.draft)) {
+    if (!isPlaceholder && (node.data !== undefined) && isEqual(node.data.object, node.draft)) {
       /** nothing to persist here */
       return;
     }
@@ -382,7 +383,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     });
 
     /** inform the external world if top element */
-    if (this.doc && node.ref === this.doc.ref) {
+    if (this.doc && (node.ref === this.doc.ref)) {
       this.dispatchEvent(
         new ContentUpdatedEvent({
           bubbles: true,
@@ -430,13 +431,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     parent: DocNode,
     entityType: string
   ): DocNode {
+    
+    const draftForReco = { id: '', object: draft };
     const hasChildren = this.recognizer
-      .recognizeBehaviours(draft)
+      .recognizeBehaviours(draftForReco)
       .find(b => (b as HasChildren).getChildrenLinks);
+    
     const hasDocNodeLenses = this.recognizer
-      .recognizeBehaviours(draft)
+      .recognizeBehaviours(draftForReco)
       .find(b => (b as HasDocNodeLenses).docNodeLenses);
+    
     const context = `${parent.context}-${ix}-${Date.now()}`;
+
+    if (!hasChildren) throw new Error(`hasChildren not found for object ${JSON.stringify(draftForReco)}`);
+    if (!hasDocNodeLenses) throw new Error(`hasDocNodeLenses not found for object ${JSON.stringify(draftForReco)}`);
 
     return {
       draft,
@@ -463,7 +471,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   ): Promise<DocNode[]> {
     if (LOGINFO) this.logger.log('spliceChildren()', { node, elements, index, count });
 
-    const currentChildren = node.hasChildren.getChildrenLinks(node.draft);
+    const currentChildren = node.hasChildren.getChildrenLinks({ id: '', object: node.draft });
     index = index !== undefined ? index : currentChildren.length;
 
     /** create objects if elements is not an id */
@@ -504,7 +512,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       child.parent = node;
     });
 
-    node.draft = node.hasChildren.replaceChildrenLinks(node.draft)(newChildren);
+    const { object } = node.hasChildren.replaceChildrenLinks({ id: '', object: node.draft })(newChildren);
+    node.draft = object;
 
     return removed;
   }

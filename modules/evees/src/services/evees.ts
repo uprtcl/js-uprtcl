@@ -287,7 +287,7 @@ export class Evees {
     const newLinksNodeActions = await Promise.all(getLinksForks);
     const newLinks = newLinksNodeActions.map(node => node.new);
 
-    const newObject = this.replaceEntityChildren(data, newLinks);
+    const tempData = this.replaceEntityChildren(data, newLinks);
 
     const remote = this.eveesRemotes.find(r => r.authority === authority);
 
@@ -296,7 +296,7 @@ export class Evees {
 
     const store = this.remoteMap(remote, type);
 
-    const newData = await deriveEntity(newObject.object, store.cidConfig);
+    const newData = await deriveEntity(tempData.object, store.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,

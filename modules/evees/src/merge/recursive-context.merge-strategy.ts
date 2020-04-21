@@ -84,7 +84,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const dataObject = result.data.entity.head.data._context.object;
     const dataId = result.data.entity.head.data.id;
-    const data = { id: dataId, entity: dataObject };
+    const data = { id: dataId, object: dataObject };
 
     this.setPerspective(perspectiveId, context, to);
 
@@ -93,7 +93,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (hasChildren) {
-      const links = hasChildren.getChildrenLinks(dataObject);
+      const links = hasChildren.getChildrenLinks(data);
 
       const promises = links.map(async link => {
         const isPerspective = await this.isPattern(link, 'Perspective');
