@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/holochain-provider",
-  "version": "0.0.6-alpha.91",
+  "version": "0.0.6-alpha.10",
   "description": "_Prtcl provider wrappers around @holochain/hc-web-client",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@holochain/hc-web-client": "^0.5.0",
-    "@uprtcl/cortex": "^0.0.6-alpha.91",
-    "@uprtcl/micro-orchestrator": "^0.0.6-alpha.91",
-    "@uprtcl/multiplatform": "^0.0.6-alpha.91",
-    "@uprtcl/access-control": "^0.0.6-alpha.91",
+    "@uprtcl/access-control": "^0.0.6-alpha.10",
+    "@uprtcl/cortex": "^0.0.6-alpha.10",
+    "@uprtcl/micro-orchestrator": "^0.0.6-alpha.10",
+    "@uprtcl/multiplatform": "^0.0.6-alpha.10",
     "inversify": "^5.0.1",
     "reflect-metadata": "^0.1.13"
   },
