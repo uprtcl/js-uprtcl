@@ -89,12 +89,10 @@ export class WikiPage extends moduleConnect(LitElement) {
       </div>
 
       <div class="page-content">
-        <div class="text-editor">
-          <documents-editor 
-            ref=${this.pageHash}
-            color=${this.color}>
-          </documents-editor>
-        </div>
+        <documents-editor 
+          ref=${this.pageHash}
+          color=${this.color}>
+        </documents-editor>
       </div>
     `;
   }
@@ -105,6 +103,9 @@ export class WikiPage extends moduleConnect(LitElement) {
       css`
         :host {
           width: 100%;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
         .color-bar {
           height: 1vw;
@@ -115,6 +116,10 @@ export class WikiPage extends moduleConnect(LitElement) {
         .page-content {
           margin: 0 auto;
           max-width: 900px;
+          width: 100%;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
         .top-row {
           margin: 16px 0px 2vw 1.5vw;

@@ -806,6 +806,43 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
+  isNodeFocused() {
+    return this.isNodeFocusedRec(this.doc);
+  }
+
+  isNodeFocusedRec(node: DocNode): boolean {
+    if (node.focused) {
+      return true;
+    } else {
+      for(let ix=0; ix < node.childrenNodes.length; ix++) {
+        if (this.isNodeFocusedRec(node.childrenNodes[ix])) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  getLastNode(): DocNode {
+    return this.getLastNodeRec(this.doc);
+  }
+
+  getLastNodeRec(node: DocNode): DocNode {
+    if (node.childrenNodes.length === 0) {
+      return node;
+    } else {
+      return this.getLastNodeRec(node.childrenNodes[node.childrenNodes.length - 1])
+    }
+  }
+
+  clickAreaClicked() {
+    if (!this.isNodeFocused()) {
+      const last = this.getLastNode();
+      last.focused = true;
+    }
+    this.requestUpdate();
+  }
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -911,14 +948,24 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         </div>
         ${this.renderDocNode(this.doc)}
       </div>
+      <div @click=${this.clickAreaClicked} class="click-area"></div>
     `;
   }
 
   static get styles() {
     return css`
+      :host {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
       .editor-container {
         position: relative;
         width: 100%;
+      }
+
+      .click-area {
+        flex-grow: 1;
       }
 
       .doc-topbar {

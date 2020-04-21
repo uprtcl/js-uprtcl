@@ -542,8 +542,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           width: 260px;
         }
         .app-content {
-          flex: 1 1 0;
           border-left: solid #cccccc 1px;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
         .evee-info {
           height: 40px;
