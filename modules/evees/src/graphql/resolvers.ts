@@ -208,12 +208,12 @@ export const eveesResolvers: IResolvers = {
       return { id: perspectiveId };
     },
 
-    async createEntity(_, { content, casID }, { container }) {
+    async createEntity(_, { object, casID }, { container }) {
       const stores: CASStore[] = container.getAll(CASModule.bindings.CASStore);
       const store = stores.find(d => d.casID === casID);
 
       if (!store) throw new Error(`No store registered for casID ${casID}`);
-      const id = await store.create(JSON.parse(content));
+      const id = await store.create(object);
 
       return id;
     },

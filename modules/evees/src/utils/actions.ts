@@ -64,6 +64,7 @@ export async function cacheActions(
             }
             _context {
               object
+              casID
             }
           }
         }`,
@@ -77,7 +78,8 @@ export async function cacheActions(
             },
             _context: {
               __typename: 'EntityContext',
-              object
+              object,
+              casID: ''
             }
           }
         }
@@ -109,12 +111,12 @@ export async function executeActions(
       const mutation = await client.mutate({
         mutation: CREATE_ENTITY,
         variables: {
-          content: JSON.stringify(action.entity.object),
+          object: action.entity.object,
           casID: action.payload.casID
         }
       });
 
-      const dataId = mutation.data.createEntity;
+      const dataId = mutation.data.createEntity.id;
 
       if (dataId !== action.entity.id) {
         throw new Error(`created entity id ${dataId} not as expected ${action.entity.id}`);

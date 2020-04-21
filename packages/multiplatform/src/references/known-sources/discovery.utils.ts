@@ -40,11 +40,10 @@ export const discoverKnownSources = (localKnownSources: KnownSourcesService) => 
 ): Promise<void> => {
   const knownSourcesNames = await source.knownSources.getKnownSources(hash);
 
-  if (knownSourcesNames) {
+  if (knownSourcesNames && knownSourcesNames.length > 0) {
     await localKnownSources.addKnownSources(hash, knownSourcesNames, type);
   }
 };
-
 
 export const getUplToDiscover = (localKnownSources: KnownSourcesService) => async (
   hash: string,

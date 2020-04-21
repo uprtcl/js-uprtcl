@@ -33,13 +33,12 @@ export class KnownSourcesApollo implements KnownSourcesService {
 
   async addKnownSources(hash: string, sources: string[], typename?: string): Promise<void> {
     const entity = {
-      data: {
-        entity: {
-          id: hash,
-          __typename: typename,
-          _context: {
-            casID: sources[0]
-          }
+      entity: {
+        id: hash,
+        __typename: typename,
+        _context: {
+          __typename: 'EntityContext',
+          casID: sources[0]
         }
       }
     };
@@ -50,6 +49,7 @@ export class KnownSourcesApollo implements KnownSourcesService {
           id
           __typename
           _context {
+            __typename
             casID
           }
         }

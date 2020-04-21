@@ -41,8 +41,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ type: String, attribute: 'ref' })
   firstRef: string | undefined = undefined;
-  
-  @property({ type: String, attribute: 'default-authority'})
+
+  @property({ type: String, attribute: 'default-authority' })
   defaultAuthority: string | undefined = undefined;
 
   @property({ type: String, attribute: false })
@@ -166,13 +166,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           entity(ref: "${pageId}") {
             id
             _context {
-              patterns {
-                content {
-                  id
-                  _context {
-                    patterns {
-                      title
-                    }
+              content {
+                id
+                _context {
+                  patterns {
+                    title
                   }
                 }
               }
@@ -183,7 +181,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
       return {
         id: pageId,
-        title: result.data.entity._context.patterns.content._context.patterns.title
+        title: result.data.entity._context.content._context.patterns.title
       };
     });
 
@@ -228,7 +226,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const createTextNode = await this.client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
-        content: JSON.stringify(page),
+        object: page,
         casID: store.casID
       }
     });
@@ -236,7 +234,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const createCommit = await this.client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
-        dataId: createTextNode.data.createEntity,
+        dataId: createTextNode.data.createEntity.id,
         parentsIds: [],
         casID: remote.casID
       }
@@ -265,7 +263,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const createWiki = await this.client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
-        content: JSON.stringify(newWiki),
+        object: newWiki,
         casID: store.casID
       }
     });
@@ -276,7 +274,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const createCommit = await this.client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
-        dataId: createWiki.data.createEntity,
+        dataId: createWiki.data.createEntity.id,
         parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
         casID: remote.casID
       }
@@ -345,7 +343,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const { entity } = await this.splicePages(removed as string[], fromIndex, 1);
 
     await this.updateContent(entity);
-    
+
     if (this.selectedPageIx === undefined) return;
 
     /** this page was moved */
@@ -362,7 +360,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async removePage(pageIndex: number) {
     const { entity } = await this.splicePages([], pageIndex, 1);
     await this.updateContent(entity);
-    
+
     if (this.selectedPageIx === undefined) return;
 
     /** this page was removed */
@@ -468,7 +466,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return html`
       <div class="app-drawer">
-
         <div class="app-navbar">
           <div
             class="color-bar"

@@ -324,13 +324,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const createTextNode = await client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
-        content: JSON.stringify(content),
+        object: content,
         casID: casID
       }
     });
     // }
 
-    return createTextNode.data.createEntity;
+    return createTextNode.data.createEntity.id;
   }
 
   async createCommit(
