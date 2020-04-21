@@ -148,6 +148,9 @@ export const eveesResolvers: IResolvers = {
 
       await remote.cloneCommit(commit);
 
+      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
+      entityCache.cacheEntity({ ...commit, casID: remote.casID });
+
       commit.casID = remote.casID;
       await multiSource.postEntityCreate(commit);
 
@@ -251,6 +254,9 @@ export const eveesResolvers: IResolvers = {
         perspectiveData,
         remote.cidConfig
       );
+
+      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
+      entityCache.cacheEntity({ ...perspective, casID: remote.casID });
 
       const newPerspectiveData: NewPerspectiveData = {
         perspective,
