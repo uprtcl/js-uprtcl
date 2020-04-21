@@ -159,7 +159,7 @@ export class EveesInfoPage extends EveesInfoBase {
               label="Propose Update"
             ></mwc-button>` : html`
             <mwc-button outlined
-              icon="accessibility"
+              icon=${this.publicRead ? "visibility_off" : "visibility"}
               @click=${this.makePublic}
               label="Make Public"
             ></mwc-button>`

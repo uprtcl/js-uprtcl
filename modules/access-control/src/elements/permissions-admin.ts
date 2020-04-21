@@ -90,10 +90,14 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
                   ${this.permissions.publicRead ? 'public' : 'private'}
                 </p>
                 <p>
-                  <mwc-button outlined icon="swap_horizontal" @click=${this.togglePublicRead}>
+                  <mwc-button outlined 
+                    icon=${this.permissions.publicRead ? "visibility_off" : "visibility"} 
+                    @click=${this.togglePublicRead}>
+
                     ${!this.permissions.publicRead
                       ? this.t('access-control:make-public')
                       : this.t('access-control:make-private')}
+
                   </mwc-button>
                 </p>
               `

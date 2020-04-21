@@ -405,14 +405,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             ></div>
             <div>
               <span class="perspective-name">
-                ${this.perspectiveTitle(perspectiveData)}
+                ${perspectiveData.id === this.firstPerspectiveId ? html`<strong>See Official</strong>` : this.perspectiveTitle(perspectiveData)}
               </span>
             </div>
           </mwc-list-item>
         </div>
         <div class="perspective-action">
           <mwc-button
-            class="merge-button"
             icon="call_merge"
             class="merge-button"
             @click=${() => this.perspectiveButtonClicked(perspectiveData)}
@@ -460,7 +459,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   
   renderAcceptedPerspective() {
     return this.perspectiveId !== this.firstPerspectiveId ? html`
-      <div class='list-section'><strong>Official Version</strong></div>
       ${this.renderPerspectiveRow(this.acceptedPerspectiveData)}` : '';
   }
 
