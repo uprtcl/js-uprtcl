@@ -6,7 +6,8 @@ import {
   DiscoveryModule,
   CASStore,
   CASModule,
-  KnownSourcesSource
+  KnownSourcesSource,
+  EntityCache
 } from '@uprtcl/multiplatform';
 import { Entity, Signed } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -144,7 +145,7 @@ export const eveesResolvers: IResolvers = {
       };
 
       const commit: Secured<Commit> = await deriveSecured(commitData, remote.cidConfig);
-      
+
       await remote.cloneCommit(commit);
 
       commit.casID = remote.casID;
@@ -215,7 +216,16 @@ export const eveesResolvers: IResolvers = {
       if (!store) throw new Error(`No store registered for casID ${casID}`);
       const id = await store.create(object);
 
-      return id;
+      const entity: Entity<any> = {
+        id,
+        object,
+        casID
+      };
+
+      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
+      entityCache.cacheEntity(entity);
+
+      return { id, ...object };
     },
 
     async createPerspective(
