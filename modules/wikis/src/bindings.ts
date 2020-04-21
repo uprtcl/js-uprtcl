@@ -1,4 +1,4 @@
 export const WikiBindings = {
-  WikiEntity: 'wiki-entity',
+  WikiType: 'Wiki',
   WikisRemote: 'wikis-remote'
 };

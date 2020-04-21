@@ -8,5 +8,3 @@ export { htmlToText } from './support/documents.support';
 
 // Module
 export { DocumentsModule } from './documents.module';
-
-

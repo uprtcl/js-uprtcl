@@ -1,22 +1,21 @@
 import { GraphQLField } from 'graphql';
-import { interfaces } from 'inversify';
-import { ApolloCache } from 'apollo-cache';
+import { Container } from 'inversify';
 
-import { Hashed } from '@uprtcl/cortex';
 import { NamedDirective } from '@uprtcl/graphql';
 
-import { Source } from '../../types/source';
-import { MultiplatformBindings } from '../../bindings';
+import { DiscoveryBindings } from '../../bindings';
 import { EntityCache } from '../entity-cache';
+import { KnownSourcesService } from 'src/references/known-sources/known-sources.service';
+import { Entity, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
 export abstract class LoadEntityDirective extends NamedDirective {
-  protected abstract getSource(container: interfaces.Container): Source;
+  protected abstract resolveEntity(container: Container, reference: string): Promise<Entity<any> | undefined>;
 
   public visitFieldDefinition(field: GraphQLField<any, any>, detail) {
     let defaultResolver = field.resolve;
 
     field.resolve = async (parent, args, context, info) => {
-      let entityId: string | string[] | undefined = args.id;
+      let entityId: string | string[] | undefined = field.name === 'entity' && args.ref;
 
       if (!entityId) {
         if (!defaultResolver) {
@@ -28,29 +27,24 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
       if (!entityId) return null;
 
-      const source = this.getSource(context.container);
-      const entityCache: EntityCache = context.container.get(MultiplatformBindings.EntityCache);
-
-      if (typeof entityId === 'string') return this.loadEntity(entityId, entityCache, source);
+      if (typeof entityId === 'string') return this.loadEntity(entityId, context.container);
       else if (Array.isArray(entityId)) {
-        return entityId.map(id => this.loadEntity(id, entityCache, source));
+        return entityId.map(id => this.loadEntity(id, context.container));
       }
     };
   }
 
-  protected async loadEntity(
-    entityId: string,
-    entityCache: EntityCache,
-    source: Source
-  ): Promise<Hashed<any> | undefined> {
+  protected async loadEntity(entityId: string, container: Container): Promise<any | undefined> {
+    const entityCache: EntityCache = container.get(DiscoveryBindings.EntityCache);
+
     const cachedEntity = entityCache.getCachedEntity(entityId);
 
-    if (cachedEntity) return cachedEntity;
+    if (cachedEntity) return { id: cachedEntity.id, ...cachedEntity.object };
 
     if (entityCache.pendingLoads[entityId]) return entityCache.pendingLoads[entityId];
 
     const promise = async () => {
-      const entity: Hashed<any> | undefined = await source.get(entityId);
+      const entity: Entity<any> | undefined = await this.resolveEntity(container, entityId);
 
       if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
 

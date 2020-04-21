@@ -6,4 +6,8 @@ export const mockSchema = gql`
     mockField: String
     _context: EntityContext!
   }
+
+  extend type Patterns {
+    text: String
+  }
 `;

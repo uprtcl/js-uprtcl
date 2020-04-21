@@ -2,58 +2,58 @@ import { injectable, inject } from 'inversify';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { Hashed, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 
 @injectable()
 export class EntityCache {
-
-  pendingLoads: Dictionary<Promise<any> | undefined> = {}
+  pendingLoads: Dictionary<Promise<any> | undefined> = {};
 
   constructor(
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
   ) {}
 
-  getCachedEntity(entityId: string): Hashed<any> | undefined {
+  getCachedEntity(entityId: string): Entity<any> | undefined {
     try {
       const data = this.client.cache['data'].data;
       const cachedObject = data[`$${entityId}._context`];
 
-      if (!cachedObject || !cachedObject.raw) return undefined;
+      if (!cachedObject || !cachedObject.object) return undefined;
 
-      const object = JSON.parse(cachedObject.raw);
-      return { id: entityId, ...object };
+      const object = cachedObject.object.json;
+      return { id: entityId, object, casID: cachedObject.casID };
     } catch (e) {
       return undefined;
     }
   }
 
-  cacheEntity(entity: Hashed<any>): void {
-    const patterns = this.recognizer.recognize(entity);
-    const name = patterns.find(p => p.name).name;
+  cacheEntity(entity: Entity<any>): void {
+    const type = this.recognizer.recognizeType(entity);
 
-    this.client.cache.writeQuery({
+    this.client.writeQuery({
       query: gql`{
-        entity(id: "${entity.id}") {
+        entity(ref: "${entity.id}") {
+          __typename
           id
           _context {
-            raw
+            object
+            casID
           }
         }
       }`,
 
       data: {
         entity: {
-          __typename: name,
+          __typename: type,
           id: entity.id,
           _context: {
             __typename: 'EntityContext',
-            raw: JSON.stringify(entity.object)
+            object: entity.object,
+            casID: entity.casID
           }
         }
       }
     });
   }
-
 }

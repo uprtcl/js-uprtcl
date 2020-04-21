@@ -8,28 +8,39 @@ import {
   PerspectiveDetails,
   EveesRemote
 } from '@uprtcl/evees';
-import { Hashed } from '@uprtcl/cortex';
 
 export class MockEveesProvider implements EveesRemote {
   constructor(
-    public entities: Dictionary<Hashed<any>> = {},
+    public entities: Dictionary<any> = {},
     public details: Dictionary<PerspectiveDetails> = {}
   ) {}
-  accessControl = undefined;
-  proposals = undefined;
-
-  authority = 'mock-authority';
-
-  userId = undefined;
-
-  source: string = 'mock-source';
-  hashRecipe: any;
-
-  ready(): Promise<void> {
+  
+  isLogged(): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
+  login(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  logout(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  
+  create(object: object, hash?: string): Promise<string> {
     throw new Error('Method not implemented.');
   }
 
-  async get(hash: string): Promise<Hashed<any>> {
+  authority: string = 'local';
+  accessControl = undefined;
+  proposals = undefined;
+
+  userId = undefined;
+
+  casID: string = 'mock-source';
+  cidConfig: any;
+
+  async ready(): Promise<void> {}
+
+  async get(hash: string): Promise<any> {
     return this.entities[hash];
   }
 
@@ -55,6 +66,10 @@ export class MockEveesProvider implements EveesRemote {
 
   cloneCommit(commit: Secured<Commit>): Promise<void> {
     throw new Error('Method not implemented');
+  }
+
+  deletePerspective(perspectiveId: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   updatePerspectiveDetails(

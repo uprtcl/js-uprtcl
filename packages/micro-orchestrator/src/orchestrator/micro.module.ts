@@ -19,18 +19,20 @@ export abstract class MicroModule {
    * Submodules of this module, which will be loaded before this module
    * Use this to compose different modules into one big module
    */
-  submodules: MicroModule[] = [];
+  get submodules(): MicroModule[] {
+    return [];
+  }
 
   /**
    * Bindings that this module will make available for other modules to use
    * This bindings **must** be made available through `container.bind()` in the `onLoad()` callback
    */
-  static bindings: Dictionary<interfaces.ServiceIdentifier<any>> = {}
+  static bindings: Dictionary<interfaces.ServiceIdentifier<any>> = {};
 
   /**
    * Loading callback for the module to load
    * This is the only required function to be defined in any `MicroModule`
-   * 
+   *
    * When this method is called, you can assume:
    *  - All dependencies will be available and loaded (you can get other module's types with `container.get()`)
    *  - All submodules will be loaded

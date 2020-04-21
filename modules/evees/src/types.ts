@@ -1,15 +1,14 @@
 import { TemplateResult } from 'lit-element';
 
-import { Source } from '@uprtcl/multiplatform';
+import { Entity, Behaviour } from '@uprtcl/cortex';
+import { CASSource } from '@uprtcl/multiplatform';
+
 import { EveesRemote } from './services/evees.remote';
-import { Hashed } from '@uprtcl/cortex';
 
-export type RemoteMap = (eveesAuthority: string) => Source;
+export type RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) => CASSource;
 
-export type RemotesConfig = {
-  map: RemoteMap;
-  defaultCreator: EveesRemote;
-};
+export const defaultRemoteMap: RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) =>
+  eveesAuthority;
 
 export type Context = string;
 
@@ -72,13 +71,13 @@ export const UPDATE_HEAD_ACTION = 'UPDATE_HEAD';
 
 export interface UprtclAction {
   type: string;
-  entity?: Hashed<any>;
+  entity?: Entity<any>;
   payload: any;
 }
 
-export interface NodeActions <T>{
-  new: T,
-  actions: UprtclAction[]
+export interface NodeActions<T> {
+  new: T;
+  actions: UprtclAction[];
 }
 
 export interface DiffLens {
@@ -86,6 +85,7 @@ export interface DiffLens {
   render: (newEntity: any, oldEntity: any) => TemplateResult;
   type?: string;
 }
-export interface HasDiffLenses {
-  diffLenses: (newEntity: any, oldEntity: any) => DiffLens[];
+
+export interface HasDiffLenses<T = any> extends Behaviour<T> {
+  diffLenses: () => DiffLens[];
 }

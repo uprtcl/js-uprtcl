@@ -1,7 +1,7 @@
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { createEntity, EntityCache } from '@uprtcl/multiplatform';
-import { PatternRecognizer, Hashed } from '@uprtcl/cortex';
+import { EntityCache } from '@uprtcl/multiplatform';
+import { Entity } from '@uprtcl/cortex';
 
 import { CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '../graphql/queries';
 import {
@@ -19,7 +19,7 @@ export function cacheUpdateRequest(
 ): void {
   client.cache.writeQuery({
     query: gql`{
-      entity(id: "${perspectiveId}") {
+      entity(ref: "${perspectiveId}") {
         id
         ... on Perspective {
           head {
@@ -48,14 +48,14 @@ export async function cacheActions(
 ) {
     const updateCachePromises = actions.map(action => {
     if (action.type === CREATE_AND_INIT_PERSPECTIVE_ACTION && action.entity) {
-      const perspectiveId = ((action.entity as unknown) as Hashed<any>).id;
+      const perspectiveId = ((action.entity as unknown) as Entity<any>).id;
       const headId = action.payload.details.headId;
 
-      const raw = JSON.stringify(action.entity.object);
+      const object = action.entity.object;
 
       client.cache.writeQuery({
         query: gql`{
-          entity(id: "${perspectiveId}") {
+          entity(ref: "${perspectiveId}") {
             id
             ... on Perspective {
               head {
@@ -63,7 +63,8 @@ export async function cacheActions(
               }
             }
             _context {
-              raw
+              object
+              casID
             }
           }
         }`,
@@ -77,7 +78,8 @@ export async function cacheActions(
             },
             _context: {
               __typename: 'EntityContext',
-              raw
+              object,
+              casID: ''
             }
           }
         }
@@ -109,12 +111,12 @@ export async function executeActions(
       const mutation = await client.mutate({
         mutation: CREATE_ENTITY,
         variables: {
-          content: JSON.stringify(action.entity.object),
-          source: action.payload.source
+          object: action.entity.object,
+          casID: action.payload.casID
         }
       });
 
-      const dataId = mutation.data.createEntity;
+      const dataId = mutation.data.createEntity.id;
 
       if (dataId !== action.entity.id) {
         throw new Error(`created entity id ${dataId} not as expected ${action.entity.id}`);
@@ -132,7 +134,7 @@ export async function executeActions(
         mutation: CREATE_COMMIT,
         variables: {
           ...action.entity.object.payload,
-          source: action.payload.source
+          casID: action.payload.casID
         }
       });
       const headId = result.data.createCommit.id;

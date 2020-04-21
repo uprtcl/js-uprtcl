@@ -5,13 +5,13 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class PermissionsForEntity extends moduleConnect(LitElement) {
-  @property({type: String})
-  public hash!: string;
+  @property({ type: String })
+  public ref!: string;
 
-  @property({type: Object, attribute: false})
+  @property({ type: Object, attribute: false })
   private permissions: string | undefined;
 
-  @property({type: Boolean, attribute: false})
+  @property({ type: Boolean, attribute: false })
   private canWrite: boolean | undefined;
 
   firstUpdated() {
@@ -19,8 +19,8 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if(changedProperties.has('hash')) {
-      if(changedProperties.get('hash') !== undefined) {
+    if (changedProperties.has('ref')) {
+      if (changedProperties.get('ref') !== undefined) {
         this.loadPermissions();
       }
     }
@@ -34,17 +34,17 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
     const result = await client.query({
       query: gql`
       {
-          entity(id: "${this.hash}") {
-            id
-              _context {
-                  patterns {
-                      accessControl {
-                          permissions
-                          canWrite
-                      }
-                  }
+        entity(ref: "${this.ref}") {
+          id
+            _context {
+              patterns {
+                accessControl {
+                  permissions
+                  canWrite
+                }
               }
-          }
+            }
+        }
       }
       `
     });
@@ -62,7 +62,7 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
     return html`
       <cortex-pattern
         .pattern=${this.permissions}
-        .context=${{ canWrite: this.canWrite, entityId: this.hash }}
+        .context=${{ canWrite: this.canWrite, entityId: this.ref }}
       ></cortex-pattern>
     `;
   }

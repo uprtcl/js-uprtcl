@@ -4,11 +4,10 @@ import { injectable } from 'inversify';
 import { Pattern } from '@uprtcl/cortex';
 import { HasLenses } from '@uprtcl/lenses';
 
-import { Permissions } from '../properties/permissions';
+import { Permissions } from '../behaviours/permissions';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
 
-@injectable()
-export class BasicAdminPattern implements Pattern, HasLenses, Permissions<BasicAdminPermissions> {
+export class BasicAdminPattern extends Pattern<BasicAdminPermissions> {
   recognize = (entity: any) => {
     return (
       (entity as BasicAdminPermissions).publicWrite !== undefined &&
@@ -19,6 +18,12 @@ export class BasicAdminPattern implements Pattern, HasLenses, Permissions<BasicA
     );
   };
 
+  type = undefined;
+}
+
+@injectable()
+export class AdminBehaviour
+  implements HasLenses<BasicAdminPermissions>, Permissions<BasicAdminPermissions> {
   canWrite = (entity: BasicAdminPermissions) => (userId: string | undefined): boolean => {
     if (entity.publicWrite) return true;
     if (!userId) return false;
@@ -33,7 +38,6 @@ export class BasicAdminPattern implements Pattern, HasLenses, Permissions<BasicA
       type: 'permissions',
       render: (_, context: any) =>
         html`
-          <!-- <h1>?</h1> -->
           <permissions-admin
             .permissions=${entity}
             .canWrite=${context.canWrite}

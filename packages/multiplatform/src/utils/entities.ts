@@ -1,118 +1,53 @@
-import { PatternRecognizer, Hashed, HasRedirect, Creatable } from '@uprtcl/cortex';
+import { ApolloClient, gql } from 'apollo-boost';
+import { PatternRecognizer, Entity } from '@uprtcl/cortex';
+import { HasRedirect } from '../behaviours/has-redirect';
 
-import { DiscoveryService } from '../services/discovery.service';
+export const redirectEntity = (
+  recognizer: PatternRecognizer,
+  loadEntity: (entityRef: string) => Promise<Entity<any> | undefined>
+) => async (entityRef: string): Promise<Entity<any>> => {
+  const entity = await loadEntity(entityRef);
 
-export async function getIsomorphisms(
-  patternRecognizer: PatternRecognizer,
-  entity: Hashed<any>,
-  loadEntity: (id: string) => Promise<Hashed<any> | undefined>
-): Promise<string[]> {
-  let isomorphisms: string[] = [entity.id];
+  if (!entity)
+    throw new Error(`Could not find entity with reference: ${entityRef} when redirecting`);
 
-  // Recursive call to get all isomorphisms from redirected entities
-  const redirectedIsomorphisms = await redirectEntity(patternRecognizer, entity, loadEntity);
-  isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
-  return isomorphisms;
-}
+  const redirect: HasRedirect = recognizer
+    .recognizeBehaviours(entity)
+    .find(b => (b as HasRedirect).redirect);
 
-async function redirectEntity(
-  patternRecognizer: PatternRecognizer,
-  entity: object,
-  loadEntity: (id: string) => Promise<Hashed<any> | undefined>
-): Promise<string[]> {
-  const hasRedirects: HasRedirect<any>[] = patternRecognizer
-    .recognize(entity)
-    .filter(prop => !!(prop as HasRedirect<any>).redirect);
+  if (!redirect) return entity;
 
-  let isomorphisms: string[] = [];
+  const redirectRef = await redirect.redirect(entity);
 
-  for (const hasRedirect of hasRedirects) {
-    const redirectHash = await hasRedirect.redirect(entity);
+  if (!redirectRef) return entity;
+  return redirectEntity(recognizer, loadEntity)(redirectRef);
+};
 
-    if (redirectHash) {
-      const redirectEntity = await loadEntity(redirectHash);
-
-      if (redirectEntity) {
-        const redirectedIsomorphisms = await getIsomorphisms(
-          patternRecognizer,
-          redirectEntity,
-          loadEntity
-        );
-
-        isomorphisms = isomorphisms.concat(redirectedIsomorphisms);
+export async function loadEntity<T>(
+  apolloClient: ApolloClient<any>,
+  entityRef: string
+): Promise<Entity<T> | undefined> {
+  const result = await apolloClient.query({
+    query: gql`
+    {
+      entity(ref: "${entityRef}") {
+        id
+        _context {
+          object
+          casID
+        }
       }
     }
-  }
+    `
+  });
 
-  return isomorphisms;
+  if (!result.data.entity) return undefined;
+
+  const object = result.data.entity._context.object;
+
+  return {
+    id: result.data.entity.id,
+    object,
+    casID: result.data.entity._context.casID
+  };
 }
-
-export async function entityContent(
-  entity: any,
-  recognizer: PatternRecognizer,
-  discovery: DiscoveryService
-): Promise<string | undefined> {
-  const hasRedirect = recognizer.recognize(entity).find(prop => !!prop.redirect);
-
-  if (hasRedirect) {
-    const redirectEntityId = await hasRedirect.redirect(entity);
-
-    if (redirectEntityId) {
-      const redirectedEntity: Hashed<any> | undefined = await discovery.get(redirectEntityId);
-      return entityContent(redirectedEntity, recognizer, discovery);
-    }
-  }
-
-  return entity.id;
-}
-
-/**
- * Generically create the given data and retrieve its hashed it
- *
- * @param data the data to create
- * @returns the created hashed data
- */
-export const createEntity = (recognizer: PatternRecognizer) => async <T extends object>(
-  data: T,
-  usl: string
-): Promise<string> => {
-  const creatable: Creatable<T, any> | undefined = recognizer
-    .recognize(data)
-    .find(prop => !!(prop as Creatable<T, any>).create);
-
-  if (!creatable) {
-    throw new Error(
-      `Trying to create data ${data.toString()} - ${JSON.stringify(
-        data
-      )}, but it does not implement the Creatable pattern`
-    );
-  }
-
-  const hashed = await creatable.create()(data, usl);
-  return hashed.id;
-};
-
-/**
- * Generically create the given data and retrieve its hashed it
- *
- * @param data the data to create
- * @returns the created hashed data
- */
-export const computeIdOfEntity = (recognizer: PatternRecognizer) => async <T extends object>(
-  data: T
-): Promise<string> => {
-  const creatable: Creatable<T, any> | undefined = recognizer
-    .recognize(data)
-    .find(prop => !!(prop as Creatable<T, any>).create);
-
-  if (!creatable) {
-    throw new Error(
-      `Trying to get id of data ${data.toString()} - ${JSON.stringify(
-        data
-      )}, but it does not implement the Creatable pattern`
-    );
-  }
-
-  const id = await creatable.computeId()(data);
-  return id;
-};

@@ -4,8 +4,8 @@
 
 `MicroModules` are a flexible and composable way of **adding a slice of functionality** to your web application. One of their main functions is to **register dependencies globally** within two main registries:
 
-- The container inside the `micro-orchestrator`
-- The `customElements` registry present in the browser
+- The [InversifyJS](https://github.com/inversify/InversifyJS) container inside the `micro-orchestrator`
+- The [customElements](https://developers.google.com/web/fundamentals/web-components/customelements) registry present in the browser
 
 ### Dependencies
 
@@ -23,7 +23,9 @@ For example, some modules **could register GraphQl schema parts** that query doc
 
 Every `MicroModule` will have different configuration processes, dependencies or requirements. In general terms, we can follow this process:
 
-1. Install the required npm package:
+0. Choose which `MicroModules` you want to install in your app.
+
+1. Install the required npm package for your module:
 
 ```bash
 npm install @uprtcl/documents
@@ -32,30 +34,38 @@ npm install @uprtcl/documents
 2. Import and configure the `MicroModule`:
 
 ```ts
+import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { DocumentsModule, DocumentsIpfs } from '@uprtcl/documents';
 
-const documentsProvider = new DocumentsIpfs({
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https'
-});
+const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
 
-const docs = new DocumentsModule([documentsProvider]);
+const ipfsStore = new IpfsStore(ipfsConfig);
+
+const docs = new DocumentsModule([ipfsStore]);
 ```
 
-3. Make sure that all dependency modules are already loaded:
+3. Make sure that all dependency modules for your module are already configured and loaded:
 
 ```ts
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { CortexModule } from '@uprtcl/cortex';
+import { LensesModule } from '@uprtcl/lenses';
+import { EveesModule, EveesHttp, EveesEthereum } from '@uprtcl/evees';
+  
+const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
+
+const ethConnection = new EthereumConnection({ provider: '' });
+const ethEvees = new EveesEthereum(ethConnection, ipfsConfig, ipfsCidConfig);
 
 await orchestrator.loadModules([
   new ApolloClientModule(),
   new i18nextBaseModule(),
   new DiscoveryModule(),
-  new CortexModule()
+  new CortexModule(),
+  new LensesModule(),
+  new EveesModule([ethEvees, httpEvees], ethEvees)
 ]);
 ```
 

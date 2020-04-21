@@ -42,7 +42,9 @@ import { resolvers } from './resolvers';
 export class TestModule extends MicroModule {
   static id = Symbol('test-module');
 
-  submodules = [new GraphQlSchemaModule(documentsTypeDefs, resolvers)];
+  get submodules() {
+    return [new GraphQlSchemaModule(documentsTypeDefs, resolvers)];
+  }
 }
 ```
 

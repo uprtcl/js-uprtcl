@@ -1,50 +1,38 @@
 import { merge } from 'lodash-es';
 
-import { PatternRecognizer } from '../recognizer/pattern.recognizer';
+import { PatternRecognizer } from '../recognizer/pattern-recognizer';
 import { CortexBindings } from '../bindings';
-import { Pattern, Entity } from '../pattern';
-import { Hashed } from '../properties/hashable';
+import { Entity } from '../types/entity';
+import { Behaviour } from '../types/behaviour';
 
 export const cortexResolvers = {
   Entity: {
+    id(parent) {
+      return parent.id ? parent.id : parent;
+    },
+    _context(parent) {
+      return parent;
+    },
     async __resolveType(parent, { container }, info) {
-      const entity = hashedFromGraphQlObject(parent);
-
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 
-      const patterns: Pattern[] = recognizer.recognize(entity);
-
-      const entities: Entity[] = patterns.filter(p => (p as Entity).name) as Entity[];
-
-      if (entities.length === 0) {
-        throw new Error(`No entity found to recognize object ${JSON.stringify(entity)}`);
-      }
-
-      const abmiguousError =
-        entities.length > 1 && !entities.every(entity => entity.name === entities[0].name);
-
-      if (abmiguousError) {
-        throw new Error(
-          `Ambiguous error recognizing entity: ${parent.toString()}. These two entites recognized the object ${entities.toString()}`
-        );
-      }
-      return entities[0].name;
+      return recognizer.recognizeType(entityFromGraphQlObject(parent));
     }
   },
   EntityContext: {
-    raw(parent) {
-      return JSON.stringify(hashedFromGraphQlObject(parent).object);
+    object(parent) {
+      return entityFromGraphQlObject(parent).object;
     },
     async patterns(parent, args, { container }, info) {
-      const entity = hashedFromGraphQlObject(parent);
+      const entity = entityFromGraphQlObject(parent);
 
       const isGraphQlField = (key: string) =>
         key !== 'accessControl' && Object.keys(info.returnType.ofType._fields).includes(key);
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 
-      const patterns = recognizer.recognize(entity);
+      const behaviours: Behaviour<any>[] = recognizer.recognizeBehaviours(entity);
 
-      const applyedPatterns = patterns.map(pattern => {
+      const applyedPatterns = behaviours.map(pattern => {
         const applyedPattern = {};
 
         for (const key of Object.keys(pattern)) {
@@ -63,7 +51,9 @@ export const cortexResolvers = {
   }
 };
 
-export function hashedFromGraphQlObject(parent): Hashed<any> {
+export function entityFromGraphQlObject(parent): Entity<any> {
+  if (parent.id && parent.object && typeof parent.casID === 'string') return parent;
+
   const id = parent.id;
 
   let object = {};

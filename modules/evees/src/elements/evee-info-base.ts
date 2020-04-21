@@ -17,14 +17,14 @@ import '@material/mwc-tab-bar';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { AccessControlService, OwnerPermissions, SET_PUBLIC_READ } from '@uprtcl/access-control';
-import { Pattern, Creatable, CortexModule, PatternRecognizer, Hashed } from '@uprtcl/cortex';
-import { DiscoveryModule, EntityCache, DiscoveryService } from '@uprtcl/multiplatform';
+import { Pattern, Create, Signed, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
+import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
 
 import { prettyAddress, prettyTime } from './support';
 
 import {
   UpdateRequest,
-  RemotesConfig,
+  RemoteMap,
   ProposalCreatedEvent,
   Perspective,
   PerspectiveDetails,
@@ -32,11 +32,19 @@ import {
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
   CREATE_AND_INIT_PERSPECTIVE_ACTION,
-  UPDATE_HEAD_ACTION
+  UPDATE_HEAD_ACTION,
+  Commit
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
-import { UPDATE_HEAD, CREATE_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL, DELETE_PERSPECTIVE, CREATE_PERSPECTIVE } from '../graphql/queries';
+import {
+  UPDATE_HEAD,
+  CREATE_PROPOSAL,
+  AUTHORIZE_PROPOSAL,
+  EXECUTE_PROPOSAL,
+  DELETE_PERSPECTIVE,
+  CREATE_PERSPECTIVE
+} from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
@@ -50,7 +58,8 @@ interface PerspectiveData {
   details: PerspectiveDetails;
   canWrite: Boolean;
   permissions: any;
-  data: Hashed<any>;
+  head: Entity<Commit>;
+  data: Entity<any>;
 }
 
 export class EveesInfoBase extends moduleConnect(LitElement) {
@@ -85,14 +94,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   perspectiveData!: PerspectiveData;
 
-  protected client: ApolloClient<any> | undefined = undefined;
-  protected merge: MergeStrategy  | undefined = undefined;
-  protected evees: Evees | undefined = undefined;
-  protected recognizer: PatternRecognizer | undefined = undefined;
-  protected cache: EntityCache | undefined = undefined;
-  protected remotesConfig: RemotesConfig | undefined = undefined;
+  protected client!: ApolloClient<any>;
+  protected merge!: MergeStrategy;
+  protected evees!: Evees;
+  protected recognizer!: PatternRecognizer;
+  protected cache!: EntityCache;
+  protected remoteMap!: RemoteMap;
   protected defaultRemote: EveesRemote | undefined = undefined;
-  protected discovery: DiscoveryService | undefined = undefined;
 
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -100,9 +108,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.evees = this.request(EveesModule.bindings.Evees);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
-    this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
-    this.discovery = this.request(DiscoveryModule.bindings.DiscoveryService);
-    
+    this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
+
     if (this.defaultAuthority !== undefined) {
       this.defaultRemote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(remote => remote.authority === this.defaultAuthority);
     }
@@ -118,14 +125,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
   
   async load() {
-    if(!this.client) throw new Error('client undefined');
-    if(!this.discovery) throw new Error('discovery undefined');
+    if (!this.client) throw new Error('client undefined');
 
     this.loading = true;
     const result = await this.client.query({
       query: gql`
         {
-          entity(id: "${this.perspectiveId}") {
+          entity(ref: "${this.perspectiveId}") {
             id
             ... on Perspective {
               context {
@@ -160,10 +166,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
 
     const accessControl = result.data.entity._context.patterns.accessControl;
-    const data = await this.discovery.get(result.data.entity.head.data.id);
+    const data = await loadEntity(this.client, result.data.entity.head.data.id);
+    const head = await loadEntity(this.client, result.data.entity.head.id) as Entity<Commit>;
 
     if (!data) throw new Error('data undefined');
-    
+    if (!head) throw new Error('head undefined');
+
     this.perspectiveData = {
       id: result.data.entity.id,
       details: {
@@ -174,6 +182,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       perspective: result.data.entity.payload,
       canWrite: accessControl ? accessControl.canWrite : true,
       permissions: accessControl ? accessControl.permissions : undefined,
+      head,
       data
     };
 
@@ -187,12 +196,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
-  
   connectedCallback() {
     super.connectedCallback();
-  
+
     this.addEventListener('permissions-updated', ((e: CustomEvent) => {
-      this.logger.info('CATCHED EVENT: permissions-updated ', { perspectiveId: this.perspectiveId, e });
+      this.logger.info('CATCHED EVENT: permissions-updated ', {
+        perspectiveId: this.perspectiveId,
+        e
+      });
       e.stopPropagation();
       this.load();
     }) as EventListener);
@@ -201,8 +212,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   reload() {
     if (this.forceUpdate === 'true') {
       this.forceUpdate = 'false';
-    } else { 
-      this.forceUpdate === 'true'
+    } else {
+      this.forceUpdate === 'true';
     }
   }
 
@@ -260,8 +271,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const accessControl = remote.accessControl as AccessControlService<OwnerPermissions>;
     const permissions = await accessControl.getPermissions(toPerspectiveId);
 
-    if (permissions  === undefined) throw new Error('target perspective dont have permissions control');
-    
+    if (permissions === undefined)
+      throw new Error('target perspective dont have permissions control');
+
     if (!permissions.owner) {
       // TODO: ownerPreserving merge should be changed to permissionPreserving merge
       throw new Error(
@@ -273,7 +285,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       forceOwner: true,
       authority: remote.authority,
       canWrite: permissions.owner
-    }
+    };
 
     const mergeResult = await this.merge.mergePerspectives(
       toPerspectiveId,
@@ -284,7 +296,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const resultTo = await this.client.query({
       query: gql`
         {
-          entity(id: "${toPerspectiveId}") {
+          entity(ref: "${toPerspectiveId}") {
             id
             ... on Perspective {
               head {
@@ -298,7 +310,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const resultFrom = await this.client.query({
       query: gql`
         {
-          entity(id: "${fromPerspectiveId}") {
+          entity(ref: "${fromPerspectiveId}") {
             id
             ... on Perspective {
               head {
@@ -327,16 +339,16 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async mergePerspective(actions: UprtclAction[]): Promise<void> {
-    if(!this.cache) throw new Error('cache undefined');
-    if(!this.client) throw new Error('client undefined');
-    
+    if (!this.cache) throw new Error('cache undefined');
+    if (!this.client) throw new Error('client undefined');
+
     await cacheActions(actions, this.cache, this.client);
     await executeActions(actions, this.client);
 
     const updateRequests = actions.filter(a => a.type === UPDATE_HEAD_ACTION).map(a => a.payload);
 
     const updateHeadsPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {
-      if(!this.client) throw new Error('client undefined');
+      if (!this.client) throw new Error('client undefined');
 
       await this.client.mutate({
         mutation: UPDATE_HEAD,
@@ -357,14 +369,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     executeActionsOnAuthority: (authority: string, actions: UprtclAction[]) => Promise<void>
   ) {
     const authoritiesPromises = actions.map(async (action: UprtclAction) => {
-      if(!this.client) throw new Error('client undefined');
+      if (!this.client) throw new Error('client undefined');
 
       const perspectiveId = actionToPerspectiveId(action);
 
       const result = await this.client.query({
         query: gql`
           {
-            entity(id: "${perspectiveId}") {
+            entity(ref: "${perspectiveId}") {
               id
               ... on Perspective {
                 payload {
@@ -422,7 +434,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION),
       action => action.entity.id,
       async (authority, actions) => {
-        if(!this.evees) throw new Error('evees undefined');
+        if (!this.evees) throw new Error('evees undefined');
         const remote = this.evees.getAuthority(authority);
 
         const perspectivesData = actions.map(
@@ -447,8 +459,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       actions.filter(a => a.type === UPDATE_HEAD_ACTION),
       action => action.payload.perspectiveId,
       async (authority, actions) => {
-        if(!this.client) throw new Error('client undefined');
-        
+        if (!this.client) throw new Error('client undefined');
+
         const result = await this.client.mutate({
           mutation: CREATE_PROPOSAL,
           variables: {
@@ -477,14 +489,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async authorizeProposal(e: CustomEvent) {
-    if(!this.client) throw new Error('client undefined');
+    if (!this.client) throw new Error('client undefined');
 
     const proposalId = e.detail.proposalId;
     const perspectiveId = e.detail.perspectiveId;
     const result = await this.client.mutate({
       mutation: AUTHORIZE_PROPOSAL,
       variables: {
-        proposalId: proposalId, 
+        proposalId: proposalId,
         perspectiveId: perspectiveId,
         authorize: true
       }
@@ -496,7 +508,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async executeProposal(e: CustomEvent) {
-    if(!this.client) throw new Error('client undefined');
+    if (!this.client) throw new Error('client undefined');
 
     const proposalId = e.detail.proposalId;
     const perspectiveId = e.detail.perspectiveId;
@@ -504,7 +516,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const result = await this.client.mutate({
       mutation: EXECUTE_PROPOSAL,
       variables: {
-        proposalId: proposalId, 
+        proposalId: proposalId,
         perspectiveId: perspectiveId
       }
     });
@@ -523,29 +535,25 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   getCreatePattern(symbol) {
-    const patterns: Pattern[] = this.requestAll(symbol);
-    const create: Creatable<any, any> | undefined = (patterns.find(
-      pattern => ((pattern as unknown) as Creatable<any, any>).create
-    ) as unknown) as Creatable<any, any>;
+    const patterns: Pattern<any>[] = this.requestAll(symbol);
+    const create: Create<any, any> | undefined = (patterns.find(
+      pattern => ((pattern as unknown) as Create<any, any>).create
+    ) as unknown) as Create<any, any>;
 
-    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].name}`);
+    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].type}`);
 
     return create;
   }
 
   async newPerspectiveClicked() {
-    if (!this.remotesConfig) throw new Error('remotesConfig undefined');
-    if (!this.client) throw new Error('client undefined');
-    if (!this.evees) throw new Error('evees-undefined');
-    if (!this.cache) throw new Error('cache-undefined');
-    
+
     this.loading = true;
 
     const forkPerspective = await this.evees.forkPerspective(this.perspectiveId, this.defaultAuthority);
 
     await cacheActions(forkPerspective.actions, this.cache, this.client);
     await executeActions(forkPerspective.actions, this.client);
-    
+
     this.checkoutPerspective(forkPerspective.new);
 
     this.logger.info('newPerspectiveClicked() - perspective created', { id: forkPerspective.new });
@@ -576,7 +584,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async delete() {
-    if(!this.client) throw new Error('client undefined');
+    if (!this.client) throw new Error('client undefined');
 
     await this.client.mutate({
       mutation: DELETE_PERSPECTIVE,
@@ -615,15 +623,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
                 </tr>
                 <tr>
                   <td class="prop-name">head:</td>
-                  <td class="prop-value">${this.perspectiveData.details.headId}</td>
-                </tr>
-                <tr>
-                  <td class="prop-name">data id:</td>
-                  <td class="prop-value">${this.perspectiveData.data.id}</td>
+                  <td class="prop-value">${JSON.stringify(this.perspectiveData.head)}</td>
                 </tr>
                 <tr>
                   <td class="prop-name">data:</td>
-                  <td class="prop-value">${JSON.stringify(this.perspectiveData.data.object)}</td>
+                  <td class="prop-value">${JSON.stringify(this.perspectiveData.data)}</td>
                 </tr>
               </table>
             </div>
@@ -634,54 +638,55 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   static get styles() {
-    return [css`
-      .perspective-details {
-        padding: 5px;
-      }
-      
-      .summary {
-        margin: 0 auto;
-        padding: 32px 32px;
-        max-width: 300px;
-        text-align: center;
-      }
+    return [
+      css`
+        .perspective-details {
+          padding: 5px;
+        }
 
-      .card-container {
-        flex-grow: 1;
-        display: flex;
-        padding: 10px;
-      }
+        .summary {
+          margin: 0 auto;
+          padding: 32px 32px;
+          max-width: 300px;
+          text-align: center;
+        }
 
-      .card {
-        flex: 1;
-        width: 100%;
-        height: 100%;
-        border: solid 1px #cccccc;
-        border-radius: 3px;
-      }
+        .card-container {
+          flex-grow: 1;
+          display: flex;
+          padding: 10px;
+        }
 
-      .technical-details {
-        max-width: 640px;
-        margin: 0 auto;
-      }
+        .card {
+          flex: 1;
+          width: 100%;
+          height: 100%;
+          border: solid 1px #cccccc;
+          border-radius: 3px;
+        }
 
-      .tech-card {
-        width: 100%;
-        padding: 16px 32px;
-        text-align: center;
-      }
+        .technical-details {
+          max-width: 640px;
+          margin: 0 auto;
+        }
 
-      .tech-table .prop-name {
-        text-align: right;
-        font-weight: bold;
-      }
+        .tech-card {
+          width: 100%;
+          padding: 16px 32px;
+          text-align: center;
+        }
 
-      .tech-table .prop-value {
-        font-family: Lucida Console, Monaco, monospace;
-        font-size: 12px;
-        text-align: left;
-      }
-    `];
+        .tech-table .prop-name {
+          text-align: right;
+          font-weight: bold;
+        }
+
+        .tech-table .prop-value {
+          font-family: Lucida Console, Monaco, monospace;
+          font-size: 12px;
+          text-align: left;
+        }
+      `
+    ];
   }
-
 }

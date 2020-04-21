@@ -1,8 +1,11 @@
-import { Hashed, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
-import { DiscoveryModule, DiscoveryService } from '@uprtcl/multiplatform';
+import { ApolloClient } from 'apollo-boost';
 
-import { Permissions } from '../properties/permissions';
-import { Updatable } from '../properties/updatable';
+import { PatternRecognizer, CortexModule, Entity } from '@uprtcl/cortex';
+import { loadEntity } from '@uprtcl/multiplatform';
+import { ApolloClientModule } from '@uprtcl/graphql';
+
+import { Permissions } from '../behaviours/permissions';
+import { Updatable } from '../behaviours/updatable';
 import { AccessControlService } from '../services/access-control.service';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
 import { Authority } from '../types/authority';
@@ -10,15 +13,15 @@ import { Authority } from '../types/authority';
 export const accessControlResolvers = {
   Mutation: {
     async setCanWrite(_, { entityId, userId }, { container }) {
-      const discoveryService: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
-      const entity: any = await discoveryService.get(entityId);
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
+      const entity: Entity<any> | undefined = await loadEntity(client, entityId);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
       if (!entity) throw new Error(`Cannot change owner of ${entityId}: entity not found`);
 
       const updatable: Updatable<any> | undefined = recognizer
-        .recognize(entity)
+        .recognizeBehaviours(entity)
         .find(prop => !!(prop as Updatable<any>).accessControl);
 
       if (!updatable)
@@ -35,22 +38,24 @@ export const accessControlResolvers = {
 
       return entityId;
     },
-    async setPublicRead(_,{ entityId, value}, { container }) {
-      const discoveryService: DiscoveryService = container.get(DiscoveryModule.bindings.DiscoveryService);
-      const entity: any = await discoveryService.get(entityId);
+    async setPublicRead(_, { entityId, value }, { container }) {
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
+      const entity: Entity<any> | undefined = await loadEntity(client, entityId);
 
       const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
 
       if (!entity) throw new Error(`Cannot change owner of ${entityId}: entity not found`);
 
       const updatable: Updatable<any> | undefined = recognizer
-        .recognize(entity)
+        .recognizeBehaviours(entity)
         .find(prop => !!(prop as Updatable<any>).accessControl);
 
       if (!updatable)
         throw new Error(`Cannot change owner of ${entityId}: no Updatable pattern implemented`);
 
-      const accessControl: AccessControlService<BasicAdminPermissions> | undefined = updatable.accessControl(entity);
+      const accessControl:
+        | AccessControlService<BasicAdminPermissions>
+        | undefined = updatable.accessControl(entity);
 
       if (!accessControl)
         throw new Error(
@@ -66,8 +71,8 @@ export const accessControlResolvers = {
         canWrite: currentPermissions.canWrite,
         publicWrite: currentPermissions.publicWrite,
         publicRead: value
-      }
-      
+      };
+
       await accessControl.setPermissions(entityId, newPermissions);
 
       return entityId;
@@ -75,11 +80,11 @@ export const accessControlResolvers = {
   },
   Patterns: {
     async accessControl(parent, args, context) {
-      const entity: Hashed<any> = parent.__entity;
+      const entity: Entity<any> = parent.__entity;
       const recognizer: PatternRecognizer = context.container.get(CortexModule.bindings.Recognizer);
 
       const hasAccessControl: Updatable<any> | undefined = recognizer
-        .recognize(entity)
+        .recognizeBehaviours(entity)
         .find(prop => !!(prop as Updatable<any>).accessControl);
 
       if (!hasAccessControl) return null;
@@ -93,7 +98,7 @@ export const accessControlResolvers = {
       if (!permissions) return null;
 
       const permissionsPattern: Permissions<any> | undefined = recognizer
-        .recognize(permissions)
+        .recognizeBehaviours(permissions)
         .find(prop => !!(prop as Permissions<any>).canWrite);
 
       if (!permissionsPattern) return null;

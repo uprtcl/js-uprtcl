@@ -1,14 +1,10 @@
-export const MultiplatformBindings = {
-  DiscoveryService: 'discovery-service',
-  TaskQueue: 'task-queue',
+export const DiscoveryBindings = {
+  MultiSourceService: 'multi-source-service',
   EntityCache: 'entity-cache',
   LocalKnownSources: 'local-known-sources'
 };
 
-export const SourcesBindings = {
-  Source: 'discovery-source'
-};
-
-export const StoresBindings = {
-  Store: 'discovery-store'
+export const CASBindings = {
+  CASSource: 'cas-source',
+  CASStore: 'cas-store'
 };

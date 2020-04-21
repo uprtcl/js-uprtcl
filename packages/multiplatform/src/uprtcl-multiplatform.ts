@@ -3,31 +3,33 @@ import 'reflect-metadata';
 
 /** Services */
 export { Ready } from './types/ready';
-export { Source } from './types/source';
-export { Store } from './types/store';
+export { CASSource } from './types/cas-source';
+export { CASStore } from './types/cas-store';
+export { CidConfig, defaultCidConfig } from './types/cid-config';
 
-export { KnownSourcesService } from './services/known-sources.service';
+export { KnownSourcesService } from './references/known-sources/known-sources.service';
+export { KnownSourcesSource } from './references/known-sources/known-sources.source';
 
-export { DiscoveryService } from './services/discovery.service';
+export { MultiSourceService } from './references/known-sources/multi-source.service';
 export { EntityCache } from './graphql/entity-cache';
 
-/** Utils */
-export {
-  linksFromObject,
-  getUplToDiscover,
-  discoverKnownSources,
-  discoverLinksKnownSources
-} from './services/discovery.utils';
+/** Behaviours */
+export { HasRedirect } from './behaviours/has-redirect';
+export { ResolveEntity } from './behaviours/resolve-entity';
 
 /** Modules */
 export { DiscoveryModule } from './discovery.module';
-export { SourcesModule } from './sources.module';
-export { StoresModule } from './stores.module';
+export { CASModule } from './cas.module';
 
 /** Connections */
 export { Connection, ConnectionOptions } from './connections/connection';
 export { SocketConnection } from './connections/socket.connection';
 
 /** Utils */
-export { createEntity, entityContent, getIsomorphisms, computeIdOfEntity } from './utils/entities';
-export { TaskQueue, Task } from './utils/task.queue';
+export { loadEntity } from './utils/entities';
+
+export {
+  linksFromEntity,
+  getUplToDiscover,
+  discoverKnownSources
+} from './references/known-sources/discovery.utils';

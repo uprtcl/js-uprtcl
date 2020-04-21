@@ -3,38 +3,37 @@ import { inject, injectable } from 'inversify';
 
 import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { CortexModule, PatternRecognizer, Hashed, Pattern, IsSecure } from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import {
-  RemotesConfig,
   UprtclAction,
   UpdateRequest,
   UPDATE_HEAD_ACTION,
   Commit,
   CREATE_COMMIT_ACTION,
   CREATE_DATA_ACTION,
-  NodeActions
+  NodeActions,
+  RemoteMap
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
 import findMostRecentCommonAncestor from './common-ancestor';
-import { Mergeable } from '../properties/mergeable';
+import { Merge } from '../behaviours/merge';
 import { mergeResult } from './utils';
-import { CidHashedPattern } from '../patterns/cid-hashed.pattern';
+import { deriveEntity } from '../utils/cid-hash';
 import { cacheUpdateRequest } from '../utils/actions';
+import { deriveSecured } from 'src/utils/signed';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(
-    @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
+    @inject(EveesBindings.RemoteMap) protected remoteMap: RemoteMap,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache,
-    @inject(EveesBindings.Secured) protected secured: Pattern & IsSecure<any>,
-    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern
+    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
   ) {}
 
   async mergePerspectives(
@@ -45,7 +44,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
       const result = await this.client.query({
         query: gql`{
-          entity(id: "${id}") {
+          entity(ref: "${id}") {
           id
           ... on Perspective {
             head {
@@ -72,12 +71,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
  */
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
 
-    const mergeResult = await this.mergeCommits(
-      toHeadId,
-      fromHeadId,
-      remote.authority,
-      config
-    );
+    const mergeResult = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, config);
 
     const request: UpdateRequest = {
       fromPerspectiveId,
@@ -88,7 +82,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const action = this.buildUpdateAction(request);
 
     return {
-      new: toPerspectiveId, 
+      new: toPerspectiveId,
       actions: [action, ...mergeResult.actions]
     };
   }
@@ -103,10 +97,10 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     return updateHead;
   }
-  protected async loadPerspectiveData(perspectiveId: string): Promise<Hashed<any>> {
+  protected async loadPerspectiveData(perspectiveId: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {
@@ -114,7 +108,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
               data {
                 id 
                 _context {
-                  raw
+                  object
                 }
               }
             }
@@ -123,29 +117,29 @@ export class SimpleMergeStrategy implements MergeStrategy {
       }`
     });
 
-    const object = JSON.parse(result.data.entity.head.data._context.raw);
+    const object = result.data.entity.head.data._context.object;
     return {
       id: result.data.entity.head.data.id,
       object
     };
   }
 
-  protected async loadCommitData(commitId: string): Promise<Hashed<any>> {
+  protected async loadCommitData(commitId: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${commitId}") {
+        entity(ref: "${commitId}") {
           id
           data {
             id
             _context {
-              raw
+              object
             }
           }
         }
       }`
     });
 
-    const object = JSON.parse(result.data.entity.data._context.raw);
+    const object = result.data.entity.data._context.object;
     return {
       id: result.data.entity.data.id,
       object
@@ -167,46 +161,50 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDatas: any[] = await Promise.all(datasPromises);
 
-    const mergedData = await this.mergeData(ancestorData.object, newDatas.map(data => data.object), config);
+    const mergedData = await this.mergeData(
+      ancestorData,
+      newDatas,
+      config
+    );
 
-    // TODO: fix inconsistency
-    const sourceRemote = this.remotesConfig.map(authority);
+    const type = this.recognizer.recognizeType(ancestorData);
+    const remote = this.evees.getAuthority(authority);
 
-    const hashed: Hashed<any> = await this.hashed.derive()(mergedData.new, sourceRemote.hashRecipe);
+    const sourceRemote = this.remoteMap(remote, type);
+
+    const entity = await deriveEntity(mergedData.new, sourceRemote.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
-      entity: hashed,
+      entity: entity,
       payload: {
-        source: sourceRemote.source
+        casID: sourceRemote.casID
       }
     };
-    this.entityCache.cacheEntity(hashed);
+    this.entityCache.cacheEntity(entity);
 
-    const remote = this.evees.getAuthority(authority);
-
-    if (!remote.userId) throw new Error('Cannot create commits in a source you are not signed in');
+    if (!remote.userId) throw new Error('Cannot create commits in a casID you are not signed in');
 
     const newCommit: Commit = {
-      dataId: hashed.id,
+      dataId: entity.id,
       parentsIds: commitsIds,
       message: `Merge commits ${commitsIds.toString()}`,
       timestamp: Date.now(),
       creatorsIds: [remote.userId]
     };
-    const securedCommit = await this.secured.derive()(newCommit, remote.hashRecipe);
+    const securedCommit = await deriveSecured(newCommit, remote.cidConfig);
 
     const newCommitAction: UprtclAction = {
       type: CREATE_COMMIT_ACTION,
       entity: securedCommit,
       payload: {
-        source: remote.source
+        casID: remote.casID
       }
     };
     this.entityCache.cacheEntity(securedCommit);
 
     return {
-      new: securedCommit.id, 
+      new: securedCommit.id,
       actions: [newCommitAction, newDataAction, ...mergedData.actions]
     };
   }
@@ -216,12 +214,16 @@ export class SimpleMergeStrategy implements MergeStrategy {
     newDatas: T[],
     config: any
   ): Promise<NodeActions<T>> {
-    const merge: Mergeable | undefined = this.recognizer
-      .recognize(originalData)
-      .find(prop => !!(prop as Mergeable).merge);
+    const merge: Merge | undefined = this.recognizer
+      .recognizeBehaviours(originalData)
+      .find(prop => !!(prop as Merge).merge);
 
     if (!merge)
-      throw new Error(`Cannot merge data ${JSON.stringify(originalData)} that does not implement the Mergeable behaviour`);
+      throw new Error(
+        `Cannot merge data ${JSON.stringify(
+          originalData
+        )} that does not implement the Mergeable behaviour`
+      );
 
     return merge.merge(originalData)(newDatas, this, config);
   }
@@ -268,8 +270,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
       }
     }
 
-    const sortedLinks = resultLinks.sort((link1, link2) => link1.index - link2.index).map(link => link.link);
-    
-    return sortedLinks.map((link):NodeActions<string> => {return { new: link, actions: [] }});
+    const sortedLinks = resultLinks
+      .sort((link1, link2) => link1.index - link2.index)
+      .map(link => link.link);
+
+    return sortedLinks.map(
+      (link): NodeActions<string> => {
+        return { new: link, actions: [] };
+      }
+    );
   }
 }

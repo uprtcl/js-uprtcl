@@ -5,9 +5,9 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Proposal, UpdateRequest } from '../types';
 import { styleMap } from './evees-info-popper';
-import { DEFAULT_COLOR } from './support';
 import { prettyTime, prettyAddress, eveeColor } from './support';
 
+export const DEFAULT_COLOR = '#d0dae0';
 import '@material/mwc-dialog';
 import '@material/mwc-button';
 
@@ -109,7 +109,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
     const result = await client.query({
       query: gql`{
-          entity(id: "${this.perspectiveId}") {
+          entity(ref: "${this.perspectiveId}") {
             id
             ... on Perspective {
               payload {
@@ -187,7 +187,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     
     const result = await client.query({
       query: gql`{
-          entity(id: "${this.perspectiveId}") {
+          entity(ref: "${this.perspectiveId}") {
             id
             ... on Perspective {
               proposals {

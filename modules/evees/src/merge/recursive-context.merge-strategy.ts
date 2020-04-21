@@ -1,11 +1,10 @@
-import gql from 'graphql-tag';
+import { gql, ApolloClient } from 'apollo-boost';
 import { injectable, inject } from 'inversify';
-import { ApolloClient } from 'apollo-boost';
 
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { HasChildren, Hashed, CortexModule, PatternRecognizer, Pattern, IsSecure } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { DiscoveryService, DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
+import { EntityCache, DiscoveryModule, loadEntity } from '@uprtcl/multiplatform';
+import { HasChildren, CortexModule, Entity, PatternRecognizer } from '@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import {
@@ -14,11 +13,12 @@ import {
   CREATE_COMMIT_ACTION,
   CREATE_DATA_ACTION,
   UpdateRequest,
-  RemotesConfig,
+  RemoteMap,
   NodeActions
 } from '../types';
+import { deriveEntity } from '../utils/cid-hash';
 import { EveesBindings } from '../bindings';
-import { Evees, CidHashedPattern } from '../uprtcl-evees';
+import { Evees, deriveSecured } from '../uprtcl-evees';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -29,23 +29,10 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
   allPerspectives!: Dictionary<string>;
 
-  constructor(
-    @inject(EveesBindings.RemotesConfig) protected remotesConfig: RemotesConfig,
-    @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache,
-    @inject(EveesBindings.Secured) protected secured: Pattern & IsSecure<any>,
-    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern,
-    @inject(DiscoveryModule.bindings.DiscoveryService) protected discovery: DiscoveryService) {
-      
-      super(remotesConfig, evees, recognizer, client, entityCache, secured, hashed);
-  }
-
-  async isPattern(id: string, name: string): Promise<boolean> {
-    const entity = await this.discovery.get(id) as object;
-    const pattern = this.recognizer.recognize(entity);
-    return pattern.findIndex(p => p.name === name) !== -1;
+  async isPattern(id: string, type: string): Promise<boolean> {
+    const entity = (await loadEntity(this.client, id)) as object;
+    const recongnizedType = this.recognizer.recognizeType(entity);
+    return type === recongnizedType;
   }
 
   setPerspective(perspectiveId: string, context: string, to: boolean): void {
@@ -68,7 +55,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async readPerspective(perspectiveId: string, to: boolean): Promise<void> {
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {
@@ -76,7 +63,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
               data {
                 id
                 _context {
-                  raw
+                  object
                 }
               }
             }
@@ -90,31 +77,33 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     });
 
     const context = result.data.entity.context.id;
-    const jsonData = result.data.entity.head.data._context.raw;
 
-    const dataObject = JSON.parse(jsonData);
     if (result.data.entity.head == null) {
       throw new Error(`head null reading perspective ${perspectiveId}`);
     }
-    
+
+    const dataObject = result.data.entity.head.data._context.object;
+    const dataId = result.data.entity.head.data.id;
+    const data = { id: dataId, object: dataObject };
+
     this.setPerspective(perspectiveId, context, to);
 
     const hasChildren: HasChildren | undefined = this.recognizer
-      .recognize(dataObject)
+      .recognizeBehaviours(data)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (hasChildren) {
-      const links = hasChildren.getChildrenLinks(dataObject);
+      const links = hasChildren.getChildrenLinks(data);
 
-      const promises = links.map(async (link) => {
-        const isPerspective = await this.isPattern(link, "Perspective");
+      const promises = links.map(async link => {
+        const isPerspective = await this.isPattern(link, 'Perspective');
         if (isPerspective) {
-          this.readPerspective(link, to)
+          this.readPerspective(link, to);
         } else {
           Promise.resolve();
         }
       });
-      
+
       await Promise.all(promises);
     }
   }
@@ -150,7 +139,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     } else {
       const result = await this.client.query({
         query: gql`{
-          entity(id: "${perspectiveId}") {
+          entity(ref: "${perspectiveId}") {
             id
             ... on Perspective {
               context{
@@ -173,18 +162,18 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   async getLinkMergeId(link: string) {
-    const isPerspective = await this.isPattern(link, "Perspective");
+    const isPerspective = await this.isPattern(link, 'Perspective');
     if (isPerspective) {
       return this.getPerspectiveContext(link);
     } else {
       return Promise.resolve(link);
     }
-  } 
+  }
 
   async checkPerspectiveAndOwner(perspectiveId: string, authority: string, canWrite: string) {
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective { payload { authority} }
           _context { patterns { accessControl { permissions} } }
@@ -219,26 +208,21 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       modificationsPromises.map(promises => Promise.all(promises))
     );
 
-    const mergedLinks = await super.mergeLinks(
-      originalMergeIds,
-      modificationsMergeIds,
-      config
-    );
+    const mergedLinks = await super.mergeLinks(originalMergeIds, modificationsMergeIds, config);
 
     const dictionary = this.perspectivesByContext;
 
     const mergeLinks = mergedLinks.map(
       async (mergeResult): Promise<NodeActions<string>> => {
-        
         const perspectivesByContext = dictionary[mergeResult.new];
 
         if (perspectivesByContext) {
-
           const needsSubperspectiveMerge = perspectivesByContext.to && perspectivesByContext.from;
 
           if (needsSubperspectiveMerge) {
-            /** Two perspectives of the same context are merged, keeping the "to" perspecive id, 
-             *  and updating its head */            
+            /** Two perspectives of the same context are merged, keeping the "to" perspecive id,
+             *  and updating its head */
+
             const { actions } = await this.mergePerspectives(
               perspectivesByContext.to as string,
               perspectivesByContext.from as string,
@@ -246,62 +230,61 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
             );
 
             return {
-              new: perspectivesByContext.to as string, 
+              new: perspectivesByContext.to as string,
               actions: actions.concat(...mergeResult.actions)
-            } 
+            };
           } else {
-                        
             if (perspectivesByContext.to) {
               /** if the perspective is only present in the "to", just keep it */
               return {
                 new: perspectivesByContext.to,
                 actions: []
-              }
+              };
             } else {
-              /** otherwise, if merge config.forceOwner and this perspective is only present in the 
-               * "from", a fork may be created to make sure the final perspective is in the target authority 
-               * and canWrite (TODO: canWrite will be replaced by a "copy permissions from element"  or 
-               * something */ 
-              
+              /** otherwise, if merge config.forceOwner and this perspective is only present in the
+               * "from", a fork may be created to make sure the final perspective is in the target authority
+               * and canWrite (TODO: canWrite will be replaced by a "copy permissions from element"  or
+               * something */
+
               if (config.forceOwner) {
-                
                 const isInternal = await this.checkPerspectiveAndOwner(
-                  perspectivesByContext.from as string, 
-                  config.authority, 
-                  config.canWrite);
+                  perspectivesByContext.from as string,
+                  config.authority,
+                  config.canWrite
+                );
 
                 if (!isInternal) {
                   const newPerspectiveActions = await this.evees.forkPerspective(
-                    perspectivesByContext.from as string, 
-                    config.authority, 
-                    config.canWrite);
+                    perspectivesByContext.from as string,
+                    config.authority,
+                    config.canWrite
+                  );
 
                   return newPerspectiveActions;
-
                 } else {
                   return {
                     new: perspectivesByContext.from as string,
                     actions: []
-                  }
+                  };
                 }
               } else {
                 return {
                   new: perspectivesByContext.from as string,
                   actions: []
-                }
-              } 
+                };
+              }
             }
           }
         }
         return {
           new: mergeResult.new,
           actions: []
-        }
+        };
       }
     );
 
     const mergeResults = await Promise.all(mergeLinks);
-    
+
     return mergeResults;
   }
 
@@ -311,11 +294,14 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   ): Promise<Array<UprtclAction>> {
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {
               id
+              data {
+                id
+              }
             }
             payload {
               authority
@@ -327,41 +313,42 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const authority = result.data.entity.payload.authority;
     const headId = result.data.entity.head.id;
+    const type = this.recognizer.recognizeType(data);
 
     const remote = this.evees.getAuthority(authority);
 
     if (!remote.userId)
       throw new Error('Cannot create perspectives in a remote you are not signed in');
 
-    const dataSource = this.remotesConfig.map(remote.authority);
+    const dataSource = this.remoteMap(remote, type);
 
-    const newHasheData = await this.hashed.derive()(data, dataSource.hashRecipe);
+    const entity = await deriveEntity(data, dataSource.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
-      entity: newHasheData,
+      entity,
       payload: {
-        source: dataSource.source
+        casID: dataSource.casID
       }
     };
 
-    this.entityCache.cacheEntity(newHasheData);
+    this.entityCache.cacheEntity(entity);
 
     const commit: Commit = {
-      dataId: newHasheData.id,
+      dataId: entity.id,
       parentsIds: headId ? [headId] : [],
       creatorsIds: [remote.userId],
       message: 'Merge: reference new commits',
       timestamp: Date.now()
     };
 
-    const securedCommit = await this.secured.derive()(commit, remote.hashRecipe);
+    const securedCommit = await deriveSecured(commit, remote.cidConfig);
 
     const newCommitAction: UprtclAction = {
       type: CREATE_COMMIT_ACTION,
       entity: securedCommit,
       payload: {
-        source: remote.source
+        casID: remote.casID
       }
     };
 
@@ -378,5 +365,4 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     return [updateHead, newCommitAction, newDataAction];
   }
-  
 }

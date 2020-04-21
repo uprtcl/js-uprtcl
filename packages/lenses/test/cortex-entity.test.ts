@@ -23,36 +23,41 @@ describe('<cortex-entity>', () => {
       new ApolloClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
-      new MockModule({ hash1: { id: 'hash1', object: object1 } }),
-      new LensesModule({})
+      new LensesModule(),
+      new MockModule({ QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo: object1 })
     ]);
   });
 
   it('<cortex-entity> renders a hash with the appropriate lens', async () => {
     const el: HTMLElement = await fixture(
       html`
-        <module-container><cortex-entity id="test" hash="hash1"></cortex-entity></module-container>
+        <module-container
+          ><cortex-entity
+            id="test"
+            ref="QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo"
+          ></cortex-entity
+        ></module-container>
       `
     );
 
     const cortexEntity = el.firstElementChild;
 
-    expect(el).lightDom.to.equal('<cortex-entity id="test" hash="hash1"></cortex-entity>');
+    expect(el).lightDom.to.equal(
+      '<cortex-entity id="test" ref="QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo"></cortex-entity>'
+    );
     expect(cortexEntity).shadowDom.to.equal(
       '<cortex-loading-placeholder></cortex-loading-placeholder>'
     );
 
     await waitUntil(
-      () => !cortexEntity.shadowRoot.querySelector('cortex-loading-placeholder'),
+      async () =>
+        !!(cortexEntity && cortexEntity.shadowRoot && !cortexEntity.shadowRoot.querySelector('cortex-loading-placeholder')),
       'Never stopped loading'
     );
 
-    expect(cortexEntity).shadowDom.to.equal(
-      '<mock-element></mock-element>'
-    );
+    expect(cortexEntity).shadowDom.to.equal('<mock-element></mock-element>');
 
-    const mock = cortexEntity.shadowRoot.firstElementChild;
-    expect(mock).shadowDom.to.equal('<span>Mock content: testing</span>')
-
+    const mock = (cortexEntity as any).shadowRoot.firstElementChild;
+    expect(mock).shadowDom.to.equal('<span>Mock content: testing</span>');
   });
 });

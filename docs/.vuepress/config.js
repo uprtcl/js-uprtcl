@@ -19,7 +19,7 @@ const guidesSidebar = [
         children: [
           '/guides/cortex/building-blocks/patterns',
           '/guides/cortex/building-blocks/lenses',
-          '/guides/cortex/building-blocks/sources',
+          '/guides/cortex/building-blocks/cas-sources',
           '/guides/cortex/building-blocks/graphql-schemas'
         ]
       },
@@ -68,10 +68,16 @@ const modulesSidebar = [
 const resourcesSidebar = ['/resources/videos', '/resources/glossary', '/resources/faq'];
 
 module.exports = {
-  title: '_Prtcl',
+  title: 'The Underscore Protocol',
   description: 'Documentation site for the _Prtcl',
   port: 8081,
   base: '/js-uprtcl/',
+  head: [
+    [
+      'link',
+      { rel: 'icon', type: 'image/png', href: '/favicon.png' }
+    ]
+  ],
   themeConfig: {
     logo: '/logo.png',
     displayAllHeaders: false,

@@ -1,12 +1,15 @@
-import { StoresModule, Store } from '@uprtcl/multiplatform';
+import { interfaces } from 'inversify';
+
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { i18nextModule, MicroModule } from '@uprtcl/micro-orchestrator';
+import { i18nextModule } from '@uprtcl/micro-orchestrator';
+import { EveesContentModule } from '@uprtcl/evees';
 
 import {
-  TextNodePatterns,
-  TextNodeTitle
-} from './patterns/text-node.entity';
+  TextNodeCommon,
+  TextNodeTitle,
+  TextNodePattern
+} from './patterns/text-node.pattern';
 import { documentsTypeDefs } from './graphql/schema';
 
 import en from './i18n/en.json';
@@ -23,51 +26,41 @@ import { TextNodeDiff } from './elements/document-text-node-diff';
  * Example usage:
  *
  * ```ts
- * import { IpfsConnection } from '@uprtcl/ipfs-provider';
- * import { DocumentsModule, DocumentsIpfs } from '@uprtcl/documents';
+ * import { IpfsStore } from '@uprtcl/ipfs-provider';
+ * import { DocumentsModule } from '@uprtcl/documents';
  *
- * const ipfsConnection = new IpfsConnection({
+ * const ipfsStore = new IpfsStore({
  *   host: 'ipfs.infura.io',
  *   port: 5001,
  *   protocol: 'https'
  * });
  *
- *  const documentsProvider = new DocumentsIpfs(ipfsConnection);
- *
- * const docs = new DocumentsModule([ documentsProvider ]);
+ * const docs = new DocumentsModule([ ipfsStore ]);
  * await orchestrator.loadModule(docs);
  * ```
  *
- * @category CortexModule
- *
- * @param stores an array of stores where documents can be put and retrieved
+ * @param stores an array of CASStores in which the documents objects can be stored/retrieved from
  */
-export class DocumentsModule extends MicroModule {
+export class DocumentsModule extends EveesContentModule {
   static id = 'documents-module';
 
   static bindings = DocumentsBindings;
 
-  constructor(protected stores: Store[]) {
-    super();
-  }
+  providerIdentifier = DocumentsBindings.DocumentsRemote;
 
-  async onLoad() {
+  async onLoad(container: interfaces.Container) {
+    super.onLoad(container);
     customElements.define('documents-text-node-editor', DocumentTextNodeEditor);
     customElements.define('documents-editor', DocumentEditor);
     customElements.define('documents-text-node-diff', TextNodeDiff);
   }
 
-  submodules = [
-    new GraphQlSchemaModule(documentsTypeDefs),
-    new i18nextModule('documents', { en: en }),
-    new StoresModule(
-      this.stores.map((store) => ({
-        symbol: DocumentsModule.bindings.DocumentsRemote,
-        store: store,
-      }))
-    ),
-    new PatternsModule({
-      [DocumentsModule.bindings.TextNodeEntity]: [TextNodePatterns, TextNodeTitle],
-    }),
-  ];
+  get submodules() {
+    return [
+      ...super.submodules,
+      new GraphQlSchemaModule(documentsTypeDefs, {}),
+      new i18nextModule('documents', { en: en }),
+      new PatternsModule([new TextNodePattern([TextNodeCommon, TextNodeTitle])])
+    ];
+  }
 }

@@ -61,23 +61,33 @@ npm install @uprtcl/cortex
 
 ## Usage
 
-Cortex modules are groups of patterns, lenses and services that are prepared to be used together.
+## Load `CortexModule`
 
-To use a module, import it, configure it and load it in the `micro-orchestrator`. Example with the `@uprtcl/documents` module.
+`CortexModule` is a `MicroModule` that registers the `PatternRecognizer` and sets the application up to be able to register `Patterns` and `Behaviours`.
 
 ```ts
-import { documentsModule, DocumentsIpfs, DocumentsBindings } from '@uprtcl/documents';
+import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { CortexModule } from '@uprtcl/cortex';
 
-const documentsProvider = new DocumentsIpfs({
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https'
-});
+const orchestrator = new MicroOrchestrator();
 
-const docs = documentsModule([documentsProvider]);
-
-await orchestrator.loadModules({
-  id: DocumentsBindings.Module,
-  module: docs
-});
+await orchestrator.loadModules([new ApolloClientModule(), new CortexModule()]);
 ```
+
+Learn more about `MicroModules` [here](https://uprtcl.github.io/js-uprtcl/guides/use/installing-the-micro-orchestrator).
+
+## Register Patterns with `PatternsModule`
+
+To register new `Patterns` and bind `Behaviours` to them, instantiate and load the `PatternsModule`:
+
+```ts
+import { PatternsModule } from '@uprtcl/cortex';
+import { TextPattern, TextActions, TextContent } from './text-pattern';
+
+const patternsModule = new PatternsModule([new TextPattern([TextActions, TextContent])]);
+
+await orchestrator.loadModule(patternsModule);
+```
+
+Learn more about how to develop `Patterns` [here](https://uprtcl.github.io/js-uprtcl/guides/cortex/building-blocks/patterns).

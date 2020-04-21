@@ -10,36 +10,46 @@ export const styleMap = style => {
   }, '');
 };
 
-
-import { htmlToText, TextType, TextNode } from '@uprtcl/documents';
+import { htmlToText, TextType, TextNode, DocumentsModule } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Hashed } from '@uprtcl/cortex';
-import { MenuConfig, EveesRemote, EveesModule, RemotesConfig, eveeColor, DEFAULT_COLOR, UPDATE_HEAD, CREATE_COMMIT, CREATE_PERSPECTIVE, CREATE_ENTITY } from '@uprtcl/evees';
+import { Entity } from '@uprtcl/cortex';
+import {
+  MenuConfig,
+  EveesRemote,
+  EveesModule,
+  eveeColor,
+  DEFAULT_COLOR,
+  UPDATE_HEAD,
+  CREATE_COMMIT,
+  CREATE_PERSPECTIVE,
+  CREATE_ENTITY,
+  RemoteMap
+} from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { Source } from '@uprtcl/multiplatform';
+import { CASSource } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
 import '@material/mwc-drawer';
+import { WikiBindings } from 'src/bindings';
 
 const LOGINFO = false;
 
 export class WikiDrawer extends moduleConnect(LitElement) {
-  
   logger = new Logger('WIKI-DRAWER');
 
   @property({ type: String, attribute: 'ref' })
   firstRef: string | undefined = undefined;
-  
-  @property({ type: String, attribute: 'default-authority'})
+
+  @property({ type: String, attribute: 'default-authority' })
   defaultAuthority: string | undefined = undefined;
 
   @property({ type: String, attribute: false })
   ref: string | undefined = undefined;
 
   @property({ type: Object, attribute: false })
-  wiki: Hashed<Wiki> | undefined;
+  wiki: Entity<Wiki> | undefined;
 
   @property({ type: Number })
   selectedPageIx: number | undefined = undefined;
@@ -51,15 +61,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   context: string = '';
   currentHeadId: string | undefined = undefined;
   editable: boolean = false;
-  
-  protected client: ApolloClient<any> | undefined = undefined;
-  protected eveesRemotes: EveesRemote[] | undefined = undefined;
-  protected remotesConfig: RemotesConfig | undefined = undefined;
+
+  protected client!: ApolloClient<any>;
+  protected eveesRemotes!: EveesRemote[];
+  protected remoteMap!: RemoteMap;
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    this.remotesConfig = this.request(EveesModule.bindings.RemotesConfig);
+    this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
 
     this.ref = this.firstRef;
 
@@ -85,12 +95,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
-    const client = this.client as ApolloClient<any>;
-
-    const result = await client.query({
+    const result = await this.client.query({
       query: gql`
       {
-        entity(id: "${this.ref}") {
+        entity(ref: "${this.ref}") {
           id
           ... on Perspective {
             payload {
@@ -136,7 +144,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         title: result.data.entity.head.data.title,
         pages: result.data.entity.head.data.pages.map(p => p.id)
       }
-    }
+    };
 
     this.logger.log('loadWiki()', { this: this, result });
 
@@ -149,22 +157,20 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!this.wiki) return;
 
     this.logger.log('loadPagesData()');
-    
+
     const pagesListPromises = this.wiki.object.pages.map(async pageId => {
       if (!this.client) throw new Error('client is undefined');
       const result = await this.client.query({
         query: gql`
         {
-          entity(id: "${pageId}") {
+          entity(ref: "${pageId}") {
             id
             _context {
-              patterns {
-                content {
-                  id
-                  _context {
-                    patterns {
-                      title
-                    }
+              content {
+                id
+                _context {
+                  patterns {
+                    title
                   }
                 }
               }
@@ -175,19 +181,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
       return {
         id: pageId,
-        title: result.data.entity._context.patterns.content._context.patterns.title
+        title: result.data.entity._context.content._context.patterns.title
       };
     });
 
     this.pagesList = await Promise.all(pagesListPromises);
-    this.logger.log('loadPagesData()', { pagesList: this.pagesList });    
+    this.logger.log('loadPagesData()', { pagesList: this.pagesList });
   }
 
   selectPage(ix: number | undefined) {
     if (!this.wiki) return;
 
     this.selectedPageIx = ix;
-    
+
     if (this.selectedPageIx === undefined) {
       return;
     }
@@ -201,9 +207,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
-  getStore(eveesAuthority: string): Source | undefined {
-    if (!this.remotesConfig) return undefined;
-    return this.remotesConfig.map(eveesAuthority);
+  getStore(authority: string, type: string): CASSource | undefined {
+    const remote = this.eveesRemotes.find(r => r.authority === authority);
+    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
+    return this.remoteMap(remote);
   }
 
   async createPage(page: TextNode, authority: string) {
@@ -213,28 +220,28 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const store = this.getStore(authority);
+    const store = this.getStore(authority, DocumentsModule.bindings.TextNodeType);
     if (!store) throw new Error('store is undefined');
-    
+
     const createTextNode = await this.client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
-        content: JSON.stringify(page),
-        source: store.source
+        object: page,
+        casID: store.casID
       }
     });
 
     const createCommit = await this.client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
-        dataId: createTextNode.data.createEntity,
+        dataId: createTextNode.data.createEntity.id,
         parentsIds: [],
-        source: remote.source
+        casID: remote.casID
       }
     });
 
     const headId = createCommit.data.createCommit.id;
-    
+
     const createPerspective = await this.client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
@@ -242,7 +249,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         headId: headId,
         parentId: this.ref,
         context: `${this.context}_${Date.now()}`,
-        source: remote.source
+        casID: remote.casID
       }
     });
 
@@ -250,35 +257,32 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async updateContent(newWiki: Wiki) {
-    const client = this.client as ApolloClient<any>;
-    const eveesRemotes = this.eveesRemotes as EveesRemote[];
-    
-    const store = this.getStore(this.authority);
+    const store = this.getStore(this.authority, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
-    
-    const createWiki = await client.mutate({
+
+    const createWiki = await this.client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
-        content: JSON.stringify(newWiki),
-        source: store.source
+        object: newWiki,
+        casID: store.casID
       }
     });
 
-    const remote = eveesRemotes.find(r => r.authority === this.authority);
+    const remote = this.eveesRemotes.find(r => r.authority === this.authority);
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
-    const createCommit = await client.mutate({
+    const createCommit = await this.client.mutate({
       mutation: CREATE_COMMIT,
       variables: {
-        dataId: createWiki.data.createEntity,
-        parentsIds: this.currentHeadId ? [this.currentHeadId] : [], 
-        source: remote.source
+        dataId: createWiki.data.createEntity.id,
+        parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
+        casID: remote.casID
       }
     });
 
     const headId = createCommit.data.createCommit.id;
 
-    await client.mutate({
+    await this.client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.ref,
@@ -287,7 +291,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     });
 
     this.currentHeadId = headId;
-    
+
     this.logger.info('updateContent()', newWiki);
 
     this.loadWiki();
@@ -296,7 +300,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async splicePages(pages: any[], index: number, count: number) {
     if (!this.wiki) throw new Error('wiki undefined');
 
-    const getPages = pages.map((page) => {
+    const getPages = pages.map(page => {
       if (typeof page !== 'string') {
         return this.createPage(page, this.authority);
       } else {
@@ -306,7 +310,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const pagesIds = await Promise.all(getPages);
 
-    const newObject = {...this.wiki.object};
+    const newObject = { ...this.wiki.object };
     const removed = newObject.pages.splice(index, count, ...pagesIds);
 
     return {
@@ -317,7 +321,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async newPage(index?: number) {
     if (!this.wiki) return;
-    
+
     const newPage: TextNode = {
       text: '',
       type: TextType.Title,
@@ -328,9 +332,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const result = await this.splicePages([newPage], index, 0);
     if (!result.entity) throw Error('problem with splice pages');
-    
+
     await this.updateContent(result.entity);
-    
+
     this.selectedPageIx = index;
   }
 
@@ -339,7 +343,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const { entity } = await this.splicePages(removed as string[], fromIndex, 1);
 
     await this.updateContent(entity);
-    
+
     if (this.selectedPageIx === undefined) return;
 
     /** this page was moved */
@@ -356,7 +360,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async removePage(pageIndex: number) {
     const { entity } = await this.splicePages([], pageIndex, 1);
     await this.updateContent(entity);
-    
+
     if (this.selectedPageIx === undefined) return;
 
     /** this page was removed */
@@ -368,21 +372,20 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (pageIndex < this.selectedPageIx) {
       this.selectedPageIx = this.selectedPageIx - 1;
     }
-
   }
 
   async optionOnPage(pageIndex: number, option: string) {
     switch (option) {
-      case 'move-up': 
+      case 'move-up':
         this.movePage(pageIndex, pageIndex - 1);
         break;
-      
-      case 'move-down': 
+
+      case 'move-down':
         this.movePage(pageIndex, pageIndex + 1);
         break;
 
-      case 'remove': 
-        this.removePage(pageIndex)
+      case 'remove':
+        this.removePage(pageIndex);
         break;
     }
   }
@@ -392,7 +395,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       this.ref = event.detail.perspectiveId;
-    })  as EventListener);
+    }) as EventListener);
   }
 
   renderPageList() {
@@ -418,16 +421,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               graphic: 'arrow_upward'
             },
             'move-down': {
-              disabled: ix === ((this.pagesList as any[]).length - 1),
+              disabled: ix === (this.pagesList as any[]).length - 1,
               text: 'move down',
               graphic: 'arrow_downward'
             },
-            'remove': {
+            remove: {
               disabled: false,
               text: 'remove',
               graphic: 'clear'
-            },
-          }
+            }
+          };
           // this.logger.log(`rendering page title ${page.id}`, menuConfig);
           const text = htmlToText(page.title);
           const empty = text === '';
@@ -439,13 +442,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           if (selected) classes.push('title-selected');
 
           return html`
-            <evees-list-item 
+            <evees-list-item
               class=${classes.join(' ')}
               text=${empty ? 'untitled' : text}
               selected=${selected ? 'true' : 'false'}
               @item-click=${() => this.selectPage(ix)}
-              @option-click=${(e) => this.optionOnPage(ix, e.detail.option)}
-              .config=${menuConfig}>
+              @option-click=${e => this.optionOnPage(ix, e.detail.option)}
+              .config=${menuConfig}
+            >
             </evees-list-item>
           `;
         })}
@@ -462,7 +466,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return html`
       <div class="app-drawer">
-
         <div class="app-navbar">
           <div
             class="color-bar"
@@ -503,7 +506,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   title=${this.wiki.object.title}
                   color=${this.color()}
                 >
-                  <evees-info-page 
+                  <evees-info-page
                     slot="evee-page"
                     first-perspective-id=${this.firstRef as string}
                     perspective-id=${this.ref}
@@ -528,7 +531,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
             Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
           color: #37352f;
-          --mdc-theme-primary: #2196F3;
+          --mdc-theme-primary: #2196f3;
         }
         .app-drawer {
           flex: 1 1 0;

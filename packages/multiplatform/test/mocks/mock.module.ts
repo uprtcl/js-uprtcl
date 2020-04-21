@@ -1,27 +1,24 @@
 import { MicroModule, Dictionary, Constructor } from '@uprtcl/micro-orchestrator';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { PatternsModule, Hashed, Pattern } from '@uprtcl/cortex';
+import { PatternsModule, Pattern } from '@uprtcl/cortex';
 
 import { mockSchema } from './mock.schema';
-import { MockPattern } from './mock.pattern';
-import { SourcesModule } from '../../src/sources.module';
-import { MockSource } from './mock.source';
+import { MockPattern, Redirect, Text } from './mock.pattern';
+import { CASModule } from '../../src/cas.module';
+import { MockSource } from './mock.store';
 
 export class MockModule extends MicroModule {
-  constructor(
-    protected initialObjects: Dictionary<Hashed<any>>,
-    protected initialPatterns: Array<Constructor<Pattern>> = []
-  ) {
+  constructor(protected initialObjects: Dictionary<any>) {
     super();
   }
 
   async onLoad() {}
 
-  submodules = [
-    new GraphQlSchemaModule(mockSchema),
-    new PatternsModule({ mock: [MockPattern, ...this.initialPatterns] }),
-    new SourcesModule([
-      { source: new MockSource(this.initialObjects), symbol: Symbol('mock-source') }
-    ])
-  ];
+  get submodules() {
+    return [
+      new GraphQlSchemaModule(mockSchema),
+      new PatternsModule([new MockPattern([Redirect, Text])]),
+      new CASModule([new MockSource(this.initialObjects)])
+    ];
+  }
 }

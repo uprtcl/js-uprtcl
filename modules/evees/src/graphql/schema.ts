@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import { gql } from 'apollo-boost';
 import { DocumentNode } from 'graphql';
 
 export const eveesTypeDefs: DocumentNode = gql`
@@ -11,14 +11,14 @@ export const eveesTypeDefs: DocumentNode = gql`
       context: String,
       name: String): Perspective!
 
-    createEntity(content: String!, source: ID): ID!
+    createEntity(object: JSON!, casID: ID): Entity!
 
     createCommit(
       dataId: ID!, 
       parentsIds: [ID!]!, 
       creatorsIds: [String], 
       message: String, 
-      source: String!, 
+      casID: String!, 
       timestamp: Date): Commit!
 
     createPerspective(

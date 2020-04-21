@@ -1,18 +1,17 @@
-import { Secured } from '../patterns/default-secured.pattern';
+import { Signed } from '@uprtcl/cortex';
 
 import { Perspective, Commit, PerspectiveDetails } from '../types';
 import { EveesSource } from './evees.source';
+import { Secured } from '../utils/cid-hash';
 
 export interface NewPerspectiveData {
   perspective: Secured<Perspective>;
   details: PerspectiveDetails;
-  canWrite?: string,
-  parentId?: string
+  canWrite?: string;
+  parentId?: string;
 }
 
 export interface EveesProvider extends EveesSource {
-
-
   /**
    * Delete a perspective, it is expected that, once called, 
    
@@ -34,7 +33,6 @@ export interface EveesProvider extends EveesSource {
    */
   clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void>;
 
-
   /** Cloners */
 
   /**
@@ -44,7 +42,6 @@ export interface EveesProvider extends EveesSource {
    */
   clonePerspective(perspective: Secured<Perspective>): Promise<void>;
 
-  
   /**
    * Clone the given commit in the service
    *

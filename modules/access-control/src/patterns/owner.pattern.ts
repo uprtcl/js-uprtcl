@@ -4,11 +4,10 @@ import { injectable } from 'inversify';
 import { Pattern } from '@uprtcl/cortex';
 import { HasLenses } from '@uprtcl/lenses';
 
-import { Permissions } from '../properties/permissions';
+import { Permissions } from '../behaviours/permissions';
 import { OwnerPermissions } from '../services/owner-access-control.service';
 
-@injectable()
-export class OwnerPattern implements Pattern, HasLenses, Permissions<OwnerPermissions> {
+export class OwnerPattern extends Pattern<OwnerPermissions> {
   recognize = (entity: any) => {
     return (
       (entity as OwnerPermissions).owner !== null &&
@@ -16,6 +15,11 @@ export class OwnerPattern implements Pattern, HasLenses, Permissions<OwnerPermis
     );
   };
 
+  type = undefined;
+}
+
+@injectable()
+export class OwnerBehaviour implements HasLenses<OwnerPermissions>, Permissions<OwnerPermissions> {
   canWrite = (entity: OwnerPermissions) => (userId: string | undefined): boolean => {
     return !!userId && entity.owner === userId;
   };

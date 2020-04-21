@@ -1,8 +1,8 @@
-import { Source } from '@uprtcl/multiplatform';
+import { CASStore } from '@uprtcl/multiplatform';
 
 import { PerspectiveDetails } from '../types';
 
-export interface EveesSource extends Source {
+export interface EveesSource extends CASStore {
   /**
    * Returns all the perspectives associated to a context
    *

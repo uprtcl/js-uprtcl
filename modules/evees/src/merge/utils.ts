@@ -1,5 +1,5 @@
 import { Diff } from 'diff-match-patch-ts';
-import * as lodash from 'lodash-es';
+import { isEqual } from 'lodash-es';
 
 import { DiffUtils } from './diff.utils';
 
@@ -26,7 +26,7 @@ export function mergeStrings(originalString: string, newStrings: string[]): stri
  * @returns the appropiate result of the merge
  */
 export function mergeResult<A>(original: A, modifications: A[]): A {
-  const changes = modifications.filter(modification => !lodash.isEqual(original, modification));
+  const changes = modifications.filter(modification => !isEqual(original, modification));
 
   switch (changes.length) {
     // Object has not changed
@@ -35,7 +35,7 @@ export function mergeResult<A>(original: A, modifications: A[]): A {
     case 1:
       return changes[0];
     default:
-      if (changes.every(change => lodash.isEqual(changes[0], change))) {
+      if (changes.every(change => isEqual(changes[0], change))) {
         return changes[0];
       }
       throw new Error('conflict when trying to merge');

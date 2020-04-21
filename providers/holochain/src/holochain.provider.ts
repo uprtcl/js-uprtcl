@@ -1,6 +1,6 @@
 import { injectable, inject } from 'inversify';
 
-import { Hashed } from '@uprtcl/cortex';
+import { Entity } from '@uprtcl/cortex';
 import { Authority } from '@uprtcl/access-control';
 import { Constructor } from '@uprtcl/micro-orchestrator';
 
@@ -9,7 +9,7 @@ import { HolochainConnectionBindings } from './bindings';
 
 // Auxiliar type for Holochain's get_entry call
 export type EntryResult<T extends object = any> = {
-  entry: Hashed<T>;
+  entry: Entity<T>;
   type: string;
 };
 

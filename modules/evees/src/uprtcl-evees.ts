@@ -7,7 +7,7 @@ export {
   Perspective,
   Context,
   PerspectiveDetails,
-  RemotesConfig,
+  RemoteMap,
   UprtclAction,
   NodeActions,
   HasDiffLenses,
@@ -26,9 +26,10 @@ export { EveesHttp } from './services/providers/http/evees.http';
 
 export { Evees } from './services/evees';
 export { EveesModule } from './evees.module';
+export { EveesContentModule } from './evees-content.module';
 
 /** Merge */
-export { Mergeable } from './properties/mergeable';
+export { Merge } from './behaviours/merge';
 
 export { MergeStrategy } from './merge/merge-strategy';
 export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
@@ -41,7 +42,13 @@ export { CommitHistory } from './elements/evees-commit-history';
 export { PerspectivesList } from './elements/evees-perspectives-list';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
-export { UpdateContentEvent, UpdateContentArgs, ContentUpdatedEvent, SpliceChildrenEvent, CONTENT_UPDATED_TAG } from './elements/events';
+export {
+  UpdateContentEvent,
+  UpdateContentArgs,
+  ContentUpdatedEvent,
+  SpliceChildrenEvent,
+  CONTENT_UPDATED_TAG
+} from './elements/events';
 
 /** UI support components */
 export { MenuConfig } from './elements/common-ui/evees-options-menu';
@@ -51,11 +58,14 @@ export { eveeColor, DEFAULT_COLOR } from './elements/support';
 export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
 
 /** Patterns */
-export { PerspectiveEntity, PerspectiveLinks } from './patterns/perspective.pattern';
-export { CommitEntity, CommitLens, CommitLinked } from './patterns/commit.pattern';
-export { CidHashedPattern, recognizeHashed } from './patterns/cid-hashed.pattern';
-export { DefaultSignedPattern } from './patterns/default-signed.pattern';
-export { DefaultSecuredPattern, Secured } from './patterns/default-secured.pattern';
+export {
+  PerspectiveAccessControl,
+  PerspectivePattern,
+  PerspectiveLinks
+} from './patterns/perspective.pattern';
+export { CommitLinked, CommitPattern } from './patterns/commit.pattern';
+export { Secured, hashObject, deriveEntity } from './utils/cid-hash';
+export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';
 
 /** Utils */
 export { isAncestorOf } from './utils/ancestor';

@@ -11,13 +11,4 @@ export const baseTypeDefs: DocumentNode = gql`
     _: Boolean
   }
 
-  interface Entity {
-    id: ID!
-
-    _context: EntityContext!
-  }
-
-  type EntityContext {
-    _: Boolean
-  }
 `;

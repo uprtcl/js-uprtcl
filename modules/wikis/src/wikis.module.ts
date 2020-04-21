@@ -1,10 +1,12 @@
+import { Container } from 'inversify';
+
 import { PatternsModule } from '@uprtcl/cortex';
-import { StoresModule, Store } from '@uprtcl/multiplatform';
+import { EveesContentModule } from '@uprtcl/evees';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
+import { i18nextModule } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
-import { WikiCommon, WikiLinks } from './patterns/wiki.entity';
+import { WikiCommon, WikiLinks, WikiPattern } from './patterns/wiki.pattern';
 import { wikiTypeDefs } from './graphql/schema';
 import { WikiPage } from './elements/wiki-page';
 import { WikiHome } from './elements/wiki-home';
@@ -16,57 +18,49 @@ import { WikiDiff } from './elements/wiki-diff';
 /**
  * Configure a wikis module with the given providers
  *
- * Depends on: lensesModule, PatternsModule, discoveryModule
+ * Depends on: lensesModule, PatternsModule, multiSourceModule
  *
  * Example usage:
  *
  * ```ts
- * import { IpfsConnection } from '@uprtcl/ipfs-provider';
- * import { wikisModule, WikisTypes, WikisIpfs } from '@uprtcl/wikis';
- *
- * const ipfsConnection = new IpfsConnection({
+ * import { IpfsStore } from '@uprtcl/ipfs-provider';
+ * import { WikisModule, WikisTypes } from '@uprtcl/wikis';
+ * 
+ * const ipfsStore = new IpfsStore({
  *   host: 'ipfs.infura.io',
  *   port: 5001,
  *   protocol: 'https'
  * });
  *
- *  const wikisProvider = new wikisIpfs(ipfsConnection);
- *
- * const wikis = new WikisModule([ wikisProvider ]);
+ * const wikis = new WikisModule([ ipfsStore ]);
  * await orchestrator.loadModule(wikis);
  * ```
  *
  * @category CortexModule
  *
- * @param wikisRemote an array of remotes of wikis
+ * @param stores an array of CASStores in which the wiki objects can be stored/retrieved from
  */
-export class WikisModule extends MicroModule {
+export class WikisModule extends EveesContentModule {
   static id = 'wikis-module';
 
   static bindings = WikiBindings;
 
-  constructor(protected stores: Store[]) {
-    super();
-  }
+  providerIdentifier = WikiBindings.WikisRemote;
 
-  async onLoad() {
+  async onLoad(container: Container) {
+    super.onLoad(container);
     customElements.define('wiki-drawer', WikiDrawer);
     customElements.define('wiki-page', WikiPage);
     customElements.define('wiki-home', WikiHome);
     customElements.define('wiki-diff', WikiDiff);
   }
 
-  submodules = [
-    new GraphQlSchemaModule(wikiTypeDefs),
-    new i18nextModule('wikis', { en: en }),
-    new StoresModule(
-      this.stores.map(store => ({
-        symbol: WikisModule.bindings.WikisRemote,
-        store: store
-      }))
-    ),
-    new PatternsModule({
-      [WikisModule.bindings.WikiEntity]: [WikiCommon, WikiLinks]
-    })
-  ];
+  get submodules() {
+    return [
+      ...super.submodules,
+      new GraphQlSchemaModule(wikiTypeDefs, {}),
+      new i18nextModule('wikis', { en: en }),
+      new PatternsModule([new WikiPattern([WikiCommon, WikiLinks])])
+    ];
+  }
 }

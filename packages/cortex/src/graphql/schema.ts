@@ -4,9 +4,15 @@ import { DocumentNode } from 'graphql';
 export const cortexSchema: DocumentNode = gql`
   scalar JSON
 
-  extend type EntityContext {
+  interface Entity {
+    id: ID!
+
+    _context: EntityContext!
+  }
+
+  type EntityContext {
     patterns: Patterns!
-    raw: String!
+    object: JSON!
   }
 
   type Patterns {

@@ -58,34 +58,30 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         provider.authority.startsWith('eth')
       );
 
-      const wikisProvider = this.requestAll(WikisModule.bindings.WikisRemote).find(provider =>
-        provider.source.startsWith('ipfs')
-      );
-
       const client = this.request(ApolloClientModule.bindings.Client);
 
       const createWiki = await client.mutate({
         mutation: CREATE_ENTITY,
         variables: {
-          content: JSON.stringify({
+          object: {
             title: 'Genesis Wiki',
             pages: []
-          }),
-          source: wikisProvider.source
+          },
+          casID: eveesEthProvider.casID
         }
       });
 
       const createCommit = await client.mutate({
         mutation: CREATE_COMMIT,
         variables: {
-          dataId: createWiki.data.createEntity,
+          dataId: createWiki.data.createEntity.id,
           parentsIds: [],
-          source: eveesEthProvider.source
+          casID: eveesEthProvider.casID
         }
       });
 
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
-  
+
       const createPerspective = await client.mutate({
         mutation: CREATE_PERSPECTIVE,
         variables: {
@@ -109,7 +105,10 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       ${!this.loading
         ? html`
             <div class="app-mock">
-              <wiki-drawer ref=${this.rootHash} default-authority=${this.defaultAuthority}></wiki-drawer>
+              <wiki-drawer
+                ref=${this.rootHash}
+                default-authority=${this.defaultAuthority}
+              ></wiki-drawer>
             </div>
           `
         : html`
@@ -120,12 +119,13 @@ export class SimpleWiki extends moduleConnect(LitElement) {
 
   static get styles() {
     return css`
-    .app-mock {
-      padding: 50px 80px;
-      min-height: calc(100vh - 100px);
-      display: flex;
-      flex-direction: column;
-      background-color: #bdc6e0;
-    }`;
+      .app-mock {
+        padding: 50px 80px;
+        min-height: calc(100vh - 100px);
+        display: flex;
+        flex-direction: column;
+        background-color: #bdc6e0;
+      }
+    `;
   }
 }

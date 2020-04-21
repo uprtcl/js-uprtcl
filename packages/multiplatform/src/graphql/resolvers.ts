@@ -1,72 +1,31 @@
-import { PatternRecognizer, CortexModule, Hashed } from '@uprtcl/cortex';
-
-import { DiscoveryService } from '../services/discovery.service';
-import { DiscoveryModule } from '../discovery.module';
-import { getIsomorphisms, entityContent } from '../utils/entities';
-import { ApolloClient, gql } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
+import { CortexModule, Entity, entityFromGraphQlObject } from '@uprtcl/cortex';
 
-export const discoverResolvers = {
-  Patterns: {
-    async content(parent, args, { container }, info) {
-      const entity: Hashed<any> = parent.__entity;
+import { redirectEntity, loadEntity } from '../utils/entities';
+import { DiscoveryBindings } from '../bindings';
+import { EntityCache } from './entity-cache';
 
-      const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
-      const hasRedirect = recognizer.recognize(entity).find(prop => !!prop.redirect);
+export const resolvers = {
+  EntityContext: {
+    casID(parent, _, { container }) {
+      const entity = entityFromGraphQlObject(parent);
+      const cache: EntityCache = container.get(DiscoveryBindings.EntityCache);
 
-      if (!hasRedirect) return entity.id;
+      const cachedEntity = cache.getCachedEntity(entity.id);
 
-      const redirectEntityId = await hasRedirect.redirect(entity);
-      if (!redirectEntityId) return entity.id;
+      if (!cachedEntity) throw new Error(`Entity with id ${entity.id} was not found in cache`);
 
-      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
-
-      const result = await client.query({
-        query: gql`
-        {
-          entity(id: "${redirectEntityId}") {
-            id
-            _context {
-              patterns {
-                content {
-                  id
-                }
-              }
-            }
-          }
-        }
-        `
-      });
-
-      return result.data.entity._context.patterns.content.id;
+      return cachedEntity.casID;
     },
-    async isomorphisms(parent, args, { container }, info) {
-      const entity = parent.__entity;
+    async content(parent, _, { container }) {
+      const entityId = parent.id;
+      const recognizer = container.get(CortexModule.bindings.Recognizer);
+      const client = container.get(ApolloClientModule.bindings.Client);
 
-      const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
-
-      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
-
-      const isomorphisms = await getIsomorphisms(recognizer, entity, (id: string) =>
-        loadEntity(id, client)
+      const redirectedEntity = await redirectEntity(recognizer, ref => loadEntity(client, ref))(
+        entityId
       );
-
-      return isomorphisms;
+      return { id: redirectedEntity.id, ...redirectedEntity.object };
     }
   }
 };
-
-async function loadEntity(id: string, client: ApolloClient<any>): Promise<Hashed<any> | undefined> {
-  const result = await client.query({
-    query: gql`{
-      entity(id: "${id}") {
-        id
-        _context {
-          raw
-        }
-      }
-    }`
-  });
-
-  return { id, object: result.data.entity._context.raw };
-}

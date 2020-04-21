@@ -1,11 +1,16 @@
 import { TemplateResult } from 'lit-element';
-
-import { SlotPlugin } from './plugins/slot.plugin';
+import { Entity } from '@uprtcl/cortex';
 
 export interface Lens {
   name: string;
-  render: (lensContent: TemplateResult, context: any) => TemplateResult;
+  render: (entity: Entity<any>, context: any) => TemplateResult;
   type?: string;
 }
 
-export type LensesPlugin = SlotPlugin;
+export type LensSelector = (
+  lenses: Lens[],
+  entityLink: string,
+  entity: any,
+  lensType: string,
+  context: string
+) => Lens;

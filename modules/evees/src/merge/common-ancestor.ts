@@ -1,8 +1,7 @@
-import { Secured } from '../patterns/default-secured.pattern';
-import { Source } from '@uprtcl/multiplatform';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import { Commit } from '../types';
-import { ApolloClient, gql } from 'apollo-boost';
+import { Secured } from '../utils/cid-hash';
 
 interface Path {
   visited: { [commitId: string]: boolean };
@@ -52,19 +51,18 @@ export class FindMostRecentCommonAncestor {
   }
 
   public async getCommit(commitId: string): Promise<Secured<Commit>> {
-
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${commitId}") {
+        entity(ref: "${commitId}") {
           id
           _context {
-            raw
+            object
           }
         }
       }`
     });
 
-    return { id: commitId, object: JSON.parse(result.data.entity._context.raw) };
+    return { id: commitId, object: result.data.entity._context.object };
   }
 
   public async compute(): Promise<string> {

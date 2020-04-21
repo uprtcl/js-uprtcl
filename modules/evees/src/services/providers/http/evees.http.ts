@@ -1,17 +1,15 @@
 import { HttpEthAuthProvider, HttpConnection, KnownSourcesHttp } from '@uprtcl/http-provider';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Hashed } from '@uprtcl/cortex';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';
-import { CidConfig } from '@uprtcl/ipfs-provider';
+import { CidConfig, KnownSourcesService } from '@uprtcl/multiplatform';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
-import { PerspectiveDetails, Perspective } from '../../../types';
+import { PerspectiveDetails, Perspective, Commit } from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
-import { KnownSourcesService } from '@uprtcl/multiplatform';
 import { NewPerspectiveData } from '../../evees.provider';
-import { Secured } from '../../../patterns/default-secured.pattern';
+import { Secured } from '../../../utils/cid-hash';
 
 const evees_api: string = 'evees-v1';
 
@@ -22,13 +20,12 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
 
   accessControl: BasicAdminAccessControlService | undefined;
   proposals: ProposalsProvider | undefined;
-  hashRecipe: CidConfig;
 
   constructor(
     host: string,
     protected connection: HttpConnection,
     protected ethConnection: EthereumConnection,
-    hashRecipe: CidConfig
+    public cidConfig: CidConfig
   ) {
     super(
       {
@@ -40,20 +37,27 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     );
 
     this.accessControl = new EveesAccessControlHttp(host, this.connection);
-    this.knownSources= new KnownSourcesHttp(host, this.connection);
-    this.hashRecipe = hashRecipe;
+    this.knownSources = new KnownSourcesHttp(host, this.connection);
   }
   
   ready(): Promise<void> {
     return Promise.resolve();
   }
 
-  get source() {
-    return `http:source:${this.options.host}`;
+  get casID() {
+    return `http:store:${this.options.host}`;
   }
 
-  async get<T>(hash: string): Promise<Hashed<T>> {
-    return super.getObject<Hashed<T>>(`/get/${hash}`);
+  async get<T>(hash: string): Promise<T> {
+    return super.getObject<T>(`/get/${hash}`);
+  }
+
+  async create(object: object, hash?: string | undefined): Promise<string> {
+    const result = await super.httpPost(`/data`, {
+      id: '',
+      object: object
+    });
+    return result.elementIds[0];
   }
 
   async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
@@ -62,14 +66,16 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
 
   async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     await super.httpPost('/persp', {
-      perspective: perspectiveData.perspective, 
+      perspective: perspectiveData.perspective,
       details: perspectiveData.details,
       parentId: perspectiveData.parentId
     });
   }
 
   async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    const promises = newPerspectivesData.map(perspectiveData => this.cloneAndInitPerspective(perspectiveData));
+    const promises = newPerspectivesData.map(perspectiveData =>
+      this.cloneAndInitPerspective(perspectiveData)
+    );
     await Promise.all(promises);
   }
 

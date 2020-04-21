@@ -1,19 +1,16 @@
-import { Hashed } from '@uprtcl/cortex';
-import { CidConfig } from '@uprtcl/ipfs-provider';
-import { Store } from '@uprtcl/multiplatform';
+import { CASStore, CidConfig } from '@uprtcl/multiplatform';
 
 import { HttpProvider } from './http.provider';
 import { HttpConnection } from './http.connection';
 
 const store_api = 'store';
 
-export class HttpStore extends HttpProvider implements Store {
-
+export class HttpStore extends HttpProvider implements CASStore {
   constructor(
-    protected host: string, 
-    protected connection: HttpConnection, 
-    public hashRecipe: CidConfig) {
-
+    protected host: string,
+    protected connection: HttpConnection,
+    public cidConfig: CidConfig
+  ) {
     super(
       {
         host: host,
@@ -23,25 +20,18 @@ export class HttpStore extends HttpProvider implements Store {
     );
   }
 
-  get source() {
+  get casID() {
     return `http:${store_api}:${this.host}`;
   }
 
-  async get(hash: string): Promise<Hashed<object>> {
-    return super.getObject<Hashed<object>>(`/get/${hash}`);
+  async get(hash: string): Promise<object> {
+    return super.getObject<object>(`/get/${hash}`);
   }
 
-  async put(object: object): Promise<string> {
+  async create(object: object, hash?: string): Promise<string> {
     const result = await super.httpPost(`/data`, {
       id: '',
       object: object
-    });
-    return result.elementIds[0];
-  }
-
-  async clone(entity: Hashed<object>): Promise<string> {
-    const result = await super.httpPost(`/data`, {
-      entity
     });
     return result.elementIds[0];
   }

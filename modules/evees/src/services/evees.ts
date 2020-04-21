@@ -1,33 +1,25 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { multiInject, injectable, inject } from 'inversify';
 
-import {
-  PatternRecognizer,
-  Hashed,
-  IsSecure,
-  HasChildren,
-  CortexModule,
-  Signed
-} from '@uprtcl/cortex';
-import { KnownSourcesService, DiscoveryService, DiscoveryModule } from '@uprtcl/multiplatform';
+import { PatternRecognizer, HasChildren, CortexModule, Signed } from '@uprtcl/cortex';
+import { KnownSourcesService, DiscoveryModule, loadEntity } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Secured } from '../patterns/default-secured.pattern';
 import {
   Perspective,
   Commit,
-  RemotesConfig,
   UprtclAction,
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION,
   CREATE_AND_INIT_PERSPECTIVE_ACTION,
   NodeActions,
+  RemoteMap
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
-import { CidHashedPattern } from '../patterns/cid-hashed.pattern';
-import { CREATE_COMMIT } from 'src/uprtcl-evees';
+import { Secured, deriveEntity } from '../utils/cid-hash';
+import { deriveSecured } from '../utils/signed';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -38,23 +30,21 @@ export class Evees {
 
   constructor(
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(EveesBindings.Secured) protected secured: IsSecure<any>,
-    @inject(EveesBindings.Hashed) protected hashed: CidHashedPattern,
     @inject(DiscoveryModule.bindings.LocalKnownSources)
     public knownSources: KnownSourcesService,
-    @inject(DiscoveryModule.bindings.DiscoveryService)
-    protected discovery: DiscoveryService,
     @multiInject(EveesBindings.EveesRemote)
     protected eveesRemotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client)
     protected client: ApolloClient<any>,
-    @inject(EveesBindings.RemotesConfig)
-    protected remotesConfig: RemotesConfig
+    @inject(EveesBindings.DefaultRemote)
+    protected defaultRemote: EveesRemote,
+    @inject(EveesBindings.RemoteMap)
+    protected remoteMap: RemoteMap
   ) {}
 
   /** Public functions */
 
-  public getAuthority(authority: String | undefined): EveesRemote {
+  public getAuthority(authority: string | undefined): EveesRemote {
     if (!authority && this.eveesRemotes.length === 1) return this.eveesRemotes[0];
 
     const remote = this.eveesRemotes.find(remote => remote.authority === authority);
@@ -82,7 +72,7 @@ export class Evees {
     const result = await this.client.query({
       query: gql`
         {
-          entity(id: "${perspectiveId}") {
+          entity(ref: "${perspectiveId}") {
             id 
             ... on Perspective {
               payload {
@@ -99,16 +89,16 @@ export class Evees {
   }
 
   public async isPerspective(id: string): Promise<boolean> {
-    const entity = await this.discovery.get(id) as object;
-    const pattern = this.recognizer.recognize(entity);
-    return pattern.findIndex(p => p.name === "Perspective") !== -1;
+    const entity = await loadEntity(this.client, id);
+    const type = this.recognizer.recognizeType(entity);
+    return type === 'Perspective';
   }
 
   public async getContextPerspectives(context: string): Promise<string[]> {
     const promises = this.eveesRemotes.map(async remote => {
       const thisPerspectivesIds = await remote.getContextPerspectives(context);
       thisPerspectivesIds.forEach(pId => {
-        this.knownSources.addKnownSources(pId, [remote.source]);
+        this.knownSources.addKnownSources(pId, [remote.casID], EveesBindings.PerspectiveType);
       });
       return thisPerspectivesIds;
     });
@@ -118,21 +108,21 @@ export class Evees {
     return ([] as string[]).concat(...perspectivesIds);
   }
 
-  async isPattern(id: string, name: string): Promise<boolean> {
-    const entity = await this.discovery.get(id) as object;
-    const pattern = this.recognizer.recognize(entity);
-    return pattern.findIndex(p => p.name === name) !== -1;
+  async isPattern(id: string, type: string): Promise<boolean> {
+    const entity = await loadEntity(this.client, id);
+    const recognizedType = this.recognizer.recognizeType(entity);
+    return type === recognizedType;
   }
 
   /**
    * receives an entity id and compute the actions that will
-   * result on this entity being forked on a target authority 
+   * result on this entity being forked on a target authority
    * with a target owner (canWrite).
-   * 
+   *
    * it also makes sure that all entities are clonned
    * on the target authority default store.
-   * 
-   * recursively fork entity children 
+   *
+   * recursively fork entity children
    */
   public async fork(
     id: string,
@@ -142,12 +132,11 @@ export class Evees {
     context?: string,
     name?: string
   ): Promise<NodeActions<string>> {
-
-    const isPerspective = await this.isPattern(id, "Perspective");
+    const isPerspective = await this.isPattern(id, EveesBindings.PerspectiveType);
     if (isPerspective) {
       return this.forkPerspective(id, authority, canWrite);
     } else {
-      const isCommit = await this.isPattern(id, "Commit");
+      const isCommit = await this.isPattern(id, EveesBindings.CommitType);
       if (isCommit) {
         return this.forkCommit(id, authority, canWrite);
       } else {
@@ -158,7 +147,7 @@ export class Evees {
 
   getEntityChildren(entity: object) {
     let hasChildren: HasChildren | undefined = this.recognizer
-      .recognize(entity)
+      .recognizeBehaviours(entity)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (!hasChildren) {
@@ -170,7 +159,7 @@ export class Evees {
 
   replaceEntityChildren(entity: object, newLinks: string[]) {
     let hasChildren: HasChildren | undefined = this.recognizer
-      .recognize(entity)
+      .recognizeBehaviours(entity)
       .find(prop => !!(prop as HasChildren).getChildrenLinks);
 
     if (!hasChildren) {
@@ -181,18 +170,23 @@ export class Evees {
   }
 
   public async forkPerspective(
-    perspectiveId: string, 
-    authority?: string, 
+    perspectiveId: string,
+    authority?: string,
     canWrite?: string,
     name?: string,
-    parentId?: string): Promise<NodeActions<string>> {
-
-    const eveesRemote = authority !== undefined ? this.getAuthority(authority) : this.remotesConfig.defaultCreator;
-    canWrite = canWrite !== undefined ? canWrite : eveesRemote.userId !== undefined ? eveesRemote.userId : '';
+    parentId?: string
+  ): Promise<NodeActions<string>> {
+    const eveesRemote = authority !== undefined ? this.getAuthority(authority) : this.defaultRemote;
+    canWrite =
+      canWrite !== undefined
+        ? canWrite
+        : eveesRemote.userId !== undefined
+        ? eveesRemote.userId
+        : '';
 
     const result = await this.client.query({
       query: gql`{
-        entity(id: "${perspectiveId}") {
+        entity(ref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {
@@ -210,18 +204,15 @@ export class Evees {
     const context = result.data.entity.context.id;
 
     const forkCommit = await this.forkCommit(headId, eveesRemote.authority, canWrite);
-    
+
     const object: Perspective = {
       creatorId: eveesRemote.userId ? eveesRemote.userId : '',
       authority: eveesRemote.authority,
       timestamp: Date.now()
     };
 
-    const perspective: Secured<Perspective> = await this.secured.derive()(
-      object,
-      eveesRemote.hashRecipe
-    );
-    
+    const perspective: Secured<Perspective> = await deriveSecured(object, eveesRemote.cidConfig);
+
     const newPerspectiveAction: UprtclAction = {
       type: CREATE_AND_INIT_PERSPECTIVE_ACTION,
       entity: perspective,
@@ -235,15 +226,17 @@ export class Evees {
     return {
       new: perspective.id,
       actions: [newPerspectiveAction].concat(forkCommit.actions)
-    }
+    };
   }
 
   public async forkCommit(
-    commitId: string, 
-    authority: string, 
-    canWrite: string): Promise<NodeActions<string>> {
+    commitId: string,
+    authority: string,
+    canWrite: string
+  ): Promise<NodeActions<string>> {
+    const commit: Secured<Commit> | undefined = await loadEntity(this.client, commitId);
+    if (!commit) throw new Error(`Could not find commit with id ${commitId}`);
 
-    const commit = await this.discovery.get(commitId) as Hashed<Signed<Commit>>;
     const remote = this.getAuthority(authority);
 
     const dataId = commit.object.payload.dataId;
@@ -252,68 +245,70 @@ export class Evees {
     const eveesRemote = this.getAuthority(authority);
 
     /** build new head object pointing to new data */
-    const newCommit: Signed<Commit> = {
-      payload: {
-        creatorsIds: eveesRemote.userId ? [eveesRemote.userId] : [''],
-        dataId: dataFork.new,
-        message: `autocommit to fork ${commitId} on authority ${authority}`,
-        parentsIds: [commit.id],
-        timestamp: Date.now()
-      },
-      proof: {
-        type: '',
-        signature: ''
-      }
+    const newCommit: Commit = {
+      creatorsIds: eveesRemote.userId ? [eveesRemote.userId] : [''],
+      dataId: dataFork.new,
+      message: `autocommit to fork ${commitId} on authority ${authority}`,
+      parentsIds: [commit.id],
+      timestamp: Date.now()
     };
 
-    const newHead = await this.hashed.derive()(newCommit, remote.hashRecipe);
+    const newHead: Secured<Commit> = await deriveSecured(newCommit, remote.cidConfig);
 
     const newCommitAction: UprtclAction = {
       type: CREATE_COMMIT_ACTION,
       entity: newHead,
       payload: {
-        source: remote.source
+        casID: remote.casID
       }
     };
 
     return {
-      new: newHead.id, 
+      new: newHead.id,
       actions: [newCommitAction].concat(dataFork.actions)
-    }
+    };
   }
 
   public async forkEntity(
-    entityId: string, 
-    authority: string, 
-    canWrite: string): Promise<NodeActions<string>> {
-
-    const data = await this.discovery.get(entityId);
+    entityId: string,
+    authority: string,
+    canWrite: string
+  ): Promise<NodeActions<string>> {
+    const data = await loadEntity(this.client, entityId);
     if (!data) throw new Error(`data ${entityId} not found`);
 
     /** createOwnerPreservingEntity of children */
-    const oldLinks = this.getEntityChildren(data.object);
+    const oldLinks = this.getEntityChildren(data);
 
-    const getLinksForks = oldLinks.map(link => this.fork(link, authority, canWrite))
+    const type = this.recognizer.recognizeType(data);
+
+    const getLinksForks = oldLinks.map(link => this.fork(link, authority, canWrite));
 
     const newLinksNodeActions = await Promise.all(getLinksForks);
     const newLinks = newLinksNodeActions.map(node => node.new);
 
-    const newObject = this.replaceEntityChildren(data.object, newLinks);
+    const tempData = this.replaceEntityChildren(data, newLinks);
 
-    const source = this.remotesConfig.map(authority);
-    const newData = await this.hashed.derive()(newObject, source.hashRecipe);
+    const remote = this.eveesRemotes.find(r => r.authority === authority);
+
+    if (!remote)
+      throw new Error(`Could not find registered evees remote for authority with ID ${authority}`);
+
+    const store = this.remoteMap(remote, type);
+
+    const newData = await deriveEntity(tempData.object, store.cidConfig);
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
       entity: newData,
       payload: {
-        source: source.source
+        casID: store.casID
       }
     };
 
     return {
       new: newData.id,
       actions: [newDataAction].concat(...newLinksNodeActions.map(node => node.actions))
-    } 
+    };
   }
 }

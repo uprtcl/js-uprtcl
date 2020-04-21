@@ -1,42 +1,50 @@
 import { interfaces } from 'inversify';
 
 import { MicroModule } from '@uprtcl/micro-orchestrator';
-import { CortexModule } from '@uprtcl/cortex';
+import { CortexModule, Pattern, PatternsModule } from '@uprtcl/cortex';
 import { ApolloClientModule, GraphQlSchemaModule } from '@uprtcl/graphql';
 
-import { DiscoveryService } from './services/discovery.service';
-import { MultiplatformBindings } from './bindings';
-import { KnownSourcesService } from './services/known-sources.service';
+import { MultiSourceService } from './references/known-sources/multi-source.service';
+import { DiscoveryBindings } from './bindings';
+import { KnownSourcesService } from './references/known-sources/known-sources.service';
 import { KnownSourcesApollo } from './graphql/known-sources.apollo';
 import { discoveryTypeDefs } from './graphql/schema';
 import { DiscoverDirective } from './graphql/directives/discover-directive';
-import { SourceDirective } from './graphql/directives/source-directive';
-import { discoverResolvers } from './graphql/resolvers';
-import { TaskQueue } from './utils/task.queue';
+import { CASSourceDirective } from './graphql/directives/cas-source-directive';
 import { EntityCache } from './graphql/entity-cache';
+import { resolvers } from './graphql/resolvers';
+import {
+  KnownSourcesRefPattern,
+  KnownSourcesResolver
+} from './references/known-sources/reference.pattern';
 
 export class DiscoveryModule extends MicroModule {
   static id = 'discovery-module';
 
-  static bindings = MultiplatformBindings;
+  static bindings = DiscoveryBindings;
 
   dependencies = [CortexModule.id, ApolloClientModule.id];
-  submodules = [
-    new GraphQlSchemaModule(discoveryTypeDefs, discoverResolvers, [
-      DiscoverDirective,
-      SourceDirective
-    ])
-  ];
+  get submodules() {
+    return [
+      new GraphQlSchemaModule(discoveryTypeDefs, resolvers, [
+        DiscoverDirective,
+        CASSourceDirective
+      ]),
+      new PatternsModule([new KnownSourcesRefPattern([KnownSourcesResolver])])
+    ];
+  }
 
   async onLoad(container: interfaces.Container): Promise<void> {
     container
-      .bind<DiscoveryService>(DiscoveryModule.bindings.DiscoveryService)
-      .to(DiscoveryService);
+      .bind<MultiSourceService>(DiscoveryModule.bindings.MultiSourceService)
+      .to(MultiSourceService);
 
     container
       .bind<KnownSourcesService>(DiscoveryModule.bindings.LocalKnownSources)
       .to(KnownSourcesApollo);
-    container.bind<TaskQueue>(DiscoveryModule.bindings.TaskQueue).to(TaskQueue);
-    container.bind<EntityCache>(DiscoveryModule.bindings.EntityCache).to(EntityCache).inSingletonScope();
+    container
+      .bind<EntityCache>(DiscoveryModule.bindings.EntityCache)
+      .to(EntityCache)
+      .inSingletonScope();
   }
 }

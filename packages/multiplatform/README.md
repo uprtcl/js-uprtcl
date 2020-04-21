@@ -24,11 +24,11 @@ import { DiscoveryModule } from '@uprtcl/multiplatform';
 await orchestrator.loadModule(new DiscoveryModule());
 ```
 
-Now you can add multiple `SourcesModule` to register new sources into your application. This will make all content-addressable object retrievable through that source integrated into the application, and they can automatically be referenced by any other entity to fetch and resolve them.
+Now you can add multiple `CASModules` to register new *Content-Addressable Sources and Stores* into your application. This will make all content-addressable object retrievable through that source integrated into the application, and they can automatically be referenced by any other entity to fetch and resolve them.
 
 ```ts
 import { MicroModule } from '@uprtcl/micro-orchestrator';
-import { SourcesModule } from '@uprtcl/multiplatform';
+import { CASModule } from '@uprtcl/multiplatform';
 import { IpfsConnection, IpfsSource } from '@uprtcl/ipfs-provider';
 
 const ipfsConnection = new IpfsConnection(ipfsConfig);
@@ -37,7 +37,9 @@ const ipfsSource = new IpfsSource(ipfsConnection);
 export class TestModule extends MicroModule {
   static id = Symbol('test-module');
 
-  submodules = [new SourcesModule(ipfsSource)];
+  get submodules() {
+    return [new CASModule([ipfsSource])];
+  }
 }
 ```
 

@@ -9,11 +9,11 @@ Consider this example in a project management app:
 - **Events** have their specific information and **a date**.
 - **Tasks** have their own specific information and **also a date**.
 
-Both types of _entity_ implement a date _pattern_.
+Both types of _pattern_ implement a date _behaviour_.
 
-This makes it possible to render both types of objects in a calendar element. Or maybe a Kanban board, in which some entities implement a _status pattern_. Or maybe they can be transformed to similar objects in different apps.
+This makes it possible to render both types of objects in a calendar element. Or maybe a Kanban board, in which some entities implement a _status behaviour_. Or maybe they can be transformed to similar objects in different apps.
 
-This is all possible provided that we can recognize which patterns each object implements, in its own way.
+This is all possible provided that we can recognize which behaviours each pattern implements, in its own way.
 
 That's what Cortex does, in a generic, modular and pluggable way.
 
@@ -25,7 +25,7 @@ Nowadays, the web follows a very different pattern. The basic unit of informatio
 
 **If** we can build a way to develop generic applications that only assume relationships between content addressable content, lots of very different modules can be composed to form complex relationships of information and then...
 
-...we can **envision a world** in which the users choose which micro modules to install in their own personalized applications to interpret and store their own data.
+...we can **envision a world** in which the users choose which micro-modules to install in their own personalized applications to interpret and store their own data.
 
 These are the transitions that Cortex wants to support in the web:
 
@@ -41,7 +41,7 @@ Cortex **enables**:
 - **Pattern recognition**: fetch generic JSON objects and add specific behaviour to them
 - **Interoperability of data** between applications
 - Connections from the front-end to different backends, and interoperability between them
-- **Reinterpretation and transformation** of data from different sources
+- **Reinterpretation and transformation** of data from different sources and apps
 
 Cortex is **specially tuned** for:
 

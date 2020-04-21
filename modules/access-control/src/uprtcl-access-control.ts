@@ -4,8 +4,8 @@ import 'reflect-metadata';
 export { Authority } from './types/authority';
 
 /** Access Control */
-export { Updatable } from './properties/updatable';
-export { Permissions } from './properties/permissions';
+export { Updatable } from './behaviours/updatable';
+export { Permissions } from './behaviours/permissions';
 
 export { AccessControlModule } from './access-control.module';
 export { AccessControlService } from './services/access-control.service';

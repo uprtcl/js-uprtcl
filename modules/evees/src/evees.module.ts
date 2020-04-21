@@ -1,20 +1,17 @@
 import { interfaces } from 'inversify';
 
-import { MicroModule, i18nextModule, Dictionary } from '@uprtcl/micro-orchestrator';
+import { MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
-import { SourcesModule } from '@uprtcl/multiplatform';
+import { CASModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { AccessControlModule } from '@uprtcl/access-control';
 
-import { DefaultSecuredPattern } from './patterns/default-secured.pattern';
-import { DefaultSignedPattern } from './patterns/default-signed.pattern';
-import { CidHashedPattern } from './patterns/cid-hashed.pattern';
 import {
   PerspectiveLinks,
-  PerspectiveLens,
   PerspectiveAccessControl,
+  PerspectivePattern
 } from './patterns/perspective.pattern';
-import { CommitLens, CommitLinked } from './patterns/commit.pattern';
+import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
 import { Evees } from './services/evees';
@@ -25,7 +22,7 @@ import { PerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
 import en from './i18n/en.json';
-import { RemotesConfig } from './types';
+import { RemoteMap, defaultRemoteMap } from './types';
 import { EveesInfoPage } from './elements/evees-info-page';
 import { ItemWithMenu } from './elements/common-ui/evees-list-item';
 import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
@@ -39,37 +36,35 @@ import { UpdatedDiff } from './elements/evees-diff';
  *
  * ```ts
  * import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
- * import { IpfsConnection } from '@uprtcl/ipfs-provider';
- * import { HolochainConnection } from '@uprtcl/holochain-provider';
+ * import { IpfsStore } from '@uprtcl/ipfs-provider';
+ * import { HttpConnection } from '@uprtcl/http-provider';
  * import { EthereumConnection } from '@uprtcl/ethereum-provider';
- * import { EveesModule, EveesEthereum, EveesHolochain, EveesBindings } from '@uprtcl/evees';
- *
- * const ipfsConnection = new IpfsConnection({
- *   host: 'ipfs.infura.io',
- *   port: 5001,
- *   protocol: 'https'
- * });
+ * import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
+ * 
+ * const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+ * 
+ * const cidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
  *
  * // Don't put anything on host to get from Metamask's ethereum provider
  * const ethConnection = new EthereumConnection({});
  *
- * const eveesEth = new EveesEthereum(ethConnection, ipfsConnection);
+ * const eveesEth = new EveesEthereum(ethConnection, ipfsConfig, cidConfig);
  *
- * const hcConnection = new HolochainConnection({ host: 'ws://localhost:8888' });
+ * const httpConnection = new HttpConnection();
  *
- * const eveesHolochain = new EveesHolochain('test-instance', hcConnection);
+ * const httpEvees = new EveesHttp('http://localhost:3100/uprtcl/1', httpConnection, ethConnection, cidConfig);
  *
- * const evees = new EveesModule([eveesHolochain, eveesEth]);
+ * const evees = new EveesModule([httpEvees, eveesEth], httpEvees);
  *
  * const orchestrator = new MicroOrchestrator();
  *
  * await orchestrator.loadModule(evees);
  * ```
  *
- * @category CortexModule
  *
- * @param eveesProviders
- * @param localEvees
+ * @param eveesProviders array of remote services that implement Evees behaviour
+ * @param defaultRemote default remote service to which to create Perspective and Commits
+ * @param remoteMap optional map between the given evees remotes and the CASSources to create the data to by default
  */
 export class EveesModule extends MicroModule {
   static id = 'evees-module';
@@ -80,7 +75,8 @@ export class EveesModule extends MicroModule {
 
   constructor(
     protected eveesProviders: Array<EveesRemote>,
-    protected remotesConfig: RemotesConfig
+    protected defaultRemote: EveesRemote,
+    protected remoteMap: RemoteMap = defaultRemoteMap
   ) {
     super();
   }
@@ -88,12 +84,13 @@ export class EveesModule extends MicroModule {
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.bindings.Evees).to(Evees);
     container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
-    container.bind(EveesModule.bindings.RemotesConfig).toConstantValue(this.remotesConfig);
+    container.bind(EveesModule.bindings.DefaultRemote).toConstantValue(this.defaultRemote);
+    container.bind(EveesModule.bindings.RemoteMap).toConstantValue(this.remoteMap);
 
-    this.eveesProviders.map((evees) => ({
-      symbol: AccessControlModule.bindings.Authority,
-      source: evees,
-    }))
+    for (const remote of this.eveesProviders) {
+      container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
+      container.bind(AccessControlModule.bindings.Authority).toConstantValue(remote);
+    }
 
     customElements.define('evees-commit-history', CommitHistory);
     customElements.define('evees-perspectives-list', PerspectivesList);
@@ -104,25 +101,15 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-update-diff', UpdatedDiff)
   }
 
-  submodules = [
-    new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
-    new i18nextModule('evees', { en: en }),
-    new PatternsModule({
-      [EveesModule.bindings.Hashed]: [CidHashedPattern],
-      [EveesModule.bindings.Signed]: [DefaultSignedPattern],
-      [EveesModule.bindings.Secured]: [DefaultSecuredPattern],
-      [EveesModule.bindings.PerspectivePattern]: [
-        PerspectiveLinks,
-        PerspectiveLens,
-        PerspectiveAccessControl,
-      ],
-      [EveesModule.bindings.CommitPattern]: [CommitLinked, CommitLens],
-    }),
-    new SourcesModule(
-      this.eveesProviders.map((evees) => ({
-        symbol: EveesModule.bindings.EveesRemote,
-        source: evees,
-      }))
-    ),
-  ];
+  get submodules() {
+    return [
+      new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
+      new i18nextModule('evees', { en: en }),
+      new PatternsModule([
+        new CommitPattern([CommitLinked]),
+        new PerspectivePattern([PerspectiveLinks, PerspectiveAccessControl])
+      ]),
+      new CASModule(this.eveesProviders)
+    ];
+  }
 }

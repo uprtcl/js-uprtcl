@@ -1,7 +1,4 @@
-const commonjs = require('@rollup/plugin-commonjs');
-const resolve = require('@rollup/plugin-node-resolve');
-const replace = require('@rollup/plugin-replace');
-const rollupConfig = require('./rollup.config');
+const path = require('path');
 
 module.exports = config =>
   config.set({
@@ -13,50 +10,47 @@ module.exports = config =>
       skipFilesWithNoCoverage: false,
       thresholds: {
         global: {
-          statements: 80,
-          branches: 80,
-          functions: 80,
-          lines: 80
+          statements: 10,
+          branches: 10,
+          functions: 10,
+          lines: 10
         }
       }
     },
 
     preprocessors: {
-      'test/**/*.test.ts': ['rollup']
+      'test/**/*.test.ts': ['webpack']
     },
-    rollupPreprocessor: {
-      ...rollupConfig,
+    webpack: {
+      mode: 'development',
+      entry: `./src/uprtcl-evees.ts`,
       output: {
-        format: 'iife', // Helps prevent naming collisions.
-        name: 'uprtclevees', // Required for 'iife' format.,
-        sourcemap: true
+        filename: 'bundle.js'
       },
-      plugins: [
-        replace({
-          'var _2 = require(".");':
-            'var _2 = {extendResolversFromInterfaces: require("./extendResolversFromInterfaces").default,checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
-          'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = require(".");':
-            'Object.defineProperty(exports, "__esModule", { value: true });\nvar _1 = {checkForResolveTypeResolver: require("./checkForResolveTypeResolver").default};',
-          delimiters: ['', '']
-        }),
-        ...rollupConfig.plugins,
-        commonjs({
-          namedExports: {
-            'apollo-boost': ['gql', 'ApolloClient'],
-            'graphql-tools': ['makeExecutableSchema']
+      resolve: {
+        alias: {
+          'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
+          'lit-element': path.resolve(__dirname, './node_modules/lit-element')
+        },
+        extensions: ['.mjs', '.js', '.ts', '.json']
+      },
+      module: {
+        rules: [
+          {
+            test: /\.ts$/,
+            use: 'ts-loader'
           },
-          exclude: [
-            '**/node_modules/mocha/**/*',
-            '**/node_modules/chai/**/*',
-            '**/node_modules/sinon-chai/**/*',
-            '**/node_modules/chai-dom/**/*',
-            '**/node_modules/core-js-bundle/**/*'
-          ]
-        }),
-        resolve({
-          dedupe: ['graphql-tools']
-        })
-      ]
+          {
+            test: /\.ts$/,
+            exclude: [path.resolve(__dirname, 'test')],
+            enforce: 'post',
+            use: {
+              loader: 'istanbul-instrumenter-loader',
+              options: { esModules: true }
+            }
+          }
+        ]
+      }
     },
     singleRun: true,
     concurrency: Infinity,
@@ -66,7 +60,6 @@ module.exports = config =>
       // at the top level
       require.resolve('karma-mocha'),
       require.resolve('karma-mocha-reporter'),
-      require.resolve('karma-source-map-support'),
       require.resolve('karma-coverage-istanbul-reporter'),
       require.resolve('karma-snapshot'),
       require.resolve('karma-mocha-snapshot'),

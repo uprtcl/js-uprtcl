@@ -41,9 +41,11 @@ export class EveesInfoPopper extends EveesInfoBase {
         <evees-perspectives-list
           perspective-id=${this.perspectiveId}
           first-perspective-id=${this.firstPerspectiveId}
-          @perspective-selected=${(e) => this.otherPerspectiveClicked(e.detail.id)}
-          @merge-perspective=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
-          @create-proposal=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, true)}
+          @perspective-selected=${e => this.otherPerspectiveClicked(e.detail.id)}
+          @merge-perspective=${e =>
+            this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
+          @create-proposal=${e =>
+            this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, true)}
           @authorize-proposal=${this.authorizeProposal}
           @execute-proposal=${this.executeProposal}
         ></evees-perspectives-list>
@@ -66,7 +68,7 @@ export class EveesInfoPopper extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        <permissions-for-entity hash=${this.perspectiveId}></permissions-for-entity>
+        <permissions-for-entity ref=${this.perspectiveId}></permissions-for-entity>
       </div>
     `;
   }

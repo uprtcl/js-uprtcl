@@ -65,7 +65,7 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     return html`
       ${this.rootHash
         ? html`
-            <cortex-entity .hash=${this.rootHash} lens-type="content"></cortex-entity>
+            <cortex-entity .ref=${this.rootHash} lens-type="content"></cortex-entity>
           `
         : html`
             Loading...
