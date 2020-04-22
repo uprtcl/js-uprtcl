@@ -34,7 +34,7 @@ const modulesSidebar = [
   '/modules/uprtcl-micro-orchestrator',
   {
     title: 'Bootstrap Modules',
-    collapsable: true,
+    collapsable: false,
     children: [
       '/modules/modules/uprtcl-access-control',
       '/modules/modules/uprtcl-evees',
@@ -44,7 +44,7 @@ const modulesSidebar = [
   },
   {
     title: 'Backend Providers',
-    collapsable: true,
+    collapsable: false,
     children: [
       '/modules/providers/uprtcl-http-provider',
       '/modules/providers/uprtcl-ethereum-provider',
@@ -54,7 +54,7 @@ const modulesSidebar = [
   },
   {
     title: 'Infrastructure',
-    collapsable: true,
+    collapsable: false,
     children: [
       '/modules/packages/uprtcl-graphql',
       '/modules/packages/uprtcl-cortex',
