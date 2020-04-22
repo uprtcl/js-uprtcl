@@ -12,7 +12,7 @@ import {
 import { Entity, Signed } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Commit, Perspective } from '../types';
+import { Commit, Perspective, NewProposal } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
@@ -279,6 +279,25 @@ export const eveesResolvers: IResolvers = {
       };
     },
 
+    async createAndAddProposal(_, { perspectives, proposal }, { container }) {
+      const evees: Evees = container.get(EveesBindings.Evees);
+
+      const remote = await evees.getPerspectiveProviderById(proposal.toPerspectiveId);
+      if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+      const proposalId = await remote.proposals.createAndPropose(perspectives, proposal);
+
+      return {
+        id: proposalId,
+        toPerspectiveId: proposal.toPerspectiveId,
+        fromPerspectiveId: proposal.fromPerspectiveId,
+        updates: proposal.updates,
+        authorized: false,
+        canAuthorize: false,
+        executed: false
+      };
+    },
+
     async addProposal(
       _,
       { toPerspectiveId, fromPerspectiveId, toHeadId, fromHeadId, updateRequests },
@@ -289,13 +308,14 @@ export const eveesResolvers: IResolvers = {
       const remote = await evees.getPerspectiveProviderById(toPerspectiveId);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
-      const proposalId = await remote.proposals.createProposal(
+      const proposal: NewProposal = {
         fromPerspectiveId,
         toPerspectiveId,
         fromHeadId,
         toHeadId,
-        updateRequests
-      );
+        updates: updateRequests
+      }
+      const proposalId = await remote.proposals.createProposal(proposal);
 
       return {
         id: proposalId,

@@ -2,10 +2,11 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { EthereumContract } from '@uprtcl/ethereum-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
-import { UpdateRequest, Proposal } from '../../../types';
-import { INIT_PROPOSAL, GET_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL, GET_PERSP_HASH, cidToHex32, bytes32ToCid, GET_PROPOSAL_ID, getProposalDetails, getHeadUpdateDetails } from './common';
+import { UpdateRequest, Proposal, NewProposal } from '../../../types';
+import { INIT_PROPOSAL, GET_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL, GET_PERSP_HASH, cidToHex32, bytes32ToCid, GET_PROPOSAL_ID, getProposalDetails, getHeadUpdateDetails, CREATE_AND_PROPOSE } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
-import { hashToId, ZERO_HEX_32 } from './evees.ethereum';
+import { hashToId, ZERO_HEX_32, EveesEthereum } from './evees.ethereum';
+import { NewPerspectiveData } from '../../evees.provider';
 
 export interface EthHeadUpdate {
   perspectiveIdHash: string;
@@ -21,36 +22,28 @@ export class ProposalsEthereum implements ProposalsProvider {
   constructor(
     protected uprtclRoot: EthereumContract,
     protected uprtclProposals: EthereumContract,
-    protected accessControl: EveesAccessControlEthereum
+    protected uprtclWrapper: EthereumContract,
+    protected accessControl: EveesAccessControlEthereum,
+    protected eveesEthereum: EveesEthereum
   ) {}
-
+  
   async ready(): Promise<void> {
     await Promise.all([this.uprtclProposals.ready()]);
   }
 
-  async createProposal(
-    fromPerspectiveId: string,
-    toPerspectiveId: string,
-    fromHeadId: string,
-    toHeadId: string,
-    headUpdates: UpdateRequest[]
-  ): Promise<string> {
-    await this.ready();
-
-    this.logger.info('createProposal()', { fromPerspectiveId, toPerspectiveId, headUpdates });
-
+  async prepareProposal(proposal: NewProposal) {
     /** verify all perspectives are owned by the owner of the to perspective (which might not be in the updateHead list) */
-    const accessData = await this.accessControl.getPermissions(toPerspectiveId);
+    const accessData = await this.accessControl.getPermissions(proposal.toPerspectiveId);
     
     if (!accessData)
-      throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
+      throw new Error(`access control data not found for target perspective ${proposal.toPerspectiveId}`);
 
-    const verifyPromises = headUpdates.map(async headUpdate => {
+    const verifyPromises = proposal.updates.map(async headUpdate => {
       const permissions = await this.accessControl.getPermissions(
         headUpdate.perspectiveId
       );
       if (!permissions)
-        throw new Error(`access control data not found for target perspective ${toPerspectiveId}`);
+        throw new Error(`access control data not found for target perspective ${proposal.toPerspectiveId}`);
 
       if (permissions.owner !== accessData.owner) {
         throw new Error(
@@ -64,7 +57,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     const nonce = Date.now();
 
-    const ethHeadUpdatesPromises = headUpdates.map(
+    const ethHeadUpdatesPromises = proposal.updates.map(
       async (update): Promise<EthHeadUpdate> => {
         const headCidParts = update.newHeadId ? cidToHex32(update.newHeadId) : [ZERO_HEX_32, ZERO_HEX_32];
 
@@ -80,27 +73,58 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const ethHeadUpdates = await Promise.all(ethHeadUpdatesPromises);
 
-    const proposal = {
-      toPerspectiveId, 
-      fromPerspectiveId, 
-      toHeadId, 
-      fromHeadId, 
+    const ethProposal = {
+      toPerspectiveId: proposal.toPerspectiveId, 
+      fromPerspectiveId: proposal.fromPerspectiveId, 
+      toHeadId: proposal.toHeadId, 
+      fromHeadId: proposal.fromHeadId, 
       owner: accessData.owner, 
       nonce: nonce, 
       headUpdates: ethHeadUpdates, 
       approvedAddresses: []
     }
 
+    return ethProposal;
+
+  }
+
+  async createProposal(proposal: NewProposal): Promise<string> {
+    await this.ready();
+
+    this.logger.info('createProposal()', { proposal });
+
+    const ethProposal = await this.prepareProposal(proposal);
+    
     await this.uprtclProposals.send(INIT_PROPOSAL, [
-      proposal, this.uprtclProposals.userId
+      ethProposal, this.uprtclProposals.userId
     ]);
 
-    const requestId = this.uprtclProposals.call(GET_PROPOSAL_ID, [toPerspectiveId, fromPerspectiveId, nonce]);
+    const requestId = this.uprtclProposals.call(GET_PROPOSAL_ID, [proposal.toPerspectiveId, proposal.fromPerspectiveId, ethProposal.nonce]);
     
-    this.logger.info('createProposal() - post', { requestId, headUpdates });
+    this.logger.info('createProposal() - post', { requestId, updates: proposal.updates });
 
     return requestId;
   }
+
+  async createAndPropose(newPerspectivesData: NewPerspectiveData[], proposal: NewProposal): Promise<string> {
+    await this.ready();
+
+    this.logger.info('createAndPropose()', { proposal });
+
+    const ethProposal = await this.prepareProposal(proposal);
+    const ethPerspectives = await this.eveesEthereum.preparePerspectives(newPerspectivesData);
+
+    await this.uprtclWrapper.send(CREATE_AND_PROPOSE, [
+      ethPerspectives, ethProposal, this.uprtclProposals.userId
+    ]);
+
+    const requestId = this.uprtclProposals.call(GET_PROPOSAL_ID, [proposal.toPerspectiveId, proposal.fromPerspectiveId, ethProposal.nonce]);
+    
+    this.logger.info('createProposal() - post', { requestId, updates: proposal.updates });
+
+    return requestId;
+  }
+
 
   async getProposal(proposalId: string): Promise<Proposal> {
     await this.ready();

@@ -43,7 +43,8 @@ import {
   AUTHORIZE_PROPOSAL,
   EXECUTE_PROPOSAL,
   DELETE_PERSPECTIVE,
-  CREATE_PERSPECTIVE
+  CREATE_PERSPECTIVE,
+  CREATE_AND_ADD_PROPOSAL
 } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
@@ -363,10 +364,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   /** executes a given function for each group of actions on perspectives of the same authority */
-  async executeActionsBatched(
+  async groupActionsByAuthority(
     actions: UprtclAction[],
-    actionToPerspectiveId: (string) => Promise<string>,
-    executeActionsOnAuthority: (authority: string, actions: UprtclAction[]) => Promise<void>
+    actionToPerspectiveId: (string) => Promise<string>
   ) {
     const authoritiesPromises = actions.map(async (action: UprtclAction) => {
       if (!this.client) throw new Error('client undefined');
@@ -405,11 +405,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       actionsByAuthority[authoritiesData[i].authority].push(authoritiesData[i].action);
     }
 
-    const executePromises = Object.keys(actionsByAuthority).map(async (authority: string) => {
-      return executeActionsOnAuthority(authority, actionsByAuthority[authority]);
-    });
-
-    return Promise.all(executePromises);
+    return actionsByAuthority;
   }
 
   async createMergeProposal(
@@ -430,62 +426,65 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     );
     await executeActions(dataActions, this.client);
 
-    await this.executeActionsBatched(
+    /** create perspectives and proposals in one call */
+
+    const createByAuthority = await this.groupActionsByAuthority(
       actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION),
-      action => action.entity.id,
-      async (authority, actions) => {
-        if (!this.evees) throw new Error('evees undefined');
-        const remote = this.evees.getAuthority(authority);
-
-        const perspectivesData = actions.map(
-          (action: UprtclAction): NewPerspectiveData => {
-            if (!action.entity) throw new Error('entity not found');
-
-            return {
-              perspective: action.entity,
-              details: action.payload.details,
-              canWrite: action.payload.owner
-            };
-          }
-        );
-
-        await remote.clonePerspectivesBatch(perspectivesData);
-
-        this.logger.info('created perspective batch', { authority, perspectivesData });
-      }
+      action => action.entity.id
     );
 
-    await this.executeActionsBatched(
+    const updatesByAuthority = await this.groupActionsByAuthority(
       actions.filter(a => a.type === UPDATE_HEAD_ACTION),
-      action => action.payload.perspectiveId,
-      async (authority, actions) => {
-        if (!this.client) throw new Error('client undefined');
-
-        const result = await this.client.mutate({
-          mutation: CREATE_PROPOSAL,
-          variables: {
-            toPerspectiveId, 
-            fromPerspectiveId, 
-            toHeadId,
-            fromHeadId,
-            updateRequests: actions.map(action => action.payload)
-          }
-        });
-
-        const proposalId = result.data.addProposal.id;
-
-        this.logger.info('created proposal', { proposalId, actions });
-
-        this.dispatchEvent(
-          new ProposalCreatedEvent({
-            detail: { proposalId, authority },
-            cancelable: true,
-            composed: true,
-            bubbles: true
-          })
-        );
-      }
+      action => action.payload.perspectiveId
     );
+
+    const createAndPropose = Object.keys(updatesByAuthority).map(async (authority: string) => {
+      const createActions = createByAuthority[authority] !== undefined ? createByAuthority[authority] : [];
+      const updateActions = updatesByAuthority[authority];
+
+      const perspectivesData = createActions.map(
+        (action: UprtclAction): NewPerspectiveData => {
+          if (!action.entity) throw new Error('entity not found');
+
+          return {
+            perspective: action.entity,
+            details: action.payload.details,
+            canWrite: action.payload.owner
+          };
+        }
+      );
+
+      const proposal = {
+        toPerspectiveId, 
+        fromPerspectiveId, 
+        toHeadId,
+        fromHeadId,
+        updates: updateActions.map(action => action.payload)
+      };
+
+      const result = await this.client.mutate({
+        mutation: CREATE_AND_ADD_PROPOSAL,
+        variables: {
+          perspectives: perspectivesData,
+          proposal: proposal
+        }
+      });
+
+      const proposalId = result.data.createAndAddProposal.id;
+
+      this.logger.info('created proposal', { proposalId, actions });
+
+      this.dispatchEvent(
+        new ProposalCreatedEvent({
+          detail: { proposalId, authority },
+          cancelable: true,
+          composed: true,
+          bubbles: true
+        })
+      );
+    })
+
+    await Promise.all(createAndPropose);
   }
 
   async authorizeProposal(e: CustomEvent) {
