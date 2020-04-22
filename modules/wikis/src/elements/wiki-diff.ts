@@ -73,7 +73,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
     const newData = this.newData as Entity<Wiki>;
     const oldData = this.oldData as Entity<Wiki>;
-        
+
     const newPagesRefs = newData.object.pages.filter(page => !oldData.object.pages.includes(page));
     const deletedPagesRefs = oldData.object.pages.filter(page => !newData.object.pages.includes(page));
 
