@@ -25982,7 +25982,8 @@
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event"
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
         },
         "0x7172667a4024e27a0d3a896c8ba72947ebed1a0bb37d5c6aaff808c4f6b574ef": {
           "anonymous": false,
@@ -26021,51 +26022,61 @@
             {
               "indexed": true,
               "name": "toPerspectiveIdHash",
-              "type": "bytes32"
+              "type": "bytes32",
+              "internalType": "bytes32"
             },
             {
               "indexed": true,
               "name": "fromPerspectiveIdHash",
-              "type": "bytes32"
+              "type": "bytes32",
+              "internalType": "bytes32"
             },
             {
               "indexed": true,
               "name": "proposalId",
-              "type": "bytes32"
+              "type": "bytes32",
+              "internalType": "bytes32"
             },
             {
               "indexed": false,
               "name": "toPerspectiveId",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             },
             {
               "indexed": false,
               "name": "fromPerspectiveId",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             },
             {
               "indexed": false,
               "name": "toHeadId",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             },
             {
               "indexed": false,
               "name": "fromHeadId",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             },
             {
               "indexed": false,
               "name": "nonce",
-              "type": "uint256"
+              "type": "uint256",
+              "internalType": "uint256"
             },
             {
               "indexed": false,
               "name": "creator",
-              "type": "address"
+              "type": "address",
+              "internalType": "address"
             }
           ],
           "name": "ProposalCreated",
-          "type": "event"
+          "type": "event",
+          "signature": "0x887b6b2688e70065ea92520acf8e6153a2cf80b2ec02264d0efbc097db7b0166"
         },
         "0x767a7e7936e539a742cd167c602bcca46c55ab47f49b2660c3a1bc7dcafc1b96": {
           "anonymous": false,
@@ -26073,35 +26084,40 @@
             {
               "indexed": true,
               "name": "proposalId",
-              "type": "bytes32"
+              "type": "bytes32",
+              "internalType": "bytes32"
             },
             {
               "indexed": true,
               "name": "perspectiveIdHash",
-              "type": "bytes32"
+              "type": "bytes32",
+              "internalType": "bytes32"
             },
             {
               "indexed": false,
               "name": "fromPerspectiveId",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             },
             {
               "indexed": false,
               "name": "fromHeadId",
-              "type": "string"
+              "type": "string",
+              "internalType": "string"
             }
           ],
           "name": "HeadUpdateAdded",
-          "type": "event"
+          "type": "event",
+          "signature": "0x767a7e7936e539a742cd167c602bcca46c55ab47f49b2660c3a1bc7dcafc1b96"
         }
       },
       "links": {},
       "address": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550",
-      "transactionHash": "0xab5e894370c55cdcd3d47be0e34a9c523a1d7b267630a1c137fbb2007b013b61"
+      "transactionHash": "0xd244192b3818d045bf14367b102f9dfbac88d4c140ab513eea8769c94b15e1cb"
     }
   },
-  "schemaVersion": "3.0.23",
-  "updatedAt": "2020-04-22T13:04:49.215Z",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2020-04-22T14:05:01.868Z",
   "devdoc": {
     "methods": {
       "isOwner()": {

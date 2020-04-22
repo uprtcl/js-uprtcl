@@ -14700,7 +14700,8 @@
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event"
+          "type": "event",
+          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
         },
         "0x9096b4564a2bafa0ceef5b1e2a3726b6c688e97d8231050b488716d3c5d06328": {
           "anonymous": false,
@@ -14719,7 +14720,8 @@
             }
           ],
           "name": "PerspectiveCreated",
-          "type": "event"
+          "type": "event",
+          "signature": "0x9096b4564a2bafa0ceef5b1e2a3726b6c688e97d8231050b488716d3c5d06328"
         },
         "0xfb5827bd51db989dc5cb76bb9d0c88277de2389aa0d547b0a87fe23f97591011": {
           "anonymous": false,
@@ -14727,30 +14729,34 @@
             {
               "indexed": true,
               "name": "perspectiveIdHash",
-              "type": "bytes32"
+              "type": "bytes32",
+              "internalType": "bytes32"
             },
             {
               "indexed": false,
               "name": "headCid1",
-              "type": "bytes32"
+              "type": "bytes32",
+              "internalType": "bytes32"
             },
             {
               "indexed": false,
               "name": "headCid0",
-              "type": "bytes32"
+              "type": "bytes32",
+              "internalType": "bytes32"
             }
           ],
           "name": "PerspectiveHeadUpdated",
-          "type": "event"
+          "type": "event",
+          "signature": "0xfb5827bd51db989dc5cb76bb9d0c88277de2389aa0d547b0a87fe23f97591011"
         }
       },
       "links": {},
       "address": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601",
-      "transactionHash": "0xd9771523de48a22e71a2e56d2b0e5ea391b6dd5f943d4671dbb31161296603f3"
+      "transactionHash": "0xa88e02bd8468e8657098edd69ed931f53b481ad3ebb72e2062df08372d8dad17"
     }
   },
-  "schemaVersion": "3.0.23",
-  "updatedAt": "2020-04-22T13:04:49.237Z",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2020-04-22T14:05:01.851Z",
   "devdoc": {
     "methods": {
       "isOwner()": {
