@@ -4,7 +4,7 @@
 
 [![CircleCI](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop.svg?style=shield)](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop)
 
-This repo contains a set of tools and libraries to help develop \_Prtcl compatible web-applications.
+This repo contains a set of tools and libraries to help develop \_Prtcl compatible web-applications. It does so by implementing a full blown micro-frontend architecture, with pluggable and composable modules to build whole SPAs from simple slices of functionality.
 
 > Important: these packages are under heavy development, with alpha release. Expect breaking changes.
 
