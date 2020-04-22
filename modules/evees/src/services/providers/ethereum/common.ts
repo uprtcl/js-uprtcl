@@ -25,6 +25,9 @@ export const EXECUTE_PROPOSAL = 'executeProposal(bytes32)';
 export const AUTHORIZE_PROPOSAL = 'authorizeProposal(bytes32,uint8,bool)';
 export const GET_PROPOSAL_ID = 'getProposalId(string,string,uint256)';
 
+/** wrapper */
+export const CREATE_AND_PROPOSE = `createAndInitProposal(${newPerspStr}[], ${proposalStr}[],address)`;
+
 export const hashText = async (text: string) => {
   const encoded = await multihashing.digest(Buffer.from(text), 'sha2-256');
   return '0x' + encoded.toString('hex');

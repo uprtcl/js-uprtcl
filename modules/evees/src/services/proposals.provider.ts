@@ -1,4 +1,5 @@
-import { UpdateRequest, Proposal } from '../types';
+import { UpdateRequest, Proposal, NewProposal } from '../types';
+import { NewPerspectiveData } from './evees.provider';
 
 export interface ProposalsProvider {
   /** Getters */
@@ -11,13 +12,9 @@ export interface ProposalsProvider {
 
   // From the point of view of the proposing person
 
-  createProposal(
-    fromPerspectiveId: string,
-    toPerspectiveId: string,
-    fromHeadId: string,
-    toHeadId: string,
-    updates: UpdateRequest[]
-  ): Promise<string>;
+  createProposal(proposal: NewProposal): Promise<string>;
+
+  createAndPropose(newPerspectivesData: NewPerspectiveData[], proposal: NewProposal): Promise<string>;
 
   addUpdatesToProposal(proposalId: string, updates: UpdateRequest[]): Promise<void>;
   
