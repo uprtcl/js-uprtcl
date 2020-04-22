@@ -18,7 +18,6 @@ export {
 export { EveesSource } from './services/evees.source';
 export { EveesProvider, NewPerspectiveData } from './services/evees.provider';
 export { EveesRemote } from './services/evees.remote';
-export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 
 /** Service providers */
 export { EveesHolochain } from './services/providers/holochain/evees.holochain';
