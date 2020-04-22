@@ -10,7 +10,7 @@ export const styleMap = style => {
 };
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Pattern, HasChildren, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
+import { HasChildren, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import {
   EveesRemote,
@@ -20,7 +20,8 @@ import {
   ContentUpdatedEvent,
   CREATE_COMMIT,
   CREATE_PERSPECTIVE,
-  CREATE_ENTITY
+  CREATE_ENTITY,
+  EveesDraftsLocal
 } from '@uprtcl/evees';
 import { loadEntity, CASSource } from '@uprtcl/multiplatform';
 
@@ -54,6 +55,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   protected eveesRemotes!: EveesRemote[];
   protected remotesMap!: RemoteMap;
   protected recognizer!: PatternRecognizer;
+
+  draftService = new EveesDraftsLocal();
 
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -214,7 +217,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       hasChildren,
       childrenNodes: [],
       data,
-      draft: { ...data.object },
       entityType,
       headId,
       hasDocNodeLenses,
@@ -474,6 +476,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       editable: true,
       focused: false
     };
+  }
+
+  setNodeDraft(node, draft) {
+    node.draft = draft;
+    this.draftService.setDraft(node.ref);
   }
 
   /** node updated as reference */
