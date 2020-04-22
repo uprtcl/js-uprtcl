@@ -279,6 +279,25 @@ export const eveesResolvers: IResolvers = {
       };
     },
 
+    async createAndAddProposal(_, { perspectives, proposal }, { container }) {
+      const evees: Evees = container.get(EveesBindings.Evees);
+
+      const remote = await evees.getPerspectiveProviderById(proposal.toPerspectiveId);
+      if (!remote.proposals) throw new Error('remote cant handle proposals');
+
+      const proposalId = await remote.proposals.createAndPropose(perspectives, proposal);
+
+      return {
+        id: proposalId,
+        toPerspectiveId: proposal.toPerspectiveId,
+        fromPerspectiveId: proposal.fromPerspectiveId,
+        updates: proposal.updates,
+        authorized: false,
+        canAuthorize: false,
+        executed: false
+      };
+    },
+
     async addProposal(
       _,
       { toPerspectiveId, fromPerspectiveId, toHeadId, fromHeadId, updateRequests },

@@ -81,6 +81,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
     uprtclWrapperOptions: EthereumContractOptions = { contract: UprtclWrapper as any }
   ) {
     super(ipfsOptions, cidConfig);
+    
     this.uprtclRoot = new EthereumContract(uprtclRootOptions, ethConnection);
     this.uprtclDetails = new EthereumContract(uprtclDetailsOptions, ethConnection);
     this.uprtclProposals = new EthereumContract(uprtclProposalsOptions, ethConnection);
@@ -116,6 +117,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
       this.uprtclRoot.ready(),
       this.uprtclDetails.ready(),
       this.uprtclProposals.ready(),
+      this.uprtclWrapper.ready(),
       super.ready()
     ]);
   }

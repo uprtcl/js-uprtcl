@@ -41,6 +41,11 @@ export const eveesTypeDefs: DocumentNode = gql`
       fromHeadId: ID!, 
       updateRequests: [HeadUpdateInput!]): UpdateProposal!
 
+    createAndAddProposal(
+      perspectives: [NewPerspectiveInput],
+      proposal: ProposalInput
+    ): UpdateProposal!
+
     authorizeProposal(
       proposalId: ID!, 
       perspectiveId: ID!, 
@@ -69,6 +74,48 @@ export const eveesTypeDefs: DocumentNode = gql`
     oldHeadId: String
     perspectiveId: String
     newHeadId: String
+  }
+
+  input ProofInput {
+    signature: String
+    type: String
+  }
+
+  input PerspectivePayload {
+    authority: String
+    timestamp: Float
+    creatorId: String
+  }
+
+  input PerspectiveEntityInput {
+    proof: ProofInput
+    payload: PerspectivePayload
+  }
+
+  input PerspectiveInput {
+    id: String
+    object: PerspectiveEntityInput
+    casID: String
+  }
+
+  input PerspectiveDetailsInput {
+    context: String
+    name: String
+    headId: String
+  }
+
+  input NewPerspectiveInput {
+    perspective: PerspectiveInput,
+    details: PerspectiveDetailsInput
+    canWrite: String
+  }
+
+  input ProposalInput {
+    toPerspectiveId: String!
+    fromPerspectiveId: String!
+    toHeadId: String!
+    fromHeadId: String!
+    updates: [HeadUpdateInput!]
   }
 
   type UpdateProposal {

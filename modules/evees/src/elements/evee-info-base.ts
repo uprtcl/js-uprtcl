@@ -43,7 +43,8 @@ import {
   AUTHORIZE_PROPOSAL,
   EXECUTE_PROPOSAL,
   DELETE_PERSPECTIVE,
-  CREATE_PERSPECTIVE
+  CREATE_PERSPECTIVE,
+  CREATE_AND_ADD_PROPOSAL
 } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
@@ -453,22 +454,23 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         }
       );
 
-      const remote = this.evees.getAuthority(authority);
-
-      await remote.clonePerspectivesBatch(perspectivesData);
+      const proposal = {
+        toPerspectiveId, 
+        fromPerspectiveId, 
+        toHeadId,
+        fromHeadId,
+        updates: updateActions.map(action => action.payload)
+      };
 
       const result = await this.client.mutate({
-        mutation: CREATE_PROPOSAL,
+        mutation: CREATE_AND_ADD_PROPOSAL,
         variables: {
-          toPerspectiveId, 
-          fromPerspectiveId, 
-          toHeadId,
-          fromHeadId,
-          updateRequests: updateActions.map(action => action.payload)
+          perspectives: perspectivesData,
+          proposal: proposal
         }
       });
 
-      const proposalId = result.data.addProposal.id;
+      const proposalId = result.data.createAndAddProposal.id;
 
       this.logger.info('created proposal', { proposalId, actions });
 
