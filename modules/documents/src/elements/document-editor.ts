@@ -23,7 +23,7 @@ import {
   CREATE_ENTITY,
   EveesDraftsLocal
 } from '@uprtcl/evees';
-import { loadEntity, CASSource } from '@uprtcl/multiplatform';
+import { loadEntity, CASSource, CASStore } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode, TextNode } from '../types';
 import { HasDocNodeLenses } from '../patterns/document-patterns';
@@ -32,6 +32,7 @@ import { DocumentsBindings } from '../bindings';
 
 const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
+const PLACEHOLDER_TOKEN = '_PLACEHOLDER_';
 
 export class DocumentEditor extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
@@ -108,16 +109,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return node;
   }
 
-  async loadNode(ref: string, parent?: DocNode, ix?: number): Promise<DocNode> {
-    if (LOGINFO) this.logger.log('loadNode()', { ref, ix });
+  async entityToNode(entity: Entity<any>, parent?: DocNode, ix?: number) {
 
-    const recognizer = this.recognizer;
-
-    const entity = await loadEntity(this.client, ref);
-
-    let entityType: string = recognizer.recognizeType(entity);
+    let entityType: string = this.recognizer.recognizeType(entity);
+    
     let editable = false;
-    let authority!: string;
+    let authority!: string | undefined;
     let context!: string;
     let dataId!: string;
     let headId!: string;
@@ -126,7 +123,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       const result = await this.client.query({
         query: gql`
         {
-          entity(ref: "${ref}") {
+          entity(ref: "${entity.id}") {
             id
             ... on Perspective {
               payload {
@@ -166,7 +163,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         const result = await this.client.query({
           query: gql`
           {
-            entity(ref: "${ref}") {
+            entity(ref: "${entity.id}") {
               id
               ... on Commit {
                 data {
@@ -212,12 +209,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
 
     const node: DocNode = {
-      ref,
+      ref: entity.id,
       ix,
       hasChildren,
       childrenNodes: [],
       data,
-      entityType,
+      draft: data ? data.object : undefined,
       headId,
       hasDocNodeLenses,
       editable,
@@ -226,6 +223,26 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       focused: false
     };
 
+    return node;
+  }
+
+  isPlaceholder(ref: string): boolean {
+    return ref.startsWith(PLACEHOLDER_TOKEN);
+  }
+
+  async loadNode(ref: string, parent?: DocNode, ix?: number): Promise<DocNode> {
+    if (LOGINFO) this.logger.log('loadNode()', { ref, ix });
+
+    let node;
+    if (this.isPlaceholder(ref)) {
+      const draft = await this.draftService.getDraft(ref);  
+      node = this.createPlaceholder(ref, draft, parent, ix);
+    } else {
+      const entity = await loadEntity(this.client, ref);
+      if (!entity) throw Error(`Entity not found ${ref}`);
+      node = await this.entityToNode(entity, parent, ix);
+    }
+    
     if (LOGINFO) this.logger.log('loadNode() post', { ref, ix, node });
 
     return node;
@@ -293,33 +310,35 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async persistNode(node: DocNode) {
-    const isPlaceholder = node.ref === undefined || node.ref === '';
-
-    if (!isPlaceholder && (node.data !== undefined) && isEqual(node.data.object, node.draft)) {
+    if (!this.isPlaceholder(node.ref) && (node.data !== undefined) && isEqual(node.data.object, node.draft)) {
       /** nothing to persist here */
       return;
     }
 
+    let refType;
+    let entityType;
+
+    /** keep entity type or create commit by default */
+    if (!this.isPlaceholder(node.ref)) {
+      const entity = await loadEntity(this.client, node.ref);
+      refType = this.recognizer.recognizeType(entity);
+    } else {
+      refType = EveesModule.bindings.CommitType;
+    }
+
+    
     /** if its a placeholder create an object, otherwise make a commit */
-    switch (node.entityType) {
+    switch (refType) {
       case EveesModule.bindings.PerspectiveType:
-        if (isPlaceholder) {
-          node.ref = await this.createEvee(
-            node.draft,
-            node.entityType,
-            node.authority,
-            node.context as string
-          );
-        } else {
-          await this.updateEvee(node);
-        }
+        await this.updateEvee(node);
         break;
 
       case EveesModule.bindings.CommitType:
-        const commitParents = isPlaceholder ? [] : node.headId ? [node.headId] : [];
+        if (node.authority === undefined) throw Error(`authority not defined for node ${node.ref}`);
+        const commitParents = this.isPlaceholder(node.ref) ? [] : node.headId ? [node.headId] : [];
+
         const commitId = await this.createCommit(
           node.draft,
-          node.entityType,
           node.authority,
           commitParents
         );
@@ -327,39 +346,36 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         break;
 
       default:
-        const store = this.getStore(node.authority, node.entityType);
-        const dataId = await this.createEntity(node.draft, store.casID);
+        if (node.authority === undefined) throw Error(`authority not defined for node ${node.ref}`);
+        const dataId = await this.createEntity(node.draft, node.authority);
         node.ref = dataId;
         break;
     }
   }
 
-  async createEntity(content: any, casID: string): Promise<string> {
-    const client = this.client as ApolloClient<any>;
+  async createEntity(content: any, authority: string): Promise<string> {
+    const entityType = this.recognizer.recognizeType({id: '', object: content});
+    const store = this.getStore(authority, entityType);
 
-    // TODO, replace for a single CREATE mutation
-    const createTextNode = await client.mutate({
+    const createTextNode = await this.client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
         object: content,
-        casID: casID
+        casID: store.casID
       }
     });
-    // }
-
+    
     return createTextNode.data.createEntity.id;
   }
 
   async createCommit(
     content: object,
-    type: string,
     authority: string,
     parentsIds?: string[]
   ): Promise<string> {
     const client = this.client as ApolloClient<any>;
 
-    const store = this.getStore(authority, type);
-    const objectId = await this.createEntity(content, store.casID);
+    const objectId = await this.createEntity(content, authority);
 
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
@@ -379,17 +395,15 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async updateEvee(node: DocNode): Promise<void> {
-    const eveesRemotes = this.eveesRemotes as EveesRemote[];
-    const client = this.client as ApolloClient<any>;
+    if (node.authority === undefined) throw Error(`authority not defined for node ${node.ref}`);
 
     const commitId = await this.createCommit(
       node.draft,
-      node.entityType,
       node.authority,
       node.headId ? [node.headId] : []
     );
 
-    await client.mutate({
+    await this.client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: node.ref,
@@ -412,21 +426,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async createEvee(
     content: object,
-    type: string,
     authority: string,
+    casID: string,
     context: string
   ): Promise<string> {
-    const client = this.client as ApolloClient<any>;
-
     if (LOGINFO) this.logger.log('createEvee()', { content, authority });
 
-    const commitId = await this.createCommit(content, type, authority);
+    const commitId = await this.createCommit(content, authority);
 
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const createPerspective = await client.mutate({
+    const createPerspective = await this.client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
         headId: commitId,
@@ -441,11 +453,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   createPlaceholder(
     ref: string,
-    ix: number,
     draft: any,
-    authority: string,
-    parent: DocNode,
-    entityType: string
+    parent?: DocNode,
+    ix?: number,
   ): DocNode {
     
     const draftForReco = { id: '', object: draft };
@@ -457,21 +467,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .recognizeBehaviours(draftForReco)
       .find(b => (b as HasDocNodeLenses).docNodeLenses);
     
-    const context = `${parent.context}-${ix}-${Date.now()}`;
+    const context = `${parent ? parent.context : 'ROOT'}-${ix}-${Date.now()}`;
 
     if (!hasChildren) throw new Error(`hasChildren not found for object ${JSON.stringify(draftForReco)}`);
     if (!hasDocNodeLenses) throw new Error(`hasDocNodeLenses not found for object ${JSON.stringify(draftForReco)}`);
 
     return {
+      ref,
+      ix,
+      parent,
       draft,
       childrenNodes: [],
       hasChildren,
       hasDocNodeLenses,
-      entityType,
-      ix,
-      ref,
-      parent,
-      authority,
       context,
       editable: true,
       focused: false
@@ -501,16 +509,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (typeof el !== 'string') {
         if (el.object !== undefined && el.entityType !== undefined) {
           /** element is an object from which a DocNode should be create */
-          return Promise.resolve(
-            this.createPlaceholder(
-              '',
-              elIndex,
-              el.object,
-              node.authority,
-              node,
-              EveesModule.bindings.CommitType
-            )
-          );
+          const randint = 0 + Math.floor((10000 - 0) * Math.random());
+          const ref = PLACEHOLDER_TOKEN + `-${ix}-${randint}`;
+          const placeholder = this.createPlaceholder(ref, el.object, node, elIndex);
+
+          return Promise.resolve(placeholder);
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);
@@ -881,7 +884,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            ${((node.ref !== '') && (node.entityType === EveesModule.bindings.PerspectiveType)) && false ? html`
+            ${false ? html`
               <evees-info-popper 
                 first-perspective-id=${node.ref}
                 perspective-id=${node.ref}
