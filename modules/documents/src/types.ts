@@ -18,7 +18,6 @@ export interface DocNode {
   entityType: string,
   context?: string,
   data?: Entity<any>,
-  draft: any,
   append?: any,              // used by upper layer to tell the docnode lense to append content using its internal appending logic.
   childrenNodes: DocNode[],
   headId?: string,
