@@ -236,11 +236,17 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     let node;
     if (this.isPlaceholder(ref)) {
       const draft = await this.draftService.getDraft(ref);  
-      node = this.createPlaceholder(ref, draft, parent, ix);
+      node = this.draftToPlaceholder(draft, parent, ix);
     } else {
       const entity = await loadEntity(this.client, ref);
       if (!entity) throw Error(`Entity not found ${ref}`);
       node = await this.entityToNode(entity, parent, ix);
+
+      /** initialize draft */
+      const draft = await this.draftService.getDraft(ref);  
+      if (draft !== undefined) {
+        node.draft = draft;
+      }
     }
     
     if (LOGINFO) this.logger.log('loadNode() post', { ref, ix, node });
@@ -290,34 +296,34 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async persistAll() {
     if (!this.doc) return;
-    await this.persistNodeRec(this.doc);
+    if (this.doc.authority === undefined) throw Error('top element must have an authority');
+    await this.persistNodeRec(this.doc, this.doc.authority);
     /** reload doc from backend */
     await this.loadDoc();
     this.requestUpdate();
   }
 
-  async persistNodeRec(node: DocNode) {
-    const persistChildren = node.childrenNodes.map(child => this.persistNodeRec(child));
+  async persistNodeRec(node: DocNode, defaultAuthority: string) {
+    const persistChildren = node.childrenNodes.map(child => this.persistNodeRec(child, defaultAuthority));
     await Promise.all(persistChildren);
 
     /** set the children with the children refs (which were created above) */
     const {object} = node.hasChildren.replaceChildrenLinks({ id: '', object: node.draft })(
       node.childrenNodes.map(node => node.ref)
     );
-    node.draft = object;
+    this.setNodeDraft(node, object);
 
-    await this.persistNode(node);
+    await this.persistNode(node, defaultAuthority);
   }
 
-  async persistNode(node: DocNode) {
+  async persistNode(node: DocNode, defaultAuthority: string) {
     if (!this.isPlaceholder(node.ref) && (node.data !== undefined) && isEqual(node.data.object, node.draft)) {
       /** nothing to persist here */
       return;
     }
 
     let refType;
-    let entityType;
-
+    
     /** keep entity type or create commit by default */
     if (!this.isPlaceholder(node.ref)) {
       const entity = await loadEntity(this.client, node.ref);
@@ -334,12 +340,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         break;
 
       case EveesModule.bindings.CommitType:
-        if (node.authority === undefined) throw Error(`authority not defined for node ${node.ref}`);
         const commitParents = this.isPlaceholder(node.ref) ? [] : node.headId ? [node.headId] : [];
-
         const commitId = await this.createCommit(
           node.draft,
-          node.authority,
+          node.authority !== undefined ? node.authority : defaultAuthority,
           commitParents
         );
         node.ref = commitId;
@@ -351,6 +355,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         node.ref = dataId;
         break;
     }
+
+    /** clean draft memory */
+    await this.draftService.removeDraft(node.ref);
   }
 
   async createEntity(content: any, authority: string): Promise<string> {
@@ -451,13 +458,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return createPerspective.data.createPerspective.id;
   }
 
-  createPlaceholder(
-    ref: string,
+  draftToPlaceholder(
     draft: any,
     parent?: DocNode,
-    ix?: number,
-  ): DocNode {
-    
+    ix?: number,) {
+
     const draftForReco = { id: '', object: draft };
     const hasChildren = this.recognizer
       .recognizeBehaviours(draftForReco)
@@ -471,6 +476,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!hasChildren) throw new Error(`hasChildren not found for object ${JSON.stringify(draftForReco)}`);
     if (!hasDocNodeLenses) throw new Error(`hasDocNodeLenses not found for object ${JSON.stringify(draftForReco)}`);
+
+    const randint = 0 + Math.floor((10000 - 0) * Math.random());
+    const ref = PLACEHOLDER_TOKEN + `-${ix !== undefined ? ix : 0}-${randint}`;
 
     return {
       ref,
@@ -486,9 +494,21 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     };
   }
 
+  createPlaceholder(
+    draft: any,
+    parent?: DocNode,
+    ix?: number,
+  ): DocNode {
+    const node = this.draftToPlaceholder(draft, parent, ix);
+    /** async store */
+    this.draftService.setDraft(node.ref, node.draft);
+    return node;
+  }
+
   setNodeDraft(node, draft) {
     node.draft = draft;
-    this.draftService.setDraft(node.ref);
+    /** async store */
+    this.draftService.setDraft(node.ref, draft);
   }
 
   /** node updated as reference */
@@ -509,10 +529,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (typeof el !== 'string') {
         if (el.object !== undefined && el.entityType !== undefined) {
           /** element is an object from which a DocNode should be create */
-          const randint = 0 + Math.floor((10000 - 0) * Math.random());
-          const ref = PLACEHOLDER_TOKEN + `-${ix}-${randint}`;
-          const placeholder = this.createPlaceholder(ref, el.object, node, elIndex);
-
+          const placeholder = this.createPlaceholder(el.object, node, elIndex);
           return Promise.resolve(placeholder);
         } else {
           /** element is a DocNode */
@@ -537,7 +554,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     });
 
     const { object } = node.hasChildren.replaceChildrenLinks({ id: '', object: node.draft })(newChildren);
-    node.draft = object;
+    this.setNodeDraft(node, object);
 
     return removed;
   }
@@ -677,8 +694,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('contentChanged()', { node, content });
 
     const oldType = node.draft.type;
-    node.draft = content;
 
+    this.setNodeDraft(node, content);
+    
     /** react to type change by manipulating the tree */
     /** PAR => TITLE */
     if (oldType === TextType.Paragraph && content.type === TextType.Title) {
