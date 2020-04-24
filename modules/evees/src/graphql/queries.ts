@@ -114,6 +114,30 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
   }
 `;
 
+export const CREATE_AND_ADD_PROPOSAL: DocumentNode = gql`
+  mutation CreateAndAddProposal(
+    $perspectives: [NewPerspectiveInput]!
+    $proposal: ProposalInput!
+  ) {
+    createAndAddProposal(perspectives: $perspectives, proposal: $proposal) {
+      id
+      toPerspective {
+        id
+        proposals {
+          id
+        }
+      }
+      fromPerspective {
+        id
+      }
+      updates
+      authorized
+      canAuthorize
+      executed
+    }
+  }
+`;
+
 export const CREATE_PROPOSAL: DocumentNode = gql`
   mutation AddProposal(
     $toPerspectiveId: ID!

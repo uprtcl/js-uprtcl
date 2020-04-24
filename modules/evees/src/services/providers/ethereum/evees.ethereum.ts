@@ -10,6 +10,7 @@ import { CidConfig } from '@uprtcl/multiplatform';
 import * as UprtclRoot from './contracts-json/UprtclRoot.json';
 import * as UprtclDetails from './contracts-json/UprtclDetails.json';
 import * as UprtclProposals from './contracts-json/UprtclProposals.json';
+import * as UprtclWrapper from './contracts-json/UprtclWrapper.json';
 
 import { Secured } from '../../../utils/cid-hash';
 import { Commit, Perspective, PerspectiveDetails } from '../../../types';
@@ -68,6 +69,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
   protected uprtclRoot: EthereumContract;
   protected uprtclDetails: EthereumContract;
   protected uprtclProposals: EthereumContract;
+  protected uprtclWrapper: EthereumContract;
 
   constructor(
     protected ethConnection: EthereumConnection,
@@ -75,18 +77,23 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
     cidConfig: CidConfig,
     uprtclRootOptions: EthereumContractOptions = { contract: UprtclRoot as any },
     uprtclDetailsOptions: EthereumContractOptions = { contract: UprtclDetails as any },
-    uprtclProposalsOptions: EthereumContractOptions = { contract: UprtclProposals as any }
+    uprtclProposalsOptions: EthereumContractOptions = { contract: UprtclProposals as any },
+    uprtclWrapperOptions: EthereumContractOptions = { contract: UprtclWrapper as any }
   ) {
     super(ipfsOptions, cidConfig);
+    
     this.uprtclRoot = new EthereumContract(uprtclRootOptions, ethConnection);
     this.uprtclDetails = new EthereumContract(uprtclDetailsOptions, ethConnection);
     this.uprtclProposals = new EthereumContract(uprtclProposalsOptions, ethConnection);
+    this.uprtclWrapper = new EthereumContract(uprtclWrapperOptions, ethConnection);
 
     this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot);
     this.proposals = new ProposalsEthereum(
       this.uprtclRoot,
       this.uprtclProposals,
-      this.accessControl
+      this.uprtclWrapper,
+      this.accessControl,
+      this
     );
   }
 
@@ -110,6 +117,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
       this.uprtclRoot.ready(),
       this.uprtclDetails.ready(),
       this.uprtclProposals.ready(),
+      this.uprtclWrapper.ready(),
       super.ready()
     ]);
   }
@@ -156,7 +164,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
     ]);
   }
 
-  async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+  async preparePerspectives(newPerspectivesData: NewPerspectiveData[]) {
     const persistPromises = newPerspectivesData.map(perspectiveData => {
       return this.persistPerspectiveEntity(perspectiveData.perspective);
     });
@@ -183,6 +191,13 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
     );
 
     const ethPerspectivesData = await Promise.all(ethPerspectivesDataPromises);
+    
+    return ethPerspectivesData;
+  }
+
+  async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+    
+    const ethPerspectivesData = await this.preparePerspectives(newPerspectivesData);
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     await this.uprtclDetails.send(INIT_PERSP_BATCH, [

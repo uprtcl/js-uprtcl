@@ -73,6 +73,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const mergeResult = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, config);
 
+    /** prevent an update head to the same head */
+    if (mergeResult.new === toHeadId) {
+      return {
+        new: toPerspectiveId,
+        actions: mergeResult.actions
+      };
+    }
+
     const request: UpdateRequest = {
       fromPerspectiveId,
       perspectiveId: toPerspectiveId,
@@ -159,7 +167,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const datasPromises = commitsIds.map(async commitId => this.loadCommitData(commitId));
 
-    const newDatas: any[] = await Promise.all(datasPromises);
+    const newDatas = await Promise.all(datasPromises);
 
     const mergedData = await this.mergeData(
       ancestorData,
@@ -173,6 +181,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const sourceRemote = this.remoteMap(remote, type);
 
     const entity = await deriveEntity(mergedData.new, sourceRemote.cidConfig);
+
+    /** prevent an update head to the same data */
+    if (entity.id === newDatas[0].id) {
+      return {
+        new: toCommitId,
+        actions: mergedData.actions
+      };
+    }
 
     const newDataAction: UprtclAction = {
       type: CREATE_DATA_ACTION,
