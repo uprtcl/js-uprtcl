@@ -22,7 +22,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   @property()
   canWrite!: boolean;
 
-  @query('mwc-dialog')
+  @query('#my-dialog')
   dialog: any;
 
   @property({ type: String })
@@ -79,7 +79,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
 
   renderDialog() {
     return html`
-      <mwc-dialog .heading=${this.t('access-control:transfer-ownership')}>
+      <mwc-dialog id="my-dialog" .heading=${this.t('access-control:transfer-ownership')}>
         <mwc-textfield
           outlined
           .label=${this.t('access-control:new-owner-address')}

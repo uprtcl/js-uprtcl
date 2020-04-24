@@ -310,12 +310,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     );
 
     await cacheActions(mergeResult.actions, this.cache, this.client);
-
     const updates = mergeResult.actions.filter(action => action.type === UPDATE_HEAD_ACTION).map(action => action.payload);
-
     const confirm = await this.updatesDialog(updates, 'propose', 'cancel');
 
-    if (!confirm) return[];
+    if (!confirm) {
+      await this.client.resetStore();
+    };
 
     const resultTo = await this.client.query({
       query: gql`
