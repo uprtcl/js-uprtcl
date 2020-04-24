@@ -95,6 +95,7 @@ export async function cacheActions(
     } else if (action.entity) {
       entityCache.cacheEntity(action.entity);
     }
+
     if (action.type === UPDATE_HEAD_ACTION) {
       const perspectiveId = action.payload.perspectiveId;
 

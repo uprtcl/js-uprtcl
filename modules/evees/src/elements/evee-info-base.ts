@@ -303,6 +303,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       canWrite: permissions.owner
     };
 
+    debugger
+
     const mergeResult = await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
       fromPerspectiveId,
@@ -314,7 +316,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const confirm = await this.updatesDialog(updates, 'propose', 'cancel');
 
     if (!confirm) {
+      // TODO: should invalidate only the portion of cache affected by the merge actions, but apollo wont allow it.
       await this.client.resetStore();
+      return;
     };
 
     const resultTo = await this.client.query({

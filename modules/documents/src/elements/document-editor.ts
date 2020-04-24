@@ -129,9 +129,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           entity(ref: "${entity.id}") {
             id
             ... on Perspective {
-              payload {
-                authority
-              }
               head {
                 id 
                 ... on Commit {
@@ -145,6 +142,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               }
             }
             _context {
+              object
               patterns {
                 accessControl {
                   canWrite
@@ -154,8 +152,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           }
         }`
       });
+      const payload = result.data.entity._context.object.payload;
       editable = result.data.entity._context.patterns.accessControl.canWrite;
-      authority = result.data.entity.payload.authority;
+      authority = payload.authority;
       context = result.data.entity.context.id;
       dataId = result.data.entity.head.data.id;
       headId = result.data.entity.head.id;
@@ -927,7 +926,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            ${false ? html`
+            ${true ? html`
               <evees-info-popper 
                 first-perspective-id=${node.ref}
                 perspective-id=${node.ref}

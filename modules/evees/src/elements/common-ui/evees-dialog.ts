@@ -14,12 +14,14 @@ export class EveesDialog extends LitElement {
   @property({ type: Function, attribute: false})
   resolved: Function | undefined = undefined;
 
-  secondaryClicked() {
+  secondaryClicked(e) {
+    e.stopPropagation();
     this.dispatchEvent(new CustomEvent('secondary'))
     if (this.resolved) this.resolved(false);
   }
 
-  primaryClicked() {
+  primaryClicked(e) {
+    e.stopPropagation();
     this.dispatchEvent(new CustomEvent('primary'))
     if (this.resolved) this.resolved(true);
   }
