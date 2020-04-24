@@ -1,6 +1,7 @@
 import { connect } from '@holochain/hc-web-client';
 
 import { SocketConnection, ConnectionOptions } from '@uprtcl/multiplatform';
+import { parseResponse } from './utils';
 
 export interface HolochainCallOptions {
   instance: string;
@@ -46,8 +47,7 @@ export class HolochainConnection extends SocketConnection {
     }
 
     this.logger.log('ZOME RESULT:', funcName, params, result);
-    if (result.Ok) return result.Ok;
-    return result;
+    return parseResponse(result);
   }
 
   public async onSignal(callback: (params: any) => void): Promise<void> {

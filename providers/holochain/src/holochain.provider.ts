@@ -7,11 +7,6 @@ import { Constructor } from '@uprtcl/micro-orchestrator';
 import { HolochainConnection } from './holochain.connection';
 import { HolochainConnectionBindings } from './bindings';
 
-// Auxiliar type for Holochain's get_entry call
-export type EntryResult<T extends object = any> = {
-  entry: Entity<T>;
-  type: string;
-};
 
 @injectable()
 export abstract class HolochainProvider implements Authority {
@@ -38,44 +33,14 @@ export abstract class HolochainProvider implements Authority {
     return this.connection.call(this.instance, this.zome, funcName, params);
   }
 
-  public parseResponse(response: { Ok: any } | any): any {
-    return response.hasOwnProperty('Ok') ? response.Ok : response;
+  async isLogged(): Promise<boolean> {
+    return true;
   }
-
-  public parseEntry<T extends object>(entry: { Ok: any } | any): T {
-    return JSON.parse(this.parseResponse(entry).App[1]);
+  async login(): Promise<void> {
+    
   }
-
-  public parseEntryResult<T extends object>(entry: any): EntryResult<T> | undefined {
-    entry = this.parseResponse(entry);
-    if (!entry.result.Single.meta) return undefined;
-    return {
-      entry: {
-        id: entry.result.Single.meta.address,
-        object: this.parseEntry<T>(entry.result.Single.entry)
-      },
-      type: entry.result.Single.meta.entry_type.App
-    };
-  }
-
-  public parseEntries<T extends object>(entryArray: Array<any>): Array<T> {
-    return entryArray.map(entry => this.parseEntry(entry));
-  }
-
-  public parseEntriesResults<T extends object>(entryArray: Array<any>): Array<EntryResult<T>> {
-    return entryArray
-      .map(entry => this.parseEntryResult<T>(this.parseResponse(entry)))
-      .filter(entry => entry != undefined) as Array<EntryResult<T>>;
-  }
-
-  isLogged(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  login(): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-  logout(): Promise<void> {
-    throw new Error("Method not implemented.");
+  async logout(): Promise<void> {
+    
   }
 
 }
