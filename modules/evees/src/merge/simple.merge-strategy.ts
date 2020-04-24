@@ -35,6 +35,10 @@ export class SimpleMergeStrategy implements MergeStrategy {
     @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
     @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
   ) {}
+  
+  mergePerspectivesExternal(toPerspectiveId: string, fromPerspectiveId: string, config: any): Promise<NodeActions<string>> {
+    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
+  }
 
   async mergePerspectives(
     toPerspectiveId: string,

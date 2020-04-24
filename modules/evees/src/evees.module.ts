@@ -28,6 +28,7 @@ import { ItemWithMenu } from './elements/common-ui/evees-list-item';
 import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
 import { RecursiveContextMergeStrategy } from './uprtcl-evees';
 import { UpdatedDiff } from './elements/evees-diff';
+import { EveesDialog } from './elements/common-ui/evees-dialog';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -99,6 +100,7 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-list-item', ItemWithMenu);
     customElements.define('evees-options-menu', EveesOptionsMenu);
     customElements.define('evees-update-diff', UpdatedDiff)
+    customElements.define('evees-dialog', EveesDialog);
   }
 
   get submodules() {

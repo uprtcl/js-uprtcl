@@ -22,12 +22,12 @@ import { Evees, deriveSecured } from '../uprtcl-evees';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
-  perspectivesByContext!: Dictionary<{
+  perspectivesByContext: Dictionary<{
     to: string | undefined;
     from: string | undefined;
-  }>;
+  }> | undefined = undefined;
 
-  allPerspectives!: Dictionary<string>;
+  allPerspectives: Dictionary<string> | undefined = undefined;
 
   async isPattern(id: string, type: string): Promise<boolean> {
     const entity = (await loadEntity(this.client, id)) as object;
@@ -36,6 +36,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   setPerspective(perspectiveId: string, context: string, to: boolean): void {
+    if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
+    if (!this.allPerspectives) throw new Error('allPerspectives undefined');
+
     if (!this.perspectivesByContext[context]) {
       this.perspectivesByContext[context] = {
         to: undefined,
@@ -117,6 +120,17 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     await Promise.all(promises);
   }
 
+  async mergePerspectivesExternal(
+    toPerspectiveId: string,
+    fromPerspectiveId: string,
+    config: any) {
+    /** reset internal state */
+    this.perspectivesByContext = undefined;
+    this.allPerspectives = undefined;
+
+    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
+  }
+
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
@@ -134,6 +148,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   private async getPerspectiveContext(perspectiveId: string): Promise<string> {
+    if (!this.allPerspectives) throw new Error('allPerspectives undefined');
+
     if (this.allPerspectives[perspectiveId]) {
       return this.allPerspectives[perspectiveId];
     } else {
@@ -196,6 +212,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     modificationsLinks: string[][],
     config: any
   ): Promise<NodeActions<string>[]> {
+    if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
+
     /** The context is used as Merge ID for perspective to have a context-based merge. For othe
      * type of entities, like commits or data, the link itself is used is mergeId */
     const originalPromises = originalLinks.map(link => this.getLinkMergeId(link));

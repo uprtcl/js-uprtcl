@@ -47,7 +47,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   doc!: DocNode;
 
   @property({ type: Boolean, attribute: false })
-  docHasChanges: Boolean = false;
+  docHasChanges: boolean = false;
+
+  @property({ type: Boolean, attribute: false })
+  showCommitMessage: boolean = false;
 
   @property({ type: String })
   color!: string;
@@ -294,17 +297,17 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     super.performUpdate();
   }
 
-  async persistAll() {
+  async persistAll(message?:string) {
     if (!this.doc) return;
     if (this.doc.authority === undefined) throw Error('top element must have an authority');
-    await this.persistNodeRec(this.doc, this.doc.authority);
+    await this.persistNodeRec(this.doc, this.doc.authority, message);
     /** reload doc from backend */
     await this.loadDoc();
     this.requestUpdate();
   }
 
-  async persistNodeRec(node: DocNode, defaultAuthority: string) {
-    const persistChildren = node.childrenNodes.map(child => this.persistNodeRec(child, defaultAuthority));
+  async persistNodeRec(node: DocNode, defaultAuthority: string, message?: string) {
+    const persistChildren = node.childrenNodes.map(child => this.persistNodeRec(child, defaultAuthority, message));
     await Promise.all(persistChildren);
 
     /** set the children with the children refs (which were created above) */
@@ -313,10 +316,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     );
     this.setNodeDraft(node, object);
 
-    await this.persistNode(node, defaultAuthority);
+    await this.persistNode(node, defaultAuthority, message);
   }
 
-  async persistNode(node: DocNode, defaultAuthority: string) {
+  async persistNode(node: DocNode, defaultAuthority: string, message?: string) {
     if (!this.isPlaceholder(node.ref) && (node.data !== undefined) && isEqual(node.data.object, node.draft)) {
       /** nothing to persist here */
       return;
@@ -336,7 +339,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     /** if its a placeholder create an object, otherwise make a commit */
     switch (refType) {
       case EveesModule.bindings.PerspectiveType:
-        await this.updateEvee(node);
+        await this.updateEvee(node, message);
         break;
 
       case EveesModule.bindings.CommitType:
@@ -344,7 +347,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         const commitId = await this.createCommit(
           node.draft,
           node.authority !== undefined ? node.authority : defaultAuthority,
-          commitParents
+          commitParents,
+          message
         );
         node.ref = commitId;
         break;
@@ -378,7 +382,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async createCommit(
     content: object,
     authority: string,
-    parentsIds?: string[]
+    parentsIds?: string[],
+    message?: string
   ): Promise<string> {
     const client = this.client as ApolloClient<any>;
 
@@ -392,7 +397,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       variables: {
         dataId: objectId,
         parentsIds,
-        casID: remote.casID
+        casID: remote.casID,
+        message: message !== undefined ? message : ''
       }
     });
 
@@ -401,7 +407,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return createCommit.data.createCommit.id;
   }
 
-  async updateEvee(node: DocNode): Promise<void> {
+  async updateEvee(node: DocNode, message?: string): Promise<void> {
     if (node.authority === undefined) throw Error(`authority not defined for node ${node.ref}`);
 
     const commitId = await this.createCommit(
@@ -415,7 +421,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       variables: {
         perspectiveId: node.ref,
         context: node.context,
-        headId: commitId
+        headId: commitId,
+        message
       }
     });
 
@@ -874,14 +881,32 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.addEventListener('keydown', event => {
-      if (event.keyCode === 83) {
-        if (event.ctrlKey === true) {
-          event.preventDefault();
-          this.persistAll();
-        }
-      }
-    });
+    // this.addEventListener('keydown', event => {
+    //   if (event.keyCode === 83) {
+    //     if (event.ctrlKey === true) {
+    //       event.preventDefault();
+    //       this.persistAll();
+    //     }
+    //   }
+    // });
+  }
+
+  commitClicked() {
+    this.showCommitMessage = true;
+  }
+
+  cancelCommitClicked() {
+    this.showCommitMessage = false;
+  }
+
+  acceptCommitClicked() {
+    if (!this.shadowRoot) return;
+    const input = this.shadowRoot.getElementById('COMMIT_MESSAGE') as any;
+    const message = input.value;
+
+    this.showCommitMessage = false;
+
+    this.persistAll(message);
   }
 
   renderWithCortex(node: DocNode) {
@@ -966,13 +991,26 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return html`
       <div class="editor-container">
         <div class="doc-topbar">
-          ${this.docHasChanges
+          ${this.docHasChanges && !this.showCommitMessage
             ? html`
-                <mwc-button outlined icon="save_alt" @click=${() => this.persistAll()}>
-                  commit
+                <mwc-button outlined icon="gavel" @click=${this.commitClicked}>
+                  stamp
                 </mwc-button>
               `
             : ''}
+          ${this.showCommitMessage ? html`
+            <mwc-textfield
+              outlined
+              id="COMMIT_MESSAGE"
+              placeholder"
+              label="Message">
+            </mwc-textfield>
+            <mwc-icon-button icon="clear" 
+              @click=${this.cancelCommitClicked}>
+            </mwc-icon-button>
+            <mwc-icon-button icon="done" 
+              @click=${this.acceptCommitClicked}>
+            </mwc-icon-button>` : ''}
         </div>
         ${this.renderDocNode(this.doc)}
       </div>

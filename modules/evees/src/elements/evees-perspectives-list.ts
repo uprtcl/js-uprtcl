@@ -488,19 +488,12 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   renderDiff() {
     this.logger.log('renderDiff()', { updatesForDiff: this.updatesForDiff });
     return html`
-      <div class="modal">
-        <div class="modal-content">
-          <div class="diff-container">
-            <evees-update-diff .updates=${this.updatesForDiff as UpdateRequest[]}></evees-update-diff>
-          </div>
-          <mwc-button
-            @click=${() => this.showDiff = false}
-            slot="primaryAction"
-            dialogAction="close">
-            Close
-          </mwc-button>
-        </div>
-      </div>`;
+      <evees-dialog>
+        <evees-update-diff 
+          .updates=${this.updatesForDiff as UpdateRequest[]}
+          @secondary=${() => this.showDiff = false}>
+        </evees-update-diff>
+      </evees-dialog>`;
   }
 
   render() {
@@ -536,31 +529,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         align-items: center;
         flex: 1;
       }
-      .modal {
-        position: fixed;
-        z-index: 100;
-        height: 100%;
-        width: 100%;
-        background-color: #b8b8b86d;
-        left: 0;
-        top: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-      .modal-content {
-        max-width: 90vw;
-        margin: 0 auto;
-        min-width: 60vw;
-        padding: 3vw 3vw;
-        background-color: white;
-        border-radius: 4px;
-        box-shadow: 10px 10px 67px 0px rgba(0,0,0,0.75);
-      }
-      .diff-container {
-        margin-bottom: 3vw;
-      }
-
       .loading-container {
         flex-grow: 1;
         display: flex;

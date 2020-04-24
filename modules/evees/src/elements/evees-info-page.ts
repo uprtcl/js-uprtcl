@@ -1,4 +1,4 @@
-import { html, css, property } from 'lit-element';
+import { html, css, property, query } from 'lit-element';
 export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
@@ -12,7 +12,7 @@ import { UPDATE_HEAD } from 'src/graphql/queries';
 import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from './common-ui/evees-options-menu';
 
-const NAME_FIELD = 'NAME_FIELD';
+import "@material/mwc-dialog";
 
 export class EveesInfoPage extends EveesInfoBase {
 
@@ -95,7 +95,7 @@ export class EveesInfoPage extends EveesInfoBase {
         break;
     }
   }
-  
+
   renderOtherPerspectives() {
     return html`
       <evees-perspectives-list
@@ -202,7 +202,6 @@ export class EveesInfoPage extends EveesInfoBase {
       }
     }
     
-
     const contextButton = html`
       <div class="context-menu">
           <evees-options-menu 
@@ -283,7 +282,8 @@ export class EveesInfoPage extends EveesInfoBase {
           
 
         </div>
-      </div>`;
+      </div>
+      ${this.showUpdatesDialog ? this.renderUpdatesDialog() : ''}`;
   }
 
   static get styles() {

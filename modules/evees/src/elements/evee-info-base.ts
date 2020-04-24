@@ -1,4 +1,4 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html, css, query } from 'lit-element';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
 export const styleMap = style => {
@@ -53,6 +53,9 @@ import { executeActions, cacheActions } from '../utils/actions';
 import { NewPerspectiveData } from '../services/evees.provider';
 import { EveesRemote } from 'src/uprtcl-evees';
 
+import { Dialog } from "@material/mwc-dialog";
+import { EveesDialog } from './common-ui/evees-dialog';
+
 interface PerspectiveData {
   id: string;
   perspective: Perspective;
@@ -62,6 +65,9 @@ interface PerspectiveData {
   head: Entity<Commit>;
   data: Entity<any>;
 }
+
+const DFT_OK_TEXT = 'Ok';
+const DFT_CANCEL_TEXT = 'Cancel';
 
 export class EveesInfoBase extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
@@ -93,6 +99,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ type: String, attribute: false })
   forceUpdate: string = 'true';
 
+  @property({type: Boolean, attribute: false})
+  showUpdatesDialog: boolean = false;
+
+  @query('#updates-dialog')
+  updatesDialogEl!: EveesDialog;
+
+  updatesForDiff: UpdateRequest[] = [];
+  dialogConfig: any = {};
+  
   perspectiveData!: PerspectiveData;
 
   protected client!: ApolloClient<any>;
@@ -288,11 +303,17 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       canWrite: permissions.owner
     };
 
-    const mergeResult = await this.merge.mergePerspectives(
+    const mergeResult = await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
       fromPerspectiveId,
       config
     );
+
+    const updates = mergeResult.actions.filter(action => action.type === UPDATE_HEAD_ACTION).map(action => action.payload);
+
+    const confirm = await this.updatesDialog(updates, 'propose', 'cancel');
+
+    if (!confirm) return[];
 
     const resultTo = await this.client.query({
       query: gql`
@@ -533,17 +554,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.reload();
   }
 
-  getCreatePattern(symbol) {
-    const patterns: Pattern<any>[] = this.requestAll(symbol);
-    const create: Create<any, any> | undefined = (patterns.find(
-      pattern => ((pattern as unknown) as Create<any, any>).create
-    ) as unknown) as Create<any, any>;
-
-    if (!create) throw new Error(`No creatable pattern registered for a ${patterns[0].type}`);
-
-    return create;
-  }
-
   async newPerspectiveClicked() {
 
     this.loading = true;
@@ -593,6 +603,34 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
 
     this.checkoutPerspective(this.firstPerspectiveId);
+  }
+
+  async updatesDialog(updates: UpdateRequest[], primaryText: string, secondaryText: string): Promise<boolean> {
+    this.updatesForDiff = updates;
+    this.dialogConfig = {
+      primaryText, secondaryText, showSecondary: secondaryText !== undefined
+    }
+    this.showUpdatesDialog = true;
+
+    await this.updateComplete;
+
+    return new Promise((resolve) => {
+      this.updatesDialogEl.resolved = (value) => {
+        this.showUpdatesDialog = false;
+        resolve(value);
+      };
+    });
+  }
+
+  renderUpdatesDialog() {
+    return html`
+      <evees-dialog 
+        id="updates-dialog" 
+        primary-text=${this.dialogConfig.primaryText}
+        secondary-text=${this.dialogConfig.secondaryText}
+        show-secondary=${this.dialogConfig.showSecondary}>
+        <evees-update-diff .updates=${this.updatesForDiff}></evees-update-diff>
+      </evees-dialog>`;
   }
 
   renderLoading() {
