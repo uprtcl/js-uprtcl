@@ -309,6 +309,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       config
     );
 
+    await cacheActions(mergeResult.actions, this.cache, this.client);
+
     const updates = mergeResult.actions.filter(action => action.type === UPDATE_HEAD_ACTION).map(action => action.payload);
 
     const confirm = await this.updatesDialog(updates, 'propose', 'cancel');
@@ -364,7 +366,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (!this.cache) throw new Error('cache undefined');
     if (!this.client) throw new Error('client undefined');
 
-    await cacheActions(actions, this.cache, this.client);
     await executeActions(actions, this.client);
 
     const updateRequests = actions.filter(a => a.type === UPDATE_HEAD_ACTION).map(a => a.payload);
@@ -439,8 +440,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if(!this.client) throw new Error('client undefined');
     if(!this.cache) throw new Error('cache undefined');
     
-    await cacheActions(actions, this.cache, this.client);
-
     /** create commits and data */
     const dataActions = actions.filter(a =>
       [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type)
