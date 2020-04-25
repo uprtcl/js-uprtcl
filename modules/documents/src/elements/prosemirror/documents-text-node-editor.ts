@@ -772,6 +772,7 @@ export class DocumentTextNodeEditor extends LitElement {
         .editor-content {
           margin: 0px 0px;
         }
+        
       `
     ];
   }

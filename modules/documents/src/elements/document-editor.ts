@@ -1088,6 +1088,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         display: flex;
       }
 
+      .row {
+        margin-bottom: 8px;
+      }
+
       .column {
         display: flex;
         flex-direction: row;
@@ -1095,9 +1099,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
       .evee-info {
         width: 30px;
+        min-width: 30px;
       }
 
       .node-content {
+        max-width: calc(100% - 30px);
         flex: 1 1 0;
         position: relative;
       }

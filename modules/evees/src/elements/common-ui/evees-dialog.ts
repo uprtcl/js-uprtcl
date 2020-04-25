@@ -33,15 +33,16 @@ export class EveesDialog extends LitElement {
           <div class="slot-container">
             <slot></slot>
           </div>
-          <mwc-button
-            @click=${this.primaryClicked}>
-            ${this.primaryText}
-          </mwc-button>
           ${this.showSecondary === 'true' ? html`
             <mwc-button
               @click=${this.secondaryClicked}>
               ${this.secondaryText}
             </mwc-button>` : ''}
+          <mwc-button
+            @click=${this.primaryClicked}>
+            ${this.primaryText}
+          </mwc-button>
+          
         </div>
       </div>`
   }

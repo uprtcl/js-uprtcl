@@ -35,6 +35,7 @@ import '@material/mwc-drawer';
 import { WikiBindings } from 'src/bindings';
 
 const LOGINFO = false;
+const MAX_LENGTH = 999;
 
 interface PageData {
   id: string
@@ -469,11 +470,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return html`
       <div class=${classes.join(' ')} @click=${() => this.selectPage(ix)}>
-        <div class="text-container">${text}</div>
-        <evees-options-menu 
-          @option-click=${e => this.optionOnPage(ix, e.detail.key)} 
-          .config=${menuConfig}>
-        </evees-options-menu>       
+        <div class="text-container">${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}</div>
+        ${this.editable ? html`
+          <evees-options-menu 
+            @option-click=${e => this.optionOnPage(ix, e.detail.key)} 
+            .config=${menuConfig}>
+          </evees-options-menu>` : ''}
       </div>`;
   }
 
@@ -560,9 +562,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .app-navbar {
           width: 260px;
+          flex-shrink: 0;
         }
         .app-content {
           border-left: solid #cccccc 1px;
+          min-width: 475px;
+          max-width: calc(100% - 260px - 1px);
           flex-grow: 1;
           display: flex;
           flex-direction: column;
@@ -579,6 +584,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           width: 100%;
         }
         .page-item {
+          min-height: 48px;
           cursor: pointer;
           width: calc(100% - 19px);
           display: flex;
@@ -586,6 +592,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           transition: all 0.1s ease-in;
         }
         .page-item .text-container {
+          max-width: calc(100% - 48px);
+          overflow-x: hidden;
           flex-grow: 1;
           display: flex;
           flex-direction: column;
