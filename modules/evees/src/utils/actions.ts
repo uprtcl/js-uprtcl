@@ -50,6 +50,7 @@ export async function cacheActions(
     if (action.type === CREATE_AND_INIT_PERSPECTIVE_ACTION && action.entity) {
       const perspectiveId = ((action.entity as unknown) as Entity<any>).id;
       const headId = action.payload.details.headId;
+      const context = action.payload.details.context;
 
       const object = action.entity.object;
 
@@ -59,6 +60,9 @@ export async function cacheActions(
             id
             ... on Perspective {
               head {
+                id
+              }
+              context {
                 id
               }
             }
@@ -76,6 +80,10 @@ export async function cacheActions(
               __typename: 'Commit',
               id: headId
             },
+            context: {
+              __typename: 'Context',
+              id: context
+            },
             _context: {
               __typename: 'EntityContext',
               object,
@@ -87,6 +95,7 @@ export async function cacheActions(
     } else if (action.entity) {
       entityCache.cacheEntity(action.entity);
     }
+
     if (action.type === UPDATE_HEAD_ACTION) {
       const perspectiveId = action.payload.perspectiveId;
 

@@ -100,6 +100,7 @@ export const eveesResolvers: IResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = evees.getPerspectiveProvider(parent);
+      
       const details = await remote.getPerspectiveDetails(parent.id);
 
       return details && details.context;

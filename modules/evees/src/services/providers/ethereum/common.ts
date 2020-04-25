@@ -105,6 +105,8 @@ export const getPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
     fromBlock: 0
   });
 
+  if (events.length === 0) return undefined;
+
   const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber) ? 1 : -1).pop();
 
   return {
@@ -119,7 +121,7 @@ export const getPerspectiveContext = async (uprtclDetails, perspectiveIdHash) =>
     fromBlock: 0
   });
 
-  if (events.length === 0) return '';
+  if (events.length === 0) return undefined;
 
   const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber) ? 1 : -1).pop();
   

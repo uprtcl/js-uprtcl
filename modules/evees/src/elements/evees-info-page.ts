@@ -1,4 +1,4 @@
-import { html, css, property } from 'lit-element';
+import { html, css, property, query } from 'lit-element';
 export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
@@ -12,7 +12,7 @@ import { UPDATE_HEAD } from 'src/graphql/queries';
 import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from './common-ui/evees-options-menu';
 
-const NAME_FIELD = 'NAME_FIELD';
+import "@material/mwc-dialog";
 
 export class EveesInfoPage extends EveesInfoBase {
 
@@ -47,7 +47,7 @@ export class EveesInfoPage extends EveesInfoBase {
     if (!this.perspectiveData) return this.perspectiveId;
 
     if (this.perspectiveId === this.firstPerspectiveId) {
-      return 'Official Version';
+      return html`<span>Official Version</span>`;
     } 
 
     const hasName = this.perspectiveData.details.name !== undefined && this.perspectiveData.details.name !== '';
@@ -95,7 +95,7 @@ export class EveesInfoPage extends EveesInfoBase {
         break;
     }
   }
-  
+
   renderOtherPerspectives() {
     return html`
       <evees-perspectives-list
@@ -123,27 +123,29 @@ export class EveesInfoPage extends EveesInfoBase {
 
   renderEditNameForm() {
     return html`
-      <div class="row">
-        <mwc-textfield
-          outlined
-          id="DRAFT_NAME"
-          value=${this.perspectiveData.details.name as string} 
-          label="Draft Name">
-        </mwc-textfield>
-      </div>
-      <div class="row">
-        <mwc-button
-          outlined
-          icon="clear"
-          @click=${() => this.showEditName = false}
-          label="Cancel"
-        ></mwc-button>
-        <mwc-button
-          outlined
-          icon="done"
-          @click=${this.saveName}
-          label="Save"
-        ></mwc-button>
+      <div>
+        <div class="row">
+          <mwc-textfield
+            outlined
+            id="DRAFT_NAME"
+            value=${this.perspectiveData.details.name as string} 
+            label="Draft Name">
+          </mwc-textfield>
+        </div>
+        <div class="row">
+          <mwc-button
+            outlined
+            icon="clear"
+            @click=${() => this.showEditName = false}
+            label="Cancel"
+          ></mwc-button>
+          <mwc-button
+            outlined
+            icon="done"
+            @click=${this.saveName}
+            label="Save"
+          ></mwc-button>
+        </div>
       </div>`;
   }
 
@@ -202,13 +204,18 @@ export class EveesInfoPage extends EveesInfoBase {
       }
     }
     
-
     const contextButton = html`
       <div class="context-menu">
+          <evees-help>
+            <span>
+              To update the "Official Version" of this Wiki you need to create a new "Draft"<br><br>
+              Once changes have been made to the draft, you can "Propose an Update" to the "Official Version".            
+            </span>
+          </evees-help>
           <evees-options-menu 
             .config=${contextConfig} 
             @option-click=${this.optionClicked}>
-          </evees-options-menu>
+          </evees-options-menu>          
       </div>
     `;
 
@@ -230,19 +237,11 @@ export class EveesInfoPage extends EveesInfoBase {
             </div>
 
             <div class="section-content">
-            
-              ${this.showEditName ? html`
-                <div>
-                  ${this.renderEditNameForm()}
-                </div>` : ''
-              }
-              
+              ${this.showEditName ? this.renderEditNameForm() : ''}
               ${this.renderPerspectiveActions()}
-              
               <div class="other-perspectives">
                 ${this.renderOtherPerspectives()}
               </div>
-
             </div>
 
           </div>
@@ -251,8 +250,16 @@ export class EveesInfoPage extends EveesInfoBase {
             <div class="section-header">
               Access Control
             </div>
-            <div class="section-content info-text">
+            <div class="section-content">
               ${this.renderPermissions()}
+            </div>
+            <div class="context-menu">
+              <evees-help>
+                <span>
+                  Drafts can be made public to let others read them.<br><br>
+                  They can only be edited by their creator.
+                </span>
+              </evees-help>
             </div>
           </div>
 
@@ -261,7 +268,7 @@ export class EveesInfoPage extends EveesInfoBase {
               <div class="section-header">
                 Delete
               </div>
-              <div class="section-content info-text">
+              <div class="section-content">
                 <mwc-button
                   outlined
                   class="bottom-button"
@@ -283,7 +290,8 @@ export class EveesInfoPage extends EveesInfoBase {
           
 
         </div>
-      </div>`;
+      </div>
+      ${this.showUpdatesDialog ? this.renderUpdatesDialog() : ''}`;
   }
 
   static get styles() {
@@ -309,13 +317,15 @@ export class EveesInfoPage extends EveesInfoBase {
         box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2);
         margin-bottom: 36px;
         border-radius: 4px;
-        overflow: hidden;
         background-color: rgb(255,255,255,0.6);
         position: relative;
       }
+      .section-content {
+        padding-top: 3vw;
+      }
       .section-header {
         font-weight: bold;
-        padding: 1.5vw 0px 0.8vw 0px; 
+        padding: 2vw 0px 0.8vw 0px; 
         font-size: 1.6em;
         border-style: solid 2px;
       }
@@ -333,8 +343,9 @@ export class EveesInfoPage extends EveesInfoBase {
       }
       .context-menu {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 6px;
+        right: 6px;
+        display: flex;
       }
       .section-content {
         padding: 2.2vw 0px 2.2vw 0px;

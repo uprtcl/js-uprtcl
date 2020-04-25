@@ -3,7 +3,7 @@ import { DocumentNode } from 'graphql';
 
 export const discoveryTypeDefs: DocumentNode = gql`
   extend type EntityContext {
-    casID: String!
+    casID: String
     content: Entity!
   }
 

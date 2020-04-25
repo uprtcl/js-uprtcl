@@ -10,19 +10,20 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { PermissionsElement } from './permissions-element';
 import { OwnerPermissions } from '../services/owner-access-control.service';
 import { SET_CAN_WRITE } from '../graphql/queries';
+import { prettyAddress } from './support';
 
 export class PermissionsOwner extends moduleConnect(LitElement)
   implements PermissionsElement<OwnerPermissions> {
-  @property()
+  @property({ type: String })
   entityId!: string;
 
-  @property()
+  @property({ attribute: false })
   permissions!: OwnerPermissions;
 
-  @property()
+  @property({ attribute: false })
   canWrite!: boolean;
 
-  @query('mwc-dialog')
+  @query('#my-dialog')
   dialog: any;
 
   @property({ type: String })
@@ -79,7 +80,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
 
   renderDialog() {
     return html`
-      <mwc-dialog .heading=${this.t('access-control:transfer-ownership')}>
+      <mwc-dialog id="my-dialog" .heading=${this.t('access-control:transfer-ownership')}>
         <mwc-textfield
           outlined
           .label=${this.t('access-control:new-owner-address')}
@@ -104,7 +105,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   render() {
     return html`
       ${this.renderDialog()}
-      <span><strong>${this.t('access-control:owner')}:</strong> ${this.permissions.owner}</span>
+      <span><strong>${this.t('access-control:owner')}:</strong> ${prettyAddress(this.permissions.owner)}</span>
       ${this.canWrite
         ? html`
             <mwc-button outlined icon="swap_horizontal" @click=${() => (this.dialog.open = true)}>

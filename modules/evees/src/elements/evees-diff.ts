@@ -127,7 +127,9 @@ export class UpdatedDiff extends moduleConnect(LitElement) {
       `;
     }
 
-    return this.updates.map(update => this.renderUpdatedDiff(update.perspectiveId));
+    return this.updates.length === 0 ? 
+        html`<span><i>no changes found</i></span>` : 
+        this.updates.map(update => this.renderUpdatedDiff(update.perspectiveId));
   }
 
   static get styles() {

@@ -10,7 +10,7 @@ export const styleMap = style => {
 };
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Pattern, HasChildren, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
+import { HasChildren, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import {
   EveesRemote,
@@ -20,9 +20,11 @@ import {
   ContentUpdatedEvent,
   CREATE_COMMIT,
   CREATE_PERSPECTIVE,
-  CREATE_ENTITY
+  CREATE_ENTITY,
+  EveesDraftsLocal,
+  MenuConfig
 } from '@uprtcl/evees';
-import { loadEntity, CASSource } from '@uprtcl/multiplatform';
+import { loadEntity, CASSource, CASStore } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode, TextNode } from '../types';
 import { HasDocNodeLenses } from '../patterns/document-patterns';
@@ -31,6 +33,7 @@ import { DocumentsBindings } from '../bindings';
 
 const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
+const PLACEHOLDER_TOKEN = '_PLACEHOLDER_';
 
 export class DocumentEditor extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
@@ -45,7 +48,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   doc!: DocNode;
 
   @property({ type: Boolean, attribute: false })
-  docHasChanges: Boolean = false;
+  docHasChanges: boolean = false;
+
+  @property({ type: Boolean, attribute: false })
+  showCommitMessage: boolean = false;
 
   @property({ type: String })
   color!: string;
@@ -54,6 +60,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   protected eveesRemotes!: EveesRemote[];
   protected remotesMap!: RemoteMap;
   protected recognizer!: PatternRecognizer;
+
+  draftService = new EveesDraftsLocal();
 
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -105,16 +113,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return node;
   }
 
-  async loadNode(ref: string, parent?: DocNode, ix?: number): Promise<DocNode> {
-    if (LOGINFO) this.logger.log('loadNode()', { ref, ix });
+  async entityToNode(entity: Entity<any>, parent?: DocNode, ix?: number) {
 
-    const recognizer = this.recognizer;
-
-    const entity = await loadEntity(this.client, ref);
-
-    let entityType: string = recognizer.recognizeType(entity);
+    let entityType: string = this.recognizer.recognizeType(entity);
+    
     let editable = false;
-    let authority!: string;
+    let authority!: string | undefined;
     let context!: string;
     let dataId!: string;
     let headId!: string;
@@ -123,12 +127,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       const result = await this.client.query({
         query: gql`
         {
-          entity(ref: "${ref}") {
+          entity(ref: "${entity.id}") {
             id
             ... on Perspective {
-              payload {
-                authority
-              }
               head {
                 id 
                 ... on Commit {
@@ -142,6 +143,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               }
             }
             _context {
+              object
               patterns {
                 accessControl {
                   canWrite
@@ -151,8 +153,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           }
         }`
       });
+      const payload = result.data.entity._context.object.payload;
       editable = result.data.entity._context.patterns.accessControl.canWrite;
-      authority = result.data.entity.payload.authority;
+      authority = payload.authority;
       context = result.data.entity.context.id;
       dataId = result.data.entity.head.data.id;
       headId = result.data.entity.head.id;
@@ -163,7 +166,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         const result = await this.client.query({
           query: gql`
           {
-            entity(ref: "${ref}") {
+            entity(ref: "${entity.id}") {
               id
               ... on Commit {
                 data {
@@ -209,13 +212,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
 
     const node: DocNode = {
-      ref,
+      ref: entity.id,
       ix,
       hasChildren,
       childrenNodes: [],
       data,
-      draft: { ...data.object },
-      entityType,
+      draft: data ? data.object : undefined,
       headId,
       hasDocNodeLenses,
       editable,
@@ -224,6 +226,32 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       focused: false
     };
 
+    return node;
+  }
+
+  isPlaceholder(ref: string): boolean {
+    return ref.startsWith(PLACEHOLDER_TOKEN);
+  }
+
+  async loadNode(ref: string, parent?: DocNode, ix?: number): Promise<DocNode> {
+    if (LOGINFO) this.logger.log('loadNode()', { ref, ix });
+
+    let node;
+    if (this.isPlaceholder(ref)) {
+      const draft = await this.draftService.getDraft(ref);  
+      node = this.draftToPlaceholder(draft, parent, ix);
+    } else {
+      const entity = await loadEntity(this.client, ref);
+      if (!entity) throw Error(`Entity not found ${ref}`);
+      node = await this.entityToNode(entity, parent, ix);
+
+      /** initialize draft */
+      const draft = await this.draftService.getDraft(ref);  
+      if (draft !== undefined) {
+        node.draft = draft;
+      }
+    }
+    
     if (LOGINFO) this.logger.log('loadNode() post', { ref, ix, node });
 
     return node;
@@ -269,95 +297,97 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     super.performUpdate();
   }
 
-  async persistAll() {
+  async persistAll(message?:string) {
     if (!this.doc) return;
-    await this.persistNodeRec(this.doc);
+    if (this.doc.authority === undefined) throw Error('top element must have an authority');
+    await this.persistNodeRec(this.doc, this.doc.authority, message);
     /** reload doc from backend */
     await this.loadDoc();
     this.requestUpdate();
   }
 
-  async persistNodeRec(node: DocNode) {
-    const persistChildren = node.childrenNodes.map(child => this.persistNodeRec(child));
+  async persistNodeRec(node: DocNode, defaultAuthority: string, message?: string) {
+    const persistChildren = node.childrenNodes.map(child => this.persistNodeRec(child, defaultAuthority, message));
     await Promise.all(persistChildren);
 
     /** set the children with the children refs (which were created above) */
     const {object} = node.hasChildren.replaceChildrenLinks({ id: '', object: node.draft })(
       node.childrenNodes.map(node => node.ref)
     );
-    node.draft = object;
+    this.setNodeDraft(node, object);
 
-    await this.persistNode(node);
+    await this.persistNode(node, defaultAuthority, message);
   }
 
-  async persistNode(node: DocNode) {
-    const isPlaceholder = node.ref === undefined || node.ref === '';
-
-    if (!isPlaceholder && (node.data !== undefined) && isEqual(node.data.object, node.draft)) {
+  async persistNode(node: DocNode, defaultAuthority: string, message?: string) {
+    if (!this.isPlaceholder(node.ref) && (node.data !== undefined) && isEqual(node.data.object, node.draft)) {
       /** nothing to persist here */
       return;
     }
 
+    let refType;
+    
+    /** keep entity type or create commit by default */
+    if (!this.isPlaceholder(node.ref)) {
+      const entity = await loadEntity(this.client, node.ref);
+      refType = this.recognizer.recognizeType(entity);
+    } else {
+      refType = EveesModule.bindings.CommitType;
+    }
+
+    
     /** if its a placeholder create an object, otherwise make a commit */
-    switch (node.entityType) {
+    switch (refType) {
       case EveesModule.bindings.PerspectiveType:
-        if (isPlaceholder) {
-          node.ref = await this.createEvee(
-            node.draft,
-            node.entityType,
-            node.authority,
-            node.context as string
-          );
-        } else {
-          await this.updateEvee(node);
-        }
+        await this.updateEvee(node, message);
         break;
 
       case EveesModule.bindings.CommitType:
-        const commitParents = isPlaceholder ? [] : node.headId ? [node.headId] : [];
+        const commitParents = this.isPlaceholder(node.ref) ? [] : node.headId ? [node.headId] : [];
         const commitId = await this.createCommit(
           node.draft,
-          node.entityType,
-          node.authority,
-          commitParents
+          node.authority !== undefined ? node.authority : defaultAuthority,
+          commitParents,
+          message
         );
         node.ref = commitId;
         break;
 
       default:
-        const store = this.getStore(node.authority, node.entityType);
-        const dataId = await this.createEntity(node.draft, store.casID);
+        if (node.authority === undefined) throw Error(`authority not defined for node ${node.ref}`);
+        const dataId = await this.createEntity(node.draft, node.authority);
         node.ref = dataId;
         break;
     }
+
+    /** clean draft memory */
+    await this.draftService.removeDraft(node.ref);
   }
 
-  async createEntity(content: any, casID: string): Promise<string> {
-    const client = this.client as ApolloClient<any>;
+  async createEntity(content: any, authority: string): Promise<string> {
+    const entityType = this.recognizer.recognizeType({id: '', object: content});
+    const store = this.getStore(authority, entityType);
 
-    // TODO, replace for a single CREATE mutation
-    const createTextNode = await client.mutate({
+    const createTextNode = await this.client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
         object: content,
-        casID: casID
+        casID: store.casID
       }
     });
-    // }
-
+    
     return createTextNode.data.createEntity.id;
   }
 
   async createCommit(
     content: object,
-    type: string,
     authority: string,
-    parentsIds?: string[]
+    parentsIds?: string[],
+    message?: string
   ): Promise<string> {
     const client = this.client as ApolloClient<any>;
 
-    const store = this.getStore(authority, type);
-    const objectId = await this.createEntity(content, store.casID);
+    const objectId = await this.createEntity(content, authority);
 
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
@@ -367,7 +397,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       variables: {
         dataId: objectId,
         parentsIds,
-        casID: remote.casID
+        casID: remote.casID,
+        message: message !== undefined ? message : ''
       }
     });
 
@@ -376,23 +407,22 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return createCommit.data.createCommit.id;
   }
 
-  async updateEvee(node: DocNode): Promise<void> {
-    const eveesRemotes = this.eveesRemotes as EveesRemote[];
-    const client = this.client as ApolloClient<any>;
+  async updateEvee(node: DocNode, message?: string): Promise<void> {
+    if (node.authority === undefined) throw Error(`authority not defined for node ${node.ref}`);
 
     const commitId = await this.createCommit(
       node.draft,
-      node.entityType,
       node.authority,
       node.headId ? [node.headId] : []
     );
 
-    await client.mutate({
+    await this.client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: node.ref,
         context: node.context,
-        headId: commitId
+        headId: commitId,
+        message
       }
     });
 
@@ -410,21 +440,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async createEvee(
     content: object,
-    type: string,
     authority: string,
+    casID: string,
     context: string
   ): Promise<string> {
-    const client = this.client as ApolloClient<any>;
-
     if (LOGINFO) this.logger.log('createEvee()', { content, authority });
 
-    const commitId = await this.createCommit(content, type, authority);
+    const commitId = await this.createCommit(content, authority);
 
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const createPerspective = await client.mutate({
+    const createPerspective = await this.client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
         headId: commitId,
@@ -437,15 +465,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return createPerspective.data.createPerspective.id;
   }
 
-  createPlaceholder(
-    ref: string,
-    ix: number,
+  draftToPlaceholder(
     draft: any,
-    authority: string,
-    parent: DocNode,
-    entityType: string
-  ): DocNode {
-    
+    parent?: DocNode,
+    ix?: number,) {
+
     const draftForReco = { id: '', object: draft };
     const hasChildren = this.recognizer
       .recognizeBehaviours(draftForReco)
@@ -455,25 +479,43 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .recognizeBehaviours(draftForReco)
       .find(b => (b as HasDocNodeLenses).docNodeLenses);
     
-    const context = `${parent.context}-${ix}-${Date.now()}`;
+    const context = `${parent ? parent.context : 'ROOT'}-${ix}-${Date.now()}`;
 
     if (!hasChildren) throw new Error(`hasChildren not found for object ${JSON.stringify(draftForReco)}`);
     if (!hasDocNodeLenses) throw new Error(`hasDocNodeLenses not found for object ${JSON.stringify(draftForReco)}`);
 
+    const randint = 0 + Math.floor((10000 - 0) * Math.random());
+    const ref = PLACEHOLDER_TOKEN + `-${ix !== undefined ? ix : 0}-${randint}`;
+
     return {
+      ref,
+      ix,
+      parent,
       draft,
       childrenNodes: [],
       hasChildren,
       hasDocNodeLenses,
-      entityType,
-      ix,
-      ref,
-      parent,
-      authority,
       context,
       editable: true,
       focused: false
     };
+  }
+
+  createPlaceholder(
+    draft: any,
+    parent?: DocNode,
+    ix?: number,
+  ): DocNode {
+    const node = this.draftToPlaceholder(draft, parent, ix);
+    /** async store */
+    this.draftService.setDraft(node.ref, node.draft);
+    return node;
+  }
+
+  setNodeDraft(node, draft) {
+    node.draft = draft;
+    /** async store */
+    this.draftService.setDraft(node.ref, draft);
   }
 
   /** node updated as reference */
@@ -494,16 +536,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (typeof el !== 'string') {
         if (el.object !== undefined && el.entityType !== undefined) {
           /** element is an object from which a DocNode should be create */
-          return Promise.resolve(
-            this.createPlaceholder(
-              '',
-              elIndex,
-              el.object,
-              node.authority,
-              node,
-              EveesModule.bindings.CommitType
-            )
-          );
+          const placeholder = this.createPlaceholder(el.object, node, elIndex);
+          return Promise.resolve(placeholder);
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);
@@ -527,7 +561,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     });
 
     const { object } = node.hasChildren.replaceChildrenLinks({ id: '', object: node.draft })(newChildren);
-    node.draft = object;
+    this.setNodeDraft(node, object);
 
     return removed;
   }
@@ -667,8 +701,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('contentChanged()', { node, content });
 
     const oldType = node.draft.type;
-    node.draft = content;
 
+    this.setNodeDraft(node, content);
+    
     /** react to type change by manipulating the tree */
     /** PAR => TITLE */
     if (oldType === TextType.Paragraph && content.type === TextType.Title) {
@@ -846,14 +881,32 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.addEventListener('keydown', event => {
-      if (event.keyCode === 83) {
-        if (event.ctrlKey === true) {
-          event.preventDefault();
-          this.persistAll();
-        }
-      }
-    });
+    // this.addEventListener('keydown', event => {
+    //   if (event.keyCode === 83) {
+    //     if (event.ctrlKey === true) {
+    //       event.preventDefault();
+    //       this.persistAll();
+    //     }
+    //   }
+    // });
+  }
+
+  commitWithMessageClicked() {
+    this.showCommitMessage = true;
+  }
+
+  cancelCommitClicked() {
+    this.showCommitMessage = false;
+  }
+
+  acceptCommitClicked() {
+    if (!this.shadowRoot) return;
+    const input = this.shadowRoot.getElementById('COMMIT_MESSAGE') as any;
+    const message = input.value;
+
+    this.showCommitMessage = false;
+
+    this.persistAll(message);
   }
 
   renderWithCortex(node: DocNode) {
@@ -874,7 +927,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            ${((node.ref !== '') && (node.entityType === EveesModule.bindings.PerspectiveType)) && false ? html`
+            ${false ? html`
               <evees-info-popper 
                 first-perspective-id=${node.ref}
                 perspective-id=${node.ref}
@@ -926,6 +979,67 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       </div>`;
   }
 
+  commitOptionSelected(e) {
+    switch (e.detail.key) {
+      case 'push':
+        this.persistAll()
+        break;
+
+      case 'push-with-message':
+        this.commitWithMessageClicked()
+        break;
+    }
+  }
+
+  renderTopBar() {
+    const options: MenuConfig = {
+      // 'push': {
+      //   graphic: 'unarchive',
+      //   text: 'push'
+      // },
+      'push-with-message': {
+        graphic: 'notes',
+        text: 'push with message'
+      }
+    }
+    return html`
+      <div class="doc-topbar">
+        ${this.docHasChanges && !this.showCommitMessage
+          ? html`
+              <div class="button-container">
+                <mwc-button outlined icon="unarchive" @click=${() => this.persistAll()}>
+                  push
+                </mwc-button>
+              </div>
+              <!-- <evees-options-menu 
+                .config=${options} 
+                @option-click=${this.commitOptionSelected}
+                icon="arrow_drop_down">
+              </evees-options-menu> -->
+              <evees-help>
+                <span>
+                  Don't worry, your changes are already saved on this device.<br><br>
+                  You just need to push them before you make a proposal.
+                </span>
+              </evees-help>
+            `
+          : ''}
+
+        ${this.showCommitMessage ? html`
+          <mwc-textfield
+            outlined
+            id="COMMIT_MESSAGE"
+            label="Message">
+          </mwc-textfield>
+          <mwc-icon-button icon="clear" 
+            @click=${this.cancelCommitClicked}>
+          </mwc-icon-button>
+          <mwc-icon-button icon="done" 
+            @click=${this.acceptCommitClicked}>
+          </mwc-icon-button>` : ''}
+      </div>`;
+  }
+
   render() {
     if (LOGINFO) this.logger.log('render()', { doc: this.doc });
 
@@ -937,15 +1051,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     return html`
       <div class="editor-container">
-        <div class="doc-topbar">
-          ${this.docHasChanges
-            ? html`
-                <mwc-button outlined icon="save_alt" @click=${() => this.persistAll()}>
-                  commit
-                </mwc-button>
-              `
-            : ''}
-        </div>
+        ${this.renderTopBar()}
         ${this.renderDocNode(this.doc)}
       </div>
       <div @click=${this.clickAreaClicked} class="click-area"></div>
@@ -963,6 +1069,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         position: relative;
         width: 100%;
       }
+      .button-container {
+        height: 48px;
+        margin-right: 6px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
 
       .click-area {
         flex-grow: 1;
@@ -971,7 +1084,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .doc-topbar {
         position: absolute;
         top: -55px;
-        right: 35px;
+        right: 10px;
+        display: flex;
       }
 
       .column {

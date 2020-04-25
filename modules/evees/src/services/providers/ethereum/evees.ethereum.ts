@@ -326,7 +326,10 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
       this.uprtclRoot.contractInstance,
       perspectiveIdHash
     );
-    const headId = bytes32ToCid([ethPerspective.headCid1, ethPerspective.headCid0]);
+
+    const headId = ethPerspective !== undefined ? 
+      bytes32ToCid([ethPerspective.headCid1, ethPerspective.headCid0]) : 
+      undefined;
 
     return { name: '', context, headId };
   }

@@ -18,6 +18,7 @@ export {
 export { EveesSource } from './services/evees.source';
 export { EveesProvider, NewPerspectiveData } from './services/evees.provider';
 export { EveesRemote } from './services/evees.remote';
+export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 
 /** Service providers */
 export { EveesHolochain } from './services/providers/holochain/evees.holochain';
@@ -52,6 +53,7 @@ export {
 
 /** UI support components */
 export { MenuConfig } from './elements/common-ui/evees-options-menu';
+export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */

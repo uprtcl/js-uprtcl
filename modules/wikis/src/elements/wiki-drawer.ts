@@ -13,7 +13,7 @@ export const styleMap = style => {
 import { htmlToText, TextType, TextNode, DocumentsModule } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Entity } from '@uprtcl/cortex';
+import { Entity, HasTitle, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import {
   MenuConfig,
   EveesRemote,
@@ -27,7 +27,7 @@ import {
   RemoteMap
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CASSource } from '@uprtcl/multiplatform';
+import { CASSource, loadEntity } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
@@ -35,6 +35,11 @@ import '@material/mwc-drawer';
 import { WikiBindings } from 'src/bindings';
 
 const LOGINFO = false;
+
+interface PageData {
+  id: string
+  title: string,
+}
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
@@ -55,7 +60,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   selectedPageIx: number | undefined = undefined;
 
   @property({ type: Object, attribute: false })
-  pagesList: Array<{ title: string; id: string }> | undefined = undefined;
+  pagesList: PageData[] | undefined = undefined;
 
   authority: string = '';
   context: string = '';
@@ -64,13 +69,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
+  protected recognizer!: PatternRecognizer;
   protected remoteMap!: RemoteMap;
-
+  
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
-
+    this.recognizer = this.request(CortexModule.bindings.Recognizer);
+    
     this.ref = this.firstRef;
 
     this.logger.log('firstUpdated()', { ref: this.ref });
@@ -158,30 +165,39 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.logger.log('loadPagesData()');
 
-    const pagesListPromises = this.wiki.object.pages.map(async pageId => {
-      if (!this.client) throw new Error('client is undefined');
-      const result = await this.client.query({
-        query: gql`
-        {
-          entity(ref: "${pageId}") {
-            id
-            _context {
-              content {
-                id
-                _context {
-                  patterns {
-                    title
+    const pagesListPromises = this.wiki.object.pages.map(
+      async (pageId):Promise<PageData> => {
+        if (!this.client) throw new Error('client is undefined');
+        const result = await this.client.query({
+          query: gql`
+          {
+            entity(ref: "${pageId}") {
+              id
+              ... on Perspective {
+                head {
+                  id 
+                  ... on Commit {
+                    data {
+                      id
+                    }
                   }
                 }
               }
             }
-          }
-        }`
-      });
+          }`
+        });
+
+      const dataId = result.data.entity.head.data.id;
+      const data = await loadEntity(this.client, dataId);
+      const hasTitle: HasTitle = this.recognizer
+        .recognizeBehaviours(data)
+        .find(b => (b as HasTitle).title);
+
+      const title = hasTitle.title(data);
 
       return {
         id: pageId,
-        title: result.data.entity._context.content._context.patterns.title
+        title
       };
     });
 
@@ -414,47 +430,50 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return html`
       <mwc-list>
         ${this.pagesList.map((page, ix) => {
-          const menuConfig: MenuConfig = {
-            'move-up': {
-              disabled: ix === 0,
-              text: 'move up',
-              graphic: 'arrow_upward'
-            },
-            'move-down': {
-              disabled: ix === (this.pagesList as any[]).length - 1,
-              text: 'move down',
-              graphic: 'arrow_downward'
-            },
-            remove: {
-              disabled: false,
-              text: 'remove',
-              graphic: 'clear'
-            }
-          };
           // this.logger.log(`rendering page title ${page.id}`, menuConfig);
-          const text = htmlToText(page.title);
-          const empty = text === '';
-          const selected = this.selectedPageIx === ix;
-
-          let classes: string[] = [];
-
-          if (empty) classes.push('title-empty');
-          if (selected) classes.push('title-selected');
-
-          return html`
-            <evees-list-item
-              class=${classes.join(' ')}
-              text=${empty ? 'untitled' : text}
-              selected=${selected ? 'true' : 'false'}
-              @item-click=${() => this.selectPage(ix)}
-              @option-click=${e => this.optionOnPage(ix, e.detail.option)}
-              .config=${menuConfig}
-            >
-            </evees-list-item>
-          `;
+          return this.renderPageItem(page, ix);
         })}
       </mwc-list>
     `;
+  }
+
+  renderPageItem(page: PageData, ix: number) {
+    const menuConfig: MenuConfig = {
+      'move-up': {
+        disabled: ix === 0,
+        text: 'move up',
+        graphic: 'arrow_upward'
+      },
+      'move-down': {
+        disabled: ix === (this.pagesList as any[]).length - 1,
+        text: 'move down',
+        graphic: 'arrow_downward'
+      },
+      remove: {
+        disabled: false,
+        text: 'remove',
+        graphic: 'clear'
+      }
+    };
+
+    const text = htmlToText(page.title);
+    const empty = text === '';
+    const selected = this.selectedPageIx === ix;
+
+    let classes: string[] = [];
+
+    classes.push('page-item')
+    if (empty) classes.push('title-empty');
+    if (selected) classes.push('title-selected');
+
+    return html`
+      <div class=${classes.join(' ')} @click=${() => this.selectPage(ix)}>
+        <div class="text-container">${text}</div>
+        <evees-options-menu 
+          @option-click=${e => this.optionOnPage(ix, e.detail.option)} 
+          .config=${menuConfig}>
+        </evees-options-menu>       
+      </div>`;
   }
 
   render() {
@@ -558,12 +577,29 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           max-height: 5px;
           width: 100%;
         }
+        .page-item {
+          cursor: pointer;
+          width: calc(100% - 19px);
+          display: flex;
+          padding: 0px 3px 0px 16px;
+          transition: all 0.1s ease-in;
+        }
+        .page-item .text-container {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .page-item:hover{
+          background-color: #e8ecec;
+        }
         .title-empty {
           color: #a2a8aa;
           font-style: italic;
         }
         .title-selected {
           font-weight: bold;
+          background-color: rgb(200,200,200,0.2);
         }
         .empty {
           width: 100%;
