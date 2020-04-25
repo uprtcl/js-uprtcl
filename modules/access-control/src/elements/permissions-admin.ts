@@ -85,21 +85,15 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
         <div class="row">
           ${this.canWrite
             ? html`
-                <p>
-                  This perspective is currently
-                  ${this.permissions.publicRead ? 'public' : 'private'}
-                </p>
-                <p>
-                  <mwc-button outlined 
-                    icon=${this.permissions.publicRead ? "visibility_off" : "visibility"} 
-                    @click=${this.togglePublicRead}>
+                <mwc-button outlined 
+                  icon=${this.permissions.publicRead ? "visibility_off" : "visibility"} 
+                  @click=${this.togglePublicRead}>
 
-                    ${!this.permissions.publicRead
-                      ? this.t('access-control:make-public')
-                      : this.t('access-control:make-private')}
+                  ${!this.permissions.publicRead
+                    ? this.t('access-control:make-public')
+                    : this.t('access-control:make-private')}
 
-                  </mwc-button>
-                </p>
+                </mwc-button>
               `
             : ''}
         </div>

@@ -21,7 +21,8 @@ import {
   CREATE_COMMIT,
   CREATE_PERSPECTIVE,
   CREATE_ENTITY,
-  EveesDraftsLocal
+  EveesDraftsLocal,
+  MenuConfig
 } from '@uprtcl/evees';
 import { loadEntity, CASSource, CASStore } from '@uprtcl/multiplatform';
 
@@ -890,7 +891,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     // });
   }
 
-  commitClicked() {
+  commitWithMessageClicked() {
     this.showCommitMessage = true;
   }
 
@@ -926,7 +927,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            ${true ? html`
+            ${false ? html`
               <evees-info-popper 
                 first-perspective-id=${node.ref}
                 perspective-id=${node.ref}
@@ -978,6 +979,69 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       </div>`;
   }
 
+  commitOptionSelected(e) {
+    switch (e.detail.key) {
+      case 'push':
+        this.persistAll()
+        break;
+
+      case 'push-with-message':
+        this.commitWithMessageClicked()
+        break;
+    }
+  }
+
+  renderTopBar() {
+    const options: MenuConfig = {
+      // 'push': {
+      //   graphic: 'unarchive',
+      //   text: 'push'
+      // },
+      'push-with-message': {
+        graphic: 'notes',
+        text: 'push with message'
+      }
+    }
+    return html`
+      <div class="doc-topbar">
+        ${this.docHasChanges && !this.showCommitMessage
+          ? html`
+              <div class="button-container">
+                <mwc-button outlined icon="unarchive" @click=${() => this.persistAll()}>
+                  push
+                </mwc-button>
+              </div>
+              <!-- <evees-options-menu 
+                .config=${options} 
+                @option-click=${this.commitOptionSelected}
+                icon="arrow_drop_down">
+              </evees-options-menu> -->
+              <evees-help>
+                <span>
+                  Don't worry, your changes are already saved on this device.<br><br>
+                  You just need to push them before you make a proposal. <br><br>
+                  Each time you push you will create a checkpoint on the history of this document. <br><br>
+                  Adding a message to each push may be used to give context on that checkpoint.
+                </span>
+              </evees-help>
+            `
+          : ''}
+
+        ${this.showCommitMessage ? html`
+          <mwc-textfield
+            outlined
+            id="COMMIT_MESSAGE"
+            label="Message">
+          </mwc-textfield>
+          <mwc-icon-button icon="clear" 
+            @click=${this.cancelCommitClicked}>
+          </mwc-icon-button>
+          <mwc-icon-button icon="done" 
+            @click=${this.acceptCommitClicked}>
+          </mwc-icon-button>` : ''}
+      </div>`;
+  }
+
   render() {
     if (LOGINFO) this.logger.log('render()', { doc: this.doc });
 
@@ -989,28 +1053,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     return html`
       <div class="editor-container">
-        <div class="doc-topbar">
-          ${this.docHasChanges && !this.showCommitMessage
-            ? html`
-                <mwc-button outlined icon="gavel" @click=${this.commitClicked}>
-                  stamp
-                </mwc-button>
-              `
-            : ''}
-          ${this.showCommitMessage ? html`
-            <mwc-textfield
-              outlined
-              id="COMMIT_MESSAGE"
-              placeholder"
-              label="Message">
-            </mwc-textfield>
-            <mwc-icon-button icon="clear" 
-              @click=${this.cancelCommitClicked}>
-            </mwc-icon-button>
-            <mwc-icon-button icon="done" 
-              @click=${this.acceptCommitClicked}>
-            </mwc-icon-button>` : ''}
-        </div>
+        ${this.renderTopBar()}
         ${this.renderDocNode(this.doc)}
       </div>
       <div @click=${this.clickAreaClicked} class="click-area"></div>
@@ -1028,6 +1071,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         position: relative;
         width: 100%;
       }
+      .button-container {
+        height: 48px;
+        margin-right: 6px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
 
       .click-area {
         flex-grow: 1;
@@ -1036,7 +1086,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .doc-topbar {
         position: absolute;
         top: -55px;
-        right: 35px;
+        right: 10px;
+        display: flex;
       }
 
       .column {
