@@ -356,7 +356,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async movePage(fromIndex: number, toIndex: number) {
     const { removed } = await this.splicePages([], fromIndex, 1);
-    const { entity } = await this.splicePages(removed as string[], fromIndex, 1);
+    const { entity } = await this.splicePages(removed as string[], toIndex, 0);
 
     await this.updateContent(entity);
 
@@ -391,6 +391,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async optionOnPage(pageIndex: number, option: string) {
+    debugger
     switch (option) {
       case 'move-up':
         this.movePage(pageIndex, pageIndex - 1);
@@ -470,7 +471,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <div class=${classes.join(' ')} @click=${() => this.selectPage(ix)}>
         <div class="text-container">${text}</div>
         <evees-options-menu 
-          @option-click=${e => this.optionOnPage(ix, e.detail.option)} 
+          @option-click=${e => this.optionOnPage(ix, e.detail.key)} 
           .config=${menuConfig}>
         </evees-options-menu>       
       </div>`;
