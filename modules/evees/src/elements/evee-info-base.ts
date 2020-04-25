@@ -17,10 +17,8 @@ import '@material/mwc-tab-bar';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { AccessControlService, OwnerPermissions, SET_PUBLIC_READ } from '@uprtcl/access-control';
-import { Pattern, Create, Signed, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
-
-import { prettyAddress, prettyTime } from './support';
 
 import {
   UpdateRequest,
@@ -39,11 +37,9 @@ import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
 import {
   UPDATE_HEAD,
-  CREATE_PROPOSAL,
   AUTHORIZE_PROPOSAL,
   EXECUTE_PROPOSAL,
   DELETE_PERSPECTIVE,
-  CREATE_PERSPECTIVE,
   CREATE_AND_ADD_PROPOSAL
 } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
@@ -65,9 +61,6 @@ interface PerspectiveData {
   head: Entity<Commit>;
   data: Entity<any>;
 }
-
-const DFT_OK_TEXT = 'Ok';
-const DFT_CANCEL_TEXT = 'Cancel';
 
 export class EveesInfoBase extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO');

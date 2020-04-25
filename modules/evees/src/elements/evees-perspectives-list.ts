@@ -488,10 +488,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   renderDiff() {
     this.logger.log('renderDiff()', { updatesForDiff: this.updatesForDiff });
     return html`
-      <evees-dialog>
-        <evees-update-diff 
-          .updates=${this.updatesForDiff as UpdateRequest[]}
-          @secondary=${() => this.showDiff = false}>
+      <evees-dialog primary-text="close" @primary=${() => this.showDiff = false}>
+        <evees-update-diff .updates=${this.updatesForDiff as UpdateRequest[]}>
         </evees-update-diff>
       </evees-dialog>`;
   }

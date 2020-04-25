@@ -1019,9 +1019,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               <evees-help>
                 <span>
                   Don't worry, your changes are already saved on this device.<br><br>
-                  You just need to push them before you make a proposal. <br><br>
-                  Each time you push you will create a checkpoint on the history of this document. <br><br>
-                  Adding a message to each push may be used to give context on that checkpoint.
+                  You just need to push them before you make a proposal.
                 </span>
               </evees-help>
             `

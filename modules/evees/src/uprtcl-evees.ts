@@ -53,6 +53,7 @@ export {
 
 /** UI support components */
 export { MenuConfig } from './elements/common-ui/evees-options-menu';
+export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */

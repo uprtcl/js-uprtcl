@@ -2,10 +2,10 @@ import { LitElement, html, property, css } from "lit-element"
 
 export class EveesDialog extends LitElement {
 
-  @property({ type: String, attribute: 'ok-text'})
+  @property({ type: String, attribute: 'primary-text'})
   primaryText: string = 'Ok';
 
-  @property({ type: String, attribute: 'cancel-text'})
+  @property({ type: String, attribute: 'secondary-text'})
   secondaryText: string = 'Cancel';
 
   @property({ type: String, attribute: 'show-secondary'})
