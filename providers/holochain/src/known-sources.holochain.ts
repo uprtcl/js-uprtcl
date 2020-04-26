@@ -11,7 +11,8 @@ export abstract class KnownSourcesHolochain extends HolochainProvider
 
   async getUpl(): Promise<string> {
     const response = await this.call('get_uprtcl_provider_locator', {});
-    return this.parseResponse(response);
+    // return this.parseResponse(response);
+    throw new Error('deleting compulation error parseResponse is not defined');
   }
 
   getKnownSources(hash: string): Promise<string[]> {

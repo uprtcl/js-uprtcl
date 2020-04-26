@@ -1,6 +1,4 @@
 import CBOR from 'cbor-js';
-import CID from 'cids';
-import multihashing from 'multihashing-async';
 import ipfsClient, { Buffer } from 'ipfs-http-client';
 
 import {
@@ -17,7 +15,8 @@ import { sortObject } from './utils';
 export interface PutConfig {
   format: string,
   hashAlg: string,
-  cidVersion: number
+  cidVersion: number,
+  pin?: boolean
 }
 
 export class IpfsStore extends Connection implements CASStore {
@@ -114,7 +113,8 @@ export class IpfsStore extends Connection implements CASStore {
     let putConfig: PutConfig = {
       format: this.cidConfig.codec,
       hashAlg: this.cidConfig.type,
-      cidVersion: this.cidConfig.version
+      cidVersion: this.cidConfig.version,
+      pin: true
     };
 
     /** recursively try */
