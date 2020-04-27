@@ -8,15 +8,16 @@ export const styleMap = style => {
 
 import { EveesInfoBase } from './evee-info-base';
 import { prettyAddress } from './support';
-import { UPDATE_HEAD } from 'src/graphql/queries';
+import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from './common-ui/evees-options-menu';
 
 import "@material/mwc-dialog";
+import { UPDATE_HEAD_ACTION } from '../types';
 
 export class EveesInfoPage extends EveesInfoBase {
 
-  @property({type: Boolean, attribute: false})
+  @property({ attribute: false})
   showEditName: boolean = false;
 
   firstUpdated() {
@@ -94,6 +95,21 @@ export class EveesInfoPage extends EveesInfoBase {
         this.editNameClicked();
         break;
     }
+  }
+
+  async showPullChanges() {
+    const updatesForPull = this.pullResult.actions
+      .filter(action => action.type === UPDATE_HEAD_ACTION)
+      .map(action => action.payload);
+
+    const confirm = await this.updatesDialog(updatesForPull, 'apply', 'close');
+
+    if (!confirm) {
+      await this.client.resetStore();
+      return;
+    }
+
+    this.mergePerspective(this.pullResult.actions);
   }
 
   renderOtherPerspectives() {
@@ -206,23 +222,31 @@ export class EveesInfoPage extends EveesInfoBase {
     
     const contextButton = html`
       <div class="context-menu">
-          <evees-help>
-            <span>
-              To update the "Official Version" of this Wiki you need to create a new "Draft"<br><br>
-              Once changes have been made to the draft, you can "Propose an Update" to the "Official Version".            
-            </span>
-          </evees-help>
-          <evees-options-menu 
-            .config=${contextConfig} 
-            @option-click=${this.optionClicked}>
-          </evees-options-menu>          
+        <evees-help>
+          <span>
+            To update the "Official Version" of this Wiki you need to create a new "Draft"<br><br>
+            Once changes have been made to the draft, you can "Propose an Update" to the "Official Version".            
+          </span>
+        </evees-help>
+        <evees-options-menu 
+          .config=${contextConfig} 
+          @option-click=${this.optionClicked}>
+        </evees-options-menu>          
       </div>
     `;
+
+    const pullButton = html`
+      <div class="pull-menu">
+        <mwc-icon-button 
+          @click=${this.showPullChanges} 
+          icon="play_for_work">
+        </mwc-icon-button>
+      </div>`;
 
     return html`
       ${this.showEditName ? '' : actionButton}
       ${contextButton}
-      `;
+      ${this.firstHasChanges ? pullButton : ''}`;
   }
 
   render() {
@@ -346,6 +370,11 @@ export class EveesInfoPage extends EveesInfoBase {
         top: 6px;
         right: 6px;
         display: flex;
+      }
+      .pull-menu {
+        position: absolute;
+        top: 6px;
+        left: 6px;
       }
       .section-content {
         padding: 2.2vw 0px 2.2vw 0px;

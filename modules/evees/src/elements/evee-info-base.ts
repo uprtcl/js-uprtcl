@@ -31,7 +31,8 @@ import {
   CREATE_COMMIT_ACTION,
   CREATE_AND_INIT_PERSPECTIVE_ACTION,
   UPDATE_HEAD_ACTION,
-  Commit
+  Commit,
+  NodeActions
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
@@ -86,20 +87,25 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ attribute: false })
   publicRead: boolean = true;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   isLogged: boolean = false;
 
-  @property({ type: String, attribute: false })
+  @property({ attribute: false })
   forceUpdate: string = 'true';
 
-  @property({type: Boolean, attribute: false})
+  @property({ attribute: false})
   showUpdatesDialog: boolean = false;
+
+  @property({ attribute: false })
+  firstHasChanges!: boolean;
 
   @query('#updates-dialog')
   updatesDialogEl!: EveesDialog;
 
   updatesForDiff: UpdateRequest[] = [];
   dialogConfig: any = {};
+
+  pullResult!: NodeActions<string>;
   
   perspectiveData!: PerspectiveData;
 
@@ -201,8 +207,35 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.isLogged = this.defaultRemote !== undefined ? (this.defaultRemote.userId !== undefined) : false;
 
     this.reload();
-
     this.loading = false;
+
+    this.checkPull();
+  }
+
+  async checkPull() {
+    if((this.perspectiveId === this.firstPerspectiveId)
+      || (!this.perspectiveData.canWrite)) {
+
+      this.firstHasChanges = false;
+      return;
+    }
+    
+    const remote = await this.evees.getPerspectiveProviderById(this.perspectiveId);
+
+    const config = {
+      forceOwner: true,
+      authority: this.perspectiveData.perspective.authority,
+      canWrite: remote.userId
+    };
+
+    this.pullResult = await this.merge.mergePerspectivesExternal(
+      this.perspectiveId,
+      this.firstPerspectiveId,
+      config
+    );
+
+    this.logger.info('checkPull()', this.pullResult);
+    this.firstHasChanges = this.pullResult.actions.length > 0;
   }
 
   connectedCallback() {
@@ -267,10 +300,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string, isProposal: boolean) {
-    if(!this.evees) throw new Error('evees undefined');
-    if(!this.merge) throw new Error('merge undefined');
-    if(!this.client) throw new Error('client undefined');
-    
     this.logger.info(
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
     );
@@ -358,32 +387,70 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async mergePerspective(actions: UprtclAction[]): Promise<void> {
-    if (!this.cache) throw new Error('cache undefined');
-    if (!this.client) throw new Error('client undefined');
 
-    await executeActions(actions, this.client);
+    debugger
+    
+    /** create commits and data */
+    const dataActions = actions.filter(a =>
+      [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type)
+    );
+    await executeActions(dataActions, this.client);
 
-    const updateRequests = actions.filter(a => a.type === UPDATE_HEAD_ACTION).map(a => a.payload);
+    /** create perspectives and proposals in one call */
+    const createByAuthority = await this.groupActionsByAuthority(
+      actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION),
+      action => action.entity.id
+    );
 
-    const updateHeadsPromises = updateRequests.map(async (updateRequest: UpdateRequest) => {
-      if (!this.client) throw new Error('client undefined');
+    const create = Object.keys(createByAuthority).map(async (authority: string) => {
+      const actions = createByAuthority[authority].actions;
+      const remote = this.evees.getAuthority(authority);
 
-      await this.client.mutate({
-        mutation: UPDATE_HEAD,
-        variables: {
-          perspectiveId: updateRequest.perspectiveId,
-          headId: updateRequest.newHeadId
+      const perspectivesData = actions.map(
+        (action: UprtclAction): NewPerspectiveData => {
+          if (!action.entity) throw new Error('entity not found');
+
+          return {
+            perspective: action.entity,
+            details: action.payload.details,
+            canWrite: action.payload.owner
+          };
         }
-      });
+      );
+
+      return remote.clonePerspectivesBatch(perspectivesData);
     });
 
-    await Promise.all(updateHeadsPromises);
+    await Promise.all(create);
+
+    const updatesByAuthority = await this.groupActionsByAuthority(
+      actions.filter(a => a.type === UPDATE_HEAD_ACTION),
+      action => action.payload.perspectiveId
+    );
+
+    const update = Object.keys(updatesByAuthority).map(async (authority: string) => {
+      const actions = updatesByAuthority[authority].actions;
+      
+      const singleUpdates = actions.map(async (action) => {
+        await this.client.mutate({
+          mutation: UPDATE_HEAD,
+          variables: {
+            perspectiveId: action.payload.perspectiveId,
+            headId: action.payload.newHeadId
+          }
+        });
+      });
+
+      return Promise.all(singleUpdates);
+    });
+
+    await Promise.all(update);
   }
 
   /** executes a given function for each group of actions on perspectives of the same authority */
   async groupActionsByAuthority(
     actions: UprtclAction[],
-    actionToPerspectiveId: (string) => Promise<string>
+    actionToPerspectiveId: (string) => Promise<any>
   ) {
     const authoritiesPromises = actions.map(async (action: UprtclAction) => {
       if (!this.client) throw new Error('client undefined');
@@ -432,9 +499,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     toHeadId: string, 
     actions: UprtclAction[]): Promise<void> {
 
-    if(!this.client) throw new Error('client undefined');
-    if(!this.cache) throw new Error('cache undefined');
-    
     /** create commits and data */
     const dataActions = actions.filter(a =>
       [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type)

@@ -51,16 +51,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'default-authority' })
   defaultAuthority: string | undefined = undefined;
 
-  @property({ type: String, attribute: false })
+  @property({ attribute: false })
   ref: string | undefined = undefined;
 
-  @property({ type: Object, attribute: false })
+  @property({ attribute: false })
   wiki: Entity<Wiki> | undefined;
 
   @property({ type: Number })
   selectedPageIx: number | undefined = undefined;
 
-  @property({ type: Object, attribute: false })
+  @property({ attribute: false })
   pagesList: PageData[] | undefined = undefined;
 
   authority: string = '';
@@ -79,10 +79,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     
-    this.ref = this.firstRef;
-
     this.logger.log('firstUpdated()', { ref: this.ref });
 
+    this.ref = this.firstRef;
     this.loadWiki();
   }
 
