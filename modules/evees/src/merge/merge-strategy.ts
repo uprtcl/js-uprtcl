@@ -1,4 +1,4 @@
-import { NodeActions } from '../types';
+import { EveesWorkspace } from 'src/services/evees.workspace';
 
 export interface MergeStrategy {
   /**
@@ -8,7 +8,7 @@ export interface MergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     config: any
-  ): Promise<NodeActions<string>>;
+  ): Promise<string>;
 
   
   /**
@@ -18,8 +18,9 @@ export interface MergeStrategy {
   mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config: any
-  ): Promise<NodeActions<string>>;
+    config: any,
+    workspace: EveesWorkspace
+  ): Promise<string>;
 
 
   /**
@@ -30,7 +31,7 @@ export interface MergeStrategy {
     fromCommitId: string,
     dataSource: string,
     config: any
-  ): Promise<NodeActions<string>>;
+  ): Promise<string>;
 
   /**
    * Merges the links to other entities appropiately
@@ -40,5 +41,5 @@ export interface MergeStrategy {
     originalLinks: string[],
     modificationsLinks: string[][],
     config: any
-  ): Promise<NodeActions<any>[]>;
+  ): Promise<any[]>;
 }

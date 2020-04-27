@@ -21,18 +21,12 @@ import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
 
 import {
-  UpdateRequest,
   RemoteMap,
   ProposalCreatedEvent,
   Perspective,
   PerspectiveDetails,
-  UprtclAction,
-  CREATE_DATA_ACTION,
-  CREATE_COMMIT_ACTION,
-  CREATE_AND_INIT_PERSPECTIVE_ACTION,
-  UPDATE_HEAD_ACTION,
   Commit,
-  NodeActions
+  NewPerspectiveData
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
@@ -41,17 +35,19 @@ import {
   AUTHORIZE_PROPOSAL,
   EXECUTE_PROPOSAL,
   DELETE_PERSPECTIVE,
-  CREATE_AND_ADD_PROPOSAL
+  CREATE_AND_ADD_PROPOSAL,
+  getPerspectiveHead,
+  getPerspectiveAuthority
 } from '../graphql/queries';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
 import { executeActions, cacheActions } from '../utils/actions';
-import { NewPerspectiveData } from '../services/evees.provider';
 import { EveesRemote } from 'src/uprtcl-evees';
 
-import { Dialog } from "@material/mwc-dialog";
 import { EveesDialog } from './common-ui/evees-dialog';
+import { EveesWorkspace } from 'src/services/evees.workspace';
+import { EveesDiff } from './evees-diff';
 
 interface PerspectiveData {
   id: string;
@@ -102,10 +98,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @query('#updates-dialog')
   updatesDialogEl!: EveesDialog;
 
-  updatesForDiff: UpdateRequest[] = [];
-  dialogConfig: any = {};
+  @query('#evees-update-diff')
+  eveesDiffEl!: EveesDiff;
+  
 
-  pullResult!: NodeActions<string>;
+  dialogConfig: any = {};
   
   perspectiveData!: PerspectiveData;
 
@@ -228,14 +225,17 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       canWrite: remote.userId
     };
 
-    this.pullResult = await this.merge.mergePerspectivesExternal(
+    const workspace = new EveesWorkspace(this.recognizer, this.client);
+
+    await this.merge.mergePerspectivesExternal(
       this.perspectiveId,
       this.firstPerspectiveId,
-      config
+      config,
+      workspace
     );
 
-    this.logger.info('checkPull()', this.pullResult);
-    this.firstHasChanges = this.pullResult.actions.length > 0;
+    this.logger.info('checkPull()');
+    this.firstHasChanges = workspace.hasUpdates();
   }
 
   connectedCallback() {
@@ -292,7 +292,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async makePublic() {
     if(!this.client) throw new Error('client undefined');
-    const result = await this.client.mutate({
+    await this.client.mutate({
       mutation: SET_PUBLIC_READ,
       variables: {
         entityId: this.perspectiveId,
@@ -323,63 +323,34 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       );
     }
 
+    const workspace = new EveesWorkspace(this.recognizer, this.client);
+
     const config = {
       forceOwner: true,
       authority: remote.authority,
       canWrite: permissions.owner
     };
 
-    const mergeResult = await this.merge.mergePerspectivesExternal(
+    await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
       fromPerspectiveId,
-      config
+      config,
+      workspace
     );
 
-    await cacheActions(mergeResult.actions, this.cache, this.client);
-    const updates = mergeResult.actions.filter(action => action.type === UPDATE_HEAD_ACTION).map(action => action.payload);
-    const confirm = await this.updatesDialog(updates, 'propose', 'cancel');
+    const confirm = await this.updatesDialog(workspace, 'propose', 'cancel');
 
     if (!confirm) {
-      // TODO: should invalidate only the portion of cache affected by the merge actions, but apollo wont allow it.
-      await this.client.resetStore();
       return;
     };
 
-    const resultTo = await this.client.query({
-      query: gql`
-        {
-          entity(ref: "${toPerspectiveId}") {
-            id
-            ... on Perspective {
-              head {
-                id
-              }
-            }
-          }
-        }
-      `});
-
-    const resultFrom = await this.client.query({
-      query: gql`
-        {
-          entity(ref: "${fromPerspectiveId}") {
-            id
-            ... on Perspective {
-              head {
-                id
-              }
-            }
-          }
-        }
-      `});
+    const toHeadId = await getPerspectiveHead(this.client, toPerspectiveId);
+    const fromHeadId = await getPerspectiveHead(this.client, fromPerspectiveId);
     
-    const toHeadId = resultTo.data.entity.head.id;
-    const fromHeadId = resultFrom.data.entity.head.id;
-
     if (isProposal) {
-      await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, fromHeadId, toHeadId, mergeResult.actions);
+      await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, fromHeadId, toHeadId, workspace);
     } else {
-      await this.mergePerspective(mergeResult.actions);
+      await this.applyMerge(workspace);
     }
 
     if (this.perspectiveId !== toPerspectiveId) {
@@ -390,108 +361,21 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
   }
 
-  async mergePerspective(actions: UprtclAction[]): Promise<void> {
+  async applyMerge(workspace: EveesWorkspace): Promise<void> {
+    
+    await workspace.execute(this.client);
 
-    /** create commits and data */
-    const dataActions = actions.filter(a =>
-      [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type)
-    );
-    await executeActions(dataActions, this.client);
-
-    /** create perspectives and proposals in one call */
-    const createByAuthority = await this.groupActionsByAuthority(
-      actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION),
-      action => action.entity.id
-    );
-
-    const create = Object.keys(createByAuthority).map(async (authority: string) => {
-      const actions = createByAuthority[authority].actions;
-      const remote = this.evees.getAuthority(authority);
-
-      const perspectivesData = actions.map(
-        (action: UprtclAction): NewPerspectiveData => {
-          if (!action.entity) throw new Error('entity not found');
-
-          return {
-            perspective: action.entity,
-            details: action.payload.details,
-            canWrite: action.payload.owner
-          };
+    const update = workspace.updates.map(async (update) => {
+      return this.client.mutate({
+        mutation: UPDATE_HEAD,
+        variables: {
+          perspectiveId: update.perspectiveId,
+          headId: update.newHeadId
         }
-      );
-
-      return remote.clonePerspectivesBatch(perspectivesData);
-    });
-
-    await Promise.all(create);
-
-    const updatesByAuthority = await this.groupActionsByAuthority(
-      actions.filter(a => a.type === UPDATE_HEAD_ACTION),
-      action => action.payload.perspectiveId
-    );
-
-    const update = Object.keys(updatesByAuthority).map(async (authority: string) => {
-      const actions = updatesByAuthority[authority].actions;
-      
-      const singleUpdates = actions.map(async (action) => {
-        await this.client.mutate({
-          mutation: UPDATE_HEAD,
-          variables: {
-            perspectiveId: action.payload.perspectiveId,
-            headId: action.payload.newHeadId
-          }
-        });
       });
-
-      return Promise.all(singleUpdates);
     });
 
     await Promise.all(update);
-  }
-
-  /** executes a given function for each group of actions on perspectives of the same authority */
-  async groupActionsByAuthority(
-    actions: UprtclAction[],
-    actionToPerspectiveId: (string) => Promise<any>
-  ) {
-    const authoritiesPromises = actions.map(async (action: UprtclAction) => {
-      if (!this.client) throw new Error('client undefined');
-
-      const perspectiveId = actionToPerspectiveId(action);
-
-      const result = await this.client.query({
-        query: gql`
-          {
-            entity(ref: "${perspectiveId}") {
-              id
-              ... on Perspective {
-                payload {
-                  authority
-                }
-              }
-            }
-          }
-        `
-      });
-
-      return {
-        authority: result.data.entity.payload.authority,
-        action: action
-      };
-    });
-
-    const authoritiesData = await Promise.all(authoritiesPromises);
-
-    const actionsByAuthority = {};
-
-    for (var i = 0; i < authoritiesData.length; i++) {
-      if (!actionsByAuthority[authoritiesData[i].authority]) {
-        actionsByAuthority[authoritiesData[i].authority] = [];
-      }
-      actionsByAuthority[authoritiesData[i].authority].push(authoritiesData[i].action);
-    }
-
-    return actionsByAuthority;
   }
 
   async createMergeProposal(
@@ -499,73 +383,46 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     toPerspectiveId: string, 
     fromHeadId: string, 
     toHeadId: string, 
-    actions: UprtclAction[]): Promise<void> {
+    workspace: EveesWorkspace): Promise<void> {
+
+    // TODO: handle proposals and updates on multiple authorities.
+    const authority = await getPerspectiveAuthority(this.client, toPerspectiveId);
+    
+    const not = await workspace.isSingleAuthority(authority);
+    if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
 
     /** create commits and data */
-    const dataActions = actions.filter(a =>
-      [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type)
+    await workspace.executeCreate(this.client);
+
+    const proposal = {
+      toPerspectiveId, 
+      fromPerspectiveId, 
+      toHeadId,
+      fromHeadId,
+      updates: workspace.updates
+    };
+
+    const result = await this.client.mutate({
+      mutation: CREATE_AND_ADD_PROPOSAL,
+      variables: {
+        perspectives: workspace.newPerspectives,
+        proposal: proposal
+      }
+    });
+
+    const proposalId = result.data.createAndAddProposal.id;
+
+    this.logger.info('created proposal');
+
+    this.dispatchEvent(
+      new ProposalCreatedEvent({
+        detail: { proposalId, authority },
+        cancelable: true,
+        composed: true,
+        bubbles: true
+      })
     );
-    await executeActions(dataActions, this.client);
-
-    /** create perspectives and proposals in one call */
-
-    const createByAuthority = await this.groupActionsByAuthority(
-      actions.filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION),
-      action => action.entity.id
-    );
-
-    const updatesByAuthority = await this.groupActionsByAuthority(
-      actions.filter(a => a.type === UPDATE_HEAD_ACTION),
-      action => action.payload.perspectiveId
-    );
-
-    const createAndPropose = Object.keys(updatesByAuthority).map(async (authority: string) => {
-      const createActions = createByAuthority[authority] !== undefined ? createByAuthority[authority] : [];
-      const updateActions = updatesByAuthority[authority];
-
-      const perspectivesData = createActions.map(
-        (action: UprtclAction): NewPerspectiveData => {
-          if (!action.entity) throw new Error('entity not found');
-
-          return {
-            perspective: action.entity,
-            details: action.payload.details,
-            canWrite: action.payload.owner
-          };
-        }
-      );
-
-      const proposal = {
-        toPerspectiveId, 
-        fromPerspectiveId, 
-        toHeadId,
-        fromHeadId,
-        updates: updateActions.map(action => action.payload)
-      };
-
-      const result = await this.client.mutate({
-        mutation: CREATE_AND_ADD_PROPOSAL,
-        variables: {
-          perspectives: perspectivesData,
-          proposal: proposal
-        }
-      });
-
-      const proposalId = result.data.createAndAddProposal.id;
-
-      this.logger.info('created proposal', { proposalId, actions });
-
-      this.dispatchEvent(
-        new ProposalCreatedEvent({
-          detail: { proposalId, authority },
-          cancelable: true,
-          composed: true,
-          bubbles: true
-        })
-      );
-    })
-
-    await Promise.all(createAndPropose);
+    
   }
 
   async authorizeProposal(e: CustomEvent) {
@@ -665,11 +522,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.checkoutPerspective(this.firstPerspectiveId);
   }
 
-  async updatesDialog(updates: UpdateRequest[], primaryText: string, secondaryText: string): Promise<boolean> {
-    this.updatesForDiff = updates;
-    this.dialogConfig = {
-      primaryText, secondaryText, showSecondary: secondaryText !== undefined
-    }
+  async updatesDialog(workspace: EveesWorkspace, primaryText: string, secondaryText: string): Promise<boolean> {
+    
+    this.updatesDialogEl.workspace = workspace;
+    this.updatesDialogEl.primaryText = primaryText;
+    this.updatesDialogEl.secondaryText = secondaryText;
+
     this.showUpdatesDialog = true;
 
     await this.updateComplete;
@@ -684,12 +542,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   renderUpdatesDialog() {
     return html`
-      <evees-dialog 
-        id="updates-dialog" 
-        primary-text=${this.dialogConfig.primaryText}
-        secondary-text=${this.dialogConfig.secondaryText}
-        show-secondary=${this.dialogConfig.showSecondary}>
-        <evees-update-diff .updates=${this.updatesForDiff}></evees-update-diff>
+      <evees-dialog id="updates-dialog">
+        <evees-update-diff id="evees-update-diff"></evees-update-diff>
       </evees-dialog>`;
   }
 

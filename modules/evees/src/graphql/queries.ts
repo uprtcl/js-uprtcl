@@ -1,5 +1,37 @@
-import { gql } from 'apollo-boost';
+import { gql, ApolloClient } from 'apollo-boost';
 import { DocumentNode } from 'graphql';
+
+export const getPerspectiveHead = async (client: ApolloClient<any>, perspectiveId: string):Promise<string> => {
+  const result = await client.query({query: gql`
+    {
+      entity(ref: "${perspectiveId}") {
+        id
+        ... on Perspective {
+          head {
+            id
+          }
+        }
+      }
+    }`
+  });
+  return result.data.entity.payload.authority;
+}
+
+export const getPerspectiveAuthority = async (client: ApolloClient<any>, perspectiveId: string):Promise<string> => {
+  const result = await client.query({query: gql`
+    {
+      entity(ref: "${perspectiveId}") {
+        id
+        ... on Perspective {
+          payload {
+            authority
+          }
+        }
+      }
+    }`
+  });
+  return result.data.entity.payload.authority;
+}
 
 export const UPDATE_HEAD: DocumentNode = gql`
   mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID, $context: String, $name: String) {
@@ -41,37 +73,6 @@ export const CREATE_ENTITY: DocumentNode = gql`
   mutation CreateEntity($object: JSON!, $casID: ID) {
     createEntity(object: $object, casID: $casID) {
       id
-    }
-  }
-`;
-
-export const CREATE_COMMIT: DocumentNode = gql`
-  mutation CreateCommit(
-    $dataId: ID!
-    $parentsIds: [ID!]!
-    $creatorsIds: [String]
-    $message: String
-    $casID: String!
-    $timestamp: Date
-  ) {
-    createCommit(
-      dataId: $dataId
-      parentsIds: $parentsIds
-      creatorsIds: $creatorsIds
-      message: $message
-      casID: $casID
-      timestamp: $timestamp
-    ) {
-      id
-      creatorsIds
-      data {
-        id
-      }
-      parentCommits {
-        id
-      }
-      message
-      timestamp
     }
   }
 `;

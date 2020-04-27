@@ -1,18 +1,16 @@
 import { ApolloClient, ApolloLink, QueryOptions, ApolloQueryResult, gql } from 'apollo-boost';
 import Observable from 'zen-observable-ts';
 import { cloneDeep } from 'lodash-es';
-import {
-  UprtclAction,
-  CREATE_AND_INIT_PERSPECTIVE_ACTION,
-  UPDATE_HEAD_ACTION,
-  CREATE_DATA_ACTION,
-  CREATE_COMMIT_ACTION
-} from '../types';
-import { CREATE_ENTITY, CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
+import { CREATE_ENTITY, CREATE_PERSPECTIVE, getPerspectiveAuthority } from '../graphql/queries';
 import { Entity, PatternRecognizer } from '@uprtcl/cortex';
+import { UpdateRequest, NewPerspectiveData } from '../types';
 
 export class EveesWorkspace {
-  private uprtclActions: UprtclAction[] = [];
+
+  public entities: Entity<any>[] = [];
+  public newPerspectives: NewPerspectiveData[] = [];
+  public updates: UpdateRequest[] = [];
+
   private workspace: ApolloClient<any>;
 
   constructor(protected recognizer: PatternRecognizer, protected client: ApolloClient<any>) {
@@ -50,192 +48,197 @@ export class EveesWorkspace {
     return workspace;
   }
 
+  public hasUpdates() {
+    return this.updates.length > 0;
+  }
+
+  public async isSingleAuthority(authority: string) {
+    const newNot = this.newPerspectives.find(newPerspective => newPerspective.perspective.object.payload.authority !== authority);
+    if (newNot !== undefined) return false;
+    
+    const check = this.updates.map(async (update) => getPerspectiveAuthority(this.workspace, update.perspectiveId));
+    const checktoPerspectives = await Promise.all(check);
+
+    const updateNot = checktoPerspectives.find((_authority) => _authority !== authority);
+    if (updateNot !== undefined) return false;
+
+    return true;
+  }
+
   public query(options: QueryOptions): Promise<ApolloQueryResult<any>> {
     return this.workspace.query(options);
   }
 
-  public addUprtclAction(action: UprtclAction) {
-    this.uprtclActions.push(action);
-    this.cacheAction(action);
+  public create(entity: Entity<any>) {
+    this.entities.push(entity);
+    this.cacheCreateEntity(entity);
   }
 
-  public async execute() {
-    const actions = this.uprtclActions;
-    /** optimistic pre-fill the cache */
-    const createDataPromises = actions
-      .filter(a => a.type === CREATE_DATA_ACTION)
-      .reverse()
-      .map(async (action: UprtclAction) => {
-        if (!action.entity) throw new Error('entity undefined');
+  public newPerspective(perspective: NewPerspectiveData) {
+    this.newPerspectives.push(perspective);
+    this.cacheInitPerspective(perspective);
+  }
 
-        const mutation = await this.client.mutate({
-          mutation: CREATE_ENTITY,
-          variables: {
-            object: action.entity.object,
-            casID: action.payload.casID
+  public update(update: UpdateRequest) {
+    this.updates.push(update);
+    this.cacheUpdateHead(update);
+  }
+
+  private cacheCreateEntity(entity: Entity<any>) {
+    const type = this.recognizer.recognizeType(entity);
+
+    this.client.writeQuery({
+      query: gql`{
+        entity(ref: "${entity.id}") {
+          __typename
+          id
+          _context {
+            object
+            casID
           }
-        });
+        }
+      }`,
 
-        const dataId = mutation.data.createEntity.id;
+      data: {
+        entity: {
+          __typename: type,
+          id: entity.id,
+          _context: {
+            __typename: 'EntityContext',
+            object: entity.object,
+            casID: entity.casID
+          }
+        }
+      }
+    });
+  }
 
-        if (dataId !== action.entity.id) {
-          throw new Error(`created entity id ${dataId} not as expected ${action.entity.id}`);
+  private cacheInitPerspective(newPerspective: NewPerspectiveData) {
+    const perspectiveId = newPerspective.perspective.id;
+    const headId = newPerspective.details ? newPerspective.details.headId : undefined;
+    const context = newPerspective.details ? newPerspective.details.context : undefined;
+    const object = newPerspective.perspective.object;
+
+    this.workspace.cache.writeQuery({
+      query: gql`{
+        entity(ref: "${perspectiveId}") {
+          id
+          ... on Perspective {
+            head {
+              id
+            }
+            context {
+              id
+            }
+          }
+          _context {
+            object
+            casID
+          }
+        }
+      }`,
+      data: {
+        entity: {
+          __typename: 'Perspective',
+          id: perspectiveId,
+          head: {
+            __typename: 'Commit',
+            id: headId
+          },
+          context: {
+            __typename: 'Context',
+            id: context
+          },
+          _context: {
+            __typename: 'EntityContext',
+            object,
+            casID: ''
+          }
+        }
+      }
+    });
+  }
+
+  private cacheUpdateHead(update: UpdateRequest) {
+    const perspectiveId = update.perspectiveId;
+    // TODO: keep track of old head?...
+
+    this.workspace.cache.writeQuery({
+      query: gql`{
+        entity(ref: "${perspectiveId}") {
+          id
+          ... on Perspective {
+            head {
+              id
+            }
+          }
+        }
+      }`,
+      data: {
+        entity: {
+          __typename: 'Perspective',
+          id: perspectiveId,
+          head: {
+            __typename: 'Commit',
+            id: update.newHeadId
+          }
+        }
+      }
+    });
+  }
+
+  /** takes the Evees actions and replicates them in another client  */
+  public async execute(client: ApolloClient<any>) {
+    await this.executeCreate(client);
+    await this.executeInit(client);
+  }
+
+  public async executeCreate(client: ApolloClient<any>) {
+    const create = this.entities.map(async (entity) => {
+      
+      const mutation = await client.mutate({
+        mutation: CREATE_ENTITY,
+        variables: {
+          object: entity.object,
+          casID: entity.casID
         }
       });
 
-    await Promise.all(createDataPromises);
+      const dataId = mutation.data.createEntity.id;
 
-    const createCommitsPromises = actions
-      .filter(a => a.type === CREATE_COMMIT_ACTION)
-      .reverse()
-      .map(async (action: UprtclAction) => {
-        if (!action.entity) throw new Error('entity undefined');
-        const result = await this.client.mutate({
-          mutation: CREATE_COMMIT,
-          variables: {
-            ...action.entity.object.payload,
-            casID: action.payload.casID
-          }
-        });
-        const headId = result.data.createCommit.id;
-        if (headId !== action.entity.id) {
-          throw new Error(`created commit id ${headId} not as expected ${action.entity.id}`);
-        }
-      });
+      if (dataId !== entity.id) {
+        throw new Error(`created entity id ${dataId} not as expected ${entity.id}`);
+      }
+    })
 
-    await Promise.all(createCommitsPromises);
+    return Promise.all(create);
+  }
 
-    const createPerspective = async (action: UprtclAction) => {
-      if (!action.entity) throw new Error('entity undefined');
-
-      const result = await this.client.mutate({
+  private async executeInit(client: ApolloClient<any>) {
+    const createPerspective = async (newPerspective: NewPerspectiveData) => {
+      
+      const result = await client.mutate({
         mutation: CREATE_PERSPECTIVE,
         variables: {
-          ...action.entity.object.payload,
-          ...action.payload.details,
-          authority: action.entity.object.payload.authority,
-          canWrite: action.payload.owner,
-          parentId: action.payload.parentId
+          ...newPerspective.perspective.object.payload,
+          ...newPerspective.details,
+          authority: newPerspective.perspective.object.payload.authority,
+          canWrite: newPerspective.canWrite,
+          parentId: newPerspective.parentId
         }
       });
-      if (result.data.createPerspective.id !== action.entity.id) {
+      if (result.data.createPerspective.id !== newPerspective.perspective.id) {
         throw new Error(
-          `created commit id ${result.data.createPerspective.id} not as expected ${action.entity.id}`
+          `created perspective id ${result.data.createPerspective.id} not as expected ${newPerspective.perspective.id}`
         );
       }
-    };
-
-    /** must run sequentially since new perspectives
+    }
+  
+     /** must run backwards and sequentially since new perspectives 
      *  permissions depend on previous ones */
-    await actions
-      .filter(a => a.type === CREATE_AND_INIT_PERSPECTIVE_ACTION)
+    await this.newPerspectives
       .reverse()
       .reduce((promise, action) => promise.then(_ => createPerspective(action)), Promise.resolve());
   }
 
-  // Private helpers
-
-  private cacheAction(action: UprtclAction) {
-    if (action.type === CREATE_AND_INIT_PERSPECTIVE_ACTION && action.entity) {
-      const perspectiveId = ((action.entity as unknown) as Entity<any>).id;
-      const headId = action.payload.details.headId;
-      const context = action.payload.details.context;
-
-      const object = action.entity.object;
-
-      this.workspace.cache.writeQuery({
-        query: gql`{
-          entity(ref: "${perspectiveId}") {
-            id
-            ... on Perspective {
-              head {
-                id
-              }
-              context {
-                id
-              }
-            }
-            _context {
-              object
-              casID
-            }
-          }
-        }`,
-        data: {
-          entity: {
-            __typename: 'Perspective',
-            id: perspectiveId,
-            head: {
-              __typename: 'Commit',
-              id: headId
-            },
-            context: {
-              __typename: 'Context',
-              id: context
-            },
-            _context: {
-              __typename: 'EntityContext',
-              object,
-              casID: ''
-            }
-          }
-        }
-      });
-    } else if (action.entity) {
-      const entity = action.entity;
-      const type = this.recognizer.recognizeType(entity);
-
-      this.client.writeQuery({
-        query: gql`{
-          entity(ref: "${entity.id}") {
-            __typename
-            id
-            _context {
-              object
-              casID
-            }
-          }
-        }`,
-
-        data: {
-          entity: {
-            __typename: type,
-            id: entity.id,
-            _context: {
-              __typename: 'EntityContext',
-              object: entity.object,
-              casID: entity.casID
-            }
-          }
-        }
-      });
-    }
-
-    if (action.type === UPDATE_HEAD_ACTION) {
-      const perspectiveId = action.payload.perspectiveId;
-
-      this.workspace.cache.writeQuery({
-        query: gql`{
-          entity(ref: "${perspectiveId}") {
-            id
-            ... on Perspective {
-              head {
-                id
-              }
-            }
-          }
-        }`,
-        data: {
-          entity: {
-            __typename: 'Perspective',
-            id: perspectiveId,
-            head: {
-              __typename: 'Commit',
-              id: action.payload.newHeadId
-            }
-          }
-        }
-      });
-    }
-  }
 }

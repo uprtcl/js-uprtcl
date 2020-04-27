@@ -1,15 +1,8 @@
 import { Signed } from '@uprtcl/cortex';
 
-import { Perspective, Commit, PerspectiveDetails } from '../types';
+import { Perspective, Commit, PerspectiveDetails, NewPerspectiveData } from '../types';
 import { EveesSource } from './evees.source';
 import { Secured } from '../utils/cid-hash';
-
-export interface NewPerspectiveData {
-  perspective: Secured<Perspective>;
-  details: PerspectiveDetails;
-  canWrite?: string;
-  parentId?: string;
-}
 
 export interface EveesProvider extends EveesSource {
   /**

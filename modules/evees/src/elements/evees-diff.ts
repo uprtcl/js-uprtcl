@@ -18,7 +18,7 @@ export interface NodeDiff {
   hasDiffLenses: HasDiffLenses;
 }
 
-export class UpdatedDiff extends moduleConnect(LitElement) {
+export class EveesDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ attribute: false })

@@ -1,9 +1,10 @@
 import { TemplateResult } from 'lit-element';
 
-import { Entity, Behaviour } from '@uprtcl/cortex';
+import { Behaviour } from '@uprtcl/cortex';
 import { CASSource } from '@uprtcl/multiplatform';
 
 import { EveesRemote } from './services/evees.remote';
+import { Secured } from './utils/cid-hash';
 
 export type RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) => CASSource;
 
@@ -72,20 +73,11 @@ export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
   }
 }
 
-export const CREATE_DATA_ACTION = 'CREATE_DATA';
-export const CREATE_COMMIT_ACTION = 'CREATE_COMMIT';
-export const CREATE_AND_INIT_PERSPECTIVE_ACTION = 'CREATE_AND_INIT_PERSPECTIVE';
-export const UPDATE_HEAD_ACTION = 'UPDATE_HEAD';
-
-export interface UprtclAction {
-  type: string;
-  entity?: Entity<any>;
-  payload: any;
-}
-
-export interface NodeActions<T> {
-  new: T;
-  actions: UprtclAction[];
+export interface NewPerspectiveData {
+  perspective: Secured<Perspective>;
+  details: PerspectiveDetails;
+  canWrite?: string;
+  parentId?: string;
 }
 
 export interface DiffLens {
