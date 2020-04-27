@@ -2,7 +2,7 @@ import { html, fixture, expect } from '@open-wc/testing';
 import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { RemoteMap } from '../src/types';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CortexModule } from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
 import { AccessControlModule } from '@uprtcl/access-control';
@@ -70,9 +70,12 @@ describe('evees-workspace', () => {
     const client: ApolloClient<any> = orchestrator.container.get(
       ApolloClientModule.bindings.Client
     );
+    const recognizer: PatternRecognizer = orchestrator.container.get(
+      CortexModule.bindings.Recognizer
+    );
 
-    const workspace = new EveesWorkspace(client);
-    const result = await workspace.workspace.query({
+    const workspace = new EveesWorkspace(recognizer, client);
+    const result = await workspace.query({
       query: gql`
         {
           entity(ref: "Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw") {
@@ -85,18 +88,24 @@ describe('evees-workspace', () => {
       `
     });
 
-    console.log(result);
-
-    workspace.workspace.writeData({
-      data: {
-        entity: {
-          id: 'hi',
-          _context: {
-            object: {
-              hj: 'hi'
+    expect(result.data).to.deep.eq({
+      entity: {
+        __typename: 'Perspective',
+        _context: {
+          __typename: 'EntityContext',
+          object: {
+            payload: {
+              authority: 'local',
+              creatorId: 'user1',
+              timestamp: 0
+            },
+            proof: {
+              signature: '',
+              type: ''
             }
           }
-        }
+        },
+        id: 'Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw'
       }
     });
   });

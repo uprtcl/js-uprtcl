@@ -49,8 +49,10 @@ export const eveesResolvers: IResolvers = {
 
       const evees: Evees = container.get(EveesBindings.Evees);
       const eveesRemotes: EveesRemote[] = container.get(EveesBindings.EveesRemote);
-      const knownSources: KnownSourcesService = container.get(DiscoveryModule.bindings.LocalKnownSources);
-      
+      const knownSources: KnownSourcesService = container.get(
+        DiscoveryModule.bindings.LocalKnownSources
+      );
+
       const promises = eveesRemotes.map(async remote => {
         const thisPerspectivesIds = await remote.getContextPerspectives(context);
         thisPerspectivesIds.forEach(pId => {
@@ -58,12 +60,10 @@ export const eveesResolvers: IResolvers = {
         });
         return thisPerspectivesIds;
       });
-  
+
       const perspectivesIds = await Promise.all(promises);
-  
+
       return ([] as string[]).concat(...perspectivesIds);
-  
-      return evees.getContextPerspectives(context);
     }
   },
   UpdateProposal: {
@@ -115,7 +115,7 @@ export const eveesResolvers: IResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = evees.getPerspectiveProvider(parent);
-      
+
       const details = await remote.getPerspectiveDetails(parent.id);
 
       return details && details.context;
@@ -330,7 +330,7 @@ export const eveesResolvers: IResolvers = {
         fromHeadId,
         toHeadId,
         updates: updateRequests
-      }
+      };
       const proposalId = await remote.proposals.createProposal(proposal);
 
       return {

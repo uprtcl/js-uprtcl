@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = config =>
   config.set({
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadlessNoSandbox'],
     // ## code coverage config
     coverageIstanbulReporter: {
       reports: ['lcovonly', 'text-summary'],
@@ -58,7 +58,7 @@ module.exports = config =>
         ]
       }
     },
-    singleRun: false,
+    singleRun: true,
     concurrency: Infinity,
 
     plugins: [

@@ -1,5 +1,3 @@
-import { injectable, inject } from 'inversify';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { ApolloClient, ApolloLink, QueryOptions, ApolloQueryResult, gql } from 'apollo-boost';
 import Observable from 'zen-observable-ts';
 import { cloneDeep } from 'lodash-es';
@@ -9,9 +7,9 @@ import {
   UPDATE_HEAD_ACTION,
   CREATE_DATA_ACTION,
   CREATE_COMMIT_ACTION
-} from 'src/types';
+} from '../types';
+import { CREATE_ENTITY, CREATE_COMMIT, CREATE_PERSPECTIVE } from '../graphql/queries';
 import { Entity, PatternRecognizer } from '@uprtcl/cortex';
-import { CREATE_ENTITY, CREATE_COMMIT, CREATE_PERSPECTIVE } from 'src/uprtcl-evees';
 
 export class EveesWorkspace {
   private uprtclActions: UprtclAction[] = [];
