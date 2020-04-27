@@ -48,7 +48,7 @@ export const eveesResolvers: IResolvers = {
       const context = typeof parent === 'string' ? parent : parent.context;
 
       const evees: Evees = container.get(EveesBindings.Evees);
-      const eveesRemotes: EveesRemote[] = container.get(EveesBindings.EveesRemote);
+      const eveesRemotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
       const knownSources: KnownSourcesService = container.get(
         DiscoveryModule.bindings.LocalKnownSources
       );
