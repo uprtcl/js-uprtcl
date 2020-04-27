@@ -29,6 +29,7 @@ module.exports = config =>
       },
       resolve: {
         alias: {
+          '@material/mwc-icon-button': path.resolve(__dirname, './node_modules/@material/mwc-icon-button'),
           '@material/mwc-button': path.resolve(__dirname, './node_modules/@material/mwc-button'),
           '@material/mwc-icon': path.resolve(__dirname, './node_modules/@material/mwc-icon'),
           '@material/mwc-dialog': path.resolve(__dirname, './node_modules/@material/mwc-dialog'),
