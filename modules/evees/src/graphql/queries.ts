@@ -2,8 +2,18 @@ import { gql } from 'apollo-boost';
 import { DocumentNode } from 'graphql';
 
 export const UPDATE_HEAD: DocumentNode = gql`
-  mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID, $context: String, $name: String) {
-    updatePerspectiveHead(perspectiveId: $perspectiveId, headId: $headId, context: $context, name: $name) {
+  mutation UpdatePerspectiveHead(
+    $perspectiveId: ID!
+    $headId: ID
+    $context: String
+    $name: String
+  ) {
+    updatePerspectiveHead(
+      perspectiveId: $perspectiveId
+      headId: $headId
+      context: $context
+      name: $name
+    ) {
       id
       head {
         id
@@ -19,10 +29,8 @@ export const UPDATE_HEAD: DocumentNode = gql`
         authority
       }
       _context {
-        patterns {
-          content {
-            id
-          }
+        content {
+          id
         }
       }
     }
@@ -115,10 +123,7 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
 `;
 
 export const CREATE_AND_ADD_PROPOSAL: DocumentNode = gql`
-  mutation CreateAndAddProposal(
-    $perspectives: [NewPerspectiveInput]!
-    $proposal: ProposalInput!
-  ) {
+  mutation CreateAndAddProposal($perspectives: [NewPerspectiveInput]!, $proposal: ProposalInput!) {
     createAndAddProposal(perspectives: $perspectives, proposal: $proposal) {
       id
       toPerspective {
@@ -141,7 +146,7 @@ export const CREATE_AND_ADD_PROPOSAL: DocumentNode = gql`
 export const CREATE_PROPOSAL: DocumentNode = gql`
   mutation AddProposal(
     $toPerspectiveId: ID!
-    $fromPerspectiveId: ID!,
+    $fromPerspectiveId: ID!
     $toHeadId: ID!
     $fromHeadId: ID!
     $updateRequests: [HeadUpdateInput!]

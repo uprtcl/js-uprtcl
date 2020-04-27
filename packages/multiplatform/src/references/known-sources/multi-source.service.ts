@@ -29,7 +29,9 @@ export class MultiSourceService {
     @inject(ApolloClientModule.bindings.Client)
     public client: ApolloClient<any>,
     @multiInject(CASBindings.CASSource)
-    sources: Array<CASSource>
+    sources: Array<CASSource>,
+    @multiInject(DiscoveryBindings.DefaultSource)
+    protected defaultSources: Array<string>
   ) {
     // Build the sources dictionary from the resulting names
     this.services = sources.reduce(
@@ -153,6 +155,28 @@ export class MultiSourceService {
     };
   }
 
+  private async tryGetFromSources<O extends object>(
+    hash: string,
+    sources: string[]
+  ): Promise<Entity<O> | undefined> {
+    const tryGetFromSource = async (sourceName: string) => {
+      const object = await this.getFromSource<O>(hash, sourceName);
+      return object ? Promise.resolve(object) : Promise.reject();
+    };
+
+    const promises = sources.map(tryGetFromSource);
+
+    try {
+      // Get first resolved object
+      return await raceToSuccess<Entity<O>>(promises);
+    } catch (e) {
+      this.logger.warn('All sources failed to get the hash', hash, ' with error ', e);
+
+      // All sources failed, return undefined
+      return undefined;
+    }
+  }
+
   /**
    * Retrieves the object with the given hash
    *
@@ -172,29 +196,16 @@ export class MultiSourceService {
       knownSources = await this.localKnownSources.getKnownSources(hash);
     }
 
-    const tryGetFromSource = async (sourceName: string) => {
-      const object = await this.getFromSource<O>(hash, sourceName);
-      return object ? Promise.resolve(object) : Promise.reject();
-    };
-
-    let promises: Array<Promise<Entity<O>>>;
     if (knownSources) {
-      // Try to retrieve the object from any of the known sources
-      promises = knownSources.map(tryGetFromSource);
+      return this.tryGetFromSources(hash, knownSources);
     } else {
-      // We had no known sources for the hash, try to get the object from any known sources service
-      promises = this.getAllCASIds().map(tryGetFromSource);
-    }
+      const defaultSources = this.defaultSources;
+      const object = await this.tryGetFromSources<O>(hash, defaultSources);
 
-    try {
-      // Get first resolved object
-      const object: Entity<O> = await raceToSuccess<Entity<O>>(promises);
-      return object;
-    } catch (e) {
-      this.logger.warn('All sources failed to get the hash', hash, ' with error ', e);
+      if (object) return object;
 
-      // All sources failed, return undefined
-      return undefined;
+      const remainingCids = this.getAllCASIds().filter(casID => !defaultSources.includes(casID));
+      return this.tryGetFromSources(hash, remainingCids);
     }
   }
 

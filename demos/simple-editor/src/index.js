@@ -35,7 +35,7 @@ import { SimpleWiki } from './simple-wiki';
   const ethEvees = new EveesEthereum(ethConnection, ipfsConfig, ipfsCidConfig);
 
   const evees = new EveesModule([ethEvees, httpEvees], httpEvees);
-  
+
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
 
@@ -45,7 +45,7 @@ import { SimpleWiki } from './simple-wiki';
     new i18nextBaseModule(),
     new ApolloClientModule(),
     new CortexModule(),
-    new DiscoveryModule(),
+    new DiscoveryModule([httpEvees.casID]),
     lenses,
     new AccessControlModule(),
     evees,
