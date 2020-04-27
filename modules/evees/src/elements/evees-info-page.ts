@@ -8,7 +8,7 @@ export const styleMap = style => {
 
 import { EveesInfoBase } from './evee-info-base';
 import { prettyAddress } from './support';
-import { UPDATE_HEAD } from 'src/graphql/queries';
+import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from './common-ui/evees-options-menu';
 

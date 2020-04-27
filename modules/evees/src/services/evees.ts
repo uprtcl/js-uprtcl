@@ -2,7 +2,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { multiInject, injectable, inject } from 'inversify';
 
 import { PatternRecognizer, HasChildren, CortexModule, Signed } from '@uprtcl/cortex';
-import { KnownSourcesService, DiscoveryModule, loadEntity } from '@uprtcl/multiplatform';
+import { loadEntity } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -30,8 +30,6 @@ export class Evees {
 
   constructor(
     @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(DiscoveryModule.bindings.LocalKnownSources)
-    public knownSources: KnownSourcesService,
     @multiInject(EveesBindings.EveesRemote)
     protected eveesRemotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client)
@@ -92,20 +90,6 @@ export class Evees {
     const entity = await loadEntity(this.client, id);
     const type = this.recognizer.recognizeType(entity);
     return type === 'Perspective';
-  }
-
-  public async getContextPerspectives(context: string): Promise<string[]> {
-    const promises = this.eveesRemotes.map(async remote => {
-      const thisPerspectivesIds = await remote.getContextPerspectives(context);
-      thisPerspectivesIds.forEach(pId => {
-        this.knownSources.addKnownSources(pId, [remote.casID], EveesBindings.PerspectiveType);
-      });
-      return thisPerspectivesIds;
-    });
-
-    const perspectivesIds = await Promise.all(promises);
-
-    return ([] as string[]).concat(...perspectivesIds);
   }
 
   async isPattern(id: string, type: string): Promise<boolean> {

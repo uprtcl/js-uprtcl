@@ -24,7 +24,7 @@ import { Merge } from '../behaviours/merge';
 import { mergeResult } from './utils';
 import { deriveEntity } from '../utils/cid-hash';
 import { cacheUpdateRequest } from '../utils/actions';
-import { deriveSecured } from 'src/utils/signed';
+import { deriveSecured } from '../utils/signed';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {

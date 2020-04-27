@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = config =>
   config.set({
-    browsers: ['ChromeHeadlessNoSandbox'],
+    browsers: ['Chrome'],
     // ## code coverage config
     coverageIstanbulReporter: {
       reports: ['lcovonly', 'text-summary'],
@@ -29,8 +29,14 @@ module.exports = config =>
       },
       resolve: {
         alias: {
+          '@material/mwc-button': path.resolve(__dirname, './node_modules/@material/mwc-button'),
+          '@material/mwc-icon-button': path.resolve(__dirname, './node_modules/@material/mwc-icon-button'),
+          '@material/mwc-icon': path.resolve(__dirname, './node_modules/@material/mwc-icon'),
+          '@material/mwc-dialog': path.resolve(__dirname, './node_modules/@material/mwc-dialog'),
           'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
-          'lit-element': path.resolve(__dirname, './node_modules/lit-element')
+          'lit-element': path.resolve(__dirname, './node_modules/lit-element'),
+          'apollo-boost': path.resolve(__dirname, './node_modules/apollo-boost'),
+          'apollo-client': path.resolve(__dirname, './node_modules/apollo-client')
         },
         extensions: ['.mjs', '.js', '.ts', '.json']
       },
@@ -52,7 +58,7 @@ module.exports = config =>
         ]
       }
     },
-    singleRun: true,
+    singleRun: false,
     concurrency: Infinity,
 
     plugins: [

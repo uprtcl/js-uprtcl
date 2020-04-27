@@ -28,6 +28,7 @@ export { EveesHttp } from './services/providers/http/evees.http';
 export { Evees } from './services/evees';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
+export { EveesWorkspace } from './services/evees.workspace';
 
 /** Merge */
 export { Merge } from './behaviours/merge';
