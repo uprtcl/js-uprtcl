@@ -391,7 +391,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async optionOnPage(pageIndex: number, option: string) {
-    debugger
     switch (option) {
       case 'move-up':
         this.movePage(pageIndex, pageIndex - 1);

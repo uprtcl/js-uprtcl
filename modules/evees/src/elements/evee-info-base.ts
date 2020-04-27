@@ -296,8 +296,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       canWrite: permissions.owner
     };
 
-    debugger
-
     const mergeResult = await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
       fromPerspectiveId,
