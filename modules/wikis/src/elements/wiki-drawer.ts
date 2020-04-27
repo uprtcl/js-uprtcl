@@ -411,6 +411,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       this.ref = event.detail.perspectiveId;
+      this.pagesList = undefined;
+      this.editable = false;
     }) as EventListener);
   }
 

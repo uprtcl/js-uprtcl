@@ -255,7 +255,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (this.forceUpdate === 'true') {
       this.forceUpdate = 'false';
     } else {
-      this.forceUpdate === 'true';
+      this.forceUpdate = 'true';
     }
   }
 
@@ -276,6 +276,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (this.defaultRemote === undefined) throw new Error('default remote undefined');
     await this.defaultRemote.login();
 
+    await this.client.resetStore();
+    this.reload();
     this.load();
   }
 
@@ -283,6 +285,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (this.defaultRemote === undefined) throw new Error('default remote undefined');
     await this.defaultRemote.logout();
 
+    await this.client.resetStore();
+    this.reload();
     this.load();
   }
 
@@ -388,8 +392,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async mergePerspective(actions: UprtclAction[]): Promise<void> {
 
-    debugger
-    
     /** create commits and data */
     const dataActions = actions.filter(a =>
       [CREATE_DATA_ACTION, CREATE_COMMIT_ACTION].includes(a.type)
