@@ -3,6 +3,7 @@ import { injectable } from 'inversify';
 import { KnownSourcesService } from '@uprtcl/multiplatform';
 
 import { HolochainProvider } from './holochain.provider';
+import { parseResponse } from './utils';
 
 @injectable()
 export abstract class KnownSourcesHolochain extends HolochainProvider
@@ -11,7 +12,7 @@ export abstract class KnownSourcesHolochain extends HolochainProvider
 
   async getUpl(): Promise<string> {
     const response = await this.call('get_uprtcl_provider_locator', {});
-    return this.parseResponse(response);
+    return parseResponse(response);
   }
 
   getKnownSources(hash: string): Promise<string[]> {
