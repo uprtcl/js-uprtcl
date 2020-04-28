@@ -6389,11 +6389,33 @@
           ],
           "name": "PerspectiveDetailsSet",
           "type": "event"
+        },
+        "0x6c9aea0d74ee0825117310c02b08c081cb33d88db58edef5517d54b9cfabaacf": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "name": "perspectiveIdHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "name": "contextHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "name": "context",
+              "type": "string"
+            }
+          ],
+          "name": "PerspectiveDetailsSet",
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0x26e86Dcff1B5b1d368be4B76f92797997CDE6544",
-      "transactionHash": "0x3969f92760ce92ad573c7fdfa1e744bafa9aaf675c8bc42d5fa31a4dab6677fd"
+      "address": "0x15ab2ae7F1BF59Bd0794EE56e746fdEB6384f843",
+      "transactionHash": "0x57f941b61fd173edf828bec2ac9f217886c5e1e633533dd35e0b4b82e315d4f8"
     },
     "42": {
       "events": {
@@ -6459,8 +6481,7 @@
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+          "type": "event"
         },
         "0x54d694087b2b7af3574607f1c7957f264e43dae2cd138a793dc22d407fac002b": {
           "anonymous": false,
@@ -6504,8 +6525,7 @@
             }
           ],
           "name": "PerspectiveDetailsSet",
-          "type": "event",
-          "signature": "0x6c9aea0d74ee0825117310c02b08c081cb33d88db58edef5517d54b9cfabaacf"
+          "type": "event"
         }
       },
       "links": {},
@@ -6513,8 +6533,9 @@
       "transactionHash": "0xbf3608483a9df3088f6dbf8971857534027a8b3ec5a557c57e56b3b215f055d5"
     }
   },
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2020-04-22T19:40:01.616Z",
+  "schemaVersion": "3.0.23",
+  "updatedAt": "2020-04-28T16:12:24.549Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {
       "isOwner()": {

@@ -30,23 +30,31 @@ export class EveesDiff extends moduleConnect(LitElement) {
 
   updatesDetails: Dictionary<UpdateDetails> = {};
 
-  protected client!: ApolloClient<any>;
   protected recognizer!: PatternRecognizer;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()');
-    this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     this.loadUpdates();
   }
 
+  async updated(changedProperties) {
+    this.logger.log('updated()', changedProperties);
+
+    if (changedProperties.has('workspace')) {
+      this.loadUpdates()
+    }
+  }
+
   async loadUpdates() {
+    if (!this.workspace) return;
+
     this.loading = true;
 
     const getDetails = this.workspace.getUpdates().map(async (update) => {
-      const newData = await getCommitData(this.client, update.newHeadId); 
-      const oldData = await getCommitData(this.client, update.newHeadId); 
+      const newData = await getCommitData(this.workspace.workspace, update.newHeadId); 
+      const oldData = await getCommitData(this.workspace.workspace, update.newHeadId); 
 
       const hasDiffLenses = this.recognizer.recognizeBehaviours(oldData).find(b => (b as HasDiffLenses<any>).diffLenses);
       if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
@@ -68,7 +76,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
     // TODO: review if old data needs to be
     return html`
       <div class="evee-diff">
-        ${details.diffLense.render(details.newData, details.oldData)}
+        ${details.diffLense.render(this.workspace, details.newData, details.oldData)}
       </div>
     `;
   }

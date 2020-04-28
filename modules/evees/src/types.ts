@@ -5,6 +5,7 @@ import { CASStore } from '@uprtcl/multiplatform';
 
 import { EveesRemote } from './services/evees.remote';
 import { Secured } from './utils/cid-hash';
+import { EveesWorkspace } from './services/evees.workspace';
 
 export type RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) => CASStore;
 
@@ -82,7 +83,7 @@ export interface NewPerspectiveData {
 
 export interface DiffLens {
   name: string;
-  render: (newEntity: any, oldEntity: any) => TemplateResult;
+  render: (workspace: EveesWorkspace, newEntity: any, oldEntity: any) => TemplateResult;
   type?: string;
 }
 

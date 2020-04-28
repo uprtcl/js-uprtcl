@@ -12,7 +12,7 @@ export class EveesWorkspace {
   private newPerspectives: NewPerspectiveData[] = [];
   private updates: UpdateRequest[] = [];
 
-  private workspace: ApolloClient<any>;
+  public workspace: ApolloClient<any>;
 
   constructor(protected recognizer: PatternRecognizer, client: ApolloClient<any>) {
     this.workspace = this.buildWorkspace(client);
@@ -76,10 +76,6 @@ export class EveesWorkspace {
 
   public getNewPerspectives() {
     return this.newPerspectives;
-  }
-
-  public query(options: QueryOptions): Promise<ApolloQueryResult<any>> {
-    return this.workspace.query(options);
   }
 
   public create(entity: Entity<any>) {

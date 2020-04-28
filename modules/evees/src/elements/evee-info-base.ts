@@ -471,8 +471,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async newPerspectiveClicked() {
     this.loading = true;
 
-    debugger
-
     const workspace = new EveesWorkspace(this.recognizer, this.client);
     const newPerspectiveId = await this.evees.forkPerspective(this.perspectiveId, workspace, this.defaultAuthority);
     await workspace.execute(this.client);
@@ -521,14 +519,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async updatesDialog(workspace: EveesWorkspace, primaryText: string, secondaryText: string): Promise<boolean> {
     
+    this.showUpdatesDialog = true;
+    await this.updateComplete;
+
     this.updatesDialogEl.primaryText = primaryText;
     this.updatesDialogEl.secondaryText = secondaryText;
-    
+    this.updatesDialogEl.showSecondary = secondaryText !== undefined ? 'true' : 'false';
+
     this.eveesDiffEl.workspace = workspace;
-
-    this.showUpdatesDialog = true;
-
-    await this.updateComplete;
 
     return new Promise((resolve) => {
       this.updatesDialogEl.resolved = (value) => {

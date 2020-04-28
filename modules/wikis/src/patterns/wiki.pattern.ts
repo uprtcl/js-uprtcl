@@ -92,10 +92,11 @@ export class WikiCommon implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity
       {
         name: 'wikis:wiki-diff',
         type: 'diff',
-        render: (newEntity: Entity<Wiki>, oldEntity: Entity<Wiki>) => {
+        render: (workspace: EveesWorkspace, newEntity: Entity<Wiki>, oldEntity: Entity<Wiki>) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <wiki-diff
+              .workspace=${workspace}
               .newData=${newEntity}
               .oldData=${oldEntity}>
             </wiki-diff>
