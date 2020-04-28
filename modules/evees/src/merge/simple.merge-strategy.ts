@@ -121,15 +121,21 @@ export class SimpleMergeStrategy implements MergeStrategy {
     workspace: EveesWorkspace,
     config: any
   ): Promise<string> {
-    const commitsIds = [toCommitId, fromCommitId];
+    
+    if (toCommitId === fromCommitId) {
+      return toCommitId;
+    }
 
+    const commitsIds = [toCommitId, fromCommitId];
     const ancestorId = await findMostRecentCommonAncestor(this.client)(commitsIds);
-    const ancestorData: any = await this.loadCommitData(ancestorId);
 
     const datasPromises = commitsIds.map(async commitId => this.loadCommitData(commitId));
-
     const newDatas = await Promise.all(datasPromises);
 
+    const ancestorData: any = ancestorId !== undefined ? 
+      await this.loadCommitData(ancestorId) :
+      newDatas[0];
+    
     const mergedData = await this.mergeData(
       ancestorData,
       newDatas,

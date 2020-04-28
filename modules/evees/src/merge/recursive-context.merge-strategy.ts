@@ -267,6 +267,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
                 if (!isInternal) {
                   const newPerspectiveId = await this.evees.forkPerspective(
                     perspectivesByContext.from as string,
+                    workspace,
                     config.authority,
                     config.canWrite
                   );

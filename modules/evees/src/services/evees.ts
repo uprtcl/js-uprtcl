@@ -212,7 +212,7 @@ export class Evees {
       creatorsIds: eveesRemote.userId ? [eveesRemote.userId] : [''],
       dataId: dataForkId,
       message: `autocommit to fork ${commitId} on authority ${authority}`,
-      parentsIds: [commit.id],
+      parentsIds: commit.object.payload.parentsIds,
       timestamp: Date.now()
     };
 

@@ -56,8 +56,6 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         provider.authority.startsWith('eth')
       );
 
-      debugger
-
       const client = this.request(ApolloClientModule.bindings.Client);
 
       const wiki = {

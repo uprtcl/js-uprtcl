@@ -213,7 +213,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.firstHasChanges = false;
       return;
     }
-    
+
     const remote = await this.evees.getPerspectiveProviderById(this.perspectiveId);
 
     const config = {
@@ -470,6 +470,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async newPerspectiveClicked() {
     this.loading = true;
+
+    debugger
 
     const workspace = new EveesWorkspace(this.recognizer, this.client);
     const newPerspectiveId = await this.evees.forkPerspective(this.perspectiveId, workspace, this.defaultAuthority);

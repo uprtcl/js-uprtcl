@@ -169,7 +169,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const pagesListPromises = this.wiki.object.pages.map(
       async (pageId):Promise<PageData> => {
       
-      const data = getPerspectiveData(this.client, pageId);
+      const data = await getPerspectiveData(this.client, pageId);
       const hasTitle: HasTitle = this.recognizer
         .recognizeBehaviours(data)
         .find(b => (b as HasTitle).title);

@@ -21,7 +21,7 @@ export const getPerspectiveHead = async (client: ApolloClient<any>, perspectiveI
         }
       }`
   });
-  return result.data.entity.payload.authority;
+  return result.data.entity.head.id;
 }
 
 export const getPerspectiveContext = async (client: ApolloClient<any>, perspectiveId: string): Promise<string> => {

@@ -65,7 +65,7 @@ export class FindMostRecentCommonAncestor {
     return { id: commitId, object: result.data.entity._context.object };
   }
 
-  public async compute(): Promise<string> {
+  public async compute(): Promise<string | undefined> {
     // Iterate until there is no more parent commits to explore
     while (this.paths.find(path => path.heads.length > 0)) {
       for (let i = 0; i < this.paths.length; i++) {
@@ -81,12 +81,12 @@ export class FindMostRecentCommonAncestor {
       }
     }
 
-    throw new Error('Commits do not have a common ancestor');
+    return undefined;
   }
 }
 
 export default function findMostRecentCommonAncestor(
   client: ApolloClient<any>
-): (commitsIds: string[]) => Promise<string> {
+): (commitsIds: string[]) => Promise<string | undefined> {
   return (commitsIds: string[]) => new FindMostRecentCommonAncestor(client, commitsIds).compute();
 }
