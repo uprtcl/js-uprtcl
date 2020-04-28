@@ -1,10 +1,11 @@
 import { ApolloClient, gql } from "apollo-boost";
 
-import { Commit } from '../types';
-import { deriveSecured } from "src/utils/signed";
 import { CASStore, loadEntity } from "@uprtcl/multiplatform";
+
+import { Commit } from '../types';
+import {  signObject } from "../utils/signed";
 import { CREATE_ENTITY, CREATE_PERSPECTIVE, UPDATE_HEAD } from "./queries";
-import { EveesRemote } from "src/services/evees.remote";
+import { EveesRemote } from "../services/evees.remote";
 
 export const getPerspectiveHead = async (client: ApolloClient<any>, perspectiveId: string): Promise<string> => {
   const result = await client.query({
@@ -141,7 +142,7 @@ export const createCommit = async (
     parentsIds: parentsIds
   };
 
-  const commitEntity = deriveSecured(commitData, store.cidConfig);
+  const commitEntity = signObject(commitData);
 
   const create = await client.mutate({
     mutation: CREATE_ENTITY,
@@ -151,7 +152,7 @@ export const createCommit = async (
     }
   });
 
-  return create.data.createCommit.id;
+  return create.data.createEntity.id;
 }
 
 export interface CreatePerspective {

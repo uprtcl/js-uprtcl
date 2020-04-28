@@ -1,10 +1,8 @@
 import { LitElement, html, css } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule, CREATE_PERSPECTIVE, CREATE_COMMIT, CREATE_ENTITY } from '@uprtcl/evees';
-import { WikisModule } from '@uprtcl/wikis';
+import { EveesModule, createPerspective, createEntity, createCommit } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { HttpProviderModule } from '@uprtcl/http-provider';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
   static get properties() {
@@ -58,43 +56,24 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         provider.authority.startsWith('eth')
       );
 
+      debugger
+
       const client = this.request(ApolloClientModule.bindings.Client);
 
-      const createWiki = await client.mutate({
-        mutation: CREATE_ENTITY,
-        variables: {
-          object: {
-            title: 'Genesis Wiki',
-            pages: []
-          },
-          casID: eveesEthProvider.casID
-        }
-      });
-
-      const dataId = createWiki.data.createEntity.id;
-      const commit = commitEntity(dataId);
-
-      const createCommit = await client.mutate({
-        mutation: CREATE_ENTITY,
-        variables: {
-          object: commit,
-          casID: eveesEthProvider.casID
-        }
-      });
+      const wiki = {
+        title: 'Genesis Wiki',
+        pages: []
+      };
+      
+      const dataId = await createEntity(client, eveesEthProvider, wiki);
+      const headId = await createCommit(client, eveesEthProvider, { dataId });
 
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
-
-      const createPerspective = await client.mutate({
-        mutation: CREATE_PERSPECTIVE,
-        variables: {
-          headId: createCommit.data.createCommit.id,
-          context: `genesis-dao-wiki-${randint}`,
-          canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
-          authority: eveesEthProvider.authority
-        }
+      const perspectiveId = await createPerspective(client, eveesEthProvider, { 
+        headId, 
+        context: `genesis-dao-wiki-${randint}`, 
+        canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
       });
-
-      const perspectiveId = createPerspective.data.createPerspective.id;
 
       window.history.pushState('', '', `/?id=${perspectiveId}`);
     }

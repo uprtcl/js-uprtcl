@@ -469,13 +469,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async newPerspectiveClicked() {
-
     this.loading = true;
 
     const workspace = new EveesWorkspace(this.recognizer, this.client);
-
     const newPerspectiveId = await this.evees.forkPerspective(this.perspectiveId, workspace, this.defaultAuthority);
-
     await workspace.execute(this.client);
 
     this.checkoutPerspective(newPerspectiveId);
