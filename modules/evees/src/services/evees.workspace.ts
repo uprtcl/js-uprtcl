@@ -7,9 +7,9 @@ import { UpdateRequest, NewPerspectiveData } from '../types';
 
 export class EveesWorkspace {
 
-  public entities: Entity<any>[] = [];
-  public newPerspectives: NewPerspectiveData[] = [];
-  public updates: UpdateRequest[] = [];
+  private entities: Entity<any>[] = [];
+  private newPerspectives: NewPerspectiveData[] = [];
+  private updates: UpdateRequest[] = [];
 
   private workspace: ApolloClient<any>;
 
@@ -63,6 +63,18 @@ export class EveesWorkspace {
     if (updateNot !== undefined) return false;
 
     return true;
+  }
+
+  public getUpdates() {
+    return this.updates;
+  }
+
+  public getEntities() {
+    return this.entities;
+  }
+
+  public getNewPerspectives() {
+    return this.newPerspectives;
   }
 
   public query(options: QueryOptions): Promise<ApolloQueryResult<any>> {

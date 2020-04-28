@@ -7,6 +7,7 @@ export interface MergeStrategy {
   mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
+    workspace: EveesWorkspace,
     config: any
   ): Promise<string>;
 
@@ -18,8 +19,8 @@ export interface MergeStrategy {
   mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config: any,
-    workspace: EveesWorkspace
+    workspace: EveesWorkspace,
+    config: any
   ): Promise<string>;
 
 
@@ -30,6 +31,7 @@ export interface MergeStrategy {
     toCommitId: string,
     fromCommitId: string,
     dataSource: string,
+    workspace: EveesWorkspace,
     config: any
   ): Promise<string>;
 
@@ -40,6 +42,7 @@ export interface MergeStrategy {
   mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
+    workspace: EveesWorkspace,
     config: any
   ): Promise<any[]>;
 }

@@ -3,7 +3,7 @@ import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Entity, HasChildren, recognizeEntity } from '@uprtcl/cortex';
-import { MergeStrategy, mergeStrings, UprtclAction, Merge, HasDiffLenses, DiffLens } from '@uprtcl/evees';
+import { MergeStrategy, mergeStrings, UprtclAction, Merge, HasDiffLenses, DiffLens, EveesWorkspace } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 import { NodeActions } from '@uprtcl/evees';
 
@@ -41,6 +41,7 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
   merge = (originalNode: Entity<Wiki>) => async (
     modifications: Entity<Wiki>[],
     mergeStrategy: MergeStrategy,
+    workspace: EveesWorkspace,
     config
   ): Promise<NodeActions<Wiki>> => {
     const resultTitle = mergeStrings(
@@ -52,18 +53,11 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
       modifications.map(data => data.object.pages),
+      workspace,
       config
     );
 
-    const allActions = ([] as UprtclAction[]).concat(...mergedPages.map(node => node.actions));
-    
-    return {
-      new: {
-        pages: mergedPages.map(node => node.new),
-        title: resultTitle
-      },
-      actions: allActions
-    };
+    return mergedPages;
   };
 }
 

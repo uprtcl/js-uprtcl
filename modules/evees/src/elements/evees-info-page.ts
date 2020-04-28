@@ -13,7 +13,6 @@ import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from './common-ui/evees-options-menu';
 
 import "@material/mwc-dialog";
-import { UPDATE_HEAD_ACTION } from '../types';
 
 export class EveesInfoPage extends EveesInfoBase {
 

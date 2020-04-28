@@ -17,6 +17,22 @@ export const getPerspectiveHead = async (client: ApolloClient<any>, perspectiveI
   return result.data.entity.payload.authority;
 }
 
+export const getPerspectiveContext = async (client: ApolloClient<any>, perspectiveId: string):Promise<string> => {
+  const result = await client.query({query: gql`
+    {
+      entity(ref: "${perspectiveId}") {
+        id
+        ... on Perspective {
+          context {
+            id
+          }
+        }
+      }
+    }`
+  });
+  return result.data.entity.context.id;
+}
+
 export const getPerspectiveAuthority = async (client: ApolloClient<any>, perspectiveId: string):Promise<string> => {
   const result = await client.query({query: gql`
     {

@@ -42,7 +42,6 @@ import {
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
-import { executeActions, cacheActions } from '../utils/actions';
 import { EveesRemote } from 'src/uprtcl-evees';
 
 import { EveesDialog } from './common-ui/evees-dialog';
@@ -230,8 +229,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.merge.mergePerspectivesExternal(
       this.perspectiveId,
       this.firstPerspectiveId,
-      config,
-      workspace
+      workspace,
+      config
     );
 
     this.logger.info('checkPull()');
@@ -334,8 +333,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
       fromPerspectiveId,
-      config,
-      workspace
+      workspace,
+      config
     );
 
     const confirm = await this.updatesDialog(workspace, 'propose', 'cancel');
@@ -365,7 +364,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     
     await workspace.execute(this.client);
 
-    const update = workspace.updates.map(async (update) => {
+    const update = workspace.getUpdates().map(async (update) => {
       return this.client.mutate({
         mutation: UPDATE_HEAD,
         variables: {
@@ -399,13 +398,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       fromPerspectiveId, 
       toHeadId,
       fromHeadId,
-      updates: workspace.updates
+      updates: workspace.getUpdates()
     };
 
     const result = await this.client.mutate({
       mutation: CREATE_AND_ADD_PROPOSAL,
       variables: {
-        perspectives: workspace.newPerspectives,
+        perspectives: workspace.getNewPerspectives(),
         proposal: proposal
       }
     });
@@ -475,14 +474,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.loading = true;
 
-    const forkPerspective = await this.evees.forkPerspective(this.perspectiveId, this.defaultAuthority);
+    const workspace = new EveesWorkspace(this.recognizer, this.client);
 
-    await cacheActions(forkPerspective.actions, this.cache, this.client);
-    await executeActions(forkPerspective.actions, this.client);
+    const newPerspectiveId = await this.evees.forkPerspective(this.perspectiveId, workspace, this.defaultAuthority);
 
-    this.checkoutPerspective(forkPerspective.new);
+    await workspace.execute(this.client);
 
-    this.logger.info('newPerspectiveClicked() - perspective created', { id: forkPerspective.new });
+    this.checkoutPerspective(newPerspectiveId);
+
+    this.logger.info('newPerspectiveClicked() - perspective created', { id: newPerspectiveId });
   }
 
   checkoutPerspective(perspectiveId: string) {

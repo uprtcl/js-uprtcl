@@ -7,13 +7,8 @@ import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import {
-  UprtclAction,
   UpdateRequest,
-  UPDATE_HEAD_ACTION,
   Commit,
-  CREATE_COMMIT_ACTION,
-  CREATE_DATA_ACTION,
-  NodeActions,
   RemoteMap
 } from '../types';
 import { EveesBindings } from '../bindings';
@@ -23,8 +18,9 @@ import findMostRecentCommonAncestor from './common-ancestor';
 import { Merge } from '../behaviours/merge';
 import { mergeResult } from './utils';
 import { deriveEntity } from '../utils/cid-hash';
-import { cacheUpdateRequest } from '../utils/actions';
 import { deriveSecured } from '../utils/signed';
+import { EveesWorkspace } from '../services/evees.workspace';
+import { getPerspectiveHead } from '../graphql/queries';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
@@ -36,79 +32,39 @@ export class SimpleMergeStrategy implements MergeStrategy {
     @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
   ) {}
   
-  mergePerspectivesExternal(toPerspectiveId: string, fromPerspectiveId: string, config: any): Promise<NodeActions<string>> {
-    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
+  mergePerspectivesExternal(toPerspectiveId: string, fromPerspectiveId: string, workspace: EveesWorkspace, config: any): Promise<string> {
+    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config, workspace);
   }
 
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config?: any
-  ): Promise<NodeActions<string>> {
-    const promises = [toPerspectiveId, fromPerspectiveId].map(async id => {
-      const result = await this.client.query({
-        query: gql`{
-          entity(ref: "${id}") {
-          id
-          ... on Perspective {
-            head {
-              id
-            }
-          }
-        }}`
-      });
-      const headId = result.data.entity.head.id;
-
-      if (!headId) throw new Error('Cannot merge a perspective that has no head associated');
-      return headId;
-    });
-
+    workspace: EveesWorkspace,
+    config: any,
+  ): Promise<string> {
+    const promises = [toPerspectiveId, fromPerspectiveId].map(async id => getPerspectiveHead(this.client, id));
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-    /*     
-    const isAncestor = await isAncestorOf(this.client)(fromHeadId, toHeadId);
-
-    if (isAncestor) {
-      // All commits to merge from are ancestors of the current one, do nothing
-      return [toPerspectiveId, []];
-    }
- */
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
 
-    const mergeResult = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, config);
+    const newHead = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, workspace, config);
 
     /** prevent an update head to the same head */
-    if (mergeResult.new === toHeadId) {
-      return {
-        new: toPerspectiveId,
-        actions: mergeResult.actions
-      };
+    if (newHead === toHeadId) {
+      return toPerspectiveId;
     }
 
     const request: UpdateRequest = {
       fromPerspectiveId,
       perspectiveId: toPerspectiveId,
       oldHeadId: toHeadId,
-      newHeadId: mergeResult.new
+      newHeadId: newHead
     };
-    const action = this.buildUpdateAction(request);
 
-    return {
-      new: toPerspectiveId,
-      actions: [action, ...mergeResult.actions]
-    };
+    workspace.update(request);
+    return toPerspectiveId;
   }
 
-  protected buildUpdateAction(updateRequest: UpdateRequest): UprtclAction {
-    const updateHead = {
-      type: UPDATE_HEAD_ACTION,
-      payload: updateRequest
-    };
-
-    cacheUpdateRequest(this.client, updateRequest.perspectiveId, updateRequest.newHeadId);
-
-    return updateHead;
-  }
   protected async loadPerspectiveData(perspectiveId: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
@@ -162,8 +118,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     toCommitId: string,
     fromCommitId: string,
     authority: string,
+    workspace: EveesWorkspace,
     config: any
-  ): Promise<NodeActions<string>> {
+  ): Promise<string> {
     const commitsIds = [toCommitId, fromCommitId];
 
     const ancestorId = await findMostRecentCommonAncestor(this.client)(commitsIds);
@@ -176,6 +133,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const mergedData = await this.mergeData(
       ancestorData,
       newDatas,
+      workspace,
       config
     );
 
@@ -184,24 +142,15 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const sourceRemote = this.remoteMap(remote, type);
 
-    const entity = await deriveEntity(mergedData.new, sourceRemote.cidConfig);
+    const entity = await deriveEntity(mergedData, sourceRemote.cidConfig);
+    entity.casID = sourceRemote.casID;
 
     /** prevent an update head to the same data */
     if (entity.id === newDatas[0].id) {
-      return {
-        new: toCommitId,
-        actions: mergedData.actions
-      };
+      return toCommitId;
     }
 
-    const newDataAction: UprtclAction = {
-      type: CREATE_DATA_ACTION,
-      entity: entity,
-      payload: {
-        casID: sourceRemote.casID
-      }
-    };
-    this.entityCache.cacheEntity(entity);
+    workspace.create(entity);
 
     if (!remote.userId) throw new Error('Cannot create commits in a casID you are not signed in');
 
@@ -212,28 +161,21 @@ export class SimpleMergeStrategy implements MergeStrategy {
       timestamp: Date.now(),
       creatorsIds: [remote.userId]
     };
+
     const securedCommit = await deriveSecured(newCommit, remote.cidConfig);
 
-    const newCommitAction: UprtclAction = {
-      type: CREATE_COMMIT_ACTION,
-      entity: securedCommit,
-      payload: {
-        casID: remote.casID
-      }
-    };
-    this.entityCache.cacheEntity(securedCommit);
+    securedCommit.casID = remote.casID;
+    workspace.create(securedCommit);
 
-    return {
-      new: securedCommit.id,
-      actions: [newCommitAction, newDataAction, ...mergedData.actions]
-    };
+    return securedCommit.id;
   }
 
   async mergeData<T extends object>(
     originalData: T,
     newDatas: T[],
+    workspace: EveesWorkspace,
     config: any
-  ): Promise<NodeActions<T>> {
+  ): Promise<T> {
     const merge: Merge | undefined = this.recognizer
       .recognizeBehaviours(originalData)
       .find(prop => !!(prop as Merge).merge);
@@ -245,14 +187,15 @@ export class SimpleMergeStrategy implements MergeStrategy {
         )} that does not implement the Mergeable behaviour`
       );
 
-    return merge.merge(originalData)(newDatas, this, config);
+    return merge.merge(originalData)(newDatas, this, workspace, config);
   }
 
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
+    workspace: EveesWorkspace,
     config: any
-  ): Promise<NodeActions<string>[]> {
+  ): Promise<string[]> {
     const allLinks: Dictionary<boolean> = {};
 
     const originalLinksDic = {};
@@ -294,10 +237,6 @@ export class SimpleMergeStrategy implements MergeStrategy {
       .sort((link1, link2) => link1.index - link2.index)
       .map(link => link.link);
 
-    return sortedLinks.map(
-      (link): NodeActions<string> => {
-        return { new: link, actions: [] };
-      }
-    );
+    return sortedLinks;
   }
 }
