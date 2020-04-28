@@ -1,9 +1,10 @@
 import { ApolloClient, ApolloLink, QueryOptions, ApolloQueryResult, gql } from 'apollo-boost';
 import Observable from 'zen-observable-ts';
 import { cloneDeep } from 'lodash-es';
-import { CREATE_ENTITY, CREATE_PERSPECTIVE, getPerspectiveAuthority } from '../graphql/queries';
+import { CREATE_ENTITY, CREATE_PERSPECTIVE } from '../graphql/queries';
 import { Entity, PatternRecognizer } from '@uprtcl/cortex';
 import { UpdateRequest, NewPerspectiveData } from '../types';
+import { getPerspectiveAuthority } from '../graphql/helpers';
 
 export class EveesWorkspace {
 

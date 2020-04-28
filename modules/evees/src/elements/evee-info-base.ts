@@ -25,8 +25,7 @@ import {
   ProposalCreatedEvent,
   Perspective,
   PerspectiveDetails,
-  Commit,
-  NewPerspectiveData
+  Commit
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
@@ -35,10 +34,11 @@ import {
   AUTHORIZE_PROPOSAL,
   EXECUTE_PROPOSAL,
   DELETE_PERSPECTIVE,
-  CREATE_AND_ADD_PROPOSAL,
-  getPerspectiveHead,
-  getPerspectiveAuthority
+  CREATE_AND_ADD_PROPOSAL
 } from '../graphql/queries';
+import {
+  getPerspectiveHead, getPerspectiveAuthority
+} from '../graphql/helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
@@ -100,10 +100,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
   
-
-  dialogConfig: any = {};
-  
   perspectiveData!: PerspectiveData;
+  pullWorkspace!: EveesWorkspace;
 
   protected client!: ApolloClient<any>;
   protected merge!: MergeStrategy;
@@ -349,7 +347,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (isProposal) {
       await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, fromHeadId, toHeadId, workspace);
     } else {
-      await this.applyMerge(workspace);
+      await this.applyWorkspace(workspace);
     }
 
     if (this.perspectiveId !== toPerspectiveId) {
@@ -360,7 +358,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
   }
 
-  async applyMerge(workspace: EveesWorkspace): Promise<void> {
+  async applyWorkspace(workspace: EveesWorkspace): Promise<void> {
     
     await workspace.execute(this.client);
 
@@ -524,10 +522,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async updatesDialog(workspace: EveesWorkspace, primaryText: string, secondaryText: string): Promise<boolean> {
     
-    this.updatesDialogEl.workspace = workspace;
     this.updatesDialogEl.primaryText = primaryText;
     this.updatesDialogEl.secondaryText = secondaryText;
-
+    
+    this.eveesDiffEl.workspace = workspace;
+    
     this.showUpdatesDialog = true;
 
     await this.updateComplete;

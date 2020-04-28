@@ -3,9 +3,8 @@ import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Entity, HasChildren, recognizeEntity } from '@uprtcl/cortex';
-import { MergeStrategy, mergeStrings, UprtclAction, Merge, HasDiffLenses, DiffLens, EveesWorkspace } from '@uprtcl/evees';
+import { MergeStrategy, mergeStrings, Merge, HasDiffLenses, DiffLens, EveesWorkspace } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
-import { NodeActions } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
@@ -43,8 +42,8 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     mergeStrategy: MergeStrategy,
     workspace: EveesWorkspace,
     config
-  ): Promise<NodeActions<Wiki>> => {
-    const resultTitle = mergeStrings(
+  ): Promise<Wiki> => {
+    const mergedTitle = mergeStrings(
       originalNode.object.title,
       modifications.map(data => data.object.title)
     );
@@ -57,7 +56,10 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
       config
     );
 
-    return mergedPages;
+    return {
+      title: mergedTitle,
+      pages: mergedPages
+    };
   };
 }
 

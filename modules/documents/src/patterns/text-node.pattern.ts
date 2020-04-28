@@ -2,7 +2,7 @@ import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
 import { Pattern, recognizeEntity, HasChildren, Entity, HasTitle, New } from '@uprtcl/cortex';
-import { Merge, MergeStrategy, mergeStrings, mergeResult, UprtclAction, NodeActions, HasDiffLenses, DiffLens, EveesWorkspace } from '@uprtcl/evees';
+import { Merge, MergeStrategy, mergeStrings, mergeResult, HasDiffLenses, DiffLens, EveesWorkspace } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';

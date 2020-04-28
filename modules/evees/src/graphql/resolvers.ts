@@ -10,7 +10,7 @@ import {
   EntityCache,
   KnownSourcesService
 } from '@uprtcl/multiplatform';
-import { Entity, Signed } from '@uprtcl/cortex';
+import { Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Commit, Perspective, NewProposal } from '../types';
@@ -18,7 +18,6 @@ import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
-import { NewPerspectiveData } from '../services/evees.provider';
 import { Secured } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
 

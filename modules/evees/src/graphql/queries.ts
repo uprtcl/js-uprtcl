@@ -1,53 +1,5 @@
-import { gql, ApolloClient } from 'apollo-boost';
+import { gql } from 'apollo-boost';
 import { DocumentNode } from 'graphql';
-
-export const getPerspectiveHead = async (client: ApolloClient<any>, perspectiveId: string):Promise<string> => {
-  const result = await client.query({query: gql`
-    {
-      entity(ref: "${perspectiveId}") {
-        id
-        ... on Perspective {
-          head {
-            id
-          }
-        }
-      }
-    }`
-  });
-  return result.data.entity.payload.authority;
-}
-
-export const getPerspectiveContext = async (client: ApolloClient<any>, perspectiveId: string):Promise<string> => {
-  const result = await client.query({query: gql`
-    {
-      entity(ref: "${perspectiveId}") {
-        id
-        ... on Perspective {
-          context {
-            id
-          }
-        }
-      }
-    }`
-  });
-  return result.data.entity.context.id;
-}
-
-export const getPerspectiveAuthority = async (client: ApolloClient<any>, perspectiveId: string):Promise<string> => {
-  const result = await client.query({query: gql`
-    {
-      entity(ref: "${perspectiveId}") {
-        id
-        ... on Perspective {
-          payload {
-            authority
-          }
-        }
-      }
-    }`
-  });
-  return result.data.entity.payload.authority;
-}
 
 export const UPDATE_HEAD: DocumentNode = gql`
   mutation UpdatePerspectiveHead($perspectiveId: ID!, $headId: ID, $context: String, $name: String) {

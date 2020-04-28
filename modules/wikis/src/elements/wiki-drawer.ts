@@ -20,11 +20,12 @@ import {
   EveesModule,
   eveeColor,
   DEFAULT_COLOR,
-  UPDATE_HEAD,
-  CREATE_COMMIT,
-  CREATE_PERSPECTIVE,
-  CREATE_ENTITY,
-  RemoteMap
+  RemoteMap,
+  createCommit,
+  createEntity,
+  createPerspective,
+  updateHead,
+  getPerspectiveData
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CASSource, loadEntity } from '@uprtcl/multiplatform';
@@ -167,28 +168,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const pagesListPromises = this.wiki.object.pages.map(
       async (pageId):Promise<PageData> => {
-        if (!this.client) throw new Error('client is undefined');
-        const result = await this.client.query({
-          query: gql`
-          {
-            entity(ref: "${pageId}") {
-              id
-              ... on Perspective {
-                head {
-                  id 
-                  ... on Commit {
-                    data {
-                      id
-                    }
-                  }
-                }
-              }
-            }
-          }`
-        });
-
-      const dataId = result.data.entity.head.data.id;
-      const data = await loadEntity(this.client, dataId);
+      
+      const data = getPerspectiveData(this.client, pageId);
       const hasTitle: HasTitle = this.recognizer
         .recognizeBehaviours(data)
         .find(b => (b as HasTitle).title);
@@ -239,74 +220,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const store = this.getStore(authority, DocumentsModule.bindings.TextNodeType);
     if (!store) throw new Error('store is undefined');
 
-    const createTextNode = await this.client.mutate({
-      mutation: CREATE_ENTITY,
-      variables: {
-        object: page,
-        casID: store.casID
-      }
-    });
-
-    const createCommit = await this.client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: createTextNode.data.createEntity.id,
-        parentsIds: [],
-        casID: remote.casID
-      }
-    });
-
-    const headId = createCommit.data.createCommit.id;
-
-    const createPerspective = await this.client.mutate({
-      mutation: CREATE_PERSPECTIVE,
-      variables: {
-        authority: this.authority,
-        headId: headId,
-        parentId: this.ref,
-        context: `${this.context}_${Date.now()}`,
-        casID: remote.casID
-      }
-    });
-
-    return createPerspective.data.createPerspective.id;
+    const dataId = await createEntity(this.client, store, page);
+    const headId = await createCommit(this.client, remote, dataId, []);
+    return createPerspective(this.client, remote, { headId, context: `${this.context}_${Date.now()}` });
   }
 
   async updateContent(newWiki: Wiki) {
     const store = this.getStore(this.authority, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const createWiki = await this.client.mutate({
-      mutation: CREATE_ENTITY,
-      variables: {
-        object: newWiki,
-        casID: store.casID
-      }
-    });
-
     const remote = this.eveesRemotes.find(r => r.authority === this.authority);
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
-    const createCommit = await this.client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: createWiki.data.createEntity.id,
-        parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
-        casID: remote.casID
-      }
-    });
-
-    const headId = createCommit.data.createCommit.id;
-
-    await this.client.mutate({
-      mutation: UPDATE_HEAD,
-      variables: {
-        perspectiveId: this.ref,
-        headId: headId
-      }
-    });
-
-    this.currentHeadId = headId;
+    const dataId = await createEntity(this.client, store, newWiki);
+    const headId = await createCommit(this.client, remote, dataId, []);
+    await updateHead(this.client, this.ref, headId)
 
     this.logger.info('updateContent()', newWiki);
 

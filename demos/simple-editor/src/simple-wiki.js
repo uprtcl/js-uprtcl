@@ -71,11 +71,13 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         }
       });
 
+      const dataId = createWiki.data.createEntity.id;
+      const commit = commitEntity(dataId);
+
       const createCommit = await client.mutate({
-        mutation: CREATE_COMMIT,
+        mutation: CREATE_ENTITY,
         variables: {
-          dataId: createWiki.data.createEntity.id,
-          parentsIds: [],
+          object: commit,
           casID: eveesEthProvider.casID
         }
       });

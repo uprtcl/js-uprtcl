@@ -16,7 +16,7 @@ import { EveesRemote } from './evees.remote';
 import { Secured, deriveEntity } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
 import { EveesWorkspace } from './evees.workspace';
-import { getPerspectiveHead, getPerspectiveContext } from '../graphql/queries';
+import { getPerspectiveHead, getPerspectiveContext } from '../graphql/helpers';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers

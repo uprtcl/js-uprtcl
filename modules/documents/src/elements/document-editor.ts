@@ -18,7 +18,6 @@ import {
   UPDATE_HEAD,
   RemoteMap,
   ContentUpdatedEvent,
-  CREATE_COMMIT,
   CREATE_PERSPECTIVE,
   CREATE_ENTITY,
   EveesDraftsLocal,
@@ -391,6 +390,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
+
+    const commit = await commitEntity(dataId);
 
     const createCommit = await client.mutate({
       mutation: CREATE_COMMIT,

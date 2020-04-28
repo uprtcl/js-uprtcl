@@ -97,18 +97,13 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   async showPullChanges() {
-    const updatesForPull = this.pullResult.actions
-      .filter(action => action.type === UPDATE_HEAD_ACTION)
-      .map(action => action.payload);
-
-    const confirm = await this.updatesDialog(updatesForPull, 'apply', 'close');
+    const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close');
 
     if (!confirm) {
-      await this.client.resetStore();
       return;
     }
 
-    this.mergePerspective(this.pullResult.actions);
+    this.applyWorkspace(this.pullWorkspace);
   }
 
   renderOtherPerspectives() {

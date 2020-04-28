@@ -20,7 +20,7 @@ import { mergeResult } from './utils';
 import { deriveEntity } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
 import { EveesWorkspace } from '../services/evees.workspace';
-import { getPerspectiveHead } from '../graphql/queries';
+import { getPerspectiveHead } from '../graphql/helpers';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
