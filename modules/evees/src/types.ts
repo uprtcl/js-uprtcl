@@ -1,12 +1,12 @@
 import { TemplateResult } from 'lit-element';
 
 import { Behaviour } from '@uprtcl/cortex';
-import { CASSource } from '@uprtcl/multiplatform';
+import { CASStore } from '@uprtcl/multiplatform';
 
 import { EveesRemote } from './services/evees.remote';
 import { Secured } from './utils/cid-hash';
 
-export type RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) => CASSource;
+export type RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) => CASStore;
 
 export const defaultRemoteMap: RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) =>
   eveesAuthority;

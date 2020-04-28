@@ -81,6 +81,26 @@ export const getPerspectiveData = async (client: ApolloClient<any>, perspectiveI
   return loadEntity(client, dataId);
 }
 
+export const getCommitData = async (client: ApolloClient<any>, commitId: string) => {
+  const result = await client.query({
+    query: gql`
+    {
+      entity(ref: "${commitId}") {
+        id
+        ... on Commit {
+          data {
+            id
+          }
+        }
+      }
+    }`
+  });
+
+  const dataId = result.data.entity.data.id;
+  return loadEntity(client, dataId);
+}
+
+
 // Creators
 
 export const createEntity = async (client: ApolloClient<any>, store: CASStore, object: any) => {
@@ -97,7 +117,7 @@ export const createEntity = async (client: ApolloClient<any>, store: CASStore, o
 
 export interface CreateCommit {
   dataId: string, 
-  parentsIds: string[], 
+  parentsIds?: string[], 
   creatorsIds?: string[], 
   message?: string, 
   timestamp?: number
@@ -111,13 +131,14 @@ export const createCommit = async (
   const message = commit.message !== undefined ? commit.message : '';
   const timestamp = commit.timestamp !== undefined ? commit.timestamp : Date.now();
   const creatorsIds = commit.creatorsIds !== undefined ? commit.creatorsIds : [];
-
+  const parentsIds = commit.parentsIds !== undefined ? commit.parentsIds : [];
+  
   const commitData: Commit = {
     creatorsIds: creatorsIds,
     dataId: commit.dataId,
     message: message,
     timestamp: timestamp,
-    parentsIds: commit.parentsIds
+    parentsIds: parentsIds
   };
 
   const commitEntity = deriveSecured(commitData, store.cidConfig);

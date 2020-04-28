@@ -143,7 +143,11 @@ export class TextNodeCommon
       config
     );
 
-    return mergedLinks;
+    return {
+      text: resultText,
+      type: resultType,
+      links: mergedLinks
+    }
   };
 }
 

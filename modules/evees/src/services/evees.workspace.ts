@@ -14,8 +14,8 @@ export class EveesWorkspace {
 
   private workspace: ApolloClient<any>;
 
-  constructor(protected recognizer: PatternRecognizer, protected client: ApolloClient<any>) {
-    this.workspace = this.buildWorkspace(this.client);
+  constructor(protected recognizer: PatternRecognizer, client: ApolloClient<any>) {
+    this.workspace = this.buildWorkspace(client);
   }
 
   private buildWorkspace(client: ApolloClient<any>): ApolloClient<any> {
@@ -100,7 +100,7 @@ export class EveesWorkspace {
   private cacheCreateEntity(entity: Entity<any>) {
     const type = this.recognizer.recognizeType(entity);
 
-    this.client.writeQuery({
+    this.workspace.writeQuery({
       query: gql`{
         entity(ref: "${entity.id}") {
           __typename

@@ -21,7 +21,8 @@ import {
   CREATE_PERSPECTIVE,
   CREATE_ENTITY,
   EveesDraftsLocal,
-  MenuConfig
+  MenuConfig,
+  createCommit
 } from '@uprtcl/evees';
 import { loadEntity, CASSource, CASStore } from '@uprtcl/multiplatform';
 
@@ -384,28 +385,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     parentsIds?: string[],
     message?: string
   ): Promise<string> {
-    const client = this.client as ApolloClient<any>;
-
-    const objectId = await this.createEntity(content, authority);
+    const dataId = await this.createEntity(content, authority);
 
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const commit = await commitEntity(dataId);
-
-    const createCommit = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: objectId,
-        parentsIds,
-        casID: remote.casID,
-        message: message !== undefined ? message : ''
-      }
-    });
-
-    if (LOGINFO) this.logger.info('createCommit()', { content });
-
-    return createCommit.data.createCommit.id;
+    return await createCommit(this.client, remote, { dataId, parentsIds });
   }
 
   async updateEvee(node: DocNode, message?: string): Promise<void> {

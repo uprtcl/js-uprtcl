@@ -13,7 +13,7 @@ import {
 import { Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Commit, Perspective, NewProposal } from '../types';
+import { Commit, Perspective, NewProposal, NewPerspectiveData } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';

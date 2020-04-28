@@ -526,7 +526,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.updatesDialogEl.secondaryText = secondaryText;
     
     this.eveesDiffEl.workspace = workspace;
-    
+
     this.showUpdatesDialog = true;
 
     await this.updateComplete;

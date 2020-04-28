@@ -3,119 +3,72 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { PatternRecognizer, CortexModule, Entity } from '@uprtcl/cortex';
+import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
-import { UpdateRequest, HasDiffLenses } from '../types';
-import { loadEntity } from '@uprtcl/multiplatform';
+import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
+
+import { EveesWorkspace } from '../uprtcl-evees';
+import { getCommitData } from '../graphql/helpers';
 
 const LOGINFO = true;
 
-export interface NodeDiff {
-  toRef: string;
-  fromRef?: string;
-  oldData: Entity<any>;
-  newData: Entity<any>;
-  hasDiffLenses: HasDiffLenses;
+interface UpdateDetails {
+  update: UpdateRequest,
+  newData: any,
+  oldData: any,
+  diffLense: DiffLens
 }
 
 export class EveesDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ attribute: false })
-  updates: UpdateRequest[] = [];
+  workspace!: EveesWorkspace;
 
   @property({ attribute: false })
   loading: boolean = true;
 
-  nodes: Dictionary<NodeDiff> = {};
+  updatesDetails: Dictionary<UpdateDetails> = {};
 
   protected client!: ApolloClient<any>;
   protected recognizer!: PatternRecognizer;
 
   async firstUpdated() {
-    this.logger.log('firstUpdated()', { updates: this.updates });
+    this.logger.log('firstUpdated()');
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
-    this.loadNodes();
+    this.loadUpdates();
   }
 
-  async updated(changedProperties) {
-    this.logger.log('updated()', { updates: this.updates, changedProperties });
-  }
-
-  async loadNodes() {
+  async loadUpdates() {
     this.loading = true;
 
-    const update = this.updates.map(update => this.loadUpdate(update));
-    await Promise.all(update);
+    const getDetails = this.workspace.getUpdates().map(async (update) => {
+      const newData = await getCommitData(this.client, update.newHeadId); 
+      const oldData = await getCommitData(this.client, update.newHeadId); 
+
+      const hasDiffLenses = this.recognizer.recognizeBehaviours(oldData).find(b => (b as HasDiffLenses<any>).diffLenses);
+      if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
+
+      this.updatesDetails[update.perspectiveId] = {
+        diffLense: hasDiffLenses.diffLenses()[0],
+        update,
+        oldData,
+        newData
+      } 
+    });
+
+    await Promise.all(getDetails);
 
     this.loading = false;
   }
 
-
-  async loadUpdate(update: UpdateRequest): Promise<void> {
-    const resultNew = await this.client.query({
-      query: gql`
-      {
-        entity(ref: "${update.newHeadId}") {
-          id 
-          ... on Commit {
-            data {
-              id
-            }
-          }
-        }
-      }`
-    });
-
-    const newDataId = resultNew.data.entity.data.id;
-    const newData = await loadEntity(this.client, newDataId);
-
-    if (!newData) throw new Error('data undefined');
-
-    const resultOld = await this.client.query({
-      query: gql`
-      {
-        entity(ref: "${update.oldHeadId}") {
-          id 
-          ... on Commit {
-            data {
-              id
-            }
-          }
-        }
-      }`
-    });
-
-    const oldDataId = resultOld.data.entity.data.id;
-    const oldData = await loadEntity(this.client, oldDataId);
-
-    if (!oldData) throw new Error('data undefined');
-
-    const hasDiffLenses = this.recognizer.recognizeBehaviours(newData).find(b => (b as HasDiffLenses<any>).diffLenses);
-    if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
-
-    const node: NodeDiff = {
-      toRef: update.perspectiveId,
-      fromRef: update.fromPerspectiveId,
-      newData,
-      oldData,
-      hasDiffLenses
-    };
-
-    if (LOGINFO) this.logger.log('loadNode()', { update, node });
-    this.nodes[update.perspectiveId] = node;
-  }
-
-  renderUpdatedDiff(ref: string) {
+  renderUpdateDiff(details: UpdateDetails) {
     // TODO: review if old data needs to be
-    const node = this.nodes[ref];
-
-    const nodeLense = node.hasDiffLenses.diffLenses()[0];
     return html`
       <div class="evee-diff">
-        ${nodeLense.render(node.newData, node.oldData)}
+        ${details.diffLense.render(details.newData, details.oldData)}
       </div>
     `;
   }
@@ -127,9 +80,10 @@ export class EveesDiff extends moduleConnect(LitElement) {
       `;
     }
 
-    return this.updates.length === 0 ? 
+    const perspectiveIds = Object.keys(this.updatesDetails);
+    return perspectiveIds.length === 0 ? 
         html`<span><i>no changes found</i></span>` : 
-        this.updates.map(update => this.renderUpdatedDiff(update.perspectiveId));
+        perspectiveIds.map(perspectiveId => this.renderUpdateDiff(this.updatesDetails[perspectiveId]));
   }
 
   static get styles() {

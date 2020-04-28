@@ -28,7 +28,7 @@ import {
   getPerspectiveData
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CASSource, loadEntity } from '@uprtcl/multiplatform';
+import { CASSource, loadEntity, CASStore } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
@@ -47,13 +47,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
 
   @property({ type: String, attribute: 'ref' })
-  firstRef: string | undefined = undefined;
+  firstRef!: string;
 
   @property({ type: String, attribute: 'default-authority' })
-  defaultAuthority: string | undefined = undefined;
+  defaultAuthority!: string;
 
   @property({ attribute: false })
-  ref: string | undefined = undefined;
+  ref!: string;
 
   @property({ attribute: false })
   wiki: Entity<Wiki> | undefined;
@@ -204,7 +204,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
-  getStore(authority: string, type: string): CASSource | undefined {
+  getStore(authority: string, type: string): CASStore | undefined {
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
     return this.remoteMap(remote);
@@ -221,7 +221,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!store) throw new Error('store is undefined');
 
     const dataId = await createEntity(this.client, store, page);
-    const headId = await createCommit(this.client, remote, dataId, []);
+    const headId = await createCommit(this.client, remote, { dataId, parentsIds: [] });
     return createPerspective(this.client, remote, { headId, context: `${this.context}_${Date.now()}` });
   }
 
@@ -233,7 +233,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
     const dataId = await createEntity(this.client, store, newWiki);
-    const headId = await createCommit(this.client, remote, dataId, []);
+    const headId = await createCommit(this.client, remote, { dataId, parentsIds: [] });
     await updateHead(this.client, this.ref, headId)
 
     this.logger.info('updateContent()', newWiki);
