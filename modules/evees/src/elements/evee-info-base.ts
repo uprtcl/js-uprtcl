@@ -40,10 +40,10 @@ import { EveesHelpers } from '../graphql/helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
-import { EveesRemote } from 'src/uprtcl-evees';
+import { EveesRemote } from '../uprtcl-evees';
 
 import { EveesDialog } from './common-ui/evees-dialog';
-import { EveesWorkspace } from 'src/services/evees.workspace';
+import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDiff } from './evees-diff';
 
 interface PerspectiveData {

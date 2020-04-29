@@ -3,14 +3,14 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Proposal, UpdateRequest } from '../types';
+import { Proposal } from '../types';
 import { styleMap } from './evees-info-popper';
-import { prettyTime, prettyAddress, eveeColor } from './support';
+import { prettyAddress, eveeColor } from './support';
 
 export const DEFAULT_COLOR = '#d0dae0';
 import '@material/mwc-dialog';
 import '@material/mwc-button';
-import { EveesWorkspace } from 'src/services/evees.workspace';
+import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDialog } from './common-ui/evees-dialog';
 import { EveesDiff } from './evees-diff';
 

@@ -24,12 +24,12 @@ import {
   EveesHelpers
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CASSource, loadEntity, CASStore } from '@uprtcl/multiplatform';
+import { CASStore } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
 import '@material/mwc-drawer';
-import { WikiBindings } from 'src/bindings';
+import { WikiBindings } from '../bindings';
 
 const LOGINFO = false;
 const MAX_LENGTH = 999;

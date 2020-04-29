@@ -2,7 +2,7 @@ import { interfaces } from 'inversify';
 
 import { LoadEntityDirective } from './load-entity-directive';
 import { Entity, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
-import { ResolveEntity } from 'src/behaviours/resolve-entity';
+import { ResolveEntity } from '../../behaviours/resolve-entity';
 
 export class DiscoverDirective extends LoadEntityDirective {
   protected async resolveEntity(

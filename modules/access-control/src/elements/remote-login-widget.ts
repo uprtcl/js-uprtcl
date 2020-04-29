@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from "@uprtcl/micro-orchestrator";
-import { AccessControlModule } from 'src/access-control.module';
+import { AccessControlModule } from '../access-control.module';
 import { Authority } from '../types/authority';
 
 export class RemoteLoginWidget extends moduleConnect(LitElement) {

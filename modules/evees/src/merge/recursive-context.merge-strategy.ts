@@ -6,14 +6,7 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { HasChildren } from '@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import {
-  Commit,
-  UpdateRequest
-} from '../types';
-import { deriveEntity } from '../utils/cid-hash';
-import { EveesBindings } from '../bindings';
-import { Evees, deriveSecured } from '../uprtcl-evees';
-import { EveesWorkspace } from 'src/services/evees.workspace';
+import { EveesWorkspace } from '../services/evees.workspace';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
