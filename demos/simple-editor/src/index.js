@@ -40,14 +40,12 @@ import { SimpleWiki } from './simple-wiki';
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
 
-  const lenses = new LensesModule();
-
   const modules = [
     new i18nextBaseModule(),
     new ApolloClientModule(),
     new CortexModule(),
     new DiscoveryModule(),
-    lenses,
+    new LensesModule(),
     new AccessControlModule(),
     evees,
     documents,
