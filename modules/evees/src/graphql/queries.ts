@@ -53,37 +53,6 @@ export const CREATE_ENTITY: DocumentNode = gql`
   }
 `;
 
-export const CREATE_COMMIT: DocumentNode = gql`
-  mutation CreateCommit(
-    $dataId: ID!
-    $parentsIds: [ID!]!
-    $creatorsIds: [String]
-    $message: String
-    $casID: String!
-    $timestamp: Date
-  ) {
-    createCommit(
-      dataId: $dataId
-      parentsIds: $parentsIds
-      creatorsIds: $creatorsIds
-      message: $message
-      casID: $casID
-      timestamp: $timestamp
-    ) {
-      id
-      creatorsIds
-      data {
-        id
-      }
-      parentCommits {
-        id
-      }
-      message
-      timestamp
-    }
-  }
-`;
-
 export const CREATE_PERSPECTIVE: DocumentNode = gql`
   mutation CreatePerspective(
     $authority: String!

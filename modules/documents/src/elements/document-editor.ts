@@ -11,22 +11,21 @@ export const styleMap = style => {
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { HasChildren, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import {
   EveesRemote,
   EveesModule,
   UPDATE_HEAD,
   RemoteMap,
   ContentUpdatedEvent,
-  CREATE_COMMIT,
   CREATE_PERSPECTIVE,
   CREATE_ENTITY,
   EveesDraftsLocal,
-  MenuConfig
+  MenuConfig,
+  EveesHelpers
 } from '@uprtcl/evees';
-import { loadEntity, CASSource, CASStore } from '@uprtcl/multiplatform';
+import { loadEntity, CASStore } from '@uprtcl/multiplatform';
 
-import { TextType, DocNode, TextNode } from '../types';
+import { TextType, DocNode } from '../types';
 import { HasDocNodeLenses } from '../patterns/document-patterns';
 import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
@@ -44,6 +43,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   editable: string = 'true';
 
+  @property({ attribute: false })
+  client!: ApolloClient<any>;
+
   @property({ type: Object, attribute: false })
   doc!: DocNode;
 
@@ -56,7 +58,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
-  protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
   protected remotesMap!: RemoteMap;
   protected recognizer!: PatternRecognizer;
@@ -64,7 +65,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   draftService = new EveesDraftsLocal();
 
   firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.remotesMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
@@ -80,9 +80,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (changedProperties.has('ref')) {
       this.loadDoc();
     }
+    if (changedProperties.has('client')) {
+      this.loadDoc();
+    }
   }
 
   async loadDoc() {
+    if (!this.client) return;
+    
     if (LOGINFO) this.logger.log('loadDoc()', this.ref);
 
     if (!this.ref) return;
@@ -113,7 +118,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return node;
   }
 
-  async entityToNode(entity: Entity<any>, parent?: DocNode, ix?: number) {
+  async refToNode(ref: string, parent?: DocNode, ix?: number) {
+
+    const entity = await loadEntity(this.client, ref);
+    if (!entity) throw Error(`Entity not found ${ref}`);
 
     let entityType: string = this.recognizer.recognizeType(entity);
     
@@ -124,62 +132,30 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     let headId!: string;
 
     if (entityType === EveesModule.bindings.PerspectiveType) {
-      const result = await this.client.query({
-        query: gql`
-        {
-          entity(ref: "${entity.id}") {
-            id
-            ... on Perspective {
-              head {
-                id 
-                ... on Commit {
-                  data {
-                    id
-                  }
-                }
-              }
-              context {
-                id
-              }
-            }
-            _context {
-              object
-              patterns {
-                accessControl {
-                  canWrite
-                }
-              }
-            }
-          }
-        }`
-      });
-      const payload = result.data.entity._context.object.payload;
-      editable = result.data.entity._context.patterns.accessControl.canWrite;
-      authority = payload.authority;
-      context = result.data.entity.context.id;
-      dataId = result.data.entity.head.data.id;
-      headId = result.data.entity.head.id;
+      
+      authority = await EveesHelpers.getPerspectiveAuthority(this.client, entity.id);
+
+      if (this.editable === 'true'){
+        const accessControl = await EveesHelpers.getAccessControl(this.client, entity.id);
+        editable = accessControl.canWrite;
+        context = await EveesHelpers.getPerspectiveContext(this.client, entity.id);
+        headId = await EveesHelpers.getPerspectiveHeadId(this.client, entity.id);
+        dataId = await EveesHelpers.getCommitDataId(this.client, headId);
+      } else {
+        editable = false;
+        dataId = await EveesHelpers.getPerspectiveDataId(this.client, entity.id);
+        context = '';
+        headId = '';
+      }
+      
+      
     } else {
       if (entityType === 'Commit') {
         if (!parent) throw new Error('Commit must have a parent');
   
-        const result = await this.client.query({
-          query: gql`
-          {
-            entity(ref: "${entity.id}") {
-              id
-              ... on Commit {
-                data {
-                  id
-                }
-              }
-            }
-          }`
-        });
-  
         editable = parent.editable;
         authority = parent.authority;
-        dataId = result.data.entity.data.id;
+        dataId = await EveesHelpers.getCommitDataId(this.client, entity.id);
         headId = this.ref;
       } else {
         entityType = 'Data';
@@ -241,9 +217,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       const draft = await this.draftService.getDraft(ref);  
       node = this.draftToPlaceholder(draft, parent, ix);
     } else {
-      const entity = await loadEntity(this.client, ref);
-      if (!entity) throw Error(`Entity not found ${ref}`);
-      node = await this.entityToNode(entity, parent, ix);
+      node = await this.refToNode(ref, parent, ix);
 
       /** initialize draft */
       const draft = await this.draftService.getDraft(ref);  
@@ -264,7 +238,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     };
   }
 
-  getStore(eveesAuthority: string, type: string): CASSource {
+  getStore(eveesAuthority: string, type: string): CASStore {
     if (!this.remotesMap) throw new Error('remotes config undefined');
     const remote = this.eveesRemotes.find(r => r.authority === eveesAuthority);
 
@@ -385,26 +359,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     parentsIds?: string[],
     message?: string
   ): Promise<string> {
-    const client = this.client as ApolloClient<any>;
-
-    const objectId = await this.createEntity(content, authority);
+    const dataId = await this.createEntity(content, authority);
 
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const createCommit = await client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: objectId,
-        parentsIds,
-        casID: remote.casID,
-        message: message !== undefined ? message : ''
-      }
-    });
-
-    if (LOGINFO) this.logger.info('createCommit()', { content });
-
-    return createCommit.data.createCommit.id;
+    return await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds });
   }
 
   async updateEvee(node: DocNode, message?: string): Promise<void> {

@@ -14630,11 +14630,36 @@
           ],
           "name": "PerspectiveCreated",
           "type": "event"
+        },
+        "0xfb5827bd51db989dc5cb76bb9d0c88277de2389aa0d547b0a87fe23f97591011": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "perspectiveIdHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "headCid1",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "headCid0",
+              "type": "bytes32"
+            }
+          ],
+          "name": "PerspectiveHeadUpdated",
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0x5201F2354EE5CDBbcbda4E47B075dA29f2f53108",
-      "transactionHash": "0x2bca7e372211dcb888ebea51fad95c51752c712a782c1166f7790dd5bfc190f4"
+      "address": "0x44dEe9fc5b694672C8008f85F3a7BBEfEbE75A5e",
+      "transactionHash": "0x9f0ba6925f02c366c48ff98205768f29ed04d204240174f786202a8c75cfc40a"
     },
     "42": {
       "events": {
@@ -14700,8 +14725,7 @@
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+          "type": "event"
         },
         "0x9096b4564a2bafa0ceef5b1e2a3726b6c688e97d8231050b488716d3c5d06328": {
           "anonymous": false,
@@ -14720,8 +14744,7 @@
             }
           ],
           "name": "PerspectiveCreated",
-          "type": "event",
-          "signature": "0x9096b4564a2bafa0ceef5b1e2a3726b6c688e97d8231050b488716d3c5d06328"
+          "type": "event"
         },
         "0xfb5827bd51db989dc5cb76bb9d0c88277de2389aa0d547b0a87fe23f97591011": {
           "anonymous": false,
@@ -14746,8 +14769,7 @@
             }
           ],
           "name": "PerspectiveHeadUpdated",
-          "type": "event",
-          "signature": "0xfb5827bd51db989dc5cb76bb9d0c88277de2389aa0d547b0a87fe23f97591011"
+          "type": "event"
         }
       },
       "links": {},
@@ -14755,8 +14777,9 @@
       "transactionHash": "0xa88e02bd8468e8657098edd69ed931f53b481ad3ebb72e2062df08372d8dad17"
     }
   },
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2020-04-22T19:40:01.610Z",
+  "schemaVersion": "3.0.23",
+  "updatedAt": "2020-04-28T16:12:24.542Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {
       "isOwner()": {

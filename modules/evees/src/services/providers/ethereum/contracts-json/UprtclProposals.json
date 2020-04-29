@@ -25900,11 +25900,103 @@
           ],
           "name": "ProposalCreated",
           "type": "event"
+        },
+        "0x767a7e7936e539a742cd167c602bcca46c55ab47f49b2660c3a1bc7dcafc1b96": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "proposalId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "perspectiveIdHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "fromPerspectiveId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "fromHeadId",
+              "type": "string"
+            }
+          ],
+          "name": "HeadUpdateAdded",
+          "type": "event"
+        },
+        "0x887b6b2688e70065ea92520acf8e6153a2cf80b2ec02264d0efbc097db7b0166": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "toPerspectiveIdHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "fromPerspectiveIdHash",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "proposalId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "toPerspectiveId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "fromPerspectiveId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "toHeadId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "fromHeadId",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "creator",
+              "type": "address"
+            }
+          ],
+          "name": "ProposalCreated",
+          "type": "event"
         }
       },
       "links": {},
-      "address": "0x5E83DEA4CD0bf67d55622f68657d92F2f81f24ca",
-      "transactionHash": "0x0c0e30615839c550e5d58df01cf4ab4da8843077e1af135ac20c1d346a1ce43e"
+      "address": "0xEf90E59bee53FAB3180bC75d883BECa3b72f6407",
+      "transactionHash": "0xaa59f119f55eaee25e92ebce42b8cd1ece37afd73d5fdddd33f5fd21a4226633"
     },
     "42": {
       "events": {
@@ -25982,8 +26074,7 @@
             }
           ],
           "name": "OwnershipTransferred",
-          "type": "event",
-          "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+          "type": "event"
         },
         "0x7172667a4024e27a0d3a896c8ba72947ebed1a0bb37d5c6aaff808c4f6b574ef": {
           "anonymous": false,
@@ -26075,8 +26166,7 @@
             }
           ],
           "name": "ProposalCreated",
-          "type": "event",
-          "signature": "0x887b6b2688e70065ea92520acf8e6153a2cf80b2ec02264d0efbc097db7b0166"
+          "type": "event"
         },
         "0x767a7e7936e539a742cd167c602bcca46c55ab47f49b2660c3a1bc7dcafc1b96": {
           "anonymous": false,
@@ -26107,8 +26197,7 @@
             }
           ],
           "name": "HeadUpdateAdded",
-          "type": "event",
-          "signature": "0x767a7e7936e539a742cd167c602bcca46c55ab47f49b2660c3a1bc7dcafc1b96"
+          "type": "event"
         }
       },
       "links": {},
@@ -26116,8 +26205,9 @@
       "transactionHash": "0xd244192b3818d045bf14367b102f9dfbac88d4c140ab513eea8769c94b15e1cb"
     }
   },
-  "schemaVersion": "3.0.11",
-  "updatedAt": "2020-04-22T19:40:01.625Z",
+  "schemaVersion": "3.0.23",
+  "updatedAt": "2020-04-28T16:12:24.567Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {
       "isOwner()": {

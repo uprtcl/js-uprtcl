@@ -99,7 +99,7 @@ export const bytes32ToCid = (bytes) => {
   return cid.toBaseEncodedString(multibaseName);
 }
 
-export const getPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
+export const getEthPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
   const events = await uprtclRoot.getPastEvents('PerspectiveHeadUpdated', {
     filter: { perspectiveIdHash: perspectiveIdHash },
     fromBlock: 0
@@ -115,7 +115,7 @@ export const getPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
   }
 }
 
-export const getPerspectiveContext = async (uprtclDetails, perspectiveIdHash) => {
+export const getEthPerspectiveContext = async (uprtclDetails, perspectiveIdHash) => {
   const events = await uprtclDetails.getPastEvents('PerspectiveDetailsSet', {
     filter: { perspectiveIdHash: perspectiveIdHash },
     fromBlock: 0

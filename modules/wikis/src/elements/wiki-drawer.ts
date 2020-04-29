@@ -20,19 +20,16 @@ import {
   EveesModule,
   eveeColor,
   DEFAULT_COLOR,
-  UPDATE_HEAD,
-  CREATE_COMMIT,
-  CREATE_PERSPECTIVE,
-  CREATE_ENTITY,
-  RemoteMap
+  RemoteMap,
+  EveesHelpers
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CASSource, loadEntity } from '@uprtcl/multiplatform';
+import { CASStore } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
 import '@material/mwc-drawer';
-import { WikiBindings } from 'src/bindings';
+import { WikiBindings } from '../bindings';
 
 const LOGINFO = false;
 const MAX_LENGTH = 999;
@@ -46,21 +43,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
 
   @property({ type: String, attribute: 'ref' })
-  firstRef: string | undefined = undefined;
+  firstRef!: string;
 
   @property({ type: String, attribute: 'default-authority' })
-  defaultAuthority: string | undefined = undefined;
+  defaultAuthority!: string;
 
-  @property({ type: String, attribute: false })
-  ref: string | undefined = undefined;
+  @property({ attribute: false })
+  ref!: string;
 
-  @property({ type: Object, attribute: false })
+  @property({ attribute: false })
   wiki: Entity<Wiki> | undefined;
 
   @property({ type: Number })
   selectedPageIx: number | undefined = undefined;
 
-  @property({ type: Object, attribute: false })
+  @property({ attribute: false })
   pagesList: PageData[] | undefined = undefined;
 
   authority: string = '';
@@ -79,10 +76,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     
-    this.ref = this.firstRef;
-
     this.logger.log('firstUpdated()', { ref: this.ref });
 
+    this.ref = this.firstRef;
     this.loadWiki();
   }
 
@@ -168,28 +164,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const pagesListPromises = this.wiki.object.pages.map(
       async (pageId):Promise<PageData> => {
-        if (!this.client) throw new Error('client is undefined');
-        const result = await this.client.query({
-          query: gql`
-          {
-            entity(ref: "${pageId}") {
-              id
-              ... on Perspective {
-                head {
-                  id 
-                  ... on Commit {
-                    data {
-                      id
-                    }
-                  }
-                }
-              }
-            }
-          }`
-        });
-
-      const dataId = result.data.entity.head.data.id;
-      const data = await loadEntity(this.client, dataId);
+      
+      const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
       const hasTitle: HasTitle = this.recognizer
         .recognizeBehaviours(data)
         .find(b => (b as HasTitle).title);
@@ -224,7 +200,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
-  getStore(authority: string, type: string): CASSource | undefined {
+  getStore(authority: string, type: string): CASStore | undefined {
     const remote = this.eveesRemotes.find(r => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
     return this.remoteMap(remote);
@@ -240,74 +216,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const store = this.getStore(authority, DocumentsModule.bindings.TextNodeType);
     if (!store) throw new Error('store is undefined');
 
-    const createTextNode = await this.client.mutate({
-      mutation: CREATE_ENTITY,
-      variables: {
-        object: page,
-        casID: store.casID
-      }
-    });
-
-    const createCommit = await this.client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: createTextNode.data.createEntity.id,
-        parentsIds: [],
-        casID: remote.casID
-      }
-    });
-
-    const headId = createCommit.data.createCommit.id;
-
-    const createPerspective = await this.client.mutate({
-      mutation: CREATE_PERSPECTIVE,
-      variables: {
-        authority: this.authority,
-        headId: headId,
-        parentId: this.ref,
-        context: `${this.context}_${Date.now()}`,
-        casID: remote.casID
-      }
-    });
-
-    return createPerspective.data.createPerspective.id;
+    const dataId = await EveesHelpers.createEntity(this.client, store, page);
+    const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [this.currentHeadId ? this.currentHeadId : ''] });
+    return EveesHelpers.createPerspective(this.client, remote, { headId, context: `${this.context}_${Date.now()}` });
   }
 
   async updateContent(newWiki: Wiki) {
     const store = this.getStore(this.authority, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const createWiki = await this.client.mutate({
-      mutation: CREATE_ENTITY,
-      variables: {
-        object: newWiki,
-        casID: store.casID
-      }
-    });
-
     const remote = this.eveesRemotes.find(r => r.authority === this.authority);
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
-    const createCommit = await this.client.mutate({
-      mutation: CREATE_COMMIT,
-      variables: {
-        dataId: createWiki.data.createEntity.id,
-        parentsIds: this.currentHeadId ? [this.currentHeadId] : [],
-        casID: remote.casID
-      }
-    });
-
-    const headId = createCommit.data.createCommit.id;
-
-    await this.client.mutate({
-      mutation: UPDATE_HEAD,
-      variables: {
-        perspectiveId: this.ref,
-        headId: headId
-      }
-    });
-
-    this.currentHeadId = headId;
+    const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
+    const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [this.currentHeadId ? this.currentHeadId : ''] });
+    await EveesHelpers.updateHead(this.client, this.ref, headId)
 
     this.logger.info('updateContent()', newWiki);
 
@@ -412,6 +335,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       this.ref = event.detail.perspectiveId;
+      this.pagesList = undefined;
+      this.editable = false;
+      this.loadWiki();
     }) as EventListener);
   }
 

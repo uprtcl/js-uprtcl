@@ -7,17 +7,17 @@ import {
   CASStore,
   CASModule,
   KnownSourcesSource,
-  EntityCache
+  EntityCache,
+  KnownSourcesService
 } from '@uprtcl/multiplatform';
-import { Entity, Signed } from '@uprtcl/cortex';
+import { Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Commit, Perspective, NewProposal } from '../types';
+import { Commit, Perspective, NewProposal, NewPerspectiveData } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
-import { NewPerspectiveData } from '../services/evees.provider';
 import { Secured } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
 
@@ -47,8 +47,22 @@ export const eveesResolvers: IResolvers = {
       const context = typeof parent === 'string' ? parent : parent.context;
 
       const evees: Evees = container.get(EveesBindings.Evees);
+      const eveesRemotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
+      const knownSources: KnownSourcesService = container.get(
+        DiscoveryModule.bindings.LocalKnownSources
+      );
 
-      return evees.getContextPerspectives(context);
+      const promises = eveesRemotes.map(async remote => {
+        const thisPerspectivesIds = await remote.getContextPerspectives(context);
+        thisPerspectivesIds.forEach(pId => {
+          knownSources.addKnownSources(pId, [remote.casID], EveesBindings.PerspectiveType);
+        });
+        return thisPerspectivesIds;
+      });
+
+      const perspectivesIds = await Promise.all(promises);
+
+      return ([] as string[]).concat(...perspectivesIds);
     }
   },
   UpdateProposal: {
@@ -100,7 +114,7 @@ export const eveesResolvers: IResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = evees.getPerspectiveProvider(parent);
-      
+
       const details = await remote.getPerspectiveDetails(parent.id);
 
       return details && details.context;
@@ -315,7 +329,7 @@ export const eveesResolvers: IResolvers = {
         fromHeadId,
         toHeadId,
         updates: updateRequests
-      }
+      };
       const proposalId = await remote.proposals.createProposal(proposal);
 
       return {

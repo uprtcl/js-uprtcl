@@ -3,9 +3,8 @@ import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Entity, HasChildren, recognizeEntity } from '@uprtcl/cortex';
-import { MergeStrategy, mergeStrings, UprtclAction, Merge, HasDiffLenses, DiffLens } from '@uprtcl/evees';
+import { MergeStrategy, mergeStrings, Merge, HasDiffLenses, DiffLens, EveesWorkspace } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
-import { NodeActions } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
@@ -41,9 +40,10 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
   merge = (originalNode: Entity<Wiki>) => async (
     modifications: Entity<Wiki>[],
     mergeStrategy: MergeStrategy,
+    workspace: EveesWorkspace,
     config
-  ): Promise<NodeActions<Wiki>> => {
-    const resultTitle = mergeStrings(
+  ): Promise<Wiki> => {
+    const mergedTitle = mergeStrings(
       originalNode.object.title,
       modifications.map(data => data.object.title)
     );
@@ -52,17 +52,13 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
       modifications.map(data => data.object.pages),
+      workspace,
       config
     );
 
-    const allActions = ([] as UprtclAction[]).concat(...mergedPages.map(node => node.actions));
-    
     return {
-      new: {
-        pages: mergedPages.map(node => node.new),
-        title: resultTitle
-      },
-      actions: allActions
+      title: mergedTitle,
+      pages: mergedPages
     };
   };
 }
@@ -96,10 +92,11 @@ export class WikiCommon implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity
       {
         name: 'wikis:wiki-diff',
         type: 'diff',
-        render: (newEntity: Entity<Wiki>, oldEntity: Entity<Wiki>) => {
+        render: (workspace: EveesWorkspace, newEntity: Entity<Wiki>, oldEntity: Entity<Wiki>) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <wiki-diff
+              .workspace=${workspace}
               .newData=${newEntity}
               .oldData=${oldEntity}>
             </wiki-diff>

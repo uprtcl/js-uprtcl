@@ -4,6 +4,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Entity } from '@uprtcl/cortex';
 
 import { TextNode } from '../types';
+import { EveesWorkspace } from '@uprtcl/evees';
 
 const LOGINFO = true;
 
@@ -12,10 +13,13 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ attribute: false })
-  newData?: Entity<TextNode>;
+  workspace!: EveesWorkspace;
 
   @property({ attribute: false })
-  oldData?: Entity<TextNode>;
+  newData!: Entity<TextNode>;
+
+  @property({ attribute: false })
+  oldData!: Entity<TextNode>;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', { newData: this.newData, oldData: this.oldData });
@@ -31,10 +35,10 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
     return html`
       <div class="page-edited-title">Page Updated</div>
       <div class="document-container old-page">
-        <documents-editor ref=${this.oldData.id}></documents-editor>
+        <documents-editor .client=${this.workspace.workspace} ref=${this.oldData.id}></documents-editor>
       </div>
       <div class="document-container new-page">
-        <documents-editor ref=${this.newData.id}></documents-editor>
+        <documents-editor .client=${this.workspace.workspace} ref=${this.newData.id}></documents-editor>
       </div>
     `;
   }

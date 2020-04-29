@@ -4,9 +4,8 @@ import { EntryResult, HolochainProvider, parseEntriesResults } from '@uprtcl/hol
 import { Signed, Entity } from '@uprtcl/cortex';
 import { KnownSourcesService, defaultCidConfig } from '@uprtcl/multiplatform';
 
-import { Perspective, Commit, PerspectiveDetails } from '../../../types';
+import { Perspective, Commit, PerspectiveDetails, NewPerspectiveData } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
-import { NewPerspectiveData } from '../../evees.provider';
 import { Secured } from '../../../utils/cid-hash';
 import { parseResponse } from '@uprtcl/holochain-provider';
 

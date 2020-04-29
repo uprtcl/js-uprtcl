@@ -1,15 +1,18 @@
 import { ApolloClient, gql } from 'apollo-boost';
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html, css, query } from 'lit-element';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Proposal, UpdateRequest } from '../types';
+import { Proposal } from '../types';
 import { styleMap } from './evees-info-popper';
-import { prettyTime, prettyAddress, eveeColor } from './support';
+import { prettyAddress, eveeColor } from './support';
 
 export const DEFAULT_COLOR = '#d0dae0';
 import '@material/mwc-dialog';
 import '@material/mwc-button';
+import { EveesWorkspace } from '../services/evees.workspace';
+import { EveesDialog } from './common-ui/evees-dialog';
+import { EveesDiff } from './evees-diff';
 
 interface PerspectiveData {
   id: string;
@@ -37,39 +40,42 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'first-perspective-id' })
   firstPerspectiveId!: string;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   loadingPerspectives: boolean = true;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   loadingProposals: boolean = true;
 
   perspectivesData: PerspectiveData[] = [];
 
-  @property({ type: Array, attribute: false })
+  @property({ attribute: false })
   acceptedPerspectiveData?: PerspectiveData;
   
-  @property({ type: Array, attribute: false })
+  @property({ attribute: false })
   pendingProposals: Proposal[] = [];
 
-  @property({ type: Array, attribute: false })
+  @property({ attribute: false })
   otherPerspectivesData: PerspectiveData[] = [];
 
-  @property({ type: Array, attribute: false })
+  @property({ attribute: false })
   mergedProposals: Proposal[] = [];
 
-  @property({ type: String, attribute: false })
+  @property({ attribute: false })
   canWrite: Boolean = false;
 
-  @property({ type: String, attribute: false })
+  @property({ attribute: false })
   showDiff: Boolean = false;
 
-  @property({ type: Object, attribute: false })
-  updatesForDiff: UpdateRequest[] | undefined = undefined;
-
-  @property({ type: String, attribute: 'force-update' })
+  @property({ attribute: 'force-update' })
   forceUpdate: string = 'true';
 
-  protected client: ApolloClient<any> | undefined = undefined;
+  @query('#updates-dialog')
+  updatesDialogEl!: EveesDialog;
+
+  @query('#evees-update-diff')
+  eveesDiffEl!: EveesDiff;
+
+  protected client!: ApolloClient<any>;
   
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -249,11 +255,27 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     this.logger.info('getProposals()', { proposals });
   };
 
-  showProposalChanges(proposal: Proposal) {
-    this.updatesForDiff = proposal.updates;
-    this.showDiff = true;
-    this.logger.log('Show changes for', this, proposal);
+  async showProposalChanges(proposal: Proposal) {
+
+    const workspace = new EveesWorkspace(this.client);
+    if (proposal.updates) {
+      for (const update of proposal.updates) {
+        workspace.update(update);
+      }
+    }
     
+    this.showDiff = true;
+    await this.updateComplete;
+    
+    this.eveesDiffEl.workspace = workspace;
+    this.updatesDialogEl.primaryText = 'close';
+    
+    return new Promise((resolve) => {
+      this.updatesDialogEl.resolved = (value) => {
+        this.showDiff = false;
+        resolve(value);
+      };
+    });
   }
 
   perspectiveTitle(perspectivesData: PerspectiveData) {
@@ -484,12 +506,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     proposal => this.renderProposalRow(proposal))}` : '';
   }
 
-  // TODO, Array of objects as attribute needs to use JSON.stringify...
   renderDiff() {
-    this.logger.log('renderDiff()', { updatesForDiff: this.updatesForDiff });
+    this.logger.log('renderDiff()');
     return html`
-      <evees-dialog primary-text="close" @primary=${() => this.showDiff = false}>
-        <evees-update-diff .updates=${this.updatesForDiff as UpdateRequest[]}>
+      <evees-dialog id="updates-dialog">
+        <evees-update-diff id="evees-update-diff">
         </evees-update-diff>
       </evees-dialog>`;
   }

@@ -34,7 +34,7 @@ export class EthereumConnection extends Connection {
   accounts!: string[];
   networkId!: number;
 
-  constructor(protected ethOptions: EthereumConnectionOptions, options: ConnectionOptions) {
+  constructor(protected ethOptions: EthereumConnectionOptions, options?: ConnectionOptions) {
     super(options);
   }
 

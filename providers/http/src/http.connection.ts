@@ -24,8 +24,8 @@ export class HttpConnection extends Connection {
   private userIdMem: string | undefined = undefined;
   
   constructor(
-    protected httpOptions: HttpConnectionOptions,
-    options: ConnectionOptions, 
+    protected httpOptions?: HttpConnectionOptions,
+    options?: ConnectionOptions, 
     protected tokenStorageId: string | null = 'HTTP_AUTH_TOKEN',
     protected userStorageId: string | null = 'HTTP_USER_ID'
   ) {

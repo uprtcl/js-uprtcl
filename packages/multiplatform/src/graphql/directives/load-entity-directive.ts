@@ -5,8 +5,7 @@ import { NamedDirective } from '@uprtcl/graphql';
 
 import { DiscoveryBindings } from '../../bindings';
 import { EntityCache } from '../entity-cache';
-import { KnownSourcesService } from 'src/references/known-sources/known-sources.service';
-import { Entity, PatternRecognizer, CortexModule } from '@uprtcl/cortex';
+import { Entity } from '@uprtcl/cortex';
 
 export abstract class LoadEntityDirective extends NamedDirective {
   protected abstract resolveEntity(container: Container, reference: string): Promise<Entity<any> | undefined>;

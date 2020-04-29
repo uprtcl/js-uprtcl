@@ -8,15 +8,13 @@ export {
   Context,
   PerspectiveDetails,
   RemoteMap,
-  UprtclAction,
-  NodeActions,
   HasDiffLenses,
   DiffLens
 } from './types';
 
 /** Services interfaces */
 export { EveesSource } from './services/evees.source';
-export { EveesProvider, NewPerspectiveData } from './services/evees.provider';
+export { EveesProvider } from './services/evees.provider';
 export { EveesRemote } from './services/evees.remote';
 export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 
@@ -28,6 +26,7 @@ export { EveesHttp } from './services/providers/http/evees.http';
 export { Evees } from './services/evees';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
+export { EveesWorkspace } from './services/evees.workspace';
 
 /** Merge */
 export { Merge } from './behaviours/merge';
@@ -57,7 +56,8 @@ export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
-export { CREATE_COMMIT, UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
+export { UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
+export { EveesHelpers, CreatePerspective, CreateCommit } from './graphql/helpers';
 
 /** Patterns */
 export {

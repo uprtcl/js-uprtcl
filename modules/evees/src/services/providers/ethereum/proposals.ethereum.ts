@@ -2,11 +2,10 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { EthereumContract } from '@uprtcl/ethereum-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
-import { UpdateRequest, Proposal, NewProposal } from '../../../types';
+import { UpdateRequest, Proposal, NewProposal, NewPerspectiveData } from '../../../types';
 import { INIT_PROPOSAL, GET_PROPOSAL, AUTHORIZE_PROPOSAL, EXECUTE_PROPOSAL, GET_PERSP_HASH, cidToHex32, bytes32ToCid, GET_PROPOSAL_ID, getProposalDetails, getHeadUpdateDetails, CREATE_AND_PROPOSE } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { hashToId, ZERO_HEX_32, EveesEthereum } from './evees.ethereum';
-import { NewPerspectiveData } from '../../evees.provider';
 
 export interface EthHeadUpdate {
   perspectiveIdHash: string;

@@ -1,5 +1,4 @@
-import { UpdateRequest, Proposal, NewProposal } from '../types';
-import { NewPerspectiveData } from './evees.provider';
+import { UpdateRequest, Proposal, NewProposal, NewPerspectiveData } from '../types';
 
 export interface ProposalsProvider {
   /** Getters */

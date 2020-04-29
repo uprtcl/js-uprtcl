@@ -13,7 +13,7 @@ import * as UprtclProposals from './contracts-json/UprtclProposals.json';
 import * as UprtclWrapper from './contracts-json/UprtclWrapper.json';
 
 import { Secured } from '../../../utils/cid-hash';
-import { Commit, Perspective, PerspectiveDetails } from '../../../types';
+import { Commit, Perspective, PerspectiveDetails, NewPerspectiveData } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 import {
   CREATE_PERSP,
@@ -27,13 +27,12 @@ import {
   INIT_PERSP_BATCH,
   UPDATE_OWNER,
   UPDATED_HEAD,
-  getPerspectiveHead,
-  getPerspectiveContext
+  getEthPerspectiveHead,
+  getEthPerspectiveContext
 } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 import { ProposalsProvider } from '../../proposals.provider';
-import { NewPerspectiveData } from '../../evees.provider';
 import { Authority } from '@uprtcl/access-control';
 
 const evees_if = 'evees-v0';
@@ -318,11 +317,11 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
   async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
     const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
 
-    const context = await getPerspectiveContext(
+    const context = await getEthPerspectiveContext(
       this.uprtclDetails.contractInstance,
       perspectiveIdHash
     );
-    const ethPerspective = await getPerspectiveHead(
+    const ethPerspective = await getEthPerspectiveHead(
       this.uprtclRoot.contractInstance,
       perspectiveIdHash
     );

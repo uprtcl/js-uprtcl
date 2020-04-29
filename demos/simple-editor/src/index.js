@@ -7,8 +7,7 @@ import { CortexModule } from '@uprtcl/cortex';
 import { AccessControlModule } from '@uprtcl/access-control';
 import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
 
-import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { HttpConnection, HttpStore } from '@uprtcl/http-provider';
+import { HttpConnection } from '@uprtcl/http-provider';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
@@ -23,7 +22,9 @@ import { SimpleWiki } from './simple-wiki';
   const c1host = 'http://localhost:3100/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
-  const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
+  
+  const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
+  // const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
 
   const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
   const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
@@ -39,14 +40,12 @@ import { SimpleWiki } from './simple-wiki';
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
 
-  const lenses = new LensesModule();
-
   const modules = [
     new i18nextBaseModule(),
     new ApolloClientModule(),
     new CortexModule(),
     new DiscoveryModule([httpEvees.casID]),
-    lenses,
+    new LensesModule(),
     new AccessControlModule(),
     evees,
     documents,

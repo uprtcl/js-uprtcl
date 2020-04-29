@@ -107,7 +107,8 @@ export const eveesTypeDefs: DocumentNode = gql`
   input NewPerspectiveInput {
     perspective: PerspectiveInput,
     details: PerspectiveDetailsInput
-    canWrite: String
+    canWrite: String,
+    parentId: String
   }
 
   input ProposalInput {
