@@ -14,7 +14,7 @@ export class EveesWorkspace {
 
   public workspace: ApolloClient<any>;
 
-  constructor(protected recognizer: PatternRecognizer, client: ApolloClient<any>) {
+  constructor(client: ApolloClient<any>, protected recognizer?: PatternRecognizer) {
     this.workspace = this.buildWorkspace(client);
   }
 
@@ -94,6 +94,8 @@ export class EveesWorkspace {
   }
 
   private cacheCreateEntity(entity: Entity<any>) {
+    if (!this.recognizer) throw new Error('recognized not provided');
+    
     const type = this.recognizer.recognizeType(entity);
 
     this.workspace.writeQuery({

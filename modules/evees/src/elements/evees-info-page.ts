@@ -103,7 +103,9 @@ export class EveesInfoPage extends EveesInfoBase {
       return;
     }
 
-    this.applyWorkspace(this.pullWorkspace);
+    await this.applyWorkspace(this.pullWorkspace);
+
+    this.checkoutPerspective(this.perspectiveId);
   }
 
   renderOtherPerspectives() {
@@ -112,7 +114,7 @@ export class EveesInfoPage extends EveesInfoBase {
         force-update=${this.forceUpdate}
         perspective-id=${this.perspectiveId}
         first-perspective-id=${this.firstPerspectiveId}
-        @perspective-selected=${(e) => this.otherPerspectiveClicked(e.detail.id)}
+        @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}
         @merge-perspective=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
         @create-proposal=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, true)}
         @authorize-proposal=${this.authorizeProposal}
@@ -297,14 +299,14 @@ export class EveesInfoPage extends EveesInfoBase {
               </div>
             </div>` : ''}
 
-          <div class="section">
+          <!-- <div class="section">
             <div class="section-header">
               Evee Info
             </div>
             <div class="section-content info-text">
               ${this.renderInfo()}
             </div>
-          </div>
+          </div> -->
           
 
         </div>

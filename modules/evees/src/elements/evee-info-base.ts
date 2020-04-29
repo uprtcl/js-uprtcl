@@ -220,7 +220,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       canWrite: remote.userId
     };
 
-    this.pullWorkspace = new EveesWorkspace(this.recognizer, this.client);
+    this.pullWorkspace = new EveesWorkspace(this.client, this.recognizer);
 
     await this.merge.mergePerspectivesExternal(
       this.perspectiveId,
@@ -252,19 +252,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     } else {
       this.forceUpdate = 'true';
     }
-  }
-
-  otherPerspectiveClicked(perspectiveId: string) {
-    this.logger.info(`otherPerspectiveClicked() ${perspectiveId}`);
-    this.dispatchEvent(
-      new CustomEvent('checkout-perspective', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          perspectiveId: perspectiveId
-        }
-      })
-    );
   }
 
   async login() {
@@ -318,7 +305,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       );
     }
 
-    const workspace = new EveesWorkspace(this.recognizer, this.client);
+    const workspace = new EveesWorkspace(this.client, this.recognizer);
 
     const config = {
       forceOwner: true,
@@ -349,7 +336,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
 
     if (this.perspectiveId !== toPerspectiveId) {
-      this.otherPerspectiveClicked(toPerspectiveId);
+      this.checkoutPerspective(toPerspectiveId);
     } else {
       /** reload perspectives-list */
       this.reload();
@@ -469,7 +456,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async newPerspectiveClicked() {
     this.loading = true;
 
-    const workspace = new EveesWorkspace(this.recognizer, this.client);
+    const workspace = new EveesWorkspace(this.client, this.recognizer);
     const newPerspectiveId = await this.evees.forkPerspective(this.perspectiveId, workspace, this.defaultAuthority);
     await workspace.execute(this.client);
 

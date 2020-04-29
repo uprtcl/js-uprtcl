@@ -74,7 +74,7 @@ describe('evees-workspace', () => {
       CortexModule.bindings.Recognizer
     );
 
-    const workspace = new EveesWorkspace(recognizer, client);
+    const workspace = new EveesWorkspace(client, recognizer);
     const result = await workspace.query({
       query: gql`
         {

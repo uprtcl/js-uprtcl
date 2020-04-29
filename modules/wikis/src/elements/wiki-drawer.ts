@@ -337,6 +337,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       this.ref = event.detail.perspectiveId;
       this.pagesList = undefined;
       this.editable = false;
+      this.loadWiki();
     }) as EventListener);
   }
 
