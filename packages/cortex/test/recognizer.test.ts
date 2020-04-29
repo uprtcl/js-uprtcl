@@ -1,10 +1,9 @@
-import { CortexModule, PatternRecognizer } from '../src/uprtcl-cortex';
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
+import { expect } from '@open-wc/testing';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
+import { CortexModule, PatternRecognizer } from '../src/uprtcl-cortex';
 import { MockModule } from './mocks/mock.module';
-import { expect } from '@open-wc/testing';
-import gql from 'graphql-tag';
 
 const object1 = {
   test: 'test'

@@ -1,4 +1,4 @@
-import { multiInject, inject, injectable } from 'inversify';
+import { multiInject, inject, injectable, optional } from 'inversify';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { PatternRecognizer, CortexModule, Pattern, HasLinks, Entity } from '@uprtcl/cortex';
@@ -30,8 +30,8 @@ export class MultiSourceService {
     public client: ApolloClient<any>,
     @multiInject(CASBindings.CASSource)
     sources: Array<CASSource>,
-    @multiInject(DiscoveryBindings.DefaultSource)
-    protected defaultSources: Array<string>
+    @multiInject(DiscoveryBindings.DefaultSource) @optional()
+    protected defaultSources: Array<string> | undefined
   ) {
     // Build the sources dictionary from the resulting names
     this.services = sources.reduce(
@@ -199,12 +199,16 @@ export class MultiSourceService {
     if (knownSources) {
       return this.tryGetFromSources(hash, knownSources);
     } else {
-      const defaultSources = this.defaultSources;
-      const object = await this.tryGetFromSources<O>(hash, defaultSources);
+      let remainingCids = this.getAllCASIds();
+      if (this.defaultSources) {
 
-      if (object) return object;
+        const defaultSources = this.defaultSources;
+        const object = await this.tryGetFromSources<O>(hash, defaultSources);
+        
+        if (object) return object;
+        remainingCids = remainingCids.filter(casID => !defaultSources.includes(casID));
+      }
 
-      const remainingCids = this.getAllCASIds().filter(casID => !defaultSources.includes(casID));
       return this.tryGetFromSources(hash, remainingCids);
     }
   }
