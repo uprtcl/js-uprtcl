@@ -1,16 +1,19 @@
-import { html, fixture, expect } from '@open-wc/testing';
+import { ApolloClient, gql } from 'apollo-boost';
+import { expect } from '@open-wc/testing';
+
 import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
-import { RemoteMap } from '../src/types';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
 import { AccessControlModule } from '@uprtcl/access-control';
-import { EveesModule } from '../src/evees.module';
+
 import { MockEveesProvider } from './mocks/mock-evees-provider';
 import { MockStore } from './mocks/mock-store';
+
+import { EveesModule } from '../src/evees.module';
+import { RemoteMap } from '../src/types';
 import { EveesWorkspace } from '../src/uprtcl-evees';
-import { ApolloClient, gql } from 'apollo-boost';
 
 describe('evees-workspace', () => {
   let orchestrator: MicroOrchestrator;

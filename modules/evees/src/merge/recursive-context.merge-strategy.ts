@@ -18,7 +18,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   allPerspectives: Dictionary<string> | undefined = undefined;
 
   async isPattern(id: string, type: string): Promise<boolean> {
-    const entity = (await loadEntity(this.client, id)) as object;
+    const entity = await loadEntity(this.client, id);
+    if (entity === undefined) throw new Error('entity not found');
     const recongnizedType = this.recognizer.recognizeType(entity);
     return type === recongnizedType;
   }

@@ -85,12 +85,14 @@ export class Evees {
 
   public async isPerspective(id: string): Promise<boolean> {
     const entity = await loadEntity(this.client, id);
+    if (entity === undefined) throw new Error('entity not found');
     const type = this.recognizer.recognizeType(entity);
     return type === 'Perspective';
   }
 
   async isPattern(id: string, type: string): Promise<boolean> {
     const entity = await loadEntity(this.client, id);
+    if (entity === undefined) throw new Error('entity not found');
     const recognizedType = this.recognizer.recognizeType(entity);
     return type === recognizedType;
   }
