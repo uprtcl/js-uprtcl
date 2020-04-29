@@ -222,7 +222,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.pullWorkspace = new EveesWorkspace(this.recognizer, this.client);
 
-    debugger
     await this.merge.mergePerspectivesExternal(
       this.perspectiveId,
       this.firstPerspectiveId,
