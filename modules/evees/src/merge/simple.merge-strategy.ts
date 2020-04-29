@@ -20,7 +20,7 @@ import { mergeResult } from './utils';
 import { deriveEntity } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
 import { EveesWorkspace } from '../services/evees.workspace';
-import { getPerspectiveHead } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/helpers';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
@@ -42,7 +42,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     workspace: EveesWorkspace,
     config: any,
   ): Promise<string> {
-    const promises = [toPerspectiveId, fromPerspectiveId].map(async id => getPerspectiveHead(this.client, id));
+    const promises = [toPerspectiveId, fromPerspectiveId].map(async id => EveesHelpers.getPerspectiveHeadId(this.client, id));
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);

@@ -21,11 +21,7 @@ import {
   eveeColor,
   DEFAULT_COLOR,
   RemoteMap,
-  createCommit,
-  createEntity,
-  createPerspective,
-  updateHead,
-  getPerspectiveData
+  EveesHelpers
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CASSource, loadEntity, CASStore } from '@uprtcl/multiplatform';
@@ -169,7 +165,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const pagesListPromises = this.wiki.object.pages.map(
       async (pageId):Promise<PageData> => {
       
-      const data = await getPerspectiveData(this.client, pageId);
+      const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
       const hasTitle: HasTitle = this.recognizer
         .recognizeBehaviours(data)
         .find(b => (b as HasTitle).title);
@@ -220,9 +216,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const store = this.getStore(authority, DocumentsModule.bindings.TextNodeType);
     if (!store) throw new Error('store is undefined');
 
-    const dataId = await createEntity(this.client, store, page);
-    const headId = await createCommit(this.client, remote, { dataId, parentsIds: [] });
-    return createPerspective(this.client, remote, { headId, context: `${this.context}_${Date.now()}` });
+    const dataId = await EveesHelpers.createEntity(this.client, store, page);
+    const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [] });
+    return EveesHelpers.createPerspective(this.client, remote, { headId, context: `${this.context}_${Date.now()}` });
   }
 
   async updateContent(newWiki: Wiki) {
@@ -232,9 +228,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const remote = this.eveesRemotes.find(r => r.authority === this.authority);
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
-    const dataId = await createEntity(this.client, store, newWiki);
-    const headId = await createCommit(this.client, remote, { dataId, parentsIds: [] });
-    await updateHead(this.client, this.ref, headId)
+    const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
+    const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [] });
+    await EveesHelpers.updateHead(this.client, this.ref, headId)
 
     this.logger.info('updateContent()', newWiki);
 

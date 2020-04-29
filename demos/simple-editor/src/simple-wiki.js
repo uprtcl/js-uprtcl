@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule, createPerspective, createEntity, createCommit } from '@uprtcl/evees';
+import { EveesModule, EveesHelpers } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
@@ -63,11 +63,11 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         pages: []
       };
       
-      const dataId = await createEntity(client, eveesEthProvider, wiki);
-      const headId = await createCommit(client, eveesEthProvider, { dataId });
+      const dataId = await EveesHelpers.createEntity(client, eveesEthProvider, wiki);
+      const headId = await EveesHelpers.createCommit(client, eveesEthProvider, { dataId });
 
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
-      const perspectiveId = await createPerspective(client, eveesEthProvider, { 
+      const perspectiveId = await EveesHelpers.createPerspective(client, eveesEthProvider, { 
         headId, 
         context: `genesis-dao-wiki-${randint}`, 
         canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'

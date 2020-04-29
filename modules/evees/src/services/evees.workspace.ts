@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash-es';
 import { CREATE_ENTITY, CREATE_PERSPECTIVE } from '../graphql/queries';
 import { Entity, PatternRecognizer } from '@uprtcl/cortex';
 import { UpdateRequest, NewPerspectiveData } from '../types';
-import { getPerspectiveAuthority } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/helpers';
 
 export class EveesWorkspace {
 
@@ -57,7 +57,7 @@ export class EveesWorkspace {
     const newNot = this.newPerspectives.find(newPerspective => newPerspective.perspective.object.payload.authority !== authority);
     if (newNot !== undefined) return false;
     
-    const check = this.updates.map(async (update) => getPerspectiveAuthority(this.workspace, update.perspectiveId));
+    const check = this.updates.map(async (update) => EveesHelpers.getPerspectiveAuthority(this.workspace, update.perspectiveId));
     const checktoPerspectives = await Promise.all(check);
 
     const updateNot = checktoPerspectives.find((_authority) => _authority !== authority);

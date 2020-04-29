@@ -16,7 +16,7 @@ import { EveesRemote } from './evees.remote';
 import { Secured, deriveEntity } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
 import { EveesWorkspace } from './evees.workspace';
-import { getPerspectiveHead, getPerspectiveContext } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/helpers';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -167,8 +167,8 @@ export class Evees {
         ? eveesRemote.userId
         : '';
 
-    const headId = await getPerspectiveHead(this.client, perspectiveId);
-    const context = await getPerspectiveContext(this.client, perspectiveId);
+    const headId = await EveesHelpers.getPerspectiveHeadId(this.client, perspectiveId);
+    const context = await EveesHelpers.getPerspectiveContext(this.client, perspectiveId);
 
     const forkCommitId = await this.forkCommit(headId, workspace, eveesRemote.authority, canWrite);
 

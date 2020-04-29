@@ -30,6 +30,8 @@ export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
+  protected client!: ApolloClient<any>;
+
   back() {
     this.dispatchEvent(new CustomEvent('nav-back'));
   }
@@ -45,8 +47,12 @@ export class WikiPage extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const result = await client.query({
+    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.load();
+  }
+
+  async load() {
+    const result = await this.client.query({
       query: gql`{
         entity(ref: "${this.pageHash}") {
           id
@@ -90,6 +96,7 @@ export class WikiPage extends moduleConnect(LitElement) {
 
       <div class="page-content">
         <documents-editor 
+          .client=${this.client}
           ref=${this.pageHash}
           color=${this.color}>
         </documents-editor>

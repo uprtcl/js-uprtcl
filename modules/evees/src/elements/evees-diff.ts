@@ -8,7 +8,7 @@ import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
 import { EveesWorkspace } from '../uprtcl-evees';
-import { getCommitData } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/helpers';
 
 const LOGINFO = true;
 
@@ -53,8 +53,10 @@ export class EveesDiff extends moduleConnect(LitElement) {
     this.loading = true;
 
     const getDetails = this.workspace.getUpdates().map(async (update) => {
-      const newData = await getCommitData(this.workspace.workspace, update.newHeadId); 
-      const oldData = await getCommitData(this.workspace.workspace, update.newHeadId); 
+      const newData = await EveesHelpers.getCommitData(this.workspace.workspace, update.newHeadId); 
+
+      if (update.oldHeadId === undefined) throw new Error('old commit not specified');
+      const oldData = await EveesHelpers.getCommitData(this.workspace.workspace, update.oldHeadId); 
 
       const hasDiffLenses = this.recognizer.recognizeBehaviours(oldData).find(b => (b as HasDiffLenses<any>).diffLenses);
       if (!hasDiffLenses) throw Error('hasDiffLenses undefined');

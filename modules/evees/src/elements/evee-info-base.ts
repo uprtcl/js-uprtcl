@@ -36,9 +36,7 @@ import {
   DELETE_PERSPECTIVE,
   CREATE_AND_ADD_PROPOSAL
 } from '../graphql/queries';
-import {
-  getPerspectiveHead, getPerspectiveAuthority
-} from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
@@ -222,17 +220,18 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       canWrite: remote.userId
     };
 
-    const workspace = new EveesWorkspace(this.recognizer, this.client);
+    this.pullWorkspace = new EveesWorkspace(this.recognizer, this.client);
 
+    debugger
     await this.merge.mergePerspectivesExternal(
       this.perspectiveId,
       this.firstPerspectiveId,
-      workspace,
+      this.pullWorkspace,
       config
     );
 
     this.logger.info('checkPull()');
-    this.firstHasChanges = workspace.hasUpdates();
+    this.firstHasChanges = this.pullWorkspace.hasUpdates();
   }
 
   connectedCallback() {
@@ -341,8 +340,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       return;
     };
 
-    const toHeadId = await getPerspectiveHead(this.client, toPerspectiveId);
-    const fromHeadId = await getPerspectiveHead(this.client, fromPerspectiveId);
+    const toHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, toPerspectiveId);
+    const fromHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, fromPerspectiveId);
     
     if (isProposal) {
       await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, fromHeadId, toHeadId, workspace);
@@ -383,7 +382,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace): Promise<void> {
 
     // TODO: handle proposals and updates on multiple authorities.
-    const authority = await getPerspectiveAuthority(this.client, toPerspectiveId);
+    const authority = await EveesHelpers.getPerspectiveAuthority(this.client, toPerspectiveId);
     
     const not = await workspace.isSingleAuthority(authority);
     if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
