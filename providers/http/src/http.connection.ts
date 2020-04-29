@@ -12,7 +12,6 @@ export interface PostResult {
   elementIds: string[];
 }
 
-const LOGINFO = false;
 /** TODO: two modules that instanciate two http connections will conflict */
 
 /**
@@ -99,7 +98,7 @@ export class HttpConnection extends Connection {
    * @param url url to make the request to
    */
   public async get<T>(url: string): Promise<T> {
-    if (LOGINFO) this.logger.log('[HTTP GET]: ', url);
+    this.logger.log('[HTTP GET]: ', url);
 
     return fetch(url, {
       method: 'GET',
@@ -112,7 +111,7 @@ export class HttpConnection extends Connection {
         return response.json() as Promise<{ data: T }>;
       })
       .then(data => {
-        if (LOGINFO) this.logger.log('[HTTP GET RESULT] ', url, data);
+       this.logger.log('[HTTP GET RESULT] ', url, data);
         return data.data;
       });
   }
@@ -132,7 +131,7 @@ export class HttpConnection extends Connection {
         return response.json() as Promise<{ data: T }>;
       })
       .then(data => {
-        if (LOGINFO) this.logger.log('[HTTP PUT RESULT] ', url, data);
+        this.logger.log('[HTTP PUT RESULT] ', url, data);
         return data.data;
       });
   }
@@ -180,7 +179,7 @@ export class HttpConnection extends Connection {
    * @param method method of the request ('POST' or 'PUT')
    */
   public async putOrPost(url: string, body: any, method: string): Promise<PostResult> {
-    if (LOGINFO) this.logger.log(`[HTTP ${method}]`, url, body);
+    this.logger.log(`[HTTP ${method}]`, url, body);
     return fetch(url, {
       method: method,
       headers: {
@@ -193,7 +192,7 @@ export class HttpConnection extends Connection {
         return response.json() as Promise<PostResult>;
       })
       .then(data => {
-        if (LOGINFO) this.logger.log('[HTTP POST RESULT]', url, body, data);
+        this.logger.log('[HTTP POST RESULT]', url, body, data);
         return (data as unknown) as PostResult;
       });
   }

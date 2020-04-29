@@ -24,6 +24,11 @@ export class DiscoveryModule extends MicroModule {
   static bindings = DiscoveryBindings;
 
   dependencies = [CortexModule.id, ApolloClientModule.id];
+
+  constructor(protected defaultSources: string[] = []) {
+    super();
+  }
+
   get submodules() {
     return [
       new GraphQlSchemaModule(discoveryTypeDefs, resolvers, [
@@ -38,6 +43,10 @@ export class DiscoveryModule extends MicroModule {
     container
       .bind<MultiSourceService>(DiscoveryModule.bindings.MultiSourceService)
       .to(MultiSourceService);
+
+    for (const source of this.defaultSources) {
+      container.bind<string>(DiscoveryModule.bindings.DefaultSource).toConstantValue(source);
+    }
 
     container
       .bind<KnownSourcesService>(DiscoveryModule.bindings.LocalKnownSources)

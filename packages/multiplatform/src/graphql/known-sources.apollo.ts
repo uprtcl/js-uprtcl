@@ -13,19 +13,13 @@ export class KnownSourcesApollo implements KnownSourcesService {
 
   async getKnownSources(hash: string): Promise<string[] | undefined> {
     try {
-      const result: any = this.client.readQuery({
-        query: gql`
-        {
-          entity(ref: "${hash}") {
-            id
-            _context {
-              casID
-            }
-          }
-        }
-        `
-      });
-      return [result.entity._context.casID];
+      
+      const data = this.client.cache['data'].data;
+      const cachedObject = data[`$${hash}._context`];
+
+      if (!cachedObject) return undefined;
+
+      return [cachedObject.casID];
     } catch (e) {
       return undefined;
     }
