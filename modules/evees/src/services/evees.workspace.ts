@@ -1,4 +1,4 @@
-import { ApolloClient, ApolloLink, QueryOptions, ApolloQueryResult, gql } from 'apollo-boost';
+import { ApolloClient, ApolloLink, gql } from 'apollo-boost';
 import Observable from 'zen-observable-ts';
 import { cloneDeep } from 'lodash-es';
 import { CREATE_ENTITY, CREATE_PERSPECTIVE } from '../graphql/queries';

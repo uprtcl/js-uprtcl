@@ -40,7 +40,7 @@ import { EveesHelpers } from '../graphql/helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
-import { EveesRemote } from '../uprtcl-evees';
+import { EveesRemote } from '../services/evees.remote';
 
 import { EveesDialog } from './common-ui/evees-dialog';
 import { EveesWorkspace } from '../services/evees.workspace';
@@ -65,7 +65,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'first-perspective-id' })
   firstPerspectiveId!: string;
 
-  @property({ type: String, attribute: 'default-authority'})
+  @property({ type: String, attribute: 'default-authority' })
   defaultAuthority: string | undefined = undefined;
 
   @property({ type: String, attribute: 'evee-color' })
@@ -86,7 +86,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ attribute: false })
   forceUpdate: string = 'true';
 
-  @property({ attribute: false})
+  @property({ attribute: false })
   showUpdatesDialog: boolean = false;
 
   @property({ attribute: false })
@@ -97,7 +97,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
-  
+
   perspectiveData!: PerspectiveData;
   pullWorkspace!: EveesWorkspace;
 
@@ -123,14 +123,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.load();
   }
-  
+
   updated(changedProperties) {
     if (changedProperties.get('perspectiveId') !== undefined) {
       this.logger.info('updated() reload', { changedProperties });
       this.load();
     }
   }
-  
+
   async load() {
     if (!this.client) throw new Error('client undefined');
 
@@ -194,7 +194,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     };
 
     this.publicRead = this.perspectiveData.permissions.publicRead !== undefined ? this.perspectiveData.permissions.publicRead : true;
-  
+
     this.logger.info('load', { perspectiveData: this.perspectiveData });
     this.isLogged = this.defaultRemote !== undefined ? (this.defaultRemote.userId !== undefined) : false;
 
@@ -205,7 +205,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async checkPull() {
-    if((this.perspectiveId === this.firstPerspectiveId)
+    if ((this.perspectiveId === this.firstPerspectiveId)
       || (!this.perspectiveData.canWrite)) {
 
       this.firstHasChanges = false;
@@ -273,7 +273,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async makePublic() {
-    if(!this.client) throw new Error('client undefined');
+    if (!this.client) throw new Error('client undefined');
     await this.client.mutate({
       mutation: SET_PUBLIC_READ,
       variables: {
@@ -328,7 +328,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const toHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, toPerspectiveId);
     const fromHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, fromPerspectiveId);
-    
+
     if (isProposal) {
       await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, fromHeadId, toHeadId, workspace);
     } else {
@@ -344,7 +344,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async applyWorkspace(workspace: EveesWorkspace): Promise<void> {
-    
+
     await workspace.execute(this.client);
 
     const update = workspace.getUpdates().map(async (update) => {
@@ -361,15 +361,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async createMergeProposal(
-    fromPerspectiveId: string, 
-    toPerspectiveId: string, 
-    fromHeadId: string, 
-    toHeadId: string, 
+    fromPerspectiveId: string,
+    toPerspectiveId: string,
+    fromHeadId: string,
+    toHeadId: string,
     workspace: EveesWorkspace): Promise<void> {
 
     // TODO: handle proposals and updates on multiple authorities.
     const authority = await EveesHelpers.getPerspectiveAuthority(this.client, toPerspectiveId);
-    
+
     const not = await workspace.isSingleAuthority(authority);
     if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
 
@@ -377,8 +377,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await workspace.executeCreate(this.client);
 
     const proposal = {
-      toPerspectiveId, 
-      fromPerspectiveId, 
+      toPerspectiveId,
+      fromPerspectiveId,
       toHeadId,
       fromHeadId,
       updates: workspace.getUpdates()
@@ -404,7 +404,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         bubbles: true
       })
     );
-    
+
   }
 
   async authorizeProposal(e: CustomEvent) {
@@ -503,7 +503,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async updatesDialog(workspace: EveesWorkspace, primaryText: string, secondaryText: string): Promise<boolean> {
-    
+
     this.showUpdatesDialog = true;
     await this.updateComplete;
 

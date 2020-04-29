@@ -26,7 +26,7 @@ import { RemoteMap, defaultRemoteMap } from './types';
 import { EveesInfoPage } from './elements/evees-info-page';
 import { ItemWithMenu } from './elements/common-ui/evees-list-item';
 import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
-import { RecursiveContextMergeStrategy } from './uprtcl-evees';
+import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 import { EveesDiff } from './elements/evees-diff';
 import { EveesDialog } from './elements/common-ui/evees-dialog';
 import { EveesPopper } from './elements/common-ui/evees-popper';
