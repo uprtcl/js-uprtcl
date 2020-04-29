@@ -1,13 +1,12 @@
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import {
-  EveesProvider,
-  NewPerspectiveData,
   Perspective,
   Secured,
   Commit,
   PerspectiveDetails,
   EveesRemote
 } from '../../src/uprtcl-evees';
+import { NewPerspectiveData } from '../../src/types';
 
 export class MockEveesProvider implements EveesRemote {
   constructor(

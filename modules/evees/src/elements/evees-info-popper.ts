@@ -41,7 +41,7 @@ export class EveesInfoPopper extends EveesInfoBase {
         <evees-perspectives-list
           perspective-id=${this.perspectiveId}
           first-perspective-id=${this.firstPerspectiveId}
-          @perspective-selected=${e => this.otherPerspectiveClicked(e.detail.id)}
+          @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
           @merge-perspective=${e =>
             this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
           @create-proposal=${e =>

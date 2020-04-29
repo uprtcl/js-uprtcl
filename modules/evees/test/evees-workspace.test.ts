@@ -75,7 +75,7 @@ describe('evees-workspace', () => {
     );
 
     const workspace = new EveesWorkspace(client, recognizer);
-    const result = await workspace.query({
+    const result = await workspace.workspace.query({
       query: gql`
         {
           entity(ref: "Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw") {
