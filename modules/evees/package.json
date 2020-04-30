@@ -13,7 +13,7 @@
   "dependencies": {
     "@authentic/mwc-card": "^0.9.0",
     "@authentic/mwc-circular-progress": "^0.9.0",
-    "@authentic/mwc-ripple": "^0.9.0",
+    "@material/mwc-ripple": "^0.14.1",
     "@material/mwc-button": "^0.14.1",
     "@material/mwc-dialog": "^0.14.1",
     "@material/mwc-icon": "^0.14.1",

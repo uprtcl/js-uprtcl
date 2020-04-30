@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@authentic/mwc-circular-progress": "^0.9.0",
-    "@authentic/mwc-ripple": "^0.9.0",
     "@authentic/mwc-tooltip": "^0.9.0",
+    "@material/mwc-ripple": "^0.14.1",
     "@material/mwc-button": "^0.14.1",
     "@material/mwc-icon": "^0.14.1",
     "@material/mwc-icon-button": "^0.14.1",
