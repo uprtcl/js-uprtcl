@@ -43,6 +43,9 @@ describe('basic GraphQl entity', () => {
         {
           entity(ref: "QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo") {
             id
+            ... on Mock {
+              test
+            }
             _context {
               casID
               object
@@ -60,6 +63,7 @@ describe('basic GraphQl entity', () => {
       entity: {
         id: 'QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo',
         __typename: 'Mock',
+        test: 'test',
         _context: {
           casID: 'local',
           object: objects['QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo'],
