@@ -104,7 +104,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
-    debugger
     const result = await this.client.query({
       query: gql`
       {
