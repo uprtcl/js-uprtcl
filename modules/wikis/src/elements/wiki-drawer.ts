@@ -88,6 +88,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         this.loadWiki();
       }
     }
+
+    if (changedProperties.has('firstRef')) {
+      this.ref = this.firstRef;
+      this.loadWiki();
+    }
   }
 
   color() {
@@ -99,6 +104,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
+    debugger
     const result = await this.client.query({
       query: gql`
       {

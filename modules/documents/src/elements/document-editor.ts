@@ -304,6 +304,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     /** keep entity type or create commit by default */
     if (!this.isPlaceholder(node.ref)) {
       const entity = await loadEntity(this.client, node.ref);
+      if(!entity) throw new Error('entity not found');
       refType = this.recognizer.recognizeType(entity);
     } else {
       refType = EveesModule.bindings.CommitType;
