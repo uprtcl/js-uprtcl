@@ -50,8 +50,13 @@ export class HolochainConnection extends SocketConnection {
     return parseResponse(result);
   }
 
-  public async onSignal(callback: (params: any) => void): Promise<void> {
+  public async onSignal(signalName: string, callback: (params: any) => void): Promise<void> {
     await this.ready();
-    return this.onSignal(callback);
+    this.onsignal(params => {
+      if (params.signal && params.signal.name === signalName) {
+        const args = params.signal.arguments;
+        callback(JSON.parse(args));
+      }
+    });
   }
 }
