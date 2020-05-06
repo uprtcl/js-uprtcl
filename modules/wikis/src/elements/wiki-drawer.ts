@@ -105,7 +105,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async resetWikiPerspective() {
-    await this.client.resetStore();
+    // await this.client.resetStore();
     this.pagesList = undefined;
     this.editable = false;
     this.loadWiki();
