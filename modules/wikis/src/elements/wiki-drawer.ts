@@ -13,7 +13,7 @@ export const styleMap = style => {
 import { htmlToText, TextType, TextNode, DocumentsModule } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Entity, HasTitle, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { Entity, HasTitle, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import {
   MenuConfig,
   EveesRemote,
@@ -21,10 +21,11 @@ import {
   eveeColor,
   DEFAULT_COLOR,
   RemoteMap,
-  EveesHelpers
+  EveesHelpers,
+  Perspective
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CASStore } from '@uprtcl/multiplatform';
+import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
@@ -103,62 +104,27 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }
   }
 
+  async resetWikiPerspective() {
+    await this.client.resetStore();
+    this.pagesList = undefined;
+    this.editable = false;
+    this.loadWiki();
+  }
+
   async loadWiki() {
-    const result = await this.client.query({
-      query: gql`
-      {
-        entity(ref: "${this.ref}") {
-          id
-          ... on Perspective {
-            payload {
-              authority
-            }
-            head {
-              id 
-              ... on Commit {
-                data {
-                  id
-                  ... on Wiki {
-                    title
-                    pages {
-                      id
-                    }
-                  }
-                }
-              }
-            }
-            context {
-              id
-            }
-          }
-          _context {
-            patterns {
-              accessControl {
-                canWrite
-              }
-            }
-          }
-        }
-      }`
-    });
+    const perspective = await loadEntity(this.client, this.ref) as Entity<Signed<Perspective>>;
+    const accessControl = await EveesHelpers.getAccessControl(this.client, this.ref);
+    const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.ref);
+    const context = await EveesHelpers.getPerspectiveContext(this.client, this.ref);
 
-    this.authority = result.data.entity.payload.authority;
-    this.currentHeadId = result.data.entity.head.id;
-    this.editable = result.data.entity._context.patterns.accessControl.canWrite;
-    this.context = result.data.entity.context.id;
+    this.authority = perspective.object.payload.authority;
+    this.currentHeadId = headId;
+    this.editable = accessControl.canWrite;
+    this.context = context;
 
-    this.wiki = {
-      id: result.data.entity.head.data.id,
-      object: {
-        title: result.data.entity.head.data.title,
-        pages: result.data.entity.head.data.pages.map(p => p.id)
-      }
-    };
-
-    this.logger.log('loadWiki()', { this: this, result });
+    this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.ref);
 
     this.loadPagesData();
-
     this.requestUpdate();
   }
 
@@ -170,6 +136,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const pagesListPromises = this.wiki.object.pages.map(
       async (pageId):Promise<PageData> => {
       
+      debugger
       const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
       const hasTitle: HasTitle = this.recognizer
         .recognizeBehaviours(data)
@@ -340,14 +307,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       this.ref = event.detail.perspectiveId;
-      this.pagesList = undefined;
-      this.editable = false;
-      this.loadWiki();
+      this.resetWikiPerspective()
     }) as EventListener);
   }
 
   renderPageList() {
-    if (!this.pagesList)
+    if (this.pagesList === undefined)
       return html`
         <cortex-loading-placeholder></cortex-loading-placeholder>
       `;
