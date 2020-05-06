@@ -19,7 +19,8 @@ import { SimpleWiki } from './simple-wiki';
 
 (async function() {
   // const c1host = 'http://3.12.79.127:3100/uprtcl/1';
-  const c1host = 'http://localhost:3100/uprtcl/1';
+  // const c1host = 'http://localhost:3100/uprtcl/1';
+  const c1host = 'http://ec2-54-145-41-139.compute-1.amazonaws.com:3100/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
   
