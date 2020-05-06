@@ -16,6 +16,7 @@ export interface HolochainConnectionOptions {
 
 export class HolochainConnection extends SocketConnection {
   connection!: (instance: string, zome: string, funcName: string, params: any) => Promise<any>;
+  private signalListeners: Array<(params: any) => void> = [];
   onsignal!: (callback: (params: any) => void) => void;
 
   constructor(
@@ -31,6 +32,9 @@ export class HolochainConnection extends SocketConnection {
     this.connection = async (instance: string, zome: string, funcName: string, params: any) =>
       callZome(instance, zome, funcName)(params);
     this.onsignal = onSignal;
+    this.onsignal(params => {
+      this.signalListeners.forEach(l => l(params));
+    });
 
     return ws;
   }
@@ -52,7 +56,7 @@ export class HolochainConnection extends SocketConnection {
 
   public async onSignal(signalName: string, callback: (params: any) => void): Promise<void> {
     await this.ready();
-    this.onsignal(params => {
+    const listener = params => {
       if (params.signal && params.signal.name === signalName) {
         let args = params.signal.arguments;
         try {
@@ -60,6 +64,7 @@ export class HolochainConnection extends SocketConnection {
         } catch (e) {}
         callback(args);
       }
-    });
+    };
+    this.signalListeners.push(listener);
   }
 }
