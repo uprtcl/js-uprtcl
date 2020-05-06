@@ -54,8 +54,11 @@ export class HolochainConnection extends SocketConnection {
     await this.ready();
     this.onsignal(params => {
       if (params.signal && params.signal.name === signalName) {
-        const args = params.signal.arguments;
-        callback(JSON.parse(args));
+        let args = params.signal.arguments;
+        try {
+          args = JSON.parse(args);
+        } catch (e) {}
+        callback(args);
       }
     });
   }
