@@ -136,7 +136,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const pagesListPromises = this.wiki.object.pages.map(
       async (pageId):Promise<PageData> => {
       
-      debugger
       const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
       const hasTitle: HasTitle = this.recognizer
         .recognizeBehaviours(data)
