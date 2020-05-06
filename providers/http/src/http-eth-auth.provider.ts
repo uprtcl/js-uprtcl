@@ -43,7 +43,7 @@ export class HttpEthAuthProvider extends HttpProvider {
       try {
         /** if there is a token, check if the token is valid */
         const isAuthorized = await this.isLogged();
-        if (isAuthorized) return;
+        if (!isAuthorized) this.logout();
       } catch (e) {
         this.connection.authToken = undefined;
       }
