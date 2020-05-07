@@ -1,7 +1,7 @@
 import { connect } from '@holochain/hc-web-client';
 
 import { SocketConnection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { parseResponse } from './utils';
+import { parseResponse, parseZomeResponse } from './utils';
 
 export interface HolochainCallOptions {
   instance: string;
@@ -18,6 +18,7 @@ export class HolochainConnection extends SocketConnection {
   connection!: (instance: string, zome: string, funcName: string, params: any) => Promise<any>;
   private signalListeners: Array<(params: any) => void> = [];
   onsignal!: (callback: (params: any) => void) => void;
+  private genericCall!: (...segments: Array<string>) => (params: any) => Promise<any>;
 
   constructor(
     protected hcConnectionOptions: HolochainConnectionOptions,
@@ -27,7 +28,9 @@ export class HolochainConnection extends SocketConnection {
   }
 
   async createSocket(): Promise<WebSocket> {
-    const { callZome, ws, onSignal } = await connect({ url: this.hcConnectionOptions.host });
+    const { call, callZome, ws, onSignal } = await connect({ url: this.hcConnectionOptions.host });
+
+    this.genericCall = call;
 
     this.connection = async (instance: string, zome: string, funcName: string, params: any) =>
       callZome(instance, zome, funcName)(params);
@@ -39,19 +42,24 @@ export class HolochainConnection extends SocketConnection {
     return ws;
   }
 
+  public async callAdmin(funcName: string, params: any): Promise<any> {
+    this.logger.log('CALL ADMIN INTERFACE:', funcName, params);
+
+    const jsonString = this.genericCall(funcName, params);
+    const result = parseZomeResponse(jsonString);
+
+    this.logger.log('ADMIN CALL RESULT:', funcName, params, result);
+    return result;
+  }
+
   public async call(instance: string, zome: string, funcName: string, params: any): Promise<any> {
     this.logger.log('CALL ZOME:', funcName, params);
     const jsonString = await this.connection(instance, zome, funcName, params);
 
-    const result = JSON.parse(jsonString);
-
-    if (result.Err) throw new Error(JSON.stringify(result.Err));
-    if (result.SerializationError) {
-      throw new Error(JSON.stringify(result.SerializationError));
-    }
+    const result = parseZomeResponse(jsonString);
 
     this.logger.log('ZOME RESULT:', funcName, params, result);
-    return parseResponse(result);
+    return result;
   }
 
   public async onSignal(signalName: string, callback: (params: any) => void): Promise<void> {

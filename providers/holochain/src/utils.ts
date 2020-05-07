@@ -6,6 +6,17 @@ export type EntryResult<T extends object = any> = {
   type: string;
 };
 
+export function parseZomeResponse(jsonString: any) {
+  const result = JSON.parse(jsonString);
+
+  if (result.Err) throw new Error(JSON.stringify(result.Err));
+  if (result.SerializationError) {
+    throw new Error(JSON.stringify(result.SerializationError));
+  }
+
+  return parseResponse(result);
+}
+
 export function parseResponse(response: { Ok: any } | any): any {
   return response.hasOwnProperty('Ok') ? response.Ok : response;
 }
