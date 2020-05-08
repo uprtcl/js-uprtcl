@@ -52,7 +52,7 @@ export class HttpEthAuthProvider extends HttpProvider {
 
   async isLogged() {
     if (this.userId === undefined) return false;
-    return this.connection.get<boolean>(this.options.host + `/user/${this.userId}/isAuthorized`);
+    return this.connection.get<boolean>(this.options.host + `/user/isAuthorized`);
   }
 
   async getNonce() {
