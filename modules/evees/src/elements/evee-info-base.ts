@@ -412,7 +412,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const proposalId = e.detail.proposalId;
     const perspectiveId = e.detail.perspectiveId;
-    const result = await this.client.mutate({
+    await this.client.mutate({
       mutation: AUTHORIZE_PROPOSAL,
       variables: {
         proposalId: proposalId,
@@ -423,6 +423,17 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.logger.info('accepted proposal', { proposalId });
 
+    /** this will refresh the current perspective content */
+    this.dispatchEvent(
+      new CustomEvent('checkout-perspective', {
+        detail: {
+          perspectiveId: perspectiveId
+        },
+        composed: true,
+        bubbles: true
+      })
+    );
+
     this.reload();
   }
 
@@ -432,7 +443,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const proposalId = e.detail.proposalId;
     const perspectiveId = e.detail.perspectiveId;
 
-    const result = await this.client.mutate({
+    await this.client.mutate({
       mutation: EXECUTE_PROPOSAL,
       variables: {
         proposalId: proposalId,
@@ -443,8 +454,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.logger.info('accepted proposal', { proposalId });
 
     this.dispatchEvent(
-      new CustomEvent('refresh-content', {
-        cancelable: true,
+      new CustomEvent('checkout-perspective', {
+        detail: {
+          perspectiveId: perspectiveId
+        },
         composed: true,
         bubbles: true
       })
