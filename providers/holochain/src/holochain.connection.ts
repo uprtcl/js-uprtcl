@@ -45,7 +45,7 @@ export class HolochainConnection extends SocketConnection {
   public async callAdmin(funcName: string, params: any): Promise<any> {
     this.logger.log('CALL ADMIN INTERFACE:', funcName, params);
 
-    const jsonString = this.genericCall(funcName)(params);
+    const jsonString = await this.genericCall(funcName)(params);
     const result = parseZomeResponse(jsonString);
 
     this.logger.log('ADMIN CALL RESULT:', funcName, params, result);
