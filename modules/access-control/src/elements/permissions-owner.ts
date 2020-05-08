@@ -1,6 +1,7 @@
-import { LitElement, property, html, query } from 'lit-element';
+import { LitElement, property, html, query, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
+import { TextFieldBase } from "@material/mwc-textfield/mwc-textfield-base"; 
 import '@material/mwc-dialog';
 import '@material/mwc-textfield';
 
@@ -12,8 +13,8 @@ import { OwnerPermissions } from '../services/owner-access-control.service';
 import { SET_CAN_WRITE } from '../graphql/queries';
 import { prettyAddress } from './support';
 
-export class PermissionsOwner extends moduleConnect(LitElement)
-  implements PermissionsElement<OwnerPermissions> {
+export class PermissionsOwner extends moduleConnect(LitElement) implements PermissionsElement<OwnerPermissions> {
+
   @property({ type: String })
   entityId!: string;
 
@@ -23,19 +24,24 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   @property({ attribute: false })
   canWrite!: boolean;
 
-  @query('#my-dialog')
-  dialog: any;
-
-  @property({ type: String })
+  @property({ attribute: false })
   newOwnerAddress!: string;
 
+  @property({ attribute: false })
+  showDialog: boolean = false;
+
+  @query('#new-address')
+  newAddressEl!: TextFieldBase;
+
+  client!: ApolloClient<any>;
+
   firstUpdated() {
+    this.client = this.request(ApolloClientModule.bindings.Client);
     this.loadPermissions();
   }
 
   async loadPermissions() {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
-    const result = await client.query({
+    const result = await this.client.query({
       query: gql`{
         entity(ref: "${this.entityId}") {
           id
@@ -55,14 +61,20 @@ export class PermissionsOwner extends moduleConnect(LitElement)
     this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
   }
 
-  async changeOwner() {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+  async showTransferDialog() {
+    this.showDialog = true;
+  }
 
-    const result = await client.mutate({
+  async changeOwner() {
+    this.showDialog = false;
+
+    const newAddress = this.newAddressEl.value;
+
+    const result = await this.client.mutate({
       mutation: SET_CAN_WRITE,
       variables: {
         entityId: this.entityId,
-        userId: this.newOwnerAddress
+        userId: newAddress
       }
     });
 
@@ -78,41 +90,56 @@ export class PermissionsOwner extends moduleConnect(LitElement)
     );
   }
 
+  getOwner() {
+    return this.canWrite ? 'you' : prettyAddress(this.permissions.owner);
+  }
+
   renderDialog() {
     return html`
-      <mwc-dialog id="my-dialog" .heading=${this.t('access-control:transfer-ownership')}>
+      <evees-dialog 
+        primary-text="Transfer" 
+        secondary-text="Cancel"
+        @primary=${this.changeOwner}
+        @secondary=${ () => this.showDialog = false }
+        show-secondary='true'>
         <mwc-textfield
+          id="new-address"
           outlined
           .label=${this.t('access-control:new-owner-address')}
           initialFocusAttribute
-          @input=${e => (this.newOwnerAddress = e.target.value)}
         ></mwc-textfield>
-        <mwc-button
-          @click=${this.changeOwner}
-          dialogAction="ok"
-          slot="primaryAction"
-          .disabled=${!this.newOwnerAddress}
-        >
-          ${this.t('access-control:confirm')}
-        </mwc-button>
-        <mwc-button dialogAction="cancel" slot="secondaryAction">
-          ${this.t('access-control:cancel')}
-        </mwc-button>
-      </mwc-dialog>
+      </evees-dialog>
     `;
   }
 
   render() {
     return html`
-      ${this.renderDialog()}
-      <span><strong>${this.t('access-control:owner')}:</strong> ${prettyAddress(this.permissions.owner)}</span>
+      ${this.showDialog ? this.renderDialog() : ''}
+      <div class="row title">
+        <strong>${this.t('access-control:owner')}:</strong> ${this.getOwner()}
+      </div>
       ${this.canWrite
         ? html`
-            <mwc-button outlined icon="swap_horizontal" @click=${() => (this.dialog.open = true)}>
+            <mwc-button outlined icon="swap_horizontal" @click=${this.showTransferDialog}>
               ${this.t('access-control:transfer-ownership')}
             </mwc-button>
           `
         : ''}
+    `;
+  }
+
+  static get styles() {
+    return css`
+      mwc-button {
+        width: 220px;
+      }
+
+      .title {
+        margin-bottom: 32px;
+      }
+      .row {
+        width: 100%;
+      }
     `;
   }
 }
