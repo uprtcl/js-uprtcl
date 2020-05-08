@@ -7,7 +7,7 @@ export type EntryResult<T extends object = any> = {
 };
 
 export function parseZomeResponse(jsonString: any) {
-  const result = JSON.parse(jsonString);
+  const result = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
 
   if (result.Err) throw new Error(JSON.stringify(result.Err));
   if (result.SerializationError) {
