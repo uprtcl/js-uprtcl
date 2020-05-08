@@ -189,7 +189,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const dataId = await EveesHelpers.createEntity(this.client, store, page);
     const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [this.currentHeadId ? this.currentHeadId : ''] });
-    return EveesHelpers.createPerspective(this.client, remote, { headId, context: `${this.context}_${Date.now()}` });
+    return EveesHelpers.createPerspective(
+      this.client, 
+      remote, 
+      { 
+        headId, 
+        context: `${this.context}_${Date.now()}`,  
+        parentId: this.ref
+      });
   }
 
   async updateContent(newWiki: Wiki) {
