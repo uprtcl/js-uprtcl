@@ -264,7 +264,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
   ): Promise<void> {
     const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
 
-    if (details.headId !== undefined || details.name !== undefined) {
+    if (details.context !== undefined) {
       await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
         perspectiveIdHash,
         details.context ? details.context : ''
@@ -274,7 +274,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
     if (details.headId !== undefined) {
       const headCidParts = cidToHex32(details.headId);
 
-      await this.uprtclDetails.send(UPDATED_HEAD, [
+      await this.uprtclRoot.send(UPDATED_HEAD, [
         perspectiveIdHash,
         headCidParts[0],
         headCidParts[1],
