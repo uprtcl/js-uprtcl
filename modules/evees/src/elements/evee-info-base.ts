@@ -226,7 +226,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.perspectiveId,
       this.firstPerspectiveId,
       this.pullWorkspace,
-      config
+      config,
+      this.perspectiveId
     );
 
     this.logger.info('checkPull()');
@@ -317,7 +318,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       toPerspectiveId,
       fromPerspectiveId,
       workspace,
-      config
+      config,
+      this.perspectiveId
     );
 
     const confirm = await this.updatesDialog(workspace, 'propose', 'cancel');

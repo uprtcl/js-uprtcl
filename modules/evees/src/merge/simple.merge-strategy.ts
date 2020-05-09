@@ -41,13 +41,20 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromPerspectiveId: string,
     workspace: EveesWorkspace,
     config: any,
+    parentId?: string
   ): Promise<string> {
     const promises = [toPerspectiveId, fromPerspectiveId].map(async id => EveesHelpers.getPerspectiveHeadId(this.client, id));
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
 
-    const newHead = await this.mergeCommits(toHeadId, fromHeadId, remote.authority, workspace, config);
+    const newHead = await this.mergeCommits(
+      toHeadId, 
+      fromHeadId, 
+      remote.authority, 
+      workspace, 
+      config, 
+      parentId);
 
     /** prevent an update head to the same head */
     if (newHead === toHeadId) {
@@ -119,7 +126,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromCommitId: string,
     authority: string,
     workspace: EveesWorkspace,
-    config: any
+    config: any,
+    parentId?: string
   ): Promise<string> {
     
     if (toCommitId === fromCommitId) {
@@ -140,7 +148,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
       ancestorData,
       newDatas,
       workspace,
-      config
+      config,
+      parentId
     );
 
     const type = this.recognizer.recognizeType(ancestorData);
@@ -180,7 +189,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
     originalData: T,
     newDatas: T[],
     workspace: EveesWorkspace,
-    config: any
+    config: any,
+    parentId?: string
   ): Promise<T> {
     const merge: Merge | undefined = this.recognizer
       .recognizeBehaviours(originalData)
@@ -193,14 +203,15 @@ export class SimpleMergeStrategy implements MergeStrategy {
         )} that does not implement the Mergeable behaviour`
       );
 
-    return merge.merge(originalData)(newDatas, this, workspace, config);
+    return merge.merge(originalData)(newDatas, this, workspace, config, parentId);
   }
 
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
     workspace: EveesWorkspace,
-    config: any
+    config: any,
+    parentId?: string
   ): Promise<string[]> {
     const allLinks: Dictionary<boolean> = {};
 

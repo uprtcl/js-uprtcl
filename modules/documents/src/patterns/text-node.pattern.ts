@@ -125,7 +125,8 @@ export class TextNodeCommon
     modifications: Entity<TextNode>[],
     mergeStrategy: MergeStrategy,
     workspace: EveesWorkspace,
-    config: any
+    config: any,
+    parentId?: string
   ): Promise<TextNode> => {
     const resultText = mergeStrings(
       originalNode.object.text,
@@ -140,7 +141,8 @@ export class TextNodeCommon
       originalNode.object.links,
       modifications.map(data => data.object.links),
       workspace,
-      config
+      config,
+      parentId
     );
 
     return {

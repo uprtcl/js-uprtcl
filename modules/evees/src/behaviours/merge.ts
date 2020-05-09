@@ -10,6 +10,7 @@ export interface Merge<T = any> extends Behaviour<T> {
     modifications: any[],
     strategy: MergeStrategy,
     workspace: EveesWorkspace,
-    config: any
+    config: any,
+    parentId?: string
   ) => Promise<any>;
 }
