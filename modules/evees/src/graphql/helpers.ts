@@ -8,6 +8,7 @@ import { CREATE_ENTITY, CREATE_PERSPECTIVE, UPDATE_HEAD } from "./queries";
 import { EveesRemote } from "../services/evees.remote";
 import { Commit, Perspective } from '../types';
 import { signObject } from "../utils/signed";
+import { cloneDeep } from "lodash-es";
 
 export interface CreateCommit {
   dataId: string, 
@@ -82,7 +83,8 @@ export class EveesHelpers {
     const dataId = await this.getCommitDataId(client, commitId);
     const data = await loadEntity<any>(client, dataId);
     if (!data) throw new Error('data not found');
-    return data;
+    /** make sure users of loadEntity wont mess the cache by reference */
+    return cloneDeep(data);
   }
   
   static async getCommitDataId(client: ApolloClient<any>, commitId: string): Promise<string> {
