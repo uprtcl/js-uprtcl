@@ -247,8 +247,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     };
 
     index = index === undefined ? this.wiki.object.pages.length : index;
-
-    debugger
     
     const result = await this.splicePages([newPage], index, 0);
     if (!result.entity) throw Error('problem with splice pages');
