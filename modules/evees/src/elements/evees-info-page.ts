@@ -161,34 +161,57 @@ export class EveesInfoPage extends EveesInfoBase {
       </div>`;
   }
 
+  renderNewPerspectiveButton() {
+    return html`
+      <evees-loading-button
+        icon="call_split" 
+        @click=${this.newPerspectiveClicked}
+        loading=${this.creatingNewPerspective ? 'true' : 'false'}
+        label="new draft">
+      </evees-loading-button>`;
+  }
+
+  renderLoginButton() {
+    return html`
+      <evees-loading-button
+        icon="account_box" 
+        @click=${this.login}
+        loading=${this.loggingIn ? 'true' : 'false'}
+        label="login">
+      </evees-loading-button>`;
+  }
+
+  renderMakeProposalButton() {
+    return html`
+      <evees-loading-button
+        icon="call_merge" 
+        @click=${this.proposeMergeClicked}
+        loading=${this.proposingUpdate ? 'true' : 'false'}
+        label="Propose Update">
+      </evees-loading-button>`;
+  }
+
+  renderMakePublicButton() {
+    return html`
+      <evees-loading-button
+        icon=${this.publicRead ? 'visibility_off' : 'visibility'}
+        @click=${this.makePublic}
+        loading=${this.makingPublic ? 'true' : 'false'}
+        label="Make Public">
+      </evees-loading-button>`;
+  }
+
   renderPerspectiveActions() {
     /** most likely action button */
     const actionButton = html`
       <div class="action-button">    
         ${this.firstPerspectiveId !== this.perspectiveId ? (
-          this.publicRead ? html`
-            <mwc-button outlined
-              icon="call_merge"
-              @click=${this.proposeMergeClicked}
-              label="Propose Update"
-            ></mwc-button>` : html`
-            <mwc-button outlined
-              icon=${this.publicRead ? "visibility_off" : "visibility"}
-              @click=${this.makePublic}
-              label="Make Public"
-            ></mwc-button>`
+          this.publicRead ? 
+          this.renderMakeProposalButton() : 
+          this.renderMakePublicButton()
         ) : (this.isLogged ? 
-          html`
-            <mwc-button outlined
-              icon="call_split"
-              @click=${this.newPerspectiveClicked}
-              label="new draft"
-            ></mwc-button>` : html`
-            <mwc-button outlined
-              icon="account_box"
-              @click=${this.login}
-              label="login"
-            ></mwc-button>`)
+            this.renderNewPerspectiveButton() : 
+            this.renderLoginButton())
           }
       </div>`;
 
