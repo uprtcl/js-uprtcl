@@ -90,6 +90,18 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   showUpdatesDialog: boolean = false;
 
   @property({ attribute: false })
+  loggingIn: boolean = false;
+
+  @property({ attribute: false})
+  creatingNewPerspective: boolean = false;
+
+  @property({ attribute: false})
+  proposingUpdate: boolean = false;
+
+  @property({ attribute: false})
+  makingPublic: boolean = false;
+
+  @property({ attribute: false })
   firstHasChanges!: boolean;
 
   @query('#updates-dialog')
@@ -217,7 +229,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const config = {
       forceOwner: true,
       authority: this.perspectiveData.perspective.authority,
-      canWrite: remote.userId
+      canWrite: remote.userId,
+      parentId: this.perspectiveId
     };
 
     this.pullWorkspace = new EveesWorkspace(this.client, this.recognizer);
@@ -226,8 +239,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.perspectiveId,
       this.firstPerspectiveId,
       this.pullWorkspace,
-      config,
-      this.perspectiveId
+      config
     );
 
     this.logger.info('checkPull()');
@@ -257,11 +269,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async login() {
     if (this.defaultRemote === undefined) throw new Error('default remote undefined');
+    this.loggingIn = true;
     await this.defaultRemote.login();
 
     await this.client.resetStore();
     this.reload();
     this.load();
+    this.loggingIn = false;
   }
 
   async logout() {
@@ -275,6 +289,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async makePublic() {
     if (!this.client) throw new Error('client undefined');
+    this.makingPublic = true;
     await this.client.mutate({
       mutation: SET_PUBLIC_READ,
       variables: {
@@ -282,6 +297,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         value: true
       }
     });
+
+    this.makingPublic = false;
 
     this.load();
   }
@@ -311,15 +328,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const config = {
       forceOwner: true,
       authority: remote.authority,
-      canWrite: permissions.owner
+      canWrite: permissions.owner,
+      parentId: this.perspectiveId
     };
 
     await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
       fromPerspectiveId,
       workspace,
-      config,
-      this.perspectiveId
+      config
     );
 
     const confirm = await this.updatesDialog(workspace, 'propose', 'cancel');
@@ -469,8 +486,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async newPerspectiveClicked() {
-    this.loading = true;
-
+    this.creatingNewPerspective = true;
+    
     const workspace = new EveesWorkspace(this.client, this.recognizer);
     const newPerspectiveId = await this.evees.forkPerspective(this.perspectiveId, workspace, this.defaultAuthority);
     await workspace.execute(this.client);
@@ -478,6 +495,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.checkoutPerspective(newPerspectiveId);
 
     this.logger.info('newPerspectiveClicked() - perspective created', { id: newPerspectiveId });
+    this.creatingNewPerspective = false;
   }
 
   checkoutPerspective(perspectiveId: string) {
@@ -493,7 +511,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async proposeMergeClicked() {
+    this.proposingUpdate = true;
     await this.otherPerspectiveMerge(this.perspectiveId, this.firstPerspectiveId, true);
+    this.proposingUpdate = false;
   }
 
   perspectiveTextColor() {

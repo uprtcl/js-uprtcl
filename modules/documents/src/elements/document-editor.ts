@@ -46,11 +46,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ attribute: false })
   client!: ApolloClient<any>;
 
-  @property({ type: Object, attribute: false })
+  @property({ attribute: false })
   doc!: DocNode;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   docHasChanges: boolean = false;
+
+  @property({ attribute: false })
+  persistingAll: boolean = false;
 
   @property({ type: Boolean, attribute: false })
   showCommitMessage: boolean = false;
@@ -273,11 +276,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async persistAll(message?:string) {
     if (!this.doc) return;
+    this.persistingAll = true;
     if (this.doc.authority === undefined) throw Error('top element must have an authority');
     await this.persistNodeRec(this.doc, this.doc.authority, message);
     /** reload doc from backend */
     await this.loadDoc();
     this.requestUpdate();
+    this.persistingAll = false;
   }
 
   async persistNodeRec(node: DocNode, defaultAuthority: string, message?: string) {
@@ -968,9 +973,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         ${this.docHasChanges && !this.showCommitMessage
           ? html`
               <div class="button-container">
-                <mwc-button outlined icon="unarchive" @click=${() => this.persistAll()}>
-                  push
-                </mwc-button>
+                <evees-loading-button
+                  icon="unarchive" 
+                  @click=${() => this.persistAll()}
+                  loading=${this.persistingAll ? 'true' : 'false'}
+                  label="push">
+                </evees-loading-button>
               </div>
               <!-- <evees-options-menu 
                 .config=${options} 

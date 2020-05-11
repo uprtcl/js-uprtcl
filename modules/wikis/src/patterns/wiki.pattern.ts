@@ -41,8 +41,7 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     modifications: Entity<Wiki>[],
     mergeStrategy: MergeStrategy,
     workspace: EveesWorkspace,
-    config,
-    parentId?: string
+    config
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
       originalNode.object.title,
@@ -54,8 +53,7 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
       originalNode.object.pages,
       modifications.map(data => data.object.pages),
       workspace,
-      config,
-      parentId
+      config
     );
 
     return {

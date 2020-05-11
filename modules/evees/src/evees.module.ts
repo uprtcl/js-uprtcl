@@ -31,6 +31,7 @@ import { EveesDiff } from './elements/evees-diff';
 import { EveesDialog } from './elements/common-ui/evees-dialog';
 import { EveesPopper } from './elements/common-ui/evees-popper';
 import { EveesHelp } from './elements/common-ui/evees-help';
+import { EveesLoadingButton } from './elements/common-ui/evees-loading-button';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -105,6 +106,8 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-update-diff', EveesDiff)
     customElements.define('evees-dialog', EveesDialog);
     customElements.define('evees-help', EveesHelp);
+    customElements.define('evees-loading-button', EveesLoadingButton);
+    
   }
 
   get submodules() {

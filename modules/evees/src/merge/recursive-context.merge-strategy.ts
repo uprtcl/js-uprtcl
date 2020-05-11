@@ -113,21 +113,19 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     workspace: EveesWorkspace,
-    config: any,
-    parentId?: string) {
+    config: any) {
     /** reset internal state */
     this.perspectivesByContext = undefined;
     this.allPerspectives = undefined;
 
-    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, workspace, config, parentId);
+    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, workspace, config);
   }
 
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
     workspace: EveesWorkspace,
-    config: any,
-    parentId?: string
+    config: any
   ): Promise<string> {
     let root = false;
     if (!this.perspectivesByContext) {
@@ -137,7 +135,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
     }
 
-    return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, workspace, config, parentId);
+    return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, workspace, config);
   }
 
   private async getPerspectiveContext(perspectiveId: string): Promise<string> {
@@ -204,8 +202,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     originalLinks: string[],
     modificationsLinks: string[][],
     workspace: EveesWorkspace,
-    config: any,
-    parentId?: string
+    config: any
   ): Promise<string[]> {
     if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
 
@@ -236,12 +233,16 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
             /** Two perspectives of the same context are merged, keeping the "to" perspecive id,
              *  and updating its head (here is where recursion start) */
 
+            config = {
+              parentId: perspectivesByContext.to,
+              ...config
+            }
+
             await this.mergePerspectives(
               perspectivesByContext.to as string,
               perspectivesByContext.from as string,
               workspace,
-              config,
-              perspectivesByContext.to
+              config
             );
 
             return perspectivesByContext.to as string;
@@ -268,7 +269,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
                     workspace,
                     config.authority,
                     config.canWrite,
-                    parentId
+                    config.parentId
                   );
 
                   return newPerspectiveId;

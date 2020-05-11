@@ -61,6 +61,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   pagesList: PageData[] | undefined = undefined;
 
+  @property({ attribute: false })
+  creatingNewPage: boolean = false;
+  
+
   authority: string = '';
   context: string = '';
   currentHeadId: string | undefined = undefined;
@@ -239,6 +243,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async newPage(index?: number) {
     if (!this.wiki) return;
+    this.creatingNewPage = true;
 
     const newPage: TextNode = {
       text: '',
@@ -254,6 +259,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     await this.updateContent(result.entity);
 
     this.selectedPageIx = index;
+    this.creatingNewPage = false;
   }
 
   async movePage(fromIndex: number, toIndex: number) {
@@ -404,9 +410,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           ${this.editable
             ? html`
                 <div class="button-row">
-                  <mwc-button outlined icon="note_add" @click=${() => this.newPage()}>
-                    ${this.t('wikis:new-page')}
-                  </mwc-button>
+                  <evees-loading-button
+                    icon="add_circle_outline" 
+                    @click=${() => this.newPage()}
+                    loading=${this.creatingNewPage ? 'true' : 'false'}
+                    label=${this.t('wikis:new-page')}>
+                  </evees-loading-button>
                 </div>
               `
             : html``}
