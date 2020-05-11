@@ -40,8 +40,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     toPerspectiveId: string,
     fromPerspectiveId: string,
     workspace: EveesWorkspace,
-    config: any,
-    parentId?: string
+    config: any
   ): Promise<string> {
     const promises = [toPerspectiveId, fromPerspectiveId].map(async id => EveesHelpers.getPerspectiveHeadId(this.client, id));
     const [toHeadId, fromHeadId] = await Promise.all(promises);
@@ -53,8 +52,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       fromHeadId, 
       remote.authority, 
       workspace, 
-      config, 
-      parentId);
+      config);
 
     /** prevent an update head to the same head */
     if (newHead === toHeadId) {
@@ -126,8 +124,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromCommitId: string,
     authority: string,
     workspace: EveesWorkspace,
-    config: any,
-    parentId?: string
+    config: any
   ): Promise<string> {
     
     if (toCommitId === fromCommitId) {
@@ -148,8 +145,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       ancestorData,
       newDatas,
       workspace,
-      config,
-      parentId
+      config
     );
 
     const type = this.recognizer.recognizeType(ancestorData);
@@ -189,8 +185,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     originalData: T,
     newDatas: T[],
     workspace: EveesWorkspace,
-    config: any,
-    parentId?: string
+    config: any
   ): Promise<T> {
     const merge: Merge | undefined = this.recognizer
       .recognizeBehaviours(originalData)
@@ -203,15 +198,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
         )} that does not implement the Mergeable behaviour`
       );
 
-    return merge.merge(originalData)(newDatas, this, workspace, config, parentId);
+    return merge.merge(originalData)(newDatas, this, workspace, config);
   }
 
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
     workspace: EveesWorkspace,
-    config: any,
-    parentId?: string
+    config: any
   ): Promise<string[]> {
     const allLinks: Dictionary<boolean> = {};
 
