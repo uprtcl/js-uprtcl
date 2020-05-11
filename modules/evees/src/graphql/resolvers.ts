@@ -369,9 +369,13 @@ export const eveesResolvers: IResolvers = {
         await remote.proposals.declineProposal(proposalId);
       }
 
+      const proposalRead = await remote.proposals.getProposal(proposalId);
+
       return {
         id: proposalId,
-        authorized: authorize
+        authorized: authorize,
+        executed: proposalRead.executed !== undefined ? proposalRead.executed : false,
+        toPerspectiveId: perspectiveId
       };
     },
     async executeProposal(_, { proposalId, perspectiveId }, { container }) {

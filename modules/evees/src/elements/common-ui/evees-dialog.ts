@@ -72,6 +72,12 @@ export class EveesDialog extends LitElement {
         }
         .slot-container {
           margin-bottom: 3vw;
+          max-height: calc(100vh - 200px);
+          min-height: 500px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
         }`;
   }
 }

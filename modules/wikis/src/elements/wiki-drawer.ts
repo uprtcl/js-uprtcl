@@ -188,8 +188,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!store) throw new Error('store is undefined');
 
     const dataId = await EveesHelpers.createEntity(this.client, store, page);
-    const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [this.currentHeadId ? this.currentHeadId : ''] });
-    return EveesHelpers.createPerspective(this.client, remote, { headId, context: `${this.context}_${Date.now()}` });
+    const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [] });
+    return EveesHelpers.createPerspective(
+      this.client, 
+      remote, 
+      { 
+        headId, 
+        context: `${this.context}_${Date.now()}`,  
+        parentId: this.ref
+      });
   }
 
   async updateContent(newWiki: Wiki) {
@@ -240,7 +247,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     };
 
     index = index === undefined ? this.wiki.object.pages.length : index;
-
+    
     const result = await this.splicePages([newPage], index, 0);
     if (!result.entity) throw Error('problem with splice pages');
 

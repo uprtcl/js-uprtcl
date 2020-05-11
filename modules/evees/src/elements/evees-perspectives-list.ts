@@ -65,6 +65,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   showDiff: Boolean = false;
+  
+  @property({ attribute: false })
+  showHistory: Boolean = false;
 
   @property({ attribute: 'force-update' })
   forceUpdate: string = 'true';
@@ -500,10 +503,16 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   renderOldProposals() {
-    return this.mergedProposals.length > 0 ? html`
-    <div class='list-section'><strong>Old Proposals</strong></div>
-    ${this.mergedProposals.map(
-    proposal => this.renderProposalRow(proposal))}` : '';
+    if (this.mergedProposals.length === 0) return '';
+    
+    return html`
+      <div class='list-section'>
+        <strong>Old Proposals 
+          <span class="inline-button" @click=${() => this.showHistory = !this.showHistory}>(${this.showHistory ? 'hide' : 'show'})</span>
+        </strong>
+      </div>
+      ${this.showHistory ? this.mergedProposals.map(proposal => this.renderProposalRow(proposal)) : ''}
+    `;
   }
 
   renderDiff() {
@@ -604,6 +613,12 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         margin-top: 60px;
         color: #d0d8db;
         text-align: center;
+      }
+
+      .inline-button {
+        cursor: pointer;
+        text-decoration: underline;
+        color: #2196f3;
       }
     `;
   }

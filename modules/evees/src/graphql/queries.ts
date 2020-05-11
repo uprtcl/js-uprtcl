@@ -154,6 +154,16 @@ export const AUTHORIZE_PROPOSAL: DocumentNode = gql`
     ) {
       id
       authorized
+      executed
+      toPerspective {
+        id
+        head {
+          id
+          data {
+            id
+          }
+        }
+      }
     }
   }
 `;

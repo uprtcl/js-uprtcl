@@ -170,8 +170,7 @@ export class MultiSourceService {
       // Get first resolved object
       return await raceToSuccess<Entity<O>>(promises);
     } catch (e) {
-      this.logger.warn('All sources failed to get the hash', hash, ' with error ', e);
-
+      
       // All sources failed, return undefined
       return undefined;
     }
@@ -199,7 +198,8 @@ export class MultiSourceService {
     if (knownSources) {
       return this.tryGetFromSources(hash, knownSources);
     } else {
-      let remainingCids = this.getAllCASIds();
+      const allCids = this.getAllCASIds();
+      let remainingCids = allCids;
       if (this.defaultSources) {
 
         const defaultSources = this.defaultSources;
@@ -209,7 +209,12 @@ export class MultiSourceService {
         remainingCids = remainingCids.filter(casID => !defaultSources.includes(casID));
       }
 
-      return this.tryGetFromSources(hash, remainingCids);
+      const finalObject = await this.tryGetFromSources<O>(hash, remainingCids);
+      if (!finalObject) {
+        this.logger.warn('All sources failed to get the hash', { hash, allCids });
+      }
+
+      return finalObject;
     }
   }
 
