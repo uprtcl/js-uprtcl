@@ -58,7 +58,8 @@ export class HolochainConnection extends SocketConnection {
     newDnaId: string,
     newInstanceId: string,
     templateDnaAddress: string,
-    properties: any
+    properties: any,
+    findInterface: (interfaces: Array<any>) => any
   ): Promise<void> {
     const holoscapeDataDir = this.getHoloscapeDataDir();
     let path: string | undefined = undefined;
@@ -87,7 +88,7 @@ export class HolochainConnection extends SocketConnection {
 
     const interfaceList = await this.callAdmin('admin/interface/list', {});
     // TODO: review this: what interface to pick?
-    const iface = interfaceList[0];
+    const iface = findInterface(interfaceList);
 
     const ifaceResult = this.callAdmin('admin/interface/add_instance', {
       instance_id: newInstanceId,
