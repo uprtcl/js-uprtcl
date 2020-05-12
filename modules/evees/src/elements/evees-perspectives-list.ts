@@ -288,7 +288,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             <strong>${perspectivesData.name}</strong>
           `
         : ''}
-      by ${prettyAddress(perspectivesData.creatorId)}
+      ${prettyAddress(perspectivesData.creatorId)}
     `;
   }
 

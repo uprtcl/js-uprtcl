@@ -20,13 +20,14 @@ import { SimpleWiki } from './simple-wiki';
 (async function() {
   // const c1host = 'http://3.12.79.127:3100/uprtcl/1';
   const c1host = 'http://localhost:3100/uprtcl/1';
-  // const c1host = 'http://ec2-54-145-41-139.compute-1.amazonaws.com:3100/uprtcl/1';
+  // const c1host = 'https:/api.intercreativity.io/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
   
+  const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
   // const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
   // const ipfsConfig = { host: 'ec2-54-145-41-139.compute-1.amazonaws.com', port: 5001, protocol: 'http' };
-  const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
+  // const ipfsConfig = { host: 'ipfs.intercreativity.io', port: 5001, protocol: 'https' };
 
   const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
   const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };

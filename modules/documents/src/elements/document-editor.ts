@@ -987,8 +987,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               </evees-options-menu> -->
               <evees-help>
                 <span>
-                  Don't worry, your changes are already saved on this device.<br><br>
-                  You just need to push them before you make a proposal.
+                  Changes are saved locally on this device until you "push" them.<br><br>
+                  Once pushed they will be visible (if this draft is public).<br><br>
+                  Only pushed changes are included on merge proposals.
                 </span>
               </evees-help>
             `

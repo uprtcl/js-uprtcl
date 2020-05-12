@@ -52,7 +52,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
     const hasName = this.perspectiveData.details.name !== undefined && this.perspectiveData.details.name !== '';
     const name = html`${this.perspectiveData.details.name}`;
-    const defaultName = html`by ${prettyAddress(this.perspectiveData.perspective.creatorId)}`;
+    const defaultName = html`${prettyAddress(this.perspectiveData.perspective.creatorId)}`;
 
     return html`Draft ${hasName ? name : defaultName}`;
   }
