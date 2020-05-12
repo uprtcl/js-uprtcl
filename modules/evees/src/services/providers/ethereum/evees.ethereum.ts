@@ -7,10 +7,15 @@ import {
 import { IpfsStore, sortObject, IpfsConnectionOptions } from '@uprtcl/ipfs-provider';
 import { CidConfig } from '@uprtcl/multiplatform';
 
-import * as UprtclRoot from './contracts-json/UprtclRoot.json';
-import * as UprtclDetails from './contracts-json/UprtclDetails.json';
-import * as UprtclProposals from './contracts-json/UprtclProposals.json';
-import * as UprtclWrapper from './contracts-json/UprtclWrapper.json';
+import { abi as abiRoot, networks as networksRoot } from './contracts-json/UprtclRoot.min.json';
+import { abi as abiDetails, networks as networksDetails } from './contracts-json/UprtclDetails.min.json';
+import { abi as abiProposals, networks as networksProposals } from './contracts-json/UprtclProposals.min.json';
+import { abi as abiWrapper, networks as networksWrapper } from './contracts-json/UprtclWrapper.min.json';
+
+const UprtclRoot = { abi: abiRoot, networks: networksRoot };
+const UprtclDetails = { abi: abiDetails, networks: networksDetails };
+const UprtclProposals = { abi: abiProposals, networks: networksProposals };
+const UprtclWrapper = { abi: abiWrapper, networks: networksWrapper };
 
 import { Secured } from '../../../utils/cid-hash';
 import { Commit, Perspective, PerspectiveDetails, NewPerspectiveData } from '../../../types';
