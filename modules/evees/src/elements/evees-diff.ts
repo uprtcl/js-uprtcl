@@ -97,6 +97,10 @@ export class EveesDiff extends moduleConnect(LitElement) {
   }
 
   static get styles() {
-    return css``;
+    return css`
+      :host {
+        display: block;
+        padding: 30px 20px 30px 0px;
+      }`;
   }
 }
