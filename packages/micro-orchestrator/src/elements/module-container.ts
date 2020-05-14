@@ -1,16 +1,21 @@
 import { LitElement, html } from 'lit-element';
 import { Container, interfaces } from 'inversify';
 
+export interface RequestDependencyOptions {
+  multiple: boolean;
+  optional: boolean;
+}
+
 export class RequestDependencyEvent extends CustomEvent<{
-  request: interfaces.ServiceIdentifier<any>[];
-  multiple?: boolean;
+  request: interfaces.ServiceIdentifier<any>;
+  options: RequestDependencyOptions;
 }> {
   dependencies!: any[];
 
   constructor(
     eventInitDict?: CustomEventInit<{
-      request: interfaces.ServiceIdentifier<any>[];
-      multiple?: boolean;
+      request: interfaces.ServiceIdentifier<any>;
+      options: RequestDependencyOptions;
     }>
   ) {
     super('request-dependency', eventInitDict);
@@ -25,23 +30,29 @@ export function ModuleContainer(container: Container): typeof HTMLElement {
       this.addEventListener<any>('request-dependency', (e: RequestDependencyEvent) => {
         e.stopPropagation();
 
-        try {
-          if (e.detail.multiple)
-            e.dependencies = e.detail.request.map((dep) => container.getAll(dep));
-          else e.dependencies = e.detail.request.map((dep) => [container.get(dep)]);
-        } catch (error) {
-          console.warn(
-            'Trying to request a dependency that is not registered ',
-            e.dependencies,
-            ' error: ',
-            error
+        const dependencyId = e.detail.request;
+        const options = e.detail.options;
+
+        if (container.isBound(dependencyId)) {
+          if (options.multiple) {
+            e.dependencies = container.getAll(dependencyId);
+          } else {
+            e.dependencies = [container.get(dependencyId)];
+          }
+        } else if (!options.optional) {
+          throw new Error(
+            `Trying to request a non-optional dependency that is not registered ${String(
+              dependencyId
+            )}`
           );
         }
       });
     }
 
     render() {
-      return html` <slot></slot> `;
+      return html`
+        <slot></slot>
+      `;
     }
   }
 
