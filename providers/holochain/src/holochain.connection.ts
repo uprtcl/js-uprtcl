@@ -100,6 +100,18 @@ export class HolochainConnection extends SocketConnection {
   }
 
   /**
+   * Returns whether this connection is attached to an admin permissioned interface
+   */
+  async isAdminInterface(): Promise<boolean> {
+    try {
+      await this.callAdmin('admin/dna/list', {});
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
    * Will return undefined if we are not on holoscape
    */
   getHoloscapeDataDir(): string | undefined {
