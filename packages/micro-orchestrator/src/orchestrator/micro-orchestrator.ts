@@ -15,7 +15,13 @@ export class MicroOrchestrator {
   loadingModules: Dictionary<Promise<any>> = {};
 
   constructor(protected moduleProvider: ModuleProvider = localModuleProvider) {
-    customElements.define('module-container', ModuleContainer(this.container));
+    if (customElements.get('module-container')) {
+      console.warn(
+        `Could not define <module-container> since it is already present in the customElements registry, assuming that both module-containers contain the same container instance...`
+      );
+    } else {
+      customElements.define('module-container', ModuleContainer(this.container));
+    }
 
     this.container
       .bind<Logger>(MicroOrchestratorBindings.Logger)

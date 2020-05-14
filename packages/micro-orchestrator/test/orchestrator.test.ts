@@ -25,4 +25,5 @@ describe('load a mock module', () => {
 
     expect(span).shadowDom.to.equal('<span>5</span>');
   });
+
 });

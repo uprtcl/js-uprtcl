@@ -14,6 +14,8 @@ export class MockModule extends MicroModule {
   async onLoad(container: interfaces.Container): Promise<void> {
     container.bind(MockModule.bindings.Mock).toConstantValue(5);
 
-    customElements.define('mock-element', MockElement);
+    if (!customElements.get('mock-element')) {
+      customElements.define('mock-element', MockElement);
+    }
   }
 }
