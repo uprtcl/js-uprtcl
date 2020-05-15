@@ -36,8 +36,8 @@ const LOGINFO = false;
 const MAX_LENGTH = 999;
 
 interface PageData {
-  id: string
-  title: string,
+  id: string;
+  title: string;
 }
 
 export class WikiDrawer extends moduleConnect(LitElement) {
@@ -63,7 +63,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   creatingNewPage: boolean = false;
-  
 
   authority: string = '';
   context: string = '';
@@ -74,13 +73,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   protected eveesRemotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
   protected remoteMap!: RemoteMap;
-  
+
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
-    
+
     this.logger.log('firstUpdated()', { ref: this.ref });
 
     this.ref = this.firstRef;
@@ -116,7 +115,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
-    const perspective = await loadEntity(this.client, this.ref) as Entity<Signed<Perspective>>;
+    const perspective = (await loadEntity(this.client, this.ref)) as Entity<Signed<Perspective>>;
     const accessControl = await EveesHelpers.getAccessControl(this.client, this.ref);
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.ref);
     const context = await EveesHelpers.getPerspectiveContext(this.client, this.ref);
@@ -138,20 +137,20 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.logger.log('loadPagesData()');
 
     const pagesListPromises = this.wiki.object.pages.map(
-      async (pageId):Promise<PageData> => {
-      
-      const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
-      const hasTitle: HasTitle = this.recognizer
-        .recognizeBehaviours(data)
-        .find(b => (b as HasTitle).title);
+      async (pageId): Promise<PageData> => {
+        const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
+        const hasTitle: HasTitle = this.recognizer
+          .recognizeBehaviours(data)
+          .find(b => (b as HasTitle).title);
 
-      const title = hasTitle.title(data);
+        const title = hasTitle.title(data);
 
-      return {
-        id: pageId,
-        title
-      };
-    });
+        return {
+          id: pageId,
+          title
+        };
+      }
+    );
 
     this.pagesList = await Promise.all(pagesListPromises);
     this.logger.log('loadPagesData()', { pagesList: this.pagesList });
@@ -193,14 +192,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const dataId = await EveesHelpers.createEntity(this.client, store, page);
     const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [] });
-    return EveesHelpers.createPerspective(
-      this.client, 
-      remote, 
-      { 
-        headId, 
-        context: `${this.context}_${Date.now()}`,  
-        parentId: this.ref
-      });
+    return EveesHelpers.createPerspective(this.client, remote, {
+      headId,
+      context: `${this.context}_${Date.now()}`,
+      parentId: this.ref
+    });
   }
 
   async updateContent(newWiki: Wiki) {
@@ -211,8 +207,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
-    const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [this.currentHeadId ? this.currentHeadId : ''] });
-    await EveesHelpers.updateHead(this.client, this.ref, headId)
+    const headId = await EveesHelpers.createCommit(this.client, remote, {
+      dataId,
+      parentsIds: [this.currentHeadId ? this.currentHeadId : '']
+    });
+    await EveesHelpers.updateHead(this.client, this.ref, headId);
 
     this.logger.info('updateContent()', newWiki);
 
@@ -252,7 +251,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     };
 
     index = index === undefined ? this.wiki.object.pages.length : index;
-    
+
     const result = await this.splicePages([newPage], index, 0);
     if (!result.entity) throw Error('problem with splice pages');
 
@@ -319,7 +318,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       this.ref = event.detail.perspectiveId;
-      this.resetWikiPerspective()
+      this.resetWikiPerspective();
     }) as EventListener);
   }
 
@@ -371,19 +370,26 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     let classes: string[] = [];
 
-    classes.push('page-item')
+    classes.push('page-item');
     if (empty) classes.push('title-empty');
     if (selected) classes.push('title-selected');
 
     return html`
       <div class=${classes.join(' ')} @click=${() => this.selectPage(ix)}>
-        <div class="text-container">${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}</div>
-        ${this.editable ? html`
-          <evees-options-menu 
-            @option-click=${e => this.optionOnPage(ix, e.detail.key)} 
-            .config=${menuConfig}>
-          </evees-options-menu>` : ''}
-      </div>`;
+        <div class="text-container">
+          ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
+        </div>
+        ${this.editable
+          ? html`
+              <evees-options-menu
+                @option-click=${e => this.optionOnPage(ix, e.detail.key)}
+                .config=${menuConfig}
+              >
+              </evees-options-menu>
+            `
+          : ''}
+      </div>
+    `;
   }
 
   render() {
@@ -411,10 +417,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             ? html`
                 <div class="button-row">
                   <evees-loading-button
-                    icon="add_circle_outline" 
+                    icon="add_circle_outline"
                     @click=${() => this.newPage()}
                     loading=${this.creatingNewPage ? 'true' : 'false'}
-                    label=${this.t('wikis:new-page')}>
+                    label=${this.t('wikis:new-page')}
+                  >
                   </evees-loading-button>
                 </div>
               `
@@ -474,6 +481,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           width: 260px;
           flex-shrink: 0;
         }
+
+        @media (max-width: 768px) {
+          .app-navbar {
+            display: none;
+          }
+          .app-content {
+            min-width: 100% !important;
+          }
+        }
         .app-content {
           border-left: solid #cccccc 1px;
           min-width: 475px;
@@ -509,7 +525,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           flex-direction: column;
           justify-content: center;
         }
-        .page-item:hover{
+        .page-item:hover {
           background-color: #e8ecec;
         }
         .title-empty {
@@ -518,7 +534,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .title-selected {
           font-weight: bold;
-          background-color: rgb(200,200,200,0.2);
+          background-color: rgb(200, 200, 200, 0.2);
         }
         .empty {
           width: 100%;
