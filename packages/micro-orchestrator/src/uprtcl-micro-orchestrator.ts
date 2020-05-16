@@ -10,6 +10,7 @@ export { Constructor, CustomElement, Dictionary } from './types';
 /** Elements */
 export { ModuleContainer, RequestDependencyEvent } from './elements/module-container';
 export { moduleConnect, ConnectedElement } from './elements/module-connect.mixin';
+export { request } from './elements/request-decorator';
 
 /** Utils */
 export { Logger, LogLevel } from './utils/logger';

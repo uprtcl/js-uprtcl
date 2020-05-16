@@ -400,8 +400,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <div class="app-drawer">
-        <div class="app-navbar">
+      <mwc-drawer>
+        <div>
           <div
             class="color-bar"
             style=${styleMap({
@@ -428,7 +428,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             : html``}
         </div>
 
-        <div class="app-content">
+        <div slot="appContent">
           ${this.selectedPageIx !== undefined
             ? html`
                 <wiki-page
@@ -455,7 +455,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 </wiki-home>
               `}
         </div>
-      </div>
+      </mwc-drawer>
     `;
   }
 
@@ -471,32 +471,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
           color: #37352f;
           --mdc-theme-primary: #2196f3;
-        }
-        .app-drawer {
-          flex: 1 1 0;
-          display: flex;
-          flex-direction: horizontal;
-        }
-        .app-navbar {
-          width: 260px;
-          flex-shrink: 0;
-        }
-
-        @media (max-width: 768px) {
-          .app-navbar {
-            display: none;
-          }
-          .app-content {
-            min-width: 100% !important;
-          }
-        }
-        .app-content {
-          border-left: solid #cccccc 1px;
-          min-width: 475px;
-          max-width: calc(100% - 260px - 1px);
-          flex-grow: 1;
-          display: flex;
-          flex-direction: column;
         }
         .evee-info {
           height: 40px;
@@ -550,6 +524,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .button-row mwc-button {
           flex-grow: 1;
+        }
+        @media (max-width: 768px) {
+          .app-navbar {
+            display: none;
+          }
+          .app-content {
+            min-width: 100% !important;
+          }
         }
       `
     ];
