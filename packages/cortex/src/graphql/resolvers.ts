@@ -1,4 +1,4 @@
-import { merge } from 'lodash-es';
+import merge from 'lodash-es/merge';
 
 import { PatternRecognizer } from '../recognizer/pattern-recognizer';
 import { CortexBindings } from '../bindings';

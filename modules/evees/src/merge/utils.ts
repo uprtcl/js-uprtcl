@@ -1,5 +1,5 @@
 import { Diff } from 'diff-match-patch-ts';
-import { isEqual } from 'lodash-es';
+import isEqual from 'lodash-es/isEqual';
 
 import { DiffUtils } from './diff.utils';
 
