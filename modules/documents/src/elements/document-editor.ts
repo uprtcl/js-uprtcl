@@ -1,6 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-import { isEqual } from 'lodash-es';
+import isEqual from 'lodash-es/isEqual';
 
 export const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
