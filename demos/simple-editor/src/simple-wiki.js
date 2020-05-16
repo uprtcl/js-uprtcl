@@ -100,7 +100,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return css`
       .app-mock {
         padding: 50px 80px;
-        min-height: calc(100vh - 100px);
+        height: calc(500px);
         display: flex;
         flex-direction: column;
         /* background-color: #bdc6e0; */
