@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/micro-orchestrator",
-  "version": "0.0.7-alpha.12",
+  "version": "0.0.7-alpha.13",
   "description": "Library to help coordinate different frontend modules to build entire applications from small building blocks",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -18,7 +18,8 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@open-wc/testing": "^2.5.4",
+    "@open-wc/testing": "2.5.4",
+    "@open-wc/testing-helpers": "1.7.2",
     "@open-wc/testing-karma": "^3.3.1",
     "@rollup/plugin-json": "^4.0.1",
     "@types/mocha": "^5.2.7",
