@@ -49,6 +49,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'default-authority' })
   defaultAuthority!: string;
 
+  @property({ type: Array })
+  editableAuthorities: string[] = [];
+
   @property({ attribute: false })
   ref!: string;
 
@@ -121,9 +124,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.ref);
     const context = await EveesHelpers.getPerspectiveContext(this.client, this.ref);
 
+    debugger
+
     this.authority = perspective.object.payload.authority;
     this.currentHeadId = headId;
-    this.editable = accessControl.canWrite;
+    this.editable = this.editableAuthorities.length > 0 ? 
+      (this.editableAuthorities.includes(this.authority) ? accessControl.canWrite : false) : 
+      false;
     this.context = context;
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.ref);
@@ -510,13 +517,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           color: #a2a8aa;
         }
         .button-row {
-          text-align: center;
           width: calc(100% - 20px);
           padding: 16px 10px 8px 10px;
           display: flex;
         }
-        .button-row mwc-button {
-          flex-grow: 1;
+        .button-row evees-loading-button {
+          margin: 0 auto;
         }
       `
     ];

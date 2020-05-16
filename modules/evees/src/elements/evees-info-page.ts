@@ -47,7 +47,7 @@ export class EveesInfoPage extends EveesInfoBase {
     if (!this.perspectiveData) return this.perspectiveId;
 
     if (this.perspectiveId === this.firstPerspectiveId) {
-      return html`<span>Official Version</span>`;
+      return html`<span>Official</span>`;
     } 
 
     const hasName = this.perspectiveData.details.name !== undefined && this.perspectiveData.details.name !== '';
