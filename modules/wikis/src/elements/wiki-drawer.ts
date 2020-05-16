@@ -124,13 +124,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.ref);
     const context = await EveesHelpers.getPerspectiveContext(this.client, this.ref);
 
-    debugger
-
     this.authority = perspective.object.payload.authority;
     this.currentHeadId = headId;
     this.editable = this.editableAuthorities.length > 0 ? 
       (this.editableAuthorities.includes(this.authority) ? accessControl.canWrite : false) : 
-      false;
+      accessControl.canWrite;
     this.context = context;
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.ref);
