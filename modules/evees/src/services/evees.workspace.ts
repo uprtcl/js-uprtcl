@@ -1,13 +1,12 @@
 import { ApolloClient, ApolloLink, gql } from 'apollo-boost';
 import Observable from 'zen-observable-ts';
-import { cloneDeep } from 'lodash-es';
+import cloneDeep from 'lodash-es/cloneDeep';
 import { CREATE_ENTITY, CREATE_PERSPECTIVE } from '../graphql/queries';
 import { Entity, PatternRecognizer } from '@uprtcl/cortex';
 import { UpdateRequest, NewPerspectiveData } from '../types';
 import { EveesHelpers } from '../graphql/helpers';
 
 export class EveesWorkspace {
-
   private entities: Entity<any>[] = [];
   private newPerspectives: NewPerspectiveData[] = [];
   private updates: UpdateRequest[] = [];
@@ -54,13 +53,17 @@ export class EveesWorkspace {
   }
 
   public async isSingleAuthority(authority: string) {
-    const newNot = this.newPerspectives.find(newPerspective => newPerspective.perspective.object.payload.authority !== authority);
+    const newNot = this.newPerspectives.find(
+      newPerspective => newPerspective.perspective.object.payload.authority !== authority
+    );
     if (newNot !== undefined) return false;
-    
-    const check = this.updates.map(async (update) => EveesHelpers.getPerspectiveAuthority(this.workspace, update.perspectiveId));
+
+    const check = this.updates.map(async update =>
+      EveesHelpers.getPerspectiveAuthority(this.workspace, update.perspectiveId)
+    );
     const checktoPerspectives = await Promise.all(check);
 
-    const updateNot = checktoPerspectives.find((_authority) => _authority !== authority);
+    const updateNot = checktoPerspectives.find(_authority => _authority !== authority);
     if (updateNot !== undefined) return false;
 
     return true;
@@ -95,7 +98,7 @@ export class EveesWorkspace {
 
   private cacheCreateEntity(entity: Entity<any>) {
     if (!this.recognizer) throw new Error('recognized not provided');
-    
+
     const type = this.recognizer.recognizeType(entity);
 
     this.workspace.writeQuery({
@@ -205,8 +208,7 @@ export class EveesWorkspace {
   }
 
   public async executeCreate(client: ApolloClient<any>) {
-    const create = this.entities.map(async (entity) => {
-      
+    const create = this.entities.map(async entity => {
       const mutation = await client.mutate({
         mutation: CREATE_ENTITY,
         variables: {
@@ -220,14 +222,13 @@ export class EveesWorkspace {
       if (dataId !== entity.id) {
         throw new Error(`created entity id ${dataId} not as expected ${entity.id}`);
       }
-    })
+    });
 
     return Promise.all(create);
   }
 
   private async executeInit(client: ApolloClient<any>) {
     const createPerspective = async (newPerspective: NewPerspectiveData) => {
-      
       const result = await client.mutate({
         mutation: CREATE_PERSPECTIVE,
         variables: {
@@ -243,13 +244,12 @@ export class EveesWorkspace {
           `created perspective id ${result.data.createPerspective.id} not as expected ${newPerspective.perspective.id}`
         );
       }
-    }
-  
-     /** must run backwards and sequentially since new perspectives 
+    };
+
+    /** must run backwards and sequentially since new perspectives
      *  permissions depend on previous ones */
     await this.newPerspectives
       .reverse()
       .reduce((promise, action) => promise.then(_ => createPerspective(action)), Promise.resolve());
   }
-
 }
