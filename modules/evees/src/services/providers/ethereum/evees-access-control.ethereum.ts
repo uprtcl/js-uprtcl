@@ -3,7 +3,7 @@ import { OwnerAccessControlService, OwnerPermissions } from '@uprtcl/access-cont
 
 import { UPDATE_OWNER, GET_PERSP_HASH, GET_PERSP_OWNER, UPDATE_OWNER_BATCH } from './common';
 import { ApolloClient } from 'apollo-boost';
-import { inject } from 'inversify';
+import { inject, Container } from 'inversify';
 
 import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -14,34 +14,37 @@ import { Evees } from 'src/services/evees';
 export class EveesAccessControlEthereum implements OwnerAccessControlService {
   constructor(
     protected uprtclRoot: EthereumContract,
-    protected recognizer: PatternRecognizer,
-    protected client: ApolloClient<any>) {}
+    protected container: Container) {}
   
   async changeOwner(ref: string, newOwnerId: string): Promise<void> {
+
+    debugger
 
     /** TODO: there were two alternatives. 
      *  - (1) search desendants here , or 
      *  - (2) search descendants on the persmisions.owner lense.  
      * (1) seems correct as it seems correct that the authority decides the logic for permissions "inheritance", like is the case for HTTP API.
      */
-    debugger;
 
-    const currentAccessControl = await EveesHelpers.getAccessControl(this.client, ref);
+    const client: ApolloClient<any> = this.container.get(ApolloClientModule.bindings.Client);
+    const recognizer: PatternRecognizer = this.container.get(CortexModule.bindings.Recognizer);
+
+    const currentAccessControl = await EveesHelpers.getAccessControl(client, ref);
     if (!currentAccessControl) throw new Error(`${ref} don't have access control`);
 
-    const authority = await EveesHelpers.getPerspectiveAuthority(this.client, ref);
+    const authority = await EveesHelpers.getPerspectiveAuthority(client, ref);
     if (!authority) throw new Error(`${ref} is not a perspective`);
     
     /** recursively search for children owned by this owner and change also those */
-    const descendants = await EveesHelpers.getDescendants(this.client, this.recognizer, ref);
+    const descendants = await EveesHelpers.getDescendants(client, recognizer, ref);
     
     /** filter the descendants witht he same owner and in the same authority */
     const getOwned = descendants.filter(async (descendant) => {
-      const accessControl = await EveesHelpers.getAccessControl(this.client, descendant);
+      const accessControl = await EveesHelpers.getAccessControl(client, descendant);
       if (!accessControl) return false;
-      let entityType: string = this.recognizer.recognizeType(accessControl.permissions);
+      let entityType: string = recognizer.recognizeType(accessControl.permissions);
       if (entityType === 'OwnerPermissions' && accessControl.canWrite === currentAccessControl.canWrite) {
-        const thisAuthority = await EveesHelpers.getPerspectiveAuthority(this.client, descendant);
+        const thisAuthority = await EveesHelpers.getPerspectiveAuthority(client, descendant);
         return thisAuthority === authority;
       };
     });
