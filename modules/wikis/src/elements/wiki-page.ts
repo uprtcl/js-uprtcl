@@ -18,7 +18,6 @@ import { ContentUpdatedEvent, CONTENT_UPDATED_TAG } from '@uprtcl/evees';
 import '@material/mwc-top-app-bar';
 
 export class WikiPage extends moduleConnect(LitElement) {
-  
   logger = new Logger('WIKI-PAGE');
 
   @property({ type: String })
@@ -42,7 +41,9 @@ export class WikiPage extends moduleConnect(LitElement) {
     this.addEventListener(CONTENT_UPDATED_TAG, ((e: ContentUpdatedEvent) => {
       this.logger.info('CATCHED EVENT: content-updated ', { pageHash: this.pageHash, e });
       e.stopPropagation();
-      this.dispatchEvent(new CustomEvent('page-title-changed', { detail: { pageId: e.detail.ref }}));
+      this.dispatchEvent(
+        new CustomEvent('page-title-changed', { detail: { pageId: e.detail.ref } })
+      );
     }) as EventListener);
   }
 
@@ -95,13 +96,35 @@ export class WikiPage extends moduleConnect(LitElement) {
       </div>
 
       <div class="page-content">
-        <documents-editor 
+        <documents-editor
+          id="doc-editor"
+          @doc-changed=${e => this.onDocChanged(e)}
           .client=${this.client}
           ref=${this.pageHash}
-          color=${this.color}>
+          color=${this.color}
+        >
         </documents-editor>
       </div>
     `;
+  }
+
+  // Propagate the event to upstream components
+  private onDocChanged(e: CustomEvent) {
+    let event = new CustomEvent('doc-changed', {
+      detail: {
+        docChanged: e.detail.docChanged
+      }
+    });
+    this.dispatchEvent(event);
+  }
+
+  async pushDocument() {
+    if (this.shadowRoot) {
+      const el: any = this.shadowRoot.getElementById('doc-editor');
+      return el.persistAll();
+    }
+
+    return Promise.resolve();
   }
 
   static get styles() {
@@ -133,6 +156,11 @@ export class WikiPage extends moduleConnect(LitElement) {
         }
         .text-editor {
           padding: 0vw 0vw;
+        }
+        @media (max-width: 768px) {
+          .top-row {
+            display: none;
+          }
         }
       `
     ];
