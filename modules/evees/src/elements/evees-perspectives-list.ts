@@ -50,7 +50,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   acceptedPerspectiveData?: PerspectiveData;
-  
+
   @property({ attribute: false })
   pendingProposals: Proposal[] = [];
 
@@ -65,7 +65,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   showDiff: Boolean = false;
-  
+
   @property({ attribute: false })
   showHistory: Boolean = false;
 
@@ -79,7 +79,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   eveesDiffEl!: EveesDiff;
 
   protected client!: ApolloClient<any>;
-  
+
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
   }
@@ -102,12 +102,12 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if(changedProperties.has('forceUpdate')) {
-      this.logger.log('updating getOtherPersepectivesData')
+    if (changedProperties.has('forceUpdate')) {
+      this.logger.log('updating getOtherPersepectivesData');
       this.load();
     }
-    if(changedProperties.has('perspectiveId') || changedProperties.has('firstPerspectiveId')) {
-      this.logger.log('updating getOtherPersepectivesData')
+    if (changedProperties.has('perspectiveId') || changedProperties.has('firstPerspectiveId')) {
+      this.logger.log('updating getOtherPersepectivesData');
       this.load();
     }
   }
@@ -159,11 +159,12 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
 
     /** data on other perspectives (proposals are injected on them) */
-    this.perspectivesData = result.data.entity.context.perspectives
-      .map((perspective):PerspectiveData => {
-        const publicRead = perspective._context.patterns.accessControl.permissions.publicRead !== undefined ? 
-          perspective._context.patterns.accessControl.permissions.publicRead : 
-          true;
+    this.perspectivesData = result.data.entity.context.perspectives.map(
+      (perspective): PerspectiveData => {
+        const publicRead =
+          perspective._context.patterns.accessControl.permissions.publicRead !== undefined
+            ? perspective._context.patterns.accessControl.permissions.publicRead
+            : true;
 
         return {
           id: perspective.id,
@@ -173,13 +174,17 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           authority: perspective.payload.authority,
           publicRead: publicRead
         };
-      });
+      }
+    );
 
     this.acceptedPerspectiveData = this.perspectivesData.find(
-      perspectiveData => perspectiveData.id === this.firstPerspectiveId);
-    
+      perspectiveData => perspectiveData.id === this.firstPerspectiveId
+    );
+
     this.otherPerspectivesData = this.perspectivesData.filter(
-      perspectiveData => (perspectiveData.id !== this.firstPerspectiveId && perspectiveData.id !== this.perspectiveId));
+      perspectiveData =>
+        perspectiveData.id !== this.firstPerspectiveId && perspectiveData.id !== this.perspectiveId
+    );
 
     this.loadingPerspectives = false;
 
@@ -192,8 +197,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     const client = this.client as ApolloClient<any>;
     this.loadingProposals = true;
 
-    this.logger.info('loadProposals')
-    
+    this.logger.info('loadProposals');
+
     const result = await client.query({
       query: gql`{
           entity(ref: "${this.perspectiveId}") {
@@ -229,13 +234,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
     const proposals = result.data.entity.proposals.map(
       (prop): Proposal => {
-        const updates = prop.updates.map(update => { 
+        const updates = prop.updates.map(update => {
           return {
             perspectiveId: update.toPerspective.id,
             fromPerspectiveId: update.fromPerspective.id,
             oldHeadId: update.oldHead.id,
             newHeadId: update.newHead.id
-          }
+          };
         });
 
         return {
@@ -256,25 +261,24 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     this.loadingProposals = false;
 
     this.logger.info('getProposals()', { proposals });
-  };
+  }
 
   async showProposalChanges(proposal: Proposal) {
-
     const workspace = new EveesWorkspace(this.client);
     if (proposal.updates) {
       for (const update of proposal.updates) {
         workspace.update(update);
       }
     }
-    
+
     this.showDiff = true;
     await this.updateComplete;
-    
+
     this.eveesDiffEl.workspace = workspace;
     this.updatesDialogEl.primaryText = 'close';
-    
-    return new Promise((resolve) => {
-      this.updatesDialogEl.resolved = (value) => {
+
+    return new Promise(resolve => {
+      this.updatesDialogEl.resolved = value => {
         this.showDiff = false;
         resolve(value);
       };
@@ -302,7 +306,10 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   proposalTitle(proposal: Proposal) {
     const perspectiveData = this.perspectivesData.find(p => p.id === proposal.fromPerspectiveId);
-    if (perspectiveData) return html`${this.perspectiveTitle(perspectiveData)}`;
+    if (perspectiveData)
+      return html`
+        ${this.perspectiveTitle(perspectiveData)}
+      `;
     return '';
   }
 
@@ -347,7 +354,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             composed: true,
             detail: {
               proposalId: proposal.id,
-              perspectiveId: this.perspectiveId,
+              perspectiveId: this.perspectiveId
             }
           })
         );
@@ -415,7 +422,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   renderPerspectiveRow(perspectiveData: PerspectiveData | undefined) {
     if (perspectiveData === undefined) return html``;
     return html`
-      <div class="list-row">
+      <div class="list-row perspectives">
         <div class="perspective-title">
           <mwc-list-item
             @click=${() => this.perspectiveClicked(perspectiveData.id)}
@@ -430,7 +437,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             ></div>
             <div>
               <span class="perspective-name">
-                ${perspectiveData.id === this.firstPerspectiveId ? html`<strong>See Official</strong>` : this.perspectiveTitle(perspectiveData)}
+                ${perspectiveData.id === this.firstPerspectiveId
+                  ? html`
+                      <strong>See Official</strong>
+                    `
+                  : this.perspectiveTitle(perspectiveData)}
               </span>
             </div>
           </mwc-list-item>
@@ -450,11 +461,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   renderProposalRow(proposal: Proposal) {
     return html`
-      <div class="list-row">
+      <div class="list-row proposals">
         <div class="perspective-title">
-          <mwc-list-item
-            @click=${() => this.showProposalChanges(proposal)}
-            graphic="small">
+          <mwc-list-item @click=${() => this.showProposalChanges(proposal)} graphic="small">
             <div
               slot="graphic"
               class="perspective-mark"
@@ -481,37 +490,50 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       </div>
     `;
   }
-  
+
   renderAcceptedPerspective() {
-    return this.perspectiveId !== this.firstPerspectiveId ? html`
-      ${this.renderPerspectiveRow(this.acceptedPerspectiveData)}` : '';
+    return this.perspectiveId !== this.firstPerspectiveId
+      ? html`
+          ${this.renderPerspectiveRow(this.acceptedPerspectiveData)}
+        `
+      : '';
   }
 
   renderProposals() {
-    return this.pendingProposals.length > 0 ? html`
-      <div class='list-section'><strong>Update Proposals</strong></div>
-      ${this.pendingProposals.map(
-      proposal => this.renderProposalRow(proposal))}` : '';
+    return this.pendingProposals.length > 0
+      ? html`
+          <div class="list-section"><strong>Update Proposals</strong></div>
+          ${this.pendingProposals.map(proposal => this.renderProposalRow(proposal))}
+        `
+      : '';
   }
 
   renderPerspectives() {
-    return this.otherPerspectivesData.length > 0 ? html`
-      <div class='list-section'><strong>Drafts</strong></div>
-      ${this.otherPerspectivesData.map(
-      perspectiveData => this.renderPerspectiveRow(perspectiveData))}` : '';
-
+    return this.otherPerspectivesData.length > 0
+      ? html`
+          <div class="list-section"><strong>Drafts</strong></div>
+          ${this.otherPerspectivesData.map(perspectiveData =>
+            this.renderPerspectiveRow(perspectiveData)
+          )}
+        `
+      : '';
   }
 
   renderOldProposals() {
     if (this.mergedProposals.length === 0) return '';
-    
+
     return html`
-      <div class='list-section'>
-        <strong>Old Proposals 
-          <span class="inline-button" @click=${() => this.showHistory = !this.showHistory}>(${this.showHistory ? 'hide' : 'show'})</span>
+      <div class="list-section">
+        <strong
+          >Old Proposals
+          <span class="inline-button" @click=${() => (this.showHistory = !this.showHistory)}
+            >(${this.showHistory ? 'hide' : 'show'})</span
+          >
         </strong>
       </div>
-      ${this.showHistory ? this.mergedProposals.map(proposal => this.renderProposalRow(proposal)) : ''}
+      ${this.showHistory
+        ? this.mergedProposals.map(proposal => this.renderProposalRow(proposal))
+        : ''}
     `;
   }
 
@@ -519,29 +541,27 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     this.logger.log('renderDiff()');
     return html`
       <evees-dialog id="updates-dialog">
-        <evees-update-diff id="evees-update-diff">
-        </evees-update-diff>
-      </evees-dialog>`;
+        <evees-update-diff id="evees-update-diff"> </evees-update-diff>
+      </evees-dialog>
+    `;
   }
 
   render() {
-    return (this.loadingPerspectives || this.loadingProposals) ? 
-      this.renderLoading() : 
-      html`
-        ${this.perspectivesData.length > 1
-          ? html`
-              <mwc-list activatable>
-                ${this.renderAcceptedPerspective()}
-                ${this.renderProposals()}
-                ${this.renderPerspectives()}
-                ${this.renderOldProposals()}
-              </mwc-list>
-            `
-          : html`
-              <div class="empty"><i>No drafts found</i></div>
-            `}
-        ${this.showDiff ? this.renderDiff() : ''}
-      `;
+    return this.loadingPerspectives || this.loadingProposals
+      ? this.renderLoading()
+      : html`
+          ${this.perspectivesData.length > 1
+            ? html`
+                <mwc-list activatable>
+                  ${this.renderAcceptedPerspective()} ${this.renderProposals()}
+                  ${this.renderPerspectives()} ${this.renderOldProposals()}
+                </mwc-list>
+              `
+            : html`
+                <div class="empty"><i>No drafts found</i></div>
+              `}
+          ${this.showDiff ? this.renderDiff() : ''}
+        `;
   }
 
   static get styles() {
@@ -619,6 +639,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         cursor: pointer;
         text-decoration: underline;
         color: #2196f3;
+      }
+
+      @media (max-width: 768px) {
+        .proposals,
+        .perspectives {
+          flex-direction: column;
+        }
       }
     `;
   }

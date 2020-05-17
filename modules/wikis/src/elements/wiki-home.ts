@@ -22,10 +22,6 @@ export class WikiHome extends moduleConnect(LitElement) {
   render() {
     return html`
       <div class="page-container">
-        <div class="color-bar" style=${styleMap({
-          backgroundColor: this.color
-        })}></div>
-          
         <div class="evee-info">
           <slot name="evee-page"></slot>
         </div>
@@ -57,11 +53,11 @@ export class WikiHome extends moduleConnect(LitElement) {
       }
 
       .color-bar {
-          height: 1vw;
-          max-height: 5px;
-          width: 100%;
-          margin-bottom: 1vw;
-        }
+        height: 1vw;
+        max-height: 5px;
+        width: 100%;
+        margin-bottom: 1vw;
+      }
     `;
   }
 }
