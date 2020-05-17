@@ -93,7 +93,7 @@ export class EveesHelpers {
     return commit.object.payload.dataId;
   }
 
-  static async getAccessControl(client: ApolloClient<any>, ref: string): Promise<{ canWrite: boolean, permissions: any }> {
+  static async getAccessControl(client: ApolloClient<any>, ref: string): Promise<{ canWrite: boolean, permissions: any } | undefined> {
     const result = await client.query({
       query: gql`{
         entity(ref: "${ref}") {
@@ -109,6 +109,10 @@ export class EveesHelpers {
         }
       }`
     });
+
+    if (!result.data.entity._context.patterns.accessControl) {
+      return undefined;
+    }
 
     return {
       canWrite: result.data.entity._context.patterns.accessControl.canWrite,
@@ -147,8 +151,10 @@ export class EveesHelpers {
   static async getDescendantsRec(client: ApolloClient<any>, recognizer: PatternRecognizer, ref: string, current: string[]): Promise<string[]> {
     const newDescendants: string[] = [];
     const children = await this.getChildren(client, recognizer, ref);
-    for(const child of children) {
+    for(let ix = 0; ix < children.length; ix++) {
+      const child = children[ix];
       const thisDescendants = await this.getDescendantsRec(client, recognizer, child, []);
+      newDescendants.push(child);
       newDescendants.push(...thisDescendants);
     }
     return current.concat(newDescendants);

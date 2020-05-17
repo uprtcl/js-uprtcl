@@ -31,6 +31,9 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
   @property({ attribute: false })
   showDialog: boolean = false;
 
+  @property({ attribute: false })
+  changingOwner: boolean = false;  
+
   @query('#new-address')
   newAddressEl!: TextFieldBase;
 
@@ -66,10 +69,14 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
 
   async showTransferDialog() {
     this.showDialog = true;
+    await this.updateComplete;
+
+    this.newAddressEl.focus();
   }
 
   async changeOwner() {
     this.showDialog = false;
+    this.changingOwner = true;
 
     const newAddress = this.newAddressEl.value;
 
@@ -81,8 +88,8 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
       }
     });
 
-    this.permissions = result.data.changeOwner._context.patterns.accessControl.permissions;
-    this.canWrite = result.data.changeOwner._context.patterns.accessControl.canWrite;
+    this.permissions = result.data.setCanWrite._context.patterns.accessControl.permissions;
+    this.canWrite = result.data.setCanWrite._context.patterns.accessControl.canWrite;
 
     this.dispatchEvent(
       new CustomEvent('permissions-updated', {
@@ -91,6 +98,8 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
         cancelable: true
       })
     );
+
+    this.changingOwner = false;
   }
 
   getOwner() {
@@ -106,10 +115,10 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
         @secondary=${ () => this.showDialog = false }
         show-secondary='true'>
         <mwc-textfield
+          class="address-field"
           id="new-address"
           outlined
           .label=${this.t('access-control:new-owner-address')}
-          initialFocusAttribute
         ></mwc-textfield>
       </evees-dialog>
     `;
@@ -123,9 +132,12 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
       </div>
       ${this.canWrite
         ? html`
-            <mwc-button outlined icon="swap_horizontal" @click=${this.showTransferDialog}>
-              ${this.t('access-control:transfer-ownership')}
-            </mwc-button>
+            <evees-loading-button
+              icon="swap_horizontal" 
+              @click=${this.showTransferDialog}
+              loading=${this.changingOwner ? 'true' : 'false'}
+              label=${this.t('access-control:transfer-ownership')}>
+            </evees-loading-button>
           `
         : ''}
     `;
@@ -135,6 +147,10 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
     return css`
       mwc-button {
         width: 220px;
+      }
+
+      .address-field {
+        margin-top: 50px;
       }
 
       .title {
