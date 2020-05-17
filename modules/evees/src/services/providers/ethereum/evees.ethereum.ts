@@ -1,3 +1,5 @@
+import { Container } from 'inversify';
+
 import { Logger } from '@uprtcl/micro-orchestrator';
 import {
   EthereumConnection,
@@ -6,6 +8,7 @@ import {
 } from '@uprtcl/ethereum-provider';
 import { IpfsStore, sortObject, IpfsConnectionOptions } from '@uprtcl/ipfs-provider';
 import { CidConfig } from '@uprtcl/multiplatform';
+import { Authority } from '@uprtcl/access-control';
 
 import { abi as abiRoot, networks as networksRoot } from './contracts-json/UprtclRoot.min.json';
 import { abi as abiDetails, networks as networksDetails } from './contracts-json/UprtclDetails.min.json';
@@ -38,7 +41,7 @@ import {
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 import { ProposalsProvider } from '../../proposals.provider';
-import { Authority } from '@uprtcl/access-control';
+
 
 const evees_if = 'evees-v0';
 export const ZERO_HEX_32 = '0x' + new Array(32).fill(0).join('');
@@ -79,6 +82,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
     protected ethConnection: EthereumConnection,
     protected ipfsOptions: IpfsConnectionOptions,
     cidConfig: CidConfig,
+    container: Container,
     uprtclRootOptions: EthereumContractOptions = { contract: UprtclRoot as any },
     uprtclDetailsOptions: EthereumContractOptions = { contract: UprtclDetails as any },
     uprtclProposalsOptions: EthereumContractOptions = { contract: UprtclProposals as any },
@@ -91,7 +95,7 @@ export class EveesEthereum extends IpfsStore implements EveesRemote, Authority {
     this.uprtclProposals = new EthereumContract(uprtclProposalsOptions, ethConnection);
     this.uprtclWrapper = new EthereumContract(uprtclWrapperOptions, ethConnection);
 
-    this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot);
+    this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot, container);
     this.proposals = new ProposalsEthereum(
       this.uprtclRoot,
       this.uprtclProposals,

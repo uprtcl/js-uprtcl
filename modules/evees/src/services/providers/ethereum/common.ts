@@ -7,6 +7,7 @@ export const GET_PERSP_HASH = 'getPerspectiveIdHash(string)';
 export const GET_PERSP_OWNER = 'getPerspectiveOwner(bytes32)';
 export const CREATE_PERSP = `createPerspective(${newPerspStr},address)`;
 export const UPDATE_OWNER = 'changePerspectiveOwner(bytes32,address)';
+export const UPDATE_OWNER_BATCH = 'changePerspectiveOwnerBatch(bytes32[],address)';
 export const CREATE_PERSP_BATCH = `createPerspectiveBatch(${newPerspStr}[],address)`;
 export const UPDATED_HEAD = `updateHead(bytes32,bytes32,bytes32,address)`;
 

@@ -15,7 +15,7 @@ export class OwnerPattern extends Pattern<OwnerPermissions> {
     );
   };
 
-  type = undefined;
+  type = 'OwnerPermissions';
 }
 
 @injectable()

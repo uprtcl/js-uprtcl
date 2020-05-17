@@ -32,11 +32,13 @@ import { SimpleWiki } from './simple-wiki';
   const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
   const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
 
+  const orchestrator = new MicroOrchestrator();
+
   const httpConnection = new HttpConnection();
   const ethConnection = new EthereumConnection({ provider: ethHost });
 
   const httpEvees = new EveesHttp(c1host, httpConnection, ethConnection, httpCidConfig);
-  const ethEvees = new EveesEthereum(ethConnection, ipfsConfig, ipfsCidConfig);
+  const ethEvees = new EveesEthereum(ethConnection, ipfsConfig, ipfsCidConfig, orchestrator.container);
 
   const evees = new EveesModule([ethEvees, httpEvees], httpEvees);
 
@@ -54,8 +56,6 @@ import { SimpleWiki } from './simple-wiki';
     documents,
     wikis
   ];
-
-  const orchestrator = new MicroOrchestrator();
 
   await orchestrator.loadModules(modules);
 
