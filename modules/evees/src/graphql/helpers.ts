@@ -1,14 +1,14 @@
 import { ApolloClient, gql } from "apollo-boost";
+import { cloneDeep } from "lodash-es";
 
 import { CASStore, loadEntity } from "@uprtcl/multiplatform";
-import { Signed, Entity, PatternRecognizer } from "@uprtcl/cortex";
-import { Updatable, Permissions, Authority } from "@uprtcl/access-control";
+import { Signed, Entity, PatternRecognizer, HasChildren } from "@uprtcl/cortex";
 
 import { CREATE_ENTITY, CREATE_PERSPECTIVE, UPDATE_HEAD } from "./queries";
 import { EveesRemote } from "../services/evees.remote";
 import { Commit, Perspective } from '../types';
 import { signObject } from "../utils/signed";
-import { cloneDeep } from "lodash-es";
+import { EveesBindings } from "../bindings";
 
 export interface CreateCommit {
   dataId: string, 
@@ -114,6 +114,48 @@ export class EveesHelpers {
       canWrite: result.data.entity._context.patterns.accessControl.canWrite,
       permissions: result.data.entity._context.patterns.accessControl.permissions
     }
+  }
+
+  static async getData(client: ApolloClient<any>, recognizer: PatternRecognizer, ref: string) {
+    const entity = await loadEntity<any>(client, ref);
+    if(!entity) return undefined;
+
+    let entityType: string = recognizer.recognizeType(entity);
+    
+    switch (entityType) {
+      case EveesBindings.PerspectiveType:
+        return this.getPerspectiveData(client, ref);
+
+      case EveesBindings.CommitType:
+        return this.getCommitData(client, ref);
+
+      default:
+        return entity;
+    }
+  }
+
+  static async getChildren(client: ApolloClient<any>, recognizer: PatternRecognizer, ref: string): Promise<string[]> {
+    const data = await this.getData(client, recognizer, ref);
+
+    const hasChildren: HasChildren = recognizer
+      .recognizeBehaviours(data)
+      .find(b => (b as HasChildren).getChildrenLinks);
+
+    return hasChildren.getChildrenLinks(data)
+  }
+
+  static async getDescendantsRec(client: ApolloClient<any>, recognizer: PatternRecognizer, ref: string, current: string[]): Promise<string[]> {
+    const newDescendants: string[] = [];
+    const children = await this.getChildren(client, recognizer, ref);
+    for(const child of children) {
+      const thisDescendants = await this.getDescendantsRec(client, recognizer, child, []);
+      newDescendants.push(...thisDescendants);
+    }
+    return current.concat(newDescendants);
+  }
+
+  static async getDescendants(client: ApolloClient<any>, recognizer: PatternRecognizer, ref: string): Promise<string[]> {
+    return this.getDescendantsRec(client, recognizer, ref, [])
   }
   
   

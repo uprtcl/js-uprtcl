@@ -12,6 +12,7 @@ import { PermissionsElement } from './permissions-element';
 import { OwnerPermissions } from '../services/owner-access-control.service';
 import { SET_CAN_WRITE } from '../graphql/queries';
 import { prettyAddress } from './support';
+import { CortexModule } from '@uprtcl/cortex';
 
 export class PermissionsOwner extends moduleConnect(LitElement) implements PermissionsElement<OwnerPermissions> {
 
@@ -34,9 +35,11 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
   newAddressEl!: TextFieldBase;
 
   client!: ApolloClient<any>;
+  recognizer!: ApolloClient<any>;
 
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
+    this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.loadPermissions();
   }
 

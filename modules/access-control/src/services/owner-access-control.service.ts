@@ -5,5 +5,5 @@ export interface OwnerPermissions {
 }
 
 export interface OwnerAccessControlService extends AccessControlService<OwnerPermissions> {
-  changeOwner(hash: string, newOwnerId: string): Promise<void>;
+  changeOwner(refs: string[], newOwnerId: string): Promise<void>;
 }
