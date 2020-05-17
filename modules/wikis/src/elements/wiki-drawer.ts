@@ -36,8 +36,8 @@ const LOGINFO = false;
 const MAX_LENGTH = 999;
 
 interface PageData {
-  id: string
-  title: string,
+  id: string;
+  title: string;
 }
 
 export class WikiDrawer extends moduleConnect(LitElement) {
@@ -66,27 +66,53 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   creatingNewPage: boolean = false;
-  
 
   authority: string = '';
   context: string = '';
   currentHeadId: string | undefined = undefined;
   editable: boolean = false;
 
+  @property({ attribute: false })
+  isDrawerOpened = true;
+
+  @property({ attribute: false })
+  isMobile = false;
+
+  @property({ attribute: false })
+  documentHasChanges = false;
+
+  @property({ attribute: false })
+  isPushing = false;
+
+  @property({ attribute: false })
+  drawerType: 'dismissible' | 'modal' = 'dismissible';
+
+  @property({ attribute: false })
+  hasSelectedPage = false;
+
+  homeRef!: string;
+
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
   protected remoteMap!: RemoteMap;
-  
+
+  constructor() {
+    super();
+    this.isViewportMobile();
+    window.addEventListener('resize', this.isViewportMobile.bind(this));
+  }
+
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
-    
+
     this.logger.log('firstUpdated()', { ref: this.ref });
 
     this.ref = this.firstRef;
+    this.homeRef = this.firstRef;
     this.loadWiki();
   }
 
@@ -111,6 +137,22 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }
   }
 
+  private isViewportMobile() {
+    if (window.innerWidth <= 768) {
+      if (!this.isMobile) {
+        this.drawerType = 'modal';
+        this.isDrawerOpened = false;
+        this.isMobile = true;
+      }
+    } else {
+      if (this.isMobile) {
+        this.drawerType = 'dismissible';
+        this.isDrawerOpened = true;
+        this.isMobile = false;
+      }
+    }
+  }
+
   async resetWikiPerspective() {
     // await this.client.resetStore();
     this.pagesList = undefined;
@@ -119,7 +161,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
-    const perspective = await loadEntity(this.client, this.ref) as Entity<Signed<Perspective>>;
+    const perspective = (await loadEntity(this.client, this.ref)) as Entity<Signed<Perspective>>;
     const accessControl = await EveesHelpers.getAccessControl(this.client, this.ref);
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.ref);
     const context = await EveesHelpers.getPerspectiveContext(this.client, this.ref);
@@ -143,20 +185,20 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.logger.log('loadPagesData()');
 
     const pagesListPromises = this.wiki.object.pages.map(
-      async (pageId):Promise<PageData> => {
-      
-      const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
-      const hasTitle: HasTitle = this.recognizer
-        .recognizeBehaviours(data)
-        .find(b => (b as HasTitle).title);
+      async (pageId): Promise<PageData> => {
+        const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
+        const hasTitle: HasTitle = this.recognizer
+          .recognizeBehaviours(data)
+          .find(b => (b as HasTitle).title);
 
-      const title = hasTitle.title(data);
+        const title = hasTitle.title(data);
 
-      return {
-        id: pageId,
-        title
-      };
-    });
+        return {
+          id: pageId,
+          title
+        };
+      }
+    );
 
     this.pagesList = await Promise.all(pagesListPromises);
     this.logger.log('loadPagesData()', { pagesList: this.pagesList });
@@ -168,6 +210,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.selectedPageIx = ix;
 
     if (this.selectedPageIx === undefined) {
+      this.hasSelectedPage = false;
       return;
     }
 
@@ -178,6 +221,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
       })
     );
+    this.hasSelectedPage = true;
+    this.isDrawerOpened = false;
   }
 
   getStore(authority: string, type: string): CASStore | undefined {
@@ -198,14 +243,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const dataId = await EveesHelpers.createEntity(this.client, store, page);
     const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [] });
-    return EveesHelpers.createPerspective(
-      this.client, 
-      remote, 
-      { 
-        headId, 
-        context: `${this.context}_${Date.now()}`,  
-        parentId: this.ref
-      });
+    return EveesHelpers.createPerspective(this.client, remote, {
+      headId,
+      context: `${this.context}_${Date.now()}`,
+      parentId: this.ref
+    });
   }
 
   async updateContent(newWiki: Wiki) {
@@ -216,8 +258,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
-    const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [this.currentHeadId ? this.currentHeadId : ''] });
-    await EveesHelpers.updateHead(this.client, this.ref, headId)
+    const headId = await EveesHelpers.createCommit(this.client, remote, {
+      dataId,
+      parentsIds: [this.currentHeadId ? this.currentHeadId : '']
+    });
+    await EveesHelpers.updateHead(this.client, this.ref, headId);
 
     this.logger.info('updateContent()', newWiki);
 
@@ -257,7 +302,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     };
 
     index = index === undefined ? this.wiki.object.pages.length : index;
-    
+
     const result = await this.splicePages([newPage], index, 0);
     if (!result.entity) throw Error('problem with splice pages');
 
@@ -324,7 +369,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       this.ref = event.detail.perspectiveId;
-      this.resetWikiPerspective()
+      this.resetWikiPerspective();
     }) as EventListener);
   }
 
@@ -376,19 +421,60 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     let classes: string[] = [];
 
-    classes.push('page-item')
+    classes.push('page-item');
     if (empty) classes.push('title-empty');
     if (selected) classes.push('title-selected');
 
     return html`
       <div class=${classes.join(' ')} @click=${() => this.selectPage(ix)}>
-        <div class="text-container">${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}</div>
-        ${this.editable ? html`
-          <evees-options-menu 
-            @option-click=${e => this.optionOnPage(ix, e.detail.key)} 
-            .config=${menuConfig}>
-          </evees-options-menu>` : ''}
-      </div>`;
+        <div class="text-container">
+          ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
+        </div>
+        ${this.editable
+          ? html`
+              <evees-options-menu
+                @option-click=${e => this.optionOnPage(ix, e.detail.key)}
+                .config=${menuConfig}
+              >
+              </evees-options-menu>
+            `
+          : ''}
+      </div>
+    `;
+  }
+
+  renderColorBar() {
+    return html`
+      <div
+        class="color-bar"
+        style=${styleMap({
+          backgroundColor: this.color()
+        })}
+      ></div>
+    `;
+  }
+
+  renderPushButton() {
+    return html`
+      <section style="display:flex; align-items:center;">
+        <div class="button-container">
+          <evees-loading-button
+            @click=${() => this.triggerDocumentPush()}
+            icon="unarchive"
+            loading=${this.isPushing}
+            label="push"
+          >
+          </evees-loading-button>
+        </div>
+        <evees-help>
+          <span>
+            Changes are saved locally on this device until you "push" them.<br /><br />
+            Once pushed they will be visible (if this draft is public).<br /><br />
+            Only pushed changes are included on merge proposals.
+          </span>
+        </evees-help>
+      </section>
+    `;
   }
 
   render() {
@@ -399,15 +485,20 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <mwc-drawer>
-        <div>
-          <div
-            class="color-bar"
-            style=${styleMap({
-              backgroundColor: this.color()
-            })}
-          ></div>
-
+      <mwc-drawer
+        @MDCDrawer:closed=${() => (this.isDrawerOpened = false)}
+        type="${this.drawerType}"
+        ?open="${this.isDrawerOpened}"
+      >
+        ${this.renderColorBar()}
+        <section>
+          ${this.isMobile
+            ? html`
+                <div>
+                  <mwc-icon-button icon="home" @click=${() => this.goToHome()}></mwc-icon-button>
+                </div>
+              `
+            : ''}
           <div>
             ${this.renderPageList()}
           </div>
@@ -416,24 +507,41 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             ? html`
                 <div class="button-row">
                   <evees-loading-button
-                    icon="add_circle_outline" 
+                    icon="add_circle_outline"
                     @click=${() => this.newPage()}
                     loading=${this.creatingNewPage ? 'true' : 'false'}
-                    label=${this.t('wikis:new-page')}>
+                    label=${this.t('wikis:new-page')}
+                  >
                   </evees-loading-button>
                 </div>
               `
             : html``}
-        </div>
+        </section>
 
-        <div slot="appContent">
+        <div slot="appContent" class="app-content">
+          ${this.isMobile
+            ? html`
+                <div class="app-top-nav">
+                  <mwc-icon-button
+                    slot="navigationIcon"
+                    icon="${this.hasSelectedPage ? 'arrow_back_ios' : 'menu'}"
+                    @click=${() => this.toggleNav()}
+                  ></mwc-icon-button>
+
+                  ${this.documentHasChanges ? this.renderPushButton() : ''}
+                </div>
+              `
+            : ''}
+          ${this.renderColorBar()}
           ${this.selectedPageIx !== undefined
             ? html`
                 <wiki-page
+                  id="wiki-page"
                   @nav-back=${() => this.selectPage(undefined)}
                   @page-title-changed=${() => this.loadPagesData()}
                   pageHash=${this.wiki.object.pages[this.selectedPageIx]}
                   color=${this.color() ? this.color() : ''}
+                  @doc-changed=${e => this.onDocChanged(e)}
                 >
                 </wiki-page>
               `
@@ -455,6 +563,43 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
       </mwc-drawer>
     `;
+  }
+
+  onDocChanged(e: CustomEvent) {
+    const hasChanges = e.detail.docChanged || false;
+    console.log({ hasChanges });
+    // console.log({ v: e.detail });
+    this.documentHasChanges = hasChanges;
+  }
+
+  toggleNav() {
+    // The behavior of the nav icon would change if there is a selected page,
+    // it will function as a back button
+    if (this.hasSelectedPage) {
+      this.selectPage(undefined);
+      this.documentHasChanges = false;
+      return;
+    }
+    this.isDrawerOpened = !this.isDrawerOpened;
+    // this.requestUpdate();
+    // console.log(this.isDrawerOpened);
+  }
+
+  async triggerDocumentPush() {
+    if (this.shadowRoot && !this.isPushing) {
+      this.isPushing = true;
+      const el: any = this.shadowRoot.getElementById('wiki-page');
+      await el.pushDocument().finally(() => {
+        this.isPushing = false;
+      });
+    }
+  }
+
+  goToHome() {
+    this.selectPage(undefined);
+    this.ref = this.homeRef;
+    this.isDrawerOpened = false;
+    this.requestUpdate();
   }
 
   static get styles() {
@@ -497,7 +642,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           flex-direction: column;
           justify-content: center;
         }
-        .page-item:hover{
+        .page-item:hover {
           background-color: #e8ecec;
         }
         .title-empty {
@@ -506,7 +651,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .title-selected {
           font-weight: bold;
-          background-color: rgb(200,200,200,0.2);
+          background-color: rgb(200, 200, 200, 0.2);
         }
         .empty {
           width: 100%;
@@ -521,6 +666,22 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .button-row evees-loading-button {
           margin: 0 auto;
+        }
+        .app-top-nav {
+          padding: 5px 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        @media (max-width: 768px) {
+          // .app-drawer {
+          //   display: none;
+          // }
+          .app-content {
+            min-width: 100% !important;
+            height: 100%;
+          }
         }
       `
     ];
