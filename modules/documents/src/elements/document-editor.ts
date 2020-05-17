@@ -138,7 +138,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
       if (this.editable === 'true') {
         const accessControl = await EveesHelpers.getAccessControl(this.client, entity.id);
-        editable = accessControl.canWrite;
+        editable = accessControl ? accessControl.canWrite : false;
         context = await EveesHelpers.getPerspectiveContext(this.client, entity.id);
         headId = await EveesHelpers.getPerspectiveHeadId(this.client, entity.id);
         dataId = await EveesHelpers.getCommitDataId(this.client, headId);
