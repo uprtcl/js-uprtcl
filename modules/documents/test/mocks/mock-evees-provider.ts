@@ -1,6 +1,5 @@
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import {
-  EveesProvider,
   NewPerspectiveData,
   Perspective,
   Secured,

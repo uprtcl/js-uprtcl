@@ -9,8 +9,7 @@ import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { EveesHelpers } from '../../../graphql/helpers';
-import { Evees } from 'src/services/evees';
-import { EveesModule } from 'src/evees.module';
+import { EveesModule } from '../../../evees.module';
 import { loadEntity } from '@uprtcl/multiplatform';
 
 export class EveesAccessControlEthereum implements OwnerAccessControlService {
