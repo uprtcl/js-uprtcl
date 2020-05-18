@@ -62,14 +62,14 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         title: 'Genesis Wiki',
         pages: []
       };
-      
+
       const dataId = await EveesHelpers.createEntity(client, eveesEthProvider, wiki);
       const headId = await EveesHelpers.createCommit(client, eveesEthProvider, { dataId });
 
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
-      const perspectiveId = await EveesHelpers.createPerspective(client, eveesEthProvider, { 
-        headId, 
-        context: `genesis-dao-wiki-${randint}`, 
+      const perspectiveId = await EveesHelpers.createPerspective(client, eveesEthProvider, {
+        headId,
+        context: `genesis-dao-wiki-${randint}`,
         canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
       });
 
@@ -100,10 +100,11 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   static get styles() {
     return css`
       .app-mock {
-        padding: 50px 80px;
+        overflow: auto;
+        padding: 0;
+        width: 800px;
+        margin: 100px auto;
         height: calc(500px);
-        display: flex;
-        flex-direction: column;
         /* background-color: #bdc6e0; */
       }
     `;

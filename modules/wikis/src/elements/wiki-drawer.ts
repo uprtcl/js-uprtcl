@@ -607,13 +607,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       sharedStyles,
       css`
         :host {
-          display: flex;
-          flex: 1 1 0;
-          flex-direction: column;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
             Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
           color: #37352f;
           --mdc-theme-primary: #2196f3;
+          width: 100%;
         }
         .evee-info {
           height: 40px;
@@ -674,10 +672,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           justify-content: space-between;
         }
 
+        mwc-drawer {
+          min-width: 800px;
+          position: relative;
+        }
+
         @media (max-width: 768px) {
-          // .app-drawer {
-          //   display: none;
-          // }
+          mwc-drawer {
+            min-width: initial;
+          }
           .app-content {
             min-width: 100% !important;
             height: 100%;
