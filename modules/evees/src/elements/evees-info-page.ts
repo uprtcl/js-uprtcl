@@ -13,10 +13,14 @@ import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from './common-ui/evees-options-menu';
 
 import '@material/mwc-dialog';
+import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
 
 export class EveesInfoPage extends EveesInfoBase {
   @property({ attribute: false })
   showEditName: boolean = false;
+
+  @query('#draft-textfield')
+  draftTextField!: TextFieldBase;
 
   firstUpdated() {
     super.firstUpdated();
@@ -44,7 +48,7 @@ export class EveesInfoPage extends EveesInfoBase {
     if (!this.perspectiveData) return this.perspectiveId;
     console.log('here');
     if (this.perspectiveId === this.firstPerspectiveId) {
-      return html`<span>Official</span>`;
+      return html` <span>Official</span> `;
     }
 
     const hasName =
@@ -57,13 +61,14 @@ export class EveesInfoPage extends EveesInfoBase {
 
   async editNameClicked() {
     this.showEditName = true;
+    await this.updateComplete;
+    this.draftTextField.focus();
   }
 
   async saveName() {
     if (!this.shadowRoot) return;
     const client = this.client as ApolloClient<any>;
-    const input = this.shadowRoot.getElementById('DRAFT_NAME') as any;
-    const newName = input.value;
+    const newName = this.draftTextField.value;
 
     this.showEditName = false;
 
@@ -137,7 +142,7 @@ export class EveesInfoPage extends EveesInfoBase {
         <div class="row draft-name">
           <mwc-textfield
             outlined
-            id="DRAFT_NAME"
+            id="draft-textfield"
             value=${this.perspectiveData.details.name as string}
             label="Draft Name"
           >
