@@ -14,6 +14,7 @@
     "@authentic/mwc-card": "^0.9.0",
     "@authentic/mwc-circular-progress": "^0.9.0",
     "@material/mwc-button": "^0.14.1",
+    "@material/mwc-textfield": "^0.14.1",
     "@material/mwc-dialog": "^0.14.1",
     "@material/mwc-icon": "^0.14.1",
     "@material/mwc-icon-button": "^0.14.1",
@@ -74,8 +75,7 @@
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"
   },
-  "contributors": [
-    {
+  "contributors": [{
       "name": "Guillem Cordoba",
       "email": "guillem.cordoba@gmail.com",
       "url": "https://github.com/guillemcordoba"

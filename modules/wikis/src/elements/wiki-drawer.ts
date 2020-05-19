@@ -5,15 +5,29 @@ import { ApolloClient, gql } from 'apollo-boost';
 
 export const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
+    propName = propName.replace(
+      /([A-Z])/g,
+      (matches) => `-${matches[0].toLowerCase()}`
+    );
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
 
-import { htmlToText, TextType, TextNode, DocumentsModule } from '@uprtcl/documents';
+import {
+  htmlToText,
+  TextType,
+  TextNode,
+  DocumentsModule,
+} from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Entity, HasTitle, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
+import {
+  Entity,
+  HasTitle,
+  CortexModule,
+  PatternRecognizer,
+  Signed,
+} from '@uprtcl/cortex';
 import {
   MenuConfig,
   EveesRemote,
@@ -161,10 +175,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
-    const perspective = (await loadEntity(this.client, this.ref)) as Entity<Signed<Perspective>>;
-    const accessControl = await EveesHelpers.getAccessControl(this.client, this.ref);
-    const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.ref);
-    const context = await EveesHelpers.getPerspectiveContext(this.client, this.ref);
+    const perspective = (await loadEntity(this.client, this.ref)) as Entity<
+      Signed<Perspective>
+    >;
+    const accessControl = await EveesHelpers.getAccessControl(
+      this.client,
+      this.ref
+    );
+    const headId = await EveesHelpers.getPerspectiveHeadId(
+      this.client,
+      this.ref
+    );
+    const context = await EveesHelpers.getPerspectiveContext(
+      this.client,
+      this.ref
+    );
 
     this.authority = perspective.object.payload.authority;
     this.currentHeadId = headId;
@@ -244,11 +269,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const remote = this.eveesRemotes.find((r) => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
-    const store = this.getStore(authority, DocumentsModule.bindings.TextNodeType);
+    const store = this.getStore(
+      authority,
+      DocumentsModule.bindings.TextNodeType
+    );
     if (!store) throw new Error('store is undefined');
 
     const dataId = await EveesHelpers.createEntity(this.client, store, page);
-    const headId = await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds: [] });
+    const headId = await EveesHelpers.createCommit(this.client, remote, {
+      dataId,
+      parentsIds: [],
+    });
     return EveesHelpers.createPerspective(this.client, remote, {
       headId,
       context: `${this.context}_${Date.now()}`,
@@ -260,8 +291,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const store = this.getStore(this.authority, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const remote = this.eveesRemotes.find((r) => r.authority === this.authority);
-    if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
+    const remote = this.eveesRemotes.find(
+      (r) => r.authority === this.authority
+    );
+    if (!remote)
+      throw Error(`Remote not found for authority ${this.authority}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
     const headId = await EveesHelpers.createCommit(this.client, remote, {
@@ -382,7 +416,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   renderPageList() {
     if (this.pagesList === undefined)
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+      return html`
+        <cortex-loading-placeholder
+          class="empty-pages-loader"
+        ></cortex-loading-placeholder>
+      `;
 
     if (this.pagesList.length === 0)
       return html`
@@ -483,7 +521,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   render() {
-    this.logger.log('render()', { wiki: this.wiki, ref: this.ref, editable: this.editable });
+    this.logger.log('render()', {
+      wiki: this.wiki,
+      ref: this.ref,
+      editable: this.editable,
+    });
     if (!this.wiki || !this.ref)
       return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
@@ -498,7 +540,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           ${this.isMobile
             ? html`
                 <div>
-                  <mwc-icon-button icon="home" @click=${() => this.goToHome()}></mwc-icon-button>
+                  <mwc-icon-button
+                    icon="home"
+                    @click=${() => this.goToHome()}
+                  ></mwc-icon-button>
                 </div>
               `
             : ''}
@@ -610,8 +655,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       sharedStyles,
       css`
         :host {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
-            Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
+            'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
+            'Segoe UI Symbol';
           color: #37352f;
           --mdc-theme-primary: #2196f3;
           width: 100%;
@@ -627,6 +673,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           max-height: 5px;
           flex-shrink: 0;
           width: 100%;
+        }
+        .empty-pages-loader {
+          margin-top: 22px;
+          display: block;
         }
         .page-item {
           min-height: 48px;
