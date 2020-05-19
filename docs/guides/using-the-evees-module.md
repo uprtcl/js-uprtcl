@@ -104,7 +104,7 @@ This element takes as an **input a `ref` (*entity reference*) value**, and is ab
 2. **Recognize which behaviours** does the object implement, and in particular which `lenses` are registered.
 3. Picks and **renders a lens** to display the given object.
 
-In practice, this makes `<cortex-entity>` a **dynamic rendering engine**, in which the instantiator of the element **doesn't need to now anything about the entity they want to render** other than have access to its reference.
+In practice, this makes `<cortex-entity>` a **dynamic rendering engine**, in which the instantiator of the element **doesn't need to know anything about the entity they want to render** other than have access to its reference.
 
 > In the future, the possibility of adding new kinds of entity references or links will be enabled. This means that you will be able to define different kind of "links" from one content-addressable entity to another in your system or application.
 
