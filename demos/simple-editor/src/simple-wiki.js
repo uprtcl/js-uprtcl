@@ -122,7 +122,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         flex-direction: row;
       }
       .app-bar {
-        width: 300px;
+        width: 10vw;
         flex-grow: 0;
         flex-shrink: 0;
         background-color: #ceb19e;

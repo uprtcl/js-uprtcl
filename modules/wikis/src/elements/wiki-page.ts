@@ -84,13 +84,6 @@ export class WikiPage extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <div
-        class="color-bar"
-        style=${styleMap({
-          backgroundColor: this.color
-        })}
-      ></div>
-
       <div class="top-row">
         <mwc-icon-button icon="arrow_back_ios" @click=${this.back}></mwc-icon-button>
       </div>
@@ -136,12 +129,6 @@ export class WikiPage extends moduleConnect(LitElement) {
           flex-grow: 1;
           display: flex;
           flex-direction: column;
-        }
-        .color-bar {
-          height: 1vw;
-          max-height: 5px;
-          width: 100%;
-          margin-bottom: 1vw;
         }
         .page-content {
           margin: 0 auto;

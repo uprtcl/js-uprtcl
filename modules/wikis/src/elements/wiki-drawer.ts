@@ -222,7 +222,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       })
     );
     this.hasSelectedPage = true;
-    this.isDrawerOpened = false;
+    if (this.isMobile) {
+      this.isDrawerOpened = false;
+    }
   }
 
   getStore(authority: string, type: string): CASStore | undefined {
@@ -308,7 +310,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     await this.updateContent(result.entity);
 
-    this.selectedPageIx = index;
+    this.selectPage(index);
+    
     this.creatingNewPage = false;
   }
 
@@ -622,6 +625,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .color-bar {
           height: 1vw;
           max-height: 5px;
+          flex-shrink: 0;
           width: 100%;
         }
         .page-item {
