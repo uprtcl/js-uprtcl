@@ -26,21 +26,25 @@ export class EveesDialog extends LitElement {
   }
 
   render() {
-    return html` <div class="modal">
-      <div class="modal-content">
-        <div class="slot-container">
-          <slot></slot>
+    return html`
+      <div class="modal">
+        <div class="modal-content">
+          <div class="slot-container">
+            <slot></slot>
+          </div>
+          ${this.showSecondary === 'true'
+            ? html`
+                <mwc-button @click=${this.secondaryClicked}>
+                  ${this.secondaryText}
+                </mwc-button>
+              `
+            : ''}
+          <mwc-button @click=${this.primaryClicked}>
+            ${this.primaryText}
+          </mwc-button>
         </div>
-        ${this.showSecondary === 'true'
-          ? html` <mwc-button @click=${this.secondaryClicked}>
-              ${this.secondaryText}
-            </mwc-button>`
-          : ''}
-        <mwc-button @click=${this.primaryClicked}>
-          ${this.primaryText}
-        </mwc-button>
       </div>
-    </div>`;
+    `;
   }
 
   static get styles() {
@@ -57,19 +61,20 @@ export class EveesDialog extends LitElement {
         flex-direction: column;
         justify-content: center;
       }
+
       .modal-content {
-        max-width: 90vw;
+        width: 90vw;
         margin: 0 auto;
-        min-width: 60vw;
         padding: 3vw 3vw;
         background-color: white;
         border-radius: 4px;
         box-shadow: 10px 10px 67px 0px rgba(0, 0, 0, 0.75);
       }
+
       .slot-container {
         margin-bottom: 3vw;
         max-height: calc(100vh - 200px);
-        min-height: 500px;
+        min-height: 50vh;
         overflow-y: auto;
       }
     `;
