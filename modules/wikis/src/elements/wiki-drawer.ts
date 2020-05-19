@@ -487,8 +487,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return html`
       <mwc-drawer
         @MDCDrawer:closed=${() => (this.isDrawerOpened = false)}
-        type="${this.drawerType}"
-        ?open="${this.isDrawerOpened}"
+        type="dismissible"
+        ?open="${true}"
       >
         ${this.renderColorBar()}
         <section>
@@ -677,13 +677,18 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           position: relative;
         }
 
+        .app-content {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
         @media (max-width: 768px) {
           mwc-drawer {
             min-width: initial;
           }
           .app-content {
             min-width: 100% !important;
-            height: 100%;
           }
         }
       `
