@@ -18,26 +18,25 @@ export interface PostResult {
  * Wrapper over the fetch API
  */
 export class HttpConnection extends Connection {
-
   /** used to keep the token in memory in case tokenId is undefined */
   private tokenMem: string | undefined = undefined;
   private userIdMem: string | undefined = undefined;
-  
+
   constructor(
     protected httpOptions?: HttpConnectionOptions,
-    options?: ConnectionOptions, 
+    options?: ConnectionOptions,
     protected tokenStorageId: string | null = 'HTTP_AUTH_TOKEN',
     protected userStorageId: string | null = 'HTTP_USER_ID'
   ) {
     super(options);
   }
 
-  public get authToken() : string | undefined {
+  public get authToken(): string | undefined {
     if (this.tokenStorageId == null) return this.tokenMem;
 
     const token = localStorage.getItem(this.tokenStorageId);
     if (token === null) return undefined;
-    return token
+    return token;
   }
 
   public set authToken(token: string | undefined) {
@@ -53,12 +52,12 @@ export class HttpConnection extends Connection {
     }
   }
 
-  public get userId() : string | undefined {
+  public get userId(): string | undefined {
     if (this.userStorageId == null) return this.tokenMem;
 
     const userId = localStorage.getItem(this.userStorageId);
     if (userId === null) return undefined;
-    return userId
+    return userId;
   }
 
   public set userId(userId: string | undefined) {
@@ -83,7 +82,7 @@ export class HttpConnection extends Connection {
    */
   get headers(): HeadersInit {
     const headers: HeadersInit = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
 
     if (this.authToken) {
@@ -102,16 +101,16 @@ export class HttpConnection extends Connection {
 
     return fetch(url, {
       method: 'GET',
-      headers: this.headers
+      headers: this.headers,
     })
-      .then(response => {
+      .then((response) => {
         if (!response.ok) {
           throw new Error(response.statusText);
         }
         return response.json() as Promise<{ data: T }>;
       })
-      .then(data => {
-       this.logger.log('[HTTP GET RESULT] ', url, data);
+      .then((data) => {
+        this.logger.log('[HTTP GET RESULT] ', url, data);
         return data.data;
       });
   }
@@ -122,15 +121,15 @@ export class HttpConnection extends Connection {
     return fetch(url, {
       method: 'PUT',
       headers: this.headers,
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     })
-      .then(response => {
+      .then((response) => {
         if (!response.ok) {
           throw new Error(response.statusText);
         }
         return response.json() as Promise<{ data: T }>;
       })
-      .then(data => {
+      .then((data) => {
         this.logger.log('[HTTP PUT RESULT] ', url, data);
         return data.data;
       });
@@ -160,13 +159,13 @@ export class HttpConnection extends Connection {
       method: 'DELETE',
       headers: {
         ...this.headers,
-        Accept: 'application/json'
-      }
+        Accept: 'application/json',
+      },
     })
-      .then(response => {
+      .then((response) => {
         return response.json() as Promise<PostResult>;
       })
-      .then(data => {
+      .then((data) => {
         this.logger.log('[HTTP POST RESULT]', url, data);
         return (data as unknown) as PostResult;
       });
@@ -184,14 +183,14 @@ export class HttpConnection extends Connection {
       method: method,
       headers: {
         ...this.headers,
-        Accept: 'application/json'
+        Accept: 'application/json',
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     })
-      .then(response => {
+      .then((response) => {
         return response.json() as Promise<PostResult>;
       })
-      .then(data => {
+      .then((data) => {
         this.logger.log('[HTTP POST RESULT]', url, body, data);
         return (data as unknown) as PostResult;
       });

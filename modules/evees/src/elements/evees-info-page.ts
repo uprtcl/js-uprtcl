@@ -1,7 +1,7 @@
 import { html, css, property, query } from 'lit-element';
-export const styleMap = style => {
+export const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -25,7 +25,7 @@ export class EveesInfoPage extends EveesInfoBase {
   connectedCallback() {
     super.connectedCallback();
 
-    this.addEventListener('keydown', event => {
+    this.addEventListener('keydown', (event) => {
       if (event.keyCode === 27) {
         // 27 is esc
         this.showEditName = false;
@@ -45,20 +45,14 @@ export class EveesInfoPage extends EveesInfoBase {
     console.log('here');
     if (this.perspectiveId === this.firstPerspectiveId) {
       return html`<span>Official</span>`;
-    } 
+    }
 
     const hasName =
       this.perspectiveData.details.name !== undefined && this.perspectiveData.details.name !== '';
-    const name = html`
-      ${this.perspectiveData.details.name}
-    `;
-    const defaultName = html`
-      ${prettyAddress(this.perspectiveData.perspective.creatorId)}
-    `;
+    const name = html` ${this.perspectiveData.details.name} `;
+    const defaultName = html` ${prettyAddress(this.perspectiveData.perspective.creatorId)} `;
 
-    return html`
-      Draft ${hasName ? name : defaultName}
-    `;
+    return html` Draft ${hasName ? name : defaultName} `;
   }
 
   async editNameClicked() {
@@ -77,8 +71,8 @@ export class EveesInfoPage extends EveesInfoBase {
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.perspectiveId,
-        name: newName
-      }
+        name: newName,
+      },
     });
 
     this.load();
@@ -118,10 +112,10 @@ export class EveesInfoPage extends EveesInfoBase {
         force-update=${this.forceUpdate}
         perspective-id=${this.perspectiveId}
         first-perspective-id=${this.firstPerspectiveId}
-        @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
-        @merge-perspective=${e =>
+        @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}
+        @merge-perspective=${(e) =>
           this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
-        @create-proposal=${e =>
+        @create-proposal=${(e) =>
           this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, true)}
         @authorize-proposal=${this.authorizeProposal}
         @execute-proposal=${this.executeProposal}
@@ -230,7 +224,7 @@ export class EveesInfoPage extends EveesInfoBase {
       contextConfig['edit'] = {
         disabled: false,
         graphic: 'edit',
-        text: 'edit'
+        text: 'edit',
       };
     }
 
@@ -238,13 +232,13 @@ export class EveesInfoPage extends EveesInfoBase {
       contextConfig['logout'] = {
         disabled: false,
         graphic: 'exit_to_app',
-        text: 'logout'
+        text: 'logout',
       };
     } else {
       contextConfig['login'] = {
         disabled: false,
         graphic: 'account_box',
-        text: 'login'
+        text: 'login',
       };
     }
 
@@ -443,7 +437,7 @@ export class EveesInfoPage extends EveesInfoBase {
             width: 85%;
           }
         }
-      `
+      `,
     ]);
   }
 }

@@ -6,54 +6,52 @@ export const eveesTypeDefs: DocumentNode = gql`
 
   extend type Mutation {
     updatePerspectiveHead(
-      perspectiveId: ID!, 
-      headId: ID,
-      context: String,
-      name: String): Perspective!
+      perspectiveId: ID!
+      headId: ID
+      context: String
+      name: String
+    ): Perspective!
 
     createEntity(object: JSON!, casID: ID): Entity!
 
     createCommit(
-      dataId: ID!, 
-      parentsIds: [ID!]!, 
-      creatorsIds: [String], 
-      message: String, 
-      casID: String!, 
-      timestamp: Date): Commit!
+      dataId: ID!
+      parentsIds: [ID!]!
+      creatorsIds: [String]
+      message: String
+      casID: String!
+      timestamp: Date
+    ): Commit!
 
     createPerspective(
-      authority: String!, 
-      creatorId: String,
-      timestamp: Date,
-      headId: ID, 
-      context: String!, 
-      name: String, 
-      canWrite: String,
-      parentId: String): Perspective!
+      authority: String!
+      creatorId: String
+      timestamp: Date
+      headId: ID
+      context: String!
+      name: String
+      canWrite: String
+      parentId: String
+    ): Perspective!
 
-    deletePerspective(
-      perspectiveId: ID!): Perspective!
+    deletePerspective(perspectiveId: ID!): Perspective!
 
     addProposal(
-      toPerspectiveId: ID!, 
-      fromPerspectiveId: ID!, 
-      toHeadId: ID!, 
-      fromHeadId: ID!, 
-      updateRequests: [HeadUpdateInput!]): UpdateProposal!
+      toPerspectiveId: ID!
+      fromPerspectiveId: ID!
+      toHeadId: ID!
+      fromHeadId: ID!
+      updateRequests: [HeadUpdateInput!]
+    ): UpdateProposal!
 
     createAndAddProposal(
-      perspectives: [NewPerspectiveInput],
+      perspectives: [NewPerspectiveInput]
       proposal: ProposalInput
     ): UpdateProposal!
 
-    authorizeProposal(
-      proposalId: ID!, 
-      perspectiveId: ID!, 
-      authorize: Boolean!): UpdateProposal!
+    authorizeProposal(proposalId: ID!, perspectiveId: ID!, authorize: Boolean!): UpdateProposal!
 
-    executeProposal(
-      proposalId: ID!, 
-      perspectiveId: ID!): UpdateProposal!
+    executeProposal(proposalId: ID!, perspectiveId: ID!): UpdateProposal!
   }
 
   type Context {
@@ -105,9 +103,9 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   input NewPerspectiveInput {
-    perspective: PerspectiveInput,
+    perspective: PerspectiveInput
     details: PerspectiveDetailsInput
-    canWrite: String,
+    canWrite: String
     parentId: String
   }
 
@@ -121,15 +119,15 @@ export const eveesTypeDefs: DocumentNode = gql`
 
   type UpdateProposal {
     id: ID!
-    
+
     creatorId: String
     toPerspective: Perspective! @discover
     fromPerspective: Perspective! @discover
     toHead: Commit! @discover
     fromHead: Commit! @discover
     updates: [HeadUpdate!]
-    authorized: Boolean,
-    canAuthorize: Boolean,
+    authorized: Boolean
+    canAuthorize: Boolean
     executed: Boolean
   }
 

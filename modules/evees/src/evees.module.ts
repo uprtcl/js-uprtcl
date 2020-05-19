@@ -9,7 +9,7 @@ import { AccessControlModule } from '@uprtcl/access-control';
 import {
   PerspectiveLinks,
   PerspectiveAccessControl,
-  PerspectivePattern
+  PerspectivePattern,
 } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
@@ -44,9 +44,9 @@ import { EveesLoadingButton } from './elements/common-ui/evees-loading-button';
  * import { HttpConnection } from '@uprtcl/http-provider';
  * import { EthereumConnection } from '@uprtcl/ethereum-provider';
  * import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
- * 
+ *
  * const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
- * 
+ *
  * const cidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
  *
  * // Don't put anything on host to get from Metamask's ethereum provider
@@ -103,11 +103,10 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-list-item', ItemWithMenu);
     customElements.define('evees-popper', EveesPopper);
     customElements.define('evees-options-menu', EveesOptionsMenu);
-    customElements.define('evees-update-diff', EveesDiff)
+    customElements.define('evees-update-diff', EveesDiff);
     customElements.define('evees-dialog', EveesDialog);
     customElements.define('evees-help', EveesHelp);
     customElements.define('evees-loading-button', EveesLoadingButton);
-    
   }
 
   get submodules() {
@@ -116,9 +115,9 @@ export class EveesModule extends MicroModule {
       new i18nextModule('evees', { en: en }),
       new PatternsModule([
         new CommitPattern([CommitLinked]),
-        new PerspectivePattern([PerspectiveLinks, PerspectiveAccessControl])
+        new PerspectivePattern([PerspectiveLinks, PerspectiveAccessControl]),
       ]),
-      new CASModule(this.eveesProviders)
+      new CASModule(this.eveesProviders),
     ];
   }
 }

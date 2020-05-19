@@ -4,7 +4,7 @@ import {
   compose,
   combineReducers,
   applyMiddleware,
-  StoreEnhancer
+  StoreEnhancer,
 } from 'redux';
 import { LazyStore, lazyReducerEnhancer } from 'pwa-helpers/lazy-reducer-enhancer.js';
 import createSagaMiddleware, { SagaMiddleware } from 'redux-saga';
@@ -28,7 +28,7 @@ export class ReduxStoreModule extends MicroModule {
     ) => StoreEnhancer<Ext0 & Ext1, StateExt0 & StateExt1> =
       window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose;
     const sagaMiddleware = createSagaMiddleware({
-      context: { [ReduxBindings.Context]: container }
+      context: { [ReduxBindings.Context]: container },
     });
 
     const store = createStore(

@@ -75,7 +75,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
           }
         }
       }
-      `
+      `,
     });
 
     if (!result.data || !result.data.entity)
@@ -83,16 +83,16 @@ export class CortexEntity extends moduleConnect(LitElement) {
 
     const entityResult = result.data.entity;
 
-    const lenses = entityResult._context.content._context.patterns.lenses.filter(lens => !!lens);
+    const lenses = entityResult._context.content._context.patterns.lenses.filter((lens) => !!lens);
 
     this.entity = {
       id: entityResult.id,
       object: entityResult._context.object,
-      casID: entityResult._context.casID
+      casID: entityResult._context.casID,
     };
 
     if (this.lensType) {
-      this.selectedLens = lenses.find(lens => lens.type === this.lensType);
+      this.selectedLens = lenses.find((lens) => lens.type === this.lensType);
     }
 
     if (this.selectedLens === undefined) {
@@ -101,7 +101,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
 
     this.logger.info(`Lens selected for entity ${this.ref}`, {
       selectedLens: this.selectedLens,
-      lenses
+      lenses,
     });
   }
 
@@ -127,9 +127,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
   render() {
     return html`
       ${!this.selectedLens
-        ? html`
-            <cortex-loading-placeholder></cortex-loading-placeholder>
-          `
+        ? html` <cortex-loading-placeholder></cortex-loading-placeholder> `
         : this.renderLens()}
     `;
   }

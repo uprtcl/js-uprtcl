@@ -17,7 +17,7 @@ export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
   recognize(entity: object) {
     const object = extractSignedEntity(entity);
 
-    return object && propertyOrder.every(p => object.hasOwnProperty(p));
+    return object && propertyOrder.every((p) => object.hasOwnProperty(p));
   }
 
   type = EveesBindings.PerspectiveType;
@@ -38,7 +38,7 @@ export class PerspectiveLinks implements HasLinks, HasRedirect {
             }
           }
         }
-      }`
+      }`,
     });
 
     const headId = result.data.entity.head ? result.data.entity.head.id : undefined;
@@ -57,7 +57,7 @@ export class PerspectiveLinks implements HasLinks, HasRedirect {
             }
           }
         }
-      }`
+      }`,
     });
 
     return result.data.entity.head ? result.data.entity.head.id : undefined;

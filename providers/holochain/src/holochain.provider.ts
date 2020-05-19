@@ -7,7 +7,6 @@ import { Constructor } from '@uprtcl/micro-orchestrator';
 import { HolochainConnection } from './holochain.connection';
 import { HolochainConnectionBindings } from './bindings';
 
-
 @injectable()
 export abstract class HolochainProvider implements Authority {
   authority!: string;
@@ -19,9 +18,9 @@ export abstract class HolochainProvider implements Authority {
     @inject(HolochainConnectionBindings.HolochainConnection)
     protected connection: HolochainConnection
   ) {}
- 
+
   userId?: string | undefined;
-  
+
   /**
    * @override
    */
@@ -36,13 +35,8 @@ export abstract class HolochainProvider implements Authority {
   async isLogged(): Promise<boolean> {
     return true;
   }
-  async login(): Promise<void> {
-    
-  }
-  async logout(): Promise<void> {
-    
-  }
-
+  async login(): Promise<void> {}
+  async logout(): Promise<void> {}
 }
 
 export function createHolochainProvider(

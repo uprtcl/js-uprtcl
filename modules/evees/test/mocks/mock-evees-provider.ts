@@ -4,7 +4,7 @@ import {
   Secured,
   Commit,
   PerspectiveDetails,
-  EveesRemote
+  EveesRemote,
 } from '../../src/uprtcl-evees';
 import { NewPerspectiveData } from '../../src/types';
 

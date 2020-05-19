@@ -19,7 +19,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
 
   @property({ type: Object, attribute: false })
   permissions!: BasicAdminPermissions;
-  
+
   @property({ type: Boolean, attribute: false })
   canWrite!: boolean;
 
@@ -42,7 +42,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
             }
           }
         }
-      }`
+      }`,
     });
 
     this.permissions = result.data.entity._context.patterns.accessControl.permissions;
@@ -60,8 +60,8 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
       mutation: SET_PUBLIC_READ,
       variables: {
         entityId: this.entityId,
-        value: !this.permissions.publicRead
-      }
+        value: !this.permissions.publicRead,
+      },
     });
 
     this.permissions = result.data.setPublicRead._context.patterns.accessControl.permissions;
@@ -72,7 +72,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
       new CustomEvent('permissions-updated', {
         bubbles: true,
         composed: true,
-        cancelable: true
+        cancelable: true,
       })
     );
   }
@@ -86,14 +86,14 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
         <div class="row">
           ${this.canWrite
             ? html`
-                <mwc-button outlined 
-                  icon=${this.permissions.publicRead ? "visibility_off" : "visibility"} 
-                  @click=${this.togglePublicRead}>
-
+                <mwc-button
+                  outlined
+                  icon=${this.permissions.publicRead ? 'visibility_off' : 'visibility'}
+                  @click=${this.togglePublicRead}
+                >
                   ${!this.permissions.publicRead
                     ? this.t('access-control:make-public')
                     : this.t('access-control:make-private')}
-
                 </mwc-button>
               `
             : ''}

@@ -35,7 +35,7 @@ export class OwnerBehaviour implements HasLenses<OwnerPermissions>, Permissions<
             .canWrite=${context.canWrite}
             .entityId=${context.entityId}
           ></permissions-owner>
-        `
-    }
+        `,
+    },
   ];
 }

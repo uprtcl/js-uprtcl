@@ -22,7 +22,7 @@ export const accessControlResolvers = {
 
       const updatable: Updatable<any> | undefined = recognizer
         .recognizeBehaviours(entity)
-        .find(prop => !!(prop as Updatable<any>).accessControl);
+        .find((prop) => !!(prop as Updatable<any>).accessControl);
 
       if (!updatable)
         throw new Error(`Cannot change owner of ${entityId}: no Updatable pattern implemented`);
@@ -48,7 +48,7 @@ export const accessControlResolvers = {
 
       const updatable: Updatable<any> | undefined = recognizer
         .recognizeBehaviours(entity)
-        .find(prop => !!(prop as Updatable<any>).accessControl);
+        .find((prop) => !!(prop as Updatable<any>).accessControl);
 
       if (!updatable)
         throw new Error(`Cannot change owner of ${entityId}: no Updatable pattern implemented`);
@@ -70,13 +70,13 @@ export const accessControlResolvers = {
         canRead: currentPermissions.canRead,
         canWrite: currentPermissions.canWrite,
         publicWrite: currentPermissions.publicWrite,
-        publicRead: value
+        publicRead: value,
       };
 
       await accessControl.setPermissions(entityId, newPermissions);
 
       return entityId;
-    }
+    },
   },
   Patterns: {
     async accessControl(parent, args, context) {
@@ -85,7 +85,7 @@ export const accessControlResolvers = {
 
       const hasAccessControl: Updatable<any> | undefined = recognizer
         .recognizeBehaviours(entity)
-        .find(prop => !!(prop as Updatable<any>).accessControl);
+        .find((prop) => !!(prop as Updatable<any>).accessControl);
 
       if (!hasAccessControl) return null;
 
@@ -99,7 +99,7 @@ export const accessControlResolvers = {
 
       const permissionsPattern: Permissions<any> | undefined = recognizer
         .recognizeBehaviours(permissions)
-        .find(prop => !!(prop as Permissions<any>).canWrite);
+        .find((prop) => !!(prop as Permissions<any>).canWrite);
 
       if (!permissionsPattern) return null;
 
@@ -109,8 +109,8 @@ export const accessControlResolvers = {
 
       return {
         canWrite: permissionsPattern.canWrite(permissions)(userId),
-        permissions
+        permissions,
       };
-    }
-  }
+    },
+  },
 };

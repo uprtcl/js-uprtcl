@@ -25,7 +25,7 @@ import { WikiDiff } from './elements/wiki-diff';
  * ```ts
  * import { IpfsStore } from '@uprtcl/ipfs-provider';
  * import { WikisModule, WikisTypes } from '@uprtcl/wikis';
- * 
+ *
  * const ipfsStore = new IpfsStore({
  *   host: 'ipfs.infura.io',
  *   port: 5001,
@@ -60,7 +60,7 @@ export class WikisModule extends EveesContentModule {
       ...super.submodules,
       new GraphQlSchemaModule(wikiTypeDefs, {}),
       new i18nextModule('wikis', { en: en }),
-      new PatternsModule([new WikiPattern([WikiCommon, WikiLinks])])
+      new PatternsModule([new WikiPattern([WikiCommon, WikiLinks])]),
     ];
   }
 }

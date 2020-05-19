@@ -13,12 +13,12 @@ import { MockEntity } from '../mocks/mock.pattern';
 const objects: Dictionary<MockEntity> = {
   QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo: {
     test: 'test',
-    data: 'QmbN42sxsBz59gD5eLfaFkehZbBDUTYYcu6PMHZUhRgCZK'
+    data: 'QmbN42sxsBz59gD5eLfaFkehZbBDUTYYcu6PMHZUhRgCZK',
   },
   QmbN42sxsBz59gD5eLfaFkehZbBDUTYYcu6PMHZUhRgCZK: {
     test: 'test2',
-    data: undefined
-  }
+    data: undefined,
+  },
 };
 
 describe('basic GraphQl entity', () => {
@@ -29,7 +29,7 @@ describe('basic GraphQl entity', () => {
       new ApolloClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
-      new MockModule(objects)
+      new MockModule(objects),
     ]);
   });
 
@@ -56,7 +56,7 @@ describe('basic GraphQl entity', () => {
             }
           }
         }
-      `
+      `,
     });
 
     expect(result.data).to.deep.equal({
@@ -70,12 +70,12 @@ describe('basic GraphQl entity', () => {
           __typename: 'EntityContext',
           patterns: {
             __typename: 'Patterns',
-            text: 'test'
-          }
-        }
-      }
+            text: 'test',
+          },
+        },
+      },
     });
-    
+
     result = await client.query({
       query: gql`
         {
@@ -92,7 +92,7 @@ describe('basic GraphQl entity', () => {
             }
           }
         }
-      `
+      `,
     });
 
     expect(result.data).to.deep.equal({
@@ -105,10 +105,10 @@ describe('basic GraphQl entity', () => {
           __typename: 'EntityContext',
           patterns: {
             __typename: 'Patterns',
-            text: 'test2'
-          }
-        }
-      }
+            text: 'test2',
+          },
+        },
+      },
     });
   });
 
@@ -135,7 +135,7 @@ describe('basic GraphQl entity', () => {
             }
           }
         }
-      `
+      `,
     });
 
     expect(result.data).to.deep.equal({
@@ -151,14 +151,14 @@ describe('basic GraphQl entity', () => {
               __typename: 'EntityContext',
               patterns: {
                 __typename: 'Patterns',
-                text: 'test2' 
-              }
-            }
-          }
-        }
-      }
+                text: 'test2',
+              },
+            },
+          },
+        },
+      },
     });
-    
+
     result = await client.query({
       query: gql`
         {
@@ -177,7 +177,7 @@ describe('basic GraphQl entity', () => {
             }
           }
         }
-      `
+      `,
     });
 
     expect(result.data).to.deep.equal({
@@ -193,12 +193,12 @@ describe('basic GraphQl entity', () => {
               __typename: 'EntityContext',
               patterns: {
                 __typename: 'Patterns',
-                text: 'test2' 
-              }
-            }
-          }
-        }
-      }
+                text: 'test2',
+              },
+            },
+          },
+        },
+      },
     });
   });
 });

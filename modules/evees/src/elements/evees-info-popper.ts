@@ -1,7 +1,7 @@
 import { html, css, property } from 'lit-element';
-export const styleMap = style => {
+export const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -41,10 +41,10 @@ export class EveesInfoPopper extends EveesInfoBase {
         <evees-perspectives-list
           perspective-id=${this.perspectiveId}
           first-perspective-id=${this.firstPerspectiveId}
-          @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
-          @merge-perspective=${e =>
+          @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}
+          @merge-perspective=${(e) =>
             this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
-          @create-proposal=${e =>
+          @create-proposal=${(e) =>
             this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, true)}
           @authorize-proposal=${this.authorizeProposal}
           @execute-proposal=${this.executeProposal}
@@ -86,7 +86,7 @@ export class EveesInfoPopper extends EveesInfoBase {
           <div
             class="evee-stripe"
             style=${styleMap({
-              backgroundColor: (this.eveeColor ? this.eveeColor : DEFAULT_COLOR) + 'FF'
+              backgroundColor: (this.eveeColor ? this.eveeColor : DEFAULT_COLOR) + 'FF',
             })}
           ></div>
         </div>
@@ -100,21 +100,21 @@ export class EveesInfoPopper extends EveesInfoBase {
                         <div
                           class="color-bar"
                           style=${styleMap({
-                            backgroundColor: this.eveeColor
+                            backgroundColor: this.eveeColor,
                           })}
                         ></div>
 
                         <div
                           class="perspective-title"
                           style=${styleMap({
-                            color: this.eveeColor
+                            color: this.eveeColor,
                           })}
                         >
                           <h2>${this.perspectiveTitle()}</h2>
                         </div>
 
                         <mwc-tab-bar
-                          @MDCTabBar:activated=${e => (this.activeTabIndex = e.detail.index)}
+                          @MDCTabBar:activated=${(e) => (this.activeTabIndex = e.detail.index)}
                         >
                           <mwc-tab .label=${this.t('evees:other-perspectives')} hasImageIcon>
                             <mwc-icon>list_alt</mwc-icon>
@@ -147,72 +147,74 @@ export class EveesInfoPopper extends EveesInfoBase {
   }
 
   static get styles() {
-    return super.styles.concat([css`
-      .container {
-        position: relative;
-        height: 100%;
-      }
-      .button {
-        cursor: pointer;
-        padding-top: 5px;
-        padding-left: 10px;
-        padding-right: 10px;
-        height: 100%;
-        border-radius: 3px;
-        user-select: none;
-        transition: background-color 100ms linear;
-      }
-      .button:hover {
-        background-color: #eef1f1;
-      }
-      .evee-stripe {
-        width: 10px;
-        height: calc(100% - 10px);
-        border-radius: 3px;
-      }
-      .info-box {
-        width: auto;
-        z-index: 20;
-        position: absolute;
-        left: 30px;
-        top: 0;
-        width: 80vw;
-        max-width: 700px;
-      }
-      .tab-content-container {
-        min-height: 400px;
-        display: flex;
-        flex-direction: column;
-      }
-      .tab-content {
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-      }
-      .color-bar {
-        height: 1vw;
-        max-height: 5px;
-        width: 100%;
-        margin-bottom: 1vw;
-        border-top-right-radius: 4px;
-        border-top-left-radius: 4px;
-      }
-      .perspective-title {
-        font-weight: bold;
-        padding: 0.5vw 0 1.5vw 1.5vw;
-      }
-      .button-row {
-        padding-bottom: 16px;
-        text-align: center;
-      }
-      .perspectives-list {
-        flex-grow: 1;
-      }
-      .close {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-      }
-    `]);
+    return super.styles.concat([
+      css`
+        .container {
+          position: relative;
+          height: 100%;
+        }
+        .button {
+          cursor: pointer;
+          padding-top: 5px;
+          padding-left: 10px;
+          padding-right: 10px;
+          height: 100%;
+          border-radius: 3px;
+          user-select: none;
+          transition: background-color 100ms linear;
+        }
+        .button:hover {
+          background-color: #eef1f1;
+        }
+        .evee-stripe {
+          width: 10px;
+          height: calc(100% - 10px);
+          border-radius: 3px;
+        }
+        .info-box {
+          width: auto;
+          z-index: 20;
+          position: absolute;
+          left: 30px;
+          top: 0;
+          width: 80vw;
+          max-width: 700px;
+        }
+        .tab-content-container {
+          min-height: 400px;
+          display: flex;
+          flex-direction: column;
+        }
+        .tab-content {
+          display: flex;
+          flex-direction: column;
+          flex-grow: 1;
+        }
+        .color-bar {
+          height: 1vw;
+          max-height: 5px;
+          width: 100%;
+          margin-bottom: 1vw;
+          border-top-right-radius: 4px;
+          border-top-left-radius: 4px;
+        }
+        .perspective-title {
+          font-weight: bold;
+          padding: 0.5vw 0 1.5vw 1.5vw;
+        }
+        .button-row {
+          padding-bottom: 16px;
+          text-align: center;
+        }
+        .perspectives-list {
+          flex-grow: 1;
+        }
+        .close {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+        }
+      `,
+    ]);
   }
 }

@@ -9,7 +9,7 @@ export interface HttpProviderOptions {
 
 export class HttpProvider implements Authority {
   constructor(protected options: HttpProviderOptions, protected connection: HttpConnection) {}
-  
+
   get authority(): string {
     return `http:${this.options.apiId}:${this.options.host}`;
   }
@@ -46,13 +46,12 @@ export class HttpProvider implements Authority {
   }
 
   isLogged(): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   login(): Promise<void> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   logout(): Promise<void> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
-
 }

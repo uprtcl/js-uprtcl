@@ -21,7 +21,7 @@ export class MockModule extends MicroModule {
     return [
       new GraphQlSchemaModule(mockSchema),
       new PatternsModule([new MockPattern([Lenses])]),
-      new CASModule([new MockSource(this.initialObjects)])
+      new CASModule([new MockSource(this.initialObjects)]),
     ];
   }
 }

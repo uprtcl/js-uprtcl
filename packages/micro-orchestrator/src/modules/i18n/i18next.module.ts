@@ -17,7 +17,7 @@ export class i18nextModule extends MicroModule {
 
     await i18next.loadNamespaces(this.namespace);
 
-    Object.keys(this.resources).map(lang => {
+    Object.keys(this.resources).map((lang) => {
       i18next.addResources(lang, this.namespace, this.resources[lang]);
     });
   }

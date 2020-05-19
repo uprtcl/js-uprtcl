@@ -9,5 +9,5 @@ export const defaultCidConfig: CidConfig = {
   version: 1,
   type: 'sha2-256',
   codec: 'raw',
-  base: 'base58btc'
+  base: 'base58btc',
 };

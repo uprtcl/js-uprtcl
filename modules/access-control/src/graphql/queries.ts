@@ -32,4 +32,3 @@ export const SET_PUBLIC_READ = gql`
     }
   }
 `;
-

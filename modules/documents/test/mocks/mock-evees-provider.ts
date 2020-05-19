@@ -5,7 +5,7 @@ import {
   Secured,
   Commit,
   PerspectiveDetails,
-  EveesRemote
+  EveesRemote,
 } from '@uprtcl/evees';
 
 export class MockEveesProvider implements EveesRemote {
@@ -13,7 +13,7 @@ export class MockEveesProvider implements EveesRemote {
     public entities: Dictionary<any> = {},
     public details: Dictionary<PerspectiveDetails> = {}
   ) {}
-  
+
   isLogged(): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
@@ -23,7 +23,7 @@ export class MockEveesProvider implements EveesRemote {
   logout(): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  
+
   create(object: object, hash?: string): Promise<string> {
     throw new Error('Method not implemented.');
   }

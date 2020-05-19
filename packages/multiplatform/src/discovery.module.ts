@@ -15,7 +15,7 @@ import { EntityCache } from './graphql/entity-cache';
 import { resolvers } from './graphql/resolvers';
 import {
   KnownSourcesRefPattern,
-  KnownSourcesResolver
+  KnownSourcesResolver,
 } from './references/known-sources/reference.pattern';
 
 export class DiscoveryModule extends MicroModule {
@@ -33,9 +33,9 @@ export class DiscoveryModule extends MicroModule {
     return [
       new GraphQlSchemaModule(discoveryTypeDefs, resolvers, [
         DiscoverDirective,
-        CASSourceDirective
+        CASSourceDirective,
       ]),
-      new PatternsModule([new KnownSourcesRefPattern([KnownSourcesResolver])])
+      new PatternsModule([new KnownSourcesRefPattern([KnownSourcesResolver])]),
     ];
   }
 

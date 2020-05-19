@@ -1,11 +1,10 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect, Logger } from "@uprtcl/micro-orchestrator";
+import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { AccessControlModule } from '../access-control.module';
 import { Authority } from '../types/authority';
 
 export class RemoteLoginWidget extends moduleConnect(LitElement) {
-
   logger = new Logger('EVEES-INFO');
 
   @property({ type: String })
@@ -17,16 +16,17 @@ export class RemoteLoginWidget extends moduleConnect(LitElement) {
   protected remote: Authority | undefined = undefined;
 
   firstUpdated() {
-    this.loadRemote()
+    this.loadRemote();
   }
 
   async loadRemote() {
     if (this.authority !== undefined) return;
     const remotes = this.requestAll(AccessControlModule.bindings.Authority) as Authority[];
-    
-    this.remote = remotes.find(remote => remote.authority === this.authority);
-    if (this.remote === undefined) throw new Error(`remote not found for authority ${this.authority}`);
-    
+
+    this.remote = remotes.find((remote) => remote.authority === this.authority);
+    if (this.remote === undefined)
+      throw new Error(`remote not found for authority ${this.authority}`);
+
     this.isAuthorized = this.remote.userId !== undefined;
   }
 
@@ -50,18 +50,21 @@ export class RemoteLoginWidget extends moduleConnect(LitElement) {
 
   render() {
     return html`
-      <div class="widget-container" @click=${this.loginClicked}>${ this.isAuthorized ? 'logout' : 'login'}</div>
+      <div class="widget-container" @click=${this.loginClicked}>
+        ${this.isAuthorized ? 'logout' : 'login'}
+      </div>
     `;
   }
 
   static get styles() {
-    return [css`
-      .widget-container {
-        width: 5px;
-        height: 50px;
-        background-color: red;
-      }
-    `];
+    return [
+      css`
+        .widget-container {
+          width: 5px;
+          height: 50px;
+          background-color: red;
+        }
+      `,
+    ];
   }
-
 }

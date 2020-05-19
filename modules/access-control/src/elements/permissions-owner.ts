@@ -1,7 +1,7 @@
 import { LitElement, property, html, query, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { TextFieldBase } from "@material/mwc-textfield/mwc-textfield-base"; 
+import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
 import '@material/mwc-dialog';
 import '@material/mwc-textfield';
 
@@ -14,8 +14,8 @@ import { SET_CAN_WRITE } from '../graphql/queries';
 import { prettyAddress } from './support';
 import { CortexModule } from '@uprtcl/cortex';
 
-export class PermissionsOwner extends moduleConnect(LitElement) implements PermissionsElement<OwnerPermissions> {
-
+export class PermissionsOwner extends moduleConnect(LitElement)
+  implements PermissionsElement<OwnerPermissions> {
   @property({ type: String })
   entityId!: string;
 
@@ -32,7 +32,7 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
   showDialog: boolean = false;
 
   @property({ attribute: false })
-  changingOwner: boolean = false;  
+  changingOwner: boolean = false;
 
   @query('#new-address')
   newAddressEl!: TextFieldBase;
@@ -60,7 +60,7 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
             }
           }
         }
-      }`
+      }`,
     });
 
     this.permissions = result.data.entity._context.patterns.accessControl.permissions;
@@ -84,8 +84,8 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
       mutation: SET_CAN_WRITE,
       variables: {
         entityId: this.entityId,
-        userId: newAddress
-      }
+        userId: newAddress,
+      },
     });
 
     this.permissions = result.data.setCanWrite._context.patterns.accessControl.permissions;
@@ -95,7 +95,7 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
       new CustomEvent('permissions-updated', {
         bubbles: true,
         composed: true,
-        cancelable: true
+        cancelable: true,
       })
     );
 
@@ -108,12 +108,13 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
 
   renderDialog() {
     return html`
-      <evees-dialog 
-        primary-text="Transfer" 
+      <evees-dialog
+        primary-text="Transfer"
         secondary-text="Cancel"
         @primary=${this.changeOwner}
-        @secondary=${ () => this.showDialog = false }
-        show-secondary='true'>
+        @secondary=${() => (this.showDialog = false)}
+        show-secondary="true"
+      >
         <mwc-textfield
           class="address-field"
           id="new-address"
@@ -133,10 +134,11 @@ export class PermissionsOwner extends moduleConnect(LitElement) implements Permi
       ${this.canWrite
         ? html`
             <evees-loading-button
-              icon="swap_horizontal" 
+              icon="swap_horizontal"
               @click=${this.showTransferDialog}
               loading=${this.changingOwner ? 'true' : 'false'}
-              label=${this.t('access-control:transfer-ownership')}>
+              label=${this.t('access-control:transfer-ownership')}
+            >
             </evees-loading-button>
           `
         : ''}

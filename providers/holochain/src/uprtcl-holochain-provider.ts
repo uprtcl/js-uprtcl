@@ -11,5 +11,5 @@ export {
   parseEntriesResults,
   parseEntry,
   parseEntryResult,
-  parseResponse
+  parseResponse,
 } from './utils';

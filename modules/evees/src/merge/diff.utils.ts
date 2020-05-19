@@ -11,7 +11,7 @@ export class DiffUtils {
   static toChars(diffs: Diff[]): Diff[] {
     let result: Diff[] = [];
     for (const diff of diffs) {
-      const charDiff = diff[1].split('').map(word => <Diff>[diff[0], word]);
+      const charDiff = diff[1].split('').map((word) => <Diff>[diff[0], word]);
       result = result.concat(charDiff);
     }
     return result;
@@ -20,11 +20,13 @@ export class DiffUtils {
   static alignDiffs(diffs: Diff[][]): { original: Diff[]; news: Diff[][] } {
     const chars = {
       original: [] as Array<Diff | undefined>,
-      news: diffs.map(() => []) as Array<Array<Diff | undefined>>
+      news: diffs.map(() => []) as Array<Array<Diff | undefined>>,
     };
 
-    while (!diffs.every(diff => diff.length === 0)) {
-      const removalIndex = diffs.findIndex(diff => diff.length > 0 && diff[0][0] === DiffOp.Delete);
+    while (!diffs.every((diff) => diff.length === 0)) {
+      const removalIndex = diffs.findIndex(
+        (diff) => diff.length > 0 && diff[0][0] === DiffOp.Delete
+      );
       if (
         removalIndex !== -1 &&
         diffs.every(
@@ -36,11 +38,13 @@ export class DiffUtils {
       ) {
         // There has been a removal
         let original = diffs[removalIndex][0];
-        diffs.forEach(diff => diff.shift());
+        diffs.forEach((diff) => diff.shift());
         chars.original.push(original);
-        chars.news.forEach(newChars => newChars.push(original));
+        chars.news.forEach((newChars) => newChars.push(original));
       } else {
-        const changeIndex = diffs.findIndex(diff => diff.length > 0 && diff[0][0] !== DiffOp.Equal);
+        const changeIndex = diffs.findIndex(
+          (diff) => diff.length > 0 && diff[0][0] !== DiffOp.Equal
+        );
         if (changeIndex !== -1) {
           const change = diffs[changeIndex].shift();
           chars.original.push(undefined);
@@ -53,9 +57,9 @@ export class DiffUtils {
           }
         } else {
           let original: Diff | undefined = undefined;
-          diffs.forEach(diff => (original = diff.shift()));
+          diffs.forEach((diff) => (original = diff.shift()));
           chars.original.push(original);
-          chars.news.forEach(newChars => newChars.push(original));
+          chars.news.forEach((newChars) => newChars.push(original));
         }
       }
     }

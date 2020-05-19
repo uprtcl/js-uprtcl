@@ -1,3 +1,3 @@
 export const MockBindings = {
-  Mock: 'mock-id'
+  Mock: 'mock-id',
 };

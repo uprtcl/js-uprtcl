@@ -19,18 +19,18 @@ export class EveesWorkspace {
 
   private buildWorkspace(client: ApolloClient<any>): ApolloClient<any> {
     const link = new ApolloLink((operation, forward) => {
-      return new Observable(observer => {
+      return new Observable((observer) => {
         client
           .query({
             query: operation.query,
             variables: operation.variables,
-            context: operation.getContext()
+            context: operation.getContext(),
           })
-          .then(result => {
+          .then((result) => {
             observer.next(result);
             observer.complete();
           })
-          .catch(error => {
+          .catch((error) => {
             observer.error(error);
             observer.complete();
           });
@@ -42,7 +42,7 @@ export class EveesWorkspace {
     const workspace = new ApolloClient<any>({
       cache: cloneDeep(client.cache),
       typeDefs: client.typeDefs,
-      link: link
+      link: link,
     });
 
     return workspace;
@@ -54,16 +54,16 @@ export class EveesWorkspace {
 
   public async isSingleAuthority(authority: string) {
     const newNot = this.newPerspectives.find(
-      newPerspective => newPerspective.perspective.object.payload.authority !== authority
+      (newPerspective) => newPerspective.perspective.object.payload.authority !== authority
     );
     if (newNot !== undefined) return false;
 
-    const check = this.updates.map(async update =>
+    const check = this.updates.map(async (update) =>
       EveesHelpers.getPerspectiveAuthority(this.workspace, update.perspectiveId)
     );
     const checktoPerspectives = await Promise.all(check);
 
-    const updateNot = checktoPerspectives.find(_authority => _authority !== authority);
+    const updateNot = checktoPerspectives.find((_authority) => _authority !== authority);
     if (updateNot !== undefined) return false;
 
     return true;
@@ -120,10 +120,10 @@ export class EveesWorkspace {
           _context: {
             __typename: 'EntityContext',
             object: entity.object,
-            casID: entity.casID
-          }
-        }
-      }
+            casID: entity.casID,
+          },
+        },
+      },
     });
   }
 
@@ -157,19 +157,19 @@ export class EveesWorkspace {
           id: perspectiveId,
           head: {
             __typename: 'Commit',
-            id: headId
+            id: headId,
           },
           context: {
             __typename: 'Context',
-            id: context
+            id: context,
           },
           _context: {
             __typename: 'EntityContext',
             object,
-            casID: ''
-          }
-        }
-      }
+            casID: '',
+          },
+        },
+      },
     });
   }
 
@@ -194,10 +194,10 @@ export class EveesWorkspace {
           id: perspectiveId,
           head: {
             __typename: 'Commit',
-            id: update.newHeadId
-          }
-        }
-      }
+            id: update.newHeadId,
+          },
+        },
+      },
     });
   }
 
@@ -208,13 +208,13 @@ export class EveesWorkspace {
   }
 
   public async executeCreate(client: ApolloClient<any>) {
-    const create = this.entities.map(async entity => {
+    const create = this.entities.map(async (entity) => {
       const mutation = await client.mutate({
         mutation: CREATE_ENTITY,
         variables: {
           object: entity.object,
-          casID: entity.casID
-        }
+          casID: entity.casID,
+        },
       });
 
       const dataId = mutation.data.createEntity.id;
@@ -236,8 +236,8 @@ export class EveesWorkspace {
           ...newPerspective.details,
           authority: newPerspective.perspective.object.payload.authority,
           canWrite: newPerspective.canWrite,
-          parentId: newPerspective.parentId
-        }
+          parentId: newPerspective.parentId,
+        },
       });
       if (result.data.createPerspective.id !== newPerspective.perspective.id) {
         throw new Error(
@@ -250,6 +250,9 @@ export class EveesWorkspace {
      *  permissions depend on previous ones */
     await this.newPerspectives
       .reverse()
-      .reduce((promise, action) => promise.then(_ => createPerspective(action)), Promise.resolve());
+      .reduce(
+        (promise, action) => promise.then((_) => createPerspective(action)),
+        Promise.resolve()
+      );
   }
 }

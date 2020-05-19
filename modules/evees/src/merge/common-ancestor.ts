@@ -13,23 +13,25 @@ export class FindMostRecentCommonAncestor {
   paths: Path[];
 
   constructor(protected client: ApolloClient<any>, commitsIds: string[]) {
-    this.paths = commitsIds.map(commitId => ({
+    this.paths = commitsIds.map((commitId) => ({
       visited: {},
-      heads: [commitId]
+      heads: [commitId],
     }));
   }
 
   private getMostRecentCommonAncestor(pathToExplore: Path): string | undefined {
     // Do we have a commit that has already been visited by all other paths?
-    const otherPaths = this.paths.filter(p => p !== pathToExplore);
-    return pathToExplore.heads.find(commitId => otherPaths.every(path => path.visited[commitId]));
+    const otherPaths = this.paths.filter((p) => p !== pathToExplore);
+    return pathToExplore.heads.find((commitId) =>
+      otherPaths.every((path) => path.visited[commitId])
+    );
   }
 
   /**
    * Explore the given path: get the parents of its heads and prepare the path for the next iteration
    */
   private async explorePath(pathToExplore: Path): Promise<Path> {
-    const promises = pathToExplore.heads.map(async commitId => {
+    const promises = pathToExplore.heads.map(async (commitId) => {
       let commit: Secured<Commit> | undefined = this.allCommits[commitId];
       if (!commit) {
         commit = await this.getCommit(commitId);
@@ -44,7 +46,7 @@ export class FindMostRecentCommonAncestor {
     });
 
     const commits = await Promise.all(promises);
-    const nextCommits = commits.map(commit => commit.object.payload.parentsIds);
+    const nextCommits = commits.map((commit) => commit.object.payload.parentsIds);
 
     pathToExplore.heads = Array.prototype.concat.apply([], nextCommits);
     return pathToExplore;
@@ -59,7 +61,7 @@ export class FindMostRecentCommonAncestor {
             object
           }
         }
-      }`
+      }`,
     });
 
     return { id: commitId, object: result.data.entity._context.object };
@@ -67,7 +69,7 @@ export class FindMostRecentCommonAncestor {
 
   public async compute(): Promise<string | undefined> {
     // Iterate until there is no more parent commits to explore
-    while (this.paths.find(path => path.heads.length > 0)) {
+    while (this.paths.find((path) => path.heads.length > 0)) {
       for (let i = 0; i < this.paths.length; i++) {
         const commonAncestor = this.getMostRecentCommonAncestor(this.paths[i]);
 

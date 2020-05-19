@@ -17,7 +17,7 @@ export class CASSourceDirective extends LoadEntityDirective {
     return {
       id: reference,
       object,
-      casID: source.casID
+      casID: source.casID,
     };
   }
 

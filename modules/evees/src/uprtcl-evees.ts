@@ -9,7 +9,7 @@ export {
   PerspectiveDetails,
   RemoteMap,
   HasDiffLenses,
-  DiffLens
+  DiffLens,
 } from './types';
 
 /** Services interfaces */
@@ -48,7 +48,7 @@ export {
   UpdateContentArgs,
   ContentUpdatedEvent,
   SpliceChildrenEvent,
-  CONTENT_UPDATED_TAG
+  CONTENT_UPDATED_TAG,
 } from './elements/events';
 
 /** UI support components */
@@ -64,7 +64,7 @@ export { EveesHelpers, CreatePerspective, CreateCommit } from './graphql/helpers
 export {
   PerspectiveAccessControl,
   PerspectivePattern,
-  PerspectiveLinks
+  PerspectiveLinks,
 } from './patterns/perspective.pattern';
 export { CommitLinked, CommitPattern } from './patterns/commit.pattern';
 export { Secured, hashObject, deriveEntity } from './utils/cid-hash';

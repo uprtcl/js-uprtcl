@@ -43,7 +43,7 @@ export class AdminBehaviour
             .canWrite=${context.canWrite}
             .entityId=${context.entityId}
           ></permissions-admin>
-        `
-    }
+        `,
+    },
   ];
 }

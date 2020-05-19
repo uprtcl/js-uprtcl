@@ -17,7 +17,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
   prototype: any;
 } & T =>
   class extends baseElement implements ConnectedElement {
-    t: (key: string) => string = key => key;
+    t: (key: string) => string = (key) => key;
 
     connectedCallback() {
       super.connectedCallback();
@@ -44,7 +44,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
       const event = new RequestDependencyEvent({
         detail: { request: dependency, options },
         composed: true,
-        bubbles: true
+        bubbles: true,
       });
 
       const resolved = this.dispatchEvent(event);

@@ -9,7 +9,6 @@ import { EveesWorkspace } from '@uprtcl/evees';
 const LOGINFO = true;
 
 export class TextNodeDiff extends moduleConnect(LitElement) {
-
   logger = new Logger('EVEES-DIFF');
 
   @property({ attribute: false })
@@ -27,18 +26,22 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.newData === undefined || this.oldData === undefined) {
-      return html`
-        <cortex-loading-placeholder></cortex-loading-placeholder>
-      `;
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
     }
 
     return html`
       <div class="page-edited-title">Page Updated</div>
       <div class="document-container old-page">
-        <documents-editor .client=${this.workspace.workspace} ref=${this.oldData.id}></documents-editor>
+        <documents-editor
+          .client=${this.workspace.workspace}
+          ref=${this.oldData.id}
+        ></documents-editor>
       </div>
       <div class="document-container new-page">
-        <documents-editor .client=${this.workspace.workspace} ref=${this.newData.id}></documents-editor>
+        <documents-editor
+          .client=${this.workspace.workspace}
+          ref=${this.newData.id}
+        ></documents-editor>
       </div>
     `;
   }

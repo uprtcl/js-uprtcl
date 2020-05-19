@@ -6,9 +6,9 @@ export function signObject<T>(object: T): Signed<T> {
   return {
     proof: {
       signature: '',
-      type: ''
+      type: '',
     },
-    payload: object
+    payload: object,
   };
 }
 

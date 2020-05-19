@@ -50,9 +50,7 @@ export function ModuleContainer(container: Container): typeof HTMLElement {
     }
 
     render() {
-      return html`
-        <slot></slot>
-      `;
+      return html` <slot></slot> `;
     }
   }
 

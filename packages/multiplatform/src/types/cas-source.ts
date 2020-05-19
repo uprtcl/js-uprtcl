@@ -10,7 +10,7 @@ export interface CASSource extends Ready {
    * Uniquely identifies this CAS source from which to retrieve objects
    */
   casID: string;
-  
+
   /**
    * Configuration with which to create objects in this store
    */

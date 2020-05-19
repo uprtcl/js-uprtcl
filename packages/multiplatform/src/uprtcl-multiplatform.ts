@@ -31,5 +31,5 @@ export { loadEntity } from './utils/entities';
 export {
   linksFromEntity,
   getUplToDiscover,
-  discoverKnownSources
+  discoverKnownSources,
 } from './references/known-sources/discovery.utils';

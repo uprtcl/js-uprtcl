@@ -35,14 +35,14 @@ export class CASModule extends MicroModule {
   }
 
   async onLoad(container: interfaces.Container): Promise<void> {
-    const readyPromises = this.casSources.map(source => {
+    const readyPromises = this.casSources.map((source) => {
       const services: Ready[] = [source];
 
       if ((source as KnownSourcesSource).knownSources) {
         services.push((source as KnownSourcesSource).knownSources);
       }
 
-      return Promise.all(services.map(s => s.ready()));
+      return Promise.all(services.map((s) => s.ready()));
     });
 
     await Promise.all(readyPromises);

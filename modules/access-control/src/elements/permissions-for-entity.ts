@@ -46,7 +46,7 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
             }
         }
       }
-      `
+      `,
     });
 
     this.permissions = result.data.entity._context.patterns.accessControl.permissions;
@@ -54,10 +54,7 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
   }
 
   render() {
-    if (!this.permissions)
-      return html`
-        <cortex-loading-placeholder></cortex-loading-placeholder>
-      `;
+    if (!this.permissions) return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`
       <cortex-pattern

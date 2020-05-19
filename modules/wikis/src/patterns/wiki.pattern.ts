@@ -3,7 +3,14 @@ import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Entity, HasChildren, recognizeEntity } from '@uprtcl/cortex';
-import { MergeStrategy, mergeStrings, Merge, HasDiffLenses, DiffLens, EveesWorkspace } from '@uprtcl/evees';
+import {
+  MergeStrategy,
+  mergeStrings,
+  Merge,
+  HasDiffLenses,
+  DiffLens,
+  EveesWorkspace,
+} from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
@@ -15,7 +22,7 @@ const logger = new Logger('WIKI-ENTITY');
 
 export class WikiPattern extends Pattern<Wiki> {
   recognize(entity: object): boolean {
-    return recognizeEntity(entity) && propertyOrder.every(p => entity.object.hasOwnProperty(p));
+    return recognizeEntity(entity) && propertyOrder.every((p) => entity.object.hasOwnProperty(p));
   }
 
   type = WikiBindings.WikiType;
@@ -27,8 +34,8 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     ...wiki,
     object: {
       ...wiki.object,
-      pages: childrenHashes
-    }
+      pages: childrenHashes,
+    },
   });
 
   getChildrenLinks: (wiki: Entity<Wiki>) => string[] = (wiki: Entity<Wiki>): string[] =>
@@ -45,27 +52,26 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
       originalNode.object.title,
-      modifications.map(data => data.object.title)
+      modifications.map((data) => data.object.title)
     );
 
     // TODO: add entity
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
-      modifications.map(data => data.object.pages),
+      modifications.map((data) => data.object.pages),
       workspace,
       config
     );
 
     return {
       title: mergedTitle,
-      pages: mergedPages
+      pages: mergedPages,
     };
   };
 }
 
 @injectable()
 export class WikiCommon implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
-  
   lenses = (wiki: Entity<Wiki>): Lens[] => {
     return [
       {
@@ -82,8 +88,8 @@ export class WikiCommon implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity
             >
             </wiki-drawer>
           `;
-        }
-      }
+        },
+      },
     ];
   };
 
@@ -95,14 +101,11 @@ export class WikiCommon implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity
         render: (workspace: EveesWorkspace, newEntity: Entity<Wiki>, oldEntity: Entity<Wiki>) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
-            <wiki-diff
-              .workspace=${workspace}
-              .newData=${newEntity}
-              .oldData=${oldEntity}>
+            <wiki-diff .workspace=${workspace} .newData=${newEntity} .oldData=${oldEntity}>
             </wiki-diff>
           `;
-        }
-      }
+        },
+      },
     ];
   };
 }

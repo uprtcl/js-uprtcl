@@ -1,15 +1,13 @@
 import Dexie from 'dexie';
 
 export class EveesDB extends Dexie {
-
   drafts: Dexie.Table<any, string>;
 
   constructor() {
     super('_prtcl-extensions');
     this.version(0.1).stores({
-      drafts: ''
+      drafts: '',
     });
     this.drafts = this.table('drafts');
   }
-  
 }

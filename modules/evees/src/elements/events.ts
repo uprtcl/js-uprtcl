@@ -14,13 +14,13 @@ export type SpliceChildrenArgs = {
   appendBackwards?: string;
   liftBackwards?: string[];
   focusAfter?: number;
-}
+};
 
 export type LiftChildrenArgs = {
   startedOnElementId: string;
   index: number;
   toIndex: number;
-}
+};
 
 export const UPDATE_CONTENT_TAG = 'update-content';
 export const SPLICE_CHILDREN_TAG = 'splice-children';
@@ -50,11 +50,3 @@ export class ContentUpdatedEvent extends CustomEvent<ContentUpdatedArgs> {
     super(CONTENT_UPDATED_TAG, init);
   }
 }
-
-
-
-
-
-
-
-

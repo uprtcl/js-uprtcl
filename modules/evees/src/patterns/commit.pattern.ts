@@ -13,7 +13,7 @@ export class CommitPattern extends Pattern<Entity<Signed<Commit>>> {
   recognize(entity: object) {
     const object = extractSignedEntity(entity);
 
-    return object && propertyOrder.every(p => object.hasOwnProperty(p));
+    return object && propertyOrder.every((p) => object.hasOwnProperty(p));
   }
 
   type = EveesBindings.CommitType;

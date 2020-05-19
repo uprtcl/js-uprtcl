@@ -8,7 +8,7 @@ import {
   CASModule,
   KnownSourcesSource,
   EntityCache,
-  KnownSourcesService
+  KnownSourcesService,
 } from '@uprtcl/multiplatform';
 import { Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -37,7 +37,7 @@ export const eveesResolvers: IResolvers = {
     },
     creatorsIds(parent) {
       return parent.payload.creatorsIds;
-    }
+    },
   },
   Context: {
     id(parent) {
@@ -52,9 +52,9 @@ export const eveesResolvers: IResolvers = {
         DiscoveryModule.bindings.LocalKnownSources
       );
 
-      const promises = eveesRemotes.map(async remote => {
+      const promises = eveesRemotes.map(async (remote) => {
         const thisPerspectivesIds = await remote.getContextPerspectives(context);
-        thisPerspectivesIds.forEach(pId => {
+        thisPerspectivesIds.forEach((pId) => {
           knownSources.addKnownSources(pId, [remote.casID], EveesBindings.PerspectiveType);
         });
         return thisPerspectivesIds;
@@ -63,7 +63,7 @@ export const eveesResolvers: IResolvers = {
       const perspectivesIds = await Promise.all(promises);
 
       return ([] as string[]).concat(...perspectivesIds);
-    }
+    },
   },
   UpdateProposal: {
     toPerspective(parent) {
@@ -77,7 +77,7 @@ export const eveesResolvers: IResolvers = {
     },
     fromHead(parent) {
       return parent.fromPerspectiveId;
-    }
+    },
   },
   HeadUpdate: {
     toPerspective(parent) {
@@ -91,7 +91,7 @@ export const eveesResolvers: IResolvers = {
     },
     oldHead(parent) {
       return parent.oldHeadId;
-    }
+    },
   },
   Perspective: {
     async head(parent, _, { container }) {
@@ -127,14 +127,14 @@ export const eveesResolvers: IResolvers = {
       if (!remote.proposals) return [];
 
       const proposalsIds = await remote.proposals.getProposalsToPerspective(parent.id);
-      const proposalsPromises = proposalsIds.map(proposalId => {
+      const proposalsPromises = proposalsIds.map((proposalId) => {
         return (remote.proposals as ProposalsProvider).getProposal(proposalId);
       });
 
       const proposals = await Promise.all(proposalsPromises);
 
       return proposals;
-    }
+    },
   },
   Mutation: {
     async createCommit(_, { dataId, parentsIds, message, casID, timestamp }, { container }) {
@@ -142,7 +142,7 @@ export const eveesResolvers: IResolvers = {
       const multiSource: MultiSourceService = container.get(
         DiscoveryModule.bindings.MultiSourceService
       );
-      const remote: EveesRemote | undefined = remotes.find(r => r.casID === casID);
+      const remote: EveesRemote | undefined = remotes.find((r) => r.casID === casID);
 
       if (!remote) throw new Error(`Evees Remote with casID was not registered ${casID}`);
 
@@ -156,7 +156,7 @@ export const eveesResolvers: IResolvers = {
         dataId: dataId,
         message: message,
         timestamp: timestamp,
-        parentsIds: parentsIds
+        parentsIds: parentsIds,
       };
 
       const commit: Secured<Commit> = await deriveSecured(commitData, remote.cidConfig);
@@ -171,7 +171,7 @@ export const eveesResolvers: IResolvers = {
 
       return {
         id: commit.id,
-        ...commit.object
+        ...commit.object,
       };
     },
 
@@ -200,7 +200,7 @@ export const eveesResolvers: IResolvers = {
             object
           }
         }
-      }`
+      }`,
       });
 
       const perspective = result.data.entity._context.object;
@@ -211,12 +211,12 @@ export const eveesResolvers: IResolvers = {
         id: perspectiveId,
         ...perspective,
         head: {
-          id: detailsRead.headId
+          id: detailsRead.headId,
         },
         context: {
-          id: detailsRead.context
+          id: detailsRead.context,
         },
-        name: detailsRead.name
+        name: detailsRead.name,
       };
     },
 
@@ -229,7 +229,7 @@ export const eveesResolvers: IResolvers = {
 
     async createEntity(_, { object, casID }, { container }) {
       const stores: CASStore[] = container.getAll(CASModule.bindings.CASStore);
-      const store = stores.find(d => d.casID === casID);
+      const store = stores.find((d) => d.casID === casID);
 
       if (!store) throw new Error(`No store registered for casID ${casID}`);
       const id = await store.create(object);
@@ -237,7 +237,7 @@ export const eveesResolvers: IResolvers = {
       const entity: Entity<any> = {
         id,
         object,
-        casID
+        casID,
       };
 
       const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
@@ -253,7 +253,7 @@ export const eveesResolvers: IResolvers = {
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
 
-      const remote: EveesRemote = remotes.find(remote => remote.authority === authority);
+      const remote: EveesRemote = remotes.find((remote) => remote.authority === authority);
       creatorId =
         creatorId !== undefined ? creatorId : remote.userId !== undefined ? remote.userId : '';
       timestamp = timestamp !== undefined ? timestamp : Date.now();
@@ -262,7 +262,7 @@ export const eveesResolvers: IResolvers = {
       const perspectiveData: Perspective = {
         creatorId,
         authority,
-        timestamp
+        timestamp,
       };
 
       const perspective: Secured<Perspective> = await deriveSecured(
@@ -277,7 +277,7 @@ export const eveesResolvers: IResolvers = {
         perspective,
         details: { headId, name, context },
         canWrite,
-        parentId
+        parentId,
       };
       await remote.cloneAndInitPerspective(newPerspectiveData);
 
@@ -289,8 +289,8 @@ export const eveesResolvers: IResolvers = {
         payload: {
           creatorId,
           authority,
-          timestamp
-        }
+          timestamp,
+        },
       };
     },
 
@@ -309,7 +309,7 @@ export const eveesResolvers: IResolvers = {
         updates: proposal.updates,
         authorized: false,
         canAuthorize: false,
-        executed: false
+        executed: false,
       };
     },
 
@@ -328,7 +328,7 @@ export const eveesResolvers: IResolvers = {
         toPerspectiveId,
         fromHeadId,
         toHeadId,
-        updates: updateRequests
+        updates: updateRequests,
       };
       const proposalId = await remote.proposals.createProposal(proposal);
 
@@ -339,7 +339,7 @@ export const eveesResolvers: IResolvers = {
         updates: updateRequests,
         authorized: false,
         canAuthorize: false,
-        executed: false
+        executed: false,
       };
     },
 
@@ -355,7 +355,7 @@ export const eveesResolvers: IResolvers = {
             object
           }
         }
-      }`
+      }`,
       });
 
       const perspective = perspectiveResult.data.entity._context.object;
@@ -375,7 +375,7 @@ export const eveesResolvers: IResolvers = {
         id: proposalId,
         authorized: authorize,
         executed: proposalRead.executed !== undefined ? proposalRead.executed : false,
-        toPerspectiveId: perspectiveId
+        toPerspectiveId: perspectiveId,
       };
     },
     async executeProposal(_, { proposalId, perspectiveId }, { container }) {
@@ -390,7 +390,7 @@ export const eveesResolvers: IResolvers = {
             object
           }
         }
-      }`
+      }`,
       });
 
       const perspective = perspectiveResult.data.entity._context.object;
@@ -403,8 +403,8 @@ export const eveesResolvers: IResolvers = {
       return {
         id: proposalId,
         toPerspectiveId: perspectiveId,
-        executed: true
+        executed: true,
       };
-    }
-  }
+    },
+  },
 };

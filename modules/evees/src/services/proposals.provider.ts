@@ -13,12 +13,15 @@ export interface ProposalsProvider {
 
   createProposal(proposal: NewProposal): Promise<string>;
 
-  createAndPropose(newPerspectivesData: NewPerspectiveData[], proposal: NewProposal): Promise<string>;
+  createAndPropose(
+    newPerspectivesData: NewPerspectiveData[],
+    proposal: NewProposal
+  ): Promise<string>;
 
   addUpdatesToProposal(proposalId: string, updates: UpdateRequest[]): Promise<void>;
-  
+
   freezeProposal(proposalId: string, updates: UpdateRequest[]): Promise<void>;
-  
+
   cancelProposal(proposalId: string): Promise<void>;
 
   // From the point of view of the person that is proposed

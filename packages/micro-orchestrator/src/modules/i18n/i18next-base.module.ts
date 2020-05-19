@@ -6,16 +6,16 @@ import { MicroModule } from '../../orchestrator/micro.module';
 export class i18nextBaseModule extends MicroModule {
   static id = 'i18n-base-module';
 
-  static bindings= {
+  static bindings = {
     Translate: 'i18n-function',
-    Service: 'i18n-service'
+    Service: 'i18n-service',
   };
 
   async onLoad(container: interfaces.Container): Promise<void> {
     const translateFunction = await i18next.init({
       fallbackLng: 'en',
       ns: ['core'],
-      defaultNS: 'core'
+      defaultNS: 'core',
     });
 
     container.bind(i18nextBaseModule.bindings.Service).toConstantValue(i18next);

@@ -1,7 +1,6 @@
-import { LitElement, property, html, css, query } from "lit-element";
+import { LitElement, property, html, css, query } from 'lit-element';
 
 export class EveesLoadingButton extends LitElement {
-
   @property({ type: String })
   loading: string = 'true';
 
@@ -12,14 +11,11 @@ export class EveesLoadingButton extends LitElement {
   icon: string = '';
 
   render() {
-    return html`
-      <mwc-button 
-        outlined 
-        icon=${this.loading === 'true' ? '' : this.icon} >
-        ${this.loading === 'true' ? 
-          html`<cortex-loading-placeholder size="20"></cortex-loading-placeholder>` : 
-          this.label}
-      </mwc-button>`;
+    return html` <mwc-button outlined icon=${this.loading === 'true' ? '' : this.icon}>
+      ${this.loading === 'true'
+        ? html`<cortex-loading-placeholder size="20"></cortex-loading-placeholder>`
+        : this.label}
+    </mwc-button>`;
   }
 
   static get styles() {

@@ -16,10 +16,10 @@ export const isAncestorOf = (client: ApolloClient<any>) => async (
           }
         }
       }
-    }`
+    }`,
   });
 
-  const parentsIds = result.data.entity.parentCommits.map(p => p.id);
+  const parentsIds = result.data.entity.parentCommits.map((p) => p.id);
 
   if (parentsIds.includes(ancestorId)) {
     return true;

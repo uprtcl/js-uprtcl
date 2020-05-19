@@ -12,7 +12,7 @@ export class KnownSourcesHttp extends HttpProvider implements KnownSourcesServic
     super(
       {
         host: host,
-        apiId: uprtcl_api
+        apiId: uprtcl_api,
       },
       connection
     );

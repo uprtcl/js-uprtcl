@@ -1,11 +1,10 @@
-import { LitElement, html, property, css } from "lit-element";
+import { LitElement, html, property, css } from 'lit-element';
 
-import { MenuConfig } from "./evees-options-menu";
+import { MenuConfig } from './evees-options-menu';
 
-import "./evees-options-menu";
+import './evees-options-menu';
 
 export class ItemWithMenu extends LitElement {
-
   @property({ type: String })
   text: string = '';
 
@@ -16,20 +15,24 @@ export class ItemWithMenu extends LitElement {
   config: MenuConfig = {};
 
   elementClicked() {
-    this.dispatchEvent(new CustomEvent('item-click', {
-      bubbles: true,
-      composed: true
-    }));
+    this.dispatchEvent(
+      new CustomEvent('item-click', {
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   optionClicked(e: CustomEvent) {
-    this.dispatchEvent(new CustomEvent('option-click', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        option: e.detail.key
-      }
-    }));
+    this.dispatchEvent(
+      new CustomEvent('option-click', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          option: e.detail.key,
+        },
+      })
+    );
   }
 
   render() {
@@ -40,9 +43,12 @@ export class ItemWithMenu extends LitElement {
     return html`
       <div class=${classes.join(' ')} @click=${this.elementClicked}>
         <div class="text-container">${this.text}</div>
-        <evees-options-menu @option-click=${this.optionClicked} .config=${this.config}></evees-options-menu>       
+        <evees-options-menu
+          @option-click=${this.optionClicked}
+          .config=${this.config}
+        ></evees-options-menu>
       </div>
-    `
+    `;
   }
 
   static get styles() {
@@ -54,7 +60,7 @@ export class ItemWithMenu extends LitElement {
       mwc-icon {
         user-select: none;
       }
-      
+
       .item-row {
         position: relative;
         width: 100%;
@@ -64,7 +70,7 @@ export class ItemWithMenu extends LitElement {
       }
 
       .item-selected {
-        background-color: rgb(200,200,200,0.2);
+        background-color: rgb(200, 200, 200, 0.2);
       }
 
       .item-row:hover {
@@ -73,10 +79,10 @@ export class ItemWithMenu extends LitElement {
 
       .text-container {
         padding-left: 16px;
-        flex-grow:1;
+        flex-grow: 1;
         display: flex;
         flex-direction: column;
       }
-    `
+    `;
   }
 }

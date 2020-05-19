@@ -8,25 +8,26 @@ export interface EthereumConnectionOptions {
 }
 
 const safeSend = (provider, data): Promise<any> => {
-  const send = (Boolean(provider.sendAsync) ? provider.sendAsync : provider.send).bind(provider)
+  const send = (Boolean(provider.sendAsync) ? provider.sendAsync : provider.send).bind(provider);
   return new Promise((resolve, reject) => {
-    send(data, function(err, result) {
-      if (err) reject(err)
-      else if (result.error) reject(result.error)
-      else resolve(result.result)
-    })
-  })
-}
+    send(data, function (err, result) {
+      if (err) reject(err);
+      else if (result.error) reject(result.error);
+      else resolve(result.result);
+    });
+  });
+};
 
 const encodeRpcCall = (method, params, fromAddress) => ({
   jsonrpc: '2.0',
   id: 1,
   method,
   params,
-  fromAddress
-})
+  fromAddress,
+});
 
-const callRpc = async (provider, method, params, fromAddress): Promise<string> => safeSend(provider, encodeRpcCall(method, params, fromAddress))
+const callRpc = async (provider, method, params, fromAddress): Promise<string> =>
+  safeSend(provider, encodeRpcCall(method, params, fromAddress));
 
 export class EthereumConnection extends Connection {
   provider: any;
@@ -51,7 +52,7 @@ export class EthereumConnection extends Connection {
 
       this.web3 = new Web3(provider);
 
-      provider.on('accountsChanged', accounts => {
+      provider.on('accountsChanged', (accounts) => {
         if (accounts != this.accounts) {
           // Time to reload your interface with accounts[0]!
           window.location.reload();
@@ -72,7 +73,7 @@ export class EthereumConnection extends Connection {
     return this.accounts[0].toLowerCase();
   }
 
-  public async signText(text: string, account: string):Promise<string> {
+  public async signText(text: string, account: string): Promise<string> {
     const provider = this.web3.currentProvider;
     if (!provider) throw new Error('Ethereum provider not found');
 

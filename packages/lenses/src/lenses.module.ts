@@ -16,7 +16,7 @@ export class LensesModule extends MicroModule {
     return [new GraphQlSchemaModule(lensesSchema, {})];
   }
 
-  constructor(defaultLensSelector: LensSelector = lenses => lenses[0]) {
+  constructor(defaultLensSelector: LensSelector = (lenses) => lenses[0]) {
     super();
   }
 

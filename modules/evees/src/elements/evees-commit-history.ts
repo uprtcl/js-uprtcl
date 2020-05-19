@@ -14,7 +14,7 @@ interface CommitHistoryData {
 }
 
 export class CommitHistory extends moduleConnect(LitElement) {
-  @property({ attribute: 'commit-id'})
+  @property({ attribute: 'commit-id' })
   commitId!: string;
 
   @property({ type: Object, attribute: false })
@@ -59,7 +59,7 @@ export class CommitHistory extends moduleConnect(LitElement) {
           }
         }
       }
-    `
+    `,
     });
 
     this.commitHistory = result.data.entity;
@@ -72,7 +72,7 @@ export class CommitHistory extends moduleConnect(LitElement) {
         ${commitHistory.entity.parentCommits
           ? html`
               <div class="row">
-                ${commitHistory.entity.parentCommits.map(parent =>
+                ${commitHistory.entity.parentCommits.map((parent) =>
                   this.renderCommitHistory(parent)
                 )}
               </div>

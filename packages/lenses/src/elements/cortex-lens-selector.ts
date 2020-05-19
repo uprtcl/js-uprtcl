@@ -56,12 +56,12 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
           }
         }
       }
-      `
+      `,
     });
 
     const lenses = result.data.entity._context.content._context.patterns.lenses;
 
-    this.lenses = lenses.filter(iso => !!iso);
+    this.lenses = lenses.filter((iso) => !!iso);
   }
 
   firstUpdated() {
@@ -91,14 +91,14 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
       <mwc-menu id="menu" class=${this.show() ? '' : 'hidden'}>
         <mwc-list>
           ${this.lenses &&
-            this.lenses.map(
-              lens =>
-                html`
-                  <mwc-list-item @click=${() => this.selectLens(lens)}>
-                    ${this.t(lens.name)}
-                  </mwc-list-item>
-                `
-            )}
+          this.lenses.map(
+            (lens) =>
+              html`
+                <mwc-list-item @click=${() => this.selectLens(lens)}>
+                  ${this.t(lens.name)}
+                </mwc-list-item>
+              `
+          )}
         </mwc-list>
       </mwc-menu>
     `;
@@ -110,7 +110,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
       new CustomEvent('lens-selected', {
         detail: { selectedLens: lens },
         bubbles: true,
-        composed: true
+        composed: true,
       })
     );
   }

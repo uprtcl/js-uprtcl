@@ -228,8 +228,8 @@ export class DocumentTextNodeEditor extends LitElement {
         new CustomEvent('enter-pressed', {
           detail: {
             content,
-            asChild: this.type === TextType.Title
-          }
+            asChild: this.type === TextType.Title,
+          },
         })
       );
 
@@ -258,8 +258,8 @@ export class DocumentTextNodeEditor extends LitElement {
             bubbles: true,
             composed: true,
             detail: {
-              content
-            }
+              content,
+            },
           })
         );
       }
@@ -359,7 +359,7 @@ export class DocumentTextNodeEditor extends LitElement {
     const state = EditorState.create({
       schema: schema,
       doc: doc,
-      plugins: []
+      plugins: [],
     });
 
     if (this.shadowRoot == null) return;
@@ -368,14 +368,14 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.view = new EditorView(container as Node, {
       state: state,
       editable: () => this.isEditable(),
-      dispatchTransaction: transaction => this.dispatchTransaction(transaction),
+      dispatchTransaction: (transaction) => this.dispatchTransaction(transaction),
       handleDOMEvents: {
         focus: () =>
           this.dispatchEvent(
             new CustomEvent('focus-changed', {
               bubbles: true,
               composed: true,
-              detail: { value: true }
+              detail: { value: true },
             })
           ),
         blur: () =>
@@ -383,14 +383,14 @@ export class DocumentTextNodeEditor extends LitElement {
             new CustomEvent('focus-changed', {
               bubbles: true,
               composed: true,
-              detail: { value: false }
+              detail: { value: false },
             })
           ),
         keydown: (view, event) => {
           this.keydown(view, event);
           return true;
-        }
-      }
+        },
+      },
     });
 
     if (this.focusInit === 'true') {
@@ -432,7 +432,7 @@ export class DocumentTextNodeEditor extends LitElement {
         selected: this.selected,
         newState,
         contentChanged,
-        transaction
+        transaction,
       });
 
     if (!contentChanged) return;
@@ -450,8 +450,8 @@ export class DocumentTextNodeEditor extends LitElement {
     this.dispatchEvent(
       new CustomEvent('content-changed', {
         detail: {
-          content: newContent
-        }
+          content: newContent,
+        },
       })
     );
   }
@@ -471,7 +471,7 @@ export class DocumentTextNodeEditor extends LitElement {
   changeType(type: TextType, lift: boolean) {
     this.dispatchEvent(
       new CustomEvent('change-type', {
-        detail: { type, lift }
+        detail: { type, lift },
       })
     );
   }
@@ -512,7 +512,7 @@ export class DocumentTextNodeEditor extends LitElement {
       if (!menu) return;
 
       /** listen events */
-      menu.addEventListener('keydown', event => {
+      menu.addEventListener('keydown', (event) => {
         if (event.keyCode === 27) {
           // 27 is esc
           event.stopPropagation();
@@ -772,8 +772,7 @@ export class DocumentTextNodeEditor extends LitElement {
         .editor-content {
           margin: 0px 0px;
         }
-        
-      `
+      `,
     ];
   }
 }

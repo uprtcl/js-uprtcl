@@ -11,12 +11,12 @@ export { AccessControlModule } from './access-control.module';
 export { AccessControlService } from './services/access-control.service';
 export {
   OwnerPermissions,
-  OwnerAccessControlService
+  OwnerAccessControlService,
 } from './services/owner-access-control.service';
 
 export {
   BasicAdminPermissions,
-  BasicAdminAccessControlService
+  BasicAdminAccessControlService,
 } from './services/basic-admin-control.service';
 
 export { SET_CAN_WRITE, SET_PUBLIC_READ } from './graphql/queries';

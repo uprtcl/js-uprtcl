@@ -20,5 +20,4 @@ export const documentsTypeDefs: DocumentNode = gql`
 
     _context: EntityContext!
   }
-
 `;

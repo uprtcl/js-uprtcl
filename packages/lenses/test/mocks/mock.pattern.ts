@@ -24,9 +24,7 @@ export class Lenses implements HasLenses<Entity<any>> {
     {
       name: 'content',
       render: (context: any) =>
-        html`
-          <mock-element .content=${entity.object.test}></mock-element>
-        `
-    }
+        html` <mock-element .content=${entity.object.test}></mock-element> `,
+    },
   ];
 }

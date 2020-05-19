@@ -95,8 +95,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         bubbles: true,
         composed: true,
         detail: {
-          id
-        }
+          id,
+        },
       })
     );
   }
@@ -152,7 +152,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
               }
             }
           }
-        }`
+        }`,
     });
 
     /** data on this perspective */
@@ -172,24 +172,24 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           creatorId: perspective.payload.creatorId,
           timestamp: perspective.payload.timestamp,
           authority: perspective.payload.authority,
-          publicRead: publicRead
+          publicRead: publicRead,
         };
       }
     );
 
     this.acceptedPerspectiveData = this.perspectivesData.find(
-      perspectiveData => perspectiveData.id === this.firstPerspectiveId
+      (perspectiveData) => perspectiveData.id === this.firstPerspectiveId
     );
 
     this.otherPerspectivesData = this.perspectivesData.filter(
-      perspectiveData =>
+      (perspectiveData) =>
         perspectiveData.id !== this.firstPerspectiveId && perspectiveData.id !== this.perspectiveId
     );
 
     this.loadingPerspectives = false;
 
     this.logger.info('getOtherPersepectives() - post', {
-      persperspectivesData: this.perspectivesData
+      persperspectivesData: this.perspectivesData,
     });
   };
 
@@ -229,17 +229,17 @@ export class PerspectivesList extends moduleConnect(LitElement) {
               }
             }
           }
-        }`
+        }`,
     });
 
     const proposals = result.data.entity.proposals.map(
       (prop): Proposal => {
-        const updates = prop.updates.map(update => {
+        const updates = prop.updates.map((update) => {
           return {
             perspectiveId: update.toPerspective.id,
             fromPerspectiveId: update.fromPerspective.id,
             oldHeadId: update.oldHead.id,
-            newHeadId: update.newHead.id
+            newHeadId: update.newHead.id,
           };
         });
 
@@ -249,14 +249,14 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           authorized: prop.authorized,
           canAuthorize: prop.canAuthorize,
           executed: prop.executed,
-          updates
+          updates,
         };
       }
     );
 
     /** data on other perspectives (proposals are injected on them) */
-    this.pendingProposals = proposals.filter(proposal => proposal.executed !== true);
-    this.mergedProposals = proposals.filter(proposal => proposal.executed === true);
+    this.pendingProposals = proposals.filter((proposal) => proposal.executed !== true);
+    this.mergedProposals = proposals.filter((proposal) => proposal.executed === true);
 
     this.loadingProposals = false;
 
@@ -277,8 +277,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     this.eveesDiffEl.workspace = workspace;
     this.updatesDialogEl.primaryText = 'close';
 
-    return new Promise(resolve => {
-      this.updatesDialogEl.resolved = value => {
+    return new Promise((resolve) => {
+      this.updatesDialogEl.resolved = (value) => {
         this.showDiff = false;
         resolve(value);
       };
@@ -287,11 +287,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   perspectiveTitle(perspectivesData: PerspectiveData) {
     return html`
-      ${perspectivesData.name !== ''
-        ? html`
-            <strong>${perspectivesData.name}</strong>
-          `
-        : ''}
+      ${perspectivesData.name !== '' ? html` <strong>${perspectivesData.name}</strong> ` : ''}
       ${prettyAddress(perspectivesData.creatorId)}
     `;
   }
@@ -305,11 +301,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   proposalTitle(proposal: Proposal) {
-    const perspectiveData = this.perspectivesData.find(p => p.id === proposal.fromPerspectiveId);
-    if (perspectiveData)
-      return html`
-        ${this.perspectiveTitle(perspectiveData)}
-      `;
+    const perspectiveData = this.perspectivesData.find((p) => p.id === proposal.fromPerspectiveId);
+    if (perspectiveData) return html` ${this.perspectiveTitle(perspectiveData)} `;
     return '';
   }
 
@@ -325,8 +318,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             bubbles: true,
             composed: true,
             detail: {
-              perspectiveId: perspectiveData.id
-            }
+              perspectiveId: perspectiveData.id,
+            },
           })
         );
         break;
@@ -337,8 +330,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             bubbles: true,
             composed: true,
             detail: {
-              perspectiveId: perspectiveData.id
-            }
+              perspectiveId: perspectiveData.id,
+            },
           })
         );
         break;
@@ -354,8 +347,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             composed: true,
             detail: {
               proposalId: proposal.id,
-              perspectiveId: this.perspectiveId
-            }
+              perspectiveId: this.perspectiveId,
+            },
           })
         );
         break;
@@ -367,8 +360,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             composed: true,
             detail: {
               proposalId: proposal.id,
-              perspectiveId: this.perspectiveId
-            }
+              perspectiveId: this.perspectiveId,
+            },
           })
         );
         break;
@@ -432,15 +425,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
               slot="graphic"
               class="perspective-mark"
               style="${styleMap({
-                backgroundColor: this.perspectiveColor(perspectiveData.id)
+                backgroundColor: this.perspectiveColor(perspectiveData.id),
               })})"
             ></div>
             <div>
               <span class="perspective-name">
                 ${perspectiveData.id === this.firstPerspectiveId
-                  ? html`
-                      <strong>See Official</strong>
-                    `
+                  ? html` <strong>See Official</strong> `
                   : this.perspectiveTitle(perspectiveData)}
               </span>
             </div>
@@ -468,7 +459,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
               slot="graphic"
               class="perspective-mark"
               style="${styleMap({
-                backgroundColor: this.proposalColor(proposal)
+                backgroundColor: this.proposalColor(proposal),
               })})"
             ></div>
             <div>
@@ -493,9 +484,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   renderAcceptedPerspective() {
     return this.perspectiveId !== this.firstPerspectiveId
-      ? html`
-          ${this.renderPerspectiveRow(this.acceptedPerspectiveData)}
-        `
+      ? html` ${this.renderPerspectiveRow(this.acceptedPerspectiveData)} `
       : '';
   }
 
@@ -503,7 +492,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     return this.pendingProposals.length > 0
       ? html`
           <div class="list-section"><strong>Update Proposals</strong></div>
-          ${this.pendingProposals.map(proposal => this.renderProposalRow(proposal))}
+          ${this.pendingProposals.map((proposal) => this.renderProposalRow(proposal))}
         `
       : '';
   }
@@ -512,7 +501,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     return this.otherPerspectivesData.length > 0
       ? html`
           <div class="list-section"><strong>Drafts</strong></div>
-          ${this.otherPerspectivesData.map(perspectiveData =>
+          ${this.otherPerspectivesData.map((perspectiveData) =>
             this.renderPerspectiveRow(perspectiveData)
           )}
         `
@@ -532,7 +521,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         </strong>
       </div>
       ${this.showHistory
-        ? this.mergedProposals.map(proposal => this.renderProposalRow(proposal))
+        ? this.mergedProposals.map((proposal) => this.renderProposalRow(proposal))
         : ''}
     `;
   }
@@ -557,9 +546,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                   ${this.renderPerspectives()} ${this.renderOldProposals()}
                 </mwc-list>
               `
-            : html`
-                <div class="empty"><i>No drafts found</i></div>
-              `}
+            : html` <div class="empty"><i>No drafts found</i></div> `}
           ${this.showDiff ? this.renderDiff() : ''}
         `;
   }

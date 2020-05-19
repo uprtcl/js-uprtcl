@@ -20,8 +20,8 @@ describe('evees-workspace', () => {
   let documentsProvider = new MockStore({
     QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN: {
       text: 'node1 content',
-      links: []
-    }
+      links: [],
+    },
   });
   let eveesProvider = new MockEveesProvider(
     {
@@ -29,9 +29,9 @@ describe('evees-workspace', () => {
         payload: {
           authority: 'local',
           creatorId: 'user1',
-          timestamp: 0
+          timestamp: 0,
         },
-        proof: { signature: '', type: '' }
+        proof: { signature: '', type: '' },
       },
       QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN: {
         payload: {
@@ -39,25 +39,25 @@ describe('evees-workspace', () => {
           timestamp: 0,
           message: 'commit message',
           parentsIds: [],
-          dataId: 'QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN'
+          dataId: 'QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN',
         },
         proof: {
           signature: '',
-          type: ''
-        }
-      }
+          type: '',
+        },
+      },
     },
     {
       Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw: {
-        headId: 'QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN'
-      }
+        headId: 'QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN',
+      },
     }
   );
 
   beforeEach(async () => {
     orchestrator = new MicroOrchestrator();
 
-    const remoteMap: RemoteMap = eveesAuthority => documentsProvider;
+    const remoteMap: RemoteMap = (eveesAuthority) => documentsProvider;
 
     await orchestrator.loadModules([
       new i18nextBaseModule(),
@@ -66,7 +66,7 @@ describe('evees-workspace', () => {
       new DiscoveryModule(),
       new LensesModule(),
       new AccessControlModule(),
-      new EveesModule([eveesProvider], eveesProvider, remoteMap)
+      new EveesModule([eveesProvider], eveesProvider, remoteMap),
     ]);
   });
   it('evees-workspace works', async () => {
@@ -88,7 +88,7 @@ describe('evees-workspace', () => {
             }
           }
         }
-      `
+      `,
     });
 
     expect(result.data).to.deep.eq({
@@ -100,16 +100,16 @@ describe('evees-workspace', () => {
             payload: {
               authority: 'local',
               creatorId: 'user1',
-              timestamp: 0
+              timestamp: 0,
             },
             proof: {
               signature: '',
-              type: ''
-            }
-          }
+              type: '',
+            },
+          },
         },
-        id: 'Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw'
-      }
+        id: 'Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw',
+      },
     });
   });
 });

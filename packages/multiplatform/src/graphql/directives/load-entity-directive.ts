@@ -8,7 +8,10 @@ import { EntityCache } from '../entity-cache';
 import { Entity } from '@uprtcl/cortex';
 
 export abstract class LoadEntityDirective extends NamedDirective {
-  protected abstract resolveEntity(container: Container, reference: string): Promise<Entity<any> | undefined>;
+  protected abstract resolveEntity(
+    container: Container,
+    reference: string
+  ): Promise<Entity<any> | undefined>;
 
   public visitFieldDefinition(field: GraphQLField<any, any>, detail) {
     let defaultResolver = field.resolve;
@@ -18,7 +21,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
       if (!entityId) {
         if (!defaultResolver) {
-          defaultResolver = parent => parent[field.name];
+          defaultResolver = (parent) => parent[field.name];
         }
 
         entityId = await defaultResolver(parent, args, context, info);
@@ -28,7 +31,7 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
       if (typeof entityId === 'string') return this.loadEntity(entityId, context.container);
       else if (Array.isArray(entityId)) {
-        return entityId.map(id => this.loadEntity(id, context.container));
+        return entityId.map((id) => this.loadEntity(id, context.container));
       }
     };
   }

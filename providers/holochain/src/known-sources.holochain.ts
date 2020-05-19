@@ -22,14 +22,14 @@ export abstract class KnownSourcesHolochain extends HolochainProvider
   addKnownSources(hash: string, casIDs: string[]): Promise<void> {
     return this.call('add_known_sources', {
       address: hash,
-      casIDs: casIDs
+      casIDs: casIDs,
     });
   }
 
   removeKnownSource(hash: string, casID: string): Promise<void> {
     return this.call('remove_known_source', {
       address: hash,
-      casID: casID
+      casID: casID,
     });
   }
 }

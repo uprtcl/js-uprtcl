@@ -29,12 +29,12 @@ export class AccessControlModule extends MicroModule {
       new GraphQlSchemaModule(accessControlTypes, accessControlResolvers),
       new PatternsModule([
         new OwnerPattern([OwnerBehaviour]),
-        new BasicAdminPattern([AdminBehaviour])
-      ])
+        new BasicAdminPattern([AdminBehaviour]),
+      ]),
     ];
   }
 
   static bindings = {
-    Authority: 'authority'
+    Authority: 'authority',
   };
 }

@@ -2,7 +2,15 @@ import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
 import { Pattern, recognizeEntity, HasChildren, Entity, HasTitle, New } from '@uprtcl/cortex';
-import { Merge, MergeStrategy, mergeStrings, mergeResult, HasDiffLenses, DiffLens, EveesWorkspace } from '@uprtcl/evees';
+import {
+  Merge,
+  MergeStrategy,
+  mergeStrings,
+  mergeResult,
+  HasDiffLenses,
+  DiffLens,
+  EveesWorkspace,
+} from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
@@ -14,14 +22,14 @@ const propertyOrder = ['text', 'type', 'links'];
 const textToTextNode = (textNode: TextNode, text: string): TextNode => {
   return {
     ...textNode,
-    text: text
+    text: text,
   };
 };
 
 const typeToTextNode = (textNode: TextNode, type: TextType): TextNode => {
   return {
     ...textNode,
-    type: type
+    type: type,
   };
 };
 
@@ -40,7 +48,7 @@ const nodeLevel = (node: DocNode) => {
 
 export class TextNodePattern extends Pattern<Entity<TextNode>> {
   recognize(entity: object): boolean {
-    return recognizeEntity(entity) && propertyOrder.every(p => entity.object.hasOwnProperty(p));
+    return recognizeEntity(entity) && propertyOrder.every((p) => entity.object.hasOwnProperty(p));
   }
 
   type = DocumentsBindings.TextNodeType;
@@ -48,18 +56,15 @@ export class TextNodePattern extends Pattern<Entity<TextNode>> {
 
 @injectable()
 export class TextNodeCommon
-  implements
-    HasLenses<Entity<TextNode>>,
-    HasChildren<Entity<TextNode>>,
-    Merge<Entity<TextNode>> {
+  implements HasLenses<Entity<TextNode>>, HasChildren<Entity<TextNode>>, Merge<Entity<TextNode>> {
   replaceChildrenLinks = (node: Entity<TextNode>) => (
     childrenHashes: string[]
   ): Entity<TextNode> => ({
     id: '',
     object: {
       ...node.object,
-      links: childrenHashes
-    }
+      links: childrenHashes,
+    },
   });
 
   getChildrenLinks = (node: Entity<TextNode>): string[] => node.object.links;
@@ -73,14 +78,10 @@ export class TextNodeCommon
         type: 'content',
         render: (entity: Entity<any>, context: any) => {
           return html`
-            <documents-text-node
-              .data=${node}
-              ref=${entity.id}
-            >
-            </documents-text-node>
+            <documents-text-node .data=${node} ref=${entity.id}> </documents-text-node>
           `;
-        }
-      }
+        },
+      },
     ];
   };
 
@@ -102,22 +103,22 @@ export class TextNodeCommon
               focus-init=${node.focused}
               @focus=${events.focus}
               @blur=${events.blur}
-              @content-changed=${e =>
+              @content-changed=${(e) =>
                 events.contentChanged(textToTextNode(node.draft, e.detail.content), false)}
-              @enter-pressed=${e => events.split(e.detail.content, e.detail.asChild)}
-              @backspace-on-start=${e => events.joinBackward(e.detail.content)}
-              @delete-on-end=${e => events.pullDownward()}
+              @enter-pressed=${(e) => events.split(e.detail.content, e.detail.asChild)}
+              @backspace-on-start=${(e) => events.joinBackward(e.detail.content)}
+              @delete-on-end=${(e) => events.pullDownward()}
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}
-              @change-type=${e =>
+              @change-type=${(e) =>
                 events.contentChanged(typeToTextNode(node.draft, e.detail.type), e.detail.lift)}
               @content-appended=${events.appended}
             >
             </documents-text-node-editor>
           `;
-        }
-      }
+        },
+      },
     ];
   };
 
@@ -129,16 +130,16 @@ export class TextNodeCommon
   ): Promise<TextNode> => {
     const resultText = mergeStrings(
       originalNode.object.text,
-      modifications.map(data => data.object.text)
+      modifications.map((data) => data.object.text)
     );
     const resultType = mergeResult(
       originalNode.object.type,
-      modifications.map(data => data.object.type)
+      modifications.map((data) => data.object.type)
     );
 
     const mergedLinks = await mergeStrategy.mergeLinks(
       originalNode.object.links,
-      modifications.map(data => data.object.links),
+      modifications.map((data) => data.object.links),
       workspace,
       config
     );
@@ -146,11 +147,10 @@ export class TextNodeCommon
     return {
       text: resultText,
       type: resultType,
-      links: mergedLinks
-    }
+      links: mergedLinks,
+    };
   };
 }
-
 
 @injectable()
 export class TextNodeTitle implements HasTitle, HasDiffLenses {
@@ -161,17 +161,22 @@ export class TextNodeTitle implements HasTitle, HasDiffLenses {
       {
         name: 'documents:document-diff',
         type: 'diff',
-        render: (workspace: EveesWorkspace, newEntity: Entity<TextNode>, oldEntity: Entity<TextNode>) => {
+        render: (
+          workspace: EveesWorkspace,
+          newEntity: Entity<TextNode>,
+          oldEntity: Entity<TextNode>
+        ) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <documents-text-node-diff
               .workspace=${workspace}
               .newData=${newEntity}
-              .oldData=${oldEntity}>
+              .oldData=${oldEntity}
+            >
             </documents-text-node-diff>
           `;
-        }
-      }
+        },
+      },
     ];
   };
 }

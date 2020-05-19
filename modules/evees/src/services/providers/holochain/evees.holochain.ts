@@ -11,7 +11,6 @@ import { parseResponse } from '@uprtcl/holochain-provider';
 
 @injectable()
 export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {
-      
   knownSources?: KnownSourcesService | undefined;
   userId?: string | undefined;
   zome: string = 'evees';
@@ -46,12 +45,12 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
 
   public async get(id: string): Promise<any | undefined> {
     return this.call('get_entry', {
-      address: id
+      address: id,
     });
   }
 
   create(object: object, hash?: string | undefined): Promise<string> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   /**
@@ -60,7 +59,7 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
     await this.call('clone_perspective', {
       previous_address: perspective.id,
-      perspective: perspective.object
+      perspective: perspective.object,
     });
   }
 
@@ -70,7 +69,7 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   async cloneCommit(commit: Secured<Commit>): Promise<void> {
     await this.call('clone_commit', {
       perspective_address: commit.id,
-      commit: commit.object
+      commit: commit.object,
     });
   }
 
@@ -83,7 +82,7 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   ): Promise<void> {
     await this.call('update_perspective_details', {
       perspective_address: perspectiveId,
-      details: details
+      details: details,
     });
   }
 
@@ -92,13 +91,13 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
    */
   async getContextPerspectives(context: string): Promise<string[]> {
     const perspectivesResponse = await this.call('get_context_perspectives', {
-      context: context
+      context: context,
     });
 
     const perspectivesEntries: EntryResult<Signed<Perspective>>[] = parseEntriesResults(
       perspectivesResponse
     );
-    return perspectivesEntries.filter(p => !!p).map(p => p.entry.id);
+    return perspectivesEntries.filter((p) => !!p).map((p) => p.entry.id);
   }
 
   /**
@@ -106,7 +105,7 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
    */
   async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
     const result = await this.call('get_perspective_details', {
-      perspective_address: perspectiveId
+      perspective_address: perspectiveId,
     });
     return parseResponse(result);
   }
@@ -118,12 +117,13 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   }
 
   async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    const promises = newPerspectivesData.map(perspectiveData => this.cloneAndInitPerspective(perspectiveData));
+    const promises = newPerspectivesData.map((perspectiveData) =>
+      this.cloneAndInitPerspective(perspectiveData)
+    );
     await Promise.all(promises);
   }
 
   deletePerspective(perspectiveId: string): Promise<void> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
-
 }

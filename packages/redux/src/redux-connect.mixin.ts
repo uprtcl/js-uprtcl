@@ -6,7 +6,7 @@ import {
   ConnectedElement,
   CustomElement,
   i18nextBaseModule,
-  RequestDependencyEvent
+  RequestDependencyEvent,
 } from '@uprtcl/micro-orchestrator';
 
 import { ReduxStoreModule } from './redux-store.module';
@@ -25,7 +25,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
 } & T =>
   class extends baseElement implements ReduxConnectedElement {
     store!: Store;
-    t: (key: string) => string = key => key;
+    t: (key: string) => string = (key) => key;
 
     private requestGeneric<T>(
       dependency: interfaces.ServiceIdentifier<T>,
@@ -39,7 +39,7 @@ export const reduxConnect = <T extends Constructor<CustomElement>>(
       const event = new RequestDependencyEvent({
         detail: { request: [dependency], multiple: multiple },
         composed: true,
-        bubbles: true
+        bubbles: true,
       });
 
       const resolved = this.dispatchEvent(event);

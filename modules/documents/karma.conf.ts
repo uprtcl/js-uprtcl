@@ -1,6 +1,6 @@
 const path = require('path');
 
-module.exports = config =>
+module.exports = (config) =>
   config.set({
     browsers: ['ChromeHeadlessNoSandbox'],
     // ## code coverage config
@@ -13,39 +13,42 @@ module.exports = config =>
           statements: 0,
           branches: 0,
           functions: 0,
-          lines: 0
-        }
-      }
+          lines: 0,
+        },
+      },
     },
 
     preprocessors: {
-      'test/**/*.test.ts': ['webpack']
+      'test/**/*.test.ts': ['webpack'],
     },
     webpack: {
       mode: 'development',
       entry: `./src/uprtcl-documents.ts`,
       output: {
-        filename: 'bundle.js'
+        filename: 'bundle.js',
       },
       resolve: {
         alias: {
-          '@material/mwc-icon-button': path.resolve(__dirname, './node_modules/@material/mwc-icon-button'),
+          '@material/mwc-icon-button': path.resolve(
+            __dirname,
+            './node_modules/@material/mwc-icon-button'
+          ),
           '@material/mwc-button': path.resolve(__dirname, './node_modules/@material/mwc-button'),
           '@material/mwc-icon': path.resolve(__dirname, './node_modules/@material/mwc-icon'),
           '@material/mwc-dialog': path.resolve(__dirname, './node_modules/@material/mwc-dialog'),
           'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
           'lit-element': path.resolve(__dirname, './node_modules/lit-element'),
           'apollo-boost': path.resolve(__dirname, './node_modules/apollo-boost'),
-          'apollo-client': path.resolve(__dirname, './node_modules/apollo-client')
+          'apollo-client': path.resolve(__dirname, './node_modules/apollo-client'),
         },
-        extensions: ['.mjs', '.js', '.ts', '.json']
+        extensions: ['.mjs', '.js', '.ts', '.json'],
       },
       devtool: 'inline-source-map',
       module: {
         rules: [
           {
             test: /\.ts$/,
-            use: 'ts-loader'
+            use: 'ts-loader',
           },
           {
             test: /\.ts$/,
@@ -53,11 +56,11 @@ module.exports = config =>
             enforce: 'post',
             use: {
               loader: 'istanbul-instrumenter-loader',
-              options: { esModules: true }
-            }
-          }
-        ]
-      }
+              options: { esModules: true },
+            },
+          },
+        ],
+      },
     },
     singleRun: true,
     concurrency: Infinity,
@@ -74,14 +77,14 @@ module.exports = config =>
       require.resolve('karma-chrome-launcher'),
 
       // fallback: resolve any karma- plugins
-      'karma-*'
+      'karma-*',
     ],
     frameworks: ['mocha', 'snapshot', 'mocha-snapshot', 'source-map-support'],
     reporters: ['mocha', 'coverage-istanbul'],
     colors: true,
 
     mochaReporter: {
-      showDiff: true
+      showDiff: true,
     },
     logLevel: config.LOG_INFO,
 
@@ -89,14 +92,14 @@ module.exports = config =>
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox', '--disable-setuid-sandbox']
-      }
+        flags: ['--no-sandbox', '--disable-setuid-sandbox'],
+      },
     },
     files: [
       {
         pattern: config.grep ? config.grep : 'test/**/*.test.ts',
         type: 'module',
-        watched: false
-      }
-    ]
+        watched: false,
+      },
+    ],
   });

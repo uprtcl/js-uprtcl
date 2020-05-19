@@ -29,7 +29,7 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     super(
       {
         host: host,
-        apiId: evees_api
+        apiId: evees_api,
       },
       connection,
       ethConnection
@@ -38,7 +38,7 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     this.accessControl = new EveesAccessControlHttp(host, this.connection);
     this.knownSources = new KnownSourcesHttp(host, this.connection);
   }
-  
+
   ready(): Promise<void> {
     return Promise.resolve();
   }
@@ -54,7 +54,7 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
   async create(object: object, hash?: string | undefined): Promise<string> {
     const result = await super.httpPost(`/data`, {
       id: '',
-      object: object
+      object: object,
     });
     return result.elementIds[0];
   }
@@ -67,12 +67,12 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     await super.httpPost('/persp', {
       perspective: perspectiveData.perspective,
       details: perspectiveData.details,
-      parentId: perspectiveData.parentId
+      parentId: perspectiveData.parentId,
     });
   }
 
   async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    const promises = newPerspectivesData.map(perspectiveData =>
+    const promises = newPerspectivesData.map((perspectiveData) =>
       this.cloneAndInitPerspective(perspectiveData)
     );
     await Promise.all(promises);

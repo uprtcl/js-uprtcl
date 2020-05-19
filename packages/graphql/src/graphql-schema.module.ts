@@ -27,7 +27,7 @@ export class GraphQlSchemaModule extends MicroModule {
     container
       .bind<IResolvers>(GraphQlSchemaModule.bindings.Resolvers)
       .toConstantValue(this.resolvers);
-    this.directives.map(directive =>
+    this.directives.map((directive) =>
       container.bind(GraphQlSchemaModule.bindings.Directive).toConstantValue(directive)
     );
   }

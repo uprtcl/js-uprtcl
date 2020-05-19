@@ -7,12 +7,12 @@ export const request = (
   dependency: interfaces.ServiceIdentifier<any>,
   options?: RequestDependencyOptions
 ) => {
-  return function(target: CustomElement & ConnectedElement, propertyKey: string) {
+  return function (target: CustomElement & ConnectedElement, propertyKey: string) {
     if (!target.request) throw new Error('Cannot request dependencies without using moduleConnect');
 
     const callback = target.connectedCallback;
 
-    target.connectedCallback = function() {
+    target.connectedCallback = function () {
       callback.call(this);
       let value;
       Object.defineProperty(target, propertyKey, {
@@ -25,7 +25,7 @@ export const request = (
             }
           }
           return value;
-        }
+        },
       });
     };
   };

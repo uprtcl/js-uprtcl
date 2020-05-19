@@ -14,7 +14,7 @@ export abstract class EveesContentModule extends MicroModule {
   abstract providerIdentifier: interfaces.ServiceIdentifier<CASStore> | undefined;
 
   async onLoad(container: interfaces.Container) {
-    this.stores.forEach(storeOrId => {
+    this.stores.forEach((storeOrId) => {
       const store =
         typeof storeOrId === 'object' && (storeOrId as CASStore).casID
           ? (storeOrId as CASStore)
@@ -27,6 +27,6 @@ export abstract class EveesContentModule extends MicroModule {
   }
 
   get submodules(): MicroModule[] {
-    return [new CASModule(this.stores.filter(store => (store as CASStore).casID) as CASStore[])];
+    return [new CASModule(this.stores.filter((store) => (store as CASStore).casID) as CASStore[])];
   }
 }

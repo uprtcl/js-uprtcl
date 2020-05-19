@@ -2,7 +2,7 @@ export type KeypressAtArgs = {
   path: number[];
   keyCode: number;
   tail: string;
-}
+};
 export const KEYPRESS_AT_TAG = 'keypress-at';
 
 export class KeypressAtEvent extends CustomEvent<KeypressAtArgs> {

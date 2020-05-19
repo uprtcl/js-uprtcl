@@ -10,5 +10,4 @@ export const wikiTypeDefs: DocumentNode = gql`
 
     _context: EntityContext!
   }
-
 `;

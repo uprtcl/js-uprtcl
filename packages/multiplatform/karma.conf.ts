@@ -1,6 +1,6 @@
 const path = require('path');
 
-module.exports = config =>
+module.exports = (config) =>
   config.set({
     browsers: ['ChromeHeadlessNoSandbox'],
     // ## code coverage config
@@ -13,33 +13,33 @@ module.exports = config =>
           statements: 10,
           branches: 10,
           functions: 10,
-          lines: 10
-        }
-      }
+          lines: 10,
+        },
+      },
     },
 
     preprocessors: {
-      'test/**/*.test.ts': ['webpack']
+      'test/**/*.test.ts': ['webpack'],
     },
     webpack: {
       mode: 'development',
       entry: `./src/uprtcl-multiplatform.ts`,
       output: {
-        filename: 'bundle.js'
+        filename: 'bundle.js',
       },
       resolve: {
         alias: {
           'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
-          'lit-element': path.resolve(__dirname, './node_modules/lit-element')
+          'lit-element': path.resolve(__dirname, './node_modules/lit-element'),
         },
-        extensions: ['.mjs', '.js', '.ts', '.json']
+        extensions: ['.mjs', '.js', '.ts', '.json'],
       },
       devtool: 'inline-source-map',
       module: {
         rules: [
           {
             test: /\.ts$/,
-            use: 'ts-loader'
+            use: 'ts-loader',
           },
           {
             test: /\.ts$/,
@@ -47,11 +47,11 @@ module.exports = config =>
             enforce: 'post',
             use: {
               loader: 'istanbul-instrumenter-loader',
-              options: { esModules: true }
-            }
-          }
-        ]
-      }
+              options: { esModules: true },
+            },
+          },
+        ],
+      },
     },
     singleRun: true,
     concurrency: Infinity,
@@ -68,14 +68,14 @@ module.exports = config =>
       require.resolve('karma-chrome-launcher'),
 
       // fallback: resolve any karma- plugins
-      'karma-*'
+      'karma-*',
     ],
     frameworks: ['mocha', 'snapshot', 'mocha-snapshot', 'source-map-support'],
     reporters: ['mocha', 'coverage-istanbul'],
     colors: true,
 
     mochaReporter: {
-      showDiff: true
+      showDiff: true,
     },
     logLevel: config.LOG_INFO,
 
@@ -83,14 +83,14 @@ module.exports = config =>
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox', '--disable-setuid-sandbox']
-      }
+        flags: ['--no-sandbox', '--disable-setuid-sandbox'],
+      },
     },
     files: [
       {
         pattern: config.grep ? config.grep : 'test/**/*.test.ts',
         type: 'module',
-        watched: false
-      }
-    ]
+        watched: false,
+      },
+    ],
   });

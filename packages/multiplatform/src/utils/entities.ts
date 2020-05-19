@@ -13,7 +13,7 @@ export const redirectEntity = (
 
   const redirect: HasRedirect = recognizer
     .recognizeBehaviours(entity)
-    .find(b => (b as HasRedirect).redirect);
+    .find((b) => (b as HasRedirect).redirect);
 
   if (!redirect) return entity;
 
@@ -38,7 +38,7 @@ export async function loadEntity<T>(
         }
       }
     }
-    `
+    `,
   });
 
   if (!result.data.entity) return undefined;
@@ -48,6 +48,6 @@ export async function loadEntity<T>(
   return {
     id: result.data.entity.id,
     object,
-    casID: result.data.entity._context.casID
+    casID: result.data.entity._context.casID,
   };
 }

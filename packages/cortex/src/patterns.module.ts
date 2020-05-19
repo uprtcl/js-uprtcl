@@ -34,14 +34,14 @@ export class PatternsModule extends MicroModule {
     // Initialize all the patterns
     for (const pattern of this.patterns) {
       const dynamicCreator = (ctx: interfaces.Context) => {
-        const behaviours: Array<Behaviour<any>> = pattern.behaviourCreators.map(prop =>
+        const behaviours: Array<Behaviour<any>> = pattern.behaviourCreators.map((prop) =>
           ctx.container.resolve(prop)
         );
 
         return <Pattern<any>>{
           ...pattern,
           recognize: pattern.recognize,
-          behaviours
+          behaviours,
         };
       };
       container.bind<Pattern<any>>(CortexModule.bindings.Pattern).toDynamicValue(dynamicCreator);

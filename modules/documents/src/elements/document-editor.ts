@@ -2,9 +2,9 @@ import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 import isEqual from 'lodash-es/isEqual';
 
-export const styleMap = style => {
+export const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -21,7 +21,7 @@ import {
   CREATE_ENTITY,
   EveesDraftsLocal,
   MenuConfig,
-  EveesHelpers
+  EveesHelpers,
 } from '@uprtcl/evees';
 import { loadEntity, CASStore } from '@uprtcl/multiplatform';
 
@@ -173,10 +173,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const hasChildren: HasChildren = this.recognizer
       .recognizeBehaviours(data)
-      .find(b => (b as HasChildren).getChildrenLinks);
+      .find((b) => (b as HasChildren).getChildrenLinks);
     const hasDocNodeLenses: HasDocNodeLenses = this.recognizer
       .recognizeBehaviours(data)
-      .find(b => (b as HasDocNodeLenses).docNodeLenses);
+      .find((b) => (b as HasDocNodeLenses).docNodeLenses);
 
     if (!hasChildren) throw Error('hasChildren undefined');
     if (!hasDocNodeLenses) throw Error('hasDocNodeLenses undefined');
@@ -198,7 +198,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       editable,
       authority,
       context,
-      focused: false
+      focused: false,
     };
 
     return node;
@@ -233,13 +233,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   defaultEntity(text: string, type: TextType) {
     return {
       data: { text, type, links: [] },
-      entityType: DocumentsBindings.TextNodeType
+      entityType: DocumentsBindings.TextNodeType,
     };
   }
 
   getStore(eveesAuthority: string, type: string): CASStore {
     if (!this.remotesMap) throw new Error('remotes config undefined');
-    const remote = this.eveesRemotes.find(r => r.authority === eveesAuthority);
+    const remote = this.eveesRemotes.find((r) => r.authority === eveesAuthority);
 
     if (!remote) throw new Error(`Could not find evees remote with authority ID ${eveesAuthority}`);
 
@@ -260,7 +260,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   hasChangesRec(node: DocNode) {
     if (this.hasChanges(node)) return true;
-    const ix = node.childrenNodes.find(child => this.hasChangesRec(child));
+    const ix = node.childrenNodes.find((child) => this.hasChangesRec(child));
     if (ix !== undefined) return true;
     return false;
   }
@@ -270,8 +270,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     // console.log({ hasChanges: this.docHasChanges });
     let event = new CustomEvent('doc-changed', {
       detail: {
-        docChanged: this.docHasChanges
-      }
+        docChanged: this.docHasChanges,
+      },
     });
     this.dispatchEvent(event);
     super.performUpdate();
@@ -289,14 +289,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async persistNodeRec(node: DocNode, defaultAuthority: string, message?: string) {
-    const persistChildren = node.childrenNodes.map(child =>
+    const persistChildren = node.childrenNodes.map((child) =>
       this.persistNodeRec(child, defaultAuthority, message)
     );
     await Promise.all(persistChildren);
 
     /** set the children with the children refs (which were created above) */
     const { object } = node.hasChildren.replaceChildrenLinks({ id: '', object: node.draft })(
-      node.childrenNodes.map(node => node.ref)
+      node.childrenNodes.map((node) => node.ref)
     );
     this.setNodeDraft(node, object);
 
@@ -360,8 +360,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       mutation: CREATE_ENTITY,
       variables: {
         object: content,
-        casID: store.casID
-      }
+        casID: store.casID,
+      },
     });
 
     return createTextNode.data.createEntity.id;
@@ -375,7 +375,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   ): Promise<string> {
     const dataId = await this.createEntity(content, authority);
 
-    const remote = this.eveesRemotes.find(r => r.authority === authority);
+    const remote = this.eveesRemotes.find((r) => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
     return await EveesHelpers.createCommit(this.client, remote, { dataId, parentsIds });
@@ -396,8 +396,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         perspectiveId: node.ref,
         context: node.context,
         headId: commitId,
-        message
-      }
+        message,
+      },
     });
 
     /** inform the external world if top element */
@@ -406,7 +406,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         new ContentUpdatedEvent({
           bubbles: true,
           composed: true,
-          detail: { ref: this.ref as string }
+          detail: { ref: this.ref as string },
         })
       );
     }
@@ -423,7 +423,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const commitId = await this.createCommit(content, authority);
 
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
-    const remote = this.eveesRemotes.find(r => r.authority === authority);
+    const remote = this.eveesRemotes.find((r) => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
     const createPerspective = await this.client.mutate({
@@ -432,8 +432,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         headId: commitId,
         context,
         parentId: this.ref,
-        casID: remote.casID
-      }
+        casID: remote.casID,
+      },
     });
 
     return createPerspective.data.createPerspective.id;
@@ -443,11 +443,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const draftForReco = { id: '', object: draft };
     const hasChildren = this.recognizer
       .recognizeBehaviours(draftForReco)
-      .find(b => (b as HasChildren).getChildrenLinks);
+      .find((b) => (b as HasChildren).getChildrenLinks);
 
     const hasDocNodeLenses = this.recognizer
       .recognizeBehaviours(draftForReco)
-      .find(b => (b as HasDocNodeLenses).docNodeLenses);
+      .find((b) => (b as HasDocNodeLenses).docNodeLenses);
 
     const context = `${parent ? parent.context : 'ROOT'}-${ix}-${Date.now()}`;
 
@@ -469,7 +469,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       hasDocNodeLenses,
       context,
       editable: true,
-      focused: false
+      focused: false,
     };
   }
 
@@ -519,7 +519,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const newNodes = await Promise.all(getNewNodes);
 
     let newChildren = [...currentChildren];
-    newChildren.splice(index, count, ...newNodes.map(node => node.ref));
+    newChildren.splice(index, count, ...newNodes.map((node) => node.ref));
     const removed = node.childrenNodes.splice(index, count, ...newNodes);
 
     /** update ix and parent of child nodes */
@@ -706,7 +706,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const ixNext = ix + 1;
     const deltaWithChidren = node.parent.childrenNodes
       .slice(ixNext)
-      .findIndex(sibling => sibling.childrenNodes.length > 0);
+      .findIndex((sibling) => sibling.childrenNodes.length > 0);
 
     /** remove next siblings (until the first sibling with childs is found) from parent */
     const removed = await this.spliceChildren(
@@ -880,9 +880,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderWithCortex(node: DocNode) {
-    return html`
-      <cortex-entity hash=${node.ref}></cortex-entity>
-    `;
+    return html` <cortex-entity hash=${node.ref}></cortex-entity> `;
   }
 
   renderTopRow(node: DocNode) {
@@ -919,13 +917,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               pullDownward: () => this.pullDownward(node),
               lift: () => this.lift(node),
               split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
-              appended: () => this.appended(node)
+              appended: () => this.appended(node),
             })}
-            ${hasIcon
-              ? html`
-                  <div class="node-mark">${icon}</div>
-                `
-              : ''}
+            ${hasIcon ? html` <div class="node-mark">${icon}</div> ` : ''}
           </div>
         </div>
       </div>
@@ -936,7 +930,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return html`
       ${this.renderTopRow(node)}
       ${node.childrenNodes
-        ? node.childrenNodes.map(child => {
+        ? node.childrenNodes.map((child) => {
             return this.renderDocNode(child);
           })
         : ''}
@@ -975,8 +969,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       // },
       'push-with-message': {
         graphic: 'notes',
-        text: 'push with message'
-      }
+        text: 'push with message',
+      },
     };
     return html`
       <div class="doc-topbar">
@@ -998,10 +992,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               </evees-options-menu> -->
               <evees-help>
                 <span>
-                  Your current changes are safely stored on this device and won't be lost.<br><br>
-                  "Push" them if<br><br>
-                    <li> You are about to propose a merge.</li><br>
-                    <li> This draft is public and you want them to be visible to others.</li>
+                  Your current changes are safely stored on this device and won't be lost.<br /><br />
+                  "Push" them if<br /><br />
+                  <li>You are about to propose a merge.</li>
+                  <br />
+                  <li>This draft is public and you want them to be visible to others.</li>
                 </span>
               </evees-help>
             `
@@ -1021,9 +1016,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('render()', { doc: this.doc });
 
     if (!this.doc) {
-      return html`
-        <cortex-loading-placeholder></cortex-loading-placeholder>
-      `;
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
     }
 
     return html`

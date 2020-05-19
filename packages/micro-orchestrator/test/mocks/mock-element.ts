@@ -7,9 +7,7 @@ export class MockElement extends moduleConnect(LitElement) {
   field!: number;
 
   render() {
-    debugger
-    return html`
-      <span>${this.field}</span>
-    `;
+    debugger;
+    return html` <span>${this.field}</span> `;
   }
 }

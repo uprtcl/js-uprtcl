@@ -13,10 +13,10 @@ import { EveesHelpers } from '../graphql/helpers';
 const LOGINFO = true;
 
 interface UpdateDetails {
-  update: UpdateRequest,
-  newData: any,
-  oldData: any,
-  diffLense: DiffLens
+  update: UpdateRequest;
+  newData: any;
+  oldData: any;
+  diffLense: DiffLens;
 }
 
 export class EveesDiff extends moduleConnect(LitElement) {
@@ -43,7 +43,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
     this.logger.log('updated()', changedProperties);
 
     if (changedProperties.has('workspace')) {
-      this.loadUpdates()
+      this.loadUpdates();
     }
   }
 
@@ -58,15 +58,17 @@ export class EveesDiff extends moduleConnect(LitElement) {
       if (update.oldHeadId === undefined) throw new Error('old commit not specified');
       const oldData = await EveesHelpers.getCommitData(this.workspace.workspace, update.oldHeadId);
 
-      const hasDiffLenses = this.recognizer.recognizeBehaviours(oldData).find(b => (b as HasDiffLenses<any>).diffLenses);
+      const hasDiffLenses = this.recognizer
+        .recognizeBehaviours(oldData)
+        .find((b) => (b as HasDiffLenses<any>).diffLenses);
       if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
 
       this.updatesDetails[update.perspectiveId] = {
         diffLense: hasDiffLenses.diffLenses()[0],
         update,
         oldData,
-        newData
-      }
+        newData,
+      };
     });
 
     await Promise.all(getDetails);
@@ -85,15 +87,15 @@ export class EveesDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html`
-        <cortex-loading-placeholder></cortex-loading-placeholder>
-      `;
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
     }
 
     const perspectiveIds = Object.keys(this.updatesDetails);
-    return perspectiveIds.length === 0 ?
-      html`<span><i>no changes found</i></span>` :
-      perspectiveIds.map(perspectiveId => this.renderUpdateDiff(this.updatesDetails[perspectiveId]));
+    return perspectiveIds.length === 0
+      ? html`<span><i>no changes found</i></span>`
+      : perspectiveIds.map((perspectiveId) =>
+          this.renderUpdateDiff(this.updatesDetails[perspectiveId])
+        );
   }
 
   static get styles() {
@@ -101,6 +103,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
       :host {
         display: block;
         padding: 30px 20px 30px 0px;
-      }`;
+      }
+    `;
   }
 }

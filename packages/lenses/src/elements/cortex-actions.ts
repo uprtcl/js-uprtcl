@@ -60,14 +60,14 @@ export class CortexActions extends moduleConnect(LitElement) {
           }
         }
       }
-      `
+      `,
     });
 
     const actions: PatternAction[] = result.data.entity._context.content._context.patterns.actions;
 
     this.actions = {};
 
-    for (const action of actions.filter(iso => !!iso)) {
+    for (const action of actions.filter((iso) => !!iso)) {
       const type = action.type || '';
       if (!this.actions[type]) this.actions[type] = [];
 
@@ -94,7 +94,7 @@ export class CortexActions extends moduleConnect(LitElement) {
         .divider {
           opacity: 0.3;
         }
-      `
+      `,
     ];
   }
 
@@ -108,14 +108,14 @@ export class CortexActions extends moduleConnect(LitElement) {
     const actions = this.actions;
     if (!actions) return [];
 
-    return Object.keys(actions).map(key => actions[key]);
+    return Object.keys(actions).map((key) => actions[key]);
   }
 
   getMenuActions(): PatternAction[][] {
     const actions = this.actions;
     if (!actions) return [];
 
-    return Object.keys(actions).map(key => actions[key]);
+    return Object.keys(actions).map((key) => actions[key]);
   }
 
   getAllActions(): PatternAction[][] {
@@ -129,7 +129,7 @@ export class CortexActions extends moduleConnect(LitElement) {
       ${toolbarActions.map(
         (actionTypeList, index) => html`
           ${actionTypeList.map(
-            action => html`
+            (action) => html`
               <mwc-button
                 .icon=${action.icon}
                 .label=${this.t(action.title)}
@@ -137,11 +137,7 @@ export class CortexActions extends moduleConnect(LitElement) {
               ></mwc-button>
             `
           )}
-          ${index < toolbarActions.length - 1
-            ? html`
-                <span class="divider">|</span>
-              `
-            : html``}
+          ${index < toolbarActions.length - 1 ? html` <span class="divider">|</span> ` : html``}
         `
       )}
     `;
@@ -154,7 +150,7 @@ export class CortexActions extends moduleConnect(LitElement) {
       ${toolbarActions.map(
         (actionTypeList, index) => html`
           ${actionTypeList.map(
-            action => html`
+            (action) => html`
               <mwc-icon-button
                 .icon=${action.icon}
                 label=${action.title}
@@ -164,11 +160,7 @@ export class CortexActions extends moduleConnect(LitElement) {
               </mwc-icon-button>
             `
           )}
-          ${index < toolbarActions.length - 1
-            ? html`
-                <span class="divider">|</span>
-              `
-            : html``}
+          ${index < toolbarActions.length - 1 ? html` <span class="divider">|</span> ` : html``}
         `
       )}
     `;
@@ -189,10 +181,10 @@ export class CortexActions extends moduleConnect(LitElement) {
       <mwc-menu id="menu">
         <mwc-list>
           ${menuActions.map(
-            actionTypeList =>
+            (actionTypeList) =>
               html`
                 ${actionTypeList.map(
-                  action => html`
+                  (action) => html`
                     <mwc-list-item @click=${() => this.actionClicked(action)}>
                       <mwc-icon slot="graphic">${action.icon}</mwc-icon>
                       ${action.title}
@@ -223,7 +215,7 @@ export class CortexActions extends moduleConnect(LitElement) {
   }
 
   actionClicked(action: PatternAction) {
-    action.action(newContent => {
+    action.action((newContent) => {
       this.updateContent(newContent);
     });
   }
@@ -233,7 +225,7 @@ export class CortexActions extends moduleConnect(LitElement) {
       new CustomEvent('content-changed', {
         bubbles: true,
         composed: true,
-        detail: { newContent }
+        detail: { newContent },
       })
     );
   }

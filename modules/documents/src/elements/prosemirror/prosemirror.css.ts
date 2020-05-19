@@ -1,4 +1,4 @@
-import { css } from "lit-element";
+import { css } from 'lit-element';
 
 export const styles = css`
   .ProseMirror {
@@ -41,7 +41,7 @@ export const styles = css`
   }
 
   li.ProseMirror-selectednode:after {
-    content: "";
+    content: '';
     position: absolute;
     left: -32px;
     right: -2px;
@@ -95,7 +95,7 @@ export const styles = css`
   }
 
   .ProseMirror-menu-dropdown:after {
-    content: "";
+    content: '';
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
     border-top: 4px solid currentColor;
@@ -134,7 +134,7 @@ export const styles = css`
   }
 
   .ProseMirror-menu-submenu-label:after {
-    content: "";
+    content: '';
     border-top: 4px solid transparent;
     border-bottom: 4px solid transparent;
     border-left: 4px solid currentColor;
@@ -215,7 +215,7 @@ export const styles = css`
   }
 
   .ProseMirror-gapcursor:after {
-    content: "";
+    content: '';
     display: block;
     position: absolute;
     top: -2px;
@@ -242,7 +242,7 @@ export const styles = css`
   }
 
   .ProseMirror-example-setup-style hr:after {
-    content: "";
+    content: '';
     display: block;
     height: 1px;
     background-color: silver;
@@ -282,14 +282,14 @@ export const styles = css`
     color: #444;
   }
 
-  .ProseMirror-prompt input[type="text"],
+  .ProseMirror-prompt input[type='text'],
   .ProseMirror-prompt textarea {
     background: #eee;
     border: none;
     outline: none;
   }
 
-  .ProseMirror-prompt input[type="text"] {
+  .ProseMirror-prompt input[type='text'] {
     padding: 0 4px;
   }
 
@@ -304,7 +304,7 @@ export const styles = css`
   }
 
   .ProseMirror-prompt-close:after {
-    content: "âœ•";
+    content: 'âœ•';
     font-size: 12px;
   }
 

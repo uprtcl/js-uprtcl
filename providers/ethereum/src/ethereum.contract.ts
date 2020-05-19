@@ -25,7 +25,7 @@ export class EthereumContract {
     protected connection: EthereumConnection
   ) {}
 
-  get userId () {
+  get userId() {
     return this.connection.getCurrentAccount();
   }
 
@@ -47,9 +47,8 @@ export class EthereumContract {
    */
   public send(funcName: string, pars: any[]): Promise<any> {
     return new Promise(async (resolve, reject) => {
-
       this.logger.log(`CALLING ${funcName}`, pars);
-      
+
       const caller = this.contractInstance.methods[funcName];
       if (!caller) {
         throw new Error(`Function "${funcName}" not found on smart contract`);
@@ -58,15 +57,15 @@ export class EthereumContract {
       const _from = this.connection.getCurrentAccount();
 
       let gasEstimated: number;
-      
-      gasEstimated = await caller(...pars).estimateGas({ from: _from })*1.2;
+
+      gasEstimated = (await caller(...pars).estimateGas({ from: _from })) * 1.2;
       gasEstimated = gasEstimated > MAX_GAS ? MAX_GAS : gasEstimated;
-      
+
       const sendPars = {
         from: _from,
-        gas: Math.floor(gasEstimated)
+        gas: Math.floor(gasEstimated),
       };
-      
+
       caller(...pars)
         .send(sendPars)
         .once('transactionHash', (transactionHash: any) => {
@@ -98,13 +97,13 @@ export class EthereumContract {
    */
   public async call(funcName: string, pars: any[]): Promise<any> {
     const caller = this.contractInstance.methods[funcName];
-    
+
     if (!caller) {
       throw new Error(`Function "${funcName}" not found on smart contract`);
     }
 
     return caller(...pars).call({
-      from: this.connection.getCurrentAccount()
+      from: this.connection.getCurrentAccount(),
     });
   }
 }

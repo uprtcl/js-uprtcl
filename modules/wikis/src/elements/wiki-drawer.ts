@@ -3,9 +3,9 @@ import { ApolloClient, gql } from 'apollo-boost';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
 
-export const styleMap = style => {
+export const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -22,7 +22,7 @@ import {
   DEFAULT_COLOR,
   RemoteMap,
   EveesHelpers,
-  Perspective
+  Perspective,
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CASStore, loadEntity } from '@uprtcl/multiplatform';
@@ -168,9 +168,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.authority = perspective.object.payload.authority;
     this.currentHeadId = headId;
-    this.editable = accessControl ? this.editableAuthorities.length > 0 ? 
-      (this.editableAuthorities.includes(this.authority) ? accessControl.canWrite : false) : 
-      accessControl.canWrite : false;
+    this.editable = accessControl
+      ? this.editableAuthorities.length > 0
+        ? this.editableAuthorities.includes(this.authority)
+          ? accessControl.canWrite
+          : false
+        : accessControl.canWrite
+      : false;
     this.context = context;
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.ref);
@@ -189,13 +193,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
         const hasTitle: HasTitle = this.recognizer
           .recognizeBehaviours(data)
-          .find(b => (b as HasTitle).title);
+          .find((b) => (b as HasTitle).title);
 
         const title = hasTitle.title(data);
 
         return {
           id: pageId,
-          title
+          title,
         };
       }
     );
@@ -217,8 +221,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.dispatchEvent(
       new CustomEvent('page-selected', {
         detail: {
-          pageId: this.wiki.object.pages[this.selectedPageIx]
-        }
+          pageId: this.wiki.object.pages[this.selectedPageIx],
+        },
       })
     );
     this.hasSelectedPage = true;
@@ -228,7 +232,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   getStore(authority: string, type: string): CASStore | undefined {
-    const remote = this.eveesRemotes.find(r => r.authority === authority);
+    const remote = this.eveesRemotes.find((r) => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
     return this.remoteMap(remote);
   }
@@ -237,7 +241,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
 
-    const remote = this.eveesRemotes.find(r => r.authority === authority);
+    const remote = this.eveesRemotes.find((r) => r.authority === authority);
     if (!remote) throw new Error(`Remote not found for authority ${authority}`);
 
     const store = this.getStore(authority, DocumentsModule.bindings.TextNodeType);
@@ -248,7 +252,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return EveesHelpers.createPerspective(this.client, remote, {
       headId,
       context: `${this.context}_${Date.now()}`,
-      parentId: this.ref
+      parentId: this.ref,
     });
   }
 
@@ -256,13 +260,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const store = this.getStore(this.authority, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const remote = this.eveesRemotes.find(r => r.authority === this.authority);
+    const remote = this.eveesRemotes.find((r) => r.authority === this.authority);
     if (!remote) throw Error(`Remote not found for authority ${this.authority}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
     const headId = await EveesHelpers.createCommit(this.client, remote, {
       dataId,
-      parentsIds: [this.currentHeadId ? this.currentHeadId : '']
+      parentsIds: [this.currentHeadId ? this.currentHeadId : ''],
     });
     await EveesHelpers.updateHead(this.client, this.ref, headId);
 
@@ -274,7 +278,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async splicePages(pages: any[], index: number, count: number) {
     if (!this.wiki) throw new Error('wiki undefined');
 
-    const getPages = pages.map(page => {
+    const getPages = pages.map((page) => {
       if (typeof page !== 'string') {
         return this.createPage(page, this.authority);
       } else {
@@ -289,7 +293,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return {
       entity: newObject,
-      removed
+      removed,
     };
   }
 
@@ -300,7 +304,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const newPage: TextNode = {
       text: '',
       type: TextType.Title,
-      links: []
+      links: [],
     };
 
     index = index === undefined ? this.wiki.object.pages.length : index;
@@ -311,7 +315,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     await this.updateContent(result.entity);
 
     this.selectPage(index);
-    
+
     this.creatingNewPage = false;
   }
 
@@ -378,9 +382,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   renderPageList() {
     if (this.pagesList === undefined)
-      return html`
-        <cortex-loading-placeholder></cortex-loading-placeholder>
-      `;
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     if (this.pagesList.length === 0)
       return html`
@@ -404,18 +406,18 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       'move-up': {
         disabled: ix === 0,
         text: 'move up',
-        graphic: 'arrow_upward'
+        graphic: 'arrow_upward',
       },
       'move-down': {
         disabled: ix === (this.pagesList as any[]).length - 1,
         text: 'move down',
-        graphic: 'arrow_downward'
+        graphic: 'arrow_downward',
       },
       remove: {
         disabled: false,
         text: 'remove',
-        graphic: 'clear'
-      }
+        graphic: 'clear',
+      },
     };
 
     const text = htmlToText(page.title);
@@ -436,7 +438,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         ${this.editable
           ? html`
               <evees-options-menu
-                @option-click=${e => this.optionOnPage(ix, e.detail.key)}
+                @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
                 .config=${menuConfig}
               >
               </evees-options-menu>
@@ -451,7 +453,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <div
         class="color-bar"
         style=${styleMap({
-          backgroundColor: this.color()
+          backgroundColor: this.color(),
         })}
       ></div>
     `;
@@ -483,9 +485,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   render() {
     this.logger.log('render()', { wiki: this.wiki, ref: this.ref, editable: this.editable });
     if (!this.wiki || !this.ref)
-      return html`
-        <cortex-loading-placeholder></cortex-loading-placeholder>
-      `;
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`
       <mwc-drawer
@@ -544,7 +544,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   @page-title-changed=${() => this.loadPagesData()}
                   pageHash=${this.wiki.object.pages[this.selectedPageIx]}
                   color=${this.color() ? this.color() : ''}
-                  @doc-changed=${e => this.onDocChanged(e)}
+                  @doc-changed=${(e) => this.onDocChanged(e)}
                 >
                 </wiki-page>
               `
@@ -695,7 +695,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             min-width: 100% !important;
           }
         }
-      `
+      `,
     ];
   }
 }

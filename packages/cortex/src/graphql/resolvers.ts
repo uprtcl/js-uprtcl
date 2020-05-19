@@ -17,7 +17,7 @@ export const cortexResolvers = {
       const recognizer: PatternRecognizer = container.get(CortexBindings.Recognizer);
 
       return recognizer.recognizeType(entityFromGraphQlObject(parent));
-    }
+    },
   },
   EntityContext: {
     object(parent) {
@@ -32,7 +32,7 @@ export const cortexResolvers = {
 
       const behaviours: Behaviour<any>[] = recognizer.recognizeBehaviours(entity);
 
-      const applyedPatterns = behaviours.map(pattern => {
+      const applyedPatterns = behaviours.map((pattern) => {
         const applyedPattern = {};
 
         for (const key of Object.keys(pattern)) {
@@ -47,8 +47,8 @@ export const cortexResolvers = {
       merge(accPatterns, ...applyedPatterns, { __entity: entity });
 
       return substituteFunction(accPatterns);
-    }
-  }
+    },
+  },
 };
 
 export function entityFromGraphQlObject(parent): Entity<any> {
@@ -64,14 +64,14 @@ export function entityFromGraphQlObject(parent): Entity<any> {
 
   return {
     id,
-    object
+    object,
   };
 }
 
 export function substituteFunction(object: Object): Object {
   for (const key of Object.keys(object)) {
     try {
-      if (Array.isArray(object[key])) object[key] = object[key].map(o => substituteFunction(o));
+      if (Array.isArray(object[key])) object[key] = object[key].map((o) => substituteFunction(o));
       else if (typeof object[key] === 'object') object[key] = substituteFunction(object[key]);
       else if (typeof object[key] === 'function') {
         const f = object[key];

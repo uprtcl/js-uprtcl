@@ -3,7 +3,7 @@ import { AccessControlService } from './access-control.service';
 export enum PermissionType {
   Read = 'Read',
   Write = 'Write',
-  Admin = 'Admin'
+  Admin = 'Admin',
 }
 
 export interface BasicAdminPermissions {
@@ -14,5 +14,5 @@ export interface BasicAdminPermissions {
   canAdmin: string[];
 }
 
-export interface BasicAdminAccessControlService extends AccessControlService<BasicAdminPermissions> {
-}
+export interface BasicAdminAccessControlService
+  extends AccessControlService<BasicAdminPermissions> {}

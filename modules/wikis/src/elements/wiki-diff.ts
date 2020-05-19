@@ -9,10 +9,12 @@ import { EveesWorkspace } from '@uprtcl/evees';
 
 const LOGINFO = true;
 
-interface PageDetails {ref: string, title: string};
+interface PageDetails {
+  ref: string;
+  title: string;
+}
 
 export class WikiDiff extends moduleConnect(LitElement) {
-
   logger = new Logger('EVEES-DIFF');
 
   @property({ attribute: false })
@@ -32,15 +34,19 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', { newData: this.newData, oldData: this.oldData });
-    
+
     this.loadChanges();
   }
 
   async loadChanges() {
     this.loading = true;
 
-    this.newPages = this.newData.object.pages.filter(page => !this.oldData.object.pages.includes(page));
-    this.deletedPages = this.oldData.object.pages.filter(page => !this.newData.object.pages.includes(page));
+    this.newPages = this.newData.object.pages.filter(
+      (page) => !this.oldData.object.pages.includes(page)
+    );
+    this.deletedPages = this.oldData.object.pages.filter(
+      (page) => !this.newData.object.pages.includes(page)
+    );
 
     this.loading = false;
   }
@@ -48,33 +54,36 @@ export class WikiDiff extends moduleConnect(LitElement) {
   renderPage(page: string, classes: string[]) {
     return html`
       <div class=${['page-row'].concat(classes).join(' ')}>
-        <documents-editor .client=${this.workspace.workspace} ref=${page} editable="false"></documents-editor>
+        <documents-editor
+          .client=${this.workspace.workspace}
+          ref=${page}
+          editable="false"
+        ></documents-editor>
       </div>
     `;
   }
 
   render() {
     if (this.loading) {
-      return html`
-        <cortex-loading-placeholder></cortex-loading-placeholder>
-      `;
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
     }
 
     const newPages = this.newPages !== undefined ? this.newPages : [];
     const deletedPages = this.deletedPages !== undefined ? this.deletedPages : [];
 
     return html`
-      ${newPages.length > 0 ? html`
-        <div class="pages-list">
-          <div class="page-list-title">Pages Added</div>
-          ${newPages.map(page => this.renderPage(page, ['page-added']))}
-        </div>` : ''}
-
-      ${deletedPages.length > 0 ? html`
-        <div class="pages-list">
-          <div class="page-list-title">Pages Removed</div>
-          ${deletedPages.map(page => this.renderPage(page, ['page-removed']))}
-        </div>` : ''}
+      ${newPages.length > 0
+        ? html` <div class="pages-list">
+            <div class="page-list-title">Pages Added</div>
+            ${newPages.map((page) => this.renderPage(page, ['page-added']))}
+          </div>`
+        : ''}
+      ${deletedPages.length > 0
+        ? html` <div class="pages-list">
+            <div class="page-list-title">Pages Removed</div>
+            ${deletedPages.map((page) => this.renderPage(page, ['page-removed']))}
+          </div>`
+        : ''}
     `;
   }
 

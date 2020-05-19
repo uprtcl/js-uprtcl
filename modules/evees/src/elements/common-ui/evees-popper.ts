@@ -1,19 +1,18 @@
-import { LitElement, property, html, css } from "lit-element";
+import { LitElement, property, html, css } from 'lit-element';
 
 import '@material/mwc-icon-button';
 import '@authentic/mwc-card';
 
 export class EveesPopper extends LitElement {
-
   @property({ type: String })
   icon: string = 'more_vert';
 
-	@property({ type: Boolean, attribute: false })
+  @property({ type: Boolean, attribute: false })
   showDropdown: boolean = false;
 
   firstUpdated() {
-    document.addEventListener('click', (event) => { 
-      const ix = event.composedPath().findIndex((el:any) => el.id === "popper-menu");
+    document.addEventListener('click', (event) => {
+      const ix = event.composedPath().findIndex((el: any) => el.id === 'popper-menu');
       if (ix === -1) {
         this.showDropdown = false;
       }
@@ -25,23 +24,23 @@ export class EveesPopper extends LitElement {
     // document.removeEventListener('click', ...);
   }
 
-	showDropDownClicked(e) {
+  showDropDownClicked(e) {
     e.stopPropagation();
     this.showDropdown = !this.showDropdown;
   }
 
-	render() {
+  render() {
     return html`
       <mwc-icon-button @click=${this.showDropDownClicked} icon=${this.icon}></mwc-icon-button>
-      ${this.showDropdown ? 
-        html`
-          <mwc-card id="popper-menu" class="info-box">
+      ${this.showDropdown
+        ? html` <mwc-card id="popper-menu" class="info-box">
             <slot></slot>
-          </mwc-card>` : ''}
-        `
-	}
+          </mwc-card>`
+        : ''}
+    `;
+  }
 
-	static get styles() {
+  static get styles() {
     return css`
       :host {
         position: relative;
@@ -56,6 +55,7 @@ export class EveesPopper extends LitElement {
         right: 2px;
         top: 52px;
         width: 250px;
-      }`
+      }
+    `;
   }
 }

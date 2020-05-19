@@ -3,7 +3,7 @@ import { HasDocNodeLenses } from './patterns/document-patterns';
 
 export enum TextType {
   Title = 'Title',
-  Paragraph = 'Paragraph'
+  Paragraph = 'Paragraph',
 }
 
 export interface TextNode {
@@ -13,20 +13,20 @@ export interface TextNode {
 }
 
 export interface DocNode {
-  ref: string,
-  authority?: string,
-  context?: string,
-  data?: Entity<any>,
-  draft: any,
-  append?: any,              // used by upper layer to tell the docnode lense to append content using its internal appending logic.
-  childrenNodes: DocNode[],
-  headId?: string,
-  editable: boolean,
-  parent?: DocNode,
-  ix?: number,              // ix on parent
-  focused: boolean,
-  hasDocNodeLenses: HasDocNodeLenses,
-  hasChildren: HasChildren
+  ref: string;
+  authority?: string;
+  context?: string;
+  data?: Entity<any>;
+  draft: any;
+  append?: any; // used by upper layer to tell the docnode lense to append content using its internal appending logic.
+  childrenNodes: DocNode[];
+  headId?: string;
+  editable: boolean;
+  parent?: DocNode;
+  ix?: number; // ix on parent
+  focused: boolean;
+  hasDocNodeLenses: HasDocNodeLenses;
+  hasChildren: HasChildren;
 }
 
 export interface DocNodeEventsHandlers {

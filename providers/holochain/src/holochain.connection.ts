@@ -40,8 +40,8 @@ export class HolochainConnection extends SocketConnection {
     this.connection = async (instance: string, zome: string, funcName: string, params: any) =>
       callZome(instance, zome, funcName)(params);
     this.onsignal = onSignal;
-    this.onsignal(params => {
-      this.signalListeners.forEach(l => l(params));
+    this.onsignal((params) => {
+      this.signalListeners.forEach((l) => l(params));
     });
 
     return ws;
@@ -49,7 +49,7 @@ export class HolochainConnection extends SocketConnection {
 
   async getAgentConfig(agentAddress: string): Promise<{ id: string; public_address: string }> {
     const agentList = await this.callAdmin('admin/agent/list', {});
-    const agentName = agentList.find(a => a.public_address === agentAddress);
+    const agentName = agentList.find((a) => a.public_address === agentAddress);
     return agentName;
   }
 
@@ -77,13 +77,13 @@ export class HolochainConnection extends SocketConnection {
       id: newDnaId,
       path,
       properties,
-      copy: true
+      copy: true,
     });
 
     const instanceResult = await this.callAdmin('admin/instance/add', {
       id: newInstanceId,
       agent_id: agentId,
-      dna_id: newDnaId
+      dna_id: newDnaId,
     });
 
     const interfaceList = await this.callAdmin('admin/interface/list', {});
@@ -92,10 +92,10 @@ export class HolochainConnection extends SocketConnection {
 
     const ifaceResult = this.callAdmin('admin/interface/add_instance', {
       instance_id: newInstanceId,
-      interface_id: iface.id
+      interface_id: iface.id,
     });
 
-    await new Promise(resolve => setTimeout(() => resolve(), 300));
+    await new Promise((resolve) => setTimeout(() => resolve(), 300));
     const startResult = await this.callAdmin('admin/instance/start', { id: newInstanceId });
   }
 
@@ -149,7 +149,7 @@ export class HolochainConnection extends SocketConnection {
 
   public async onSignal(signalName: string, callback: (params: any) => void): Promise<void> {
     await this.ready();
-    const listener = params => {
+    const listener = (params) => {
       if (params.signal && params.signal.name === signalName) {
         let args = params.signal.arguments;
         try {

@@ -1,9 +1,9 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
-export const styleMap = style => {
+export const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -20,13 +20,7 @@ import { AccessControlService, OwnerPermissions, SET_PUBLIC_READ } from '@uprtcl
 import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
 
-import {
-  RemoteMap,
-  ProposalCreatedEvent,
-  Perspective,
-  PerspectiveDetails,
-  Commit
-} from '../types';
+import { RemoteMap, ProposalCreatedEvent, Perspective, PerspectiveDetails, Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
 import {
@@ -34,7 +28,7 @@ import {
   AUTHORIZE_PROPOSAL,
   EXECUTE_PROPOSAL,
   DELETE_PERSPECTIVE,
-  CREATE_AND_ADD_PROPOSAL
+  CREATE_AND_ADD_PROPOSAL,
 } from '../graphql/queries';
 import { EveesHelpers } from '../graphql/helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
@@ -92,13 +86,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loggingIn: boolean = false;
 
-  @property({ attribute: false})
+  @property({ attribute: false })
   creatingNewPerspective: boolean = false;
 
-  @property({ attribute: false})
+  @property({ attribute: false })
   proposingUpdate: boolean = false;
 
-  @property({ attribute: false})
+  @property({ attribute: false })
   makingPublic: boolean = false;
 
   @property({ attribute: false })
@@ -130,7 +124,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
 
     if (this.defaultAuthority !== undefined) {
-      this.defaultRemote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(remote => remote.authority === this.defaultAuthority);
+      this.defaultRemote = (this.requestAll(
+        EveesModule.bindings.EveesRemote
+      ) as EveesRemote[]).find((remote) => remote.authority === this.defaultAuthority);
     }
 
     this.load();
@@ -181,12 +177,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
             }
           }
         }
-      `
+      `,
     });
 
     const accessControl = result.data.entity._context.patterns.accessControl;
     const data = await loadEntity(this.client, result.data.entity.head.data.id);
-    const head = await loadEntity(this.client, result.data.entity.head.id) as Entity<Commit>;
+    const head = (await loadEntity(this.client, result.data.entity.head.id)) as Entity<Commit>;
 
     if (!data) throw new Error('data undefined');
     if (!head) throw new Error('head undefined');
@@ -196,19 +192,23 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       details: {
         context: result.data.entity.context.id,
         headId: result.data.entity.head.id,
-        name: result.data.entity.name
+        name: result.data.entity.name,
       },
       perspective: result.data.entity.payload,
       canWrite: accessControl ? accessControl.canWrite : true,
       permissions: accessControl ? accessControl.permissions : undefined,
       head,
-      data
+      data,
     };
 
-    this.publicRead = this.perspectiveData.permissions.publicRead !== undefined ? this.perspectiveData.permissions.publicRead : true;
+    this.publicRead =
+      this.perspectiveData.permissions.publicRead !== undefined
+        ? this.perspectiveData.permissions.publicRead
+        : true;
 
     this.logger.info('load', { perspectiveData: this.perspectiveData });
-    this.isLogged = this.defaultRemote !== undefined ? (this.defaultRemote.userId !== undefined) : false;
+    this.isLogged =
+      this.defaultRemote !== undefined ? this.defaultRemote.userId !== undefined : false;
 
     this.reload();
     this.loading = false;
@@ -217,9 +217,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async checkPull() {
-    if ((this.perspectiveId === this.firstPerspectiveId)
-      || (!this.perspectiveData.canWrite)) {
-
+    if (this.perspectiveId === this.firstPerspectiveId || !this.perspectiveData.canWrite) {
       this.firstHasChanges = false;
       return;
     }
@@ -230,7 +228,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       forceOwner: true,
       authority: this.perspectiveData.perspective.authority,
       canWrite: remote.userId,
-      parentId: this.perspectiveId
+      parentId: this.perspectiveId,
     };
 
     this.pullWorkspace = new EveesWorkspace(this.client, this.recognizer);
@@ -252,7 +250,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.addEventListener('permissions-updated', ((e: CustomEvent) => {
       this.logger.info('CATCHED EVENT: permissions-updated ', {
         perspectiveId: this.perspectiveId,
-        e
+        e,
       });
       e.stopPropagation();
       this.load();
@@ -294,8 +292,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       mutation: SET_PUBLIC_READ,
       variables: {
         entityId: this.perspectiveId,
-        value: true
-      }
+        value: true,
+      },
     });
 
     this.makingPublic = false;
@@ -303,7 +301,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.load();
   }
 
-  async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string, isProposal: boolean) {
+  async otherPerspectiveMerge(
+    fromPerspectiveId: string,
+    toPerspectiveId: string,
+    isProposal: boolean
+  ) {
     this.logger.info(
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
     );
@@ -329,7 +331,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       forceOwner: true,
       authority: remote.authority,
       canWrite: permissions.owner,
-      parentId: this.perspectiveId
+      parentId: this.perspectiveId,
     };
 
     await this.merge.mergePerspectivesExternal(
@@ -343,13 +345,19 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     if (!confirm) {
       return;
-    };
+    }
 
     const toHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, toPerspectiveId);
     const fromHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, fromPerspectiveId);
 
     if (isProposal) {
-      await this.createMergeProposal(fromPerspectiveId, toPerspectiveId, fromHeadId, toHeadId, workspace);
+      await this.createMergeProposal(
+        fromPerspectiveId,
+        toPerspectiveId,
+        fromHeadId,
+        toHeadId,
+        workspace
+      );
     } else {
       await this.applyWorkspace(workspace);
     }
@@ -363,7 +371,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async applyWorkspace(workspace: EveesWorkspace): Promise<void> {
-
     await workspace.execute(this.client);
 
     const update = workspace.getUpdates().map(async (update) => {
@@ -371,8 +378,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         mutation: UPDATE_HEAD,
         variables: {
           perspectiveId: update.perspectiveId,
-          headId: update.newHeadId
-        }
+          headId: update.newHeadId,
+        },
       });
     });
 
@@ -384,8 +391,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     toPerspectiveId: string,
     fromHeadId: string,
     toHeadId: string,
-    workspace: EveesWorkspace): Promise<void> {
-
+    workspace: EveesWorkspace
+  ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
     const authority = await EveesHelpers.getPerspectiveAuthority(this.client, toPerspectiveId);
 
@@ -400,15 +407,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       fromPerspectiveId,
       toHeadId,
       fromHeadId,
-      updates: workspace.getUpdates()
+      updates: workspace.getUpdates(),
     };
 
     const result = await this.client.mutate({
       mutation: CREATE_AND_ADD_PROPOSAL,
       variables: {
         perspectives: workspace.getNewPerspectives(),
-        proposal: proposal
-      }
+        proposal: proposal,
+      },
     });
 
     const proposalId = result.data.createAndAddProposal.id;
@@ -420,10 +427,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         detail: { proposalId, authority },
         cancelable: true,
         composed: true,
-        bubbles: true
+        bubbles: true,
       })
     );
-
   }
 
   async authorizeProposal(e: CustomEvent) {
@@ -436,8 +442,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       variables: {
         proposalId: proposalId,
         perspectiveId: perspectiveId,
-        authorize: true
-      }
+        authorize: true,
+      },
     });
 
     this.logger.info('accepted proposal', { proposalId });
@@ -446,10 +452,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.dispatchEvent(
       new CustomEvent('checkout-perspective', {
         detail: {
-          perspectiveId: perspectiveId
+          perspectiveId: perspectiveId,
         },
         composed: true,
-        bubbles: true
+        bubbles: true,
       })
     );
 
@@ -466,8 +472,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       mutation: EXECUTE_PROPOSAL,
       variables: {
         proposalId: proposalId,
-        perspectiveId: perspectiveId
-      }
+        perspectiveId: perspectiveId,
+      },
     });
 
     this.logger.info('accepted proposal', { proposalId });
@@ -475,10 +481,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.dispatchEvent(
       new CustomEvent('checkout-perspective', {
         detail: {
-          perspectiveId: perspectiveId
+          perspectiveId: perspectiveId,
         },
         composed: true,
-        bubbles: true
+        bubbles: true,
       })
     );
 
@@ -487,9 +493,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async newPerspectiveClicked() {
     this.creatingNewPerspective = true;
-    
+
     const workspace = new EveesWorkspace(this.client, this.recognizer);
-    const newPerspectiveId = await this.evees.forkPerspective(this.perspectiveId, workspace, this.defaultAuthority);
+    const newPerspectiveId = await this.evees.forkPerspective(
+      this.perspectiveId,
+      workspace,
+      this.defaultAuthority
+    );
     await workspace.execute(this.client);
 
     this.checkoutPerspective(newPerspectiveId);
@@ -502,10 +512,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.dispatchEvent(
       new CustomEvent('checkout-perspective', {
         detail: {
-          perspectiveId: perspectiveId
+          perspectiveId: perspectiveId,
         },
         composed: true,
-        bubbles: true
+        bubbles: true,
       })
     );
   }
@@ -530,15 +540,18 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.client.mutate({
       mutation: DELETE_PERSPECTIVE,
       variables: {
-        perspectiveId: this.perspectiveId
-      }
+        perspectiveId: this.perspectiveId,
+      },
     });
 
     this.checkoutPerspective(this.firstPerspectiveId);
   }
 
-  async updatesDialog(workspace: EveesWorkspace, primaryText: string, secondaryText: string): Promise<boolean> {
-
+  async updatesDialog(
+    workspace: EveesWorkspace,
+    primaryText: string,
+    secondaryText: string
+  ): Promise<boolean> {
     this.showUpdatesDialog = true;
     await this.updateComplete;
 
@@ -557,16 +570,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   renderUpdatesDialog() {
-    return html`
-      <evees-dialog id="updates-dialog">
-        <evees-update-diff id="evees-update-diff"></evees-update-diff>
-      </evees-dialog>`;
+    return html` <evees-dialog id="updates-dialog">
+      <evees-update-diff id="evees-update-diff"></evees-update-diff>
+    </evees-dialog>`;
   }
 
   renderLoading() {
-    return html`
-      <mwc-circular-progress></mwc-circular-progress>
-    `;
+    return html` <mwc-circular-progress></mwc-circular-progress> `;
   }
 
   renderInfo() {
@@ -653,7 +663,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
           font-size: 12px;
           text-align: left;
         }
-      `
+      `,
     ];
   }
 }

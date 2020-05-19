@@ -50,10 +50,10 @@ export class EntityCache {
           _context: {
             __typename: 'EntityContext',
             object: entity.object,
-            casID: entity.casID
-          }
-        }
-      }
+            casID: entity.casID,
+          },
+        },
+      },
     });
   }
 }

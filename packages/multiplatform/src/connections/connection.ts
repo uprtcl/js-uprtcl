@@ -12,12 +12,12 @@ export interface ConnectionOptions {
 export enum ConnectionState {
   PENDING,
   SUCCESS,
-  FAILED
+  FAILED,
 }
 
 const defaultOptions: ConnectionOptions = {
   retries: 4,
-  retryInterval: 200
+  retryInterval: 200,
 };
 
 export abstract class Connection implements Ready {
@@ -41,7 +41,7 @@ export abstract class Connection implements Ready {
     setTimeout(() => {
       this.connect()
         .then(() => this.success())
-        .catch(e => this.retry(e));
+        .catch((e) => this.retry(e));
     });
   }
 

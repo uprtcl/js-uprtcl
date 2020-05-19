@@ -1,3 +1,3 @@
 export const MicroOrchestratorBindings = {
-  Logger: Symbol('logger')
+  Logger: Symbol('logger'),
 };

@@ -13,15 +13,12 @@ import { EveesModule } from '../../../evees.module';
 import { loadEntity } from '@uprtcl/multiplatform';
 
 export class EveesAccessControlEthereum implements OwnerAccessControlService {
-  constructor(
-    protected uprtclRoot: EthereumContract,
-    protected container: Container) {}
-  
-  async changeOwner(ref: string, newOwnerId: string): Promise<void> {
+  constructor(protected uprtclRoot: EthereumContract, protected container: Container) {}
 
-    /** TODO: there were two alternatives. 
-     *  - (1) search desendants here , or 
-     *  - (2) search descendants on the persmisions.owner lense.  
+  async changeOwner(ref: string, newOwnerId: string): Promise<void> {
+    /** TODO: there were two alternatives.
+     *  - (1) search desendants here , or
+     *  - (2) search descendants on the persmisions.owner lense.
      * (1) seems correct as it seems correct that the authority decides the logic for permissions "inheritance", like is the case for HTTP API.
      */
 
@@ -33,13 +30,13 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
 
     const authority = await EveesHelpers.getPerspectiveAuthority(client, ref);
     if (!authority) throw new Error(`${ref} is not a perspective`);
-    
+
     /** recursively search for children owned by this owner and change also those */
     const descendants = await EveesHelpers.getDescendants(client, recognizer, ref);
-    
+
     /** filter the descendants witht he same owner and in the same authority */
-    const asyncFilter = async (arr, predicate) => Promise.all(arr.map(predicate))
-      .then((results) => arr.filter((_v, index) => results[index]));
+    const asyncFilter = async (arr, predicate) =>
+      Promise.all(arr.map(predicate)).then((results) => arr.filter((_v, index) => results[index]));
 
     const owned = await asyncFilter(descendants, async (descendantRef) => {
       let descendant = await loadEntity<any>(client, descendantRef);
@@ -50,17 +47,22 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
 
       const accessControl = await EveesHelpers.getAccessControl(client, descendantRef);
       if (!accessControl) return false;
-      
+
       let entityType: string = recognizer.recognizeType(accessControl.permissions);
 
-      if (entityType === 'OwnerPermissions' && accessControl.permissions.owner === currentAccessControl.permissions.owner) {
+      if (
+        entityType === 'OwnerPermissions' &&
+        accessControl.permissions.owner === currentAccessControl.permissions.owner
+      ) {
         const thisAuthority = await EveesHelpers.getPerspectiveAuthority(client, descendantRef);
         return thisAuthority === authority;
-      };
+      }
     });
 
     const all = [ref].concat(owned);
-    const getPerspectivesIdsHashes = all.map(async (id) => this.uprtclRoot.call(GET_PERSP_HASH, [id]));
+    const getPerspectivesIdsHashes = all.map(async (id) =>
+      this.uprtclRoot.call(GET_PERSP_HASH, [id])
+    );
     const perspectivesIdsHashes = await Promise.all(getPerspectivesIdsHashes);
 
     await this.uprtclRoot.send(UPDATE_OWNER_BATCH, [perspectivesIdsHashes, newOwnerId]);
@@ -83,6 +85,6 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
   }
 
   setPermissions(hash: string, newPersmissions: OwnerPermissions): Promise<void> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 }

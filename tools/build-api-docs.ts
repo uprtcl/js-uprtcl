@@ -1,13 +1,13 @@
-(function() {
+(function () {
   const { readFileSync, readdirSync } = require('fs');
 
-  const getDirectories = source =>
+  const getDirectories = (source) =>
     readdirSync(source, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
+      .filter((dirent) => dirent.isDirectory())
+      .map((dirent) => dirent.name);
 
-  getDirectories('./packages').forEach(s => generateDocs('packages', s));
-  getDirectories('./modules').forEach(s => generateDocs('modules', s));
+  getDirectories('./packages').forEach((s) => generateDocs('packages', s));
+  getDirectories('./modules').forEach((s) => generateDocs('modules', s));
 })();
 
 function generateDocs(prefix: string, name: string) {

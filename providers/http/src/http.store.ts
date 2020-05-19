@@ -14,7 +14,7 @@ export class HttpStore extends HttpProvider implements CASStore {
     super(
       {
         host: host,
-        apiId: store_api
+        apiId: store_api,
       },
       connection
     );
@@ -31,7 +31,7 @@ export class HttpStore extends HttpProvider implements CASStore {
   async create(object: object, hash?: string): Promise<string> {
     const result = await super.httpPost(`/data`, {
       id: '',
-      object: object
+      object: object,
     });
     return result.elementIds[0];
   }

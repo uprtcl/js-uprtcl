@@ -31,20 +31,20 @@ export function parseEntryResult<T extends object>(entry: any): EntryResult<T> |
   return {
     entry: {
       id: entry.result.Single.meta.address,
-      object: parseEntry<T>(entry.result.Single.entry)
+      object: parseEntry<T>(entry.result.Single.entry),
     },
-    type: entry.result.Single.meta.entry_type.App
+    type: entry.result.Single.meta.entry_type.App,
   };
 }
 
 export function parseEntries<T extends object>(entryArray: Array<any>): Array<T> {
-  return entryArray.map(entry => parseEntry(entry));
+  return entryArray.map((entry) => parseEntry(entry));
 }
 
 export function parseEntriesResults<T extends object>(
   entryArray: Array<any>
 ): Array<EntryResult<T>> {
   return entryArray
-    .map(entry => parseEntryResult<T>(parseResponse(entry)))
-    .filter(entry => entry != undefined) as Array<EntryResult<T>>;
+    .map((entry) => parseEntryResult<T>(parseResponse(entry)))
+    .filter((entry) => entry != undefined) as Array<EntryResult<T>>;
 }

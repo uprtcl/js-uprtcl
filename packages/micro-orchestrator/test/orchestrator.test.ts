@@ -16,14 +16,11 @@ describe('load a mock module', () => {
 
   it('load an element which requests a dependency', async () => {
     const el: HTMLElement = await fixture(
-      html`
-        <module-container><mock-element></mock-element></module-container>
-      `
+      html` <module-container><mock-element></mock-element></module-container> `
     );
 
     const span = el.firstElementChild as HTMLElement;
 
     expect(span).shadowDom.to.equal('<span>5</span>');
   });
-
 });

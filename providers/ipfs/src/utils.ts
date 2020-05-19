@@ -1,4 +1,3 @@
-
 export function sortObject(object: object): object {
   if (typeof object !== 'object' || object instanceof Array) {
     // Not to sort the array

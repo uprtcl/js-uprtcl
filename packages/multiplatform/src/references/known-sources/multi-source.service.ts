@@ -30,7 +30,8 @@ export class MultiSourceService {
     public client: ApolloClient<any>,
     @multiInject(CASBindings.CASSource)
     sources: Array<CASSource>,
-    @multiInject(DiscoveryBindings.DefaultSource) @optional()
+    @multiInject(DiscoveryBindings.DefaultSource)
+    @optional()
     protected defaultSources: Array<string> | undefined
   ) {
     // Build the sources dictionary from the resulting names
@@ -44,7 +45,7 @@ export class MultiSourceService {
    * @override
    */
   public async ready(): Promise<void> {
-    const promises = Object.keys(this.services).map(serviceName =>
+    const promises = Object.keys(this.services).map((serviceName) =>
       this.services[serviceName].ready()
     );
     await Promise.all(promises);
@@ -61,7 +62,7 @@ export class MultiSourceService {
    * @returns gets all the services
    */
   public getAllCASSources(): CASSource[] {
-    return Object.keys(this.services).map(casID => this.services[casID]);
+    return Object.keys(this.services).map((casID) => this.services[casID]);
   }
 
   /**
@@ -124,13 +125,13 @@ export class MultiSourceService {
             }
           }
         }
-        `
+        `,
         });
 
         const linksResult = result.data.entity._context.patterns.links;
         if (linksResult) {
           // Discover the known sources from the links
-          const linksPromises = linksResult.map(link =>
+          const linksPromises = linksResult.map((link) =>
             discoverKnownSources(this.localKnownSources)(
               link.id,
               link.__typename,
@@ -151,7 +152,7 @@ export class MultiSourceService {
     return {
       id: hash,
       object,
-      casID
+      casID,
     };
   }
 
@@ -170,7 +171,6 @@ export class MultiSourceService {
       // Get first resolved object
       return await raceToSuccess<Entity<O>>(promises);
     } catch (e) {
-      
       // All sources failed, return undefined
       return undefined;
     }
@@ -201,12 +201,11 @@ export class MultiSourceService {
       const allCids = this.getAllCASIds();
       let remainingCids = allCids;
       if (this.defaultSources) {
-
         const defaultSources = this.defaultSources;
         const object = await this.tryGetFromSources<O>(hash, defaultSources);
-        
+
         if (object) return object;
-        remainingCids = remainingCids.filter(casID => !defaultSources.includes(casID));
+        remainingCids = remainingCids.filter((casID) => !defaultSources.includes(casID));
       }
 
       const finalObject = await this.tryGetFromSources<O>(hash, remainingCids);
@@ -228,7 +227,7 @@ export class MultiSourceService {
     const knownSourcesService = source.knownSources;
     if (!knownSourcesService) return;
 
-    const promises = links.map(async link => {
+    const promises = links.map(async (link) => {
       // We asume that we have stored the local known sources for the links from the object
       const knownSources = await this.localKnownSources.getKnownSources(link);
 
@@ -258,10 +257,10 @@ export class MultiSourceService {
     const patterns: Pattern<any>[] = this.recognizer.recognize(entity);
 
     const hasLinks: HasLinks[] = (patterns.filter(
-      p => ((p as unknown) as HasLinks).links
+      (p) => ((p as unknown) as HasLinks).links
     ) as unknown) as HasLinks[];
 
-    const promises = hasLinks.map(l => l.links(entity));
+    const promises = hasLinks.map((l) => l.links(entity));
 
     const linksArray = await Promise.all(promises);
 

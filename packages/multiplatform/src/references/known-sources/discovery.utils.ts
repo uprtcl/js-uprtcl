@@ -16,12 +16,12 @@ export const linksFromEntity = (recognizer: PatternRecognizer) => async <O exten
   const patterns: Pattern<Entity<O>>[] = recognizer.recognize(entity);
 
   const hasLinks = patterns.map(
-    p => p.behaviours.filter(b => (b as HasLinks<Entity<O>>).links) as HasLinks<Entity<O>>[]
+    (p) => p.behaviours.filter((b) => (b as HasLinks<Entity<O>>).links) as HasLinks<Entity<O>>[]
   );
 
   const promises = ([] as HasLinks<Entity<O>>[])
     .concat(...hasLinks)
-    .map(async has => has.links(entity));
+    .map(async (has) => has.links(entity));
 
   const links: string[][] = await Promise.all(promises);
 
@@ -70,8 +70,8 @@ export function raceToSuccess<O>(promises: Array<Promise<O>>): Promise<O> {
   let errors: Error[] = [];
 
   return new Promise((resolve, reject) =>
-    promises.forEach(promise =>
-      promise.then(resolve).catch(e => {
+    promises.forEach((promise) =>
+      promise.then(resolve).catch((e) => {
         errors.push(e);
         if (++numRejected === promises.length) reject(errors);
       })

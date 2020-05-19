@@ -2,7 +2,6 @@ import { EveesDB } from './evees.db';
 import { EveesDrafts } from '../../evees.drafts';
 
 export class EveesDraftsLocal implements EveesDrafts {
-
   eveesDB = new EveesDB();
 
   removeDraft(objectId: string): Promise<void> {

@@ -2,7 +2,6 @@ import { LitElement, html, css, property } from 'lit-element';
 import '@authentic/mwc-circular-progress';
 
 export class CortexLoadingPlaceholder extends LitElement {
-
   @property({ type: Number })
   size: number = 28;
 

@@ -10,7 +10,7 @@ import { LensesModule } from '../src/lenses.module';
 import { MockModule } from './mocks/mock.module';
 
 const object1 = {
-  test: 'testing'
+  test: 'testing',
 };
 
 describe('<cortex-entity>', () => {
@@ -24,7 +24,7 @@ describe('<cortex-entity>', () => {
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
-      new MockModule({ QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo: object1 })
+      new MockModule({ QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo: object1 }),
     ]);
   });
 
@@ -51,7 +51,11 @@ describe('<cortex-entity>', () => {
 
     await waitUntil(
       async () =>
-        !!(cortexEntity && cortexEntity.shadowRoot && !cortexEntity.shadowRoot.querySelector('cortex-loading-placeholder')),
+        !!(
+          cortexEntity &&
+          cortexEntity.shadowRoot &&
+          !cortexEntity.shadowRoot.querySelector('cortex-loading-placeholder')
+        ),
       'Never stopped loading'
     );
 

@@ -13,7 +13,7 @@ describe('<uprtcl-common>', () => {
   }); */
 
   it('graphql loads an entity given its id', async () => {
-   /*  const client: ApolloClient<any> = orchestrator.container.get(
+    /*  const client: ApolloClient<any> = orchestrator.container.get(
       ApolloClientModule.bindings.Client
     );
     expect(client).to.be.ok; */

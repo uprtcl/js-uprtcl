@@ -13,7 +13,6 @@ export class KnownSourcesApollo implements KnownSourcesService {
 
   async getKnownSources(hash: string): Promise<string[] | undefined> {
     try {
-      
       const data = this.client.cache['data'].data;
       const cachedObject = data[`$${hash}._context`];
 
@@ -32,9 +31,9 @@ export class KnownSourcesApollo implements KnownSourcesService {
         __typename: typename,
         _context: {
           __typename: 'EntityContext',
-          casID: sources[0]
-        }
-      }
+          casID: sources[0],
+        },
+      },
     };
 
     this.client.writeQuery({
@@ -48,7 +47,7 @@ export class KnownSourcesApollo implements KnownSourcesService {
           }
         }
       }`,
-      data: entity
+      data: entity,
     });
   }
 

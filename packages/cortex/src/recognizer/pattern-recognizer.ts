@@ -18,8 +18,8 @@ export class PatternRecognizer {
     }
 
     const recognizedPatterns = this.patterns
-      .filter(pattern => pattern.recognize(object))
-      .map(p => ({ ...p }));
+      .filter((pattern) => pattern.recognize(object))
+      .map((p) => ({ ...p }));
 
     return recognizedPatterns as Pattern<T>[];
   }
@@ -32,7 +32,7 @@ export class PatternRecognizer {
   public recognizeBehaviours<T>(object: T): Behaviour<T>[] {
     const patterns: Pattern<T>[] = this.recognize(object);
 
-    const behaviours = patterns.map(p => p.behaviours);
+    const behaviours = patterns.map((p) => p.behaviours);
     return ([] as Behaviour<T>[]).concat(...behaviours);
   }
 
@@ -42,9 +42,9 @@ export class PatternRecognizer {
    * @param type type of the pattern of which to return the behaviours
    */
   public getTypeBehaviours<T>(type: string): Behaviour<T>[] {
-    const patterns =  this.patterns.filter(pattern => pattern.type === type);
+    const patterns = this.patterns.filter((pattern) => pattern.type === type);
 
-    const behaviours = patterns.map(p => p.behaviours);
+    const behaviours = patterns.map((p) => p.behaviours);
     return ([] as Behaviour<T>[]).concat(...behaviours);
   }
 
@@ -58,13 +58,13 @@ export class PatternRecognizer {
   public recognizeType<T>(entity: Entity<T>): string {
     const patterns: Pattern<Entity<T>>[] = this.recognize(entity);
 
-    const types: string[] = patterns.map(p => p.type).filter(t => !!t) as string[];
+    const types: string[] = patterns.map((p) => p.type).filter((t) => !!t) as string[];
 
     if (types.length === 0) {
       throw new Error(`No entity found to recognize object ${JSON.stringify(entity)}`);
     }
 
-    const abmiguousError = types.length > 1 && !types.every(t => types[0]);
+    const abmiguousError = types.length > 1 && !types.every((t) => types[0]);
 
     if (abmiguousError) {
       throw new Error(
