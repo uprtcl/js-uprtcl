@@ -83,12 +83,16 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return html`
       ${!this.loading
         ? html`
-            <div class="app-mock">
-              <wiki-drawer
-                ref=${this.rootHash}
-                default-authority=${this.defaultAuthority}
-                .editableAuthorities=${[this.defaultAuthority]}
-              ></wiki-drawer>
+            <div class="app-header">HEADER</div>
+            <div class="app-content">
+              <div class="app-bar">BAR</div>
+              <div class="wiki-container">
+                <wiki-drawer
+                  ref=${this.rootHash}
+                  default-authority=${this.defaultAuthority}
+                  .editableAuthorities=${[this.defaultAuthority]}
+                ></wiki-drawer>
+              </div>
             </div>
           `
         : html`
@@ -99,13 +103,33 @@ export class SimpleWiki extends moduleConnect(LitElement) {
 
   static get styles() {
     return css`
-      .app-mock {
+      :host {
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+      }
+      .app-header {
+        width: 100%;
+        height: 50px;
+        flex-shrink: 0;
+        background-color: #cecb9e;
+      }
+      .app-content {
         overflow: auto;
-        padding: 0;
-        width: 800px;
-        margin: 100px auto;
-        height: calc(500px);
-        /* background-color: #bdc6e0; */
+        flex-grow: 1;
+        display: flex;
+        flex-direction: row;
+      }
+      .app-bar {
+        width: 300px;
+        flex-grow: 0;
+        flex-shrink: 0;
+        background-color: #ceb19e;
+      }
+      .wiki-container {
+        flex-grow: 1;
+        background-color: #c2cfd4;
       }
     `;
   }
