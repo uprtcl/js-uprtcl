@@ -487,8 +487,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return html`
       <mwc-drawer
         @MDCDrawer:closed=${() => (this.isDrawerOpened = false)}
-        type="modal"
-        ?open="${true}"
+        type="${this.drawerType}"
+        ?open="${this.isDrawerOpened}"
       >
         ${this.renderColorBar()}
         <section>
