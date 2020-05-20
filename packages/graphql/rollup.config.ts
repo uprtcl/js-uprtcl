@@ -29,5 +29,4 @@ export default {
 
     sourceMaps(),
   ],
-  preserveSymlinks: false,
 };

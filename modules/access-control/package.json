@@ -11,7 +11,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@material/mwc-button": "^0.14.1",
+    "@material/mwc-button": "^0.15.0",
     "@material/mwc-dialog": "^0.14.1",
     "@material/mwc-textfield": "^0.14.1",
     "@uprtcl/cortex": "^0.0.7-alpha.18",
@@ -22,7 +22,7 @@
     "apollo-boost": "^0.4.7",
     "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
-    "lit-element": "^2.2.1",
+    "lit-element": "^2.3.0",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
