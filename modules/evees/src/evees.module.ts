@@ -32,6 +32,7 @@ import { EveesDialog } from './elements/common-ui/evees-dialog';
 import { EveesPopper } from './elements/common-ui/evees-popper';
 import { EveesHelp } from './elements/common-ui/evees-help';
 import { EveesLoadingButton } from './elements/common-ui/evees-loading-button';
+import { EveesAuthor } from './elements/evees-author';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -87,13 +88,21 @@ export class EveesModule extends MicroModule {
 
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.bindings.Evees).to(Evees);
-    container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
-    container.bind(EveesModule.bindings.DefaultRemote).toConstantValue(this.defaultRemote);
-    container.bind(EveesModule.bindings.RemoteMap).toConstantValue(this.remoteMap);
+    container
+      .bind(EveesModule.bindings.MergeStrategy)
+      .to(RecursiveContextMergeStrategy);
+    container
+      .bind(EveesModule.bindings.DefaultRemote)
+      .toConstantValue(this.defaultRemote);
+    container
+      .bind(EveesModule.bindings.RemoteMap)
+      .toConstantValue(this.remoteMap);
 
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
-      container.bind(AccessControlModule.bindings.Authority).toConstantValue(remote);
+      container
+        .bind(AccessControlModule.bindings.Authority)
+        .toConstantValue(remote);
     }
 
     customElements.define('evees-commit-history', CommitHistory);
@@ -107,6 +116,7 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-dialog', EveesDialog);
     customElements.define('evees-help', EveesHelp);
     customElements.define('evees-loading-button', EveesLoadingButton);
+    customElements.define('evees-author', EveesAuthor);
   }
 
   get submodules() {
