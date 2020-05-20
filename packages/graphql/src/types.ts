@@ -1,6 +1,6 @@
 import { GraphQLSchema } from 'graphql';
 import { SchemaDirectiveVisitor } from 'graphql-tools';
-import { VisitableSchemaType } from 'graphql-tools/dist/schemaVisitor';
+import { VisitableSchemaType } from 'graphql-tools';
 
 export abstract class NamedDirective extends SchemaDirectiveVisitor {
   constructor(config: {
