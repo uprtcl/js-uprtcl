@@ -1,9 +1,6 @@
 import { property, html, css, LitElement } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-// import { styleMap } from 'lit-html/directives/style-map';
-// https://github.com/Polymer/lit-html/issues/729
-
-export const styleMap = (style) => {
+const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(
       /([A-Z])/g,

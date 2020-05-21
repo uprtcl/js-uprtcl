@@ -1,5 +1,8 @@
 import { html, css, property } from 'lit-element';
-export const styleMap = (style) => {
+import { EveesInfoBase } from './evee-info-base';
+import { DEFAULT_COLOR } from './support';
+
+const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(
       /([A-Z])/g,
@@ -8,9 +11,6 @@ export const styleMap = (style) => {
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
-
-import { EveesInfoBase } from './evee-info-base';
-import { DEFAULT_COLOR } from './support';
 
 export class EveesInfoPopper extends EveesInfoBase {
   @property({ attribute: false })

@@ -53,10 +53,17 @@ export class EveesDiff extends moduleConnect(LitElement) {
     this.loading = true;
 
     const getDetails = this.workspace.getUpdates().map(async (update) => {
-      const newData = await EveesHelpers.getCommitData(this.workspace.workspace, update.newHeadId);
+      const newData = await EveesHelpers.getCommitData(
+        this.workspace.workspace,
+        update.newHeadId
+      );
 
-      if (update.oldHeadId === undefined) throw new Error('old commit not specified');
-      const oldData = await EveesHelpers.getCommitData(this.workspace.workspace, update.oldHeadId);
+      if (update.oldHeadId === undefined)
+        throw new Error('old commit not specified');
+      const oldData = await EveesHelpers.getCommitData(
+        this.workspace.workspace,
+        update.oldHeadId
+      );
 
       const hasDiffLenses = this.recognizer
         .recognizeBehaviours(oldData)
@@ -80,7 +87,11 @@ export class EveesDiff extends moduleConnect(LitElement) {
     // TODO: review if old data needs to be
     return html`
       <div class="evee-diff">
-        ${details.diffLense.render(this.workspace, details.newData, details.oldData)}
+        ${details.diffLense.render(
+          this.workspace,
+          details.newData,
+          details.oldData
+        )}
       </div>
     `;
   }
@@ -103,6 +114,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
       :host {
         display: block;
         padding: 30px 20px 30px 0px;
+        text-align: center;
       }
     `;
   }

@@ -1,16 +1,27 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 import * as Box from '3box';
-import * as ENS from 'ethereum-ens';
+// import * as ENS from 'ethereum-ens';
 import { blockies } from './blockies.js';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { styleMap } from './evees-info-popper.js';
+const styleMap = (style) => {
+  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
+    propName = propName.replace(
+      /([A-Z])/g,
+      (matches) => `-${matches[0].toLowerCase()}`
+    );
+    return `${styleString}${propName}:${propValue};`;
+  }, '');
+};
 
 export class EveesAuthor extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-AUTHOR');
 
   @property({ type: String, attribute: 'user-id' })
   userId!: string;
+
+  @property({ type: String, attribute: 'show-name' })
+  showName: String = 'true';
 
   @property({ type: String })
   color!: string;
@@ -39,6 +50,7 @@ export class EveesAuthor extends moduleConnect(LitElement) {
 
   async load() {
     this.image = undefined;
+    this.profile = {};
     this.profile.userId = this.userId;
 
     /** wait so that the canvas blockie is alraedy rendered */
@@ -100,9 +112,11 @@ export class EveesAuthor extends moduleConnect(LitElement) {
           }
         </div>
 
-        <div class="boxShortAddress">
-          ${this.profile.name ? this.profile.name : this.profile.userId}
-        </div>
+        ${this.showName == 'true'
+          ? html`<div class="boxShortAddress">
+              ${this.profile.name ? this.profile.name : this.profile.userId}
+            </div>`
+          : ''}
       </div>
     `;
   }

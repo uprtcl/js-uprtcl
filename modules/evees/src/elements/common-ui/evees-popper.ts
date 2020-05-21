@@ -12,7 +12,9 @@ export class EveesPopper extends LitElement {
 
   firstUpdated() {
     document.addEventListener('click', (event) => {
-      const ix = event.composedPath().findIndex((el: any) => el.id === 'popper-menu');
+      const ix = event
+        .composedPath()
+        .findIndex((el: any) => el.id === 'popper-menu');
       if (ix === -1) {
         this.showDropdown = false;
       }
@@ -31,7 +33,11 @@ export class EveesPopper extends LitElement {
 
   render() {
     return html`
-      <mwc-icon-button @click=${this.showDropDownClicked} icon=${this.icon}></mwc-icon-button>
+      <div @click=${this.showDropDownClicked}>
+        <slot name="icon">
+          <mwc-icon-button icon=${this.icon}></mwc-icon-button>
+        </slot>
+      </div>
       ${this.showDropdown
         ? html` <mwc-card id="popper-menu" class="info-box">
             <slot></slot>

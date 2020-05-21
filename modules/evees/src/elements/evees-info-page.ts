@@ -1,5 +1,5 @@
 import { html, css, property, query } from 'lit-element';
-export const styleMap = (style) => {
+const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(
       /([A-Z])/g,
@@ -54,6 +54,7 @@ export class EveesInfoPage extends EveesInfoBase {
     }
 
     return html` <evees-author
+      color=${this.eveeColor}
       user-id=${this.perspectiveData.perspective.creatorId}
     ></evees-author>`;
   }
@@ -90,6 +91,10 @@ export class EveesInfoPage extends EveesInfoBase {
 
       case 'login':
         this.login();
+        break;
+
+      case 'edit-profile':
+        window.open(`https://3box.io/${this.defaultRemote.userId}`);
         break;
 
       case 'edit':
@@ -201,6 +206,11 @@ export class EveesInfoPage extends EveesInfoBase {
         graphic: 'exit_to_app',
         text: 'logout',
       };
+      contextConfig['edit-profile'] = {
+        disabled: false,
+        graphic: 'account_box',
+        text: 'edit profile',
+      };
     } else {
       contextConfig['login'] = {
         disabled: false,
@@ -223,6 +233,14 @@ export class EveesInfoPage extends EveesInfoBase {
           .config=${contextConfig}
           @option-click=${this.optionClicked}
         >
+          ${this.defaultRemote.userId !== undefined
+            ? html` <div slot="icon" class="user-icon">
+                <evees-author
+                  user-id=${this.defaultRemote.userId}
+                  show-name="false"
+                ></evees-author>
+              </div>`
+            : ''}
         </evees-options-menu>
       </div>
     `;
@@ -293,7 +311,7 @@ export class EveesInfoPage extends EveesInfoBase {
                 </div>
               </div>`
             : ''}
-          ${false
+          ${this.firstPerspectiveId === this.perspectiveId
             ? html`
                 <div class="section">
                   <div class="section-header">
@@ -312,7 +330,7 @@ export class EveesInfoPage extends EveesInfoBase {
                   </div>
                 </div>
 
-                <div class="section">
+                <!-- <div class="section">
                   <div class="section-header">
                     Delete
                   </div>
@@ -324,7 +342,7 @@ export class EveesInfoPage extends EveesInfoBase {
                       label="Delete"
                     ></mwc-button>
                   </div>
-                </div>
+                </div> -->
               `
             : ''}
 
@@ -367,6 +385,12 @@ export class EveesInfoPage extends EveesInfoBase {
           border-radius: 4px;
           background-color: rgb(255, 255, 255, 0.6);
           position: relative;
+        }
+        .user-icon {
+          padding-top: 8px;
+          width: 48px;
+          height: 48px;
+          cursor: pointer;
         }
         .section-content {
           padding-top: 3vw;

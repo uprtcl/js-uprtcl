@@ -1,12 +1,4 @@
 import { LitElement, property, html, css, query } from 'lit-element';
-// import { styleMap } from 'lit-html/directives/style-map';
-// https://github.com/Polymer/lit-html/issues/729
-export const styleMap = (style) => {
-  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
-    return `${styleString}${propName}:${propValue};`;
-  }, '');
-};
 
 import { ApolloClient, gql } from 'apollo-boost';
 
@@ -16,11 +8,25 @@ import '@material/mwc-tab-bar';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { AccessControlService, OwnerPermissions, SET_PUBLIC_READ } from '@uprtcl/access-control';
+import {
+  AccessControlService,
+  OwnerPermissions,
+  SET_PUBLIC_READ,
+} from '@uprtcl/access-control';
 import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
-import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
+import {
+  DiscoveryModule,
+  EntityCache,
+  loadEntity,
+} from '@uprtcl/multiplatform';
 
-import { RemoteMap, ProposalCreatedEvent, Perspective, PerspectiveDetails, Commit } from '../types';
+import {
+  RemoteMap,
+  ProposalCreatedEvent,
+  Perspective,
+  PerspectiveDetails,
+  Commit,
+} from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesModule } from '../evees.module';
 import {
@@ -126,7 +132,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (this.defaultAuthority !== undefined) {
       this.defaultRemote = (this.requestAll(
         EveesModule.bindings.EveesRemote
-      ) as EveesRemote[]).find((remote) => remote.authority === this.defaultAuthority);
+      ) as EveesRemote[]).find(
+        (remote) => remote.authority === this.defaultAuthority
+      );
     }
 
     this.load();
@@ -182,7 +190,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const accessControl = result.data.entity._context.patterns.accessControl;
     const data = await loadEntity(this.client, result.data.entity.head.data.id);
-    const head = (await loadEntity(this.client, result.data.entity.head.id)) as Entity<Commit>;
+    const head = (await loadEntity(
+      this.client,
+      result.data.entity.head.id
+    )) as Entity<Commit>;
 
     if (!data) throw new Error('data undefined');
     if (!head) throw new Error('head undefined');
@@ -208,7 +219,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.logger.info('load', { perspectiveData: this.perspectiveData });
     this.isLogged =
-      this.defaultRemote !== undefined ? this.defaultRemote.userId !== undefined : false;
+      this.defaultRemote !== undefined
+        ? this.defaultRemote.userId !== undefined
+        : false;
 
     this.reload();
     this.loading = false;
@@ -217,12 +230,17 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async checkPull() {
-    if (this.perspectiveId === this.firstPerspectiveId || !this.perspectiveData.canWrite) {
+    if (
+      this.perspectiveId === this.firstPerspectiveId ||
+      !this.perspectiveData.canWrite
+    ) {
       this.firstHasChanges = false;
       return;
     }
 
-    const remote = await this.evees.getPerspectiveProviderById(this.perspectiveId);
+    const remote = await this.evees.getPerspectiveProviderById(
+      this.perspectiveId
+    );
 
     const config = {
       forceOwner: true,
@@ -266,7 +284,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async login() {
-    if (this.defaultRemote === undefined) throw new Error('default remote undefined');
+    if (this.defaultRemote === undefined)
+      throw new Error('default remote undefined');
     this.loggingIn = true;
     await this.defaultRemote.login();
 
@@ -277,7 +296,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async logout() {
-    if (this.defaultRemote === undefined) throw new Error('default remote undefined');
+    if (this.defaultRemote === undefined)
+      throw new Error('default remote undefined');
     await this.defaultRemote.logout();
 
     await this.client.resetStore();
@@ -312,7 +332,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
 
-    const accessControl = remote.accessControl as AccessControlService<OwnerPermissions>;
+    const accessControl = remote.accessControl as AccessControlService<
+      OwnerPermissions
+    >;
     const permissions = await accessControl.getPermissions(toPerspectiveId);
 
     if (permissions === undefined)
@@ -347,8 +369,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       return;
     }
 
-    const toHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, toPerspectiveId);
-    const fromHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, fromPerspectiveId);
+    const toHeadId = await EveesHelpers.getPerspectiveHeadId(
+      this.client,
+      toPerspectiveId
+    );
+    const fromHeadId = await EveesHelpers.getPerspectiveHeadId(
+      this.client,
+      fromPerspectiveId
+    );
 
     if (isProposal) {
       await this.createMergeProposal(
@@ -394,10 +422,16 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
-    const authority = await EveesHelpers.getPerspectiveAuthority(this.client, toPerspectiveId);
+    const authority = await EveesHelpers.getPerspectiveAuthority(
+      this.client,
+      toPerspectiveId
+    );
 
     const not = await workspace.isSingleAuthority(authority);
-    if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
+    if (!not)
+      throw new Error(
+        'cant create merge proposals on multiple authorities yet'
+      );
 
     /** create commits and data */
     await workspace.executeCreate(this.client);
@@ -504,7 +538,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.checkoutPerspective(newPerspectiveId);
 
-    this.logger.info('newPerspectiveClicked() - perspective created', { id: newPerspectiveId });
+    this.logger.info('newPerspectiveClicked() - perspective created', {
+      id: newPerspectiveId,
+    });
     this.creatingNewPerspective = false;
   }
 
@@ -522,7 +558,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async proposeMergeClicked() {
     this.proposingUpdate = true;
-    await this.otherPerspectiveMerge(this.perspectiveId, this.firstPerspectiveId, true);
+    await this.otherPerspectiveMerge(
+      this.perspectiveId,
+      this.firstPerspectiveId,
+      true
+    );
     this.proposingUpdate = false;
   }
 
@@ -557,7 +597,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.updatesDialogEl.primaryText = primaryText;
     this.updatesDialogEl.secondaryText = secondaryText;
-    this.updatesDialogEl.showSecondary = secondaryText !== undefined ? 'true' : 'false';
+    this.updatesDialogEl.showSecondary =
+      secondaryText !== undefined ? 'true' : 'false';
 
     this.eveesDiffEl.workspace = workspace;
 
@@ -592,19 +633,27 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
                 </tr>
                 <tr>
                   <td class="prop-name">context:</td>
-                  <td class="prop-value">${this.perspectiveData.details.context}</td>
+                  <td class="prop-value">
+                    ${this.perspectiveData.details.context}
+                  </td>
                 </tr>
                 <tr>
                   <td class="prop-name">authority:</td>
-                  <td class="prop-value">${this.perspectiveData.perspective.authority}</td>
+                  <td class="prop-value">
+                    ${this.perspectiveData.perspective.authority}
+                  </td>
                 </tr>
                 <tr>
                   <td class="prop-name">head:</td>
-                  <td class="prop-value">${JSON.stringify(this.perspectiveData.head)}</td>
+                  <td class="prop-value">
+                    ${JSON.stringify(this.perspectiveData.head)}
+                  </td>
                 </tr>
                 <tr>
                   <td class="prop-name">data:</td>
-                  <td class="prop-value">${JSON.stringify(this.perspectiveData.data)}</td>
+                  <td class="prop-value">
+                    ${JSON.stringify(this.perspectiveData.data)}
+                  </td>
                 </tr>
               </table>
             </div>

@@ -228,6 +228,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     return html`
       <mwc-list-item
         hasMeta
+        ?selected=${this.perspectiveId === perspectiveData.id}
+        ?activated=${this.perspectiveId === perspectiveData.id}
         @click=${() => this.perspectiveClicked(perspectiveData.id)}
       >
         <evees-author
@@ -259,7 +261,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             )}
           </mwc-list>
         `
-      : html`<div class="empty"><i>No drafts found</i></div>`;
+      : html`<div class="empty"><i>No other perspectives found</i></div>`;
   }
 
   static get styles() {

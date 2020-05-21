@@ -39,6 +39,9 @@ export class EveesOptionsMenu extends LitElement {
 
   render() {
     return html` <evees-popper id="popper" icon=${this.icon}>
+      <slot name="icon" slot="icon"
+        ><mwc-icon-button icon=${this.icon}></mwc-icon-button
+      ></slot>
       <mwc-list>
         ${Object.keys(this.config).map((itemKey) => {
           const item = this.config[itemKey];
@@ -47,7 +50,10 @@ export class EveesOptionsMenu extends LitElement {
                 <span>${item.text}</span>
                 <mwc-icon slot="graphic">${item.graphic}</mwc-icon>
               </mwc-list-item>`
-            : html` <mwc-list-item graphic="icon" @click=${(e) => this.optionClicked(itemKey, e)}>
+            : html` <mwc-list-item
+                graphic="icon"
+                @click=${(e) => this.optionClicked(itemKey, e)}
+              >
                 <span>${item.text}</span>
                 <mwc-icon slot="graphic">${item.graphic}</mwc-icon>
               </mwc-list-item>`;

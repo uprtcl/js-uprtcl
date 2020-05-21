@@ -2,9 +2,12 @@ import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
-export const styleMap = (style) => {
+const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
+    propName = propName.replace(
+      /([A-Z])/g,
+      (matches) => `-${matches[0].toLowerCase()}`
+    );
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -39,10 +42,15 @@ export class WikiPage extends moduleConnect(LitElement) {
     super.connectedCallback();
 
     this.addEventListener(CONTENT_UPDATED_TAG, ((e: ContentUpdatedEvent) => {
-      this.logger.info('CATCHED EVENT: content-updated ', { pageHash: this.pageHash, e });
+      this.logger.info('CATCHED EVENT: content-updated ', {
+        pageHash: this.pageHash,
+        e,
+      });
       e.stopPropagation();
       this.dispatchEvent(
-        new CustomEvent('page-title-changed', { detail: { pageId: e.detail.ref } })
+        new CustomEvent('page-title-changed', {
+          detail: { pageId: e.detail.ref },
+        })
       );
     }) as EventListener);
   }
@@ -78,11 +86,15 @@ export class WikiPage extends moduleConnect(LitElement) {
   }
 
   render() {
-    if (!this.textNode) return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+    if (!this.textNode)
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`
       <div class="top-row">
-        <mwc-icon-button icon="arrow_back_ios" @click=${this.back}></mwc-icon-button>
+        <mwc-icon-button
+          icon="arrow_back_ios"
+          @click=${this.back}
+        ></mwc-icon-button>
       </div>
 
       <div class="page-content">
