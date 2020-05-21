@@ -1,5 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 import * as Box from '3box';
+import * as ENS from 'ethereum-ens';
 import { blockies } from './blockies.js';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
@@ -62,6 +63,18 @@ export class EveesAuthor extends moduleConnect(LitElement) {
       : undefined;
 
     this.requestUpdate();
+
+    // let provider = window['ethereum'];
+    // await provider.enable();
+    // const ensApi = new ENS(provider);
+
+    // try {
+    //   this.logger.log('ens', ens);
+    //   const add = await ensApi.resolver(ens).addr();
+    //   this.logger.log('add', add);
+    // } catch (e) {
+    //   this.logger.warn('error connecting to ensApi');
+    // }
   }
 
   clicked() {

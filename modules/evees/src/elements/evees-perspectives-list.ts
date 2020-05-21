@@ -120,9 +120,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     );
 
     this.otherPerspectivesData = this.perspectivesData.filter(
-      (perspectiveData) =>
-        perspectiveData.id !== this.firstPerspectiveId &&
-        perspectiveData.id !== this.perspectiveId
+      (perspectiveData) => perspectiveData.id !== this.firstPerspectiveId
     );
 
     this.loadingPerspectives = false;

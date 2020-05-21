@@ -40,6 +40,7 @@
     "cids": "^0.7.2",
     "dexie": "^2.0.4",
     "diff-match-patch-ts": "^0.2.0",
+    "ethereum-ens": "^0.8.0",
     "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
     "lit-element": "^2.2.1",
