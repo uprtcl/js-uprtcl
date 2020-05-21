@@ -37,7 +37,10 @@ export class EveesAuthor extends moduleConnect(LitElement) {
   }
 
   async load() {
+    this.image = undefined;
     this.profile.userId = this.userId;
+
+    /** wait so that the canvas blockie is alraedy rendered */
     this.requestUpdate();
     await this.updateComplete;
 
@@ -68,8 +71,6 @@ export class EveesAuthor extends moduleConnect(LitElement) {
   }
 
   render() {
-    this.logger.log('render()', this.profile);
-
     if (this.profile.userId === undefined) return '';
 
     return html`
@@ -96,6 +97,11 @@ export class EveesAuthor extends moduleConnect(LitElement) {
   static get styles() {
     const baseTileHeight = css`28px`;
     return css`
+      :host {
+        width: fit-content;
+        display: block;
+        margin: 0 auto;
+      }
       .boxAddress {
         background: transparent;
         height: fit-content;

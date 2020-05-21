@@ -1,67 +1,41 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css, query } from 'lit-element';
 
+import { loadEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Proposal } from '../types';
-import { styleMap } from './evees-info-popper';
+
+import { Proposal, Perspective } from '../types';
 import { eveeColor } from './support';
 
-export const DEFAULT_COLOR = '#d0dae0';
-import '@material/mwc-dialog';
-import '@material/mwc-button';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDialog } from './common-ui/evees-dialog';
 import { EveesDiff } from './evees-diff';
 
-interface PerspectiveData {
-  id: string;
-  name: string;
-  authority: string;
-  creatorId: string;
-  timestamp: number;
-  publicRead: boolean;
-}
+export const DEFAULT_COLOR = '#d0dae0';
+import '@material/mwc-dialog';
+import '@material/mwc-button';
+import { Signed } from '@uprtcl/cortex';
 
-const MERGE_ACTION: string = 'Merge';
-const MERGE_PROPOSAL_ACTION: string = 'Propose';
 const PENDING_ACTION: string = 'Pending';
 const AUTHORIZE_ACTION: string = 'Authorize';
 const EXECUTE_ACTION: string = 'Execute';
 const MERGE_EXECUTED: string = 'Accepted';
-const PRIVATE_PERSPECTIVE: string = 'Private';
 
-export class PerspectivesList extends moduleConnect(LitElement) {
+export class ProposalsList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
 
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
 
-  @property({ type: String, attribute: 'first-perspective-id' })
-  firstPerspectiveId!: string;
-
-  @property({ attribute: false })
-  loadingPerspectives: boolean = true;
-
   @property({ attribute: false })
   loadingProposals: boolean = true;
-
-  perspectivesData: PerspectiveData[] = [];
-
-  @property({ attribute: false })
-  acceptedPerspectiveData?: PerspectiveData;
 
   @property({ attribute: false })
   pendingProposals: Proposal[] = [];
 
   @property({ attribute: false })
-  otherPerspectivesData: PerspectiveData[] = [];
-
-  @property({ attribute: false })
   mergedProposals: Proposal[] = [];
-
-  @property({ attribute: false })
-  canWrite: Boolean = false;
 
   @property({ attribute: false })
   showDiff: Boolean = false;
@@ -82,131 +56,15 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
+    this.load();
   }
 
-  load() {
-    this.loadPerspectives();
-    this.loadProposals();
-  }
-
-  perspectiveClicked(id: string) {
-    this.dispatchEvent(
-      new CustomEvent('perspective-selected', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          id,
-        },
-      })
-    );
-  }
-
-  updated(changedProperties) {
-    if (changedProperties.has('forceUpdate')) {
-      this.logger.log('updating getOtherPersepectivesData');
-      this.load();
-    }
-    if (
-      changedProperties.has('perspectiveId') ||
-      changedProperties.has('firstPerspectiveId')
-    ) {
-      this.logger.log('updating getOtherPersepectivesData');
-      this.load();
-    }
-  }
-
-  loadPerspectives = async () => {
-    this.loadingPerspectives = true;
-
-    const client: ApolloClient<any> = this.request(
-      ApolloClientModule.bindings.Client
-    );
-    const result = await client.query({
-      query: gql`{
-          entity(ref: "${this.perspectiveId}") {
-            id
-            ... on Perspective {
-              payload {
-                authority
-              }
-              context {
-                id
-                perspectives {
-                  id
-                  name
-                  payload {
-                    creatorId
-                    timestamp
-                    authority
-                  }
-                  _context {
-                    patterns {
-                      accessControl {
-                        permissions
-                      }
-                    }
-                  }
-                } 
-              }
-            }
-            _context {
-              patterns {
-                accessControl {
-                  canWrite
-                }
-              }
-            }
-          }
-        }`,
-    });
-
-    /** data on this perspective */
-    this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
-
-    /** data on other perspectives (proposals are injected on them) */
-    this.perspectivesData = result.data.entity.context.perspectives.map(
-      (perspective): PerspectiveData => {
-        const publicRead =
-          perspective._context.patterns.accessControl.permissions.publicRead !==
-          undefined
-            ? perspective._context.patterns.accessControl.permissions.publicRead
-            : true;
-
-        return {
-          id: perspective.id,
-          name: perspective.name,
-          creatorId: perspective.payload.creatorId,
-          timestamp: perspective.payload.timestamp,
-          authority: perspective.payload.authority,
-          publicRead: publicRead,
-        };
-      }
-    );
-
-    this.acceptedPerspectiveData = this.perspectivesData.find(
-      (perspectiveData) => perspectiveData.id === this.firstPerspectiveId
-    );
-
-    this.otherPerspectivesData = this.perspectivesData.filter(
-      (perspectiveData) =>
-        perspectiveData.id !== this.firstPerspectiveId &&
-        perspectiveData.id !== this.perspectiveId
-    );
-
-    this.loadingPerspectives = false;
-
-    this.logger.info('getOtherPersepectives() - post', {
-      persperspectivesData: this.perspectivesData,
-    });
-  };
-
-  async loadProposals() {
-    const client = this.client as ApolloClient<any>;
+  async load() {
     this.loadingProposals = true;
 
     this.logger.info('loadProposals');
 
-    const result = await client.query({
+    const result = await this.client.query({
       query: gql`{
           entity(ref: "${this.perspectiveId}") {
             id
@@ -239,8 +97,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         }`,
     });
 
-    const proposals = result.data.entity.proposals.map(
-      (prop): Proposal => {
+    const getProposals: Proposal[] = result.data.entity.proposals.map(
+      async (prop): Promise<Proposal> => {
         const updates = prop.updates.map((update) => {
           return {
             perspectiveId: update.toPerspective.id,
@@ -250,9 +108,17 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           };
         });
 
+        const fromPerspective = await loadEntity<Signed<Perspective>>(
+          this.client,
+          prop.fromPerspective.id
+        );
+
         return {
           id: prop.id,
           fromPerspectiveId: prop.fromPerspective.id,
+          creatorId: fromPerspective
+            ? fromPerspective.object.payload.creatorId
+            : '',
           authorized: prop.authorized,
           canAuthorize: prop.canAuthorize,
           executed: prop.executed,
@@ -260,6 +126,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         };
       }
     );
+
+    const proposals = await Promise.all(getProposals);
 
     /** data on other perspectives (proposals are injected on them) */
     this.pendingProposals = proposals.filter(
@@ -274,6 +142,17 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     this.logger.info('getProposals()', { proposals });
   }
 
+  updated(changedProperties) {
+    if (changedProperties.has('forceUpdate')) {
+      this.logger.log('updating proposals');
+      this.load();
+    }
+    if (changedProperties.has('perspectiveId')) {
+      this.logger.log('updating proposals');
+      this.load();
+    }
+  }
+
   async showProposalChanges(proposal: Proposal) {
     const workspace = new EveesWorkspace(this.client);
     if (proposal.updates) {
@@ -286,105 +165,39 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     await this.updateComplete;
 
     this.eveesDiffEl.workspace = workspace;
-    this.updatesDialogEl.primaryText = 'close';
 
-    return new Promise((resolve) => {
+    const canAuthorize = this.getProposalAction(proposal) === AUTHORIZE_ACTION;
+    if (canAuthorize) {
+      this.updatesDialogEl.primaryText = 'accept';
+      this.updatesDialogEl.secondaryText = 'close';
+      this.updatesDialogEl.showSecondary = 'true';
+    } else {
+      this.updatesDialogEl.primaryText = 'close';
+    }
+
+    const value = await new Promise((resolve) => {
       this.updatesDialogEl.resolved = (value) => {
         this.showDiff = false;
         resolve(value);
       };
     });
-  }
 
-  perspectiveColor(perspectiveId: string) {
-    if (perspectiveId === this.firstPerspectiveId) {
-      return DEFAULT_COLOR;
-    } else {
-      return eveeColor(perspectiveId);
+    if (canAuthorize && value) {
+      this.authorizeProposal(proposal);
     }
   }
 
-  proposalTitle(proposal: Proposal) {
-    const perspectiveData = this.perspectivesData.find(
-      (p) => p.id === proposal.fromPerspectiveId
+  authorizeProposal(proposal: Proposal) {
+    this.dispatchEvent(
+      new CustomEvent('authorize-proposal', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          proposalId: proposal.id,
+          perspectiveId: this.perspectiveId,
+        },
+      })
     );
-    if (perspectiveData)
-      return html` ${this.perspectiveTitle(perspectiveData)} `;
-    return '';
-  }
-
-  proposalColor(proposal: Proposal) {
-    return this.perspectiveColor(proposal.fromPerspectiveId);
-  }
-
-  perspectiveButtonClicked(perspectiveData: PerspectiveData) {
-    switch (this.getPerspectiveAction(perspectiveData)) {
-      case MERGE_ACTION:
-        this.dispatchEvent(
-          new CustomEvent('merge-perspective', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              perspectiveId: perspectiveData.id,
-            },
-          })
-        );
-        break;
-
-      case MERGE_PROPOSAL_ACTION:
-        this.dispatchEvent(
-          new CustomEvent('create-proposal', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              perspectiveId: perspectiveData.id,
-            },
-          })
-        );
-        break;
-    }
-  }
-
-  proposalButtonClicked(proposal: Proposal) {
-    switch (this.getProposalAction(proposal)) {
-      case AUTHORIZE_ACTION:
-        this.dispatchEvent(
-          new CustomEvent('authorize-proposal', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              proposalId: proposal.id,
-              perspectiveId: this.perspectiveId,
-            },
-          })
-        );
-        break;
-
-      case EXECUTE_ACTION:
-        this.dispatchEvent(
-          new CustomEvent('execute-proposal', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              proposalId: proposal.id,
-              perspectiveId: this.perspectiveId,
-            },
-          })
-        );
-        break;
-    }
-  }
-
-  getPerspectiveAction(perspectiveData: PerspectiveData) {
-    if (this.canWrite) {
-      return MERGE_ACTION;
-    } else {
-      if (perspectiveData.publicRead) {
-        return MERGE_PROPOSAL_ACTION;
-      } else {
-        return PRIVATE_PERSPECTIVE;
-      }
-    }
   }
 
   getProposalAction(proposal: Proposal): string {
@@ -403,12 +216,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     }
   }
 
-  getPerspectiveActionDisaled(perspectiveData: PerspectiveData) {
-    return [MERGE_ACTION, PRIVATE_PERSPECTIVE].includes(
-      this.getPerspectiveAction(perspectiveData)
-    );
-  }
-
   getProposalActionDisaled(proposal: Proposal) {
     return [PENDING_ACTION, MERGE_EXECUTED].includes(
       this.getProposalAction(proposal)
@@ -423,89 +230,28 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     `;
   }
 
-  renderPerspectiveRow(perspectiveData: PerspectiveData | undefined) {
-    if (perspectiveData === undefined) return html``;
-    return html`
-      <div class="list-row perspectives">
-        <div class="perspective-title">
-          <mwc-list-item
-            @click=${() => this.perspectiveClicked(perspectiveData.id)}
-          >
-            <evees-author
-              color=${this.perspectiveColor(perspectiveData.id)}
-              user-id=${perspectiveData.creatorId}
-            ></evees-author>
-          </mwc-list-item>
-        </div>
-        <div class="perspective-action">
-          <mwc-button
-            icon="call_merge"
-            class="merge-button"
-            @click=${() => this.perspectiveButtonClicked(perspectiveData)}
-            label=${this.getPerspectiveAction(perspectiveData)}
-            .disabled=${this.getPerspectiveActionDisaled(perspectiveData)}
-          ></mwc-button>
-        </div>
-      </div>
-    `;
-  }
-
   renderProposalRow(proposal: Proposal) {
     return html`
-      <div class="list-row proposals">
-        <div class="perspective-title">
-          <mwc-list-item
-            @click=${() => this.showProposalChanges(proposal)}
-            graphic="small"
-          >
-            <div
-              slot="graphic"
-              class="perspective-mark"
-              style="${styleMap({
-                backgroundColor: this.proposalColor(proposal),
-              })})"
-            ></div>
-            <div class="perspective-author">
-              ${this.proposalTitle(proposal)}
-            </div>
-          </mwc-list-item>
-        </div>
-        <div class="perspective-action">
-          <mwc-button
-            icon="call_merge"
-            class="merge-button"
-            @click=${() => this.proposalButtonClicked(proposal)}
-            label=${this.getProposalAction(proposal)}
-            .disabled=${this.getProposalActionDisaled(proposal)}
-          ></mwc-button>
-        </div>
-      </div>
-    `;
-  }
+      <mwc-list-item hasMeta @click=${() => this.showProposalChanges(proposal)}>
+        <evees-author
+          color=${eveeColor(proposal.fromPerspectiveId)}
+          user-id=${proposal.creatorId as string}
+        ></evees-author>
 
-  renderAcceptedPerspective() {
-    return this.perspectiveId !== this.firstPerspectiveId
-      ? html` ${this.renderPerspectiveRow(this.acceptedPerspectiveData)} `
-      : '';
+        ${!this.getProposalActionDisaled(proposal)
+          ? html` <mwc-icon slot="meta">
+              call_merge
+            </mwc-icon>`
+          : ''}
+      </mwc-list-item>
+    `;
   }
 
   renderProposals() {
     return this.pendingProposals.length > 0
       ? html`
-          <div class="list-section"><strong>Update Proposals</strong></div>
           ${this.pendingProposals.map((proposal) =>
             this.renderProposalRow(proposal)
-          )}
-        `
-      : '';
-  }
-
-  renderPerspectives() {
-    return this.otherPerspectivesData.length > 0
-      ? html`
-          <div class="list-section"><strong>Drafts</strong></div>
-          ${this.otherPerspectivesData.map((perspectiveData) =>
-            this.renderPerspectiveRow(perspectiveData)
           )}
         `
       : '';
@@ -543,17 +289,16 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   render() {
-    return this.loadingPerspectives || this.loadingProposals
+    return this.loadingProposals
       ? this.renderLoading()
       : html`
-          ${this.perspectivesData.length > 1
+          ${this.pendingProposals.length > 0 || this.mergedProposals.length > 0
             ? html`
                 <mwc-list activatable>
-                  ${this.renderAcceptedPerspective()} ${this.renderProposals()}
-                  ${this.renderPerspectives()} ${this.renderOldProposals()}
+                  ${this.renderProposals()} ${this.renderOldProposals()}
                 </mwc-list>
               `
-            : html` <div class="empty"><i>No drafts found</i></div> `}
+            : html`<div class="empty"><i>No proposals found</i></div>`}
           ${this.showDiff ? this.renderDiff() : ''}
         `;
   }

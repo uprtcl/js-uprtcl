@@ -10,7 +10,6 @@ export const styleMap = (style) => {
 };
 
 import { EveesInfoBase } from './evee-info-base';
-import { prettyAddress } from './support';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from './common-ui/evees-options-menu';
@@ -54,8 +53,7 @@ export class EveesInfoPage extends EveesInfoBase {
       return html`<span>Official</span>`;
     }
 
-    return html`<evees-author
-      color=${this.eveeColor}
+    return html` <evees-author
       user-id=${this.perspectiveData.perspective.creatorId}
     ></evees-author>`;
   }
@@ -125,43 +123,13 @@ export class EveesInfoPage extends EveesInfoBase {
     `;
   }
 
-  renderEditNameForm() {
-    return html`
-      <div>
-        <div class="row draft-name">
-          <mwc-textfield
-            outlined
-            id="draft-textfield"
-            value=${this.perspectiveData.details.name as string}
-            label="Draft Name"
-          >
-          </mwc-textfield>
-        </div>
-        <div class="row draft-mod-action">
-          <mwc-button
-            outlined
-            icon="clear"
-            @click=${() => (this.showEditName = false)}
-            label="Cancel"
-          ></mwc-button>
-          <mwc-button
-            outlined
-            icon="done"
-            @click=${this.saveName}
-            label="Save"
-          ></mwc-button>
-        </div>
-      </div>
-    `;
-  }
-
   renderNewPerspectiveButton() {
     return html`
       <evees-loading-button
         icon="call_split"
         @click=${this.newPerspectiveClicked}
         loading=${this.creatingNewPerspective ? 'true' : 'false'}
-        label="new draft"
+        label="new perspective"
       >
       </evees-loading-button>
     `;
@@ -214,6 +182,14 @@ export class EveesInfoPage extends EveesInfoBase {
           : this.isLogged
           ? this.renderNewPerspectiveButton()
           : this.renderLoginButton()}
+        ${this.perspectiveId !== this.firstPerspectiveId
+          ? html`<mwc-button
+              icon="home"
+              @click=${() => this.checkoutPerspective(this.firstPerspectiveId)}
+              label="see official"
+            >
+            </mwc-button>`
+          : ''}
       </div>
     `;
 
@@ -238,9 +214,9 @@ export class EveesInfoPage extends EveesInfoBase {
         <evees-help>
           <span>
             To update the "Official Version" of this Wiki you need to create a
-            new "Draft"<br /><br />
-            Once changes have been made to the draft, you can "Propose an
-            Update" to the "Official Version".
+            new "Perspective"<br /><br />
+            Once changes have been made to that perspectective, click "Propose
+            Update" to update the "Official" perspective.
           </span>
         </evees-help>
         <evees-options-menu
@@ -270,13 +246,14 @@ export class EveesInfoPage extends EveesInfoBase {
       <div class="container">
         <div class="column">
           <div class="section">
-            <div class="section-header">
+            <div class="section-header perspective-title">
               ${this.perspectiveTitle()}
             </div>
 
             <div class="section-content">
               ${this.renderPerspectiveActions()}
-              <div class="other-perspectives">
+              <div class="list-container">
+                <strong>Perspectives:</strong>
                 <evees-perspectives-list
                   force-update=${this.forceUpdate}
                   perspective-id=${this.perspectiveId}
@@ -297,69 +274,59 @@ export class EveesInfoPage extends EveesInfoBase {
                     )}
                 ></evees-perspectives-list>
               </div>
-              <!-- <div class="proposals">
-                <evees-proposals-list
-                  force-update=${this.forceUpdate}
-                  perspective-id=${this.perspectiveId}
-                  @authorize-proposal=${this.authorizeProposal}
-                  @execute-proposal=${this.executeProposal}
-                ></evees-perspectives-list>
-              </div> -->
             </div>
           </div>
 
-          <div class="section">
-            <div class="section-header">
-              Proposals
-            </div>
+          ${this.perspectiveId === this.firstPerspectiveId
+            ? html`<div class="section">
+                <div class="section-header">
+                  Proposals
+                </div>
 
-            <div class="section-content">
-              <evees-proposals-list
-                force-update=${this.forceUpdate}
-                perspective-id=${this.perspectiveId}
-                @authorize-proposal=${this.authorizeProposal}
-                @execute-proposal=${this.executeProposal}
-              ></evees-perspectives-list>
-            </div>
-          </div>
-
-          <div class="section">
-            <div class="section-header">
-              Access Control
-            </div>
-            <div class="section-content">
-              ${this.renderPermissions()}
-            </div>
-            <div class="context-menu">
-              <evees-help>
-                <span>
-                  Drafts can be made public to let others read them.<br /><br />
-                  They can only be edited by their creator.
-                </span>
-              </evees-help>
-            </div>
-          </div>
-
-          ${
-            this.perspectiveData.canWrite
-              ? html`
-                  <div class="section">
-                    <div class="section-header">
-                      Delete
-                    </div>
-                    <div class="section-content">
-                      <mwc-button
-                        outlined
-                        class="bottom-button"
-                        icon="delete_forever"
-                        @click=${() => this.delete()}
-                        label="Delete"
-                      ></mwc-button>
-                    </div>
+                <div class="section-content list-container">
+                  <evees-proposals-list
+                    force-update=${this.forceUpdate}
+                    perspective-id=${this.perspectiveId}
+                    @authorize-proposal=${this.authorizeProposal}
+                    @execute-proposal=${this.executeProposal}
+                  ></evees-proposals-list>
+                </div>
+              </div>`
+            : ''}
+          ${false
+            ? html`
+                <div class="section">
+                  <div class="section-header">
+                    Access Control
                   </div>
-                `
-              : ''
-          }
+                  <div class="section-content">
+                    ${this.renderPermissions()}
+                  </div>
+                  <div class="context-menu">
+                    <evees-help>
+                      <span>
+                        Drafts can be made public to let others read them.<br /><br />
+                        They can only be edited by their creator.
+                      </span>
+                    </evees-help>
+                  </div>
+                </div>
+
+                <div class="section">
+                  <div class="section-header">
+                    Delete
+                  </div>
+                  <div class="section-content">
+                    <mwc-button
+                      class="bottom-button"
+                      icon="delete_forever"
+                      @click=${() => this.delete()}
+                      label="Delete"
+                    ></mwc-button>
+                  </div>
+                </div>
+              `
+            : ''}
 
           <!-- <div class="section">
             <div class="section-header">
@@ -410,18 +377,6 @@ export class EveesInfoPage extends EveesInfoBase {
           font-size: 1.6em;
           border-style: solid 2px;
         }
-        .edit-btn {
-          position: absolute;
-          top: 20px;
-          right: 20px;
-        }
-        .row mwc-textfield {
-          margin: 0px 0px 24px 0px;
-        }
-        .perspective-header {
-          border-top-style: solid;
-          border-top-width: 5px;
-        }
         .context-menu {
           position: absolute;
           top: 6px;
@@ -442,14 +397,16 @@ export class EveesInfoPage extends EveesInfoBase {
           min-height: 75px;
         }
         .action-button {
-          margin-bottom: 32px;
+          margin-bottom: 24px;
         }
-        .other-perspectives {
-          border-top: solid 1px #cccccc;
-          margin-top: 1.8vw;
+        .list-container {
           min-height: 200px;
           display: flex;
           flex-direction: column;
+          text-align: left;
+          padding: 6px 12px 0px 16px;
+          font-size: 14px;
+          color: #4e585c;
         }
 
         @media (max-width: 768px) {

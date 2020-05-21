@@ -1,18 +1,13 @@
 import { ApolloClient, gql } from 'apollo-boost';
-import { LitElement, property, html, css, query } from 'lit-element';
+import { LitElement, property, html, css } from 'lit-element';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Proposal } from '../types';
-import { styleMap } from './evees-info-popper';
 import { eveeColor } from './support';
 
 export const DEFAULT_COLOR = '#d0dae0';
 import '@material/mwc-dialog';
 import '@material/mwc-button';
-import { EveesWorkspace } from '../services/evees.workspace';
-import { EveesDialog } from './common-ui/evees-dialog';
-import { EveesDiff } from './evees-diff';
 
 interface PerspectiveData {
   id: string;
@@ -25,10 +20,6 @@ interface PerspectiveData {
 
 const MERGE_ACTION: string = 'Merge';
 const MERGE_PROPOSAL_ACTION: string = 'Propose';
-const PENDING_ACTION: string = 'Pending';
-const AUTHORIZE_ACTION: string = 'Authorize';
-const EXECUTE_ACTION: string = 'Execute';
-const MERGE_EXECUTED: string = 'Accepted';
 const PRIVATE_PERSPECTIVE: string = 'Private';
 
 export class PerspectivesList extends moduleConnect(LitElement) {
@@ -53,9 +44,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   @property({ attribute: 'force-update' })
   forceUpdate: string = 'true';
-
-  @query('#updates-dialog')
-  updatesDialogEl!: EveesDialog;
 
   protected client!: ApolloClient<any>;
 
@@ -265,7 +253,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   render() {
     return this.loadingPerspectives
       ? this.renderLoading()
-      : this.perspectivesData.length > 1
+      : this.otherPerspectivesData.length > 0
       ? html`
           <mwc-list activatable>
             ${this.otherPerspectivesData.map((perspectiveData) =>
@@ -273,7 +261,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             )}
           </mwc-list>
         `
-      : '';
+      : html`<div class="empty"><i>No drafts found</i></div>`;
   }
 
   static get styles() {
@@ -289,6 +277,12 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: center;
+      }
+
+      .empty {
+        margin-top: 60px;
+        color: #d0d8db;
+        text-align: center;
       }
     `;
   }

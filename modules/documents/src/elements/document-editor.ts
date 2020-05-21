@@ -1103,7 +1103,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           : ''}
         ${this.showCommitMessage
           ? html`
-              <mwc-textfield outlined id="COMMIT_MESSAGE" label="Message">
+              <mwc-textfield id="COMMIT_MESSAGE" label="Message">
               </mwc-textfield>
               <mwc-icon-button icon="clear" @click=${this.cancelCommitClicked}>
               </mwc-icon-button>

@@ -33,6 +33,7 @@ import { EveesPopper } from './elements/common-ui/evees-popper';
 import { EveesHelp } from './elements/common-ui/evees-help';
 import { EveesLoadingButton } from './elements/common-ui/evees-loading-button';
 import { EveesAuthor } from './elements/evees-author';
+import { ProposalsList } from './elements/evees-proposals-list';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -107,6 +108,7 @@ export class EveesModule extends MicroModule {
 
     customElements.define('evees-commit-history', CommitHistory);
     customElements.define('evees-perspectives-list', PerspectivesList);
+    customElements.define('evees-proposals-list', ProposalsList);
     customElements.define('evees-info-popper', EveesInfoPopper);
     customElements.define('evees-info-page', EveesInfoPage);
     customElements.define('evees-list-item', ItemWithMenu);

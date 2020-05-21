@@ -63,7 +63,8 @@ export class PermissionsOwner extends moduleConnect(LitElement)
       }`,
     });
 
-    this.permissions = result.data.entity._context.patterns.accessControl.permissions;
+    this.permissions =
+      result.data.entity._context.patterns.accessControl.permissions;
     this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
   }
 
@@ -88,8 +89,10 @@ export class PermissionsOwner extends moduleConnect(LitElement)
       },
     });
 
-    this.permissions = result.data.setCanWrite._context.patterns.accessControl.permissions;
-    this.canWrite = result.data.setCanWrite._context.patterns.accessControl.canWrite;
+    this.permissions =
+      result.data.setCanWrite._context.patterns.accessControl.permissions;
+    this.canWrite =
+      result.data.setCanWrite._context.patterns.accessControl.canWrite;
 
     this.dispatchEvent(
       new CustomEvent('permissions-updated', {
@@ -103,7 +106,9 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   }
 
   getOwner() {
-    return this.canWrite ? 'you' : prettyAddress(this.permissions.owner);
+    return html`<evees-author
+      user-id=${this.permissions.owner}
+    ></evees-author>`;
   }
 
   renderDialog() {
@@ -118,7 +123,6 @@ export class PermissionsOwner extends moduleConnect(LitElement)
         <mwc-textfield
           class="address-field"
           id="new-address"
-          outlined
           .label=${this.t('access-control:new-owner-address')}
         ></mwc-textfield>
       </evees-dialog>
