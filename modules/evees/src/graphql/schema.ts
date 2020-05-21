@@ -49,7 +49,11 @@ export const eveesTypeDefs: DocumentNode = gql`
       proposal: ProposalInput
     ): UpdateProposal!
 
-    authorizeProposal(proposalId: ID!, perspectiveId: ID!, authorize: Boolean!): UpdateProposal!
+    authorizeProposal(
+      proposalId: ID!
+      perspectiveId: ID!
+      authorize: Boolean!
+    ): UpdateProposal!
 
     executeProposal(proposalId: ID!, perspectiveId: ID!): UpdateProposal!
   }
