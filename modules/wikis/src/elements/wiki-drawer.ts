@@ -101,8 +101,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   hasSelectedPage = false;
 
-  homeRef!: string;
-
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
@@ -123,7 +121,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.logger.log('firstUpdated()', { ref: this.ref });
 
     this.ref = this.firstRef;
-    this.homeRef = this.firstRef;
     this.loadWiki();
   }
 
@@ -537,10 +534,23 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           ${this.isMobile
             ? html`
                 <div>
-                  <mwc-icon-button
-                    icon="home"
+                  <mwc-button
+                    icon="arrow_back"
+                    label=".."
+                    @click=${() => this.goBack()}
+                  ></mwc-button>
+                  <span>/</span>
+                  <evees-author
+                    user-id=${this.firstCreatorId}
                     @click=${() => this.goToHome()}
-                  ></mwc-icon-button>
+                  ></evees-author>
+                  ${this.selectedPageIx !== undefined
+                    ? html`<span>/</span
+                        ><evees-author
+                          user-id=${this.thisCreatorId}
+                          @click=${() => this.goToHome()}
+                        ></evees-author>`
+                    : ''}
                 </div>
               `
             : ''}
@@ -569,7 +579,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 <div class="app-top-nav">
                   <mwc-icon-button
                     slot="navigationIcon"
-                    icon="${this.hasSelectedPage ? 'arrow_back_ios' : 'menu'}"
+                    icon="menu"
                     @click=${() => this.toggleNav()}
                   ></mwc-icon-button>
 
@@ -618,16 +628,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   toggleNav() {
-    // The behavior of the nav icon would change if there is a selected page,
-    // it will function as a back button
-    if (this.hasSelectedPage) {
-      this.selectPage(undefined);
-      this.documentHasChanges = false;
-      return;
-    }
     this.isDrawerOpened = !this.isDrawerOpened;
-    // this.requestUpdate();
-    // console.log(this.isDrawerOpened);
   }
 
   async triggerDocumentPush() {
@@ -642,9 +643,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   goToHome() {
     this.selectPage(undefined);
-    this.ref = this.homeRef;
+    this.ref = this.firstRef;
     this.isDrawerOpened = false;
-    this.requestUpdate();
+  }
+
+  goBack() {
+    this.dispatchEvent(
+      new CustomEvent('back', { bubbles: true, composed: true })
+    );
   }
 
   static get styles() {
