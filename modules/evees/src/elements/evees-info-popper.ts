@@ -1,7 +1,10 @@
 import { html, css, property } from 'lit-element';
 export const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
+    propName = propName.replace(
+      /([A-Z])/g,
+      (matches) => `-${matches[0].toLowerCase()}`
+    );
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -43,9 +46,17 @@ export class EveesInfoPopper extends EveesInfoBase {
           first-perspective-id=${this.firstPerspectiveId}
           @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}
           @merge-perspective=${(e) =>
-            this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, false)}
+            this.otherPerspectiveMerge(
+              e.detail.perspectiveId,
+              this.perspectiveId,
+              false
+            )}
           @create-proposal=${(e) =>
-            this.otherPerspectiveMerge(e.detail.perspectiveId, this.perspectiveId, true)}
+            this.otherPerspectiveMerge(
+              e.detail.perspectiveId,
+              this.perspectiveId,
+              true
+            )}
           @authorize-proposal=${this.authorizeProposal}
           @execute-proposal=${this.executeProposal}
         ></evees-perspectives-list>
@@ -55,7 +66,6 @@ export class EveesInfoPopper extends EveesInfoBase {
           ? this.renderLoading()
           : html`
               <mwc-button
-                outlined
                 icon="call_split"
                 @click=${this.newPerspectiveClicked}
                 label="new perspective"
@@ -68,7 +78,9 @@ export class EveesInfoPopper extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        <permissions-for-entity ref=${this.perspectiveId}></permissions-for-entity>
+        <permissions-for-entity
+          ref=${this.perspectiveId}
+        ></permissions-for-entity>
       </div>
     `;
   }
@@ -86,7 +98,8 @@ export class EveesInfoPopper extends EveesInfoBase {
           <div
             class="evee-stripe"
             style=${styleMap({
-              backgroundColor: (this.eveeColor ? this.eveeColor : DEFAULT_COLOR) + 'FF',
+              backgroundColor:
+                (this.eveeColor ? this.eveeColor : DEFAULT_COLOR) + 'FF',
             })}
           ></div>
         </div>
@@ -114,12 +127,19 @@ export class EveesInfoPopper extends EveesInfoBase {
                         </div>
 
                         <mwc-tab-bar
-                          @MDCTabBar:activated=${(e) => (this.activeTabIndex = e.detail.index)}
+                          @MDCTabBar:activated=${(e) =>
+                            (this.activeTabIndex = e.detail.index)}
                         >
-                          <mwc-tab .label=${this.t('evees:other-perspectives')} hasImageIcon>
+                          <mwc-tab
+                            .label=${this.t('evees:other-perspectives')}
+                            hasImageIcon
+                          >
                             <mwc-icon>list_alt</mwc-icon>
                           </mwc-tab>
-                          <mwc-tab .label=${this.t('evees:information')} hasImageIcon>
+                          <mwc-tab
+                            .label=${this.t('evees:information')}
+                            hasImageIcon
+                          >
                             <mwc-icon>info</mwc-icon>
                           </mwc-tab>
                         </mwc-tab-bar>

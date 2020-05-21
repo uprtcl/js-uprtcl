@@ -69,6 +69,7 @@ export class EveesDialog extends LitElement {
         background-color: white;
         border-radius: 4px;
         box-shadow: 10px 10px 67px 0px rgba(0, 0, 0, 0.75);
+        text-align: right;
       }
 
       .slot-container {

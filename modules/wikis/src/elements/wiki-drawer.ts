@@ -512,7 +512,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <evees-help>
           <span>
             Changes are saved locally on this device until you "push" them.<br /><br />
-            Once pushed they will be visible (if this draft is public).<br /><br />
+            Once pushed they will be visible (if this perspective is public).<br /><br />
             Only pushed changes are included on merge proposals.
           </span>
         </evees-help>

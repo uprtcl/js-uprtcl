@@ -28,7 +28,9 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
   }
 
   async loadPermissions() {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const client: ApolloClient<any> = this.request(
+      ApolloClientModule.bindings.Client
+    );
     const result = await client.query({
       query: gql`{
         entity(ref: "${this.entityId}") {
@@ -45,16 +47,21 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
       }`,
     });
 
-    this.permissions = result.data.entity._context.patterns.accessControl.permissions;
+    this.permissions =
+      result.data.entity._context.patterns.accessControl.permissions;
     this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
   }
 
   getOwner() {
-    return this.canWrite ? 'you' : prettyAddress(this.permissions.canAdmin[0]);
+    return html`<evees-author
+      user-id=${this.permissions.canAdmin[0]}
+    ></evees-author>`;
   }
 
   async togglePublicRead() {
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const client: ApolloClient<any> = this.request(
+      ApolloClientModule.bindings.Client
+    );
 
     const result = await client.mutate({
       mutation: SET_PUBLIC_READ,
@@ -64,8 +71,10 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
       },
     });
 
-    this.permissions = result.data.setPublicRead._context.patterns.accessControl.permissions;
-    this.canWrite = result.data.setPublicRead._context.patterns.accessControl.canWrite;
+    this.permissions =
+      result.data.setPublicRead._context.patterns.accessControl.permissions;
+    this.canWrite =
+      result.data.setPublicRead._context.patterns.accessControl.canWrite;
     this.loadPermissions();
 
     this.dispatchEvent(
@@ -87,8 +96,9 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
           ${this.canWrite
             ? html`
                 <mwc-button
-                  outlined
-                  icon=${this.permissions.publicRead ? 'visibility_off' : 'visibility'}
+                  icon=${this.permissions.publicRead
+                    ? 'visibility_off'
+                    : 'visibility'}
                   @click=${this.togglePublicRead}
                 >
                   ${!this.permissions.publicRead
