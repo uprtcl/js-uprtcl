@@ -94,7 +94,9 @@ export class EveesInfoPage extends EveesInfoBase {
         break;
 
       case 'edit-profile':
-        window.open(`https://3box.io/${this.defaultRemote.userId}`);
+        if (this.defaultRemote) {
+          window.open(`https://3box.io/${this.defaultRemote.userId}`);
+        }
         break;
 
       case 'edit':
@@ -233,7 +235,7 @@ export class EveesInfoPage extends EveesInfoBase {
           .config=${contextConfig}
           @option-click=${this.optionClicked}
         >
-          ${this.defaultRemote.userId !== undefined
+          ${this.defaultRemote && this.defaultRemote.userId !== undefined
             ? html` <div slot="icon" class="user-icon">
                 <evees-author
                   user-id=${this.defaultRemote.userId}
@@ -400,6 +402,9 @@ export class EveesInfoPage extends EveesInfoBase {
           padding: 2vw 0px 0.8vw 0px;
           font-size: 1.6em;
           border-style: solid 2px;
+        }
+        .section-header evees-author {
+          margin: 0 auto;
         }
         .context-menu {
           position: absolute;

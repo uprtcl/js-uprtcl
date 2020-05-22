@@ -127,7 +127,6 @@ export class EveesAuthor extends moduleConnect(LitElement) {
       :host {
         width: fit-content;
         display: block;
-        margin: 0 auto;
       }
       .boxAddress {
         background: transparent;

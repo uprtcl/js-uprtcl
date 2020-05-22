@@ -101,6 +101,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   hasSelectedPage = false;
 
+  @property({ attribute: false })
+  firstRefAuthor: string = '';
+
+  @property({ attribute: false })
+  author: string = '';
+
+  @property({ type: Boolean, attribute: 'breadcrumb' })
+  showBreadcrumb: boolean = true;
+
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
@@ -122,6 +131,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.ref = this.firstRef;
     this.loadWiki();
+
+    const firstPerspective = await loadEntity<Signed<Perspective>>(
+      this.client,
+      this.firstRef
+    );
+    if (firstPerspective) {
+      this.firstRefAuthor = firstPerspective.object.payload.creatorId;
+    }
   }
 
   updated(changedProperties) {
@@ -186,6 +203,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
 
     this.authority = perspective.object.payload.authority;
+    this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
     this.editable = accessControl
       ? this.editableAuthorities.length > 0
@@ -531,29 +549,29 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       >
         ${this.renderColorBar()}
         <section>
-          ${this.isMobile
-            ? html`
-                <div>
-                  <mwc-button
+          <div class="nav-bar-top">
+            ${this.showBreadcrumb
+              ? html`<mwc-button
                     icon="arrow_back"
                     label=".."
                     @click=${() => this.goBack()}
                   ></mwc-button>
-                  <span>/</span>
+                  <div class="slash">/</div>
                   <evees-author
-                    user-id=${this.firstCreatorId}
+                    user-id=${this.firstRefAuthor}
+                    show-name="false"
                     @click=${() => this.goToHome()}
-                  ></evees-author>
-                  ${this.selectedPageIx !== undefined
-                    ? html`<span>/</span
-                        ><evees-author
-                          user-id=${this.thisCreatorId}
-                          @click=${() => this.goToHome()}
-                        ></evees-author>`
-                    : ''}
-                </div>
-              `
-            : ''}
+                  ></evees-author>`
+              : ''}
+            ${this.ref !== this.firstRef
+              ? html`<div class="slash">/</div>
+                  <evees-author
+                    user-id=${this.author}
+                    show-name="false"
+                    color=${eveeColor(this.ref)}
+                  ></evees-author>`
+              : ''}
+          </div>
           <div>
             ${this.renderPageList()}
           </div>
@@ -644,7 +662,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   goToHome() {
     this.selectPage(undefined);
     this.ref = this.firstRef;
-    this.isDrawerOpened = false;
+    if (this.isMobile) {
+      this.isDrawerOpened = false;
+    }
   }
 
   goBack() {
@@ -676,6 +696,23 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           max-height: 5px;
           flex-shrink: 0;
           width: 100%;
+        }
+        .nav-bar-top {
+          display: flex;
+          width: 100%;
+          justify-content: left;
+          padding: 14px 0px 8px 0px;
+          border-color: #a2a8aa;
+          border-bottom-style: solid;
+          border-bottom-width: 1px;
+        }
+        .nav-bar-top .slash {
+          font-size: 28px;
+          margin-right: 6px;
+        }
+        .nav-bar-top evees-author {
+          margin: 0px 6px 0px 0px;
+          cursor: pointer;
         }
         .empty-pages-loader {
           margin-top: 22px;
