@@ -189,14 +189,6 @@ export class EveesInfoPage extends EveesInfoBase {
           : this.isLogged
           ? this.renderNewPerspectiveButton()
           : this.renderLoginButton()}
-        ${this.perspectiveId !== this.firstPerspectiveId
-          ? html`<mwc-button
-              icon="home"
-              @click=${() => this.checkoutPerspective(this.firstPerspectiveId)}
-              label="see official"
-            >
-            </mwc-button>`
-          : ''}
       </div>
     `;
 
