@@ -107,8 +107,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   author: string = '';
 
-  @property({ type: Boolean, attribute: 'breadcrumb' })
-  showBreadcrumb: boolean = true;
+  @property({ type: Boolean, attribute: 'show-exit' })
+  showExit: boolean = true;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -532,6 +532,51 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     `;
   }
 
+  renderNavBar() {
+    return html`<section>
+      <div class="nav-bar-top">
+        ${this.showExit
+          ? html`<mwc-button
+              icon="arrow_back"
+              label="exit"
+              @click=${() => this.goBack()}
+            ></mwc-button>`
+          : ''}
+        <mwc-button
+          ?unelevated=${this.ref === this.firstRef}
+          label="official"
+          @click=${() => this.goToHome()}
+        ></mwc-button>
+        <div class="perspective-author-wrapper">
+          ${this.ref !== this.firstRef
+            ? html`<evees-author
+                user-id=${this.author}
+                show-name="false"
+                color=${eveeColor(this.ref)}
+              ></evees-author>`
+            : ''}
+        </div>
+      </div>
+      <div>
+        ${this.renderPageList()}
+      </div>
+
+      ${this.editable
+        ? html`
+            <div class="button-row">
+              <evees-loading-button
+                icon="add_circle_outline"
+                @click=${() => this.newPage()}
+                loading=${this.creatingNewPage ? 'true' : 'false'}
+                label=${this.t('wikis:new-page')}
+              >
+              </evees-loading-button>
+            </div>
+          `
+        : html``}
+    </section>`;
+  }
+
   render() {
     this.logger.log('render()', {
       wiki: this.wiki,
@@ -547,49 +592,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         type="${this.drawerType}"
         ?open="${this.isDrawerOpened}"
       >
-        ${this.renderColorBar()}
-        <section>
-          <div class="nav-bar-top">
-            ${this.showBreadcrumb
-              ? html`<mwc-button
-                    icon="arrow_back"
-                    label=".."
-                    @click=${() => this.goBack()}
-                  ></mwc-button>
-                  <div class="slash">/</div>
-                  <evees-author
-                    user-id=${this.firstRefAuthor}
-                    show-name="false"
-                    @click=${() => this.goToHome()}
-                  ></evees-author>`
-              : ''}
-            ${this.ref !== this.firstRef
-              ? html`<div class="slash">/</div>
-                  <evees-author
-                    user-id=${this.author}
-                    show-name="false"
-                    color=${eveeColor(this.ref)}
-                  ></evees-author>`
-              : ''}
-          </div>
-          <div>
-            ${this.renderPageList()}
-          </div>
-
-          ${this.editable
-            ? html`
-                <div class="button-row">
-                  <evees-loading-button
-                    icon="add_circle_outline"
-                    @click=${() => this.newPage()}
-                    loading=${this.creatingNewPage ? 'true' : 'false'}
-                    label=${this.t('wikis:new-page')}
-                  >
-                  </evees-loading-button>
-                </div>
-              `
-            : html``}
-        </section>
+        ${this.renderColorBar()} ${this.renderNavBar()}
 
         <div slot="appContent" class="app-content">
           ${this.isMobile
@@ -700,7 +703,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .nav-bar-top {
           display: flex;
           width: 100%;
-          justify-content: left;
+          justify-content: space-between;
           padding: 14px 0px 8px 0px;
           border-color: #a2a8aa;
           border-bottom-style: solid;
@@ -710,8 +713,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           font-size: 28px;
           margin-right: 6px;
         }
+        .perspective-author-wrapper {
+          width: 48px;
+          height: 48px;
+        }
         .nav-bar-top evees-author {
-          margin: 0px 6px 0px 0px;
           cursor: pointer;
         }
         .empty-pages-loader {
