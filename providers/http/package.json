@@ -20,7 +20,7 @@
     "inversify": "^5.0.1",
     "lit-element": "^2.3.0",
     "reflect-metadata": "^0.1.13",
-    "web3": "^1.2.6"
+    "web3": "^1.2.8"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
