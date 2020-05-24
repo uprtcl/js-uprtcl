@@ -47,7 +47,8 @@
     "lodash-es": "^4.17.15",
     "multihashing-async": "^0.8.0",
     "randomcolor": "^0.5.4",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "web3": "^1.2.1"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
