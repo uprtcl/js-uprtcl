@@ -21,7 +21,7 @@ import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
 (async function () {
-  // const c1host = 'http://localhost:3000/dev/uprtcl/1' ;
+  // const c1host = 'http://localhost:3000/dev/uprtcl/1';
   const c1host = 'https://api.intercreativity.io/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
