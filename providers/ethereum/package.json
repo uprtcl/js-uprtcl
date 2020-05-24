@@ -17,10 +17,9 @@
     "@uprtcl/multiplatform": "^0.0.7-alpha.26",
     "inversify": "^5.0.1",
     "reflect-metadata": "^0.1.13",
-    "web3": "^1.2.1",
-    "web3-core": "^1.2.1",
-    "web3-eth-contract": "^1.2.1",
-    "web3-utils": "^1.2.1"
+    "web3": "1.2.7",
+    "web3-eth-contract": "1.2.7",
+    "web3-utils": "1.2.7"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
