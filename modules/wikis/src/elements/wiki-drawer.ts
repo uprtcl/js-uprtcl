@@ -1,4 +1,4 @@
-import { property, html, css, LitElement } from 'lit-element';
+import { property, html, css, LitElement, query } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -41,6 +41,9 @@ import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 import { Wiki } from '../types';
 
 import '@material/mwc-drawer';
+import '@material/mwc-textfield';
+import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
+
 import { WikiBindings } from '../bindings';
 
 const LOGINFO = false;
@@ -109,6 +112,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ type: Boolean, attribute: 'show-exit' })
   showExit: boolean = true;
+
+  @property({ attribute: false })
+  showEditTitle: boolean = false;
+
+  @property({ attribute: false })
+  updatingTitle: boolean = false;
+
+  @query('#new-title')
+  newTitleEl!: TextFieldBase;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -417,6 +429,34 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }
   }
 
+  titleOptionClicked(e: CustomEvent) {
+    switch (e.detail.key) {
+      case 'edit-title':
+        this.showEditTitleAync();
+        break;
+    }
+  }
+
+  async showEditTitleAync() {
+    this.showEditTitle = true;
+    await this.updateComplete;
+
+    this.newTitleEl.focus();
+  }
+
+  async editTitle() {
+    this.updatingTitle = true;
+    if (!this.wiki) throw new Error('wiki undefined');
+    const wiki = this.wiki.object;
+
+    wiki.title = this.newTitleEl.value;
+
+    await this.updateContent(wiki);
+
+    this.updatingTitle = false;
+    this.showEditTitle = false;
+  }
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -545,7 +585,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <mwc-button
           ?unelevated=${this.ref === this.firstRef}
           label="official"
-          @click=${() => this.goToHome()}
+          @click=${() => this.goToOfficial()}
         ></mwc-button>
         <div class="perspective-author-wrapper">
           ${this.ref !== this.firstRef
@@ -553,6 +593,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 user-id=${this.author}
                 show-name="false"
                 color=${eveeColor(this.ref)}
+                @click=${() => this.goToHome()}
               ></evees-author>`
             : ''}
         </div>
@@ -575,6 +616,79 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           `
         : html``}
     </section>`;
+  }
+
+  renderWikiTitle() {
+    const contextConfig: MenuConfig = {};
+
+    contextConfig['edit-title'] = {
+      disabled: false,
+      graphic: 'edit',
+      text: 'edit',
+    };
+
+    return html` <div class="section">
+      <div class="section-header">
+        ${this.wiki ? this.wiki.object.title : ''}
+      </div>
+
+      <div class="section-content">
+        <div class="row">
+          ${this.ref === this.firstRef
+            ? html`<div class="official-name">(Official)</div>`
+            : html`<span class="by-3box">by</span>
+                <evees-author user-id=${this.author}></evees-author>`}
+        </div>
+        ${this.showEditTitle ? this.renderEditTitleForm() : ''}
+      </div>
+
+      <div class="context-menu">
+        <evees-help>
+          <span>
+            This Wiki is multi-perspective. <br /><br />It has one "official"
+            perspective, and many different "personal" perspectives.<br /><br />
+            The owner of the official perspective is shown below, under "Access
+            Control".
+          </span>
+        </evees-help>
+        ${this.editable
+          ? html`<evees-options-menu
+              .config=${contextConfig}
+              @option-click=${this.titleOptionClicked}
+            ></evees-options-menu>`
+          : ''}
+      </div>
+    </div>`;
+  }
+
+  renderEditTitleForm() {
+    return html`
+      <div class="title-form">
+        <div class="row">
+          <mwc-textfield
+            outlined
+            id="new-title"
+            value=${this.wiki ? this.wiki.object.title : ''}
+            label="Title"
+          >
+          </mwc-textfield>
+        </div>
+        <div class="title-action">
+          <mwc-button
+            icon="clear"
+            @click=${() => (this.showEditTitle = false)}
+            label="Cancel"
+          ></mwc-button>
+          <evees-loading-button
+            icon="done"
+            @click=${this.editTitle}
+            loading=${this.updatingTitle ? 'true' : 'false'}
+            label="Save"
+          >
+          </evees-loading-button>
+        </div>
+      </div>
+    `;
   }
 
   render() {
@@ -622,19 +736,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 </wiki-page>
               `
             : html`
-                <wiki-home
-                  wikiHash=${this.ref}
-                  title=${this.wiki.object.title}
-                  color=${this.color()}
-                >
-                  <evees-info-page
-                    slot="evee-page"
-                    first-perspective-id=${this.firstRef as string}
-                    perspective-id=${this.ref}
-                    evee-color=${this.color()}
-                    default-authority=${this.defaultAuthority as string}
-                  ></evees-info-page>
-                </wiki-home>
+                <div class="home-container">
+                  ${this.renderWikiTitle()}
+
+                  <div class="evee-info">
+                    <evees-info-page
+                      slot="evee-page"
+                      first-perspective-id=${this.firstRef as string}
+                      perspective-id=${this.ref}
+                      evee-color=${this.color()}
+                      default-authority=${this.defaultAuthority as string}
+                    ></evees-info-page>
+                  </div>
+                </div>
               `}
         </div>
       </mwc-drawer>
@@ -662,9 +776,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }
   }
 
+  goToOfficial() {
+    this.ref = this.firstRef;
+    if (this.isMobile) {
+      this.isDrawerOpened = false;
+    }
+    this.goToHome();
+  }
+
   goToHome() {
     this.selectPage(undefined);
-    this.ref = this.firstRef;
     if (this.isMobile) {
       this.isDrawerOpened = false;
     }
@@ -702,9 +823,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .nav-bar-top {
           display: flex;
-          width: 100%;
+          padding: 14px 10px 0px 0px;
+          width: calc(100% - 10px);
           justify-content: space-between;
-          padding: 14px 0px 8px 0px;
           border-color: #a2a8aa;
           border-bottom-style: solid;
           border-bottom-width: 1px;
@@ -781,6 +902,73 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           height: 100%;
           display: flex;
           flex-direction: column;
+        }
+
+        .home-container {
+          text-align: center;
+          height: auto;
+          min-height: 100%;
+          padding: 3vw 0px;
+        }
+
+        .section {
+          text-align: center;
+          width: 100%;
+          max-width: 700px;
+          margin: 0 auto;
+          box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2);
+          margin-bottom: 36px;
+          border-radius: 4px;
+          background-color: rgb(255, 255, 255, 0.6);
+          position: relative;
+        }
+        .section-header {
+          font-weight: bold;
+          padding: 2vw 0px 0.8vw 0px;
+          font-size: 1.6em;
+          border-style: solid 2px;
+        }
+        .section-content evees-author {
+          display: inline-block;
+          margin-left: 12px;
+        }
+        .section-content {
+          padding-bottom: 2vw;
+        }
+        .official-name {
+          font-size: 1.6em;
+          font-weight: bold;
+          color: #4e585c;
+          font-size: 1.3em;
+        }
+        .by-3box {
+          color: rgb(99, 102, 104);
+          font-size: 15px;
+          font-weight: 600;
+          letter-spacing: 0.015em;
+          font-size: 1.1em;
+        }
+        .context-menu {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          display: flex;
+        }
+        .row {
+          width: 100%;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+        }
+        .title-form {
+          margin-top: 22px;
+        }
+        .title-form .title-action {
+          margin-top: 16px;
+        }
+        .title-form .title-action mwc-button {
+          width: 180px;
         }
 
         @media (max-width: 768px) {

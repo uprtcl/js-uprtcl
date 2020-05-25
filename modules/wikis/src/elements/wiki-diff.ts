@@ -33,7 +33,10 @@ export class WikiDiff extends moduleConnect(LitElement) {
   deletedPages!: string[];
 
   async firstUpdated() {
-    this.logger.log('firstUpdated()', { newData: this.newData, oldData: this.oldData });
+    this.logger.log('firstUpdated()', {
+      newData: this.newData,
+      oldData: this.oldData,
+    });
 
     this.loadChanges();
   }
@@ -63,15 +66,36 @@ export class WikiDiff extends moduleConnect(LitElement) {
     `;
   }
 
+  renderTitleChange(title: string, classes: string[]) {
+    return html`
+      <div class=${['page-row'].concat(classes).join(' ')}>
+        <h1>${title}</h1>
+      </div>
+    `;
+  }
+
   render() {
     if (this.loading) {
       return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
     }
 
+    const titleChanged =
+      this.newData.object.title !== this.oldData.object.title;
+
     const newPages = this.newPages !== undefined ? this.newPages : [];
-    const deletedPages = this.deletedPages !== undefined ? this.deletedPages : [];
+    const deletedPages =
+      this.deletedPages !== undefined ? this.deletedPages : [];
 
     return html`
+      ${titleChanged
+        ? html`<div class="pages-list">
+            <div class="page-list-title">New Title</div>
+            ${this.renderTitleChange(this.newData.object.title, ['page-added'])}
+            ${this.renderTitleChange(this.oldData.object.title, [
+              'page-removed',
+            ])}
+          </div>`
+        : ''}
       ${newPages.length > 0
         ? html` <div class="pages-list">
             <div class="page-list-title">Pages Added</div>
@@ -81,7 +105,9 @@ export class WikiDiff extends moduleConnect(LitElement) {
       ${deletedPages.length > 0
         ? html` <div class="pages-list">
             <div class="page-list-title">Pages Removed</div>
-            ${deletedPages.map((page) => this.renderPage(page, ['page-removed']))}
+            ${deletedPages.map((page) =>
+              this.renderPage(page, ['page-removed'])
+            )}
           </div>`
         : ''}
     `;

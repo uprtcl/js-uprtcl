@@ -46,19 +46,6 @@ export class EveesInfoPage extends EveesInfoBase {
     });
   }
 
-  perspectiveTitle() {
-    if (!this.perspectiveData) return this.perspectiveId;
-
-    if (this.perspectiveId === this.firstPerspectiveId) {
-      return html`<span>Official</span>`;
-    }
-
-    return html` <evees-author
-      color=${this.eveeColor}
-      user-id=${this.perspectiveData.perspective.creatorId}
-    ></evees-author>`;
-  }
-
   async editNameClicked() {
     this.showEditName = true;
     await this.updateComplete;
@@ -259,13 +246,12 @@ export class EveesInfoPage extends EveesInfoBase {
         <div class="column">
           <div class="section">
             <div class="section-header perspective-title">
-              ${this.perspectiveTitle()}
+              Perspectives
             </div>
 
             <div class="section-content">
               ${this.renderPerspectiveActions()}
               <div class="list-container">
-                <strong>Perspectives:</strong>
                 <evees-perspectives-list
                   force-update=${this.forceUpdate}
                   perspective-id=${this.perspectiveId}
@@ -385,9 +371,6 @@ export class EveesInfoPage extends EveesInfoBase {
           width: 48px;
           height: 48px;
           cursor: pointer;
-        }
-        .section-content {
-          padding-top: 3vw;
         }
         .section-header {
           font-weight: bold;
