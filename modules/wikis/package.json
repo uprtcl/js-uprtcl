@@ -20,6 +20,7 @@
     "@material/mwc-radio": "^0.14.1",
     "@material/mwc-ripple": "^0.14.1",
     "@material/mwc-switch": "^0.14.1",
+    "@material/mwc-textfield": "^0.14.1",
     "@material/mwc-top-app-bar": "^0.14.1",
     "@uprtcl/cortex": "^0.0.7-alpha.28",
     "@uprtcl/documents": "^0.0.7-alpha.28",

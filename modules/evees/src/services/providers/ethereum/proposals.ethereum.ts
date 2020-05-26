@@ -2,7 +2,12 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { EthereumContract } from '@uprtcl/ethereum-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
-import { UpdateRequest, Proposal, NewProposal, NewPerspectiveData } from '../../../types';
+import {
+  UpdateRequest,
+  Proposal,
+  NewProposal,
+  NewPerspectiveData,
+} from '../../../types';
 import {
   INIT_PROPOSAL,
   GET_PROPOSAL,
@@ -15,9 +20,12 @@ import {
   getProposalDetails,
   getHeadUpdateDetails,
   CREATE_AND_PROPOSE,
+  hashToId,
+  ZERO_HEX_32,
+  PerspectiveCreator,
 } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
-import { hashToId, ZERO_HEX_32, EveesEthereum } from './evees.ethereum';
+import { EveesEthereum } from './evees.ethereum';
 
 export interface EthHeadUpdate {
   perspectiveIdHash: string;
@@ -34,7 +42,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     protected uprtclProposals: EthereumContract,
     protected uprtclWrapper: EthereumContract,
     protected accessControl: EveesAccessControlEthereum,
-    protected eveesEthereum: EveesEthereum
+    protected perspectiveCreator: PerspectiveCreator
   ) {}
 
   async ready(): Promise<void> {
@@ -43,7 +51,9 @@ export class ProposalsEthereum implements ProposalsProvider {
 
   async prepareProposal(proposal: NewProposal) {
     /** verify all perspectives are owned by the owner of the to perspective (which might not be in the updateHead list) */
-    const accessData = await this.accessControl.getPermissions(proposal.toPerspectiveId);
+    const accessData = await this.accessControl.getPermissions(
+      proposal.toPerspectiveId
+    );
 
     if (!accessData)
       throw new Error(
@@ -51,7 +61,9 @@ export class ProposalsEthereum implements ProposalsProvider {
       );
 
     const verifyPromises = proposal.updates.map(async (headUpdate) => {
-      const permissions = await this.accessControl.getPermissions(headUpdate.perspectiveId);
+      const permissions = await this.accessControl.getPermissions(
+        headUpdate.perspectiveId
+      );
       if (!permissions)
         throw new Error(
           `access control data not found for target perspective ${proposal.toPerspectiveId}`
@@ -76,10 +88,14 @@ export class ProposalsEthereum implements ProposalsProvider {
           : [ZERO_HEX_32, ZERO_HEX_32];
 
         return {
-          perspectiveIdHash: await this.uprtclRoot.call(GET_PERSP_HASH, [update.perspectiveId]),
+          perspectiveIdHash: await this.uprtclRoot.call(GET_PERSP_HASH, [
+            update.perspectiveId,
+          ]),
           headCid1: headCidParts[0],
           headCid0: headCidParts[1],
-          fromPerspectiveId: update.fromPerspectiveId ? update.fromPerspectiveId : '',
+          fromPerspectiveId: update.fromPerspectiveId
+            ? update.fromPerspectiveId
+            : '',
           fromHeadId: update.oldHeadId ? update.oldHeadId : '',
         };
       }
@@ -108,7 +124,10 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const ethProposal = await this.prepareProposal(proposal);
 
-    await this.uprtclProposals.send(INIT_PROPOSAL, [ethProposal, this.uprtclProposals.userId]);
+    await this.uprtclProposals.send(INIT_PROPOSAL, [
+      ethProposal,
+      this.uprtclProposals.userId,
+    ]);
 
     const requestId = this.uprtclProposals.call(GET_PROPOSAL_ID, [
       proposal.toPerspectiveId,
@@ -116,7 +135,10 @@ export class ProposalsEthereum implements ProposalsProvider {
       ethProposal.nonce,
     ]);
 
-    this.logger.info('createProposal() - post', { requestId, updates: proposal.updates });
+    this.logger.info('createProposal() - post', {
+      requestId,
+      updates: proposal.updates,
+    });
 
     return requestId;
   }
@@ -130,7 +152,9 @@ export class ProposalsEthereum implements ProposalsProvider {
     this.logger.info('createAndPropose()', { proposal });
 
     const ethProposal = await this.prepareProposal(proposal);
-    const ethPerspectives = await this.eveesEthereum.preparePerspectives(newPerspectivesData);
+    const ethPerspectives = await this.perspectiveCreator.preparePerspectives(
+      newPerspectivesData
+    );
 
     await this.uprtclWrapper.send(CREATE_AND_PROPOSE, [
       ethPerspectives,
@@ -144,7 +168,10 @@ export class ProposalsEthereum implements ProposalsProvider {
       ethProposal.nonce,
     ]);
 
-    this.logger.info('createProposal() - post', { requestId, updates: proposal.updates });
+    this.logger.info('createProposal() - post', {
+      requestId,
+      updates: proposal.updates,
+    });
 
     return requestId;
   }
@@ -154,7 +181,9 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('getProposal() - pre', { proposalId });
 
-    const ethProposal = await this.uprtclProposals.call(GET_PROPOSAL, [proposalId]);
+    const ethProposal = await this.uprtclProposals.call(GET_PROPOSAL, [
+      proposalId,
+    ]);
 
     const ethProposalDetails = await getProposalDetails(
       this.uprtclProposals.contractInstance,
@@ -165,8 +194,14 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const updatesPromises = ethHeadUpdates.map(
       async (ethUpdateRequest): Promise<UpdateRequest> => {
-        const perspectiveId = await hashToId(this.uprtclRoot, ethUpdateRequest.perspectiveIdHash);
-        const headId = bytes32ToCid([ethUpdateRequest.headCid1, ethUpdateRequest.headCid0]);
+        const perspectiveId = await hashToId(
+          this.uprtclRoot,
+          ethUpdateRequest.perspectiveIdHash
+        );
+        const headId = bytes32ToCid([
+          ethUpdateRequest.headCid1,
+          ethUpdateRequest.headCid0,
+        ]);
         const headUpdateDetails = await getHeadUpdateDetails(
           this.uprtclProposals.contractInstance,
           proposalId,
@@ -184,10 +219,13 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const updates: any = await Promise.all(updatesPromises);
 
-    const executed = ethHeadUpdates.find((update: any) => update.executed === '0') === undefined;
+    const executed =
+      ethHeadUpdates.find((update: any) => update.executed === '0') ===
+      undefined;
     const canAuthorize =
       this.uprtclProposals.userId !== undefined
-        ? ethProposal.owner.toLocaleLowerCase() === this.uprtclProposals.userId.toLocaleLowerCase()
+        ? ethProposal.owner.toLocaleLowerCase() ===
+          this.uprtclProposals.userId.toLocaleLowerCase()
         : false;
 
     const proposal: Proposal = {
@@ -218,7 +256,9 @@ export class ProposalsEthereum implements ProposalsProvider {
       'ProposalCreated',
       {
         filter: {
-          toPerspectiveIdHash: await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]),
+          toPerspectiveIdHash: await this.uprtclRoot.call(GET_PERSP_HASH, [
+            perspectiveId,
+          ]),
         },
         fromBlock: 0,
       }

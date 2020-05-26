@@ -28,7 +28,6 @@ import {
   Commit,
 } from '../types';
 import { EveesBindings } from '../bindings';
-import { EveesModule } from '../evees.module';
 import {
   UPDATE_HEAD,
   AUTHORIZE_PROPOSAL,
@@ -124,14 +123,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.merge = this.request(EveesBindings.MergeStrategy);
-    this.evees = this.request(EveesModule.bindings.Evees);
+    this.evees = this.request(EveesBindings.Evees);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
-    this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
+    this.remoteMap = this.request(EveesBindings.RemoteMap);
 
     if (this.defaultAuthority !== undefined) {
       this.defaultRemote = (this.requestAll(
-        EveesModule.bindings.EveesRemote
+        EveesBindings.EveesRemote
       ) as EveesRemote[]).find(
         (remote) => remote.authority === this.defaultAuthority
       );
