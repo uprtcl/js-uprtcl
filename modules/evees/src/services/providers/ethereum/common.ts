@@ -1,13 +1,17 @@
 import multihashing from 'multihashing-async';
 import CID from 'cids';
 
+import { EthereumContract } from '@uprtcl/ethereum-provider';
+import { NewPerspectiveData } from '../../../types';
+
 /** Function signatures */
 const newPerspStr = '(string,bytes32,bytes32,address)';
 export const GET_PERSP_HASH = 'getPerspectiveIdHash(string)';
 export const GET_PERSP_OWNER = 'getPerspectiveOwner(bytes32)';
 export const CREATE_PERSP = `createPerspective(${newPerspStr},address)`;
 export const UPDATE_OWNER = 'changePerspectiveOwner(bytes32,address)';
-export const UPDATE_OWNER_BATCH = 'changePerspectiveOwnerBatch(bytes32[],address)';
+export const UPDATE_OWNER_BATCH =
+  'changePerspectiveOwnerBatch(bytes32[],address)';
 export const CREATE_PERSP_BATCH = `createPerspectiveBatch(${newPerspStr}[],address)`;
 export const UPDATED_HEAD = `updateHead(bytes32,bytes32,bytes32,address)`;
 
@@ -28,6 +32,9 @@ export const GET_PROPOSAL_ID = 'getProposalId(string,string,uint256)';
 
 /** wrapper */
 export const CREATE_AND_PROPOSE = `createAndInitProposal((${newPerspStr},string)[],${proposalStr},address)`;
+
+export const ZERO_HEX_32 = '0x' + new Array(32).fill(0).join('');
+export const ZERO_ADDRESS = '0x' + new Array(40).fill(0).join('');
 
 export const hashText = async (text: string) => {
   const encoded = await multihashing.digest(Buffer.from(text), 'sha2-256');
@@ -100,6 +107,29 @@ export const bytes32ToCid = (bytes) => {
   return cid.toBaseEncodedString(multibaseName);
 };
 
+export const hashToId = async (
+  uprtclRoot: EthereumContract,
+  perspectiveIdHash: string
+) => {
+  /** check the creation event to reverse map the cid */
+  const perspectiveAddedEvents = await uprtclRoot.contractInstance.getPastEvents(
+    'PerspectiveCreated',
+    {
+      filter: { perspectiveIdHash: perspectiveIdHash },
+      fromBlock: 0,
+    }
+  );
+
+  /** one event should exist only */
+  const perspectiveAddedEvent = perspectiveAddedEvents[0];
+
+  if (!perspectiveAddedEvent) {
+    throw new Error(`Perspective with hash ${perspectiveIdHash} not found`);
+  }
+
+  return perspectiveAddedEvent.returnValues.perspectiveId;
+};
+
 export const getEthPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
   const events = await uprtclRoot.getPastEvents('PerspectiveHeadUpdated', {
     filter: { perspectiveIdHash: perspectiveIdHash },
@@ -108,7 +138,9 @@ export const getEthPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
 
   if (events.length === 0) return undefined;
 
-  const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber ? 1 : -1)).pop();
+  const last = events
+    .sort((e1, e2) => (e1.blockNumber > e2.blockNumber ? 1 : -1))
+    .pop();
 
   return {
     headCid1: last.returnValues.headCid1,
@@ -116,7 +148,10 @@ export const getEthPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
   };
 };
 
-export const getEthPerspectiveContext = async (uprtclDetails, perspectiveIdHash) => {
+export const getEthPerspectiveContext = async (
+  uprtclDetails,
+  perspectiveIdHash
+) => {
   const events = await uprtclDetails.getPastEvents('PerspectiveDetailsSet', {
     filter: { perspectiveIdHash: perspectiveIdHash },
     fromBlock: 0,
@@ -124,7 +159,9 @@ export const getEthPerspectiveContext = async (uprtclDetails, perspectiveIdHash)
 
   if (events.length === 0) return undefined;
 
-  const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber ? 1 : -1)).pop();
+  const last = events
+    .sort((e1, e2) => (e1.blockNumber > e2.blockNumber ? 1 : -1))
+    .pop();
 
   return last.returnValues.context;
 };
@@ -137,7 +174,10 @@ export interface ProposalDetails {
   nonce: number;
 }
 
-export const getProposalDetails = async (uprtclProposals, proposalId): Promise<ProposalDetails> => {
+export const getProposalDetails = async (
+  uprtclProposals,
+  proposalId
+): Promise<ProposalDetails> => {
   const events = await uprtclProposals.getPastEvents('ProposalCreated', {
     filter: { proposalId },
     fromBlock: 0,
@@ -171,7 +211,8 @@ export const getHeadUpdateDetails = async (
     fromBlock: 0,
   });
 
-  if (events.length !== 1) throw Error('One headupte per perspective and proposal expected');
+  if (events.length !== 1)
+    throw Error('One headupte per perspective and proposal expected');
 
   const e = events[0];
 
@@ -180,3 +221,7 @@ export const getHeadUpdateDetails = async (
     fromHeadId: e.returnValues.fromHeadId,
   };
 };
+
+export interface PerspectiveCreator {
+  preparePerspectives(newPerspectivesData: NewPerspectiveData[]);
+}

@@ -1,8 +1,8 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { AccessControlModule } from '../access-control.module';
 import { Authority } from '../types/authority';
+import { AccessControlBindings } from '../bindings';
 
 export class RemoteLoginWidget extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
@@ -21,7 +21,9 @@ export class RemoteLoginWidget extends moduleConnect(LitElement) {
 
   async loadRemote() {
     if (this.authority !== undefined) return;
-    const remotes = this.requestAll(AccessControlModule.bindings.Authority) as Authority[];
+    const remotes = this.requestAll(
+      AccessControlBindings.Authority
+    ) as Authority[];
 
     this.remote = remotes.find((remote) => remote.authority === this.authority);
     if (this.remote === undefined)

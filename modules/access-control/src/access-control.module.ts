@@ -7,11 +7,15 @@ import { accessControlResolvers } from './graphql/resolvers';
 import { PermissionsForEntity } from './elements/permissions-for-entity';
 import { PermissionsOwner } from './elements/permissions-owner';
 import { OwnerPattern, OwnerBehaviour } from './patterns/owner.pattern';
-import { BasicAdminPattern, AdminBehaviour } from './patterns/basic-admin-control.pattern';
+import {
+  BasicAdminPattern,
+  AdminBehaviour,
+} from './patterns/basic-admin-control.pattern';
 
 import en from './i18n/en.json';
 import { PermissionsAdmin } from './elements/permissions-admin';
 import { RemoteLoginWidget } from './elements/remote-login-widget';
+import { AccessControlBindings } from './bindings';
 
 export class AccessControlModule extends MicroModule {
   static id = 'access-control-module';
@@ -34,7 +38,5 @@ export class AccessControlModule extends MicroModule {
     ];
   }
 
-  static bindings = {
-    Authority: 'authority',
-  };
+  static bindings = AccessControlBindings;
 }

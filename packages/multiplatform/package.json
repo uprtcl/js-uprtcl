@@ -15,7 +15,7 @@
     "@uprtcl/graphql": "^0.0.7-alpha.28",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.28",
     "apollo-boost": "^0.4.7",
-    "cids": "^0.8.0",
+    "cids": "^0.8.1",
     "graphql": "^14.6.0",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^5.0.0",

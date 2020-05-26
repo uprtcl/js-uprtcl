@@ -15,7 +15,7 @@
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.28",
     "@uprtcl/multiplatform": "^0.0.7-alpha.28",
     "cbor-js": "^0.1.0",
-    "cids": "^0.7.2",
+    "cids": "^0.8.1",
     "concat-stream": "^2.0.0",
     "inversify": "^5.0.1",
     "ipfs-http-client": "^44.0.0",
