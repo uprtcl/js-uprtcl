@@ -627,36 +627,38 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       text: 'edit',
     };
 
-    return html` <div class="section">
-      <div class="section-header">
-        ${this.wiki ? this.wiki.object.title : ''}
-      </div>
-
-      <div class="section-content">
-        <div class="row">
-          ${this.ref === this.firstRef
-            ? html`<div class="official-name">(Official)</div>`
-            : html`<span class="by-3box">by</span>
-                <evees-author user-id=${this.author}></evees-author>`}
+    return html`<div class="title-card-container">
+      <div class="section">
+        <div class="section-header">
+          ${this.wiki ? this.wiki.object.title : ''}
         </div>
-        ${this.showEditTitle ? this.renderEditTitleForm() : ''}
-      </div>
 
-      <div class="context-menu">
-        <evees-help>
-          <span>
-            This Wiki is multi-perspective. <br /><br />It has one "official"
-            perspective, and many different "personal" perspectives.<br /><br />
-            The owner of the official perspective is shown below, under "Access
-            Control".
-          </span>
-        </evees-help>
-        ${this.editable
-          ? html`<evees-options-menu
-              .config=${contextConfig}
-              @option-click=${this.titleOptionClicked}
-            ></evees-options-menu>`
-          : ''}
+        <div class="section-content">
+          <div class="row">
+            ${this.ref === this.firstRef
+              ? html`<div class="official-name">(Official)</div>`
+              : html`<span class="by-3box">by</span>
+                  <evees-author user-id=${this.author}></evees-author>`}
+          </div>
+          ${this.showEditTitle ? this.renderEditTitleForm() : ''}
+        </div>
+
+        <div class="context-menu">
+          <evees-help>
+            <span>
+              This Wiki is multi-perspective. <br /><br />It has one "official"
+              perspective, and many different "personal" perspectives.<br /><br />
+              The owner of the official perspective is shown below, under
+              "Access Control".
+            </span>
+          </evees-help>
+          ${this.editable
+            ? html`<evees-options-menu
+                .config=${contextConfig}
+                @option-click=${this.titleOptionClicked}
+              ></evees-options-menu>`
+            : ''}
+        </div>
       </div>
     </div>`;
   }
@@ -909,6 +911,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           height: auto;
           min-height: 100%;
           padding: 3vw 0px;
+        }
+
+        .title-card-container {
+          padding: 0px 5vw;
         }
 
         .section {
