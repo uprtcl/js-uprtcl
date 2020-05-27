@@ -41,8 +41,6 @@ import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 import { Wiki } from '../types';
 
 import '@material/mwc-drawer';
-import '@material/mwc-textfield';
-import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
 
 import { WikiBindings } from '../bindings';
 
@@ -118,9 +116,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   updatingTitle: boolean = false;
-
-  @query('#new-title')
-  newTitleEl!: TextFieldBase;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -198,6 +193,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
+    if (this.ref === undefined) return;
+
     const perspective = (await loadEntity(this.client, this.ref)) as Entity<
       Signed<Perspective>
     >;
@@ -432,24 +429,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   titleOptionClicked(e: CustomEvent) {
     switch (e.detail.key) {
       case 'edit-title':
-        this.showEditTitleAync();
+        this.showEditTitle = true;
         break;
     }
   }
 
-  async showEditTitleAync() {
-    this.showEditTitle = true;
-    await this.updateComplete;
-
-    this.newTitleEl.focus();
-  }
-
-  async editTitle() {
+  async editTitle(newTitle: string) {
     this.updatingTitle = true;
     if (!this.wiki) throw new Error('wiki undefined');
     const wiki = this.wiki.object;
 
-    wiki.title = this.newTitleEl.value;
+    wiki.title = newTitle;
 
     await this.updateContent(wiki);
 
@@ -634,13 +624,23 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
 
         <div class="section-content">
-          <div class="row">
+          <div class="row center-aligned">
             ${this.ref === this.firstRef
               ? html`<div class="official-name">(Official)</div>`
               : html`<span class="by-3box">by</span>
                   <evees-author user-id=${this.author}></evees-author>`}
           </div>
-          ${this.showEditTitle ? this.renderEditTitleForm() : ''}
+          <div class="row center-aligned title-form">
+            ${this.showEditTitle
+              ? html`<evees-string-form
+                  value=${this.wiki ? this.wiki.object.title : ''}
+                  label="new title"
+                  @cancel=${() => (this.showEditTitle = false)}
+                  @accept=${(e) => this.editTitle(e.detail.value)}
+                  ?loading=${this.updatingTitle}
+                ></evees-string-form>`
+              : ''}
+          </div>
         </div>
 
         <div class="context-menu">
@@ -661,36 +661,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
       </div>
     </div>`;
-  }
-
-  renderEditTitleForm() {
-    return html`
-      <div class="title-form">
-        <div class="row">
-          <mwc-textfield
-            outlined
-            id="new-title"
-            value=${this.wiki ? this.wiki.object.title : ''}
-            label="Title"
-          >
-          </mwc-textfield>
-        </div>
-        <div class="title-action">
-          <mwc-button
-            icon="clear"
-            @click=${() => (this.showEditTitle = false)}
-            label="Cancel"
-          ></mwc-button>
-          <evees-loading-button
-            icon="done"
-            @click=${this.editTitle}
-            loading=${this.updatingTitle ? 'true' : 'false'}
-            label="Save"
-          >
-          </evees-loading-button>
-        </div>
-      </div>
-    `;
   }
 
   render() {
@@ -880,6 +850,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           padding-top: 24px;
           color: #a2a8aa;
         }
+        .center-aligned {
+          justify-content: center;
+          align-items: center;
+        }
         .button-row {
           width: calc(100% - 20px);
           padding: 16px 10px 8px 10px;
@@ -960,21 +934,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           right: 6px;
           display: flex;
         }
-        .row {
-          width: 100%;
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          justify-content: center;
-        }
         .title-form {
           margin-top: 22px;
-        }
-        .title-form .title-action {
-          margin-top: 16px;
-        }
-        .title-form .title-action mwc-button {
-          width: 180px;
         }
 
         @media (max-width: 768px) {

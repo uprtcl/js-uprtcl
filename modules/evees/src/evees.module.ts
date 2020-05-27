@@ -34,6 +34,7 @@ import { EveesHelp } from './elements/common-ui/evees-help';
 import { EveesLoadingButton } from './elements/common-ui/evees-loading-button';
 import { EveesAuthor } from './elements/evees-author';
 import { ProposalsList } from './elements/evees-proposals-list';
+import { EveesStringForm } from './elements/common-ui/evees-string-form';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -119,6 +120,7 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-help', EveesHelp);
     customElements.define('evees-loading-button', EveesLoadingButton);
     customElements.define('evees-author', EveesAuthor);
+    customElements.define('evees-string-form', EveesStringForm);
   }
 
   get submodules() {
