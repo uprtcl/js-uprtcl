@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@authentic/mwc-card": "^0.9.0",
-    "@material/mwc-button": "^0.15.0",
+    "@material/mwc-button": "^0.14.1",
     "@material/mwc-checkbox": "^0.14.1",
     "@material/mwc-drawer": "^0.14.1",
     "@material/mwc-fab": "^0.14.1",
