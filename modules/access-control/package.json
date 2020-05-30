@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/access-control",
-  "version": "0.0.7-alpha.30.1",
+  "version": "0.0.7-alpha.30.2",
   "description": "Cortex module implementing access control behaviours",
   "homepage": "https://uprtcl.io",
   "scripts": {

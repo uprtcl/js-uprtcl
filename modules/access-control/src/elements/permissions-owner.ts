@@ -11,7 +11,6 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { PermissionsElement } from './permissions-element';
 import { OwnerPermissions } from '../services/owner-access-control.service';
 import { SET_CAN_WRITE } from '../graphql/queries';
-import { prettyAddress } from './support';
 import { CortexModule } from '@uprtcl/cortex';
 
 export class PermissionsOwner extends moduleConnect(LitElement)

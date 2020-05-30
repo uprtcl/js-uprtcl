@@ -1,4 +1,4 @@
-import { Ready } from './ready';
+import { Ready } from '@uprtcl/multiplatform';
 
 export interface Authority extends Ready {
   /**
