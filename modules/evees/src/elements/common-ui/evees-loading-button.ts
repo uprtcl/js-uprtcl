@@ -7,11 +7,17 @@ export class EveesLoadingButton extends LitElement {
   @property({ type: String })
   label: string = '';
 
+  @property({ type: Boolean })
+  outlined: boolean = false;
+
   @property({ type: String })
   icon: string = '';
 
   render() {
-    return html` <mwc-button icon=${this.loading === 'true' ? '' : this.icon}>
+    return html` <mwc-button
+      ?outlined=${this.outlined}
+      icon=${this.loading === 'true' ? '' : this.icon}
+    >
       ${this.loading === 'true'
         ? html`<cortex-loading-placeholder
             size="20"
