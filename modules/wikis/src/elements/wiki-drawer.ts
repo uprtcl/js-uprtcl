@@ -58,6 +58,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'ref' })
   firstRef!: string;
 
+  @property({ type: String, attribute: 'init-ref' })
+  initRef!: string;
+
+  @property({ type: String, attribute: 'page-id' })
+  pageId!: string;
+
   @property({ type: String, attribute: 'default-authority' })
   defaultAuthority!: string;
 
@@ -193,6 +199,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
+    if (this.initRef !== 'undefined') this.ref = this.initRef;
+
     if (this.ref === undefined) return;
 
     const perspective = (await loadEntity(this.client, this.ref)) as Entity<
@@ -227,6 +235,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.loadPagesData();
     this.requestUpdate();
+
+    // If page is previously selected in the parent component, choose the page
+    this.wiki.object.pages.find((id, i) => (id === this.pageId ? this.selectPage(i) : false));
+
+    // Clears Page Id and InitRef variables
+    this.restoreInitRefAndPageId();
   }
 
   async loadPagesData() {
@@ -767,6 +781,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.dispatchEvent(
       new CustomEvent('back', { bubbles: true, composed: true })
     );
+  }
+
+  restoreInitRefAndPageId() {
+    this.initRef = 'undefined';
+    this.pageId = '';
   }
 
   static get styles() {
