@@ -704,6 +704,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   pageHash=${this.wiki.object.pages[this.selectedPageIx]}
                   color=${this.color() ? this.color() : ''}
                   @doc-changed=${(e) => this.onDocChanged(e)}
+                  .editableAuthorities=${this.editableAuthorities}
                 >
                 </wiki-page>
               `

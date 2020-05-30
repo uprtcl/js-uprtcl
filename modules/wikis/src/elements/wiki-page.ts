@@ -16,7 +16,12 @@ import { TextNode } from '@uprtcl/documents';
 import { sharedStyles } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { ContentUpdatedEvent, CONTENT_UPDATED_TAG } from '@uprtcl/evees';
+import {
+  ContentUpdatedEvent,
+  CONTENT_UPDATED_TAG,
+  EveesHelpers,
+  Evees,
+} from '@uprtcl/evees';
 
 import '@material/mwc-top-app-bar';
 
@@ -31,6 +36,12 @@ export class WikiPage extends moduleConnect(LitElement) {
 
   @property({ type: String })
   color!: string;
+
+  @property({ type: Array })
+  editableAuthorities: string[] = [];
+
+  @property({ attribute: false })
+  editable: string = 'false';
 
   protected client!: ApolloClient<any>;
 
@@ -83,6 +94,28 @@ export class WikiPage extends moduleConnect(LitElement) {
     });
 
     this.textNode = result.data.entity.head.data;
+
+    const authority = await EveesHelpers.getPerspectiveAuthority(
+      this.client,
+      this.pageHash
+    );
+
+    const accessControl = await EveesHelpers.getAccessControl(
+      this.client,
+      this.pageHash
+    );
+
+    this.editable = accessControl
+      ? this.editableAuthorities.length > 0
+        ? this.editableAuthorities.includes(authority)
+          ? accessControl.canWrite
+            ? 'true'
+            : 'false'
+          : 'false'
+        : accessControl.canWrite
+        ? 'true'
+        : 'false'
+      : 'true';
   }
 
   render() {
@@ -104,6 +137,7 @@ export class WikiPage extends moduleConnect(LitElement) {
           .client=${this.client}
           ref=${this.pageHash}
           color=${this.color}
+          editable=${this.editable}
         >
         </documents-editor>
       </div>

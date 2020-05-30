@@ -11,7 +11,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@material/mwc-button": "^0.15.0",
+    "@material/mwc-button": "^0.14.1",
     "@material/mwc-checkbox": "^0.14.1",
     "@material/mwc-fab": "^0.14.1",
     "@material/mwc-radio": "^0.14.1",

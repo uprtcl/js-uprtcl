@@ -95,6 +95,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (changedProperties.has('client')) {
       this.loadDoc();
     }
+    if (changedProperties.has('editable')) {
+      this.loadDoc();
+    }
   }
 
   async loadDoc() {

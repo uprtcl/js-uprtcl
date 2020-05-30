@@ -13,7 +13,7 @@
   "dependencies": {
     "@authentic/mwc-circular-progress": "^0.9.0",
     "@authentic/mwc-tooltip": "^0.9.0",
-    "@material/mwc-button": "^0.15.0",
+    "@material/mwc-button": "^0.14.1",
     "@material/mwc-icon": "^0.14.1",
     "@material/mwc-icon-button": "^0.14.1",
     "@material/mwc-linear-progress": "^0.14.1",
