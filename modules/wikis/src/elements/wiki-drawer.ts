@@ -465,8 +465,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     super.connectedCallback();
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
-      this.ref = event.detail.perspectiveId;
-      this.resetWikiPerspective();
+      this.ref = event.detail.perspectiveId;      
+      this.dispatchEvent(
+        new CustomEvent('perspective', { bubbles: true, composed: true, detail: { rootPerspective: this.firstRef, perspective: this.ref } })
+      );
     }) as EventListener);
   }
 
@@ -525,7 +527,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (selected) classes.push('title-selected');
 
     return html`
-      <div class=${classes.join(' ')} @click=${() => this.selectPage(ix)}>
+      <div class=${classes.join(' ')} @click=${() => this.goToPage(page.id)}>
         <div class="text-container">
           ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
         </div>
@@ -770,11 +772,27 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.goToHome();
   }
 
+  goToPage(pageId: string) {    
+    const pageInfo = {
+      official: this.ref === this.firstRef,
+      perspective: this.ref,
+      rootPerspective: this.firstRef,
+      pageId: pageId
+    }
+
+    this.dispatchEvent(
+      new CustomEvent('page', { bubbles: true, composed: true, detail: pageInfo })
+    );
+  }
+
   goToHome() {
-    this.selectPage(undefined);
     if (this.isMobile) {
       this.isDrawerOpened = false;
     }
+
+    this.dispatchEvent(
+      new CustomEvent('perspective', { bubbles: true, composed: true, detail: { rootPerspective: this.ref } })
+    );
   }
 
   goBack() {
