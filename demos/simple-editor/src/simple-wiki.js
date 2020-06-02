@@ -121,7 +121,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         width: 100%;
         height: 50px;
         flex-shrink: 0;
-        background-color: #cecb9e;
+        background-color: white;
       }
       .app-content {
         overflow: auto;
@@ -137,7 +137,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       }
       .wiki-container {
         flex-grow: 1;
-        background-color: #c2cfd4;
+        background-color: white;
       }
     `;
   }

@@ -120,6 +120,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderNewPerspectiveButton() {
     return html`
       <evees-loading-button
+        outlined
         icon="call_split"
         @click=${this.newPerspectiveClicked}
         loading=${this.creatingNewPerspective ? 'true' : 'false'}
@@ -132,6 +133,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderLoginButton() {
     return html`
       <evees-loading-button
+        outlined
         icon="account_box"
         @click=${this.login}
         loading=${this.loggingIn ? 'true' : 'false'}
@@ -144,6 +146,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderMakeProposalButton() {
     return html`
       <evees-loading-button
+        outlined
         icon="call_merge"
         @click=${this.proposeMergeClicked}
         loading=${this.proposingUpdate ? 'true' : 'false'}
@@ -156,6 +159,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderMakePublicButton() {
     return html`
       <evees-loading-button
+        outlined
         icon=${this.publicRead ? 'visibility_off' : 'visibility'}
         @click=${this.makePublic}
         loading=${this.makingPublic ? 'true' : 'false'}

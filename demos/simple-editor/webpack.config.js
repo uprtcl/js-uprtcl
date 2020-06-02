@@ -19,13 +19,13 @@ module.exports = {
       graphql: path.resolve('./node_modules/graphql'),
       'lit-html': path.resolve('./node_modules/lit-html'),
       '@material': path.resolve('./node_modules/@material'),
-      '@authentic': path.resolve('./node_modules/@authentic')
-    }
+      '@authentic': path.resolve('./node_modules/@authentic'),
+    },
   },
   entry: ['babel-polyfill', './src/index.js'],
   devServer: {
     historyApiFallback: true,
-    port: 8080
+    port: 8082,
   },
   mode: 'production',
   module: {
@@ -36,17 +36,17 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: [['@babel/preset-env', { targets: { ie: '11' } }]],
-            plugins: ['@babel/plugin-syntax-dynamic-import']
-          }
-        }
-      }
-    ]
+            plugins: ['@babel/plugin-syntax-dynamic-import'],
+          },
+        },
+      },
+    ],
   },
   plugins: [
     new CopyWebpackPlugin(['node_modules/@webcomponents/webcomponentsjs/**']),
     new HtmlWebpackPlugin({
       chunksSortMode: 'none',
-      template: 'index.html'
+      template: 'index.html',
     }),
-  ]
+  ],
 };
