@@ -944,7 +944,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
 
         .app-content {
-          flex-grow: 1;
+          height: 100%;
           display: flex;
           flex-direction: column;
         }
@@ -952,6 +952,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .home-container {
           text-align: center;
           height: auto;
+          min-height: 100%;
           padding: 3vw 0px;
         }
 
