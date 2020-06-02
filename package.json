@@ -11,7 +11,7 @@
     "build": "lerna run build",
     "clean": "lerna clean",
     "dev": "lerna run dev --parallel",
-    "ci": "lerna clean --yes && lerna exec rm package-lock.json && npm run bootstrap && npm run build",
+    "reset": "lerna clean --yes && lerna exec rm package-lock.json && npm run bootstrap && npm run build",
     "test": "lerna run test",
     "test:watch": "lerna run test:watch --parallel",
     "docs:dev": "vuepress dev docs",
