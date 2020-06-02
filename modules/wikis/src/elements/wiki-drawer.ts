@@ -873,6 +873,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         mwc-drawer {
           min-width: 800px;
           position: relative;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
 
         .app-content {
