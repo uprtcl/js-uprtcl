@@ -58,17 +58,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'ref' })
   firstRef!: string;
 
-  @property({ type: String, attribute: 'init-ref' })
-  initRef!: string;
-
-  @property({ type: String, attribute: 'page-id' })
-  pageId!: string;
-
   @property({ type: String, attribute: 'default-authority' })
   defaultAuthority!: string;
 
   @property({ type: Array })
   editableAuthorities: string[] = [];
+
+  @property({ type: Boolean, attribute: 'external-routing' })
+  externalRouting: boolean = false;
 
   @property({ attribute: false })
   ref!: string;
@@ -89,6 +86,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   context: string = '';
   currentHeadId: string | undefined = undefined;
   editable: boolean = false;
+  initRef: string = '';
+  urlPageId: string = '';
 
   @property({ attribute: false })
   isDrawerOpened = true;
@@ -142,7 +141,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.logger.log('firstUpdated()', { ref: this.ref });
 
-    this.ref = this.firstRef;
+    this.ref = this.firstRef;    
+
+    if(this.externalRouting) {
+      this.getUrlParameters()
+    }
+
     this.loadWiki();
 
     const firstPerspective = await loadEntity<Signed<Perspective>>(
@@ -165,6 +169,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       this.ref = this.firstRef;
       this.loadWiki();
     }
+  }
+
+  getUrlParameters() {
+    const pathElements = window.location.pathname.split('/');
+    this.initRef = pathElements[3] !== 'official' ? pathElements[3] : '';
+    this.urlPageId = pathElements.length > 3 ? pathElements[4] : '';
   }
 
   color() {
@@ -199,9 +209,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
-    if (this.initRef !== 'undefined') this.ref = this.initRef;
 
     if (this.ref === undefined) return;
+
+    if (this.initRef !== '') this.ref = this.initRef;
 
     const perspective = (await loadEntity(this.client, this.ref)) as Entity<
       Signed<Perspective>
@@ -237,7 +248,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.requestUpdate();
 
     // If page is previously selected in the parent component, choose the page
-    this.wiki.object.pages.find((id, i) => (id === this.pageId ? this.selectPage(i) : false));
+    this.wiki.object.pages.find((id, i) => (id === this.urlPageId ? this.selectPage(i) : false));
 
     // Clears Page Id and InitRef variables
     this.restoreInitRefAndPageId();
@@ -268,15 +279,28 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.logger.log('loadPagesData()', { pagesList: this.pagesList });
   }
 
+  goToPage(ix: number | undefined, id: string | undefined) {
+    if(this.externalRouting) {  
+      this.emitExternalRoutingEvent('select-page', {
+        official: this.ref === this.firstRef,
+        perspective: this.ref,
+        rootPerspective: this.firstRef,
+        pageId: id
+      })
+      return;
+    } else {
+      this.selectPage(ix)
+    }
+  }
+
   selectPage(ix: number | undefined) {
     if (!this.wiki) return;
-
     this.selectedPageIx = ix;
 
     if (this.selectedPageIx === undefined) {
       this.hasSelectedPage = false;
       return;
-    }
+    }    
 
     this.dispatchEvent(
       new CustomEvent('page-selected', {
@@ -465,10 +489,18 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     super.connectedCallback();
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
-      this.ref = event.detail.perspectiveId;      
-      this.dispatchEvent(
-        new CustomEvent('perspective', { bubbles: true, composed: true, detail: { rootPerspective: this.firstRef, perspective: this.ref } })
-      );
+
+      const { detail: { perspectiveId } } = event;
+
+      if(this.externalRouting) {
+        this.emitExternalRoutingEvent('select-perspective', {
+          rootPerspective: this.firstRef,
+          perspective: perspectiveId
+        })
+      } else {
+        this.ref = perspectiveId;
+        this.resetWikiPerspective();
+      }
     }) as EventListener);
   }
 
@@ -527,7 +559,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (selected) classes.push('title-selected');
 
     return html`
-      <div class=${classes.join(' ')} @click=${() => this.goToPage(page.id)}>
+      <div class=${classes.join(' ')} @click=${() => this.goToPage(ix, page.id)}>
         <div class="text-container">
           ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
         </div>
@@ -715,11 +747,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             ? html`
                 <wiki-page
                   id="wiki-page"
-                  @nav-back=${() => this.selectPage(undefined)}
+                  @nav-back=${() => this.goToPage(undefined, '')}
                   @page-title-changed=${() => this.loadPagesData()}
                   pageHash=${this.wiki.object.pages[this.selectedPageIx]}
                   color=${this.color() ? this.color() : ''}
                   @doc-changed=${(e) => this.onDocChanged(e)}
+                  .editableAuthorities=${this.editableAuthorities}
                 >
                 </wiki-page>
               `
@@ -765,34 +798,24 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   goToOfficial() {
-    this.ref = this.firstRef;
-    if (this.isMobile) {
-      this.isDrawerOpened = false;
+    if(this.externalRouting) {
+      this.emitExternalRoutingEvent('select-perspective', {
+        rootPerspective: this.firstRef
+      })
+    } else {
+      this.ref = this.firstRef;
+      if (this.isMobile) {
+        this.isDrawerOpened = false;
+      }
+      this.goToHome();
     }
-    this.goToHome();
-  }
-
-  goToPage(pageId: string) {    
-    const pageInfo = {
-      official: this.ref === this.firstRef,
-      perspective: this.ref,
-      rootPerspective: this.firstRef,
-      pageId: pageId
-    }
-
-    this.dispatchEvent(
-      new CustomEvent('page', { bubbles: true, composed: true, detail: pageInfo })
-    );
   }
 
   goToHome() {
+    this.selectPage(undefined);
     if (this.isMobile) {
       this.isDrawerOpened = false;
     }
-
-    this.dispatchEvent(
-      new CustomEvent('perspective', { bubbles: true, composed: true, detail: { rootPerspective: this.ref } })
-    );
   }
 
   goBack() {
@@ -801,9 +824,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
+  emitExternalRoutingEvent(eventName: string, eventDetails: object) {
+    this.dispatchEvent(
+      new CustomEvent(eventName, { bubbles: true, composed: true, detail: eventDetails })
+    );
+  }
+
   restoreInitRefAndPageId() {
-    this.initRef = 'undefined';
-    this.pageId = '';
+    this.initRef = '';
+    this.urlPageId = '';
   }
 
   static get styles() {
@@ -909,10 +938,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         mwc-drawer {
           min-width: 800px;
           position: relative;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
 
         .app-content {
-          height: 100%;
+          flex-grow: 1;
           display: flex;
           flex-direction: column;
         }
@@ -920,7 +952,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .home-container {
           text-align: center;
           height: auto;
-          min-height: 100%;
           padding: 3vw 0px;
         }
 
