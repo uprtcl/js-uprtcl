@@ -938,10 +938,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         mwc-drawer {
           min-width: 800px;
           position: relative;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
 
         .app-content {
-          height: 100%;
+          flex-grow: 1;
           display: flex;
           flex-direction: column;
         }
@@ -949,7 +952,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .home-container {
           text-align: center;
           height: auto;
-          min-height: 100%;
           padding: 3vw 0px;
         }
 
