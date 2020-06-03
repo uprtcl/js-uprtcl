@@ -295,7 +295,7 @@ export class EveesInfoPage extends EveesInfoBase {
                 </div>
               </div>`
             : ''}
-          ${this.firstPerspectiveId === this.perspectiveId
+          ${true
             ? html`
                 <div class="section">
                   <div class="section-header">
@@ -314,7 +314,7 @@ export class EveesInfoPage extends EveesInfoBase {
                   </div>
                 </div>
 
-                <!-- <div class="section">
+                <div class="section">
                   <div class="section-header">
                     Delete
                   </div>
@@ -326,7 +326,7 @@ export class EveesInfoPage extends EveesInfoBase {
                       label="Delete"
                     ></mwc-button>
                   </div>
-                </div> -->
+                </div>
               `
             : ''}
 
