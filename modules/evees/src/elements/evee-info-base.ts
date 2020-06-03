@@ -144,6 +144,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.logger.info('updated() reload', { changedProperties });
       this.load();
     }
+
+    if (changedProperties.has('defaultAuthority')) {
+      this.defaultRemote = (this.requestAll(
+        EveesBindings.EveesRemote
+      ) as EveesRemote[]).find(
+        (remote) => remote.authority === this.defaultAuthority
+      );
+    }
   }
 
   async load() {
