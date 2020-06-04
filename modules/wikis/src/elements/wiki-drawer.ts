@@ -715,8 +715,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   <div class="evee-info">
                     <evees-info-page
                       slot="evee-page"
-                      first-perspective-id=${this.firstRef as string}
-                      perspective-id=${this.ref}
+                      ref=${this.ref}
+                      first-ref=${this.firstRef as string}
                       evee-color=${this.color()}
                       default-authority=${this.defaultAuthority as string}
                     ></evees-info-page>

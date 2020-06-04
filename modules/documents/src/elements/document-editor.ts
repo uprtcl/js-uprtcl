@@ -991,11 +991,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            ${false
+            ${true
               ? html`
                   <evees-info-popper
-                    first-perspective-id=${node.ref}
-                    perspective-id=${node.ref}
+                    ref=${node.ref}
+                    first-ref=${node.ref}
                     evee-color=${color}
                   ></evees-info-popper>
                 `

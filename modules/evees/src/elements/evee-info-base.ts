@@ -46,23 +46,23 @@ import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDiff } from './evees-diff';
 
 interface PerspectiveData {
-  id: string;
-  perspective: Perspective;
-  details: PerspectiveDetails;
-  canWrite: Boolean;
-  permissions: any;
-  head: Entity<Commit>;
+  id?: string;
+  perspective?: Perspective;
+  details?: PerspectiveDetails;
+  canWrite?: Boolean;
+  permissions?: any;
+  head?: Entity<Commit>;
   data: Entity<any>;
 }
 
 export class EveesInfoBase extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
 
-  @property({ type: String, attribute: 'perspective-id' })
-  perspectiveId!: string;
+  @property({ type: String, attribute: 'ref' })
+  ref!: string;
 
-  @property({ type: String, attribute: 'first-perspective-id' })
-  firstPerspectiveId!: string;
+  @property({ type: String, attribute: 'first-ref' })
+  firstRef!: string;
 
   @property({ type: String, attribute: 'default-authority' })
   defaultAuthority: string | undefined = undefined;
@@ -70,11 +70,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
-  @property({ attribute: false })
-  loading: Boolean = false;
+  @property({ type: String, attribute: false })
+  entityType: string | undefined = undefined;
 
   @property({ attribute: false })
-  activeTabIndex: number = 0;
+  loading: Boolean = false;
 
   @property({ attribute: false })
   publicRead: boolean = true;
@@ -155,112 +155,99 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async load() {
-    if (!this.client) throw new Error('client undefined');
+    const entity = await loadEntity(this.client, this.ref);
+    if (!entity) throw Error(`Entity not found ${this.ref}`);
+
+    this.entityType = this.recognizer.recognizeType(entity);
 
     this.loading = true;
-    const result = await this.client.query({
-      query: gql`
-        {
-          entity(ref: "${this.perspectiveId}") {
-            id
-            ... on Perspective {
-              context {
-                id
-              }
-              head {
-                id
-                ... on Commit {
-                  data {
-                    id
-                  }
-                }
-              }
-              name
-              payload {
-                authority
-                creatorId
-                timestamp
-              }
-            }
-            _context {
-              patterns {
-                accessControl {
-                  canWrite
-                  permissions
-                }
-              }
-            }
-          }
-        }
-      `,
-    });
 
-    const accessControl = result.data.entity._context.patterns.accessControl;
-    const data = await loadEntity(this.client, result.data.entity.head.data.id);
-    const head = (await loadEntity(
-      this.client,
-      result.data.entity.head.id
-    )) as Entity<Commit>;
+    if (this.entityType === EveesBindings.PerspectiveType) {
+      const accessControl = await EveesHelpers.getAccessControl(
+        this.client,
+        entity.id
+      );
 
-    if (!data) throw new Error('data undefined');
-    if (!head) throw new Error('head undefined');
+      const headId = await EveesHelpers.getPerspectiveHeadId(
+        this.client,
+        this.ref
+      );
+      const context = await EveesHelpers.getPerspectiveContext(
+        this.client,
+        this.ref
+      );
 
-    this.perspectiveData = {
-      id: result.data.entity.id,
-      details: {
-        context: result.data.entity.context.id,
-        headId: result.data.entity.head.id,
-        name: result.data.entity.name,
-      },
-      perspective: result.data.entity.payload,
-      canWrite: accessControl ? accessControl.canWrite : true,
-      permissions: accessControl ? accessControl.permissions : undefined,
-      head,
-      data,
-    };
+      const head = await loadEntity<Commit>(this.client, headId);
+      const data = await EveesHelpers.getPerspectiveData(this.client, this.ref);
 
-    this.publicRead =
-      this.perspectiveData.permissions.publicRead !== undefined
-        ? this.perspectiveData.permissions.publicRead
-        : true;
+      this.perspectiveData = {
+        id: this.ref,
+        details: {
+          context: context,
+          headId: headId,
+        },
+        perspective: entity.object as Perspective,
+        canWrite: accessControl ? accessControl.canWrite : true,
+        permissions: accessControl ? accessControl.permissions : undefined,
+        head,
+        data,
+      };
 
-    this.logger.info('load', { perspectiveData: this.perspectiveData });
+      this.publicRead =
+        this.perspectiveData.permissions.publicRead !== undefined
+          ? this.perspectiveData.permissions.publicRead
+          : true;
+
+      this.logger.info('load', { perspectiveData: this.perspectiveData });
+
+      this.checkPull();
+    }
+
+    if (this.entityType === EveesBindings.CommitType) {
+      const head = await loadEntity<Commit>(this.client, this.ref);
+      const data = await EveesHelpers.getCommitData(this.client, this.ref);
+
+      this.perspectiveData = {
+        head,
+        data,
+      };
+
+      this.publicRead = true;
+    }
+
     this.isLogged =
       this.defaultRemote !== undefined
         ? this.defaultRemote.userId !== undefined
         : false;
 
-    this.reload();
+    this.reloadChildren();
     this.loading = false;
-
-    this.checkPull();
   }
 
   async checkPull() {
-    if (
-      this.perspectiveId === this.firstPerspectiveId ||
-      !this.perspectiveData.canWrite
-    ) {
+    if (this.entityType !== EveesBindings.PerspectiveType) {
+      this.firstHasChanges = false;
+    }
+
+    if (this.ref === this.firstRef || !this.perspectiveData.canWrite) {
       this.firstHasChanges = false;
       return;
     }
 
-    const remote = await this.evees.getPerspectiveProviderById(
-      this.perspectiveId
-    );
+    const remote = await this.evees.getPerspectiveProviderById(this.ref);
 
     const config = {
       forceOwner: true,
-      authority: this.perspectiveData.perspective.authority,
+      authority: this.perspectiveData.perspective?.authority,
       canWrite: remote.userId,
-      parentId: this.perspectiveId,
+      parentId: this.ref,
     };
 
     this.pullWorkspace = new EveesWorkspace(this.client, this.recognizer);
 
     await this.merge.mergePerspectivesExternal(
-      this.perspectiveId,
-      this.firstPerspectiveId,
+      this.ref,
+      this.firstRef,
       this.pullWorkspace,
       config
     );
@@ -274,7 +261,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.addEventListener('permissions-updated', ((e: CustomEvent) => {
       this.logger.info('CATCHED EVENT: permissions-updated ', {
-        perspectiveId: this.perspectiveId,
+        perspectiveId: this.ref,
         e,
       });
       e.stopPropagation();
@@ -282,7 +269,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
-  reload() {
+  reloadChildren() {
     if (this.forceUpdate === 'true') {
       this.forceUpdate = 'false';
     } else {
@@ -297,7 +284,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.defaultRemote.login();
 
     await this.client.resetStore();
-    this.reload();
+    this.reloadChildren();
     this.load();
     this.loggingIn = false;
   }
@@ -308,7 +295,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.defaultRemote.logout();
 
     await this.client.resetStore();
-    this.reload();
+    this.reloadChildren();
     this.load();
   }
 
@@ -318,7 +305,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.client.mutate({
       mutation: SET_PUBLIC_READ,
       variables: {
-        entityId: this.perspectiveId,
+        entityId: this.ref,
         value: true,
       },
     });
@@ -360,7 +347,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       forceOwner: true,
       authority: remote.authority,
       canWrite: permissions.owner,
-      parentId: this.perspectiveId,
+      parentId: this.ref,
     };
 
     await this.merge.mergePerspectivesExternal(
@@ -397,11 +384,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       await this.applyWorkspace(workspace);
     }
 
-    if (this.perspectiveId !== toPerspectiveId) {
+    if (this.ref !== toPerspectiveId) {
       this.checkoutPerspective(toPerspectiveId);
     } else {
       /** reload perspectives-list */
-      this.reload();
+      this.reloadChildren();
     }
   }
 
@@ -500,7 +487,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       })
     );
 
-    this.reload();
+    this.reloadChildren();
   }
 
   async executeProposal(e: CustomEvent) {
@@ -529,7 +516,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       })
     );
 
-    this.reload();
+    this.reloadChildren();
   }
 
   async newPerspectiveClicked() {
@@ -537,7 +524,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const workspace = new EveesWorkspace(this.client, this.recognizer);
     const newPerspectiveId = await this.evees.forkPerspective(
-      this.perspectiveId,
+      this.ref,
       workspace,
       this.defaultAuthority
     );
@@ -565,16 +552,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async proposeMergeClicked() {
     this.proposingUpdate = true;
-    await this.otherPerspectiveMerge(
-      this.perspectiveId,
-      this.firstPerspectiveId,
-      true
-    );
+    await this.otherPerspectiveMerge(this.ref, this.firstRef, true);
     this.proposingUpdate = false;
   }
 
   perspectiveTextColor() {
-    if (this.perspectiveId === this.firstPerspectiveId) {
+    if (this.ref === this.firstRef) {
       return '#37352f';
     } else {
       return '#ffffff';
@@ -587,11 +570,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.client.mutate({
       mutation: DELETE_PERSPECTIVE,
       variables: {
-        perspectiveId: this.perspectiveId,
+        perspectiveId: this.ref,
       },
     });
 
-    this.checkoutPerspective(this.firstPerspectiveId);
+    this.checkoutPerspective(this.firstRef);
   }
 
   async updatesDialog(
@@ -630,42 +613,33 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   renderInfo() {
     return html`
       <div class="perspective-details">
-        <div class="technical-details">
-          <div class="card-container">
-            <div class="card tech-card">
-              <table class="tech-table">
-                <tr>
-                  <td class="prop-name">perspective-id:</td>
-                  <td class="prop-value">${this.perspectiveData.id}</td>
-                </tr>
-                <tr>
-                  <td class="prop-name">context:</td>
-                  <td class="prop-value">
-                    ${this.perspectiveData.details.context}
-                  </td>
-                </tr>
-                <tr>
-                  <td class="prop-name">authority:</td>
-                  <td class="prop-value">
-                    ${this.perspectiveData.perspective.authority}
-                  </td>
-                </tr>
-                <tr>
-                  <td class="prop-name">head:</td>
-                  <td class="prop-value">
-                    ${JSON.stringify(this.perspectiveData.head)}
-                  </td>
-                </tr>
-                <tr>
-                  <td class="prop-name">data:</td>
-                  <td class="prop-value">
-                    ${JSON.stringify(this.perspectiveData.data)}
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </div>
+        <div class="prop-name"><h2>${this.entityType}</h2></div>
+        ${this.entityType === EveesBindings.PerspectiveType
+          ? html`<div class="prop-name">perspective-id</div>
+              <pre class="prop-value">
+${JSON.stringify(this.perspectiveData.id)}</pre
+              >
+
+              <div class="prop-name">context</div>
+              <pre class="prop-value">
+${this.perspectiveData.details?.context}</pre
+              >
+
+              <div class="prop-name">authority</div>
+              <pre class="prop-value">
+${this.perspectiveData.perspective?.authority}</pre
+              > `
+          : ''}
+
+        <div class="prop-name">head</div>
+        <pre class="prop-value">
+${JSON.stringify(this.perspectiveData.head, undefined, 2)}</pre
+        >
+
+        <div class="prop-name">data</div>
+        <pre class="prop-value">
+${JSON.stringify(this.perspectiveData.data, undefined, 2)}</pre
+        >
       </div>
     `;
   }
@@ -675,49 +649,27 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       css`
         .perspective-details {
           padding: 5px;
+          text-align: left;
         }
 
-        .summary {
-          margin: 0 auto;
-          padding: 32px 32px;
-          max-width: 300px;
-          text-align: center;
-        }
-
-        .card-container {
-          flex-grow: 1;
-          display: flex;
-          padding: 10px;
-        }
-
-        .card {
-          flex: 1;
-          width: 100%;
-          height: 100%;
-          border: solid 1px #cccccc;
-          border-radius: 3px;
-        }
-
-        .technical-details {
-          max-width: 640px;
-          margin: 0 auto;
-        }
-
-        .tech-card {
-          width: 100%;
-          padding: 16px 32px;
-          text-align: center;
-        }
-
-        .tech-table .prop-name {
-          text-align: right;
+        .prop-name {
           font-weight: bold;
+          width: 100%;
         }
 
-        .tech-table .prop-value {
+        .prop-value {
           font-family: Lucida Console, Monaco, monospace;
           font-size: 12px;
           text-align: left;
+          background-color: #1c1d27;
+          color: #a0a3cb;
+          padding: 16px 16px;
+          margin-bottom: 16px;
+          border-radius: 6px;
+          width: 100%;
+          overflow: auto;
+          width: calc(100% - 32px);
+          overflow-x: auto;
         }
       `,
     ];
