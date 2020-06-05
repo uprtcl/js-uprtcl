@@ -1,4 +1,8 @@
-import { HttpEthAuthProvider, HttpConnection, KnownSourcesHttp } from '@uprtcl/http-provider';
+import {
+  HttpEthAuthProvider,
+  HttpConnection,
+  KnownSourcesHttp,
+} from '@uprtcl/http-provider';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';
@@ -6,7 +10,12 @@ import { CidConfig, KnownSourcesService } from '@uprtcl/multiplatform';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
-import { PerspectiveDetails, Perspective, Commit, NewPerspectiveData } from '../../../types';
+import {
+  PerspectiveDetails,
+  Perspective,
+  Commit,
+  NewPerspectiveData,
+} from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
 import { Secured } from '../../../utils/cid-hash';
 
@@ -59,11 +68,7 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     return result.elementIds[0];
   }
 
-  async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
-    await super.httpPost('/persp', { perspective });
-  }
-
-  async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+  async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     await super.httpPost('/persp', {
       perspective: perspectiveData.perspective,
       details: perspectiveData.details,
@@ -71,18 +76,16 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     });
   }
 
-  async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+  async createPerspectiveBatch(
+    newPerspectivesData: NewPerspectiveData[]
+  ): Promise<void> {
     const promises = newPerspectivesData.map((perspectiveData) =>
-      this.cloneAndInitPerspective(perspectiveData)
+      this.createPerspective(perspectiveData)
     );
     await Promise.all(promises);
   }
 
-  async cloneCommit(commit: any): Promise<void> {
-    await super.httpPost('/commit', commit);
-  }
-
-  async updatePerspectiveDetails(
+  async updatePerspective(
     perspectiveId: string,
     details: Partial<PerspectiveDetails>
   ): Promise<void> {
@@ -93,8 +96,10 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     return super.getWithPut<any[]>(`/persp`, { context: context });
   }
 
-  async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
-    return super.getObject<PerspectiveDetails>(`/persp/${perspectiveId}/details`);
+  async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
+    return super.getObject<PerspectiveDetails>(
+      `/persp/${perspectiveId}/details`
+    );
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {

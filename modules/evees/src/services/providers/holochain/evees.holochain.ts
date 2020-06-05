@@ -1,16 +1,26 @@
 import { injectable } from 'inversify';
 
-import { EntryResult, HolochainProvider, parseEntriesResults } from '@uprtcl/holochain-provider';
+import {
+  EntryResult,
+  HolochainProvider,
+  parseEntriesResults,
+} from '@uprtcl/holochain-provider';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { KnownSourcesService, defaultCidConfig } from '@uprtcl/multiplatform';
 
-import { Perspective, Commit, PerspectiveDetails, NewPerspectiveData } from '../../../types';
+import {
+  Perspective,
+  Commit,
+  PerspectiveDetails,
+  NewPerspectiveData,
+} from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 import { Secured } from '../../../utils/cid-hash';
 import { parseResponse } from '@uprtcl/holochain-provider';
 
 @injectable()
-export abstract class EveesHolochain extends HolochainProvider implements EveesRemote {
+export abstract class EveesHolochain extends HolochainProvider
+  implements EveesRemote {
   knownSources?: KnownSourcesService | undefined;
   userId?: string | undefined;
   zome: string = 'evees';
@@ -56,27 +66,7 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
   /**
    * @override
    */
-  async clonePerspective(perspective: Secured<Perspective>): Promise<void> {
-    await this.call('clone_perspective', {
-      previous_address: perspective.id,
-      perspective: perspective.object,
-    });
-  }
-
-  /**
-   * @override
-   */
-  async cloneCommit(commit: Secured<Commit>): Promise<void> {
-    await this.call('clone_commit', {
-      perspective_address: commit.id,
-      commit: commit.object,
-    });
-  }
-
-  /**
-   * @override
-   */
-  async updatePerspectiveDetails(
+  async updatePerspective(
     perspectiveId: string,
     details: PerspectiveDetails
   ): Promise<void> {
@@ -94,31 +84,39 @@ export abstract class EveesHolochain extends HolochainProvider implements EveesR
       context: context,
     });
 
-    const perspectivesEntries: EntryResult<Signed<Perspective>>[] = parseEntriesResults(
-      perspectivesResponse
-    );
+    const perspectivesEntries: EntryResult<
+      Signed<Perspective>
+    >[] = parseEntriesResults(perspectivesResponse);
     return perspectivesEntries.filter((p) => !!p).map((p) => p.entry.id);
   }
 
   /**
    * @override
    */
-  async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
+  async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
     const result = await this.call('get_perspective_details', {
       perspective_address: perspectiveId,
     });
     return parseResponse(result);
   }
 
-  async cloneAndInitPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    await this.clonePerspective(perspectiveData.perspective);
-    return this.updatePerspectiveDetails(perspectiveData.perspective.id, perspectiveData.details);
+  async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    await this.call('clone_perspective', {
+      previous_address: perspectiveData.perspective.id,
+      perspective: perspectiveData.perspective.object,
+    });
+    return this.updatePerspective(
+      perspectiveData.perspective.id,
+      perspectiveData.details
+    );
     // TODO: addEditor
   }
 
-  async clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+  async createPerspectiveBatch(
+    newPerspectivesData: NewPerspectiveData[]
+  ): Promise<void> {
     const promises = newPerspectivesData.map((perspectiveData) =>
-      this.cloneAndInitPerspective(perspectiveData)
+      this.createPerspective(perspectiveData)
     );
     await Promise.all(promises);
   }

@@ -47,23 +47,17 @@ export class MockEveesProvider implements EveesRemote {
     throw new Error('Method not implemented');
   }
 
-  async getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails> {
+  async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
     return this.details[perspectiveId];
   }
 
-  cloneAndInitPerspective(newPerspectiveData: NewPerspectiveData): Promise<void> {
+  createPerspective(newPerspectiveData: NewPerspectiveData): Promise<void> {
     throw new Error('Method not implemented');
   }
 
-  clonePerspectivesBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    throw new Error('Method not implemented');
-  }
-
-  clonePerspective(perspective: Secured<Perspective>): Promise<void> {
-    throw new Error('Method not implemented');
-  }
-
-  cloneCommit(commit: Secured<Commit>): Promise<void> {
+  createPerspectivesBatch(
+    newPerspectivesData: NewPerspectiveData[]
+  ): Promise<void> {
     throw new Error('Method not implemented');
   }
 
@@ -71,7 +65,7 @@ export class MockEveesProvider implements EveesRemote {
     throw new Error('Method not implemented.');
   }
 
-  updatePerspectiveDetails(
+  updatePerspective(
     perspectiveId: string,
     details: Partial<PerspectiveDetails>
   ): Promise<void> {

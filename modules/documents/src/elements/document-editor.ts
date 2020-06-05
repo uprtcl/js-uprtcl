@@ -30,6 +30,7 @@ import {
   EveesDraftsLocal,
   MenuConfig,
   EveesHelpers,
+  EveesBindings,
 } from '@uprtcl/evees';
 import { loadEntity, CASStore } from '@uprtcl/multiplatform';
 
@@ -182,18 +183,18 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         headId = '';
       }
     } else {
-      if (entityType === 'Commit') {
+      if (entityType === EveesModule.bindings.CommitType) {
         if (!parent) throw new Error('Commit must have a parent');
 
         editable = parent.editable;
         authority = parent.authority;
         dataId = await EveesHelpers.getCommitDataId(this.client, entity.id);
-        headId = this.ref;
+        headId = ref;
       } else {
         entityType = 'Data';
         editable = false;
         authority = '';
-        dataId = this.ref;
+        dataId = ref;
         headId = '';
       }
     }

@@ -15,5 +15,5 @@ export interface EveesSource extends CASStore {
    * @param perspectiveId id of the perspective
    * @returns the headId, the context and the name of the perspective
    */
-  getPerspectiveDetails(perspectiveId: string): Promise<PerspectiveDetails>;
+  getPerspective(perspectiveId: string): Promise<PerspectiveDetails>;
 }
