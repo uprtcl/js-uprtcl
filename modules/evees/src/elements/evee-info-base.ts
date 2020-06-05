@@ -140,7 +140,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if (changedProperties.get('perspectiveId') !== undefined) {
+    if (changedProperties.get('ref') !== undefined) {
       this.logger.info('updated() reload', { changedProperties });
       this.load();
     }
@@ -349,6 +349,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       canWrite: permissions.owner,
       parentId: this.ref,
     };
+
+    debugger;
 
     await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
