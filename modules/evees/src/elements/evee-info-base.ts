@@ -350,8 +350,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       parentId: this.ref,
     };
 
-    debugger;
-
     await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
       fromPerspectiveId,
@@ -652,6 +650,7 @@ ${JSON.stringify(this.perspectiveData.data, undefined, 2)}</pre
         .perspective-details {
           padding: 5px;
           text-align: left;
+          max-width: calc(100vw - 72px);
         }
 
         .prop-name {
@@ -663,8 +662,8 @@ ${JSON.stringify(this.perspectiveData.data, undefined, 2)}</pre
           font-family: Lucida Console, Monaco, monospace;
           font-size: 12px;
           text-align: left;
-          background-color: #1c1d27;
-          color: #a0a3cb;
+          background-color: #a0a3cb;
+          color: #1c1d27;
           padding: 16px 16px;
           margin-bottom: 16px;
           border-radius: 6px;

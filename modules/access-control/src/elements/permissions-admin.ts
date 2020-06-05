@@ -123,6 +123,10 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
       .row {
         width: 100%;
       }
+
+      evees-author {
+        margin: 0 auto;
+      }
     `;
   }
 }
