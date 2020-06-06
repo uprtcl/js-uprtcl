@@ -568,6 +568,7 @@ export class DocumentTextNodeEditor extends LitElement {
         this.applyImageNode();
         break;
       case ActiveSubMenu.VIDEO:
+        this.applyIframeNode();
         break;
     }
 
@@ -619,20 +620,35 @@ export class DocumentTextNodeEditor extends LitElement {
   applyImageNode() {
     const { link, width, height } = this.getSubMenuFields();
     if (this.isValidLink(link)) {
-      console.log('apply image node', this.isValidLink(link));
       const imgNode = this.editor.view.state.schema.nodes.image.create({
         src: link,
         style: `width:${width !== '' ? width + 'px' : '100%'};${
           height !== '' ? `height:${height}px` : ''
         }`
       });
-      this.editor.view.dispatch(this.editor.view.state.tr.replaceSelectionWith(imgNode, false));
+      this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(imgNode, false));
+      // this.editor.view.dispatch();
+    }
+  }
+
+  applyIframeNode() {
+    const { link, width, height } = this.getSubMenuFields();
+    if (this.isValidLink(link)) {
+      const iframeNode = this.editor.view.state.schema.nodes.iframe.create({
+        src: link,
+        style: `width:${width !== '' ? width + 'px' : '100%'};${
+          height !== '' ? `height:${height}px` : ''
+        };border:0px;`
+      });
+
+      this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(iframeNode, false));
     }
   }
 
   menuItemClick(markType: any) {
     this.preventHide = false;
     toggleMark(markType)(this.editor.view.state, this.editor.view.dispatch);
+    this.resetSubMenu();
   }
 
   editorFocused() {
@@ -722,44 +738,46 @@ export class DocumentTextNodeEditor extends LitElement {
       <div class="top-menu" id="TOP_MENU">
         <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
 
-        ${this.renderLevelControllers()}
-        ${this.type !== TextType.Title
-          ? html`
-              <button
-                class="btn btn-square btn-large"
-                @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.strong)}
-              >
-                ${icons.bold}
-              </button>
-            `
-          : ''}
-        <button
-          class="btn btn-square btn-large"
-          @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.em)}
-        >
-          ${icons.em}
-        </button>
+        <div class="menus">
+          ${this.renderLevelControllers()}
+          ${this.type !== TextType.Title
+            ? html`
+                <button
+                  class="btn btn-square btn-large"
+                  @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.strong)}
+                >
+                  ${icons.bold}
+                </button>
+              `
+            : ''}
+          <button
+            class="btn btn-square btn-large"
+            @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.em)}
+          >
+            ${icons.em}
+          </button>
 
-        <button
-          class="btn btn-square btn-small"
-          @click=${() => this.subMenuClick(ActiveSubMenu.LINK)}
-        >
-          ${icons.link}
-        </button>
+          <button
+            class="btn btn-square btn-small"
+            @click=${() => this.subMenuClick(ActiveSubMenu.LINK)}
+          >
+            ${icons.link}
+          </button>
 
-        <button
-          class="btn btn-square btn-small"
-          @click=${() => this.subMenuClick(ActiveSubMenu.IMAGE)}
-        >
-          ${icons.image}
-        </button>
+          <button
+            class="btn btn-square btn-small"
+            @click=${() => this.subMenuClick(ActiveSubMenu.IMAGE)}
+          >
+            ${icons.image}
+          </button>
 
-        <button
-          class="btn btn-square btn-small"
-          @click=${() => this.subMenuClick(ActiveSubMenu.VIDEO)}
-        >
-          ${icons.youtube}
-        </button>
+          <button
+            class="btn btn-square btn-small"
+            @click=${() => this.subMenuClick(ActiveSubMenu.VIDEO)}
+          >
+            ${icons.youtube}
+          </button>
+        </div>
 
         ${this.showUrlMenu ? this.renderUrlMenu() : ''}
       </div>
@@ -793,15 +811,23 @@ export class DocumentTextNodeEditor extends LitElement {
         .top-menu {
           z-index: 10;
           position: absolute;
-          display: flex;
           padding: 0px 0px;
-          height: 40px;
+          height: initial;
           top: -50px;
           left: 25px;
           background-color: white;
           border-radius: 10px;
           border: solid 1px #cfcfcf;
           background-color: #28282a;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .top-menu .menus {
+          display: flex;
+          justify-content: center;
+          align-items: center;
         }
 
         .top-menu button {
@@ -858,6 +884,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
         .inp {
           display: flex;
+          padding: 0 10px 7px 10px;
         }
 
         .inp input {
@@ -867,17 +894,25 @@ export class DocumentTextNodeEditor extends LitElement {
           border: none;
           background-color: #444444;
           color: white;
-          margin: 0 5px;
+          margin: 0 5px 0 0;
+          border-radius: 6px;
+        }
+
+        .inp input#URL_INPUT {
+          flex-grow: 1;
         }
 
         .inp input.dim {
           width: 50px;
+          margin-left: 5px;
         }
 
         .inp .inp-hldr {
           display: flex;
+          flex-grow: 1;
           color: white;
           align-items: center;
+          margin-right: 5px;
         }
 
         .editor-content {

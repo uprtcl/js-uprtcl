@@ -55,7 +55,7 @@ export const nodes = {
   },
 
   // :: NodeSpec An inline image (`<img>`) node. Supports `src`,
-  // `alt`, and `href` attributes. The latter two default to the empty
+  // `alt`, `style`, and `href` attributes. The latter two default to the empty
   // string.
   image: {
     inline: true,
@@ -83,6 +83,32 @@ export const nodes = {
     toDOM(node) {
       let { src, alt, title, style } = node.attrs;
       return ['img', { src, alt, title, style }];
+    }
+  },
+
+  // :: NodeSpec An inline image (`<iframe>`) node. Supports `src`,
+  //  and `style` attributes.
+  iframe: {
+    inline: true,
+    attrs: {
+      src: {},
+      style: {}
+    },
+    group: 'inline',
+    parseDOM: [
+      {
+        tag: 'iframe',
+        getAttrs(dom) {
+          return {
+            src: dom.getAttribute('src'),
+            style: dom.getAttribute('style')
+          };
+        }
+      }
+    ],
+    toDOM(node) {
+      let { src, style } = node.attrs;
+      return ['iframe', { src, style }];
     }
   },
 
