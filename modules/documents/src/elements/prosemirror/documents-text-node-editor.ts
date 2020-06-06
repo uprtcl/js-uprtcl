@@ -62,7 +62,7 @@ export class DocumentTextNodeEditor extends LitElement {
   showUrlMenu: Boolean = false;
 
   @property({ type: Boolean, attribute: false })
-  showImageMenu: Boolean = false;
+  showDimMenu: Boolean = false;
 
   @property({ type: ActiveSubMenu, attribute: false })
   activeSubMenu!: ActiveSubMenu | null;
@@ -96,7 +96,10 @@ export class DocumentTextNodeEditor extends LitElement {
 
     if (changedProperties.has('focusInit')) {
       if (this.focusInit === 'true') {
+        this.setShowMenu(true);
         this.editor.view.focus();
+      } else {
+        this.setShowMenu(false);
       }
     }
 
@@ -131,15 +134,17 @@ export class DocumentTextNodeEditor extends LitElement {
       }
     }
 
-    if (changedProperties.has('selected')) {
-      if (!this.selected) {
-        if (!this.preventHide) {
-          this.setShowMenu(false);
-        }
-      } else {
-        this.setShowMenu(true);
-      }
-    }
+    // if (changedProperties.has('selected')) {
+    //   if (!this.selected) {
+    //     if (!this.preventHide) {
+    //       this.setShowMenu(false);
+    //     }
+    //   } else {
+    //     this.setShowMenu(true);
+    //   }
+    // }
+
+    console.log('UPDATED TRIGGERED', changedProperties);
   }
 
   runAction(action: any) {
@@ -543,9 +548,9 @@ export class DocumentTextNodeEditor extends LitElement {
         this.activeSubMenu === ActiveSubMenu.IMAGE ||
         this.activeSubMenu === ActiveSubMenu.VIDEO
       ) {
-        this.showImageMenu = true;
+        this.showDimMenu = true;
       } else {
-        this.showImageMenu = false;
+        this.showDimMenu = false;
       }
     } else {
       this.resetSubMenu();
@@ -555,7 +560,7 @@ export class DocumentTextNodeEditor extends LitElement {
   private resetSubMenu() {
     this.preventHide = false;
     this.activeSubMenu = null;
-    this.showImageMenu = false;
+    this.showDimMenu = false;
     this.showUrlMenu = false;
   }
 
@@ -677,7 +682,7 @@ export class DocumentTextNodeEditor extends LitElement {
               : ''}url"
             id="URL_INPUT"
           />
-          ${this.showImageMenu ? this.renderDimensionsMenu() : ''}
+          ${this.showDimMenu ? this.renderDimensionsMenu() : ''}
         </div>
         <button @click=${this.subMenuCancel} class="btn btn-small">
           ${icons.cross}
@@ -733,37 +738,54 @@ export class DocumentTextNodeEditor extends LitElement {
     `;
   }
 
+  /**
+   * Menus that needs to show up only when there is a `selection`
+   */
+
+  renderSelectionOnlyMenus() {
+    const menus = html`
+      ${this.renderLevelControllers()}
+      ${this.type !== TextType.Title
+        ? html`
+            <button
+              class="btn btn-square btn-large"
+              @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.strong)}
+            >
+              ${icons.bold}
+            </button>
+          `
+        : ''}
+      <button
+        class="btn btn-square btn-large"
+        @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.em)}
+      >
+        ${icons.em}
+      </button>
+
+      <button
+        class="btn btn-square btn-small"
+        @click=${() => this.subMenuClick(ActiveSubMenu.LINK)}
+      >
+        ${icons.link}
+      </button>
+    `;
+    return this.hasSelection() ? menus : '';
+  }
+
+  hasSelection() {
+    if (this.editor.view.state.selection.from > 1 || this.editor.view.state.selection.to > 1) {
+      return true;
+    }
+    return false;
+  }
+
   renderMenu() {
     return html`
       <div class="top-menu" id="TOP_MENU">
         <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
 
         <div class="menus">
-          ${this.renderLevelControllers()}
-          ${this.type !== TextType.Title
-            ? html`
-                <button
-                  class="btn btn-square btn-large"
-                  @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.strong)}
-                >
-                  ${icons.bold}
-                </button>
-              `
-            : ''}
-          <button
-            class="btn btn-square btn-large"
-            @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.em)}
-          >
-            ${icons.em}
-          </button>
-
-          <button
-            class="btn btn-square btn-small"
-            @click=${() => this.subMenuClick(ActiveSubMenu.LINK)}
-          >
-            ${icons.link}
-          </button>
-
+          ${this.renderSelectionOnlyMenus()}
           <button
             class="btn btn-square btn-small"
             @click=${() => this.subMenuClick(ActiveSubMenu.IMAGE)}
