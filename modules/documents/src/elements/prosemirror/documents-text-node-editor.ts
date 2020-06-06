@@ -1,25 +1,26 @@
-import { LitElement, html, css, property } from 'lit-element';
-
 import { Logger } from '@uprtcl/micro-orchestrator';
-
+import { css, html, LitElement, property } from 'lit-element';
+import { toggleMark } from 'prosemirror-commands';
+import { DOMParser, DOMSerializer } from 'prosemirror-model';
 import { EditorState, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import { toggleMark, splitBlock, joinBackward } from 'prosemirror-commands';
-import { DOMParser, DOMSerializer } from 'prosemirror-model';
-
-import { styles } from './prosemirror.css';
-import { titleSchema } from './schema-title';
-import { blockSchema } from './schema-block';
-
-import { iconsStyle } from './icons.css';
-import { icons } from './icons';
 import { TextType } from '../../types';
-import { runInThisContext } from 'vm';
+import { icons } from './icons';
+import { iconsStyle } from './icons.css';
+import { styles } from './prosemirror.css';
+import { blockSchema } from './schema-block';
+import { titleSchema } from './schema-title';
 
 export const APPEND_ACTION = 'append';
 export const FOCUS_ACTION = 'focus';
 
 const LOGINFO = false;
+
+enum ActiveSubMenu {
+  LINK = 'link',
+  IMAGE = 'image',
+  VIDEO = 'video'
+}
 
 export class DocumentTextNodeEditor extends LitElement {
   logger = new Logger('DOCUMENT-TEXT-NODE-EDITOR');
@@ -49,16 +50,22 @@ export class DocumentTextNodeEditor extends LitElement {
   level: number = 0;
 
   @property({ type: Boolean, attribute: false })
-  showMenu: Boolean = false;
-
-  @property({ type: Boolean, attribute: false })
   selected: Boolean = false;
 
   @property({ type: Boolean, attribute: false })
-  showUrl: Boolean = false;
+  empty: Boolean = false;
 
   @property({ type: Boolean, attribute: false })
-  empty: Boolean = false;
+  showMenu: Boolean = false;
+
+  @property({ type: Boolean, attribute: false })
+  showUrlMenu: Boolean = false;
+
+  @property({ type: Boolean, attribute: false })
+  showImageMenu: Boolean = false;
+
+  @property({ type: ActiveSubMenu, attribute: false })
+  activeSubMenu!: ActiveSubMenu | null;
 
   editor: any = {};
   preventHide: Boolean = false;
@@ -117,7 +124,7 @@ export class DocumentTextNodeEditor extends LitElement {
       }
     }
 
-    if (changedProperties.has('showUrl') && this.showUrl && this.shadowRoot != null) {
+    if (changedProperties.has('showUrlMenu') && this.showUrlMenu && this.shadowRoot != null) {
       const input = this.shadowRoot.getElementById('URL_INPUT');
       if (input) {
         input.focus();
@@ -228,8 +235,8 @@ export class DocumentTextNodeEditor extends LitElement {
         new CustomEvent('enter-pressed', {
           detail: {
             content,
-            asChild: this.type === TextType.Title,
-          },
+            asChild: this.type === TextType.Title
+          }
         })
       );
 
@@ -241,7 +248,7 @@ export class DocumentTextNodeEditor extends LitElement {
       if (this.showMenu) {
         event.preventDefault();
         this.preventHide = false;
-        this.showUrl = false;
+        this.showUrlMenu = false;
         this.setShowMenu(false);
       }
     }
@@ -258,8 +265,8 @@ export class DocumentTextNodeEditor extends LitElement {
             bubbles: true,
             composed: true,
             detail: {
-              content,
-            },
+              content
+            }
           })
         );
       }
@@ -324,7 +331,7 @@ export class DocumentTextNodeEditor extends LitElement {
     if (event.keyCode === 75) {
       if (event.ctrlKey === true) {
         event.preventDefault();
-        this.linkClick();
+        this.subMenuConfirm();
       }
       return;
     }
@@ -359,7 +366,7 @@ export class DocumentTextNodeEditor extends LitElement {
     const state = EditorState.create({
       schema: schema,
       doc: doc,
-      plugins: [],
+      plugins: []
     });
 
     if (this.shadowRoot == null) return;
@@ -368,14 +375,14 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.view = new EditorView(container as Node, {
       state: state,
       editable: () => this.isEditable(),
-      dispatchTransaction: (transaction) => this.dispatchTransaction(transaction),
+      dispatchTransaction: transaction => this.dispatchTransaction(transaction),
       handleDOMEvents: {
         focus: () =>
           this.dispatchEvent(
             new CustomEvent('focus-changed', {
               bubbles: true,
               composed: true,
-              detail: { value: true },
+              detail: { value: true }
             })
           ),
         blur: () =>
@@ -383,14 +390,14 @@ export class DocumentTextNodeEditor extends LitElement {
             new CustomEvent('focus-changed', {
               bubbles: true,
               composed: true,
-              detail: { value: false },
+              detail: { value: false }
             })
           ),
         keydown: (view, event) => {
           this.keydown(view, event);
           return true;
-        },
-      },
+        }
+      }
     });
 
     if (this.focusInit === 'true') {
@@ -432,7 +439,7 @@ export class DocumentTextNodeEditor extends LitElement {
         selected: this.selected,
         newState,
         contentChanged,
-        transaction,
+        transaction
       });
 
     if (!contentChanged) return;
@@ -450,8 +457,8 @@ export class DocumentTextNodeEditor extends LitElement {
     this.dispatchEvent(
       new CustomEvent('content-changed', {
         detail: {
-          content: newContent,
-        },
+          content: newContent
+        }
       })
     );
   }
@@ -471,7 +478,7 @@ export class DocumentTextNodeEditor extends LitElement {
   changeType(type: TextType, lift: boolean) {
     this.dispatchEvent(
       new CustomEvent('change-type', {
-        detail: { type, lift },
+        detail: { type, lift }
       })
     );
   }
@@ -481,7 +488,7 @@ export class DocumentTextNodeEditor extends LitElement {
     if (event.keyCode === 27) {
       if (this.showMenu) {
         event.preventDefault();
-        this.linkCancelled();
+        this.subMenuCancel();
       }
     }
 
@@ -489,7 +496,7 @@ export class DocumentTextNodeEditor extends LitElement {
     if (event.keyCode === 13) {
       if (this.showMenu) {
         event.preventDefault();
-        this.linkConfirmed();
+        this.subMenuConfirm();
       }
     }
   }
@@ -512,7 +519,7 @@ export class DocumentTextNodeEditor extends LitElement {
       if (!menu) return;
 
       /** listen events */
-      menu.addEventListener('keydown', (event) => {
+      menu.addEventListener('keydown', event => {
         if (event.keyCode === 27) {
           // 27 is esc
           event.stopPropagation();
@@ -526,40 +533,100 @@ export class DocumentTextNodeEditor extends LitElement {
     }
   }
 
-  linkClick() {
-    this.preventHide = true;
-    this.showUrl = !this.showUrl;
+  subMenuClick(type: ActiveSubMenu) {
+    if (this.activeSubMenu !== type) {
+      this.activeSubMenu = type;
+      this.preventHide = true;
+      this.showUrlMenu = true;
+
+      if (
+        this.activeSubMenu === ActiveSubMenu.IMAGE ||
+        this.activeSubMenu === ActiveSubMenu.VIDEO
+      ) {
+        this.showImageMenu = true;
+      } else {
+        this.showImageMenu = false;
+      }
+    } else {
+      this.resetSubMenu();
+    }
   }
 
-  linkCancelled() {
+  private resetSubMenu() {
     this.preventHide = false;
-    this.showUrl = false;
+    this.activeSubMenu = null;
+    this.showImageMenu = false;
+    this.showUrlMenu = false;
+  }
+
+  subMenuConfirm() {
+    switch (this.activeSubMenu) {
+      case ActiveSubMenu.LINK:
+        this.applyLinkMark();
+        break;
+      case ActiveSubMenu.IMAGE:
+        this.applyImageNode();
+        break;
+      case ActiveSubMenu.VIDEO:
+        break;
+    }
+
+    this.resetSubMenu();
+  }
+
+  subMenuCancel() {
+    this.resetSubMenu();
     this.setShowMenu(false);
   }
 
-  linkConfirmed() {
-    if (this.shadowRoot == null) return;
-
-    let href = (this.shadowRoot.getElementById('URL_INPUT') as HTMLInputElement).value;
-
-    if (!href.startsWith('http')) {
-      href = `http://${href}`;
+  private isValidLink(link: string) {
+    if (!link.startsWith('http')) {
+      link = `http://${link}`;
     }
-
-    let valid = true;
     try {
-      new URL(href);
+      new URL(link);
     } catch (_) {
-      valid = false;
+      return false;
     }
-    if (valid) {
+
+    return link;
+  }
+
+  getSubMenuFields() {
+    if (this.shadowRoot == null) return { link: '', width: '', height: '' };
+
+    return {
+      link: (this.shadowRoot.getElementById('URL_INPUT') as HTMLInputElement).value,
+      width: (this.shadowRoot.getElementById('DIM_WIDTH') as HTMLInputElement)?.value || '',
+      height: (this.shadowRoot.getElementById('DIM_HEIGHT') as HTMLInputElement)?.value || ''
+    };
+  }
+
+  applyLinkMark() {
+    const { link } = this.getSubMenuFields();
+
+    const href = this.isValidLink(link);
+    if (href) {
       toggleMark(this.editor.view.state.schema.marks.link, { href })(
         this.editor.view.state,
         this.editor.view.dispatch
       );
       this.preventHide = false;
-      this.showUrl = false;
       this.selected = false;
+    }
+  }
+
+  applyImageNode() {
+    const { link, width, height } = this.getSubMenuFields();
+    if (this.isValidLink(link)) {
+      console.log('apply image node', this.isValidLink(link));
+      const imgNode = this.editor.view.state.schema.nodes.image.create({
+        src: link,
+        style: `width:${width !== '' ? width + 'px' : '100%'};${
+          height !== '' ? `height:${height}px` : ''
+        }`
+      });
+      this.editor.view.dispatch(this.editor.view.state.tr.replaceSelectionWith(imgNode, false));
     }
   }
 
@@ -576,14 +643,30 @@ export class DocumentTextNodeEditor extends LitElement {
     if (LOGINFO) this.logger.log('editor blured');
   }
 
+  renderDimensionsMenu() {
+    return html`
+      <input @keydown=${this.urlKeydown} class="dim" placeholder="width" id="DIM_WIDTH" />px
+      <input @keydown=${this.urlKeydown} class="dim" placeholder="height" id="DIM_HEIGHT" />px
+    `;
+  }
+
   renderUrlMenu() {
     return html`
       <div class="inp">
-        <input @keydown=${this.urlKeydown} placeholder="url" id="URL_INPUT" />
-        <button @click=${this.linkCancelled} class="btn btn-small">
+        <div class="inp-hldr">
+          <input
+            @keydown=${this.urlKeydown}
+            placeholder="${this.activeSubMenu !== ActiveSubMenu.LINK
+              ? this.activeSubMenu + ' '
+              : ''}url"
+            id="URL_INPUT"
+          />
+          ${this.showImageMenu ? this.renderDimensionsMenu() : ''}
+        </div>
+        <button @click=${this.subMenuCancel} class="btn btn-small">
           ${icons.cross}
         </button>
-        <button @click=${this.linkConfirmed} class="btn btn-small">
+        <button @click=${this.subMenuConfirm} class="btn btn-small">
           ${icons.check}
         </button>
       </div>
@@ -657,11 +740,28 @@ export class DocumentTextNodeEditor extends LitElement {
           ${icons.em}
         </button>
 
-        <button class="btn btn-square btn-small" @click=${this.linkClick}>
+        <button
+          class="btn btn-square btn-small"
+          @click=${() => this.subMenuClick(ActiveSubMenu.LINK)}
+        >
           ${icons.link}
         </button>
 
-        ${this.showUrl ? this.renderUrlMenu() : ''}
+        <button
+          class="btn btn-square btn-small"
+          @click=${() => this.subMenuClick(ActiveSubMenu.IMAGE)}
+        >
+          ${icons.image}
+        </button>
+
+        <button
+          class="btn btn-square btn-small"
+          @click=${() => this.subMenuClick(ActiveSubMenu.VIDEO)}
+        >
+          ${icons.youtube}
+        </button>
+
+        ${this.showUrlMenu ? this.renderUrlMenu() : ''}
       </div>
     `;
   }
@@ -767,12 +867,23 @@ export class DocumentTextNodeEditor extends LitElement {
           border: none;
           background-color: #444444;
           color: white;
+          margin: 0 5px;
+        }
+
+        .inp input.dim {
+          width: 50px;
+        }
+
+        .inp .inp-hldr {
+          display: flex;
+          color: white;
+          align-items: center;
         }
 
         .editor-content {
           margin: 0px 0px;
         }
-      `,
+      `
     ];
   }
 }
