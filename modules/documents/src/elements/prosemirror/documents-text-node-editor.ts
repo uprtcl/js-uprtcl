@@ -629,7 +629,7 @@ export class DocumentTextNodeEditor extends LitElement {
         src: link,
         style: `width:${width !== '' ? width + 'px' : '100%'};${
           height !== '' ? `height:${height}px` : ''
-        }`
+        };max-width: 100%;`
       });
       this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(imgNode, false));
       // this.editor.view.dispatch();
@@ -643,7 +643,7 @@ export class DocumentTextNodeEditor extends LitElement {
         src: link,
         style: `width:${width !== '' ? width + 'px' : '100%'};${
           height !== '' ? `height:${height}px` : ''
-        };border:0px;`
+        };border:0px;max-width:100%;`
       });
 
       this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(iframeNode, false));
