@@ -143,8 +143,6 @@ export class DocumentTextNodeEditor extends LitElement {
     //     this.setShowMenu(true);
     //   }
     // }
-
-    console.log('UPDATED TRIGGERED', changedProperties);
   }
 
   runAction(action: any) {
