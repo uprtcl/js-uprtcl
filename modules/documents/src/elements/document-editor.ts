@@ -1,6 +1,8 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
+import { ApolloClient } from 'apollo-boost';
 import isEqual from 'lodash-es/isEqual';
+
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -30,6 +32,7 @@ import {
   EveesDraftsLocal,
   MenuConfig,
   EveesHelpers,
+  EveesBindings,
 } from '@uprtcl/evees';
 import { loadEntity, CASStore } from '@uprtcl/multiplatform';
 
@@ -79,6 +82,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.remotesMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
+
+    if (!this.client) {
+      this.client = this.request(ApolloClientModule.bindings.Client);
+    }
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.ref);
 
@@ -182,18 +189,18 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         headId = '';
       }
     } else {
-      if (entityType === 'Commit') {
+      if (entityType === EveesModule.bindings.CommitType) {
         if (!parent) throw new Error('Commit must have a parent');
 
         editable = parent.editable;
         authority = parent.authority;
         dataId = await EveesHelpers.getCommitDataId(this.client, entity.id);
-        headId = this.ref;
+        headId = ref;
       } else {
         entityType = 'Data';
         editable = false;
         authority = '';
-        dataId = this.ref;
+        dataId = ref;
         headId = '';
       }
     }
@@ -991,11 +998,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="evee-info">
-            ${false
+            ${true
               ? html`
                   <evees-info-popper
-                    first-perspective-id=${node.ref}
-                    perspective-id=${node.ref}
+                    ref=${node.ref}
+                    first-ref=${node.ref}
                     evee-color=${color}
                   ></evees-info-popper>
                 `

@@ -47,15 +47,23 @@ export const eveesResolvers: IResolvers = {
       const context = typeof parent === 'string' ? parent : parent.context;
 
       const evees: Evees = container.get(EveesBindings.Evees);
-      const eveesRemotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
+      const eveesRemotes: EveesRemote[] = container.getAll(
+        EveesBindings.EveesRemote
+      );
       const knownSources: KnownSourcesService = container.get(
         DiscoveryModule.bindings.LocalKnownSources
       );
 
       const promises = eveesRemotes.map(async (remote) => {
-        const thisPerspectivesIds = await remote.getContextPerspectives(context);
+        const thisPerspectivesIds = await remote.getContextPerspectives(
+          context
+        );
         thisPerspectivesIds.forEach((pId) => {
-          knownSources.addKnownSources(pId, [remote.casID], EveesBindings.PerspectiveType);
+          knownSources.addKnownSources(
+            pId,
+            [remote.casID],
+            EveesBindings.PerspectiveType
+          );
         });
         return thisPerspectivesIds;
       });
@@ -98,7 +106,7 @@ export const eveesResolvers: IResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = evees.getPerspectiveProvider(parent);
-      const details = await remote.getPerspectiveDetails(parent.id);
+      const details = await remote.getPerspective(parent.id);
 
       return details && details.headId;
     },
@@ -106,7 +114,7 @@ export const eveesResolvers: IResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = evees.getPerspectiveProvider(parent);
-      const details = await remote.getPerspectiveDetails(parent.id);
+      const details = await remote.getPerspective(parent.id);
 
       return details && details.name;
     },
@@ -115,7 +123,7 @@ export const eveesResolvers: IResolvers = {
 
       const remote = evees.getPerspectiveProvider(parent);
 
-      const details = await remote.getPerspectiveDetails(parent.id);
+      const details = await remote.getPerspective(parent.id);
 
       return details && details.context;
     },
@@ -126,7 +134,9 @@ export const eveesResolvers: IResolvers = {
 
       if (!remote.proposals) return [];
 
-      const proposalsIds = await remote.proposals.getProposalsToPerspective(parent.id);
+      const proposalsIds = await remote.proposals.getProposalsToPerspective(
+        parent.id
+      );
       const proposalsPromises = proposalsIds.map((proposalId) => {
         return (remote.proposals as ProposalsProvider).getProposal(proposalId);
       });
@@ -137,59 +147,34 @@ export const eveesResolvers: IResolvers = {
     },
   },
   Mutation: {
-    async createCommit(_, { dataId, parentsIds, message, casID, timestamp }, { container }) {
-      const remotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
-      const multiSource: MultiSourceService = container.get(
-        DiscoveryModule.bindings.MultiSourceService
-      );
-      const remote: EveesRemote | undefined = remotes.find((r) => r.casID === casID);
-
-      if (!remote) throw new Error(`Evees Remote with casID was not registered ${casID}`);
-
-      message = message !== undefined ? message : '';
-      timestamp = timestamp !== undefined ? timestamp : Date.now();
-
-      const creatorsIds = [remote.userId !== undefined ? remote.userId : ''];
-
-      const commitData: Commit = {
-        creatorsIds: creatorsIds,
-        dataId: dataId,
-        message: message,
-        timestamp: timestamp,
-        parentsIds: parentsIds,
-      };
-
-      const commit: Secured<Commit> = await deriveSecured(commitData, remote.cidConfig);
-
-      await remote.cloneCommit(commit);
-
-      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
-      entityCache.cacheEntity({ ...commit, casID: remote.casID });
-
-      commit.casID = remote.casID;
-      await multiSource.postEntityCreate(commit);
-
-      return {
-        id: commit.id,
-        ...commit.object,
-      };
-    },
-
-    async updatePerspectiveHead(parent, { perspectiveId, headId, context, name }, { container }) {
+    async updatePerspectiveHead(
+      parent,
+      { perspectiveId, headId, context, name },
+      { container }
+    ) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const multiSource: MultiSourceService = container.get(
         DiscoveryModule.bindings.MultiSourceService
       );
-      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
+      const client: ApolloClient<any> = container.get(
+        ApolloClientModule.bindings.Client
+      );
 
       const provider = await evees.getPerspectiveProviderById(perspectiveId);
 
-      await provider.updatePerspectiveDetails(perspectiveId, { headId, context, name });
+      await provider.updatePerspective(perspectiveId, {
+        headId,
+        context,
+        name,
+      });
       /** needed to return the current values in case one of the inputs is undefined */
-      const detailsRead = await provider.getPerspectiveDetails(perspectiveId);
+      const detailsRead = await provider.getPerspective(perspectiveId);
 
       if (((provider as unknown) as KnownSourcesSource).knownSources) {
-        await multiSource.postEntityUpdate((provider as unknown) as KnownSourcesSource, [headId]);
+        await multiSource.postEntityUpdate(
+          (provider as unknown) as KnownSourcesSource,
+          [headId]
+        );
       }
 
       const result = await client.query({
@@ -205,7 +190,8 @@ export const eveesResolvers: IResolvers = {
 
       const perspective = result.data.entity._context.object;
 
-      if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
+      if (!perspective)
+        throw new Error(`Perspective with id ${perspectiveId} not found`);
 
       return {
         id: perspectiveId,
@@ -240,7 +226,9 @@ export const eveesResolvers: IResolvers = {
         casID,
       };
 
-      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
+      const entityCache: EntityCache = container.get(
+        DiscoveryModule.bindings.EntityCache
+      );
       entityCache.cacheEntity(entity);
 
       return { id, ...object };
@@ -248,14 +236,29 @@ export const eveesResolvers: IResolvers = {
 
     async createPerspective(
       _,
-      { authority, creatorId, timestamp, headId, context, name, canWrite, parentId },
+      {
+        authority,
+        creatorId,
+        timestamp,
+        headId,
+        context,
+        name,
+        canWrite,
+        parentId,
+      },
       { container }
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
 
-      const remote: EveesRemote = remotes.find((remote) => remote.authority === authority);
+      const remote: EveesRemote = remotes.find(
+        (remote) => remote.authority === authority
+      );
       creatorId =
-        creatorId !== undefined ? creatorId : remote.userId !== undefined ? remote.userId : '';
+        creatorId !== undefined
+          ? creatorId
+          : remote.userId !== undefined
+          ? remote.userId
+          : '';
       timestamp = timestamp !== undefined ? timestamp : Date.now();
       name = name !== undefined && name != null ? name : '';
 
@@ -270,7 +273,9 @@ export const eveesResolvers: IResolvers = {
         remote.cidConfig
       );
 
-      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
+      const entityCache: EntityCache = container.get(
+        DiscoveryModule.bindings.EntityCache
+      );
       entityCache.cacheEntity({ ...perspective, casID: remote.casID });
 
       const newPerspectiveData: NewPerspectiveData = {
@@ -279,7 +284,7 @@ export const eveesResolvers: IResolvers = {
         canWrite,
         parentId,
       };
-      await remote.cloneAndInitPerspective(newPerspectiveData);
+      await remote.createPerspective(newPerspectiveData);
 
       return {
         id: perspective.id,
@@ -297,10 +302,15 @@ export const eveesResolvers: IResolvers = {
     async createAndAddProposal(_, { perspectives, proposal }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
 
-      const remote = await evees.getPerspectiveProviderById(proposal.toPerspectiveId);
+      const remote = await evees.getPerspectiveProviderById(
+        proposal.toPerspectiveId
+      );
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
-      const proposalId = await remote.proposals.createAndPropose(perspectives, proposal);
+      const proposalId = await remote.proposals.createAndPropose(
+        perspectives,
+        proposal
+      );
 
       return {
         id: proposalId,
@@ -315,7 +325,13 @@ export const eveesResolvers: IResolvers = {
 
     async addProposal(
       _,
-      { toPerspectiveId, fromPerspectiveId, toHeadId, fromHeadId, updateRequests },
+      {
+        toPerspectiveId,
+        fromPerspectiveId,
+        toHeadId,
+        fromHeadId,
+        updateRequests,
+      },
       { container }
     ) {
       const evees: Evees = container.get(EveesBindings.Evees);
@@ -343,8 +359,14 @@ export const eveesResolvers: IResolvers = {
       };
     },
 
-    async authorizeProposal(_, { proposalId, perspectiveId, authorize }, { container }) {
-      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
+    async authorizeProposal(
+      _,
+      { proposalId, perspectiveId, authorize },
+      { container }
+    ) {
+      const client: ApolloClient<any> = container.get(
+        ApolloClientModule.bindings.Client
+      );
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const perspectiveResult = await client.query({
@@ -374,12 +396,15 @@ export const eveesResolvers: IResolvers = {
       return {
         id: proposalId,
         authorized: authorize,
-        executed: proposalRead.executed !== undefined ? proposalRead.executed : false,
+        executed:
+          proposalRead.executed !== undefined ? proposalRead.executed : false,
         toPerspectiveId: perspectiveId,
       };
     },
     async executeProposal(_, { proposalId, perspectiveId }, { container }) {
-      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
+      const client: ApolloClient<any> = container.get(
+        ApolloClientModule.bindings.Client
+      );
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const perspectiveResult = await client.query({

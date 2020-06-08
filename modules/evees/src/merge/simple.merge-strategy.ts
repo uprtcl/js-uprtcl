@@ -1,7 +1,11 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { inject, injectable } from 'inversify';
 
-import { DiscoveryModule, EntityCache } from '@uprtcl/multiplatform';
+import {
+  DiscoveryModule,
+  EntityCache,
+  loadEntity,
+} from '@uprtcl/multiplatform';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -23,9 +27,12 @@ export class SimpleMergeStrategy implements MergeStrategy {
   constructor(
     @inject(EveesBindings.RemoteMap) protected remoteMap: RemoteMap,
     @inject(EveesBindings.Evees) protected evees: Evees,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @inject(DiscoveryModule.bindings.EntityCache) protected entityCache: EntityCache
+    @inject(CortexModule.bindings.Recognizer)
+    protected recognizer: PatternRecognizer,
+    @inject(ApolloClientModule.bindings.Client)
+    protected client: ApolloClient<any>,
+    @inject(DiscoveryModule.bindings.EntityCache)
+    protected entityCache: EntityCache
   ) {}
 
   mergePerspectivesExternal(
@@ -34,7 +41,12 @@ export class SimpleMergeStrategy implements MergeStrategy {
     workspace: EveesWorkspace,
     config: any
   ): Promise<string> {
-    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config, workspace);
+    return this.mergePerspectives(
+      toPerspectiveId,
+      fromPerspectiveId,
+      config,
+      workspace
+    );
   }
 
   async mergePerspectives(
@@ -74,7 +86,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     return toPerspectiveId;
   }
 
-  protected async loadPerspectiveData(perspectiveId: string): Promise<Entity<any>> {
+  protected async loadPerspectiveData(
+    perspectiveId: string
+  ): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
         entity(ref: "${perspectiveId}") {
@@ -123,27 +137,52 @@ export class SimpleMergeStrategy implements MergeStrategy {
     };
   }
 
+  async findLatestNonFork(commitId) {
+    const commit = await loadEntity<Commit>(this.client, commitId);
+    if (commit === undefined) throw new Error('commit not found');
+
+    if (commit.object.forking !== undefined) {
+      return this.findLatestNonFork(commit.object.forking);
+    } else {
+      return commitId;
+    }
+  }
+
   async mergeCommits(
-    toCommitId: string,
-    fromCommitId: string,
+    toCommitIdOrg: string,
+    fromCommitIdOrg: string,
     authority: string,
     workspace: EveesWorkspace,
     config: any
   ): Promise<string> {
+    const toCommitId = await this.findLatestNonFork(toCommitIdOrg);
+    const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg);
+
     if (toCommitId === fromCommitId) {
       return toCommitId;
     }
 
     const commitsIds = [toCommitId, fromCommitId];
-    const ancestorId = await findMostRecentCommonAncestor(this.client)(commitsIds);
+    const ancestorId = await findMostRecentCommonAncestor(this.client)(
+      commitsIds
+    );
 
-    const datasPromises = commitsIds.map(async (commitId) => this.loadCommitData(commitId));
+    const datasPromises = commitsIds.map(async (commitId) =>
+      this.loadCommitData(commitId)
+    );
     const newDatas = await Promise.all(datasPromises);
 
     const ancestorData: any =
-      ancestorId !== undefined ? await this.loadCommitData(ancestorId) : newDatas[0];
+      ancestorId !== undefined
+        ? await this.loadCommitData(ancestorId)
+        : newDatas[0];
 
-    const mergedData = await this.mergeData(ancestorData, newDatas, workspace, config);
+    const mergedData = await this.mergeData(
+      ancestorData,
+      newDatas,
+      workspace,
+      config
+    );
 
     const type = this.recognizer.recognizeType(ancestorData);
     const remote = this.evees.getAuthority(authority);
@@ -160,7 +199,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     workspace.create(entity);
 
-    if (!remote.userId) throw new Error('Cannot create commits in a casID you are not signed in');
+    if (!remote.userId)
+      throw new Error('Cannot create commits in a casID you are not signed in');
 
     const newCommit: Commit = {
       dataId: entity.id,

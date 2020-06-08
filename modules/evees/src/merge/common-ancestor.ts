@@ -46,7 +46,11 @@ export class FindMostRecentCommonAncestor {
     });
 
     const commits = await Promise.all(promises);
-    const nextCommits = commits.map((commit) => commit.object.payload.parentsIds);
+    const nextCommits = commits.map((commit) =>
+      commit.object.payload.parentsIds.concat(
+        commit.object.payload.forking ? [commit.object.payload.forking] : []
+      )
+    );
 
     pathToExplore.heads = Array.prototype.concat.apply([], nextCommits);
     return pathToExplore;
@@ -90,5 +94,6 @@ export class FindMostRecentCommonAncestor {
 export default function findMostRecentCommonAncestor(
   client: ApolloClient<any>
 ): (commitsIds: string[]) => Promise<string | undefined> {
-  return (commitsIds: string[]) => new FindMostRecentCommonAncestor(client, commitsIds).compute();
+  return (commitsIds: string[]) =>
+    new FindMostRecentCommonAncestor(client, commitsIds).compute();
 }
