@@ -1,6 +1,8 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
+import { ApolloClient } from 'apollo-boost';
 import isEqual from 'lodash-es/isEqual';
+
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -80,6 +82,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.remotesMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
+
+    if (!this.client) {
+      this.client = this.request(ApolloClientModule.bindings.Client);
+    }
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.ref);
 
