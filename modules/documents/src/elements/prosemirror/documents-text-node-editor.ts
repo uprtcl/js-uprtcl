@@ -5,12 +5,13 @@ import { DOMParser, DOMSerializer } from 'prosemirror-model';
 import { EditorState, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { TextType } from '../../types';
+import { styles as cmStyle } from './codemirror.css';
+import { CodeBlockView } from './codeview';
 import { icons } from './icons';
 import { iconsStyle } from './icons.css';
 import { styles } from './prosemirror.css';
 import { blockSchema } from './schema-block';
 import { titleSchema } from './schema-title';
-
 export const APPEND_ACTION = 'append';
 export const FOCUS_ACTION = 'focus';
 
@@ -402,6 +403,9 @@ export class DocumentTextNodeEditor extends LitElement {
           this.keydown(view, event);
           return true;
         }
+      },
+      nodeViews: {
+        code_block: (node, view, getPos) => new CodeBlockView(node, view, getPos)
       }
     });
 
@@ -627,7 +631,7 @@ export class DocumentTextNodeEditor extends LitElement {
     if (this.isValidLink(link)) {
       const imgNode = this.editor.view.state.schema.nodes.image.create({
         src: link,
-        style: `width:${width !== '' ? width + 'px' : '100%'};${
+        style: `${width !== '' ? `width:${width}px` : ''};${
           height !== '' ? `height:${height}px` : ''
         };max-width: 100%;`
       });
@@ -779,6 +783,15 @@ export class DocumentTextNodeEditor extends LitElement {
     return false;
   }
 
+  toggleCode() {
+    const node = this.editor.view.state.doc.content.content[0];
+    const end = node.nodeSize;
+    const newType =
+      node.type.name !== 'code_block' ? blockSchema.nodes.code_block : blockSchema.nodes.paragraph;
+
+    this.editor.view.dispatch(this.editor.view.state.tr.setBlockType(0, end, newType));
+  }
+
   renderMenu() {
     return html`
       <div class="top-menu" id="TOP_MENU">
@@ -799,6 +812,9 @@ export class DocumentTextNodeEditor extends LitElement {
           >
             ${icons.youtube}
           </button>
+          <button class="btn btn-square btn-small" @click=${this.toggleCode}>
+            ${icons.code}
+          </button>
         </div>
 
         ${this.showUrlMenu ? this.renderUrlMenu() : ''}
@@ -816,6 +832,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
   static get styles() {
     return [
+      cmStyle,
       styles,
       iconsStyle,
       css`
