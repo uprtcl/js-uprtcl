@@ -122,7 +122,7 @@ export const nodes = {
     ],
     toDOM(node) {
       let { src, style } = node.attrs;
-      return ['iframe', { src, style }];
+      return ['iframe', { src, style, class: 'yt-embed' }];
     }
   },
 
