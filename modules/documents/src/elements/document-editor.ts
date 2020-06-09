@@ -1144,6 +1144,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+        text-align: left;
       }
       .editor-container {
         position: relative;

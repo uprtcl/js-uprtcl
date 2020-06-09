@@ -24,6 +24,10 @@ export class EveesHelp extends LitElement {
         padding: 32px 16px;
         color: #4e585c;
       }
+
+      mwc-button {
+        width: 100%;
+      }
     `;
   }
 }
