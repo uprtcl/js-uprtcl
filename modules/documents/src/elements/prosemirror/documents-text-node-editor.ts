@@ -1024,6 +1024,16 @@ export class DocumentTextNodeEditor extends LitElement {
         .editor-content {
           margin: 0px 0px;
         }
+
+        .yt-embed {
+          max-width: 100%;
+        }
+
+        @media (max-width: 768px) {
+          .yt-embed {
+            max-height: 300px;
+          }
+        }
       `
     ];
   }
