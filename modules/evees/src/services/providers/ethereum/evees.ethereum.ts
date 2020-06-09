@@ -168,9 +168,7 @@ export class EveesEthereum extends IpfsStore
     return perspectiveId;
   }
 
-  async cloneAndInitPerspective(
-    perspectiveData: NewPerspectiveData
-  ): Promise<void> {
+  async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
     const canWrite = perspectiveData.canWrite;
@@ -233,7 +231,7 @@ export class EveesEthereum extends IpfsStore
     return ethPerspectivesData;
   }
 
-  async clonePerspectivesBatch(
+  async createPerspectiveBatch(
     newPerspectivesData: NewPerspectiveData[]
   ): Promise<void> {
     const ethPerspectivesData = await this.preparePerspectives(
@@ -250,59 +248,7 @@ export class EveesEthereum extends IpfsStore
   /**
    * @override
    */
-  async clonePerspective(secured: Secured<Perspective>): Promise<void> {
-    let perspective = secured.object.payload;
-
-    /** validate */
-    if (!perspective.authority) throw new Error('authority cannot be empty');
-
-    /** Store the perspective data in the data layer */
-    const perspectiveId = await this.create(sortObject(secured.object));
-    this.logger.log(`[ETH] createPerspective - added to IPFS`, perspectiveId);
-
-    if (secured.id && secured.id != perspectiveId) {
-      throw new Error(
-        `perspective ID computed by IPFS ${perspectiveId} is not the same as the input one ${secured.id}.`
-      );
-    }
-
-    const newPerspective = {
-      perspectiveId: perspectiveId,
-      headCid1: ZERO_HEX_32,
-      headCid0: ZERO_HEX_32,
-      owner: this.ethConnection.getCurrentAccount(),
-    };
-
-    /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
-    await this.uprtclRoot.send(CREATE_PERSP, [
-      newPerspective,
-      this.ethConnection.getCurrentAccount(),
-    ]);
-
-    this.logger.log(`[ETH] addPerspective - TX minted`);
-  }
-
-  /**
-   * @override
-   */
-  async cloneCommit(secured: Secured<Commit>): Promise<void> {
-    const commit = sortObject(secured.object);
-    /** Store the perspective data in the data layer */
-
-    let commitId = await this.create(commit);
-    this.logger.log(`[ETH] createCommit - added to IPFS`, commitId, commit);
-
-    if (secured.id && secured.id != commitId) {
-      throw new Error(
-        'commit ID computed by IPFS is not the same as the input one.'
-      );
-    }
-  }
-
-  /**
-   * @override
-   */
-  async updatePerspectiveDetails(
+  async updatePerspective(
     perspectiveId: string,
     details: PerspectiveDetails
   ): Promise<void> {
@@ -367,9 +313,7 @@ export class EveesEthereum extends IpfsStore
   /**
    * @override
    */
-  async getPerspectiveDetails(
-    perspectiveId: string
-  ): Promise<PerspectiveDetails> {
+  async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
     const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [
       perspectiveId,
     ]);

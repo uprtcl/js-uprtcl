@@ -19,10 +19,24 @@ export const nodes = {
   paragraph: {
     content: 'inline*',
     group: 'block',
-    parseDOM: [{ tag: 'p' }],
-    toDOM() {
-      return pDOM;
-    }
+    attrs: {
+      style: {
+        default: ''
+      }
+    },
+    toDOM(node) {
+      return ['p', { style: node.attrs.style }, 0];
+    },
+    parseDOM: [
+      {
+        tag: 'p',
+        getAttrs: node => {
+          return {
+            textAlign: node.attributes ? node.attributes.style : node.attrs.style
+          };
+        }
+      }
+    ]
   },
 
   // :: NodeSpec A horizontal rule (`<hr>`).

@@ -31,7 +31,7 @@ export class EveesInfoPopper extends EveesInfoBase {
   }
 
   perspectiveTitle() {
-    if (this.perspectiveId === this.firstPerspectiveId) {
+    if (this.ref === this.firstRef) {
       return 'Accepted Perspective (on the parent)';
     } else {
       return `Another Perspective`;
@@ -42,21 +42,13 @@ export class EveesInfoPopper extends EveesInfoBase {
     return html`
       <div class="perspectives-list">
         <evees-perspectives-list
-          perspective-id=${this.perspectiveId}
-          first-perspective-id=${this.firstPerspectiveId}
+          perspective-id=${this.ref}
+          first-perspective-id=${this.firstRef}
           @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}
           @merge-perspective=${(e) =>
-            this.otherPerspectiveMerge(
-              e.detail.perspectiveId,
-              this.perspectiveId,
-              false
-            )}
+            this.otherPerspectiveMerge(e.detail.perspectiveId, this.ref, false)}
           @create-proposal=${(e) =>
-            this.otherPerspectiveMerge(
-              e.detail.perspectiveId,
-              this.perspectiveId,
-              true
-            )}
+            this.otherPerspectiveMerge(e.detail.perspectiveId, this.ref, true)}
           @authorize-proposal=${this.authorizeProposal}
           @execute-proposal=${this.executeProposal}
         ></evees-perspectives-list>
@@ -78,17 +70,9 @@ export class EveesInfoPopper extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        <permissions-for-entity
-          ref=${this.perspectiveId}
-        ></permissions-for-entity>
+        <permissions-for-entity ref=${this.ref}></permissions-for-entity>
       </div>
     `;
-  }
-
-  renderTabContent() {
-    if (this.activeTabIndex === 0) return this.renderOtherPerspectives();
-    else if (this.activeTabIndex === 1) return this.renderInfo();
-    else return this.renderPermissions();
   }
 
   render() {
@@ -110,45 +94,7 @@ export class EveesInfoPopper extends EveesInfoBase {
                 ${this.perspectiveData
                   ? html`
                       <div class="column">
-                        <div
-                          class="color-bar"
-                          style=${styleMap({
-                            backgroundColor: this.eveeColor,
-                          })}
-                        ></div>
-
-                        <div
-                          class="perspective-title"
-                          style=${styleMap({
-                            color: this.eveeColor,
-                          })}
-                        >
-                          <h2>${this.perspectiveTitle()}</h2>
-                        </div>
-
-                        <mwc-tab-bar
-                          @MDCTabBar:activated=${(e) =>
-                            (this.activeTabIndex = e.detail.index)}
-                        >
-                          <mwc-tab
-                            .label=${this.t('evees:other-perspectives')}
-                            hasImageIcon
-                          >
-                            <mwc-icon>list_alt</mwc-icon>
-                          </mwc-tab>
-                          <mwc-tab
-                            .label=${this.t('evees:information')}
-                            hasImageIcon
-                          >
-                            <mwc-icon>info</mwc-icon>
-                          </mwc-tab>
-                        </mwc-tab-bar>
-
-                        <div class="tab-content-container">
-                          <div class="tab-content">
-                            ${this.renderTabContent()}
-                          </div>
-                        </div>
+                        ${this.renderInfo()}
 
                         <div class="close">
                           <mwc-icon-button

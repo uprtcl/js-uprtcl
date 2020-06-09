@@ -12,6 +12,8 @@ import { iconsStyle } from './icons.css';
 import { styles } from './prosemirror.css';
 import { blockSchema } from './schema-block';
 import { titleSchema } from './schema-title';
+import { setBlockType } from 'prosemirror-commands';
+
 export const APPEND_ACTION = 'append';
 export const FOCUS_ACTION = 'focus';
 
@@ -144,8 +146,6 @@ export class DocumentTextNodeEditor extends LitElement {
     //     this.setShowMenu(true);
     //   }
     // }
-
-    console.log('UPDATED TRIGGERED', changedProperties);
   }
 
   runAction(action: any) {
@@ -626,31 +626,73 @@ export class DocumentTextNodeEditor extends LitElement {
     }
   }
 
+  alignNodeToCenter() {
+    setBlockType(this.editor.view.state.schema.nodes.paragraph, { style: 'text-align:center' })(
+      this.editor.view.state,
+      this.editor.view.dispatch
+    );
+  }
+
   applyImageNode() {
     const { link, width, height } = this.getSubMenuFields();
     if (this.isValidLink(link)) {
+      const node = this.editor.view.state.doc.content.content[0];
+      const end = node.nodeSize;
       const imgNode = this.editor.view.state.schema.nodes.image.create({
         src: link,
         style: `${width !== '' ? `width:${width}px` : ''};${
           height !== '' ? `height:${height}px` : ''
-        };max-width: 100%;`
+        };max-width: 100%;margin: 0 auto;`
       });
       this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(imgNode, false));
+      this.alignNodeToCenter();
       // this.editor.view.dispatch();
     }
+  }
+
+  parseYoutubeURL(url: string) {
+    const getParameterByName = (name, url) => {
+      name = name.replace(/[\[\]]/g, '\\$&');
+      var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+        results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    };
+
+    let embedUrl = 'https://www.youtube.com/embed';
+
+    // For when the user copies the youtube video URL
+    // on the address bar
+    if (url.indexOf('?v=') > -1) {
+      const videoId = getParameterByName('v', url);
+      embedUrl += `/${videoId}`;
+      // For when the user right-clicks on the video and
+      // copies the "video url"
+    } else if (url.indexOf('youtu.be') > -1) {
+      embedUrl += `/${url.split('/').pop()}`;
+
+      // If none of these patterns match, do not parse
+      // the given URL by the user.
+    } else {
+      return url;
+    }
+
+    return embedUrl;
   }
 
   applyIframeNode() {
     const { link, width, height } = this.getSubMenuFields();
     if (this.isValidLink(link)) {
       const iframeNode = this.editor.view.state.schema.nodes.iframe.create({
-        src: link,
-        style: `width:${width !== '' ? width + 'px' : '100%'};${
-          height !== '' ? `height:${height}px` : ''
-        };border:0px;max-width:100%;`
+        src: this.parseYoutubeURL(link),
+        style: `width:${
+          width !== '' ? width + 'px' : '100%'
+        };height:500px;border:0px;max-width:100%;`
       });
 
       this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(iframeNode, false));
+      this.alignNodeToCenter();
     }
   }
 
@@ -669,9 +711,17 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   renderDimensionsMenu() {
+    // incase we want the height field back
+    // const renderHeightDim = () => html`
+    //   <input @keydown=${this.urlKeydown} class="dim" placeholder="height" id="DIM_HEIGHT" />px
+    // `;
     return html`
-      <input @keydown=${this.urlKeydown} class="dim" placeholder="width" id="DIM_WIDTH" />px
-      <input @keydown=${this.urlKeydown} class="dim" placeholder="height" id="DIM_HEIGHT" />px
+      <input
+        @keydown=${this.urlKeydown}
+        class="dim"
+        placeholder="width (optional)"
+        id="DIM_WIDTH"
+      />
     `;
   }
 
@@ -793,12 +843,27 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   renderMenu() {
+    const subMenus = html`
+      <button
+        class="btn btn-square btn-small"
+        @click=${() => this.subMenuClick(ActiveSubMenu.IMAGE)}
+      >
+        ${icons.image}
+      </button>
+
+      <button
+        class="btn btn-square btn-small"
+        @click=${() => this.subMenuClick(ActiveSubMenu.VIDEO)}
+      >
+        ${icons.youtube}
+      </button>
+    `;
     return html`
       <div class="top-menu" id="TOP_MENU">
         <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
 
         <div class="menus">
-          ${this.renderSelectionOnlyMenus()}
+          <<<<<<< HEAD ${this.renderSelectionOnlyMenus()}
           <button
             class="btn btn-square btn-small"
             @click=${() => this.subMenuClick(ActiveSubMenu.IMAGE)}
@@ -815,6 +880,8 @@ export class DocumentTextNodeEditor extends LitElement {
           <button class="btn btn-square btn-small" @click=${this.toggleCode}>
             ${icons.code}
           </button>
+          ======= ${this.renderSelectionOnlyMenus()} ${this.type === 'Paragraph' ? subMenus : ''}
+          >>>>>>> develop
         </div>
 
         ${this.showUrlMenu ? this.renderUrlMenu() : ''}
@@ -942,7 +1009,7 @@ export class DocumentTextNodeEditor extends LitElement {
         }
 
         .inp input.dim {
-          width: 50px;
+          width: 100px;
           margin-left: 5px;
         }
 
