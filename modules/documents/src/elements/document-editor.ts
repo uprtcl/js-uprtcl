@@ -1149,6 +1149,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .editor-container {
         position: relative;
         width: 100%;
+        padding-bottom: 20vh;
       }
       .button-container {
         height: 48px;
