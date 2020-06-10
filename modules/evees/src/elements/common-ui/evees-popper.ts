@@ -60,7 +60,7 @@ export class EveesPopper extends LitElement {
         position: absolute;
         right: 2px;
         top: 52px;
-        width: 250px;
+        width: var(--box-width, 250px);
       }
     `;
   }

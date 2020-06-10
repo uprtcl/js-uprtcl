@@ -996,35 +996,33 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     return html`
       <div class="row">
-        <div class="column">
-          <div class="evee-info">
-            ${false
-              ? html`
-                  <evees-info-popper
-                    ref=${node.ref}
-                    first-ref=${node.ref}
-                    evee-color=${color}
-                  ></evees-info-popper>
-                `
-              : ''}
-          </div>
-          <div class="node-content">
-            ${nodeLense.render(node, {
-              focus: () => this.focused(node),
-              blur: () => this.blured(node),
-              contentChanged: (content: any, lift: boolean) =>
-                this.contentChanged(node, content, lift),
-              focusBackward: () => this.focusBackward(node),
-              focusDownward: () => this.focusDownward(node),
-              joinBackward: (tail: string) => this.joinBackward(node, tail),
-              pullDownward: () => this.pullDownward(node),
-              lift: () => this.lift(node),
-              split: (tail: string, asChild: boolean) =>
-                this.split(node, tail, asChild),
-              appended: () => this.appended(node),
-            })}
-            ${hasIcon ? html` <div class="node-mark">${icon}</div> ` : ''}
-          </div>
+        <div class="evee-info">
+          ${false
+            ? html`
+                <evees-info-popper
+                  ref=${node.ref}
+                  first-ref=${node.ref}
+                  evee-color=${color}
+                ></evees-info-popper>
+              `
+            : ''}
+        </div>
+        <div class="node-content">
+          ${nodeLense.render(node, {
+            focus: () => this.focused(node),
+            blur: () => this.blured(node),
+            contentChanged: (content: any, lift: boolean) =>
+              this.contentChanged(node, content, lift),
+            focusBackward: () => this.focusBackward(node),
+            focusDownward: () => this.focusDownward(node),
+            joinBackward: (tail: string) => this.joinBackward(node, tail),
+            pullDownward: () => this.pullDownward(node),
+            lift: () => this.lift(node),
+            split: (tail: string, asChild: boolean) =>
+              this.split(node, tail, asChild),
+            appended: () => this.appended(node),
+          })}
+          ${hasIcon ? html` <div class="node-mark">${icon}</div> ` : ''}
         </div>
       </div>
     `;
@@ -1146,10 +1144,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+        text-align: left;
       }
       .editor-container {
         position: relative;
         width: 100%;
+        padding-bottom: 20vh;
       }
       .button-container {
         height: 48px;
@@ -1172,22 +1172,22 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
       .row {
         margin-bottom: 8px;
-      }
-
-      .column {
         display: flex;
         flex-direction: row;
       }
 
       .evee-info {
-        width: 30px;
-        min-width: 30px;
+        width: 10px;
+        flex-shrink: 0 0 0;
       }
 
       .node-content {
-        max-width: calc(100% - 30px);
         flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
         position: relative;
+        padding-right: 4px;
       }
 
       .node-mark {
