@@ -857,17 +857,16 @@ export class DocumentTextNodeEditor extends LitElement {
       >
         ${icons.youtube}
       </button>
+      <button class="btn btn-square btn-small" @click=${this.toggleCode}>
+        ${icons.code}
+      </button>
     `;
     return html`
       <div class="top-menu" id="TOP_MENU">
         <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
 
         <div class="menus">
-          ${this.renderSelectionOnlyMenus()}
-          <button class="btn btn-square btn-small" @click=${this.toggleCode}>
-            ${icons.code}
-          </button>
-          ${this.type === 'Paragraph' ? subMenus : ''}
+          ${this.renderSelectionOnlyMenus()} ${this.type === 'Paragraph' ? subMenus : ''}
         </div>
 
         ${this.showUrlMenu ? this.renderUrlMenu() : ''}

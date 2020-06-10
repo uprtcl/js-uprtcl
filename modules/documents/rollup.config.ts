@@ -4,6 +4,7 @@ import json from '@rollup/plugin-json';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 const pkg = require('./package.json');
+// import { resolve } from 'path';
 
 const libraryName = 'uprtcl-documents';
 
@@ -27,20 +28,19 @@ export default {
     // Allow json resolution
     json(),
     // Compile TypeScript files
-    commonjs({
-      extensions: ['.js', '.ts'],
-      include: ['node_modules/codemirror/mode/*.*']
-    }),
     typescript({
       objectHashIgnoreUnknownHack: true,
       abortOnError: false,
-      // include: ['./node_modules/codemirror/lib/javascript'],
+      // include: ['./node_modules/codemirror/mode/javascript.js'],
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
     }),
 
     // Resolve source maps to the original source
-    sourceMaps()
-    // resolve()
+    sourceMaps(),
+    resolve(),
+    commonjs({
+      extensions: ['.js', '.ts']
+    })
   ]
 };

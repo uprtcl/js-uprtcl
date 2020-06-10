@@ -4,14 +4,13 @@ import { Node } from 'prosemirror-model';
 import { Selection, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 
-// "JS" mode, this is the one responsible for code highlighting
-// import 'codemirror/lib/javascript';
-// import 'codemirror/mode/javascript/javascript.js';
-import 'codemirror/mode/javascript/javascript';
+// This is the one responsible for code highlighting
+// in codemirror editor
+require('codemirror/mode/javascript/javascript.js');
 
 export class CodeBlockView {
-  cm: any;
-  dom: any;
+  cm: CodeMirror.Editor;
+  dom: HTMLElement;
   updating: boolean;
   incomingChanges = false;
 
@@ -20,7 +19,8 @@ export class CodeBlockView {
     this.cm = CodeMirror(null as any, {
       value: this.node.textContent,
       mode: 'javascript',
-      extraKeys: this.codeMirrorKeymap()
+      extraKeys: this.codeMirrorKeymap(),
+      lineNumbers: true
     });
 
     // The editor's outer node is our DOM representation
