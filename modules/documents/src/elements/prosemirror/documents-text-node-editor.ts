@@ -362,7 +362,6 @@ export class DocumentTextNodeEditor extends LitElement {
 
     this.currentContent = this.init;
     const doc = this.html2doc(this.getValidDocHtml(this.init));
-
     /** the heading level for render is given by the `level` attribute,
      * not the heading tag (which is always <h1> in the data text) */
     if (doc.content.content[0].type.name === 'heading') {
@@ -414,11 +413,18 @@ export class DocumentTextNodeEditor extends LitElement {
     }
   }
 
-  state2Html(state) {
+  state2Html(state: EditorState) {
     const fragment = this.editor.serializer.serializeFragment(state.doc);
+
+    const node = state.doc.content.child(0);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
-    return (temp.firstElementChild as HTMLElement).innerHTML;
+    /** heading and paragraph content are stored without the exernal tag */
+    if (node.type.name === 'code_block') {
+      return (temp as HTMLElement).innerHTML;
+    } else {
+      return (temp.firstElementChild as HTMLElement).innerHTML;
+    }
   }
 
   html2doc(text: string) {
@@ -782,11 +788,6 @@ export class DocumentTextNodeEditor extends LitElement {
 
   renderLevelControllers() {
     return html`
-      <!-- current level -->
-      <button class="btn-text btn-current">
-        <span>${this.type === TextType.Title ? `h${this.level}` : 'text'}</span>
-      </button>
-
       <!-- level controllers -->
       ${this.type === TextType.Paragraph ? this.renderParagraphItems() : this.renderHeadingItems()}
     `;
@@ -796,7 +797,7 @@ export class DocumentTextNodeEditor extends LitElement {
    * Menus that needs to show up only when there is a `selection`
    */
 
-  renderSelectionOnlyMenus() {
+  renderSelectionOnlyMenus(type: string) {
     const menus = html`
       ${this.renderLevelControllers()}
       ${this.type !== TextType.Title
@@ -823,7 +824,7 @@ export class DocumentTextNodeEditor extends LitElement {
         ${icons.link}
       </button>
     `;
-    return this.hasSelection() ? menus : '';
+    return this.hasSelection() && type !== 'code' ? menus : '';
   }
 
   hasSelection() {
@@ -843,7 +844,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   renderMenu() {
-    const subMenus = html`
+    const embedSubMenu = html`
       <button
         class="btn btn-square btn-small"
         @click=${() => this.subMenuClick(ActiveSubMenu.IMAGE)}
@@ -857,21 +858,40 @@ export class DocumentTextNodeEditor extends LitElement {
       >
         ${icons.youtube}
       </button>
+    `;
+    const codeSubMenu = html`
       <button class="btn btn-square btn-small" @click=${this.toggleCode}>
         ${icons.code}
       </button>
     `;
+    const type = this.getBlockType();
+    console.log(this.type);
     return html`
       <div class="top-menu" id="TOP_MENU">
         <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
 
         <div class="menus">
-          ${this.renderSelectionOnlyMenus()} ${this.type === 'Paragraph' ? subMenus : ''}
+          <!-- current level -->
+          <button class="btn-text btn-current">
+            <span>${type}</span>
+          </button>
+          ${this.renderSelectionOnlyMenus(type)}
+          ${this.type === 'Paragraph' && type !== 'code' ? embedSubMenu : ''}
+          ${this.showUrlMenu && type !== 'code' ? this.renderUrlMenu() : ''}
+          ${this.type !== 'Title' ? codeSubMenu : ''}
         </div>
-
-        ${this.showUrlMenu ? this.renderUrlMenu() : ''}
       </div>
     `;
+  }
+
+  getBlockType() {
+    const nodeType = (this.editor.view as EditorView).state.doc.child(0).type;
+
+    if (nodeType && nodeType.name === 'code_block') {
+      return 'code';
+    }
+
+    return this.type === TextType.Title ? `h${this.level}` : 'text';
   }
 
   render() {

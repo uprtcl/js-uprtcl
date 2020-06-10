@@ -59,7 +59,7 @@ export const nodes = {
     defining: true,
     parseDOM: [{ tag: 'pre', preserveWhitespace: 'full' }],
     toDOM: function toDOM() {
-      return preDOM;
+      return ['pre', ['code', 0]];
     }
   },
 
@@ -197,7 +197,7 @@ export const marks = {
 
   // :: MarkSpec Code font mark. Represented as a `<code>` element.
   code: {
-    parseDOM: [{ tag: 'code' }],
+    parseDOM: [{ tag: 'code', node: 'code_block', preserveWhitespace: 'full' }],
     toDOM() {
       return codeDOM;
     }

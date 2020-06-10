@@ -6,7 +6,7 @@ export const styles = css`
   .CodeMirror {
     /* Set height, width, borders, and global font properties here */
     font-family: monospace;
-    height: 200px;
+    height: auto;
     color: black;
     direction: ltr;
   }
@@ -265,7 +265,7 @@ export const styles = css`
     margin-bottom: -50px;
     margin-right: -50px;
     padding-bottom: 50px;
-    height: 100%;
+    height: auto !important;
     outline: none; /* Prevent dragging from highlighting the element */
     position: relative;
   }
