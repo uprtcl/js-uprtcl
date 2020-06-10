@@ -2,15 +2,17 @@ import { css } from 'lit-element';
 
 export const styles = css`
   /* BASICS */
+
   .CodeMirror {
     /* Set height, width, borders, and global font properties here */
     font-family: monospace;
-    height: auto;
+    height: 200px;
     color: black;
     direction: ltr;
-    padding: 16px 0vw;
   }
+
   /* PADDING */
+
   .CodeMirror-lines {
     padding: 4px 0; /* Vertical padding around content */
   }
@@ -18,11 +20,14 @@ export const styles = css`
   .CodeMirror pre.CodeMirror-line-like {
     padding: 0 4px; /* Horizontal padding of content */
   }
+
   .CodeMirror-scrollbar-filler,
   .CodeMirror-gutter-filler {
     background-color: white; /* The little square between H and V scrollbars */
   }
+
   /* GUTTER */
+
   .CodeMirror-gutters {
     border-right: 1px solid #ddd;
     background-color: #f7f7f7;
@@ -37,13 +42,16 @@ export const styles = css`
     color: #999;
     white-space: nowrap;
   }
+
   .CodeMirror-guttermarker {
     color: black;
   }
   .CodeMirror-guttermarker-subtle {
     color: #999;
   }
+
   /* CURSOR */
+
   .CodeMirror-cursor {
     border-left: 1px solid black;
     border-right: none;
@@ -102,13 +110,16 @@ export const styles = css`
     100% {
     }
   }
+
   /* Can style cursor different in overwrite (non-insert) mode */
   .CodeMirror-overwrite .CodeMirror-cursor {
   }
+
   .cm-tab {
     display: inline-block;
     text-decoration: inherit;
   }
+
   .CodeMirror-rulers {
     position: absolute;
     left: 0;
@@ -123,7 +134,9 @@ export const styles = css`
     bottom: 0;
     position: absolute;
   }
+
   /* DEFAULT THEME */
+
   .cm-s-default .cm-header {
     color: blue;
   }
@@ -149,6 +162,7 @@ export const styles = css`
   .cm-strikethrough {
     text-decoration: line-through;
   }
+
   .cm-s-default .cm-keyword {
     color: #708;
   }
@@ -206,16 +220,20 @@ export const styles = css`
   .cm-s-default .cm-link {
     color: #00c;
   }
+
   .cm-s-default .cm-error {
     color: #f00;
   }
   .cm-invalidchar {
     color: #f00;
   }
+
   .CodeMirror-composing {
     border-bottom: 2px solid;
   }
+
   /* Default styles for common addons */
+
   div.CodeMirror span.CodeMirror-matchingbracket {
     color: #0b0;
   }
@@ -228,32 +246,37 @@ export const styles = css`
   .CodeMirror-activeline-background {
     background: #e8f2ff;
   }
+
   /* STOP */
+
   /* The rest of this file contains styles related to the mechanics of
-  the editor. You probably shouldn't touch them. */
+   the editor. You probably shouldn't touch them. */
+
   .CodeMirror {
     position: relative;
     overflow: hidden;
     background: white;
   }
+
   .CodeMirror-scroll {
     overflow: scroll !important; /* Things will break if this is overridden */
-    /* 30px is the magic margin used to hide the element's real scrollbars */
+    /* 50px is the magic margin used to hide the element's real scrollbars */
     /* See overflow: hidden in .CodeMirror */
-    margin-bottom: -30px;
-    margin-right: -30px;
-    padding-bottom: 30px;
+    margin-bottom: -50px;
+    margin-right: -50px;
+    padding-bottom: 50px;
     height: 100%;
     outline: none; /* Prevent dragging from highlighting the element */
     position: relative;
   }
   .CodeMirror-sizer {
     position: relative;
-    border-right: 30px solid transparent;
+    border-right: 50px solid transparent;
   }
+
   /* The fake, visible scrollbars. Used to force redraw during scrolling
-  before actual scrolling happens, thus preventing shaking and
-  flickering artifacts. */
+   before actual scrolling happens, thus preventing shaking and
+   flickering artifacts. */
   .CodeMirror-vscrollbar,
   .CodeMirror-hscrollbar,
   .CodeMirror-scrollbar-filler,
@@ -282,6 +305,7 @@ export const styles = css`
     left: 0;
     bottom: 0;
   }
+
   .CodeMirror-gutters {
     position: absolute;
     left: 0;
@@ -294,7 +318,7 @@ export const styles = css`
     height: 100%;
     display: inline-block;
     vertical-align: top;
-    margin-bottom: -30px;
+    margin-bottom: -50px;
   }
   .CodeMirror-gutter-wrapper {
     position: absolute;
@@ -319,6 +343,7 @@ export const styles = css`
   .CodeMirror-gutter-wrapper ::-moz-selection {
     background-color: transparent;
   }
+
   .CodeMirror-lines {
     cursor: text;
     min-height: 1px; /* prevents collapsing before first draw */
@@ -351,6 +376,7 @@ export const styles = css`
     white-space: pre-wrap;
     word-break: normal;
   }
+
   .CodeMirror-linebackground {
     position: absolute;
     left: 0;
@@ -359,19 +385,24 @@ export const styles = css`
     bottom: 0;
     z-index: 0;
   }
+
   .CodeMirror-linewidget {
     position: relative;
     z-index: 2;
     padding: 0.1px; /* Force widget margins to stay inside of the container */
   }
+
   .CodeMirror-widget {
   }
+
   .CodeMirror-rtl pre {
     direction: rtl;
   }
+
   .CodeMirror-code {
     outline: none;
   }
+
   /* Force content-box sizing for the elements where we expect it */
   .CodeMirror-scroll,
   .CodeMirror-sizer,
@@ -381,6 +412,7 @@ export const styles = css`
     -moz-box-sizing: content-box;
     box-sizing: content-box;
   }
+
   .CodeMirror-measure {
     position: absolute;
     width: 100%;
@@ -388,6 +420,7 @@ export const styles = css`
     overflow: hidden;
     visibility: hidden;
   }
+
   .CodeMirror-cursor {
     position: absolute;
     pointer-events: none;
@@ -395,6 +428,7 @@ export const styles = css`
   .CodeMirror-measure pre {
     position: static;
   }
+
   div.CodeMirror-cursors {
     visibility: hidden;
     position: relative;
@@ -403,9 +437,11 @@ export const styles = css`
   div.CodeMirror-dragcursors {
     visibility: visible;
   }
+
   .CodeMirror-focused div.CodeMirror-cursors {
     visibility: visible;
   }
+
   .CodeMirror-selected {
     background: #d9d9d9;
   }
@@ -425,24 +461,29 @@ export const styles = css`
   .CodeMirror-line > span > span::-moz-selection {
     background: #d7d4f0;
   }
+
   .cm-searching {
     background-color: #ffa;
     background-color: rgba(255, 255, 0, 0.4);
   }
+
   /* Used to force a border model for a node */
   .cm-force-border {
     padding-right: 0.1px;
   }
+
   @media print {
     /* Hide the cursor when printing */
     .CodeMirror div.CodeMirror-cursors {
       visibility: hidden;
     }
   }
+
   /* See issue #2901 */
   .cm-tab-wrap-hack:after {
     content: '';
   }
+
   /* Help users use markselection to safely style text background */
   span.CodeMirror-selectedtext {
     background: none;

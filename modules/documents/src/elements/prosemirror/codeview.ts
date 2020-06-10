@@ -1,27 +1,23 @@
 import CodeMirror from 'codemirror';
 import { exitCode } from 'prosemirror-commands';
-import { TextSelection, Selection } from 'prosemirror-state';
+import { Node } from 'prosemirror-model';
+import { Selection, TextSelection } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
 
-import { blockSchema as schema } from './schema-block';
+// "JS" mode, this is the one responsible for code highlighting
+// import 'codemirror/lib/javascript';
+// import 'codemirror/mode/javascript/javascript.js';
+import 'codemirror/mode/javascript/javascript';
 
 export class CodeBlockView {
-  node: any;
-  view: any;
-  getPos: any;
-  incomingChanges: boolean;
   cm: any;
   dom: any;
   updating: boolean;
+  incomingChanges = false;
 
-  constructor(node, view, getPos) {
-    // Store for later
-    this.node = node;
-    this.view = view;
-    this.getPos = getPos;
-    this.incomingChanges = false;
-
+  constructor(public node: Node, public view: EditorView, public getPos) {
     // Create a CodeMirror instance
-    this.cm = new CodeMirror(null, {
+    this.cm = CodeMirror(null as any, {
       value: this.node.textContent,
       mode: 'javascript',
       extraKeys: this.codeMirrorKeymap()
@@ -80,7 +76,7 @@ export class CodeBlockView {
       let tr = this.view.state.tr.replaceWith(
         start + change.from,
         start + change.to,
-        change.text ? schema.text(change.text) : null
+        change.text ? this.view.state.schema.text(change.text) : null
       );
       this.view.dispatch(tr);
     }

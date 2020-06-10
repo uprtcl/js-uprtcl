@@ -58,7 +58,7 @@ export const nodes = {
     code: true,
     defining: true,
     parseDOM: [{ tag: 'pre', preserveWhitespace: 'full' }],
-    toDOM() {
+    toDOM: function toDOM() {
       return preDOM;
     }
   },
