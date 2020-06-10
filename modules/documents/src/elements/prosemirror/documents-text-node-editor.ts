@@ -998,7 +998,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
         @media (max-width: 768px) {
           .yt-embed {
-            max-height: 300px;
+            max-height: 52vw;
           }
         }
       `
