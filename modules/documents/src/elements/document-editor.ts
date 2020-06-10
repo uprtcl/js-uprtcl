@@ -278,15 +278,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     };
   }
 
-  getStore(eveesAuthority: string, type: string): CASStore {
+  getStore(remoteId: string, type: string): CASStore {
     if (!this.remotesMap) throw new Error('remotes config undefined');
-    const remote = this.eveesRemotes.find(
-      (r) => r.authority === eveesAuthority
-    );
+    const remote = this.eveesRemotes.find((r) => r.id === remoteId);
 
     if (!remote)
       throw new Error(
-        `Could not find evees remote with authority ID ${eveesAuthority}`
+        `Could not find evees remote with authority ID ${remoteId}`
       );
 
     return this.remotesMap(remote, type);
@@ -429,14 +427,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async createCommit(
     content: object,
-    authority: string,
+    remoteId: string,
     parentsIds?: string[],
     message?: string
   ): Promise<string> {
-    const dataId = await this.createEntity(content, authority);
+    const dataId = await this.createEntity(content, remoteId);
 
-    const remote = this.eveesRemotes.find((r) => r.authority === authority);
-    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
+    const remote = this.eveesRemotes.find((r) => r.id === remoteId);
+    if (!remote) throw new Error(`Remote not found for authority ${remoteId}`);
 
     return await EveesHelpers.createCommit(this.client, remote, {
       dataId,

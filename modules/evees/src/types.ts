@@ -20,7 +20,8 @@ export const defaultRemoteMap: RemoteMap = (
 export type Context = string;
 
 export interface Perspective {
-  authority: string;
+  remote: string;
+  path: string;
   creatorId: string;
   timestamp: number;
 }

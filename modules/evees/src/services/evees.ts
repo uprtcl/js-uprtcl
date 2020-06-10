@@ -41,15 +41,13 @@ export class Evees {
 
   /** Public functions */
 
-  public getAuthority(authority: string | undefined): EveesRemote {
-    if (!authority && this.eveesRemotes.length === 1)
+  public getRemote(remoteId: string | undefined): EveesRemote {
+    if (!remoteId && this.eveesRemotes.length === 1)
       return this.eveesRemotes[0];
 
-    const remote = this.eveesRemotes.find(
-      (remote) => remote.authority === authority
-    );
+    const remote = this.eveesRemotes.find((remote) => remote.id === remoteId);
 
-    if (!remote) throw new Error(`Authority ${authority}  is not registered`);
+    if (!remote) throw new Error(`Authority ${remoteId}  is not registered`);
 
     return remote;
   }
@@ -59,9 +57,7 @@ export class Evees {
    * @returns the uprtcl remote
    */
   public getPerspectiveProvider(perspective: Signed<Perspective>): EveesRemote {
-    const perspectiveOrigin = perspective.payload.authority;
-
-    return this.getAuthority(perspectiveOrigin);
+    return this.getRemote(perspective.payload.remote);
   }
 
   /**
