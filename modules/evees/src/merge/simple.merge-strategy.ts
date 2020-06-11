@@ -194,8 +194,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
     entity.casID = sourceRemote.casID;
 
     /** prevent an update head to the same data */
-    if (entity.id === newDatas[0].id) {
-      return toCommitId;
+    if (entity.id === newDatas[0].id || toCommitId === fromCommitId) {
+      return toCommitIdOrg;
     }
 
     workspace.create(entity);
