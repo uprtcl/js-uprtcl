@@ -7,7 +7,12 @@ import {
   loadEntity,
 } from '@uprtcl/multiplatform';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
+import {
+  CortexModule,
+  PatternRecognizer,
+  Entity,
+  Signed,
+} from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { UpdateRequest, Commit, RemoteMap } from '../types';
@@ -138,11 +143,11 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   async findLatestNonFork(commitId) {
-    const commit = await loadEntity<Commit>(this.client, commitId);
+    const commit = await loadEntity<Signed<Commit>>(this.client, commitId);
     if (commit === undefined) throw new Error('commit not found');
 
-    if (commit.object.forking !== undefined) {
-      return this.findLatestNonFork(commit.object.forking);
+    if (commit.object.payload.forking !== undefined) {
+      return this.findLatestNonFork(commit.object.payload.forking);
     } else {
       return commitId;
     }
@@ -157,10 +162,6 @@ export class SimpleMergeStrategy implements MergeStrategy {
   ): Promise<string> {
     const toCommitId = await this.findLatestNonFork(toCommitIdOrg);
     const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg);
-
-    if (toCommitId === fromCommitId) {
-      return toCommitId;
-    }
 
     const commitsIds = [toCommitId, fromCommitId];
     const ancestorId = await findMostRecentCommonAncestor(this.client)(
