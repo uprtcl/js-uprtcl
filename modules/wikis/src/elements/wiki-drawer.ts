@@ -841,6 +841,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           transition: all 0.1s ease-in;
         }
         .page-item .text-container {
+          white-space: nowrap;
+          overflow: hidden;
           max-width: calc(100% - 48px);
           overflow-x: hidden;
           flex-grow: 1;
