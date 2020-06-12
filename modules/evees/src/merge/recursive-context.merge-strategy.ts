@@ -27,7 +27,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   setPerspective(perspectiveId: string, context: string, to: boolean): void {
-    if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
+    if (!this.perspectivesByContext)
+      throw new Error('perspectivesByContext undefined');
     if (!this.allPerspectives) throw new Error('allPerspectives undefined');
 
     if (!this.perspectivesByContext[context]) {
@@ -82,7 +83,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     this.setPerspective(perspectiveId, context, to);
 
-    const hasChildren: HasChildren | undefined = this.recognizer
+    const hasChildren:
+      | HasChildren
+      | undefined = this.recognizer
       .recognizeBehaviours(data)
       .find((prop) => !!(prop as HasChildren).getChildrenLinks);
 
@@ -102,7 +105,10 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     }
   }
 
-  async readAllSubcontexts(toPerspectiveId: string, fromPerspectiveId: string): Promise<void> {
+  async readAllSubcontexts(
+    toPerspectiveId: string,
+    fromPerspectiveId: string
+  ): Promise<void> {
     const promises = [
       this.readPerspective(toPerspectiveId, true),
       this.readPerspective(fromPerspectiveId, false),
@@ -121,7 +127,12 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     this.perspectivesByContext = undefined;
     this.allPerspectives = undefined;
 
-    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, workspace, config);
+    return this.mergePerspectives(
+      toPerspectiveId,
+      fromPerspectiveId,
+      workspace,
+      config
+    );
   }
 
   async mergePerspectives(
@@ -138,7 +149,12 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
     }
 
-    return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, workspace, config);
+    return super.mergePerspectives(
+      toPerspectiveId,
+      fromPerspectiveId,
+      workspace,
+      config
+    );
   }
 
   private async getPerspectiveContext(perspectiveId: string): Promise<string> {
@@ -180,7 +196,11 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     }
   }
 
-  async checkPerspectiveAndOwner(perspectiveId: string, authority: string, canWrite: string) {
+  async checkPerspectiveAndOwner(
+    perspectiveId: string,
+    authority: string,
+    canWrite: string
+  ) {
     const result = await this.client.query({
       query: gql`{
         entity(ref: "${perspectiveId}") {
@@ -192,7 +212,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     });
 
     const thisAuthority = result.data.entity.payload.authority;
-    const owner = result.data.entity._context.patterns.accessControl.permissions.owner;
+    const owner =
+      result.data.entity._context.patterns.accessControl.permissions.owner;
 
     if (authority !== thisAuthority) {
       return false;
@@ -207,11 +228,14 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     workspace: EveesWorkspace,
     config: any
   ): Promise<string[]> {
-    if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
+    if (!this.perspectivesByContext)
+      throw new Error('perspectivesByContext undefined');
 
     /** The context is used as Merge ID for perspective to have a context-based merge. For othe
      * type of entities, like commits or data, the link itself is used is mergeId */
-    const originalPromises = originalLinks.map((link) => this.getLinkMergeId(link));
+    const originalPromises = originalLinks.map((link) =>
+      this.getLinkMergeId(link)
+    );
     const modificationsPromises = modificationsLinks.map((links) =>
       links.map((link) => this.getLinkMergeId(link))
     );
@@ -235,7 +259,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
         const perspectivesByContext = dictionary[link];
 
         if (perspectivesByContext) {
-          const needsSubperspectiveMerge = perspectivesByContext.to && perspectivesByContext.from;
+          const needsSubperspectiveMerge =
+            perspectivesByContext.to && perspectivesByContext.from;
 
           if (needsSubperspectiveMerge) {
             /** Two perspectives of the same context are merged, keeping the "to" perspecive id,
