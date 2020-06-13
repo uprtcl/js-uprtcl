@@ -456,7 +456,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
-  renderPageList() {
+  renderPageList(showOptions: boolean = true) {
     if (this.pagesList === undefined)
       return html`
         <cortex-loading-placeholder
@@ -475,13 +475,26 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <mwc-list>
         ${this.pagesList.map((page, ix) => {
           // this.logger.log(`rendering page title ${page.id}`, menuConfig);
-          return this.renderPageItem(page, ix);
+          return this.renderPageItem(page, ix, showOptions);
         })}
       </mwc-list>
+      ${this.editable
+        ? html`
+            <div class="button-row">
+              <evees-loading-button
+                icon="add_circle_outline"
+                @click=${() => this.newPage()}
+                loading=${this.creatingNewPage ? 'true' : 'false'}
+                label=${this.t('wikis:new-page')}
+              >
+              </evees-loading-button>
+            </div>
+          `
+        : html``}
     `;
   }
 
-  renderPageItem(page: PageData, ix: number) {
+  renderPageItem(page: PageData, ix: number, showOptions: boolean) {
     const menuConfig: MenuConfig = {
       'move-up': {
         disabled: ix === 0,
@@ -515,7 +528,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <div class="text-container">
           ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
         </div>
-        ${this.editable
+        ${this.editable && showOptions
           ? html`
               <evees-options-menu
                 @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
@@ -596,20 +609,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <div>
           ${this.renderPageList()}
         </div>
-
-        ${this.editable
-          ? html`
-              <div class="button-row">
-                <evees-loading-button
-                  icon="add_circle_outline"
-                  @click=${() => this.newPage()}
-                  loading=${this.creatingNewPage ? 'true' : 'false'}
-                  label=${this.t('wikis:new-page')}
-                >
-                </evees-loading-button>
-              </div>
-            `
-          : html``}
       </section>
     `;
   }
@@ -654,7 +653,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 : ''}
             </div>
             <div class="pages-summary">
-              ${this.renderPageList()}
+              ${this.renderPageList(false)}
             </div>
           </div>
 
