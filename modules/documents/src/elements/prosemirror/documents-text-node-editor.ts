@@ -684,7 +684,7 @@ export class DocumentTextNodeEditor extends LitElement {
         src: link,
         style: `${width !== '' ? `width:${width}px` : ''};${
           height !== '' ? `height:${height}px` : ''
-        };max-width: 100%;margin: 0 auto;`,
+        };max-width: 100%;margin: 0 auto;border-radius: 5px;`,
       });
       this.dispatchTransaction(
         this.editor.view.state.tr.replaceSelectionWith(imgNode, false)
