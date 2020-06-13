@@ -614,7 +614,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     `;
   }
 
-  renderWikiTitle() {
+  renderSummary() {
     const contextConfig: MenuConfig = {};
 
     contextConfig['edit-title'] = {
@@ -652,6 +652,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                     ></evees-string-form>
                   `
                 : ''}
+            </div>
+            <div class="pages-summary">
+              ${this.renderPageList()}
             </div>
           </div>
 
@@ -726,7 +729,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               `
             : html`
                 <div class="home-container">
-                  ${this.renderWikiTitle()}
+                  ${this.renderSummary()}
 
                   <div class="evee-info">
                     <evees-info-page
@@ -958,6 +961,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           right: 6px;
           display: flex;
         }
+        .pages-summary {
+          max-height: 150px;
+          min-height: 80px;
+          overflow-y: auto;
+        }
         .title-form {
           margin-top: 22px;
         }
@@ -968,6 +976,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           }
           .app-content {
             min-width: 100% !important;
+          }
+          .section {
+            padding-top: 33px;
           }
         }
       `,
