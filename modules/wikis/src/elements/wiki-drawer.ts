@@ -464,20 +464,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         ></cortex-loading-placeholder>
       `;
 
-    if (this.pagesList.length === 0)
-      return html`
-        <div class="empty">
-          <span><i>${this.t('wikis:no-pages-yet')}</i></span>
-        </div>
-      `;
-
     return html`
-      <mwc-list>
-        ${this.pagesList.map((page, ix) => {
-          // this.logger.log(`rendering page title ${page.id}`, menuConfig);
-          return this.renderPageItem(page, ix, showOptions);
-        })}
-      </mwc-list>
+      ${this.pagesList.length === 0
+        ? html`<div class="empty">
+            <span><i>${this.t('wikis:no-pages-yet')}</i></span>
+          </div>`
+        : html`<mwc-list>
+            ${this.pagesList.map((page, ix) => {
+              // this.logger.log(`rendering page title ${page.id}`, menuConfig);
+              return this.renderPageItem(page, ix, showOptions);
+            })}
+          </mwc-list>`}
       ${this.editable
         ? html`
             <div class="button-row">
