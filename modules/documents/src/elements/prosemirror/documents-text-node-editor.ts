@@ -5,9 +5,12 @@ import { DOMParser, DOMSerializer } from 'prosemirror-model';
 import { EditorState, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { TextType } from '../../types';
+import { styles as cmStyle } from './codemirror.css';
+import { CodeBlockView } from './codeview';
 import { icons } from './icons';
 import { iconsStyle } from './icons.css';
 import { styles } from './prosemirror.css';
+import { styles as theme } from './lesser-dark.css';
 import { blockSchema } from './schema-block';
 import { titleSchema } from './schema-title';
 import { setBlockType } from 'prosemirror-commands';
@@ -217,6 +220,17 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.view.focus();
   }
 
+  enterPressedEvent(content, asChild) {
+    this.dispatchEvent(
+      new CustomEvent('enter-pressed', {
+        detail: {
+          content,
+          asChild,
+        },
+      })
+    );
+  }
+
   keydown(view, event) {
     if (LOGINFO) this.logger.log('keydown()', { keyCode: event.keyCode });
 
@@ -246,15 +260,7 @@ export class DocumentTextNodeEditor extends LitElement {
       const content = temp.innerHTML;
 
       if (LOGINFO) this.logger.log('enter-pressed', { content });
-      this.dispatchEvent(
-        new CustomEvent('enter-pressed', {
-          detail: {
-            content,
-            asChild: this.type === TextType.Title,
-          },
-        })
-      );
-
+      this.enterPressedEvent(content, this.type === TextType.Title);
       return;
     }
 
@@ -381,7 +387,6 @@ export class DocumentTextNodeEditor extends LitElement {
 
     this.currentContent = this.init;
     const doc = this.html2doc(this.getValidDocHtml(this.init));
-
     /** the heading level for render is given by the `level` attribute,
      * not the heading tag (which is always <h1> in the data text) */
     if (doc.content.content[0].type.name === 'heading') {
@@ -424,6 +429,12 @@ export class DocumentTextNodeEditor extends LitElement {
           return true;
         },
       },
+      nodeViews: {
+        code_block: (node, view, getPos) =>
+          new CodeBlockView(node, view, getPos, () =>
+            this.enterPressedEvent('', false)
+          ),
+      },
     });
 
     if (this.focusInit === 'true') {
@@ -431,11 +442,18 @@ export class DocumentTextNodeEditor extends LitElement {
     }
   }
 
-  state2Html(state) {
+  state2Html(state: EditorState) {
     const fragment = this.editor.serializer.serializeFragment(state.doc);
+
+    const node = state.doc.content.child(0);
     const temp = document.createElement('div');
     temp.appendChild(fragment);
-    return (temp.firstElementChild as HTMLElement).innerHTML;
+    /** heading and paragraph content are stored without the exernal tag */
+    if (node.type.name === 'code_block') {
+      return (temp as HTMLElement).innerHTML;
+    } else {
+      return (temp.firstElementChild as HTMLElement).innerHTML;
+    }
   }
 
   html2doc(text: string) {
@@ -813,11 +831,6 @@ export class DocumentTextNodeEditor extends LitElement {
 
   renderLevelControllers() {
     return html`
-      <!-- current level -->
-      <button class="btn-text btn-current">
-        <span>${this.type === TextType.Title ? `h${this.level}` : 'text'}</span>
-      </button>
-
       <!-- level controllers -->
       ${this.type === TextType.Paragraph
         ? this.renderParagraphItems()
@@ -829,7 +842,7 @@ export class DocumentTextNodeEditor extends LitElement {
    * Menus that needs to show up only when there is a `selection`
    */
 
-  renderSelectionOnlyMenus() {
+  renderSelectionOnlyMenus(type: string) {
     const menus = html`
       ${this.renderLevelControllers()}
       ${this.type !== TextType.Title
@@ -858,7 +871,7 @@ export class DocumentTextNodeEditor extends LitElement {
         ${icons.link}
       </button>
     `;
-    return this.hasSelection() ? menus : '';
+    return this.hasSelection() && type !== 'code' ? menus : '';
   }
 
   hasSelection() {
@@ -871,8 +884,21 @@ export class DocumentTextNodeEditor extends LitElement {
     return false;
   }
 
+  toggleCode() {
+    const node = this.editor.view.state.doc.content.content[0];
+    const end = node.nodeSize;
+    const newType =
+      node.type.name !== 'code_block'
+        ? blockSchema.nodes.code_block
+        : blockSchema.nodes.paragraph;
+
+    this.editor.view.dispatch(
+      this.editor.view.state.tr.setBlockType(0, end, newType)
+    );
+  }
+
   renderMenu() {
-    const subMenus = html`
+    const embedSubMenu = html`
       <button
         class="btn btn-square btn-small"
         @click=${() => this.subMenuClick(ActiveSubMenu.IMAGE)}
@@ -887,18 +913,39 @@ export class DocumentTextNodeEditor extends LitElement {
         ${icons.youtube}
       </button>
     `;
+    const codeSubMenu = html`
+      <button class="btn btn-square btn-small" @click=${this.toggleCode}>
+        ${icons.code}
+      </button>
+    `;
+    const type = this.getBlockType();
+    console.log(this.type);
     return html`
       <div class="top-menu" id="TOP_MENU">
         <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
 
         <div class="menus">
-          ${this.renderSelectionOnlyMenus()}
-          ${this.type === 'Paragraph' ? subMenus : ''}
+          <!-- current level -->
+          <button class="btn-text btn-current">
+            <span>${type}</span>
+          </button>
+          ${this.renderSelectionOnlyMenus(type)}
+          ${this.type === 'Paragraph' && type !== 'code' ? embedSubMenu : ''}
+          ${this.showUrlMenu && type !== 'code' ? this.renderUrlMenu() : ''}
+          ${this.type !== 'Title' ? codeSubMenu : ''}
         </div>
-
-        ${this.showUrlMenu ? this.renderUrlMenu() : ''}
       </div>
     `;
+  }
+
+  getBlockType() {
+    const nodeType = (this.editor.view as EditorView).state.doc.child(0).type;
+
+    if (nodeType && nodeType.name === 'code_block') {
+      return 'code';
+    }
+
+    return this.type === TextType.Title ? `h${this.level}` : 'text';
   }
 
   render() {
@@ -911,8 +958,10 @@ export class DocumentTextNodeEditor extends LitElement {
 
   static get styles() {
     return [
+      cmStyle,
       styles,
       iconsStyle,
+      theme,
       css`
         :host {
           position: relative;
@@ -1035,6 +1084,16 @@ export class DocumentTextNodeEditor extends LitElement {
 
         .editor-content {
           margin: 0px 0px;
+        }
+
+        .yt-embed {
+          max-width: 100%;
+        }
+
+        @media (max-width: 768px) {
+          .yt-embed {
+            max-height: 300px;
+          }
         }
       `,
     ];
