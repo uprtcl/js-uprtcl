@@ -9,6 +9,8 @@ export const styles = css`
     height: auto;
     color: black;
     direction: ltr;
+    padding: 2vh 1.5vh;
+    border-radius: 5px;
   }
 
   /* PADDING */

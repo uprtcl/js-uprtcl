@@ -10,6 +10,7 @@ import { CodeBlockView } from './codeview';
 import { icons } from './icons';
 import { iconsStyle } from './icons.css';
 import { styles } from './prosemirror.css';
+import { styles as theme } from './lesser-dark.css';
 import { blockSchema } from './schema-block';
 import { titleSchema } from './schema-title';
 import { setBlockType } from 'prosemirror-commands';
@@ -219,6 +220,17 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.view.focus();
   }
 
+  enterPressedEvent(content, asChild) {
+    this.dispatchEvent(
+      new CustomEvent('enter-pressed', {
+        detail: {
+          content,
+          asChild,
+        },
+      })
+    );
+  }
+
   keydown(view, event) {
     if (LOGINFO) this.logger.log('keydown()', { keyCode: event.keyCode });
 
@@ -248,15 +260,7 @@ export class DocumentTextNodeEditor extends LitElement {
       const content = temp.innerHTML;
 
       if (LOGINFO) this.logger.log('enter-pressed', { content });
-      this.dispatchEvent(
-        new CustomEvent('enter-pressed', {
-          detail: {
-            content,
-            asChild: this.type === TextType.Title,
-          },
-        })
-      );
-
+      this.enterPressedEvent(content, this.type === TextType.Title);
       return;
     }
 
@@ -423,11 +427,14 @@ export class DocumentTextNodeEditor extends LitElement {
         keydown: (view, event) => {
           this.keydown(view, event);
           return true;
-        }
+        },
       },
       nodeViews: {
-        code_block: (node, view, getPos) => new CodeBlockView(node, view, getPos)
-      }
+        code_block: (node, view, getPos) =>
+          new CodeBlockView(node, view, getPos, () =>
+            this.enterPressedEvent('', false)
+          ),
+      },
     });
 
     if (this.focusInit === 'true') {
@@ -881,9 +888,13 @@ export class DocumentTextNodeEditor extends LitElement {
     const node = this.editor.view.state.doc.content.content[0];
     const end = node.nodeSize;
     const newType =
-      node.type.name !== 'code_block' ? blockSchema.nodes.code_block : blockSchema.nodes.paragraph;
+      node.type.name !== 'code_block'
+        ? blockSchema.nodes.code_block
+        : blockSchema.nodes.paragraph;
 
-    this.editor.view.dispatch(this.editor.view.state.tr.setBlockType(0, end, newType));
+    this.editor.view.dispatch(
+      this.editor.view.state.tr.setBlockType(0, end, newType)
+    );
   }
 
   renderMenu() {
@@ -950,6 +961,7 @@ export class DocumentTextNodeEditor extends LitElement {
       cmStyle,
       styles,
       iconsStyle,
+      theme,
       css`
         :host {
           position: relative;
@@ -1083,7 +1095,7 @@ export class DocumentTextNodeEditor extends LitElement {
             max-height: 300px;
           }
         }
-      `
+      `,
     ];
   }
 }

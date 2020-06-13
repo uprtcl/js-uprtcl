@@ -14,13 +14,19 @@ export class CodeBlockView {
   updating: boolean;
   incomingChanges = false;
 
-  constructor(public node: Node, public view: EditorView, public getPos) {
+  constructor(
+    public node: Node,
+    public view: EditorView,
+    public getPos,
+    public enterPressed: Function
+  ) {
     // Create a CodeMirror instance
     this.cm = CodeMirror(null as any, {
       value: this.node.textContent,
       mode: 'javascript',
       extraKeys: this.codeMirrorKeymap(),
-      lineNumbers: true
+      lineNumbers: false,
+      theme: 'lesser-dark',
     });
 
     // The editor's outer node is our DOM representation
@@ -52,7 +58,8 @@ export class CodeBlockView {
     if (!this.cm.hasFocus()) return;
     let state = this.view.state;
     let selection = this.asProseMirrorSelection(state.doc);
-    if (!selection.eq(state.selection)) this.view.dispatch(state.tr.setSelection(selection));
+    if (!selection.eq(state.selection))
+      this.view.dispatch(state.tr.setSelection(selection));
   }
 
   asProseMirrorSelection(doc) {
@@ -65,7 +72,10 @@ export class CodeBlockView {
   setSelection(anchor, head) {
     this.cm.focus();
     this.updating = true;
-    this.cm.setSelection(this.cm.posFromIndex(anchor), this.cm.posFromIndex(head));
+    this.cm.setSelection(
+      this.cm.posFromIndex(anchor),
+      this.cm.posFromIndex(head)
+    );
     this.updating = false;
   }
 
@@ -90,8 +100,8 @@ export class CodeBlockView {
       Down: () => this.maybeEscape('line', 1),
       Right: () => this.maybeEscape('char', 1),
       'Ctrl-Enter': () => {
-        if (exitCode(view.state, view.dispatch)) view.focus();
-      }
+        this.enterPressed();
+      },
     });
   }
 
@@ -100,13 +110,16 @@ export class CodeBlockView {
     if (
       this.cm.somethingSelected() ||
       pos.line != (dir < 0 ? this.cm.firstLine() : this.cm.lastLine()) ||
-      (unit == 'char' && pos.ch != (dir < 0 ? 0 : this.cm.getLine(pos.line).length))
+      (unit == 'char' &&
+        pos.ch != (dir < 0 ? 0 : this.cm.getLine(pos.line).length))
     )
       return CodeMirror.Pass;
     this.view.focus();
     let targetPos = this.getPos() + (dir < 0 ? 0 : this.node.nodeSize);
     let selection = Selection.near(this.view.state.doc.resolve(targetPos), dir);
-    this.view.dispatch(this.view.state.tr.setSelection(selection).scrollIntoView());
+    this.view.dispatch(
+      this.view.state.tr.setSelection(selection).scrollIntoView()
+    );
     this.view.focus();
   }
 
@@ -139,7 +152,8 @@ function computeChange(oldVal, newVal) {
   let start = 0,
     oldEnd = oldVal.length,
     newEnd = newVal.length;
-  while (start < oldEnd && oldVal.charCodeAt(start) == newVal.charCodeAt(start)) ++start;
+  while (start < oldEnd && oldVal.charCodeAt(start) == newVal.charCodeAt(start))
+    ++start;
   while (
     oldEnd > start &&
     newEnd > start &&
