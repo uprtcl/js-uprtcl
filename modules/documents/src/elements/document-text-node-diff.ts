@@ -21,7 +21,10 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
   oldData!: Entity<TextNode>;
 
   async firstUpdated() {
-    this.logger.log('firstUpdated()', { newData: this.newData, oldData: this.oldData });
+    this.logger.log('firstUpdated()', {
+      newData: this.newData,
+      oldData: this.oldData,
+    });
   }
 
   render() {
@@ -35,12 +38,14 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
         <documents-editor
           .client=${this.workspace.workspace}
           ref=${this.oldData.id}
+          editable="false"
         ></documents-editor>
       </div>
       <div class="document-container new-page">
         <documents-editor
           .client=${this.workspace.workspace}
           ref=${this.newData.id}
+          editable="false"
         ></documents-editor>
       </div>
     `;

@@ -13,7 +13,10 @@ export class EveesWorkspace {
 
   public workspace: ApolloClient<any>;
 
-  constructor(client: ApolloClient<any>, protected recognizer?: PatternRecognizer) {
+  constructor(
+    client: ApolloClient<any>,
+    protected recognizer?: PatternRecognizer
+  ) {
     this.workspace = this.buildWorkspace(client);
   }
 
@@ -54,7 +57,8 @@ export class EveesWorkspace {
 
   public async isSingleAuthority(authority: string) {
     const newNot = this.newPerspectives.find(
-      (newPerspective) => newPerspective.perspective.object.payload.authority !== authority
+      (newPerspective) =>
+        newPerspective.perspective.object.payload.authority !== authority
     );
     if (newNot !== undefined) return false;
 
@@ -63,7 +67,9 @@ export class EveesWorkspace {
     );
     const checktoPerspectives = await Promise.all(check);
 
-    const updateNot = checktoPerspectives.find((_authority) => _authority !== authority);
+    const updateNot = checktoPerspectives.find(
+      (_authority) => _authority !== authority
+    );
     if (updateNot !== undefined) return false;
 
     return true;
@@ -83,25 +89,25 @@ export class EveesWorkspace {
 
   public create(entity: Entity<any>) {
     this.entities.push(entity);
-    this.cacheCreateEntity(entity);
+    this.cacheCreateEntity(this.workspace, entity);
   }
 
   public newPerspective(perspective: NewPerspectiveData) {
     this.newPerspectives.push(perspective);
-    this.cacheInitPerspective(perspective);
+    this.cacheInitPerspective(this.workspace, perspective);
   }
 
   public update(update: UpdateRequest) {
     this.updates.push(update);
-    this.cacheUpdateHead(update);
+    this.cacheUpdateHead(this.workspace, update);
   }
 
-  private cacheCreateEntity(entity: Entity<any>) {
+  public cacheCreateEntity(client: ApolloClient<any>, entity: Entity<any>) {
     if (!this.recognizer) throw new Error('recognized not provided');
 
     const type = this.recognizer.recognizeType(entity);
 
-    this.workspace.writeQuery({
+    client.writeQuery({
       query: gql`{
         entity(ref: "${entity.id}") {
           __typename
@@ -127,13 +133,20 @@ export class EveesWorkspace {
     });
   }
 
-  private cacheInitPerspective(newPerspective: NewPerspectiveData) {
+  public cacheInitPerspective(
+    client: ApolloClient<any>,
+    newPerspective: NewPerspectiveData
+  ) {
     const perspectiveId = newPerspective.perspective.id;
-    const headId = newPerspective.details ? newPerspective.details.headId : undefined;
-    const context = newPerspective.details ? newPerspective.details.context : undefined;
+    const headId = newPerspective.details
+      ? newPerspective.details.headId
+      : undefined;
+    const context = newPerspective.details
+      ? newPerspective.details.context
+      : undefined;
     const object = newPerspective.perspective.object;
 
-    this.workspace.cache.writeQuery({
+    client.cache.writeQuery({
       query: gql`{
         entity(ref: "${perspectiveId}") {
           id
@@ -173,11 +186,11 @@ export class EveesWorkspace {
     });
   }
 
-  private cacheUpdateHead(update: UpdateRequest) {
+  public cacheUpdateHead(client: ApolloClient<any>, update: UpdateRequest) {
     const perspectiveId = update.perspectiveId;
     // TODO: keep track of old head?...
 
-    this.workspace.cache.writeQuery({
+    client.cache.writeQuery({
       query: gql`{
         entity(ref: "${perspectiveId}") {
           id
@@ -220,12 +233,18 @@ export class EveesWorkspace {
       const dataId = mutation.data.createEntity.id;
 
       if (dataId !== entity.id) {
-        throw new Error(`created entity id ${dataId} not as expected ${entity.id}`);
+        throw new Error(
+          `created entity id ${dataId} not as expected ${entity.id}`
+        );
       }
     });
 
     return Promise.all(create);
   }
+
+  /* Takes the new perspectives and sets their head in the cache 
+     before the perspective is actually created */
+  public precacheInit(client: ApolloClient<any>) {}
 
   private async executeInit(client: ApolloClient<any>) {
     const createPerspective = async (newPerspective: NewPerspectiveData) => {
@@ -254,5 +273,13 @@ export class EveesWorkspace {
         (promise, action) => promise.then((_) => createPerspective(action)),
         Promise.resolve()
       );
+  }
+
+  /** copies the new perspective data (head) in the workspace into the
+   *  cache of an apollo client */
+  public async precacheNewPerspectives(client: ApolloClient<any>) {
+    this.newPerspectives.reverse().map((newPerspective) => {
+      this.cacheInitPerspective(client, newPerspective);
+    });
   }
 }

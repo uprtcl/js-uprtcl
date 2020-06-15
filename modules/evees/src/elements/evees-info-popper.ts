@@ -122,8 +122,6 @@ export class EveesInfoPopper extends EveesInfoBase {
         .button {
           cursor: pointer;
           padding-top: 5px;
-          padding-left: 10px;
-          padding-right: 10px;
           height: 100%;
           border-radius: 3px;
           user-select: none;
@@ -141,7 +139,7 @@ export class EveesInfoPopper extends EveesInfoBase {
           width: auto;
           z-index: 20;
           position: absolute;
-          left: 30px;
+          left: 15px;
           top: 0;
           width: 80vw;
           max-width: 700px;

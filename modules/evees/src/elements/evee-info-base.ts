@@ -13,7 +13,12 @@ import {
   OwnerPermissions,
   SET_PUBLIC_READ,
 } from '@uprtcl/access-control';
-import { CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
+import {
+  CortexModule,
+  PatternRecognizer,
+  Entity,
+  Signed,
+} from '@uprtcl/cortex';
 import {
   DiscoveryModule,
   EntityCache,
@@ -186,7 +191,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
           context: context,
           headId: headId,
         },
-        perspective: entity.object as Perspective,
+        perspective: (entity.object as Signed<Perspective>).payload,
         canWrite: accessControl ? accessControl.canWrite : true,
         permissions: accessControl ? accessControl.permissions : undefined,
         head,
@@ -429,6 +434,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     /** create commits and data */
     await workspace.executeCreate(this.client);
+    await workspace.precacheNewPerspectives(this.client);
 
     const proposal = {
       toPerspectiveId,

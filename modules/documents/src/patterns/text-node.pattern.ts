@@ -1,7 +1,14 @@
 import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
-import { Pattern, recognizeEntity, HasChildren, Entity, HasTitle, New } from '@uprtcl/cortex';
+import {
+  Pattern,
+  recognizeEntity,
+  HasChildren,
+  Entity,
+  HasTitle,
+  New,
+} from '@uprtcl/cortex';
 import {
   Merge,
   MergeStrategy,
@@ -48,7 +55,10 @@ const nodeLevel = (node: DocNode) => {
 
 export class TextNodePattern extends Pattern<Entity<TextNode>> {
   recognize(entity: object): boolean {
-    return recognizeEntity(entity) && propertyOrder.every((p) => entity.object.hasOwnProperty(p));
+    return (
+      recognizeEntity(entity) &&
+      propertyOrder.every((p) => entity.object.hasOwnProperty(p))
+    );
   }
 
   type = DocumentsBindings.TextNodeType;
@@ -56,7 +66,10 @@ export class TextNodePattern extends Pattern<Entity<TextNode>> {
 
 @injectable()
 export class TextNodeCommon
-  implements HasLenses<Entity<TextNode>>, HasChildren<Entity<TextNode>>, Merge<Entity<TextNode>> {
+  implements
+    HasLenses<Entity<TextNode>>,
+    HasChildren<Entity<TextNode>>,
+    Merge<Entity<TextNode>> {
   replaceChildrenLinks = (node: Entity<TextNode>) => (
     childrenHashes: string[]
   ): Entity<TextNode> => ({
@@ -78,7 +91,8 @@ export class TextNodeCommon
         type: 'content',
         render: (entity: Entity<any>, context: any) => {
           return html`
-            <documents-text-node .data=${node} ref=${entity.id}> </documents-text-node>
+            <documents-text-node .data=${node} ref=${entity.id}>
+            </documents-text-node>
           `;
         },
       },
@@ -104,15 +118,23 @@ export class TextNodeCommon
               @focus=${events.focus}
               @blur=${events.blur}
               @content-changed=${(e) =>
-                events.contentChanged(textToTextNode(node.draft, e.detail.content), false)}
-              @enter-pressed=${(e) => events.split(e.detail.content, e.detail.asChild)}
-              @backspace-on-start=${(e) => events.joinBackward(e.detail.content)}
+                events.contentChanged(
+                  textToTextNode(node.draft, e.detail.content),
+                  false
+                )}
+              @enter-pressed=${(e) =>
+                events.split(e.detail.content, e.detail.asChild)}
+              @backspace-on-start=${(e) =>
+                events.joinBackward(e.detail.content)}
               @delete-on-end=${(e) => events.pullDownward()}
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}
               @change-type=${(e) =>
-                events.contentChanged(typeToTextNode(node.draft, e.detail.type), e.detail.lift)}
+                events.contentChanged(
+                  typeToTextNode(node.draft, e.detail.type),
+                  e.detail.lift
+                )}
               @content-appended=${events.appended}
             >
             </documents-text-node-editor>
@@ -128,10 +150,7 @@ export class TextNodeCommon
     workspace: EveesWorkspace,
     config: any
   ): Promise<TextNode> => {
-    const resultText = mergeStrings(
-      originalNode.object.text,
-      modifications.map((data) => data.object.text)
-    );
+    const resultText = modifications[1].object.text;
     const resultType = mergeResult(
       originalNode.object.type,
       modifications.map((data) => data.object.type)

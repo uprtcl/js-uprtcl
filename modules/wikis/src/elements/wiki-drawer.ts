@@ -456,7 +456,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
-  renderPageList() {
+  renderPageList(showOptions: boolean = true) {
     if (this.pagesList === undefined)
       return html`
         <cortex-loading-placeholder
@@ -464,24 +464,34 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         ></cortex-loading-placeholder>
       `;
 
-    if (this.pagesList.length === 0)
-      return html`
-        <div class="empty">
-          <span><i>${this.t('wikis:no-pages-yet')}</i></span>
-        </div>
-      `;
-
     return html`
-      <mwc-list>
-        ${this.pagesList.map((page, ix) => {
-          // this.logger.log(`rendering page title ${page.id}`, menuConfig);
-          return this.renderPageItem(page, ix);
-        })}
-      </mwc-list>
+      ${this.pagesList.length === 0
+        ? html`<div class="empty">
+            <span><i>${this.t('wikis:no-pages-yet')}</i></span>
+          </div>`
+        : html`<mwc-list>
+            ${this.pagesList.map((page, ix) => {
+              // this.logger.log(`rendering page title ${page.id}`, menuConfig);
+              return this.renderPageItem(page, ix, showOptions);
+            })}
+          </mwc-list>`}
+      ${this.editable
+        ? html`
+            <div class="button-row">
+              <evees-loading-button
+                icon="add_circle_outline"
+                @click=${() => this.newPage()}
+                loading=${this.creatingNewPage ? 'true' : 'false'}
+                label=${this.t('wikis:new-page')}
+              >
+              </evees-loading-button>
+            </div>
+          `
+        : html``}
     `;
   }
 
-  renderPageItem(page: PageData, ix: number) {
+  renderPageItem(page: PageData, ix: number, showOptions: boolean) {
     const menuConfig: MenuConfig = {
       'move-up': {
         disabled: ix === 0,
@@ -515,7 +525,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <div class="text-container">
           ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
         </div>
-        ${this.editable
+        ${this.editable && showOptions
           ? html`
               <evees-options-menu
                 @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
@@ -596,25 +606,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <div>
           ${this.renderPageList()}
         </div>
-
-        ${this.editable
-          ? html`
-              <div class="button-row">
-                <evees-loading-button
-                  icon="add_circle_outline"
-                  @click=${() => this.newPage()}
-                  loading=${this.creatingNewPage ? 'true' : 'false'}
-                  label=${this.t('wikis:new-page')}
-                >
-                </evees-loading-button>
-              </div>
-            `
-          : html``}
       </section>
     `;
   }
 
-  renderWikiTitle() {
+  renderSummary() {
     const contextConfig: MenuConfig = {};
 
     contextConfig['edit-title'] = {
@@ -652,6 +648,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                     ></evees-string-form>
                   `
                 : ''}
+            </div>
+            <div class="pages-summary">
+              ${this.renderPageList(false)}
             </div>
           </div>
 
@@ -726,7 +725,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               `
             : html`
                 <div class="home-container">
-                  ${this.renderWikiTitle()}
+                  ${this.renderSummary()}
 
                   <div class="evee-info">
                     <evees-info-page
@@ -841,6 +840,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           transition: all 0.1s ease-in;
         }
         .page-item .text-container {
+          white-space: nowrap;
+          overflow: hidden;
           max-width: calc(100% - 48px);
           overflow-x: hidden;
           flex-grow: 1;
@@ -956,6 +957,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           right: 6px;
           display: flex;
         }
+        .pages-summary {
+          max-height: 150px;
+          min-height: 80px;
+          overflow-y: auto;
+        }
         .title-form {
           margin-top: 22px;
         }
@@ -966,6 +972,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           }
           .app-content {
             min-width: 100% !important;
+          }
+          .section {
+            padding-top: 33px;
           }
         }
       `,

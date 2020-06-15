@@ -1128,8 +1128,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
     }
 
+    const editorClasses = ['editor-container'];
+
+    if (this.editable === 'true') {
+      editorClasses.concat(['padding-bottom']);
+    }
+
     return html`
-      <div class="editor-container">
+      <div class=${editorClasses.join(' ')}>
         ${this.renderTopBar()} ${this.renderDocNode(this.doc)}
       </div>
       <div @click=${this.clickAreaClicked} class="click-area"></div>
@@ -1147,6 +1153,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .editor-container {
         position: relative;
         width: 100%;
+      }
+      .padding-bottom {
         padding-bottom: 20vh;
       }
       .button-container {

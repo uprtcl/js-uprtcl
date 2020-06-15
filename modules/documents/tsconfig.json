@@ -8,7 +8,9 @@
       "lit-element": ["node_modules/lit-element"],
       "apollo-boost": ["node_modules/apollo-boost"],
       "graphql": ["node_modules/graphql"]
-    }
+    },
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true
   },
   "include": ["src"],
   "exclude": ["test"]
