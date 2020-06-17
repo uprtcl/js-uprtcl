@@ -297,7 +297,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!store) throw new Error('store is undefined');
 
     const dataId = await EveesHelpers.createEntity(this.client, store, page);
-    const headId = await EveesHelpers.createCommit(this.client, remote, {
+    const headId = await EveesHelpers.createCommit(this.client, remote.store, {
       dataId,
       parentsIds: [],
     });
@@ -319,7 +319,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       throw Error(`Remote not found for authority ${this.authority}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
-    const headId = await EveesHelpers.createCommit(this.client, remote, {
+    const headId = await EveesHelpers.createCommit(this.client, remote.store, {
       dataId,
       parentsIds: [this.currentHeadId ? this.currentHeadId : ''],
     });

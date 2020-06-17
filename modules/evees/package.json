@@ -46,6 +46,7 @@
     "lit-element": "^2.3.0",
     "lodash-es": "^4.17.15",
     "multihashing-async": "^0.8.0",
+    "orbit-db": "^0.24.1",
     "randomcolor": "^0.5.4",
     "reflect-metadata": "^0.1.13"
   },

@@ -11,7 +11,7 @@ import {
   sortObject,
   IpfsConnectionOptions,
 } from '@uprtcl/ipfs-provider';
-import { CidConfig } from '@uprtcl/multiplatform';
+import { CidConfig, CASStore } from '@uprtcl/multiplatform';
 import { Authority } from '@uprtcl/access-control';
 
 import {
@@ -68,7 +68,7 @@ import { ProposalsProvider } from '../../proposals.provider';
 
 const evees_if = 'evees-v0';
 
-export class EveesEthereum extends IpfsStore
+export class EveesEthereum
   implements EveesRemote, Authority, PerspectiveCreator {
   logger: Logger = new Logger('EveesEtereum');
 
@@ -82,8 +82,7 @@ export class EveesEthereum extends IpfsStore
 
   constructor(
     protected ethConnection: EthereumConnection,
-    protected ipfsOptions: IpfsConnectionOptions,
-    cidConfig: CidConfig,
+    public store: CASStore,
     container: Container,
     uprtclRootOptions: EthereumContractOptions = {
       contract: UprtclRoot as any,
@@ -98,8 +97,6 @@ export class EveesEthereum extends IpfsStore
       contract: UprtclWrapper as any,
     }
   ) {
-    super(ipfsOptions, cidConfig);
-
     this.uprtclRoot = new EthereumContract(uprtclRootOptions, ethConnection);
     this.uprtclDetails = new EthereumContract(
       uprtclDetailsOptions,
@@ -148,12 +145,12 @@ export class EveesEthereum extends IpfsStore
       this.uprtclDetails.ready(),
       this.uprtclProposals.ready(),
       this.uprtclWrapper.ready(),
-      super.ready(),
+      this.store.ready(),
     ]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspectiveId = await this.create(secured.object);
+    const perspectiveId = await this.store.create(secured.object);
     this.logger.log(
       `[ETH] persistPerspectiveEntity - added to IPFS`,
       perspectiveId

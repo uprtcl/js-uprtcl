@@ -15,7 +15,7 @@ export type RemoteMap = (
 export const defaultRemoteMap: RemoteMap = (
   eveesAuthority: EveesRemote,
   contentType?: string
-) => eveesAuthority;
+) => eveesAuthority.store;
 
 export type Context = string;
 

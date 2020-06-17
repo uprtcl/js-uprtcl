@@ -131,7 +131,7 @@ export class EveesModule extends MicroModule {
         new CommitPattern([CommitLinked]),
         new PerspectivePattern([PerspectiveLinks, PerspectiveAccessControl]),
       ]),
-      new CASModule(this.eveesProviders),
+      new CASModule(this.eveesProviders.map((p) => p.store)),
     ];
   }
 }

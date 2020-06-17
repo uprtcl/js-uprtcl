@@ -192,7 +192,7 @@ export class Evees {
 
     const perspective: Secured<Perspective> = await deriveSecured(
       object,
-      eveesRemote.cidConfig
+      eveesRemote.store.cidConfig
     );
 
     const headId = await EveesHelpers.getPerspectiveHeadId(
@@ -260,9 +260,9 @@ export class Evees {
 
     const newHead: Secured<Commit> = await deriveSecured(
       newCommit,
-      remote.cidConfig
+      remote.store.cidConfig
     );
-    newHead.casID = remote.casID;
+    newHead.casID = remote.store.casID;
     workspace.create(newHead);
 
     return newHead.id;

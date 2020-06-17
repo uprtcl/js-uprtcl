@@ -6,7 +6,11 @@ import {
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';
-import { CidConfig, KnownSourcesService } from '@uprtcl/multiplatform';
+import {
+  CidConfig,
+  KnownSourcesService,
+  CASStore,
+} from '@uprtcl/multiplatform';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
@@ -33,7 +37,7 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     host: string,
     protected connection: HttpConnection,
     protected ethConnection: EthereumConnection,
-    public cidConfig: CidConfig
+    public store: CASStore
   ) {
     super(
       {
@@ -54,18 +58,6 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
 
   get casID() {
     return `http:store:${this.options.host}`;
-  }
-
-  async get<T>(hash: string): Promise<T> {
-    return super.getObject<T>(`/get/${hash}`);
-  }
-
-  async create(object: object, hash?: string | undefined): Promise<string> {
-    const result = await super.httpPost(`/data`, {
-      id: '',
-      object: object,
-    });
-    return result.elementIds[0];
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {

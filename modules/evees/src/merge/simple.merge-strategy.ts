@@ -211,9 +211,12 @@ export class SimpleMergeStrategy implements MergeStrategy {
       creatorsIds: [remote.userId],
     };
 
-    const securedCommit = await deriveSecured(newCommit, remote.cidConfig);
+    const securedCommit = await deriveSecured(
+      newCommit,
+      remote.store.cidConfig
+    );
 
-    securedCommit.casID = remote.casID;
+    securedCommit.casID = remote.store.casID;
     workspace.create(securedCommit);
 
     return securedCommit.id;

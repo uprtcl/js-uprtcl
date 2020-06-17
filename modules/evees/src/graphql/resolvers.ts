@@ -61,7 +61,7 @@ export const eveesResolvers: IResolvers = {
         thisPerspectivesIds.forEach((pId) => {
           knownSources.addKnownSources(
             pId,
-            [remote.casID],
+            [remote.store.casID],
             EveesBindings.PerspectiveType
           );
         });
@@ -270,13 +270,13 @@ export const eveesResolvers: IResolvers = {
 
       const perspective: Secured<Perspective> = await deriveSecured(
         perspectiveData,
-        remote.cidConfig
+        remote.store.cidConfig
       );
 
       const entityCache: EntityCache = container.get(
         DiscoveryModule.bindings.EntityCache
       );
-      entityCache.cacheEntity({ ...perspective, casID: remote.casID });
+      entityCache.cacheEntity({ ...perspective, casID: remote.store.casID });
 
       const newPerspectiveData: NewPerspectiveData = {
         perspective,
