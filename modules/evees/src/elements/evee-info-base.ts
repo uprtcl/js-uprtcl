@@ -329,7 +329,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
     );
 
-    const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
+    const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
     const accessControl = remote.accessControl as AccessControlService<
       OwnerPermissions
@@ -350,7 +350,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const config = {
       forceOwner: true,
-      authority: remote.authority,
+      remoteId: remote.id,
       canWrite: permissions.owner,
       parentId: this.ref,
     };

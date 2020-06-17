@@ -70,7 +70,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const newHead = await this.mergeCommits(
       toHeadId,
       fromHeadId,
-      remote.authority,
+      remote.id,
       workspace,
       config
     );
@@ -156,7 +156,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeCommits(
     toCommitIdOrg: string,
     fromCommitIdOrg: string,
-    authority: string,
+    remoteId: string,
     workspace: EveesWorkspace,
     config: any
   ): Promise<string> {
@@ -186,7 +186,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     );
 
     const type = this.recognizer.recognizeType(ancestorData);
-    const remote = this.evees.getAuthority(authority);
+    const remote = this.evees.getRemote(remoteId);
 
     const sourceRemote = this.remoteMap(remote, type);
 

@@ -79,7 +79,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   creatingNewPage: boolean = false;
 
-  authority: string = '';
+  remoteId: string = '';
+  path: string = '';
   context: string = '';
   currentHeadId: string | undefined = undefined;
   editable: boolean = false;
@@ -211,12 +212,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       this.ref
     );
 
-    this.authority = perspective.object.payload.authority;
+    this.remoteId = perspective.object.payload.remote;
+    this.path = perspective.object.payload.path;
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
     this.editable = accessControl
       ? this.editableAuthorities.length > 0
-        ? this.editableAuthorities.includes(this.authority)
+        ? this.editableAuthorities.includes(`${this.remoteId}:${this.path}`)
           ? accessControl.canWrite
           : false
         : accessControl.canWrite
@@ -277,21 +279,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }
   }
 
-  getStore(authority: string, type: string): CASStore | undefined {
-    const remote = this.eveesRemotes.find((r) => r.authority === authority);
-    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
+  getStore(remoteId: string, type: string): CASStore | undefined {
+    const remote = this.eveesRemotes.find((r) => r.id === remoteId);
+    if (!remote) throw new Error(`Remote not found for remoteId ${remoteId}`);
     return this.remoteMap(remote);
   }
 
-  async createPage(page: TextNode, authority: string) {
+  async createPage(page: TextNode, remoteId: string) {
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
 
-    const remote = this.eveesRemotes.find((r) => r.authority === authority);
-    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
+    const remote = this.eveesRemotes.find((r) => r.id === remoteId);
+    if (!remote) throw new Error(`Remote not found for remoteId ${remoteId}`);
 
     const store = this.getStore(
-      authority,
+      remoteId,
       DocumentsModule.bindings.TextNodeType
     );
     if (!store) throw new Error('store is undefined');
@@ -309,14 +311,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async updateContent(newWiki: Wiki) {
-    const store = this.getStore(this.authority, WikiBindings.WikiType);
+    const store = this.getStore(this.remoteId, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const remote = this.eveesRemotes.find(
-      (r) => r.authority === this.authority
-    );
-    if (!remote)
-      throw Error(`Remote not found for authority ${this.authority}`);
+    const remote = this.eveesRemotes.find((r) => r.id === this.remoteId);
+    if (!remote) throw Error(`Remote not found for authority ${this.remoteId}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
     const headId = await EveesHelpers.createCommit(this.client, remote, {
@@ -335,7 +334,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const getPages = pages.map((page) => {
       if (typeof page !== 'string') {
-        return this.createPage(page, this.authority);
+        return this.createPage(page, this.remoteId);
       } else {
         return Promise.resolve(page);
       }

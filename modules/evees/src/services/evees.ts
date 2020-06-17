@@ -64,7 +64,7 @@ export class Evees {
    * Returns the uprtcl remote that controls the given perspective, from its authority
    * @returns the uprtcl remote
    */
-  public async getPerspectiveProviderById(
+  public async getPerspectiveRemoteById(
     perspectiveId: String
   ): Promise<EveesRemote> {
     const result = await this.client.query({
@@ -74,7 +74,7 @@ export class Evees {
             id 
             ... on Perspective {
               payload {
-                authority
+                remote
               }
             }
           }
@@ -82,8 +82,8 @@ export class Evees {
       `,
     });
 
-    const perspectiveOrigin = result.data.entity.payload.authority;
-    return this.getAuthority(perspectiveOrigin);
+    const remote = result.data.entity.payload.remote;
+    return this.getRemote(remote);
   }
 
   public async isPerspective(id: string): Promise<boolean> {
@@ -164,15 +164,13 @@ export class Evees {
   public async forkPerspective(
     perspectiveId: string,
     workspace: EveesWorkspace,
-    authority?: string,
+    remoteId?: string,
     canWrite?: string,
     parentId?: string,
     name?: string
   ): Promise<string> {
     const eveesRemote =
-      authority !== undefined
-        ? this.getAuthority(authority)
-        : this.defaultRemote;
+      remoteId !== undefined ? this.getRemote(remoteId) : this.defaultRemote;
     canWrite =
       canWrite !== undefined
         ? canWrite
@@ -182,7 +180,8 @@ export class Evees {
 
     const object: Perspective = {
       creatorId: eveesRemote.userId ? eveesRemote.userId : '',
-      authority: eveesRemote.authority,
+      remote: eveesRemote.id,
+      path: eveesRemote.defaultPath,
       timestamp: Date.now(),
     };
 
@@ -203,7 +202,7 @@ export class Evees {
     const forkCommitId = await this.forkCommit(
       headId,
       workspace,
-      eveesRemote.authority,
+      eveesRemote.id,
       canWrite,
       perspective.id // this perspective is set as the parent of the children's new perspectives
     );
@@ -221,7 +220,7 @@ export class Evees {
   public async forkCommit(
     commitId: string,
     workspace: EveesWorkspace,
-    authority: string,
+    remoteId: string,
     canWrite: string,
     parentId?: string // used by forkEntity which forks the children
   ): Promise<string> {
@@ -231,24 +230,24 @@ export class Evees {
     );
     if (!commit) throw new Error(`Could not find commit with id ${commitId}`);
 
-    const remote = this.getAuthority(authority);
+    const remote = this.getRemote(remoteId);
 
     const dataId = commit.object.payload.dataId;
     const dataForkId = await this.forkEntity(
       dataId,
       workspace,
-      authority,
+      remoteId,
       canWrite,
       parentId
     );
 
-    const eveesRemote = this.getAuthority(authority);
+    const eveesRemote = this.getRemote(remoteId);
 
     /** build new head object pointing to new data */
     const newCommit: Commit = {
       creatorsIds: eveesRemote.userId ? [eveesRemote.userId] : [''],
       dataId: dataForkId,
-      message: `autocommit to fork ${commitId} on authority ${authority}`,
+      message: `autocommit to fork ${commitId} on remoteId ${remoteId}`,
       forking: commitId,
       parentsIds: [],
       timestamp: Date.now(),
@@ -267,7 +266,7 @@ export class Evees {
   public async forkEntity(
     entityId: string,
     workspace: EveesWorkspace,
-    authority: string,
+    remoteId: string,
     canWrite: string,
     parentId?: string
   ): Promise<string> {
@@ -276,15 +275,15 @@ export class Evees {
 
     /** createOwnerPreservingEntity of children */
     const getLinksForks = this.getEntityChildren(data).map((link) =>
-      this.fork(link, workspace, authority, canWrite, parentId)
+      this.fork(link, workspace, remoteId, canWrite, parentId)
     );
     const newLinks = await Promise.all(getLinksForks);
     const tempData = this.replaceEntityChildren(data, newLinks);
 
-    const remote = this.eveesRemotes.find((r) => r.authority === authority);
+    const remote = this.eveesRemotes.find((r) => r.id === remoteId);
     if (!remote)
       throw new Error(
-        `Could not find registered evees remote for authority with ID ${authority}`
+        `Could not find registered evees remote for remoteId with ID ${remoteId}`
       );
 
     const store = this.remoteMap(remote, this.recognizer.recognizeType(data));

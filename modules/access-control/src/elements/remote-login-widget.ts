@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Authority } from '../types/authority';
+import { Remote } from '../types/remote';
 import { AccessControlBindings } from '../bindings';
 
 export class RemoteLoginWidget extends moduleConnect(LitElement) {
@@ -22,10 +22,10 @@ export class RemoteLoginWidget extends moduleConnect(LitElement) {
   async loadRemote() {
     if (this.authority !== undefined) return;
     const remotes = this.requestAll(
-      AccessControlBindings.Authority
-    ) as Authority[];
+      AccessControlBindings.Remote
+    ) as Remote[];
 
-    this.remote = remotes.find((remote) => remote.authority === this.authority);
+    this.remote = remotes.find((remote) => remote.id === this.remoteId);
     if (this.remote === undefined)
       throw new Error(`remote not found for authority ${this.authority}`);
 

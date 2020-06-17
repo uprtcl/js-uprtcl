@@ -6,13 +6,9 @@ import {
   EthereumContractOptions,
   EthereumContract,
 } from '@uprtcl/ethereum-provider';
-import {
-  IpfsStore,
-  sortObject,
-  IpfsConnectionOptions,
-} from '@uprtcl/ipfs-provider';
+import { IpfsStore, IpfsConnectionOptions } from '@uprtcl/ipfs-provider';
 import { CidConfig } from '@uprtcl/multiplatform';
-import { Authority } from '@uprtcl/access-control';
+import { Remote } from '@uprtcl/access-control';
 
 import {
   abi as abiRoot,
@@ -69,7 +65,7 @@ import { ProposalsProvider } from '../../proposals.provider';
 const evees_if = 'evees-v0';
 
 export class EveesEthereum extends IpfsStore
-  implements EveesRemote, Authority, PerspectiveCreator {
+  implements EveesRemote, Remote, PerspectiveCreator {
   logger: Logger = new Logger('EveesEtereum');
 
   accessControl: EveesAccessControlEthereum;
@@ -172,10 +168,6 @@ export class EveesEthereum extends IpfsStore
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
     const canWrite = perspectiveData.canWrite;
-
-    /** validate */
-    if (!secured.object.payload.authority)
-      throw new Error('authority cannot be empty');
 
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);

@@ -8,7 +8,7 @@ import { Permissions } from '../behaviours/permissions';
 import { Updatable } from '../behaviours/updatable';
 import { AccessControlService } from '../services/access-control.service';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
-import { Authority } from '../types/authority';
+import { Authority } from '../types/remote';
 
 export const accessControlResolvers = {
   Mutation: {
