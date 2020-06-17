@@ -1,15 +1,9 @@
-import { Container } from 'inversify';
+// import pEvent from 'p-event';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { OrbitDBConnection } from '@uprtcl/orbit-db-provider';
-import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import {
-  IpfsStore,
-  sortObject,
-  IpfsConnectionOptions,
-} from '@uprtcl/ipfs-provider';
-import { CidConfig } from '@uprtcl/multiplatform';
-import { Authority } from '@uprtcl/access-control';
+import { IpfsStore } from '@uprtcl/ipfs-provider';
+import { Authority, OwnerAccessControlService } from '@uprtcl/access-control';
+import { Signed } from '@uprtcl/cortex';
 
 import { Secured } from '../../../utils/cid-hash';
 import {
@@ -19,30 +13,30 @@ import {
 } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 import { EveesAccessControlOrbitDB } from './evees-access-control.orbit-db';
-import pEvent from 'p-event';
+import { OrbitDBConnection } from './orbit-db.connection';
+import { ProposalsProvider } from '../../../services/proposals.provider';
 
 const evees_if = 'evees-v0';
-const timeout = 200
-const defaultDetails: PerspectiveDetails =
-  { name: '', context: undefined, headId: undefined }
+const timeout = 200;
+const defaultDetails: PerspectiveDetails = {
+  name: '',
+  context: undefined,
+  headId: undefined,
+};
 
-export class EveesEthereum extends IpfsStore
-  implements EveesRemote, Authority, PerspectiveCreator {
-  logger: Logger = new Logger('EveesEtereum');
+export class EveesOrbitDB implements EveesRemote, Authority {
+  logger: Logger = new Logger('EveesOrbitDB');
+  accessControl: OwnerAccessControlService;
+  proposals!: ProposalsProvider;
 
   constructor(
     protected orbitdbConnection: OrbitDBConnection,
-    protected ethConnection: EthereumConnection,
-    protected ipfsOptions: IpfsConnectionOptions,
-    cidConfig: CidConfig,
-    container: Container
+    public store: IpfsStore
   ) {
-    super(ipfsOptions, cidConfig);
-
     this.accessControl = new EveesAccessControlOrbitDB(
       this.orbitdbConnection,
-      this.get.bind(this)
-    )
+      this.store
+    );
   }
 
   get authority() {
@@ -57,14 +51,11 @@ export class EveesEthereum extends IpfsStore
    * @override
    */
   async ready(): Promise<void> {
-    await Promise.all([
-      super.ready(),
-      this.orbitdbConnection.ready()
-    ]);
+    await Promise.all([this.orbitdbConnection.ready()]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspectiveId = await this.create(secured.object);
+    const perspectiveId = await this.store.create(secured.object);
     this.logger.log(
       `[OrbitDB] persistPerspectiveEntity - added to IPFS`,
       perspectiveId
@@ -79,6 +70,13 @@ export class EveesEthereum extends IpfsStore
     return perspectiveId;
   }
 
+  async getPerspectiveStore(perspectiveId: string) {
+    const { payload: perspective } = (await this.store.get(
+      perspectiveId
+    )) as Signed<Perspective>;
+    return this.orbitdbConnection.perspectiveStore(perspective);
+  }
+
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
@@ -91,10 +89,11 @@ export class EveesEthereum extends IpfsStore
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);
 
-    const perspectiveStore =
-      await this.orbitdbConnection.perspectiveStore(secured.object.payload);
+    const perspectiveStore = await this.orbitdbConnection.perspectiveStore(
+      secured.object.payload
+    );
 
-    await this.updatePerspective(details);
+    await this.updatePerspective(perspectiveId, details);
   }
 
   async createPerspectiveBatch(
@@ -112,31 +111,40 @@ export class EveesEthereum extends IpfsStore
     perspectiveId: string,
     details: PerspectiveDetails
   ): Promise<void> {
-    if (datails.name) throw new Error('details.name is not supported');
-    const currentDetails: PerspectiveDetails = await this.getPerspective(perspectiveId);
+    if (details.name) throw new Error('details.name is not supported');
+    const currentDetails: PerspectiveDetails = await this.getPerspective(
+      perspectiveId
+    );
 
-    details = Object.keys(details)
-      .reduce((a, c) => details[c] === undefined ? a : { ...a, [c]: details[c] }, {});
+    details = Object.keys(details).reduce(
+      (a, c) => (details[c] === undefined ? a : { ...a, [c]: details[c] }),
+      {}
+    );
 
     const newDetails: PerspectiveDetails = { ...currentDetails, ...details };
 
-    const { payload: perspective } = await this.get(perspectiveId);
-    const perspectiveStore = await this.orbitdbConnection.perspectiveStore(perspective);
+    const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
     await perspectiveStore.add(newDetails);
 
     const contextChange = currentDetails.context !== newDetails.context;
 
     if (contextChange && currentDetails.context) {
-      const contextStore = await this.orbitdbConnection.contextStore(currentDetails.context);
+      const contextStore = await this.orbitdbConnection.contextStore(
+        currentDetails.context
+      );
       // await contextStore.delete(perspectiveId);
       await Promise.all([
-        ...contextStore.iterator({ limit: -1 }).collect()
-          .filter(e => e.payload.value === perspectiveId)
-          .map(e => contextStore.remove(e.hash))
+        ...contextStore
+          .iterator({ limit: -1 })
+          .collect()
+          .filter((e) => e.payload.value === perspectiveId)
+          .map((e) => contextStore.remove(e.hash)),
       ]);
     }
     if (contextChange && newDetails.context) {
-      const contextStore = await this.orbitdbConnection.contextStore(newDetails.context);
+      const contextStore = await this.orbitdbConnection.contextStore(
+        newDetails.context
+      );
       await contextStore.add(perspectiveId);
     }
   }
@@ -149,12 +157,13 @@ export class EveesEthereum extends IpfsStore
 
     const open = !!this.orbitdbConnection.instance.stores[address];
     const contextStore = await this.orbitdbConnection.contextStore(context);
-    if (!open) await event(contextStore.events, 'replicated', { timeout });
+    // if (!open) await event(contextStore.events, 'replicated', { timeout });
 
     // const perspectiveIds = [...await contextStore.values()];
-    const perspectiveIds = contextStore.iterator({ limit: -1 }).collect()
-      .map(e => e.payload.value);
-
+    const perspectiveIds = contextStore
+      .iterator({ limit: -1 })
+      .collect()
+      .map((e) => e.payload.value);
 
     this.logger.log(
       `[OrbitDB] getContextPerspectives of ${context}`,
@@ -168,32 +177,33 @@ export class EveesEthereum extends IpfsStore
    * @override
    */
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    const { payload: perspective } = await this.get(perspectiveId);
-    const address = await this.orbitdbConnection.perspectiveAddress(perspective);
+    const { payload: perspective } = (await this.store.get(
+      perspectiveId
+    )) as Signed<Perspective>;
+    const address = await this.orbitdbConnection.perspectiveAddress(
+      perspective
+    );
 
     const open = !!this.orbitdbConnection.instance.stores[address];
-    const perspectiveStore =
-      await this.orbitdbConnection.perspectiveStore(perspective);
-    if (!open) await pEvent(perspectiveStore.events, 'replicated', { timeout });
+    const perspectiveStore = await this.orbitdbConnection.perspectiveStore(
+      perspective
+    );
+    // if (!open) await pEvent(perspectiveStore.events, 'replicated', { timeout });
 
     const [latestEntry] = perspectiveStore.iterator({ limit: 1 }).collect();
 
-    return latestEntry
-      ? latestEntry.payload.value
-      : defaultDetails;
+    return latestEntry ? latestEntry.payload.value : defaultDetails;
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
-    const { payload: perspective } = await this.get(perspectiveId);
-    const perspectiveStore =
-      await this.orbitdbConnection.perspectiveStore(perspective);
+    const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
 
     const [latestEntry] = perspectiveStore.iterator({ limit: 1 }).collect();
     const context = latestEntry && latestEntry.payload.value.context;
 
     await Promise.all([
       perspectiveStore.drop(),
-      this.orbitdbConnection.purgeContexts(perspectiveId)
+      this.orbitdbConnection.instance.purgeContexts(perspectiveId),
     ]);
   }
 
