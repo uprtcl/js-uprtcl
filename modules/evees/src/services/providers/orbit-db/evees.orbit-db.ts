@@ -1,12 +1,8 @@
 import { Container } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import {
-  OrbitDBConnection
-} from '@uprtcl/orbit-db-provider';
-import {
-  EthereumConnection
-} from '@uprtcl/ethereum-provider';
+import { OrbitDBConnection } from '@uprtcl/orbit-db-provider';
+import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import {
   IpfsStore,
   sortObject,
@@ -22,6 +18,7 @@ import {
   NewPerspectiveData,
 } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
+import { EveesAccessControlOrbitDB } from './evees-access-control.orbit-db';
 import pEvent from 'p-event';
 
 const evees_if = 'evees-v0';
@@ -42,6 +39,10 @@ export class EveesEthereum extends IpfsStore
   ) {
     super(ipfsOptions, cidConfig);
 
+    this.accessControl = new EveesAccessControlOrbitDB(
+      this.orbitdbConnection,
+      this.get.bind(this)
+    )
   }
 
   get authority() {
@@ -127,11 +128,16 @@ export class EveesEthereum extends IpfsStore
 
     if (contextChange && currentDetails.context) {
       const contextStore = await this.orbitdbConnection.contextStore(currentDetails.context);
-      await contextStore.delete(perspectiveId);
+      // await contextStore.delete(perspectiveId);
+      await Promise.all([
+        ...contextStore.iterator({ limit: -1 }).collect()
+          .filter(e => e.payload.value === perspectiveId)
+          .map(e => contextStore.remove(e.hash))
+      ]);
     }
     if (contextChange && newDetails.context) {
       const contextStore = await this.orbitdbConnection.contextStore(newDetails.context);
-      await contextStore.add(newDetails.context);
+      await contextStore.add(perspectiveId);
     }
   }
 
@@ -145,7 +151,10 @@ export class EveesEthereum extends IpfsStore
     const contextStore = await this.orbitdbConnection.contextStore(context);
     if (!open) await event(contextStore.events, 'replicated', { timeout });
 
-    const perspectiveIds = await contextStore.read();
+    // const perspectiveIds = [...await contextStore.values()];
+    const perspectiveIds = contextStore.iterator({ limit: -1 }).collect()
+      .map(e => e.payload.value);
+
 
     this.logger.log(
       `[OrbitDB] getContextPerspectives of ${context}`,
