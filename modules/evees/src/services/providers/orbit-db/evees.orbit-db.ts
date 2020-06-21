@@ -88,7 +88,7 @@ export class EveesOrbitDB implements EveesRemote {
 
     /** validate */
     if (!secured.object.payload.remote)
-      throw new Error('remoteId cannot be empty');
+      throw new Error('remote cannot be empty');
 
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);

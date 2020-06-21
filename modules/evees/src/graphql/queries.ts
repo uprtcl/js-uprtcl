@@ -26,7 +26,7 @@ export const UPDATE_HEAD: DocumentNode = gql`
       }
       name
       payload {
-        remoteId
+        remote
       }
       _context {
         content {
@@ -55,7 +55,7 @@ export const CREATE_ENTITY: DocumentNode = gql`
 
 export const CREATE_PERSPECTIVE: DocumentNode = gql`
   mutation CreatePerspective(
-    $remoteId: String!
+    $remote: String!
     $creatorId: String
     $timestamp: Date
     $headId: ID
@@ -65,7 +65,7 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
     $parentId: String
   ) {
     createPerspective(
-      remoteId: $remoteId
+      remote: $remote
       creatorId: $creatorId
       timestamp: $timestamp
       headId: $headId

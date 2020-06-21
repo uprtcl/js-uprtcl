@@ -30,7 +30,7 @@ describe('<cortex-entity>', () => {
     {
       Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw: {
         payload: {
-          remoteId: 'local',
+          remote: 'local',
           creatorId: 'user1',
           timestamp: 0,
         },

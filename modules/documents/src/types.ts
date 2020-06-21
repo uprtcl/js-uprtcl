@@ -14,7 +14,7 @@ export interface TextNode {
 
 export interface DocNode {
   ref: string;
-  remoteId?: string;
+  remote?: string;
   context?: string;
   data?: Entity<any>;
   draft: any;

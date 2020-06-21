@@ -9,7 +9,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return {
       rootHash: { type: String },
       loading: { type: Boolean, attribute: false },
-      defaultRemoteId: { type: String },
+      defaultRemote: { type: String },
     };
   }
 
@@ -44,19 +44,19 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     const eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     await Promise.all(eveesRemotes.map((p) => p.ready()));
 
-    const defaultRemote = eveesRemotes.find((remote) =>
-      remote.id.startsWith('http')
+    const defaultInstance = eveesRemotes.find((instance) =>
+      instance.id.startsWith('http')
     );
 
-    await defaultRemote.connect();
+    await defaultInstance.connect();
 
-    this.defaultRemoteId = defaultRemote.id;
+    this.defaultRemote = defaultInstance.id;
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const eveesEthRemote = eveesRemotes.find((remote) =>
-        remote.id.startsWith('eth')
+      const eveesEthRemote = eveesRemotes.find((instance) =>
+        instance.id.startsWith('eth')
       );
 
       const client = this.request(ApolloClientModule.bindings.Client);
@@ -106,8 +106,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
               <div class="wiki-container">
                 <wiki-drawer
                   ref=${this.rootHash}
-                  default-remote=${this.defaultRemoteId}
-                  .editableRemotes=${[this.defaultRemoteId]}
+                  default-remote=${this.defaultRemote}
+                  .editableRemotes=${[this.defaultRemote]}
                 ></wiki-drawer>
               </div>
             </div>

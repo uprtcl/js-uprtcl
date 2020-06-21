@@ -272,7 +272,7 @@ export class EveesHelpers {
     const createPerspective = await client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
-        remoteId: remote.id,
+        remote: remote.id,
         casID: remote.store.casID,
         ...perspective,
       },

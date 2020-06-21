@@ -79,7 +79,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   creatingNewPage: boolean = false;
 
-  remoteId: string = '';
+  remote: string = '';
   path: string = '';
   context: string = '';
   currentHeadId: string | undefined = undefined;
@@ -212,13 +212,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       this.ref
     );
 
-    this.remoteId = perspective.object.payload.remote;
+    this.remote = perspective.object.payload.remote;
     this.path = perspective.object.payload.path;
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
     this.editable = accessControl
       ? this.editableRemotes.length > 0
-        ? this.editableRemotes.includes(`${this.remoteId}:${this.path}`)
+        ? this.editableRemotes.includes(`${this.remote}:${this.path}`)
           ? accessControl.canWrite
           : false
         : accessControl.canWrite
@@ -279,31 +279,34 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }
   }
 
-  getStore(remoteId: string, type: string): CASStore | undefined {
-    const remote = this.eveesRemotes.find((r) => r.id === remoteId);
-    if (!remote) throw new Error(`Remote not found for remoteId ${remoteId}`);
-    return this.remoteMap(remote);
+  getStore(remote: string, type: string): CASStore | undefined {
+    const remoteInstance = this.eveesRemotes.find((r) => r.id === remote);
+    if (!remoteInstance)
+      throw new Error(`Remote not found for remote ${remote}`);
+    return this.remoteMap(remoteInstance);
   }
 
-  async createPage(page: TextNode, remoteId: string) {
+  async createPage(page: TextNode, remote: string) {
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
 
-    const remote = this.eveesRemotes.find((r) => r.id === remoteId);
-    if (!remote) throw new Error(`Remote not found for remoteId ${remoteId}`);
+    const remoteInstance = this.eveesRemotes.find((r) => r.id === remote);
+    if (!remoteInstance)
+      throw new Error(`Remote not found for remote ${remote}`);
 
-    const store = this.getStore(
-      remoteId,
-      DocumentsModule.bindings.TextNodeType
-    );
+    const store = this.getStore(remote, DocumentsModule.bindings.TextNodeType);
     if (!store) throw new Error('store is undefined');
 
     const dataId = await EveesHelpers.createEntity(this.client, store, page);
-    const headId = await EveesHelpers.createCommit(this.client, remote.store, {
-      dataId,
-      parentsIds: [],
-    });
-    return EveesHelpers.createPerspective(this.client, remote, {
+    const headId = await EveesHelpers.createCommit(
+      this.client,
+      remoteInstance.store,
+      {
+        dataId,
+        parentsIds: [],
+      }
+    );
+    return EveesHelpers.createPerspective(this.client, remoteInstance, {
       headId,
       context: `${this.context}_${Date.now()}`,
       parentId: this.ref,
@@ -311,11 +314,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async updateContent(newWiki: Wiki) {
-    const store = this.getStore(this.remoteId, WikiBindings.WikiType);
+    const store = this.getStore(this.remote, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const remote = this.eveesRemotes.find((r) => r.id === this.remoteId);
-    if (!remote) throw Error(`Remote not found for remoteId ${this.remoteId}`);
+    const remote = this.eveesRemotes.find((r) => r.id === this.remote);
+    if (!remote) throw Error(`Remote not found for remote ${this.remote}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
     const headId = await EveesHelpers.createCommit(this.client, remote.store, {
@@ -334,7 +337,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const getPages = pages.map((page) => {
       if (typeof page !== 'string') {
-        return this.createPage(page, this.remoteId);
+        return this.createPage(page, this.remote);
       } else {
         return Promise.resolve(page);
       }

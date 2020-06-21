@@ -95,7 +95,7 @@ export class WikiPage extends moduleConnect(LitElement) {
 
     this.textNode = result.data.entity.head.data;
 
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(
+    const remote = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
       this.pageHash
     );
@@ -107,7 +107,7 @@ export class WikiPage extends moduleConnect(LitElement) {
 
     this.editable = accessControl
       ? this.editableRemotes.length > 0
-        ? this.editableRemotes.includes(remoteId)
+        ? this.editableRemotes.includes(remote)
           ? accessControl.canWrite
             ? 'true'
             : 'false'

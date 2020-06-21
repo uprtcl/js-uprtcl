@@ -55,10 +55,10 @@ export class EveesWorkspace {
     return this.updates.length > 0;
   }
 
-  public async isSingleAuthority(remoteId: string) {
+  public async isSingleAuthority(remote: string) {
     const newNot = this.newPerspectives.find(
       (newPerspective) =>
-        newPerspective.perspective.object.payload.remote !== remoteId
+        newPerspective.perspective.object.payload.remote !== remote
     );
     if (newNot !== undefined) return false;
 
@@ -68,7 +68,7 @@ export class EveesWorkspace {
     const checktoPerspectives = await Promise.all(check);
 
     const updateNot = checktoPerspectives.find(
-      (_remoteId) => _remoteId !== remoteId
+      (_remoteId) => _remoteId !== remote
     );
     if (updateNot !== undefined) return false;
 
@@ -253,7 +253,7 @@ export class EveesWorkspace {
         variables: {
           ...newPerspective.perspective.object.payload,
           ...newPerspective.details,
-          remoteId: newPerspective.perspective.object.payload.remote,
+          remote: newPerspective.perspective.object.payload.remote,
           canWrite: newPerspective.canWrite,
           parentId: newPerspective.parentId,
         },

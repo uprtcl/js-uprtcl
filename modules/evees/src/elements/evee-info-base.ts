@@ -348,7 +348,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const config = {
       forceOwner: true,
-      remoteId: remote.id,
+      remote: remote.id,
       canWrite: permissions.owner,
       parentId: this.ref,
     };
@@ -419,12 +419,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(
+    const remote = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
       toPerspectiveId
     );
 
-    const not = await workspace.isSingleAuthority(remoteId);
+    const not = await workspace.isSingleAuthority(remote);
     if (!not)
       throw new Error(
         'cant create merge proposals on multiple authorities yet'
@@ -456,7 +456,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.dispatchEvent(
       new ProposalCreatedEvent({
-        detail: { proposalId, remoteId },
+        detail: { proposalId, remote },
         cancelable: true,
         composed: true,
         bubbles: true,

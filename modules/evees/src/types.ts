@@ -76,7 +76,7 @@ export interface NewProposal {
 
 export interface ProposalCreatedDetail {
   proposalId: string;
-  remoteId: string;
+  remote: string;
 }
 
 export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {

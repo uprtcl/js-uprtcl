@@ -54,14 +54,14 @@ export const eveesResolvers: IResolvers = {
         DiscoveryModule.bindings.LocalKnownSources
       );
 
-      const promises = eveesRemotes.map(async (remote) => {
-        const thisPerspectivesIds = await remote.getContextPerspectives(
+      const promises = eveesRemotes.map(async (instance) => {
+        const thisPerspectivesIds = await instance.getContextPerspectives(
           context
         );
         thisPerspectivesIds.forEach((pId) => {
           knownSources.addKnownSources(
             pId,
-            [remote.store.casID],
+            [instance.store.casID],
             EveesBindings.PerspectiveType
           );
         });
@@ -237,7 +237,7 @@ export const eveesResolvers: IResolvers = {
     async createPerspective(
       _,
       {
-        remoteId,
+        remote,
         creatorId,
         timestamp,
         headId,
@@ -250,34 +250,37 @@ export const eveesResolvers: IResolvers = {
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
 
-      const remote: EveesRemote = remotes.find(
-        (remote) => remote.id === remoteId
+      const remoteInstance: EveesRemote = remotes.find(
+        (instance) => instance.id === remote
       );
       creatorId =
         creatorId !== undefined
           ? creatorId
-          : remote.userId !== undefined
-          ? remote.userId
+          : remoteInstance.userId !== undefined
+          ? remoteInstance.userId
           : '';
       timestamp = timestamp !== undefined ? timestamp : Date.now();
       name = name !== undefined && name != null ? name : '';
 
       const payload: Perspective = {
         creatorId,
-        remote: remoteId,
+        remote: remote,
         path: remote.defaultPath,
         timestamp,
       };
 
       const perspective: Secured<Perspective> = await deriveSecured(
         payload,
-        remote.store.cidConfig
+        remoteInstance.store.cidConfig
       );
 
       const entityCache: EntityCache = container.get(
         DiscoveryModule.bindings.EntityCache
       );
-      entityCache.cacheEntity({ ...perspective, casID: remote.store.casID });
+      entityCache.cacheEntity({
+        ...perspective,
+        casID: remoteInstance.store.casID,
+      });
 
       const newPerspectiveData: NewPerspectiveData = {
         perspective,
@@ -285,7 +288,7 @@ export const eveesResolvers: IResolvers = {
         canWrite,
         parentId,
       };
-      await remote.createPerspective(newPerspectiveData);
+      await remoteInstance.createPerspective(newPerspectiveData);
 
       return {
         id: perspective.id,
@@ -379,7 +382,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspective = perspectiveResult.data.entity._context.object;
 
-      const remote = evees.getRemote(perspective.payload.remoteId);
+      const remote = evees.getRemote(perspective.payload.remote);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
       if (authorize) {
@@ -417,7 +420,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspective = perspectiveResult.data.entity._context.object;
 
-      const remote = evees.getRemote(perspective.payload.remoteId);
+      const remote = evees.getRemote(perspective.payload.remote);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
       await remote.proposals.executeProposal(proposalId);
