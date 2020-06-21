@@ -58,11 +58,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'ref' })
   firstRef!: string;
 
-  @property({ type: String, attribute: 'default-authority' })
-  defaultAuthority!: string;
+  @property({ type: String, attribute: 'default-remote' })
+  defaultRemoteId!: string;
 
   @property({ type: Array })
-  editableAuthorities: string[] = [];
+  editableRemotes: string[] = [];
 
   @property({ attribute: false })
   ref!: string;
@@ -217,8 +217,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
     this.editable = accessControl
-      ? this.editableAuthorities.length > 0
-        ? this.editableAuthorities.includes(`${this.remoteId}:${this.path}`)
+      ? this.editableRemotes.length > 0
+        ? this.editableRemotes.includes(`${this.remoteId}:${this.path}`)
           ? accessControl.canWrite
           : false
         : accessControl.canWrite
@@ -718,7 +718,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   pageHash=${this.wiki.object.pages[this.selectedPageIx]}
                   color=${this.color() ? this.color() : ''}
                   @doc-changed=${(e) => this.onDocChanged(e)}
-                  .editableAuthorities=${this.editableAuthorities}
+                  .editableRemotes=${this.editableRemotes}
                 >
                 </wiki-page>
               `
@@ -732,7 +732,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                       ref=${this.ref}
                       first-ref=${this.firstRef as string}
                       evee-color=${this.color()}
-                      default-authority=${this.defaultAuthority as string}
+                      default-remote=${this.defaultRemoteId as string}
                     ></evees-info-page>
                   </div>
                 </div>

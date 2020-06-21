@@ -38,7 +38,7 @@ export class WikiPage extends moduleConnect(LitElement) {
   color!: string;
 
   @property({ type: Array })
-  editableAuthorities: string[] = [];
+  editableRemotes: string[] = [];
 
   @property({ attribute: false })
   editable: string = 'false';
@@ -95,7 +95,7 @@ export class WikiPage extends moduleConnect(LitElement) {
 
     this.textNode = result.data.entity.head.data;
 
-    const authority = await EveesHelpers.getPerspectiveAuthority(
+    const remoteId = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
       this.pageHash
     );
@@ -106,8 +106,8 @@ export class WikiPage extends moduleConnect(LitElement) {
     );
 
     this.editable = accessControl
-      ? this.editableAuthorities.length > 0
-        ? this.editableAuthorities.includes(authority)
+      ? this.editableRemotes.length > 0
+        ? this.editableRemotes.includes(remoteId)
           ? accessControl.canWrite
             ? 'true'
             : 'false'

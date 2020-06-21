@@ -11,7 +11,7 @@ import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { extractSignedEntity } from '../utils/signed';
 
-export const propertyOrder = ['authority', 'creatorId', 'timestamp'];
+export const propertyOrder = ['creatorId', 'path', 'remote', 'timestamp'];
 
 export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
   recognize(entity: object) {

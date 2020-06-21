@@ -15,7 +15,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     createEntity(object: JSON!, casID: ID): Entity!
 
     createPerspective(
-      authority: String!
+      remoteId: String!
       creatorId: String
       timestamp: Date
       headId: ID
