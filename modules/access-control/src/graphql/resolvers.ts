@@ -8,26 +8,40 @@ import { Permissions } from '../behaviours/permissions';
 import { Updatable } from '../behaviours/updatable';
 import { AccessControlService } from '../services/access-control.service';
 import { BasicAdminPermissions } from '../services/basic-admin-control.service';
-import { Authority } from '../types/remote';
+import { Remote } from '../types/remote';
 
 export const accessControlResolvers = {
   Mutation: {
     async setCanWrite(_, { entityId, userId }, { container }) {
-      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
-      const entity: Entity<any> | undefined = await loadEntity(client, entityId);
+      const client: ApolloClient<any> = container.get(
+        ApolloClientModule.bindings.Client
+      );
+      const entity: Entity<any> | undefined = await loadEntity(
+        client,
+        entityId
+      );
 
-      const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
+      const recognizer: PatternRecognizer = container.get(
+        CortexModule.bindings.Recognizer
+      );
 
-      if (!entity) throw new Error(`Cannot change owner of ${entityId}: entity not found`);
+      if (!entity)
+        throw new Error(`Cannot change owner of ${entityId}: entity not found`);
 
-      const updatable: Updatable<any> | undefined = recognizer
+      const updatable:
+        | Updatable<any>
+        | undefined = recognizer
         .recognizeBehaviours(entity)
         .find((prop) => !!(prop as Updatable<any>).accessControl);
 
       if (!updatable)
-        throw new Error(`Cannot change owner of ${entityId}: no Updatable pattern implemented`);
+        throw new Error(
+          `Cannot change owner of ${entityId}: no Updatable pattern implemented`
+        );
 
-      const accessControl: AccessControlService<any> | undefined = updatable.accessControl(entity);
+      const accessControl:
+        | AccessControlService<any>
+        | undefined = updatable.accessControl(entity);
 
       if (!accessControl)
         throw new Error(
@@ -39,19 +53,31 @@ export const accessControlResolvers = {
       return entityId;
     },
     async setPublicRead(_, { entityId, value }, { container }) {
-      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
-      const entity: Entity<any> | undefined = await loadEntity(client, entityId);
+      const client: ApolloClient<any> = container.get(
+        ApolloClientModule.bindings.Client
+      );
+      const entity: Entity<any> | undefined = await loadEntity(
+        client,
+        entityId
+      );
 
-      const recognizer: PatternRecognizer = container.get(CortexModule.bindings.Recognizer);
+      const recognizer: PatternRecognizer = container.get(
+        CortexModule.bindings.Recognizer
+      );
 
-      if (!entity) throw new Error(`Cannot change owner of ${entityId}: entity not found`);
+      if (!entity)
+        throw new Error(`Cannot change owner of ${entityId}: entity not found`);
 
-      const updatable: Updatable<any> | undefined = recognizer
+      const updatable:
+        | Updatable<any>
+        | undefined = recognizer
         .recognizeBehaviours(entity)
         .find((prop) => !!(prop as Updatable<any>).accessControl);
 
       if (!updatable)
-        throw new Error(`Cannot change owner of ${entityId}: no Updatable pattern implemented`);
+        throw new Error(
+          `Cannot change owner of ${entityId}: no Updatable pattern implemented`
+        );
 
       const accessControl:
         | AccessControlService<BasicAdminPermissions>
@@ -63,7 +89,8 @@ export const accessControlResolvers = {
         );
 
       const currentPermissions = await accessControl.getPermissions(entityId);
-      if (!currentPermissions) throw new Error(`Persmissions for entity ${entityId} not found`);
+      if (!currentPermissions)
+        throw new Error(`Persmissions for entity ${entityId} not found`);
 
       const newPermissions: BasicAdminPermissions = {
         canAdmin: currentPermissions.canAdmin,
@@ -81,9 +108,13 @@ export const accessControlResolvers = {
   Patterns: {
     async accessControl(parent, args, context) {
       const entity: Entity<any> = parent.__entity;
-      const recognizer: PatternRecognizer = context.container.get(CortexModule.bindings.Recognizer);
+      const recognizer: PatternRecognizer = context.container.get(
+        CortexModule.bindings.Recognizer
+      );
 
-      const hasAccessControl: Updatable<any> | undefined = recognizer
+      const hasAccessControl:
+        | Updatable<any>
+        | undefined = recognizer
         .recognizeBehaviours(entity)
         .find((prop) => !!(prop as Updatable<any>).accessControl);
 
@@ -93,17 +124,21 @@ export const accessControlResolvers = {
 
       if (!accessControl) return null;
 
-      const permissions: any | undefined = await accessControl.getPermissions(entity.id);
+      const permissions: any | undefined = await accessControl.getPermissions(
+        entity.id
+      );
 
       if (!permissions) return null;
 
-      const permissionsPattern: Permissions<any> | undefined = recognizer
+      const permissionsPattern:
+        | Permissions<any>
+        | undefined = recognizer
         .recognizeBehaviours(permissions)
         .find((prop) => !!(prop as Permissions<any>).canWrite);
 
       if (!permissionsPattern) return null;
 
-      const serviceProvider: Authority = hasAccessControl.authority(entity);
+      const serviceProvider: Remote = hasAccessControl.remote(entity);
 
       const userId = serviceProvider.userId;
 

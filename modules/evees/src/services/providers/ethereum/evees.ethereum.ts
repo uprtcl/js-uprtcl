@@ -123,12 +123,14 @@ export class EveesEthereum extends IpfsStore
     );
   }
 
-  get authority() {
-    return `eth-${this.ethConnection.networkId}:${evees_if}:${
-      this.uprtclRoot.contractInstance.options.address
-        ? this.uprtclRoot.contractInstance.options.address.toLocaleLowerCase()
-        : ''
-    }`;
+  get id() {
+    return `eth-${this.ethConnection.networkId}:${evees_if}`;
+  }
+
+  get defaultPath() {
+    return this.uprtclRoot.contractInstance.options.address
+      ? this.uprtclRoot.contractInstance.options.address.toLocaleLowerCase()
+      : '';
   }
 
   get userId() {

@@ -69,13 +69,16 @@ export class EveesHelpers {
     return result.data.entity.context.id;
   }
 
-  static async getPerspectiveAuthority(
+  static async getPerspectiveRemoteId(
     client: ApolloClient<any>,
     perspectiveId: string
   ): Promise<string> {
-    const perspective = await loadEntity<Signed<Perspective>>(client, perspectiveId);
+    const perspective = await loadEntity<Signed<Perspective>>(
+      client,
+      perspectiveId
+    );
     if (!perspective) throw new Error('perspective not found');
-    return perspective.object.payload.authority;
+    return perspective.object.payload.remote;
   }
 
   static async getPerspectiveDataId(
@@ -94,7 +97,10 @@ export class EveesHelpers {
     return this.getCommitData(client, headId);
   }
 
-  static async getCommitData(client: ApolloClient<any>, commitId: string): Promise<Entity<any>> {
+  static async getCommitData(
+    client: ApolloClient<any>,
+    commitId: string
+  ): Promise<Entity<any>> {
     const dataId = await this.getCommitDataId(client, commitId);
     const data = await loadEntity<any>(client, dataId);
     if (!data) throw new Error('data not found');
@@ -102,7 +108,10 @@ export class EveesHelpers {
     return cloneDeep(data);
   }
 
-  static async getCommitDataId(client: ApolloClient<any>, commitId: string): Promise<string> {
+  static async getCommitDataId(
+    client: ApolloClient<any>,
+    commitId: string
+  ): Promise<string> {
     const commit = await loadEntity<Signed<Commit>>(client, commitId);
     if (!commit) throw new Error('commit not found');
     return commit.object.payload.dataId;
@@ -134,11 +143,16 @@ export class EveesHelpers {
 
     return {
       canWrite: result.data.entity._context.patterns.accessControl.canWrite,
-      permissions: result.data.entity._context.patterns.accessControl.permissions,
+      permissions:
+        result.data.entity._context.patterns.accessControl.permissions,
     };
   }
 
-  static async getData(client: ApolloClient<any>, recognizer: PatternRecognizer, ref: string) {
+  static async getData(
+    client: ApolloClient<any>,
+    recognizer: PatternRecognizer,
+    ref: string
+  ) {
     const entity = await loadEntity<any>(client, ref);
     if (!entity) return undefined;
 
@@ -180,7 +194,12 @@ export class EveesHelpers {
     const children = await this.getChildren(client, recognizer, ref);
     for (let ix = 0; ix < children.length; ix++) {
       const child = children[ix];
-      const thisDescendants = await this.getDescendantsRec(client, recognizer, child, []);
+      const thisDescendants = await this.getDescendantsRec(
+        client,
+        recognizer,
+        child,
+        []
+      );
       newDescendants.push(child);
       newDescendants.push(...thisDescendants);
     }
@@ -196,7 +215,11 @@ export class EveesHelpers {
   }
 
   // Creators
-  static async createEntity(client: ApolloClient<any>, store: CASStore, object: any) {
+  static async createEntity(
+    client: ApolloClient<any>,
+    store: CASStore,
+    object: any
+  ) {
     const create = await client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
@@ -208,10 +231,16 @@ export class EveesHelpers {
     return create.data.createEntity.id;
   }
 
-  static async createCommit(client: ApolloClient<any>, store: CASStore, commit: CreateCommit) {
+  static async createCommit(
+    client: ApolloClient<any>,
+    store: CASStore,
+    commit: CreateCommit
+  ) {
     const message = commit.message !== undefined ? commit.message : '';
-    const timestamp = commit.timestamp !== undefined ? commit.timestamp : Date.now();
-    const creatorsIds = commit.creatorsIds !== undefined ? commit.creatorsIds : [];
+    const timestamp =
+      commit.timestamp !== undefined ? commit.timestamp : Date.now();
+    const creatorsIds =
+      commit.creatorsIds !== undefined ? commit.creatorsIds : [];
     const parentsIds = commit.parentsIds !== undefined ? commit.parentsIds : [];
 
     const commitData: Commit = {
@@ -243,7 +272,7 @@ export class EveesHelpers {
     const createPerspective = await client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
-        authority: remote.authority,
+        remoteId: remote.id,
         casID: remote.casID,
         ...perspective,
       },
@@ -252,7 +281,11 @@ export class EveesHelpers {
     return createPerspective.data.createPerspective.id;
   }
 
-  static async updateHead(client: ApolloClient<any>, perspectiveId: string, headId: string) {
+  static async updateHead(
+    client: ApolloClient<any>,
+    perspectiveId: string,
+    headId: string
+  ) {
     await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {

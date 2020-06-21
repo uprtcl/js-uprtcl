@@ -10,14 +10,8 @@ import { CidConfig, KnownSourcesService } from '@uprtcl/multiplatform';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
-import {
-  PerspectiveDetails,
-  Perspective,
-  Commit,
-  NewPerspectiveData,
-} from '../../../types';
+import { PerspectiveDetails, NewPerspectiveData } from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
-import { Secured } from '../../../utils/cid-hash';
 
 const evees_api: string = 'evees-v1';
 

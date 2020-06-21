@@ -99,8 +99,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
               <div class="wiki-container">
                 <wiki-drawer
                   ref=${this.rootHash}
-                  default-authority=${this.defaultAuthority}
-                  .editableAuthorities=${[this.defaultAuthority]}
+                  default-remote=${this.defaultRemote}
+                  .editableRemotes=${[this.defaultRemote]}
                 ></wiki-drawer>
               </div>
             </div>

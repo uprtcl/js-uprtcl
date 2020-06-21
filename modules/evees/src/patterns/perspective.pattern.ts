@@ -25,7 +25,10 @@ export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
 
 @injectable()
 export class PerspectiveLinks implements HasLinks, HasRedirect {
-  constructor(@inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {}
+  constructor(
+    @inject(ApolloClientModule.bindings.Client)
+    protected client: ApolloClient<any>
+  ) {}
 
   links = async (perspective: Entity<Signed<Perspective>>) => {
     const result = await this.client.query({
@@ -41,7 +44,9 @@ export class PerspectiveLinks implements HasLinks, HasRedirect {
       }`,
     });
 
-    const headId = result.data.entity.head ? result.data.entity.head.id : undefined;
+    const headId = result.data.entity.head
+      ? result.data.entity.head.id
+      : undefined;
 
     return headId ? [headId] : [];
   };
@@ -65,10 +70,11 @@ export class PerspectiveLinks implements HasLinks, HasRedirect {
 }
 
 @injectable()
-export class PerspectiveAccessControl implements Updatable<Entity<Signed<Perspective>>> {
+export class PerspectiveAccessControl
+  implements Updatable<Entity<Signed<Perspective>>> {
   constructor(@inject(EveesBindings.Evees) protected evees: Evees) {}
 
-  authority = (perspective: Entity<Signed<Perspective>>) =>
+  remote = (perspective: Entity<Signed<Perspective>>) =>
     this.evees.getPerspectiveProvider(perspective.object);
 
   accessControl = (perspective: Entity<Signed<Perspective>>) => {

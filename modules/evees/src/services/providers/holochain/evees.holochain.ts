@@ -25,9 +25,8 @@ export abstract class EveesHolochain extends HolochainProvider
   userId?: string | undefined;
   zome: string = 'evees';
 
-  get authority() {
-    return '';
-  }
+  id: string = '';
+  defaultPath: string = '';
 
   get accessControl() {
     return undefined;

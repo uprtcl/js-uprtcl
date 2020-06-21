@@ -103,7 +103,7 @@ export class EveesModule extends MicroModule {
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
       container
-        .bind(AccessControlModule.bindings.Authority)
+        .bind(AccessControlModule.bindings.Remote)
         .toConstantValue(remote);
     }
 

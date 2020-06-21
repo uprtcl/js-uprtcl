@@ -65,7 +65,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     );
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-    const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
+    const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
     const newHead = await this.mergeCommits(
       toHeadId,

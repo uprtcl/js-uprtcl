@@ -1,3 +1,3 @@
 export const AccessControlBindings = {
-  Authority: 'authority',
+  Remote: 'remote',
 };

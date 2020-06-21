@@ -8,26 +8,24 @@ export class RemoteLoginWidget extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
 
   @property({ type: String })
-  authority: string | undefined = undefined;
+  remoteId: string | undefined = undefined;
 
   @property({ type: Boolean, attribute: false })
   isAuthorized: boolean = false;
 
-  protected remote: Authority | undefined = undefined;
+  protected remote: Remote | undefined = undefined;
 
   firstUpdated() {
     this.loadRemote();
   }
 
   async loadRemote() {
-    if (this.authority !== undefined) return;
-    const remotes = this.requestAll(
-      AccessControlBindings.Remote
-    ) as Remote[];
+    if (this.remoteId !== undefined) return;
+    const remotes = this.requestAll(AccessControlBindings.Remote) as Remote[];
 
     this.remote = remotes.find((remote) => remote.id === this.remoteId);
     if (this.remote === undefined)
-      throw new Error(`remote not found for authority ${this.authority}`);
+      throw new Error(`remote not found for remoteId ${this.remoteId}`);
 
     this.isAuthorized = this.remote.userId !== undefined;
   }

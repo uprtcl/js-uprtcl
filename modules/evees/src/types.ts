@@ -26,6 +26,10 @@ export interface Perspective {
   timestamp: number;
 }
 
+export const getAuthority = (perspective: Perspective): string => {
+  return `${perspective.remote}:${perspective.path}`;
+};
+
 export interface PerspectiveDetails {
   name?: string;
   context?: string | undefined;
@@ -72,7 +76,7 @@ export interface NewProposal {
 
 export interface ProposalCreatedDetail {
   proposalId: string;
-  authority: string;
+  remoteId: string;
 }
 
 export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
