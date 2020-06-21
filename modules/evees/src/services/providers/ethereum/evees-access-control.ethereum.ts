@@ -30,7 +30,7 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
     /** TODO: there were two alternatives.
      *  - (1) search desendants here , or
      *  - (2) search descendants on the persmisions.owner lense.
-     * (1) seems correct as it seems correct that the authority decides the logic for permissions "inheritance", like is the case for HTTP API.
+     * (1) seems correct as it seems correct that the remoteId decides the logic for permissions "inheritance", like is the case for HTTP API.
      */
 
     const client: ApolloClient<any> = this.container.get(
@@ -57,7 +57,7 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
       ref
     );
 
-    /** filter the descendants witht he same owner and in the same authority */
+    /** filter the descendants witht he same owner and in the same remoteId */
     const asyncFilter = async (arr, predicate) =>
       Promise.all(arr.map(predicate)).then((results) =>
         arr.filter((_v, index) => results[index])

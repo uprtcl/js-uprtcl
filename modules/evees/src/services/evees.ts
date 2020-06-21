@@ -53,7 +53,7 @@ export class Evees {
   }
 
   /**
-   * Returns the uprtcl remote that controls the given perspective, from its authority
+   * Returns the uprtcl remote that controls the given perspective, from its remoteId
    * @returns the uprtcl remote
    */
   public getPerspectiveProvider(perspective: Signed<Perspective>): EveesRemote {
@@ -61,7 +61,7 @@ export class Evees {
   }
 
   /**
-   * Returns the uprtcl remote that controls the given perspective, from its authority
+   * Returns the uprtcl remote that controls the given perspective, from its remoteId
    * @returns the uprtcl remote
    */
   public async getPerspectiveRemoteById(
@@ -102,18 +102,18 @@ export class Evees {
 
   /**
    * receives an entity id and compute the actions that will
-   * result on this entity being forked on a target authority
+   * result on this entity being forked on a target remoteId
    * with a target owner (canWrite).
    *
    * it also makes sure that all entities are clonned
-   * on the target authority default store.
+   * on the target remoteId default store.
    *
    * recursively fork entity children
    */
   public async fork(
     id: string,
     workspace: EveesWorkspace,
-    authority: string,
+    remoteId: string,
     canWrite: string,
     parentId?: string
   ): Promise<string> {
@@ -122,13 +122,13 @@ export class Evees {
       EveesBindings.PerspectiveType
     );
     if (isPerspective) {
-      return this.forkPerspective(id, workspace, authority, canWrite, parentId);
+      return this.forkPerspective(id, workspace, remoteId, canWrite, parentId);
     } else {
       const isCommit = await this.isPattern(id, EveesBindings.CommitType);
       if (isCommit) {
-        return this.forkCommit(id, workspace, authority, canWrite, parentId);
+        return this.forkCommit(id, workspace, remoteId, canWrite, parentId);
       } else {
-        return this.forkEntity(id, workspace, authority, canWrite, parentId);
+        return this.forkEntity(id, workspace, remoteId, canWrite, parentId);
       }
     }
   }

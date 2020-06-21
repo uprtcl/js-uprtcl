@@ -31,7 +31,7 @@ export class RemoteLoginWidget extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if (changedProperties.has('authority')) {
+    if (changedProperties.has('remoteId')) {
       this.loadRemote();
     }
   }

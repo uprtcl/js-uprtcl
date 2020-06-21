@@ -26,7 +26,7 @@ export const UPDATE_HEAD: DocumentNode = gql`
       }
       name
       payload {
-        authority
+        remoteId
       }
       _context {
         content {

@@ -198,24 +198,24 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
   async checkPerspectiveAndOwner(
     perspectiveId: string,
-    authority: string,
+    remoteId: string,
     canWrite: string
   ) {
     const result = await this.client.query({
       query: gql`{
         entity(ref: "${perspectiveId}") {
           id
-          ... on Perspective { payload { authority} }
+          ... on Perspective { payload { remoteId} }
           _context { patterns { accessControl { permissions} } }
         }
       }`,
     });
 
-    const thisAuthority = result.data.entity.payload.authority;
+    const thisAuthority = result.data.entity.payload.remoteId;
     const owner =
       result.data.entity._context.patterns.accessControl.permissions.owner;
 
-    if (authority !== thisAuthority) {
+    if (remoteId !== thisAuthority) {
       return false;
     } else {
       return canWrite === owner;
@@ -285,14 +285,14 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
               return perspectivesByContext.to;
             } else {
               /** otherwise, if merge config.forceOwner and this perspective is only present in the
-               * "from", a fork may be created to make sure the final perspective is in the target authority
+               * "from", a fork may be created to make sure the final perspective is in the target remoteId
                * and canWrite (TODO: canWrite will be replaced by a "copy permissions from element"  or
                * something */
 
               if (config.forceOwner) {
                 const isInternal = await this.checkPerspectiveAndOwner(
                   perspectivesByContext.from as string,
-                  config.authority,
+                  config.remoteId,
                   config.canWrite
                 );
 
@@ -300,7 +300,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
                   const newPerspectiveId = await this.evees.forkPerspective(
                     perspectivesByContext.from as string,
                     workspace,
-                    config.authority,
+                    config.remoteId,
                     config.canWrite,
                     config.parentId
                   );

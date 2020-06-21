@@ -379,7 +379,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspective = perspectiveResult.data.entity._context.object;
 
-      const remote = evees.getRemote(perspective.payload.authority);
+      const remote = evees.getRemote(perspective.payload.remoteId);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
       if (authorize) {
@@ -417,7 +417,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspective = perspectiveResult.data.entity._context.object;
 
-      const remote = evees.getRemote(perspective.payload.authority);
+      const remote = evees.getRemote(perspective.payload.remoteId);
       if (!remote.proposals) throw new Error('remote cant handle proposals');
 
       await remote.proposals.executeProposal(proposalId);

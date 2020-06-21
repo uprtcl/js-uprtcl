@@ -1,7 +1,10 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { expect } from '@open-wc/testing';
 
-import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
+import {
+  MicroOrchestrator,
+  i18nextBaseModule,
+} from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
@@ -27,7 +30,7 @@ describe('evees-workspace', () => {
     {
       Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw: {
         payload: {
-          authority: 'local',
+          remoteId: 'local',
           creatorId: 'user1',
           timestamp: 0,
         },
@@ -98,7 +101,7 @@ describe('evees-workspace', () => {
           __typename: 'EntityContext',
           object: {
             payload: {
-              authority: 'local',
+              remoteId: 'local',
               creatorId: 'user1',
               timestamp: 0,
             },

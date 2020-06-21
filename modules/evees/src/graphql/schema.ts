@@ -75,7 +75,7 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   input PerspectivePayload {
-    authority: String
+    remoteId: String
     timestamp: Float
     creatorId: String
   }
@@ -151,7 +151,8 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   type Payload {
-    authority: String
+    remote: String
+    path: String
     creatorId: String
     timestamp: Date
   }

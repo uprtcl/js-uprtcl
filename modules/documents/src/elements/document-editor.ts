@@ -153,13 +153,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     let entityType: string = this.recognizer.recognizeType(entity);
 
     let editable = false;
-    let authority!: string | undefined;
+    let remoteId!: string | undefined;
     let context!: string;
     let dataId!: string;
     let headId!: string;
 
     if (entityType === EveesModule.bindings.PerspectiveType) {
-      authority = await EveesHelpers.getPerspectiveRemoteId(
+      remoteId = await EveesHelpers.getPerspectiveRemoteId(
         this.client,
         entity.id
       );
@@ -193,13 +193,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         if (!parent) throw new Error('Commit must have a parent');
 
         editable = parent.editable;
-        authority = parent.authority;
+        remoteId = parent.remoteId;
         dataId = await EveesHelpers.getCommitDataId(this.client, entity.id);
         headId = ref;
       } else {
         entityType = 'Data';
         editable = false;
-        authority = '';
+        remoteId = '';
         dataId = ref;
         headId = '';
       }
@@ -237,7 +237,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       headId,
       hasDocNodeLenses,
       editable,
-      authority,
+      remoteId,
       context,
       focused: false,
     };
@@ -283,9 +283,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const remote = this.eveesRemotes.find((r) => r.id === remoteId);
 
     if (!remote)
-      throw new Error(
-        `Could not find evees remote with authority ID ${remoteId}`
-      );
+      throw new Error(`Could not find evees remote with remoteId ${remoteId}`);
 
     return this.remotesMap(remote, type);
   }
@@ -324,9 +322,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async persistAll(message?: string) {
     if (!this.doc) return;
     this.persistingAll = true;
-    if (this.doc.authority === undefined)
-      throw Error('top element must have an authority');
-    await this.persistNodeRec(this.doc, this.doc.authority, message);
+    if (this.doc.remoteId === undefined)
+      throw Error('top element must have an remoteId');
+    await this.persistNodeRec(this.doc, this.doc.remoteId, message);
     /** reload doc from backend */
     await this.loadDoc();
     this.requestUpdate();
@@ -388,7 +386,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           : [];
         const commitId = await this.createCommit(
           node.draft,
-          node.authority !== undefined ? node.authority : defaultAuthority,
+          node.remoteId !== undefined ? node.remoteId : defaultAuthority,
           commitParents,
           message
         );
@@ -396,9 +394,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         break;
 
       default:
-        if (node.authority === undefined)
-          throw Error(`authority not defined for node ${node.ref}`);
-        const dataId = await this.createEntity(node.draft, node.authority);
+        if (node.remoteId === undefined)
+          throw Error(`remoteId not defined for node ${node.ref}`);
+        const dataId = await this.createEntity(node.draft, node.remoteId);
         node.ref = dataId;
         break;
     }
@@ -407,12 +405,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     await this.draftService.removeDraft(node.ref);
   }
 
-  async createEntity(content: any, authority: string): Promise<string> {
+  async createEntity(content: any, remoteId: string): Promise<string> {
     const entityType = this.recognizer.recognizeType({
       id: '',
       object: content,
     });
-    const store = this.getStore(authority, entityType);
+    const store = this.getStore(remoteId, entityType);
 
     const createTextNode = await this.client.mutate({
       mutation: CREATE_ENTITY,
@@ -434,7 +432,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const dataId = await this.createEntity(content, remoteId);
 
     const remote = this.eveesRemotes.find((r) => r.id === remoteId);
-    if (!remote) throw new Error(`Remote not found for authority ${remoteId}`);
+    if (!remote) throw new Error(`Remote not found for remoteId ${remoteId}`);
 
     return await EveesHelpers.createCommit(this.client, remote.store, {
       dataId,
@@ -443,12 +441,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async updateEvee(node: DocNode, message?: string): Promise<void> {
-    if (node.authority === undefined)
-      throw Error(`authority not defined for node ${node.ref}`);
+    if (node.remoteId === undefined)
+      throw Error(`remoteId not defined for node ${node.ref}`);
 
     const commitId = await this.createCommit(
       node.draft,
-      node.authority,
+      node.remoteId,
       node.headId ? [node.headId] : []
     );
 

@@ -28,7 +28,7 @@ export class MockEveesProvider implements EveesRemote {
     throw new Error('Method not implemented.');
   }
 
-  authority: string = 'local';
+  remoteId: string = 'local';
   accessControl = undefined;
   proposals = undefined;
 

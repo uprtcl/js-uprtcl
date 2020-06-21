@@ -12,7 +12,7 @@ import '@material/mwc-button';
 interface PerspectiveData {
   id: string;
   name: string;
-  authority: string;
+  remoteId: string;
   creatorId: string;
   timestamp: number;
   publicRead: boolean;
@@ -63,7 +63,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           id
           ... on Perspective {
             payload {
-              authority
+              remoteId
             }
             context {
               id
@@ -73,7 +73,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                 payload {
                   creatorId
                   timestamp
-                  authority
+                  remoteId
                 }
                 _context {
                   patterns {
@@ -113,7 +113,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           name: perspective.name,
           creatorId: perspective.payload.creatorId,
           timestamp: perspective.payload.timestamp,
-          authority: perspective.payload.authority,
+          remoteId: perspective.payload.remoteId,
           publicRead: publicRead,
         };
       }

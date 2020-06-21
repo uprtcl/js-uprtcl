@@ -315,7 +315,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!store) throw new Error('store is undefined');
 
     const remote = this.eveesRemotes.find((r) => r.id === this.remoteId);
-    if (!remote) throw Error(`Remote not found for authority ${this.remoteId}`);
+    if (!remote) throw Error(`Remote not found for remoteId ${this.remoteId}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
     const headId = await EveesHelpers.createCommit(this.client, remote.store, {
