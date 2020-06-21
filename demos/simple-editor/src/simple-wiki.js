@@ -41,9 +41,12 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = state[2].split('id=')[1];
     });
 
-    const eveesHttpProvider = this.requestAll(
-      EveesModule.bindings.EveesRemote
-    ).find((provider) => provider.authority.startsWith('http'));
+    const eveesProviders = this.requestAll(EveesModule.bindings.EveesRemote);
+    await Promise.all(eveesProviders.map((p) => p.ready()));
+
+    const eveesHttpProvider = eveesProviders.find((provider) =>
+      provider.authority.startsWith('http')
+    );
 
     await eveesHttpProvider.connect();
 
@@ -52,9 +55,9 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const eveesEthProvider = this.requestAll(
-        EveesModule.bindings.EveesRemote
-      ).find((provider) => provider.authority.startsWith('eth'));
+      const eveesEthProvider = eveesProviders.find((provider) =>
+        provider.authority.startsWith('eth')
+      );
 
       const client = this.request(ApolloClientModule.bindings.Client);
 
@@ -65,12 +68,16 @@ export class SimpleWiki extends moduleConnect(LitElement) {
 
       const dataId = await EveesHelpers.createEntity(
         client,
-        eveesEthProvider,
+        eveesEthProvider.store,
         wiki
       );
-      const headId = await EveesHelpers.createCommit(client, eveesEthProvider, {
-        dataId,
-      });
+      const headId = await EveesHelpers.createCommit(
+        client,
+        eveesEthProvider.store,
+        {
+          dataId,
+        }
+      );
 
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
       const perspectiveId = await EveesHelpers.createPerspective(

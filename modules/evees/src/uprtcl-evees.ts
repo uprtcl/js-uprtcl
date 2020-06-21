@@ -23,6 +23,8 @@ export { NewPerspectiveData } from './types';
 export { EveesHolochain } from './services/providers/holochain/evees.holochain';
 export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
 export { EveesHttp } from './services/providers/http/evees.http';
+export { EveesOrbitDB } from './services/providers/orbit-db/evees.orbit-db';
+export { OrbitDBConnection } from './services/providers/orbit-db/orbit-db.connection';
 
 export { Evees } from './services/evees';
 export { EveesModule } from './evees.module';
@@ -57,8 +59,16 @@ export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
-export { UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
-export { EveesHelpers, CreatePerspective, CreateCommit } from './graphql/helpers';
+export {
+  UPDATE_HEAD,
+  CREATE_PERSPECTIVE,
+  CREATE_ENTITY,
+} from './graphql/queries';
+export {
+  EveesHelpers,
+  CreatePerspective,
+  CreateCommit,
+} from './graphql/helpers';
 
 /** Patterns */
 export {

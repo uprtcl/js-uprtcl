@@ -8,9 +8,10 @@ import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
 import { AccessControlModule } from '@uprtcl/access-control';
-import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
+import { EveesModule, EveesEthereum } from '@uprtcl/evees';
+import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import { HttpConnection } from '@uprtcl/http-provider';
+import { OrbitDBConnection, EveesOrbitDB } from '@uprtcl/evees';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
@@ -35,12 +36,6 @@ import { SimpleWiki } from './simple-wiki';
     protocol: 'https',
   };
 
-  const httpCidConfig = {
-    version: 1,
-    type: 'sha3-256',
-    codec: 'raw',
-    base: 'base58btc',
-  };
   const ipfsCidConfig = {
     version: 1,
     type: 'sha2-256',
@@ -50,19 +45,16 @@ import { SimpleWiki } from './simple-wiki';
 
   const orchestrator = new MicroOrchestrator();
 
-  const httpConnection = new HttpConnection();
+  const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
+
+  const orbitDBConnection = new OrbitDBConnection(ipfsStore.client, {});
   const ethConnection = new EthereumConnection({ provider: ethHost });
 
-  const httpEvees = new EveesHttp(
-    c1host,
-    httpConnection,
-    ethConnection,
-    httpCidConfig
-  );
+  const httpEvees = new EveesOrbitDB(orbitDBConnection, ipfsStore);
+
   const ethEvees = new EveesEthereum(
     ethConnection,
-    ipfsConfig,
-    ipfsCidConfig,
+    ipfsStore,
     orchestrator.container
   );
 

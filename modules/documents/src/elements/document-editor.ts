@@ -436,7 +436,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const remote = this.eveesRemotes.find((r) => r.id === remoteId);
     if (!remote) throw new Error(`Remote not found for authority ${remoteId}`);
 
-    return await EveesHelpers.createCommit(this.client, remote, {
+    return await EveesHelpers.createCommit(this.client, remote.store, {
       dataId,
       parentsIds,
     });
@@ -494,7 +494,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         headId: commitId,
         context,
         parentId: this.ref,
-        casID: remote.casID,
+        casID: remote.store.casID,
       },
     });
 

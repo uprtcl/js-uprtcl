@@ -273,7 +273,7 @@ export class EveesHelpers {
       mutation: CREATE_PERSPECTIVE,
       variables: {
         remoteId: remote.id,
-        casID: remote.casID,
+        casID: remote.store.casID,
         ...perspective,
       },
     });
