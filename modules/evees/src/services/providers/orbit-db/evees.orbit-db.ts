@@ -2,7 +2,7 @@
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { Authority, OwnerAccessControlService } from '@uprtcl/access-control';
+import { Remote, OwnerAccessControlService } from '@uprtcl/access-control';
 import { Signed } from '@uprtcl/cortex';
 
 import { Secured } from '../../../utils/cid-hash';
@@ -24,7 +24,7 @@ const defaultDetails: PerspectiveDetails = {
   headId: undefined,
 };
 
-export class EveesOrbitDB implements EveesRemote, Authority {
+export class EveesOrbitDB implements EveesRemote {
   logger: Logger = new Logger('EveesOrbitDB');
   accessControl: OwnerAccessControlService;
   proposals!: ProposalsProvider;
@@ -39,8 +39,12 @@ export class EveesOrbitDB implements EveesRemote, Authority {
     );
   }
 
-  get authority() {
+  get id() {
     return `orbitdb:${evees_if}`;
+  }
+
+  get defaultPath() {
+    return '';
   }
 
   get userId() {
@@ -83,7 +87,7 @@ export class EveesOrbitDB implements EveesRemote, Authority {
     const canWrite = perspectiveData.canWrite;
 
     /** validate */
-    if (!secured.object.payload.authority)
+    if (!secured.object.payload.remote)
       throw new Error('authority cannot be empty');
 
     /** Store the perspective data in the data layer */

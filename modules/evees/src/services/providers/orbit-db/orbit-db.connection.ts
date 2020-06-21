@@ -37,7 +37,7 @@ export class OrbitDBConnection extends Connection {
     perspective: Perspective
   ): Promise<OrbitDBAddress> {
     return this.instance.determineAddress(
-      `perspective-store/${perspective.authority}`,
+      `perspective-store/${perspective.path}`,
       'log',
       {
         accessController: { type: 'ipfs', write: [perspective.creatorId] },

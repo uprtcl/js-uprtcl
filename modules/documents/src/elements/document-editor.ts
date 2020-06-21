@@ -159,7 +159,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     let headId!: string;
 
     if (entityType === EveesModule.bindings.PerspectiveType) {
-      authority = await EveesHelpers.getPerspectiveAuthority(
+      authority = await EveesHelpers.getPerspectiveRemoteId(
         this.client,
         entity.id
       );
@@ -476,17 +476,17 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async createEvee(
     content: object,
-    authority: string,
+    remoteId: string,
     casID: string,
     context: string
   ): Promise<string> {
-    if (LOGINFO) this.logger.log('createEvee()', { content, authority });
+    if (LOGINFO) this.logger.log('createEvee()', { content, remoteId });
 
-    const commitId = await this.createCommit(content, authority);
+    const commitId = await this.createCommit(content, remoteId);
 
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
-    const remote = this.eveesRemotes.find((r) => r.authority === authority);
-    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
+    const remote = this.eveesRemotes.find((r) => r.id === remoteId);
+    if (!remote) throw new Error(`Remote not found for remoteId ${remoteId}`);
 
     const createPerspective = await this.client.mutate({
       mutation: CREATE_PERSPECTIVE,

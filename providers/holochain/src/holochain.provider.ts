@@ -1,15 +1,15 @@
 import { injectable, inject } from 'inversify';
 
-import { Entity } from '@uprtcl/cortex';
-import { Authority } from '@uprtcl/access-control';
+import { Remote } from '@uprtcl/access-control';
 import { Constructor } from '@uprtcl/micro-orchestrator';
 
 import { HolochainConnection } from './holochain.connection';
 import { HolochainConnectionBindings } from './bindings';
 
 @injectable()
-export abstract class HolochainProvider implements Authority {
-  authority!: string;
+export abstract class HolochainProvider implements Remote {
+  id!: string;
+  defaultPath!: string;
 
   abstract instance: string;
   abstract zome: string;

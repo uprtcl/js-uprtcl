@@ -271,7 +271,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspective: Secured<Perspective> = await deriveSecured(
         payload,
-        remote.cidConfig
+        remote.store.cidConfig
       );
 
       const entityCache: EntityCache = container.get(
