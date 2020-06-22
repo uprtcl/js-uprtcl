@@ -31,6 +31,7 @@ import {
   Perspective,
   PerspectiveDetails,
   Commit,
+  getAuthority,
 } from '../types';
 import { EveesBindings } from '../bindings';
 import {
@@ -69,8 +70,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'first-ref' })
   firstRef!: string;
 
-  @property({ type: String, attribute: 'default-authority' })
-  defaultAuthority: string | undefined = undefined;
+  @property({ type: String, attribute: 'default-remote' })
+  defaultRemoteId: string | undefined = undefined;
 
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
@@ -133,12 +134,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
     this.remoteMap = this.request(EveesBindings.RemoteMap);
 
-    if (this.defaultAuthority !== undefined) {
+    if (this.defaultRemoteId !== undefined) {
       this.defaultRemote = (this.requestAll(
         EveesBindings.EveesRemote
-      ) as EveesRemote[]).find(
-        (remote) => remote.authority === this.defaultAuthority
-      );
+      ) as EveesRemote[]).find((remote) => remote.id === this.defaultRemoteId);
     }
 
     this.load();
@@ -153,9 +152,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (changedProperties.has('defaultAuthority')) {
       this.defaultRemote = (this.requestAll(
         EveesBindings.EveesRemote
-      ) as EveesRemote[]).find(
-        (remote) => remote.authority === this.defaultAuthority
-      );
+      ) as EveesRemote[]).find((remote) => remote.id === this.defaultRemoteId);
     }
   }
 
@@ -239,11 +236,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       return;
     }
 
-    const remote = await this.evees.getPerspectiveProviderById(this.ref);
+    const remote = await this.evees.getPerspectiveRemoteById(this.ref);
 
     const config = {
       forceOwner: true,
-      authority: this.perspectiveData.perspective?.authority,
+      remote: this.perspectiveData.perspective?.remote,
+      path: this.perspectiveData.perspective?.path,
       canWrite: remote.userId,
       parentId: this.ref,
     };
@@ -329,7 +327,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
     );
 
-    const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
+    const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
     const accessControl = remote.accessControl as AccessControlService<
       OwnerPermissions
@@ -350,7 +348,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const config = {
       forceOwner: true,
-      authority: remote.authority,
+      remote: remote.id,
       canWrite: permissions.owner,
       parentId: this.ref,
     };
@@ -421,12 +419,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
-    const authority = await EveesHelpers.getPerspectiveAuthority(
+    const remote = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
       toPerspectiveId
     );
 
-    const not = await workspace.isSingleAuthority(authority);
+    const not = await workspace.isSingleAuthority(remote);
     if (!not)
       throw new Error(
         'cant create merge proposals on multiple authorities yet'
@@ -458,7 +456,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.dispatchEvent(
       new ProposalCreatedEvent({
-        detail: { proposalId, authority },
+        detail: { proposalId, remote },
         cancelable: true,
         composed: true,
         bubbles: true,
@@ -526,13 +524,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async newPerspectiveClicked() {
+    debugger;
     this.creatingNewPerspective = true;
 
     const workspace = new EveesWorkspace(this.client, this.recognizer);
     const newPerspectiveId = await this.evees.forkPerspective(
       this.ref,
       workspace,
-      this.defaultAuthority
+      this.defaultRemoteId
     );
     await workspace.execute(this.client);
 
@@ -633,7 +632,9 @@ ${this.perspectiveData.details?.context}</pre
 
               <div class="prop-name">authority</div>
               <pre class="prop-value">
-${this.perspectiveData.perspective?.authority}</pre
+${this.perspectiveData.perspective
+                  ? getAuthority(this.perspectiveData.perspective)
+                  : ''}</pre
               > `
           : ''}
 

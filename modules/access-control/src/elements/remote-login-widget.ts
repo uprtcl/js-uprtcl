@@ -1,50 +1,52 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Authority } from '../types/authority';
+import { Remote } from '../types/remote';
 import { AccessControlBindings } from '../bindings';
 
 export class RemoteLoginWidget extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
 
   @property({ type: String })
-  authority: string | undefined = undefined;
+  remote: string | undefined = undefined;
 
   @property({ type: Boolean, attribute: false })
   isAuthorized: boolean = false;
 
-  protected remote: Authority | undefined = undefined;
+  protected remoteInstance: Remote | undefined = undefined;
 
   firstUpdated() {
     this.loadRemote();
   }
 
   async loadRemote() {
-    if (this.authority !== undefined) return;
-    const remotes = this.requestAll(
-      AccessControlBindings.Authority
-    ) as Authority[];
+    if (this.remoteInstance !== undefined) return;
+    const remoteInstances = this.requestAll(
+      AccessControlBindings.Remote
+    ) as Remote[];
 
-    this.remote = remotes.find((remote) => remote.authority === this.authority);
-    if (this.remote === undefined)
-      throw new Error(`remote not found for authority ${this.authority}`);
+    this.remoteInstance = remoteInstances.find(
+      (instance) => instance.id === this.remote
+    );
+    if (this.remoteInstance === undefined)
+      throw new Error(`remote not found for remote ${this.remote}`);
 
-    this.isAuthorized = this.remote.userId !== undefined;
+    this.isAuthorized = this.remoteInstance.userId !== undefined;
   }
 
   updated(changedProperties) {
-    if (changedProperties.has('authority')) {
+    if (changedProperties.has('remote')) {
       this.loadRemote();
     }
   }
 
   async loginClicked() {
-    if (this.remote === undefined) throw Error('this.remoge undefined');
+    if (this.remoteInstance === undefined) throw Error('this.remoge undefined');
 
     if (!this.isAuthorized) {
-      await this.remote.login();
+      await this.remoteInstance.login();
     } else {
-      await this.remote.logout();
+      await this.remoteInstance.logout();
     }
 
     this.loadRemote();

@@ -1,11 +1,13 @@
 import { Ready } from '@uprtcl/multiplatform';
 
-export interface Authority extends Ready {
+export interface Remote extends Ready {
   /**
-   * The provider locator for this service
-   * This should uniquely identify the provider from which to do requests
+   * The id is used to select the JS remote from the listed of available Remotes.
+   * A path is used to addreess a given request to that remote.
+   * The defaultPath is used to simplify "get" or "create"s operations that dont receive a path.
    */
-  authority: string;
+  id: string;
+  defaultPath: string;
 
   userId?: string | undefined;
 

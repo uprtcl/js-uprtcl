@@ -2,7 +2,10 @@ import { html, fixture, expect } from '@open-wc/testing';
 import { waitUntil } from '@open-wc/testing-helpers';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
+import {
+  MicroOrchestrator,
+  i18nextBaseModule,
+} from '@uprtcl/micro-orchestrator';
 import { CortexModule } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
@@ -27,7 +30,7 @@ describe('<cortex-entity>', () => {
     {
       Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw: {
         payload: {
-          authority: 'local',
+          remote: 'local',
           creatorId: 'user1',
           timestamp: 0,
         },
@@ -75,7 +78,9 @@ describe('<cortex-entity>', () => {
     const el: HTMLElement = await fixture(
       html`
         <module-container
-          ><cortex-entity ref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></cortex-entity
+          ><cortex-entity
+            ref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"
+          ></cortex-entity
         ></module-container>
       `
     );
@@ -90,7 +95,10 @@ describe('<cortex-entity>', () => {
     );
 
     await waitUntil(
-      () => !(cortexEntity.shadowRoot as ShadowRoot).querySelector('cortex-loading-placeholder'),
+      () =>
+        !(cortexEntity.shadowRoot as ShadowRoot).querySelector(
+          'cortex-loading-placeholder'
+        ),
       'Never stopped loading'
     );
 

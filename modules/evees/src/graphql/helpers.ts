@@ -69,7 +69,7 @@ export class EveesHelpers {
     return result.data.entity.context.id;
   }
 
-  static async getPerspectiveAuthority(
+  static async getPerspectiveRemoteId(
     client: ApolloClient<any>,
     perspectiveId: string
   ): Promise<string> {
@@ -78,7 +78,7 @@ export class EveesHelpers {
       perspectiveId
     );
     if (!perspective) throw new Error('perspective not found');
-    return perspective.object.payload.authority;
+    return perspective.object.payload.remote;
   }
 
   static async getPerspectiveDataId(
@@ -272,7 +272,7 @@ export class EveesHelpers {
     const createPerspective = await client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
-        authority: remote.authority,
+        remote: remote.id,
         casID: remote.store.casID,
         ...perspective,
       },

@@ -1,4 +1,4 @@
-import { Authority } from '@uprtcl/access-control';
+import { Remote } from '@uprtcl/access-control';
 
 import { HttpConnection, PostResult } from './http.connection';
 
@@ -7,11 +7,18 @@ export interface HttpProviderOptions {
   apiId: string;
 }
 
-export class HttpProvider implements Authority {
-  constructor(protected options: HttpProviderOptions, protected connection: HttpConnection) {}
+export class HttpProvider implements Remote {
+  constructor(
+    protected options: HttpProviderOptions,
+    protected connection: HttpConnection
+  ) {}
 
-  get authority(): string {
-    return `http:${this.options.apiId}:${this.options.host}`;
+  get id(): string {
+    return `http:${this.options.apiId}`;
+  }
+
+  get defaultPath(): string {
+    return `${this.options.host}`;
   }
 
   get userId() {

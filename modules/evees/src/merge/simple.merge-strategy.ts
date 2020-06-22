@@ -65,12 +65,12 @@ export class SimpleMergeStrategy implements MergeStrategy {
     );
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-    const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
+    const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
     const newHead = await this.mergeCommits(
       toHeadId,
       fromHeadId,
-      remote.authority,
+      remote.id,
       workspace,
       config
     );
@@ -156,7 +156,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeCommits(
     toCommitIdOrg: string,
     fromCommitIdOrg: string,
-    authority: string,
+    remote: string,
     workspace: EveesWorkspace,
     config: any
   ): Promise<string> {
@@ -186,9 +186,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     );
 
     const type = this.recognizer.recognizeType(ancestorData);
-    const remote = this.evees.getAuthority(authority);
+    const instance = this.evees.getRemote(remote);
 
-    const sourceRemote = this.remoteMap(remote, type);
+    const sourceRemote = this.remoteMap(instance, type);
 
     const entity = await deriveEntity(mergedData, sourceRemote.cidConfig);
     entity.casID = sourceRemote.casID;
@@ -200,7 +200,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     workspace.create(entity);
 
-    if (!remote.userId)
+    if (!instance.userId)
       throw new Error('Cannot create commits in a casID you are not signed in');
 
     const newCommit: Commit = {
@@ -208,15 +208,15 @@ export class SimpleMergeStrategy implements MergeStrategy {
       parentsIds: commitsIds,
       message: `Merge commits ${commitsIds.toString()}`,
       timestamp: Date.now(),
-      creatorsIds: [remote.userId],
+      creatorsIds: [instance.userId],
     };
 
     const securedCommit = await deriveSecured(
       newCommit,
-      remote.store.cidConfig
+      instance.store.cidConfig
     );
 
-    securedCommit.casID = remote.store.casID;
+    securedCommit.casID = instance.store.casID;
     workspace.create(securedCommit);
 
     return securedCommit.id;
