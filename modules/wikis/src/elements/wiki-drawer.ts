@@ -212,13 +212,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       this.ref
     );
 
+    debugger;
+
     this.remote = perspective.object.payload.remote;
     this.path = perspective.object.payload.path;
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
     this.editable = accessControl
       ? this.editableRemotes.length > 0
-        ? this.editableRemotes.includes(`${this.remote}:${this.path}`)
+        ? this.editableRemotes.includes(this.remote)
           ? accessControl.canWrite
           : false
         : accessControl.canWrite

@@ -524,6 +524,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async newPerspectiveClicked() {
+    debugger;
     this.creatingNewPerspective = true;
 
     const workspace = new EveesWorkspace(this.client, this.recognizer);

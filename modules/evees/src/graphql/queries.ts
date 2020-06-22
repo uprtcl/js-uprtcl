@@ -56,6 +56,7 @@ export const CREATE_ENTITY: DocumentNode = gql`
 export const CREATE_PERSPECTIVE: DocumentNode = gql`
   mutation CreatePerspective(
     $remote: String!
+    $path: String
     $creatorId: String
     $timestamp: Date
     $headId: ID
@@ -66,6 +67,7 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
   ) {
     createPerspective(
       remote: $remote
+      path: $path
       creatorId: $creatorId
       timestamp: $timestamp
       headId: $headId

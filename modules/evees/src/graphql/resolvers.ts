@@ -238,6 +238,7 @@ export const eveesResolvers: IResolvers = {
       _,
       {
         remote,
+        path,
         creatorId,
         timestamp,
         headId,
@@ -253,6 +254,9 @@ export const eveesResolvers: IResolvers = {
       const remoteInstance: EveesRemote = remotes.find(
         (instance) => instance.id === remote
       );
+
+      path = path !== undefined ? path : remoteInstance.defaultPath;
+
       creatorId =
         creatorId !== undefined
           ? creatorId
@@ -264,8 +268,8 @@ export const eveesResolvers: IResolvers = {
 
       const payload: Perspective = {
         creatorId,
-        remote: remote,
-        path: remote.defaultPath,
+        remote,
+        path,
         timestamp,
       };
 
