@@ -624,8 +624,8 @@ export class DocumentTextNodeEditor extends LitElement {
 
     return {
       link: (this.shadowRoot.getElementById('URL_INPUT') as HTMLInputElement).value,
-      width: (this.shadowRoot.getElementById('DIM_WIDTH') as HTMLInputElement)?.value || '',
-      height: (this.shadowRoot.getElementById('DIM_HEIGHT') as HTMLInputElement)?.value || ''
+      width: this.shadowRoot.getElementById('DIM_WIDTH') ? (this.shadowRoot.getElementById('DIM_WIDTH') as HTMLInputElement).value : '',
+      height: this.shadowRoot.getElementById('DIM_HEIGHT') ? (this.shadowRoot.getElementById('DIM_HEIGHT') as HTMLInputElement).value : ''
     };
   }
 
@@ -658,7 +658,7 @@ export class DocumentTextNodeEditor extends LitElement {
         src: link,
         style: `${width !== '' ? `width:${width}px` : ''};${
           height !== '' ? `height:${height}px` : ''
-        };max-width: 100%;margin: 0 auto;border-radius: 5px;`
+          };max-width: 100%;margin: 0 auto;border-radius: 5px;`
       });
       this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(imgNode, false));
       this.alignNodeToCenter();
@@ -704,7 +704,7 @@ export class DocumentTextNodeEditor extends LitElement {
         src: this.parseYoutubeURL(link),
         style: `width:${
           width !== '' ? width + 'px' : '100%'
-        };height:52vw;border:0px;max-width:100%;max-height:470px;`
+          };height:52vw;border:0px;max-width:100%;max-height:470px;`
       });
 
       this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(iframeNode, false));
@@ -748,8 +748,8 @@ export class DocumentTextNodeEditor extends LitElement {
           <input
             @keydown=${this.urlKeydown}
             placeholder="${this.activeSubMenu !== ActiveSubMenu.LINK
-              ? this.activeSubMenu + ' '
-              : ''}url"
+        ? this.activeSubMenu + ' '
+        : ''}url"
             id="URL_INPUT"
           />
           ${this.showDimMenu ? this.renderDimensionsMenu() : ''}
@@ -785,12 +785,12 @@ export class DocumentTextNodeEditor extends LitElement {
     return this.level > 1
       ? html`
           ${this.level > 2
-            ? html`
+          ? html`
                 <button class="btn btn-text" @click=${() => this.reduceHeading()}>
                   <span>h${this.level - 1}</span>
                 </button>
               `
-            : ''}
+          : ''}
           <button class="btn btn-text" @click=${this.toParagraph}>
             <span>text</span>
           </button>

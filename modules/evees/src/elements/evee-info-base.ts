@@ -239,11 +239,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       return;
     }
 
+    if (this.perspectiveData.perspective === undefined) {
+      return;
+    }
+
     const remote = await this.evees.getPerspectiveProviderById(this.ref);
 
     const config = {
       forceOwner: true,
-      authority: this.perspectiveData.perspective?.authority,
+      authority: this.perspectiveData.perspective.authority,
       canWrite: remote.userId,
       parentId: this.ref,
     };
@@ -621,21 +625,21 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       <div class="perspective-details">
         <div class="prop-name"><h2>${this.entityType}</h2></div>
         ${this.entityType === EveesBindings.PerspectiveType
-          ? html`<div class="prop-name">perspective-id</div>
+        ? html`<div class="prop-name">perspective-id</div>
               <pre class="prop-value">
 ${JSON.stringify(this.perspectiveData.id)}</pre
               >
 
               <div class="prop-name">context</div>
               <pre class="prop-value">
-${this.perspectiveData.details?.context}</pre
+${this.perspectiveData.details ? this.perspectiveData.details.context : 'undefined'}</pre
               >
 
               <div class="prop-name">authority</div>
               <pre class="prop-value">
-${this.perspectiveData.perspective?.authority}</pre
+${this.perspectiveData.perspective ? this.perspectiveData.perspective.authority : 'undefined'}</pre
               > `
-          : ''}
+        : ''}
 
         <div class="prop-name">head</div>
         <pre class="prop-value">
