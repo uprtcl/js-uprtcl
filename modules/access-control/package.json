@@ -11,10 +11,12 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
+    "@aragon/connect": "^0.2.0",
+    "@aragon/connect-thegraph-token-manager": "^0.2.0",
     "@material/mwc-button": "^0.14.1",
     "@material/mwc-dialog": "^0.14.1",
-    "@material/mwc-textfield": "^0.14.1",
     "@material/mwc-list": "^0.14.1",
+    "@material/mwc-textfield": "^0.14.1",
     "@uprtcl/cortex": "^0.0.7-alpha.39",
     "@uprtcl/graphql": "^0.0.7-alpha.39",
     "@uprtcl/lenses": "^0.0.7-alpha.39",

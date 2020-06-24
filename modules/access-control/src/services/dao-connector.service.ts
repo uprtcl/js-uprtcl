@@ -1,3 +1,4 @@
 export interface DAOConnector {
-    getMembers(): Promise<string[]>;
+  connect(address: string): Promise<void>;
+  getMembers(): Promise<string[]>;
 }

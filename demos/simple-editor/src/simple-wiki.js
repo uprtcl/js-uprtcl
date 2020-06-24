@@ -78,8 +78,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         eveesEthProvider,
         {
           headId,
-          context: `genesis-dao-wiki-${randint}`,
-          canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
+          context: `dao-space-${randint}`,
+          canWrite: '0x246dEe41716ABef61d3C33628AB7F830D46CA0A2',
         }
       );
 

@@ -1,4 +1,5 @@
 import { LitElement, property, html, query, css } from 'lit-element';
+
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 import { PermissionsElement } from './permissions-element';
@@ -30,6 +31,7 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   }
 
   async firstUpdated() {
+    await this.daoConnector.connect(this.permissions.owner);
     this.members = await this.daoConnector.getMembers();
     this.requestUpdate();
   }
