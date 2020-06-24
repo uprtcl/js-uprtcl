@@ -28,6 +28,7 @@ export class DaoOwnerBehaviour implements HasLenses<DAOPermissions>, Permissions
       render: (_, context: any) =>
         html`
           <permissions-dao
+            .permissions=${entity}
             entityId=${context.entityId}
           ></permissions-dao>
           `,

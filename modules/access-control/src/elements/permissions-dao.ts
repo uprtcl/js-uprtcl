@@ -2,7 +2,12 @@ import { LitElement, property, html, query, css } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 import { PermissionsElement } from './permissions-element';
-import { DAOPermissions } from 'src/services/dao-access-control.service';
+import { DAOPermissions } from '../services/dao-access-control.service';
+import { DAOConnector } from '../services/dao-connector.service';
+import { AragonConnector } from '../services/aragon-connector';
+
+import '@material/mwc-button';
+import '@material/mwc-list';
 
 export class PermissionsDAO extends moduleConnect(LitElement)
   implements PermissionsElement<DAOPermissions> {
@@ -15,12 +20,27 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   @property({ attribute: false })
   canWrite!: boolean;
 
-  firstUpdated() {
+  members: string[] = [];
+
+  daoConnector: DAOConnector;
+
+  constructor() {
+    super();
+    this.daoConnector = new AragonConnector();
+  }
+
+  async firstUpdated() {
+    this.members = await this.daoConnector.getMembers();
+    this.requestUpdate();
   }
 
   render() {
     return html`
-      <h1>Owned by a DAO</h1>
+      <h4>Owned by an Aragon DAO ${this.permissions.owner}</h4>
+      <mwc-list>
+        ${this.members.map(member => html`<mwc-list-item>${member}</mwc-list-item>`)}
+      </mwc-list>
+      <mwc-button>add member</mwc-button>
     `;
   }
 

@@ -1,6 +1,7 @@
 import { AccessControlService } from './access-control.service';
 
 export interface DAOPermissions {
+  owner: string;
   type: string;
 }
 
