@@ -39,6 +39,8 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   render() {
     return html`
       <h4>Owned by an Aragon DAO ${this.permissions.owner}</h4>
+      <br>
+      <b>Members:</b>
       <mwc-list>
         ${this.members.map(member => html`<mwc-list-item>${member}</mwc-list-item>`)}
       </mwc-list>
