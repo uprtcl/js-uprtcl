@@ -16,6 +16,8 @@ import en from './i18n/en.json';
 import { PermissionsAdmin } from './elements/permissions-admin';
 import { RemoteLoginWidget } from './elements/remote-login-widget';
 import { AccessControlBindings } from './bindings';
+import { DaoOwnerPattern, DaoOwnerBehaviour } from './patterns/dao-owner.pattern';
+import { PermissionsDAO } from './elements/permissions-dao';
 
 export class AccessControlModule extends MicroModule {
   static id = 'access-control-module';
@@ -24,6 +26,7 @@ export class AccessControlModule extends MicroModule {
     customElements.define('permissions-for-entity', PermissionsForEntity);
     customElements.define('permissions-owner', PermissionsOwner);
     customElements.define('permissions-admin', PermissionsAdmin);
+    customElements.define('permissions-dao', PermissionsDAO);
     customElements.define('remote-login-widget', RemoteLoginWidget);
   }
 
@@ -34,6 +37,7 @@ export class AccessControlModule extends MicroModule {
       new PatternsModule([
         new OwnerPattern([OwnerBehaviour]),
         new BasicAdminPattern([AdminBehaviour]),
+        new DaoOwnerPattern([DaoOwnerBehaviour]),
       ]),
     ];
   }

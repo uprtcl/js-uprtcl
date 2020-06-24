@@ -1,7 +1,8 @@
 import { AccessControlService } from './access-control.service';
 
 export interface OwnerPermissions {
-  owner: string;
+  type: string;
+  owner?: string;
 }
 
 export interface OwnerAccessControlService extends AccessControlService<OwnerPermissions> {

@@ -8,11 +8,8 @@ import { Permissions } from '../behaviours/permissions';
 import { OwnerPermissions } from '../services/owner-access-control.service';
 
 export class OwnerPattern extends Pattern<OwnerPermissions> {
-  recognize = (entity: any) => {
-    return (
-      (entity as OwnerPermissions).owner !== null &&
-      typeof (entity as OwnerPermissions).owner === 'string'
-    );
+  recognize = (permissions: any) => {
+    return permissions.type === 'owner';
   };
 
   type = 'OwnerPermissions';

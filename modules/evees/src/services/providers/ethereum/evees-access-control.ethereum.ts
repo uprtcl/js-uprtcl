@@ -13,7 +13,7 @@ import { EveesModule } from '../../../evees.module';
 import { loadEntity } from '@uprtcl/multiplatform';
 
 export class EveesAccessControlEthereum implements OwnerAccessControlService {
-  constructor(protected uprtclRoot: EthereumContract, protected container: Container) {}
+  constructor(protected uprtclRoot: EthereumContract, protected container: Container) { }
 
   async changeOwner(ref: string, newOwnerId: string): Promise<void> {
     /** TODO: there were two alternatives.
@@ -80,8 +80,8 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
   }
 
   async getPermissions(hash: string): Promise<OwnerPermissions | undefined> {
-    let owner = await this.getOwner(hash);
-    return { owner };
+    const owner = await this.getOwner(hash);
+    return { type: 'dao', owner };
   }
 
   setPermissions(hash: string, newPersmissions: OwnerPermissions): Promise<void> {
