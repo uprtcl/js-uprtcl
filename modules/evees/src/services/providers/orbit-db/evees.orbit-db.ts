@@ -136,14 +136,7 @@ export class EveesOrbitDB implements EveesRemote {
       const contextStore = await this.orbitdbConnection.contextStore(
         currentDetails.context
       );
-      // await contextStore.delete(perspectiveId);
-      await Promise.all([
-        ...contextStore
-          .iterator({ limit: -1 })
-          .collect()
-          .filter((e) => e.payload.value === perspectiveId)
-          .map((e) => contextStore.remove(e.hash)),
-      ]);
+      await contextStore.delete(perspectiveId);
     }
     if (contextChange && newDetails.context) {
       const contextStore = await this.orbitdbConnection.contextStore(
@@ -163,11 +156,7 @@ export class EveesOrbitDB implements EveesRemote {
     const contextStore = await this.orbitdbConnection.contextStore(context);
     // if (!open) await event(contextStore.events, 'replicated', { timeout });
 
-    // const perspectiveIds = [...await contextStore.values()];
-    const perspectiveIds = contextStore
-      .iterator({ limit: -1 })
-      .collect()
-      .map((e) => e.payload.value);
+    const perspectiveIds = [...await contextStore.values()];
 
     this.logger.log(
       `[OrbitDB] getContextPerspectives of ${context}`,

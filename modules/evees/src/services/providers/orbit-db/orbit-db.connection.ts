@@ -1,6 +1,11 @@
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { OrbitDB, OrbitDBAddress, OrbitDBStore } from 'orbit-db';
-import { Perspective } from '../../../types';
+import { Perspective } from 'src/types';
+import { IpfsStore } from '@uprtcl/ipfs-provider';
+import OrbitDB from 'orbit-db';
+import OrbitDBSet from '@tabcat/orbit-db-set';
+import attachIpfsStore from './context-access-controller'
+OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
+
 
 export interface OrbitDBConnectionOptions {
   directory?: string;
@@ -16,11 +21,14 @@ export class OrbitDBConnection extends Connection {
   private storeQueue = {};
 
   constructor(
-    protected ipfsClient: any,
+    protected ipfsStore: IpfsStore,
     protected orbitdbOptions?: OrbitDBConnectionOptions,
     options?: ConnectionOptions
   ) {
     super(options);
+    const AccessController = attachIpfsStore(this.ipfsStore);
+    OrbitDB.AccessControllers.addAccessController({ AccessController });
+
   }
 
   /**
@@ -46,9 +54,11 @@ export class OrbitDBConnection extends Connection {
     );
   }
 
-  public async contextAddress(context: string): Promise<OrbitDBAddress> {
-    return this.instance.determineAddress(`context-store/${context}`, 'feed', {
-      accessController: { type: 'ipfs', write: ['*'] },
+  public async contextAddress(
+    context: string
+  ): Promise<any> {
+    return this.instance.determineAddress(`context-store/${context}`, 'set', {
+      accessController: { type: 'context', write: ['*'] },
     });
   }
 
