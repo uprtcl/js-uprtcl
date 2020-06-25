@@ -52,6 +52,9 @@ import { SimpleWiki } from './simple-wiki';
 
   const httpConnection = new HttpConnection();
   const ethConnection = new EthereumConnection({ provider: ethHost });
+  orchestrator.container
+    .bind('EthereumConnection')
+    .toConstantValue(ethConnection);
 
   const httpEvees = new EveesHttp(
     c1host,

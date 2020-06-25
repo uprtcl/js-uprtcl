@@ -1,6 +1,7 @@
 import { LitElement, property, html, query, css } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import { PermissionsElement } from './permissions-element';
 import { DAOPermissions } from '../services/dao-access-control.service';
@@ -29,14 +30,15 @@ export class PermissionsDAO extends moduleConnect(LitElement)
 
   members: DAOMember[] = [];
 
-  daoConnector: DAOConnector;
-
-  constructor() {
-    super();
-    this.daoConnector = new AragonConnector();
-  }
+  daoConnector!: DAOConnector;
 
   async firstUpdated() {
+    const ethConnection = this.request(
+      'EthereumConnection'
+    ) as EthereumConnection;
+
+    this.daoConnector = new AragonConnector(ethConnection);
+
     await this.daoConnector.connect(this.permissions.owner);
     this.members = await this.daoConnector.getMembers();
     this.requestUpdate();

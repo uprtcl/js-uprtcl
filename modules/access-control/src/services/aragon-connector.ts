@@ -2,6 +2,8 @@ import { DAOConnector, DAOMember } from './dao-connector.service';
 import { connect, Organization } from '@aragon/connect';
 import { TokenManager, Token } from '@aragon/connect-thegraph-token-manager';
 
+import { EthereumConnection } from '@uprtcl/ethereum-provider';
+
 const ALL_TOKEN_MANAGER_SUBGRAPH_URL =
   'https://api.thegraph.com/subgraphs/name/aragon/aragon-tokens-rinkeby';
 
@@ -9,6 +11,8 @@ export class AragonConnector implements DAOConnector {
   org!: Organization;
   tokenManager!: TokenManager;
   token!: Token;
+
+  constructor(protected eth: EthereumConnection) {}
 
   async connect(address: string) {
     this.org = await connect(address, 'thegraph', { chainId: 4 });
@@ -34,8 +38,13 @@ export class AragonConnector implements DAOConnector {
     });
   }
 
-  addMember(member: DAOMember): Promise<void> {
-    console.log(member);
+  async addMember(member: DAOMember): Promise<void> {
+    debugger;
+    const intent = this.org.appIntent(this.tokenManager.appAddress, 'mint', [
+      member.address,
+      member.balance,
+    ]);
+    const txs = await intent.transactions(this.eth.getCurrentAccount());
     throw new Error('Method not implemented.');
   }
 }
