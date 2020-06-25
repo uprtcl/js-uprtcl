@@ -36,16 +36,16 @@ export class OrbitDBConnection extends Connection {
    */
   protected async connect(): Promise<void> {
     this.instance = await OrbitDB.createInstance(
-      this.ipfsClient,
+      this.ipfsStore.client,
       this.orbitdbOptions
     );
   }
 
   public async perspectiveAddress(
     perspective: Perspective
-  ): Promise<OrbitDBAddress> {
+  ): Promise<any> {
     return this.instance.determineAddress(
-      `perspective-store/${perspective.path}`,
+      'perspective-store',
       'log',
       {
         accessController: { type: 'ipfs', write: [perspective.creatorId] },
@@ -62,7 +62,9 @@ export class OrbitDBConnection extends Connection {
     });
   }
 
-  private openStore(address: string | OrbitDBAddress): Promise<OrbitDBStore> {
+  private openStore(
+    address: string | any
+  ): Promise<any> {
     if (this.instance.stores[address]) return this.instance.stores[address];
     if (this.storeQueue[address]) return this.storeQueue[address];
 
@@ -73,12 +75,14 @@ export class OrbitDBConnection extends Connection {
 
   public async perspectiveStore(
     perspective: Perspective
-  ): Promise<OrbitDBStore> {
+  ): Promise<any> {
     const address = await this.perspectiveAddress(perspective);
     return this.openStore(address);
   }
 
-  public async contextStore(context: string): Promise<OrbitDBStore> {
+  public async contextStore(
+    context: string
+  ): Promise<any> {
     const address = await this.contextAddress(context);
     return this.openStore(address);
   }

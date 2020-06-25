@@ -10,14 +10,14 @@ import {
   Perspective,
   PerspectiveDetails,
   NewPerspectiveData,
-} from '../../../types';
+} from 'src/types';
 import { EveesRemote } from '../../evees.remote';
 import { EveesAccessControlOrbitDB } from './evees-access-control.orbit-db';
 import { OrbitDBConnection } from './orbit-db.connection';
 import { ProposalsProvider } from '../../../services/proposals.provider';
 
 const evees_if = 'evees-v0';
-const timeout = 200;
+// const timeout = 200;
 const defaultDetails: PerspectiveDetails = {
   name: '',
   context: undefined,
@@ -71,6 +71,8 @@ export class EveesOrbitDB implements EveesRemote {
       );
     }
 
+    checkPerspectivePath(this.orbitdbConnection, secured.object.payload)
+
     return perspectiveId;
   }
 
@@ -78,6 +80,12 @@ export class EveesOrbitDB implements EveesRemote {
     const { payload: perspective } = (await this.store.get(
       perspectiveId
     )) as Signed<Perspective>;
+    const perspectiveAddress = await orbitdbConnection.perspectiveAddress(
+      perspective
+    );
+    if (perspectiveAddress.root !== perspective.path) {
+      throw new Error('perspectiveAddress mismatch')
+    }
     return this.orbitdbConnection.perspectiveStore(perspective);
   }
 
@@ -86,6 +94,8 @@ export class EveesOrbitDB implements EveesRemote {
     const details = perspectiveData.details;
     const canWrite = perspectiveData.canWrite;
 
+    checkPerspectivePath(secured.object.payload)
+
     /** validate */
     if (!secured.object.payload.remote)
       throw new Error('remote cannot be empty');
@@ -93,7 +103,7 @@ export class EveesOrbitDB implements EveesRemote {
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);
 
-    const perspectiveStore = await this.orbitdbConnection.perspectiveStore(
+    const perspectiveStore = await this.getPerspectiveStore(
       secured.object.payload
     );
 
@@ -173,12 +183,12 @@ export class EveesOrbitDB implements EveesRemote {
     const { payload: perspective } = (await this.store.get(
       perspectiveId
     )) as Signed<Perspective>;
-    const address = await this.orbitdbConnection.perspectiveAddress(
-      perspective
-    );
-
-    const open = !!this.orbitdbConnection.instance.stores[address];
-    const perspectiveStore = await this.orbitdbConnection.perspectiveStore(
+    // const address = await this.orbitdbConnection.perspectiveAddress(
+    //   perspective
+    // );
+    //
+    // const open = !!this.orbitdbConnection.instance.stores[address];
+    const perspectiveStore = await this.getPerspectiveStore(
       perspective
     );
     // if (!open) await pEvent(perspectiveStore.events, 'replicated', { timeout });
