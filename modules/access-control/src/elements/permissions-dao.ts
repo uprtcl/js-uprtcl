@@ -4,7 +4,7 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 import { PermissionsElement } from './permissions-element';
 import { DAOPermissions } from '../services/dao-access-control.service';
-import { DAOConnector } from '../services/dao-connector.service';
+import { DAOConnector, DAOMember } from '../services/dao-connector.service';
 import { AragonConnector } from '../services/aragon-connector';
 
 import '@material/mwc-button';
@@ -21,7 +21,13 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   @property({ attribute: false })
   canWrite!: boolean;
 
-  members: string[] = [];
+  @property({ attribute: false })
+  showAddMember: boolean = false;
+
+  @property({ attribute: false })
+  addingMember: boolean = false;
+
+  members: DAOMember[] = [];
 
   daoConnector: DAOConnector;
 
@@ -36,20 +42,35 @@ export class PermissionsDAO extends moduleConnect(LitElement)
     this.requestUpdate();
   }
 
+  async addMember(address: string) {
+    await this.daoConnector.addMember({ address, balance: '1' });
+  }
+
   render() {
     return html`
       <h4>Owned by an Aragon DAO ${this.permissions.owner}</h4>
-      <br>
+      <br />
       <b>Members:</b>
       <mwc-list>
-        ${this.members.map(member => html`<mwc-list-item>${member}</mwc-list-item>`)}
+        ${this.members.map(
+          (member) => html`<mwc-list-item>${member.address}</mwc-list-item>`
+        )}
       </mwc-list>
-      <mwc-button>add member</mwc-button>
+      ${this.showAddMember
+        ? html`<evees-string-form
+            value=""
+            label="address"
+            ?loading=${this.addingMember}
+            @cancel=${() => (this.showAddMember = false)}
+            @accept=${(e) => this.addMember(e.detail.value)}
+          ></evees-string-form>`
+        : html` <mwc-button @click=${() => (this.showAddMember = true)}>
+            add member
+          </mwc-button>`}
     `;
   }
 
   static get styles() {
-    return css`
-    `;
+    return css``;
   }
 }
