@@ -25,6 +25,7 @@
     "@material/mwc-tab": "^0.14.1",
     "@material/mwc-tab-bar": "^0.14.1",
     "@material/mwc-textfield": "^0.14.1",
+    "@tabcat/orbit-db-identity-provider-d": "^1.0.0",
     "@tabcat/orbit-db-set": "^1.0.0",
     "@uprtcl/access-control": "^0.0.7-alpha.39",
     "@uprtcl/cortex": "^0.0.7-alpha.39",

@@ -3,9 +3,12 @@ import { Perspective } from 'src/types';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import OrbitDB from 'orbit-db';
 import OrbitDBSet from '@tabcat/orbit-db-set';
-import attachIpfsStore from './context-access-controller'
+import attachIpfsStore from './context-access-controller';
+import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
+OrbitDB.Identities.addIdentityProvider(IdentityProvider)
 
+const keystorePath = (id) => `./orbitdb/identity/odbipd-${id}`
 
 export interface OrbitDBConnectionOptions {
   directory?: string;
@@ -17,28 +20,44 @@ export interface OrbitDBConnectionOptions {
 }
 
 export class OrbitDBConnection extends Connection {
-  public instance: any;
+  public instance: null | any;
   private storeQueue = {};
+  private identity: null | any = null;
 
   constructor(
     protected ipfsStore: IpfsStore,
-    protected orbitdbOptions?: OrbitDBConnectionOptions,
+    private signature: string,
+    orbitdbOptions?: OrbitDBConnectionOptions,
     options?: ConnectionOptions
   ) {
     super(options);
     const AccessController = attachIpfsStore(this.ipfsStore);
-    OrbitDB.AccessControllers.addAccessController({ AccessController });
-
+    if (!OrbitDB.AccessControllers.isSupported(AccessController.type)) {
+      OrbitDB.AccessControllers.addAccessController({ AccessController });
+    }
   }
 
   /**
    * @override
    */
   protected async connect(): Promise<void> {
+    const id = this.signature.slice(-8)
+    this.identity = await OrbitDB.Identities.createIdentity({
+      keystore: new Keystore(keystorePath(id)),
+      type: IdentityProvider.type,
+      id: id,
+      derive: this.signature
+    })
     this.instance = await OrbitDB.createInstance(
       this.ipfsStore.client,
-      this.orbitdbOptions
+      { ...this.orbitdbOptions, identity }
     );
+  }
+
+  protected async disconnect(): Promise<void> {
+    await this.identity.provider.keystore.close()
+    await this.instance.stop()
+    this.instance = null
   }
 
   public async perspectiveAddress(

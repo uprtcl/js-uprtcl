@@ -13,7 +13,8 @@ import {
 } from 'src/types';
 import { EveesRemote } from '../../evees.remote';
 import { EveesAccessControlOrbitDB } from './evees-access-control.orbit-db';
-import { OrbitDBConnection } from './orbit-db.connection';
+import { OrbitDBConnection, OrbitDBConnectionOptions } from './orbit-db.connection';
+import { ConnectionOptions } from '@uprtcl/multiplatform';
 import { ProposalsProvider } from '../../../services/proposals.provider';
 
 const evees_if = 'evees-v0';
@@ -24,14 +25,27 @@ const defaultDetails: PerspectiveDetails = {
   headId: undefined,
 };
 
+const msg =
+`
+--UPRTCL SITE: <website name>--
+
+PLEASE READ
+
+DO NOT SIGN THIS SAME MESSAGE ON OTHER SITES
+BECAUSE YOUR PASSWORD WILL BE STOLEN
+`
+
 export class EveesOrbitDB implements EveesRemote {
+  protected orbitdbConnection: null | OrbitDBConnection = null
   logger: Logger = new Logger('EveesOrbitDB');
   accessControl: OwnerAccessControlService;
   proposals!: ProposalsProvider;
 
   constructor(
-    protected orbitdbConnection: OrbitDBConnection,
-    public store: IpfsStore
+    protected ethConnection: EthereumConnection,
+    public store: IpfsStore,
+    orbitdbOptions?: OrbitDBConnectionOptions,
+    connectionOptions?: ConnectionOptions
   ) {
     this.accessControl = new EveesAccessControlOrbitDB(
       this.orbitdbConnection,
@@ -55,7 +69,11 @@ export class EveesOrbitDB implements EveesRemote {
    * @override
    */
   async ready(): Promise<void> {
-    await Promise.all([this.orbitdbConnection.ready()]);
+    await Promise.all([
+      this.orbitdbConnection.ready()
+      this.ethConnection.ready()
+      this.store.ready()
+    ]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
@@ -210,13 +228,23 @@ export class EveesOrbitDB implements EveesRemote {
     ]);
   }
 
-  isLogged(): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async isLogged(): Promise<boolean> {
+    return !!this.orbitdbConnection;
   }
-  login(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async login(): Promise<void> {
+    if (this.orbitdbConnection) { return };
+    const signature = await this.ethConnection.signText(msg)
+    this.orbitdbConnection = new OrbitDBConnection(
+      this.store,
+      signature,
+      this.orbitdbOptions,
+      this.connectionOptions,
+    )
+    await this.orbitdbConnection.ready()
   }
-  logout(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async logout(): Promise<void> {
+    if (!this.orbitdbConnection) { return };
+    await this.orbitdbConnection.disconnect();
+    this.orbitdbConnection = null;
   }
 }
