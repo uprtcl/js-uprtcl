@@ -1,5 +1,5 @@
 import { DAOConnector, DAOMember } from './dao-connector.service';
-import { connect, Organization } from '@aragon/connect';
+import { connect, Organization, Application } from '@aragon/connect';
 import { TokenManager, Token } from '@aragon/connect-thegraph-token-manager';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
@@ -9,6 +9,7 @@ const ALL_TOKEN_MANAGER_SUBGRAPH_URL =
 
 export class AragonConnector implements DAOConnector {
   org!: Organization;
+  tokenApp!: Application | undefined;
   tokenManager!: TokenManager;
   token!: Token;
 
@@ -17,11 +18,12 @@ export class AragonConnector implements DAOConnector {
   async connect(address: string) {
     this.org = await connect(address, 'thegraph', { chainId: 4 });
     const apps = await this.org.apps();
-    const tokenApp = apps.find((app) => app.name === 'token-manager');
-    if (!tokenApp) throw Error('token app not found');
+    this.tokenApp = apps.find((app) => app.name === 'token-manager');
+    debugger
+    if (!this.tokenApp) throw Error('token app not found');
 
     this.tokenManager = new TokenManager(
-      tokenApp.address,
+      this.tokenApp.address,
       ALL_TOKEN_MANAGER_SUBGRAPH_URL,
       true
     );
@@ -39,8 +41,8 @@ export class AragonConnector implements DAOConnector {
   }
 
   async addMember(member: DAOMember): Promise<void> {
-    debugger;
-    const intent = this.org.appIntent(this.tokenManager.appAddress, 'mint', [
+    if (!this.tokenApp) throw new Error('token app not defined');
+    const intent = this.org.appIntent(this.tokenApp.address, 'mint', [
       member.address,
       member.balance,
     ]);
