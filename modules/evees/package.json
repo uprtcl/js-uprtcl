@@ -49,6 +49,7 @@
     "lodash-es": "^4.17.15",
     "multihashing-async": "^0.8.0",
     "orbit-db": "^0.24.1",
+    "orbit-db-access-controllers": "^0.2.5",
     "randomcolor": "^0.5.4",
     "reflect-metadata": "^0.1.13"
   },

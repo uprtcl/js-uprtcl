@@ -3,7 +3,7 @@ import { Perspective } from 'src/types';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import OrbitDB from 'orbit-db';
 import OrbitDBSet from '@tabcat/orbit-db-set';
-import attachIpfsStore from './context-access-controller';
+import { attachIpfsStore } from './context-access-controller';
 import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider)
@@ -27,7 +27,7 @@ export class OrbitDBConnection extends Connection {
   constructor(
     protected ipfsStore: IpfsStore,
     private signature: string,
-    orbitdbOptions?: OrbitDBConnectionOptions,
+    protected orbitdbOptions?: OrbitDBConnectionOptions,
     options?: ConnectionOptions
   ) {
     super(options);
@@ -50,11 +50,11 @@ export class OrbitDBConnection extends Connection {
     })
     this.instance = await OrbitDB.createInstance(
       this.ipfsStore.client,
-      { ...this.orbitdbOptions, identity }
+      { ...this.orbitdbOptions, identity: this.identity }
     );
   }
 
-  protected async disconnect(): Promise<void> {
+  public async disconnect(): Promise<void> {
     await this.identity.provider.keystore.close()
     await this.instance.stop()
     this.instance = null
