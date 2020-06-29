@@ -49,9 +49,9 @@
     "lodash-es": "^4.17.15",
     "multihashing-async": "^0.8.0",
     "orbit-db": "^0.24.1",
-    "orbit-db-access-controllers": "^0.2.5",
     "randomcolor": "^0.5.4",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "rollup-plugin-commonjs": "^10.1.0"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",

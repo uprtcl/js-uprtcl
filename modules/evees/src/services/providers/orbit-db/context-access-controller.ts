@@ -1,6 +1,6 @@
 
 'use strict'
-import * as IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
+import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { Signed } from '@uprtcl/cortex';
 import { Perspective } from 'src/types';
@@ -12,7 +12,7 @@ function attachIpfsStore (ipfsStore: IpfsStore) {
     [x: string]: any;
     // Returns the type of the access controller
     static get type () { return type }
-    
+
     constructor(ipfs, options) {
       super(ipfs, options)
     }
