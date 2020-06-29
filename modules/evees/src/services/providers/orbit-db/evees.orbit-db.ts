@@ -53,7 +53,7 @@ export class EveesOrbitDB implements EveesRemote {
     //   this.store
     // );
   }
-
+  
   get id() {
     return `orbitdb:${evees_if}`;
   }
@@ -259,5 +259,15 @@ export class EveesOrbitDB implements EveesRemote {
     if (!this.orbitdbConnection) { return };
     await this.orbitdbConnection.disconnect();
     this.orbitdbConnection = undefined;
+  }
+
+  async connect(): Promise<void> {
+  }
+
+  async isConnected(): Promise<boolean> {
+    return true;
+  }
+  
+  async disconnect(): Promise<void> {
   }
 }

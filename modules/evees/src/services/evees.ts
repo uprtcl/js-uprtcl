@@ -48,8 +48,7 @@ export class Evees {
       (instance) => instance.id === remote
     );
 
-    if (!remoteInstance)
-      throw new Error(`Authority ${remote}  is not registered`);
+    if (!remoteInstance) throw new Error(`Remote ${remote}  is not registered`);
 
     return remoteInstance;
   }

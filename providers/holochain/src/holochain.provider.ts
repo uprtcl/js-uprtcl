@@ -37,6 +37,9 @@ export abstract class HolochainProvider implements Remote {
   }
   async login(): Promise<void> {}
   async logout(): Promise<void> {}
+  async connect(): Promise<void> {}
+  async isConnected(): Promise<boolean> { return true }
+  async disconnect(): Promise<void> {}
 }
 
 export function createHolochainProvider(

@@ -118,7 +118,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       this
     );
   }
-
+  
   get id() {
     return `eth-${this.ethConnection.networkId}:${evees_if}`;
   }
@@ -353,5 +353,14 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   }
   logout(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+  connect(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  isConnected(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  disconnect(): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }

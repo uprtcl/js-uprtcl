@@ -41,23 +41,26 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = state[2].split('id=')[1];
     });
 
-    const eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    await Promise.all(eveesRemotes.map((p) => p.ready()));
-
-    const defaultInstance = eveesRemotes.find((instance) =>
-      instance.id.startsWith('http')
-    );
-
+    const defaultInstance = this.request(EveesModule.bindings.DefaultRemote);
     await defaultInstance.connect();
 
     this.defaultRemote = defaultInstance.id;
 
+    // wait all remotes to be ready
+    await Promise.all(
+      this.requestAll(EveesModule.bindings.EveesRemote).map((remote) =>
+        remote.ready()
+      )
+    );
+
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const eveesEthRemote = eveesRemotes.find((instance) =>
-        instance.id.startsWith('eth')
-      );
+      const eveesEthRemote = this.requestAll(
+        EveesModule.bindings.EveesRemote
+      ).find((instance) => instance.id.startsWith('eth'));
+
+      await eveesEthRemote.ready();
 
       const client = this.request(ApolloClientModule.bindings.Client);
 

@@ -212,8 +212,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       this.ref
     );
 
-    debugger;
-
     this.remote = perspective.object.payload.remote;
     this.path = perspective.object.payload.path;
     this.author = perspective.object.payload.creatorId;
