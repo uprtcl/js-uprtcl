@@ -61,4 +61,13 @@ export class HttpProvider implements Remote {
   logout(): Promise<void> {
     throw new Error('Method not implemented.');
   }
+  connect(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  isConnected(): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
+  disconnect(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 }
