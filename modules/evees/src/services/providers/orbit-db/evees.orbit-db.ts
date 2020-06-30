@@ -27,7 +27,7 @@ const defaultDetails: PerspectiveDetails = {
 
 const checkPerspectivePath = async (orbitdbConnection, perspective) => {
   const address = await orbitdbConnection.perspectiveAddress(perspective);
-  if (address.toString() !== perspective.path) {
+  if (address.root !== perspective.path) {
     throw new Error('invalid perspective path');
   }
 };

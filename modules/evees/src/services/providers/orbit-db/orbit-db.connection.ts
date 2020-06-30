@@ -27,9 +27,9 @@ export class OrbitDBConnection extends Connection {
   private storeQueue = {};
   private identity: null | any = null;
 
-  constructor(protected ipfs: any, options?: ConnectionOptions) {
+  constructor(protected ipfsStore: any, protected ipfs, options?: ConnectionOptions) {
     super(options);
-    const AccessController = attachIpfsStore(this.ipfs);
+    const AccessController = attachIpfsStore(this.ipfsStore);
     if (!OrbitDB.AccessControllers.isSupported(AccessController.type)) {
       OrbitDB.AccessControllers.addAccessController({ AccessController });
     }
