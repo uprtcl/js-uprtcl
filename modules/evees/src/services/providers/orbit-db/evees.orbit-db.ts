@@ -26,6 +26,15 @@ const defaultDetails: PerspectiveDetails = {
   headId: undefined,
 };
 
+const checkPerspectivePath = async (orbitdbConnection, perspective) => {
+  const address = await orbitdbConnect.perspectiveAddress(perspective)
+  if (address.toString() !== perspective.path) {
+    throw new Error('invalid perspective path')
+  }
+}
+
+const notLogged = () => new Error('must be logged in to use this method')
+
 const msg =
 `
 --UPRTCL SITE: <website name>--
@@ -37,23 +46,24 @@ BECAUSE YOUR PASSWORD WILL BE STOLEN
 `
 
 export class EveesOrbitDB implements EveesRemote {
-  protected orbitdbConnection: OrbitDBConnection | undefined = undefined
   logger: Logger = new Logger('EveesOrbitDB');
   accessControl!: OwnerAccessControlService;
   proposals!: ProposalsProvider;
+  loggedIn: boolean = false;
 
   constructor(
     protected ethConnection: EthereumConnection,
+    protected orbitdbConnection: OrbitDBConnection,
     public store: IpfsStore,
     protected orbitdbOptions?: OrbitDBConnectionOptions,
     protected connectionOptions?: ConnectionOptions
   ) {
-    // this.accessControl = new EveesAccessControlOrbitDB(
-    //   this.orbitdbConnection,
-    //   this.store
-    // );
+    this.accessControl = new EveesAccessControlOrbitDB(
+      this.orbitdbConnection,
+      this.store
+    );
   }
-  
+
   get id() {
     return `orbitdb:${evees_if}`;
   }
@@ -73,6 +83,7 @@ export class EveesOrbitDB implements EveesRemote {
   async ready(): Promise<void> {
     await Promise.all([
       this.ethConnection.ready(),
+      this.orbitdbConnection.ready(),
       this.store.ready()
     ]);
   }
@@ -90,7 +101,7 @@ export class EveesOrbitDB implements EveesRemote {
       );
     }
 
-    // checkPerspectivePath(this.orbitdbConnection, secured.object.payload)
+    await checkPerspectivePath(this.orbitdbConnection, secured.object.payload)
 
     return perspectiveId;
   }
@@ -111,11 +122,12 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    if (!await this.isLogged()) throw notLogged()
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
     // const canWrite = perspectiveData.canWrite;
 
-    // checkPerspectivePath(secured.object.payload)
+    await checkPerspectivePath(secured.object.payload)
 
     /** validate */
     if (!secured.object.payload.remote)
@@ -134,6 +146,7 @@ export class EveesOrbitDB implements EveesRemote {
   async createPerspectiveBatch(
     newPerspectivesData: NewPerspectiveData[]
   ): Promise<void> {
+    if (!await this.isLogged()) throw notLogged()
     await Promise.all(
       newPerspectivesData.map(this.createPerspective.bind(this))
     );
@@ -146,6 +159,7 @@ export class EveesOrbitDB implements EveesRemote {
     perspectiveId: string,
     details: PerspectiveDetails
   ): Promise<void> {
+    if (!await this.isLogged()) throw notLogged()
     if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
 
     if (details.name) throw new Error('details.name is not supported');
@@ -185,11 +199,7 @@ export class EveesOrbitDB implements EveesRemote {
   async getContextPerspectives(context: string): Promise<string[]> {
     if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
 
-    const address = await this.orbitdbConnection.contextAddress(context);
-
-    const open = !!this.orbitdbConnection.instance.stores[address];
     const contextStore = await this.orbitdbConnection.contextStore(context);
-    // if (!open) await event(contextStore.events, 'replicated', { timeout });
 
     const perspectiveIds = [...await contextStore.values()];
 
@@ -205,18 +215,9 @@ export class EveesOrbitDB implements EveesRemote {
    * @override
    */
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    // const { payload: perspective } = (await this.store.get(
-    //   perspectiveId
-    // )) as Signed<Perspective>;
-    // const address = await this.orbitdbConnection.perspectiveAddress(
-    //   perspective
-    // );
-    //
-    // const open = !!this.orbitdbConnection.instance.stores[address];
     const perspectiveStore = await this.getPerspectiveStore(
       perspectiveId
     );
-    // if (!open) await pEvent(perspectiveStore.events, 'replicated', { timeout });
 
     const [latestEntry] = perspectiveStore.iterator({ limit: 1 }).collect();
 
@@ -224,6 +225,7 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
+    if (!await this.isLogged()) throw notLogged()
     if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
 
     const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
@@ -238,27 +240,23 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   async isLogged(): Promise<boolean> {
-    return !!this.orbitdbConnection;
+    return this.loggedIn;
   }
+
   async login(): Promise<void> {
-    if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
-
-    if (this.orbitdbConnection) { return };
+    if (this.loggedIn) { return };
     const signature = await this.ethConnection.signText(msg, this.ethConnection.getCurrentAccount());
-    this.orbitdbConnection = new OrbitDBConnection(
-      this.store,
-      signature,
-      this.orbitdbOptions,
-      this.connectionOptions,
-    )
-    await this.orbitdbConnection.ready()
+    const identity = await this.orbitdbConnection.deriveIdentity(signature);
+    this.orbitdbConnection.useIdentity(identity);
+    this.loggedIn = true;
   }
-  async logout(): Promise<void> {
-    if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
 
-    if (!this.orbitdbConnection) { return };
-    await this.orbitdbConnection.disconnect();
-    this.orbitdbConnection = undefined;
+  async logout(): Promise<void> {
+    if (!this.loggedIn) { return };
+    this.orbitdbConnection.useIdentity(
+      this.orbitdbConnection.instance.identity
+    );
+    this.loggedIn = false;
   }
 
   async connect(): Promise<void> {
@@ -267,7 +265,7 @@ export class EveesOrbitDB implements EveesRemote {
   async isConnected(): Promise<boolean> {
     return true;
   }
-  
+
   async disconnect(): Promise<void> {
   }
 }

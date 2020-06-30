@@ -20,14 +20,12 @@ export interface OrbitDBConnectionOptions {
 }
 
 export class OrbitDBConnection extends Connection {
-  public instance: null | any;
+  public instance: any;
   private storeQueue = {};
   private identity: null | any = null;
 
   constructor(
     protected ipfsStore: IpfsStore,
-    private signature: string,
-    protected orbitdbOptions?: OrbitDBConnectionOptions,
     options?: ConnectionOptions
   ) {
     super(options);
@@ -41,23 +39,31 @@ export class OrbitDBConnection extends Connection {
    * @override
    */
   protected async connect(): Promise<void> {
-    const id = this.signature.slice(-8)
-    this.identity = await OrbitDB.Identities.createIdentity({
+    this.instance = await OrbitDB.createInstance(
+      this.ipfsStore.client,
+      { ...this.orbitdbOptions }
+    );
+    this.identity = this.instance.identity
+  }
+
+  // public async disconnect(): Promise<void> {
+  //   await this.identity.provider.keystore.close()
+  //   await this.instance.stop()
+  //   this.instance = null
+  // }
+
+  public async deriveIdentity(sig: string): Promise<any> {
+    const id = this.sig.slice(-8)
+    return OrbitDB.Identities.createIdentity({
       keystore: new Keystore(keystorePath(id)),
       type: IdentityProvider.type,
       id: id,
-      derive: this.signature
+      derive: sig
     })
-    this.instance = await OrbitDB.createInstance(
-      this.ipfsStore.client,
-      { ...this.orbitdbOptions, identity: this.identity }
-    );
   }
 
-  public async disconnect(): Promise<void> {
-    await this.identity.provider.keystore.close()
-    await this.instance.stop()
-    this.instance = null
+  public useIdentity(identity: <any>): void {
+    this.identity = identity
   }
 
   public async perspectiveAddress(
@@ -84,12 +90,18 @@ export class OrbitDBConnection extends Connection {
   private openStore(
     address: string | any
   ): Promise<any> {
-    if (this.instance.stores[address]) return this.instance.stores[address];
-    if (this.storeQueue[address]) return this.storeQueue[address];
+    let db
 
-    return (this.storeQueue[address] = this.instance
-      .open(address)
-      .finally(() => delete this.storeQueue[address]));
+    if (this.instance.stores[address]) db = this.instance.stores[address];
+    else if (this.storeQueue[address]) db = this.storeQueue[address];
+    else db = this.storeQueue[address] = this.instance
+      .open(address, { identity: this.identity })
+      .finally(() => delete this.storeQueue[address]);
+
+    db = await db
+
+    if (db.identity.id !== this.identity.id) db.identity = this.identity
+    return db
   }
 
   public async perspectiveStore(
