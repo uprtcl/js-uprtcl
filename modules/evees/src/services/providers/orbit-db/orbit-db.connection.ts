@@ -72,7 +72,7 @@ export class OrbitDBConnection extends Connection {
 
   public async contextAddress(context: string): Promise<any> {
     return this.instance.determineAddress(`context-store/${context}`, 'set', {
-      accessController: { type: 'context', write: ['*'] },
+      accessController: { type: 'ipfs', write: ['*'] },
     });
   }
 
@@ -85,7 +85,6 @@ export class OrbitDBConnection extends Connection {
       db = this.storeQueue[address] = this.instance
         .open(address, { identity: this.identity })
         .finally(() => delete this.storeQueue[address]);
-
     db = await db;
 
     if (db.identity.id !== this.identity.id) db.identity = this.identity;
