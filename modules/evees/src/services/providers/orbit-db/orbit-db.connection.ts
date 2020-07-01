@@ -27,7 +27,11 @@ export class OrbitDBConnection extends Connection {
   private storeQueue = {};
   private identity: null | any = null;
 
-  constructor(protected ipfsStore: any, protected ipfs, options?: ConnectionOptions) {
+  constructor(
+    protected ipfsStore: any,
+    protected ipfs,
+    options?: ConnectionOptions
+  ) {
     super(options);
     const AccessController = attachIpfsStore(this.ipfsStore);
     if (!OrbitDB.AccessControllers.isSupported(AccessController.type)) {
@@ -64,7 +68,7 @@ export class OrbitDBConnection extends Connection {
   }
 
   public async perspectiveAddress(perspective: Perspective): Promise<any> {
-    return this.instance.determineAddress('perspective-store', 'log', {
+    return this.instance.determineAddress('perspective-store', 'eventlog', {
       accessController: { type: 'ipfs', write: [perspective.creatorId] },
       meta: { timestamp: perspective.timestamp },
     });

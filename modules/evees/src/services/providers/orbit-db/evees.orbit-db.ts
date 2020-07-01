@@ -1,10 +1,14 @@
 // import pEvent from 'p-event';
+import { Container } from 'inversify';
+import { ApolloClient } from 'apollo-boost';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { OwnerAccessControlService } from '@uprtcl/access-control';
 import { Signed } from '@uprtcl/cortex';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { ConnectionOptions, loadEntity } from '@uprtcl/multiplatform';
 
 import { Secured } from '../../../utils/cid-hash';
 import { Perspective, PerspectiveDetails, NewPerspectiveData } from 'src/types';
@@ -14,7 +18,6 @@ import {
   OrbitDBConnection,
   OrbitDBConnectionOptions,
 } from './orbit-db.connection';
-import { ConnectionOptions } from '@uprtcl/multiplatform';
 import { ProposalsProvider } from '../../../services/proposals.provider';
 
 const evees_if = 'evees-v0';
@@ -23,13 +26,6 @@ const defaultDetails: PerspectiveDetails = {
   name: '',
   context: undefined,
   headId: undefined,
-};
-
-const checkPerspectivePath = async (orbitdbConnection, perspective) => {
-  const address = await orbitdbConnection.perspectiveAddress(perspective);
-  if (address.root !== perspective.path) {
-    throw new Error('invalid perspective path');
-  }
 };
 
 const notLogged = () => new Error('must be logged in to use this method');
@@ -53,6 +49,7 @@ export class EveesOrbitDB implements EveesRemote {
     protected ethConnection: EthereumConnection,
     protected orbitdbConnection: OrbitDBConnection,
     public store: IpfsStore,
+    protected container: Container,
     protected orbitdbOptions?: OrbitDBConnectionOptions,
     protected connectionOptions?: ConnectionOptions
   ) {
@@ -99,8 +96,6 @@ export class EveesOrbitDB implements EveesRemote {
       );
     }
 
-    await checkPerspectivePath(this.orbitdbConnection, secured.object.payload);
-
     return perspectiveId;
   }
 
@@ -108,25 +103,25 @@ export class EveesOrbitDB implements EveesRemote {
     if (!this.orbitdbConnection)
       throw new Error('orbit db connection undefined');
 
-    const { payload: perspective } = (await this.store.get(
-      perspectiveId
-    )) as Signed<Perspective>;
+    const client: ApolloClient<any> = this.container.get(
+      ApolloClientModule.bindings.Client
+    );
+
+    const perspective = (await loadEntity(client, perspectiveId)) as Entity<
+      Signed<Perspective>
+    >;
     const perspectiveAddress = await this.orbitdbConnection.perspectiveAddress(
       perspective
     );
-    if (perspectiveAddress.root !== perspective.path) {
-      throw new Error('perspectiveAddress mismatch');
-    }
     return this.orbitdbConnection.perspectiveStore(perspective);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    debugger;
     if (!(await this.isLogged())) throw notLogged();
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
     // const canWrite = perspectiveData.canWrite;
-
-    await checkPerspectivePath(this.orbitdbConnection, secured.object.payload);
 
     /** validate */
     if (!secured.object.payload.remote)
