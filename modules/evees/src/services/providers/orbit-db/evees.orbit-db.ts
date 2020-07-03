@@ -69,7 +69,7 @@ export class EveesOrbitDB implements EveesRemote {
 
   get userId() {
     if (!this.orbitdbConnection) return undefined;
-    return this.orbitdbConnection.instance.identity.id;
+    return this.orbitdbConnection.identity.id;
   }
 
   /**
