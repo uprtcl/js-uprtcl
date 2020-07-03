@@ -1,6 +1,4 @@
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { Perspective } from 'src/types';
-import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { Signed } from '@uprtcl/cortex';
 import { Perspective } from 'src/types';
 import OrbitDB from 'orbit-db';
@@ -67,13 +65,6 @@ export class OrbitDBConnection extends Connection {
 
   public useIdentity(identity: any): void {
     this.identity = identity;
-  }
-
-  public async perspective(perspectiveId: string): Promise<any> {
-    const { payload: perspective } = (await this.store.get(
-      perspectiveId
-    )) as Signed<Perspective>;
-    return perspective
   }
 
   public async perspectiveAddress(perspective: Perspective): Promise<any> {

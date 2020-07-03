@@ -53,10 +53,7 @@ export class EveesOrbitDB implements EveesRemote {
     protected orbitdbOptions?: OrbitDBConnectionOptions,
     protected connectionOptions?: ConnectionOptions
   ) {
-    this.accessControl = new EveesAccessControlOrbitDB(
-      this.orbitdbConnection,
-      this.store
-    );
+    this.accessControl = new EveesAccessControlOrbitDB(container, this.store);
   }
 
   get id() {

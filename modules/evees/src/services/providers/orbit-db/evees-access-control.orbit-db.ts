@@ -1,22 +1,18 @@
+import { Container } from 'inversify';
+import { ApolloClient } from 'apollo-boost';
+
 import {
   OwnerAccessControlService,
   OwnerPermissions,
 } from '@uprtcl/access-control';
-import { OrbitDBConnection } from './orbit-db.connection';
-import { CASStore } from '@uprtcl/multiplatform';
-import { Signed } from '@uprtcl/cortex';
-import { Perspective } from 'src/types';
+import { CASStore, loadEntity } from '@uprtcl/multiplatform';
+import { Signed, Entity } from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
-interface OrbitDBPermissions {
-  canAppend: Boolean;
-  write: string[] | undefined;
-}
+import { Perspective } from '../../../types';
 
 export class EveesAccessControlOrbitDB implements OwnerAccessControlService {
-  constructor(
-    protected orbitdbConnection: OrbitDBConnection,
-    protected store: CASStore
-  ) {}
+  constructor(protected container: Container, protected store: CASStore) {}
 
   changeOwner(ref: string, newOwnerId: string): Promise<void> {
     throw new Error('Method not implemented.');
@@ -29,8 +25,15 @@ export class EveesAccessControlOrbitDB implements OwnerAccessControlService {
   async getPermissions(
     perspectiveId: string
   ): Promise<OwnerPermissions | undefined> {
-    const perspective = await this.orbitdbConnection.perspective(perspectiveId)
-    return { owner: perspective.creatorId };
+    const client: ApolloClient<any> = this.container.get(
+      ApolloClientModule.bindings.Client
+    );
+
+    const singedPerspective = (await loadEntity(
+      client,
+      perspectiveId
+    )) as Entity<Signed<Perspective>>;
+    return { owner: singedPerspective.object.payload.creatorId };
   }
 
   setPermissions(
