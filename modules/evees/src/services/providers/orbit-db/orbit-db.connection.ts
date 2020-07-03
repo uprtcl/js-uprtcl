@@ -88,6 +88,7 @@ export class OrbitDBConnection extends Connection {
     else
       db = this.storeQueue[address] = this.instance
         .open(address, { identity: this.identity })
+        .then(async (store) => { await store.load(); return store })
         .finally(() => delete this.storeQueue[address]);
     db = await db;
 
