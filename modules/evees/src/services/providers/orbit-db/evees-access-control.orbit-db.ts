@@ -29,7 +29,8 @@ export class EveesAccessControlOrbitDB implements OwnerAccessControlService {
   async getPermissions(
     perspectiveId: string
   ): Promise<OwnerPermissions | undefined> {
-    return { owner: '' };
+    const perspective = await this.orbitdbConnection.perspective(perspectiveId)
+    return { owner: perspective.creatorId };
   }
 
   setPermissions(
