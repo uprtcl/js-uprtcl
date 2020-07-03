@@ -5,7 +5,7 @@ import { ApolloClient } from 'apollo-boost';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { OwnerAccessControlService } from '@uprtcl/access-control';
-import { Signed } from '@uprtcl/cortex';
+import { Signed, Entity } from '@uprtcl/cortex';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { ConnectionOptions, loadEntity } from '@uprtcl/multiplatform';
@@ -107,13 +107,14 @@ export class EveesOrbitDB implements EveesRemote {
       ApolloClientModule.bindings.Client
     );
 
-    const perspective = (await loadEntity(client, perspectiveId)) as Entity<
-      Signed<Perspective>
-    >;
-    const perspectiveAddress = await this.orbitdbConnection.perspectiveAddress(
-      perspective
+    const singedPerspective = (await loadEntity(
+      client,
+      perspectiveId
+    )) as Entity<Signed<Perspective>>;
+
+    return this.orbitdbConnection.perspectiveStore(
+      singedPerspective.object.payload
     );
-    return this.orbitdbConnection.perspectiveStore(perspective);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
