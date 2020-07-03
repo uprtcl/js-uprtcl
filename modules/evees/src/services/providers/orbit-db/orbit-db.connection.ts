@@ -25,7 +25,7 @@ export interface OrbitDBConnectionOptions {
 export class OrbitDBConnection extends Connection {
   public instance: any;
   private storeQueue = {};
-  private identity: null | any = null;
+  public identity: null | any = null;
 
   constructor(
     protected ipfsStore: any,
