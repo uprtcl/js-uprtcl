@@ -3,7 +3,6 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { OwnerAccessControlService } from '@uprtcl/access-control';
-import { Signed } from '@uprtcl/cortex';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import { Secured } from '../../../utils/cid-hash';
@@ -108,9 +107,7 @@ export class EveesOrbitDB implements EveesRemote {
     if (!this.orbitdbConnection)
       throw new Error('orbit db connection undefined');
 
-    const { payload: perspective } = (await this.store.get(
-      perspectiveId
-    )) as Signed<Perspective>;
+    const perspective = await this.orbitdbConnection.perspective(perspectiveId)
     const perspectiveAddress = await this.orbitdbConnection.perspectiveAddress(
       perspective
     );
