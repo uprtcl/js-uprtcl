@@ -115,7 +115,6 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    debugger;
     if (!(await this.isLogged())) throw notLogged();
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
