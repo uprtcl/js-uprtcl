@@ -59,7 +59,7 @@ export class FindMostRecentCommonAncestor {
   public async getCommit(commitId: string): Promise<Secured<Commit>> {
     const result = await this.client.query({
       query: gql`{
-        entity(ref: "${commitId}") {
+        entity(uref: "${commitId}") {
           id
           _context {
             object

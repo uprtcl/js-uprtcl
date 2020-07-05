@@ -49,7 +49,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
 
   @property({ type: String })
-  ref!: string;
+  uref!: string;
 
   @property({ type: String })
   editable: string = 'true';
@@ -87,16 +87,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       this.client = this.request(ApolloClientModule.bindings.Client);
     }
 
-    if (LOGINFO) this.logger.log('firstUpdated()', this.ref);
+    if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
     this.loadDoc();
   }
 
   updated(changedProperties) {
     if (LOGINFO)
-      this.logger.log('updated()', { ref: this.ref, changedProperties });
+      this.logger.log('updated()', { uref: this.uref, changedProperties });
 
-    if (changedProperties.has('ref')) {
+    if (changedProperties.has('uref')) {
       this.loadDoc();
     }
     if (changedProperties.has('client')) {
@@ -110,20 +110,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async loadDoc() {
     if (!this.client) return;
 
-    if (LOGINFO) this.logger.log('loadDoc()', this.ref);
+    if (LOGINFO) this.logger.log('loadDoc()', this.uref);
 
-    if (!this.ref) return;
-    this.doc = await this.loadNodeRec(this.ref);
+    if (!this.uref) return;
+    this.doc = await this.loadNodeRec(this.uref);
   }
 
   async loadNodeRec(
-    ref: string,
+    uref: string,
     ix?: number,
     parent?: DocNode
   ): Promise<DocNode> {
-    if (LOGINFO) this.logger.log('loadNodeRec()', { ref, ix, parent });
+    if (LOGINFO) this.logger.log('loadNodeRec()', { uref, ix, parent });
 
-    const node = await this.loadNode(ref, parent, ix);
+    const node = await this.loadNode(uref, parent, ix);
 
     const loadChildren = node.hasChildren
       .getChildrenLinks({ id: '', object: node.draft })
@@ -139,16 +139,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     node.childrenNodes = await Promise.all(loadChildren);
 
     /** focus if top element */
-    if (node.ref === this.ref && node.editable) {
+    if (node.uref === this.uref && node.editable) {
       node.focused = true;
     }
 
     return node;
   }
 
-  async refToNode(ref: string, parent?: DocNode, ix?: number) {
-    const entity = await loadEntity(this.client, ref);
-    if (!entity) throw Error(`Entity not found ${ref}`);
+  async refToNode(uref: string, parent?: DocNode, ix?: number) {
+    const entity = await loadEntity(this.client, uref);
+    if (!entity) throw Error(`Entity not found ${uref}`);
 
     let entityType: string = this.recognizer.recognizeType(entity);
 
@@ -195,18 +195,18 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         editable = parent.editable;
         authority = parent.authority;
         dataId = await EveesHelpers.getCommitDataId(this.client, entity.id);
-        headId = ref;
+        headId = uref;
       } else {
         entityType = 'Data';
         editable = false;
         authority = '';
-        dataId = ref;
+        dataId = uref;
         headId = '';
       }
     }
 
     if (!dataId || !entityType)
-      throw Error(`data not loaded for ref ${this.ref}`);
+      throw Error(`data not loaded for uref ${this.uref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
     const data: Entity<any> | undefined = await loadEntity(this.client, dataId);
@@ -228,7 +228,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
 
     const node: DocNode = {
-      ref: entity.id,
+      uref: entity.id,
       ix,
       hasChildren,
       childrenNodes: [],
@@ -245,28 +245,32 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return node;
   }
 
-  isPlaceholder(ref: string): boolean {
-    return ref.startsWith(PLACEHOLDER_TOKEN);
+  isPlaceholder(uref: string): boolean {
+    return uref.startsWith(PLACEHOLDER_TOKEN);
   }
 
-  async loadNode(ref: string, parent?: DocNode, ix?: number): Promise<DocNode> {
-    if (LOGINFO) this.logger.log('loadNode()', { ref, ix });
+  async loadNode(
+    uref: string,
+    parent?: DocNode,
+    ix?: number
+  ): Promise<DocNode> {
+    if (LOGINFO) this.logger.log('loadNode()', { uref, ix });
 
     let node;
-    if (this.isPlaceholder(ref)) {
-      const draft = await this.draftService.getDraft(ref);
+    if (this.isPlaceholder(uref)) {
+      const draft = await this.draftService.getDraft(uref);
       node = this.draftToPlaceholder(draft, parent, ix);
     } else {
-      node = await this.refToNode(ref, parent, ix);
+      node = await this.refToNode(uref, parent, ix);
 
       /** initialize draft */
-      const draft = await this.draftService.getDraft(ref);
+      const draft = await this.draftService.getDraft(uref);
       if (draft !== undefined) {
         node.draft = draft;
       }
     }
 
-    if (LOGINFO) this.logger.log('loadNode() post', { ref, ix, node });
+    if (LOGINFO) this.logger.log('loadNode() post', { uref, ix, node });
 
     return node;
   }
@@ -298,7 +302,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   hasChanges(node: DocNode) {
-    if (node.ref === '') return true; // is placeholder
+    if (node.uref === '') return true; // is placeholder
     if (!node.data) return true;
     if (!isEqual(node.data.object, node.draft)) return true;
     return false;
@@ -349,7 +353,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const { object } = node.hasChildren.replaceChildrenLinks({
       id: '',
       object: node.draft,
-    })(node.childrenNodes.map((node) => node.ref));
+    })(node.childrenNodes.map((node) => node.uref));
     this.setNodeDraft(node, object);
 
     await this.persistNode(node, defaultAuthority, message);
@@ -357,7 +361,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async persistNode(node: DocNode, defaultAuthority: string, message?: string) {
     if (
-      !this.isPlaceholder(node.ref) &&
+      !this.isPlaceholder(node.uref) &&
       node.data !== undefined &&
       isEqual(node.data.object, node.draft)
     ) {
@@ -368,8 +372,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     let refType;
 
     /** keep entity type or create commit by default */
-    if (!this.isPlaceholder(node.ref)) {
-      const entity = await loadEntity(this.client, node.ref);
+    if (!this.isPlaceholder(node.uref)) {
+      const entity = await loadEntity(this.client, node.uref);
       if (!entity) throw new Error('entity not found');
       refType = this.recognizer.recognizeType(entity);
     } else {
@@ -383,7 +387,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         break;
 
       case EveesModule.bindings.CommitType:
-        const commitParents = this.isPlaceholder(node.ref)
+        const commitParents = this.isPlaceholder(node.uref)
           ? []
           : node.headId
           ? [node.headId]
@@ -394,19 +398,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           commitParents,
           message
         );
-        node.ref = commitId;
+        node.uref = commitId;
         break;
 
       default:
         if (node.authority === undefined)
-          throw Error(`authority not defined for node ${node.ref}`);
+          throw Error(`authority not defined for node ${node.uref}`);
         const dataId = await this.createEntity(node.draft, node.authority);
-        node.ref = dataId;
+        node.uref = dataId;
         break;
     }
 
     /** clean draft memory */
-    await this.draftService.removeDraft(node.ref);
+    await this.draftService.removeDraft(node.uref);
   }
 
   async createEntity(content: any, authority: string): Promise<string> {
@@ -446,7 +450,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async updateEvee(node: DocNode, message?: string): Promise<void> {
     if (node.authority === undefined)
-      throw Error(`authority not defined for node ${node.ref}`);
+      throw Error(`authority not defined for node ${node.uref}`);
 
     const commitId = await this.createCommit(
       node.draft,
@@ -457,7 +461,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     await this.client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
-        perspectiveId: node.ref,
+        perspectiveId: node.uref,
         context: node.context,
         headId: commitId,
         message,
@@ -465,12 +469,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     });
 
     /** inform the external world if top element */
-    if (this.doc && node.ref === this.doc.ref) {
+    if (this.doc && node.uref === this.doc.uref) {
       this.dispatchEvent(
         new ContentUpdatedEvent({
           bubbles: true,
           composed: true,
-          detail: { ref: this.ref as string },
+          detail: { uref: this.uref as string },
         })
       );
     }
@@ -495,7 +499,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       variables: {
         headId: commitId,
         context,
-        parentId: this.ref,
+        parentId: this.uref,
         casID: remote.casID,
       },
     });
@@ -525,10 +529,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       );
 
     const randint = 0 + Math.floor((10000 - 0) * Math.random());
-    const ref = PLACEHOLDER_TOKEN + `-${ix !== undefined ? ix : 0}-${randint}`;
+    const uref = PLACEHOLDER_TOKEN + `-${ix !== undefined ? ix : 0}-${randint}`;
 
     return {
-      ref,
+      uref,
       ix,
       parent,
       draft,
@@ -544,14 +548,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   createPlaceholder(draft: any, parent?: DocNode, ix?: number): DocNode {
     const node = this.draftToPlaceholder(draft, parent, ix);
     /** async store */
-    this.draftService.setDraft(node.ref, node.draft);
+    this.draftService.setDraft(node.uref, node.draft);
     return node;
   }
 
   setNodeDraft(node, draft) {
     node.draft = draft;
     /** async store */
-    this.draftService.setDraft(node.ref, draft);
+    this.draftService.setDraft(node.uref, draft);
   }
 
   /** node updated as reference */
@@ -583,7 +587,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           return Promise.resolve(el);
         }
       } else {
-        /** element is a string (a ref) */
+        /** element is a string (a uref) */
         return this.loadNodeRec(el, elIndex, node);
       }
     });
@@ -591,7 +595,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const newNodes = await Promise.all(getNewNodes);
 
     let newChildren = [...currentChildren];
-    newChildren.splice(index, count, ...newNodes.map((node) => node.ref));
+    newChildren.splice(index, count, ...newNodes.map((node) => node.uref));
     const removed = node.childrenNodes.splice(index, count, ...newNodes);
 
     /** update ix and parent of child nodes */
@@ -983,16 +987,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderWithCortex(node: DocNode) {
-    return html` <cortex-entity hash=${node.ref}></cortex-entity> `;
+    return html` <cortex-entity hash=${node.uref}></cortex-entity> `;
   }
 
   renderTopRow(node: DocNode) {
     if (LOGINFO) this.logger.log('renderTopRow()', { node });
-    /** the ref to which the parent is pointing at */
+    /** the uref to which the parent is pointing at */
     const color = this.color;
     const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
     const hasIcon = this.hasChanges(node);
-    const icon = node.ref === '' ? icons.add_box : icons.edit;
+    const icon = node.uref === '' ? icons.add_box : icons.edit;
 
     return html`
       <div class="row">
@@ -1000,8 +1004,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           ${false
             ? html`
                 <evees-info-popper
-                  ref=${node.ref}
-                  first-ref=${node.ref}
+                  uref=${node.uref}
+                  first-uref=${node.uref}
                   evee-color=${color}
                 ></evees-info-popper>
               `

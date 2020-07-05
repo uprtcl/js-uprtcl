@@ -31,7 +31,7 @@ export class EveesInfoPopper extends EveesInfoBase {
   }
 
   perspectiveTitle() {
-    if (this.ref === this.firstRef) {
+    if (this.uref === this.firstRef) {
       return 'Accepted Perspective (on the parent)';
     } else {
       return `Another Perspective`;
@@ -42,13 +42,17 @@ export class EveesInfoPopper extends EveesInfoBase {
     return html`
       <div class="perspectives-list">
         <evees-perspectives-list
-          perspective-id=${this.ref}
+          perspective-id=${this.uref}
           first-perspective-id=${this.firstRef}
           @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}
           @merge-perspective=${(e) =>
-            this.otherPerspectiveMerge(e.detail.perspectiveId, this.ref, false)}
+            this.otherPerspectiveMerge(
+              e.detail.perspectiveId,
+              this.uref,
+              false
+            )}
           @create-proposal=${(e) =>
-            this.otherPerspectiveMerge(e.detail.perspectiveId, this.ref, true)}
+            this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref, true)}
           @authorize-proposal=${this.authorizeProposal}
           @execute-proposal=${this.executeProposal}
         ></evees-perspectives-list>
@@ -70,7 +74,7 @@ export class EveesInfoPopper extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        <permissions-for-entity ref=${this.ref}></permissions-for-entity>
+        <permissions-for-entity uref=${this.uref}></permissions-for-entity>
       </div>
     `;
   }

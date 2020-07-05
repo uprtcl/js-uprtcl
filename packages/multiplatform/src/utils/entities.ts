@@ -9,7 +9,9 @@ export const redirectEntity = (
   const entity = await loadEntity(entityRef);
 
   if (!entity)
-    throw new Error(`Could not find entity with reference: ${entityRef} when redirecting`);
+    throw new Error(
+      `Could not find entity with reference: ${entityRef} when redirecting`
+    );
 
   const redirect: HasRedirect = recognizer
     .recognizeBehaviours(entity)
@@ -30,7 +32,7 @@ export async function loadEntity<T>(
   const result = await apolloClient.query({
     query: gql`
     {
-      entity(ref: "${entityRef}") {
+      entity(uref: "${entityRef}") {
         id
         _context {
           object

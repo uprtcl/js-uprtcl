@@ -7,7 +7,10 @@ import { KnownSourcesService } from '../references/known-sources/known-sources.s
 
 @injectable()
 export class KnownSourcesApollo implements KnownSourcesService {
-  constructor(@inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>) {}
+  constructor(
+    @inject(ApolloClientModule.bindings.Client)
+    protected client: ApolloClient<any>
+  ) {}
 
   async ready(): Promise<void> {}
 
@@ -24,7 +27,11 @@ export class KnownSourcesApollo implements KnownSourcesService {
     }
   }
 
-  async addKnownSources(hash: string, sources: string[], typename?: string): Promise<void> {
+  async addKnownSources(
+    hash: string,
+    sources: string[],
+    typename?: string
+  ): Promise<void> {
     const entity = {
       entity: {
         id: hash,
@@ -38,7 +45,7 @@ export class KnownSourcesApollo implements KnownSourcesService {
 
     this.client.writeQuery({
       query: gql`{
-        entity(ref: "${hash}") {
+        entity(uref: "${hash}") {
           id
           __typename
           _context {

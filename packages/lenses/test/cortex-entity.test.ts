@@ -24,7 +24,9 @@ describe('<cortex-entity>', () => {
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
-      new MockModule({ QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo: object1 }),
+      new MockModule({
+        QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo: object1,
+      }),
     ]);
   });
 
@@ -34,7 +36,7 @@ describe('<cortex-entity>', () => {
         <module-container
           ><cortex-entity
             id="test"
-            ref="QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo"
+            uref="QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo"
           ></cortex-entity
         ></module-container>
       `
@@ -43,7 +45,7 @@ describe('<cortex-entity>', () => {
     const cortexEntity = el.firstElementChild;
 
     expect(el).lightDom.to.equal(
-      '<cortex-entity id="test" ref="QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo"></cortex-entity>'
+      '<cortex-entity id="test" uref="QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo"></cortex-entity>'
     );
     expect(cortexEntity).shadowDom.to.equal(
       '<cortex-loading-placeholder></cortex-loading-placeholder>'

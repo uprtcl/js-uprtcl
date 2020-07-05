@@ -10,7 +10,7 @@ import { EveesWorkspace } from '@uprtcl/evees';
 const LOGINFO = true;
 
 interface PageDetails {
-  ref: string;
+  uref: string;
   title: string;
 }
 
@@ -59,7 +59,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
       <div class=${['page-row'].concat(classes).join(' ')}>
         <documents-editor
           .client=${this.workspace.workspace}
-          ref=${page}
+          uref=${page}
           editable="false"
         ></documents-editor>
       </div>

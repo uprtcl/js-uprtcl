@@ -60,7 +60,7 @@ export class WikiPage extends moduleConnect(LitElement) {
       e.stopPropagation();
       this.dispatchEvent(
         new CustomEvent('page-title-changed', {
-          detail: { pageId: e.detail.ref },
+          detail: { pageId: e.detail.uref },
         })
       );
     }) as EventListener);
@@ -74,7 +74,7 @@ export class WikiPage extends moduleConnect(LitElement) {
   async load() {
     const result = await this.client.query({
       query: gql`{
-        entity(ref: "${this.pageHash}") {
+        entity(uref: "${this.pageHash}") {
           id
           ... on Perspective {
             head {
@@ -135,7 +135,7 @@ export class WikiPage extends moduleConnect(LitElement) {
           id="doc-editor"
           @doc-changed=${(e) => this.onDocChanged(e)}
           .client=${this.client}
-          ref=${this.pageHash}
+          uref=${this.pageHash}
           color=${this.color}
           editable=${this.editable}
         >

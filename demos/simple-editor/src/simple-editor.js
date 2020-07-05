@@ -6,21 +6,23 @@ import { EveesModule } from '@uprtcl/evees';
 export class SimpleEditor extends moduleConnect(LitElement) {
   static get properties() {
     return {
-      rootHash: { type: String }
+      rootHash: { type: String },
     };
   }
 
   constructor() {
     super();
-    this.perspectivePattern = this.requestAll(EveesModule.bindings.PerspectivePattern).find(
-      p => p.create
-    );
-    this.textNodePattern = this.requestAll(DocumentsModule.bindings.TextNodeEntity).find(p => p.create);
+    this.perspectivePattern = this.requestAll(
+      EveesModule.bindings.PerspectivePattern
+    ).find((p) => p.create);
+    this.textNodePattern = this.requestAll(
+      DocumentsModule.bindings.TextNodeEntity
+    ).find((p) => p.create);
   }
 
   subscribeToHistory(history, callback) {
     const pushState = history.pushState;
-    history.pushState = function(state) {
+    history.pushState = function (state) {
       if (typeof history.onpushstate == 'function') {
         history.onpushstate({ state: state });
       }
@@ -31,12 +33,16 @@ export class SimpleEditor extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    const docProvider = this.requestAll(DocumentsModule.bindings.DocumentsRemote).find(provider => {
+    const docProvider = this.requestAll(
+      DocumentsModule.bindings.DocumentsRemote
+    ).find((provider) => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.authority);
     });
 
-    const eveesProvider = this.requestAll(EveesModule.bindings.EveesRemote).find(provider => {
+    const eveesProvider = this.requestAll(
+      EveesModule.bindings.EveesRemote
+    ).find((provider) => {
       const regexp = new RegExp('^http');
       return !regexp.test(provider.authority);
     });
@@ -44,14 +50,17 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     window.addEventListener('popstate', () => {
       this.rootHash = window.location.href.split('id=')[1];
     });
-    this.subscribeToHistory(window.history, state => {
+    this.subscribeToHistory(window.history, (state) => {
       this.rootHash = state[2].split('id=')[1];
     });
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const hashed = await this.textNodePattern.create()({}, docProvider.authority);
+      const hashed = await this.textNodePattern.create()(
+        {},
+        docProvider.authority
+      );
 
       const perspective = await this.perspectivePattern.create()(
         { dataId: hashed.id },
@@ -65,11 +74,12 @@ export class SimpleEditor extends moduleConnect(LitElement) {
     return html`
       ${this.rootHash
         ? html`
-            <cortex-entity .ref=${this.rootHash} lens-type="content"></cortex-entity>
+            <cortex-entity
+              .uref=${this.rootHash}
+              lens-type="content"
+            ></cortex-entity>
           `
-        : html`
-            Loading...
-          `}
+        : html` Loading... `}
     `;
   }
 }

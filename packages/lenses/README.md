@@ -36,7 +36,10 @@ await orchestrator.loadModule(lenses);
 In your `html`, now you can use `<cortex-entity>`:
 
 ```html
-<cortex-entity id="cortex-entity-rendering" ref="<REFERENCE-TO-THE-ENTITY-WE-WANT-TO-LOAD>" />
+<cortex-entity
+  id="cortex-entity-rendering"
+  uref="<REFERENCE-TO-THE-ENTITY-WE-WANT-TO-LOAD>"
+/>
 ```
 
 For now, the only type of supported reference is a the hash of the entity to load. Support for new types of reference will be added soon.

@@ -1,5 +1,5 @@
 export interface AccessControlService<T> {
-  getPermissions(ref: string): Promise<T | undefined>;
-  setPermissions(ref: string, newPersmissions: T): Promise<void>;
-  setCanWrite(refs: string, userId: string): Promise<void>;
+  getPermissions(uref: string): Promise<T | undefined>;
+  setPermissions(uref: string, newPersmissions: T): Promise<void>;
+  setCanWrite(urefs: string, userId: string): Promise<void>;
 }

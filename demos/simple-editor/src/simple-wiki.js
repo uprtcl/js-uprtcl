@@ -98,7 +98,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
               <div class="app-bar">BAR</div>
               <div class="wiki-container">
                 <wiki-drawer
-                  ref=${this.rootHash}
+                  uref=${this.rootHash}
                   default-authority=${this.defaultAuthority}
                   .editableAuthorities=${[this.defaultAuthority]}
                 ></wiki-drawer>

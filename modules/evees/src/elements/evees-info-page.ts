@@ -62,7 +62,7 @@ export class EveesInfoPage extends EveesInfoBase {
     await client.mutate({
       mutation: UPDATE_HEAD,
       variables: {
-        perspectiveId: this.ref,
+        perspectiveId: this.uref,
         name: newName,
       },
     });
@@ -105,13 +105,13 @@ export class EveesInfoPage extends EveesInfoBase {
 
     await this.applyWorkspace(this.pullWorkspace);
 
-    this.checkoutPerspective(this.ref);
+    this.checkoutPerspective(this.uref);
   }
 
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        <permissions-for-entity ref=${this.ref}> </permissions-for-entity>
+        <permissions-for-entity uref=${this.uref}> </permissions-for-entity>
       </div>
     `;
   }
@@ -172,7 +172,7 @@ export class EveesInfoPage extends EveesInfoBase {
     /** most likely action button */
     const actionButton = html`
       <div class="action-button">
-        ${this.firstRef !== this.ref
+        ${this.firstRef !== this.uref
           ? this.publicRead
             ? this.renderMakeProposalButton()
             : this.renderMakePublicButton()
@@ -257,20 +257,20 @@ export class EveesInfoPage extends EveesInfoBase {
               <div class="list-container">
                 <evees-perspectives-list
                   force-update=${this.forceUpdate}
-                  perspective-id=${this.ref}
+                  perspective-id=${this.uref}
                   first-perspective-id=${this.firstRef}
                   @perspective-selected=${(e) =>
                     this.checkoutPerspective(e.detail.id)}
                   @merge-perspective=${(e) =>
                     this.otherPerspectiveMerge(
                       e.detail.perspectiveId,
-                      this.ref,
+                      this.uref,
                       false
                     )}
                   @create-proposal=${(e) =>
                     this.otherPerspectiveMerge(
                       e.detail.perspectiveId,
-                      this.ref,
+                      this.uref,
                       true
                     )}
                 ></evees-perspectives-list>
@@ -278,7 +278,7 @@ export class EveesInfoPage extends EveesInfoBase {
             </div>
           </div>
 
-          ${this.ref === this.firstRef
+          ${this.uref === this.firstRef
             ? html`<div class="section">
                 <div class="section-header">
                   Proposals
@@ -287,7 +287,7 @@ export class EveesInfoPage extends EveesInfoBase {
                 <div class="section-content list-container">
                   <evees-proposals-list
                     force-update=${this.forceUpdate}
-                    perspective-id=${this.ref}
+                    perspective-id=${this.uref}
                     @authorize-proposal=${this.authorizeProposal}
                     @execute-proposal=${this.executeProposal}
                   ></evees-proposals-list>

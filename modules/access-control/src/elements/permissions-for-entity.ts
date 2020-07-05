@@ -6,7 +6,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class PermissionsForEntity extends moduleConnect(LitElement) {
   @property({ type: String })
-  public ref!: string;
+  public uref!: string;
 
   @property({ type: Object, attribute: false })
   private permissions: string | undefined;
@@ -19,8 +19,8 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if (changedProperties.has('ref')) {
-      if (changedProperties.get('ref') !== undefined) {
+    if (changedProperties.has('uref')) {
+      if (changedProperties.get('uref') !== undefined) {
         this.loadPermissions();
       }
     }
@@ -29,12 +29,14 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
   async loadPermissions() {
     this.permissions = undefined;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const client: ApolloClient<any> = this.request(
+      ApolloClientModule.bindings.Client
+    );
 
     const result = await client.query({
       query: gql`
       {
-        entity(ref: "${this.ref}") {
+        entity(uref: "${this.uref}") {
           id
             _context {
               patterns {
@@ -49,17 +51,19 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
       `,
     });
 
-    this.permissions = result.data.entity._context.patterns.accessControl.permissions;
+    this.permissions =
+      result.data.entity._context.patterns.accessControl.permissions;
     this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
   }
 
   render() {
-    if (!this.permissions) return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+    if (!this.permissions)
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`
       <cortex-pattern
         .pattern=${this.permissions}
-        .context=${{ canWrite: this.canWrite, entityId: this.ref }}
+        .context=${{ canWrite: this.canWrite, entityId: this.uref }}
       ></cortex-pattern>
     `;
   }

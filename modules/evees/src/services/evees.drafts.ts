@@ -1,7 +1,7 @@
 export interface EveesDrafts {
-  setDraft(ref: string, object: any): Promise<void>;
+  setDraft(uref: string, object: any): Promise<void>;
 
-  getDraft(ref: string): Promise<any>;
+  getDraft(uref: string): Promise<any>;
 
-  removeDraft(ref: string): Promise<void>;
+  removeDraft(uref: string): Promise<void>;
 }
