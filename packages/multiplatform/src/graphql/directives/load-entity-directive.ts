@@ -17,7 +17,8 @@ export abstract class LoadEntityDirective extends NamedDirective {
     let defaultResolver = field.resolve;
 
     field.resolve = async (parent, args, context, info) => {
-      let entityId: string | string[] | undefined = field.name === 'entity' && args.ref;
+      let entityId: string | string[] | undefined =
+        field.name === 'entity' && args.uref;
 
       if (!entityId) {
         if (!defaultResolver) {
@@ -29,24 +30,34 @@ export abstract class LoadEntityDirective extends NamedDirective {
 
       if (!entityId) return null;
 
-      if (typeof entityId === 'string') return this.loadEntity(entityId, context.container);
+      if (typeof entityId === 'string')
+        return this.loadEntity(entityId, context.container);
       else if (Array.isArray(entityId)) {
         return entityId.map((id) => this.loadEntity(id, context.container));
       }
     };
   }
 
-  protected async loadEntity(entityId: string, container: Container): Promise<any | undefined> {
-    const entityCache: EntityCache = container.get(DiscoveryBindings.EntityCache);
+  protected async loadEntity(
+    entityId: string,
+    container: Container
+  ): Promise<any | undefined> {
+    const entityCache: EntityCache = container.get(
+      DiscoveryBindings.EntityCache
+    );
 
     const cachedEntity = entityCache.getCachedEntity(entityId);
 
     if (cachedEntity) return { id: cachedEntity.id, ...cachedEntity.object };
 
-    if (entityCache.pendingLoads[entityId]) return entityCache.pendingLoads[entityId];
+    if (entityCache.pendingLoads[entityId])
+      return entityCache.pendingLoads[entityId];
 
     const promise = async () => {
-      const entity: Entity<any> | undefined = await this.resolveEntity(container, entityId);
+      const entity: Entity<any> | undefined = await this.resolveEntity(
+        container,
+        entityId
+      );
 
       if (!entity) throw new Error(`Could not find entity with id ${entityId}`);
 

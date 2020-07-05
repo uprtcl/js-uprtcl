@@ -13,7 +13,8 @@ export const resolvers = {
 
       const cachedEntity = cache.getCachedEntity(entity.id);
 
-      if (!cachedEntity) throw new Error(`Entity with id ${entity.id} was not found in cache`);
+      if (!cachedEntity)
+        throw new Error(`Entity with id ${entity.id} was not found in cache`);
 
       return cachedEntity.casID;
     },
@@ -22,9 +23,9 @@ export const resolvers = {
       const recognizer = container.get(CortexModule.bindings.Recognizer);
       const client = container.get(ApolloClientModule.bindings.Client);
 
-      const redirectedEntity = await redirectEntity(recognizer, (ref) => loadEntity(client, ref))(
-        entityId
-      );
+      const redirectedEntity = await redirectEntity(recognizer, (uref) =>
+        loadEntity(client, uref)
+      )(entityId);
       return { id: redirectedEntity.id, ...redirectedEntity.object };
     },
   },

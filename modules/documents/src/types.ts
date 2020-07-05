@@ -13,7 +13,7 @@ export interface TextNode {
 }
 
 export interface DocNode {
-  ref: string;
+  uref: string;
   authority?: string;
   context?: string;
   data?: Entity<any>;

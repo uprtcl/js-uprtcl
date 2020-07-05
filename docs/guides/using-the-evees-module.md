@@ -22,20 +22,40 @@ import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 import { IpfsConnection } from '@uprtcl/ipfs-provider';
 import { HolochainConnection } from '@uprtcl/holochain-provider';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { EveesModule, EveesEthereum, EveesHolochain, EveesBindings } from '@uprtcl/evees';
+import {
+  EveesModule,
+  EveesEthereum,
+  EveesHolochain,
+  EveesBindings,
+} from '@uprtcl/evees';
 
 const httpHost = 'http://localhost:3100/uprtcl/1';
 const ethHost = '';
 const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
 
-const httpCidConfig = { version: 1, type: 'sha3-256', codec: 'raw', base: 'base58btc' };
+const httpCidConfig = {
+  version: 1,
+  type: 'sha3-256',
+  codec: 'raw',
+  base: 'base58btc',
+};
 
-const ipfsCidConfig = { version: 1, type: 'sha2-256', codec: 'raw', base: 'base58btc' };
+const ipfsCidConfig = {
+  version: 1,
+  type: 'sha2-256',
+  codec: 'raw',
+  base: 'base58btc',
+};
 
 const httpConnection = new HttpConnection();
 const ethConnection = new EthereumConnection({ provider: ethHost });
 
-const httpEvees = new EveesHttp(httpHost, httpConnection, ethConnection, httpCidConfig);
+const httpEvees = new EveesHttp(
+  httpHost,
+  httpConnection,
+  ethConnection,
+  httpCidConfig
+);
 const ethEvees = new EveesEthereum(ethConnection, ipfsConfig, ipfsCidConfig);
 
 const evees = new EveesModule([ethEvees, httpEvees], httpEvees);
@@ -87,7 +107,7 @@ After loading the `EveesModule` and all its dependencies, and also the [any of t
 <body>
   <module-container>
     <!-- Any kind of custom element defined in the modules or in your app is available here -->
-    <wiki-drawer .ref="${perspectiveId}"></wiki-drawer>
+    <wiki-drawer .uref="${perspectiveId}"></wiki-drawer>
   </module-container>
 </body>
 ```
@@ -98,7 +118,7 @@ You can see our [simple-editor demo](https://github.com/uprtcl/js-uprtcl/tree/de
 
 There is a special built-in custom element defined in [`@uprtcl/lenses`](https://uprtcl.github.io/js-uprtcl/modules/packages/uprtcl-lenses.html): `<cortex-entity>`.
 
-This element takes as an **input a `ref` (*entity reference*) value**, and is able to:
+This element takes as an **input a `uref` (_entity reference_) value**, and is able to:
 
 1. **Fetch the entity** with the given entity reference identified with the given hash from the registered `CASSources`.
 2. **Recognize which behaviours** does the object implement, and in particular which `lenses` are registered.

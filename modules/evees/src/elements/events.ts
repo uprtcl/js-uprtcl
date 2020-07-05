@@ -1,5 +1,5 @@
 export type ContentUpdatedArgs = {
-  ref: string;
+  uref: string;
 };
 
 export type UpdateContentArgs = {

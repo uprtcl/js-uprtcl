@@ -66,7 +66,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
     const result = await this.client.query({
       query: gql`{
-          entity(ref: "${this.perspectiveId}") {
+          entity(uref: "${this.perspectiveId}") {
             id
             ... on Perspective {
               proposals {

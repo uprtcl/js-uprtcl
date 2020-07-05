@@ -32,7 +32,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
     );
     const result = await client.query({
       query: gql`{
-        entity(ref: "${this.entityId}") {
+        entity(uref: "${this.entityId}") {
           id
           _context {
             patterns {

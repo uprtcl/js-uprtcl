@@ -41,7 +41,7 @@ describe('basic GraphQl entity', () => {
     let result = await client.query({
       query: gql`
         {
-          entity(ref: "QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo") {
+          entity(uref: "QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo") {
             id
             ... on Mock {
               test
@@ -79,7 +79,7 @@ describe('basic GraphQl entity', () => {
     result = await client.query({
       query: gql`
         {
-          entity(ref: "QmbN42sxsBz59gD5eLfaFkehZbBDUTYYcu6PMHZUhRgCZK") {
+          entity(uref: "QmbN42sxsBz59gD5eLfaFkehZbBDUTYYcu6PMHZUhRgCZK") {
             __typename
             id
             _context {
@@ -120,7 +120,7 @@ describe('basic GraphQl entity', () => {
     let result = await client.query({
       query: gql`
         {
-          entity(ref: "QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo") {
+          entity(uref: "QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo") {
             __typename
             id
             _context {
@@ -162,7 +162,7 @@ describe('basic GraphQl entity', () => {
     result = await client.query({
       query: gql`
         {
-          entity(ref: "QmbN42sxsBz59gD5eLfaFkehZbBDUTYYcu6PMHZUhRgCZK") {
+          entity(uref: "QmbN42sxsBz59gD5eLfaFkehZbBDUTYYcu6PMHZUhRgCZK") {
             __typename
             id
             _context {

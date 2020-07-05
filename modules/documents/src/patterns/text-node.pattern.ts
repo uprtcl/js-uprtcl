@@ -91,7 +91,7 @@ export class TextNodeCommon
         type: 'content',
         render: (entity: Entity<any>, context: any) => {
           return html`
-            <documents-text-node .data=${node} ref=${entity.id}>
+            <documents-text-node .data=${node} uref=${entity.id}>
             </documents-text-node>
           `;
         },

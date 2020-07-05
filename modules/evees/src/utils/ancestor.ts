@@ -8,7 +8,7 @@ export const isAncestorOf = (client: ApolloClient<any>) => async (
 
   const result = await client.query({
     query: gql`{
-      entity(ref: "${commitId}") {
+      entity(uref: "${commitId}") {
         id
         ... on Commit {
           parentCommits {

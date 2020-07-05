@@ -109,7 +109,7 @@ export class EveesWorkspace {
 
     client.writeQuery({
       query: gql`{
-        entity(ref: "${entity.id}") {
+        entity(uref: "${entity.id}") {
           __typename
           id
           _context {
@@ -148,7 +148,7 @@ export class EveesWorkspace {
 
     client.cache.writeQuery({
       query: gql`{
-        entity(ref: "${perspectiveId}") {
+        entity(uref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {
@@ -192,7 +192,7 @@ export class EveesWorkspace {
 
     client.cache.writeQuery({
       query: gql`{
-        entity(ref: "${perspectiveId}") {
+        entity(uref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {

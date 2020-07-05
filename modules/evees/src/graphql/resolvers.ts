@@ -179,7 +179,7 @@ export const eveesResolvers: IResolvers = {
 
       const result = await client.query({
         query: gql`{
-        entity(ref: "${perspectiveId}") {
+        entity(uref: "${perspectiveId}") {
           id
           _context {
             object
@@ -371,7 +371,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspectiveResult = await client.query({
         query: gql`{
-        entity(ref: "${perspectiveId}") {
+        entity(uref: "${perspectiveId}") {
           id
           _context {
             object
@@ -409,7 +409,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspectiveResult = await client.query({
         query: gql`{
-        entity(ref: "${perspectiveId}") {
+        entity(uref: "${perspectiveId}") {
           id
           _context {
             object

@@ -1,7 +1,13 @@
 import { multiInject, inject, injectable, optional } from 'inversify';
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { PatternRecognizer, CortexModule, Pattern, HasLinks, Entity } from '@uprtcl/cortex';
+import {
+  PatternRecognizer,
+  CortexModule,
+  Pattern,
+  HasLinks,
+  Entity,
+} from '@uprtcl/cortex';
 import { Dictionary, Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -23,7 +29,8 @@ export class MultiSourceService {
    * @param serviceProviders array of all source service providers from which to get objects
    */
   constructor(
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer,
+    @inject(CortexModule.bindings.Recognizer)
+    protected recognizer: PatternRecognizer,
     @inject(DiscoveryBindings.LocalKnownSources)
     public localKnownSources: KnownSourcesService,
     @inject(ApolloClientModule.bindings.Client)
@@ -84,7 +91,8 @@ export class MultiSourceService {
     }
 
     const serviceProvider = this.services[casID];
-    if (!serviceProvider) throw new Error(`No service provider was found for casID ${casID}`);
+    if (!serviceProvider)
+      throw new Error(`No service provider was found for casID ${casID}`);
 
     return serviceProvider;
   }
@@ -113,7 +121,7 @@ export class MultiSourceService {
         const result = await this.client.query({
           query: gql`
         {
-          entity(ref: "${hash}") {
+          entity(uref: "${hash}") {
             id
             _context {
               patterns {
@@ -182,7 +190,9 @@ export class MultiSourceService {
    * @param hash the hash of the object to retrieve
    * @returns the object if found, otherwise undefined
    */
-  public async get<O extends object>(hash: string): Promise<Entity<O> | undefined> {
+  public async get<O extends object>(
+    hash: string
+  ): Promise<Entity<O> | undefined> {
     let knownSources: string[] | undefined = undefined;
 
     // If there is only one source, use that to get the object
@@ -205,12 +215,17 @@ export class MultiSourceService {
         const object = await this.tryGetFromSources<O>(hash, defaultSources);
 
         if (object) return object;
-        remainingCids = remainingCids.filter((casID) => !defaultSources.includes(casID));
+        remainingCids = remainingCids.filter(
+          (casID) => !defaultSources.includes(casID)
+        );
       }
 
       const finalObject = await this.tryGetFromSources<O>(hash, remainingCids);
       if (!finalObject) {
-        this.logger.warn('All sources failed to get the hash', { hash, allCids });
+        this.logger.warn('All sources failed to get the hash', {
+          hash,
+          allCids,
+        });
       }
 
       return finalObject;
@@ -223,7 +238,10 @@ export class MultiSourceService {
    * @param source
    * @param links
    */
-  public async postEntityUpdate(source: KnownSourcesSource, links: string[]): Promise<void> {
+  public async postEntityUpdate(
+    source: KnownSourcesSource,
+    links: string[]
+  ): Promise<void> {
     const knownSourcesService = source.knownSources;
     if (!knownSourcesService) return;
 
@@ -233,7 +251,9 @@ export class MultiSourceService {
 
       // If the only known source is the name of the source itself, we don't need to tell the provider
       const sameSource =
-        knownSources && knownSources.length === 1 && knownSources[0] === source.casID;
+        knownSources &&
+        knownSources.length === 1 &&
+        knownSources[0] === source.casID;
 
       if (knownSources && !sameSource) {
         await knownSourcesService.addKnownSources(link, knownSources);
@@ -249,7 +269,9 @@ export class MultiSourceService {
    * @param source
    * @param links
    */
-  public async postEntityCreate<O extends Object>(entity: Entity<O>): Promise<void> {
+  public async postEntityCreate<O extends Object>(
+    entity: Entity<O>
+  ): Promise<void> {
     if (!entity.casID) {
       throw new Error('casID for the entity is required and none was provided');
     }

@@ -10,8 +10,10 @@ export class EntityCache {
   pendingLoads: Dictionary<Promise<any> | undefined> = {};
 
   constructor(
-    @inject(ApolloClientModule.bindings.Client) protected client: ApolloClient<any>,
-    @inject(CortexModule.bindings.Recognizer) protected recognizer: PatternRecognizer
+    @inject(ApolloClientModule.bindings.Client)
+    protected client: ApolloClient<any>,
+    @inject(CortexModule.bindings.Recognizer)
+    protected recognizer: PatternRecognizer
   ) {}
 
   getCachedEntity(entityId: string): Entity<any> | undefined {
@@ -33,7 +35,7 @@ export class EntityCache {
 
     this.client.writeQuery({
       query: gql`{
-        entity(ref: "${entity.id}") {
+        entity(uref: "${entity.id}") {
           __typename
           id
           _context {

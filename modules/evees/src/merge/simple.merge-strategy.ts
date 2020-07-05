@@ -96,7 +96,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   ): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
-        entity(ref: "${perspectiveId}") {
+        entity(uref: "${perspectiveId}") {
           id
           ... on Perspective {
             head {
@@ -123,7 +123,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   protected async loadCommitData(commitId: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
-        entity(ref: "${commitId}") {
+        entity(uref: "${commitId}") {
           id
           data {
             id

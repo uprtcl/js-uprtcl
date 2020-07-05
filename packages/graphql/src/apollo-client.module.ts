@@ -37,9 +37,9 @@ export class ApolloClientModule extends MicroModule {
 
         let directives = {};
         if (context.container.isBound(GraphQlSchemaBindings.Directive)) {
-          const directivesArray: Constructor<NamedDirective>[] = context.container.getAll(
-            GraphQlSchemaBindings.Directive
-          );
+          const directivesArray: Constructor<
+            NamedDirective
+          >[] = context.container.getAll(GraphQlSchemaBindings.Directive);
 
           directives = directivesArray.reduce(
             (acc, next) => ({ ...acc, [next['directive']]: next }),
@@ -56,12 +56,14 @@ export class ApolloClientModule extends MicroModule {
       });
     const cache = new InMemoryCache({
       dataIdFromObject: (object) => {
-        if (object.__typename === 'Context') return `${object.__typename}:${object.id}`;
+        if (object.__typename === 'Context')
+          return `${object.__typename}:${object.id}`;
         return object.id || null;
       },
       cacheRedirects: {
         Query: {
-          entity: (_, { ref }, { getCacheKey }) => getCacheKey({ __typename: '', id: ref }),
+          entity: (_, { uref }, { getCacheKey }) =>
+            getCacheKey({ __typename: '', id: uref }),
         },
       },
     });
@@ -88,7 +90,9 @@ export class ApolloClientModule extends MicroModule {
       .toDynamicValue((context: interfaces.Context) => {
         if (client) return client;
 
-        const schema: GraphQLSchema = context.container.get(ApolloClientModule.bindings.RootSchema);
+        const schema: GraphQLSchema = context.container.get(
+          ApolloClientModule.bindings.RootSchema
+        );
 
         const links = new SchemaLink({
           schema,

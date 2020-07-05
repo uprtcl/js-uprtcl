@@ -48,7 +48,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   async loadPermissions() {
     const result = await this.client.query({
       query: gql`{
-        entity(ref: "${this.entityId}") {
+        entity(uref: "${this.entityId}") {
           id
           _context {
             patterns {

@@ -11,7 +11,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
   logger = new Logger('CORTEX-ENTITY');
 
   @property({ type: String })
-  public ref!: string;
+  public uref!: string;
 
   @property({ attribute: 'lens-type' })
   public lensType!: string;
@@ -35,7 +35,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    this.addEventListener('entity-updated', () => this.loadEntity(this.ref));
+    this.addEventListener('entity-updated', () => this.loadEntity(this.uref));
     this.addEventListener<any>(
       'lens-selected',
       (e: CustomEvent) => (this.selectedLens = e.detail.selectedLens)
@@ -44,7 +44,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
 
   getContentLenses() {}
 
-  async loadEntity(ref: string): Promise<void> {
+  async loadEntity(uref: string): Promise<void> {
     if (!this.client) throw new Error('client undefined');
 
     this.selectedLens = undefined;
@@ -53,7 +53,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
     const result = await this.client.query({
       query: gql`
       {
-        entity(ref: "${ref}") {
+        entity(uref: "${uref}") {
           id
           _context {
             object
@@ -79,11 +79,13 @@ export class CortexEntity extends moduleConnect(LitElement) {
     });
 
     if (!result.data || !result.data.entity)
-      throw new Error(`Could not find entity with reference ${ref}`);
+      throw new Error(`Could not find entity with reference ${uref}`);
 
     const entityResult = result.data.entity;
 
-    const lenses = entityResult._context.content._context.patterns.lenses.filter((lens) => !!lens);
+    const lenses = entityResult._context.content._context.patterns.lenses.filter(
+      (lens) => !!lens
+    );
 
     this.entity = {
       id: entityResult.id,
@@ -99,7 +101,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
       this.selectedLens = lenses[0];
     }
 
-    this.logger.info(`Lens selected for entity ${this.ref}`, {
+    this.logger.info(`Lens selected for entity ${this.uref}`, {
       selectedLens: this.selectedLens,
       lenses,
     });
@@ -108,8 +110,12 @@ export class CortexEntity extends moduleConnect(LitElement) {
   updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 
-    if (changedProperties.has('ref') && this.ref && this.ref !== changedProperties.get('ref')) {
-      this.loadEntity(this.ref);
+    if (
+      changedProperties.has('uref') &&
+      this.uref &&
+      this.uref !== changedProperties.get('uref')
+    ) {
+      this.loadEntity(this.uref);
     }
   }
 

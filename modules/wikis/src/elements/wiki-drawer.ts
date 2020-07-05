@@ -55,7 +55,7 @@ interface PageData {
 export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
 
-  @property({ type: String, attribute: 'ref' })
+  @property({ type: String, attribute: 'uref' })
   firstRef!: string;
 
   @property({ type: String, attribute: 'default-authority' })
@@ -65,7 +65,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   editableAuthorities: string[] = [];
 
   @property({ attribute: false })
-  ref!: string;
+  uref!: string;
 
   @property({ attribute: false })
   wiki: Entity<Wiki> | undefined;
@@ -134,9 +134,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
-    this.logger.log('firstUpdated()', { ref: this.ref });
+    this.logger.log('firstUpdated()', { uref: this.uref });
 
-    this.ref = this.firstRef;
+    this.uref = this.firstRef;
     this.loadWiki();
 
     const firstPerspective = await loadEntity<Signed<Perspective>>(
@@ -149,23 +149,23 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if (changedProperties.has('ref')) {
-      if (changedProperties.get('ref') !== undefined) {
+    if (changedProperties.has('uref')) {
+      if (changedProperties.get('uref') !== undefined) {
         this.loadWiki();
       }
     }
 
     if (changedProperties.has('firstRef')) {
-      this.ref = this.firstRef;
+      this.uref = this.firstRef;
       this.loadWiki();
     }
   }
 
   color() {
-    if (this.firstRef === this.ref) {
+    if (this.firstRef === this.uref) {
       return DEFAULT_COLOR;
     } else {
-      return eveeColor(this.ref as string);
+      return eveeColor(this.uref as string);
     }
   }
 
@@ -193,22 +193,22 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async loadWiki() {
-    if (this.ref === undefined) return;
+    if (this.uref === undefined) return;
 
-    const perspective = (await loadEntity(this.client, this.ref)) as Entity<
+    const perspective = (await loadEntity(this.client, this.uref)) as Entity<
       Signed<Perspective>
     >;
     const accessControl = await EveesHelpers.getAccessControl(
       this.client,
-      this.ref
+      this.uref
     );
     const headId = await EveesHelpers.getPerspectiveHeadId(
       this.client,
-      this.ref
+      this.uref
     );
     const context = await EveesHelpers.getPerspectiveContext(
       this.client,
-      this.ref
+      this.uref
     );
 
     this.authority = perspective.object.payload.authority;
@@ -223,7 +223,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       : false;
     this.context = context;
 
-    this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.ref);
+    this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
     this.loadPagesData();
     this.requestUpdate();
@@ -304,7 +304,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return EveesHelpers.createPerspective(this.client, remote, {
       headId,
       context: `${this.context}_${Date.now()}`,
-      parentId: this.ref,
+      parentId: this.uref,
     });
   }
 
@@ -323,7 +323,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       dataId,
       parentsIds: [this.currentHeadId ? this.currentHeadId : ''],
     });
-    await EveesHelpers.updateHead(this.client, this.ref, headId);
+    await EveesHelpers.updateHead(this.client, this.uref, headId);
 
     this.logger.info('updateContent()', newWiki);
 
@@ -451,7 +451,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     super.connectedCallback();
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
-      this.ref = event.detail.perspectiveId;
+      this.uref = event.detail.perspectiveId;
       this.resetWikiPerspective();
     }) as EventListener);
   }
@@ -586,17 +586,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               `
             : ''}
           <mwc-button
-            ?unelevated=${this.ref === this.firstRef}
+            ?unelevated=${this.uref === this.firstRef}
             label="official"
             @click=${() => this.goToOfficial()}
           ></mwc-button>
           <div class="perspective-author-wrapper">
-            ${this.ref !== this.firstRef
+            ${this.uref !== this.firstRef
               ? html`
                   <evees-author
                     user-id=${this.author}
                     show-name="false"
-                    color=${eveeColor(this.ref)}
+                    color=${eveeColor(this.uref)}
                     @click=${() => this.goToHome()}
                   ></evees-author>
                 `
@@ -629,7 +629,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
           <div class="section-content">
             <div class="row center-aligned">
-              ${this.ref === this.firstRef
+              ${this.uref === this.firstRef
                 ? html` <div class="official-name">(Official)</div> `
                 : html`
                     <span class="by-3box">by</span>
@@ -681,10 +681,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   render() {
     this.logger.log('render()', {
       wiki: this.wiki,
-      ref: this.ref,
+      uref: this.uref,
       editable: this.editable,
     });
-    if (!this.wiki || !this.ref)
+    if (!this.wiki || !this.uref)
       return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`
@@ -730,8 +730,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   <div class="evee-info">
                     <evees-info-page
                       slot="evee-page"
-                      ref=${this.ref}
-                      first-ref=${this.firstRef as string}
+                      uref=${this.uref}
+                      first-uref=${this.firstRef as string}
                       evee-color=${this.color()}
                       default-authority=${this.defaultAuthority as string}
                     ></evees-info-page>
@@ -763,7 +763,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   goToOfficial() {
-    this.ref = this.firstRef;
+    this.uref = this.firstRef;
     if (this.isMobile) {
       this.isDrawerOpened = false;
     }

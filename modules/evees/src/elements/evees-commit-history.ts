@@ -27,11 +27,13 @@ export class CommitHistory extends moduleConnect(LitElement) {
   async loadCommitHistory() {
     this.commitHistory = undefined;
 
-    const apolloClient: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const apolloClient: ApolloClient<any> = this.request(
+      ApolloClientModule.bindings.Client
+    );
     const result = await apolloClient.query({
       query: gql`
       {
-        entity(ref: "${this.commitId}") {
+        entity(uref: "${this.commitId}") {
           id
           entity {
             ... on Commit {
@@ -68,7 +70,8 @@ export class CommitHistory extends moduleConnect(LitElement) {
   renderCommitHistory(commitHistory: CommitHistoryData) {
     return html`
       <div class="column">
-        ${commitHistory.id} ${commitHistory.entity.message} ${commitHistory.entity.timestamp}
+        ${commitHistory.id} ${commitHistory.entity.message}
+        ${commitHistory.entity.timestamp}
         ${commitHistory.entity.parentCommits
           ? html`
               <div class="row">
@@ -85,7 +88,9 @@ export class CommitHistory extends moduleConnect(LitElement) {
   render() {
     return html`
       <div class="row">
-        ${this.commitHistory ? this.renderCommitHistory(this.commitHistory) : html``}
+        ${this.commitHistory
+          ? this.renderCommitHistory(this.commitHistory)
+          : html``}
         <slot name="plugins"></slot>
       </div>
     `;

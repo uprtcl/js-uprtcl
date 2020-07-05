@@ -1,4 +1,11 @@
-import { LitElement, html, property, query, PropertyValues, css } from 'lit-element';
+import {
+  LitElement,
+  html,
+  property,
+  query,
+  PropertyValues,
+  css,
+} from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 import { Menu } from '@material/mwc-menu';
 import '@material/mwc-list/mwc-list-item';
@@ -16,7 +23,8 @@ export class CortexActions extends moduleConnect(LitElement) {
   public hash!: string;
 
   @property({ type: String })
-  public toolbar: 'responsive' | 'none' | 'only-icon' | 'icon-text' = 'responsive';
+  public toolbar: 'responsive' | 'none' | 'only-icon' | 'icon-text' =
+    'responsive';
 
   @property({ type: Array })
   public actionTypesOrder: string[] | undefined;
@@ -34,12 +42,14 @@ export class CortexActions extends moduleConnect(LitElement) {
     this.actions = undefined;
     if (!this.hash) return;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const client: ApolloClient<any> = this.request(
+      ApolloClientModule.bindings.Client
+    );
 
     const result = await client.query({
       query: gql`
       {
-        entity(ref: "${this.hash}") {
+        entity(uref: "${this.hash}") {
           id
           _context {
 
@@ -63,7 +73,8 @@ export class CortexActions extends moduleConnect(LitElement) {
       `,
     });
 
-    const actions: PatternAction[] = result.data.entity._context.content._context.patterns.actions;
+    const actions: PatternAction[] =
+      result.data.entity._context.content._context.patterns.actions;
 
     this.actions = {};
 
@@ -137,7 +148,9 @@ export class CortexActions extends moduleConnect(LitElement) {
               ></mwc-button>
             `
           )}
-          ${index < toolbarActions.length - 1 ? html` <span class="divider">|</span> ` : html``}
+          ${index < toolbarActions.length - 1
+            ? html` <span class="divider">|</span> `
+            : html``}
         `
       )}
     `;
@@ -156,11 +169,17 @@ export class CortexActions extends moduleConnect(LitElement) {
                 label=${action.title}
                 @click=${() => this.actionClicked(action)}
               >
-                <mwc-tooltip .text=${action.title} showDelay="200" gap="5"></mwc-tooltip>
+                <mwc-tooltip
+                  .text=${action.title}
+                  showDelay="200"
+                  gap="5"
+                ></mwc-tooltip>
               </mwc-icon-button>
             `
           )}
-          ${index < toolbarActions.length - 1 ? html` <span class="divider">|</span> ` : html``}
+          ${index < toolbarActions.length - 1
+            ? html` <span class="divider">|</span> `
+            : html``}
         `
       )}
     `;

@@ -37,14 +37,14 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
       <div class="document-container old-page">
         <documents-editor
           .client=${this.workspace.workspace}
-          ref=${this.oldData.id}
+          uref=${this.oldData.id}
           editable="false"
         ></documents-editor>
       </div>
       <div class="document-container new-page">
         <documents-editor
           .client=${this.workspace.workspace}
-          ref=${this.newData.id}
+          uref=${this.newData.id}
           editable="false"
         ></documents-editor>
       </div>
