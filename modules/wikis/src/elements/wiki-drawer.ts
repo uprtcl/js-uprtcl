@@ -649,9 +649,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   `
                 : ''}
             </div>
-            <div class="pages-summary">
-              ${this.renderPageList(false)}
-            </div>
+            ${this.isMobile
+              ? html`<div class="pages-summary">
+                  <b>pages:</b>
+                  ${this.renderPageList(false)}
+                </div>`
+              : html``}
           </div>
 
           <div class="context-menu">
@@ -961,6 +964,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           max-height: 150px;
           min-height: 80px;
           overflow-y: auto;
+          text-align: left;
+          color: gray;
+          padding-left: 12px;
         }
         .title-form {
           margin-top: 22px;
