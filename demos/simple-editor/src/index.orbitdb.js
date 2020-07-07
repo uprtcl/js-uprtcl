@@ -29,14 +29,14 @@ import IPFS from 'ipfs';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
 
-  // const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
+  const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
   // const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
   // const ipfsConfig = { host: 'ec2-54-145-41-139.compute-1.amazonaws.com', port: 5001, protocol: 'http' };
-  const ipfsConfig = {
-    host: 'ipfs.intercreativity.io',
-    port: 443,
-    protocol: 'https',
-  };
+  // const ipfsConfig = {
+  //   host: 'ipfs.intercreativity.io',
+  //   port: 443,
+  //   protocol: 'https',
+  // };
 
   const ipfsCidConfig = {
     version: 1,

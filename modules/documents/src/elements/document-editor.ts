@@ -995,7 +995,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return html`
       <div class="row">
         <div class="evee-info">
-          ${false
+          ${true
             ? html`
                 <evees-info-popper
                   ref=${node.ref}

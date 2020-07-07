@@ -43,7 +43,8 @@ export class OrbitDBConnection extends Connection {
    * @override
    */
   protected async connect(): Promise<void> {
-    this.instance = await OrbitDB.createInstance(this.ipfs);
+    // this.instance = await OrbitDB.createInstance(this.ipfs);
+    this.instance = await OrbitDB.createInstance(this.ipfsStore.client);
     this.identity = this.instance.identity;
   }
 
@@ -88,7 +89,10 @@ export class OrbitDBConnection extends Connection {
     else
       db = this.storeQueue[address] = this.instance
         .open(address, { identity: this.identity })
-        .then(async (store) => { await store.load(); return store })
+        .then(async (store) => {
+          await store.load();
+          return store;
+        })
         .finally(() => delete this.storeQueue[address]);
     db = await db;
 

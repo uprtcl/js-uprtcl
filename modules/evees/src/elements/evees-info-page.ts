@@ -217,7 +217,7 @@ export class EveesInfoPage extends EveesInfoBase {
           .config=${contextConfig}
           @option-click=${this.optionClicked}
         >
-          ${this.defaultRemote && this.defaultRemote.userId !== undefined
+          ${this.defaultRemote && this.defaultRemote.isLogged()
             ? html` <div slot="icon" class="user-icon">
                 <evees-author
                   user-id=${this.defaultRemote.userId}

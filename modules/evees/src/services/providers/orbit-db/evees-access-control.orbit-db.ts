@@ -25,6 +25,8 @@ export class EveesAccessControlOrbitDB implements OwnerAccessControlService {
   async getPermissions(
     perspectiveId: string
   ): Promise<OwnerPermissions | undefined> {
+    debugger;
+
     const client: ApolloClient<any> = this.container.get(
       ApolloClientModule.bindings.Client
     );
