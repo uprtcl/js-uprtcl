@@ -6,4 +6,5 @@ export const EveesBindings = {
   Evees: 'evees',
   RemoteMap: 'remotes-map',
   DefaultRemote: 'default-remote',
+  DAOProposalType: 'dao-proposal-type',
 };

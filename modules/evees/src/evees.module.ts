@@ -12,6 +12,10 @@ import {
   PerspectivePattern,
 } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
+import {
+  DAOProposalPattern,
+  DAOProposalLenses,
+} from './patterns/dao-proposal.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
 import { Evees } from './services/evees';
@@ -35,6 +39,7 @@ import { EveesLoadingButton } from './elements/common-ui/evees-loading-button';
 import { EveesAuthor } from './elements/evees-author';
 import { ProposalsList } from './elements/evees-proposals-list';
 import { EveesStringForm } from './elements/common-ui/evees-string-form';
+import { EveesProposalControl } from './elements/evees-proposal-control';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -121,6 +126,7 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-loading-button', EveesLoadingButton);
     customElements.define('evees-author', EveesAuthor);
     customElements.define('evees-string-form', EveesStringForm);
+    customElements.define('evees-proposal-control', EveesProposalControl);
   }
 
   get submodules() {
@@ -130,6 +136,7 @@ export class EveesModule extends MicroModule {
       new PatternsModule([
         new CommitPattern([CommitLinked]),
         new PerspectivePattern([PerspectiveLinks, PerspectiveAccessControl]),
+        new DAOProposalPattern([DAOProposalLenses]),
       ]),
       new CASModule(this.eveesProviders),
     ];

@@ -79,7 +79,10 @@ export class PermissionsDAO extends moduleConnect(LitElement)
       <b>Members:</b>
       <mwc-list>
         ${this.members.map(
-          (member) => html`<mwc-list-item>${member.address}</mwc-list-item>`
+          (member) =>
+            html`<mwc-list-item
+              ><evees-author user-id=${member.address}></evees-author
+            ></mwc-list-item>`
         )}
       </mwc-list>
       ${this.showAddMember

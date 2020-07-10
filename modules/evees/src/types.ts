@@ -47,6 +47,11 @@ export interface UpdateRequest {
   newHeadId: string;
 }
 
+export interface ProposalRef {
+  id: string;
+  perspectiveId: string;
+}
+
 export interface Proposal {
   id: string;
   creatorId?: string;
@@ -59,6 +64,7 @@ export interface Proposal {
   authorized?: boolean;
   executed?: boolean;
   canAuthorize?: boolean;
+  details?: any;
 }
 
 export interface NewProposal {

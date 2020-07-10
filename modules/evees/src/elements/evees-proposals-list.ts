@@ -4,6 +4,7 @@ import { LitElement, property, html, css, query } from 'lit-element';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+import { Signed } from '@uprtcl/cortex';
 
 import { Proposal, Perspective } from '../types';
 import { eveeColor } from './support';
@@ -11,11 +12,11 @@ import { eveeColor } from './support';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDialog } from './common-ui/evees-dialog';
 import { EveesDiff } from './evees-diff';
+import { EveesProposalControl } from './evees-proposal-control';
 
 export const DEFAULT_COLOR = '#d0dae0';
 import '@material/mwc-dialog';
 import '@material/mwc-button';
-import { Signed } from '@uprtcl/cortex';
 
 const PENDING_ACTION: string = 'Pending';
 const AUTHORIZE_ACTION: string = 'Authorize';
@@ -52,6 +53,9 @@ export class ProposalsList extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
+  @query('#evees-proposal-control')
+  eveesProposalControlEl!: EveesProposalControl;
+
   protected client!: ApolloClient<any>;
 
   async firstUpdated() {
@@ -75,7 +79,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
                   id
                 }
                 authorized
-                canAuthorize
                 executed
                 updates {
                   toPerspective {
@@ -165,6 +168,10 @@ export class ProposalsList extends moduleConnect(LitElement) {
     await this.updateComplete;
 
     this.eveesDiffEl.workspace = workspace;
+    this.eveesProposalControlEl.proposalRef = {
+      id: proposal.id,
+      perspectiveId: this.perspectiveId,
+    };
 
     const canAuthorize = this.getProposalAction(proposal) === AUTHORIZE_ACTION;
     if (canAuthorize) {
@@ -181,23 +188,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
         resolve(value);
       };
     });
-
-    if (canAuthorize && value) {
-      this.authorizeProposal(proposal);
-    }
-  }
-
-  authorizeProposal(proposal: Proposal) {
-    this.dispatchEvent(
-      new CustomEvent('authorize-proposal', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          proposalId: proposal.id,
-          perspectiveId: this.perspectiveId,
-        },
-      })
-    );
   }
 
   getProposalAction(proposal: Proposal): string {
@@ -284,6 +274,9 @@ export class ProposalsList extends moduleConnect(LitElement) {
     return html`
       <evees-dialog id="updates-dialog">
         <evees-update-diff id="evees-update-diff"> </evees-update-diff>
+        <evees-proposal-control
+          id="evees-proposal-control"
+        ></evees-proposal-control>
       </evees-dialog>
     `;
   }

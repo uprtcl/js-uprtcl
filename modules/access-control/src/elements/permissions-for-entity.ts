@@ -8,10 +8,10 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
   @property({ type: String })
   public ref!: string;
 
-  @property({ type: Object, attribute: false })
+  @property({ attribute: false })
   private permissions: string | undefined;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   private canWrite: boolean | undefined;
 
   firstUpdated() {
@@ -29,7 +29,9 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
   async loadPermissions() {
     this.permissions = undefined;
 
-    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
+    const client: ApolloClient<any> = this.request(
+      ApolloClientModule.bindings.Client
+    );
 
     const result = await client.query({
       query: gql`
@@ -49,12 +51,14 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
       `,
     });
 
-    this.permissions = result.data.entity._context.patterns.accessControl.permissions;
+    this.permissions =
+      result.data.entity._context.patterns.accessControl.permissions;
     this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
   }
 
   render() {
-    if (!this.permissions) return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+    if (!this.permissions)
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`
       <cortex-pattern

@@ -240,6 +240,9 @@ export class ProposalsEthereum implements ProposalsProvider {
       authorized: ethProposal.authorized === '1',
       executed: executed,
       canAuthorize: canAuthorize,
+      details: {
+        type: 'dao-proposal',
+      },
     };
 
     this.logger.info('getProposal() - post', { proposal });
