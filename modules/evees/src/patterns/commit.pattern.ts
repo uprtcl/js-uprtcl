@@ -7,7 +7,13 @@ import { extractSignedEntity } from '../utils/signed';
 import { HasRedirect } from '@uprtcl/multiplatform';
 import { EveesBindings } from '../bindings';
 
-export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
+export const propertyOrder = [
+  'creatorsIds',
+  'timestamp',
+  'message',
+  'parentsIds',
+  'dataId',
+];
 
 export class CommitPattern extends Pattern<Entity<Signed<Commit>>> {
   recognize(entity: object) {
@@ -21,10 +27,15 @@ export class CommitPattern extends Pattern<Entity<Signed<Commit>>> {
 
 @injectable()
 export class CommitLinked
-  implements HasLinks<Entity<Signed<Commit>>>, HasRedirect<Entity<Signed<Commit>>> {
+  implements
+    HasLinks<Entity<Signed<Commit>>>,
+    HasRedirect<Entity<Signed<Commit>>> {
   links: (commit: Entity<Signed<Commit>>) => Promise<string[]> = async (
     commit: Entity<Signed<Commit>>
-  ): Promise<string[]> => [commit.object.payload.dataId, ...commit.object.payload.parentsIds];
+  ): Promise<string[]> => [
+    commit.object.payload.dataId,
+    ...commit.object.payload.parentsIds,
+  ];
 
   getChildrenLinks: (commit: Entity<Signed<Commit>>) => string[] = (
     commit: Entity<Signed<Commit>>
@@ -35,7 +46,8 @@ export class CommitLinked
     newLinks: string[]
   ): Entity<Signed<Commit>> => commit;
 
-  redirect: (commit: Entity<Signed<Commit>>) => Promise<string | undefined> = async (
+  redirect: (
     commit: Entity<Signed<Commit>>
-  ) => commit.object.payload.dataId;
+  ) => Promise<string | undefined> = async (commit: Entity<Signed<Commit>>) =>
+    commit.object.payload.dataId;
 }

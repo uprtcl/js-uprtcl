@@ -7,12 +7,10 @@ import {
   HasChildren,
   Entity,
   HasTitle,
-  New,
 } from '@uprtcl/cortex';
 import {
   Merge,
   MergeStrategy,
-  mergeStrings,
   mergeResult,
   HasDiffLenses,
   DiffLens,
