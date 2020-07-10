@@ -8,7 +8,10 @@ export interface EthereumConnectionOptions {
 }
 
 const safeSend = (provider, data): Promise<any> => {
-  const send = (Boolean(provider.sendAsync) ? provider.sendAsync : provider.send).bind(provider);
+  const send = (Boolean(provider.sendAsync)
+    ? provider.sendAsync
+    : provider.send
+  ).bind(provider);
   return new Promise((resolve, reject) => {
     send(data, function (err, result) {
       if (err) reject(err);
@@ -26,7 +29,12 @@ const encodeRpcCall = (method, params, fromAddress) => ({
   fromAddress,
 });
 
-const callRpc = async (provider, method, params, fromAddress): Promise<string> =>
+const callRpc = async (
+  provider,
+  method,
+  params,
+  fromAddress
+): Promise<string> =>
   safeSend(provider, encodeRpcCall(method, params, fromAddress));
 
 export class EthereumConnection extends Connection {
@@ -35,7 +43,10 @@ export class EthereumConnection extends Connection {
   accounts!: string[];
   networkId!: number;
 
-  constructor(protected ethOptions: EthereumConnectionOptions, options?: ConnectionOptions) {
+  constructor(
+    protected ethOptions: EthereumConnectionOptions,
+    options?: ConnectionOptions
+  ) {
     super(options);
   }
 
@@ -77,10 +88,39 @@ export class EthereumConnection extends Connection {
     const provider = this.web3.currentProvider;
     if (!provider) throw new Error('Ethereum provider not found');
 
-    if ((provider as any).isAuthereum) return (provider as any).signMessageWithAdminKey(text);
+    if ((provider as any).isAuthereum)
+      return (provider as any).signMessageWithAdminKey(text);
     var msg = '0x' + Buffer.from(text, 'utf8').toString('hex');
     var params = [msg, account];
     var method = 'personal_sign';
     return callRpc(provider, method, params, account);
+  }
+
+  public async sendTransaction(tx: any) {
+    return new Promise((resolve, reject) => {
+      this.web3.eth
+        .sendTransaction(tx)
+        .once('transactionHash', (transactionHash: any) => {
+          this.logger.info(`TX HASH`, { transactionHash, tx });
+        })
+        .on('receipt', (receipt: any) => {
+          this.logger.log(`RECEIPT receipt`, { receipt, tx });
+          resolve();
+        })
+        .on('error', (error: any) => {
+          this.logger.error(`ERROR`, { error, tx });
+          reject();
+        })
+        .on('confirmation', (confirmationNumber: any) => {
+          if (confirmationNumber < 5) {
+            this.logger.log(`CONFIRMED`, { confirmationNumber, tx });
+          }
+          resolve();
+        })
+        .then((receipt: any) => {
+          this.logger.log(`MINED call mined`, { tx, receipt });
+          resolve();
+        });
+    });
   }
 }

@@ -5,7 +5,11 @@ import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import { PermissionsElement } from './permissions-element';
 import { DAOPermissions } from '../services/dao-access-control.service';
-import { DAOConnector, DAOMember } from '../services/dao-connector.service';
+import {
+  DAOConnector,
+  DAOMember,
+  DAOMemberProposal,
+} from '../services/dao-connector.service';
 import { AragonConnector } from '../services/aragon-connector';
 
 import '@material/mwc-button';
@@ -28,7 +32,11 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   @property({ attribute: false })
   addingMember: boolean = false;
 
+  @property({ attribute: false })
   members: DAOMember[] = [];
+
+  @property({ attribute: false })
+  newMemberProposals: DAOMemberProposal[] = [];
 
   daoConnector!: DAOConnector;
 
@@ -40,12 +48,28 @@ export class PermissionsDAO extends moduleConnect(LitElement)
     this.daoConnector = new AragonConnector(ethConnection);
 
     await this.daoConnector.connect(this.permissions.owner);
+    this.loadMembers();
+    this.getNewMemberProposals();
+  }
+
+  async loadMembers() {
     this.members = await this.daoConnector.getMembers();
     this.requestUpdate();
   }
 
+  async getNewMemberProposals() {
+    this.newMemberProposals = await this.daoConnector.getNewMemberProposals();
+  }
+
   async addMember(address: string) {
+    this.addingMember = true;
     await this.daoConnector.addMember({ address, balance: '1' });
+    this.addingMember = false;
+    this.showAddMember = false;
+  }
+
+  async voted(proposalId: string, value: boolean) {
+    await this.daoConnector.vote(proposalId, value);
   }
 
   render() {
@@ -69,6 +93,15 @@ export class PermissionsDAO extends moduleConnect(LitElement)
         : html` <mwc-button @click=${() => (this.showAddMember = true)}>
             add member
           </mwc-button>`}
+
+      <br /><br /><b>New members proposals:</b>
+      ${this.newMemberProposals.map(
+        (proposal) =>
+          html`<proposal-ui
+            .proposal=${proposal}
+            @voted=${(e) => this.voted(proposal.id, e.detail.value)}
+          ></proposal-ui>`
+      )}
     `;
   }
 
