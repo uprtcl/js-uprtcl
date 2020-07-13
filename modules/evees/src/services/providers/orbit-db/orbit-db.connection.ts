@@ -96,7 +96,7 @@ export class OrbitDBConnection extends Connection {
         .finally(() => delete this.storeQueue[address]);
     db = await db;
 
-    if (db.identity.id !== this.identity.id) db.identity = this.identity;
+    if (db.identity.id !== this.identity.id) db.setIdentity(this.identity);
     return db;
   }
 
