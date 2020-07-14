@@ -17,18 +17,25 @@ function attachIpfsStore (ipfsStore: IpfsStore) {
       super(ipfs, options)
     }
 
-    async canAppend (entry, identityProvider, perspectiveId) {
+    async canAppend (entry, identityProvider) {
       // Allow if access list contain the writer's publicKey or is '*'
       const key = entry.identity.id
-      if (this.write.includes(key) || this.write.includes('*')) {
-        const { payload: perspective } = (await ipfsStore.get(
-          perspectiveId
-        )) as Signed<Perspective>;
-        if (perspective.creatorId !== entry.identity) return false;
-        // check identity is valid
-        return identityProvider.verifyIdentity(entry.identity);
+      const perspectiveId = entry.payload.value
+      try {
+        if (this.write.includes(key) || this.write.includes('*')) {
+          const perspectiveId = entry.payload.value
+          const { payload: perspective } = (await ipfsStore.get(
+            perspectiveId
+          )) as Signed<Perspective>;
+          if (perspective.creatorId !== entry.identity) return false;
+
+          // check identity is valid
+          return identityProvider.verifyIdentity(entry.identity);
+        }
+      } catch (e) {
+        console.error(e)
       }
-      return false;
+      return false
     }
 
     static async create (orbitdb, options:any = {}) {

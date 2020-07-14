@@ -104,13 +104,13 @@ export class EveesOrbitDB implements EveesRemote {
       ApolloClientModule.bindings.Client
     );
 
-    const singedPerspective = (await loadEntity(
+    const signedPerspective = (await loadEntity(
       client,
       perspectiveId
     )) as Entity<Signed<Perspective>>;
 
     return this.orbitdbConnection.perspectiveStore(
-      singedPerspective.object.payload
+      signedPerspective.object.payload
     );
   }
 
@@ -126,10 +126,6 @@ export class EveesOrbitDB implements EveesRemote {
 
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);
-
-    // const perspectiveStore = await this.getPerspectiveStore(
-    //   secured.object.payload
-    // );
 
     await this.updatePerspective(perspectiveId, details);
   }
@@ -153,8 +149,8 @@ export class EveesOrbitDB implements EveesRemote {
     if (!(await this.isLogged())) throw notLogged();
     if (!this.orbitdbConnection)
       throw new Error('orbit db connection undefined');
-
     if (details.name) throw new Error('details.name is not supported');
+
     const currentDetails: PerspectiveDetails = await this.getPerspective(
       perspectiveId
     );
@@ -165,7 +161,6 @@ export class EveesOrbitDB implements EveesRemote {
     );
 
     const newDetails: PerspectiveDetails = { ...currentDetails, ...details };
-
     const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
     await perspectiveStore.add(newDetails);
 
@@ -195,12 +190,7 @@ export class EveesOrbitDB implements EveesRemote {
       throw new Error('orbit db connection undefined');
 
     const contextStore = await this.orbitdbConnection.contextStore(context);
-
-    const perspectiveIds = contextStore
-      .iterator({ limit: -1 })
-      .collect()
-      .map((e) => e.payload.value);
-    // const perspectiveIds = [...(await contextStore.values())];
+    const perspectiveIds = [...contextStore.values()];
 
     this.logger.log(
       `[OrbitDB] getContextPerspectives of ${context}`,
@@ -217,13 +207,9 @@ export class EveesOrbitDB implements EveesRemote {
     debugger;
 
     const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
-
     const [latestEntry] = perspectiveStore.iterator({ limit: 1 }).collect();
 
-    // return latestEntry ? latestEntry.payload.value : defaultDetails;
-
     const output = latestEntry ? latestEntry.payload.value : defaultDetails;
-
     return { ...output };
   }
 
@@ -233,13 +219,13 @@ export class EveesOrbitDB implements EveesRemote {
       throw new Error('orbit db connection undefined');
 
     const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
-
     const [latestEntry] = perspectiveStore.iterator({ limit: 1 }).collect();
+
     const context = latestEntry && latestEntry.payload.value.context;
-    // if (context) {
-    //   const contextStore = await this.orbitdbConnection.contextStore(context);
-    //   await contextStore.delete(perspectiveId);
-    // }
+    if (context) {
+      const contextStore = await this.orbitdbConnection.contextStore(context);
+      await contextStore.delete(perspectiveId);
+    }
 
     await perspectiveStore.drop();
   }
