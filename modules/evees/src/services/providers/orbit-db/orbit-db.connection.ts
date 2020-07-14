@@ -29,7 +29,7 @@ export class OrbitDBConnection extends Connection {
 
   constructor(
     protected ipfsStore: any,
-    protected ipfs,
+    protected ipfs: any,
     options?: ConnectionOptions
   ) {
     super(options);

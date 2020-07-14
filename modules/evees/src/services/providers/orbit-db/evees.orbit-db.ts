@@ -30,8 +30,8 @@ const defaultDetails: PerspectiveDetails = {
 
 const notLogged = () => new Error('must be logged in to use this method');
 
-const msg = `
---UPRTCL SITE: <website name>--
+const msg = (website) => `
+--UPRTCL SITE: ${website}--
 
 PLEASE READ
 
@@ -239,7 +239,7 @@ export class EveesOrbitDB implements EveesRemote {
       return;
     }
     const signature = await this.ethConnection.signText(
-      msg,
+      msg(window.location.origin),
       this.ethConnection.getCurrentAccount()
     );
     const identity = await this.orbitdbConnection.deriveIdentity(signature);
