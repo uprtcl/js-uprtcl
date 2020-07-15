@@ -27,11 +27,7 @@ export class OrbitDBConnection extends Connection {
   private storeQueue = {};
   public identity: null | any = null;
 
-  constructor(
-    protected ipfsStore: any,
-    protected ipfs,
-    options?: ConnectionOptions
-  ) {
+  constructor(protected ipfsStore: any, options?: ConnectionOptions) {
     super(options);
     const AccessController = attachIpfsStore(this.ipfsStore);
     if (!OrbitDB.AccessControllers.isSupported(AccessController.type)) {
@@ -43,7 +39,6 @@ export class OrbitDBConnection extends Connection {
    * @override
    */
   protected async connect(): Promise<void> {
-    // this.instance = await OrbitDB.createInstance(this.ipfs);
     this.instance = await OrbitDB.createInstance(this.ipfsStore.client);
     this.identity = this.instance.identity;
   }

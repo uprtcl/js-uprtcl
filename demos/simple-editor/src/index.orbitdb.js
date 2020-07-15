@@ -21,22 +21,18 @@ import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
-import IPFS from 'ipfs';
-
 (async function () {
   // const c1host = 'http://localhost:3000/uprtcl/1';
   const c1host = 'https://api.intercreativity.io/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
 
-  const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
-  // const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
-  // const ipfsConfig = { host: 'ec2-54-145-41-139.compute-1.amazonaws.com', port: 5001, protocol: 'http' };
-  // const ipfsConfig = {
-  //   host: 'ipfs.intercreativity.io',
-  //   port: 443,
-  //   protocol: 'https',
-  // };
+  // const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
+  const ipfsConfig = {
+    host: 'ipfs.intercreativity.io',
+    port: 443,
+    protocol: 'https',
+  };
 
   const ipfsCidConfig = {
     version: 1,
@@ -50,8 +46,7 @@ import IPFS from 'ipfs';
   const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
   await ipfsStore.ready();
 
-  const ipfs = await IPFS.create();
-  const orbitDBConnection = new OrbitDBConnection(ipfsStore, ipfs, {});
+  const orbitDBConnection = new OrbitDBConnection(ipfsStore, {});
   const ethConnection = new EthereumConnection({ provider: ethHost });
 
   const httpEvees = new EveesOrbitDB(

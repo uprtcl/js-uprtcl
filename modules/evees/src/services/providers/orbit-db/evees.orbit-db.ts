@@ -93,6 +93,8 @@ export class EveesOrbitDB implements EveesRemote {
       );
     }
 
+    this.logger.log('persisting', secured);
+
     return perspectiveId;
   }
 
@@ -108,6 +110,8 @@ export class EveesOrbitDB implements EveesRemote {
       client,
       perspectiveId
     )) as Entity<Signed<Perspective>>;
+
+    this.logger.log('getting', { perspectiveId, signedPerspective });
 
     return this.orbitdbConnection.perspectiveStore(
       singedPerspective.object.payload
@@ -189,8 +193,6 @@ export class EveesOrbitDB implements EveesRemote {
    * @override
    */
   async getContextPerspectives(context: string): Promise<string[]> {
-    debugger;
-
     if (!this.orbitdbConnection)
       throw new Error('orbit db connection undefined');
 
@@ -210,8 +212,6 @@ export class EveesOrbitDB implements EveesRemote {
    * @override
    */
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    debugger;
-
     const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
 
     const [latestEntry] = perspectiveStore.iterator({ limit: 1 }).collect();
