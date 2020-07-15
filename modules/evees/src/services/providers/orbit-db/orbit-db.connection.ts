@@ -44,7 +44,7 @@ export class OrbitDBConnection extends Connection {
    */
   protected async connect(): Promise<void> {
     // this.instance = await OrbitDB.createInstance(this.ipfs);
-    this.instance = await OrbitDB.createInstance(this.ipfsStore.client);
+    this.instance = await OrbitDB.createInstance(this.ipfs);
     this.identity = this.instance.identity;
   }
 
