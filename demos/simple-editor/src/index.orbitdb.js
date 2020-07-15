@@ -46,7 +46,18 @@ import { SimpleWiki } from './simple-wiki';
   const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
   await ipfsStore.ready();
 
-  const orbitDBConnection = new OrbitDBConnection(ipfsStore, {});
+  const ipfs = await IPFS.create({
+    config: {
+      Addresses: {
+        Swarm: [
+          '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star/',
+          '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star/',
+          '/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star/',
+        ],
+      },
+    },
+  });
+  const orbitDBConnection = new OrbitDBConnection(ipfsStore, ipfs, {});
   const ethConnection = new EthereumConnection({ provider: ethHost });
 
   const httpEvees = new EveesOrbitDB(

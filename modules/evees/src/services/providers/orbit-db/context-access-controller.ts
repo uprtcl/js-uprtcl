@@ -27,7 +27,7 @@ function attachIpfsStore (ipfsStore: IpfsStore) {
           const { payload: perspective } = (await ipfsStore.get(
             perspectiveId
           )) as Signed<Perspective>;
-          if (perspective.creatorId !== entry.identity) return false;
+          if (perspective.creatorId !== entry.identity.id) return false;
 
           // check identity is valid
           return identityProvider.verifyIdentity(entry.identity);
