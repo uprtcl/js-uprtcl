@@ -77,7 +77,7 @@ export class OrbitDBConnection extends Connection {
 
   public async contextAddress(context: string): Promise<any> {
     return this.instance.determineAddress(`context-store/${context}`, 'set', {
-      accessController: { type: 'ipfs', write: ['*'] },
+      accessController: { type: 'context', write: ['*'] },
     });
   }
 
