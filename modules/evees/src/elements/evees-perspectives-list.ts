@@ -100,24 +100,28 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
 
     /** data on other perspectives (proposals are injected on them) */
-    this.perspectivesData = result.data.entity.context.perspectives.map(
-      (perspective): PerspectiveData => {
-        const publicRead =
-          perspective._context.patterns.accessControl.permissions.publicRead !==
-          undefined
-            ? perspective._context.patterns.accessControl.permissions.publicRead
-            : true;
+    this.perspectivesData =
+      result.data.entity.context === null
+        ? []
+        : result.data.entity.context.perspectives.map(
+            (perspective): PerspectiveData => {
+              const publicRead =
+                perspective._context.patterns.accessControl.permissions
+                  .publicRead !== undefined
+                  ? perspective._context.patterns.accessControl.permissions
+                      .publicRead
+                  : true;
 
-        return {
-          id: perspective.id,
-          name: perspective.name,
-          creatorId: perspective.payload.creatorId,
-          timestamp: perspective.payload.timestamp,
-          remote: perspective.payload.remote,
-          publicRead: publicRead,
-        };
-      }
-    );
+              return {
+                id: perspective.id,
+                name: perspective.name,
+                creatorId: perspective.payload.creatorId,
+                timestamp: perspective.payload.timestamp,
+                remote: perspective.payload.remote,
+                publicRead: publicRead,
+              };
+            }
+          );
 
     this.otherPerspectivesData = this.perspectivesData.filter(
       (perspectiveData) => perspectiveData.id !== this.firstPerspectiveId

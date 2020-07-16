@@ -46,6 +46,8 @@ export const eveesResolvers: IResolvers = {
     async perspectives(parent, _, { container }) {
       const context = typeof parent === 'string' ? parent : parent.context;
 
+      if (context === undefined) return [];
+
       const evees: Evees = container.get(EveesBindings.Evees);
       const eveesRemotes: EveesRemote[] = container.getAll(
         EveesBindings.EveesRemote

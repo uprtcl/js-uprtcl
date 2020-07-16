@@ -68,6 +68,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   ref!: string;
 
   @property({ attribute: false })
+  loading: boolean = false;
+
+  @property({ attribute: false })
   wiki: Entity<Wiki> | undefined;
 
   @property({ type: Number })
@@ -81,7 +84,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   remote: string = '';
   path: string = '';
-  context: string = '';
+  context: string | undefined = undefined;
   currentHeadId: string | undefined = undefined;
   editable: boolean = false;
 
@@ -196,6 +199,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async loadWiki() {
     if (this.ref === undefined) return;
 
+    this.loading = true;
+
     const perspective = (await loadEntity(this.client, this.ref)) as Entity<
       Signed<Perspective>
     >;
@@ -227,12 +232,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.ref);
 
-    this.loadPagesData();
     this.requestUpdate();
+    await this.loadPagesData();
+
+    this.loading = false;
   }
 
   async loadPagesData() {
-    if (!this.wiki) return;
+    if (!this.wiki) {
+      this.pagesList = [];
+      return;
+    }
 
     this.logger.log('loadPagesData()');
 
@@ -686,7 +696,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       ref: this.ref,
       editable: this.editable,
     });
-    if (!this.wiki || !this.ref)
+    if (this.loading || !this.ref)
       return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`

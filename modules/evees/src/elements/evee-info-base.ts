@@ -58,7 +58,7 @@ interface PerspectiveData {
   canWrite?: Boolean;
   permissions?: any;
   head?: Entity<Commit>;
-  data: Entity<any>;
+  data?: Entity<any>;
 }
 
 export class EveesInfoBase extends moduleConnect(LitElement) {
@@ -184,8 +184,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
           ? await loadEntity<Commit>(this.client, headId)
           : undefined;
       const data = await EveesHelpers.getPerspectiveData(this.client, this.ref);
-      if (data === undefined)
-        throw new Error(`undefined data for ref ${this.ref}`);
 
       this.perspectiveData = {
         id: this.ref,

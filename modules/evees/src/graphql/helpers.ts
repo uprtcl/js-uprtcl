@@ -52,7 +52,7 @@ export class EveesHelpers {
   static async getPerspectiveContext(
     client: ApolloClient<any>,
     perspectiveId: string
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const result = await client.query({
       query: gql`
         {
@@ -66,7 +66,7 @@ export class EveesHelpers {
           }
         }`,
     });
-    return result.data.entity.context.id;
+    return result.data.entity.context?.id;
   }
 
   static async getPerspectiveRemoteId(
