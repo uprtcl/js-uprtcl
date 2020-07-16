@@ -46,7 +46,7 @@ import IPFS from 'ipfs';
   const orchestrator = new MicroOrchestrator();
 
   const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
-  // await ipfsStore.ready();
+  await ipfsStore.ready();
 
   const ipfsJSConfig = {
     config: {

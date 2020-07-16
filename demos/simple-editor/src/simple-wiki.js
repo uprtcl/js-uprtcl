@@ -64,8 +64,9 @@ export class SimpleWiki extends moduleConnect(LitElement) {
 
       const client = this.request(ApolloClientModule.bindings.Client);
 
+      const randint = 0 + Math.floor((10000 - 0) * Math.random());
       const wiki = {
-        title: 'Genesis Wiki',
+        title: `Genesis Wiki ${randint}`,
         pages: [],
       };
 
@@ -82,7 +83,6 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         }
       );
 
-      const randint = 0 + Math.floor((10000 - 0) * Math.random());
       const perspectiveId = await EveesHelpers.createPerspective(
         client,
         eveesEthRemote,
