@@ -65,6 +65,7 @@ import {
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 import { ProposalsProvider } from '../../proposals.provider';
+import { DAOConnector } from '@uprtcl/access-control/dist/types/services/dao-connector.service';
 
 const evees_if = 'evees-v0';
 
@@ -84,7 +85,8 @@ export class EveesEthereum extends IpfsStore
     protected ethConnection: EthereumConnection,
     protected ipfsOptions: IpfsConnectionOptions,
     cidConfig: CidConfig,
-    container: Container,
+    protected container: Container,
+    protected daoConnector?: DAOConnector,
     uprtclRootOptions: EthereumContractOptions = {
       contract: UprtclRoot as any,
     },
@@ -123,7 +125,9 @@ export class EveesEthereum extends IpfsStore
       this.uprtclProposals,
       this.uprtclWrapper,
       this.accessControl,
-      this
+      this,
+      this.ethConnection,
+      this.daoConnector
     );
   }
 

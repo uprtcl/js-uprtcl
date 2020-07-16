@@ -3,10 +3,12 @@ import { injectable } from 'inversify';
 
 import { Lens, HasLenses } from '@uprtcl/lenses';
 import { Pattern, Entity } from '@uprtcl/cortex';
+import { DAOProposal } from '@uprtcl/access-control';
+
 import { EveesBindings } from '../bindings';
 
-export class DAOProposalPattern extends Pattern<any> {
-  recognize(entity: any) {
+export class DAOProposalPattern extends Pattern<DAOProposal> {
+  recognize(entity: DAOProposal) {
     return entity.type ? entity.type === 'dao-proposal' : false;
   }
 
@@ -21,7 +23,6 @@ export class DAOProposalLenses implements HasLenses<any> {
         name: 'evees:proposal',
         type: 'content',
         render: (entity: Entity<any>, context: any) => {
-          TODO!!!;
           return html`
             <proposal-ui .data=${node} ref=${entity.id}> </proposal-ui>
           `;

@@ -4,7 +4,7 @@ import { Voting, Vote } from '@aragon/connect-thegraph-voting';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
-import { DAOConnector, DAOMember } from './dao-connector.service';
+import { DAOConnector, DAOMember, DAOProposal } from './dao-connector.service';
 
 const ALL_TOKEN_MANAGER_SUBGRAPH_URL =
   'https://api.thegraph.com/subgraphs/name/aragon/aragon-tokens-rinkeby';
@@ -92,13 +92,29 @@ export class AragonConnector implements DAOConnector {
       )
       .map((v) => {
         return {
+          type: 'dao-proposal',
           id: v.id,
-          address: v.txRequest?.descriptionAnnotated[1].value,
           yea: v.yea,
           nay: v.nay,
           possibleVotes: v.votingPower,
+          subject: { address: v.txRequest?.descriptionAnnotated[1].value },
         };
       });
+  }
+
+  async getProposal(voteId: string) {
+    const votes: VoteWithDescripton[] = await this.voting.votes();
+    const vote = votes.find((v) => v.id === voteId);
+    if (!vote) throw new Error(`vote ${voteId} not found`);
+    const proposal: DAOProposal = {
+      type: 'dao-proposal',
+      id: vote.id,
+      yea: vote.yea,
+      nay: vote.nay,
+      possibleVotes: vote.votingPower,
+      subject: '',
+    };
+    return proposal;
   }
 
   async vote(proposalId: string, value: boolean): Promise<void> {

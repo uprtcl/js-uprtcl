@@ -8,7 +8,7 @@ import { DAOPermissions } from '../services/dao-access-control.service';
 import {
   DAOConnector,
   DAOMember,
-  DAOMemberProposal,
+  DAOProposal,
 } from '../services/dao-connector.service';
 import { AragonConnector } from '../services/aragon-connector';
 
@@ -36,7 +36,7 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   members: DAOMember[] = [];
 
   @property({ attribute: false })
-  newMemberProposals: DAOMemberProposal[] = [];
+  newMemberProposals: DAOProposal[] = [];
 
   daoConnector!: DAOConnector;
 

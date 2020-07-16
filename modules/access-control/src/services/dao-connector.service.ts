@@ -3,18 +3,19 @@ export interface DAOMember {
   balance: string;
 }
 
-export interface DAOMemberProposal {
+export interface DAOProposal {
+  type: string;
   id: string;
-  address: string;
   yea: string;
   nay: string;
   possibleVotes: string;
+  subject: any;
 }
-
 export interface DAOConnector {
   connect(address: string): Promise<void>;
   getMembers(): Promise<DAOMember[]>;
   addMember(member: DAOMember): Promise<void>;
-  getNewMemberProposals(): Promise<DAOMemberProposal[]>;
+  getNewMemberProposals(): Promise<DAOProposal[]>;
   vote(proposalId: string, value: boolean): Promise<void>;
+  getProposal(proposalId: string): Promise<DAOProposal>;
 }

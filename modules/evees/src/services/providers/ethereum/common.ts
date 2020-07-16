@@ -1,8 +1,12 @@
 import multihashing from 'multihashing-async';
 import CID from 'cids';
 
-import { EthereumContract } from '@uprtcl/ethereum-provider';
+import {
+  EthereumContract,
+  EthereumConnection,
+} from '@uprtcl/ethereum-provider';
 import { NewPerspectiveData } from '../../../types';
+import { DAOProposal } from '@uprtcl/access-control';
 
 /** Function signatures */
 const newPerspStr = '(string,bytes32,bytes32,address)';
@@ -172,12 +176,17 @@ export interface ProposalDetails {
   toHeadId: string;
   fromHeadId: string;
   nonce: number;
+  owner: string;
+  daoProposal?: DAOProposal;
 }
 
 export const getProposalDetails = async (
   uprtclProposals,
   proposalId
 ): Promise<ProposalDetails> => {
+  const ethProposal: EthProposal = await uprtclProposals.call(GET_PROPOSAL, [
+    proposalId,
+  ]);
   const events = await uprtclProposals.getPastEvents('ProposalCreated', {
     filter: { proposalId },
     fromBlock: 0,
@@ -193,12 +202,28 @@ export const getProposalDetails = async (
     toHeadId: e.returnValues.toHeadId,
     fromHeadId: e.returnValues.fromHeadId,
     nonce: e.returnValues.fromHeadId,
+    daoProposal: e.returnValues.daoProposal,
+    owner: ethProposal.owner,
   };
 };
 
 export interface HeadUpdateDetails {
   fromPerspectiveId: string;
   fromHeadId: string;
+}
+
+export interface EthProposal {
+  owner: string;
+  approvedAddresses: string[];
+  status: string;
+  authorized: string;
+  rejected: string;
+  withdrawn: string;
+  headUpdates: Array<{
+    perspectiveIdHash: string;
+    headCid1: string;
+    headCid0: string;
+  }>;
 }
 
 export const getHeadUpdateDetails = async (
@@ -225,3 +250,16 @@ export const getHeadUpdateDetails = async (
 export interface PerspectiveCreator {
   preparePerspectives(newPerspectivesData: NewPerspectiveData[]);
 }
+
+export enum OwnerType {
+  ExternalAddress = 'ExternalAddress',
+  AragonDAO = 'AragonDAO',
+  DAOstackDAO = 'DAOstackDAO',
+}
+
+export const getOwnerType = async (
+  eth: EthereumConnection,
+  owner: string
+): Promise<OwnerType> => {
+  return OwnerType.AragonDAO;
+};

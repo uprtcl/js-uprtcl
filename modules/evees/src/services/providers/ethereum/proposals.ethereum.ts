@@ -1,5 +1,8 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { EthereumContract } from '@uprtcl/ethereum-provider';
+import {
+  EthereumContract,
+  EthereumConnection,
+} from '@uprtcl/ethereum-provider';
 
 import { ProposalsProvider } from '../../proposals.provider';
 import {
@@ -23,9 +26,13 @@ import {
   hashToId,
   ZERO_HEX_32,
   PerspectiveCreator,
+  EthProposal,
+  getOwnerType,
+  OwnerType,
 } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { EveesEthereum } from './evees.ethereum';
+import { DAOConnector } from '@uprtcl/access-control/dist/types/services/dao-connector.service';
 
 export interface EthHeadUpdate {
   perspectiveIdHash: string;
@@ -42,7 +49,9 @@ export class ProposalsEthereum implements ProposalsProvider {
     protected uprtclProposals: EthereumContract,
     protected uprtclWrapper: EthereumContract,
     protected accessControl: EveesAccessControlEthereum,
-    protected perspectiveCreator: PerspectiveCreator
+    protected perspectiveCreator: PerspectiveCreator,
+    protected ethConnection: EthereumConnection,
+    protected daoConnector?: DAOConnector
   ) {}
 
   async ready(): Promise<void> {
@@ -181,9 +190,10 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('getProposal() - pre', { proposalId });
 
-    const ethProposal = await this.uprtclProposals.call(GET_PROPOSAL, [
-      proposalId,
-    ]);
+    const ethProposal: EthProposal = await this.uprtclProposals.call(
+      GET_PROPOSAL,
+      [proposalId]
+    );
 
     const ethProposalDetails = await getProposalDetails(
       this.uprtclProposals.contractInstance,
@@ -228,6 +238,27 @@ export class ProposalsEthereum implements ProposalsProvider {
           this.uprtclProposals.userId.toLocaleLowerCase()
         : false;
 
+    /** add details about the owner of the proposal, if it's a DAO */
+    let details:any = undefined;
+
+    if (this.daoConnector !== undefined) {
+      const ownerType = await getOwnerType(
+        this.ethConnection,
+        ethProposal.owner
+      );
+
+      switch (ownerType) {
+        case OwnerType.AragonDAO:
+          if (ethProposalDetails.daoProposal === undefined) throw new Error('');
+          details = await this.daoConnector.getProposal(
+            ethProposalDetails.daoProposal.id
+          );
+          break;
+        default:
+          throw new Error('unexpected owner type');
+      }
+    }
+
     const proposal: Proposal = {
       id: proposalId,
       creatorId: '',
@@ -240,9 +271,7 @@ export class ProposalsEthereum implements ProposalsProvider {
       authorized: ethProposal.authorized === '1',
       executed: executed,
       canAuthorize: canAuthorize,
-      details: {
-        type: 'dao-proposal',
-      },
+      details: details,
     };
 
     this.logger.info('getProposal() - post', { proposal });

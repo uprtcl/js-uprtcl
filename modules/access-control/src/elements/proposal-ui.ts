@@ -1,11 +1,11 @@
 import { LitElement, property, html, query, css } from 'lit-element';
-import { DAOMemberProposal } from 'src/services/dao-connector.service';
+import { DAOProposal } from '../services/dao-connector.service';
 
 import '@material/mwc-icon';
 
 export class ProposalUI extends LitElement {
   @property({ type: Object })
-  proposal!: DAOMemberProposal;
+  proposal!: DAOProposal;
 
   async firstUpdated() {}
 
@@ -30,7 +30,6 @@ export class ProposalUI extends LitElement {
     return html`
       <div>
         <div class="row">
-          <evees-author user-id=${this.proposal.address}></evees-author>
           <div class="vote-buttons">
             <div class="icon-container">
               <mwc-icon-button icon="clear" @click=${() => this.vote(false)}>
