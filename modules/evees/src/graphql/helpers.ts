@@ -32,7 +32,7 @@ export class EveesHelpers {
   static async getPerspectiveHeadId(
     client: ApolloClient<any>,
     perspectiveId: string
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const result = await client.query({
       query: gql`
         {
@@ -46,7 +46,7 @@ export class EveesHelpers {
           }
         }`,
     });
-    return result.data.entity.head.id;
+    return result.data.entity.head?.id;
   }
 
   static async getPerspectiveContext(
@@ -84,16 +84,18 @@ export class EveesHelpers {
   static async getPerspectiveDataId(
     client: ApolloClient<any>,
     perspectiveId: string
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const headId = await this.getPerspectiveHeadId(client, perspectiveId);
+    if (headId === undefined) return undefined;
     return this.getCommitDataId(client, headId);
   }
 
   static async getPerspectiveData(
     client: ApolloClient<any>,
     perspectiveId: string
-  ): Promise<Entity<any>> {
+  ): Promise<Entity<any> | undefined> {
     const headId = await this.getPerspectiveHeadId(client, perspectiveId);
+    if (headId === undefined) return undefined;
     return this.getCommitData(client, headId);
   }
 

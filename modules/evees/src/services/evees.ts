@@ -200,13 +200,17 @@ export class Evees {
       perspectiveId
     );
 
-    const forkCommitId = await this.forkCommit(
-      headId,
-      workspace,
-      eveesRemote.id,
-      canWrite,
-      perspective.id // this perspective is set as the parent of the children's new perspectives
-    );
+    let forkCommitId: string | undefined = undefined;
+
+    if (headId !== undefined) {
+      forkCommitId = await this.forkCommit(
+        headId,
+        workspace,
+        eveesRemote.id,
+        canWrite,
+        perspective.id // this perspective is set as the parent of the children's new perspectives
+      );
+    }
 
     workspace.newPerspective({
       perspective,

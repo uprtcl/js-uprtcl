@@ -179,8 +179,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         this.ref
       );
 
-      const head = await loadEntity<Commit>(this.client, headId);
+      const head =
+        headId !== undefined
+          ? await loadEntity<Commit>(this.client, headId)
+          : undefined;
       const data = await EveesHelpers.getPerspectiveData(this.client, this.ref);
+      if (data === undefined)
+        throw new Error(`undefined data for ref ${this.ref}`);
 
       this.perspectiveData = {
         id: this.ref,
@@ -375,6 +380,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       fromPerspectiveId
     );
 
+    if (fromHeadId === undefined)
+      throw new Error(`undefuned head for ${fromPerspectiveId}`);
+
     if (isProposal) {
       await this.createMergeProposal(
         fromPerspectiveId,
@@ -415,7 +423,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     fromPerspectiveId: string,
     toPerspectiveId: string,
     fromHeadId: string,
-    toHeadId: string,
+    toHeadId: string | undefined,
     workspace: EveesWorkspace
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
