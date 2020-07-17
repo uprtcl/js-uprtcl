@@ -52,8 +52,9 @@ export class PermissionsForEntity extends moduleConnect(LitElement) {
     });
 
     this.permissions =
-      result.data.entity._context.patterns.accessControl.permissions;
-    this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
+      result.data?.entity._context.patterns.accessControl.permissions;
+    this.canWrite =
+      result.data?.entity._context.patterns.accessControl.canWrite;
   }
 
   render() {

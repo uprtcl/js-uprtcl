@@ -97,35 +97,37 @@ export class ProposalsList extends moduleConnect(LitElement) {
         }`,
     });
 
-    const getProposals: Proposal[] = result.data.entity.proposals.map(
-      async (prop): Promise<Proposal> => {
-        const updates = prop.updates.map((update) => {
-          return {
-            perspectiveId: update.toPerspective.id,
-            fromPerspectiveId: update.fromPerspective.id,
-            oldHeadId: update.oldHead.id,
-            newHeadId: update.newHead.id,
-          };
-        });
+    const getProposals: Proposal[] = result.data
+      ? result.data.entity.proposals.map(
+          async (prop): Promise<Proposal> => {
+            const updates = prop.updates.map((update) => {
+              return {
+                perspectiveId: update.toPerspective.id,
+                fromPerspectiveId: update.fromPerspective.id,
+                oldHeadId: update.oldHead.id,
+                newHeadId: update.newHead.id,
+              };
+            });
 
-        const fromPerspective = await loadEntity<Signed<Perspective>>(
-          this.client,
-          prop.fromPerspective.id
-        );
+            const fromPerspective = await loadEntity<Signed<Perspective>>(
+              this.client,
+              prop.fromPerspective.id
+            );
 
-        return {
-          id: prop.id,
-          fromPerspectiveId: prop.fromPerspective.id,
-          creatorId: fromPerspective
-            ? fromPerspective.object.payload.creatorId
-            : '',
-          authorized: prop.authorized,
-          canAuthorize: prop.canAuthorize,
-          executed: prop.executed,
-          updates,
-        };
-      }
-    );
+            return {
+              id: prop.id,
+              fromPerspectiveId: prop.fromPerspective.id,
+              creatorId: fromPerspective
+                ? fromPerspective.object.payload.creatorId
+                : '',
+              authorized: prop.authorized,
+              canAuthorize: prop.canAuthorize,
+              executed: prop.executed,
+              updates,
+            };
+          }
+        )
+      : [];
 
     const proposals = await Promise.all(getProposals);
 

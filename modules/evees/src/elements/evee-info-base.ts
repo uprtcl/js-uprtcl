@@ -139,6 +139,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       ) as EveesRemote[]).find(
         (remote) => remote.authority === this.defaultAuthority
       );
+    } else {
+      this.defaultRemote = this.request(EveesBindings.DefaultRemote);
     }
 
     this.load();

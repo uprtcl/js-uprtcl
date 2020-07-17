@@ -732,7 +732,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
                   <div class="evee-info">
                     <evees-info-page
-                      slot="evee-page"
                       uref=${this.uref}
                       first-uref=${this.firstRef as string}
                       evee-color=${this.color()}

@@ -958,14 +958,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    // this.addEventListener('keydown', event => {
-    //   if (event.keyCode === 83) {
-    //     if (event.ctrlKey === true) {
-    //       event.preventDefault();
-    //       this.persistAll();
-    //     }
-    //   }
-    // });
+    this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
+      event.stopPropagation();
+      this.uref = event.detail.perspectiveId;
+    }) as EventListener);
   }
 
   commitWithMessageClicked() {
@@ -1001,7 +997,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return html`
       <div class="row">
         <div class="evee-info">
-          ${false
+          ${true
             ? html`
                 <evees-info-popper
                   uref=${node.uref}
@@ -1191,6 +1187,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .evee-info {
         width: 10px;
         flex-shrink: 0 0 0;
+        display: flex;
+        flex-direction: column;
       }
 
       .node-content {
@@ -1205,7 +1203,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .node-mark {
         position: absolute;
         top: 0px;
-        left: -6px;
+        left: 0px;
         height: 100%;
         display: flex;
         flex-direction: column;

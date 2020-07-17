@@ -97,27 +97,32 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     });
 
     /** data on this perspective */
-    this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
+    this.canWrite = result.data
+      ? result.data.entity._context.patterns.accessControl.canWrite
+      : false;
 
     /** data on other perspectives (proposals are injected on them) */
-    this.perspectivesData = result.data.entity.context.perspectives.map(
-      (perspective): PerspectiveData => {
-        const publicRead =
-          perspective._context.patterns.accessControl.permissions.publicRead !==
-          undefined
-            ? perspective._context.patterns.accessControl.permissions.publicRead
-            : true;
+    this.perspectivesData = result.data
+      ? result.data.entity.context.perspectives.map(
+          (perspective): PerspectiveData => {
+            const publicRead =
+              perspective._context.patterns.accessControl.permissions
+                .publicRead !== undefined
+                ? perspective._context.patterns.accessControl.permissions
+                    .publicRead
+                : true;
 
-        return {
-          id: perspective.id,
-          name: perspective.name,
-          creatorId: perspective.payload.creatorId,
-          timestamp: perspective.payload.timestamp,
-          authority: perspective.payload.authority,
-          publicRead: publicRead,
-        };
-      }
-    );
+            return {
+              id: perspective.id,
+              name: perspective.name,
+              creatorId: perspective.payload.creatorId,
+              timestamp: perspective.payload.timestamp,
+              authority: perspective.payload.authority,
+              publicRead: publicRead,
+            };
+          }
+        )
+      : [];
 
     this.otherPerspectivesData = this.perspectivesData.filter(
       (perspectiveData) => perspectiveData.id !== this.firstPerspectiveId
