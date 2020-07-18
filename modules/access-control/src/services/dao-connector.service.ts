@@ -18,4 +18,9 @@ export interface DAOConnector {
   getNewMemberProposals(): Promise<DAOProposal[]>;
   vote(proposalId: string, value: boolean): Promise<void>;
   getProposal(proposalId: string): Promise<DAOProposal>;
+  createAgentProposal(
+    onContract: string,
+    functionSignature: string,
+    parameters: Array<any>
+  );
 }

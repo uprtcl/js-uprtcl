@@ -1,5 +1,6 @@
 import { connect, Organization, describeScript, App } from '@aragon/connect';
 import { TokenManager, Token } from '@aragon/connect-thegraph-token-manager';
+import { execAppMethod } from '@aragon/toolkit';
 import { Voting, Vote } from '@aragon/connect-thegraph-voting';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
@@ -34,18 +35,25 @@ export class AragonConnector implements DAOConnector {
   tokenManager!: TokenManager;
   token!: Token;
   voting!: Voting;
+  agentAddress!: string;
 
   constructor(protected eth: EthereumConnection) {}
 
   async connect(address: string) {
     this.org = await connect(address, 'thegraph', { chainId: 4 });
     this.apps = await this.org.apps();
+
+    debugger;
+
     const tokenApp = this.apps.find((app) => app.name === 'token-manager');
     const votingApp = this.apps.find((app) => app.name === 'voting');
+    const agent = this.apps.find((app) => app.name === 'agent');
 
     if (!tokenApp) throw new Error('token manager not found');
     if (!votingApp) throw new Error('voting not found');
+    if (!agent) throw new Error('agent app not found');
 
+    this.agentAddress = agent.address;
     this.tokenManager = new TokenManager(
       tokenApp.address,
       ALL_TOKEN_MANAGER_SUBGRAPH_URL,
@@ -125,5 +133,19 @@ export class AragonConnector implements DAOConnector {
     ]);
     const paths = await intent.paths(this.eth.getCurrentAccount());
     await this.eth.sendTransaction(paths.transactions[0]);
+  }
+
+  async createAgentProposal(
+    onContract: string,
+    functionSignature: string,
+    parameters: any[]
+  ) {
+    await execAppMethod(
+      this.org.address,
+      this.agentAddress,
+      functionSignature,
+      parameters,
+      this.eth.provider.networkName
+    );
   }
 }

@@ -138,11 +138,13 @@ export class ProposalsEthereum implements ProposalsProvider {
       this.uprtclProposals.userId,
     ]);
 
-    const requestId = this.uprtclProposals.call(GET_PROPOSAL_ID, [
+    const requestId = await this.uprtclProposals.call(GET_PROPOSAL_ID, [
       proposal.toPerspectiveId,
       proposal.fromPerspectiveId,
       ethProposal.nonce,
     ]);
+
+    this.createDAOProposal(requestId);
 
     this.logger.info('createProposal() - post', {
       requestId,
@@ -171,11 +173,13 @@ export class ProposalsEthereum implements ProposalsProvider {
       this.uprtclProposals.userId,
     ]);
 
-    const requestId = this.uprtclProposals.call(GET_PROPOSAL_ID, [
+    const requestId = await this.uprtclProposals.call(GET_PROPOSAL_ID, [
       proposal.toPerspectiveId,
       proposal.fromPerspectiveId,
       ethProposal.nonce,
     ]);
+
+    this.createDAOProposal(requestId);
 
     this.logger.info('createProposal() - post', {
       requestId,
@@ -183,6 +187,32 @@ export class ProposalsEthereum implements ProposalsProvider {
     });
 
     return requestId;
+  }
+
+  async createDAOProposal(proposalId: string) {
+    const ethProposal: EthProposal = await this.uprtclProposals.call(
+      GET_PROPOSAL,
+      [proposalId]
+    );
+
+    if (this.daoConnector !== undefined) {
+      const ownerType = await getOwnerType(
+        this.ethConnection,
+        ethProposal.owner
+      );
+
+      switch (ownerType) {
+        case OwnerType.AragonDAO:
+          await this.daoConnector.createAgentProposal(
+            this.uprtclProposals.contractInstance.options.address,
+            AUTHORIZE_PROPOSAL,
+            [proposalId]
+          );
+          break;
+        default:
+          throw new Error('unexpected owner type');
+      }
+    }
   }
 
   async getProposal(proposalId: string): Promise<Proposal> {
@@ -239,7 +269,7 @@ export class ProposalsEthereum implements ProposalsProvider {
         : false;
 
     /** add details about the owner of the proposal, if it's a DAO */
-    let details:any = undefined;
+    let details: any = undefined;
 
     if (this.daoConnector !== undefined) {
       const ownerType = await getOwnerType(
