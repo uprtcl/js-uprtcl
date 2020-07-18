@@ -1,6 +1,6 @@
 import { connect, Organization, describeScript, App } from '@aragon/connect';
 import { TokenManager, Token } from '@aragon/connect-thegraph-token-manager';
-import { execAppMethod } from '@aragon/toolkit';
+// import { execAppMethod } from '@aragon/toolkit';
 import { Voting, Vote } from '@aragon/connect-thegraph-voting';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
@@ -140,12 +140,12 @@ export class AragonConnector implements DAOConnector {
     functionSignature: string,
     parameters: any[]
   ) {
-    await execAppMethod(
-      this.org.address,
-      this.agentAddress,
-      functionSignature,
-      parameters,
-      this.eth.provider.networkName
-    );
+    // await execAppMethod(
+    //   this.org.address,
+    //   this.agentAddress,
+    //   functionSignature,
+    //   parameters,
+    //   this.eth.provider.networkName
+    // );
   }
 }

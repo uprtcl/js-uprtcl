@@ -14,7 +14,6 @@
     "@aragon/connect": "^0.4.2",
     "@aragon/connect-thegraph-token-manager": "^0.3.0",
     "@aragon/connect-thegraph-voting": "^0.4.2",
-    "@aragon/toolkit": "0.0.7-beta.1",
     "@material/mwc-button": "^0.14.1",
     "@material/mwc-dialog": "^0.14.1",
     "@material/mwc-list": "^0.14.1",
