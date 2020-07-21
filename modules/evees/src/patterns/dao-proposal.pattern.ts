@@ -22,10 +22,8 @@ export class DAOProposalLenses implements HasLenses<any> {
       {
         name: 'evees:proposal',
         type: 'content',
-        render: (entity: Entity<any>, context: any) => {
-          return html`
-            <proposal-ui .data=${node} ref=${entity.id}> </proposal-ui>
-          `;
+        render: (proposal: DAOProposal, context: any) => {
+          return html` <proposal-ui .proposal=${proposal}> </proposal-ui> `;
         },
       },
     ];

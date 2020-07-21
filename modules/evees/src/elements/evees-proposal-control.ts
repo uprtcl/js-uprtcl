@@ -27,7 +27,6 @@ export class EveesProposalControl extends moduleConnect(LitElement) {
   }
 
   async loadProposal() {
-    debugger;
     if (this.proposalRef === undefined) return;
 
     this.evees = this.request(EveesBindings.Evees);

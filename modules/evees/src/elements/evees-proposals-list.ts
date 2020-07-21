@@ -157,8 +157,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
   }
 
   async showProposalChanges(proposal: Proposal) {
-    debugger;
-
     const workspace = new EveesWorkspace(this.client);
     if (proposal.updates) {
       for (const update of proposal.updates) {
