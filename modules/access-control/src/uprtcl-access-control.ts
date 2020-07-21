@@ -22,3 +22,4 @@ export {
 export { SET_CAN_WRITE, SET_PUBLIC_READ } from './graphql/queries';
 
 export { DAOProposal } from './services/dao-connector.service';
+export { AragonConnector } from './services/aragon-connector';

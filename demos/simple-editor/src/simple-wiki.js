@@ -79,7 +79,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         {
           headId,
           context: `dao-space-${randint}`,
-          canWrite: '0x246dEe41716ABef61d3C33628AB7F830D46CA0A2',
+          canWrite: '0x72920844a39467e729e615eadb8dca77d68678e1',
         }
       );
 

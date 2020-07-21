@@ -17,10 +17,11 @@ export interface DAOConnector {
   addMember(member: DAOMember): Promise<void>;
   getNewMemberProposals(): Promise<DAOProposal[]>;
   vote(proposalId: string, value: boolean): Promise<void>;
-  getProposal(proposalId: string): Promise<DAOProposal>;
+  getDaoProposal(proposalId: string): Promise<DAOProposal>;
+  getDaoProposalFromUprtclProposalId(proposalId: string): Promise<DAOProposal>;
   createAgentProposal(
     onContract: string,
-    functionSignature: string,
-    parameters: Array<any>
+    value: string,
+    calldataEncoded: string
   );
 }

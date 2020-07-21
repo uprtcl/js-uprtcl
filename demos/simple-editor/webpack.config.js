@@ -28,9 +28,6 @@ module.exports = {
     port: 8082,
   },
   mode: 'production',
-  node: {
-    fs: 'empty',
-  },
   module: {
     rules: [
       {

@@ -1,6 +1,5 @@
 import { connect, Organization, describeScript, App } from '@aragon/connect';
 import { TokenManager, Token } from '@aragon/connect-thegraph-token-manager';
-import { execAppMethod } from '@aragon/toolkit';
 import { Voting, Vote } from '@aragon/connect-thegraph-voting';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
@@ -23,7 +22,7 @@ interface TransactionRequest {
   descriptionAnnotated: Annotation[];
 }
 
-type VoteWithDescripton = Vote & { txRequest?: TransactionRequest };
+type VoteWithDescription = Vote & { txRequest?: TransactionRequest };
 
 function voteId(id: string) {
   return String(parseInt(id.match(/voteId:(.+)$/)?.[1] || '0'));
@@ -40,10 +39,13 @@ export class AragonConnector implements DAOConnector {
   constructor(protected eth: EthereumConnection) {}
 
   async connect(address: string) {
-    this.org = await connect(address, 'thegraph', { chainId: 4 });
+    console.error('TODO: agent address to org address mapping');
+    this.org = await connect(
+      '0x3b3e701962407E8E0D3e05aF57F62Fb645715ed9',
+      'thegraph',
+      { chainId: 4 }
+    );
     this.apps = await this.org.apps();
-
-    debugger;
 
     const tokenApp = this.apps.find((app) => app.name === 'token-manager');
     const votingApp = this.apps.find((app) => app.name === 'voting');
@@ -84,7 +86,7 @@ export class AragonConnector implements DAOConnector {
   }
 
   async getNewMemberProposals() {
-    const votes: VoteWithDescripton[] = await this.voting.votes();
+    const votes: VoteWithDescription[] = await this.voting.votes();
     await Promise.all(
       votes.map(async (v) => {
         v.txRequest = (
@@ -110,9 +112,30 @@ export class AragonConnector implements DAOConnector {
       });
   }
 
-  async getProposal(voteId: string) {
-    const votes: VoteWithDescripton[] = await this.voting.votes();
+  async getDaoProposal(voteId: string) {
+    const votes: VoteWithDescription[] = await this.voting.votes();
     const vote = votes.find((v) => v.id === voteId);
+    if (!vote) throw new Error(`vote ${voteId} not found`);
+    const proposal: DAOProposal = {
+      type: 'dao-proposal',
+      id: vote.id,
+      yea: vote.yea,
+      nay: vote.nay,
+      possibleVotes: vote.votingPower,
+      subject: '',
+    };
+    return proposal;
+  }
+
+  async getDaoProposalFromUprtclProposalId(
+    uprtclProposalId: string
+  ): Promise<DAOProposal> {
+    const votes: VoteWithDescription[] = await this.voting.votes();
+
+    const vote = votes.find(
+      (v) => v.script.indexOf(uprtclProposalId.slice(2)) !== -1
+    );
+
     if (!vote) throw new Error(`vote ${voteId} not found`);
     const proposal: DAOProposal = {
       type: 'dao-proposal',
@@ -137,15 +160,15 @@ export class AragonConnector implements DAOConnector {
 
   async createAgentProposal(
     onContract: string,
-    functionSignature: string,
-    parameters: any[]
+    value: string,
+    calldataEncoded: string
   ) {
-    await execAppMethod(
-      this.org.address,
-      this.agentAddress,
-      functionSignature,
-      parameters,
-      this.eth.provider.networkName
-    );
+    const intent = this.org.appIntent(this.agentAddress, 'execute', [
+      onContract,
+      value,
+      calldataEncoded,
+    ]);
+    const paths = await intent.paths(this.eth.getCurrentAccount());
+    await this.eth.sendTransaction(paths.transactions[0]);
   }
 }

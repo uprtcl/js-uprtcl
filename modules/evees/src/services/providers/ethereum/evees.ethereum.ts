@@ -45,7 +45,6 @@ import {
 } from '../../../types';
 import { EveesRemote } from '../../evees.remote';
 import {
-  CREATE_PERSP,
   UPDATE_PERSP_DETAILS,
   INIT_PERSP,
   GET_CONTEXT_HASH,
@@ -86,7 +85,6 @@ export class EveesEthereum extends IpfsStore
     protected ipfsOptions: IpfsConnectionOptions,
     cidConfig: CidConfig,
     protected container: Container,
-    protected daoConnector?: DAOConnector,
     uprtclRootOptions: EthereumContractOptions = {
       contract: UprtclRoot as any,
     },
@@ -126,8 +124,7 @@ export class EveesEthereum extends IpfsStore
       this.uprtclWrapper,
       this.accessControl,
       this,
-      this.ethConnection,
-      this.daoConnector
+      this.ethConnection
     );
   }
 

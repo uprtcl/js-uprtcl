@@ -55,7 +55,7 @@ export class TextNodePattern extends Pattern<Entity<TextNode>> {
   recognize(entity: object): boolean {
     return (
       recognizeEntity(entity) &&
-      propertyOrder.every((p) => entity.object.hasOwnProperty(p))
+      propertyOrder.every((p) => entity.object?.hasOwnProperty(p))
     );
   }
 

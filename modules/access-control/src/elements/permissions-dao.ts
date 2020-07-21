@@ -46,8 +46,8 @@ export class PermissionsDAO extends moduleConnect(LitElement)
     ) as EthereumConnection;
 
     this.daoConnector = new AragonConnector(ethConnection);
-
     await this.daoConnector.connect(this.permissions.owner);
+
     this.loadMembers();
     this.getNewMemberProposals();
   }

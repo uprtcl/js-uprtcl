@@ -62,6 +62,7 @@ import { SimpleWiki } from './simple-wiki';
     ethConnection,
     httpCidConfig
   );
+
   const ethEvees = new EveesEthereum(
     ethConnection,
     ipfsConfig,

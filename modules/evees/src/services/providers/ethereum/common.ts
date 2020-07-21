@@ -7,6 +7,7 @@ import {
 } from '@uprtcl/ethereum-provider';
 import { NewPerspectiveData } from '../../../types';
 import { DAOProposal } from '@uprtcl/access-control';
+import { EthHeadUpdate } from './proposals.ethereum';
 
 /** Function signatures */
 const newPerspStr = '(string,bytes32,bytes32,address)';
@@ -177,7 +178,6 @@ export interface ProposalDetails {
   fromHeadId: string;
   nonce: number;
   owner: string;
-  daoProposal?: DAOProposal;
 }
 
 export const getProposalDetails = async (
@@ -187,10 +187,13 @@ export const getProposalDetails = async (
   const ethProposal: EthProposal = await uprtclProposals.call(GET_PROPOSAL, [
     proposalId,
   ]);
-  const events = await uprtclProposals.getPastEvents('ProposalCreated', {
-    filter: { proposalId },
-    fromBlock: 0,
-  });
+  const events = await uprtclProposals.contractInstance.getPastEvents(
+    'ProposalCreated',
+    {
+      filter: { proposalId },
+      fromBlock: 0,
+    }
+  );
 
   if (events.length !== 1) throw Error('One proposal created event expected');
 
@@ -202,7 +205,6 @@ export const getProposalDetails = async (
     toHeadId: e.returnValues.toHeadId,
     fromHeadId: e.returnValues.fromHeadId,
     nonce: e.returnValues.fromHeadId,
-    daoProposal: e.returnValues.daoProposal,
     owner: ethProposal.owner,
   };
 };
@@ -210,6 +212,17 @@ export const getProposalDetails = async (
 export interface HeadUpdateDetails {
   fromPerspectiveId: string;
   fromHeadId: string;
+}
+
+export interface NewEthProposal {
+  toPerspectiveId: string;
+  fromPerspectiveId: string;
+  toHeadId: string;
+  fromHeadId: string;
+  owner?: string;
+  nonce: number;
+  headUpdates: Array<EthHeadUpdate>;
+  approvedAddresses: Array<string>;
 }
 
 export interface EthProposal {

@@ -20,7 +20,9 @@ export class CortexPattern extends moduleConnect(LitElement) {
   }
 
   getLens() {
-    const hasLenses: HasLenses<any> | undefined = this.recognizer
+    const hasLenses:
+      | HasLenses<any>
+      | undefined = this.recognizer
       .recognizeBehaviours(this.pattern)
       .find((p) => (p as HasLenses<any>).lenses);
 
@@ -35,6 +37,6 @@ export class CortexPattern extends moduleConnect(LitElement) {
 
   render() {
     const lens = this.getLens()[0];
-    return html` ${lens.render(null as any, this.context)} `;
+    return html` ${lens.render(this.pattern, this.context)} `;
   }
 }

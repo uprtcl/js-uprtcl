@@ -1,4 +1,8 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { DAOConnector } from '@uprtcl/access-control/dist/types/services/dao-connector.service';
+
+import { abi as abiProposals } from './contracts-json/UprtclProposals.min.json';
+
 import {
   EthereumContract,
   EthereumConnection,
@@ -29,10 +33,10 @@ import {
   EthProposal,
   getOwnerType,
   OwnerType,
+  NewEthProposal,
 } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
-import { EveesEthereum } from './evees.ethereum';
-import { DAOConnector } from '@uprtcl/access-control/dist/types/services/dao-connector.service';
+import { AragonConnector } from '@uprtcl/access-control';
 
 export interface EthHeadUpdate {
   perspectiveIdHash: string;
@@ -50,15 +54,14 @@ export class ProposalsEthereum implements ProposalsProvider {
     protected uprtclWrapper: EthereumContract,
     protected accessControl: EveesAccessControlEthereum,
     protected perspectiveCreator: PerspectiveCreator,
-    protected ethConnection: EthereumConnection,
-    protected daoConnector?: DAOConnector
+    protected ethConnection: EthereumConnection
   ) {}
 
   async ready(): Promise<void> {
     await Promise.all([this.uprtclProposals.ready()]);
   }
 
-  async prepareProposal(proposal: NewProposal) {
+  async prepareProposal(proposal: NewProposal): Promise<NewEthProposal> {
     /** verify all perspectives are owned by the owner of the to perspective (which might not be in the updateHead list) */
     const accessData = await this.accessControl.getPermissions(
       proposal.toPerspectiveId
@@ -138,20 +141,9 @@ export class ProposalsEthereum implements ProposalsProvider {
       this.uprtclProposals.userId,
     ]);
 
-    const requestId = await this.uprtclProposals.call(GET_PROPOSAL_ID, [
-      proposal.toPerspectiveId,
-      proposal.fromPerspectiveId,
-      ethProposal.nonce,
-    ]);
+    const proposalId = this.handleProposalByOwner(ethProposal);
 
-    this.createDAOProposal(requestId);
-
-    this.logger.info('createProposal() - post', {
-      requestId,
-      updates: proposal.updates,
-    });
-
-    return requestId;
+    return proposalId;
   }
 
   async createAndPropose(
@@ -173,46 +165,52 @@ export class ProposalsEthereum implements ProposalsProvider {
       this.uprtclProposals.userId,
     ]);
 
-    const requestId = await this.uprtclProposals.call(GET_PROPOSAL_ID, [
-      proposal.toPerspectiveId,
-      proposal.fromPerspectiveId,
+    const proposalId = this.handleProposalByOwner(ethProposal);
+
+    return proposalId;
+  }
+
+  private async handleProposalByOwner(
+    ethProposal: NewEthProposal
+  ): Promise<string> {
+    const proposalId = await this.uprtclProposals.call(GET_PROPOSAL_ID, [
+      ethProposal.toPerspectiveId,
+      ethProposal.fromPerspectiveId,
       ethProposal.nonce,
     ]);
 
-    this.createDAOProposal(requestId);
+    if (ethProposal.owner === undefined) return proposalId;
 
-    this.logger.info('createProposal() - post', {
-      requestId,
-      updates: proposal.updates,
-    });
+    /* review */
+    const ownerType = await getOwnerType(this.ethConnection, ethProposal.owner);
 
-    return requestId;
-  }
-
-  async createDAOProposal(proposalId: string) {
-    const ethProposal: EthProposal = await this.uprtclProposals.call(
-      GET_PROPOSAL,
-      [proposalId]
+    const authorizeAbi = abiProposals.find(
+      (el) => el.name === 'authorizeProposal'
     );
 
-    if (this.daoConnector !== undefined) {
-      const ownerType = await getOwnerType(
-        this.ethConnection,
-        ethProposal.owner
-      );
+    if (authorizeAbi === undefined) throw new Error('api not found');
 
-      switch (ownerType) {
-        case OwnerType.AragonDAO:
-          await this.daoConnector.createAgentProposal(
-            this.uprtclProposals.contractInstance.options.address,
-            AUTHORIZE_PROPOSAL,
-            [proposalId]
-          );
-          break;
-        default:
-          throw new Error('unexpected owner type');
-      }
+    const calldata = this.ethConnection.web3.eth.abi.encodeFunctionCall(
+      authorizeAbi as any,
+      [proposalId, '1', 'true']
+    );
+
+    switch (ownerType) {
+      case OwnerType.AragonDAO:
+        const aragonConnector = new AragonConnector(this.ethConnection);
+        await aragonConnector.connect(ethProposal.owner);
+
+        aragonConnector.createAgentProposal(
+          this.uprtclProposals.contractInstance.options.address,
+          '0',
+          calldata
+        );
+        break;
+      default:
+        throw new Error('unexpected owner type');
     }
+
+    return proposalId;
   }
 
   async getProposal(proposalId: string): Promise<Proposal> {
@@ -226,7 +224,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     );
 
     const ethProposalDetails = await getProposalDetails(
-      this.uprtclProposals.contractInstance,
+      this.uprtclProposals,
       proposalId
     );
 
@@ -271,22 +269,19 @@ export class ProposalsEthereum implements ProposalsProvider {
     /** add details about the owner of the proposal, if it's a DAO */
     let details: any = undefined;
 
-    if (this.daoConnector !== undefined) {
-      const ownerType = await getOwnerType(
-        this.ethConnection,
-        ethProposal.owner
-      );
+    const ownerType = await getOwnerType(this.ethConnection, ethProposal.owner);
 
-      switch (ownerType) {
-        case OwnerType.AragonDAO:
-          if (ethProposalDetails.daoProposal === undefined) throw new Error('');
-          details = await this.daoConnector.getProposal(
-            ethProposalDetails.daoProposal.id
-          );
-          break;
-        default:
-          throw new Error('unexpected owner type');
-      }
+    switch (ownerType) {
+      case OwnerType.AragonDAO:
+        const aragonConnector = new AragonConnector(this.ethConnection);
+        await aragonConnector.connect(ethProposal.owner);
+
+        details = await aragonConnector.getDaoProposalFromUprtclProposalId(
+          proposalId
+        );
+        break;
+      default:
+        throw new Error('unexpected owner type');
     }
 
     const proposal: Proposal = {

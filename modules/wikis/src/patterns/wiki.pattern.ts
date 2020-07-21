@@ -22,15 +22,23 @@ const logger = new Logger('WIKI-ENTITY');
 
 export class WikiPattern extends Pattern<Wiki> {
   recognize(entity: object): boolean {
-    return recognizeEntity(entity) && propertyOrder.every((p) => entity.object.hasOwnProperty(p));
+    return (
+      recognizeEntity(entity) &&
+      propertyOrder.every((p) =>
+        entity.object ? entity.object.hasOwnProperty(p) : false
+      )
+    );
   }
 
   type = WikiBindings.WikiType;
 }
 
 @injectable()
-export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>> {
-  replaceChildrenLinks = (wiki: Entity<Wiki>) => (childrenHashes: string[]): Entity<Wiki> => ({
+export class WikiLinks
+  implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>> {
+  replaceChildrenLinks = (wiki: Entity<Wiki>) => (
+    childrenHashes: string[]
+  ): Entity<Wiki> => ({
     ...wiki,
     object: {
       ...wiki.object,
@@ -38,11 +46,13 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     },
   });
 
-  getChildrenLinks: (wiki: Entity<Wiki>) => string[] = (wiki: Entity<Wiki>): string[] =>
-    wiki.object.pages;
+  getChildrenLinks: (wiki: Entity<Wiki>) => string[] = (
+    wiki: Entity<Wiki>
+  ): string[] => wiki.object.pages;
 
-  links: (wiki: Entity<Wiki>) => Promise<string[]> = async (wiki: Entity<Wiki>) =>
-    this.getChildrenLinks(wiki);
+  links: (wiki: Entity<Wiki>) => Promise<string[]> = async (
+    wiki: Entity<Wiki>
+  ) => this.getChildrenLinks(wiki);
 
   merge = (originalNode: Entity<Wiki>) => async (
     modifications: Entity<Wiki>[],
@@ -71,7 +81,8 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
 }
 
 @injectable()
-export class WikiCommon implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
+export class WikiCommon
+  implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
   lenses = (wiki: Entity<Wiki>): Lens[] => {
     return [
       {
@@ -98,10 +109,18 @@ export class WikiCommon implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity
       {
         name: 'wikis:wiki-diff',
         type: 'diff',
-        render: (workspace: EveesWorkspace, newEntity: Entity<Wiki>, oldEntity: Entity<Wiki>) => {
+        render: (
+          workspace: EveesWorkspace,
+          newEntity: Entity<Wiki>,
+          oldEntity: Entity<Wiki>
+        ) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
-            <wiki-diff .workspace=${workspace} .newData=${newEntity} .oldData=${oldEntity}>
+            <wiki-diff
+              .workspace=${workspace}
+              .newData=${newEntity}
+              .oldData=${oldEntity}
+            >
             </wiki-diff>
           `;
         },
