@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { EveesModule, EveesHelpers } from '@uprtcl/evees';
+import { AragonConnector } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
@@ -72,6 +73,12 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         dataId,
       });
 
+      debugger;
+
+      const eth = this.request('EthereumConnection');
+      const aragonConnector = new AragonConnector(eth);
+      const daoAddress = await aragonConnector.createDao();
+
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
       const perspectiveId = await EveesHelpers.createPerspective(
         client,
@@ -79,7 +86,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         {
           headId,
           context: `dao-space-${randint}`,
-          canWrite: '0x72920844a39467e729e615eadb8dca77d68678e1',
+          canWrite: daoAddress,
         }
       );
 

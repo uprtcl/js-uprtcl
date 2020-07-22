@@ -2,9 +2,18 @@ import { connect, Organization, describeScript, App } from '@aragon/connect';
 import { TokenManager, Token } from '@aragon/connect-thegraph-token-manager';
 import { Voting, Vote } from '@aragon/connect-thegraph-voting';
 
-import { EthereumConnection } from '@uprtcl/ethereum-provider';
+import { fetchRepo, getOrgAddress } from './helpers';
+
+import {
+  EthereumConnection,
+  EthereumContract,
+} from '@uprtcl/ethereum-provider';
 
 import { DAOConnector, DAOMember, DAOProposal } from './dao-connector.service';
+import { abi as abiVoting } from './aragon-voting-abi.json';
+
+const MAIN_SUBGRAPH_RINKEBY =
+  'https://api.thegraph.com/subgraphs/name/aragon/aragon-rinkeby';
 
 const ALL_TOKEN_MANAGER_SUBGRAPH_URL =
   'https://api.thegraph.com/subgraphs/name/aragon/aragon-tokens-rinkeby';
@@ -38,13 +47,40 @@ export class AragonConnector implements DAOConnector {
 
   constructor(protected eth: EthereumConnection) {}
 
-  async connect(address: string) {
-    console.error('TODO: agent address to org address mapping');
-    this.org = await connect(
-      '0x3b3e701962407E8E0D3e05aF57F62Fb645715ed9',
-      'thegraph',
-      { chainId: 4 }
+  async createDao(parameters: any) {
+    const TEMPLATE_NAME = 'membership-template';
+
+    const { data } = await fetchRepo(TEMPLATE_NAME, MAIN_SUBGRAPH_RINKEBY);
+
+    // parse data from last version published
+    const { lastVersion } = data.repos[0];
+    const templateAddress = lastVersion.codeAddress;
+    const templateArtifact = JSON.parse(lastVersion.artifact);
+
+    // create template contract
+    const templateContract = new this.eth.web3.eth.Contract(
+      templateArtifact.abi,
+      templateAddress
     );
+
+    // Get the proper function we want to call; ethers will not get the overload
+    // automatically, so we take the proper one from the object, and then call it.
+    const tx = await templateContract.methods['newInstance'].send();
+
+    // Filter and get the org address from the events.
+    const orgAddress = await getOrgAddress(
+      'DeployDao',
+      templateContract as any,
+      tx.hash
+    );
+
+    return orgAddress;
+  }
+
+  async connect(address: string) {
+    const agentCtr = new this.eth.web3.eth.Contract(abiVoting as any, address);
+    const orgAddress = await agentCtr.methods.kernel().call();
+    this.org = await connect(orgAddress, 'thegraph', { chainId: 4 });
     this.apps = await this.org.apps();
 
     const tokenApp = this.apps.find((app) => app.name === 'token-manager');

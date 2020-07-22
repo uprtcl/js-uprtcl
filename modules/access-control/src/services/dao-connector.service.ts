@@ -13,6 +13,7 @@ export interface DAOProposal {
   subject: any;
 }
 export interface DAOConnector {
+  createDao(parameters: any);
   connect(address: string): Promise<void>;
   getMembers(): Promise<DAOMember[]>;
   addMember(member: DAOMember): Promise<void>;

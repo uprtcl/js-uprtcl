@@ -38,7 +38,6 @@ const UprtclWrapper = { abi: abiWrapper, networks: networksWrapper };
 
 import { Secured } from '../../../utils/cid-hash';
 import {
-  Commit,
   Perspective,
   PerspectiveDetails,
   NewPerspectiveData,
