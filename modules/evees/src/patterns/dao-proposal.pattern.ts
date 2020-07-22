@@ -17,13 +17,16 @@ export class DAOProposalPattern extends Pattern<DAOProposal> {
 
 @injectable()
 export class DAOProposalLenses implements HasLenses<any> {
-  lenses = (node: any): Lens[] => {
+  lenses = (proposal: any): Lens[] => {
     return [
       {
         name: 'evees:proposal',
         type: 'content',
         render: (proposal: DAOProposal, context: any) => {
-          return html` <proposal-ui .proposal=${proposal}> </proposal-ui> `;
+          return html`
+            <voting-widget vote-id=${proposal.id} address=${proposal.owner}>
+            </voting-widget>
+          `;
         },
       },
     ];

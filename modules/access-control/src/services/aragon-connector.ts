@@ -103,6 +103,7 @@ export class AragonConnector implements DAOConnector {
       .map((v) => {
         return {
           type: 'dao-proposal',
+          owner: this.agentAddress,
           id: v.id,
           yea: v.yea,
           nay: v.nay,
@@ -118,6 +119,7 @@ export class AragonConnector implements DAOConnector {
     if (!vote) throw new Error(`vote ${voteId} not found`);
     const proposal: DAOProposal = {
       type: 'dao-proposal',
+      owner: this.agentAddress,
       id: vote.id,
       yea: vote.yea,
       nay: vote.nay,
@@ -140,6 +142,7 @@ export class AragonConnector implements DAOConnector {
     const proposal: DAOProposal = {
       type: 'dao-proposal',
       id: vote.id,
+      owner: this.agentAddress,
       yea: vote.yea,
       nay: vote.nay,
       possibleVotes: vote.votingPower,

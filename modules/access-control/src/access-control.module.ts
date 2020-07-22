@@ -23,6 +23,7 @@ import {
 import { PermissionsDAO } from './elements/permissions-dao';
 import { ProgressBar } from './elements/progress-bar';
 import { ProposalUI } from './elements/proposal-ui';
+import { VotingWidget } from './elements/voter-widget';
 
 export class AccessControlModule extends MicroModule {
   static id = 'access-control-module';
@@ -32,6 +33,7 @@ export class AccessControlModule extends MicroModule {
     customElements.define('permissions-owner', PermissionsOwner);
     customElements.define('permissions-admin', PermissionsAdmin);
     customElements.define('permissions-dao', PermissionsDAO);
+    customElements.define('voting-widget', VotingWidget);
     customElements.define('remote-login-widget', RemoteLoginWidget);
     customElements.define('proposal-ui', ProposalUI);
     customElements.define('progress-bar', ProgressBar);

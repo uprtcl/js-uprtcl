@@ -5,6 +5,7 @@ export interface DAOMember {
 
 export interface DAOProposal {
   type: string;
+  owner: string;
   id: string;
   yea: string;
   nay: string;

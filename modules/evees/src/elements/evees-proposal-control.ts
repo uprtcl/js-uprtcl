@@ -26,6 +26,10 @@ export class EveesProposalControl extends moduleConnect(LitElement) {
     }
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+  }
+
   async loadProposal() {
     if (this.proposalRef === undefined) return;
 
