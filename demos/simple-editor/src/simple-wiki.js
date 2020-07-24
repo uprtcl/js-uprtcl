@@ -73,20 +73,30 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         dataId,
       });
 
+      const randint = 0 + Math.floor((10000 - 0) * Math.random());
+
       debugger;
 
       const eth = this.request('EthereumConnection');
       const aragonConnector = new AragonConnector(eth);
-      const daoAddress = await aragonConnector.createDao();
+      const daoAddress = await aragonConnector.createDao({
+        daoName: `dao-space-${randint}`,
+        tokenName: 'Citizenship',
+        tokenSymbol: 'CTZ',
+        members: [eth.getCurrentAccount()],
+        votingSettings: ['500000000000000000', '100000000000000000', '86400'],
+      });
 
-      const randint = 0 + Math.floor((10000 - 0) * Math.random());
+      console.log('DAO created at', { daoAddress });
+      await aragonConnector.connect(daoAddress);
+
       const perspectiveId = await EveesHelpers.createPerspective(
         client,
         eveesEthProvider,
         {
           headId,
           context: `dao-space-${randint}`,
-          canWrite: daoAddress,
+          canWrite: aragonConnector.agentAddress,
         }
       );
 

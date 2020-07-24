@@ -21,6 +21,9 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   entityId!: string;
 
   @property({ attribute: false })
+  loading: boolean = true;
+
+  @property({ attribute: false })
   permissions!: DAOPermissions;
 
   @property({ attribute: false })
@@ -41,15 +44,27 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   daoConnector!: DAOConnector;
 
   async firstUpdated() {
+    this.load();
+  }
+
+  async load() {
+    this.loading = true;
+
+    debugger;
     const ethConnection = this.request(
       'EthereumConnection'
     ) as EthereumConnection;
 
     this.daoConnector = new AragonConnector(ethConnection);
-    await this.daoConnector.connect(this.permissions.owner);
+    const orgAddress = await this.daoConnector.orgAddresFromAgentAddress(
+      this.permissions.owner
+    );
+    await this.daoConnector.connect(orgAddress);
 
     this.loadMembers();
     this.getNewMemberProposals();
+
+    this.loading = false;
   }
 
   async loadMembers() {
@@ -73,8 +88,14 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   }
 
   render() {
+    if (this.loading)
+      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+
     return html`
-      <h4>Owned by an Aragon DAO ${this.permissions.owner}</h4>
+      <h4>Owned by an Aragon DAO agent: ${this.permissions.owner}</h4>
+      <br />
+      <b>DAO: ${this.daoConnector.daoAddress}</b><br />
+      <b>Agent: ${this.daoConnector.agentAddress}</b><br />
       <br />
       <b>Members:</b>
       <mwc-list>

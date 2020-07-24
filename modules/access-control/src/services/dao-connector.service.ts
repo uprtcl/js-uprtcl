@@ -3,6 +3,15 @@ export interface DAOMember {
   balance: string;
 }
 
+export interface NewDAOParameters {
+  daoName: string;
+  tokenName: string;
+  tokenSymbol: string;
+  members: string[];
+  votingSettings: any;
+  support?: any;
+}
+
 export interface DAOProposal {
   type: string;
   owner: string;
@@ -13,7 +22,10 @@ export interface DAOProposal {
   subject: any;
 }
 export interface DAOConnector {
-  createDao(parameters: any);
+  daoAddress: string;
+  agentAddress: string;
+  createDao(parameters: NewDAOParameters);
+  orgAddresFromAgentAddress(agentAddress: string): Promise<string>;
   connect(address: string): Promise<void>;
   getMembers(): Promise<DAOMember[]>;
   addMember(member: DAOMember): Promise<void>;

@@ -35,18 +35,13 @@ export async function fetchRepo(name: string, subgraph: string) {
 }
 
 export async function getOrgAddress(
-  selectedFilter: string,
-  templateContract: ethers.Contract,
-  transactionHash: string
+  templateContract: any,
+  txHash: string
 ): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const filter = templateContract.filters[selectedFilter]();
-
-    templateContract.on(filter, (contractAddress, event) => {
-      if (event.transactionHash === transactionHash) {
-        templateContract.removeAllListeners();
-        resolve(contractAddress);
-      }
-    });
+  return new Promise(async (resolve, reject) => {
+    debugger;
+    const events = await templateContract.getPastEvents('SetupDao');
+    const event = events.find((e) => e.transactionHash === txHash);
+    resolve(event.returnValues.dao);
   });
 }

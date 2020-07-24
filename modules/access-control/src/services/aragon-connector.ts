@@ -2,15 +2,17 @@ import { connect, Organization, describeScript, App } from '@aragon/connect';
 import { TokenManager, Token } from '@aragon/connect-thegraph-token-manager';
 import { Voting, Vote } from '@aragon/connect-thegraph-voting';
 
-import { fetchRepo, getOrgAddress } from './helpers';
+import { fetchRepo, getOrgAddress } from './aragon-helpers';
+
+import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import {
-  EthereumConnection,
-  EthereumContract,
-} from '@uprtcl/ethereum-provider';
-
-import { DAOConnector, DAOMember, DAOProposal } from './dao-connector.service';
-import { abi as abiVoting } from './aragon-voting-abi.json';
+  DAOConnector,
+  DAOMember,
+  DAOProposal,
+  NewDAOParameters,
+} from './dao-connector.service';
+import { abi as abiAgent } from './aragon-agent-abi.json';
 
 const MAIN_SUBGRAPH_RINKEBY =
   'https://api.thegraph.com/subgraphs/name/aragon/aragon-rinkeby';
@@ -47,7 +49,7 @@ export class AragonConnector implements DAOConnector {
 
   constructor(protected eth: EthereumConnection) {}
 
-  async createDao(parameters: any) {
+  async createDao(parameters: NewDAOParameters) {
     const TEMPLATE_NAME = 'membership-template';
 
     const { data } = await fetchRepo(TEMPLATE_NAME, MAIN_SUBGRAPH_RINKEBY);
@@ -65,22 +67,49 @@ export class AragonConnector implements DAOConnector {
 
     // Get the proper function we want to call; ethers will not get the overload
     // automatically, so we take the proper one from the object, and then call it.
-    const tx = await templateContract.methods['newInstance'].send();
+    const pars = [
+      parameters.tokenName,
+      parameters.tokenSymbol,
+      parameters.daoName,
+      parameters.members,
+      parameters.votingSettings,
+      '7885000', // seconds in a year/4
+      true,
+    ];
+    const from = this.eth.getCurrentAccount();
+
+    const caller = await templateContract.methods[
+      'newTokenAndInstance(string,string,string,address[],uint64[3],uint64,bool)'
+    ](...pars);
+
+    const gasEstimated = await caller.estimateGas({ from });
+    console.log(gasEstimated);
+
+    const receipt = await caller.send({ from });
 
     // Filter and get the org address from the events.
     const orgAddress = await getOrgAddress(
-      'DeployDao',
-      templateContract as any,
-      tx.hash
+      templateContract,
+      receipt.transactionHash
     );
 
     return orgAddress;
   }
 
+  get daoAddress(): string {
+    return this.org.address;
+  }
+
+  async orgAddresFromAgentAddress(agentAddress: string) {
+    const agentCtr = new this.eth.web3.eth.Contract(
+      abiAgent as any,
+      agentAddress
+    );
+    return agentCtr.methods.kernel().call();
+  }
+
   async connect(address: string) {
-    const agentCtr = new this.eth.web3.eth.Contract(abiVoting as any, address);
-    const orgAddress = await agentCtr.methods.kernel().call();
-    this.org = await connect(orgAddress, 'thegraph', { chainId: 4 });
+    this.org = await connect(address, 'thegraph', { chainId: 4 });
     this.apps = await this.org.apps();
 
     const tokenApp = this.apps.find((app) => app.name === 'token-manager');
