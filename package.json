@@ -9,10 +9,10 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "clean": "lerna clean",
+    "clean": "lerna clean --yes",
     "dev": "lerna run dev --parallel",
     "reset": "lerna clean --yes && lerna exec rm package-lock.json && npm run bootstrap && npm run build",
-    "hard-reset": "find . -type d -name node_modules -prune -exec rm -rf {} \\; && find . -type d -name dist -prune -exec rm -rf {} \\;",
+    "hard-reset": "find . -type d -name node_modules -prune -exec rm -rf {} \\; && find . -type d -name dist -prune -exec rm -rf {} \\; && npm i && npm run clean && npm run bootstrap && npm run build && npm run dev",
     "test": "lerna run test",
     "test:watch": "lerna run test:watch --parallel",
     "docs:dev": "vuepress dev docs",
