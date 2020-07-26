@@ -13,7 +13,6 @@ import {
   NewDAOParameters,
 } from './dao-connector.service';
 import { abi as abiAgent } from './aragon-agent-abi.json';
-import { abi as abiMembership } from './MembershipTemplateRaiser.min.json';
 
 const MAIN_SUBGRAPH_RINKEBY =
   'https://api.thegraph.com/subgraphs/name/aragon/aragon-rinkeby';
@@ -69,9 +68,18 @@ export class AragonConnector implements DAOConnector {
   constructor(protected eth: EthereumConnection) {}
 
   async createDao(parameters: NewDAOParameters) {
+    const TEMPLATE_NAME = 'membership-template';
+
+    const { data } = await fetchRepo(TEMPLATE_NAME, MAIN_SUBGRAPH_RINKEBY);
+
+    // parse data from last version published
+    const { lastVersion } = data.repos[0];
+    const templateAddress = lastVersion.codeAddress;
+    const templateArtifact = JSON.parse(lastVersion.artifact);
+
     // create template contract
     const templateContract = new this.eth.web3.eth.Contract(
-      abiMembership as any,
+      templateArtifact.abi,
       templateAddress
     );
 
@@ -94,6 +102,8 @@ export class AragonConnector implements DAOConnector {
 
     const gasEstimated = await caller.estimateGas({ from });
     console.log(gasEstimated);
+
+    debugger;
 
     const receipt: any = await waitConfirmation(caller, from, 5);
 
