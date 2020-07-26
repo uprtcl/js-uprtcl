@@ -198,7 +198,10 @@ export class ProposalsEthereum implements ProposalsProvider {
     switch (ownerType) {
       case OwnerType.AragonDAO:
         const aragonConnector = new AragonConnector(this.ethConnection);
-        await aragonConnector.connect(ethProposal.owner);
+        const orgAddress = await aragonConnector.orgAddresFromAgentAddress(
+          ethProposal.owner
+        );
+        await aragonConnector.connect(orgAddress);
 
         aragonConnector.createAgentProposal(
           this.uprtclProposals.contractInstance.options.address,

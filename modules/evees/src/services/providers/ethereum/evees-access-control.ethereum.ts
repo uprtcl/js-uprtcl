@@ -110,7 +110,6 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
   }
 
   private async getOwner(hash: string): Promise<string> {
-    debugger;
     const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [
       hash,
     ]);

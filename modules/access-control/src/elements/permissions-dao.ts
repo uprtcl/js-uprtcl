@@ -49,8 +49,6 @@ export class PermissionsDAO extends moduleConnect(LitElement)
 
   async load() {
     this.loading = true;
-
-    debugger;
     const ethConnection = this.request(
       'EthereumConnection'
     ) as EthereumConnection;

@@ -5,6 +5,10 @@ import { EveesModule, EveesHelpers } from '@uprtcl/evees';
 import { AragonConnector } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
+const wait = (delay) => {
+  return new Promise((resolve) => setTimeout(() => resolve(), delay));
+};
+
 export class SimpleWiki extends moduleConnect(LitElement) {
   static get properties() {
     return {
@@ -74,8 +78,6 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       });
 
       const randint = 0 + Math.floor((10000 - 0) * Math.random());
-
-      debugger;
 
       const eth = this.request('EthereumConnection');
       const aragonConnector = new AragonConnector(eth);

@@ -13,6 +13,7 @@ import {
   NewDAOParameters,
 } from './dao-connector.service';
 import { abi as abiAgent } from './aragon-agent-abi.json';
+import { abi as abiMembership } from './MembershipTemplateRaiser.min.json';
 
 const MAIN_SUBGRAPH_RINKEBY =
   'https://api.thegraph.com/subgraphs/name/aragon/aragon-rinkeby';
@@ -35,9 +36,27 @@ interface TransactionRequest {
 
 type VoteWithDescription = Vote & { txRequest?: TransactionRequest };
 
-function voteId(id: string) {
+const voteId = (id: string) => {
   return String(parseInt(id.match(/voteId:(.+)$/)?.[1] || '0'));
-}
+};
+
+const waitConfirmation = (caller: any, from: string, confirmations: number) => {
+  return new Promise(async (resolve) => {
+    let tx;
+    let resolved = false;
+    tx = await caller
+      .send({ from })
+      .on('confirmation', (_confirmations: number) => {
+        if (!resolved) console.log(`[CONFIRMED] ${_confirmations}`);
+
+        if (_confirmations >= confirmations && !resolved) {
+          resolved = true;
+          console.log(`[RESOLVING]`, { tx });
+          resolve(tx);
+        }
+      });
+  });
+};
 
 export class AragonConnector implements DAOConnector {
   org!: Organization;
@@ -50,18 +69,9 @@ export class AragonConnector implements DAOConnector {
   constructor(protected eth: EthereumConnection) {}
 
   async createDao(parameters: NewDAOParameters) {
-    const TEMPLATE_NAME = 'membership-template';
-
-    const { data } = await fetchRepo(TEMPLATE_NAME, MAIN_SUBGRAPH_RINKEBY);
-
-    // parse data from last version published
-    const { lastVersion } = data.repos[0];
-    const templateAddress = lastVersion.codeAddress;
-    const templateArtifact = JSON.parse(lastVersion.artifact);
-
     // create template contract
     const templateContract = new this.eth.web3.eth.Contract(
-      templateArtifact.abi,
+      abiMembership as any,
       templateAddress
     );
 
@@ -85,12 +95,15 @@ export class AragonConnector implements DAOConnector {
     const gasEstimated = await caller.estimateGas({ from });
     console.log(gasEstimated);
 
-    const receipt = await caller.send({ from });
+    const receipt: any = await waitConfirmation(caller, from, 5);
+
+    const block = await this.eth.web3.eth.getBlockNumber();
 
     // Filter and get the org address from the events.
     const orgAddress = await getOrgAddress(
       templateContract,
-      receipt.transactionHash
+      receipt.transactionHash,
+      block - 50
     );
 
     return orgAddress;

@@ -27,7 +27,10 @@ export class VotingWidget extends moduleConnect(LitElement) {
     ) as EthereumConnection;
 
     this.daoConnector = new AragonConnector(ethConnection);
-    await this.daoConnector.connect(this.address);
+    const orgAddress = await this.daoConnector.orgAddresFromAgentAddress(
+      this.address
+    );
+    await this.daoConnector.connect(orgAddress);
 
     this.proposal = await this.daoConnector.getDaoProposal(this.voteId);
     this.loading = false;

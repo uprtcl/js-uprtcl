@@ -36,11 +36,13 @@ export async function fetchRepo(name: string, subgraph: string) {
 
 export async function getOrgAddress(
   templateContract: any,
-  txHash: string
+  txHash: string,
+  fromBlock: number
 ): Promise<string> {
   return new Promise(async (resolve, reject) => {
-    debugger;
-    const events = await templateContract.getPastEvents('SetupDao');
+    const events = await templateContract.getPastEvents('SetupDao', {
+      fromBlock,
+    });
     const event = events.find((e) => e.transactionHash === txHash);
     resolve(event.returnValues.dao);
   });
