@@ -88,7 +88,7 @@ export class AragonConnector implements DAOConnector {
     const pars = [
       parameters.tokenName,
       parameters.tokenSymbol,
-      parameters.daoName,
+      Date.now().toString(),
       parameters.members,
       parameters.votingSettings,
       '7885000', // seconds in a year/4
@@ -103,7 +103,7 @@ export class AragonConnector implements DAOConnector {
     const gasEstimated = await caller.estimateGas({ from });
     console.log(gasEstimated);
 
-    const receipt: any = await waitConfirmation(caller, from, 5);
+    const receipt: any = await waitConfirmation(caller, from, 6);
 
     const block = await this.eth.web3.eth.getBlockNumber();
 

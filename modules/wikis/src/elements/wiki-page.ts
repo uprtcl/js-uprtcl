@@ -180,17 +180,13 @@ export class WikiPage extends moduleConnect(LitElement) {
           flex-grow: 1;
           display: flex;
           flex-direction: column;
+          background-color: rgba(255, 255, 255, 0.8);
         }
         .top-row {
           margin: 16px 0px 2vw 1.5vw;
         }
         .text-editor {
           padding: 0vw 0vw;
-        }
-        @media (max-width: 768px) {
-          .top-row {
-            display: none;
-          }
         }
       `,
     ];

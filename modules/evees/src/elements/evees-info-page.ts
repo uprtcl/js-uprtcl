@@ -281,7 +281,7 @@ export class EveesInfoPage extends EveesInfoBase {
           ${this.ref === this.firstRef
             ? html`<div class="section">
                 <div class="section-header">
-                  Proposals
+                  Referendums
                 </div>
 
                 <div class="section-content list-container">
@@ -294,7 +294,7 @@ export class EveesInfoPage extends EveesInfoBase {
                 </div>
               </div>`
             : ''}
-          ${true
+          ${false
             ? html`
                 <div class="section">
                   <div class="section-header">

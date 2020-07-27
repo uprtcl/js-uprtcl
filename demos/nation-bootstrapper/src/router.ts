@@ -13,8 +13,8 @@ export function setupRouter(outlet: HTMLElement) {
       component: 'nation-new',
     },
     {
-      path: '/existing/:name',
-      component: 'nation-visit',
+      path: '/nation/:ref',
+      component: 'nation-home',
     },
   ]);
 

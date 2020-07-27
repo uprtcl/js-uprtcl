@@ -1,5 +1,5 @@
 import { New } from './new';
-import { Doc } from './doc';
+import { Nation } from './nation';
 import { initUprtcl } from './init';
 import { App } from './app';
 
@@ -8,5 +8,5 @@ import { App } from './app';
 
   customElements.define('nation-bootstrapper', App);
   customElements.define('nation-new', New);
-  customElements.define('nation-visit', Doc);
+  customElements.define('nation-home', Nation);
 })();

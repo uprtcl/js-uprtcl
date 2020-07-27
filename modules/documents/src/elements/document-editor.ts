@@ -343,7 +343,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         : this.doc.authority,
       message
     );
+
+    this.dispatchEvent(
+      new CustomEvent('doc-persisted', {
+        bubbles: true,
+        composed: true,
+        detail: { ref: this.doc.ref },
+      })
+    );
+
     /** reload doc from backend */
+    this.ref = this.doc.ref;
+    this.init = undefined;
+
     await this.loadDoc();
     this.requestUpdate();
     this.persistingAll = false;
@@ -379,7 +391,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       isEqual(node.data.object, node.draft)
     ) {
       /** nothing to persist here */
-      return;
+      return node;
     }
 
     let refType;
@@ -396,13 +408,17 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           : EveesModule.bindings.CommitType;
     }
 
+    const draftRef = node.ref;
     /** if its a placeholder create an object, otherwise make a commit */
     switch (refType) {
       case EveesModule.bindings.PerspectiveType:
         if (this.init !== undefined) {
           /** if document evee does not exist */
-          node.authority = this.defaultAuthority;
-          await this.createEvee(node, message);
+          node.ref = await this.createEvee(
+            node.draft,
+            this.defaultAuthority,
+            Date.now().toString()
+          );
         } else {
           await this.updateEvee(node, message);
         }
@@ -433,7 +449,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
 
     /** clean draft memory */
-    await this.draftService.removeDraft(node.ref);
+    await this.draftService.removeDraft(draftRef);
+    return node;
   }
 
   async createEntity(content: any, authority: string): Promise<string> {
@@ -468,22 +485,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return await EveesHelpers.createCommit(this.client, remote, {
       dataId,
       parentsIds,
-    });
-  }
-
-  async createEvee(node: DocNode): Promise<string> {
-    if (node.authority === undefined) throw new Error('undefined');
-    const headId = this.createCommit(node.draft, node.authority);
-
-    const result = await this.client.mutate({
-      mutation: CREATE_PERSPECTIVE,
-      variables: {
-        ...newPerspective.perspective.object.payload,
-        ...newPerspective.details,
-        authority: newPerspective.perspective.object.payload.authority,
-        canWrite: newPerspective.canWrite,
-        parentId: newPerspective.parentId,
-      },
     });
   }
 
@@ -522,7 +523,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async createEvee(
     content: object,
     authority: string,
-    casID: string,
     context: string
   ): Promise<string> {
     if (LOGINFO) this.logger.log('createEvee()', { content, authority });
@@ -536,6 +536,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const createPerspective = await this.client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
+        authority: remote.authority,
         headId: commitId,
         context,
         parentId: this.ref,
@@ -1199,7 +1200,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .doc-topbar {
         position: absolute;
         top: -55px;
-        right: 10px;
+        right: 0px;
         display: flex;
       }
 
@@ -1237,12 +1238,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .node-mark svg {
         height: 14px;
         width: 14px;
-      }
-
-      @media (max-width: 768px) {
-        .doc-topbar {
-          display: none;
-        }
       }
     `;
   }

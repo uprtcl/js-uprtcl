@@ -109,7 +109,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   author: string = '';
 
   @property({ type: Boolean, attribute: 'show-exit' })
-  showExit: boolean = true;
+  showExit: boolean = false;
 
   @property({ attribute: false })
   showEditTitle: boolean = false;
@@ -121,6 +121,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   protected eveesRemotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
   protected remoteMap!: RemoteMap;
+  protected accessControl!:
+    | {
+        canWrite: boolean;
+        permissions: any;
+      }
+    | undefined;
 
   constructor() {
     super();
@@ -198,7 +204,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const perspective = (await loadEntity(this.client, this.ref)) as Entity<
       Signed<Perspective>
     >;
-    const accessControl = await EveesHelpers.getAccessControl(
+    this.accessControl = await EveesHelpers.getAccessControl(
       this.client,
       this.ref
     );
@@ -214,12 +220,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.authority = perspective.object.payload.authority;
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
-    this.editable = accessControl
+    this.editable = this.accessControl
       ? this.editableAuthorities.length > 0
         ? this.editableAuthorities.includes(this.authority)
-          ? accessControl.canWrite
+          ? this.accessControl.canWrite
           : false
-        : accessControl.canWrite
+        : this.accessControl.canWrite
       : false;
     this.context = context;
 
@@ -620,7 +626,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     };
 
     return html`
-      <div class="title-padding-div"></div>
       <div class="title-card-container">
         <div class="section">
           <div class="section-header">
@@ -678,6 +683,42 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     `;
   }
 
+  renderCitizens() {
+    return html`
+      <div class="title-padding-div"></div>
+      <div class="title-card-container">
+        <div class="section">
+          <div class="section-header">
+            Citizens
+          </div>
+          <div class="section-content">
+            <permissions-dao
+              entityId=${this.ref}
+              owner=${this.accessControl?.permissions.owner}
+            ></permissions-dao>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderTreasury() {
+    return html`
+      <div class="title-card-container">
+        <div class="section">
+          <div class="section-header">
+            Treasury
+          </div>
+          <div class="section-content">
+            <div class="progress-bar"><div class="progress"></div></div>
+            <mwc-button raised>Contribute</mwc-button>
+            <mwc-button raised>Withdraw</mwc-button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   render() {
     this.logger.log('render()', {
       wiki: this.wiki,
@@ -725,6 +766,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               `
             : html`
                 <div class="home-container">
+                  ${this.renderCitizens()} ${this.renderTreasury()}
                   ${this.renderSummary()}
 
                   <div class="evee-info">
@@ -964,6 +1006,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .title-form {
           margin-top: 22px;
+        }
+        .progress-bar {
+          height: 30px;
+          width: calc(100% - 32px);
+          background-color: #bdbdce;
+          margin-left: 16px;
+          border-radius: 4px;
+          margin-bottom: 16px;
+        }
+        .progress {
+          height: 30px;
+          width: 30px;
+          background-color: #0c0c6f;
+          border-radius: 4px;
+          margin-bottom: 16px;
         }
 
         @media (max-width: 768px) {

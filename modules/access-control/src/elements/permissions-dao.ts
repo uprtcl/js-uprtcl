@@ -20,6 +20,9 @@ export class PermissionsDAO extends moduleConnect(LitElement)
   @property({ type: String })
   entityId!: string;
 
+  @property({ type: String })
+  owner!: string;
+
   @property({ attribute: false })
   loading: boolean = true;
 
@@ -55,7 +58,7 @@ export class PermissionsDAO extends moduleConnect(LitElement)
 
     this.daoConnector = new AragonConnector(ethConnection);
     const orgAddress = await this.daoConnector.orgAddresFromAgentAddress(
-      this.permissions.owner
+      this.owner
     );
     await this.daoConnector.connect(orgAddress);
 
@@ -90,12 +93,6 @@ export class PermissionsDAO extends moduleConnect(LitElement)
       return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`
-      <h4>Owned by an Aragon DAO agent: ${this.permissions.owner}</h4>
-      <br />
-      <b>DAO: ${this.daoConnector.daoAddress}</b><br />
-      <b>Agent: ${this.daoConnector.agentAddress}</b><br />
-      <br />
-      <b>Members:</b>
       <mwc-list>
         ${this.members.map(
           (member) =>
@@ -104,26 +101,6 @@ export class PermissionsDAO extends moduleConnect(LitElement)
             ></mwc-list-item>`
         )}
       </mwc-list>
-      ${this.showAddMember
-        ? html`<evees-string-form
-            value=""
-            label="address"
-            ?loading=${this.addingMember}
-            @cancel=${() => (this.showAddMember = false)}
-            @accept=${(e) => this.addMember(e.detail.value)}
-          ></evees-string-form>`
-        : html` <mwc-button @click=${() => (this.showAddMember = true)}>
-            add member
-          </mwc-button>`}
-
-      <br /><br /><b>New members proposals:</b>
-      ${this.newMemberProposals.map(
-        (proposal) =>
-          html`<proposal-ui
-            .proposal=${proposal}
-            @voted=${(e) => this.voted(proposal.id, e.detail.value)}
-          ></proposal-ui>`
-      )}
     `;
   }
 

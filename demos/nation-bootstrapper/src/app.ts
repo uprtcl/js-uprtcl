@@ -34,6 +34,8 @@ export class App extends LitElement {
           display: flex;
           flex-direction: column;
           overflow: auto;
+          background-image: url('/static/bg.jpg');
+          background-size: cover;
         }
       `,
     ];

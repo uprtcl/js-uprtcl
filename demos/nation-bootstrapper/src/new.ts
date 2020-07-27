@@ -7,10 +7,6 @@ import {
   EveesRemote,
   EveesHelpers,
   EveesEthereum,
-  Perspective,
-  deriveSecured,
-  Secured,
-  NewPerspectiveData,
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { AragonConnector } from '@uprtcl/access-control';
@@ -32,10 +28,13 @@ interface NewNation {
 
 export class New extends moduleConnect(LitElement) {
   @property({ attribute: false })
-  step: number = 2;
+  step: number = 0;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading: boolean = false;
+
+  @property({ attribute: false })
+  target: number = 0;
 
   owner: string;
   name: string;
@@ -64,7 +63,6 @@ export class New extends moduleConnect(LitElement) {
   }
 
   async newDao(name: string): Promise<string> {
-    return '0x0';
     /** create the perspectuve manually to call wrapper createAndSetHome in one tx */
     const eth: EthereumConnection = this.request('EthereumConnection');
     const aragonConnector = new AragonConnector(eth);
@@ -83,52 +81,21 @@ export class New extends moduleConnect(LitElement) {
 
   async nameSet(name: string) {
     this.loading = true;
-    const owner = await this.newDao(name);
+    this.name = name;
+    this.owner = await this.newDao(name);
     this.step = 2;
     this.loading = false;
   }
 
-  async initConstitution(name: string) {
-    /** prepare first page */
-    const pageEntityId = await EveesHelpers.createEntity(
-      this.client,
-      this.eveesEthProvider,
-      this.firstPage
-    );
-
-    const pageHeadId = await EveesHelpers.createCommit(
-      this.client,
-      this.eveesEthProvider,
-      {
-        dataId: pageEntityId,
-      }
-    );
-
-    const pagePerspective: Perspective = {
-      creatorId: this.connection.getCurrentAccount(),
-      authority: this.eveesEthProvider.authority,
-      timestamp: Date.now(),
-    };
-
-    const pageSecured: Secured<Perspective> = await deriveSecured(
-      pagePerspective,
-      this.eveesEthProvider.cidConfig
-    );
-
-    const newPagePerspective: NewPerspectiveData = {
-      perspective: pageSecured,
-      details: { headId: pageHeadId, context: `${name}-1` },
-      canWrite: this.owner,
-    };
-
+  async initConstitution(articleRef: string) {
     /** prepare constitution (with link to the first page)*/
+    this.loading = true;
     const constitutionEntityId = await EveesHelpers.createEntity(
       this.client,
       this.eveesEthProvider,
       {
-        title: `${name} Constitution`,
-        type: TextType.Title,
-        links: [pageSecured.id],
+        title: `${this.name} Constitution`,
+        pages: [articleRef],
       }
     );
 
@@ -140,29 +107,39 @@ export class New extends moduleConnect(LitElement) {
       }
     );
 
-    const constitutionPerspective: Perspective = {
-      creatorId: this.connection.getCurrentAccount(),
-      authority: this.eveesEthProvider.authority,
-      timestamp: Date.now(),
-    };
+    const randint = 0 + Math.floor((10000 - 0) * Math.random());
 
-    const constitutionSecured: Secured<Perspective> = await deriveSecured(
-      constitutionPerspective,
-      this.eveesEthProvider.cidConfig
+    const perspectiveId = await EveesHelpers.createPerspective(
+      this.client,
+      this.eveesEthProvider,
+      {
+        headId: constHeadId,
+        context: `${name}-wiki-${randint}`,
+        canWrite: this.owner,
+      }
     );
+    this.loading = false;
 
-    const newConstitutionPerspective: NewPerspectiveData = {
-      perspective: constitutionSecured,
-      details: { headId: constHeadId, context: `${name}-1` },
-      canWrite: this.owner,
-    };
+    Router.go(`/nation/${perspectiveId}`);
+  }
 
-    /** create both perspective owned by the DAO in a single tx */
+  getTarget(target: number) {
+    switch (target) {
+      case 0:
+        return ['Minority', '1M USD'];
+      case 1:
+        return ['Small City', '10M USD'];
+      case 2:
+        return ['Small Country', '1B USD'];
+      case 3:
+        return ['Big Country', '10B USD'];
+      case 4:
+        return ['World Power', '1T USD'];
+    }
+  }
 
-    this.eveesEthProvider.createPerspectiveBatch([
-      newPagePerspective,
-      newConstitutionPerspective,
-    ]);
+  clickTarget() {
+    this.target = this.target < 4 ? this.target + 1 : 0;
   }
 
   renderStep() {
@@ -174,21 +151,32 @@ export class New extends moduleConnect(LitElement) {
 
       case 1:
         return html`<evees-string-form
-          value=""
-          label="name of the nation"
-          @cancel=${() => (this.step = 0)}
-          @accept=${(e) => this.nameSet(e.detail.value)}
-        ></evees-string-form>`;
+            value=""
+            label="Nation's name"
+            @cancel=${() => (this.step = 0)}
+            @accept=${(e) => this.nameSet(e.detail.value)}
+          ></evees-string-form>
+          <div class="label">Nation's Treasury</div>
+          <mwc-button raised @click=${() => this.clickTarget()}>
+            ${this.getTarget(this.target)[0]}<br />
+            (${this.getTarget(this.target)[1]})
+          </mwc-button>`;
 
       case 2:
         return html`<documents-editor
           .init=${this.firstPage}
+          default-authority=${this.eveesEthProvider.authority}
+          @doc-persisted=${(e) => this.initConstitution(e.detail.ref)}
         ></documents-editor>`;
     }
   }
 
   render() {
-    return html`<div class="content">${this.renderStep()}</div>`;
+    return html`<div class="content">
+      ${this.loading
+        ? html`<cortex-loading-placeholder></cortex-loading-placeholder> `
+        : this.renderStep()}
+    </div>`;
   }
 
   static styles = css`
@@ -196,11 +184,19 @@ export class New extends moduleConnect(LitElement) {
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: start;
       text-align: center;
+      margin-top: 25vh;
     }
     .content {
       margin: 0 auto;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 16px 16px;
+      border-radius: 8px;
+    }
+    .label {
+      width: 100%;
+      margin-top: 20px;
     }
     documents-editor {
       width: 90vw;
