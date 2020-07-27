@@ -21,7 +21,7 @@
   },
   "scripts": {
     "start": "webpack-dev-server --mode development",
-    "dev": "webpack-dev-server --mode development",
+    "dev-disabled": "webpack-dev-server--mode development",
     "build": "rm -rf dist && cross-env NODE_OPTIONS=--max_old_space_size=8192 webpack --config webpack.config.js"
   },
   "dependencies": {

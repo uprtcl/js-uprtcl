@@ -57,8 +57,16 @@ export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
-export { UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
-export { EveesHelpers, CreatePerspective, CreateCommit } from './graphql/helpers';
+export {
+  UPDATE_HEAD,
+  CREATE_PERSPECTIVE,
+  CREATE_ENTITY,
+} from './graphql/queries';
+export {
+  EveesHelpers,
+  CreatePerspective,
+  CreateCommit,
+} from './graphql/helpers';
 
 /** Patterns */
 export {

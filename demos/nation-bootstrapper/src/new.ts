@@ -7,6 +7,10 @@ import {
   EveesRemote,
   EveesHelpers,
   EveesEthereum,
+  Perspective,
+  deriveSecured,
+  Secured,
+  NewPerspectiveData,
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { AragonConnector } from '@uprtcl/access-control';
@@ -18,7 +22,7 @@ import { Router } from '@vaadin/router';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { EveesEthereumBinding } from './init';
-import { TextType } from '@uprtcl/documents';
+import { TextType, TextNode } from '@uprtcl/documents';
 
 interface NewNation {
   name: string;
@@ -28,17 +32,14 @@ interface NewNation {
 
 export class New extends moduleConnect(LitElement) {
   @property({ attribute: false })
-  loadingHome: boolean = true;
+  step: number = 2;
 
   @property({ attribute: false })
-  creatingNewNation: boolean = false;
-
-  @property({ attribute: false })
-  step: number = 0;
+  loading: boolean = true;
 
   owner: string;
   name: string;
-  articleRef: string;
+  firstPage: TextNode = { text: 'Article 1', type: TextType.Title, links: [] };
 
   eveesEthereum: EveesEthereum;
   eveesEthProvider: EveesRemote;
@@ -63,6 +64,7 @@ export class New extends moduleConnect(LitElement) {
   }
 
   async newDao(name: string): Promise<string> {
+    return '0x0';
     /** create the perspectuve manually to call wrapper createAndSetHome in one tx */
     const eth: EthereumConnection = this.request('EthereumConnection');
     const aragonConnector = new AragonConnector(eth);
@@ -79,74 +81,114 @@ export class New extends moduleConnect(LitElement) {
     return aragonConnector.agentAddress;
   }
 
-  async newPerspective(
-    data: any,
-    context: string,
-    owner: string
-  ): Promise<string> {
-    const dataId = await EveesHelpers.createEntity(
-      this.client,
-      this.eveesEthProvider,
-      data
-    );
-    const headId = await EveesHelpers.createCommit(
-      this.client,
-      this.eveesEthProvider,
-      {
-        dataId,
-      }
-    );
-    const perspectiveId = await EveesHelpers.createPerspective(
-      this.client,
-      this.eveesEthProvider,
-      {
-        headId,
-        context,
-        canWrite: owner,
-      }
-    );
-    return perspectiveId;
-  }
-
   async nameSet(name: string) {
-    this.creatingNewNation = true;
-
-    const randint = 0 + Math.floor((1000000000 - 0) * Math.random());
-
-    const owner = await this.newDao(nation.name);
+    this.loading = true;
+    const owner = await this.newDao(name);
+    this.step = 2;
+    this.loading = false;
   }
 
   async initConstitution(name: string) {
-    const ids = await this.newPerspectives(
-      [{ text: 'Article 1', type: TextType.Paragraph, links: [] },
-      `${name}-article-1`,
-      this.owner
+    /** prepare first page */
+    const pageEntityId = await EveesHelpers.createEntity(
+      this.client,
+      this.eveesEthProvider,
+      this.firstPage
     );
+
+    const pageHeadId = await EveesHelpers.createCommit(
+      this.client,
+      this.eveesEthProvider,
+      {
+        dataId: pageEntityId,
+      }
+    );
+
+    const pagePerspective: Perspective = {
+      creatorId: this.connection.getCurrentAccount(),
+      authority: this.eveesEthProvider.authority,
+      timestamp: Date.now(),
+    };
+
+    const pageSecured: Secured<Perspective> = await deriveSecured(
+      pagePerspective,
+      this.eveesEthProvider.cidConfig
+    );
+
+    const newPagePerspective: NewPerspectiveData = {
+      perspective: pageSecured,
+      details: { headId: pageHeadId, context: `${name}-1` },
+      canWrite: this.owner,
+    };
+
+    /** prepare constitution (with link to the first page)*/
+    const constitutionEntityId = await EveesHelpers.createEntity(
+      this.client,
+      this.eveesEthProvider,
+      {
+        title: `${name} Constitution`,
+        type: TextType.Title,
+        links: [pageSecured.id],
+      }
+    );
+
+    const constHeadId = await EveesHelpers.createCommit(
+      this.client,
+      this.eveesEthProvider,
+      {
+        dataId: constitutionEntityId,
+      }
+    );
+
+    const constitutionPerspective: Perspective = {
+      creatorId: this.connection.getCurrentAccount(),
+      authority: this.eveesEthProvider.authority,
+      timestamp: Date.now(),
+    };
+
+    const constitutionSecured: Secured<Perspective> = await deriveSecured(
+      constitutionPerspective,
+      this.eveesEthProvider.cidConfig
+    );
+
+    const newConstitutionPerspective: NewPerspectiveData = {
+      perspective: constitutionSecured,
+      details: { headId: constHeadId, context: `${name}-1` },
+      canWrite: this.owner,
+    };
+
+    /** create both perspective owned by the DAO in a single tx */
+
+    this.eveesEthProvider.createPerspectiveBatch([
+      newPagePerspective,
+      newConstitutionPerspective,
+    ]);
   }
 
   renderStep() {
     switch (this.step) {
       case 0:
-        return html`<mwc-button
-          @click=${() => (this.step = 1)}
-          raised
-        >
+        return html`<mwc-button @click=${() => (this.step = 1)} raised>
           found a new nation
         </mwc-button>`;
 
       case 1:
         return html`<evees-string-form
-        value=""
-        label="name of the nation"
-        ?loading=${this.creatingDao}
-        @cancel=${() => (this.step = 0)}
-        @accept=${(e) => this.nameSet(e.detail.value)}
-      ></evees-string-form>`;
-          }
+          value=""
+          label="name of the nation"
+          @cancel=${() => (this.step = 0)}
+          @accept=${(e) => this.nameSet(e.detail.value)}
+        ></evees-string-form>`;
+
+      case 2:
+        return html`<documents-editor
+          .init=${this.firstPage}
+        ></documents-editor>`;
+    }
   }
 
   render() {
-    return html`<div>${this.renderStep()}</div>`;
+    return html`<div class="content">${this.renderStep()}</div>`;
   }
 
   static styles = css`
@@ -157,8 +199,14 @@ export class New extends moduleConnect(LitElement) {
       justify-content: center;
       text-align: center;
     }
-    mwc-textfield {
-      width: 400px;
+    .content {
+      margin: 0 auto;
+    }
+    documents-editor {
+      width: 90vw;
+      max-width: 600px;
+      --font-family: italiannoregular;
+      --font-size: 36px;
     }
     mwc-button {
       width: 220px;

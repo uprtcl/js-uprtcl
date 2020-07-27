@@ -103,8 +103,6 @@ export class AragonConnector implements DAOConnector {
     const gasEstimated = await caller.estimateGas({ from });
     console.log(gasEstimated);
 
-    debugger;
-
     const receipt: any = await waitConfirmation(caller, from, 5);
 
     const block = await this.eth.web3.eth.getBlockNumber();

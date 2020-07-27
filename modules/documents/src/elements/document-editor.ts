@@ -54,6 +54,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   editable: string = 'true';
 
+  @property({ type: Object })
+  init: any;
+
+  @property({ type: String, attribute: 'default-authority' })
+  defaultAuthority!: string;
+
   @property({ attribute: false })
   client!: ApolloClient<any>;
 
@@ -88,7 +94,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.ref);
-
     this.loadDoc();
   }
 
@@ -111,6 +116,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (!this.client) return;
 
     if (LOGINFO) this.logger.log('loadDoc()', this.ref);
+
+    if (this.init !== undefined) {
+      this.doc = this.createPlaceholder(this.init);
+      return;
+    }
 
     if (!this.ref) return;
     this.doc = await this.loadNodeRec(this.ref);
@@ -326,9 +336,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async persistAll(message?: string) {
     if (!this.doc) return;
     this.persistingAll = true;
-    if (this.doc.authority === undefined)
-      throw Error('top element must have an authority');
-    await this.persistNodeRec(this.doc, this.doc.authority, message);
+    await this.persistNodeRec(
+      this.doc,
+      this.isPlaceholder(this.doc.ref)
+        ? this.defaultAuthority
+        : this.doc.authority,
+      message
+    );
     /** reload doc from backend */
     await this.loadDoc();
     this.requestUpdate();
@@ -337,9 +351,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async persistNodeRec(
     node: DocNode,
-    defaultAuthority: string,
+    defaultAuthority?: string,
     message?: string
   ) {
+    if (defaultAuthority === undefined)
+      throw new Error('defaultAuthority undefined');
+
     const persistChildren = node.childrenNodes.map((child) =>
       this.persistNodeRec(child, defaultAuthority, message)
     );
@@ -373,13 +390,23 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       if (!entity) throw new Error('entity not found');
       refType = this.recognizer.recognizeType(entity);
     } else {
-      refType = EveesModule.bindings.CommitType;
+      refType =
+        node.parent === undefined
+          ? EveesModule.bindings.PerspectiveType
+          : EveesModule.bindings.CommitType;
     }
 
     /** if its a placeholder create an object, otherwise make a commit */
     switch (refType) {
       case EveesModule.bindings.PerspectiveType:
-        await this.updateEvee(node, message);
+        if (this.init !== undefined) {
+          /** if document evee does not exist */
+          node.authority = this.defaultAuthority;
+          await this.createEvee(node, message);
+        } else {
+          await this.updateEvee(node, message);
+        }
+
         break;
 
       case EveesModule.bindings.CommitType:
@@ -441,6 +468,22 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return await EveesHelpers.createCommit(this.client, remote, {
       dataId,
       parentsIds,
+    });
+  }
+
+  async createEvee(node: DocNode): Promise<string> {
+    if (node.authority === undefined) throw new Error('undefined');
+    const headId = this.createCommit(node.draft, node.authority);
+
+    const result = await this.client.mutate({
+      mutation: CREATE_PERSPECTIVE,
+      variables: {
+        ...newPerspective.perspective.object.payload,
+        ...newPerspective.details,
+        authority: newPerspective.perspective.object.payload.authority,
+        canWrite: newPerspective.canWrite,
+        parentId: newPerspective.parentId,
+      },
     });
   }
 
@@ -1082,31 +1125,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           ? html`
               <div class="button-container">
                 <evees-loading-button
-                  icon="unarchive"
+                  icon="check"
                   @click=${() => this.persistAll()}
                   loading=${this.persistingAll ? 'true' : 'false'}
-                  label="push"
+                  label="done"
                 >
                 </evees-loading-button>
               </div>
-              <!-- <evees-options-menu 
-                .config=${options} 
-                @option-click=${this.commitOptionSelected}
-                icon="arrow_drop_down">
-              </evees-options-menu> -->
-              <evees-help>
-                <span>
-                  Your current changes are safely stored on this device and
-                  won't be lost.<br /><br />
-                  "Push" them if<br /><br />
-                  <li>You are about to propose a merge.</li>
-                  <br />
-                  <li>
-                    This draft is public and you want them to be visible to
-                    others.
-                  </li>
-                </span>
-              </evees-help>
             `
           : ''}
         ${this.showCommitMessage
