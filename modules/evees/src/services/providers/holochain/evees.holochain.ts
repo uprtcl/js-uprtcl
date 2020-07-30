@@ -6,7 +6,11 @@ import {
   parseEntriesResults,
 } from '@uprtcl/holochain-provider';
 import { Signed, Entity } from '@uprtcl/cortex';
-import { KnownSourcesService, defaultCidConfig } from '@uprtcl/multiplatform';
+import {
+  KnownSourcesService,
+  defaultCidConfig,
+  CASStore,
+} from '@uprtcl/multiplatform';
 
 import {
   Perspective,
@@ -21,13 +25,13 @@ import { parseResponse } from '@uprtcl/holochain-provider';
 @injectable()
 export abstract class EveesHolochain extends HolochainProvider
   implements EveesRemote {
+  store!: CASStore;
   knownSources?: KnownSourcesService | undefined;
   userId?: string | undefined;
   zome: string = 'evees';
 
-  get authority() {
-    return '';
-  }
+  id: string = '';
+  defaultPath: string = '';
 
   get accessControl() {
     return undefined;
@@ -51,16 +55,6 @@ export abstract class EveesHolochain extends HolochainProvider
    */
   public async ready() {
     await super.ready();
-  }
-
-  public async get(id: string): Promise<any | undefined> {
-    return this.call('get_entry', {
-      address: id,
-    });
-  }
-
-  create(object: object, hash?: string | undefined): Promise<string> {
-    throw new Error('Method not implemented.');
   }
 
   /**

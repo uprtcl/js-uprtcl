@@ -15,7 +15,8 @@ export const eveesTypeDefs: DocumentNode = gql`
     createEntity(object: JSON!, casID: ID): Entity!
 
     createPerspective(
-      authority: String!
+      remote: String!
+      path: String
       creatorId: String
       timestamp: Date
       headId: ID
@@ -75,7 +76,8 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   input PerspectivePayload {
-    authority: String
+    remote: String
+    path: String
     timestamp: Float
     creatorId: String
   }
@@ -151,7 +153,8 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   type Payload {
-    authority: String
+    remote: String
+    path: String
     creatorId: String
     timestamp: Date
   }

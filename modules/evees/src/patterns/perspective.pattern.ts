@@ -11,7 +11,7 @@ import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { extractSignedEntity } from '../utils/signed';
 
-export const propertyOrder = ['authority', 'creatorId', 'timestamp'];
+export const propertyOrder = ['creatorId', 'path', 'remote', 'timestamp'];
 
 export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
   recognize(entity: object) {
@@ -74,7 +74,7 @@ export class PerspectiveAccessControl
   implements Updatable<Entity<Signed<Perspective>>> {
   constructor(@inject(EveesBindings.Evees) protected evees: Evees) {}
 
-  authority = (perspective: Entity<Signed<Perspective>>) =>
+  remote = (perspective: Entity<Signed<Perspective>>) =>
     this.evees.getPerspectiveProvider(perspective.object);
 
   accessControl = (perspective: Entity<Signed<Perspective>>) => {

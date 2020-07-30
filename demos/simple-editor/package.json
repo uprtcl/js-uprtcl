@@ -63,7 +63,9 @@
     "pwa-helpers": "^0.9.0",
     "redux": "^4.0.0",
     "reselect": "^4.0.0",
-    "webpack": "^4.42.1"
+    "secp256k1": "^3.8.0",
+    "webpack": "^4.42.1",
+    "ipfs": "^0.47.0"
   },
   "devDependencies": {
     "@babel/core": "^7.2.0",

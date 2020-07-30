@@ -64,16 +64,24 @@ export class SimpleMergeStrategy implements MergeStrategy {
       EveesHelpers.getPerspectiveHeadId(this.client, id)
     );
     const [toHeadId, fromHeadId] = await Promise.all(promises);
+    if (fromHeadId === undefined)
+      throw new Error('cannot merged undefined head');
 
-    const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
+    const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
-    const newHead = await this.mergeCommits(
-      toHeadId,
-      fromHeadId,
-      remote.authority,
-      workspace,
-      config
-    );
+    let newHead: string;
+
+    if (toHeadId === undefined) {
+      newHead = fromHeadId;
+    } else {
+      newHead = await this.mergeCommits(
+        toHeadId,
+        fromHeadId,
+        remote.id,
+        workspace,
+        config
+      );
+    }
 
     /** prevent an update head to the same head */
     if (newHead === toHeadId) {
@@ -156,7 +164,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeCommits(
     toCommitIdOrg: string,
     fromCommitIdOrg: string,
-    authority: string,
+    remote: string,
     workspace: EveesWorkspace,
     config: any
   ): Promise<string> {
@@ -186,9 +194,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     );
 
     const type = this.recognizer.recognizeType(ancestorData);
-    const remote = this.evees.getAuthority(authority);
+    const instance = this.evees.getRemote(remote);
 
-    const sourceRemote = this.remoteMap(remote, type);
+    const sourceRemote = this.remoteMap(instance, type);
 
     const entity = await deriveEntity(mergedData, sourceRemote.cidConfig);
     entity.casID = sourceRemote.casID;
@@ -200,7 +208,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     workspace.create(entity);
 
-    if (!remote.userId)
+    if (!instance.userId)
       throw new Error('Cannot create commits in a casID you are not signed in');
 
     const newCommit: Commit = {
@@ -208,12 +216,15 @@ export class SimpleMergeStrategy implements MergeStrategy {
       parentsIds: commitsIds,
       message: `Merge commits ${commitsIds.toString()}`,
       timestamp: Date.now(),
-      creatorsIds: [remote.userId],
+      creatorsIds: [instance.userId],
     };
 
-    const securedCommit = await deriveSecured(newCommit, remote.cidConfig);
+    const securedCommit = await deriveSecured(
+      newCommit,
+      instance.store.cidConfig
+    );
 
-    securedCommit.casID = remote.casID;
+    securedCommit.casID = instance.store.casID;
     workspace.create(securedCommit);
 
     return securedCommit.id;

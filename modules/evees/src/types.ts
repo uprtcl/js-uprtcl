@@ -15,15 +15,20 @@ export type RemoteMap = (
 export const defaultRemoteMap: RemoteMap = (
   eveesAuthority: EveesRemote,
   contentType?: string
-) => eveesAuthority;
+) => eveesAuthority.store;
 
 export type Context = string;
 
 export interface Perspective {
-  authority: string;
+  remote: string;
+  path: string;
   creatorId: string;
   timestamp: number;
 }
+
+export const getAuthority = (perspective: Perspective): string => {
+  return `${perspective.remote}:${perspective.path}`;
+};
 
 export interface PerspectiveDetails {
   name?: string;
@@ -71,7 +76,7 @@ export interface NewProposal {
 
 export interface ProposalCreatedDetail {
   proposalId: string;
-  authority: string;
+  remote: string;
 }
 
 export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {

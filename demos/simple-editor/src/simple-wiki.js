@@ -9,7 +9,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return {
       rootHash: { type: String },
       loading: { type: Boolean, attribute: false },
-      defaultAuthority: { type: String },
+      defaultRemote: { type: String },
     };
   }
 
@@ -41,41 +41,51 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = state[2].split('id=')[1];
     });
 
-    const eveesHttpProvider = this.requestAll(
-      EveesModule.bindings.EveesRemote
-    ).find((provider) => provider.authority.startsWith('http'));
+    const defaultInstance = this.request(EveesModule.bindings.DefaultRemote);
+    await defaultInstance.connect();
 
-    await eveesHttpProvider.connect();
+    this.defaultRemote = defaultInstance.id;
 
-    this.defaultAuthority = eveesHttpProvider.authority;
+    // wait all remotes to be ready
+    await Promise.all(
+      this.requestAll(EveesModule.bindings.EveesRemote).map((remote) =>
+        remote.ready()
+      )
+    );
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
     } else {
-      const eveesEthProvider = this.requestAll(
+      const eveesEthRemote = this.requestAll(
         EveesModule.bindings.EveesRemote
-      ).find((provider) => provider.authority.startsWith('eth'));
+      ).find((instance) => instance.id.startsWith('eth'));
+
+      await eveesEthRemote.ready();
 
       const client = this.request(ApolloClientModule.bindings.Client);
 
+      const randint = 0 + Math.floor((10000 - 0) * Math.random());
       const wiki = {
-        title: 'Genesis Wiki',
+        title: `Genesis Wiki ${randint}`,
         pages: [],
       };
 
       const dataId = await EveesHelpers.createEntity(
         client,
-        eveesEthProvider,
+        eveesEthRemote.store,
         wiki
       );
-      const headId = await EveesHelpers.createCommit(client, eveesEthProvider, {
-        dataId,
-      });
+      const headId = await EveesHelpers.createCommit(
+        client,
+        eveesEthRemote.store,
+        {
+          dataId,
+        }
+      );
 
-      const randint = 0 + Math.floor((10000 - 0) * Math.random());
       const perspectiveId = await EveesHelpers.createPerspective(
         client,
-        eveesEthProvider,
+        eveesEthRemote,
         {
           headId,
           context: `genesis-dao-wiki-${randint}`,
@@ -99,8 +109,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
               <div class="wiki-container">
                 <wiki-drawer
                   uref=${this.rootHash}
-                  default-authority=${this.defaultAuthority}
-                  .editableAuthorities=${[this.defaultAuthority]}
+                  default-remote=${this.defaultRemote}
+                  .editableRemotes=${[this.defaultRemote]}
                 ></wiki-drawer>
               </div>
             </div>

@@ -9,8 +9,9 @@ import { WikisModule } from '@uprtcl/wikis';
 import { CortexModule } from '@uprtcl/cortex';
 import { AccessControlModule } from '@uprtcl/access-control';
 import { EveesModule, EveesEthereum, EveesHttp } from '@uprtcl/evees';
+import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import { HttpConnection } from '@uprtcl/http-provider';
+import { HttpConnection, HttpStore } from '@uprtcl/http-provider';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
@@ -21,8 +22,8 @@ import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
 (async function () {
-  // const c1host = 'http://localhost:3000/uprtcl/1';
-  const c1host = 'https://api.intercreativity.io/uprtcl/1';
+  const c1host = 'http://localhost:3100/uprtcl/1';
+  // const c1host = 'https://api.intercreativity.io/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
 
@@ -53,16 +54,17 @@ import { SimpleWiki } from './simple-wiki';
   const httpConnection = new HttpConnection();
   const ethConnection = new EthereumConnection({ provider: ethHost });
 
+  const httpStore = new HttpStore(c1host, httpConnection, httpCidConfig);
   const httpEvees = new EveesHttp(
     c1host,
     httpConnection,
     ethConnection,
-    httpCidConfig
+    httpStore
   );
+  const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
   const ethEvees = new EveesEthereum(
     ethConnection,
-    ipfsConfig,
-    ipfsCidConfig,
+    ipfsStore,
     orchestrator.container
   );
 

@@ -6,13 +6,8 @@ import {
   EthereumContractOptions,
   EthereumContract,
 } from '@uprtcl/ethereum-provider';
-import {
-  IpfsStore,
-  sortObject,
-  IpfsConnectionOptions,
-} from '@uprtcl/ipfs-provider';
-import { CidConfig } from '@uprtcl/multiplatform';
-import { Authority } from '@uprtcl/access-control';
+import { IpfsStore } from '@uprtcl/ipfs-provider';
+import { Remote } from '@uprtcl/access-control';
 
 import {
   abi as abiRoot,
@@ -65,11 +60,11 @@ import {
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 import { ProposalsProvider } from '../../proposals.provider';
+import { CASStore } from '@uprtcl/multiplatform';
 
 const evees_if = 'evees-v0';
 
-export class EveesEthereum extends IpfsStore
-  implements EveesRemote, Authority, PerspectiveCreator {
+export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   logger: Logger = new Logger('EveesEtereum');
 
   accessControl: EveesAccessControlEthereum;
@@ -82,8 +77,7 @@ export class EveesEthereum extends IpfsStore
 
   constructor(
     protected ethConnection: EthereumConnection,
-    protected ipfsOptions: IpfsConnectionOptions,
-    cidConfig: CidConfig,
+    public store: CASStore,
     container: Container,
     uprtclRootOptions: EthereumContractOptions = {
       contract: UprtclRoot as any,
@@ -98,8 +92,6 @@ export class EveesEthereum extends IpfsStore
       contract: UprtclWrapper as any,
     }
   ) {
-    super(ipfsOptions, cidConfig);
-
     this.uprtclRoot = new EthereumContract(uprtclRootOptions, ethConnection);
     this.uprtclDetails = new EthereumContract(
       uprtclDetailsOptions,
@@ -126,13 +118,15 @@ export class EveesEthereum extends IpfsStore
       this
     );
   }
+  
+  get id() {
+    return `eth-${this.ethConnection.networkId}:${evees_if}`;
+  }
 
-  get authority() {
-    return `eth-${this.ethConnection.networkId}:${evees_if}:${
-      this.uprtclRoot.contractInstance.options.address
-        ? this.uprtclRoot.contractInstance.options.address.toLocaleLowerCase()
-        : ''
-    }`;
+  get defaultPath() {
+    return this.uprtclRoot.contractInstance.options.address
+      ? this.uprtclRoot.contractInstance.options.address.toLocaleLowerCase()
+      : '';
   }
 
   get userId() {
@@ -148,12 +142,12 @@ export class EveesEthereum extends IpfsStore
       this.uprtclDetails.ready(),
       this.uprtclProposals.ready(),
       this.uprtclWrapper.ready(),
-      super.ready(),
+      this.store.ready(),
     ]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspectiveId = await this.create(secured.object);
+    const perspectiveId = await this.store.create(secured.object);
     this.logger.log(
       `[ETH] persistPerspectiveEntity - added to IPFS`,
       perspectiveId
@@ -172,10 +166,6 @@ export class EveesEthereum extends IpfsStore
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
     const canWrite = perspectiveData.canWrite;
-
-    /** validate */
-    if (!secured.object.payload.authority)
-      throw new Error('authority cannot be empty');
 
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);
@@ -363,5 +353,14 @@ export class EveesEthereum extends IpfsStore
   }
   logout(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+  connect(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  isConnected(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  disconnect(): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }

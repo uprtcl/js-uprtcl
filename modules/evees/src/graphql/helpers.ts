@@ -32,7 +32,7 @@ export class EveesHelpers {
   static async getPerspectiveHeadId(
     client: ApolloClient<any>,
     perspectiveId: string
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const result = await client.query({
       query: gql`
         {
@@ -46,13 +46,13 @@ export class EveesHelpers {
           }
         }`,
     });
-    return result.data.entity.head.id;
+    return result.data.entity.head?.id;
   }
 
   static async getPerspectiveContext(
     client: ApolloClient<any>,
     perspectiveId: string
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const result = await client.query({
       query: gql`
         {
@@ -66,10 +66,10 @@ export class EveesHelpers {
           }
         }`,
     });
-    return result.data.entity.context.id;
+    return result.data.entity.context?.id;
   }
 
-  static async getPerspectiveAuthority(
+  static async getPerspectiveRemoteId(
     client: ApolloClient<any>,
     perspectiveId: string
   ): Promise<string> {
@@ -78,22 +78,24 @@ export class EveesHelpers {
       perspectiveId
     );
     if (!perspective) throw new Error('perspective not found');
-    return perspective.object.payload.authority;
+    return perspective.object.payload.remote;
   }
 
   static async getPerspectiveDataId(
     client: ApolloClient<any>,
     perspectiveId: string
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const headId = await this.getPerspectiveHeadId(client, perspectiveId);
+    if (headId === undefined) return undefined;
     return this.getCommitDataId(client, headId);
   }
 
   static async getPerspectiveData(
     client: ApolloClient<any>,
     perspectiveId: string
-  ): Promise<Entity<any>> {
+  ): Promise<Entity<any> | undefined> {
     const headId = await this.getPerspectiveHeadId(client, perspectiveId);
+    if (headId === undefined) return undefined;
     return this.getCommitData(client, headId);
   }
 
@@ -272,8 +274,8 @@ export class EveesHelpers {
     const createPerspective = await client.mutate({
       mutation: CREATE_PERSPECTIVE,
       variables: {
-        authority: remote.authority,
-        casID: remote.casID,
+        remote: remote.id,
+        casID: remote.store.casID,
         ...perspective,
       },
     });

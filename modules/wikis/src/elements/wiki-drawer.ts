@@ -58,14 +58,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'uref' })
   firstRef!: string;
 
-  @property({ type: String, attribute: 'default-authority' })
-  defaultAuthority!: string;
+  @property({ type: String, attribute: 'default-remote' })
+  defaultRemoteId!: string;
 
   @property({ type: Array })
-  editableAuthorities: string[] = [];
+  editableRemotes: string[] = [];
 
   @property({ attribute: false })
   uref!: string;
+
+  @property({ attribute: false })
+  loading: boolean = false;
 
   @property({ attribute: false })
   wiki: Entity<Wiki> | undefined;
@@ -79,8 +82,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   creatingNewPage: boolean = false;
 
-  authority: string = '';
-  context: string = '';
+  remote: string = '';
+  path: string = '';
+  context: string | undefined = undefined;
   currentHeadId: string | undefined = undefined;
   editable: boolean = false;
 
@@ -195,6 +199,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async loadWiki() {
     if (this.uref === undefined) return;
 
+    this.loading = true;
+
     const perspective = (await loadEntity(this.client, this.uref)) as Entity<
       Signed<Perspective>
     >;
@@ -211,12 +217,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       this.uref
     );
 
-    this.authority = perspective.object.payload.authority;
+    this.remote = perspective.object.payload.remote;
+    this.path = perspective.object.payload.path;
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
     this.editable = accessControl
-      ? this.editableAuthorities.length > 0
-        ? this.editableAuthorities.includes(this.authority)
+      ? this.editableRemotes.length > 0
+        ? this.editableRemotes.includes(this.remote)
           ? accessControl.canWrite
           : false
         : accessControl.canWrite
@@ -225,12 +232,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
-    this.loadPagesData();
     this.requestUpdate();
+    await this.loadPagesData();
+
+    this.loading = false;
   }
 
   async loadPagesData() {
-    if (!this.wiki) return;
+    if (!this.wiki) {
+      this.pagesList = [];
+      return;
+    }
 
     this.logger.log('loadPagesData()');
 
@@ -277,31 +289,34 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }
   }
 
-  getStore(authority: string, type: string): CASStore | undefined {
-    const remote = this.eveesRemotes.find((r) => r.authority === authority);
-    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
-    return this.remoteMap(remote);
+  getStore(remote: string, type: string): CASStore | undefined {
+    const remoteInstance = this.eveesRemotes.find((r) => r.id === remote);
+    if (!remoteInstance)
+      throw new Error(`Remote not found for remote ${remote}`);
+    return this.remoteMap(remoteInstance);
   }
 
-  async createPage(page: TextNode, authority: string) {
+  async createPage(page: TextNode, remote: string) {
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
 
-    const remote = this.eveesRemotes.find((r) => r.authority === authority);
-    if (!remote) throw new Error(`Remote not found for authority ${authority}`);
+    const remoteInstance = this.eveesRemotes.find((r) => r.id === remote);
+    if (!remoteInstance)
+      throw new Error(`Remote not found for remote ${remote}`);
 
-    const store = this.getStore(
-      authority,
-      DocumentsModule.bindings.TextNodeType
-    );
+    const store = this.getStore(remote, DocumentsModule.bindings.TextNodeType);
     if (!store) throw new Error('store is undefined');
 
     const dataId = await EveesHelpers.createEntity(this.client, store, page);
-    const headId = await EveesHelpers.createCommit(this.client, remote, {
-      dataId,
-      parentsIds: [],
-    });
-    return EveesHelpers.createPerspective(this.client, remote, {
+    const headId = await EveesHelpers.createCommit(
+      this.client,
+      remoteInstance.store,
+      {
+        dataId,
+        parentsIds: [],
+      }
+    );
+    return EveesHelpers.createPerspective(this.client, remoteInstance, {
       headId,
       context: `${this.context}_${Date.now()}`,
       parentId: this.uref,
@@ -309,17 +324,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async updateContent(newWiki: Wiki) {
-    const store = this.getStore(this.authority, WikiBindings.WikiType);
+    const store = this.getStore(this.remote, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const remote = this.eveesRemotes.find(
-      (r) => r.authority === this.authority
-    );
-    if (!remote)
-      throw Error(`Remote not found for authority ${this.authority}`);
+    const remote = this.eveesRemotes.find((r) => r.id === this.remote);
+    if (!remote) throw Error(`Remote not found for remote ${this.remote}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
-    const headId = await EveesHelpers.createCommit(this.client, remote, {
+    const headId = await EveesHelpers.createCommit(this.client, remote.store, {
       dataId,
       parentsIds: [this.currentHeadId ? this.currentHeadId : ''],
     });
@@ -335,7 +347,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const getPages = pages.map((page) => {
       if (typeof page !== 'string') {
-        return this.createPage(page, this.authority);
+        return this.createPage(page, this.remote);
       } else {
         return Promise.resolve(page);
       }
@@ -687,7 +699,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       uref: this.uref,
       editable: this.editable,
     });
-    if (!this.wiki || !this.uref)
+    if (this.loading || !this.uref)
       return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`
@@ -722,7 +734,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   pageHash=${this.wiki.object.pages[this.selectedPageIx]}
                   color=${this.color() ? this.color() : ''}
                   @doc-changed=${(e) => this.onDocChanged(e)}
-                  .editableAuthorities=${this.editableAuthorities}
+                  .editableRemotes=${this.editableRemotes}
                 >
                 </wiki-page>
               `
@@ -736,7 +748,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                       uref=${this.uref}
                       first-uref=${this.firstRef as string}
                       evee-color=${this.color()}
-                      default-authority=${this.defaultAuthority as string}
+                      default-remote=${this.defaultRemoteId as string}
                     ></evees-info-page>
                   </div>
                 </div>

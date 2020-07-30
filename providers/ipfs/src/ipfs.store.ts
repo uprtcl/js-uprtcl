@@ -40,9 +40,18 @@ export class IpfsStore extends Connection implements CASStore {
     this.client = ipfsClient(this.ipfsOptions);
   }
 
-  public tryPut(buffer: Buffer, putConfig: object, wait: number, attempt: number): Promise<any> {
+  public tryPut(
+    buffer: Buffer,
+    putConfig: object,
+    wait: number,
+    attempt: number
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.logger.log(`Try put. Attempt: ${attempt}`, { client: this.client, buffer, putConfig });
+      this.logger.log(`Try put. Attempt: ${attempt}`, {
+        client: this.client,
+        buffer,
+        putConfig,
+      });
 
       let timeout;
       if (attempt < 4) {
@@ -61,12 +70,15 @@ export class IpfsStore extends Connection implements CASStore {
           resolve(result);
         })
         .catch((e) => {
-          this.logger.error(`Error putting object on IPFS on attempt: ${attempt}`, {
-            e,
-            client: this.client,
-            buffer,
-            putConfig,
-          });
+          this.logger.error(
+            `Error putting object on IPFS on attempt: ${attempt}`,
+            {
+              e,
+              client: this.client,
+              buffer,
+              putConfig,
+            }
+          );
         });
     });
   }
@@ -121,7 +133,12 @@ export class IpfsStore extends Connection implements CASStore {
     return this.tryPut(buffer, putConfig, 500, 0)
       .then((result: any) => {
         let hashString = result.toString(this.cidConfig.base);
-        this.logger.log(`Object stored`, { object, sorted, buffer, hashString });
+        this.logger.log(`Object stored`, {
+          object,
+          sorted,
+          buffer,
+          hashString,
+        });
         return hashString;
       })
       .catch((e) => {
@@ -142,7 +159,10 @@ export class IpfsStore extends Connection implements CASStore {
         return object;
       })
       .catch((e) => {
-        this.logger.warn(`Object with ${hash} not found in IPFS, returning undefined`, e);
+        this.logger.warn(
+          `Object with ${hash} not found in IPFS, returning undefined`,
+          e
+        );
         return undefined;
       });
   }

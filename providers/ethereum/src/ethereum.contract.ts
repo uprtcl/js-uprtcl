@@ -1,7 +1,6 @@
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 
-import { Authority } from '@uprtcl/access-control';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EthereumConnection } from './ethereum.connection';
@@ -81,7 +80,10 @@ export class EthereumContract {
         })
         .on('confirmation', (confirmationNumber: any) => {
           if (confirmationNumber < 5) {
-            this.logger.log(`CONFIRMED ${funcName}`, { confirmationNumber, pars });
+            this.logger.log(`CONFIRMED ${funcName}`, {
+              confirmationNumber,
+              pars,
+            });
           }
           resolve();
         })
