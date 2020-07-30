@@ -154,9 +154,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     let editable = false;
     let remote!: string | undefined;
-    let context!: string;
-    let dataId!: string;
-    let headId!: string;
+    let context!: string | undefined;
+    let dataId!: string | undefined;
+    let headId!: string | undefined;
 
     if (entityType === EveesModule.bindings.PerspectiveType) {
       remote = await EveesHelpers.getPerspectiveRemoteId(
@@ -178,7 +178,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           this.client,
           entity.id
         );
-        dataId = await EveesHelpers.getCommitDataId(this.client, headId);
+        dataId =
+          headId !== undefined
+            ? await EveesHelpers.getCommitDataId(this.client, headId)
+            : undefined;
       } else {
         editable = false;
         dataId = await EveesHelpers.getPerspectiveDataId(
@@ -447,7 +450,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   async updateEvee(node: DocNode, message?: string): Promise<void> {
     if (node.remote === undefined)
-      throw Error(`remote not defined for node ${node.ref}`);
+      throw Error(`remote not defined for node ${node.uref}`);
 
     const commitId = await this.createCommit(
       node.draft,

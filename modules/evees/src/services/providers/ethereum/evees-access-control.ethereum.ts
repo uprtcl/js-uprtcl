@@ -42,10 +42,10 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
 
     const currentAccessControl = await EveesHelpers.getAccessControl(
       client,
-      ref
+      uref
     );
     if (!currentAccessControl)
-      throw new Error(`${ref} don't have access control`);
+      throw new Error(`${uref} don't have access control`);
 
     const remote = await EveesHelpers.getPerspectiveRemoteId(client, uref);
     if (!remote) throw new Error(`${uref} is not a perspective`);
