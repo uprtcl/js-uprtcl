@@ -137,14 +137,12 @@ export class Home extends moduleConnect(LitElement) {
 
   async newDocument(title: string) {
     this.creatingNewDocument = true;
-    // debugger;
-    const eveesEthProvider = this.requestAll(
+
+    const eveesProvider = this.requestAll(
       EveesModule.bindings.EveesRemote
     ).find((provider: EveesRemote) =>
       provider.authority.startsWith('http')
     ) as EveesRemote;
-
-    // await eveesEthProvider.login();
 
     const client = this.request(
       ApolloClientModule.bindings.Client
@@ -157,27 +155,27 @@ export class Home extends moduleConnect(LitElement) {
 
     const dataId = await EveesHelpers.createEntity(
       client,
-      eveesEthProvider,
+      eveesProvider,
       wiki
     );
-    const headId = await EveesHelpers.createCommit(client, eveesEthProvider, {
+    const headId = await EveesHelpers.createCommit(client, eveesProvider, {
       dataId,
     });
 
-    const perspectiveId = await EveesHelpers.createPerspective(client, eveesEthProvider, {
+    const perspectiveId = await EveesHelpers.createPerspective(client, eveesProvider, {
       headId: headId, context: 'test123'
     });
 
     /** create the perspectuve manually to call wrapper createAndSetHome in one tx */
     // const perspectiveData: Perspective = {
     //   creatorId: this.connection.getCurrentAccount(),
-    //   authority: eveesEthProvider.authority,
+    //   authority: eveesProvider.authority,
     //   timestamp: Date.now(),
     // };
 
     // const perspective: Secured<Perspective> = await deriveSecured(
     //   perspectiveData,
-    //   eveesEthProvider.cidConfig
+    //   eveesProvider.cidConfig
     // );
 
     // const newPerspective: NewPerspectiveData = {
