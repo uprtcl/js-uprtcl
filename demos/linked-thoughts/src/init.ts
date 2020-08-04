@@ -62,7 +62,7 @@ export const initUprtcl = async () => {
     orchestrator.container
   );
 
-  const evees = new EveesModule([ethEvees, httpEvees], httpEvees);
+  const evees = new EveesModule([httpEvees], httpEvees);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();

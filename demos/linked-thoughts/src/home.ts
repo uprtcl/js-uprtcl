@@ -6,6 +6,7 @@ import {
   EveesModule,
   EveesRemote,
   EveesHelpers,
+  EveesHttp,
   EveesEthereum,
   Secured,
   deriveSecured,
@@ -72,14 +73,14 @@ export class Home extends moduleConnect(LitElement) {
   uprtclWrapper: EthereumContract;
 
   async firstUpdated() {
-    this.eveesEthereum = this.request(EveesEthereumBinding);
-    this.connection = (this.eveesEthereum as any).ethConnection;
-    await this.connection.ready();
 
-    // if ([1, 3, 42].includes(this.connection.networkId)) {
-    //   this.switchNetwork = true;
-    //   return;
-    // }
+    const eveesProvider = this.requestAll(
+      EveesModule.bindings.EveesRemote
+    ).find((provider:EveesHttp) =>
+      provider.authority.startsWith('http')
+    ) as EveesHttp;
+
+    await eveesProvider.login();
 
     // this.uprtclHomePerspectives = new EthereumContract(
     //   {

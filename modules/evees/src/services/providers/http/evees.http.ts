@@ -1,5 +1,6 @@
 import {
   HttpEthAuthProvider,
+  HttpAuth0Provider,
   HttpConnection,
   KnownSourcesHttp,
 } from '@uprtcl/http-provider';
@@ -21,7 +22,7 @@ import { Secured } from '../../../utils/cid-hash';
 
 const evees_api: string = 'evees-v1';
 
-export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
+export class EveesHttp extends HttpAuth0Provider implements EveesRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   knownSources: KnownSourcesService;
@@ -41,7 +42,6 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
         apiId: evees_api,
       },
       connection,
-      ethConnection
     );
 
     this.accessControl = new EveesAccessControlHttp(host, this.connection);
