@@ -11,6 +11,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
+    "@auth0/auth0-spa-js": "^1.11.0",
     "@uprtcl/access-control": "^0.0.7-alpha.41",
     "@uprtcl/cortex": "^0.0.7-alpha.41",
     "@uprtcl/ethereum-provider": "^0.0.7-alpha.41",
