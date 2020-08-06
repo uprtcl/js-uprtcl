@@ -30,7 +30,7 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
     /** TODO: there were two alternatives.
      *  - (1) search desendants here , or
      *  - (2) search descendants on the persmisions.owner lense.
-     * (1) seems correct as it seems correct that the authority decides the logic for permissions "inheritance", like is the case for HTTP API.
+     * (1) seems correct as it seems correct that the remote decides the logic for permissions "inheritance", like is the case for HTTP API.
      */
 
     const client: ApolloClient<any> = this.container.get(
@@ -47,8 +47,8 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
     if (!currentAccessControl)
       throw new Error(`${uref} don't have access control`);
 
-    const authority = await EveesHelpers.getPerspectiveAuthority(client, uref);
-    if (!authority) throw new Error(`${uref} is not a perspective`);
+    const remote = await EveesHelpers.getPerspectiveRemoteId(client, uref);
+    if (!remote) throw new Error(`${uref} is not a perspective`);
 
     /** recursively search for children owned by this owner and change also those */
     const descendants = await EveesHelpers.getDescendants(
@@ -57,7 +57,7 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
       uref
     );
 
-    /** filter the descendants witht he same owner and in the same authority */
+    /** filter the descendants witht he same owner and in the same remote */
     const asyncFilter = async (arr, predicate) =>
       Promise.all(arr.map(predicate)).then((results) =>
         arr.filter((_v, index) => results[index])
@@ -85,11 +85,11 @@ export class EveesAccessControlEthereum implements OwnerAccessControlService {
         accessControl.permissions.owner ===
           currentAccessControl.permissions.owner
       ) {
-        const thisAuthority = await EveesHelpers.getPerspectiveAuthority(
+        const thisRemoteId = await EveesHelpers.getPerspectiveRemoteId(
           client,
           descendantRef
         );
-        return thisAuthority === authority;
+        return thisRemoteId === remote;
       }
     });
 

@@ -31,6 +31,7 @@ import {
   Perspective,
   PerspectiveDetails,
   Commit,
+  getAuthority,
 } from '../types';
 import { EveesBindings } from '../bindings';
 import {
@@ -57,7 +58,7 @@ interface PerspectiveData {
   canWrite?: Boolean;
   permissions?: any;
   head?: Entity<Commit>;
-  data: Entity<any>;
+  data?: Entity<any>;
 }
 
 export class EveesInfoBase extends moduleConnect(LitElement) {
@@ -69,8 +70,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'first-uref' })
   firstRef!: string;
 
-  @property({ type: String, attribute: 'default-authority' })
-  defaultAuthority: string | undefined = undefined;
+  @property({ type: String, attribute: 'default-remote' })
+  defaultRemoteId: string | undefined = undefined;
 
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
@@ -133,12 +134,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
     this.remoteMap = this.request(EveesBindings.RemoteMap);
 
-    if (this.defaultAuthority !== undefined) {
+    if (this.defaultRemoteId !== undefined) {
       this.defaultRemote = (this.requestAll(
         EveesBindings.EveesRemote
-      ) as EveesRemote[]).find(
-        (remote) => remote.authority === this.defaultAuthority
-      );
+      ) as EveesRemote[]).find((remote) => remote.id === this.defaultRemoteId);
     }
 
     this.load();
@@ -153,9 +152,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (changedProperties.has('defaultAuthority')) {
       this.defaultRemote = (this.requestAll(
         EveesBindings.EveesRemote
-      ) as EveesRemote[]).find(
-        (remote) => remote.authority === this.defaultAuthority
-      );
+      ) as EveesRemote[]).find((remote) => remote.id === this.defaultRemoteId);
     }
   }
 
@@ -182,11 +179,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         this.uref
       );
 
-      const head = await loadEntity<Commit>(this.client, headId);
-      const data = await EveesHelpers.getPerspectiveData(
-        this.client,
-        this.uref
-      );
+      const head =
+        headId !== undefined
+          ? await loadEntity<Commit>(this.client, headId)
+          : undefined;
+      const data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
       this.perspectiveData = {
         id: this.uref,
@@ -225,7 +222,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.isLogged =
       this.defaultRemote !== undefined
-        ? this.defaultRemote.userId !== undefined
+        ? await this.defaultRemote.isLogged()
         : false;
 
     this.reloadChildren();
@@ -242,15 +239,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       return;
     }
 
-    if (this.perspectiveData.perspective === undefined) {
-      return;
-    }
-
-    const remote = await this.evees.getPerspectiveProviderById(this.uref);
+    const remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
     const config = {
       forceOwner: true,
-      authority: this.perspectiveData.perspective.authority,
+      remote: this.perspectiveData.perspective?.remote,
+      path: this.perspectiveData.perspective?.path,
       canWrite: remote.userId,
       parentId: this.uref,
     };
@@ -336,7 +330,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
     );
 
-    const remote = await this.evees.getPerspectiveProviderById(toPerspectiveId);
+    const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
     const accessControl = remote.accessControl as AccessControlService<
       OwnerPermissions
@@ -357,7 +351,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const config = {
       forceOwner: true,
-      authority: remote.authority,
+      remote: remote.id,
       canWrite: permissions.owner,
       parentId: this.uref,
     };
@@ -383,6 +377,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.client,
       fromPerspectiveId
     );
+
+    if (fromHeadId === undefined)
+      throw new Error(`undefuned head for ${fromPerspectiveId}`);
 
     if (isProposal) {
       await this.createMergeProposal(
@@ -424,16 +421,16 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     fromPerspectiveId: string,
     toPerspectiveId: string,
     fromHeadId: string,
-    toHeadId: string,
+    toHeadId: string | undefined,
     workspace: EveesWorkspace
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
-    const authority = await EveesHelpers.getPerspectiveAuthority(
+    const remote = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
       toPerspectiveId
     );
 
-    const not = await workspace.isSingleAuthority(authority);
+    const not = await workspace.isSingleAuthority(remote);
     if (!not)
       throw new Error(
         'cant create merge proposals on multiple authorities yet'
@@ -465,7 +462,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.dispatchEvent(
       new ProposalCreatedEvent({
-        detail: { proposalId, authority },
+        detail: { proposalId, remote },
         cancelable: true,
         composed: true,
         bubbles: true,
@@ -539,7 +536,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const newPerspectiveId = await this.evees.forkPerspective(
       this.uref,
       workspace,
-      this.defaultAuthority
+      this.defaultRemoteId
     );
     await workspace.execute(this.client);
 
@@ -643,8 +640,8 @@ ${this.perspectiveData.details
               <div class="prop-name">authority</div>
               <pre class="prop-value">
 ${this.perspectiveData.perspective
-                  ? this.perspectiveData.perspective.authority
-                  : 'undefined'}</pre
+                  ? getAuthority(this.perspectiveData.perspective)
+                  : ''}</pre
               > `
           : ''}
 

@@ -25,6 +25,8 @@
     "@material/mwc-tab": "^0.14.1",
     "@material/mwc-tab-bar": "^0.14.1",
     "@material/mwc-textfield": "^0.14.1",
+    "@tabcat/orbit-db-identity-provider-d": "^1.0.0",
+    "@tabcat/orbit-db-set": "^1.0.2",
     "@uprtcl/access-control": "^0.0.7-alpha.41",
     "@uprtcl/cortex": "^0.0.7-alpha.41",
     "@uprtcl/ethereum-provider": "^0.0.7-alpha.41",
@@ -46,8 +48,10 @@
     "lit-element": "^2.3.0",
     "lodash-es": "^4.17.15",
     "multihashing-async": "^0.8.0",
+    "orbit-db": "^0.24.1",
     "randomcolor": "^0.5.4",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "rollup-plugin-commonjs": "^10.1.0"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",

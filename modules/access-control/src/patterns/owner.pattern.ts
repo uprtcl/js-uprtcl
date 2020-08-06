@@ -19,8 +19,11 @@ export class OwnerPattern extends Pattern<OwnerPermissions> {
 }
 
 @injectable()
-export class OwnerBehaviour implements HasLenses<OwnerPermissions>, Permissions<OwnerPermissions> {
-  canWrite = (entity: OwnerPermissions) => (userId: string | undefined): boolean => {
+export class OwnerBehaviour
+  implements HasLenses<OwnerPermissions>, Permissions<OwnerPermissions> {
+  canWrite = (entity: OwnerPermissions) => (
+    userId: string | undefined
+  ): boolean => {
     return !!userId && entity.owner === userId;
   };
 

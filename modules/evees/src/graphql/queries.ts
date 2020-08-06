@@ -26,7 +26,7 @@ export const UPDATE_HEAD: DocumentNode = gql`
       }
       name
       payload {
-        authority
+        remote
       }
       _context {
         content {
@@ -55,7 +55,8 @@ export const CREATE_ENTITY: DocumentNode = gql`
 
 export const CREATE_PERSPECTIVE: DocumentNode = gql`
   mutation CreatePerspective(
-    $authority: String!
+    $remote: String!
+    $path: String
     $creatorId: String
     $timestamp: Date
     $headId: ID
@@ -65,7 +66,8 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
     $parentId: String
   ) {
     createPerspective(
-      authority: $authority
+      remote: $remote
+      path: $path
       creatorId: $creatorId
       timestamp: $timestamp
       headId: $headId
@@ -84,7 +86,8 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
       }
       payload {
         creatorId
-        authority
+        remote
+        path
         timestamp
       }
     }
@@ -92,7 +95,10 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
 `;
 
 export const CREATE_AND_ADD_PROPOSAL: DocumentNode = gql`
-  mutation CreateAndAddProposal($perspectives: [NewPerspectiveInput]!, $proposal: ProposalInput!) {
+  mutation CreateAndAddProposal(
+    $perspectives: [NewPerspectiveInput]!
+    $proposal: ProposalInput!
+  ) {
     createAndAddProposal(perspectives: $perspectives, proposal: $proposal) {
       id
       toPerspective {
@@ -146,7 +152,11 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
 `;
 
 export const AUTHORIZE_PROPOSAL: DocumentNode = gql`
-  mutation AuthorizeProposal($proposalId: ID!, $perspectiveId: ID!, $authorize: Boolean!) {
+  mutation AuthorizeProposal(
+    $proposalId: ID!
+    $perspectiveId: ID!
+    $authorize: Boolean!
+  ) {
     authorizeProposal(
       proposalId: $proposalId
       perspectiveId: $perspectiveId

@@ -84,4 +84,6 @@ export class HttpEthAuthProvider extends HttpProvider {
     this.connection.userId = this.account;
     this.connection.authToken = 'Bearer ' + token.jwt;
   }
+  async isConnected(): Promise<boolean> { return true }
+  async disconnect(): Promise<void> {}
 }
