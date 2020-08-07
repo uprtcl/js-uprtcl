@@ -183,7 +183,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         headId !== undefined
           ? await loadEntity<Commit>(this.client, headId)
           : undefined;
-      const data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
+      const data = await EveesHelpers.getPerspectiveData(
+        this.client,
+        this.uref
+      );
 
       this.perspectiveData = {
         id: this.uref,
