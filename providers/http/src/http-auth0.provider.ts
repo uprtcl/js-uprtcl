@@ -1,5 +1,5 @@
 import { injectable } from 'inversify';
-import { Auth0Client } from '@auth0/auth0-spa-js';
+import { Auth0Client, Auth0ClientOptions } from '@auth0/auth0-spa-js';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 
@@ -12,20 +12,16 @@ export class HttpAuth0Provider extends HttpProvider {
 
   account: string | undefined = undefined;
 
+  auth0: Auth0Client;
+
   constructor(
     protected options: HttpProviderOptions,
     protected connection: HttpConnection,
-    protected auth0: Auth0Client
-  ) {
+    auth0Config: Auth0ClientOptions
+    ) {
     super(options, connection);
 
-    // TODO: refactor
-    this.auth0 = new Auth0Client({
-      domain: 'linked-thoughts-dev.eu.auth0.com',
-      client_id: 'I7cwQfbSOm9zzU29Lt0Z3TjQsdB6GVEf',
-      redirect_uri: `${window.location.origin}/home`,
-      cacheLocation: 'localstorage',
-    });
+    this.auth0 = new Auth0Client(auth0Config);
   }
 
   async connect() {
@@ -102,14 +98,18 @@ export class HttpAuth0Provider extends HttpProvider {
 
   async makeLoginRedirect() {
     try {
-      const url = window.location.origin + window.location.pathname;
+      const isAuthenticated = await this.isLogged(); 
 
-      const options = {
-        redirect_uri: url,
-        appState: { targetUrl: url },
-      };
+      if(!isAuthenticated) {
+        const url = window.location.origin + window.location.pathname;
 
-      await this.auth0.loginWithRedirect(options);
+        const options = {
+          redirect_uri: url,
+          appState: { targetUrl: url },
+        };
+
+        await this.auth0.loginWithRedirect(options);
+      }
     } catch (err) {
       console.log('Log in failed', err);
     }
