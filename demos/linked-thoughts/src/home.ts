@@ -73,11 +73,10 @@ export class Home extends moduleConnect(LitElement) {
   uprtclWrapper: EthereumContract;
 
   async firstUpdated() {
-
     const eveesProvider = this.requestAll(
       EveesModule.bindings.EveesRemote
-    ).find((provider:EveesHttp) =>
-      provider.authority.startsWith('http')
+    ).find((provider: EveesHttp) =>
+      provider.id.startsWith('http')
     ) as EveesHttp;
 
     await eveesProvider.login();
@@ -142,7 +141,7 @@ export class Home extends moduleConnect(LitElement) {
     const eveesProvider = this.requestAll(
       EveesModule.bindings.EveesRemote
     ).find((provider: EveesRemote) =>
-      provider.authority.startsWith('http')
+      provider.id.startsWith('http')
     ) as EveesRemote;
 
     const client = this.request(
@@ -156,16 +155,25 @@ export class Home extends moduleConnect(LitElement) {
 
     const dataId = await EveesHelpers.createEntity(
       client,
-      eveesProvider,
+      eveesProvider.store,
       wiki
     );
-    const headId = await EveesHelpers.createCommit(client, eveesProvider, {
-      dataId,
-    });
+    const headId = await EveesHelpers.createCommit(
+      client,
+      eveesProvider.store,
+      {
+        dataId,
+      }
+    );
 
-    const perspectiveId = await EveesHelpers.createPerspective(client, eveesProvider, {
-      headId: headId, context: 'test123'
-    });
+    const perspectiveId = await EveesHelpers.createPerspective(
+      client,
+      eveesProvider,
+      {
+        headId: headId,
+        context: 'test123',
+      }
+    );
 
     /** create the perspectuve manually to call wrapper createAndSetHome in one tx */
     // const perspectiveData: Perspective = {

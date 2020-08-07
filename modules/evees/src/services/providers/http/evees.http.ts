@@ -31,7 +31,7 @@ export class EveesHttp extends HttpAuth0Provider implements EveesRemote {
   constructor(
     host: string,
     protected connection: HttpConnection,
-    protected ethConnection: EthereumConnection,
+    protected auth0: any,
     public store: CASStore
   ) {
     super(
@@ -40,6 +40,7 @@ export class EveesHttp extends HttpAuth0Provider implements EveesRemote {
         apiId: evees_api,
       },
       connection,
+      auth0
     );
 
     this.accessControl = new EveesAccessControlHttp(host, this.connection);

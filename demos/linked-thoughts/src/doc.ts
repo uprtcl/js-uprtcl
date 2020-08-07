@@ -18,11 +18,11 @@ export class Doc extends moduleConnect(LitElement) {
     const eveesHttpProvider = this.requestAll(
       EveesModule.bindings.EveesRemote
     ).find((provider: EveesRemote) =>
-      provider.authority.startsWith('http')
+      provider.id.startsWith('http')
     ) as HttpEthAuthProvider;
 
     await eveesHttpProvider.connect();
-    this.defaultAuthority = eveesHttpProvider.authority;
+    this.defaultAuthority = eveesHttpProvider.id;
   }
 
   goHome() {

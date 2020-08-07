@@ -1,7 +1,6 @@
-import { EveesEthereum, EveesHttp } from '@uprtcl/evees';
+import { EveesHttp } from '@uprtcl/evees';
 
-import { HttpConnection } from '@uprtcl/http-provider';
-import { EthereumConnection } from '@uprtcl/ethereum-provider';
+import { HttpConnection, HttpStore } from '@uprtcl/http-provider';
 
 import {
   MicroOrchestrator,
@@ -37,30 +36,14 @@ export const initUprtcl = async () => {
     base: 'base58btc',
   };
 
-  const ipfsCidConfig: any = {
-    version: 1,
-    type: 'sha2-256',
-    codec: 'raw',
-    base: 'base58btc',
-  };
-
   const orchestrator = new MicroOrchestrator();
 
   const httpConnection = new HttpConnection();
-  const ethConnection = new EthereumConnection({ provider: ethHost });
+  const httpStore = new HttpStore(c1host, httpConnection, httpCidConfig);
 
-  const httpEvees = new EveesHttp(
-    c1host,
-    httpConnection,
-    ethConnection,
-    httpCidConfig
-  );
-  const ethEvees = new EveesEthereum(
-    ethConnection,
-    ipfsConfig,
-    ipfsCidConfig,
-    orchestrator.container
-  );
+  const auth0 = undefined;
+
+  const httpEvees = new EveesHttp(c1host, httpConnection, auth0, httpStore);
 
   const evees = new EveesModule([httpEvees], httpEvees);
 
@@ -80,9 +63,6 @@ export const initUprtcl = async () => {
       wikis,
     ]);
   } catch (e) {
-    console.log('error loading modules', e);
+    console.error('error loading modules', e);
   }
-
-  /** manually inject ethereum connection */
-  orchestrator.container.bind(EveesEthereumBinding).toConstantValue(ethEvees);
 };
