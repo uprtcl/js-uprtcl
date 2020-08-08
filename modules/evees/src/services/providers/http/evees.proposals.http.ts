@@ -5,8 +5,20 @@ import {
     NewProposal,
     NewPerspectiveData,
   } from '../../../types';
+import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
 
-export class ProposalsHttp implements ProposalsProvider {
+const uprtcl_api: string = 'uprtcl-ac-v1';
+export class ProposalsHttp extends HttpProvider implements ProposalsProvider {
+    
+    constructor(host: string, protected connection: HttpConnection) {
+        super(
+            {
+                host: host,
+                apiId: uprtcl_api
+            },
+            connection
+        )
+    }
     
     async createProposal(proposal: NewProposal): Promise<string> {
         return '';

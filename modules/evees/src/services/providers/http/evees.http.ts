@@ -17,6 +17,7 @@ import { ProposalsProvider } from '../../proposals.provider';
 import { EveesRemote } from '../../evees.remote';
 import { PerspectiveDetails, NewPerspectiveData } from '../../../types';
 import { EveesAccessControlHttp } from './evees-access-control-http';
+import { ProposalsHttp } from './evees.proposals.http';
 
 const evees_api: string = 'evees-v1';
 
@@ -26,6 +27,7 @@ export class EveesHttp extends HttpAuth0Provider implements EveesRemote {
   knownSources: KnownSourcesService;
 
   accessControl: BasicAdminAccessControlService | undefined;
+  
   proposals: ProposalsProvider | undefined;
 
   constructor(
@@ -44,6 +46,7 @@ export class EveesHttp extends HttpAuth0Provider implements EveesRemote {
     );
 
     this.accessControl = new EveesAccessControlHttp(host, this.connection);
+    this.proposals = new ProposalsHttp(host, this.connection);
     this.knownSources = new KnownSourcesHttp(host, this.connection);
   }
 
