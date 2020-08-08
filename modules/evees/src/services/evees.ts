@@ -115,7 +115,6 @@ export class Evees {
     id: string,
     workspace: EveesWorkspace,
     remote: string,
-    canWrite: string,
     parentId?: string
   ): Promise<string> {
     const isPerspective = await this.isPattern(
@@ -123,13 +122,13 @@ export class Evees {
       EveesBindings.PerspectiveType
     );
     if (isPerspective) {
-      return this.forkPerspective(id, workspace, remote, canWrite, parentId);
+      return this.forkPerspective(id, workspace, remote, parentId);
     } else {
       const isCommit = await this.isPattern(id, EveesBindings.CommitType);
       if (isCommit) {
-        return this.forkCommit(id, workspace, remote, canWrite, parentId);
+        return this.forkCommit(id, workspace, remote, parentId);
       } else {
-        return this.forkEntity(id, workspace, remote, canWrite, parentId);
+        return this.forkEntity(id, workspace, remote, parentId);
       }
     }
   }
@@ -166,18 +165,11 @@ export class Evees {
     perspectiveId: string,
     workspace: EveesWorkspace,
     remote?: string,
-    canWrite?: string,
     parentId?: string,
     name?: string
   ): Promise<string> {
     const eveesRemote =
       remote !== undefined ? this.getRemote(remote) : this.defaultRemote;
-    canWrite =
-      canWrite !== undefined
-        ? canWrite
-        : eveesRemote.userId !== undefined
-        ? eveesRemote.userId
-        : '';
 
     const object: Perspective = {
       creatorId: eveesRemote.userId ? eveesRemote.userId : '',
@@ -207,7 +199,6 @@ export class Evees {
         headId,
         workspace,
         eveesRemote.id,
-        canWrite,
         perspective.id // this perspective is set as the parent of the children's new perspectives
       );
     }
@@ -215,7 +206,6 @@ export class Evees {
     workspace.newPerspective({
       perspective,
       details: { headId: forkCommitId, name, context },
-      canWrite: canWrite,
       parentId,
     });
 
@@ -226,8 +216,7 @@ export class Evees {
     commitId: string,
     workspace: EveesWorkspace,
     remote: string,
-    canWrite: string,
-    parentId?: string // used by forkEntity which forks the children
+    parentId?: string
   ): Promise<string> {
     const commit: Secured<Commit> | undefined = await loadEntity(
       this.client,
@@ -242,7 +231,6 @@ export class Evees {
       dataId,
       workspace,
       remote,
-      canWrite,
       parentId
     );
 
@@ -272,7 +260,6 @@ export class Evees {
     entityId: string,
     workspace: EveesWorkspace,
     remote: string,
-    canWrite: string,
     parentId?: string
   ): Promise<string> {
     const data = await loadEntity(this.client, entityId);
@@ -280,7 +267,7 @@ export class Evees {
 
     /** createOwnerPreservingEntity of children */
     const getLinksForks = this.getEntityChildren(data).map((link) =>
-      this.fork(link, workspace, remote, canWrite, parentId)
+      this.fork(link, workspace, remote, parentId)
     );
     const newLinks = await Promise.all(getLinksForks);
     const tempData = this.replaceEntityChildren(data, newLinks);

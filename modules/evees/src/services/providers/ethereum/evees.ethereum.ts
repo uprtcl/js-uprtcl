@@ -118,7 +118,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       this
     );
   }
-  
+
   get id() {
     return `eth-${this.ethConnection.networkId}:${evees_if}`;
   }
@@ -162,11 +162,26 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
     return perspectiveId;
   }
 
+  async getOwnerOfNewPerspective(perspectiveData: NewPerspectiveData) {
+    let owner: String | undefined = undefined;
+    if (perspectiveData.parentId !== undefined) {
+      const parentPersmissions = await this.accessControl.getPermissions(
+        perspectiveData.parentId
+      );
+      owner = parentPersmissions?.owner;
+    } else {
+      owner =
+        perspectiveData.canWrite !== undefined
+          ? perspectiveData.canWrite
+          : this.ethConnection.getCurrentAccount();
+    }
+    return owner;
+  }
+
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
-    const canWrite = perspectiveData.canWrite;
-
+    const owner = await this.getOwnerOfNewPerspective(perspectiveData);
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);
 
@@ -178,7 +193,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       perspectiveId: perspectiveId,
       headCid1: headCidParts[0],
       headCid0: headCidParts[1],
-      owner: canWrite ? canWrite : this.ethConnection.getCurrentAccount(),
+      owner: owner,
     };
 
     const context = details.context ? details.context : '';
@@ -199,6 +214,8 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
 
     const ethPerspectivesDataPromises = newPerspectivesData.map(
       async (perspectiveData): Promise<any> => {
+        const owner = await this.getOwnerOfNewPerspective(perspectiveData);
+
         const headCidParts = perspectiveData.details.headId
           ? cidToHex32(perspectiveData.details.headId)
           : [ZERO_HEX_32, ZERO_HEX_32];
@@ -207,9 +224,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
           perspectiveId: perspectiveData.perspective.id,
           headCid1: headCidParts[0],
           headCid0: headCidParts[1],
-          owner: perspectiveData.canWrite
-            ? perspectiveData.canWrite
-            : this.ethConnection.getCurrentAccount(),
+          owner: owner,
         };
 
         return { perspective, context: perspectiveData.details.context };
@@ -355,12 +370,12 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
     throw new Error('Method not implemented.');
   }
   connect(): Promise<void> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   isConnected(): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
   disconnect(): Promise<void> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 }
