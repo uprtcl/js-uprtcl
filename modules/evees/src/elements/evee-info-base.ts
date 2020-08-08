@@ -335,21 +335,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
-    const accessControl = remote.accessControl as AccessControlService<
-      OwnerPermissions
-    >;
-    const permissions = await accessControl.getPermissions(toPerspectiveId);
-
-    if (permissions === undefined)
-      throw new Error('target perspective dont have permissions control');
-
-    if (!permissions.owner) {
-      // TODO: ownerPreserving merge should be changed to permissionPreserving merge
-      throw new Error(
-        'Target perspective dont have an owner. TODO: ownerPreserving merge should be changed to permissionPreserving merge'
-      );
-    }
-
     const workspace = new EveesWorkspace(this.client, this.recognizer);
 
     const config = {
