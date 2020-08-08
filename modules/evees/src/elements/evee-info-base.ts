@@ -352,8 +352,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const config = {
       forceOwner: true,
       remote: remote.id,
-      canWrite: permissions.owner,
-      parentId: this.uref,
+      parentId: toPerspectiveId,
     };
 
     await this.merge.mergePerspectivesExternal(
