@@ -10,7 +10,7 @@ export class Doc extends moduleConnect(LitElement) {
   docId!: string;
 
   @property({ attribute: false })
-  defaultAuthority!: string;
+  defaultRemote!: string;
 
   async firstUpdated() {
     this.docId = window.location.pathname.split('/')[2];
@@ -22,7 +22,7 @@ export class Doc extends moduleConnect(LitElement) {
     ) as HttpEthAuthProvider;
 
     await eveesHttpProvider.connect();
-    this.defaultAuthority = eveesHttpProvider.id;
+    this.defaultRemote = eveesHttpProvider.id;
   }
 
   goHome() {
@@ -35,8 +35,8 @@ export class Doc extends moduleConnect(LitElement) {
       <wiki-drawer
         @back=${() => this.goHome()}
         uref=${this.docId}
-        default-authority=${this.defaultAuthority}
-        .editableAuthorities=${[this.defaultAuthority]}
+        default-remote=${this.defaultRemote}
+        .editableRemotes=${[this.defaultRemote]}
       ></wiki-drawer>
     `;
   }

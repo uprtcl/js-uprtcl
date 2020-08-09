@@ -21,14 +21,6 @@ export const initUprtcl = async () => {
   // const c1host = 'https://api.intercreativity.io/uprtcl/1';
   const c1host = 'http://localhost:3100/uprtcl/1';
 
-  const ethHost = '';
-
-  const ipfsConfig = {
-    host: 'ipfs.intercreativity.io',
-    port: 443,
-    protocol: 'https',
-  };
-
   const httpCidConfig: any = {
     version: 1,
     type: 'sha3-256',
@@ -48,7 +40,12 @@ export const initUprtcl = async () => {
     cacheLocation: 'localstorage',
   };
 
-  const httpEvees = new EveesHttp(c1host, httpConnection, auth0Config, httpStore);
+  const httpEvees = new EveesHttp(
+    c1host,
+    httpConnection,
+    auth0Config,
+    httpStore
+  );
 
   const evees = new EveesModule([httpEvees], httpEvees);
 
