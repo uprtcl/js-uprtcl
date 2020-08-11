@@ -311,7 +311,7 @@ export const eveesResolvers: IResolvers = {
       const remote = await evees.getPerspectiveRemoteById(
         proposal.toPerspectiveId
       );
-      if (!remote.proposals) throw new Error('remote cant handle proposals');
+      if (!remote.proposals) return [''];
 
       const proposalId = await remote.proposals.createAndPropose(
         perspectives,
