@@ -46,7 +46,7 @@ export class ProposalsEthereum implements ProposalsProvider {
   ) {}
 
   async ready(): Promise<void> {
-    await Promise.all([this.uprtclProposals.ready()]);
+    await Promise.all([this.uprtclProposals.ready(), this.uprtclRoot.ready(), this.uprtclWrapper.ready()]);
   }
 
   async prepareProposal(proposal: NewProposal) {

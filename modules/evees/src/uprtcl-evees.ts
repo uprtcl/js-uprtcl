@@ -82,3 +82,6 @@ export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';
 
 /** Utils */
 export { isAncestorOf } from './utils/ancestor';
+
+/** Proposals */
+export { Proposal } from './types';
