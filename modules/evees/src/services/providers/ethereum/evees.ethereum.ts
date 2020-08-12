@@ -76,7 +76,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   protected uprtclWrapper: EthereumContract;
 
   constructor(
-    protected ethConnection: EthereumConnection,
+    public ethConnection: EthereumConnection,
     public store: CASStore,
     container: Container,
     uprtclRootOptions: EthereumContractOptions = {
