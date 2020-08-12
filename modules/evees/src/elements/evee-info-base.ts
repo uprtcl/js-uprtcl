@@ -241,10 +241,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
+    if (this.perspectiveData.perspective === undefined) throw new Error('undefined');
+    
     const config = {
       forceOwner: true,
-      remote: this.perspectiveData.perspective?.remote,
-      path: this.perspectiveData.perspective?.path,
+      remote: this.perspectiveData.perspective.remote,
+      path: this.perspectiveData.perspective.path,
       canWrite: remote.userId,
       parentId: this.uref,
     };

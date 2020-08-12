@@ -168,7 +168,8 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       const parentPersmissions = await this.accessControl.getPermissions(
         perspectiveData.parentId
       );
-      owner = parentPersmissions?.owner;
+      if (parentPersmissions === undefined) throw new Error(`persmissions undefined for ${perspectiveData.parentId}`)
+      owner = parentPersmissions.owner;
     } else {
       owner =
         perspectiveData.canWrite !== undefined
