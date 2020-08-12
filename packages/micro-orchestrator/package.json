@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/micro-orchestrator",
-  "version": "0.0.7-alpha.43",
+  "version": "0.0.7-alpha.44",
   "description": "Library to help coordinate different frontend modules to build entire applications from small building blocks",
   "homepage": "https://uprtcl.io",
   "scripts": {
