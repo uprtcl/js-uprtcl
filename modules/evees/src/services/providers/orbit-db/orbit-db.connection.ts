@@ -1,5 +1,6 @@
 import OrbitDB from 'orbit-db';
 import OrbitDBSet from '@tabcat/orbit-db-set';
+import IPFS from 'ipfs';
 
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 
@@ -32,8 +33,8 @@ export class OrbitDBConnection extends Connection {
 
   constructor(
     protected ipfsStore: any,
-    protected ipfs: any,
-    options?: ConnectionOptions
+    options?: ConnectionOptions,
+    protected ipfs?: any
   ) {
     super(options);
     const AccessController = attachIpfsStore(this.ipfsStore);
@@ -45,7 +46,10 @@ export class OrbitDBConnection extends Connection {
   /**
    * @override
    */
-  protected async connect(): Promise<void> {
+  protected async connect(params: any): Promise<void> {
+    if (!this.ipfs) {
+      this.ipfs = await IPFS.create(params);
+    }
     this.instance = await OrbitDB.createInstance(this.ipfs);
     this.identity = this.instance.identity;
   }

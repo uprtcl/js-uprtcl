@@ -21,8 +21,6 @@ import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
-import IPFS from 'ipfs';
-
 (async function () {
   // const c1host = 'http://localhost:3000/uprtcl/1';
   const c1host = 'https://api.intercreativity.io/uprtcl/1';
@@ -59,8 +57,11 @@ import IPFS from 'ipfs';
       },
     },
   };
-  const ipfs = await IPFS.create(ipfsJSConfig);
-  const orbitDBConnection = new OrbitDBConnection(ipfsStore, ipfs, {});
+  const orbitDBConnection = new OrbitDBConnection(ipfsStore, {
+    params: ipfsJSConfig,
+  });
+  await orbitDBConnection.ready();
+
   const ethConnection = new EthereumConnection({ provider: ethHost });
 
   const httpEvees = new EveesOrbitDB(

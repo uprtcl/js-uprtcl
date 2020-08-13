@@ -37,6 +37,7 @@
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.45",
     "@uprtcl/multiplatform": "^0.0.7-alpha.45",
     "apollo-boost": "^0.4.7",
+    "ipfs": "^0.47.0",
     "cbor-js": "^0.1.0",
     "cids": "^0.8.1",
     "dexie": "^2.0.4",
