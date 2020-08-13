@@ -1,13 +1,16 @@
-import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { Signed } from '@uprtcl/cortex';
-import { Perspective } from 'src/types';
 import OrbitDB from 'orbit-db';
 import OrbitDBSet from '@tabcat/orbit-db-set';
+
+import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
+
 import { attachIpfsStore } from './context-access-controller';
+import { Perspective } from '../../../types';
+
 import {
   IdentityProvider,
   Keystore,
 } from '@tabcat/orbit-db-identity-provider-d';
+
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
 
@@ -43,7 +46,6 @@ export class OrbitDBConnection extends Connection {
    * @override
    */
   protected async connect(): Promise<void> {
-    // this.instance = await OrbitDB.createInstance(this.ipfs);
     this.instance = await OrbitDB.createInstance(this.ipfs);
     this.identity = this.instance.identity;
   }

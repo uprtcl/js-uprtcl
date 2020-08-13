@@ -22,7 +22,8 @@ module.exports = {
       '@authentic': path.resolve('./node_modules/@authentic'),
     },
   },
-  entry: ['babel-polyfill', './src/index.http.js'],
+  // entry: ['babel-polyfill', './src/index.http.js'],
+  entry: ['babel-polyfill', './src/index.orbitdb.js'],
   devServer: {
     historyApiFallback: true,
     port: 8082,
