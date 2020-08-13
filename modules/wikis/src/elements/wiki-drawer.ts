@@ -731,7 +731,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   id="wiki-page"
                   @nav-back=${() => this.selectPage(undefined)}
                   @page-title-changed=${() => this.loadPagesData()}
-                  pageHash=${this.wiki.object.pages[this.selectedPageIx]}
+                  pageHash=${this.wiki
+                    ? this.wiki.object.pages[this.selectedPageIx]
+                    : ''}
                   color=${this.color() ? this.color() : ''}
                   @doc-changed=${(e) => this.onDocChanged(e)}
                   .editableRemotes=${this.editableRemotes}
