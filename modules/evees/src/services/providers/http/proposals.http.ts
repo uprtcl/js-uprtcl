@@ -31,11 +31,11 @@ export class ProposalsHttp extends HttpProvider implements ProposalsProvider {
         proposal: NewProposal
     ): Promise<string> {  
         await this.evees.createPerspectiveBatch(newPerspectiveData);             
-        return await this.createProposal(proposal);
+        return await this.createProposal(proposal);        
     }
 
     async getProposal(proposalId: string): Promise<Proposal> {
-        return super.getObject<Proposal>(`/proposal/${proposalId}`);        
+        return super.getObject<Proposal>(`/proposal/${proposalId}`);         
     }
 
     async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
@@ -59,11 +59,11 @@ export class ProposalsHttp extends HttpProvider implements ProposalsProvider {
     }
 
     async acceptProposal(proposalId: string[]): Promise<void> {
-
+        super.httpPut(`/proposal/${proposalId}/accept`, {});
     }
     
     async executeProposal(proposalId: string[]): Promise<void> {
-
+        throw new Error('Method not implemented.');
     }
 
 }
