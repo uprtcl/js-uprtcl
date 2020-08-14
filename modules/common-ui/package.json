@@ -11,7 +11,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@material/mwc-button": "^0.14.1",
+    "@material/mwc-button": "^0.18.0",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.46"
   },
   "devDependencies": {
@@ -41,9 +41,9 @@
     }
   ],
   "license": "MIT",
-  "main": "dist/uprtcl-access-control.umd.js",
-  "module": "dist/uprtcl-access-control.es5.js",
-  "typings": "dist/types/uprtcl-access-control.d.ts",
+  "main": "dist/uprtcl-common-ui.umd.js",
+  "module": "dist/uprtcl-common-ui.es5.js",
+  "typings": "dist/types/uprtcl-common-ui.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"

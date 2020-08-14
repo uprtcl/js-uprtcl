@@ -1,6 +1,5 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-import '@material/mwc-icon';
 import { EveesPopper } from './evees-popper';
 
 export class EveesHelp extends LitElement {

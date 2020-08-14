@@ -1,9 +1,6 @@
 import { LitElement, property, html, query, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
-import '@material/mwc-textfield';
-
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 

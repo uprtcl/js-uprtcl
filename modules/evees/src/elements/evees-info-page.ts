@@ -14,8 +14,6 @@ import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from './common-ui/evees-options-menu';
 
-import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
-
 export class EveesInfoPage extends EveesInfoBase {
   @property({ attribute: false })
   showEditName: boolean = false;

@@ -8,7 +8,6 @@ export interface MenuConfig {
   };
 }
 
-import '@material/mwc-icon';
 import { EveesPopper } from './evees-popper';
 
 export class EveesOptionsMenu extends LitElement {

@@ -40,8 +40,6 @@ import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
 
-import '@material/mwc-drawer';
-
 import { WikiBindings } from '../bindings';
 
 const LOGINFO = false;

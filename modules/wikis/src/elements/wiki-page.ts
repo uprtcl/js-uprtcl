@@ -23,8 +23,6 @@ import {
   Evees,
 } from '@uprtcl/evees';
 
-import '@material/mwc-top-app-bar';
-
 export class WikiPage extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-PAGE');
 

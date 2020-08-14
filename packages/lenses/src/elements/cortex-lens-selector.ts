@@ -8,10 +8,6 @@ import {
   PropertyValues,
 } from 'lit-element';
 
-import { Menu } from '@material/mwc-menu';
-import '@material/mwc-list/mwc-list-item';
-import '@material/mwc-icon-button';
-
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 

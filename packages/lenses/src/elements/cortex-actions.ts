@@ -7,9 +7,6 @@ import {
   css,
 } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-import { Menu } from '@material/mwc-menu';
-import '@material/mwc-list/mwc-list-item';
-import '@authentic/mwc-tooltip';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternAction } from '@uprtcl/cortex';

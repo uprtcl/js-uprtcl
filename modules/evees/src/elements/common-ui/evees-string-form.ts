@@ -1,9 +1,5 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-import '@material/mwc-icon';
-import '@material/mwc-textfield';
-import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
-
 export class EveesStringForm extends LitElement {
   @property({ type: String, attribute: 'value' })
   fieldValue: string = '';

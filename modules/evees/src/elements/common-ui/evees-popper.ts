@@ -1,8 +1,5 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import '@material/mwc-icon-button';
-import '@authentic/mwc-card';
-
 export class EveesPopper extends LitElement {
   @property({ type: String })
   icon: string = 'more_vert';

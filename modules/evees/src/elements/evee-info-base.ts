@@ -2,10 +2,6 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { ApolloClient, gql } from 'apollo-boost';
 
-import '@authentic/mwc-card';
-import '@material/mwc-tab';
-import '@material/mwc-tab-bar';
-
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import {
