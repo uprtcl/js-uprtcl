@@ -10,7 +10,6 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { Menu } from '@material/mwc-menu';
 import '@material/mwc-list/mwc-list-item';
 import '@authentic/mwc-tooltip';
-import '@material/mwc-button';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternAction } from '@uprtcl/cortex';
@@ -141,11 +140,11 @@ export class CortexActions extends moduleConnect(LitElement) {
         (actionTypeList, index) => html`
           ${actionTypeList.map(
             (action) => html`
-              <mwc-button
+              <uprtcl-mwc-button
                 .icon=${action.icon}
                 .label=${this.t(action.title)}
                 @click=${() => this.actionClicked(action)}
-              ></mwc-button>
+              ></uprtcl-mwc-button>
             `
           )}
           ${index < toolbarActions.length - 1

@@ -2,7 +2,6 @@ import { LitElement, property, html, query, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
-import '@material/mwc-dialog';
 import '@material/mwc-textfield';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
@@ -150,7 +149,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
 
   static get styles() {
     return css`
-      mwc-button {
+      uprtcl-mwc-button {
         width: 220px;
       }
 

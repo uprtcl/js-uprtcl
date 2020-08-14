@@ -85,7 +85,7 @@ export class EveesStringForm extends LitElement {
         width: 48px;
         height: 48px;
       }
-      .actions mwc-button {
+      .actions uprtcl-mwc-button {
         width: 180px;
       }
     `;

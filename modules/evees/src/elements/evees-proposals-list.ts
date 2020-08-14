@@ -13,8 +13,6 @@ import { EveesDialog } from './common-ui/evees-dialog';
 import { EveesDiff } from './evees-diff';
 
 export const DEFAULT_COLOR = '#d0dae0';
-import '@material/mwc-dialog';
-import '@material/mwc-button';
 import { Signed } from '@uprtcl/cortex';
 
 const PENDING_ACTION: string = 'Pending';

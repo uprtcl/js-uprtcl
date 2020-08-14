@@ -14,7 +14,6 @@ import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from './common-ui/evees-options-menu';
 
-import '@material/mwc-dialog';
 import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
 
 export class EveesInfoPage extends EveesInfoBase {
@@ -318,12 +317,12 @@ export class EveesInfoPage extends EveesInfoBase {
                     Delete
                   </div>
                   <div class="section-content">
-                    <mwc-button
+                    <uprtcl-mwc-button
                       class="bottom-button"
                       icon="delete_forever"
                       @click=${() => this.delete()}
                       label="Delete"
-                    ></mwc-button>
+                    ></uprtcl-mwc-button>
                   </div>
                 </div>
               `
@@ -346,7 +345,7 @@ export class EveesInfoPage extends EveesInfoBase {
   static get styles() {
     return super.styles.concat([
       css`
-        mwc-button {
+        uprtcl-mwc-button {
           width: 220px;
         }
 
@@ -432,7 +431,7 @@ export class EveesInfoPage extends EveesInfoBase {
             width: 35px !important;
             height: 35px !important;
           }
-          .draft-mod-action mwc-button {
+          .draft-mod-action uprtcl-mwc-button {
             margin-bottom: 10px;
           }
           .draft-name mwc-textfield {

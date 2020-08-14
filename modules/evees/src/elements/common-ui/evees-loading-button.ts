@@ -14,7 +14,7 @@ export class EveesLoadingButton extends LitElement {
   icon: string = '';
 
   render() {
-    return html` <mwc-button
+    return html` <uprtcl-mwc-button
       ?outlined=${this.outlined}
       icon=${this.loading === 'true' ? '' : this.icon}
     >
@@ -23,12 +23,12 @@ export class EveesLoadingButton extends LitElement {
             size="20"
           ></cortex-loading-placeholder>`
         : this.label}
-    </mwc-button>`;
+    </uprtcl-mwc-button>`;
   }
 
   static get styles() {
     return css`
-      mwc-button {
+      uprtcl-mwc-button {
         width: 220px;
       }
     `;

@@ -1,7 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
-import '@material/mwc-dialog';
 import '@material/mwc-textfield';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
@@ -94,7 +93,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
         <div class="row">
           ${this.canWrite
             ? html`
-                <mwc-button
+                <uprtcl-mwc-button
                   icon=${this.permissions.publicRead
                     ? 'visibility_off'
                     : 'visibility'}
@@ -103,7 +102,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
                   ${!this.permissions.publicRead
                     ? this.t('access-control:make-public')
                     : this.t('access-control:make-private')}
-                </mwc-button>
+                </uprtcl-mwc-button>
               `
             : ''}
         </div>
@@ -113,7 +112,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
 
   static get styles() {
     return css`
-      mwc-button {
+      uprtcl-mwc-button {
         width: 220px;
       }
 

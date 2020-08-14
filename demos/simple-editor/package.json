@@ -21,7 +21,7 @@
   },
   "scripts": {
     "start": "webpack-dev-server --mode development",
-    "dev": "webpack-dev-server --mode development",
+    "dev-disabled": "webpack-dev-server --mode development",
     "build": "rm -rf dist && webpack --config webpack.config.js"
   },
   "dependencies": {

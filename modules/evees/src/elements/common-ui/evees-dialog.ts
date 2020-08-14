@@ -34,14 +34,14 @@ export class EveesDialog extends LitElement {
           </div>
           ${this.showSecondary === 'true'
             ? html`
-                <mwc-button @click=${this.secondaryClicked}>
+                <uprtcl-mwc-button @click=${this.secondaryClicked}>
                   ${this.secondaryText}
-                </mwc-button>
+                </uprtcl-mwc-button>
               `
             : ''}
-          <mwc-button @click=${this.primaryClicked}>
+          <uprtcl-mwc-button @click=${this.primaryClicked}>
             ${this.primaryText}
-          </mwc-button>
+          </uprtcl-mwc-button>
         </div>
       </div>
     `;

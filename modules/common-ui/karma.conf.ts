@@ -10,10 +10,10 @@ module.exports = (config) =>
       skipFilesWithNoCoverage: false,
       thresholds: {
         global: {
-          statements: 0,
-          branches: 0,
-          functions: 0,
-          lines: 0,
+          statements: 10,
+          branches: 10,
+          functions: 10,
+          lines: 10,
         },
       },
     },
@@ -23,20 +23,13 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-documents.ts`,
+      entry: `./src/uprtcl-access-control.ts`,
       output: {
         filename: 'bundle.js',
       },
       resolve: {
-        alias: {
-          'lit-html': path.resolve(__dirname, './node_modules/lit-html'),
-          'lit-element': path.resolve(__dirname, './node_modules/lit-element'),
-          'apollo-boost': path.resolve(__dirname, './node_modules/apollo-boost'),
-          'apollo-client': path.resolve(__dirname, './node_modules/apollo-client'),
-        },
         extensions: ['.mjs', '.js', '.ts', '.json'],
       },
-      devtool: 'inline-source-map',
       module: {
         rules: [
           {
@@ -63,7 +56,6 @@ module.exports = (config) =>
       // at the top level
       require.resolve('karma-mocha'),
       require.resolve('karma-mocha-reporter'),
-      require.resolve('karma-source-map-support'),
       require.resolve('karma-coverage-istanbul-reporter'),
       require.resolve('karma-snapshot'),
       require.resolve('karma-mocha-snapshot'),
@@ -72,7 +64,7 @@ module.exports = (config) =>
       // fallback: resolve any karma- plugins
       'karma-*',
     ],
-    frameworks: ['mocha', 'snapshot', 'mocha-snapshot', 'source-map-support'],
+    frameworks: ['mocha', 'snapshot', 'mocha-snapshot'],
     reporters: ['mocha', 'coverage-istanbul'],
     colors: true,
 

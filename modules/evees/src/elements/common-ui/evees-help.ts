@@ -12,9 +12,9 @@ export class EveesHelp extends LitElement {
       <div class="help-content">
         <slot></slot>
       </div>
-      <mwc-button @click=${() => (this.popper.showDropdown = false)}>
+      <uprtcl-mwc-button @click=${() => (this.popper.showDropdown = false)}>
         close
-      </mwc-button>
+      </uprtcl-mwc-button>
     </evees-popper>`;
   }
 
@@ -25,7 +25,7 @@ export class EveesHelp extends LitElement {
         color: #4e585c;
       }
 
-      mwc-button {
+      uprtcl-mwc-button {
         width: 100%;
       }
     `;

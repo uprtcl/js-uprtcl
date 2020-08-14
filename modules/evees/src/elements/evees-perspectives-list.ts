@@ -6,8 +6,6 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { eveeColor } from './support';
 
 export const DEFAULT_COLOR = '#d0dae0';
-import '@material/mwc-dialog';
-import '@material/mwc-button';
 
 interface PerspectiveData {
   id: string;
