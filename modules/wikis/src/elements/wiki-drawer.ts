@@ -82,26 +82,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   creatingNewPage: boolean = false;
 
-  remote: string = '';
-  path: string = '';
-  context: string | undefined = undefined;
-  currentHeadId: string | undefined = undefined;
-  editable: boolean = false;
-
   @property({ attribute: false })
   isDrawerOpened = true;
 
   @property({ attribute: false })
   isMobile = false;
-
-  @property({ attribute: false })
-  documentHasChanges = false;
-
-  @property({ attribute: false })
-  isPushing = false;
-
-  @property({ attribute: false })
-  drawerType: 'dismissible' | 'modal' = 'dismissible';
 
   @property({ attribute: false })
   hasSelectedPage = false;
@@ -113,13 +98,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   author: string = '';
 
   @property({ type: Boolean, attribute: 'show-exit' })
-  showExit: boolean = true;
+  showExit: boolean = false;
 
   @property({ attribute: false })
   showEditTitle: boolean = false;
 
   @property({ attribute: false })
   updatingTitle: boolean = false;
+
+  remote: string = '';
+  path: string = '';
+  context: string | undefined = undefined;
+  currentHeadId: string | undefined = undefined;
+  editable: boolean = false;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -176,14 +167,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   private isViewportMobile() {
     if (window.innerWidth <= 768) {
       if (!this.isMobile) {
-        this.drawerType = 'modal';
-        this.isDrawerOpened = false;
         this.isMobile = true;
       }
     } else {
       if (this.isMobile) {
-        this.drawerType = 'dismissible';
-        this.isDrawerOpened = true;
         this.isMobile = false;
       }
     }
@@ -459,6 +446,27 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.showEditTitle = false;
   }
 
+  goToOfficial() {
+    this.uref = this.firstRef;
+    if (this.isMobile) {
+      this.isDrawerOpened = false;
+    }
+    this.goToHome();
+  }
+
+  goToHome() {
+    this.selectPage(undefined);
+    if (this.isMobile) {
+      this.isDrawerOpened = false;
+    }
+  }
+
+  goBack() {
+    this.dispatchEvent(
+      new CustomEvent('back', { bubbles: true, composed: true })
+    );
+  }
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -561,64 +569,39 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     `;
   }
 
-  renderPushButton() {
-    return html`
-      <section style="display:flex; align-items:center;">
-        <div class="button-container">
-          <evees-loading-button
-            @click=${() => this.triggerDocumentPush()}
-            icon="unarchive"
-            loading=${this.isPushing}
-            label="push"
-          >
-          </evees-loading-button>
-        </div>
-        <evees-help>
-          <span>
-            Changes are saved locally on this device until you "push" them.<br /><br />
-            Once pushed they will be visible (if this perspective is public).<br /><br />
-            Only pushed changes are included on merge proposals.
-          </span>
-        </evees-help>
-      </section>
-    `;
-  }
-
   renderNavBar() {
     return html`
-      <section>
-        <div class="nav-bar-top">
-          ${this.showExit
+      <div class="nav-bar-top">
+        ${this.showExit
+          ? html`
+              <mwc-button
+                icon="arrow_back"
+                label="exit"
+                @click=${() => this.goBack()}
+              ></mwc-button>
+            `
+          : ''}
+        <mwc-button
+          ?unelevated=${this.uref === this.firstRef}
+          label="official"
+          @click=${() => this.goToOfficial()}
+        ></mwc-button>
+        <div class="perspective-author-wrapper">
+          ${this.uref !== this.firstRef
             ? html`
-                <mwc-button
-                  icon="arrow_back"
-                  label="exit"
-                  @click=${() => this.goBack()}
-                ></mwc-button>
+                <evees-author
+                  user-id=${this.author}
+                  show-name="false"
+                  color=${eveeColor(this.uref)}
+                  @click=${() => this.goToHome()}
+                ></evees-author>
               `
             : ''}
-          <mwc-button
-            ?unelevated=${this.uref === this.firstRef}
-            label="official"
-            @click=${() => this.goToOfficial()}
-          ></mwc-button>
-          <div class="perspective-author-wrapper">
-            ${this.uref !== this.firstRef
-              ? html`
-                  <evees-author
-                    user-id=${this.author}
-                    show-name="false"
-                    color=${eveeColor(this.uref)}
-                    @click=${() => this.goToHome()}
-                  ></evees-author>
-                `
-              : ''}
-          </div>
         </div>
-        <div>
-          ${this.renderPageList()}
-        </div>
-      </section>
+      </div>
+      <div>
+        ${this.renderPageList()}
+      </div>
     `;
   }
 
@@ -703,28 +686,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
 
     return html`
-      <mwc-drawer
-        @MDCDrawer:closed=${() => (this.isDrawerOpened = false)}
-        type="${this.drawerType}"
-        ?open="${this.isDrawerOpened}"
-      >
-        ${this.renderColorBar()} ${this.renderNavBar()}
+      <div class="app-drawer">
+      
+        ${this.renderColorBar()} 
 
-        <div slot="appContent" class="app-content">
-          ${this.isMobile
-            ? html`
-                <div class="app-top-nav">
-                  <mwc-icon-button
-                    slot="navigationIcon"
-                    icon="menu"
-                    @click=${() => this.toggleNav()}
-                  ></mwc-icon-button>
+        <div class="app-navbar">
+          ${this.renderNavBar()}
+        </div>
 
-                  ${this.documentHasChanges ? this.renderPushButton() : ''}
-                </div>
-              `
-            : ''}
-          ${this.renderColorBar()}
+        <div class="app-content">
           ${this.selectedPageIx !== undefined
             ? html`
                 <wiki-page
@@ -735,7 +705,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                     ? this.wiki.object.pages[this.selectedPageIx]
                     : ''}
                   color=${this.color() ? this.color() : ''}
-                  @doc-changed=${(e) => this.onDocChanged(e)}
                   .editableRemotes=${this.editableRemotes}
                 >
                 </wiki-page>
@@ -756,48 +725,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 </div>
               `}
         </div>
-      </mwc-drawer>
+      </div>
     `;
-  }
-
-  onDocChanged(e: CustomEvent) {
-    const hasChanges = e.detail.docChanged || false;
-    this.documentHasChanges = hasChanges;
-  }
-
-  toggleNav() {
-    this.isDrawerOpened = !this.isDrawerOpened;
-  }
-
-  async triggerDocumentPush() {
-    if (this.shadowRoot && !this.isPushing) {
-      this.isPushing = true;
-      const el: any = this.shadowRoot.getElementById('wiki-page');
-      await el.pushDocument().finally(() => {
-        this.isPushing = false;
-      });
-    }
-  }
-
-  goToOfficial() {
-    this.uref = this.firstRef;
-    if (this.isMobile) {
-      this.isDrawerOpened = false;
-    }
-    this.goToHome();
-  }
-
-  goToHome() {
-    this.selectPage(undefined);
-    if (this.isMobile) {
-      this.isDrawerOpened = false;
-    }
-  }
-
-  goBack() {
-    this.dispatchEvent(
-      new CustomEvent('back', { bubbles: true, composed: true })
-    );
   }
 
   static get styles() {
@@ -805,6 +734,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       sharedStyles,
       css`
         :host {
+          display: flex;
+          flex: 1 1 0;
+          flex-direction: column;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
             'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
             'Segoe UI Symbol';
@@ -812,8 +744,23 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           --mdc-theme-primary: #2196f3;
           width: 100%;
         }
-        .evee-info {
-          height: 40px;
+        .app-drawer {
+          flex: 1 1 0;
+          display: flex;
+          flex-direction: horizontal;
+          padding-top: 5px;
+        }
+        .app-navbar {
+          width: 260px;
+          flex-shrink: 0;
+        }
+        .app-content {
+          border-left: solid #cccccc 1px;
+          min-width: 475px;
+          max-width: calc(100% - 260px - 1px);
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
         .column {
           height: 100%;
@@ -823,6 +770,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           max-height: 5px;
           flex-shrink: 0;
           width: 100%;
+          position: absolute;
+          top: 0px;
         }
         .nav-bar-top {
           display: flex;
