@@ -30,7 +30,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   changingOwner: boolean = false;
 
   @query('#new-address')
-  newAddressEl!: TextFieldBase;
+  newAddressEl!: any;
 
   client!: ApolloClient<any>;
   recognizer!: ApolloClient<any>;

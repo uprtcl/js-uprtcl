@@ -21,7 +21,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
   private lenses!: Lens[] | undefined;
 
   @query('#menu')
-  menu!: Menu;
+  menu!: any;
 
   static get styles() {
     return css`

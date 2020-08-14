@@ -17,7 +17,7 @@ export class EveesStringForm extends LitElement {
   loading: boolean = false;
 
   @query('#text-input')
-  newTitleEl!: TextFieldBase;
+  newTitleEl!: any;
 
   firstUpdated() {
     setTimeout(() => this.newTitleEl.focus(), 50);

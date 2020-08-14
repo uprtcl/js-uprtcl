@@ -19,7 +19,7 @@ export class EveesInfoPage extends EveesInfoBase {
   showEditName: boolean = false;
 
   @query('#draft-textfield')
-  draftTextField!: TextFieldBase;
+  draftTextField!: any;
 
   firstUpdated() {
     super.firstUpdated();

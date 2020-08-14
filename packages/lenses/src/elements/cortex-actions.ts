@@ -26,7 +26,7 @@ export class CortexActions extends moduleConnect(LitElement) {
   public actionTypesOrder: string[] | undefined;
 
   @query('#menu')
-  menu!: Menu;
+  menu!: any;
 
   @property({ type: Object, attribute: false })
   private actions!: Dictionary<PatternAction[]> | undefined;
