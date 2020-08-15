@@ -1,0 +1,68 @@
+diff --git a/modules/access-control/src/elements/permissions-admin.ts b/modules/access-control/src/elements/permissions-admin.ts
+index 308aac15..f9ae58d1 100644
+--- a/modules/access-control/src/elements/permissions-admin.ts
++++ b/modules/access-control/src/elements/permissions-admin.ts
+@@ -5,8 +5,8 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
+ import { ApolloClientModule } from '@uprtcl/graphql';
+ 
+ import { PermissionsElement } from './permissions-element';
+-import { SET_PUBLIC_READ } from '../graphql/queries';
+ import { BasicAdminPermissions } from '../services/basic-admin-control.service';
++import { EveesHelpers } from '@uprtcl/evees';
+ 
+ export class PermissionsAdmin extends moduleConnect(LitElement)
+   implements PermissionsElement<BasicAdminPermissions> {
+@@ -19,15 +19,25 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
+   @property({ type: Boolean, attribute: false })
+   canWrite!: boolean;
+ 
++  client: ApolloClient<any>;
++  remote: EveesAccessControlHttp;
++
+   firstUpdated() {
++    this.client = this.request(ApolloClientModule.bindings.Client);
++    const remoteId = EveesHelpers.getPerspecitveRemoteId(
++      this.client,
++      this.entityId
++    );
++
++    this.remote = (this.requestAll(EveesBindings.EveesRemote) as any[]).find(
++      (remote) => remote.id === remoteId
++    );
++
+     this.loadPermissions();
+   }
+ 
+   async loadPermissions() {
+-    const client: ApolloClient<any> = this.request(
+-      ApolloClientModule.bindings.Client
+-    );
+-    const result = await client.query({
++    const result = await this.client.query({
+       query: gql`{
+         entity(uref: "${this.entityId}") {
+           id
+@@ -55,22 +65,8 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
+   }
+ 
+   async togglePublicRead() {
+-    const client: ApolloClient<any> = this.request(
+-      ApolloClientModule.bindings.Client
+-    );
++    this.remote.accessControl.setPermissions({});
+ 
+-    const result = await client.mutate({
+-      mutation: SET_PUBLIC_READ,
+-      variables: {
+-        entityId: this.entityId,
+-        value: !this.permissions.publicRead,
+-      },
+-    });
+-
+-    this.permissions =
+-      result.data.setPublicRead._context.patterns.accessControl.permissions;
+-    this.canWrite =
+-      result.data.setPublicRead._context.patterns.accessControl.canWrite;
+     this.loadPermissions();
+ 
+     this.dispatchEvent(
