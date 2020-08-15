@@ -146,7 +146,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
 
   static get styles() {
     return css`
-      uprtcl-mwc-button {
+      uprtcl-button {
         width: 220px;
       }
 

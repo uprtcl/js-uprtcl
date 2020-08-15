@@ -137,11 +137,11 @@ export class CortexActions extends moduleConnect(LitElement) {
         (actionTypeList, index) => html`
           ${actionTypeList.map(
             (action) => html`
-              <uprtcl-mwc-button
+              <uprtcl-button
                 .icon=${action.icon}
                 .label=${this.t(action.title)}
                 @click=${() => this.actionClicked(action)}
-              ></uprtcl-mwc-button>
+              ></uprtcl-button>
             `
           )}
           ${index < toolbarActions.length - 1

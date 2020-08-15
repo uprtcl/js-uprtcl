@@ -61,11 +61,11 @@ export class EveesInfoPopper extends EveesInfoBase {
         ${this.loading
           ? this.renderLoading()
           : html`
-              <uprtcl-mwc-button
+              <uprtcl-button
                 icon="call_split"
                 @click=${this.newPerspectiveClicked}
                 label="new perspective"
-              ></uprtcl-mwc-button>
+              ></uprtcl-button>
             `}
       </div>
     `;

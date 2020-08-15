@@ -315,12 +315,12 @@ export class EveesInfoPage extends EveesInfoBase {
                     Delete
                   </div>
                   <div class="section-content">
-                    <uprtcl-mwc-button
+                    <uprtcl-button
                       class="bottom-button"
                       icon="delete_forever"
                       @click=${() => this.delete()}
                       label="Delete"
-                    ></uprtcl-mwc-button>
+                    ></uprtcl-button>
                   </div>
                 </div>
               `
@@ -343,7 +343,7 @@ export class EveesInfoPage extends EveesInfoBase {
   static get styles() {
     return super.styles.concat([
       css`
-        uprtcl-mwc-button {
+        uprtcl-button {
           width: 220px;
         }
 
@@ -429,7 +429,7 @@ export class EveesInfoPage extends EveesInfoBase {
             width: 35px !important;
             height: 35px !important;
           }
-          .draft-mod-action uprtcl-mwc-button {
+          .draft-mod-action uprtcl-button {
             margin-bottom: 10px;
           }
           .draft-name mwc-textfield {

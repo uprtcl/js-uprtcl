@@ -91,7 +91,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
         <div class="row">
           ${this.canWrite
             ? html`
-                <uprtcl-mwc-button
+                <uprtcl-button
                   icon=${this.permissions.publicRead
                     ? 'visibility_off'
                     : 'visibility'}
@@ -100,7 +100,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
                   ${!this.permissions.publicRead
                     ? this.t('access-control:make-public')
                     : this.t('access-control:make-private')}
-                </uprtcl-mwc-button>
+                </uprtcl-button>
               `
             : ''}
         </div>
@@ -110,7 +110,7 @@ export class PermissionsAdmin extends moduleConnect(LitElement)
 
   static get styles() {
     return css`
-      uprtcl-mwc-button {
+      uprtcl-button {
         width: 220px;
       }
 
