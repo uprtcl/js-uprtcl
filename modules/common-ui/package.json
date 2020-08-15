@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@material/mwc-button": "^0.18.0",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.46"
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.46",
+    "milligram": "^1.4.1"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",

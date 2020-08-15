@@ -572,18 +572,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <div class="nav-bar-top">
         ${this.showExit
           ? html`
-              <uprtcl-button
-                icon="arrow_back"
-                label="exit"
-                @click=${() => this.goBack()}
-              ></uprtcl-button>
+              <uprtcl-button @click=${() => this.goBack()}>exit</uprtcl-button>
             `
           : ''}
-        <uprtcl-button
-          ?unelevated=${this.uref === this.firstRef}
-          label="official"
-          @click=${() => this.goToOfficial()}
-        ></uprtcl-button>
+        <uprtcl-button @click=${() => this.goToOfficial()}>
+          official
+        </uprtcl-button>
         <div class="perspective-author-wrapper">
           ${this.uref !== this.firstRef
             ? html`
