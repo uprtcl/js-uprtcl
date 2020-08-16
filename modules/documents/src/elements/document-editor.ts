@@ -1086,20 +1086,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         ${this.docHasChanges && !this.showCommitMessage
           ? html`
               <div class="button-container">
-                <evees-loading-button
+                <uprtcl-loading-button
                   icon="unarchive"
                   @click=${() => this.persistAll()}
                   loading=${this.persistingAll ? 'true' : 'false'}
                   label="push"
                 >
-                </evees-loading-button>
+                </uprtcl-loading-button>
               </div>
-              <!-- <evees-options-menu 
+              <!-- <uprtcl-options-menu 
                 .config=${options} 
                 @option-click=${this.commitOptionSelected}
                 icon="arrow_drop_down">
-              </evees-options-menu> -->
-              <evees-help>
+              </uprtcl-options-menu> -->
+              <uprtcl-help>
                 <span>
                   Your current changes are safely stored on this device and
                   won't be lost.<br /><br />
@@ -1111,7 +1111,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                     others.
                   </li>
                 </span>
-              </evees-help>
+              </uprtcl-help>
             `
           : ''}
         ${this.showCommitMessage

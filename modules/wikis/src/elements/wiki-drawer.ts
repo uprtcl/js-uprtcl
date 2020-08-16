@@ -496,13 +496,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       ${this.editable
         ? html`
             <div class="button-row">
-              <evees-loading-button
+              <uprtcl-loading-button
                 icon="add_circle_outline"
                 @click=${() => this.newPage()}
                 loading=${this.creatingNewPage ? 'true' : 'false'}
                 label=${this.t('wikis:new-page')}
               >
-              </evees-loading-button>
+              </uprtcl-loading-button>
             </div>
           `
         : html``}
@@ -545,11 +545,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
         ${this.editable && showOptions
           ? html`
-              <evees-options-menu
+              <uprtcl-options-menu
                 @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
                 .config=${menuConfig}
               >
-              </evees-options-menu>
+              </uprtcl-options-menu>
             `
           : ''}
       </div>
@@ -626,13 +626,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             <div class="row center-aligned title-form">
               ${this.showEditTitle
                 ? html`
-                    <evees-string-form
+                    <uprtcl-form-string
                       value=${this.wiki ? this.wiki.object.title : ''}
                       label="new title"
                       @cancel=${() => (this.showEditTitle = false)}
                       @accept=${(e) => this.editTitle(e.detail.value)}
                       ?loading=${this.updatingTitle}
-                    ></evees-string-form>
+                    ></uprtcl-form-string>
                   `
                 : ''}
             </div>
@@ -645,7 +645,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           </div>
 
           <div class="context-menu">
-            <evees-help>
+            <uprtcl-help>
               <span>
                 This Wiki is multi-perspective. <br /><br />It has one
                 "official" perspective, and many different "personal"
@@ -653,13 +653,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 The owner of the official perspective is shown below, under
                 "Access Control".
               </span>
-            </evees-help>
+            </uprtcl-help>
             ${this.editable
               ? html`
-                  <evees-options-menu
+                  <uprtcl-options-menu
                     .config=${contextConfig}
                     @option-click=${this.titleOptionClicked}
-                  ></evees-options-menu>
+                  ></uprtcl-options-menu>
                 `
               : ''}
           </div>
@@ -832,7 +832,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           padding: 16px 10px 8px 10px;
           display: flex;
         }
-        .button-row evees-loading-button {
+        .button-row uprtcl-loading-button {
           margin: 0 auto;
         }
         .app-top-nav {

@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-export class EveesLoadingButton extends LitElement {
+export class UprtclButtonLoading extends LitElement {
   @property({ type: String })
   loading: string = 'true';
 

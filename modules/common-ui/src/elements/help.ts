@@ -1,20 +1,20 @@
-import { LitElement, property, html, css, query } from 'lit-element';
+import { LitElement, html, css, query } from 'lit-element';
 
-import { EveesPopper } from './evees-popper';
+import { UprtclPopper } from './popper';
 
-export class EveesHelp extends LitElement {
+export class UprtclHelp extends LitElement {
   @query('#popper')
-  popper!: EveesPopper;
+  popper!: UprtclPopper;
 
   render() {
-    return html` <evees-popper id="popper" icon="help_outline">
+    return html` <uprtcl-popper id="popper" icon="help_outline">
       <div class="help-content">
         <slot></slot>
       </div>
       <uprtcl-button @click=${() => (this.popper.showDropdown = false)}>
         close
       </uprtcl-button>
-    </evees-popper>`;
+    </uprtcl-popper>`;
   }
 
   static get styles() {

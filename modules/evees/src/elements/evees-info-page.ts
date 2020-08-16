@@ -12,7 +12,7 @@ const styleMap = (style) => {
 import { EveesInfoBase } from './evee-info-base';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
-import { MenuConfig } from './common-ui/evees-options-menu';
+import { MenuConfig } from './common-ui/uprtcl-options-menu';
 
 export class EveesInfoPage extends EveesInfoBase {
   @property({ attribute: false })
@@ -115,7 +115,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
   renderNewPerspectiveButton() {
     return html`
-      <evees-loading-button
+      <uprtcl-loading-button
         class="section-button"
         outlined
         icon="call_split"
@@ -123,13 +123,13 @@ export class EveesInfoPage extends EveesInfoBase {
         loading=${this.creatingNewPerspective ? 'true' : 'false'}
         label="new perspective"
       >
-      </evees-loading-button>
+      </uprtcl-loading-button>
     `;
   }
 
   renderLoginButton() {
     return html`
-      <evees-loading-button
+      <uprtcl-loading-button
         class="section-button"
         outlined
         icon="account_box"
@@ -137,13 +137,13 @@ export class EveesInfoPage extends EveesInfoBase {
         loading=${this.loggingIn ? 'true' : 'false'}
         label="login"
       >
-      </evees-loading-button>
+      </uprtcl-loading-button>
     `;
   }
 
   renderMakeProposalButton() {
     return html`
-      <evees-loading-button
+      <uprtcl-loading-button
         class="section-button"
         outlined
         icon="call_merge"
@@ -151,13 +151,13 @@ export class EveesInfoPage extends EveesInfoBase {
         loading=${this.proposingUpdate ? 'true' : 'false'}
         label="Propose Update"
       >
-      </evees-loading-button>
+      </uprtcl-loading-button>
     `;
   }
 
   renderMakePublicButton() {
     return html`
-      <evees-loading-button
+      <uprtcl-loading-button
         class="section-button"
         outlined
         icon=${this.publicRead ? 'visibility_off' : 'visibility'}
@@ -165,7 +165,7 @@ export class EveesInfoPage extends EveesInfoBase {
         loading=${this.makingPublic ? 'true' : 'false'}
         label="Make Public"
       >
-      </evees-loading-button>
+      </uprtcl-loading-button>
     `;
   }
 
@@ -206,15 +206,15 @@ export class EveesInfoPage extends EveesInfoBase {
 
     const contextButton = html`
       <div class="context-menu">
-        <evees-help>
+        <uprtcl-help>
           <span>
             To update the "Official Version" of this Wiki you need to create a
             new "Perspective"<br /><br />
             Once changes have been made to that perspectective, click "Propose
             Update" to update the "Official" perspective.
           </span>
-        </evees-help>
-        <evees-options-menu
+        </uprtcl-help>
+        <uprtcl-options-menu
           .config=${contextConfig}
           @option-click=${this.optionClicked}
         >
@@ -226,7 +226,7 @@ export class EveesInfoPage extends EveesInfoBase {
                 ></evees-author>
               </div>`
             : ''}
-        </evees-options-menu>
+        </uprtcl-options-menu>
       </div>
     `;
 
@@ -305,12 +305,12 @@ export class EveesInfoPage extends EveesInfoBase {
                     ${this.renderPermissions()}
                   </div>
                   <div class="context-menu">
-                    <evees-help>
+                    <uprtcl-help>
                       <span>
                         Drafts can be made public to let others read them.<br /><br />
                         They can only be edited by their creator.
                       </span>
-                    </evees-help>
+                    </uprtcl-help>
                   </div>
                 </div>
 

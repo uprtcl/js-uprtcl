@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-export class EveesStringForm extends LitElement {
+export class UprtclFormString extends LitElement {
   @property({ type: String, attribute: 'value' })
   fieldValue: string = '';
 

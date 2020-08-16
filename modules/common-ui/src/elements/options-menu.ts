@@ -8,9 +8,9 @@ export interface MenuConfig {
   };
 }
 
-import { EveesPopper } from './evees-popper';
+import { UprtclPopper } from './popper';
 
-export class EveesOptionsMenu extends LitElement {
+export class UprtclOptionsMenu extends LitElement {
   @property({ type: Object })
   config: MenuConfig = {};
 
@@ -18,7 +18,7 @@ export class EveesOptionsMenu extends LitElement {
   icon: string = 'more_vert';
 
   @query('#popper')
-  popper!: EveesPopper;
+  popper!: UprtclPopper;
 
   optionClicked(key: string, e) {
     e.stopPropagation();
@@ -37,7 +37,7 @@ export class EveesOptionsMenu extends LitElement {
   }
 
   render() {
-    return html` <evees-popper id="popper" icon=${this.icon}>
+    return html` <uprtcl-popper id="popper" icon=${this.icon}>
       <slot name="icon" slot="icon"
         ><mwc-icon-button icon=${this.icon}></mwc-icon-button
       ></slot>
@@ -58,7 +58,7 @@ export class EveesOptionsMenu extends LitElement {
               </uprtcl-list-item>`;
         })}
       </uprtcl-list>
-    </evees-popper>`;
+    </uprtcl-popper>`;
   }
 
   static get styles() {

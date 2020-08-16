@@ -108,7 +108,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
 
   renderDialog() {
     return html`
-      <evees-dialog
+      <uprtcl-dialog
         primary-text="Transfer"
         secondary-text="Cancel"
         @primary=${this.changeOwner}
@@ -120,7 +120,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
           id="new-address"
           .label=${this.t('access-control:new-owner-address')}
         ></mwc-textfield>
-      </evees-dialog>
+      </uprtcl-dialog>
     `;
   }
 
@@ -132,13 +132,13 @@ export class PermissionsOwner extends moduleConnect(LitElement)
       </div>
       ${this.canWrite
         ? html`
-            <evees-loading-button
+            <uprtcl-loading-button
               icon="swap_horizontal"
               @click=${this.showTransferDialog}
               loading=${this.changingOwner ? 'true' : 'false'}
               label=${this.t('access-control:transfer-ownership')}
             >
-            </evees-loading-button>
+            </uprtcl-loading-button>
           `
         : ''}
     `;

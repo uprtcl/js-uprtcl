@@ -43,7 +43,7 @@ import { Evees } from '../services/evees';
 
 import { EveesRemote } from '../services/evees.remote';
 
-import { EveesDialog } from './common-ui/evees-dialog';
+import { EveesDialog } from './common-ui/uprtcl-dialog';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDiff } from './evees-diff';
 
@@ -179,7 +179,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         headId !== undefined
           ? await loadEntity<Commit>(this.client, headId)
           : undefined;
-      const data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
+      const data = await EveesHelpers.getPerspectiveData(
+        this.client,
+        this.uref
+      );
 
       this.perspectiveData = {
         id: this.uref,
@@ -237,8 +240,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
-    if (this.perspectiveData.perspective === undefined) throw new Error('undefined');
-    
+    if (this.perspectiveData.perspective === undefined)
+      throw new Error('undefined');
+
     const config = {
       forceOwner: true,
       remote: this.perspectiveData.perspective.remote,
@@ -608,9 +612,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   renderUpdatesDialog() {
-    return html` <evees-dialog id="updates-dialog">
+    return html` <uprtcl-dialog id="updates-dialog">
       <evees-update-diff id="evees-update-diff"></evees-update-diff>
-    </evees-dialog>`;
+    </uprtcl-dialog>`;
   }
 
   renderLoading() {

@@ -1,6 +1,6 @@
 import { LitElement, html, property, css } from 'lit-element';
 
-export class EveesDialog extends LitElement {
+export class UprtclDialog extends LitElement {
   @property({ type: String, attribute: 'primary-text' })
   primaryText: string = 'Ok';
 

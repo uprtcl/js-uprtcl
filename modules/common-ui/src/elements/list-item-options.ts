@@ -1,10 +1,10 @@
 import { LitElement, html, property, css } from 'lit-element';
 
-import { MenuConfig } from './evees-options-menu';
+import { MenuConfig } from './options-menu';
 
-import './evees-options-menu';
+import './options-menu';
 
-export class ItemWithMenu extends LitElement {
+export class UprtclListItemWithOption extends LitElement {
   @property({ type: String })
   text: string = '';
 
@@ -43,10 +43,10 @@ export class ItemWithMenu extends LitElement {
     return html`
       <div class=${classes.join(' ')} @click=${this.elementClicked}>
         <div class="text-container">${this.text}</div>
-        <evees-options-menu
+        <uprtcl-options-menu
           @option-click=${this.optionClicked}
           .config=${this.config}
-        ></evees-options-menu>
+        ></uprtcl-options-menu>
       </div>
     `;
   }
