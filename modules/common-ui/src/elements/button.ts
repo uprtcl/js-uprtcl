@@ -1,5 +1,5 @@
 import { LitElement, html, css, property } from 'lit-element';
-import { cssFramework } from './miligram.css';
+import { styles } from './styles.css';
 import { icons } from './icons';
 
 export class UprtclButton extends LitElement {
@@ -7,7 +7,7 @@ export class UprtclButton extends LitElement {
   icon!: string;
 
   render() {
-    return html` <div class="button">
+    return html` <div class="button button-colored">
       ${this.icon !== undefined
         ? html`<div class="icon-container">${icons[this.icon]}</div>`
         : ''}<slot></slot>
@@ -16,7 +16,7 @@ export class UprtclButton extends LitElement {
 
   static get styles() {
     return [
-      cssFramework,
+      styles,
       css`
         svg {
           fill: white;
@@ -33,6 +33,18 @@ export class UprtclButton extends LitElement {
           flex-direction: row;
           justify-content: center;
           width: calc(100% - 6rem - 0.2rem);
+        }
+        .button-colored {
+          background-color: #2286c3;
+          border-color: #2286c3;
+        }
+        .button-colored.button-clear,
+        .button-colored.button-outline {
+          background-color: transparent;
+          color: #2286c3;
+        }
+        .button-colored.button-clear {
+          border-color: transparent;
         }
       `,
     ];

@@ -1,6 +1,6 @@
 import { css } from 'lit-element';
 
-export const cssFramework = css`
+export const styles = css`
   /*!
 * Milligram v1.4.1
 * https://milligram.io
