@@ -6,7 +6,7 @@ export class UprtclPopper extends LitElement {
   icon: string = 'more_vert';
 
   @property({ type: Boolean, attribute: false })
-  showDropdown: boolean = true;
+  showDropdown: boolean = false;
 
   firstUpdated() {
     document.addEventListener('click', (event) => {

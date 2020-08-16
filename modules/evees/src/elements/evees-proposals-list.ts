@@ -9,7 +9,7 @@ import { Proposal, Perspective } from '../types';
 import { eveeColor } from './support';
 
 import { EveesWorkspace } from '../services/evees.workspace';
-import { EveesDialog } from './common-ui/uprtcl-dialog';
+import { UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
 
 export const DEFAULT_COLOR = '#d0dae0';
@@ -45,7 +45,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
   forceUpdate: string = 'true';
 
   @query('#updates-dialog')
-  updatesDialogEl!: EveesDialog;
+  updatesDialogEl!: UprtclDialog;
 
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;

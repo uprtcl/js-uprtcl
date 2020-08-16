@@ -9,10 +9,11 @@ const styleMap = (style) => {
   }, '');
 };
 
+import { MenuConfig } from '@uprtcl/common-ui';
+
 import { EveesInfoBase } from './evee-info-base';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
-import { MenuConfig } from './common-ui/uprtcl-options-menu';
 
 export class EveesInfoPage extends EveesInfoBase {
   @property({ attribute: false })

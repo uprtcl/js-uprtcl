@@ -20,6 +20,7 @@ import {
   EntityCache,
   loadEntity,
 } from '@uprtcl/multiplatform';
+import { UprtclDialog } from '@uprtcl/common-ui';
 
 import {
   RemoteMap,
@@ -43,7 +44,6 @@ import { Evees } from '../services/evees';
 
 import { EveesRemote } from '../services/evees.remote';
 
-import { EveesDialog } from './common-ui/uprtcl-dialog';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDiff } from './evees-diff';
 
@@ -106,7 +106,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   firstHasChanges!: boolean;
 
   @query('#updates-dialog')
-  updatesDialogEl!: EveesDialog;
+  updatesDialogEl!: UprtclDialog;
 
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
