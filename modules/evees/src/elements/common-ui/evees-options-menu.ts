@@ -41,23 +41,23 @@ export class EveesOptionsMenu extends LitElement {
       <slot name="icon" slot="icon"
         ><mwc-icon-button icon=${this.icon}></mwc-icon-button
       ></slot>
-      <mwc-list>
+      <uprtcl-list>
         ${Object.keys(this.config).map((itemKey) => {
           const item = this.config[itemKey];
           return item.disabled !== undefined && item.disabled
-            ? html` <mwc-list-item graphic="icon" disabled>
+            ? html` <uprtcl-list-item graphic="icon" disabled>
                 <span>${item.text}</span>
                 <mwc-icon slot="graphic">${item.graphic}</mwc-icon>
-              </mwc-list-item>`
-            : html` <mwc-list-item
+              </uprtcl-list-item>`
+            : html` <uprtcl-list-item
                 graphic="icon"
                 @click=${(e) => this.optionClicked(itemKey, e)}
               >
                 <span>${item.text}</span>
                 <mwc-icon slot="graphic">${item.graphic}</mwc-icon>
-              </mwc-list-item>`;
+              </uprtcl-list-item>`;
         })}
-      </mwc-list>
+      </uprtcl-list>
     </evees-popper>`;
   }
 

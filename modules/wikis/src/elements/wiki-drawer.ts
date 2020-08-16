@@ -487,12 +487,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         ? html`<div class="empty">
             <span><i>${this.t('wikis:no-pages-yet')}</i></span>
           </div>`
-        : html`<mwc-list>
+        : html`<uprtcl-list>
             ${this.pagesList.map((page, ix) => {
               // this.logger.log(`rendering page title ${page.id}`, menuConfig);
               return this.renderPageItem(page, ix, showOptions);
             })}
-          </mwc-list>`}
+          </uprtcl-list>`}
       ${this.editable
         ? html`
             <div class="button-row">

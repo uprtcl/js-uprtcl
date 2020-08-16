@@ -228,7 +228,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   renderPerspectiveRow(perspectiveData: PerspectiveData) {
     const action = this.getPerspectiveAction(perspectiveData);
     return html`
-      <mwc-list-item
+      <uprtcl-list-item
         hasMeta
         ?selected=${this.perspectiveId === perspectiveData.id}
         ?activated=${this.perspectiveId === perspectiveData.id}
@@ -248,7 +248,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
               call_merge
             </mwc-icon>`
           : ''}
-      </mwc-list-item>
+      </uprtcl-list-item>
     `;
   }
 
@@ -257,11 +257,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       ? this.renderLoading()
       : this.otherPerspectivesData.length > 0
       ? html`
-          <mwc-list activatable>
+          <uprtcl-list activatable>
             ${this.otherPerspectivesData.map((perspectiveData) =>
               this.renderPerspectiveRow(perspectiveData)
             )}
-          </mwc-list>
+          </uprtcl-list>
         `
       : html`<div class="empty"><i>No other perspectives found</i></div>`;
   }

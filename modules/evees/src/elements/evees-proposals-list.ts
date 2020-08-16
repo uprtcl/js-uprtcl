@@ -230,7 +230,10 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
   renderProposalRow(proposal: Proposal) {
     return html`
-      <mwc-list-item hasMeta @click=${() => this.showProposalChanges(proposal)}>
+      <uprtcl-list-item
+        hasMeta
+        @click=${() => this.showProposalChanges(proposal)}
+      >
         <evees-author
           color=${eveeColor(proposal.fromPerspectiveId)}
           user-id=${proposal.creatorId as string}
@@ -241,7 +244,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
               call_merge
             </mwc-icon>`
           : ''}
-      </mwc-list-item>
+      </uprtcl-list-item>
     `;
   }
 
@@ -292,9 +295,9 @@ export class ProposalsList extends moduleConnect(LitElement) {
       : html`
           ${this.pendingProposals.length > 0 || this.mergedProposals.length > 0
             ? html`
-                <mwc-list activatable>
+                <uprtcl-list activatable>
                   ${this.renderProposals()} ${this.renderOldProposals()}
-                </mwc-list>
+                </uprtcl-list>
               `
             : html`<div class="empty"><i>No proposals found</i></div>`}
           ${this.showDiff ? this.renderDiff() : ''}

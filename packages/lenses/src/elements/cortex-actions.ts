@@ -194,23 +194,25 @@ export class CortexActions extends moduleConnect(LitElement) {
       ></mwc-icon-button>
 
       <mwc-menu id="menu">
-        <mwc-list>
+        <uprtcl-list>
           ${menuActions.map(
             (actionTypeList) =>
               html`
                 ${actionTypeList.map(
                   (action) => html`
-                    <mwc-list-item @click=${() => this.actionClicked(action)}>
+                    <uprtcl-list-item
+                      @click=${() => this.actionClicked(action)}
+                    >
                       <mwc-icon slot="graphic">${action.icon}</mwc-icon>
                       ${action.title}
-                    </mwc-list-item>
+                    </uprtcl-list-item>
                   `
                 )}
 
-                <mwc-list-divider></mwc-list-divider>
+                <uprtcl-list-divider></uprtcl-list-divider>
               `
           )}
-        </mwc-list>
+        </uprtcl-list>
       </mwc-menu>
     `;
   }

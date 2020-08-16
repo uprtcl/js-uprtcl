@@ -94,7 +94,7 @@ export class EveesInfoPopper extends EveesInfoBase {
 
         ${this.show
           ? html`
-              <mwc-card class="info-box">
+              <uprtcl-card class="info-box">
                 ${this.perspectiveData
                   ? html`
                       <div class="column">
@@ -109,7 +109,7 @@ export class EveesInfoPopper extends EveesInfoBase {
                       </div>
                     `
                   : ''}
-              </mwc-card>
+              </uprtcl-card>
             `
           : ''}
       </div>

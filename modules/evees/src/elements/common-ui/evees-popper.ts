@@ -5,7 +5,7 @@ export class EveesPopper extends LitElement {
   icon: string = 'more_vert';
 
   @property({ type: Boolean, attribute: false })
-  showDropdown: boolean = false;
+  showDropdown: boolean = true;
 
   firstUpdated() {
     document.addEventListener('click', (event) => {
@@ -36,9 +36,9 @@ export class EveesPopper extends LitElement {
         </slot>
       </div>
       ${this.showDropdown
-        ? html` <mwc-card id="popper-menu" class="info-box">
+        ? html` <uprtcl-card id="popper-menu" class="info-box">
             <slot></slot>
-          </mwc-card>`
+          </uprtcl-card>`
         : ''}
     `;
   }
