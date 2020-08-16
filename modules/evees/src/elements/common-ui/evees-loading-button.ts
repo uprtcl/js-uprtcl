@@ -19,17 +19,15 @@ export class EveesLoadingButton extends LitElement {
       icon=${this.loading === 'true' ? '' : this.icon}
     >
       ${this.loading === 'true'
-        ? html`<cortex-loading-placeholder
-            size="20"
-          ></cortex-loading-placeholder>`
+        ? html`<uprtcl-loading size="20"></uprtcl-loading>`
         : this.label}
     </uprtcl-button>`;
   }
 
   static get styles() {
     return css`
-      uprtcl-button {
-        width: 220px;
+      :host {
+        display: block;
       }
     `;
   }

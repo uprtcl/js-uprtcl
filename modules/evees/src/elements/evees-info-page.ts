@@ -116,6 +116,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderNewPerspectiveButton() {
     return html`
       <evees-loading-button
+        class="section-button"
         outlined
         icon="call_split"
         @click=${this.newPerspectiveClicked}
@@ -129,6 +130,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderLoginButton() {
     return html`
       <evees-loading-button
+        class="section-button"
         outlined
         icon="account_box"
         @click=${this.login}
@@ -142,6 +144,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderMakeProposalButton() {
     return html`
       <evees-loading-button
+        class="section-button"
         outlined
         icon="call_merge"
         @click=${this.proposeMergeClicked}
@@ -155,6 +158,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderMakePublicButton() {
     return html`
       <evees-loading-button
+        class="section-button"
         outlined
         icon=${this.publicRead ? 'visibility_off' : 'visibility'}
         @click=${this.makePublic}
@@ -343,8 +347,9 @@ export class EveesInfoPage extends EveesInfoBase {
   static get styles() {
     return super.styles.concat([
       css`
-        uprtcl-button {
+        .section-button {
           width: 220px;
+          margin: 0 auto;
         }
 
         p {
@@ -375,7 +380,7 @@ export class EveesInfoPage extends EveesInfoBase {
         .section-header {
           font-weight: bold;
           padding: 2vw 0px 0.8vw 0px;
-          font-size: 1.6em;
+          font-size: 2.2em;
           border-style: solid 2px;
         }
         .section-header evees-author {
