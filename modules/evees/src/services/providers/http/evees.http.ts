@@ -34,7 +34,7 @@ export class EveesHttp extends HttpAuth0Provider implements EveesRemote {
     host: string,
     protected connection: HttpConnection,
     protected auth0Config: any,
-    public store: any
+    public store: CASStore
   ) {
     super(
       {
