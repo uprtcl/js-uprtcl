@@ -1,24 +1,23 @@
+import { Container } from 'inversify';
+import { ApolloClient } from 'apollo-boost';
 import { EthereumContract } from '@uprtcl/ethereum-provider';
 import {
   OwnerAccessControlService,
   OwnerPermissions,
 } from '@uprtcl/access-control';
 
+import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/graphql';
+
+import { EveesModule, EveesHelpers } from '@uprtcl/evees';
+import { loadEntity } from '@uprtcl/multiplatform';
+
 import {
-  UPDATE_OWNER,
   GET_PERSP_HASH,
   GET_PERSP_OWNER,
   UPDATE_OWNER_BATCH,
 } from './common';
-import { ApolloClient } from 'apollo-boost';
-import { inject, Container } from 'inversify';
 
-import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
-import { ApolloClientModule } from '@uprtcl/graphql';
-
-import { EveesHelpers } from '../../../graphql/helpers';
-import { EveesModule } from '../../../evees.module';
-import { loadEntity } from '@uprtcl/multiplatform';
 
 export class EveesAccessControlEthereum implements OwnerAccessControlService {
   constructor(
