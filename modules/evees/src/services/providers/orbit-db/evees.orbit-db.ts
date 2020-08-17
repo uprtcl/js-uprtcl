@@ -11,7 +11,11 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { ConnectionOptions, loadEntity } from '@uprtcl/multiplatform';
 
 import { Secured } from '../../../utils/cid-hash';
-import { Perspective, PerspectiveDetails, NewPerspectiveData } from 'src/types';
+import {
+  Perspective,
+  PerspectiveDetails,
+  NewPerspectiveData,
+} from './../../../types';
 import { EveesRemote } from '../../evees.remote';
 import { EveesAccessControlOrbitDB } from './evees-access-control.orbit-db';
 import {
