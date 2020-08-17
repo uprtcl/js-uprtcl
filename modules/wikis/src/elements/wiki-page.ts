@@ -23,8 +23,6 @@ import {
   Evees,
 } from '@uprtcl/evees';
 
-import '@material/mwc-top-app-bar';
-
 export class WikiPage extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-PAGE');
 
@@ -124,10 +122,10 @@ export class WikiPage extends moduleConnect(LitElement) {
 
     return html`
       <div class="top-row">
-        <mwc-icon-button
+        <uprtcl-icon-button
           icon="arrow_back_ios"
           @click=${this.back}
-        ></mwc-icon-button>
+        ></uprtcl-icon-button>
       </div>
 
       <div class="page-content">

@@ -1,9 +1,13 @@
 import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { BasicAdminAccessControlService, BasicAdminPermissions } from '@uprtcl/access-control';
+import {
+  BasicAdminAccessControlService,
+  BasicAdminPermissions,
+} from '@uprtcl/access-control';
 
 const uprtcl_api: string = 'uprtcl-ac-v1';
-export class EveesAccessControlHttp extends HttpProvider implements BasicAdminAccessControlService {
+export class EveesAccessControlHttp extends HttpProvider
+  implements BasicAdminAccessControlService {
   logger = new Logger('HTTP-EVEES-ACCESS-CONTROL');
 
   constructor(host: string, protected connection: HttpConnection) {
@@ -20,7 +24,9 @@ export class EveesAccessControlHttp extends HttpProvider implements BasicAdminAc
     throw new Error('Method not implemented.');
   }
 
-  async getPermissions(hash: string): Promise<BasicAdminPermissions | undefined> {
+  async getPermissions(
+    hash: string
+  ): Promise<BasicAdminPermissions | undefined> {
     return super.getObject<BasicAdminPermissions>(`/permissions/${hash}`);
   }
 

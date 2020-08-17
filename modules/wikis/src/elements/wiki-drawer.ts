@@ -26,7 +26,6 @@ import {
   Signed,
 } from '@uprtcl/cortex';
 import {
-  MenuConfig,
   EveesRemote,
   EveesModule,
   eveeColor,
@@ -35,12 +34,11 @@ import {
   EveesHelpers,
   Perspective,
 } from '@uprtcl/evees';
+import { MenuConfig } from '@uprtcl/common-ui';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
-
-import '@material/mwc-drawer';
 
 import { WikiBindings } from '../bindings';
 
@@ -489,22 +487,22 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         ? html`<div class="empty">
             <span><i>${this.t('wikis:no-pages-yet')}</i></span>
           </div>`
-        : html`<mwc-list>
+        : html`<uprtcl-list>
             ${this.pagesList.map((page, ix) => {
               // this.logger.log(`rendering page title ${page.id}`, menuConfig);
               return this.renderPageItem(page, ix, showOptions);
             })}
-          </mwc-list>`}
+          </uprtcl-list>`}
       ${this.editable
         ? html`
             <div class="button-row">
-              <evees-loading-button
+              <uprtcl-button-loading
                 icon="add_circle_outline"
                 @click=${() => this.newPage()}
                 loading=${this.creatingNewPage ? 'true' : 'false'}
                 label=${this.t('wikis:new-page')}
               >
-              </evees-loading-button>
+              </uprtcl-button-loading>
             </div>
           `
         : html``}
@@ -547,11 +545,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
         ${this.editable && showOptions
           ? html`
-              <evees-options-menu
+              <uprtcl-options-menu
                 @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
                 .config=${menuConfig}
               >
-              </evees-options-menu>
+              </uprtcl-options-menu>
             `
           : ''}
       </div>
@@ -574,18 +572,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <div class="nav-bar-top">
         ${this.showExit
           ? html`
-              <mwc-button
-                icon="arrow_back"
-                label="exit"
-                @click=${() => this.goBack()}
-              ></mwc-button>
+              <uprtcl-button @click=${() => this.goBack()}>exit</uprtcl-button>
             `
           : ''}
-        <mwc-button
-          ?unelevated=${this.uref === this.firstRef}
-          label="official"
-          @click=${() => this.goToOfficial()}
-        ></mwc-button>
+        <uprtcl-button @click=${() => this.goToOfficial()}>
+          official
+        </uprtcl-button>
         <div class="perspective-author-wrapper">
           ${this.uref !== this.firstRef
             ? html`
@@ -634,13 +626,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             <div class="row center-aligned title-form">
               ${this.showEditTitle
                 ? html`
-                    <evees-string-form
+                    <uprtcl-form-string
                       value=${this.wiki ? this.wiki.object.title : ''}
                       label="new title"
                       @cancel=${() => (this.showEditTitle = false)}
                       @accept=${(e) => this.editTitle(e.detail.value)}
                       ?loading=${this.updatingTitle}
-                    ></evees-string-form>
+                    ></uprtcl-form-string>
                   `
                 : ''}
             </div>
@@ -653,7 +645,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           </div>
 
           <div class="context-menu">
-            <evees-help>
+            <uprtcl-help>
               <span>
                 This Wiki is multi-perspective. <br /><br />It has one
                 "official" perspective, and many different "personal"
@@ -661,13 +653,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 The owner of the official perspective is shown below, under
                 "Access Control".
               </span>
-            </evees-help>
+            </uprtcl-help>
             ${this.editable
               ? html`
-                  <evees-options-menu
+                  <uprtcl-options-menu
                     .config=${contextConfig}
                     @option-click=${this.titleOptionClicked}
-                  ></evees-options-menu>
+                  ></uprtcl-options-menu>
                 `
               : ''}
           </div>
@@ -687,8 +679,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return html`
       <div class="app-drawer">
-      
-        ${this.renderColorBar()} 
+        ${this.renderColorBar()}
 
         <div class="app-navbar">
           ${this.renderNavBar()}
@@ -740,6 +731,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
             'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
             'Segoe UI Symbol';
+          font-size: 1.6rem;
           color: #37352f;
           --mdc-theme-primary: #2196f3;
           width: 100%;
@@ -783,7 +775,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           border-bottom-width: 1px;
         }
         .nav-bar-top .slash {
-          font-size: 28px;
           margin-right: 6px;
         }
         .perspective-author-wrapper {
@@ -818,6 +809,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .page-item:hover {
           background-color: #e8ecec;
         }
+        uprtcl-options-menu {
+          padding-top: 6px;
+          --box-with: 200px;
+        }
         .title-empty {
           color: #a2a8aa;
           font-style: italic;
@@ -841,7 +836,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           padding: 16px 10px 8px 10px;
           display: flex;
         }
-        .button-row evees-loading-button {
+        .button-row uprtcl-button-loading {
           margin: 0 auto;
         }
         .app-top-nav {
@@ -894,7 +889,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .section-header {
           font-weight: bold;
           padding: 2vw 0px 0.8vw 0px;
-          font-size: 1.6em;
+          font-size: 3rem;
           border-style: solid 2px;
         }
         .section-content evees-author {
@@ -905,17 +900,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           padding-bottom: 2vw;
         }
         .official-name {
-          font-size: 1.6em;
+          font-size: 3rem;
           font-weight: bold;
           color: #4e585c;
-          font-size: 1.3em;
         }
         .by-3box {
           color: rgb(99, 102, 104);
-          font-size: 15px;
           font-weight: 600;
           letter-spacing: 0.015em;
-          font-size: 1.1em;
         }
         .context-menu {
           position: absolute;

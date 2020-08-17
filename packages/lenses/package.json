@@ -11,15 +11,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@authentic/mwc-circular-progress": "^0.9.0",
-    "@authentic/mwc-tooltip": "^0.9.0",
-    "@material/mwc-button": "^0.14.1",
-    "@material/mwc-icon": "^0.14.1",
-    "@material/mwc-icon-button": "^0.14.1",
-    "@material/mwc-linear-progress": "^0.14.1",
-    "@material/mwc-list": "^0.14.1",
-    "@material/mwc-menu": "^0.14.1",
-    "@material/mwc-ripple": "^0.14.1",
+    
     "@uprtcl/cortex": "^0.0.7-alpha.46",
     "@uprtcl/graphql": "^0.0.7-alpha.46",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.46",

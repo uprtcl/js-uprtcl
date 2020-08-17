@@ -1,10 +1,6 @@
 import { LitElement, property, html, query, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
-import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
-import '@material/mwc-dialog';
-import '@material/mwc-textfield';
-
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -34,7 +30,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   changingOwner: boolean = false;
 
   @query('#new-address')
-  newAddressEl!: TextFieldBase;
+  newAddressEl!: any;
 
   client!: ApolloClient<any>;
   recognizer!: ApolloClient<any>;
@@ -112,7 +108,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
 
   renderDialog() {
     return html`
-      <evees-dialog
+      <uprtcl-dialog
         primary-text="Transfer"
         secondary-text="Cancel"
         @primary=${this.changeOwner}
@@ -124,7 +120,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
           id="new-address"
           .label=${this.t('access-control:new-owner-address')}
         ></mwc-textfield>
-      </evees-dialog>
+      </uprtcl-dialog>
     `;
   }
 
@@ -136,13 +132,13 @@ export class PermissionsOwner extends moduleConnect(LitElement)
       </div>
       ${this.canWrite
         ? html`
-            <evees-loading-button
+            <uprtcl-button-loading
               icon="swap_horizontal"
               @click=${this.showTransferDialog}
               loading=${this.changingOwner ? 'true' : 'false'}
               label=${this.t('access-control:transfer-ownership')}
             >
-            </evees-loading-button>
+            </uprtcl-button-loading>
           `
         : ''}
     `;
@@ -150,7 +146,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
 
   static get styles() {
     return css`
-      mwc-button {
+      uprtcl-button {
         width: 220px;
       }
 

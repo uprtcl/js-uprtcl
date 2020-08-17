@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-export class EveesLoadingButton extends LitElement {
+export class UprtclButtonLoading extends LitElement {
   @property({ type: String })
   loading: string = 'true';
 
@@ -14,22 +14,20 @@ export class EveesLoadingButton extends LitElement {
   icon: string = '';
 
   render() {
-    return html` <mwc-button
+    return html` <uprtcl-button
       ?outlined=${this.outlined}
       icon=${this.loading === 'true' ? '' : this.icon}
     >
       ${this.loading === 'true'
-        ? html`<cortex-loading-placeholder
-            size="20"
-          ></cortex-loading-placeholder>`
+        ? html`<uprtcl-loading size="20"></uprtcl-loading>`
         : this.label}
-    </mwc-button>`;
+    </uprtcl-button>`;
   }
 
   static get styles() {
     return css`
-      mwc-button {
-        width: 220px;
+      :host {
+        display: block;
       }
     `;
   }

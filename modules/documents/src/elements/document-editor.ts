@@ -30,10 +30,10 @@ import {
   CREATE_PERSPECTIVE,
   CREATE_ENTITY,
   EveesDraftsLocal,
-  MenuConfig,
   EveesHelpers,
   EveesBindings,
 } from '@uprtcl/evees';
+import { MenuConfig } from '@uprtcl/common-ui';
 import { loadEntity, CASStore } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode } from '../types';
@@ -1086,20 +1086,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         ${this.docHasChanges && !this.showCommitMessage
           ? html`
               <div class="button-container">
-                <evees-loading-button
+                <uprtcl-button-loading
                   icon="unarchive"
                   @click=${() => this.persistAll()}
                   loading=${this.persistingAll ? 'true' : 'false'}
                   label="push"
                 >
-                </evees-loading-button>
+                </uprtcl-button-loading>
               </div>
-              <!-- <evees-options-menu 
+              <!-- <uprtcl-options-menu 
                 .config=${options} 
                 @option-click=${this.commitOptionSelected}
                 icon="arrow_drop_down">
-              </evees-options-menu> -->
-              <evees-help>
+              </uprtcl-options-menu> -->
+              <uprtcl-help>
                 <span>
                   Your current changes are safely stored on this device and
                   won't be lost.<br /><br />
@@ -1111,17 +1111,23 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                     others.
                   </li>
                 </span>
-              </evees-help>
+              </uprtcl-help>
             `
           : ''}
         ${this.showCommitMessage
           ? html`
               <mwc-textfield id="COMMIT_MESSAGE" label="Message">
               </mwc-textfield>
-              <mwc-icon-button icon="clear" @click=${this.cancelCommitClicked}>
-              </mwc-icon-button>
-              <mwc-icon-button icon="done" @click=${this.acceptCommitClicked}>
-              </mwc-icon-button>
+              <uprtcl-icon-button
+                icon="clear"
+                @click=${this.cancelCommitClicked}
+              >
+              </uprtcl-icon-button>
+              <uprtcl-icon-button
+                icon="done"
+                @click=${this.acceptCommitClicked}
+              >
+              </uprtcl-icon-button>
             `
           : ''}
       </div>

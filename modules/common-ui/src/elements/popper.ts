@@ -1,9 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
+import { icons } from './icons';
 
-import '@material/mwc-icon-button';
-import '@authentic/mwc-card';
-
-export class EveesPopper extends LitElement {
+export class UprtclPopper extends LitElement {
   @property({ type: String })
   icon: string = 'more_vert';
 
@@ -35,13 +33,13 @@ export class EveesPopper extends LitElement {
     return html`
       <div @click=${this.showDropDownClicked}>
         <slot name="icon">
-          <mwc-icon-button icon=${this.icon}></mwc-icon-button>
+          <div class="icon-container">${icons[this.icon]}</div>
         </slot>
       </div>
       ${this.showDropdown
-        ? html` <mwc-card id="popper-menu" class="info-box">
+        ? html` <uprtcl-card id="popper-menu" class="info-box">
             <slot></slot>
-          </mwc-card>`
+          </uprtcl-card>`
         : ''}
     `;
   }

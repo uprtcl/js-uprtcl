@@ -8,10 +8,9 @@ export interface MenuConfig {
   };
 }
 
-import '@material/mwc-icon';
-import { EveesPopper } from './evees-popper';
+import { UprtclPopper } from './popper';
 
-export class EveesOptionsMenu extends LitElement {
+export class UprtclOptionsMenu extends LitElement {
   @property({ type: Object })
   config: MenuConfig = {};
 
@@ -19,7 +18,7 @@ export class EveesOptionsMenu extends LitElement {
   icon: string = 'more_vert';
 
   @query('#popper')
-  popper!: EveesPopper;
+  popper!: UprtclPopper;
 
   optionClicked(key: string, e) {
     e.stopPropagation();
@@ -38,28 +37,28 @@ export class EveesOptionsMenu extends LitElement {
   }
 
   render() {
-    return html` <evees-popper id="popper" icon=${this.icon}>
+    return html` <uprtcl-popper id="popper" icon=${this.icon}>
       <slot name="icon" slot="icon"
-        ><mwc-icon-button icon=${this.icon}></mwc-icon-button
+        ><uprtcl-icon-button icon=${this.icon}></uprtcl-icon-button
       ></slot>
-      <mwc-list>
+      <uprtcl-list>
         ${Object.keys(this.config).map((itemKey) => {
           const item = this.config[itemKey];
           return item.disabled !== undefined && item.disabled
-            ? html` <mwc-list-item graphic="icon" disabled>
+            ? html` <uprtcl-list-item graphic="icon" disabled>
                 <span>${item.text}</span>
                 <mwc-icon slot="graphic">${item.graphic}</mwc-icon>
-              </mwc-list-item>`
-            : html` <mwc-list-item
+              </uprtcl-list-item>`
+            : html` <uprtcl-list-item
                 graphic="icon"
                 @click=${(e) => this.optionClicked(itemKey, e)}
               >
                 <span>${item.text}</span>
                 <mwc-icon slot="graphic">${item.graphic}</mwc-icon>
-              </mwc-list-item>`;
+              </uprtcl-list-item>`;
         })}
-      </mwc-list>
-    </evees-popper>`;
+      </uprtcl-list>
+    </uprtcl-popper>`;
   }
 
   static get styles() {

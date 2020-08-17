@@ -1,6 +1,6 @@
 import { LitElement, html, property, css } from 'lit-element';
 
-export class EveesDialog extends LitElement {
+export class UprtclDialog extends LitElement {
   @property({ type: String, attribute: 'primary-text' })
   primaryText: string = 'Ok';
 
@@ -34,14 +34,14 @@ export class EveesDialog extends LitElement {
           </div>
           ${this.showSecondary === 'true'
             ? html`
-                <mwc-button @click=${this.secondaryClicked}>
+                <uprtcl-button @click=${this.secondaryClicked}>
                   ${this.secondaryText}
-                </mwc-button>
+                </uprtcl-button>
               `
             : ''}
-          <mwc-button @click=${this.primaryClicked}>
+          <uprtcl-button @click=${this.primaryClicked}>
             ${this.primaryText}
-          </mwc-button>
+          </uprtcl-button>
         </div>
       </div>
     `;

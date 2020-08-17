@@ -11,12 +11,6 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@material/mwc-button": "^0.14.1",
-    "@material/mwc-checkbox": "^0.14.1",
-    "@material/mwc-fab": "^0.14.1",
-    "@material/mwc-radio": "^0.14.1",
-    "@material/mwc-ripple": "^0.14.1",
-    "@material/mwc-switch": "^0.14.1",
     "@uprtcl/access-control": "^0.0.7-alpha.46",
     "@uprtcl/cortex": "^0.0.7-alpha.46",
     "@uprtcl/evees": "^0.0.7-alpha.46",
@@ -27,6 +21,7 @@
     "@uprtcl/lenses": "^0.0.7-alpha.46",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.46",
     "@uprtcl/multiplatform": "^0.0.7-alpha.46",
+    "@uprtcl/common-ui": "^0.0.7-alpha.46",
     "apollo-boost": "^0.4.7",
     "codemirror": "^5.54.0",
     "graphql-tag": "^2.10.1",
@@ -40,8 +35,6 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@material/mwc-dialog": "^0.14.1",
-    "@material/mwc-icon-button": "^0.14.1",
     "@open-wc/testing": "^2.5.6",
     "@open-wc/testing-karma": "^3.0.0",
     "@rollup/plugin-commonjs": "^13.0.0",

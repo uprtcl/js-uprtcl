@@ -1,6 +1,7 @@
 import { MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
+import { CommonUIModule } from '@uprtcl/common-ui';
 
 import { accessControlTypes } from './graphql/schema';
 import { accessControlResolvers } from './graphql/resolvers';
@@ -35,6 +36,7 @@ export class AccessControlModule extends MicroModule {
         new OwnerPattern([OwnerBehaviour]),
         new BasicAdminPattern([AdminBehaviour]),
       ]),
+      new CommonUIModule(),
     ];
   }
 

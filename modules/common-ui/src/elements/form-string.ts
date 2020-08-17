@@ -1,10 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-import '@material/mwc-icon';
-import '@material/mwc-textfield';
-import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
-
-export class EveesStringForm extends LitElement {
+export class UprtclFormString extends LitElement {
   @property({ type: String, attribute: 'value' })
   fieldValue: string = '';
 
@@ -21,7 +17,7 @@ export class EveesStringForm extends LitElement {
   loading: boolean = false;
 
   @query('#text-input')
-  newTitleEl!: TextFieldBase;
+  newTitleEl!: any;
 
   firstUpdated() {
     setTimeout(() => this.newTitleEl.focus(), 50);
@@ -53,8 +49,11 @@ export class EveesStringForm extends LitElement {
         </mwc-textfield>
 
         <div class="icon-container">
-          <mwc-icon-button icon=${this.cancelIcon} @click=${this.cancelClick}>
-          </mwc-icon-button>
+          <uprtcl-icon-button
+            icon=${this.cancelIcon}
+            @click=${this.cancelClick}
+          >
+          </uprtcl-icon-button>
         </div>
 
         <div class="icon-container">
@@ -62,10 +61,10 @@ export class EveesStringForm extends LitElement {
             ? html`<cortex-loading-placeholder
                 size="20"
               ></cortex-loading-placeholder>`
-            : html`<mwc-icon-button
+            : html`<uprtcl-icon-button
                 @click=${this.acceptClick}
                 icon=${this.acceptIcon}
-              ></mwc-icon-button>`}
+              ></uprtcl-icon-button>`}
         </div>
       </div>
     `;
@@ -85,7 +84,7 @@ export class EveesStringForm extends LitElement {
         width: 48px;
         height: 48px;
       }
-      .actions mwc-button {
+      .actions uprtcl-button {
         width: 180px;
       }
     `;
