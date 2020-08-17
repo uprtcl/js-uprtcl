@@ -101,10 +101,10 @@ export class EveesInfoPopper extends EveesInfoBase {
                         ${this.renderInfo()}
 
                         <div class="close">
-                          <mwc-icon-button
+                          <uprtcl-icon-button
                             icon="close"
                             @click=${this.showClicked}
-                          ></mwc-icon-button>
+                          ></uprtcl-icon-button>
                         </div>
                       </div>
                     `

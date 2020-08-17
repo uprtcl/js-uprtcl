@@ -87,11 +87,11 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
 
   render() {
     return html`
-      <mwc-icon-button
+      <uprtcl-icon-button
         icon="remove_red_eye"
         class=${this.show() ? '' : 'hidden'}
         @click=${() => (this.menu.open = !this.menu.open)}
-      ></mwc-icon-button>
+      ></uprtcl-icon-button>
 
       <mwc-menu id="menu" class=${this.show() ? '' : 'hidden'}>
         <uprtcl-list>

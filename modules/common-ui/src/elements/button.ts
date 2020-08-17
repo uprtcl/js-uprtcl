@@ -7,10 +7,12 @@ export class UprtclButton extends LitElement {
   icon!: string;
 
   render() {
-    return html` <div class="button button-colored">
+    return html` <div class="button-color button-layout">
       ${this.icon !== undefined
         ? html`<div class="icon-container">${icons[this.icon]}</div>`
-        : ''}<slot></slot>
+        : ''}
+
+      <slot></slot>
     </div>`;
   }
 
@@ -18,8 +20,14 @@ export class UprtclButton extends LitElement {
     return [
       styles,
       css`
-        svg {
-          fill: white;
+        .button-layout {
+          border-radius: 0.5rem;
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          line-height: 3.6rem;
+          height: 3.6rem;
+          padding: 0rem 3rem;
         }
         .icon-container {
           height: 100%;
@@ -27,24 +35,6 @@ export class UprtclButton extends LitElement {
           flex-direction: column;
           justify-content: center;
           margin-right: 10px;
-        }
-        .button {
-          display: flex;
-          flex-direction: row;
-          justify-content: center;
-          width: calc(100% - 6rem - 0.2rem);
-        }
-        .button-colored {
-          background-color: #2286c3;
-          border-color: #2286c3;
-        }
-        .button-colored.button-clear,
-        .button-colored.button-outline {
-          background-color: transparent;
-          color: #2286c3;
-        }
-        .button-colored.button-clear {
-          border-color: transparent;
         }
       `,
     ];

@@ -39,7 +39,7 @@ export class UprtclOptionsMenu extends LitElement {
   render() {
     return html` <uprtcl-popper id="popper" icon=${this.icon}>
       <slot name="icon" slot="icon"
-        ><mwc-icon-button icon=${this.icon}></mwc-icon-button
+        ><uprtcl-icon-button icon=${this.icon}></uprtcl-icon-button
       ></slot>
       <uprtcl-list>
         ${Object.keys(this.config).map((itemKey) => {

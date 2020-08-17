@@ -26,7 +26,6 @@ import {
   Signed,
 } from '@uprtcl/cortex';
 import {
-  MenuConfig,
   EveesRemote,
   EveesModule,
   eveeColor,
@@ -35,6 +34,7 @@ import {
   EveesHelpers,
   Perspective,
 } from '@uprtcl/evees';
+import { MenuConfig } from '@uprtcl/common-ui';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 
@@ -496,13 +496,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       ${this.editable
         ? html`
             <div class="button-row">
-              <uprtcl-loading-button
+              <uprtcl-button-loading
                 icon="add_circle_outline"
                 @click=${() => this.newPage()}
                 loading=${this.creatingNewPage ? 'true' : 'false'}
                 label=${this.t('wikis:new-page')}
               >
-              </uprtcl-loading-button>
+              </uprtcl-button-loading>
             </div>
           `
         : html``}
@@ -731,6 +731,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
             'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
             'Segoe UI Symbol';
+          font-size: 1.6rem;
           color: #37352f;
           --mdc-theme-primary: #2196f3;
           width: 100%;
@@ -774,7 +775,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           border-bottom-width: 1px;
         }
         .nav-bar-top .slash {
-          font-size: 28px;
           margin-right: 6px;
         }
         .perspective-author-wrapper {
@@ -809,6 +809,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .page-item:hover {
           background-color: #e8ecec;
         }
+        uprtcl-options-menu {
+          padding-top: 6px;
+          --box-with: 200px;
+        }
         .title-empty {
           color: #a2a8aa;
           font-style: italic;
@@ -832,7 +836,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           padding: 16px 10px 8px 10px;
           display: flex;
         }
-        .button-row uprtcl-loading-button {
+        .button-row uprtcl-button-loading {
           margin: 0 auto;
         }
         .app-top-nav {
@@ -885,7 +889,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .section-header {
           font-weight: bold;
           padding: 2vw 0px 0.8vw 0px;
-          font-size: 1.6em;
+          font-size: 3rem;
           border-style: solid 2px;
         }
         .section-content evees-author {
@@ -896,17 +900,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           padding-bottom: 2vw;
         }
         .official-name {
-          font-size: 1.6em;
+          font-size: 3rem;
           font-weight: bold;
           color: #4e585c;
-          font-size: 1.3em;
         }
         .by-3box {
           color: rgb(99, 102, 104);
-          font-size: 15px;
           font-weight: 600;
           letter-spacing: 0.015em;
-          font-size: 1.1em;
         }
         .context-menu {
           position: absolute;

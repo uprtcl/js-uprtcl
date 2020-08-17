@@ -5,6 +5,7 @@ import { PatternsModule } from '@uprtcl/cortex';
 import { CASModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { AccessControlModule } from '@uprtcl/access-control';
+import { CommonUIModule } from '@uprtcl/common-ui';
 
 import {
   PerspectiveLinks,
@@ -120,6 +121,7 @@ export class EveesModule extends MicroModule {
         new PerspectivePattern([PerspectiveLinks, PerspectiveAccessControl]),
       ]),
       new CASModule(this.eveesProviders.map((p) => p.store)),
+      new CommonUIModule(),
     ];
   }
 }

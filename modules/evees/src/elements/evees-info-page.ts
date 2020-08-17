@@ -116,7 +116,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
   renderNewPerspectiveButton() {
     return html`
-      <uprtcl-loading-button
+      <uprtcl-button-loading
         class="section-button"
         outlined
         icon="call_split"
@@ -124,13 +124,13 @@ export class EveesInfoPage extends EveesInfoBase {
         loading=${this.creatingNewPerspective ? 'true' : 'false'}
         label="new perspective"
       >
-      </uprtcl-loading-button>
+      </uprtcl-button-loading>
     `;
   }
 
   renderLoginButton() {
     return html`
-      <uprtcl-loading-button
+      <uprtcl-button-loading
         class="section-button"
         outlined
         icon="account_box"
@@ -138,13 +138,13 @@ export class EveesInfoPage extends EveesInfoBase {
         loading=${this.loggingIn ? 'true' : 'false'}
         label="login"
       >
-      </uprtcl-loading-button>
+      </uprtcl-button-loading>
     `;
   }
 
   renderMakeProposalButton() {
     return html`
-      <uprtcl-loading-button
+      <uprtcl-button-loading
         class="section-button"
         outlined
         icon="call_merge"
@@ -152,13 +152,13 @@ export class EveesInfoPage extends EveesInfoBase {
         loading=${this.proposingUpdate ? 'true' : 'false'}
         label="Propose Update"
       >
-      </uprtcl-loading-button>
+      </uprtcl-button-loading>
     `;
   }
 
   renderMakePublicButton() {
     return html`
-      <uprtcl-loading-button
+      <uprtcl-button-loading
         class="section-button"
         outlined
         icon=${this.publicRead ? 'visibility_off' : 'visibility'}
@@ -166,7 +166,7 @@ export class EveesInfoPage extends EveesInfoBase {
         loading=${this.makingPublic ? 'true' : 'false'}
         label="Make Public"
       >
-      </uprtcl-loading-button>
+      </uprtcl-button-loading>
     `;
   }
 
@@ -233,8 +233,8 @@ export class EveesInfoPage extends EveesInfoBase {
 
     const pullButton = html`
       <div class="pull-menu">
-        <mwc-icon-button @click=${this.showPullChanges} icon="play_for_work">
-        </mwc-icon-button>
+        <uprtcl-icon-button @click=${this.showPullChanges} icon="play_for_work">
+        </uprtcl-icon-button>
       </div>
     `;
 
@@ -381,7 +381,7 @@ export class EveesInfoPage extends EveesInfoBase {
         .section-header {
           font-weight: bold;
           padding: 2vw 0px 0.8vw 0px;
-          font-size: 2.2em;
+          font-size: 3rem;
           border-style: solid 2px;
         }
         .section-header evees-author {
@@ -415,7 +415,6 @@ export class EveesInfoPage extends EveesInfoBase {
           flex-direction: column;
           text-align: left;
           padding: 6px 12px 0px 16px;
-          font-size: 14px;
           color: #4e585c;
         }
 

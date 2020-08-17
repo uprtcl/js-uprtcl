@@ -132,13 +132,13 @@ export class PermissionsOwner extends moduleConnect(LitElement)
       </div>
       ${this.canWrite
         ? html`
-            <uprtcl-loading-button
+            <uprtcl-button-loading
               icon="swap_horizontal"
               @click=${this.showTransferDialog}
               loading=${this.changingOwner ? 'true' : 'false'}
               label=${this.t('access-control:transfer-ownership')}
             >
-            </uprtcl-loading-button>
+            </uprtcl-button-loading>
           `
         : ''}
     `;

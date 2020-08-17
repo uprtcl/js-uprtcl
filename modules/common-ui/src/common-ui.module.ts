@@ -13,6 +13,7 @@ import { UprtclDialog } from './elements/dialog';
 import { UprtclHelp } from './elements/help';
 import { UprtclFormString } from './elements/form-string';
 import { UprtclListItemWithOption } from './elements/list-item-options';
+import { UprtclIconButton } from './elements/icon-button';
 
 export class CommonUIModule extends MicroModule {
   static id = 'common-ui-module';
@@ -23,6 +24,7 @@ export class CommonUIModule extends MicroModule {
   async onLoad() {
     customElements.define('uprtcl-button', UprtclButton);
     customElements.define('uprtcl-button-loading', UprtclButtonLoading);
+    customElements.define('uprtcl-icon-button', UprtclIconButton);
     customElements.define('uprtcl-loading', UprtclLoading);
     customElements.define('uprtcl-list', UprtclList);
     customElements.define('uprtcl-list-item', UprtclListItem);

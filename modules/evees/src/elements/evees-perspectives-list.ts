@@ -274,6 +274,10 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         flex-direction: column;
       }
 
+      uprtcl-list-item {
+        padding-left: 12px;
+      }
+
       .loading-container {
         flex-grow: 1;
         display: flex;

@@ -339,7 +339,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
       .list-section {
         text-align: left;
         padding: 6px 12px 0px 16px;
-        font-size: 14px;
         color: #4e585c;
       }
 

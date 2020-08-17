@@ -139,6 +139,9 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: row;
       }
+      wiki-drawer {
+        min-height: calc(100vh - 50px);
+      }
       .app-bar {
         width: 0vw;
         flex-grow: 0;

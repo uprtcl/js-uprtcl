@@ -122,10 +122,10 @@ export class WikiPage extends moduleConnect(LitElement) {
 
     return html`
       <div class="top-row">
-        <mwc-icon-button
+        <uprtcl-icon-button
           icon="arrow_back_ios"
           @click=${this.back}
-        ></mwc-icon-button>
+        ></uprtcl-icon-button>
       </div>
 
       <div class="page-content">

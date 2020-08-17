@@ -49,8 +49,11 @@ export class UprtclFormString extends LitElement {
         </mwc-textfield>
 
         <div class="icon-container">
-          <mwc-icon-button icon=${this.cancelIcon} @click=${this.cancelClick}>
-          </mwc-icon-button>
+          <uprtcl-icon-button
+            icon=${this.cancelIcon}
+            @click=${this.cancelClick}
+          >
+          </uprtcl-icon-button>
         </div>
 
         <div class="icon-container">
@@ -58,10 +61,10 @@ export class UprtclFormString extends LitElement {
             ? html`<cortex-loading-placeholder
                 size="20"
               ></cortex-loading-placeholder>`
-            : html`<mwc-icon-button
+            : html`<uprtcl-icon-button
                 @click=${this.acceptClick}
                 icon=${this.acceptIcon}
-              ></mwc-icon-button>`}
+              ></uprtcl-icon-button>`}
         </div>
       </div>
     `;

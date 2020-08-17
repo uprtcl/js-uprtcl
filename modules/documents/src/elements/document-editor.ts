@@ -30,10 +30,10 @@ import {
   CREATE_PERSPECTIVE,
   CREATE_ENTITY,
   EveesDraftsLocal,
-  MenuConfig,
   EveesHelpers,
   EveesBindings,
 } from '@uprtcl/evees';
+import { MenuConfig } from '@uprtcl/common-ui';
 import { loadEntity, CASStore } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode } from '../types';
@@ -1086,13 +1086,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         ${this.docHasChanges && !this.showCommitMessage
           ? html`
               <div class="button-container">
-                <uprtcl-loading-button
+                <uprtcl-button-loading
                   icon="unarchive"
                   @click=${() => this.persistAll()}
                   loading=${this.persistingAll ? 'true' : 'false'}
                   label="push"
                 >
-                </uprtcl-loading-button>
+                </uprtcl-button-loading>
               </div>
               <!-- <uprtcl-options-menu 
                 .config=${options} 
@@ -1118,10 +1118,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           ? html`
               <mwc-textfield id="COMMIT_MESSAGE" label="Message">
               </mwc-textfield>
-              <mwc-icon-button icon="clear" @click=${this.cancelCommitClicked}>
-              </mwc-icon-button>
-              <mwc-icon-button icon="done" @click=${this.acceptCommitClicked}>
-              </mwc-icon-button>
+              <uprtcl-icon-button
+                icon="clear"
+                @click=${this.cancelCommitClicked}
+              >
+              </uprtcl-icon-button>
+              <uprtcl-icon-button
+                icon="done"
+                @click=${this.acceptCommitClicked}
+              >
+              </uprtcl-icon-button>
             `
           : ''}
       </div>
