@@ -7,7 +7,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { PermissionsElement } from './permissions-element';
 import { OwnerPermissions } from '../services/owner-access-control.service';
 import { SET_CAN_WRITE } from '../graphql/queries';
-import { CortexModule } from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
 export class PermissionsOwner extends moduleConnect(LitElement)
   implements PermissionsElement<OwnerPermissions> {
@@ -33,7 +33,7 @@ export class PermissionsOwner extends moduleConnect(LitElement)
   newAddressEl!: any;
 
   client!: ApolloClient<any>;
-  recognizer!: ApolloClient<any>;
+  recognizer!: PatternRecognizer;
 
   firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
