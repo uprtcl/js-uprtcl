@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/access-control",
-  "version": "0.0.7-alpha.47",
+  "version": "0.0.7-alpha.48",
   "description": "Cortex module implementing access control behaviours",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,12 +11,12 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.0.7-alpha.47",
-    "@uprtcl/cortex": "^0.0.7-alpha.47",
-    "@uprtcl/graphql": "^0.0.7-alpha.47",
-    "@uprtcl/lenses": "^0.0.7-alpha.47",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.47",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.47",
+    "@uprtcl/common-ui": "^0.0.7-alpha.48",
+    "@uprtcl/cortex": "^0.0.7-alpha.48",
+    "@uprtcl/graphql": "^0.0.7-alpha.48",
+    "@uprtcl/lenses": "^0.0.7-alpha.48",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.48",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.48",
     "apollo-boost": "^0.4.7",
     "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
