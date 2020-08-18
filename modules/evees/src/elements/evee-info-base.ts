@@ -83,9 +83,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   loading: Boolean = false;
 
   @property({ attribute: false })
-  publicRead: boolean = true;
-
-  @property({ attribute: false })
   isLogged: boolean = false;
 
   @property({ attribute: false })
@@ -201,11 +198,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         data,
       };
 
-      this.publicRead =
-        this.perspectiveData.permissions.publicRead !== undefined
-          ? this.perspectiveData.permissions.publicRead
-          : true;
-
       this.logger.info('load', { perspectiveData: this.perspectiveData });
 
       this.checkPull();
@@ -220,7 +212,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         data,
       };
 
-      this.publicRead = true;
     }
 
     this.isLogged =

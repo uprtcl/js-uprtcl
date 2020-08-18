@@ -159,7 +159,7 @@ export class EveesInfoPage extends EveesInfoBase {
     return html`
       <evees-loading-button
         outlined
-        icon=${this.publicRead ? 'visibility_off' : 'visibility'}
+        icon=${'visibility'}
         @click=${this.makePublic}
         loading=${this.makingPublic ? 'true' : 'false'}
         label="Make Public"
@@ -173,12 +173,10 @@ export class EveesInfoPage extends EveesInfoBase {
     const actionButton = html`
       <div class="action-button">
         ${this.firstRef !== this.uref
-          ? this.publicRead
-            ? this.renderMakeProposalButton()
-            : this.renderMakePublicButton()
+          ? this.renderMakeProposalButton()
           : this.isLogged
-          ? this.renderNewPerspectiveButton()
-          : this.renderLoginButton()}
+            ? this.renderNewPerspectiveButton()
+            : this.renderLoginButton()}
       </div>
     `;
 
