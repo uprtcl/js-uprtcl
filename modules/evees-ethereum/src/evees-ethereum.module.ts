@@ -2,7 +2,7 @@ import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesEthereumBindings } from './bindings';
 
-export class CommonUIModule extends MicroModule {
+export class EveesEthereumModule extends MicroModule {
   static id = 'evees-ethereum-module';
   static bindings = EveesEthereumBindings;
 

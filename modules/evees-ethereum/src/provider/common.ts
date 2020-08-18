@@ -1,4 +1,4 @@
-import multihashing from 'multihashing-async';
+import * as multihashing from 'multihashing-async';
 import CID from 'cids';
 
 import { EthereumContract } from '@uprtcl/ethereum-provider';

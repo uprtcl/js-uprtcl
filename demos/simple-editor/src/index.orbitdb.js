@@ -8,10 +8,11 @@ import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
 import { AccessControlModule } from '@uprtcl/access-control';
-import { EveesModule, EveesEthereum } from '@uprtcl/evees';
+import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 import { OrbitDBConnection, EveesOrbitDB } from '@uprtcl/evees';
+import { EveesEthereum } from '@uprtcl/evees-ethereum';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 

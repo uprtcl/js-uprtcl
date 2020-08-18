@@ -1,13 +1,13 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { EthereumContract } from '@uprtcl/ethereum-provider';
 
-import { ProposalsProvider } from '../../proposals.provider';
+import { ProposalsProvider } from '@uprtcl/evees';
 import {
   UpdateRequest,
   Proposal,
   NewProposal,
   NewPerspectiveData,
-} from '../../../types';
+} from '@uprtcl/evees';
 import {
   INIT_PROPOSAL,
   GET_PROPOSAL,
@@ -25,7 +25,6 @@ import {
   PerspectiveCreator,
 } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
-import { EveesEthereum } from './evees.ethereum';
 
 export interface EthHeadUpdate {
   perspectiveIdHash: string;
