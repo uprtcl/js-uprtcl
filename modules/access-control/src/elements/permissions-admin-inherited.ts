@@ -23,6 +23,12 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
   @property({ type: Boolean, attribute: false })
   canWrite!: boolean;
 
+  @property({ type: Boolean, attribute: false })
+  canRead!: boolean;
+
+  @property({ type: Boolean, attribute: false })
+  canAdmin!: boolean;
+
   client!: ApolloClient<any>;
   remote!: EveesHttp;
 
@@ -40,6 +46,10 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
   // - change permissions for each user
 
   // add new user permissions
+
+  // refactor permission methods to be unique
+
+  // remove custom permissions
 
   // later:
   // search users
@@ -77,7 +87,6 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
           _context {
             patterns {
               accessControl {
-                canWrite
                 permissions
               }
             }
@@ -86,10 +95,13 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
       }`,
     });
 
-    console.log("[INHERITED] -> loadPermissions -> result.data", result.data)
-    this.permissions =
-      result.data.entity._context.patterns.accessControl.permissions;
-    this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
+    const newPermissions = result.data.entity._context.patterns.accessControl.permissions;
+    
+    this.permissions = newPermissions;
+   
+    this.canWrite = newPermissions.effectivePermissions.canWrite;
+    this.canRead = newPermissions.effectivePermissions.canRead;
+    this.canAdmin = newPermissions.effectivePermissions.canAdmin;
   }
 
   getOwner() {
@@ -97,6 +109,12 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
       user-id=${this.permissions.effectivePermissions.canAdmin[0]}
     ></evees-author>`;
   }
+
+  // updated(changedProperties) {
+  //   if (changedProperties.has('entityId')) {
+  //     this.loadPermissions();
+  //   }
+  // }
 
   async togglePublicRead() {
     if(!this.remote.accessControl) {
@@ -114,7 +132,38 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
     await this.remote.accessControl.setPermissions(this.entityId, newPermissions);
     
     this.permissions.effectivePermissions.publicRead = newPublicRead;
+
+    await this.requestUpdate();
+
+    this.dispatchEvent(
+      new CustomEvent('permissions-updated', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
+
+  }
+
+  async togglePublicWrite() {
+    if(!this.remote.accessControl) {
+      throw new Error(`remote accessControl not found`);
+    }
+
+    const newPublicWrite = !this.permissions.effectivePermissions.publicWrite;
+
+    const newPermissions:BasicAdminPermissions = Object.assign(
+      {},
+      this.permissions.effectivePermissions,
+      { publicWrite: newPublicWrite }
+    );
+
+    await this.remote.accessControl.setPermissions(this.entityId, newPermissions);
     
+    this.permissions.effectivePermissions.publicWrite = newPublicWrite;
+    
+    await this.requestUpdate();
+
     this.dispatchEvent(
       new CustomEvent('permissions-updated', {
         bubbles: true,
@@ -132,8 +181,17 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
           <strong>${this.t('access-control:owner')}:</strong> ${this.getOwner()}
         </div>
         <div class="row">
-          ${this.canWrite
+          ${this.canAdmin
             ? html`
+                <mwc-button
+                  icon=${this.permissions.effectivePermissions.publicWrite
+                    ? 'visibility_off'
+                    : 'visibility'}
+                  @click=${this.togglePublicWrite}
+                >
+                togglePublicWrite
+                </mwc-button>
+
                 <mwc-button
                   icon=${this.permissions.effectivePermissions.publicRead
                     ? 'visibility_off'
