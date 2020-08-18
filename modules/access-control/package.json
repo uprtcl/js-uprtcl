@@ -15,6 +15,7 @@
     "@material/mwc-dialog": "^0.14.1",
     "@material/mwc-textfield": "^0.14.1",
     "@uprtcl/cortex": "^0.0.7-alpha.41",
+    "@uprtcl/evees": "0.0.7-alpha.41",
     "@uprtcl/graphql": "^0.0.7-alpha.41",
     "@uprtcl/lenses": "^0.0.7-alpha.41",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.41",
