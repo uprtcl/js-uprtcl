@@ -14,5 +14,13 @@ export interface BasicAdminPermissions {
   canAdmin: string[];
 }
 
+export interface BasicAdminInheritedPermissions {
+  delegate: boolean,
+  delegateTo?: string | null,
+  finDelegatedTo?: string | null,
+  customPermissions?: BasicAdminPermissions,
+  effectivePermissions: BasicAdminPermissions,
+}
+
 export interface BasicAdminAccessControlService
   extends AccessControlService<BasicAdminPermissions> {}

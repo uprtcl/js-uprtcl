@@ -8,12 +8,12 @@ import { PermissionsForEntity } from './elements/permissions-for-entity';
 import { PermissionsOwner } from './elements/permissions-owner';
 import { OwnerPattern, OwnerBehaviour } from './patterns/owner.pattern';
 import {
-  BasicAdminPattern,
-  AdminBehaviour,
-} from './patterns/basic-admin-control.pattern';
+  BasicAdminInheritedPattern,
+  AdminInheritedBehaviour,
+} from './patterns/basic-admin-inherited-control.pattern';
 
 import en from './i18n/en.json';
-import { PermissionsAdmin } from './elements/permissions-admin';
+import { PermissionsAdminInherited } from './elements/permissions-admin-inherited';
 import { RemoteLoginWidget } from './elements/remote-login-widget';
 import { AccessControlBindings } from './bindings';
 
@@ -23,7 +23,7 @@ export class AccessControlModule extends MicroModule {
   async onLoad() {
     customElements.define('permissions-for-entity', PermissionsForEntity);
     customElements.define('permissions-owner', PermissionsOwner);
-    customElements.define('permissions-admin', PermissionsAdmin);
+    customElements.define('permissions-admin-inherited', PermissionsAdminInherited);
     customElements.define('remote-login-widget', RemoteLoginWidget);
   }
 
@@ -33,7 +33,7 @@ export class AccessControlModule extends MicroModule {
       new GraphQlSchemaModule(accessControlTypes, accessControlResolvers),
       new PatternsModule([
         new OwnerPattern([OwnerBehaviour]),
-        new BasicAdminPattern([AdminBehaviour]),
+        new BasicAdminInheritedPattern([AdminInheritedBehaviour]),
       ]),
     ];
   }
