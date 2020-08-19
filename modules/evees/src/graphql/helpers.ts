@@ -46,7 +46,8 @@ export class EveesHelpers {
           }
         }`,
     });
-    return result.data.entity.head?.id;
+    if (result.data.entity.head === undefined) return undefined;
+    return result.data.entity.head.id;
   }
 
   static async getPerspectiveContext(
@@ -66,7 +67,8 @@ export class EveesHelpers {
           }
         }`,
     });
-    return result.data.entity.context?.id;
+    if (result.data.entity.context === undefined) return undefined;
+    return result.data.entity.context.id;
   }
 
   static async getPerspectiveRemoteId(

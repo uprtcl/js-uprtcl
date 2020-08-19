@@ -2,10 +2,6 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { ApolloClient, gql } from 'apollo-boost';
 
-import '@authentic/mwc-card';
-import '@material/mwc-tab';
-import '@material/mwc-tab-bar';
-
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import {
@@ -24,6 +20,7 @@ import {
   EntityCache,
   loadEntity,
 } from '@uprtcl/multiplatform';
+import { UprtclDialog } from '@uprtcl/common-ui';
 
 import {
   RemoteMap,
@@ -47,7 +44,6 @@ import { Evees } from '../services/evees';
 
 import { EveesRemote } from '../services/evees.remote';
 
-import { EveesDialog } from './common-ui/evees-dialog';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDiff } from './evees-diff';
 
@@ -107,7 +103,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   firstHasChanges!: boolean;
 
   @query('#updates-dialog')
-  updatesDialogEl!: EveesDialog;
+  updatesDialogEl!: UprtclDialog;
 
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
@@ -235,10 +231,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
+    if (this.perspectiveData.perspective === undefined)
+      throw new Error('undefined');
+
     const config = {
       forceOwner: true,
-      remote: this.perspectiveData.perspective?.remote,
-      path: this.perspectiveData.perspective?.path,
+      remote: this.perspectiveData.perspective.remote,
+      path: this.perspectiveData.perspective.path,
       canWrite: remote.userId,
       parentId: this.uref,
     };
@@ -589,9 +588,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   renderUpdatesDialog() {
-    return html` <evees-dialog id="updates-dialog">
+    return html` <uprtcl-dialog id="updates-dialog">
       <evees-update-diff id="evees-update-diff"></evees-update-diff>
-    </evees-dialog>`;
+    </uprtcl-dialog>`;
   }
 
   renderLoading() {

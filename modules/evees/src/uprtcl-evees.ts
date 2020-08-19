@@ -16,20 +16,14 @@ export {
 export { EveesSource } from './services/evees.source';
 export { EveesProvider } from './services/evees.provider';
 export { EveesRemote } from './services/evees.remote';
-export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 export { NewPerspectiveData } from './types';
 
 /** Service providers */
-export { EveesHolochain } from './services/providers/holochain/evees.holochain';
-export { EveesEthereum } from './services/providers/ethereum/evees.ethereum';
-export { EveesHttp } from './services/providers/http/evees.http';
-export { EveesOrbitDB } from './services/providers/orbit-db/evees.orbit-db';
-export { OrbitDBConnection } from './services/providers/orbit-db/orbit-db.connection';
-
 export { Evees } from './services/evees';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
 export { EveesWorkspace } from './services/evees.workspace';
+export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 
 /** Merge */
 export { Merge } from './behaviours/merge';
@@ -54,7 +48,6 @@ export {
 } from './elements/events';
 
 /** UI support components */
-export { MenuConfig } from './elements/common-ui/evees-options-menu';
 export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
@@ -82,3 +75,7 @@ export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';
 
 /** Utils */
 export { isAncestorOf } from './utils/ancestor';
+
+/** Proposals */
+export { Proposal, UpdateRequest, NewProposal } from './types';
+export { ProposalsProvider } from './services/proposals.provider';

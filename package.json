@@ -12,7 +12,7 @@
     "clean": "lerna clean --yes",
     "dev": "lerna run dev --parallel",
     "reset": "lerna clean --yes && lerna exec rm package-lock.json && npm run bootstrap && npm run build",
-    "hard-reset": "find . -type d -name node_modules -prune -exec rm -rf {} \\; && find . -type d -name dist -prune -exec rm -rf {} \\; &&  find . -name \"package-lock.json\" -delete && npm i && npm run clean && npm run bootstrap && npm run build && npm run dev",
+    "hard-reset": "find . -type d -name node_modules -prune -exec rm -rf {} \\; && find . -type d -name dist -prune -exec rm -rf {} \\; &&  find . -name \"package-lock.json\" -delete && npm i && npm run clean && npm run bootstrap && npm run build",
     "test": "lerna run test",
     "test:watch": "lerna run test:watch --parallel",
     "docs:dev": "vuepress dev docs",
@@ -22,18 +22,12 @@
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare"
   },
   "devDependencies": {
-    "@types/mocha": "^5.2.7",
     "@types/node": "^10.11.0",
-    "es-dev-server": "^1.12.0",
     "lerna": "^3.21.0",
-    "nyc": "^14.1.1",
-    "path": "^0.12.7",
-    "rimraf": "^3.0.0",
     "shelljs": "^0.8.3",
     "ts-node": "=7.0.1",
-    "typedoc": "^0.15.6",
-    "typescript": "^3.8.3",
-    "vuepress": "^1.2.0"
+    "vuepress": "^1.2.0",
+    "colors": "^1.4.0"
   },
   "contributors": [
     {

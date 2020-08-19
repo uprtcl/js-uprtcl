@@ -6,8 +6,6 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { eveeColor } from './support';
 
 export const DEFAULT_COLOR = '#d0dae0';
-import '@material/mwc-dialog';
-import '@material/mwc-button';
 
 interface PerspectiveData {
   id: string;
@@ -230,7 +228,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   renderPerspectiveRow(perspectiveData: PerspectiveData) {
     const action = this.getPerspectiveAction(perspectiveData);
     return html`
-      <mwc-list-item
+      <uprtcl-list-item
         hasMeta
         ?selected=${this.perspectiveId === perspectiveData.id}
         ?activated=${this.perspectiveId === perspectiveData.id}
@@ -250,7 +248,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
               call_merge
             </mwc-icon>`
           : ''}
-      </mwc-list-item>
+      </uprtcl-list-item>
     `;
   }
 
@@ -259,11 +257,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       ? this.renderLoading()
       : this.otherPerspectivesData.length > 0
       ? html`
-          <mwc-list activatable>
+          <uprtcl-list activatable>
             ${this.otherPerspectivesData.map((perspectiveData) =>
               this.renderPerspectiveRow(perspectiveData)
             )}
-          </mwc-list>
+          </uprtcl-list>
         `
       : html`<div class="empty"><i>No other perspectives found</i></div>`;
   }
@@ -274,6 +272,10 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+      }
+
+      uprtcl-list-item {
+        padding-left: 12px;
       }
 
       .loading-container {
