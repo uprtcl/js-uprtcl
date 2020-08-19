@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees",
-  "version": "0.0.7-alpha.49",
+  "version": "0.0.7-alpha.50",
   "description": "Cortex module that provides generic version control for any content-addressable content to become an Evolving Entity (Evee)",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,14 +11,14 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/access-control": "^0.0.7-alpha.49",
-    "@uprtcl/common-ui": "^0.0.7-alpha.49",
-    "@uprtcl/cortex": "^0.0.7-alpha.49",
-    "@uprtcl/graphql": "^0.0.7-alpha.49",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.49",
-    "@uprtcl/lenses": "^0.0.7-alpha.49",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.49",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.49",
+    "@uprtcl/access-control": "^0.0.7-alpha.50",
+    "@uprtcl/common-ui": "^0.0.7-alpha.50",
+    "@uprtcl/cortex": "^0.0.7-alpha.50",
+    "@uprtcl/graphql": "^0.0.7-alpha.50",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.50",
+    "@uprtcl/lenses": "^0.0.7-alpha.50",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.50",
     "dexie": "^2.0.4",
     "apollo-boost": "^0.4.7",
     "inversify": "^5.0.1",

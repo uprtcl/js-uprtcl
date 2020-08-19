@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-ethereum",
-  "version": "0.0.7-alpha.49",
+  "version": "0.0.7-alpha.50",
   "description": "EveesRemote implemented on the Ethereum Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,14 +11,14 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.49",
-    "@uprtcl/ethereum-provider": "^0.0.7-alpha.49",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.49", 
-    "@uprtcl/cortex": "^0.0.7-alpha.49",    
-    "@uprtcl/graphql": "^0.0.7-alpha.49",    
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.49",
-    "@uprtcl/access-control": "^0.0.7-alpha.49",
-    "@uprtcl/evees": "^0.0.7-alpha.49",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
+    "@uprtcl/ethereum-provider": "^0.0.7-alpha.50",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.50",
+    "@uprtcl/cortex": "^0.0.7-alpha.50",
+    "@uprtcl/graphql": "^0.0.7-alpha.50",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.50",
+    "@uprtcl/access-control": "^0.0.7-alpha.50",
+    "@uprtcl/evees": "^0.0.7-alpha.50",
     "multihashing-async": "^0.8.0",
     "cids": "^0.8.1",
     "inversify": "^5.0.1",
