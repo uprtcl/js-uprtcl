@@ -16,16 +16,14 @@ export {
 export { EveesSource } from './services/evees.source';
 export { EveesProvider } from './services/evees.provider';
 export { EveesRemote } from './services/evees.remote';
-export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 export { NewPerspectiveData } from './types';
 
 /** Service providers */
-export { EveesHolochain } from './services/providers/holochain/evees.holochain';
-
 export { Evees } from './services/evees';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
 export { EveesWorkspace } from './services/evees.workspace';
+export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 
 /** Merge */
 export { Merge } from './behaviours/merge';
@@ -80,4 +78,4 @@ export { isAncestorOf } from './utils/ancestor';
 
 /** Proposals */
 export { Proposal, UpdateRequest, NewProposal } from './types';
-export { ProposalsProvider }  from './services/proposals.provider';
+export { ProposalsProvider } from './services/proposals.provider';
