@@ -10,19 +10,20 @@ import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { ConnectionOptions, loadEntity } from '@uprtcl/multiplatform';
 
-import { Secured } from '../../../utils/cid-hash';
 import {
+  Secured,
   Perspective,
   PerspectiveDetails,
   NewPerspectiveData,
-} from './../../../types';
-import { EveesRemote } from '../../evees.remote';
+  EveesRemote,
+  ProposalsProvider,
+} from '@uprtcl/evees';
+
 import { EveesAccessControlOrbitDB } from './evees-access-control.orbit-db';
 import {
   OrbitDBConnection,
   OrbitDBConnectionOptions,
 } from './orbit-db.connection';
-import { ProposalsProvider } from '../../../services/proposals.provider';
 
 const evees_if = 'evees-v0';
 // const timeout = 200;

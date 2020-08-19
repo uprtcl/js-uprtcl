@@ -9,7 +9,7 @@ import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Perspective } from '../../../types';
+import { Perspective } from '@uprtcl/evees';
 
 export class EveesAccessControlOrbitDB implements OwnerAccessControlService {
   constructor(protected container: Container, protected store: CASStore) {}

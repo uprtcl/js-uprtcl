@@ -3,7 +3,7 @@
 import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { Signed } from '@uprtcl/cortex';
-import { Perspective } from 'src/types';
+import { Perspective } from '@uprtcl/evees';
 
 const type = 'context'
 
