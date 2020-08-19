@@ -21,7 +21,6 @@ export { NewPerspectiveData } from './types';
 
 /** Service providers */
 export { EveesHolochain } from './services/providers/holochain/evees.holochain';
-export { EveesHttp } from './services/providers/http/evees.http';
 export { EveesOrbitDB } from './services/providers/orbit-db/evees.orbit-db';
 export { OrbitDBConnection } from './services/providers/orbit-db/orbit-db.connection';
 

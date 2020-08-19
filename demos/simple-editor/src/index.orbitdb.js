@@ -71,6 +71,7 @@ import { SimpleWiki } from './simple-wiki';
     ipfsStore,
     orchestrator.container
   );
+  await httpEvees.connect();
 
   const ethEvees = new EveesEthereum(
     ethConnection,
