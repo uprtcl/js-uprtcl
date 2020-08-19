@@ -1,8 +1,8 @@
-import multihashing from 'multihashing-async';
+import * as multihashing from 'multihashing-async';
 import CID from 'cids';
 
 import { EthereumContract } from '@uprtcl/ethereum-provider';
-import { NewPerspectiveData } from '../../../types';
+import { NewPerspectiveData } from '@uprtcl/evees';
 
 /** Function signatures */
 const newPerspStr = '(string,bytes32,bytes32,address)';

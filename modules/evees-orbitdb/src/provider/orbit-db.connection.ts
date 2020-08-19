@@ -3,14 +3,13 @@ import OrbitDBSet from '@tabcat/orbit-db-set';
 import IPFS from 'ipfs';
 
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-
-import { attachIpfsStore } from './context-access-controller';
-import { Perspective } from '../../../types';
+import { Perspective } from '@uprtcl/evees';
 
 import {
   IdentityProvider,
   Keystore,
 } from '@tabcat/orbit-db-identity-provider-d';
+import { attachIpfsStore } from './context-access-controller';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);

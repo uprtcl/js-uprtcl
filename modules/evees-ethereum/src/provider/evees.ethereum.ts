@@ -1,5 +1,6 @@
 import { Container } from 'inversify';
 
+import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import {
   EthereumConnection,
@@ -31,16 +32,16 @@ const UprtclDetails = { abi: abiDetails, networks: networksDetails };
 const UprtclProposals = { abi: abiProposals, networks: networksProposals };
 const UprtclWrapper = { abi: abiWrapper, networks: networksWrapper };
 
-import { Secured } from '../../../utils/cid-hash';
 import {
-  Commit,
+  EveesRemote,
   Perspective,
   PerspectiveDetails,
   NewPerspectiveData,
-} from '../../../types';
-import { EveesRemote } from '../../evees.remote';
+  Secured,
+  ProposalsProvider
+} from '@uprtcl/evees';
+
 import {
-  CREATE_PERSP,
   UPDATE_PERSP_DETAILS,
   INIT_PERSP,
   GET_CONTEXT_HASH,
@@ -59,8 +60,6 @@ import {
 } from './common';
 import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
-import { ProposalsProvider } from '../../proposals.provider';
-import { CASStore } from '@uprtcl/multiplatform';
 
 const evees_if = 'evees-v0';
 

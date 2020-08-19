@@ -1,10 +1,10 @@
+import { Logger } from '@uprtcl/micro-orchestrator';
 import {
   HttpEthAuthProvider,
   HttpConnection,
   KnownSourcesHttp,
 } from '@uprtcl/http-provider';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { Logger } from '@uprtcl/micro-orchestrator';
 import { BasicAdminAccessControlService } from '@uprtcl/access-control';
 import {
   CidConfig,
@@ -12,9 +12,8 @@ import {
   CASStore,
 } from '@uprtcl/multiplatform';
 
-import { ProposalsProvider } from '../../proposals.provider';
-import { EveesRemote } from '../../evees.remote';
-import { PerspectiveDetails, NewPerspectiveData } from '../../../types';
+import { ProposalsProvider, EveesRemote,PerspectiveDetails, NewPerspectiveData } from '@uprtcl/evees';
+
 import { EveesAccessControlHttp } from './evees-access-control-http';
 
 const evees_api: string = 'evees-v1';

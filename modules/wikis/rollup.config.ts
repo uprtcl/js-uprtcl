@@ -12,6 +12,10 @@ export default {
     { file: pkg.main, name: libraryName, format: 'umd', sourcemap: true },
     { file: pkg.module, format: 'es', sourcemap: true }
   ],
+  external: [
+    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.peerDependencies || {}),
+  ],
   watch: {
     include: 'src/**'
   },

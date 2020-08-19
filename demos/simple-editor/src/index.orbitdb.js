@@ -8,10 +8,11 @@ import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
 import { AccessControlModule } from '@uprtcl/access-control';
-import { EveesModule, EveesEthereum } from '@uprtcl/evees';
+import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import { OrbitDBConnection, EveesOrbitDB } from '@uprtcl/evees';
+import { OrbitDBConnection, EveesOrbitDB } from '@uprtcl/evees-orbitdb';
+import { EveesEthereum } from '@uprtcl/evees-ethereum';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
@@ -22,8 +23,6 @@ import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
 (async function () {
-  // const c1host = 'http://localhost:3000/uprtcl/1';
-  const c1host = 'https://api.intercreativity.io/uprtcl/1';
   const ethHost = '';
   // const ethHost = 'ws://localhost:8545';
 
@@ -63,21 +62,24 @@ import { SimpleWiki } from './simple-wiki';
   await orbitDBConnection.ready();
 
   const ethConnection = new EthereumConnection({ provider: ethHost });
+  await ethConnection.ready();
 
-  const httpEvees = new EveesOrbitDB(
+  const orbitdbEvees = new EveesOrbitDB(
     ethConnection,
     orbitDBConnection,
     ipfsStore,
     orchestrator.container
   );
+  await orbitdbEvees.connect();
 
   const ethEvees = new EveesEthereum(
     ethConnection,
     ipfsStore,
     orchestrator.container
   );
+  await ethEvees.ready();
 
-  const evees = new EveesModule([ethEvees, httpEvees], httpEvees);
+  const evees = new EveesModule([ethEvees, orbitdbEvees], orbitdbEvees);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
@@ -86,7 +88,7 @@ import { SimpleWiki } from './simple-wiki';
     new i18nextBaseModule(),
     new ApolloClientModule(),
     new CortexModule(),
-    new DiscoveryModule([httpEvees.casID]),
+    new DiscoveryModule([orbitdbEvees.casID]),
     new LensesModule(),
     new AccessControlModule(),
     evees,

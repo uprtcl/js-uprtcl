@@ -31,7 +31,6 @@ import {
   CREATE_ENTITY,
   EveesDraftsLocal,
   EveesHelpers,
-  EveesBindings,
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { loadEntity, CASStore } from '@uprtcl/multiplatform';

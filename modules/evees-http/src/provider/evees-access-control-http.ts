@@ -1,5 +1,5 @@
-import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
 import {
   BasicAdminAccessControlService,
   BasicAdminPermissions,
