@@ -10,7 +10,7 @@ import { EveesBindings, EveesHelpers, EveesHttp, EveesRemote } from '@uprtcl/eve
 
 
 import { PermissionsElement } from './permissions-element';
-import { BasicAdminPermissions, BasicAdminInheritedPermissions } from '../services/basic-admin-control.service';
+import { BasicAdminPermissions, BasicAdminInheritedPermissions, PermissionType } from '../services/basic-admin-control.service';
 
 export class PermissionsAdminInherited extends moduleConnect(LitElement)
   implements PermissionsElement<BasicAdminInheritedPermissions> {
@@ -30,7 +30,7 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
   canAdmin!: boolean;
 
   client!: ApolloClient<any>;
-  remote!: EveesHttp;
+  remote!: any;
 
 
   setCutomCliekced() {
@@ -38,9 +38,6 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
   }
 
   // TODO:
-
-  // public permission ilst
-  // - toggle public (read/write)
 
   // private user permissions
   // - change permissions for each user
@@ -74,7 +71,7 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
 
     if (!remote) throw new Error(`remote not registered ${remoteId}`)
 
-    this.remote = (remote as EveesHttp);
+    this.remote = (remote as any);
 
     this.loadPermissions();
   }
@@ -123,13 +120,7 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
 
     const newPublicRead = !this.permissions.effectivePermissions.publicRead;
 
-    const newPermissions:BasicAdminPermissions = Object.assign(
-      {},
-      this.permissions.effectivePermissions,
-      { publicRead: newPublicRead }
-    );
-
-    await this.remote.accessControl.setPermissions(this.entityId, newPermissions);
+    await this.remote.accessControl.setPublicPermissions(this.entityId, PermissionType.Read, newPublicRead);
     
     this.permissions.effectivePermissions.publicRead = newPublicRead;
 
@@ -152,13 +143,7 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
 
     const newPublicWrite = !this.permissions.effectivePermissions.publicWrite;
 
-    const newPermissions:BasicAdminPermissions = Object.assign(
-      {},
-      this.permissions.effectivePermissions,
-      { publicWrite: newPublicWrite }
-    );
-
-    await this.remote.accessControl.setPermissions(this.entityId, newPermissions);
+    await this.remote.accessControl.setPublicPermissions(this.entityId, PermissionType.Write, newPublicWrite);
     
     this.permissions.effectivePermissions.publicWrite = newPublicWrite;
     
