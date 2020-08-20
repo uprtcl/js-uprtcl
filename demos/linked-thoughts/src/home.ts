@@ -247,13 +247,13 @@ export class Home extends moduleConnect(LitElement) {
                     </evees-loading-button>
                   `}
             </div>`
-        : html`<evees-string-form
+        : html`<uprtcl-form-string
             value=""
             label="title (optional)"
             ?loading=${this.creatingNewDocument}
             @cancel=${() => (this.showNewSpaceForm = false)}
             @accept=${(e) => this.newDocument(e.detail.value)}
-          ></evees-string-form>`}
+          ></uprtcl-form-string>`}
 
       <div class="section-title">Recent Spaces</div>
       <div class="spaces-container">
@@ -285,7 +285,7 @@ export class Home extends moduleConnect(LitElement) {
       padding: 10vh 10px;
     }
 
-    evees-string-form {
+    uprtcl-form-string {
       width: fit-content;
       margin: 0 auto;
     }
