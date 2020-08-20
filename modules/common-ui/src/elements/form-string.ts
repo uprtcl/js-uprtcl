@@ -57,14 +57,10 @@ export class UprtclFormString extends LitElement {
         </div>
 
         <div class="icon-container">
-          ${this.loading
-            ? html`<cortex-loading-placeholder
-                size="20"
-              ></cortex-loading-placeholder>`
-            : html`<uprtcl-icon-button
-                @click=${this.acceptClick}
-                icon=${this.acceptIcon}
-              ></uprtcl-icon-button>`}
+          <uprtcl-icon-button
+            @click=${this.acceptClick}
+            icon=${this.loading ? 'loading' : this.acceptIcon}
+          ></uprtcl-icon-button>
         </div>
       </div>
     `;
