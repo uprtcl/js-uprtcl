@@ -17,6 +17,7 @@ export {
 export {
   BasicAdminPermissions,
   BasicAdminAccessControlService,
+  PermissionType,
 } from './services/basic-admin-control.service';
 
 export { SET_CAN_WRITE, SET_PUBLIC_READ } from './graphql/queries';
