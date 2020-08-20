@@ -1,6 +1,6 @@
 import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { BasicAdminAccessControlService, BasicAdminPermissions } from '@uprtcl/access-control';
+import { BasicAdminAccessControlService, BasicAdminPermissions, PermissionType } from '@uprtcl/access-control';
 
 const uprtcl_api: string = 'uprtcl-ac-v1';
 export class EveesAccessControlHttp extends HttpProvider implements BasicAdminAccessControlService {
@@ -18,6 +18,10 @@ export class EveesAccessControlHttp extends HttpProvider implements BasicAdminAc
 
   setCanWrite(hash: string, userId: string): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  async setPublicPermissions(hash: string, type: PermissionType, value: Boolean) {
+    await super.httpPut(`/permissions/${hash}/public`, { type, value });
   }
 
   async getPermissions(hash: string): Promise<BasicAdminPermissions | undefined> {
