@@ -1,20 +1,11 @@
 import { LitElement, html, css, property, query } from 'lit-element';
 import { ApolloClient } from 'apollo-boost';
 
-import { moduleConnect, request } from '@uprtcl/micro-orchestrator';
-import {
-  EveesModule,
-  EveesRemote,
-  EveesHelpers,
-  EveesHttp,
-  EveesEthereum,
-  Secured,
-  deriveSecured,
-} from '@uprtcl/evees';
-import { ApolloClientModule } from '@uprtcl/graphql';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { EveesModule, EveesRemote, EveesHelpers } from '@uprtcl/evees';
 
-import '@material/mwc-button';
-import '@authentic/mwc-circular-progress';
+import { EveesHttp } from '@uprtcl/evees-http';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Router } from '@vaadin/router';
 
@@ -23,21 +14,7 @@ import {
   EthereumContract,
 } from '@uprtcl/ethereum-provider';
 
-import {
-  abi as abiHome,
-  networks as networksHome,
-} from './contracts-json/UprtclHomePerspectives.min.json';
-import {
-  abi as abiWrapper,
-  networks as networksWrapper,
-} from './contracts-json/UprtclWrapper.min.json';
-
-import { EveesEthereumBinding } from './init';
-import {
-  NewPerspectiveData,
-  Perspective,
-} from '@uprtcl/evees/dist/types/types';
-import { getHomePerspective, CREATE_AND_SET_HOME, SET_HOME } from './support';
+import { getHomePerspective, SET_HOME } from './support';
 
 export class Home extends moduleConnect(LitElement) {
   @property({ attribute: false })
@@ -64,7 +41,6 @@ export class Home extends moduleConnect(LitElement) {
   @property({ attribute: false })
   showNewSpaceForm: boolean = false;
 
-  eveesEthereum: EveesEthereum;
   connection: EthereumConnection;
 
   spaces!: object;
@@ -227,16 +203,16 @@ export class Home extends moduleConnect(LitElement) {
     );
 
     return html`
-      <mwc-list>
+      <uprtcl-list>
         ${addresses.map((address) => {
           const space = this.spaces[address];
           return html`
-            <mwc-list-item @click=${() => this.go(space.perspectiveId)}>
+            <uprtcl-list-item @click=${() => this.go(space.perspectiveId)}>
               <evees-author user-id=${address}></evees-author>
-            </mwc-list-item>
+            </uprtcl-list-item>
           `;
         })}
-      </mwc-list>
+      </uprtcl-list>
     `;
   }
 
@@ -250,16 +226,16 @@ export class Home extends moduleConnect(LitElement) {
         ? html` <img class="background-image" src="/img/home-bg.svg" />
             <div class="button-container">
               ${this.home === undefined || this.home === ''
-                ? html` <mwc-button
+                ? html` <uprtcl-button
                     @click=${() => (this.showNewSpaceForm = true)}
                     raised
                   >
                     create your space
-                  </mwc-button>`
+                  </uprtcl-button>`
                 : html`
-                    <mwc-button @click=${() => this.go(this.home)} raised>
+                    <uprtcl-button @click=${() => this.go(this.home)} raised>
                       go to your space
-                    </mwc-button>
+                    </uprtcl-button>
                     <br />
                     <br />
                     <evees-loading-button
@@ -290,9 +266,9 @@ export class Home extends moduleConnect(LitElement) {
               ref="zb2rhgWKqjszNprmTEM769G1BgbKisYiiqeP9gnwhWKdVMQeW"
             ></documents-editor>
           </div>
-          <mwc-button @click=${() => (this.popper.showDropdown = false)}>
+          <uprtcl-button @click=${() => (this.popper.showDropdown = false)}>
             close
-          </mwc-button>
+          </uprtcl-button>
         </evees-popper>
       </div>
     `;
@@ -314,7 +290,7 @@ export class Home extends moduleConnect(LitElement) {
       margin: 0 auto;
     }
 
-    mwc-button {
+    uprtcl-button {
       width: 220px;
     }
 
@@ -362,7 +338,7 @@ export class Home extends moduleConnect(LitElement) {
       --box-width: 80vw;
     }
 
-    .top-right evees-popper mwc-button {
+    .top-right evees-popper uprtcl-button {
       width: 100%;
     }
   `;

@@ -240,9 +240,9 @@ export class ProposalsList extends moduleConnect(LitElement) {
         ></evees-author>
 
         ${!this.getProposalActionDisaled(proposal)
-          ? html` <mwc-icon slot="meta">
+          ? html` <uprtcl-icon slot="meta">
               call_merge
-            </mwc-icon>`
+            </uprtcl-icon>`
           : ''}
       </uprtcl-list-item>
     `;

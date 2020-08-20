@@ -11,6 +11,8 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
+    "@uprtcl/evees": "^0.0.7-alpha.50",
+    "@uprtcl/evees-http": "^0.0.7-alpha.50",
     "@uprtcl/common-ui": "^0.0.7-alpha.50",
     "@uprtcl/cortex": "^0.0.7-alpha.50",
     "@uprtcl/graphql": "^0.0.7-alpha.50",

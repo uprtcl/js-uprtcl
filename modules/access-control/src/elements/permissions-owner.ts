@@ -115,11 +115,11 @@ export class PermissionsOwner extends moduleConnect(LitElement)
         @secondary=${() => (this.showDialog = false)}
         show-secondary="true"
       >
-        <mwc-textfield
+        <uprtcl-textfield
           class="address-field"
           id="new-address"
           .label=${this.t('access-control:new-owner-address')}
-        ></mwc-textfield>
+        ></uprtcl-textfield>
       </uprtcl-dialog>
     `;
   }

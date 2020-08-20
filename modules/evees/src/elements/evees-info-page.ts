@@ -177,8 +177,8 @@ export class EveesInfoPage extends EveesInfoBase {
         ${this.firstRef !== this.uref
           ? this.renderMakeProposalButton()
           : this.isLogged
-            ? this.renderNewPerspectiveButton()
-            : this.renderLoginButton()}
+          ? this.renderNewPerspectiveButton()
+          : this.renderLoginButton()}
       </div>
     `;
 
@@ -435,7 +435,7 @@ export class EveesInfoPage extends EveesInfoBase {
           .draft-mod-action uprtcl-button {
             margin-bottom: 10px;
           }
-          .draft-name mwc-textfield {
+          .draft-name uprtcl-textfield {
             width: 85%;
           }
         }

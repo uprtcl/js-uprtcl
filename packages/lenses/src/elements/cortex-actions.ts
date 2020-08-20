@@ -165,11 +165,11 @@ export class CortexActions extends moduleConnect(LitElement) {
                 label=${action.title}
                 @click=${() => this.actionClicked(action)}
               >
-                <mwc-tooltip
+                <uprtcl-tooltip
                   .text=${action.title}
                   showDelay="200"
                   gap="5"
-                ></mwc-tooltip>
+                ></uprtcl-tooltip>
               </uprtcl-icon-button>
             `
           )}
@@ -193,7 +193,7 @@ export class CortexActions extends moduleConnect(LitElement) {
         @click=${() => (this.menu.open = !this.menu.open)}
       ></uprtcl-icon-button>
 
-      <mwc-menu id="menu">
+      <uprtcl-menu id="menu">
         <uprtcl-list>
           ${menuActions.map(
             (actionTypeList) =>
@@ -203,7 +203,7 @@ export class CortexActions extends moduleConnect(LitElement) {
                     <uprtcl-list-item
                       @click=${() => this.actionClicked(action)}
                     >
-                      <mwc-icon slot="graphic">${action.icon}</mwc-icon>
+                      <uprtcl-icon slot="graphic">${action.icon}</uprtcl-icon>
                       ${action.title}
                     </uprtcl-list-item>
                   `
@@ -213,7 +213,7 @@ export class CortexActions extends moduleConnect(LitElement) {
               `
           )}
         </uprtcl-list>
-      </mwc-menu>
+      </uprtcl-menu>
     `;
   }
 

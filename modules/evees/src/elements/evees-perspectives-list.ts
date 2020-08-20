@@ -240,13 +240,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         ></evees-author>
 
         ${!this.getPerspectiveActionDisaled(perspectiveData)
-          ? html` <mwc-icon
+          ? html` <uprtcl-icon
               slot="meta"
               @click=${(e) =>
                 this.perspectiveButtonClicked(e, action, perspectiveData)}
             >
               call_merge
-            </mwc-icon>`
+            </uprtcl-icon>`
           : ''}
       </uprtcl-list-item>
     `;

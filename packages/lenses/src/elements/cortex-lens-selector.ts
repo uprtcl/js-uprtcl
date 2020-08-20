@@ -93,7 +93,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
         @click=${() => (this.menu.open = !this.menu.open)}
       ></uprtcl-icon-button>
 
-      <mwc-menu id="menu" class=${this.show() ? '' : 'hidden'}>
+      <uprtcl-menu id="menu" class=${this.show() ? '' : 'hidden'}>
         <uprtcl-list>
           ${this.lenses &&
           this.lenses.map(
@@ -105,7 +105,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
               `
           )}
         </uprtcl-list>
-      </mwc-menu>
+      </uprtcl-menu>
     `;
   }
 

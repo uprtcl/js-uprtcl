@@ -207,7 +207,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         head,
         data,
       };
-
     }
 
     this.isLogged =
@@ -594,7 +593,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   renderLoading() {
-    return html` <mwc-circular-progress></mwc-circular-progress> `;
+    return html` <uprtcl-loading></uprtcl-loading> `;
   }
 
   renderInfo() {

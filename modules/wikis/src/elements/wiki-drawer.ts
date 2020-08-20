@@ -846,14 +846,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           justify-content: space-between;
         }
 
-        mwc-drawer {
-          min-width: 800px;
-          position: relative;
-          flex-grow: 1;
-          display: flex;
-          flex-direction: column;
-        }
-
         .app-content {
           flex-grow: 1;
           display: flex;
@@ -928,9 +920,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
 
         @media (max-width: 768px) {
-          mwc-drawer {
-            min-width: initial;
-          }
           .app-content {
             min-width: 100% !important;
           }
