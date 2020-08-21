@@ -4,7 +4,12 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import { EveesModule, EveesHelpers, Perspective, EveesRemote } from '@uprtcl/evees';
+import {
+  EveesModule,
+  EveesHelpers,
+  Perspective,
+  EveesRemote,
+} from '@uprtcl/evees';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { EveesEthereumModule } from 'src/evees-ethereum.module';
 import { EveesEthereum } from './evees.ethereum';
@@ -39,14 +44,18 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
-    const perspective = await loadEntity<Signed<Perspective>>(this.client, this.perspectiveId);
-    if (perspective === undefined) throw new Error(`perspective ${this.perspectiveId} not found`);
+    const remoteId = await EveesHelpers.getPerspectiveRemoteId(
+      this.client,
+      this.uref
+    );
+    if (remoteId === undefined) throw new Error('remote not found');
 
-    this.remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find((r) => r.id === perspective.object.payload.remote);
+    this.remote = (this.requestAll(
+      EveesModule.bindings.EveesRemote
+    ) as EveesRemote[]).find((r) => r.id === remoteId) as EveesEthereum;
   }
 
   async changeOwner(uref: string, newOwnerId: string): Promise<void> {
-    
     const currentAccessControl = await EveesHelpers.getAccessControl(
       this.client,
       uref
@@ -113,9 +122,10 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
   }
 
   async getOwner(hash: string): Promise<string> {
-    const perspectiveIdHash = await this.remote.uprtclRoot.call(GET_PERSP_HASH, [
-      hash,
-    ]);
+    const perspectiveIdHash = await this.remote.uprtclRoot.call(
+      GET_PERSP_HASH,
+      [hash]
+    );
 
     const owner = await this.remote.uprtclRoot.call(GET_PERSP_OWNER, [
       perspectiveIdHash,
@@ -150,9 +160,7 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
   }
 
   renderOwner() {
-    return html`<evees-author
-      user-id=${this.owner}
-    ></evees-author>`;
+    return html`<evees-author user-id=${this.owner}></evees-author>`;
   }
 
   renderDialog() {
@@ -177,7 +185,8 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
     return html`
       ${this.showDialog ? this.renderDialog() : ''}
       <div class="row title">
-        <strong>${this.t('access-control:owner')}:</strong> ${this.renderOwner()}
+        <strong>${this.t('access-control:owner')}:</strong>
+        ${this.renderOwner()}
       </div>
       ${this.canWrite
         ? html`
