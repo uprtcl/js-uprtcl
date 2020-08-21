@@ -45,7 +45,7 @@ BECAUSE YOUR PASSWORD WILL BE STOLEN
 
 export class EveesOrbitDB implements EveesRemote {
   logger: Logger = new Logger('EveesOrbitDB');
-  accessControl!: OwnerAccessControlService;
+  accessControl!: any;
   proposals!: ProposalsProvider;
   loggedIn: boolean = false;
 

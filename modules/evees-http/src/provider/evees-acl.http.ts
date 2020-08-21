@@ -1,12 +1,13 @@
 import { html } from 'lit-element';
-import { Logger } from '@uprtcl/micro-orchestrator';
 
+import { Logger } from '@uprtcl/micro-orchestrator';
+import { AccessControlService } from '@uprtcl/evees';
+import { Lens } from '@uprtcl/lenses';
 import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
 
 const uprtcl_api: string = 'uprtcl-acl-v1';
 export class EveesAccessControlHttp extends HttpProvider
   implements AccessControlService {
-    
   logger = new Logger('HTTP-EVEES-ACCESS-CONTROL');
 
   constructor(host: string, protected connection: HttpConnection) {
@@ -23,9 +24,7 @@ export class EveesAccessControlHttp extends HttpProvider
     throw new Error('Method not implemented.');
   }
 
-  async getPermissions(
-    hash: string
-  ): Promise<any | undefined> {
+  async getPermissions(hash: string): Promise<any | undefined> {
     return super.getObject(`/permissions/${hash}`);
   }
 
@@ -34,19 +33,18 @@ export class EveesAccessControlHttp extends HttpProvider
   }
 
   async canWrite(uref: string, userId: string) {
-    return ;
+    return;
   }
 
   lense(): Lens {
     return {
-        name: 'evees-http:access-control',
-        type: 'access-control',
-        render: (uref: string) => {
-          return html`
-            <evees-http-permissions uref=${uref}>
-            </evees-http-permissions>
-          `;
-        },
-      };
-  };
+      name: 'evees-http:access-control',
+      type: 'access-control',
+      render: (uref: string) => {
+        return html`
+          <evees-http-permissions uref=${uref}> </evees-http-permissions>
+        `;
+      },
+    };
+  }
 }

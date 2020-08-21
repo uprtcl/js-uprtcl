@@ -12,9 +12,14 @@ import {
   CASStore,
 } from '@uprtcl/multiplatform';
 
-import { ProposalsProvider, EveesRemote,PerspectiveDetails, NewPerspectiveData } from '@uprtcl/evees';
+import {
+  ProposalsProvider,
+  EveesRemote,
+  PerspectiveDetails,
+  NewPerspectiveData,
+} from '@uprtcl/evees';
 
-import { EveesAccessControlHttp } from './evees-access-control-http';
+import { EveesAccessControlHttp } from './evees-acl.http';
 
 const evees_api: string = 'evees-v1';
 
