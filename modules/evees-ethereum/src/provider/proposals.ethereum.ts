@@ -24,7 +24,7 @@ import {
   ZERO_HEX_32,
   PerspectiveCreator,
 } from './common';
-import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
+import { EveesAccessControlEthereum } from './evees-acl.ethereum';
 
 export interface EthHeadUpdate {
   perspectiveIdHash: string;

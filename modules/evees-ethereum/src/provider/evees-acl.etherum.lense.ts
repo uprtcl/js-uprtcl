@@ -8,7 +8,7 @@ import { EveesModule, EveesHelpers, Perspective, EveesRemote } from '@uprtcl/eve
 import { loadEntity } from '@uprtcl/multiplatform';
 import { EveesEthereumModule } from 'src/evees-ethereum.module';
 import { EveesEthereum } from './evees.ethereum';
-import { GET_PERSP_HASH, UPDATE_OWNER_BATCH } from './common';
+import { GET_PERSP_HASH, UPDATE_OWNER_BATCH, GET_PERSP_OWNER } from './common';
 
 export class PermissionsEthereum extends moduleConnect(LitElement) {
   @property({ type: String })

@@ -56,7 +56,7 @@ import {
   hashToId,
   PerspectiveCreator,
 } from './common';
-import { EveesAccessControlEthereum } from './evees-ac.ethereum';
+import { EveesAccessControlEthereum } from './evees-acl.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 
 const evees_if = 'evees-v0';
