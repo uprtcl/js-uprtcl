@@ -1,9 +1,5 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
-import {
-  BasicAdminAccessControlService,
-  BasicAdminPermissions,
-} from '@uprtcl/access-control';
 
 const uprtcl_api: string = 'uprtcl-ac-v1';
 export class EveesAccessControlHttp extends HttpProvider

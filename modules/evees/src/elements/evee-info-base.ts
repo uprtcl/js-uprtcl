@@ -5,11 +5,6 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import {
-  AccessControlService,
-  OwnerPermissions,
-  SET_PUBLIC_READ,
-} from '@uprtcl/access-control';
-import {
   CortexModule,
   PatternRecognizer,
   Entity,

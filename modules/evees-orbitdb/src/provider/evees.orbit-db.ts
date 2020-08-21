@@ -4,7 +4,6 @@ import { ApolloClient } from 'apollo-boost';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { OwnerAccessControlService } from '@uprtcl/access-control';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';

@@ -4,12 +4,10 @@ import { MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 import { CASModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { AccessControlModule } from '@uprtcl/access-control';
 import { CommonUIModule } from '@uprtcl/common-ui';
 
 import {
   PerspectiveLinks,
-  PerspectiveAccessControl,
   PerspectivePattern,
 } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLinked } from './patterns/commit.pattern';

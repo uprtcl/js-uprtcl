@@ -7,8 +7,6 @@ import {
   EthereumContractOptions,
   EthereumContract,
 } from '@uprtcl/ethereum-provider';
-import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { Remote } from '@uprtcl/access-control';
 
 import {
   abi as abiRoot,
@@ -38,7 +36,7 @@ import {
   PerspectiveDetails,
   NewPerspectiveData,
   Secured,
-  ProposalsProvider
+  ProposalsProvider,
 } from '@uprtcl/evees';
 
 import {
@@ -58,7 +56,7 @@ import {
   hashToId,
   PerspectiveCreator,
 } from './common';
-import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
+import { EveesAccessControlEthereum } from './evees-ac.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 
 const evees_if = 'evees-v0';
@@ -69,10 +67,10 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   accessControl: EveesAccessControlEthereum;
   proposals: ProposalsProvider;
 
-  protected uprtclRoot: EthereumContract;
-  protected uprtclDetails: EthereumContract;
-  protected uprtclProposals: EthereumContract;
-  protected uprtclWrapper: EthereumContract;
+  public uprtclRoot: EthereumContract;
+  public uprtclDetails: EthereumContract;
+  public uprtclProposals: EthereumContract;
+  public uprtclWrapper: EthereumContract;
 
   constructor(
     public ethConnection: EthereumConnection,
@@ -167,7 +165,10 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       const parentPersmissions = await this.accessControl.getPermissions(
         perspectiveData.parentId
       );
-      if (parentPersmissions === undefined) throw new Error(`persmissions undefined for ${perspectiveData.parentId}`)
+      if (parentPersmissions === undefined)
+        throw new Error(
+          `persmissions undefined for ${perspectiveData.parentId}`
+        );
       owner = parentPersmissions.owner;
     } else {
       owner =

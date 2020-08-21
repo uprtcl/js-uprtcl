@@ -1,10 +1,6 @@
 import { Container } from 'inversify';
 import { ApolloClient } from 'apollo-boost';
 
-import {
-  OwnerAccessControlService,
-  OwnerPermissions,
-} from '@uprtcl/access-control';
 import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
