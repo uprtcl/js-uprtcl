@@ -96,7 +96,9 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('createProposal()', { proposal });
 
-    const ethProposal = await this.prepareProposal(proposal, '');
+    const owner = await this.accessControl.getOwner(proposal.toPerspectiveId);
+
+    const ethProposal = await this.prepareProposal(proposal, owner);
 
     await this.uprtclProposals.send(INIT_PROPOSAL, [
       ethProposal,
@@ -125,7 +127,9 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('createAndPropose()', { proposal });
 
-    const ethProposal = await this.prepareProposal(proposal, '');
+    const owner = await this.accessControl.getOwner(proposal.toPerspectiveId);
+
+    const ethProposal = await this.prepareProposal(proposal, owner);
     const ethPerspectives = await this.perspectiveCreator.preparePerspectives(
       newPerspectivesData
     );

@@ -74,7 +74,7 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   canWrite(uref: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
+    return this.accessControl.canWrite(uref, this.userId);
   }
 
   /**
