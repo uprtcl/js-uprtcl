@@ -156,28 +156,12 @@ export class EveesInfoPage extends EveesInfoBase {
     `;
   }
 
-  renderMakePublicButton() {
-    return html`
-      <uprtcl-button-loading
-        class="section-button"
-        outlined
-        icon=${this.publicRead ? 'visibility_off' : 'visibility'}
-        @click=${this.makePublic}
-        loading=${this.makingPublic ? 'true' : 'false'}
-        label="Make Public"
-      >
-      </uprtcl-button-loading>
-    `;
-  }
-
   renderPerspectiveActions() {
     /** most likely action button */
     const actionButton = html`
       <div class="action-button">
         ${this.firstRef !== this.uref
-          ? this.publicRead
-            ? this.renderMakeProposalButton()
-            : this.renderMakePublicButton()
+          ? this.renderMakeProposalButton()
           : this.isLogged
           ? this.renderNewPerspectiveButton()
           : this.renderLoginButton()}

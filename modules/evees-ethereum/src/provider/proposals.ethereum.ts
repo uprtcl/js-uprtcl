@@ -45,39 +45,14 @@ export class ProposalsEthereum implements ProposalsProvider {
   ) {}
 
   async ready(): Promise<void> {
-    await Promise.all([this.uprtclProposals.ready(), this.uprtclRoot.ready(), this.uprtclWrapper.ready()]);
+    await Promise.all([
+      this.uprtclProposals.ready(),
+      this.uprtclRoot.ready(),
+      this.uprtclWrapper.ready(),
+    ]);
   }
 
-  async prepareProposal(proposal: NewProposal) {
-    /** verify all perspectives are owned by the owner of the to perspective (which might not be in the updateHead list) */
-    const accessData = await this.accessControl.getPermissions(
-      proposal.toPerspectiveId
-    );
-
-    if (!accessData)
-      throw new Error(
-        `access control data not found for target perspective ${proposal.toPerspectiveId}`
-      );
-
-    const verifyPromises = proposal.updates.map(async (headUpdate) => {
-      const permissions = await this.accessControl.getPermissions(
-        headUpdate.perspectiveId
-      );
-      if (!permissions)
-        throw new Error(
-          `access control data not found for target perspective ${proposal.toPerspectiveId}`
-        );
-
-      if (permissions.owner !== accessData.owner) {
-        throw new Error(
-          `perspective ${headUpdate.perspectiveId} in request not owned by target perspective owner ${accessData.owner} but by ${permissions.owner}`
-        );
-      }
-    });
-
-    await Promise.all(verifyPromises);
-
-    /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
+  async prepareProposal(proposal: NewProposal, owner: string) {
     const nonce = Date.now();
 
     const ethHeadUpdatesPromises = proposal.updates.map(
@@ -107,7 +82,7 @@ export class ProposalsEthereum implements ProposalsProvider {
       fromPerspectiveId: proposal.fromPerspectiveId,
       toHeadId: proposal.toHeadId,
       fromHeadId: proposal.fromHeadId,
-      owner: accessData.owner,
+      owner: owner,
       nonce: nonce,
       headUpdates: ethHeadUpdates,
       approvedAddresses: [],
@@ -121,7 +96,7 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('createProposal()', { proposal });
 
-    const ethProposal = await this.prepareProposal(proposal);
+    const ethProposal = await this.prepareProposal(proposal, '');
 
     await this.uprtclProposals.send(INIT_PROPOSAL, [
       ethProposal,
@@ -150,7 +125,7 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('createAndPropose()', { proposal });
 
-    const ethProposal = await this.prepareProposal(proposal);
+    const ethProposal = await this.prepareProposal(proposal, '');
     const ethPerspectives = await this.perspectiveCreator.preparePerspectives(
       newPerspectivesData
     );

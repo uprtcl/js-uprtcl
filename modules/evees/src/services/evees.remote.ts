@@ -4,6 +4,8 @@ import { Remote } from '../remote';
 import { AccessControlService } from './evees.access-control';
 
 export interface EveesRemote extends EveesProvider, Remote {
-  accessControl?: AccessControlService;
+  accessControl: AccessControlService;
   proposals?: ProposalsProvider;
+
+  canWrite(uref: string): Promise<boolean>;
 }

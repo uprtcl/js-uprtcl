@@ -121,37 +121,6 @@ export class EveesHelpers {
     return commit.object.payload.dataId;
   }
 
-  static async getAccessControl(
-    client: ApolloClient<any>,
-    uref: string
-  ): Promise<{ canWrite: boolean; permissions: any } | undefined> {
-    const result = await client.query({
-      query: gql`{
-        entity(uref: "${uref}") {
-          id
-          _context {
-            patterns {
-              accessControl {
-                canWrite
-                permissions
-              }
-            }
-          }
-        }
-      }`,
-    });
-
-    if (!result.data.entity._context.patterns.accessControl) {
-      return undefined;
-    }
-
-    return {
-      canWrite: result.data.entity._context.patterns.accessControl.canWrite,
-      permissions:
-        result.data.entity._context.patterns.accessControl.permissions,
-    };
-  }
-
   static async getData(
     client: ApolloClient<any>,
     recognizer: PatternRecognizer,

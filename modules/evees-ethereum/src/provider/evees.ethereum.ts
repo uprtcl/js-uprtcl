@@ -55,6 +55,7 @@ import {
   ZERO_ADDRESS,
   hashToId,
   PerspectiveCreator,
+  GET_PERSP_OWNER,
 } from './common';
 import { EveesAccessControlEthereum } from './evees-acl.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
@@ -75,7 +76,6 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   constructor(
     public ethConnection: EthereumConnection,
     public store: CASStore,
-    container: Container,
     uprtclRootOptions: EthereumContractOptions = {
       contract: UprtclRoot as any,
     },
@@ -103,10 +103,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       ethConnection
     );
 
-    this.accessControl = new EveesAccessControlEthereum(
-      this.uprtclRoot,
-      container
-    );
+    this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot);
     this.proposals = new ProposalsEthereum(
       this.uprtclRoot,
       this.uprtclProposals,
@@ -159,17 +156,15 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
     return perspectiveId;
   }
 
+  async canWrite(uref: string) {
+    return this.accessControl.canWrite(uref, this.userId);
+  }
+
+  /** */
   async getOwnerOfNewPerspective(perspectiveData: NewPerspectiveData) {
     let owner: String | undefined = undefined;
     if (perspectiveData.parentId !== undefined) {
-      const parentPersmissions = await this.accessControl.getPermissions(
-        perspectiveData.parentId
-      );
-      if (parentPersmissions === undefined)
-        throw new Error(
-          `persmissions undefined for ${perspectiveData.parentId}`
-        );
-      owner = parentPersmissions.owner;
+      owner = await this.accessControl.getOwner(perspectiveData.parentId);
     } else {
       owner =
         perspectiveData.canWrite !== undefined

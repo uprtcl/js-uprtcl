@@ -69,7 +69,7 @@ import { EveesProposalDiff } from './elements/evees-proposal-diff';
 export class EveesModule extends MicroModule {
   static id = 'evees-module';
 
-  dependencies = [AccessControlModule.id];
+  dependencies = [];
 
   static bindings = EveesBindings;
 
@@ -95,9 +95,7 @@ export class EveesModule extends MicroModule {
 
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
-      container
-        .bind(AccessControlModule.bindings.Remote)
-        .toConstantValue(remote);
+      container.bind(EveesModule.bindings.Remote).toConstantValue(remote);
     }
 
     customElements.define('evees-commit-history', CommitHistory);
@@ -116,7 +114,7 @@ export class EveesModule extends MicroModule {
       new i18nextModule('evees', { en: en }),
       new PatternsModule([
         new CommitPattern([CommitLinked]),
-        new PerspectivePattern([PerspectiveLinks, PerspectiveAccessControl]),
+        new PerspectivePattern([PerspectiveLinks]),
       ]),
       new CASModule(this.eveesProviders.map((p) => p.store)),
       new CommonUIModule(),

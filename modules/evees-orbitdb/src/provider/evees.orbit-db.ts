@@ -18,7 +18,7 @@ import {
   ProposalsProvider,
 } from '@uprtcl/evees';
 
-import { EveesAccessControlOrbitDB } from './evees-access-control.orbit-db';
+import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
 import {
   OrbitDBConnection,
   OrbitDBConnectionOptions,
@@ -45,7 +45,7 @@ BECAUSE YOUR PASSWORD WILL BE STOLEN
 
 export class EveesOrbitDB implements EveesRemote {
   logger: Logger = new Logger('EveesOrbitDB');
-  accessControl!: any;
+  accessControl: any;
   proposals!: ProposalsProvider;
   loggedIn: boolean = false;
 
@@ -71,6 +71,10 @@ export class EveesOrbitDB implements EveesRemote {
   get userId() {
     if (!this.orbitdbConnection) return undefined;
     return this.orbitdbConnection.identity.id;
+  }
+
+  canWrite(uref: string): Promise<boolean> {
+    throw new Error('Method not implemented.');
   }
 
   /**

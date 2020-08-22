@@ -20,10 +20,6 @@ export class EveesAccessControlHttp extends HttpProvider
     );
   }
 
-  setCanWrite(hash: string, userId: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
   async getPermissions(hash: string): Promise<any | undefined> {
     return super.getObject(`/permissions/${hash}`);
   }
@@ -33,16 +29,16 @@ export class EveesAccessControlHttp extends HttpProvider
   }
 
   async canWrite(uref: string, userId: string) {
-    return;
+    return true;
   }
 
   lense(): Lens {
     return {
       name: 'evees-http:access-control',
       type: 'access-control',
-      render: (uref: string) => {
+      render: (entity: string) => {
         return html`
-          <evees-http-permissions uref=${uref}> </evees-http-permissions>
+          <evees-http-permissions uref=${entity}> </evees-http-permissions>
         `;
       },
     };
