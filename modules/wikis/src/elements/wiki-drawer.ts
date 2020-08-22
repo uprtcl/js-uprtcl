@@ -189,10 +189,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const perspective = (await loadEntity(this.client, this.uref)) as Entity<
       Signed<Perspective>
     >;
-    const accessControl = await EveesHelpers.getAccessControl(
-      this.client,
-      this.uref
-    );
     const headId = await EveesHelpers.getPerspectiveHeadId(
       this.client,
       this.uref
@@ -203,16 +199,20 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
 
     this.remote = perspective.object.payload.remote;
+
+    const remote = this.eveesRemotes.find((r) => r.id === this.remote);
+    if (!remote) throw new Error(`remote not found ${this.remote}`);
+    const canWrite = await remote.canWrite(this.uref);
+
     this.path = perspective.object.payload.path;
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
-    this.editable = accessControl
-      ? this.editableRemotes.length > 0
+    this.editable =
+      this.editableRemotes.length > 0
         ? this.editableRemotes.includes(this.remote)
-          ? accessControl.canWrite
+          ? canWrite
           : false
-        : accessControl.canWrite
-      : false;
+        : canWrite;
     this.context = context;
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);

@@ -4,6 +4,8 @@ import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { eveeColor } from './support';
+import { EveesBindings } from './../bindings';
+import { EveesRemote } from './../services/evees.remote';
 
 export const DEFAULT_COLOR = '#d0dae0';
 
@@ -13,7 +15,6 @@ interface PerspectiveData {
   remote: string;
   creatorId: string;
   timestamp: number;
-  publicRead: boolean;
 }
 
 const MERGE_ACTION: string = 'Merge';
@@ -47,6 +48,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
+    this.load();
   }
 
   async load() {
@@ -73,52 +75,40 @@ export class PerspectivesList extends moduleConnect(LitElement) {
                   timestamp
                   remote
                 }
-                _context {
-                  patterns {
-                    accessControl {
-                      permissions
-                    }
-                  }
-                }
               } 
-            }
-          }
-          _context {
-            patterns {
-              accessControl {
-                canWrite
-              }
             }
           }
         }
       }`,
     });
 
-    /** data on this perspective */
-    this.canWrite = result.data.entity._context.patterns.accessControl.canWrite;
-
     /** data on other perspectives (proposals are injected on them) */
     this.perspectivesData =
       result.data.entity.context === null
         ? []
-        : result.data.entity.context.perspectives.map(
-            (perspective): PerspectiveData => {
-              const publicRead =
-                perspective._context.patterns.accessControl.permissions
-                  .publicRead !== undefined
-                  ? perspective._context.patterns.accessControl.permissions
-                      .publicRead
-                  : true;
-
-              return {
-                id: perspective.id,
-                name: perspective.name,
-                creatorId: perspective.payload.creatorId,
-                timestamp: perspective.payload.timestamp,
-                remote: perspective.payload.remote,
-                publicRead: publicRead,
-              };
-            }
+        : await Promise.all(
+            result.data.entity.context.perspectives.map(
+              async (perspective): Promise<PerspectiveData> => {
+                /** data on this perspective */
+                const remote = (this.requestAll(
+                  EveesBindings.EveesRemote
+                ) as EveesRemote[]).find(
+                  (r) => r.id === perspective.payload.remote
+                );
+                if (!remote)
+                  throw new Error(
+                    `remote not found for ${perspective.payload.remote}`
+                  );
+                this.canWrite = await remote.canWrite(this.perspectiveId);
+                return {
+                  id: perspective.id,
+                  name: perspective.name,
+                  creatorId: perspective.payload.creatorId,
+                  timestamp: perspective.payload.timestamp,
+                  remote: perspective.payload.remote,
+                };
+              }
+            )
           );
 
     this.otherPerspectivesData = this.perspectivesData.filter(
@@ -203,11 +193,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     if (this.canWrite) {
       return MERGE_ACTION;
     } else {
-      if (perspectiveData.publicRead) {
-        return MERGE_PROPOSAL_ACTION;
-      } else {
-        return PRIVATE_PERSPECTIVE;
-      }
+      return MERGE_PROPOSAL_ACTION;
     }
   }
 

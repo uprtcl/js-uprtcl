@@ -5,11 +5,6 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import {
-  AccessControlService,
-  OwnerPermissions,
-  SET_PUBLIC_READ,
-} from '@uprtcl/access-control';
-import {
   CortexModule,
   PatternRecognizer,
   Entity,
@@ -158,11 +153,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.loading = true;
 
     if (this.entityType === EveesBindings.PerspectiveType) {
-      const accessControl = await EveesHelpers.getAccessControl(
-        this.client,
-        entity.id
-      );
-
       const headId = await EveesHelpers.getPerspectiveHeadId(
         this.client,
         this.uref
@@ -181,6 +171,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         this.uref
       );
 
+      const remote = await this.evees.getPerspectiveRemoteById(this.uref);
+      const canWrite = await remote.canWrite(this.uref);
+
       this.perspectiveData = {
         id: this.uref,
         details: {
@@ -188,8 +181,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
           headId: headId,
         },
         perspective: (entity.object as Signed<Perspective>).payload,
-        canWrite: accessControl ? accessControl.canWrite : true,
-        permissions: accessControl ? accessControl.permissions : undefined,
+        canWrite: canWrite,
         head,
         data,
       };
@@ -294,22 +286,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     await this.client.resetStore();
     this.reloadChildren();
-    this.load();
-  }
-
-  async makePublic() {
-    if (!this.client) throw new Error('client undefined');
-    this.makingPublic = true;
-    await this.client.mutate({
-      mutation: SET_PUBLIC_READ,
-      variables: {
-        entityId: this.uref,
-        value: true,
-      },
-    });
-
-    this.makingPublic = false;
-
     this.load();
   }
 

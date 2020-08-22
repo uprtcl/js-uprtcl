@@ -9,7 +9,6 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
-import { AccessControlModule } from '@uprtcl/access-control';
 
 import { MockEveesProvider } from './mocks/mock-evees-provider';
 import { MockStore } from './mocks/mock-store';
@@ -68,7 +67,6 @@ describe('evees-workspace', () => {
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
-      new AccessControlModule(),
       new EveesModule([eveesProvider], eveesProvider, remoteMap),
     ]);
   });

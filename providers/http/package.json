@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^1.11.0",
-    "@uprtcl/access-control": "^0.0.7-alpha.50",
+    "@uprtcl/evees": "^0.0.7-alpha.50",
     "@uprtcl/cortex": "^0.0.7-alpha.50",
     "@uprtcl/ethereum-provider": "^0.0.7-alpha.50",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.50",
@@ -73,5 +73,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "e0135da55af5aa285b82d333ed2296c5ada8201d"
+  "gitHead": "2ac07cf8bffa6e1ac3da6844e49336a396ca75df"
 }

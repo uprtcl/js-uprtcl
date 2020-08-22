@@ -11,7 +11,6 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/access-control": "^0.0.7-alpha.50",
     "@uprtcl/common-ui": "^0.0.7-alpha.50",
     "@uprtcl/cortex": "^0.0.7-alpha.50",
     "@uprtcl/graphql": "^0.0.7-alpha.50",
@@ -19,15 +18,15 @@
     "@uprtcl/lenses": "^0.0.7-alpha.50",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
     "@uprtcl/multiplatform": "^0.0.7-alpha.50",
-    "dexie": "^2.0.4",
     "apollo-boost": "^0.4.7",
-    "inversify": "^5.0.1",
     "cbor-js": "^0.1.0",
     "cids": "^0.8.1",
-    "multihashing-async": "^0.8.0",
+    "dexie": "^2.0.4",
     "diff-match-patch-ts": "^0.2.0",
+    "inversify": "^5.0.1",
     "lit-element": "^2.3.0",
     "lodash-es": "^4.17.15",
+    "multihashing-async": "^0.8.0",
     "randomcolor": "^0.5.4",
     "reflect-metadata": "^0.1.13"
   },
@@ -80,5 +79,5 @@
   "files": [
     "dist"
   ],
-  "gitHead": "e0135da55af5aa285b82d333ed2296c5ada8201d"
+  "gitHead": "2ac07cf8bffa6e1ac3da6844e49336a396ca75df"
 }

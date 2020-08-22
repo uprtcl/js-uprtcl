@@ -152,23 +152,25 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     let entityType: string = this.recognizer.recognizeType(entity);
 
     let editable = false;
-    let remote!: string | undefined;
-    let context!: string | undefined;
-    let dataId!: string | undefined;
-    let headId!: string | undefined;
+    let remoteId: string | undefined;
+    let context: string | undefined;
+    let dataId: string | undefined;
+    let headId: string | undefined;
 
     if (entityType === EveesModule.bindings.PerspectiveType) {
-      remote = await EveesHelpers.getPerspectiveRemoteId(
+      remoteId = await EveesHelpers.getPerspectiveRemoteId(
         this.client,
         entity.id
       );
 
+      const remote = (this.requestAll(
+        EveesModule.bindings.EveesRemote
+      ) as EveesRemote[]).find((r) => r.id === remoteId);
+      if (!remote) throw new Error(`remote not found for ${remoteId}`);
+      const canWrite = await remote.canWrite(uref);
+
       if (this.editable === 'true') {
-        const accessControl = await EveesHelpers.getAccessControl(
-          this.client,
-          entity.id
-        );
-        editable = accessControl ? accessControl.canWrite : false;
+        editable = canWrite;
         context = await EveesHelpers.getPerspectiveContext(
           this.client,
           entity.id
@@ -195,13 +197,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         if (!parent) throw new Error('Commit must have a parent');
 
         editable = parent.editable;
-        remote = parent.remote;
+        remoteId = parent.remote;
         dataId = await EveesHelpers.getCommitDataId(this.client, entity.id);
         headId = uref;
       } else {
         entityType = 'Data';
         editable = false;
-        remote = '';
+        remoteId = '';
         dataId = uref;
         headId = '';
       }
@@ -239,7 +241,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       headId,
       hasDocNodeLenses,
       editable,
-      remote,
+      remote: remoteId,
       context,
       focused: false,
     };

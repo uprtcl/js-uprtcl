@@ -4,7 +4,6 @@ import { ApolloClient } from 'apollo-boost';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { OwnerAccessControlService } from '@uprtcl/access-control';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -19,7 +18,7 @@ import {
   ProposalsProvider,
 } from '@uprtcl/evees';
 
-import { EveesAccessControlOrbitDB } from './evees-access-control.orbit-db';
+import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
 import {
   OrbitDBConnection,
   OrbitDBConnectionOptions,
@@ -46,7 +45,7 @@ BECAUSE YOUR PASSWORD WILL BE STOLEN
 
 export class EveesOrbitDB implements EveesRemote {
   logger: Logger = new Logger('EveesOrbitDB');
-  accessControl!: OwnerAccessControlService;
+  accessControl: any;
   proposals!: ProposalsProvider;
   loggedIn: boolean = false;
 
@@ -72,6 +71,10 @@ export class EveesOrbitDB implements EveesRemote {
   get userId() {
     if (!this.orbitdbConnection) return undefined;
     return this.orbitdbConnection.identity.id;
+  }
+
+  canWrite(uref: string): Promise<boolean> {
+    return this.accessControl.canWrite(uref, this.userId);
   }
 
   /**

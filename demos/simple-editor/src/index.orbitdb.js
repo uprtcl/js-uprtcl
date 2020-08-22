@@ -7,7 +7,6 @@ import { DocumentsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
-import { AccessControlModule } from '@uprtcl/access-control';
 import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
@@ -72,11 +71,7 @@ import { SimpleWiki } from './simple-wiki';
   );
   await orbitdbEvees.connect();
 
-  const ethEvees = new EveesEthereum(
-    ethConnection,
-    ipfsStore,
-    orchestrator.container
-  );
+  const ethEvees = new EveesEthereum(ethConnection, ipfsStore);
   await ethEvees.ready();
 
   const evees = new EveesModule([ethEvees, orbitdbEvees], orbitdbEvees);
@@ -90,7 +85,6 @@ import { SimpleWiki } from './simple-wiki';
     new CortexModule(),
     new DiscoveryModule([orbitdbEvees.casID]),
     new LensesModule(),
-    new AccessControlModule(),
     evees,
     documents,
     wikis,

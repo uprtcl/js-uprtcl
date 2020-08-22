@@ -48,7 +48,6 @@ export const eveesResolvers: IResolvers = {
 
       if (context === undefined) return [];
 
-      const evees: Evees = container.get(EveesBindings.Evees);
       const eveesRemotes: EveesRemote[] = container.getAll(
         EveesBindings.EveesRemote
       );
