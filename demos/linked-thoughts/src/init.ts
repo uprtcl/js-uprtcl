@@ -11,7 +11,6 @@ import { DocumentsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
 import { EveesModule } from '@uprtcl/evees';
 import { CortexModule } from '@uprtcl/cortex';
-import { AccessControlModule } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 
@@ -59,7 +58,6 @@ export const initUprtcl = async () => {
       new CortexModule(),
       new DiscoveryModule([httpEvees.casID]),
       new LensesModule(),
-      new AccessControlModule(),
       evees,
       documents,
       wikis,

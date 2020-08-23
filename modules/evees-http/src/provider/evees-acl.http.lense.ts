@@ -160,16 +160,16 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement) {
         <div class="row">
           ${this.canAdmin
             ? html`
-                <mwc-button
+                <uprtcl-button
                   icon=${this.permissions.effectivePermissions.publicWrite
                     ? 'visibility_off'
                     : 'visibility'}
                   @click=${this.togglePublicWrite}
                 >
                   togglePublicWrite
-                </mwc-button>
+                </uprtcl-button>
 
-                <mwc-button
+                <uprtcl-button
                   icon=${this.permissions.effectivePermissions.publicRead
                     ? 'visibility_off'
                     : 'visibility'}
@@ -178,7 +178,7 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement) {
                   ${!this.permissions.effectivePermissions.publicRead
                     ? this.t('access-control:make-public')
                     : this.t('access-control:make-private')}
-                </mwc-button>
+                </uprtcl-button>
               `
             : ''}
         </div>
@@ -188,7 +188,7 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement) {
 
   static get styles() {
     return css`
-      mwc-button {
+      uprtcl-button {
         width: 220px;
       }
 

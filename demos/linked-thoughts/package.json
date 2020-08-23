@@ -10,7 +10,6 @@
     "deploy": "npm run build && ./deploy.sh prd"
   },
   "dependencies": {
-    "@uprtcl/access-control": "0.0.7-alpha.50",
     "@uprtcl/cortex": "0.0.7-alpha.50",
     "@uprtcl/documents": "0.0.7-alpha.50",
     "@uprtcl/evees": "0.0.7-alpha.50",

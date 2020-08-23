@@ -204,7 +204,7 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
 
   static get styles() {
     return css`
-      mwc-button {
+      uprtcl-button {
         width: 220px;
       }
 
