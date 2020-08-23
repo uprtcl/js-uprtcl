@@ -4,8 +4,15 @@ export class UprtclTextField extends LitElement {
   @property({ type: String })
   label: string = '';
 
+  @property({ type: String })
+  value: string = '';
+
   render() {
-    return html`<label>${this.label}</label><input />`;
+    return html`<label>${this.label}</label
+      ><input
+        value=${this.value}
+        @input=${(e) => (this.value = e.target.value)}
+      />`;
   }
 
   static get styles() {
