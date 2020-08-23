@@ -9,11 +9,6 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Router } from '@vaadin/router';
 
-import {
-  EthereumConnection,
-  EthereumContract,
-} from '@uprtcl/ethereum-provider';
-
 import { getHomePerspective, SET_HOME } from './support';
 
 export class Home extends moduleConnect(LitElement) {
@@ -41,12 +36,7 @@ export class Home extends moduleConnect(LitElement) {
   @property({ attribute: false })
   showNewSpaceForm: boolean = false;
 
-  connection: EthereumConnection;
-
   spaces!: object;
-
-  uprtclHomePerspectives: EthereumContract;
-  uprtclWrapper: EthereumContract;
 
   async firstUpdated() {
     const eveesProvider = this.requestAll(

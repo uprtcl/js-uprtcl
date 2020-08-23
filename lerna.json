@@ -1,6 +1,6 @@
 {
   "packages": [
-    "demos/*",
+    "demos/linked-thoughts",
     "modules/*",
     "packages/*",
     "providers/*"

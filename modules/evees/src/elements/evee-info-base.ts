@@ -109,18 +109,20 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected client!: ApolloClient<any>;
   protected merge!: MergeStrategy;
   protected evees!: Evees;
+  protected remote!: EveesRemote;
   protected recognizer!: PatternRecognizer;
   protected cache!: EntityCache;
   protected remoteMap!: RemoteMap;
   protected defaultRemote: EveesRemote | undefined = undefined;
 
-  firstUpdated() {
+  async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.merge = this.request(EveesBindings.MergeStrategy);
     this.evees = this.request(EveesBindings.Evees);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
     this.remoteMap = this.request(EveesBindings.RemoteMap);
+    this.remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
     if (this.defaultRemoteId !== undefined) {
       this.defaultRemote = (this.requestAll(
@@ -171,8 +173,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         this.uref
       );
 
-      const remote = await this.evees.getPerspectiveRemoteById(this.uref);
-      const canWrite = await remote.canWrite(this.uref);
+      const canWrite = await this.remote.canWrite(this.uref);
 
       this.perspectiveData = {
         id: this.uref,
@@ -220,8 +221,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       return;
     }
 
-    const remote = await this.evees.getPerspectiveRemoteById(this.uref);
-
     if (this.perspectiveData.perspective === undefined)
       throw new Error('undefined');
 
@@ -229,7 +228,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       forceOwner: true,
       remote: this.perspectiveData.perspective.remote,
       path: this.perspectiveData.perspective.path,
-      canWrite: remote.userId,
+      canWrite: this.remote.userId,
       parentId: this.uref,
     };
 
@@ -298,13 +297,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
     );
 
-    const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
-
     const workspace = new EveesWorkspace(this.client, this.recognizer);
 
     const config = {
       forceOwner: true,
-      remote: remote.id,
+      remote: this.remote.id,
       parentId: toPerspectiveId,
     };
 

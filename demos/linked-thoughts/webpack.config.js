@@ -8,13 +8,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist-pages'),
   },
   resolve: {
-    alias: {
-      '@uprtcl/graphql': path.resolve('./node_modules/@uprtcl/graphql'),
-      'graphql-tag': path.resolve('./node_modules/graphql-tag'),
-      'lit-element': path.resolve('./node_modules/lit-element'),
-      'lit-html': path.resolve('./node_modules/lit-html'),
-      'wicg-inert': path.resolve('./node_modules/wicg-inert/dist/inert'),
-    },
+    alias: {},
     extensions: [
       '.mjs',
       '.ts',

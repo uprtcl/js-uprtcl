@@ -1,4 +1,4 @@
-import { EveesHttp } from '@uprtcl/evees-http';
+import { EveesHttp, EveesHttpModule } from '@uprtcl/evees-http';
 
 import { HttpConnection, HttpStore } from '@uprtcl/http-provider';
 

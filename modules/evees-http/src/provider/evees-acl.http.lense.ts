@@ -3,15 +3,11 @@ import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import {
-  EveesBindings,
-  EveesHelpers,
-  EveesHttp,
-  EveesRemote,
-} from '@uprtcl/evees';
+import { EveesBindings, EveesHelpers, EveesRemote } from '@uprtcl/evees';
 import { BasicAdminInheritedPermissions } from './types';
+import { EveesHttp } from './evees.http';
 
-export class PermissionsAdminInherited extends moduleConnect(LitElement) {
+export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   @property()
   uref!: string;
 
