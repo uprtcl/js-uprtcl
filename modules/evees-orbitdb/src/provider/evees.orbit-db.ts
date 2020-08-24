@@ -139,6 +139,9 @@ export class EveesOrbitDB implements EveesRemote {
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);
 
+    const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
+    this.orbitdbConnection.pin(perspectiveStore.address);
+
     await this.updatePerspective(perspectiveId, details);
   }
 
