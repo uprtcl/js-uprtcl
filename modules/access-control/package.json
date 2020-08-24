@@ -13,6 +13,7 @@
   "dependencies": {
     "@material/mwc-button": "^0.14.1",
     "@material/mwc-dialog": "^0.14.1",
+    "@material/mwc-select": "^0.14.1",
     "@material/mwc-textfield": "^0.14.1",
     "@uprtcl/cortex": "^0.0.7-alpha.41",
     "@uprtcl/evees": "0.0.7-alpha.41",
