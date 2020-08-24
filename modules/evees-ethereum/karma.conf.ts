@@ -23,7 +23,7 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-access-control.ts`,
+      entry: `./src/uprtcl-evees-ethereum.ts`,
       output: {
         filename: 'bundle.js',
       },

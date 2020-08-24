@@ -5,16 +5,17 @@ import {
   KnownSourcesHttp,
 } from '@uprtcl/http-provider';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { BasicAdminAccessControlService } from '@uprtcl/access-control';
+import { KnownSourcesService, CASStore } from '@uprtcl/multiplatform';
+
 import {
-  CidConfig,
-  KnownSourcesService,
-  CASStore,
-} from '@uprtcl/multiplatform';
+  ProposalsProvider,
+  EveesRemote,
+  PerspectiveDetails,
+  NewPerspectiveData,
+  AccessControlService,
+} from '@uprtcl/evees';
 
-import { ProposalsProvider, EveesRemote,PerspectiveDetails, NewPerspectiveData } from '@uprtcl/evees';
-
-import { EveesAccessControlHttp } from './evees-access-control-http';
+import { EveesAccessControlHttp } from './evees-acl.http';
 
 const evees_api: string = 'evees-v1';
 
@@ -23,7 +24,7 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
 
   knownSources: KnownSourcesService;
 
-  accessControl: BasicAdminAccessControlService | undefined;
+  accessControl: AccessControlService;
   proposals: ProposalsProvider | undefined;
 
   constructor(
@@ -51,6 +52,10 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
 
   get casID() {
     return `http:store:${this.options.host}`;
+  }
+
+  canWrite(uref: string): Promise<boolean> {
+    return this.accessControl.canWrite(uref, this.userId);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {

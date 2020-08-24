@@ -65,7 +65,6 @@ export {
 
 /** Patterns */
 export {
-  PerspectiveAccessControl,
   PerspectivePattern,
   PerspectiveLinks,
 } from './patterns/perspective.pattern';
@@ -79,3 +78,7 @@ export { isAncestorOf } from './utils/ancestor';
 /** Proposals */
 export { Proposal, UpdateRequest, NewProposal } from './types';
 export { ProposalsProvider } from './services/proposals.provider';
+
+/** Aceess Control */
+export { AccessControlService } from './services/evees.access-control';
+export { Remote } from './remote';

@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@holochain/hc-web-client": "^0.5.0",
-    "@uprtcl/access-control": "^0.0.7-alpha.50",
+    "@uprtcl/evees": "^0.0.7-alpha.50",
     "@uprtcl/cortex": "^0.0.7-alpha.50",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
     "@uprtcl/multiplatform": "^0.0.7-alpha.50",

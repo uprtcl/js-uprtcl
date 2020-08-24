@@ -5,11 +5,6 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import {
-  AccessControlService,
-  OwnerPermissions,
-  SET_PUBLIC_READ,
-} from '@uprtcl/access-control';
-import {
   CortexModule,
   PatternRecognizer,
   Entity,
@@ -77,9 +72,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   loading: Boolean = false;
-
-  @property({ attribute: false })
-  publicRead: boolean = true;
 
   @property({ attribute: false })
   isLogged: boolean = false;
@@ -161,11 +153,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.loading = true;
 
     if (this.entityType === EveesBindings.PerspectiveType) {
-      const accessControl = await EveesHelpers.getAccessControl(
-        this.client,
-        entity.id
-      );
-
       const headId = await EveesHelpers.getPerspectiveHeadId(
         this.client,
         this.uref
@@ -184,6 +171,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         this.uref
       );
 
+      const remote = await this.evees.getPerspectiveRemoteById(this.uref);
+      const canWrite = await remote.canWrite(this.uref);
+
       this.perspectiveData = {
         id: this.uref,
         details: {
@@ -191,16 +181,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
           headId: headId,
         },
         perspective: (entity.object as Signed<Perspective>).payload,
-        canWrite: accessControl ? accessControl.canWrite : true,
-        permissions: accessControl ? accessControl.permissions : undefined,
+        canWrite: canWrite,
         head,
         data,
       };
-
-      this.publicRead =
-        this.perspectiveData.permissions.publicRead !== undefined
-          ? this.perspectiveData.permissions.publicRead
-          : true;
 
       this.logger.info('load', { perspectiveData: this.perspectiveData });
 
@@ -215,8 +199,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         head,
         data,
       };
-
-      this.publicRead = true;
     }
 
     this.isLogged =
@@ -307,22 +289,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.load();
   }
 
-  async makePublic() {
-    if (!this.client) throw new Error('client undefined');
-    this.makingPublic = true;
-    await this.client.mutate({
-      mutation: SET_PUBLIC_READ,
-      variables: {
-        entityId: this.uref,
-        value: true,
-      },
-    });
-
-    this.makingPublic = false;
-
-    this.load();
-  }
-
   async otherPerspectiveMerge(
     fromPerspectiveId: string,
     toPerspectiveId: string,
@@ -333,21 +299,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     );
 
     const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
-
-    const accessControl = remote.accessControl as AccessControlService<
-      OwnerPermissions
-    >;
-    const permissions = await accessControl.getPermissions(toPerspectiveId);
-
-    if (permissions === undefined)
-      throw new Error('target perspective dont have permissions control');
-
-    if (!permissions.owner) {
-      // TODO: ownerPreserving merge should be changed to permissionPreserving merge
-      throw new Error(
-        'Target perspective dont have an owner. TODO: ownerPreserving merge should be changed to permissionPreserving merge'
-      );
-    }
 
     const workspace = new EveesWorkspace(this.client, this.recognizer);
 

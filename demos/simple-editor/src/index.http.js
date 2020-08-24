@@ -7,10 +7,9 @@ import { DocumentsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
-import { AccessControlModule } from '@uprtcl/access-control';
 import { EveesModule } from '@uprtcl/evees';
 import { EveesEthereum } from '@uprtcl/evees-ethereum';
-import  {EveesHttp } from '@uprtcl/evees-http';
+import { EveesHttp } from '@uprtcl/evees-http';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 import { HttpConnection, HttpStore } from '@uprtcl/http-provider';
@@ -64,11 +63,7 @@ import { SimpleWiki } from './simple-wiki';
     httpStore
   );
   const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
-  const ethEvees = new EveesEthereum(
-    ethConnection,
-    ipfsStore,
-    orchestrator.container
-  );
+  const ethEvees = new EveesEthereum(ethConnection, ipfsStore);
   await httpEvees.connect();
 
   const evees = new EveesModule([ethEvees, httpEvees], httpEvees);
@@ -82,7 +77,6 @@ import { SimpleWiki } from './simple-wiki';
     new CortexModule(),
     new DiscoveryModule([httpEvees.casID]),
     new LensesModule(),
-    new AccessControlModule(),
     evees,
     documents,
     wikis,

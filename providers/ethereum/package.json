@@ -11,7 +11,6 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/access-control": "^0.0.7-alpha.50",
     "@uprtcl/cortex": "^0.0.7-alpha.50",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
     "@uprtcl/multiplatform": "^0.0.7-alpha.50",

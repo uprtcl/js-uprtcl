@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
 
-import { Remote } from '@uprtcl/access-control';
 import { Constructor } from '@uprtcl/micro-orchestrator';
+import { Remote } from '@uprtcl/evees';
 
 import { HolochainConnection } from './holochain.connection';
 import { HolochainConnectionBindings } from './bindings';
@@ -38,7 +38,9 @@ export abstract class HolochainProvider implements Remote {
   async login(): Promise<void> {}
   async logout(): Promise<void> {}
   async connect(): Promise<void> {}
-  async isConnected(): Promise<boolean> { return true }
+  async isConnected(): Promise<boolean> {
+    return true;
+  }
   async disconnect(): Promise<void> {}
 }
 

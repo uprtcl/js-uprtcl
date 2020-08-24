@@ -25,7 +25,6 @@
     "build": "rm -rf dist && webpack --config webpack.config.js"
   },
   "dependencies": {
-    "@uprtcl/access-control": "^0.0.7-alpha.50",
     "@uprtcl/cortex": "^0.0.7-alpha.50",
     "@uprtcl/documents": "^0.0.7-alpha.50",
     "@uprtcl/ethereum-provider": "^0.0.7-alpha.50",

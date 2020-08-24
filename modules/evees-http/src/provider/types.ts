@@ -1,5 +1,3 @@
-import { AccessControlService } from './access-control.service';
-
 export enum PermissionType {
   Read = 'Read',
   Write = 'Write',
@@ -14,5 +12,10 @@ export interface BasicAdminPermissions {
   canAdmin: string[];
 }
 
-export interface BasicAdminAccessControlService
-  extends AccessControlService<BasicAdminPermissions> {}
+export interface BasicAdminInheritedPermissions {
+  delegate: boolean,
+  delegateTo?: string | null,
+  finDelegatedTo?: string | null,
+  customPermissions?: BasicAdminPermissions,
+  effectivePermissions: BasicAdminPermissions,
+}

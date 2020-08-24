@@ -7,8 +7,6 @@ import {
   EthereumContractOptions,
   EthereumContract,
 } from '@uprtcl/ethereum-provider';
-import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { Remote } from '@uprtcl/access-control';
 
 import {
   abi as abiRoot,
@@ -38,7 +36,7 @@ import {
   PerspectiveDetails,
   NewPerspectiveData,
   Secured,
-  ProposalsProvider
+  ProposalsProvider,
 } from '@uprtcl/evees';
 
 import {
@@ -57,8 +55,9 @@ import {
   ZERO_ADDRESS,
   hashToId,
   PerspectiveCreator,
+  GET_PERSP_OWNER,
 } from './common';
-import { EveesAccessControlEthereum } from './evees-access-control.ethereum';
+import { EveesAccessControlEthereum } from './evees-acl.ethereum';
 import { ProposalsEthereum } from './proposals.ethereum';
 
 const evees_if = 'evees-v0';
@@ -69,15 +68,14 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   accessControl: EveesAccessControlEthereum;
   proposals: ProposalsProvider;
 
-  protected uprtclRoot: EthereumContract;
-  protected uprtclDetails: EthereumContract;
-  protected uprtclProposals: EthereumContract;
-  protected uprtclWrapper: EthereumContract;
+  public uprtclRoot: EthereumContract;
+  public uprtclDetails: EthereumContract;
+  public uprtclProposals: EthereumContract;
+  public uprtclWrapper: EthereumContract;
 
   constructor(
     public ethConnection: EthereumConnection,
     public store: CASStore,
-    container: Container,
     uprtclRootOptions: EthereumContractOptions = {
       contract: UprtclRoot as any,
     },
@@ -105,10 +103,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       ethConnection
     );
 
-    this.accessControl = new EveesAccessControlEthereum(
-      this.uprtclRoot,
-      container
-    );
+    this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot);
     this.proposals = new ProposalsEthereum(
       this.uprtclRoot,
       this.uprtclProposals,
@@ -161,14 +156,15 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
     return perspectiveId;
   }
 
+  async canWrite(uref: string) {
+    return this.accessControl.canWrite(uref, this.userId);
+  }
+
+  /** */
   async getOwnerOfNewPerspective(perspectiveData: NewPerspectiveData) {
     let owner: String | undefined = undefined;
     if (perspectiveData.parentId !== undefined) {
-      const parentPersmissions = await this.accessControl.getPermissions(
-        perspectiveData.parentId
-      );
-      if (parentPersmissions === undefined) throw new Error(`persmissions undefined for ${perspectiveData.parentId}`)
-      owner = parentPersmissions.owner;
+      owner = await this.accessControl.getOwner(perspectiveData.parentId);
     } else {
       owner =
         perspectiveData.canWrite !== undefined
