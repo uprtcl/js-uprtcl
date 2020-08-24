@@ -9,8 +9,6 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Router } from '@vaadin/router';
 
-import { getHomePerspective, SET_HOME } from './support';
-
 export class Home extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loadingSpaces: boolean = true;
@@ -75,29 +73,13 @@ export class Home extends moduleConnect(LitElement) {
 
   async loadAllSpaces() {
     this.loadingSpaces = true;
-    const events = await this.uprtclHomePerspectives.contractInstance.getPastEvents(
-      'HomePerspectiveSet',
-      {
-        fromBlock: 0,
-      }
-    );
-
     this.spaces = {};
-    for (const event of events) {
-      const address = event.returnValues.owner.toLowerCase();
-      this.spaces[address] = {
-        perspectiveId: event.returnValues.perspectiveId,
-      };
-    }
     this.loadingSpaces = false;
   }
 
   async loadHome() {
     this.loadingHome = true;
-    this.home = await getHomePerspective(
-      this.uprtclHomePerspectives.contractInstance,
-      this.connection.getCurrentAccount()
-    );
+    this.home = '';
     this.loadingHome = false;
   }
 
@@ -174,7 +156,6 @@ export class Home extends moduleConnect(LitElement) {
 
   async removeSpace() {
     this.removingSpace = true;
-    await this.uprtclHomePerspectives.send(SET_HOME, ['']);
     this.removingSpace = false;
     this.firstUpdated();
   }
@@ -186,11 +167,7 @@ export class Home extends moduleConnect(LitElement) {
   renderSpaces() {
     if (this.spaces === undefined) return '';
 
-    const addresses = Object.keys(this.spaces).filter(
-      (address) =>
-        address !== this.connection.getCurrentAccount() &&
-        this.spaces[address].perspectiveId !== ''
-    );
+    const addresses = Object.keys(this.spaces);
 
     return html`
       <uprtcl-list>

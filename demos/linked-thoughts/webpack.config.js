@@ -8,7 +8,15 @@ module.exports = {
     path: path.resolve(__dirname, 'dist-pages'),
   },
   resolve: {
-    alias: {},
+    alias: {
+      '@uprtcl/graphql': path.resolve('./node_modules/@uprtcl/graphql'),
+      'graphql-tag': path.resolve('./node_modules/graphql-tag'),
+      // https://github.com/apollographql/react-apollo/issues/1274#issuecomment-339692383
+      graphql: path.resolve('./node_modules/graphql'),
+      'lit-element': path.resolve('./node_modules/lit-element'),
+      'lit-html': path.resolve('./node_modules/lit-html'),
+      'wicg-inert': path.resolve('./node_modules/wicg-inert/dist/inert'),
+    },
     extensions: [
       '.mjs',
       '.ts',
