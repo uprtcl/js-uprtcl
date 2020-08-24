@@ -20,6 +20,10 @@ export class EveesAccessControlHttp extends HttpProvider implements BasicAdminAc
     throw new Error('Method not implemented.');
   }
 
+  async setPrivatePermissions(hash: string, type: PermissionType, userId: string) {
+    await super.httpPut(`/permissions/${hash}/single`, { type, userId });
+  }
+
   async setPublicPermissions(hash: string, type: PermissionType, value: Boolean) {
     await super.httpPut(`/permissions/${hash}/public`, { type, value });
   }
