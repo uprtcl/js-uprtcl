@@ -39,6 +39,8 @@ import { SimpleWiki } from './simple-wiki';
     base: 'base58btc',
   };
 
+  const pinnerUrl = 'http://localhost:3000';
+
   const orchestrator = new MicroOrchestrator();
 
   const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
@@ -55,7 +57,7 @@ import { SimpleWiki } from './simple-wiki';
       },
     },
   };
-  const orbitDBConnection = new OrbitDBConnection(ipfsStore, {
+  const orbitDBConnection = new OrbitDBConnection(pinnerUrl, ipfsStore, {
     params: ipfsJSConfig,
   });
   await orbitDBConnection.ready();

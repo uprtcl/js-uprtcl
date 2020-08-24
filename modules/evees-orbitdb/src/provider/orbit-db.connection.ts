@@ -31,6 +31,7 @@ export class OrbitDBConnection extends Connection {
   public identity: null | any = null;
 
   constructor(
+    protected pinnerUrl: string,
     protected ipfsStore: any,
     options?: ConnectionOptions,
     protected ipfs?: any
@@ -113,5 +114,13 @@ export class OrbitDBConnection extends Connection {
   public async contextStore(context: string): Promise<any> {
     const address = await this.contextAddress(context);
     return this.openStore(address);
+  }
+
+  public async pin(address: string) {
+    fetch(`${this.pinnerUrl}/pin?address=${address}`, {
+      method: 'GET',
+    }).then((response) => {
+      console.log(response);
+    });
   }
 }
