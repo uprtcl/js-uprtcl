@@ -3,6 +3,8 @@ import { ApolloClient, gql } from 'apollo-boost';
 
 import '@material/mwc-dialog';
 import '@material/mwc-textfield';
+import '@material/mwc-select';
+import '@material/mwc-list/mwc-list-item';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -32,6 +34,14 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
   client!: ApolloClient<any>;
   remote!: any;
 
+  userPermissions!: Object[];
+
+  // TODO: remove
+  userList: string[] = [
+    'google-oauth2|102538849128130956176',
+    'google-oauth2|101944349925589295194',
+    'google-oauth2|108882209031762642189',
+  ]
 
   setCutomCliekced() {
 
@@ -51,12 +61,85 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
   // later:
   // search users
  
+  async addRole(e) {
+    if(!this.remote.accessControl) {
+      throw new Error(`remote accessControl not found`);
+    }
 
-  chagneRole() {}
+    const {canRead} = this.permissions.effectivePermissions;
 
-  addRole() {}
+    const {currentTarget} = e
 
-  chagneDelegateTo() {}
+    const selectedUserId = currentTarget.value;
+
+    // add user to user permissions list
+    // if the selected user is not on the list
+    if(selectedUserId !== '' &&
+      !this.getUserPermissionList().some(
+        userPermissions => userPermissions.userId === selectedUserId
+      )
+    ) {
+      await this.remote.accessControl.setPrivatePermissions(
+        this.entityId,
+        PermissionType.Read,
+        selectedUserId
+      );
+
+      canRead.push(selectedUserId);
+
+      await this.requestUpdate();
+
+      this.dispatchEvent(
+        new CustomEvent('permissions-updated', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        })
+      );
+      
+    }
+
+    // Reset select value
+    currentTarget.value = '';
+    
+  }
+
+  changeRole(e) {
+    const selectedUserRole = e.curerntTarget.value;
+
+
+
+  }
+
+  getUserList() {
+    // TODO: get correct users
+    const { canAdmin } = this.permissions.effectivePermissions
+    return this.userList.filter(user => canAdmin[0] !== user)
+  }
+
+  getUserPermissionList() {
+    const { canAdmin, canWrite, canRead } = this.permissions.effectivePermissions
+    let userPermissions: any[] = [];
+    
+    userPermissions = userPermissions.concat(
+      canAdmin.filter((_, adminIndex) => adminIndex !== 0).map(admin =>
+        ({ userId: admin, permission: 'Admin' }))
+    );
+    
+    userPermissions = userPermissions.concat(
+      canWrite.map(write =>
+        ({ userId: write, permission: 'Write' }))
+    );
+    
+    userPermissions = userPermissions.concat(
+      canRead.map(read =>
+        ({ userId: read, permission: 'Read' }))
+    );
+    
+    return userPermissions;
+  }
+
+  changeDelegateTo() {}
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -165,31 +248,55 @@ export class PermissionsAdminInherited extends moduleConnect(LitElement)
         <div class="row title">
           <strong>${this.t('access-control:owner')}:</strong> ${this.getOwner()}
         </div>
-        <div class="row">
-          ${this.canAdmin
-            ? html`
-                <mwc-button
-                  icon=${this.permissions.effectivePermissions.publicWrite
-                    ? 'visibility_off'
-                    : 'visibility'}
-                  @click=${this.togglePublicWrite}
-                >
-                togglePublicWrite
-                </mwc-button>
+        ${this.canAdmin
+          ? html`
+            <div class="row">
+              <mwc-button
+                icon=${this.permissions.effectivePermissions.publicWrite
+                  ? 'visibility_off'
+                  : 'visibility'}
+                @click=${this.togglePublicWrite}
+              >
+              togglePublicWrite
+              </mwc-button>
+              <mwc-button
+                icon=${this.permissions.effectivePermissions.publicRead
+                  ? 'visibility_off'
+                  : 'visibility'}
+                @click=${this.togglePublicRead}
+              >
+                ${!this.permissions.effectivePermissions.publicRead
+                  ? this.t('access-control:make-public')
+                  : this.t('access-control:make-private')}
+              </mwc-button>
+            </div>
+            ${this.getUserPermissionList().map(userPermission => html`
+              <div class="row">
+                <span>${userPermission.userId}</span>
 
-                <mwc-button
-                  icon=${this.permissions.effectivePermissions.publicRead
-                    ? 'visibility_off'
-                    : 'visibility'}
-                  @click=${this.togglePublicRead}
+                <mwc-select
+                  value=${userPermission.permission}
+                  @selected=${this.changeRole}
                 >
-                  ${!this.permissions.effectivePermissions.publicRead
-                    ? this.t('access-control:make-public')
-                    : this.t('access-control:make-private')}
-                </mwc-button>
-              `
-            : ''}
-        </div>
+                  ${Object.values(PermissionType).map(permission => html`
+                    <mwc-list-item value=${permission}>${permission}</mwc-list-item>
+                  `)}
+                </mwc-select>
+              </div>
+            `)}
+            <div class="row">
+              <mwc-select
+                label="Add user permissions"
+                @selected=${this.addRole}
+              >
+                ${this.getUserList().map(user => html`
+                  <mwc-list-item value=${user}>${user}</mwc-list-item>
+                `)}
+              </mwc-select>
+            </div>
+
+          `
+        : ''}
       </div>
     `;
   }
