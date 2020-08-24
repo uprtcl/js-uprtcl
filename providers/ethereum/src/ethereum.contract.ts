@@ -1,5 +1,4 @@
-import { AbiItem } from 'web3-utils';
-import { Contract } from 'web3-eth-contract';
+import { ethers, ContractInterface } from 'ethers';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 
@@ -7,7 +6,7 @@ import { EthereumConnection } from './ethereum.connection';
 
 export interface EthereumContractOptions {
   contract: {
-    abi: AbiItem[] | AbiItem;
+    abi: ContractInterface;
     networks: { [key: string]: { address: string } };
   };
   contractAddress?: string;
@@ -17,7 +16,7 @@ const MAX_GAS: number = 1000000;
 
 export class EthereumContract {
   logger = new Logger('EthereumContract');
-  contractInstance!: Contract;
+  contractInstance!: ethers.Contract;
 
   constructor(
     protected options: EthereumContractOptions,
@@ -33,11 +32,12 @@ export class EthereumContract {
 
     const contractAddress =
       this.options.contractAddress ||
-      this.options.contract.networks[this.connection.networkId].address;
+      this.options.contract.networks[this.connection.network.chainId].address;
 
-    this.contractInstance = new this.connection.web3.eth.Contract(
+    this.contractInstance = new ethers.Contract(
+      contractAddress,
       this.options.contract.abi,
-      contractAddress
+      this.connection.signer
     );
   }
 
