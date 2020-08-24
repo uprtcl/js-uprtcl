@@ -58,6 +58,7 @@ export const initUprtcl = async () => {
       new CortexModule(),
       new DiscoveryModule([httpEvees.casID]),
       new LensesModule(),
+      new EveesHttpModule(),
       evees,
       documents,
       wikis,

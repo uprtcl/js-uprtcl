@@ -90,15 +90,13 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     this.permissions = newPermissions;
 
-    this.canWrite = newPermissions.effectivePermissions.canWrite;
-    this.canRead = newPermissions.effectivePermissions.canRead;
-    this.canAdmin = newPermissions.effectivePermissions.canAdmin;
+    // this.canWrite = newPermissions.effectivePermissions.canWrite;
+    // this.canRead = newPermissions.effectivePermissions.canRead;
+    // this.canAdmin = newPermissions.effectivePermissions.canAdmin;
   }
 
   getOwner() {
-    return html`<evees-author
-      user-id=${this.permissions.effectivePermissions.canAdmin[0]}
-    ></evees-author>`;
+    return html`<evees-author user-id=${''}></evees-author>`;
   }
 
   // updated(changedProperties) {
