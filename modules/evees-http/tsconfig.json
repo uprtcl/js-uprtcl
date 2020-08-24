@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declarationDir": "dist/types",
+    "outDir": "dist/lib",
+    "baseUrl": "./",
+    "paths": {
+      "lit-element": ["node_modules/lit-element"],
+      "graphql": ["node_modules/graphql"]
+    }
+  },
+  "include": ["src"]
+}

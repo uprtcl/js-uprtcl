@@ -1,43 +1,13 @@
 import { LitElement, html, css, property, query } from 'lit-element';
 import { ApolloClient } from 'apollo-boost';
 
-import { moduleConnect, request } from '@uprtcl/micro-orchestrator';
-import {
-  EveesModule,
-  EveesRemote,
-  EveesHelpers,
-  EveesHttp,
-  EveesEthereum,
-  Secured,
-  deriveSecured,
-} from '@uprtcl/evees';
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { EveesModule, EveesRemote, EveesHelpers } from '@uprtcl/evees';
+
+import { EveesHttp } from '@uprtcl/evees-http';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import '@material/mwc-button';
-import '@authentic/mwc-circular-progress';
-
 import { Router } from '@vaadin/router';
-
-import {
-  EthereumConnection,
-  EthereumContract,
-} from '@uprtcl/ethereum-provider';
-
-import {
-  abi as abiHome,
-  networks as networksHome,
-} from './contracts-json/UprtclHomePerspectives.min.json';
-import {
-  abi as abiWrapper,
-  networks as networksWrapper,
-} from './contracts-json/UprtclWrapper.min.json';
-
-import { EveesEthereumBinding } from './init';
-import {
-  NewPerspectiveData,
-  Perspective,
-} from '@uprtcl/evees/dist/types/types';
-import { getHomePerspective, CREATE_AND_SET_HOME, SET_HOME } from './support';
 
 export class Home extends moduleConnect(LitElement) {
   @property({ attribute: false })
@@ -64,13 +34,7 @@ export class Home extends moduleConnect(LitElement) {
   @property({ attribute: false })
   showNewSpaceForm: boolean = false;
 
-  eveesEthereum: EveesEthereum;
-  connection: EthereumConnection;
-
   spaces!: object;
-
-  uprtclHomePerspectives: EthereumContract;
-  uprtclWrapper: EthereumContract;
 
   async firstUpdated() {
     const eveesProvider = this.requestAll(
@@ -109,29 +73,13 @@ export class Home extends moduleConnect(LitElement) {
 
   async loadAllSpaces() {
     this.loadingSpaces = true;
-    const events = await this.uprtclHomePerspectives.contractInstance.getPastEvents(
-      'HomePerspectiveSet',
-      {
-        fromBlock: 0,
-      }
-    );
-
     this.spaces = {};
-    for (const event of events) {
-      const address = event.returnValues.owner.toLowerCase();
-      this.spaces[address] = {
-        perspectiveId: event.returnValues.perspectiveId,
-      };
-    }
     this.loadingSpaces = false;
   }
 
   async loadHome() {
     this.loadingHome = true;
-    this.home = await getHomePerspective(
-      this.uprtclHomePerspectives.contractInstance,
-      this.connection.getCurrentAccount()
-    );
+    this.home = '';
     this.loadingHome = false;
   }
 
@@ -208,7 +156,6 @@ export class Home extends moduleConnect(LitElement) {
 
   async removeSpace() {
     this.removingSpace = true;
-    await this.uprtclHomePerspectives.send(SET_HOME, ['']);
     this.removingSpace = false;
     this.firstUpdated();
   }
@@ -220,23 +167,19 @@ export class Home extends moduleConnect(LitElement) {
   renderSpaces() {
     if (this.spaces === undefined) return '';
 
-    const addresses = Object.keys(this.spaces).filter(
-      (address) =>
-        address !== this.connection.getCurrentAccount() &&
-        this.spaces[address].perspectiveId !== ''
-    );
+    const addresses = Object.keys(this.spaces);
 
     return html`
-      <mwc-list>
+      <uprtcl-list>
         ${addresses.map((address) => {
           const space = this.spaces[address];
           return html`
-            <mwc-list-item @click=${() => this.go(space.perspectiveId)}>
+            <uprtcl-list-item @click=${() => this.go(space.perspectiveId)}>
               <evees-author user-id=${address}></evees-author>
-            </mwc-list-item>
+            </uprtcl-list-item>
           `;
         })}
-      </mwc-list>
+      </uprtcl-list>
     `;
   }
 
@@ -250,16 +193,16 @@ export class Home extends moduleConnect(LitElement) {
         ? html` <img class="background-image" src="/img/home-bg.svg" />
             <div class="button-container">
               ${this.home === undefined || this.home === ''
-                ? html` <mwc-button
+                ? html` <uprtcl-button
                     @click=${() => (this.showNewSpaceForm = true)}
                     raised
                   >
                     create your space
-                  </mwc-button>`
+                  </uprtcl-button>`
                 : html`
-                    <mwc-button @click=${() => this.go(this.home)} raised>
+                    <uprtcl-button @click=${() => this.go(this.home)} raised>
                       go to your space
-                    </mwc-button>
+                    </uprtcl-button>
                     <br />
                     <br />
                     <evees-loading-button
@@ -271,13 +214,13 @@ export class Home extends moduleConnect(LitElement) {
                     </evees-loading-button>
                   `}
             </div>`
-        : html`<evees-string-form
+        : html`<uprtcl-form-string
             value=""
             label="title (optional)"
             ?loading=${this.creatingNewDocument}
             @cancel=${() => (this.showNewSpaceForm = false)}
             @accept=${(e) => this.newDocument(e.detail.value)}
-          ></evees-string-form>`}
+          ></uprtcl-form-string>`}
 
       <div class="section-title">Recent Spaces</div>
       <div class="spaces-container">
@@ -290,9 +233,9 @@ export class Home extends moduleConnect(LitElement) {
               ref="zb2rhgWKqjszNprmTEM769G1BgbKisYiiqeP9gnwhWKdVMQeW"
             ></documents-editor>
           </div>
-          <mwc-button @click=${() => (this.popper.showDropdown = false)}>
+          <uprtcl-button @click=${() => (this.popper.showDropdown = false)}>
             close
-          </mwc-button>
+          </uprtcl-button>
         </evees-popper>
       </div>
     `;
@@ -309,12 +252,12 @@ export class Home extends moduleConnect(LitElement) {
       padding: 10vh 10px;
     }
 
-    evees-string-form {
+    uprtcl-form-string {
       width: fit-content;
       margin: 0 auto;
     }
 
-    mwc-button {
+    uprtcl-button {
       width: 220px;
     }
 
@@ -362,7 +305,7 @@ export class Home extends moduleConnect(LitElement) {
       --box-width: 80vw;
     }
 
-    .top-right evees-popper mwc-button {
+    .top-right evees-popper uprtcl-button {
       width: 100%;
     }
   `;

@@ -1,0 +1,68 @@
+{
+  "name": "@uprtcl/evees-http",
+  "version": "0.0.7-alpha.50",
+  "description": "EveesRemote implemented on the Ethereum Blockchain",
+  "homepage": "https://uprtcl.io",
+  "scripts": {
+    "clean": "rimraf dist",
+    "dev": "rollup -w -c rollup.config.ts",
+    "build": "npm run clean && rollup -c rollup.config.ts",
+    "test": "karma start --coverage",
+    "test:watch": "karma start --auto-watch=true --single-run=false"
+  },
+  "dependencies": {
+    "@uprtcl/ethereum-provider": "^0.0.7-alpha.50",
+    "@uprtcl/evees": "^0.0.7-alpha.50",
+    "@uprtcl/http-provider": "^0.0.7-alpha.50",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.50",
+    "@uprtcl/lenses": "^0.0.7-alpha.50",
+    "@uprtcl/graphql": "^0.0.7-alpha.50",
+    "apollo-boost": "^0.4.7"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^2.5.6",
+    "@open-wc/testing-karma": "^3.0.0",
+    "@rollup/plugin-json": "^4.0.1",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^10.11.0",
+    "istanbul-instrumenter-loader": "^3.0.1",
+    "karma": "^4.4.1",
+    "karma-webpack": "^4.0.2",
+    "path": "^0.12.7",
+    "reflect-metadata": "^0.1.13",
+    "rimraf": "^2.6.2",
+    "rollup": "^2.0.5",
+    "rollup-plugin-sourcemaps": "^0.5.0",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "temp-dir": "^2.0.0",
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1"
+  },
+  "contributors": [
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@uprtcl.io",
+      "url": "https://github.com/pepoospina"
+    },
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    }
+  ],
+  "license": "MIT",
+  "main": "dist/uprtcl-evees-http.umd.js",
+  "module": "dist/uprtcl-evees-http.es5.js",
+  "typings": "dist/types/uprtcl-evees-http.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "gitHead": "2ac07cf8bffa6e1ac3da6844e49336a396ca75df"
+}

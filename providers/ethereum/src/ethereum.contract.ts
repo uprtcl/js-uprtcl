@@ -21,7 +21,7 @@ export class EthereumContract {
 
   constructor(
     protected options: EthereumContractOptions,
-    protected connection: EthereumConnection
+    public connection: EthereumConnection
   ) {}
 
   get userId() {

@@ -1,12 +1,11 @@
-import { Remote, AccessControlService } from '@uprtcl/access-control';
-
 import { EveesProvider } from './evees.provider';
 import { ProposalsProvider } from './proposals.provider';
+import { Remote } from '../remote';
+import { AccessControlService } from './evees.access-control';
 
 export interface EveesRemote extends EveesProvider, Remote {
-  /** Access Control */
-  accessControl: AccessControlService<any> | undefined;
+  accessControl: AccessControlService;
+  proposals?: ProposalsProvider;
 
-  /** Proposals */
-  proposals: ProposalsProvider | undefined;
+  canWrite(uref: string): Promise<boolean>;
 }

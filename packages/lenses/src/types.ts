@@ -3,7 +3,7 @@ import { Entity } from '@uprtcl/cortex';
 
 export interface Lens {
   name: string;
-  render: (entity: Entity<any>, context: any) => TemplateResult;
+  render: (entity: any, context?: any) => TemplateResult;
   type?: string;
 }
 

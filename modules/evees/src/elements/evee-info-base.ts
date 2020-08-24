@@ -2,17 +2,8 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { ApolloClient, gql } from 'apollo-boost';
 
-import '@authentic/mwc-card';
-import '@material/mwc-tab';
-import '@material/mwc-tab-bar';
-
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import {
-  AccessControlService,
-  OwnerPermissions,
-  SET_PUBLIC_READ,
-} from '@uprtcl/access-control';
 import {
   CortexModule,
   PatternRecognizer,
@@ -24,6 +15,7 @@ import {
   EntityCache,
   loadEntity,
 } from '@uprtcl/multiplatform';
+import { UprtclDialog } from '@uprtcl/common-ui';
 
 import {
   RemoteMap,
@@ -47,7 +39,6 @@ import { Evees } from '../services/evees';
 
 import { EveesRemote } from '../services/evees.remote';
 
-import { EveesDialog } from './common-ui/evees-dialog';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDiff } from './evees-diff';
 
@@ -107,7 +98,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   firstHasChanges!: boolean;
 
   @query('#updates-dialog')
-  updatesDialogEl!: EveesDialog;
+  updatesDialogEl!: UprtclDialog;
 
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
@@ -118,18 +109,20 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected client!: ApolloClient<any>;
   protected merge!: MergeStrategy;
   protected evees!: Evees;
+  protected remote!: EveesRemote;
   protected recognizer!: PatternRecognizer;
   protected cache!: EntityCache;
   protected remoteMap!: RemoteMap;
   protected defaultRemote: EveesRemote | undefined = undefined;
 
-  firstUpdated() {
+  async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.merge = this.request(EveesBindings.MergeStrategy);
     this.evees = this.request(EveesBindings.Evees);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
     this.remoteMap = this.request(EveesBindings.RemoteMap);
+    this.remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
     if (this.defaultRemoteId !== undefined) {
       this.defaultRemote = (this.requestAll(
@@ -162,11 +155,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.loading = true;
 
     if (this.entityType === EveesBindings.PerspectiveType) {
-      const accessControl = await EveesHelpers.getAccessControl(
-        this.client,
-        entity.id
-      );
-
       const headId = await EveesHelpers.getPerspectiveHeadId(
         this.client,
         this.uref
@@ -185,6 +173,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         this.uref
       );
 
+      const canWrite = await this.remote.canWrite(this.uref);
+
       this.perspectiveData = {
         id: this.uref,
         details: {
@@ -192,8 +182,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
           headId: headId,
         },
         perspective: (entity.object as Signed<Perspective>).payload,
-        canWrite: accessControl ? accessControl.canWrite : true,
-        permissions: accessControl ? accessControl.permissions : undefined,
+        canWrite: canWrite,
         head,
         data,
       };
@@ -211,7 +200,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         head,
         data,
       };
-
     }
 
     this.isLogged =
@@ -233,13 +221,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       return;
     }
 
-    const remote = await this.evees.getPerspectiveRemoteById(this.uref);
+    if (this.perspectiveData.perspective === undefined)
+      throw new Error('undefined');
 
     const config = {
       forceOwner: true,
-      remote: this.perspectiveData.perspective?.remote,
-      path: this.perspectiveData.perspective?.path,
-      canWrite: remote.userId,
+      remote: this.perspectiveData.perspective.remote,
+      path: this.perspectiveData.perspective.path,
+      canWrite: this.remote.userId,
       parentId: this.uref,
     };
 
@@ -299,22 +288,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.load();
   }
 
-  async makePublic() {
-    if (!this.client) throw new Error('client undefined');
-    this.makingPublic = true;
-    await this.client.mutate({
-      mutation: SET_PUBLIC_READ,
-      variables: {
-        entityId: this.uref,
-        value: true,
-      },
-    });
-
-    this.makingPublic = false;
-
-    this.load();
-  }
-
   async otherPerspectiveMerge(
     fromPerspectiveId: string,
     toPerspectiveId: string,
@@ -324,13 +297,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
     );
 
-    const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
-
     const workspace = new EveesWorkspace(this.client, this.recognizer);
 
     const config = {
       forceOwner: true,
-      remote: remote.id,
+      remote: this.remote.id,
       parentId: toPerspectiveId,
     };
 
@@ -589,13 +560,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   renderUpdatesDialog() {
-    return html` <evees-dialog id="updates-dialog">
+    return html` <uprtcl-dialog id="updates-dialog">
       <evees-update-diff id="evees-update-diff"></evees-update-diff>
-    </evees-dialog>`;
+    </uprtcl-dialog>`;
   }
 
   renderLoading() {
-    return html` <mwc-circular-progress></mwc-circular-progress> `;
+    return html` <uprtcl-loading></uprtcl-loading> `;
   }
 
   renderInfo() {

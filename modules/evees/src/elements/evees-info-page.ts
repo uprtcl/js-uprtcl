@@ -9,22 +9,20 @@ const styleMap = (style) => {
   }, '');
 };
 
+import { MenuConfig } from '@uprtcl/common-ui';
+
 import { EveesInfoBase } from './evee-info-base';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
-import { MenuConfig } from './common-ui/evees-options-menu';
-
-import '@material/mwc-dialog';
-import { TextFieldBase } from '@material/mwc-textfield/mwc-textfield-base';
 
 export class EveesInfoPage extends EveesInfoBase {
   @property({ attribute: false })
   showEditName: boolean = false;
 
   @query('#draft-textfield')
-  draftTextField!: TextFieldBase;
+  draftTextField!: any;
 
-  firstUpdated() {
+  async firstUpdated() {
     super.firstUpdated();
   }
 
@@ -111,60 +109,50 @@ export class EveesInfoPage extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        <permissions-for-entity uref=${this.uref}> </permissions-for-entity>
+        ${this.remote.accessControl.lense().render(this.uref)}
       </div>
     `;
   }
 
   renderNewPerspectiveButton() {
     return html`
-      <evees-loading-button
+      <uprtcl-button-loading
+        class="section-button"
         outlined
         icon="call_split"
         @click=${this.newPerspectiveClicked}
         loading=${this.creatingNewPerspective ? 'true' : 'false'}
         label="new perspective"
       >
-      </evees-loading-button>
+      </uprtcl-button-loading>
     `;
   }
 
   renderLoginButton() {
     return html`
-      <evees-loading-button
+      <uprtcl-button-loading
+        class="section-button"
         outlined
         icon="account_box"
         @click=${this.login}
         loading=${this.loggingIn ? 'true' : 'false'}
         label="login"
       >
-      </evees-loading-button>
+      </uprtcl-button-loading>
     `;
   }
 
   renderMakeProposalButton() {
     return html`
-      <evees-loading-button
+      <uprtcl-button-loading
+        class="section-button"
         outlined
         icon="call_merge"
         @click=${this.proposeMergeClicked}
         loading=${this.proposingUpdate ? 'true' : 'false'}
         label="Propose Update"
       >
-      </evees-loading-button>
-    `;
-  }
-
-  renderMakePublicButton() {
-    return html`
-      <evees-loading-button
-        outlined
-        icon=${'visibility'}
-        @click=${this.makePublic}
-        loading=${this.makingPublic ? 'true' : 'false'}
-        label="Make Public"
-      >
-      </evees-loading-button>
+      </uprtcl-button-loading>
     `;
   }
 
@@ -175,8 +163,8 @@ export class EveesInfoPage extends EveesInfoBase {
         ${this.firstRef !== this.uref
           ? this.renderMakeProposalButton()
           : this.isLogged
-            ? this.renderNewPerspectiveButton()
-            : this.renderLoginButton()}
+          ? this.renderNewPerspectiveButton()
+          : this.renderLoginButton()}
       </div>
     `;
 
@@ -203,15 +191,15 @@ export class EveesInfoPage extends EveesInfoBase {
 
     const contextButton = html`
       <div class="context-menu">
-        <evees-help>
+        <uprtcl-help>
           <span>
             To update the "Official Version" of this Wiki you need to create a
             new "Perspective"<br /><br />
             Once changes have been made to that perspectective, click "Propose
             Update" to update the "Official" perspective.
           </span>
-        </evees-help>
-        <evees-options-menu
+        </uprtcl-help>
+        <uprtcl-options-menu
           .config=${contextConfig}
           @option-click=${this.optionClicked}
         >
@@ -223,14 +211,14 @@ export class EveesInfoPage extends EveesInfoBase {
                 ></evees-author>
               </div>`
             : ''}
-        </evees-options-menu>
+        </uprtcl-options-menu>
       </div>
     `;
 
     const pullButton = html`
       <div class="pull-menu">
-        <mwc-icon-button @click=${this.showPullChanges} icon="play_for_work">
-        </mwc-icon-button>
+        <uprtcl-icon-button @click=${this.showPullChanges} icon="play_for_work">
+        </uprtcl-icon-button>
       </div>
     `;
 
@@ -302,12 +290,12 @@ export class EveesInfoPage extends EveesInfoBase {
                     ${this.renderPermissions()}
                   </div>
                   <div class="context-menu">
-                    <evees-help>
+                    <uprtcl-help>
                       <span>
                         Drafts can be made public to let others read them.<br /><br />
                         They can only be edited by their creator.
                       </span>
-                    </evees-help>
+                    </uprtcl-help>
                   </div>
                 </div>
 
@@ -316,12 +304,12 @@ export class EveesInfoPage extends EveesInfoBase {
                     Delete
                   </div>
                   <div class="section-content">
-                    <mwc-button
+                    <uprtcl-button
                       class="bottom-button"
                       icon="delete_forever"
                       @click=${() => this.delete()}
                       label="Delete"
-                    ></mwc-button>
+                    ></uprtcl-button>
                   </div>
                 </div>
               `
@@ -344,8 +332,9 @@ export class EveesInfoPage extends EveesInfoBase {
   static get styles() {
     return super.styles.concat([
       css`
-        mwc-button {
+        .section-button {
           width: 220px;
+          margin: 0 auto;
         }
 
         p {
@@ -376,7 +365,7 @@ export class EveesInfoPage extends EveesInfoBase {
         .section-header {
           font-weight: bold;
           padding: 2vw 0px 0.8vw 0px;
-          font-size: 1.6em;
+          font-size: 3rem;
           border-style: solid 2px;
         }
         .section-header evees-author {
@@ -410,7 +399,6 @@ export class EveesInfoPage extends EveesInfoBase {
           flex-direction: column;
           text-align: left;
           padding: 6px 12px 0px 16px;
-          font-size: 14px;
           color: #4e585c;
         }
 
@@ -430,10 +418,10 @@ export class EveesInfoPage extends EveesInfoBase {
             width: 35px !important;
             height: 35px !important;
           }
-          .draft-mod-action mwc-button {
+          .draft-mod-action uprtcl-button {
             margin-bottom: 10px;
           }
-          .draft-name mwc-textfield {
+          .draft-name uprtcl-textfield {
             width: 85%;
           }
         }

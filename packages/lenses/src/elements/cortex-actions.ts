@@ -7,10 +7,6 @@ import {
   css,
 } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-import { Menu } from '@material/mwc-menu';
-import '@material/mwc-list/mwc-list-item';
-import '@authentic/mwc-tooltip';
-import '@material/mwc-button';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternAction } from '@uprtcl/cortex';
@@ -30,7 +26,7 @@ export class CortexActions extends moduleConnect(LitElement) {
   public actionTypesOrder: string[] | undefined;
 
   @query('#menu')
-  menu!: Menu;
+  menu!: any;
 
   @property({ type: Object, attribute: false })
   private actions!: Dictionary<PatternAction[]> | undefined;
@@ -141,11 +137,11 @@ export class CortexActions extends moduleConnect(LitElement) {
         (actionTypeList, index) => html`
           ${actionTypeList.map(
             (action) => html`
-              <mwc-button
+              <uprtcl-button
                 .icon=${action.icon}
                 .label=${this.t(action.title)}
                 @click=${() => this.actionClicked(action)}
-              ></mwc-button>
+              ></uprtcl-button>
             `
           )}
           ${index < toolbarActions.length - 1
@@ -164,17 +160,17 @@ export class CortexActions extends moduleConnect(LitElement) {
         (actionTypeList, index) => html`
           ${actionTypeList.map(
             (action) => html`
-              <mwc-icon-button
+              <uprtcl-icon-button
                 .icon=${action.icon}
                 label=${action.title}
                 @click=${() => this.actionClicked(action)}
               >
-                <mwc-tooltip
+                <uprtcl-tooltip
                   .text=${action.title}
                   showDelay="200"
                   gap="5"
-                ></mwc-tooltip>
-              </mwc-icon-button>
+                ></uprtcl-tooltip>
+              </uprtcl-icon-button>
             `
           )}
           ${index < toolbarActions.length - 1
@@ -192,30 +188,32 @@ export class CortexActions extends moduleConnect(LitElement) {
     if (!show) return html``;
 
     return html`
-      <mwc-icon-button
+      <uprtcl-icon-button
         icon="more_vert"
         @click=${() => (this.menu.open = !this.menu.open)}
-      ></mwc-icon-button>
+      ></uprtcl-icon-button>
 
-      <mwc-menu id="menu">
-        <mwc-list>
+      <uprtcl-menu id="menu">
+        <uprtcl-list>
           ${menuActions.map(
             (actionTypeList) =>
               html`
                 ${actionTypeList.map(
                   (action) => html`
-                    <mwc-list-item @click=${() => this.actionClicked(action)}>
-                      <mwc-icon slot="graphic">${action.icon}</mwc-icon>
+                    <uprtcl-list-item
+                      @click=${() => this.actionClicked(action)}
+                    >
+                      <uprtcl-icon slot="graphic">${action.icon}</uprtcl-icon>
                       ${action.title}
-                    </mwc-list-item>
+                    </uprtcl-list-item>
                   `
                 )}
 
-                <mwc-list-divider></mwc-list-divider>
+                <uprtcl-list-divider></uprtcl-list-divider>
               `
           )}
-        </mwc-list>
-      </mwc-menu>
+        </uprtcl-list>
+      </uprtcl-menu>
     `;
   }
 
