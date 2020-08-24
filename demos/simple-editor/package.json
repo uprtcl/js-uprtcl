@@ -1,6 +1,6 @@
 {
   "name": "simple-editor",
-  "private": true,
+  "private": false,
   "version": "0.0.7-alpha.50",
   "contributors": [
     {
