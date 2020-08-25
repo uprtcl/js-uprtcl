@@ -9,7 +9,8 @@ export class EthereumConnection extends Connection {
   signer!: ethers.providers.JsonRpcSigner;
 
   account!: string;
-  network!: ethers.providers.Network;
+  private network!: ethers.providers.Network;
+  private networkId!: string;
 
   constructor(
     protected ethOptions: EthereumConnectionOptions,
@@ -23,8 +24,6 @@ export class EthereumConnection extends Connection {
    */
   protected async connect(): Promise<void> {
     let windowEthereum = window['ethereum'];
-
-    debugger;
 
     if (this.ethOptions.provider) {
       this.provider = this.ethOptions.provider;
@@ -41,6 +40,7 @@ export class EthereumConnection extends Connection {
 
     this.account = await this.signer.getAddress();
     this.network = await this.provider.getNetwork();
+    this.networkId = await this.provider.send('net_version', []);
   }
 
   /**
@@ -48,6 +48,10 @@ export class EthereumConnection extends Connection {
    */
   public getCurrentAccount(): string {
     return this.account.toLowerCase();
+  }
+
+  public getNetworkId(): string {
+    return this.networkId;
   }
 
   public async signText(text: string, account: string): Promise<string> {
