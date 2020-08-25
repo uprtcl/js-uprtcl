@@ -15,6 +15,7 @@ import { UprtclFormString } from './elements/form-string';
 import { UprtclListItemWithOption } from './elements/list-item-options';
 import { UprtclIconButton } from './elements/icon-button';
 import { UprtclTextField } from './elements/text-field';
+import { UprtclSelect } from './elements/select';
 
 export class CommonUIModule extends MicroModule {
   static id = 'common-ui-module';
@@ -37,6 +38,7 @@ export class CommonUIModule extends MicroModule {
     customElements.define('uprtcl-help', UprtclHelp);
     customElements.define('uprtcl-textfield', UprtclTextField);
     customElements.define('uprtcl-form-string', UprtclFormString);
+    customElements.define('uprtcl-select', UprtclSelect);
   }
 
   get submodules() {

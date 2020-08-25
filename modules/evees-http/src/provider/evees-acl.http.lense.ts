@@ -4,12 +4,12 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesBindings, EveesHelpers, EveesRemote } from '@uprtcl/evees';
-import { BasicAdminInheritedPermissions } from './types';
-import { EveesHttp } from './evees.http';
+
+import { BasicAdminInheritedPermissions, PermissionType } from './types';
 
 export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   @property()
-  uref!: string;
+  entityId!: string;
 
   @property({ type: Object, attribute: false })
   permissions!: BasicAdminInheritedPermissions;
@@ -26,6 +26,15 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   client!: ApolloClient<any>;
   remote!: any;
 
+  userPermissions!: Object[];
+
+  // TODO: remove
+  userList: string[] = [
+    'google-oauth2|102538849128130956176',
+    'google-oauth2|101944349925589295194',
+    'google-oauth2|108882209031762642189',
+  ];
+
   setCutomCliekced() {}
 
   // TODO:
@@ -41,6 +50,52 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   // later:
   // search users
+
+  async addRole(e) {
+    if (!this.remote.accessControl) {
+      throw new Error(`remote accessControl not found`);
+    }
+
+    const { canRead } = this.permissions.effectivePermissions;
+
+    const { currentTarget } = e;
+
+    const selectedUserId = currentTarget.value;
+
+    // add user to user permissions list
+    // if the selected user is not on the list
+    if (
+      selectedUserId !== '' &&
+      !this.getUserPermissionList().some(
+        (userPermissions) => userPermissions.userId === selectedUserId
+      )
+    ) {
+      await this.remote.accessControl.setPrivatePermissions(
+        this.entityId,
+        PermissionType.Read,
+        selectedUserId
+      );
+
+      canRead.push(selectedUserId);
+
+      await this.requestUpdate();
+
+      this.dispatchEvent(
+        new CustomEvent('permissions-updated', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        })
+      );
+    }
+
+    // Reset select value
+    currentTarget.value = '';
+  }
+
+  changeRole(e) {
+    const selectedUserRole = e.curerntTarget.value;
+  }
 
   getUserList() {
     // TODO: get correct users
@@ -79,7 +134,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
-      this.uref
+      this.entityId
     );
 
     const remote = (this.requestAll(
@@ -88,7 +143,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     if (!remote) throw new Error(`remote not registered ${remoteId}`);
 
-    this.remote = remote as EveesHttp;
+    this.remote = remote as any;
 
     this.loadPermissions();
   }
@@ -96,7 +151,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   async loadPermissions() {
     const result = await this.client.query({
       query: gql`{
-        entity(uref: "${this.uref}") {
+        entity(uref: "${this.entityId}") {
           id
           _context {
             patterns {
@@ -114,13 +169,15 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     this.permissions = newPermissions;
 
-    // this.canWrite = newPermissions.effectivePermissions.canWrite;
-    // this.canRead = newPermissions.effectivePermissions.canRead;
-    // this.canAdmin = newPermissions.effectivePermissions.canAdmin;
+    this.canWrite = newPermissions.effectivePermissions.canWrite;
+    this.canRead = newPermissions.effectivePermissions.canRead;
+    this.canAdmin = newPermissions.effectivePermissions.canAdmin;
   }
 
   getOwner() {
-    return html`<evees-author user-id=${''}></evees-author>`;
+    return html`<evees-author
+      user-id=${this.permissions.effectivePermissions.canAdmin[0]}
+    ></evees-author>`;
   }
 
   // updated(changedProperties) {
@@ -135,6 +192,12 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     }
 
     const newPublicRead = !this.permissions.effectivePermissions.publicRead;
+
+    await this.remote.accessControl.setPublicPermissions(
+      this.entityId,
+      PermissionType.Read,
+      newPublicRead
+    );
 
     this.permissions.effectivePermissions.publicRead = newPublicRead;
 
@@ -156,6 +219,12 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     const newPublicWrite = !this.permissions.effectivePermissions.publicWrite;
 
+    await this.remote.accessControl.setPublicPermissions(
+      this.entityId,
+      PermissionType.Write,
+      newPublicWrite
+    );
+
     this.permissions.effectivePermissions.publicWrite = newPublicWrite;
 
     await this.requestUpdate();
@@ -175,9 +244,9 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
         <div class="row title">
           <strong>${this.t('access-control:owner')}:</strong> ${this.getOwner()}
         </div>
-        <div class="row">
-          ${this.canAdmin
-            ? html`
+        ${this.canAdmin
+          ? html`
+              <div class="row">
                 <uprtcl-button
                   icon=${this.permissions.effectivePermissions.publicWrite
                     ? 'visibility_off'
@@ -186,7 +255,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                 >
                   togglePublicWrite
                 </uprtcl-button>
-
                 <uprtcl-button
                   icon=${this.permissions.effectivePermissions.publicRead
                     ? 'visibility_off'
@@ -197,9 +265,41 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                     ? this.t('access-control:make-public')
                     : this.t('access-control:make-private')}
                 </uprtcl-button>
-              `
-            : ''}
-        </div>
+              </div>
+              ${this.getUserPermissionList().map(
+                (userPermission) => html`
+                  <div class="row">
+                    <span>${userPermission.userId}</span>
+
+                    <uprtcl-select
+                      value=${userPermission.permission}
+                      @selected=${this.changeRole}
+                    >
+                      ${Object.values(PermissionType).map(
+                        (permission) => html`
+                          <uprtcl-list-item value=${permission}
+                            >${permission}</uprtcl-list-item
+                          >
+                        `
+                      )}
+                    </uprtcl-select>
+                  </div>
+                `
+              )}
+              <div class="row">
+                <uprtcl-select
+                  label="Add user permissions"
+                  @selected=${this.addRole}
+                >
+                  ${this.getUserList().map(
+                    (user) => html`
+                      <uprtcl-list-item value=${user}>${user}</uprtcl-list-item>
+                    `
+                  )}
+                </uprtcl-select>
+              </div>
+            `
+          : ''}
       </div>
     `;
   }
