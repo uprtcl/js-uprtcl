@@ -37,7 +37,7 @@ export class EthereumContract {
     this.contractInstance = new ethers.Contract(
       contractAddress,
       this.options.contract.abi,
-      this.connection.signer
+      this.connection.signer ? this.connection.signer : this.connection.provider
     );
   }
 

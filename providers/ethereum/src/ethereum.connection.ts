@@ -5,7 +5,7 @@ export interface EthereumConnectionOptions {
   provider?: any;
 }
 export class EthereumConnection extends Connection {
-  provider!: ethers.providers.Web3Provider;
+  provider!: ethers.providers.JsonRpcProvider;
   signer!: ethers.providers.JsonRpcSigner;
 
   account!: string;
@@ -35,10 +35,12 @@ export class EthereumConnection extends Connection {
         window.location.reload();
       });
     } else {
-      throw new Error('No available web3 provider was found');
+      this.provider = new ethers.providers.JsonRpcProvider(
+        'http://localhost:8545'
+      );
     }
 
-    this.account = await this.signer.getAddress();
+    this.account = this.signer ? await this.signer.getAddress() : '';
     this.network = await this.provider.getNetwork();
     this.networkId = await this.provider.send('net_version', []);
   }
