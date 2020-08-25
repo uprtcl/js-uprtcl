@@ -114,12 +114,12 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   }
 
   get id() {
-    return `eth-${this.ethConnection.networkId}:${evees_if}`;
+    return `eth-${this.ethConnection.getNetworkId()}:${evees_if}`;
   }
 
   get defaultPath() {
-    return this.uprtclRoot.contractInstance.options.address
-      ? this.uprtclRoot.contractInstance.options.address.toLocaleLowerCase()
+    return this.uprtclRoot.contractInstance.address
+      ? this.uprtclRoot.contractInstance.address.toLocaleLowerCase()
       : '';
   }
 
@@ -288,17 +288,20 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       context,
     ]);
 
-    let perspectiveContextUpdatedEvents = await this.uprtclDetails.contractInstance.getPastEvents(
-      'PerspectiveDetailsSet',
-      {
-        filter: { contextHash: contextHash },
-        fromBlock: 0,
-      }
+    let contextFilter = this.uprtclDetails.contractInstance.filters.PerspectiveDetailsSet(
+      null,
+      contextHash,
+      null
     );
 
-    let perspectiveIdHashes = perspectiveContextUpdatedEvents.map(
-      (e) => e.returnValues.perspectiveIdHash
+    let perspectiveContextUpdatedEvents = await this.uprtclDetails.contractInstance.queryFilter(
+      contextFilter,
+      0
     );
+
+    console.log({ perspectiveContextUpdatedEvents });
+
+    let perspectiveIdHashes = [];
 
     const hashToIdPromises = perspectiveIdHashes.map((idHash) =>
       this.hashToId(idHash)

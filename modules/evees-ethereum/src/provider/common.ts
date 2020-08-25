@@ -112,12 +112,14 @@ export const hashToId = async (
   perspectiveIdHash: string
 ) => {
   /** check the creation event to reverse map the cid */
-  const perspectiveAddedEvents = await uprtclRoot.contractInstance.getPastEvents(
-    'PerspectiveCreated',
-    {
-      filter: { perspectiveIdHash: perspectiveIdHash },
-      fromBlock: 0,
-    }
+  let filter = uprtclRoot.contractInstance.filters.PerspectiveCreated(
+    perspectiveIdHash,
+    null
+  );
+
+  let perspectiveAddedEvents = await uprtclRoot.contractInstance.queryFilter(
+    filter,
+    0
   );
 
   /** one event should exist only */
@@ -127,14 +129,19 @@ export const hashToId = async (
     throw new Error(`Perspective with hash ${perspectiveIdHash} not found`);
   }
 
-  return perspectiveAddedEvent.returnValues.perspectiveId;
+  return perspectiveAddedEvent.args
+    ? perspectiveAddedEvent.args.perspectiveId
+    : undefined;
 };
 
 export const getEthPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
-  const events = await uprtclRoot.getPastEvents('PerspectiveHeadUpdated', {
-    filter: { perspectiveIdHash: perspectiveIdHash },
-    fromBlock: 0,
-  });
+  const filter = uprtclRoot.filters.PerspectiveHeadUpdated(
+    perspectiveIdHash,
+    null,
+    null
+  );
+
+  const events = await uprtclRoot.queryFilter(filter, 0);
 
   if (events.length === 0) return undefined;
 
@@ -143,8 +150,8 @@ export const getEthPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
     .pop();
 
   return {
-    headCid1: last.returnValues.headCid1,
-    headCid0: last.returnValues.headCid0,
+    headCid1: last.args.headCid1,
+    headCid0: last.args.headCid0,
   };
 };
 
@@ -152,10 +159,11 @@ export const getEthPerspectiveContext = async (
   uprtclDetails,
   perspectiveIdHash
 ) => {
-  const events = await uprtclDetails.getPastEvents('PerspectiveDetailsSet', {
-    filter: { perspectiveIdHash: perspectiveIdHash },
-    fromBlock: 0,
-  });
+  const filter = uprtclDetails.filters.PerspectiveDetailsSet(
+    perspectiveIdHash,
+    null
+  );
+  const events = await uprtclDetails.queryFilter(filter, 0);
 
   if (events.length === 0) return undefined;
 
@@ -163,7 +171,7 @@ export const getEthPerspectiveContext = async (
     .sort((e1, e2) => (e1.blockNumber > e2.blockNumber ? 1 : -1))
     .pop();
 
-  return last.returnValues.context;
+  return last.args.context;
 };
 
 export interface ProposalDetails {
@@ -178,21 +186,30 @@ export const getProposalDetails = async (
   uprtclProposals,
   proposalId
 ): Promise<ProposalDetails> => {
-  const events = await uprtclProposals.getPastEvents('ProposalCreated', {
-    filter: { proposalId },
-    fromBlock: 0,
-  });
+  const filter = uprtclProposals.filters.ProposalCreated(
+    null,
+    null,
+    proposalId,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  );
+
+  const events = await uprtclProposals.queryFilter(filter, 0);
 
   if (events.length !== 1) throw Error('One proposal created event expected');
 
   const e = events[0];
 
   return {
-    toPerspectiveId: e.returnValues.toPerspectiveId,
-    fromPerspectiveId: e.returnValues.fromPerspectiveId,
-    toHeadId: e.returnValues.toHeadId,
-    fromHeadId: e.returnValues.fromHeadId,
-    nonce: e.returnValues.fromHeadId,
+    toPerspectiveId: e.args.toPerspectiveId,
+    fromPerspectiveId: e.args.fromPerspectiveId,
+    toHeadId: e.args.toHeadId,
+    fromHeadId: e.args.fromHeadId,
+    nonce: e.args.fromHeadId,
   };
 };
 
@@ -206,10 +223,13 @@ export const getHeadUpdateDetails = async (
   proposalId,
   perspectiveIdHash
 ): Promise<HeadUpdateDetails> => {
-  const events = await uprtclProposals.getPastEvents('HeadUpdateAdded', {
-    filter: { proposalId, perspectiveIdHash },
-    fromBlock: 0,
-  });
+  const filter = uprtclProposals.filters.HeadUpdateAdded(
+    proposalId,
+    perspectiveIdHash,
+    null,
+    null
+  );
+  const events = await uprtclProposals.queryFilter(filter, 0);
 
   if (events.length !== 1)
     throw Error('One headupte per perspective and proposal expected');
@@ -217,8 +237,8 @@ export const getHeadUpdateDetails = async (
   const e = events[0];
 
   return {
-    fromPerspectiveId: e.returnValues.fromPerspectiveId,
-    fromHeadId: e.returnValues.fromHeadId,
+    fromPerspectiveId: e.args.fromPerspectiveId,
+    fromHeadId: e.args.fromHeadId,
   };
 };
 
