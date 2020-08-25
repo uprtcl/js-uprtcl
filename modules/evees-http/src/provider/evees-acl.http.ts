@@ -45,7 +45,7 @@ export class EveesAccessControlHttp extends HttpProvider
     await super.httpPut(`/permissions/${hash}/public`, { type, value });
   }
 
-  async canWrite(uref: string, userId: string) {
+  async canWrite(uref: string, userId?: string) {
     return true;
   }
 

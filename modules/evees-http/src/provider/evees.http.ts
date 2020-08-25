@@ -25,7 +25,7 @@ export class EveesHttp extends HttpAuth0Provider implements EveesRemote {
 
   knownSources: KnownSourcesService;
 
-  accessControl: AccessControlService;
+  accessControl: EveesAccessControlHttp;
   proposals: ProposalsProvider | undefined;
 
   constructor(
