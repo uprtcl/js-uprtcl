@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/documents",
-  "version": "0.0.7-alpha.41",
+  "version": "0.0.7-alpha.50",
   "description": "Cortex module implementing texts and folders",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,22 +11,16 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@material/mwc-button": "^0.14.1",
-    "@material/mwc-checkbox": "^0.14.1",
-    "@material/mwc-fab": "^0.14.1",
-    "@material/mwc-radio": "^0.14.1",
-    "@material/mwc-ripple": "^0.14.1",
-    "@material/mwc-switch": "^0.14.1",
-    "@uprtcl/access-control": "^0.0.7-alpha.41",
-    "@uprtcl/cortex": "^0.0.7-alpha.41",
-    "@uprtcl/evees": "^0.0.7-alpha.41",
-    "@uprtcl/graphql": "^0.0.7-alpha.41",
-    "@uprtcl/holochain-provider": "^0.0.7-alpha.41",
-    "@uprtcl/http-provider": "^0.0.7-alpha.41",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.41",
-    "@uprtcl/lenses": "^0.0.7-alpha.41",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.41",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.41",
+    "@uprtcl/common-ui": "^0.0.7-alpha.50",
+    "@uprtcl/cortex": "^0.0.7-alpha.50",
+    "@uprtcl/evees": "^0.0.7-alpha.50",
+    "@uprtcl/graphql": "^0.0.7-alpha.50",
+    "@uprtcl/holochain-provider": "^0.0.7-alpha.50",
+    "@uprtcl/http-provider": "^0.0.7-alpha.50",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.50",
+    "@uprtcl/lenses": "^0.0.7-alpha.50",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.50",
     "apollo-boost": "^0.4.7",
     "codemirror": "^5.54.0",
     "graphql-tag": "^2.10.1",
@@ -40,8 +34,6 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@material/mwc-dialog": "^0.14.1",
-    "@material/mwc-icon-button": "^0.14.1",
     "@open-wc/testing": "^2.5.6",
     "@open-wc/testing-karma": "^3.0.0",
     "@rollup/plugin-commonjs": "^13.0.0",
@@ -93,5 +85,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "b5d916b6aa57b009dd84f237f9d47192d9e4eef3"
+  "gitHead": "2ac07cf8bffa6e1ac3da6844e49336a396ca75df"
 }

@@ -10,7 +10,6 @@ import { CortexModule } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
 import { EveesModule, RemoteMap } from '@uprtcl/evees';
-import { AccessControlModule } from '@uprtcl/access-control';
 
 import { DocumentsModule } from '../src/documents.module';
 import { MockStore } from './mocks/mock-store';
@@ -68,7 +67,6 @@ describe('<cortex-entity>', () => {
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
-      new AccessControlModule(),
       new EveesModule([eveesProvider], eveesProvider, remoteMap),
       new DocumentsModule([documentsProvider]),
     ]);

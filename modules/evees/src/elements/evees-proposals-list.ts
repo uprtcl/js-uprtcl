@@ -9,12 +9,10 @@ import { Proposal, Perspective } from '../types';
 import { eveeColor } from './support';
 
 import { EveesWorkspace } from '../services/evees.workspace';
-import { EveesDialog } from './common-ui/evees-dialog';
+import { UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
 
 export const DEFAULT_COLOR = '#d0dae0';
-import '@material/mwc-dialog';
-import '@material/mwc-button';
 import { Signed } from '@uprtcl/cortex';
 
 const PENDING_ACTION: string = 'Pending';
@@ -47,7 +45,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
   forceUpdate: string = 'true';
 
   @query('#updates-dialog')
-  updatesDialogEl!: EveesDialog;
+  updatesDialogEl!: UprtclDialog;
 
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
@@ -232,18 +230,21 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
   renderProposalRow(proposal: Proposal) {
     return html`
-      <mwc-list-item hasMeta @click=${() => this.showProposalChanges(proposal)}>
+      <uprtcl-list-item
+        hasMeta
+        @click=${() => this.showProposalChanges(proposal)}
+      >
         <evees-author
           color=${eveeColor(proposal.fromPerspectiveId)}
           user-id=${proposal.creatorId as string}
         ></evees-author>
 
         ${!this.getProposalActionDisaled(proposal)
-          ? html` <mwc-icon slot="meta">
+          ? html` <uprtcl-icon slot="meta">
               call_merge
-            </mwc-icon>`
+            </uprtcl-icon>`
           : ''}
-      </mwc-list-item>
+      </uprtcl-list-item>
     `;
   }
 
@@ -282,9 +283,9 @@ export class ProposalsList extends moduleConnect(LitElement) {
   renderDiff() {
     this.logger.log('renderDiff()');
     return html`
-      <evees-dialog id="updates-dialog">
+      <uprtcl-dialog id="updates-dialog">
         <evees-update-diff id="evees-update-diff"> </evees-update-diff>
-      </evees-dialog>
+      </uprtcl-dialog>
     `;
   }
 
@@ -294,9 +295,9 @@ export class ProposalsList extends moduleConnect(LitElement) {
       : html`
           ${this.pendingProposals.length > 0 || this.mergedProposals.length > 0
             ? html`
-                <mwc-list activatable>
+                <uprtcl-list activatable>
                   ${this.renderProposals()} ${this.renderOldProposals()}
-                </mwc-list>
+                </uprtcl-list>
               `
             : html`<div class="empty"><i>No proposals found</i></div>`}
           ${this.showDiff ? this.renderDiff() : ''}
@@ -338,7 +339,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
       .list-section {
         text-align: left;
         padding: 6px 12px 0px 16px;
-        font-size: 14px;
         color: #4e585c;
       }
 

@@ -1,4 +1,4 @@
-import { Remote } from '@uprtcl/access-control';
+import { Remote } from '@uprtcl/evees';
 
 import { HttpConnection, PostResult } from './http.connection';
 

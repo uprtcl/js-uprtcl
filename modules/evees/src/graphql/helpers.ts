@@ -46,7 +46,8 @@ export class EveesHelpers {
           }
         }`,
     });
-    return result.data.entity.head?.id;
+    if (result.data.entity.head === undefined) return undefined;
+    return result.data.entity.head.id;
   }
 
   static async getPerspectiveContext(
@@ -66,7 +67,8 @@ export class EveesHelpers {
           }
         }`,
     });
-    return result.data.entity.context?.id;
+    if (result.data.entity.context === undefined) return undefined;
+    return result.data.entity.context.id;
   }
 
   static async getPerspectiveRemoteId(
@@ -117,37 +119,6 @@ export class EveesHelpers {
     const commit = await loadEntity<Signed<Commit>>(client, commitId);
     if (!commit) throw new Error('commit not found');
     return commit.object.payload.dataId;
-  }
-
-  static async getAccessControl(
-    client: ApolloClient<any>,
-    uref: string
-  ): Promise<{ canWrite: boolean; permissions: any } | undefined> {
-    const result = await client.query({
-      query: gql`{
-        entity(uref: "${uref}") {
-          id
-          _context {
-            patterns {
-              accessControl {
-                canWrite
-                permissions
-              }
-            }
-          }
-        }
-      }`,
-    });
-
-    if (!result.data.entity._context.patterns.accessControl) {
-      return undefined;
-    }
-
-    return {
-      canWrite: result.data.entity._context.patterns.accessControl.canWrite,
-      permissions:
-        result.data.entity._context.patterns.accessControl.permissions,
-    };
   }
 
   static async getData(

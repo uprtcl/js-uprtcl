@@ -21,9 +21,9 @@ import {
   CONTENT_UPDATED_TAG,
   EveesHelpers,
   Evees,
+  EveesModule,
+  EveesRemote,
 } from '@uprtcl/evees';
-
-import '@material/mwc-top-app-bar';
 
 export class WikiPage extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-PAGE');
@@ -95,27 +95,27 @@ export class WikiPage extends moduleConnect(LitElement) {
 
     this.textNode = result.data.entity.head.data;
 
-    const remote = await EveesHelpers.getPerspectiveRemoteId(
+    const remoteId = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
       this.pageHash
     );
 
-    const accessControl = await EveesHelpers.getAccessControl(
-      this.client,
-      this.pageHash
-    );
+    const remote = (this.requestAll(
+      EveesModule.bindings.EveesRemote
+    ) as EveesRemote[]).find((r) => r.id === remoteId);
+    if (!remote) throw new Error(`remote not found ${remoteId}`);
+    const canWrite = await remote.canWrite(this.pageHash);
 
-    this.editable = accessControl
-      ? this.editableRemotes.length > 0
-        ? this.editableRemotes.includes(remote)
-          ? accessControl.canWrite
+    this.editable =
+      this.editableRemotes.length > 0
+        ? this.editableRemotes.includes(remoteId)
+          ? canWrite
             ? 'true'
             : 'false'
           : 'false'
-        : accessControl.canWrite
+        : canWrite
         ? 'true'
-        : 'false'
-      : 'true';
+        : 'false';
   }
 
   render() {
@@ -124,16 +124,15 @@ export class WikiPage extends moduleConnect(LitElement) {
 
     return html`
       <div class="top-row">
-        <mwc-icon-button
+        <uprtcl-icon-button
           icon="arrow_back_ios"
           @click=${this.back}
-        ></mwc-icon-button>
+        ></uprtcl-icon-button>
       </div>
 
       <div class="page-content">
         <documents-editor
           id="doc-editor"
-          @doc-changed=${(e) => this.onDocChanged(e)}
           .client=${this.client}
           uref=${this.pageHash}
           color=${this.color}
@@ -142,16 +141,6 @@ export class WikiPage extends moduleConnect(LitElement) {
         </documents-editor>
       </div>
     `;
-  }
-
-  // Propagate the event to upstream components
-  private onDocChanged(e: CustomEvent) {
-    let event = new CustomEvent('doc-changed', {
-      detail: {
-        docChanged: e.detail.docChanged,
-      },
-    });
-    this.dispatchEvent(event);
   }
 
   async pushDocument() {

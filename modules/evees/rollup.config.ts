@@ -1,6 +1,5 @@
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
-import commonjs from 'rollup-plugin-commonjs';
 import json from '@rollup/plugin-json';
 
 const pkg = require('./package.json');
@@ -34,14 +33,7 @@ export default {
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`,
     }),
-		commonjs({
-      include: 'node_modules/**',
-      namedExports: {
-        'node_modules/orbit-db-access-controllers/src/ipfs-access-controller.js': ['IPFSAccessController']
-      }
-    }),
-
     // Resolve source maps to the original source
     sourceMaps(),
-  ]
+  ],
 };

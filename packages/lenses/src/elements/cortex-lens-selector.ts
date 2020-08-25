@@ -8,10 +8,6 @@ import {
   PropertyValues,
 } from 'lit-element';
 
-import { Menu } from '@material/mwc-menu';
-import '@material/mwc-list/mwc-list-item';
-import '@material/mwc-icon-button';
-
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -25,7 +21,7 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
   private lenses!: Lens[] | undefined;
 
   @query('#menu')
-  menu!: Menu;
+  menu!: any;
 
   static get styles() {
     return css`
@@ -91,25 +87,25 @@ export class CortexLensSelector extends moduleConnect(LitElement) {
 
   render() {
     return html`
-      <mwc-icon-button
+      <uprtcl-icon-button
         icon="remove_red_eye"
         class=${this.show() ? '' : 'hidden'}
         @click=${() => (this.menu.open = !this.menu.open)}
-      ></mwc-icon-button>
+      ></uprtcl-icon-button>
 
-      <mwc-menu id="menu" class=${this.show() ? '' : 'hidden'}>
-        <mwc-list>
+      <uprtcl-menu id="menu" class=${this.show() ? '' : 'hidden'}>
+        <uprtcl-list>
           ${this.lenses &&
           this.lenses.map(
             (lens) =>
               html`
-                <mwc-list-item @click=${() => this.selectLens(lens)}>
+                <uprtcl-list-item @click=${() => this.selectLens(lens)}>
                   ${this.t(lens.name)}
-                </mwc-list-item>
+                </uprtcl-list-item>
               `
           )}
-        </mwc-list>
-      </mwc-menu>
+        </uprtcl-list>
+      </uprtcl-menu>
     `;
   }
 

@@ -4,11 +4,10 @@ import { MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 import { CASModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
-import { AccessControlModule } from '@uprtcl/access-control';
+import { CommonUIModule } from '@uprtcl/common-ui';
 
 import {
   PerspectiveLinks,
-  PerspectiveAccessControl,
   PerspectivePattern,
 } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
@@ -24,17 +23,11 @@ import { EveesInfoPopper } from './elements/evees-info-popper';
 import en from './i18n/en.json';
 import { RemoteMap, defaultRemoteMap } from './types';
 import { EveesInfoPage } from './elements/evees-info-page';
-import { ItemWithMenu } from './elements/common-ui/evees-list-item';
-import { EveesOptionsMenu } from './elements/common-ui/evees-options-menu';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 import { EveesDiff } from './elements/evees-diff';
-import { EveesDialog } from './elements/common-ui/evees-dialog';
-import { EveesPopper } from './elements/common-ui/evees-popper';
-import { EveesHelp } from './elements/common-ui/evees-help';
-import { EveesLoadingButton } from './elements/common-ui/evees-loading-button';
 import { EveesAuthor } from './elements/evees-author';
 import { ProposalsList } from './elements/evees-proposals-list';
-import { EveesStringForm } from './elements/common-ui/evees-string-form';
+import { EveesProposalDiff } from './elements/evees-proposal-diff';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -76,7 +69,7 @@ import { EveesStringForm } from './elements/common-ui/evees-string-form';
 export class EveesModule extends MicroModule {
   static id = 'evees-module';
 
-  dependencies = [AccessControlModule.id];
+  dependencies = [];
 
   static bindings = EveesBindings;
 
@@ -102,9 +95,7 @@ export class EveesModule extends MicroModule {
 
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
-      container
-        .bind(AccessControlModule.bindings.Remote)
-        .toConstantValue(remote);
+      container.bind(EveesModule.bindings.Remote).toConstantValue(remote);
     }
 
     customElements.define('evees-commit-history', CommitHistory);
@@ -112,15 +103,9 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-proposals-list', ProposalsList);
     customElements.define('evees-info-popper', EveesInfoPopper);
     customElements.define('evees-info-page', EveesInfoPage);
-    customElements.define('evees-list-item', ItemWithMenu);
-    customElements.define('evees-popper', EveesPopper);
-    customElements.define('evees-options-menu', EveesOptionsMenu);
     customElements.define('evees-update-diff', EveesDiff);
-    customElements.define('evees-dialog', EveesDialog);
-    customElements.define('evees-help', EveesHelp);
-    customElements.define('evees-loading-button', EveesLoadingButton);
+    customElements.define('evees-proposal-diff', EveesProposalDiff);
     customElements.define('evees-author', EveesAuthor);
-    customElements.define('evees-string-form', EveesStringForm);
   }
 
   get submodules() {
@@ -129,9 +114,10 @@ export class EveesModule extends MicroModule {
       new i18nextModule('evees', { en: en }),
       new PatternsModule([
         new CommitPattern([CommitLinked]),
-        new PerspectivePattern([PerspectiveLinks, PerspectiveAccessControl]),
+        new PerspectivePattern([PerspectiveLinks]),
       ]),
       new CASModule(this.eveesProviders.map((p) => p.store)),
+      new CommonUIModule(),
     ];
   }
 }

@@ -7,6 +7,7 @@ import { Ready } from '../types/ready';
 export interface ConnectionOptions {
   retries?: number;
   retryInterval?: number;
+  params?: any;
 }
 
 export enum ConnectionState {
@@ -39,7 +40,7 @@ export abstract class Connection implements Ready {
 
     // setTimeout needed here because we need the constructors to be executed before the connect call happens
     setTimeout(() => {
-      this.connect()
+      this.connect(options.params)
         .then(() => this.success())
         .catch((e) => this.retry(e));
     });
@@ -60,7 +61,7 @@ export abstract class Connection implements Ready {
    * Opens the connection
    * To be overriden by subclasses
    */
-  protected abstract async connect(): Promise<void>;
+  protected abstract async connect(params?: any): Promise<void>;
 
   /**
    * Waits until the connection is ready to process calls
@@ -96,7 +97,11 @@ export abstract class Connection implements Ready {
       this.state = ConnectionState.FAILED;
       this.connectionReject();
 
-      this.logger.warn(`Connection failed with cause `, cause, `, not retrying`);
+      this.logger.warn(
+        `Connection failed with cause `,
+        cause,
+        `, not retrying`
+      );
 
       return;
     }

@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/redux",
-  "version": "0.0.7-alpha.41",
+  "version": "0.0.7-alpha.50",
   "description": "Redux wrappers to be used with the @uprtcl infrastructure",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,7 +11,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.41",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
     "inversify": "^5.0.1",
     "pwa-helpers": "^0.9.1",
     "redux": "^4.0.4",
@@ -68,5 +68,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "b5d916b6aa57b009dd84f237f9d47192d9e4eef3"
+  "gitHead": "2ac07cf8bffa6e1ac3da6844e49336a396ca75df"
 }

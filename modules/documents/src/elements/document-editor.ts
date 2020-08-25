@@ -30,10 +30,9 @@ import {
   CREATE_PERSPECTIVE,
   CREATE_ENTITY,
   EveesDraftsLocal,
-  MenuConfig,
   EveesHelpers,
-  EveesBindings,
 } from '@uprtcl/evees';
+import { MenuConfig } from '@uprtcl/common-ui';
 import { loadEntity, CASStore } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode } from '../types';
@@ -153,23 +152,25 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     let entityType: string = this.recognizer.recognizeType(entity);
 
     let editable = false;
-    let remote!: string | undefined;
-    let context!: string | undefined;
-    let dataId!: string | undefined;
-    let headId!: string | undefined;
+    let remoteId: string | undefined;
+    let context: string | undefined;
+    let dataId: string | undefined;
+    let headId: string | undefined;
 
     if (entityType === EveesModule.bindings.PerspectiveType) {
-      remote = await EveesHelpers.getPerspectiveRemoteId(
+      remoteId = await EveesHelpers.getPerspectiveRemoteId(
         this.client,
         entity.id
       );
 
+      const remote = (this.requestAll(
+        EveesModule.bindings.EveesRemote
+      ) as EveesRemote[]).find((r) => r.id === remoteId);
+      if (!remote) throw new Error(`remote not found for ${remoteId}`);
+      const canWrite = await remote.canWrite(uref);
+
       if (this.editable === 'true') {
-        const accessControl = await EveesHelpers.getAccessControl(
-          this.client,
-          entity.id
-        );
-        editable = accessControl ? accessControl.canWrite : false;
+        editable = canWrite;
         context = await EveesHelpers.getPerspectiveContext(
           this.client,
           entity.id
@@ -196,13 +197,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         if (!parent) throw new Error('Commit must have a parent');
 
         editable = parent.editable;
-        remote = parent.remote;
+        remoteId = parent.remote;
         dataId = await EveesHelpers.getCommitDataId(this.client, entity.id);
         headId = uref;
       } else {
         entityType = 'Data';
         editable = false;
-        remote = '';
+        remoteId = '';
         dataId = uref;
         headId = '';
       }
@@ -240,7 +241,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       headId,
       hasDocNodeLenses,
       editable,
-      remote,
+      remote: remoteId,
       context,
       focused: false,
     };
@@ -1086,20 +1087,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         ${this.docHasChanges && !this.showCommitMessage
           ? html`
               <div class="button-container">
-                <evees-loading-button
+                <uprtcl-button-loading
                   icon="unarchive"
                   @click=${() => this.persistAll()}
                   loading=${this.persistingAll ? 'true' : 'false'}
                   label="push"
                 >
-                </evees-loading-button>
+                </uprtcl-button-loading>
               </div>
-              <!-- <evees-options-menu 
+              <!-- <uprtcl-options-menu 
                 .config=${options} 
                 @option-click=${this.commitOptionSelected}
                 icon="arrow_drop_down">
-              </evees-options-menu> -->
-              <evees-help>
+              </uprtcl-options-menu> -->
+              <uprtcl-help>
                 <span>
                   Your current changes are safely stored on this device and
                   won't be lost.<br /><br />
@@ -1111,17 +1112,23 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                     others.
                   </li>
                 </span>
-              </evees-help>
+              </uprtcl-help>
             `
           : ''}
         ${this.showCommitMessage
           ? html`
-              <mwc-textfield id="COMMIT_MESSAGE" label="Message">
-              </mwc-textfield>
-              <mwc-icon-button icon="clear" @click=${this.cancelCommitClicked}>
-              </mwc-icon-button>
-              <mwc-icon-button icon="done" @click=${this.acceptCommitClicked}>
-              </mwc-icon-button>
+              <uprtcl-textfield id="COMMIT_MESSAGE" label="Message">
+              </uprtcl-textfield>
+              <uprtcl-icon-button
+                icon="clear"
+                @click=${this.cancelCommitClicked}
+              >
+              </uprtcl-icon-button>
+              <uprtcl-icon-button
+                icon="done"
+                @click=${this.acceptCommitClicked}
+              >
+              </uprtcl-icon-button>
             `
           : ''}
       </div>

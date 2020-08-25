@@ -4,8 +4,13 @@ import { PatternsModule } from '@uprtcl/cortex';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { i18nextModule } from '@uprtcl/micro-orchestrator';
 import { EveesContentModule } from '@uprtcl/evees';
+import { CommonUIModule } from '@uprtcl/common-ui';
 
-import { TextNodeCommon, TextNodeTitle, TextNodePattern } from './patterns/text-node.pattern';
+import {
+  TextNodeCommon,
+  TextNodeTitle,
+  TextNodePattern,
+} from './patterns/text-node.pattern';
 import { documentsTypeDefs } from './graphql/schema';
 
 import en from './i18n/en.json';
@@ -56,7 +61,10 @@ export class DocumentsModule extends EveesContentModule {
       ...super.submodules,
       new GraphQlSchemaModule(documentsTypeDefs, {}),
       new i18nextModule('documents', { en: en }),
-      new PatternsModule([new TextNodePattern([TextNodeCommon, TextNodeTitle])]),
+      new PatternsModule([
+        new TextNodePattern([TextNodeCommon, TextNodeTitle]),
+      ]),
+      new CommonUIModule(),
     ];
   }
 }

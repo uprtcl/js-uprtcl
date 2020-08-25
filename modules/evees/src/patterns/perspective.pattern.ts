@@ -3,12 +3,10 @@ import { injectable, inject } from 'inversify';
 
 import { Pattern, HasLinks, Entity, Signed } from '@uprtcl/cortex';
 import { HasRedirect } from '@uprtcl/multiplatform';
-import { Updatable } from '@uprtcl/access-control';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Perspective } from '../types';
 import { EveesBindings } from '../bindings';
-import { Evees } from '../services/evees';
 import { extractSignedEntity } from '../utils/signed';
 
 export const propertyOrder = ['creatorId', 'path', 'remote', 'timestamp'];
@@ -66,19 +64,5 @@ export class PerspectiveLinks implements HasLinks, HasRedirect {
     });
 
     return result.data.entity.head ? result.data.entity.head.id : undefined;
-  };
-}
-
-@injectable()
-export class PerspectiveAccessControl
-  implements Updatable<Entity<Signed<Perspective>>> {
-  constructor(@inject(EveesBindings.Evees) protected evees: Evees) {}
-
-  remote = (perspective: Entity<Signed<Perspective>>) =>
-    this.evees.getPerspectiveProvider(perspective.object);
-
-  accessControl = (perspective: Entity<Signed<Perspective>>) => {
-    const provider = this.evees.getPerspectiveProvider(perspective.object);
-    return provider.accessControl;
   };
 }

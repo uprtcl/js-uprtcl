@@ -1,5 +1,4 @@
 import { LitElement, property, html, css, query } from 'lit-element';
-import * as Box from '3box';
 // import * as ENS from 'ethereum-ens';
 import { blockies } from './blockies.js';
 
@@ -68,7 +67,7 @@ export class EveesAuthor extends moduleConnect(LitElement) {
       );
     }
 
-    // this.profile = await Box.getProfile(this.userId);
+    this.profile = {};
     this.profile.userId = this.userId;
     this.image = this.profile.image
       ? `https://ipfs.io/ipfs/${this.profile.image[0].contentUrl['/']}`

@@ -9,7 +9,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return {
       rootHash: { type: String },
       loading: { type: Boolean, attribute: false },
-      defaultRemote: { type: String },
+      defaultRemoteId: { type: String },
     };
   }
 
@@ -41,10 +41,10 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = state[2].split('id=')[1];
     });
 
-    const defaultInstance = this.request(EveesModule.bindings.DefaultRemote);
-    await defaultInstance.connect();
+    const defaultRemote = this.request(EveesModule.bindings.DefaultRemote);
+    await defaultRemote.ready();
 
-    this.defaultRemote = defaultInstance.id;
+    this.defaultRemoteId = defaultRemote.id;
 
     // wait all remotes to be ready
     await Promise.all(
@@ -109,8 +109,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
               <div class="wiki-container">
                 <wiki-drawer
                   uref=${this.rootHash}
-                  default-remote=${this.defaultRemote}
-                  .editableRemotes=${[this.defaultRemote]}
+                  default-remote=${this.defaultRemoteId}
+                  .editableRemotes=${[this.defaultRemoteId]}
                 ></wiki-drawer>
               </div>
             </div>
@@ -138,6 +138,9 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         flex-grow: 1;
         display: flex;
         flex-direction: row;
+      }
+      wiki-drawer {
+        min-height: calc(100vh - 50px);
       }
       .app-bar {
         width: 0vw;

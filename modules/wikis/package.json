@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/wikis",
-  "version": "0.0.7-alpha.41",
+  "version": "0.0.7-alpha.50",
   "description": "Cortex module implementing texts and folders",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,27 +11,17 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@authentic/mwc-card": "^0.9.0",
-    "@material/mwc-button": "^0.14.1",
-    "@material/mwc-checkbox": "^0.14.1",
-    "@material/mwc-drawer": "^0.14.1",
-    "@material/mwc-fab": "^0.14.1",
-    "@material/mwc-list": "^0.14.1",
-    "@material/mwc-radio": "^0.14.1",
-    "@material/mwc-ripple": "^0.14.1",
-    "@material/mwc-switch": "^0.14.1",
-    "@material/mwc-textfield": "^0.14.1",
-    "@material/mwc-top-app-bar": "^0.14.1",
-    "@uprtcl/cortex": "^0.0.7-alpha.41",
-    "@uprtcl/documents": "^0.0.7-alpha.41",
-    "@uprtcl/evees": "^0.0.7-alpha.41",
-    "@uprtcl/graphql": "^0.0.7-alpha.41",
-    "@uprtcl/holochain-provider": "^0.0.7-alpha.41",
-    "@uprtcl/http-provider": "^0.0.7-alpha.41",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.41",
-    "@uprtcl/lenses": "^0.0.7-alpha.41",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.41",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.41",
+    "@uprtcl/common-ui": "^0.0.7-alpha.50",
+    "@uprtcl/cortex": "^0.0.7-alpha.50",
+    "@uprtcl/documents": "^0.0.7-alpha.50",
+    "@uprtcl/evees": "^0.0.7-alpha.50",
+    "@uprtcl/graphql": "^0.0.7-alpha.50",
+    "@uprtcl/holochain-provider": "^0.0.7-alpha.50",
+    "@uprtcl/http-provider": "^0.0.7-alpha.50",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.50",
+    "@uprtcl/lenses": "^0.0.7-alpha.50",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.50",
     "apollo-boost": "^0.4.7",
     "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
@@ -81,5 +71,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "b5d916b6aa57b009dd84f237f9d47192d9e4eef3"
+  "gitHead": "2ac07cf8bffa6e1ac3da6844e49336a396ca75df"
 }
