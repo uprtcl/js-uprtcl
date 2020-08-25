@@ -24,14 +24,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   canAdmin!: boolean;
 
   client!: ApolloClient<any>;
-  remote!: EveesHttp;
+  remote!: any;
 
   setCutomCliekced() {}
 
   // TODO:
-
-  // public permission ilst
-  // - toggle public (read/write)
 
   // private user permissions
   // - change permissions for each user
@@ -45,11 +42,38 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   // later:
   // search users
 
-  chagneRole() {}
+  getUserList() {
+    // TODO: get correct users
+    const { canAdmin } = this.permissions.effectivePermissions;
+    return this.userList.filter((user) => canAdmin[0] !== user);
+  }
 
-  addRole() {}
+  getUserPermissionList() {
+    const {
+      canAdmin,
+      canWrite,
+      canRead,
+    } = this.permissions.effectivePermissions;
+    let userPermissions: any[] = [];
 
-  chagneDelegateTo() {}
+    userPermissions = userPermissions.concat(
+      canAdmin
+        .filter((_, adminIndex) => adminIndex !== 0)
+        .map((admin) => ({ userId: admin, permission: 'Admin' }))
+    );
+
+    userPermissions = userPermissions.concat(
+      canWrite.map((write) => ({ userId: write, permission: 'Write' }))
+    );
+
+    userPermissions = userPermissions.concat(
+      canRead.map((read) => ({ userId: read, permission: 'Read' }))
+    );
+
+    return userPermissions;
+  }
+
+  changeDelegateTo() {}
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
