@@ -2,18 +2,20 @@ import { ethers } from 'ethers';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 
 export interface EthereumConnectionOptions {
-  provider?: any;
+  provider: string | ethers.providers.JsonRpcProvider;
 }
 export class EthereumConnection extends Connection {
   provider!: ethers.providers.JsonRpcProvider;
-  signer!: ethers.providers.JsonRpcSigner;
+  signer!: ethers.providers.JsonRpcSigner | undefined;
 
   account!: string;
   private network!: ethers.providers.Network;
   private networkId!: string;
 
   constructor(
-    protected ethOptions: EthereumConnectionOptions,
+    protected ethOptions: EthereumConnectionOptions = {
+      provider: 'http://localhost:8545',
+    },
     options?: ConnectionOptions
   ) {
     super(options);
@@ -23,26 +25,33 @@ export class EthereumConnection extends Connection {
    * @override
    */
   protected async connect(): Promise<void> {
-    let windowEthereum = window['ethereum'];
-
-    if (this.ethOptions.provider) {
-      this.provider = this.ethOptions.provider;
-    } else if (typeof windowEthereum !== 'undefined') {
-      this.provider = new ethers.providers.Web3Provider(windowEthereum);
-      this.signer = this.provider.getSigner();
-
-      windowEthereum.on('accountsChanged', (accounts) => {
-        window.location.reload();
-      });
-    } else {
+    if (typeof this.ethOptions.provider === 'string') {
       this.provider = new ethers.providers.JsonRpcProvider(
-        'http://localhost:8545'
+        this.ethOptions.provider
       );
+    } else {
+      this.provider = this.ethOptions.provider;
     }
+
+    this.signer =
+      this.provider['getSigner'] !== undefined
+        ? this.provider.getSigner()
+        : undefined;
 
     this.account = this.signer ? await this.signer.getAddress() : '';
     this.network = await this.provider.getNetwork();
-    this.networkId = await this.provider.send('net_version', []);
+    this.networkId = this.provider.send
+      ? await this.provider.send('net_version', [])
+      : this.network.chainId;
+  }
+
+  public async reconnect(ethOptions: EthereumConnectionOptions) {
+    this.ethOptions = ethOptions;
+    await this.connect();
+  }
+
+  public canSign() {
+    return !!this.signer;
   }
 
   /**
