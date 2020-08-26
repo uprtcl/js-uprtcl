@@ -66,6 +66,7 @@ export class EthereumConnection extends Connection {
   }
 
   public async signText(text: string, account: string): Promise<string> {
+    if (!this.signer) throw new Error('signer not set');
     return this.signer.signMessage(text);
   }
 }

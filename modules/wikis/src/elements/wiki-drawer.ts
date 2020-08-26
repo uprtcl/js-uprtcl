@@ -33,6 +33,7 @@ import {
   RemoteMap,
   EveesHelpers,
   Perspective,
+  EveesInfoPage,
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -103,6 +104,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   updatingTitle: boolean = false;
+
+  @query('#evees-info-page')
+  evessInfoPageEl!: EveesInfoPage;
 
   remote: string = '';
   path: string = '';
@@ -465,6 +469,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
+  loggedIn() {
+    /* relaod evees info */
+    this.evessInfoPageEl.load();
+  }
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -706,6 +715,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
                   <div class="evee-info">
                     <evees-info-page
+                      id="evees-info-page"
                       slot="evee-page"
                       uref=${this.uref}
                       first-uref=${this.firstRef as string}
@@ -715,6 +725,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                   </div>
                 </div>
               `}
+          <evees-login-widget
+            @logged-in=${() => this.loggedIn()}
+          ></evees-login-widget>
         </div>
       </div>
     `;
@@ -753,6 +766,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           flex-grow: 1;
           display: flex;
           flex-direction: column;
+          position: relative;
+        }
+        evees-login-widget {
+          position: absolute;
+          top: 8px;
+          right: 8px;
         }
         .column {
           height: 100%;
@@ -849,12 +868,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         mwc-drawer {
           min-width: 800px;
           position: relative;
-          flex-grow: 1;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .app-content {
           flex-grow: 1;
           display: flex;
           flex-direction: column;

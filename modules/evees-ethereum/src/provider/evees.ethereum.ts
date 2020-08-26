@@ -1,4 +1,4 @@
-import { Container } from 'inversify';
+import { ethers } from 'ethers';
 
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -359,11 +359,12 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
     await this.uprtclRoot.send(UPDATE_OWNER, [perspectiveIdHash, ZERO_ADD]);
   }
 
-  isLogged(): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async isLogged() {
+    return this.ethConnection.canSign();
   }
-  login(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async login(): Promise<void> {
+    const provider = new ethers.providers.Web3Provider(window['ethereum']);
+    await this.ethConnection.reconnect({ provider });
   }
   logout(): Promise<void> {
     throw new Error('Method not implemented.');

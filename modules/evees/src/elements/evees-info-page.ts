@@ -128,20 +128,6 @@ export class EveesInfoPage extends EveesInfoBase {
     `;
   }
 
-  renderLoginButton() {
-    return html`
-      <uprtcl-button-loading
-        class="section-button"
-        outlined
-        icon="account_box"
-        @click=${this.login}
-        loading=${this.loggingIn ? 'true' : 'false'}
-        label="login"
-      >
-      </uprtcl-button-loading>
-    `;
-  }
-
   renderMakeProposalButton() {
     return html`
       <uprtcl-button-loading
@@ -164,7 +150,7 @@ export class EveesInfoPage extends EveesInfoBase {
           ? this.renderMakeProposalButton()
           : this.isLogged
           ? this.renderNewPerspectiveButton()
-          : this.renderLoginButton()}
+          : ''}
       </div>
     `;
 
@@ -199,19 +185,6 @@ export class EveesInfoPage extends EveesInfoBase {
             Update" to update the "Official" perspective.
           </span>
         </uprtcl-help>
-        <uprtcl-options-menu
-          .config=${contextConfig}
-          @option-click=${this.optionClicked}
-        >
-          ${this.defaultRemote && this.defaultRemote.isLogged()
-            ? html` <div slot="icon" class="user-icon">
-                <evees-author
-                  user-id=${this.defaultRemote.userId}
-                  show-name="false"
-                ></evees-author>
-              </div>`
-            : ''}
-        </uprtcl-options-menu>
       </div>
     `;
 

@@ -16,11 +16,12 @@
     "@uprtcl/evees": "^0.0.7-alpha.50",
     "@uprtcl/graphql": "^0.0.7-alpha.50",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.50",
+    "@uprtcl/lenses": "^0.0.7-alpha.50",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
     "@uprtcl/multiplatform": "^0.0.7-alpha.50",
-    "@uprtcl/lenses": "^0.0.7-alpha.50",
     "apollo-boost": "^0.4.7",
     "cids": "^0.8.1",
+    "ethers": "^5.0.9",
     "inversify": "^5.0.1",
     "multihashing-async": "^0.8.0"
   },
