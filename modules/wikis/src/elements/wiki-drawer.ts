@@ -43,7 +43,6 @@ import { Wiki } from '../types';
 
 import { WikiBindings } from '../bindings';
 
-const LOGINFO = false;
 const MAX_LENGTH = 999;
 
 interface PageData {
@@ -486,9 +485,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   renderPageList(showOptions: boolean = true) {
     if (this.pagesList === undefined)
       return html`
-        <cortex-loading-placeholder
-          class="empty-pages-loader"
-        ></cortex-loading-placeholder>
+        <uprtcl-loading class="empty-pages-loader"></uprtcl-loading>
       `;
 
     return html`
@@ -683,8 +680,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       uref: this.uref,
       editable: this.editable,
     });
-    if (this.loading || !this.uref)
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+    if (!this.uref) return html` <uprtcl-placeholder></uprtcl-placeholder> `;
 
     return html`
       <div class="app-drawer">

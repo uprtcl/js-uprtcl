@@ -94,6 +94,42 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
   }
 `;
 
+export const FORK_PERSPECTIVE: DocumentNode = gql`
+  mutation ForkPerspective(
+    $perspectiveId: String
+    $remote: String
+    $parentId: String
+    $name: String
+  ) {
+    forkPerspective(
+      perspectiveId: $perspectiveId
+      remote: $remote
+      parentId: $parentId
+      name: $name
+    ) {
+      id
+      head {
+        id
+        data {
+          id
+        }
+      }
+      context {
+        id
+      }
+      name
+      payload {
+        remote
+      }
+      _context {
+        content {
+          id
+        }
+      }
+    }
+  }
+`;
+
 export const CREATE_AND_ADD_PROPOSAL: DocumentNode = gql`
   mutation CreateAndAddProposal(
     $perspectives: [NewPerspectiveInput]!
