@@ -22,7 +22,7 @@ export class EveesInfoPage extends EveesInfoBase {
   @query('#draft-textfield')
   draftTextField!: any;
 
-  firstUpdated() {
+  async firstUpdated() {
     super.firstUpdated();
   }
 
@@ -109,7 +109,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        <permissions-for-entity uref=${this.uref}> </permissions-for-entity>
+        ${this.remote.accessControl.lense().render(this.uref)}
       </div>
     `;
   }
@@ -394,7 +394,7 @@ export class EveesInfoPage extends EveesInfoBase {
           .draft-mod-action uprtcl-button {
             margin-bottom: 10px;
           }
-          .draft-name mwc-textfield {
+          .draft-name uprtcl-textfield {
             width: 85%;
           }
         }

@@ -16,7 +16,7 @@ export class EveesInfoPopper extends EveesInfoBase {
   @property({ attribute: false })
   show: Boolean = false;
 
-  firstUpdated() {
+  async firstUpdated() {
     super.firstUpdated();
   }
 

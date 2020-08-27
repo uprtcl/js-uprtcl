@@ -57,7 +57,7 @@ export class UprtclListItemWithOption extends LitElement {
         cursor: pointer;
       }
 
-      mwc-icon {
+      uprtcl-icon {
         user-select: none;
       }
 

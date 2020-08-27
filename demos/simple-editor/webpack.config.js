@@ -17,14 +17,14 @@ module.exports = {
     alias: {
       'lit-element': path.resolve('./node_modules/lit-element'),
       graphql: path.resolve('./node_modules/graphql'),
-      'lit-html': path.resolve('./node_modules/lit-html')
+      'lit-html': path.resolve('./node_modules/lit-html'),
     },
   },
   // entry: ['babel-polyfill', './src/index.http.js'],
   entry: ['babel-polyfill', './src/index.orbitdb.js'],
   devServer: {
     historyApiFallback: true,
-    port: 8082,
+    port: 8084,
   },
   mode: 'production',
   module: {

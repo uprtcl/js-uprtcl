@@ -47,14 +47,14 @@ export class UprtclOptionsMenu extends LitElement {
           return item.disabled !== undefined && item.disabled
             ? html` <uprtcl-list-item graphic="icon" disabled>
                 <span>${item.text}</span>
-                <mwc-icon slot="graphic">${item.graphic}</mwc-icon>
+                <uprtcl-icon slot="graphic">${item.graphic}</uprtcl-icon>
               </uprtcl-list-item>`
             : html` <uprtcl-list-item
                 graphic="icon"
                 @click=${(e) => this.optionClicked(itemKey, e)}
               >
                 <span>${item.text}</span>
-                <mwc-icon slot="graphic">${item.graphic}</mwc-icon>
+                <uprtcl-icon slot="graphic">${item.graphic}</uprtcl-icon>
               </uprtcl-list-item>`;
         })}
       </uprtcl-list>

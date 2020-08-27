@@ -1,6 +1,7 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
 import {
   HttpEthAuthProvider,
+  HttpAuth0Provider,
   HttpConnection,
   KnownSourcesHttp,
 } from '@uprtcl/http-provider';
@@ -19,18 +20,18 @@ import { EveesAccessControlHttp } from './evees-acl.http';
 
 const evees_api: string = 'evees-v1';
 
-export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
+export class EveesHttp extends HttpAuth0Provider implements EveesRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   knownSources: KnownSourcesService;
 
-  accessControl: AccessControlService;
+  accessControl: EveesAccessControlHttp;
   proposals: ProposalsProvider | undefined;
 
   constructor(
     host: string,
     protected connection: HttpConnection,
-    protected ethConnection: EthereumConnection,
+    protected auth0Config: any,
     public store: CASStore
   ) {
     super(
@@ -39,7 +40,7 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
         apiId: evees_api,
       },
       connection,
-      ethConnection
+      auth0Config
     );
 
     this.accessControl = new EveesAccessControlHttp(host, this.connection);

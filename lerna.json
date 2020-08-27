@@ -1,9 +1,9 @@
 {
   "packages": [
-    "demos/*",
     "modules/*",
     "packages/*",
-    "providers/*"
+    "providers/*",
+    "demos/linked-thoughts"
   ],
   "version": "0.0.7-alpha.50"
 }

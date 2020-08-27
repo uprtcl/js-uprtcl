@@ -40,13 +40,13 @@ export class UprtclFormString extends LitElement {
   render() {
     return html`
       <div class="form">
-        <mwc-textfield
+        <uprtcl-textfield
           outlined
           id="text-input"
           value=${this.fieldValue}
           label=${this.fieldLabel}
         >
-        </mwc-textfield>
+        </uprtcl-textfield>
 
         <div class="icon-container">
           <uprtcl-icon-button
@@ -57,14 +57,10 @@ export class UprtclFormString extends LitElement {
         </div>
 
         <div class="icon-container">
-          ${this.loading
-            ? html`<cortex-loading-placeholder
-                size="20"
-              ></cortex-loading-placeholder>`
-            : html`<uprtcl-icon-button
-                @click=${this.acceptClick}
-                icon=${this.acceptIcon}
-              ></uprtcl-icon-button>`}
+          <uprtcl-icon-button
+            @click=${this.acceptClick}
+            icon=${this.loading ? 'loading' : this.acceptIcon}
+          ></uprtcl-icon-button>
         </div>
       </div>
     `;

@@ -7,7 +7,7 @@ export class CortexLoadingPlaceholder extends LitElement {
   render() {
     return html`
       <div class="container">
-        <mwc-circular-progress SIZE=${this.size}></mwc-circular-progress>
+        <uprtcl-loading SIZE=${this.size}></uprtcl-loading>
         <div>
           <slot></slot>
         </div>
