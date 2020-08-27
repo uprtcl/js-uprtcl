@@ -122,8 +122,8 @@ export class EveesInfoPage extends EveesInfoBase {
         icon="call_split"
         @click=${this.newPerspectiveClicked}
         loading=${this.creatingNewPerspective ? 'true' : 'false'}
-        label="new perspective"
       >
+        new perspective
       </uprtcl-button-loading>
     `;
   }
@@ -136,8 +136,8 @@ export class EveesInfoPage extends EveesInfoBase {
         icon="call_merge"
         @click=${this.proposeMergeClicked}
         loading=${this.proposingUpdate ? 'true' : 'false'}
-        label="Propose Update"
       >
+        Propose Update
       </uprtcl-button-loading>
     `;
   }

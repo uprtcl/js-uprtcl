@@ -1091,8 +1091,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   icon="unarchive"
                   @click=${() => this.persistAll()}
                   loading=${this.persistingAll ? 'true' : 'false'}
-                  label="push"
                 >
+                  push
                 </uprtcl-button-loading>
               </div>
               <!-- <uprtcl-options-menu 

@@ -11,6 +11,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       rootHash: { type: String },
       loading: { attribute: false },
       canCreate: { attribute: false },
+      creatingSpace: { attribute: false },
       defaultRemoteId: { type: String },
     };
   }
@@ -67,7 +68,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
-  async creatSpace() {
+  async createSpace() {
+    this.creatingSpace = true;
     const eveesEthRemote = this.requestAll(
       EveesModule.bindings.EveesRemote
     ).find((instance) => instance.id.startsWith('eth'));
@@ -104,7 +106,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0',
       }
     );
-
+    this.creatingSpace = false;
     window.history.pushState('', '', `/?id=${perspectiveId}`);
   }
 
@@ -117,8 +119,10 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   renderCreate() {
     return html`<div class="home">
       ${this.canCreate
-        ? html`<uprtcl-button @click=${() => this.creatSpace()}
-            >create space</uprtcl-button
+        ? html`<uprtcl-button-loading
+            @click=${() => this.createSpace()}
+            loading=${this.creatingSpace ? 'true' : 'false'}
+            >create space</uprtcl-button-loading
           >`
         : html`<uprtcl-button @click=${() => this.connectWallet()}
             >connect</uprtcl-button

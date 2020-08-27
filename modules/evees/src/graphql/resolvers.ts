@@ -344,7 +344,12 @@ export const eveesResolvers: IResolvers = {
         id: newPerspectiveId,
         name: name,
         head: headId,
-        context: context,
+        context: {
+          id: context,
+          perspectives: {
+            newPerspectiveId,
+          },
+        },
         payload: perspective.object.payload,
       };
     },

@@ -110,21 +110,19 @@ export const FORK_PERSPECTIVE: DocumentNode = gql`
       id
       head {
         id
-        data {
-          id
-        }
       }
       context {
         id
+        perspectives {
+          id
+        }
       }
       name
       payload {
+        path
         remote
-      }
-      _context {
-        content {
-          id
-        }
+        creatorId
+        timestamp
       }
     }
   }

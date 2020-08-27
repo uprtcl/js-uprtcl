@@ -299,19 +299,17 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       0
     );
 
-    console.log({ perspectiveContextUpdatedEvents });
-
-    let perspectiveIdHashes = [];
-
-    const hashToIdPromises = perspectiveIdHashes.map((idHash) =>
-      this.hashToId(idHash)
+    const perspectiveIds = await Promise.all(
+      perspectiveContextUpdatedEvents.map((event) =>
+        this.hashToId(event.args ? event.args.perspectiveIdHash : undefined)
+      )
     );
     this.logger.log(
       `[ETH] getContextPerspectives of ${context}`,
-      perspectiveIdHashes
+      perspectiveIds
     );
 
-    return Promise.all(hashToIdPromises);
+    return perspectiveIds;
   }
 
   /**
