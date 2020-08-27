@@ -363,8 +363,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
     return this.ethConnection.canSign();
   }
   async login(): Promise<void> {
-    const provider = new ethers.providers.Web3Provider(window['ethereum']);
-    await this.ethConnection.reconnect({ provider });
+    await this.ethConnection.connectWallet();
   }
   logout(): Promise<void> {
     throw new Error('Method not implemented.');

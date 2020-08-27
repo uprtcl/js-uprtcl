@@ -45,8 +45,10 @@ export class EthereumConnection extends Connection {
       : this.network.chainId;
   }
 
-  public async reconnect(ethOptions: EthereumConnectionOptions) {
-    this.ethOptions = ethOptions;
+  public async connectWallet() {
+    await window['ethereum'].enable();
+    const provider = new ethers.providers.Web3Provider(window['ethereum']);
+    this.ethOptions = { provider };
     await this.connect();
   }
 

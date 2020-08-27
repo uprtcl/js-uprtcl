@@ -1,3 +1,5 @@
+import { ethers } from 'ethers';
+
 import {
   MicroOrchestrator,
   i18nextBaseModule,
@@ -23,10 +25,12 @@ import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
 (async function () {
+  const provider = ethers.getDefaultProvider('rinkeby', {
+    etherscan: '6H4I43M46DJ4IJ9KKR8SFF1MF2TMUQTS2F',
+    infura: '73e0929fc849451dae4662585aea9a7b',
+  });
+
   const c1host = 'http://localhost:3100/uprtcl/1';
-  // const c1host = 'https://api.intercreativity.io/uprtcl/1';
-  const ethHost = '';
-  // const ethHost = 'ws://localhost:8545';
 
   // const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
   // const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
@@ -53,7 +57,8 @@ import { SimpleWiki } from './simple-wiki';
   const orchestrator = new MicroOrchestrator();
 
   const httpConnection = new HttpConnection();
-  const ethConnection = new EthereumConnection({ provider: ethHost });
+  const ethConnection = new EthereumConnection({ provider });
+  await ethConnection.ready();
 
   const httpStore = new HttpStore(c1host, httpConnection, httpCidConfig);
   const httpEvees = new EveesHttp(
@@ -83,6 +88,11 @@ import { SimpleWiki } from './simple-wiki';
   ];
 
   await orchestrator.loadModules(modules);
+
+  /*** add other services to the container */
+  orchestrator.container
+    .bind('ethereum-connection')
+    .toConstantValue(ethConnection);
 
   console.log(orchestrator);
   customElements.define('simple-editor', SimpleEditor);

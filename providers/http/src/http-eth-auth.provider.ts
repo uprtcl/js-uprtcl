@@ -76,7 +76,13 @@ export class HttpEthAuthProvider extends HttpProvider {
   }
 
   async login(): Promise<void> {
-    if (this.account === undefined) throw Error('account undefined');
+    if (!this.ethConnection.canSign()) {
+      await this.ethConnection.connectWallet();
+      await this.connect();
+    }
+
+    if (this.account === undefined || this.account === '')
+      throw Error('account undefined');
 
     const nonce = await this.getNonce();
     const signature = await this.ethConnection.signText(

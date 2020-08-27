@@ -108,10 +108,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     window.history.pushState('', '', `/?id=${perspectiveId}`);
   }
 
-  async reconnect() {
-    await window['ethereum'].enable();
-    const provider = new ethers.providers.Web3Provider(window['ethereum']);
-    await this.ethConnection.reconnect({ provider });
+  async connectWallet() {
+    await this.ethConnection.connectWallet();
 
     this.canCreate = this.ethConnection.canSign();
   }
@@ -122,7 +120,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         ? html`<uprtcl-button @click=${() => this.creatSpace()}
             >create space</uprtcl-button
           >`
-        : html`<uprtcl-button @click=${() => this.reconnect()}
+        : html`<uprtcl-button @click=${() => this.connectWallet()}
             >connect</uprtcl-button
           >`}
     </div>`;
