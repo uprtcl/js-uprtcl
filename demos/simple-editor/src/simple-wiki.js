@@ -109,6 +109,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   }
 
   async reconnect() {
+    await window['ethereum'].enable();
     const provider = new ethers.providers.Web3Provider(window['ethereum']);
     await this.ethConnection.reconnect({ provider });
 
