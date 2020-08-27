@@ -62,14 +62,13 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     const { canRead } = this.permissions.effectivePermissions;
 
-    const { currentTarget } = e;
+    const selectedUserId = e.detail.key;
 
-    const selectedUserId = currentTarget.value;
 
     // add user to user permissions list
     // if the selected user is not on the list
     if (
-      selectedUserId !== '' &&
+      selectedUserId &&
       !this.getUserPermissionList().some(
         (userPermissions) => userPermissions.userId === selectedUserId
       )
@@ -93,8 +92,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       );
     }
 
-    // Reset select value
-    currentTarget.value = '';
   }
 
   changeRole(e) {
