@@ -27,7 +27,12 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   }
 
   async loginAll() {
-    await Promise.all(this.remotes.map((remote) => remote.login()));
+    await Promise.all(
+      this.remotes.map(async (remote) => {
+        const isLogged = await remote.isLogged();
+        if (!isLogged) await remote.login();
+      })
+    );
     this.checkLogged();
   }
 
