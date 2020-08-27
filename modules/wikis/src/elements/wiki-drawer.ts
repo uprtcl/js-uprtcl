@@ -62,6 +62,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Array })
   editableRemotes: string[] = [];
 
+  @property({ type: Boolean, attribute: 'show-exit' })
+  showExit: boolean = false;
+
   @property({ attribute: false })
   uref!: string;
 
@@ -71,11 +74,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   wiki: Entity<Wiki> | undefined;
 
-  @property({ type: Number })
-  selectedPageIx: number | undefined = undefined;
-
   @property({ attribute: false })
   pagesList: PageData[] | undefined = undefined;
+
+  @property({ attribute: false })
+  selectedPageIx: number | undefined = undefined;
 
   @property({ attribute: false })
   creatingNewPage: boolean = false;
@@ -90,13 +93,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   hasSelectedPage = false;
 
   @property({ attribute: false })
-  firstRefAuthor: string = '';
+  editable: boolean = false;
 
   @property({ attribute: false })
   author: string = '';
-
-  @property({ type: Boolean, attribute: 'show-exit' })
-  showExit: boolean = false;
 
   @property({ attribute: false })
   showEditTitle: boolean = false;
@@ -108,10 +108,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   evessInfoPageEl!: EveesInfoPage;
 
   remote: string = '';
-  path: string = '';
   context: string | undefined = undefined;
   currentHeadId: string | undefined = undefined;
-  editable: boolean = false;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -121,7 +119,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   constructor() {
     super();
     this.isViewportMobile();
-    window.addEventListener('resize', this.isViewportMobile.bind(this));
+    window.addEventListener('resize', () => this.isViewportMobile());
   }
 
   async firstUpdated() {
@@ -134,14 +132,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.uref = this.firstRef;
     this.loadWiki();
-
-    const firstPerspective = await loadEntity<Signed<Perspective>>(
-      this.client,
-      this.firstRef
-    );
-    if (firstPerspective) {
-      this.firstRefAuthor = firstPerspective.object.payload.creatorId;
-    }
   }
 
   updated(changedProperties) {
@@ -207,7 +197,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!remote) throw new Error(`remote not found ${this.remote}`);
     const canWrite = await remote.canWrite(this.uref);
 
-    this.path = perspective.object.payload.path;
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
     this.editable =
@@ -581,7 +570,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               <uprtcl-button @click=${() => this.goBack()}>exit</uprtcl-button>
             `
           : ''}
-        <uprtcl-button @click=${() => this.goToOfficial()}>
+        <uprtcl-button
+          .outlined=${this.uref !== this.firstRef}
+          @click=${() => this.goToOfficial()}
+        >
           official
         </uprtcl-button>
         <div class="perspective-author-wrapper">
@@ -617,18 +609,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <div class="title-card-container">
         <div class="section">
           <div class="section-header">
-            ${this.wiki ? this.wiki.object.title : ''}
+            ${this.uref === this.firstRef
+              ? html` <div class="official-name">(Official)</div> `
+              : html`
+                  <span class="by-3box">by</span>
+                  <evees-author user-id=${this.author}></evees-author>
+                `}
           </div>
 
           <div class="section-content">
-            <div class="row center-aligned">
-              ${this.uref === this.firstRef
-                ? html` <div class="official-name">(Official)</div> `
-                : html`
-                    <span class="by-3box">by</span>
-                    <evees-author user-id=${this.author}></evees-author>
-                  `}
-            </div>
+            <div class="row center-aligned"></div>
             <div class="row center-aligned title-form">
               ${this.showEditTitle
                 ? html`
@@ -744,6 +734,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           color: #37352f;
           --mdc-theme-primary: #2196f3;
           width: 100%;
+          position: relative;
         }
         .app-drawer {
           flex: 1 1 0;
@@ -769,9 +760,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           top: 8px;
           right: 8px;
         }
-        .column {
-          height: 100%;
-        }
         .color-bar {
           height: 1vw;
           max-height: 5px;
@@ -782,8 +770,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .nav-bar-top {
           display: flex;
-          padding: 14px 10px 0px 0px;
-          width: calc(100% - 10px);
+          padding: 14px 10px 0px 10px;
+          width: calc(100% - 10px - 10px);
           justify-content: space-between;
           border-color: #a2a8aa;
           border-bottom-style: solid;
@@ -854,28 +842,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .button-row uprtcl-button-loading {
           margin: 0 auto;
         }
-        .app-top-nav {
-          padding: 5px 0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .app-content {
-          flex-grow: 1;
-          display: flex;
-          flex-direction: column;
-        }
 
         .home-container {
           text-align: center;
           height: auto;
-        }
-
-        .title-padding-div {
-          width: 100%;
-          height: 5vw;
-          min-height: 32px;
         }
 
         .title-card-container {

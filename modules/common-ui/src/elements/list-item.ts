@@ -14,9 +14,10 @@ export class UprtclListItem extends LitElement {
           flex-direction: column;
           justify-content: center;
           cursor: pointer;
+          transition: background-color 200ms linear;
         }
         :host(:hover) {
-          background: #e8e8e8;
+          background: #f1f1f1;
         }
       `,
     ];

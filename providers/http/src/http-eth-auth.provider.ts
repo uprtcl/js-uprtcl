@@ -76,6 +76,7 @@ export class HttpEthAuthProvider extends HttpProvider {
   }
 
   async login(): Promise<void> {
+    debugger;
     if (!this.ethConnection.canSign()) {
       await this.ethConnection.connectWallet();
       await this.connect();

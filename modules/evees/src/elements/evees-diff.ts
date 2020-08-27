@@ -98,7 +98,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     const perspectiveIds = Object.keys(this.updatesDetails);

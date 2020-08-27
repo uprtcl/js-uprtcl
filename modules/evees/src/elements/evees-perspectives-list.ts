@@ -55,8 +55,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   async load() {
     this.loadingPerspectives = true;
-    debugger;
-
     const result = await this.client.query({
       query: gql`{
         entity(uref: "${this.perspectiveId}") {
@@ -206,7 +204,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   renderLoading() {
     return html`
       <div class="loading-container">
-        <cortex-loading-placeholder></cortex-loading-placeholder>
+        <uprtcl-loading></uprtcl-loading>
       </div>
     `;
   }

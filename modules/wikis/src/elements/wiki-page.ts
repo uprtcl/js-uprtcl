@@ -119,8 +119,7 @@ export class WikiPage extends moduleConnect(LitElement) {
   }
 
   render() {
-    if (!this.textNode)
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+    if (!this.textNode) return html` <uprtcl-loading></uprtcl-loading> `;
 
     return html`
       <div class="top-row">

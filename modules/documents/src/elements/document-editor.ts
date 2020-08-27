@@ -1139,7 +1139,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('render()', { doc: this.doc });
 
     if (!this.doc) {
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     const editorClasses = ['editor-container'];

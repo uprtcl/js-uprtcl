@@ -227,7 +227,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
   renderLoading() {
     return html`
       <div class="loading-container">
-        <cortex-loading-placeholder></cortex-loading-placeholder>
+        <uprtcl-loading></uprtcl-loading>
       </div>
     `;
   }
