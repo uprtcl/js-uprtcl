@@ -98,7 +98,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   }
 
   changeRole(e) {
-    const selectedUserRole = e.curerntTarget.value;
+    console.log("EveesAccessControlHttpLense -> changeRole -> e", e)
   }
 
   getUserList() {
@@ -118,21 +118,78 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     userPermissions = userPermissions.concat(
       canAdmin
         .filter((_, adminIndex) => adminIndex !== 0)
-        .map((admin) => ({ userId: admin, permission: 'Admin' }))
+        .map((admin) => ({ userId: admin, permission: PermissionType.Admin }))
     );
 
     userPermissions = userPermissions.concat(
-      canWrite.map((write) => ({ userId: write, permission: 'Write' }))
+      canWrite.map((write) => ({ userId: write, permission: PermissionType.Write }))
     );
 
     userPermissions = userPermissions.concat(
-      canRead.map((read) => ({ userId: read, permission: 'Read' }))
+      canRead.map((read) => ({ userId: read, permission: PermissionType.Read }))
     );
 
     return userPermissions;
   }
 
   changeDelegateTo() {}
+
+  renderUserPermissionList() {
+
+    const permissionListConfig = {};
+
+    Object.values(PermissionType).forEach(permission => {
+      permissionListConfig[permission] = {
+        disabled: false,
+        graphic: '',
+        text: permission,
+      };
+    });
+
+    return html`
+      ${this.getUserPermissionList().map(
+        (userPermission) => html`
+          <div class="row flex-center">
+            <evees-author
+              user-id=${userPermission.userId}
+            ></evees-author>
+
+            <span>${userPermission.permission}</span>
+
+            <uprtcl-options-menu
+              @option-click=${this.changeRole}
+              .config=${permissionListConfig}
+            ></uprtcl-options-menu>
+
+          </div>
+        `
+      )}
+    `
+  }
+
+  renderAddUserPermission() {
+    const userListConfig = {};
+
+    this.getUserList().forEach(user => {
+      userListConfig[user] = {
+        disabled: false,
+        graphic: '',
+        text: user,
+      };
+    })
+
+    return html`
+      <uprtcl-options-menu
+        @option-click=${this.addRole}
+        .config=${userListConfig}
+      >
+        <uprtcl-textfield
+          slot="icon"
+          label="Search users"
+        ></uprtcl-textfield>
+      </uprtcl-options-menu>
+    `
+  }
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -259,39 +316,13 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                         : this.t('access-control:make-private')}
                     </uprtcl-button>
                   </div>
-                  ${this.getUserPermissionList().map(
-                    (userPermission) => html`
-                      <div class="row">
-                        <span>${userPermission.userId}</span>
 
-                        <uprtcl-select
-                          value=${userPermission.permission}
-                          @selected=${this.changeRole}
-                        >
-                          ${Object.values(PermissionType).map(
-                            (permission) => html`
-                              <uprtcl-list-item value=${permission}
-                                >${permission}</uprtcl-list-item
-                              >
-                            `
-                          )}
-                        </uprtcl-select>
-                      </div>
-                    `
-                  )}
                   <div class="row">
-                    <uprtcl-select
-                      label="Add user permissions"
-                      @selected=${this.addRole}
-                    >
-                      ${this.getUserList().map(
-                        (user) => html`
-                          <uprtcl-list-item value=${user}
-                            >${user}</uprtcl-list-item
-                          >
-                        `
-                      )}
-                    </uprtcl-select>
+                    ${this.renderUserPermissionList()}
+                  </div>
+
+                  <div class="row">
+                    ${this.renderAddUserPermission()}
                   </div>
                 `
               : ''}
@@ -310,6 +341,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       }
       .row {
         width: 100%;
+      }
+
+      .flex-center {
+        display: flex;
+        justify-content: space-evenly;
       }
 
       evees-author {
