@@ -55,84 +55,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   // later:
   // search users
 
-  async addRole(e) {
-    if (!this.remote.accessControl) {
-      throw new Error(`remote accessControl not found`);
-    }
-
-    const { canRead } = this.permissions.effectivePermissions;
-
-    const { currentTarget } = e;
-
-    const selectedUserId = currentTarget.value;
-
-    // add user to user permissions list
-    // if the selected user is not on the list
-    if (
-      selectedUserId !== '' &&
-      !this.getUserPermissionList().some(
-        (userPermissions) => userPermissions.userId === selectedUserId
-      )
-    ) {
-      await this.remote.accessControl.setPrivatePermissions(
-        this.uref,
-        PermissionType.Read,
-        selectedUserId
-      );
-
-      canRead.push(selectedUserId);
-
-      await this.requestUpdate();
-
-      this.dispatchEvent(
-        new CustomEvent('permissions-updated', {
-          bubbles: true,
-          composed: true,
-          cancelable: true,
-        })
-      );
-    }
-
-    // Reset select value
-    currentTarget.value = '';
-  }
-
-  changeRole(e) {
-    const selectedUserRole = e.curerntTarget.value;
-  }
-
-  getUserList() {
-    // TODO: get correct users
-    const { canAdmin } = this.permissions.effectivePermissions;
-    return this.userList.filter((user) => canAdmin[0] !== user);
-  }
-
-  getUserPermissionList() {
-    const {
-      canAdmin,
-      canWrite,
-      canRead,
-    } = this.permissions.effectivePermissions;
-    let userPermissions: any[] = [];
-
-    userPermissions = userPermissions.concat(
-      canAdmin
-        .filter((_, adminIndex) => adminIndex !== 0)
-        .map((admin) => ({ userId: admin, permission: 'Admin' }))
-    );
-
-    userPermissions = userPermissions.concat(
-      canWrite.map((write) => ({ userId: write, permission: 'Write' }))
-    );
-
-    userPermissions = userPermissions.concat(
-      canRead.map((read) => ({ userId: read, permission: 'Read' }))
-    );
-
-    return userPermissions;
-  }
-
-  changeDelegateTo() {}
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -152,6 +74,12 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     this.loadPermissions();
   }
 
+  // updated(changedProperties) {
+  //   if (changedProperties.has('entityId')) {
+  //     this.loadPermissions();
+  //   }
+  // }
+
   async loadPermissions() {
     this.loading = true;
     this.permissions = await this.remote.accessControl.getPermissions(
@@ -163,18 +91,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     this.canAdmin = this.permissions.effectivePermissions.canAdmin;
     this.loading = false;
   }
-
-  renderOwner() {
-    return html`<evees-author
-      user-id=${this.permissions.effectivePermissions.canAdmin[0]}
-    ></evees-author>`;
-  }
-
-  // updated(changedProperties) {
-  //   if (changedProperties.has('entityId')) {
-  //     this.loadPermissions();
-  //   }
-  // }
 
   async togglePublicRead() {
     if (!this.remote.accessControl) {
@@ -228,6 +144,205 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     );
   }
 
+
+  getUserList() {
+    // TODO: get correct users
+    const { canAdmin } = this.permissions.effectivePermissions;
+    return this.userList.filter((user) => canAdmin[0] !== user);
+  }
+
+  getUserPermissionList() {
+    const {
+      canAdmin,
+      canWrite,
+      canRead,
+    } = this.permissions.effectivePermissions;
+    let userPermissions: any[] = [];
+
+    userPermissions = userPermissions.concat(
+      canAdmin
+        .filter((_, adminIndex) => adminIndex !== 0)
+        .map((admin) => ({ userId: admin, permission: PermissionType.Admin }))
+    );
+
+    userPermissions = userPermissions.concat(
+      canWrite.map((write) => ({ userId: write, permission: PermissionType.Write }))
+    );
+
+    userPermissions = userPermissions.concat(
+      canRead.map((read) => ({ userId: read, permission: PermissionType.Read }))
+    );
+
+    return userPermissions;
+  }
+
+  changeDelegateTo() {}
+
+
+  async addRole(e) {
+    if (!this.remote.accessControl) {
+      throw new Error(`remote accessControl not found`);
+    }
+
+    const selectedUserId = e.detail.key;
+
+
+    // add user to user permissions list
+    // if the selected user is not on the list
+    if (
+      selectedUserId &&
+      !this.getUserPermissionList().some(
+        (userPermissions) => userPermissions.userId === selectedUserId
+      )
+    ) {
+      await this.remote.accessControl.setPrivatePermissions(
+        this.uref,
+        PermissionType.Read,
+        selectedUserId
+      );
+
+      this.permissions.effectivePermissions.canRead.push(selectedUserId);
+
+      await this.requestUpdate();
+
+      this.dispatchEvent(
+        new CustomEvent('permissions-updated', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        })
+      );
+    }
+
+  }
+
+  async changeRole(userId, event) {
+    if (!this.remote.accessControl) {
+      throw new Error(`remote accessControl not found`);
+    }
+
+    const selectedRole = event.detail.key;
+
+
+    await this.remote.accessControl.setPrivatePermissions(
+      this.uref,
+      selectedRole,
+      userId,
+    );
+
+    let {canAdmin, canRead, canWrite} = this.permissions.effectivePermissions;
+    
+    this.permissions.effectivePermissions.canAdmin = canAdmin.filter(admin => admin !== userId);
+    this.permissions.effectivePermissions.canRead = canRead.filter(read => read !== userId);
+    this.permissions.effectivePermissions.canWrite = canWrite.filter(write => write !== userId);
+
+    this.permissions.effectivePermissions[`can${selectedRole}`].push(userId)
+
+    await this.requestUpdate();
+
+    this.dispatchEvent(
+      new CustomEvent('permissions-updated', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
+  }
+
+  async removeRole(userId) {
+    if (!this.remote.accessControl) {
+      throw new Error(`remote accessControl not found`);
+    }
+
+    await this.remote.accessControl.removePermissions(
+      this.uref,
+      userId,
+    );
+
+    let {canAdmin, canRead, canWrite} = this.permissions.effectivePermissions;
+    
+    this.permissions.effectivePermissions.canAdmin = canAdmin.filter(admin => admin !== userId);
+    this.permissions.effectivePermissions.canRead = canRead.filter(read => read !== userId);
+    this.permissions.effectivePermissions.canWrite = canWrite.filter(write => write !== userId);
+
+    await this.requestUpdate();
+
+    this.dispatchEvent(
+      new CustomEvent('permissions-updated', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
+  }
+
+  renderOwner() {
+    return html`<evees-author
+      user-id=${this.permissions.effectivePermissions.canAdmin[0]}
+    ></evees-author>`;
+  }
+
+  renderUserPermissionList() {
+
+    const permissionListConfig = {};
+
+    Object.values(PermissionType).forEach(permission => {
+      permissionListConfig[permission] = {
+        disabled: false,
+        graphic: '',
+        text: permission,
+      };
+    });
+
+    return html`
+      ${this.getUserPermissionList().map(
+        (userPermission) => html`
+          <div class="row flex-center">
+            <evees-author
+              user-id=${userPermission.userId}
+            ></evees-author>
+
+            <uprtcl-options-menu
+              @option-click=${event => this.changeRole(userPermission.userId, event)}
+              .config=${permissionListConfig}
+            >
+              <span class="user-permission" slot="icon">${userPermission.permission}</span>
+            </uprtcl-options-menu>
+
+            <uprtcl-button
+              icon="clear"
+              @click=${() => this.removeRole(userPermission.userId)}
+            ></uprtcl-button>
+          </div>
+        `
+      )}
+    `
+  }
+
+  renderAddUserPermission() {
+    const userListConfig = {};
+
+    this.getUserList().forEach(user => {
+      userListConfig[user] = {
+        disabled: false,
+        graphic: '',
+        text: user,
+      };
+    })
+
+    return html`
+      <uprtcl-options-menu
+        @option-click=${this.addRole}
+        .config=${userListConfig}
+      >
+        <uprtcl-textfield
+          slot="icon"
+          label="Search users"
+        ></uprtcl-textfield>
+      </uprtcl-options-menu>
+    `
+  }
+
   render() {
     return this.loading
       ? html`<uprtcl-loading></uprtcl-loading>`
@@ -259,39 +374,13 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                         : this.t('access-control:make-private')}
                     </uprtcl-button>
                   </div>
-                  ${this.getUserPermissionList().map(
-                    (userPermission) => html`
-                      <div class="row">
-                        <span>${userPermission.userId}</span>
 
-                        <uprtcl-select
-                          value=${userPermission.permission}
-                          @selected=${this.changeRole}
-                        >
-                          ${Object.values(PermissionType).map(
-                            (permission) => html`
-                              <uprtcl-list-item value=${permission}
-                                >${permission}</uprtcl-list-item
-                              >
-                            `
-                          )}
-                        </uprtcl-select>
-                      </div>
-                    `
-                  )}
                   <div class="row">
-                    <uprtcl-select
-                      label="Add user permissions"
-                      @selected=${this.addRole}
-                    >
-                      ${this.getUserList().map(
-                        (user) => html`
-                          <uprtcl-list-item value=${user}
-                            >${user}</uprtcl-list-item
-                          >
-                        `
-                      )}
-                    </uprtcl-select>
+                    ${this.renderUserPermissionList()}
+                  </div>
+
+                  <div class="row">
+                    ${this.renderAddUserPermission()}
                   </div>
                 `
               : ''}
@@ -310,6 +399,20 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       }
       .row {
         width: 100%;
+      }
+
+      .flex-center {
+        display: flex;
+        justify-content: space-evenly;
+      }
+
+      .user-permission {
+        cursor: pointer; 
+      }
+
+
+      .user-permission:hover {
+        color: #e8e8e8;
       }
 
       evees-author {
