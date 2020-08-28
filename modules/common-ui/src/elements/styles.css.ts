@@ -12,7 +12,7 @@ export const styles = css`
     letter-spacing: 1.25px;
   }
   .button-filled {
-    background-color: #2196f3;
+    background-color: var(--background-color, #2196f3);
     color: #ffffff;
   }
   .button-filled svg {

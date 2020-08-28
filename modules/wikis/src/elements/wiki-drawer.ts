@@ -540,11 +540,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
         ${this.editable && showOptions
           ? html`
-              <uprtcl-options-menu
-                @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
-                .config=${menuConfig}
-              >
-              </uprtcl-options-menu>
+              <div class="item-menu-container">
+                <uprtcl-options-menu
+                  class="options-menu"
+                  @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
+                  .config=${menuConfig}
+                >
+                </uprtcl-options-menu>
+              </div>
             `
           : ''}
       </div>
@@ -567,10 +570,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       ${this.uref !== this.firstRef
         ? html`
             <uprtcl-button
+              style=${`--background-color: ${this.color()}`}
+              class="evees-author"
               >by
               <evees-author
                 user-id=${this.author}
-                show-name="false"
+                show-name
+                short
                 color=${eveeColor(this.uref)}
                 @click=${() => this.goToHome()}
               ></evees-author
@@ -685,7 +691,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .breadcrum-container uprtcl-button {
           display: block;
-          width: 180px;
+          width: auto;
+          margin-right: 8px;
+        }
+        .breadcrum-container .evees-author {
+          --background-color: red;
+        }
+        .breadcrum-container uprtcl-button evees-author {
+          --color: white;
         }
         .login-widget-container {
           flex: 0 0 0;
@@ -732,12 +745,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           flex-direction: column;
           justify-content: center;
         }
+        .page-item .item-menu-container {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .page-item .item-menu-container .options-menu {
+          --box-width: 160px;
+        }
         .page-item:hover {
           background-color: #e8ecec;
-        }
-        uprtcl-options-menu {
-          padding-top: 6px;
-          --box-with: 200px;
         }
         .title-empty {
           color: #a2a8aa;

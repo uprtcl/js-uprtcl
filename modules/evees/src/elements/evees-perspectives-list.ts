@@ -213,6 +213,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     const action = this.getPerspectiveAction(perspectiveData);
     return html`
       <uprtcl-list-item
+        style=${`--selected-border-color: ${this.perspectiveColor(
+          perspectiveData.id
+        )}`}
         hasMeta
         ?selected=${this.perspectiveId === perspectiveData.id}
         @click=${() => this.perspectiveClicked(perspectiveData.id)}
@@ -223,13 +226,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         ></evees-author>
 
         ${!this.getPerspectiveActionDisaled(perspectiveData)
-          ? html` <uprtcl-icon
+          ? html` <uprtcl-button
               slot="meta"
               @click=${(e) =>
                 this.perspectiveButtonClicked(e, action, perspectiveData)}
             >
               call_merge
-            </uprtcl-icon>`
+            </uprtcl-button>`
           : ''}
       </uprtcl-list-item>
     `;
@@ -255,10 +258,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-      }
-
-      uprtcl-list-item {
-        padding-left: 12px;
       }
 
       .loading-container {
