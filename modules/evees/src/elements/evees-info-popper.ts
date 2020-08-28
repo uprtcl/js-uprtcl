@@ -1,6 +1,6 @@
-import { html, css, property } from 'lit-element';
-import { EveesInfoBase } from './evee-info-base';
-import { DEFAULT_COLOR } from './support';
+import { html, css, property, LitElement, query } from 'lit-element';
+import { DEFAULT_COLOR, eveeColor } from './support';
+import { EveesPopper } from './common-ui/evees-popper';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -12,117 +12,77 @@ const styleMap = (style) => {
   }, '');
 };
 
-export class EveesInfoPopper extends EveesInfoBase {
-  @property({ attribute: false })
-  show: Boolean = false;
+export class EveesInfoPopper extends LitElement {
+  @property({ type: String, attribute: 'uref' })
+  uref!: string;
 
-  async firstUpdated() {
-    super.firstUpdated();
-  }
+  @property({ type: String, attribute: 'first-uref' })
+  firstRef!: string;
 
-  showClicked() {
-    this.show = !this.show;
-    if (this.show) this.load();
-  }
+  @property({ type: String, attribute: 'default-authority' })
+  defaultAuthority: string | undefined = undefined;
 
-  async newPerspectiveClicked() {
-    super.newPerspectiveClicked();
-    this.show = false;
-  }
+  @property({ type: String, attribute: 'evee-color' })
+  eveeColor!: string;
 
-  perspectiveTitle() {
+  @query('#info-popper')
+  infoPopper!: EveesPopper;
+
+  color() {
     if (this.uref === this.firstRef) {
-      return 'Accepted Perspective (on the parent)';
+      return this.eveeColor ? this.eveeColor : DEFAULT_COLOR;
     } else {
-      return `Another Perspective`;
+      return eveeColor(this.uref);
     }
   }
 
-  renderOtherPerspectives() {
-    return html`
-      <div class="perspectives-list">
-        <evees-perspectives-list
-          perspective-id=${this.uref}
-          first-perspective-id=${this.firstRef}
-          @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}
-          @merge-perspective=${(e) =>
-            this.otherPerspectiveMerge(
-              e.detail.perspectiveId,
-              this.uref,
-              false
-            )}
-          @create-proposal=${(e) =>
-            this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref, true)}
-          @authorize-proposal=${this.authorizeProposal}
-          @execute-proposal=${this.executeProposal}
-        ></evees-perspectives-list>
-      </div>
-      <div class="button-row">
-        ${this.loading
-          ? this.renderLoading()
-          : html`
-              <uprtcl-button
-                icon="call_split"
-                @click=${this.newPerspectiveClicked}
-                label="new perspective"
-              ></uprtcl-button>
-            `}
-      </div>
-    `;
-  }
+  connectedCallback() {
+    super.connectedCallback();
 
-  renderPermissions() {
-    return html`
-      <div class="perspectives-permissions">
-        <permissions-for-entity uref=${this.uref}></permissions-for-entity>
-      </div>
-    `;
+    this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
+      this.infoPopper.showDropdown = false;
+      this.requestUpdate();
+    }) as EventListener);
   }
 
   render() {
     return html`
-      <div class="container">
-        <div class="button" @click=${this.showClicked}>
+      <evees-popper id="info-popper" position="right">
+        <div slot="icon" class="button">
           <div
             class="evee-stripe"
             style=${styleMap({
-              backgroundColor:
-                (this.eveeColor ? this.eveeColor : DEFAULT_COLOR) + 'FF',
+              backgroundColor: this.color() + 'FF',
             })}
           ></div>
         </div>
-
-        ${this.show
-          ? html`
-              <uprtcl-card class="info-box">
-                ${this.perspectiveData
-                  ? html`
-                      <div class="column">
-                        ${this.renderInfo()}
-
-                        <div class="close">
-                          <uprtcl-icon-button
-                            icon="close"
-                            @click=${this.showClicked}
-                          ></uprtcl-icon-button>
-                        </div>
-                      </div>
-                    `
-                  : ''}
-              </uprtcl-card>
-            `
-          : ''}
-      </div>
+        <evees-info-page
+          uref=${this.uref}
+          first-uref=${this.firstRef as string}
+          evee-color=${this.color()}
+          .default-authority=${this.defaultAuthority}
+        ></evees-info-page>
+      </evees-popper>
     `;
   }
 
   static get styles() {
-    return super.styles.concat([
+    return [
       css`
-        .container {
-          position: relative;
-          height: 100%;
+        :host {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
+        evees-popper {
+          flex-grow: 1;
+          --box-width: 500px;
+        }
+
+        evees-info-page {
+          padding: 5vw 0px;
+        }
+
         .button {
           cursor: pointer;
           padding-top: 5px;
@@ -139,50 +99,7 @@ export class EveesInfoPopper extends EveesInfoBase {
           height: calc(100% - 10px);
           border-radius: 3px;
         }
-        .info-box {
-          width: auto;
-          z-index: 20;
-          position: absolute;
-          left: 15px;
-          top: 0;
-          width: 80vw;
-          max-width: 700px;
-        }
-        .tab-content-container {
-          min-height: 400px;
-          display: flex;
-          flex-direction: column;
-        }
-        .tab-content {
-          display: flex;
-          flex-direction: column;
-          flex-grow: 1;
-        }
-        .color-bar {
-          height: 1vw;
-          max-height: 5px;
-          width: 100%;
-          margin-bottom: 1vw;
-          border-top-right-radius: 4px;
-          border-top-left-radius: 4px;
-        }
-        .perspective-title {
-          font-weight: bold;
-          padding: 0.5vw 0 1.5vw 1.5vw;
-        }
-        .button-row {
-          padding-bottom: 16px;
-          text-align: center;
-        }
-        .perspectives-list {
-          flex-grow: 1;
-        }
-        .close {
-          position: absolute;
-          top: 20px;
-          right: 20px;
-        }
       `,
-    ]);
+    ];
   }
 }
