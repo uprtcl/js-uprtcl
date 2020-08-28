@@ -38,7 +38,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
   render() {
     if (this.logged) {
-      return html` <uprtcl-button>logout</uprtcl-button> `;
+      return html` <uprtcl-button disabled>connected</uprtcl-button> `;
     } else {
       return html`
         <uprtcl-button @click=${() => this.loginAll()}>login</uprtcl-button>

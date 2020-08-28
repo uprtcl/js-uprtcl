@@ -564,18 +564,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       >
         official
       </uprtcl-button>
-      <div class="perspective-author-wrapper">
-        ${this.uref !== this.firstRef
-          ? html`
+      ${this.uref !== this.firstRef
+        ? html`
+            <uprtcl-button
+              >by
               <evees-author
                 user-id=${this.author}
                 show-name="false"
                 color=${eveeColor(this.uref)}
                 @click=${() => this.goToHome()}
-              ></evees-author>
-            `
-          : ''}
-      </div>
+              ></evees-author
+            ></uprtcl-button>
+          `
+        : ''}
     `;
   }
 
@@ -684,7 +685,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .breadcrum-container uprtcl-button {
           display: block;
-          width: 210px;
+          width: 180px;
         }
         .login-widget-container {
           flex: 0 0 0;

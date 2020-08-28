@@ -7,7 +7,7 @@ export class UprtclIconButton extends LitElement {
   icon!: string;
 
   render() {
-    return html`<div class="button-color button-layout">
+    return html`<div class="button-filled icon-button-layout cursor">
       ${icons[this.icon]}
     </div>`;
   }
@@ -19,13 +19,10 @@ export class UprtclIconButton extends LitElement {
         :host {
           display: inline-block;
         }
-        .button-color {
-          background-color: #9dbacc;
-        }
-        .button-layout {
-          width: 3.6rem;
-          height: 3.6rem;
-          border-radius: 1.8rem;
+        .icon-button-layout {
+          width: 36px;
+          height: 36px;
+          border-radius: 18px;
           display: flex;
           flex-direction: column;
           justify-content: center;

@@ -21,6 +21,10 @@ export const styles = css`
   .button-filled:hover {
     background-color: #50b0ff;
   }
+  .button-disabled {
+    background-color: #bbd6ec;
+    color: #ffffff;
+  }
   .button-outlined {
     background-color: transparent;
     color: #2196f3;

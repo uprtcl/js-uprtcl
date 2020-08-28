@@ -215,7 +215,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       <uprtcl-list-item
         hasMeta
         ?selected=${this.perspectiveId === perspectiveData.id}
-        ?activated=${this.perspectiveId === perspectiveData.id}
         @click=${() => this.perspectiveClicked(perspectiveData.id)}
       >
         <evees-author

@@ -482,7 +482,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async newPerspectiveClicked() {
     this.creatingNewPerspective = true;
 
-    debugger;
     const result = await this.client.mutate({
       mutation: FORK_PERSPECTIVE,
       variables: {
