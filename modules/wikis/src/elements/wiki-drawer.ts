@@ -567,7 +567,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       >
         official
       </uprtcl-button>
-      <uprtcl-textfield></uprtcl-textfield>
       ${this.uref !== this.firstRef
         ? html`
             <uprtcl-button
