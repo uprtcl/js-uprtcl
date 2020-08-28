@@ -249,6 +249,33 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     );
   }
 
+  async removeRole(userId) {
+    if (!this.remote.accessControl) {
+      throw new Error(`remote accessControl not found`);
+    }
+
+    await this.remote.accessControl.removePermissions(
+      this.uref,
+      userId,
+    );
+
+    let {canAdmin, canRead, canWrite} = this.permissions.effectivePermissions;
+    
+    this.permissions.effectivePermissions.canAdmin = canAdmin.filter(admin => admin !== userId);
+    this.permissions.effectivePermissions.canRead = canRead.filter(read => read !== userId);
+    this.permissions.effectivePermissions.canWrite = canWrite.filter(write => write !== userId);
+
+    await this.requestUpdate();
+
+    this.dispatchEvent(
+      new CustomEvent('permissions-updated', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
+  }
+
   renderOwner() {
     return html`<evees-author
       user-id=${this.permissions.effectivePermissions.canAdmin[0]}
@@ -282,6 +309,10 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
               <span class="user-permission" slot="icon">${userPermission.permission}</span>
             </uprtcl-options-menu>
 
+            <uprtcl-button
+              icon="clear"
+              @click=${() => this.removeRole(userPermission.userId)}
+            ></uprtcl-button>
           </div>
         `
       )}
