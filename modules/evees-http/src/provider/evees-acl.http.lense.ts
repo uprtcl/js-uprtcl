@@ -184,8 +184,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       throw new Error(`remote accessControl not found`);
     }
 
-    const { canRead } = this.permissions.effectivePermissions;
-
     const selectedUserId = e.detail.key;
 
 
@@ -203,7 +201,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
         selectedUserId
       );
 
-      canRead.push(selectedUserId);
+      this.permissions.effectivePermissions.canRead.push(selectedUserId);
 
       await this.requestUpdate();
 
@@ -218,8 +216,37 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   }
 
-  changeRole(e) {
-    console.log("EveesAccessControlHttpLense -> changeRole -> e", e)
+  async changeRole(userId, event) {
+    if (!this.remote.accessControl) {
+      throw new Error(`remote accessControl not found`);
+    }
+
+    const selectedRole = event.detail.key;
+
+
+    await this.remote.accessControl.setPrivatePermissions(
+      this.uref,
+      selectedRole,
+      userId,
+    );
+
+    let {canAdmin, canRead, canWrite} = this.permissions.effectivePermissions;
+    
+    this.permissions.effectivePermissions.canAdmin = canAdmin.filter(admin => admin !== userId);
+    this.permissions.effectivePermissions.canRead = canRead.filter(read => read !== userId);
+    this.permissions.effectivePermissions.canWrite = canWrite.filter(write => write !== userId);
+
+    this.permissions.effectivePermissions[`can${selectedRole}`].push(userId)
+
+    await this.requestUpdate();
+
+    this.dispatchEvent(
+      new CustomEvent('permissions-updated', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
   }
 
   renderOwner() {
@@ -249,7 +276,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
             ></evees-author>
 
             <uprtcl-options-menu
-              @option-click=${this.changeRole}
+              @option-click=${event => this.changeRole(userPermission.userId, event)}
               .config=${permissionListConfig}
             >
               <span class="user-permission" slot="icon">${userPermission.permission}</span>
