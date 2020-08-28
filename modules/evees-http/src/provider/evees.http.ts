@@ -18,7 +18,7 @@ import { EveesAccessControlHttp } from './evees-acl.http';
 
 const evees_api: string = 'evees-v1';
 
-export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
+export class EveesHttp extends HttpAuth0Provider implements EveesRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   knownSources: KnownSourcesService;
