@@ -1,6 +1,6 @@
 import { html, css, property, LitElement, query } from 'lit-element';
 import { DEFAULT_COLOR, eveeColor } from './support';
-import { EveesPopper } from './common-ui/evees-popper';
+import { UprtclPopper } from '@uprtcl/common-ui';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -26,7 +26,7 @@ export class EveesInfoPopper extends LitElement {
   eveeColor!: string;
 
   @query('#info-popper')
-  infoPopper!: EveesPopper;
+  infoPopper!: UprtclPopper;
 
   color() {
     if (this.uref === this.firstRef) {
@@ -47,7 +47,7 @@ export class EveesInfoPopper extends LitElement {
 
   render() {
     return html`
-      <evees-popper id="info-popper" position="right">
+      <uprtcl-popper id="info-popper" position="right">
         <div slot="icon" class="button">
           <div
             class="evee-stripe"
@@ -62,7 +62,7 @@ export class EveesInfoPopper extends LitElement {
           evee-color=${this.color()}
           .default-authority=${this.defaultAuthority}
         ></evees-info-page>
-      </evees-popper>
+      </uprtcl-popper>
     `;
   }
 
@@ -74,13 +74,14 @@ export class EveesInfoPopper extends LitElement {
           display: flex;
           flex-direction: column;
         }
-        evees-popper {
+        uprtcl-popper {
           flex-grow: 1;
           --box-width: 500px;
         }
 
         evees-info-page {
-          padding: 5vw 0px;
+          padding: 5vw 0vw;
+          display: block;
         }
 
         .button {

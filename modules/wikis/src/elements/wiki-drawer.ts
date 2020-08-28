@@ -663,7 +663,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
             'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
             'Segoe UI Symbol';
-          font-size: 1.6rem;
+          font-size: 16px;
           color: #37352f;
           --mdc-theme-primary: #2196f3;
           width: 100%;
@@ -806,7 +806,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .section-header {
           font-weight: bold;
           padding: 2vw 0px 0.8vw 0px;
-          font-size: 3rem;
+          font-size: 30px;
           border-style: solid 2px;
         }
         .section-content evees-author {
@@ -817,7 +817,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           padding-bottom: 2vw;
         }
         .official-name {
-          font-size: 3rem;
+          font-size: 30px;
           font-weight: bold;
           color: #4e585c;
         }

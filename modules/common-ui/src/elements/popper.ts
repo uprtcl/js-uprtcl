@@ -33,8 +33,10 @@ export class UprtclPopper extends LitElement {
   }
 
   render() {
-    const classes =
+    let classes =
       this.position === 'bottom' ? ['info-box-bottom'] : ['info-box-right'];
+
+    classes.push('info-box');
 
     return html`
       <div class="popper-button" @click=${this.showDropDownClicked}>
@@ -43,7 +45,7 @@ export class UprtclPopper extends LitElement {
         </slot>
       </div>
       ${this.showDropdown
-        ? html` <uprtcl-card id="popper-menu" class="info-box">
+        ? html` <uprtcl-card id="popper-menu" class=${classes.join(' ')}>
             <slot></slot>
           </uprtcl-card>`
         : ''}
@@ -68,6 +70,10 @@ export class UprtclPopper extends LitElement {
         align-items: center;
       }
 
+      .popper-button {
+        flex-grow: 1;
+      }
+
       .info-box {
         color: rgba(0, 0, 0, 0.87);
         z-index: 20;
@@ -75,12 +81,12 @@ export class UprtclPopper extends LitElement {
         width: var(--box-width, 250px);
       }
       .info-box-bottom {
-        right: 2px;
-        top: 52px;
+        right: 0px;
+        top: calc(100% + 5px);
       }
       .info-box-right {
         top: 5px;
-        left: 25px;
+        left: calc(100% + 5px);
       }
     `;
   }

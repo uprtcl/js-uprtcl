@@ -306,7 +306,7 @@ export class EveesInfoPage extends EveesInfoBase {
         .section-header {
           font-weight: bold;
           padding: 2vw 0px 0.8vw 0px;
-          font-size: 3rem;
+          font-size: 30px;
           border-style: solid 2px;
         }
         .section-header evees-author {
