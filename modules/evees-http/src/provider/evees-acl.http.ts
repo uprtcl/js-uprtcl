@@ -29,6 +29,13 @@ export class EveesAccessControlHttp extends HttpProvider
     await super.httpPut(`/permissions/${hash}`, permissions);
   }
 
+  async removePermissions(
+    hash: string,
+    userId: string
+  ) {
+    await super.httpDelete(`/permissions/${hash}/single/${userId}`);
+  }
+
   async setPrivatePermissions(
     hash: string,
     type: PermissionType,
