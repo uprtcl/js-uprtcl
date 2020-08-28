@@ -1,3 +1,5 @@
+import { ethers } from 'ethers';
+
 import {
   MicroOrchestrator,
   i18nextBaseModule,
@@ -11,7 +13,7 @@ import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 import { OrbitDBConnection, EveesOrbitDB } from '@uprtcl/evees-orbitdb';
-import { EveesEthereum } from '@uprtcl/evees-ethereum';
+import { EveesEthereum, EveesEthereumModule } from '@uprtcl/evees-ethereum';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
@@ -22,7 +24,11 @@ import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
 (async function () {
-  const ethHost = '';
+  // const provider = '';
+  const provider = ethers.getDefaultProvider('rinkeby', {
+    etherscan: '6H4I43M46DJ4IJ9KKR8SFF1MF2TMUQTS2F',
+    infura: '73e0929fc849451dae4662585aea9a7b',
+  });
   // const ethHost = 'ws://localhost:8545';
 
   // const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
@@ -62,7 +68,7 @@ import { SimpleWiki } from './simple-wiki';
   });
   await orbitDBConnection.ready();
 
-  const ethConnection = new EthereumConnection({ provider: ethHost });
+  const ethConnection = new EthereumConnection({ provider });
   await ethConnection.ready();
 
   const orbitdbEvees = new EveesOrbitDB(
@@ -87,12 +93,18 @@ import { SimpleWiki } from './simple-wiki';
     new CortexModule(),
     new DiscoveryModule([orbitdbEvees.casID]),
     new LensesModule(),
+    new EveesEthereumModule(),
     evees,
     documents,
     wikis,
   ];
 
   await orchestrator.loadModules(modules);
+
+  /*** add other services to the container */
+  orchestrator.container
+    .bind('ethereum-connection')
+    .toConstantValue(ethConnection);
 
   console.log(orchestrator);
   customElements.define('simple-editor', SimpleEditor);

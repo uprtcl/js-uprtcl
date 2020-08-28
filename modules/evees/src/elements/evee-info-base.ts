@@ -32,6 +32,7 @@ import {
   EXECUTE_PROPOSAL,
   DELETE_PERSPECTIVE,
   CREATE_AND_ADD_PROPOSAL,
+  FORK_PERSPECTIVE,
 } from '../graphql/queries';
 import { EveesHelpers } from '../graphql/helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
@@ -75,6 +76,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   isLogged: boolean = false;
+
+  @property({ attribute: false })
+  isLoggedOnDefault;
 
   @property({ attribute: false })
   forceUpdate: string = 'true';
@@ -202,7 +206,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       };
     }
 
-    this.isLogged =
+    this.isLogged = await this.remote.isLogged();
+    this.isLoggedOnDefault =
       this.defaultRemote !== undefined
         ? await this.defaultRemote.isLogged()
         : false;
@@ -312,7 +317,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       config
     );
 
-    const confirm = await this.updatesDialog(workspace, 'propose', 'cancel');
+    const confirm = await this.updatesDialog(
+      workspace,
+      isProposal ? 'propose' : 'merge',
+      'cancel'
+    );
 
     if (!confirm) {
       return;
@@ -481,14 +490,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async newPerspectiveClicked() {
     this.creatingNewPerspective = true;
 
-    const workspace = new EveesWorkspace(this.client, this.recognizer);
-    const newPerspectiveId = await this.evees.forkPerspective(
-      this.uref,
-      workspace,
-      this.defaultRemoteId
-    );
-    await workspace.execute(this.client);
+    const result = await this.client.mutate({
+      mutation: FORK_PERSPECTIVE,
+      variables: {
+        perspectiveId: this.uref,
+        remote: this.defaultRemoteId,
+      },
+    });
 
+    const newPerspectiveId = result.data.forkPerspective.id;
     this.checkoutPerspective(newPerspectiveId);
 
     this.logger.info('newPerspectiveClicked() - perspective created', {

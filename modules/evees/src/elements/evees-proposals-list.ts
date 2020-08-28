@@ -53,11 +53,15 @@ export class ProposalsList extends moduleConnect(LitElement) {
   protected client!: ApolloClient<any>;
 
   async firstUpdated() {
+    if (!this.isConnected) return;
+
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.load();
   }
 
   async load() {
+    if (!this.isConnected) return;
+
     this.loadingProposals = true;
 
     this.logger.info('loadProposals');
@@ -223,7 +227,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
   renderLoading() {
     return html`
       <div class="loading-container">
-        <cortex-loading-placeholder></cortex-loading-placeholder>
+        <uprtcl-loading></uprtcl-loading>
       </div>
     `;
   }

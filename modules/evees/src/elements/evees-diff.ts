@@ -98,7 +98,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     const perspectiveIds = Object.keys(this.updatesDetails);
@@ -113,7 +113,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
     return css`
       :host {
         display: block;
-        padding: 30px 20px 30px 0px;
+        padding: 30px 0px;
         text-align: center;
       }
     `;

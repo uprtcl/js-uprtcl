@@ -41,7 +41,7 @@ export class UprtclFormString extends LitElement {
     return html`
       <div class="form">
         <uprtcl-textfield
-          outlined
+          skinny
           id="text-input"
           value=${this.fieldValue}
           label=${this.fieldLabel}

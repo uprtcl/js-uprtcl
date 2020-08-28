@@ -4,9 +4,6 @@ export class UprtclButtonLoading extends LitElement {
   @property({ type: String })
   loading: string = 'true';
 
-  @property({ type: String })
-  label: string = '';
-
   @property({ type: Boolean })
   outlined: boolean = false;
 
@@ -20,7 +17,7 @@ export class UprtclButtonLoading extends LitElement {
     >
       ${this.loading === 'true'
         ? html`<uprtcl-loading size="20"></uprtcl-loading>`
-        : this.label}
+        : html`<slot></slot>`}
     </uprtcl-button>`;
   }
 

@@ -52,6 +52,16 @@ export class UprtclPopper extends LitElement {
         flex-direction: column;
       }
 
+      .icon-container {
+        width: 36px;
+        height: 36px;
+        border-radius: 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
       .info-box {
         color: rgba(0, 0, 0, 0.87);
         z-index: 20;

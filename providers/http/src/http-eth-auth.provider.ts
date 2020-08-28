@@ -24,7 +24,7 @@ export class HttpEthAuthProvider extends HttpProvider {
     await this.ethConnection.ready();
 
     /** keep a copy of the current ethConnection account */
-    this.account = this.ethConnection.accounts[0].toLocaleLowerCase();
+    this.account = this.ethConnection.getCurrentAccount();
 
     const currentUserId = this.userId;
 
@@ -50,12 +50,16 @@ export class HttpEthAuthProvider extends HttpProvider {
 
   async isLogged() {
     if (this.userId === undefined) return false;
-    return this.connection.get<boolean>(this.options.host + `/user/isAuthorized`);
+    return this.connection.get<boolean>(
+      this.options.host + `/user/isAuthorized`
+    );
   }
 
   async getNonce() {
     if (this.account === undefined) throw Error('account undefined');
-    return this.connection.get<string>(this.options.host + `/user/${this.account}/nonce`);
+    return this.connection.get<string>(
+      this.options.host + `/user/${this.account}/nonce`
+    );
   }
 
   async authorize(signature: string) {
@@ -72,7 +76,13 @@ export class HttpEthAuthProvider extends HttpProvider {
   }
 
   async login(): Promise<void> {
-    if (this.account === undefined) throw Error('account undefined');
+    if (!this.ethConnection.canSign()) {
+      await this.ethConnection.connectWallet();
+      await this.connect();
+    }
+
+    if (this.account === undefined || this.account === '')
+      throw Error('account undefined');
 
     const nonce = await this.getNonce();
     const signature = await this.ethConnection.signText(
@@ -84,6 +94,8 @@ export class HttpEthAuthProvider extends HttpProvider {
     this.connection.userId = this.account;
     this.connection.authToken = 'Bearer ' + token.jwt;
   }
-  async isConnected(): Promise<boolean> { return true }
+  async isConnected(): Promise<boolean> {
+    return true;
+  }
   async disconnect(): Promise<void> {}
 }

@@ -19,8 +19,11 @@ export class EveesAuthor extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'user-id' })
   userId!: string;
 
-  @property({ type: String, attribute: 'show-name' })
-  showName: String = 'true';
+  @property({ type: Boolean })
+  showName: boolean = true;
+
+  @property({ type: Boolean })
+  short: boolean = false;
 
   @property({ type: String })
   color!: string;
@@ -96,11 +99,16 @@ export class EveesAuthor extends moduleConnect(LitElement) {
 
   render() {
     if (this.profile.userId === undefined) return '';
-
+    let addressBoxClasses = ['box-address-txt'];
+    if (this.short) {
+      addressBoxClasses.push('box-address-shorter');
+    } else {
+      addressBoxClasses.push('box-address-short');
+    }
     return html`
-      <div class="boxAddress boxAddressFull">
+      <div class="box-address">
         <div
-          class="boxImg"
+          class="box-img"
           style="${styleMap({
             borderColor: this.color,
           })}"
@@ -111,8 +119,8 @@ export class EveesAuthor extends moduleConnect(LitElement) {
           }
         </div>
 
-        ${this.showName == 'true'
-          ? html`<div class="boxShortAddress">
+        ${this.showName
+          ? html`<div class=${addressBoxClasses.join(' ')}>
               ${this.profile.name ? this.profile.name : this.profile.userId}
             </div>`
           : ''}
@@ -125,9 +133,11 @@ export class EveesAuthor extends moduleConnect(LitElement) {
     return css`
       :host {
         width: fit-content;
-        display: block;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
       }
-      .boxAddress {
+      .box-address {
         background: transparent;
         height: fit-content;
         padding: 0px;
@@ -139,7 +149,7 @@ export class EveesAuthor extends moduleConnect(LitElement) {
         align-items: center;
       }
 
-      .boxAddress .boxImg {
+      .box-address .box-img {
         background: rgb(7, 73, 136);
         height: ${baseTileHeight};
         width: ${baseTileHeight};
@@ -149,24 +159,29 @@ export class EveesAuthor extends moduleConnect(LitElement) {
         border-width: 2px;
       }
 
-      .boxAddress .boxImg img {
+      .box-address .box-img img {
         height: 100%;
         width: 100%;
         object-fit: cover;
         background-color: white;
       }
 
-      .boxShortAddress {
-        color: rgb(99, 102, 104);
+      .box-address-txt {
+        color: var(--color, rgb(99, 102, 104));
         font-size: 15px;
         font-weight: 600;
         letter-spacing: 0.015em;
         display: block;
         padding: 0 16px;
-        max-width: 200px;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+      }
+      .box-address-short {
+        max-width: 200px;
+      }
+      .box-address-shorter {
+        max-width: 100px;
       }
     `;
   }

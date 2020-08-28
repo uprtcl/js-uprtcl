@@ -7,6 +7,9 @@ export class UprtclDialog extends LitElement {
   @property({ type: String, attribute: 'secondary-text' })
   secondaryText: string = 'Cancel';
 
+  @property({ type: String, attribute: 'secondary-icon' })
+  secondaryIcon: string = 'clear';
+
   @property({ type: String, attribute: 'show-secondary' })
   showSecondary: string = 'false';
 
@@ -32,16 +35,22 @@ export class UprtclDialog extends LitElement {
           <div class="slot-container">
             <slot></slot>
           </div>
-          ${this.showSecondary === 'true'
-            ? html`
-                <uprtcl-button @click=${this.secondaryClicked}>
-                  ${this.secondaryText}
-                </uprtcl-button>
-              `
-            : ''}
-          <uprtcl-button @click=${this.primaryClicked}>
-            ${this.primaryText}
-          </uprtcl-button>
+          <div class="buttons-container">
+            ${this.showSecondary === 'true'
+              ? html`
+                  <uprtcl-button
+                    @click=${this.secondaryClicked}
+                    icon=${this.secondaryIcon}
+                    skinny
+                  >
+                    ${this.secondaryText}
+                  </uprtcl-button>
+                `
+              : ''}
+            <uprtcl-button @click=${this.primaryClicked}>
+              ${this.primaryText}
+            </uprtcl-button>
+          </div>
         </div>
       </div>
     `;
@@ -77,6 +86,17 @@ export class UprtclDialog extends LitElement {
         max-height: calc(100vh - 200px);
         min-height: 50vh;
         overflow-y: auto;
+      }
+
+      .buttons-container {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+        flex-direction: row;
+      }
+      .buttons-container uprtcl-button {
+        width: 150px;
+        margin-left: 12px;
       }
     `;
   }
