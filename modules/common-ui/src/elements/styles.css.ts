@@ -25,14 +25,14 @@ export const styles = css`
     background-color: #bbd6ec;
     color: #ffffff;
   }
-  .button-outlined {
+  .button-skinny {
     background-color: transparent;
     color: #2196f3;
   }
-  .button-outlined svg {
+  .button-skinny svg {
     fill: #2196f3;
   }
-  .button-outlined:hover {
+  .button-skinny:hover {
     color: #50b0ff;
     background-color: #eef7ff;
   }

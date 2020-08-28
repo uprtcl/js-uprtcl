@@ -562,11 +562,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           `
         : ''}
       <uprtcl-button
-        .outlined=${this.uref !== this.firstRef}
+        .skinny=${this.uref !== this.firstRef}
         @click=${() => this.goToOfficial()}
       >
         official
       </uprtcl-button>
+      <uprtcl-textfield></uprtcl-textfield>
       ${this.uref !== this.firstRef
         ? html`
             <uprtcl-button

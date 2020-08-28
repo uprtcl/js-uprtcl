@@ -78,6 +78,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   isLogged: boolean = false;
 
   @property({ attribute: false })
+  isLoggedOnDefault;
+
+  @property({ attribute: false })
   forceUpdate: string = 'true';
 
   @property({ attribute: false })
@@ -203,7 +206,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       };
     }
 
-    this.isLogged =
+    this.isLogged = await this.remote.isLogged();
+    this.isLoggedOnDefault =
       this.defaultRemote !== undefined
         ? await this.defaultRemote.isLogged()
         : false;
@@ -313,7 +317,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       config
     );
 
-    const confirm = await this.updatesDialog(workspace, 'propose', 'cancel');
+    const confirm = await this.updatesDialog(
+      workspace,
+      isProposal ? 'propose' : 'merge',
+      'cancel'
+    );
 
     if (!confirm) {
       return;

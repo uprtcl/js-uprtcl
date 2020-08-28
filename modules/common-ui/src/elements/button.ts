@@ -10,7 +10,7 @@ export class UprtclButton extends LitElement {
   disabled: boolean = false;
 
   @property({ type: Boolean })
-  outlined: boolean = false;
+  skinny: boolean = false;
 
   @property({ type: Boolean })
   raised: boolean = false;
@@ -21,8 +21,8 @@ export class UprtclButton extends LitElement {
     if (this.disabled) {
       classes.push('button-disabled');
     } else {
-      if (this.outlined) {
-        classes.push('button-outlined', 'cursor');
+      if (this.skinny) {
+        classes.push('button-skinny', 'cursor');
       } else {
         classes.push('button-filled', 'cursor');
       }

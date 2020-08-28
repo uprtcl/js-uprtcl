@@ -109,7 +109,9 @@ export class EveesInfoPage extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        ${this.remote.accessControl.lense().render(this.uref)}
+        ${!this.loading
+          ? this.remote.accessControl.lense().render(this.uref)
+          : ''}
       </div>
     `;
   }
@@ -118,7 +120,7 @@ export class EveesInfoPage extends EveesInfoBase {
     return html`
       <uprtcl-button-loading
         class="section-button"
-        outlined
+        skinny
         icon="call_split"
         @click=${this.newPerspectiveClicked}
         loading=${this.creatingNewPerspective ? 'true' : 'false'}
@@ -132,12 +134,12 @@ export class EveesInfoPage extends EveesInfoBase {
     return html`
       <uprtcl-button-loading
         class="section-button"
-        outlined
+        skinny
         icon="call_merge"
         @click=${this.proposeMergeClicked}
         loading=${this.proposingUpdate ? 'true' : 'false'}
       >
-        Propose Update
+        Propose Merge
       </uprtcl-button-loading>
     `;
   }
@@ -145,35 +147,19 @@ export class EveesInfoPage extends EveesInfoBase {
   renderPerspectiveActions() {
     /** most likely action button */
     const actionButton = html`
-      <div class="action-button">
-        ${this.firstRef !== this.uref
-          ? this.renderMakeProposalButton()
-          : this.isLogged
-          ? this.renderNewPerspectiveButton()
-          : ''}
+        ${
+          this.isLogged && this.firstRef !== this.uref
+            ? html`<div class="action-button">
+                ${this.renderMakeProposalButton()}
+              </div>`
+            : this.isLoggedOnDefault
+            ? html`<div class="action-button">
+                ${this.renderNewPerspectiveButton()}
+              </div>`
+            : ''
+        }
       </div>
     `;
-
-    const contextConfig: MenuConfig = {};
-
-    if (this.isLogged) {
-      contextConfig['logout'] = {
-        disabled: false,
-        graphic: 'exit_to_app',
-        text: 'logout',
-      };
-      contextConfig['edit-profile'] = {
-        disabled: false,
-        graphic: 'account_box',
-        text: 'edit profile',
-      };
-    } else {
-      contextConfig['login'] = {
-        disabled: false,
-        graphic: 'account_box',
-        text: 'login',
-      };
-    }
 
     const contextButton = html`
       <div class="context-menu">
@@ -218,6 +204,7 @@ export class EveesInfoPage extends EveesInfoBase {
                   force-update=${this.forceUpdate}
                   perspective-id=${this.uref}
                   first-perspective-id=${this.firstRef}
+                  ?can-propose=${this.isLogged}
                   @perspective-selected=${(e) =>
                     this.checkoutPerspective(e.detail.id)}
                   @merge-perspective=${(e) =>
@@ -243,13 +230,15 @@ export class EveesInfoPage extends EveesInfoBase {
                   Proposals
                 </div>
 
-                <div class="section-content list-container">
-                  <evees-proposals-list
-                    force-update=${this.forceUpdate}
-                    perspective-id=${this.uref}
-                    @authorize-proposal=${this.authorizeProposal}
-                    @execute-proposal=${this.executeProposal}
-                  ></evees-proposals-list>
+                <div class="section-content">
+                  <div class="list-container">
+                    <evees-proposals-list
+                      force-update=${this.forceUpdate}
+                      perspective-id=${this.uref}
+                      @authorize-proposal=${this.authorizeProposal}
+                      @execute-proposal=${this.executeProposal}
+                    ></evees-proposals-list>
+                  </div>
                 </div>
               </div>`
             : ''}
@@ -262,28 +251,7 @@ export class EveesInfoPage extends EveesInfoBase {
                   <div class="section-content">
                     ${this.renderPermissions()}
                   </div>
-                  <div class="context-menu">
-                    <uprtcl-help>
-                      <span>
-                        Drafts can be made public to let others read them.<br /><br />
-                        They can only be edited by their creator.
-                      </span>
-                    </uprtcl-help>
-                  </div>
-                </div>
-
-                <div class="section">
-                  <div class="section-header">
-                    Delete
-                  </div>
-                  <div class="section-content">
-                    <uprtcl-button
-                      class="bottom-button"
-                      icon="delete_forever"
-                      @click=${() => this.delete()}
-                      label="Delete"
-                    ></uprtcl-button>
-                  </div>
+                  <div class="context-menu"></div>
                 </div>
               `
             : ''}

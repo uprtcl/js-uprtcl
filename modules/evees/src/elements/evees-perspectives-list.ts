@@ -30,10 +30,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'first-perspective-id' })
   firstPerspectiveId!: string;
 
+  @property({ type: Boolean, attribute: 'can-propose' })
+  canPropose: Boolean = false;
+
   @property({ attribute: false })
   loadingPerspectives: boolean = true;
-
-  perspectivesData: PerspectiveData[] = [];
 
   @property({ attribute: false })
   otherPerspectivesData: PerspectiveData[] = [];
@@ -43,6 +44,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   @property({ attribute: 'force-update' })
   forceUpdate: string = 'true';
+
+  perspectivesData: PerspectiveData[] = [];
 
   protected client!: ApolloClient<any>;
 
@@ -195,12 +198,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     }
   }
 
-  getPerspectiveActionDisaled(perspectiveData: PerspectiveData) {
-    return [MERGE_ACTION, PRIVATE_PERSPECTIVE].includes(
-      this.getPerspectiveAction(perspectiveData)
-    );
-  }
-
   renderLoading() {
     return html`
       <div class="loading-container">
@@ -210,7 +207,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   renderPerspectiveRow(perspectiveData: PerspectiveData) {
-    const action = this.getPerspectiveAction(perspectiveData);
     return html`
       <uprtcl-list-item
         style=${`--selected-border-color: ${this.perspectiveColor(
@@ -225,13 +221,20 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           user-id=${perspectiveData.creatorId}
         ></evees-author>
 
-        ${!this.getPerspectiveActionDisaled(perspectiveData)
+        <!-- just enable merges to the official perspective for now -->
+        ${this.canPropose && this.perspectiveId === this.firstPerspectiveId
           ? html` <uprtcl-button
               slot="meta"
+              icon="call_merge"
+              skinny
               @click=${(e) =>
-                this.perspectiveButtonClicked(e, action, perspectiveData)}
+                this.perspectiveButtonClicked(
+                  e,
+                  this.getPerspectiveAction(perspectiveData),
+                  perspectiveData
+                )}
             >
-              call_merge
+              merge
             </uprtcl-button>`
           : ''}
       </uprtcl-list-item>
