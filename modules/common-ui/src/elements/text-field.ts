@@ -73,6 +73,7 @@ export class UprtclTextField extends LitElement {
           border-radius: 4px;
           border-style: solid;
           border-width: 2px;
+          width: fit-content;
         }
       `,
     ];

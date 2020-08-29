@@ -4,6 +4,8 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesRemote } from '../services/evees.remote';
 import { EveesBindings } from '../bindings';
+import { ApolloClient } from 'apollo-boost';
+import { ApolloClientModule } from '@uprtcl/graphql';
 
 export class EveesLoginWidget extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
@@ -12,9 +14,11 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   logged!: boolean;
 
   remotes!: EveesRemote[];
+  client!: ApolloClient<any>;
 
   async firstUpdated() {
     this.remotes = this.requestAll(EveesBindings.EveesRemote);
+    this.client = this.request(ApolloClientModule.bindings.Client);
     this.checkLogged();
   }
 
@@ -33,6 +37,8 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
         if (!isLogged) await remote.login();
       })
     );
+    /** invalidate all the cache :) */
+    await this.client.resetStore();
     this.checkLogged();
   }
 

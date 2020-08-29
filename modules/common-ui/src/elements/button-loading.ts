@@ -25,6 +25,7 @@ export class UprtclButtonLoading extends LitElement {
     return css`
       :host {
         display: block;
+        width: fit-content;
       }
     `;
   }

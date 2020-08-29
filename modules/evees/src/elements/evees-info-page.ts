@@ -200,26 +200,28 @@ export class EveesInfoPage extends EveesInfoBase {
             <div class="section-content">
               ${this.renderPerspectiveActions()}
               <div class="list-container">
-                <evees-perspectives-list
-                  force-update=${this.forceUpdate}
-                  perspective-id=${this.uref}
-                  first-perspective-id=${this.firstRef}
-                  ?can-propose=${this.isLogged}
-                  @perspective-selected=${(e) =>
-                    this.checkoutPerspective(e.detail.id)}
-                  @merge-perspective=${(e) =>
-                    this.otherPerspectiveMerge(
-                      e.detail.perspectiveId,
-                      this.uref,
-                      false
-                    )}
-                  @create-proposal=${(e) =>
-                    this.otherPerspectiveMerge(
-                      e.detail.perspectiveId,
-                      this.uref,
-                      true
-                    )}
-                ></evees-perspectives-list>
+                ${!this.loading
+                  ? html`<evees-perspectives-list
+                      force-update=${this.forceUpdate}
+                      perspective-id=${this.uref}
+                      first-perspective-id=${this.firstRef}
+                      ?can-propose=${this.isLogged}
+                      @perspective-selected=${(e) =>
+                        this.checkoutPerspective(e.detail.id)}
+                      @merge-perspective=${(e) =>
+                        this.otherPerspectiveMerge(
+                          e.detail.perspectiveId,
+                          this.uref,
+                          false
+                        )}
+                      @create-proposal=${(e) =>
+                        this.otherPerspectiveMerge(
+                          e.detail.perspectiveId,
+                          this.uref,
+                          true
+                        )}
+                    ></evees-perspectives-list>`
+                  : html`<uprtcl-loading></uprtcl-loading>`}
               </div>
             </div>
           </div>
@@ -232,12 +234,14 @@ export class EveesInfoPage extends EveesInfoBase {
 
                 <div class="section-content">
                   <div class="list-container">
-                    <evees-proposals-list
-                      force-update=${this.forceUpdate}
-                      perspective-id=${this.uref}
-                      @authorize-proposal=${this.authorizeProposal}
-                      @execute-proposal=${this.executeProposal}
-                    ></evees-proposals-list>
+                    ${!this.loading
+                      ? html`<evees-proposals-list
+                          force-update=${this.forceUpdate}
+                          perspective-id=${this.uref}
+                          @authorize-proposal=${this.authorizeProposal}
+                          @execute-proposal=${this.executeProposal}
+                        ></evees-proposals-list>`
+                      : html`<uprtcl-loading></uprtcl-loading>`}
                   </div>
                 </div>
               </div>`

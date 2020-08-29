@@ -199,6 +199,7 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const executed =
       ethHeadUpdates.find((update: any) => update.executed === 0) === undefined;
+
     const canAuthorize =
       this.uprtclProposals.userId !== undefined
         ? ethProposal.owner.toLocaleLowerCase() ===

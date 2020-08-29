@@ -44,6 +44,9 @@ export class UprtclButton extends LitElement {
     return [
       styles,
       css`
+        :host {
+          width: fit-content;
+        }
         .cursor {
           cursor: pointer;
         }
