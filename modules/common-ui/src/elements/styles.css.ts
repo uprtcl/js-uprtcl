@@ -1,21 +1,39 @@
 import { css } from 'lit-element';
 
 export const styles = css`
-  .button-color {
-    color: white;
-    cursor: pointer;
+  .button-text {
     font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    background-color: #4a99ca;
     text-decoration: none;
     text-transform: uppercase;
-    letter-spacing: 0.1rem;
+    font-family: Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    font-stretch: 100%;
+    letter-spacing: 1.25px;
   }
-  .button-color svg {
+  .button-filled {
+    background-color: var(--background-color, #2196f3);
+    color: #ffffff;
+  }
+  .button-filled svg {
     fill: white;
   }
-  .button-color:hover {
-    background-color: #6590aa;
+  .button-filled:hover {
+    background-color: #50b0ff;
+  }
+  .button-disabled {
+    background-color: #bbd6ec;
+    color: #ffffff;
+  }
+  .button-skinny {
+    background-color: transparent;
+    color: #2196f3;
+  }
+  .button-skinny svg {
+    fill: #2196f3;
+  }
+  .button-skinny:hover {
+    color: #50b0ff;
+    background-color: #eef7ff;
   }
 `;

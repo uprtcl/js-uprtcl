@@ -1,17 +1,10 @@
 import { LitElement, property, html, query, css } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
+import { ApolloClient } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import {
-  EveesModule,
-  EveesHelpers,
-  Perspective,
-  EveesRemote,
-} from '@uprtcl/evees';
-import { loadEntity } from '@uprtcl/multiplatform';
-import { EveesEthereumModule } from 'src/evees-ethereum.module';
+import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { EveesModule, EveesHelpers, EveesRemote } from '@uprtcl/evees';
 import { EveesEthereum } from './evees.ethereum';
 import { GET_PERSP_HASH, UPDATE_OWNER_BATCH, GET_PERSP_OWNER } from './common';
 
@@ -20,7 +13,10 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
   uref!: string;
 
   @property({ attribute: false })
-  owner!: boolean;
+  loading: boolean = false;
+
+  @property({ attribute: false })
+  owner!: string;
 
   @property({ attribute: false })
   canWrite!: boolean;
@@ -44,6 +40,11 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
+    this.load();
+  }
+
+  async load() {
+    this.loading = true;
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
       this.uref
@@ -53,16 +54,14 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
     this.remote = (this.requestAll(
       EveesModule.bindings.EveesRemote
     ) as EveesRemote[]).find((r) => r.id === remoteId) as EveesEthereum;
+
+    this.owner = await this.getOwner(this.uref);
+    this.canWrite = await this.remote.canWrite(this.uref);
+
+    this.loading = false;
   }
 
   async changeOwner(uref: string, newOwnerId: string): Promise<void> {
-    const currentAccessControl = await EveesHelpers.getAccessControl(
-      this.client,
-      uref
-    );
-    if (!currentAccessControl)
-      throw new Error(`${uref} don't have access control`);
-
     const remote = await EveesHelpers.getPerspectiveRemoteId(this.client, uref);
     if (!remote) throw new Error(`${uref} is not a perspective`);
 
@@ -80,33 +79,11 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
       );
 
     const owned = await asyncFilter(descendants, async (descendantRef) => {
-      let descendant = await loadEntity<any>(this.client, descendantRef);
-      if (!descendant) throw new Error('descendant not found');
-
-      let descendantType: string = this.recognizer.recognizeType(descendant);
-      if (descendantType !== EveesModule.bindings.PerspectiveType) return false;
-
-      const accessControl = await EveesHelpers.getAccessControl(
+      const thisRemoteId = await EveesHelpers.getPerspectiveRemoteId(
         this.client,
         descendantRef
       );
-      if (!accessControl) return false;
-
-      let entityType: string = this.recognizer.recognizeType(
-        accessControl.permissions
-      );
-
-      if (
-        entityType === 'OwnerPermissions' &&
-        accessControl.permissions.owner ===
-          currentAccessControl.permissions.owner
-      ) {
-        const thisRemoteId = await EveesHelpers.getPerspectiveRemoteId(
-          this.client,
-          descendantRef
-        );
-        return thisRemoteId === remote;
-      }
+      return thisRemoteId === remote;
     });
 
     const all = [uref].concat(owned);
@@ -146,7 +123,7 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
 
     const newAddress = this.newAddressEl.value;
 
-    await this.changeOwner(this.perspectiveId, newAddress);
+    await this.changeOwner(this.uref, newAddress);
 
     this.dispatchEvent(
       new CustomEvent('permissions-updated', {
@@ -165,40 +142,43 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
 
   renderDialog() {
     return html`
-      <evees-dialog
+      <uprtcl-dialog
         primary-text="Transfer"
         secondary-text="Cancel"
         @primary=${this.changeOwner}
         @secondary=${() => (this.showDialog = false)}
         show-secondary="true"
       >
+        <p>Transfer the ownership of all these perspectives to:</p>
         <uprtcl-textfield
           class="address-field"
           id="new-address"
           .label=${this.t('access-control:new-owner-address')}
         ></uprtcl-textfield>
-      </evees-dialog>
+      </uprtcl-dialog>
     `;
   }
 
   render() {
     return html`
       ${this.showDialog ? this.renderDialog() : ''}
-      <div class="row title">
-        <strong>${this.t('access-control:owner')}:</strong>
-        ${this.renderOwner()}
-      </div>
-      ${this.canWrite
-        ? html`
-            <evees-loading-button
-              icon="swap_horizontal"
-              @click=${this.showTransferDialog}
-              loading=${this.changingOwner ? 'true' : 'false'}
-              label=${this.t('access-control:transfer-ownership')}
-            >
-            </evees-loading-button>
-          `
-        : ''}
+      ${this.loading
+        ? html`<uprtcl-loading></uprtcl-loading>`
+        : html`<div class="row title">
+              <strong>${this.t('access-control:owner')}:</strong>
+              ${this.renderOwner()}
+            </div>
+            ${this.canWrite
+              ? html`
+                  <uprtcl-button-loading
+                    icon="swap_horizontal"
+                    @click=${this.showTransferDialog}
+                    loading=${this.changingOwner ? 'true' : 'false'}
+                  >
+                    ${this.t('access-control:transfer-ownership')}
+                  </uprtcl-button-loading>
+                `
+              : ''}`}
     `;
   }
 

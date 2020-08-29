@@ -5,6 +5,9 @@ export class UprtclPopper extends LitElement {
   @property({ type: String })
   icon: string = 'more_vert';
 
+  @property({ type: String })
+  position: string = 'bottom';
+
   @property({ type: Boolean, attribute: false })
   showDropdown: boolean = false;
 
@@ -30,14 +33,19 @@ export class UprtclPopper extends LitElement {
   }
 
   render() {
+    let classes =
+      this.position === 'bottom' ? ['info-box-bottom'] : ['info-box-right'];
+
+    classes.push('info-box');
+
     return html`
-      <div @click=${this.showDropDownClicked}>
+      <div class="popper-button" @click=${this.showDropDownClicked}>
         <slot name="icon">
           <div class="icon-container">${icons[this.icon]}</div>
         </slot>
       </div>
       ${this.showDropdown
-        ? html` <uprtcl-card id="popper-menu" class="info-box">
+        ? html` <uprtcl-card id="popper-menu" class=${classes.join(' ')}>
             <slot></slot>
           </uprtcl-card>`
         : ''}
@@ -52,13 +60,33 @@ export class UprtclPopper extends LitElement {
         flex-direction: column;
       }
 
+      .icon-container {
+        width: 36px;
+        height: 36px;
+        border-radius: 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .popper-button {
+        flex-grow: 1;
+      }
+
       .info-box {
         color: rgba(0, 0, 0, 0.87);
         z-index: 20;
         position: absolute;
-        right: 2px;
-        top: 52px;
         width: var(--box-width, 250px);
+      }
+      .info-box-bottom {
+        right: 0px;
+        top: calc(100% + 5px);
+      }
+      .info-box-right {
+        top: 5px;
+        left: calc(100% + 5px);
       }
     `;
   }

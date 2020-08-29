@@ -960,14 +960,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    // this.addEventListener('keydown', event => {
-    //   if (event.keyCode === 83) {
-    //     if (event.ctrlKey === true) {
-    //       event.preventDefault();
-    //       this.persistAll();
-    //     }
-    //   }
-    // });
+    this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
+      event.stopPropagation();
+      this.uref = event.detail.perspectiveId;
+    }) as EventListener);
   }
 
   commitWithMessageClicked() {
@@ -1086,20 +1082,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       <div class="doc-topbar">
         ${this.docHasChanges && !this.showCommitMessage
           ? html`
-              <div class="button-container">
-                <uprtcl-button-loading
-                  icon="unarchive"
-                  @click=${() => this.persistAll()}
-                  loading=${this.persistingAll ? 'true' : 'false'}
-                >
-                  push
-                </uprtcl-button-loading>
-              </div>
-              <!-- <uprtcl-options-menu 
-                .config=${options} 
-                @option-click=${this.commitOptionSelected}
-                icon="arrow_drop_down">
-              </uprtcl-options-menu> -->
+              <uprtcl-button-loading
+                icon="unarchive"
+                @click=${() => this.persistAll()}
+                loading=${this.persistingAll ? 'true' : 'false'}
+              >
+                push
+              </uprtcl-button-loading>
               <uprtcl-help>
                 <span>
                   Your current changes are safely stored on this device and
@@ -1139,7 +1128,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('render()', { doc: this.doc });
 
     if (!this.doc) {
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     const editorClasses = ['editor-container'];
@@ -1171,23 +1160,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .padding-bottom {
         padding-bottom: 20vh;
       }
-      .button-container {
-        height: 48px;
-        margin-right: 6px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-
       .click-area {
         flex-grow: 1;
       }
-
       .doc-topbar {
         position: absolute;
-        top: -55px;
-        right: 10px;
+        top: 16px;
+        right: 16px;
         display: flex;
+        z-index: 2;
+      }
+      .doc-topbar uprtcl-button-loading {
+        opacity: 0.9;
+        margin-right: 6px;
+        width: 90px;
       }
 
       .row {
@@ -1199,6 +1185,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .evee-info {
         width: 10px;
         flex-shrink: 0 0 0;
+        display: flex;
+        flex-direction: column;
       }
 
       .node-content {
@@ -1213,7 +1201,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .node-mark {
         position: absolute;
         top: 0px;
-        left: -6px;
+        left: 0px;
         height: 100%;
         display: flex;
         flex-direction: column;

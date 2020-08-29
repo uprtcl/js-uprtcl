@@ -1,10 +1,5 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
-import {
-  HttpEthAuthProvider,
-  HttpAuth0Provider,
-  HttpConnection,
-  KnownSourcesHttp,
-} from '@uprtcl/http-provider';
+import { KnownSourcesHttp, HttpProvider } from '@uprtcl/http-provider';
 import { KnownSourcesService, CASStore } from '@uprtcl/multiplatform';
 
 import {
@@ -18,7 +13,7 @@ import { EveesAccessControlHttp } from './evees-acl.http';
 
 const evees_api: string = 'evees-v1';
 
-export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
+export class EveesHttp implements EveesRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   knownSources: KnownSourcesService;
@@ -26,31 +21,27 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
   accessControl: EveesAccessControlHttp;
   proposals: ProposalsProvider | undefined;
 
-  constructor(
-    host: string,
-    protected connection: HttpConnection,
-    protected auth0Config: any,
-    public store: CASStore
-  ) {
-    super(
-      {
-        host: host,
-        apiId: evees_api,
-      },
-      connection,
-      auth0Config
-    );
-
-    this.accessControl = new EveesAccessControlHttp(host, this.connection);
-    this.knownSources = new KnownSourcesHttp(host, this.connection);
+  constructor(protected provider: HttpProvider, public store: CASStore) {
+    this.accessControl = new EveesAccessControlHttp(this.provider);
+    this.knownSources = new KnownSourcesHttp(this.provider);
   }
 
-  ready(): Promise<void> {
+  get id() {
+    return this.provider.id;
+  }
+  get defaultPath() {
+    return this.provider.defaultPath;
+  }
+  get userId() {
+    return this.provider.userId;
+  }
+
+  ready() {
     return Promise.resolve();
   }
 
   get casID() {
-    return `http:store:${this.options.host}`;
+    return `http:store:${this.provider.pOptions.host}`;
   }
 
   canWrite(uref: string): Promise<boolean> {
@@ -58,7 +49,7 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    await super.httpPost('/persp', {
+    await this.provider.post('/persp', {
       perspective: perspectiveData.perspective,
       details: perspectiveData.details,
       parentId: perspectiveData.parentId,
@@ -78,20 +69,39 @@ export class EveesHttp extends HttpEthAuthProvider implements EveesRemote {
     perspectiveId: string,
     details: Partial<PerspectiveDetails>
   ): Promise<void> {
-    await super.httpPut(`/persp/${perspectiveId}/details`, details);
+    await this.provider.put(`/persp/${perspectiveId}/details`, details);
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
-    return super.getWithPut<any[]>(`/persp`, { context: context });
+    return this.provider.getWithPut<any[]>(`/persp`, { context: context });
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    return super.getObject<PerspectiveDetails>(
+    return this.provider.getObject<PerspectiveDetails>(
       `/persp/${perspectiveId}/details`
     );
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
-    await super.httpDelete(`/persp/${perspectiveId}`);
+    await this.provider.delete(`/persp/${perspectiveId}`);
+  }
+
+  connect() {
+    return this.provider.connect();
+  }
+  isConnected() {
+    return this.provider.isConnected();
+  }
+  disconnect() {
+    return this.provider.disconnect();
+  }
+  isLogged() {
+    return this.provider.isLogged();
+  }
+  login() {
+    return this.provider.login();
+  }
+  logout() {
+    return this.provider.logout();
   }
 }

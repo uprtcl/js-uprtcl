@@ -7,22 +7,25 @@ export interface HttpProviderOptions {
   apiId: string;
 }
 
-export class HttpProvider implements Remote {
-  constructor(
-    protected options: HttpProviderOptions,
-    protected connection: HttpConnection
-  ) {}
+export abstract class HttpProvider extends HttpConnection implements Remote {
+  constructor(public pOptions: HttpProviderOptions) {
+    super();
+  }
 
   get id(): string {
-    return `http:${this.options.apiId}`;
+    return `http:${this.pOptions.apiId}`;
   }
 
   get defaultPath(): string {
-    return `${this.options.host}`;
+    return `${this.pOptions.host}`;
   }
 
   get userId() {
-    return this.connection.userId;
+    return super.userId;
+  }
+
+  set userId(_userId: string | undefined) {
+    super.userId = _userId;
   }
 
   ready(): Promise<void> {
@@ -30,44 +33,31 @@ export class HttpProvider implements Remote {
   }
 
   async getObject<T>(url: string): Promise<T> {
-    const object: any = await this.connection.get<T>(this.options.host + url);
+    const object: any = await super.get<T>(this.pOptions.host + url);
 
     if ((object as { object: any }).object) return object.object as T;
     return object as T;
   }
 
   getWithPut<T>(url: string, body: any): Promise<T> {
-    return this.connection.getWithPut<T>(this.options.host + url, body);
+    return super.getWithPut<T>(this.pOptions.host + url, body);
   }
 
-  httpPut(url: string, body: any): Promise<PostResult> {
-    return this.connection.put(this.options.host + url, body);
+  put(url: string, body: any): Promise<PostResult> {
+    return super.put(this.pOptions.host + url, body);
   }
 
-  httpPost(url: string, body: any): Promise<PostResult> {
-    return this.connection.post(this.options.host + url, body);
+  post(url: string, body: any): Promise<PostResult> {
+    return super.post(this.pOptions.host + url, body);
   }
 
-  httpDelete(url: string): Promise<PostResult> {
-    return this.connection.delete(this.options.host + url);
+  delete(url: string): Promise<PostResult> {
+    return super.delete(this.pOptions.host + url);
   }
 
-  isLogged(): Promise<boolean> {
-    throw new Error('Method not implemented.');
-  }
-  login(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  logout(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  connect(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  isConnected(): Promise<boolean> {
-    throw new Error('Method not implemented.');
-  }
-  disconnect(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
+  abstract isConnected(): Promise<boolean>;
+  abstract disconnect(): Promise<void>;
+  abstract isLogged(): Promise<boolean>;
+  abstract login(): Promise<void>;
+  abstract logout(): Promise<void>;
 }
