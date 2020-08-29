@@ -1,6 +1,10 @@
 import { EveesHttp, EveesHttpModule } from '@uprtcl/evees-http';
 
-import { HttpConnection, HttpStore } from '@uprtcl/http-provider';
+import {
+  HttpConnection,
+  HttpStore,
+  HttpAuth0Provider,
+} from '@uprtcl/http-provider';
 
 import {
   MicroOrchestrator,
@@ -29,9 +33,6 @@ export const initUprtcl = async () => {
 
   const orchestrator = new MicroOrchestrator();
 
-  const httpConnection = new HttpConnection();
-  const httpStore = new HttpStore(c1host, httpConnection, httpCidConfig);
-
   const auth0Config = {
     domain: 'linked-thoughts-dev.eu.auth0.com',
     client_id: 'I7cwQfbSOm9zzU29Lt0Z3TjQsdB6GVEf',
@@ -39,12 +40,12 @@ export const initUprtcl = async () => {
     cacheLocation: 'localstorage',
   };
 
-  const httpEvees = new EveesHttp(
-    c1host,
-    httpConnection,
-    auth0Config,
-    httpStore
+  const httpProvider = new HttpAuth0Provider(
+    { host: c1host, apiId: 'uprtcl-v1' },
+    auth0Config
   );
+  const httpStore = new HttpStore(httpProvider, httpCidConfig);
+  const httpEvees = new EveesHttp(httpProvider, httpStore);
 
   const evees = new EveesModule([httpEvees], httpEvees);
 

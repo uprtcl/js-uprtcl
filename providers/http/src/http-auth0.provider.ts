@@ -3,7 +3,6 @@ import { Auth0Client, Auth0ClientOptions } from '@auth0/auth0-spa-js';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { HttpConnection } from './http.connection';
 import { HttpProvider, HttpProviderOptions } from './http.provider';
 
 @injectable()
@@ -15,17 +14,16 @@ export class HttpAuth0Provider extends HttpProvider {
   auth0: Auth0Client;
 
   constructor(
-    protected options: HttpProviderOptions,
-    protected connection: HttpConnection,
+    public pOptions: HttpProviderOptions,
     auth0Config: Auth0ClientOptions
-    ) {
-    super(options, connection);
+  ) {
+    super(pOptions);
 
     this.auth0 = new Auth0Client(auth0Config);
   }
 
   async connect() {
-    const currentUserId = this.connection.userId;
+    const currentUserId = super.userId;
 
     if (currentUserId !== undefined) {
       try {
@@ -40,12 +38,12 @@ export class HttpAuth0Provider extends HttpProvider {
           this.logout();
         }
       } catch (e) {
-        this.connection.userId = undefined;
+        super.userId = undefined;
       }
     }
 
     /** chech if HTTP authToken is available */
-    const currentToken = this.connection.authToken;
+    const currentToken = super.authToken;
 
     if (currentToken !== undefined) {
       try {
@@ -53,13 +51,13 @@ export class HttpAuth0Provider extends HttpProvider {
         const isAuthorized = await this.isLogged();
         if (!isAuthorized) this.logout();
       } catch (e) {
-        this.connection.authToken = undefined;
+        super.authToken = undefined;
       }
     }
   }
 
   async isLogged() {
-    if (this.connection.userId === undefined) return false;
+    if (super.userId === undefined) return false;
     return this.auth0.isAuthenticated();
   }
 
@@ -72,8 +70,8 @@ export class HttpAuth0Provider extends HttpProvider {
       console.log('Log out failed', err);
     }
 
-    this.connection.userId = undefined;
-    this.connection.authToken = undefined;
+    super.userId = undefined;
+    super.authToken = undefined;
   }
 
   async parseLoginResult() {
@@ -84,8 +82,8 @@ export class HttpAuth0Provider extends HttpProvider {
         const user = await this.auth0.getUser();
         const auth0Claims = await this.auth0.getIdTokenClaims();
 
-        this.connection.userId = user.sub;
-        this.connection.authToken = 'Bearer ' + auth0Claims.__raw;
+        super.userId = user.sub;
+        super.authToken = 'Bearer ' + auth0Claims.__raw;
 
         const url = window.location.origin + window.location.pathname;
 
@@ -98,9 +96,9 @@ export class HttpAuth0Provider extends HttpProvider {
 
   async makeLoginRedirect() {
     try {
-      const isAuthenticated = await this.isLogged(); 
+      const isAuthenticated = await this.isLogged();
 
-      if(!isAuthenticated) {
+      if (!isAuthenticated) {
         const url = window.location.origin + window.location.pathname;
 
         const options = {

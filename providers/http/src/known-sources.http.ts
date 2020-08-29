@@ -1,29 +1,23 @@
 import { KnownSourcesService } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { HttpConnection } from './http.connection';
 import { HttpProvider } from './http.provider';
 
-const uprtcl_api: string = 'uprtcl-ks-v1';
-export class KnownSourcesHttp extends HttpProvider implements KnownSourcesService {
+export class KnownSourcesHttp implements KnownSourcesService {
   logger = new Logger('HTTP-KNOWN-SRC-PROVIDER');
 
-  constructor(host: string, protected connection: HttpConnection) {
-    super(
-      {
-        host: host,
-        apiId: uprtcl_api,
-      },
-      connection
-    );
+  constructor(protected provider: HttpProvider) {}
+
+  ready() {
+    return Promise.resolve();
   }
 
   async getKnownSources(hash: string): Promise<string[]> {
-    return super.getObject<string[]>(`/discovery/${hash}`);
+    return this.provider.getObject<string[]>(`/discovery/${hash}`);
   }
 
   async addKnownSources(hash: string, sources: string[]): Promise<void> {
-    await super.httpPut(`/discovery/${hash}`, sources);
+    await this.provider.httpPut(`/discovery/${hash}`, sources);
   }
 
   async removeKnownSource(hash: string, source: string): Promise<void> {

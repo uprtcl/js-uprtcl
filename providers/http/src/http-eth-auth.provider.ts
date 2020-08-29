@@ -13,11 +13,10 @@ export class HttpEthAuthProvider extends HttpProvider {
   account: string | undefined = undefined;
 
   constructor(
-    protected options: HttpProviderOptions,
-    protected connection: HttpConnection,
+    public pOptions: HttpProviderOptions,
     protected ethConnection: EthereumConnection
   ) {
-    super(options, connection);
+    super(pOptions);
   }
 
   async connect() {
@@ -35,7 +34,7 @@ export class HttpEthAuthProvider extends HttpProvider {
     }
 
     /** chech if HTTP authToken is available */
-    const currentToken = this.connection.authToken;
+    const currentToken = super.authToken;
 
     if (currentToken !== undefined) {
       try {
@@ -43,36 +42,34 @@ export class HttpEthAuthProvider extends HttpProvider {
         const isAuthorized = await this.isLogged();
         if (!isAuthorized) this.logout();
       } catch (e) {
-        this.connection.authToken = undefined;
+        super.authToken = undefined;
       }
     }
   }
 
   async isLogged() {
     if (this.userId === undefined) return false;
-    return this.connection.get<boolean>(
-      this.options.host + `/user/isAuthorized`
-    );
+    return super.get<boolean>(this.pOptions.host + `/user/isAuthorized`);
   }
 
   async getNonce() {
     if (this.account === undefined) throw Error('account undefined');
-    return this.connection.get<string>(
-      this.options.host + `/user/${this.account}/nonce`
+    return super.get<string>(
+      this.pOptions.host + `/user/${this.account}/nonce`
     );
   }
 
   async authorize(signature: string) {
     if (this.account === undefined) throw Error('account undefined');
-    return this.connection.getWithPut<{ jwt: string }>(
-      this.options.host + `/user/${this.account}/authorize`,
+    return super.getWithPut<{ jwt: string }>(
+      this.pOptions.host + `/user/${this.account}/authorize`,
       { signature }
     );
   }
 
   async logout(): Promise<void> {
-    this.connection.userId = undefined;
-    this.connection.authToken = undefined;
+    super.userId = undefined;
+    super.authToken = undefined;
   }
 
   async login(): Promise<void> {
@@ -91,8 +88,8 @@ export class HttpEthAuthProvider extends HttpProvider {
     );
     const token = await this.authorize(signature);
 
-    this.connection.userId = this.account;
-    this.connection.authToken = 'Bearer ' + token.jwt;
+    super.userId = this.account;
+    super.authToken = 'Bearer ' + token.jwt;
   }
   async isConnected(): Promise<boolean> {
     return true;
