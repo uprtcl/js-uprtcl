@@ -61,7 +61,7 @@ export abstract class Connection implements Ready {
    * Opens the connection
    * To be overriden by subclasses
    */
-  protected abstract async connect(params?: any): Promise<void>;
+  public abstract async connect(params?: any): Promise<void>;
 
   /**
    * Waits until the connection is ready to process calls

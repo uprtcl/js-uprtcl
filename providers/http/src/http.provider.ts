@@ -7,7 +7,7 @@ export interface HttpProviderOptions {
   apiId: string;
 }
 
-export class HttpProvider extends HttpConnection {
+export abstract class HttpProvider extends HttpConnection implements Remote {
   constructor(public pOptions: HttpProviderOptions) {
     super();
   }
@@ -21,11 +21,11 @@ export class HttpProvider extends HttpConnection {
   }
 
   get userId() {
-    return this.userId;
+    return super.userId;
   }
 
   set userId(_userId: string | undefined) {
-    this.userId = _userId;
+    super.userId = _userId;
   }
 
   ready(): Promise<void> {
@@ -54,4 +54,10 @@ export class HttpProvider extends HttpConnection {
   httpDelete(url: string): Promise<PostResult> {
     return super.delete(this.pOptions.host + url);
   }
+
+  abstract isConnected(): Promise<boolean>;
+  abstract disconnect(): Promise<void>;
+  abstract isLogged(): Promise<boolean>;
+  abstract login(): Promise<void>;
+  abstract logout(): Promise<void>;
 }

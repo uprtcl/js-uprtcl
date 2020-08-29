@@ -2,12 +2,12 @@ import { injectable } from 'inversify';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { Remote } from '@uprtcl/evees';
 
-import { HttpConnection } from './http.connection';
 import { HttpProvider, HttpProviderOptions } from './http.provider';
 
 @injectable()
-export class HttpEthAuthProvider extends HttpProvider {
+export class HttpEthAuthProvider extends HttpProvider implements Remote {
   logger = new Logger('HTTP-ETH-Provider');
 
   account: string | undefined = undefined;

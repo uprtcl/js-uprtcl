@@ -66,7 +66,7 @@ export class HttpConnection extends Connection {
     }
   }
 
-  protected connect(): Promise<void> {
+  public connect(): Promise<void> {
     return Promise.resolve();
   }
 
