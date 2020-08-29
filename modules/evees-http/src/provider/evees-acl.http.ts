@@ -17,11 +17,11 @@ export class EveesAccessControlHttp implements AccessControlService {
   }
 
   async setPermissions(hash: string, permissions: any) {
-    await this.provider.httpPut(`/permissions/${hash}`, permissions);
+    await this.provider.put(`/permissions/${hash}`, permissions);
   }
 
   async removePermissions(hash: string, userId: string) {
-    await this.provider.httpDelete(`/permissions/${hash}/single/${userId}`);
+    await this.provider.delete(`/permissions/${hash}/single/${userId}`);
   }
 
   async setPrivatePermissions(
@@ -29,7 +29,7 @@ export class EveesAccessControlHttp implements AccessControlService {
     type: PermissionType,
     userId: string
   ) {
-    await this.provider.httpPut(`/permissions/${hash}/single`, {
+    await this.provider.put(`/permissions/${hash}/single`, {
       type,
       userId,
     });
@@ -40,7 +40,7 @@ export class EveesAccessControlHttp implements AccessControlService {
     type: PermissionType,
     value: Boolean
   ) {
-    await this.provider.httpPut(`/permissions/${hash}/public`, { type, value });
+    await this.provider.put(`/permissions/${hash}/public`, { type, value });
   }
 
   async canWrite(uref: string, userId?: string) {

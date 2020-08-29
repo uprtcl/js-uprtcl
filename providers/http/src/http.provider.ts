@@ -43,15 +43,15 @@ export abstract class HttpProvider extends HttpConnection implements Remote {
     return super.getWithPut<T>(this.pOptions.host + url, body);
   }
 
-  httpPut(url: string, body: any): Promise<PostResult> {
+  put(url: string, body: any): Promise<PostResult> {
     return super.put(this.pOptions.host + url, body);
   }
 
-  httpPost(url: string, body: any): Promise<PostResult> {
+  post(url: string, body: any): Promise<PostResult> {
     return super.post(this.pOptions.host + url, body);
   }
 
-  httpDelete(url: string): Promise<PostResult> {
+  delete(url: string): Promise<PostResult> {
     return super.delete(this.pOptions.host + url);
   }
 

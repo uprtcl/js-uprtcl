@@ -49,20 +49,18 @@ export class HttpEthAuthProvider extends HttpProvider implements Remote {
 
   async isLogged() {
     if (this.userId === undefined) return false;
-    return super.get<boolean>(this.pOptions.host + `/user/isAuthorized`);
+    return super.getObject<boolean>(`/user/isAuthorized`);
   }
 
   async getNonce() {
     if (this.account === undefined) throw Error('account undefined');
-    return super.get<string>(
-      this.pOptions.host + `/user/${this.account}/nonce`
-    );
+    return super.getObject<string>(`/user/${this.account}/nonce`);
   }
 
   async authorize(signature: string) {
     if (this.account === undefined) throw Error('account undefined');
     return super.getWithPut<{ jwt: string }>(
-      this.pOptions.host + `/user/${this.account}/authorize`,
+      `/user/${this.account}/authorize`,
       { signature }
     );
   }

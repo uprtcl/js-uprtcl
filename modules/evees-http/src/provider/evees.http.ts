@@ -49,7 +49,7 @@ export class EveesHttp implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    await this.provider.httpPost('/persp', {
+    await this.provider.post('/persp', {
       perspective: perspectiveData.perspective,
       details: perspectiveData.details,
       parentId: perspectiveData.parentId,
@@ -69,7 +69,7 @@ export class EveesHttp implements EveesRemote {
     perspectiveId: string,
     details: Partial<PerspectiveDetails>
   ): Promise<void> {
-    await this.provider.httpPut(`/persp/${perspectiveId}/details`, details);
+    await this.provider.put(`/persp/${perspectiveId}/details`, details);
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
@@ -83,7 +83,7 @@ export class EveesHttp implements EveesRemote {
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
-    await this.provider.httpDelete(`/persp/${perspectiveId}`);
+    await this.provider.delete(`/persp/${perspectiveId}`);
   }
 
   connect() {

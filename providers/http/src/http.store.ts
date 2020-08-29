@@ -21,7 +21,7 @@ export class HttpStore implements CASStore {
   }
 
   async create(object: object, hash?: string): Promise<string> {
-    const result = await this.provider.httpPost(`/data`, {
+    const result = await this.provider.post(`/data`, {
       id: '',
       object: object,
     });

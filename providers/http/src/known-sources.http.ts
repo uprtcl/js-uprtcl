@@ -17,7 +17,7 @@ export class KnownSourcesHttp implements KnownSourcesService {
   }
 
   async addKnownSources(hash: string, sources: string[]): Promise<void> {
-    await this.provider.httpPut(`/discovery/${hash}`, sources);
+    await this.provider.put(`/discovery/${hash}`, sources);
   }
 
   async removeKnownSource(hash: string, source: string): Promise<void> {

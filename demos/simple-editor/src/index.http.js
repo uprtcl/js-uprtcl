@@ -14,7 +14,7 @@ import { EveesEthereum } from '@uprtcl/evees-ethereum';
 import { EveesHttp } from '@uprtcl/evees-http';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import { HttpConnection, HttpStore } from '@uprtcl/http-provider';
+import { HttpStore, HttpEthAuthProvider } from '@uprtcl/http-provider';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
@@ -56,17 +56,15 @@ import { SimpleWiki } from './simple-wiki';
 
   const orchestrator = new MicroOrchestrator();
 
-  const httpConnection = new HttpConnection();
   const ethConnection = new EthereumConnection({ provider });
   await ethConnection.ready();
 
-  const httpStore = new HttpStore(c1host, httpConnection, httpCidConfig);
-  const httpEvees = new EveesHttp(
-    c1host,
-    httpConnection,
-    ethConnection,
-    httpStore
+  const httpProvider = new HttpEthAuthProvider(
+    { host: c1host, apiId: 'evees-v1' },
+    ethConnection
   );
+  const httpStore = new HttpStore(httpProvider, httpCidConfig);
+  const httpEvees = new EveesHttp(httpProvider, httpStore);
   const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
   const ethEvees = new EveesEthereum(ethConnection, ipfsStore);
   await httpEvees.connect();
