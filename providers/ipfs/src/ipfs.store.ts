@@ -1,5 +1,5 @@
 import CBOR from 'cbor-js';
-import ipfsClient, { Buffer } from 'ipfs-http-client';
+import IPFS from 'ipfs';
 
 import {
   CidConfig,
@@ -21,13 +21,12 @@ export interface PutConfig {
 
 export class IpfsStore extends Connection implements CASStore {
   logger = new Logger('IpfsStore');
-  client: any;
 
   casID = 'ipfs';
 
   constructor(
-    protected ipfsOptions: IpfsConnectionOptions,
     public cidConfig: CidConfig = defaultCidConfig,
+    protected client?: any,
     connectionOptions: ConnectionOptions = {}
   ) {
     super(connectionOptions);
@@ -36,12 +35,14 @@ export class IpfsStore extends Connection implements CASStore {
   /**
    * @override
    */
-  protected async connect(): Promise<void> {
-    this.client = ipfsClient(this.ipfsOptions);
+  public async connect(ipfsOptions?: IpfsConnectionOptions): Promise<void> {
+    if (!this.client) {
+      this.client = new IPFS.create();
+    }
   }
 
   public tryPut(
-    buffer: Buffer,
+    buffer: any,
     putConfig: object,
     wait: number,
     attempt: number

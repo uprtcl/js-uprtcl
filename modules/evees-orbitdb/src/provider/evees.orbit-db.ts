@@ -53,9 +53,7 @@ export class EveesOrbitDB implements EveesRemote {
     protected ethConnection: EthereumConnection,
     protected orbitdbConnection: OrbitDBConnection,
     public store: IpfsStore,
-    protected container: Container,
-    protected orbitdbOptions?: OrbitDBConnectionOptions,
-    protected connectionOptions?: ConnectionOptions
+    protected container: Container
   ) {
     this.accessControl = new EveesAccessControlOrbitDB(container, this.store);
   }

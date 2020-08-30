@@ -33,8 +33,8 @@ export class OrbitDBConnection extends Connection {
   constructor(
     protected pinnerUrl: string,
     protected ipfsStore: any,
-    options?: ConnectionOptions,
-    protected ipfs?: any
+    protected ipfs?: any,
+    options?: ConnectionOptions
   ) {
     super(options);
     const AccessController = attachIpfsStore(this.ipfsStore);
@@ -46,7 +46,7 @@ export class OrbitDBConnection extends Connection {
   /**
    * @override
    */
-  protected async connect(params: any): Promise<void> {
+  public async connect(params: any): Promise<void> {
     if (!this.ipfs) {
       this.ipfs = await IPFS.create(params);
     }

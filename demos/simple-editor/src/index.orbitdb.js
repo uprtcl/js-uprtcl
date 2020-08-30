@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import IPFS from 'ipfs';
 
 import {
   MicroOrchestrator,
@@ -47,11 +48,6 @@ import { SimpleWiki } from './simple-wiki';
 
   const pinnerUrl = 'http://localhost:3000';
 
-  const orchestrator = new MicroOrchestrator();
-
-  const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
-  await ipfsStore.ready();
-
   const ipfsJSConfig = {
     config: {
       Addresses: {
@@ -63,9 +59,19 @@ import { SimpleWiki } from './simple-wiki';
       },
     },
   };
-  const orbitDBConnection = new OrbitDBConnection(pinnerUrl, ipfsStore, {
-    params: ipfsJSConfig,
-  });
+
+  const orchestrator = new MicroOrchestrator();
+
+  const ipfsInstance = new IPFS.create(ipfsJSConfig);
+
+  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfsInstance);
+  await ipfsStore.ready();
+
+  const orbitDBConnection = new OrbitDBConnection(
+    pinnerUrl,
+    ipfsStore,
+    ipfsInstance
+  );
   await orbitDBConnection.ready();
 
   const ethConnection = new EthereumConnection({ provider });
