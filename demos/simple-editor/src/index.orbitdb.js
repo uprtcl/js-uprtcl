@@ -62,7 +62,7 @@ import { SimpleWiki } from './simple-wiki';
 
   const orchestrator = new MicroOrchestrator();
 
-  const ipfsInstance = new IPFS.create(ipfsJSConfig);
+  const ipfsInstance = await IPFS.create(ipfsJSConfig);
 
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfsInstance);
   await ipfsStore.ready();

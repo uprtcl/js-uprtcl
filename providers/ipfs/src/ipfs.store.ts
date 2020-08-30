@@ -65,7 +65,7 @@ export class IpfsStore extends Connection implements CASStore {
       }
 
       this.client.dag
-        .put(buffer, putConfig)
+        .put(Buffer.from(buffer), putConfig)
         .then((result: object) => {
           clearTimeout(timeout);
           resolve(result);
