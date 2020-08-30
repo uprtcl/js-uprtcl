@@ -73,6 +73,7 @@ export class UprtclDialog extends LitElement {
 
       .modal-content {
         width: 90vw;
+        max-width: 900px;
         margin: 0 auto;
         padding: 3vw 3vw;
         background-color: white;

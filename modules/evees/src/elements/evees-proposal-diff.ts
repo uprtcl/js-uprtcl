@@ -84,7 +84,7 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
     return css`
       :host {
         display: block;
-        padding: 30px 20px 30px 0px;
+        padding: 30px 0px 30px 0px;
         text-align: center;
       }
     `;
