@@ -3,37 +3,25 @@ import { html } from 'lit-element';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { AccessControlService } from '@uprtcl/evees';
 import { Lens } from '@uprtcl/lenses';
-import { HttpProvider, HttpConnection } from '@uprtcl/http-provider';
+import { HttpProvider } from '@uprtcl/http-provider';
 import { PermissionType } from './types';
 
 const uprtcl_api: string = 'uprtcl-acl-v1';
-export class EveesAccessControlHttp extends HttpProvider
-  implements AccessControlService {
+export class EveesAccessControlHttp implements AccessControlService {
   logger = new Logger('HTTP-EVEES-ACCESS-CONTROL');
 
-  constructor(host: string, protected connection: HttpConnection) {
-    super(
-      {
-        host: host,
-        apiId: uprtcl_api,
-      },
-      connection
-    );
-  }
+  constructor(protected provider: HttpProvider) {}
 
   async getPermissions(hash: string): Promise<any | undefined> {
-    return super.getObject(`/permissions/${hash}`);
+    return this.provider.getObject(`/permissions/${hash}`);
   }
 
   async setPermissions(hash: string, permissions: any) {
-    await super.httpPut(`/permissions/${hash}`, permissions);
+    await this.provider.put(`/permissions/${hash}`, permissions);
   }
 
-  async removePermissions(
-    hash: string,
-    userId: string
-  ) {
-    await super.httpDelete(`/permissions/${hash}/single/${userId}`);
+  async removePermissions(hash: string, userId: string) {
+    await this.provider.delete(`/permissions/${hash}/single/${userId}`);
   }
 
   async setPrivatePermissions(
@@ -41,7 +29,10 @@ export class EveesAccessControlHttp extends HttpProvider
     type: PermissionType,
     userId: string
   ) {
-    await super.httpPut(`/permissions/${hash}/single`, { type, userId });
+    await this.provider.put(`/permissions/${hash}/single`, {
+      type,
+      userId,
+    });
   }
 
   async setPublicPermissions(
@@ -49,7 +40,7 @@ export class EveesAccessControlHttp extends HttpProvider
     type: PermissionType,
     value: Boolean
   ) {
-    await super.httpPut(`/permissions/${hash}/public`, { type, value });
+    await this.provider.put(`/permissions/${hash}/public`, { type, value });
   }
 
   async canWrite(uref: string, userId?: string) {

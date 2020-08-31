@@ -9,8 +9,9 @@ import {
   KnownSourcesSource,
   EntityCache,
   KnownSourcesService,
+  loadEntity,
 } from '@uprtcl/multiplatform';
-import { Entity } from '@uprtcl/cortex';
+import { Entity, Signed, CortexModule } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { Commit, Perspective, NewProposal, NewPerspectiveData } from '../types';
@@ -20,6 +21,8 @@ import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
 import { Secured } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
+import { EveesHelpers } from './helpers';
+import { EveesWorkspace } from 'src/uprtcl-evees';
 
 export const eveesResolvers: IResolvers = {
   Commit: {
@@ -301,6 +304,53 @@ export const eveesResolvers: IResolvers = {
         head: headId,
         context: context,
         payload: payload,
+      };
+    },
+
+    async forkPerspective(
+      _,
+      { perspectiveId, remote, parentId, name },
+      { container }
+    ) {
+      const evees: Evees = container.get(EveesBindings.Evees);
+      const client: ApolloClient<any> = container.get(
+        ApolloClientModule.bindings.Client
+      );
+      const recognizer = container.get(CortexModule.bindings.Recognizer);
+
+      const workspace = new EveesWorkspace(client, recognizer);
+      const newPerspectiveId = await evees.forkPerspective(
+        perspectiveId,
+        workspace,
+        remote
+      );
+      await workspace.execute(client);
+
+      const headId = await EveesHelpers.getPerspectiveHeadId(
+        client,
+        newPerspectiveId
+      );
+      const context = await EveesHelpers.getPerspectiveContext(
+        client,
+        newPerspectiveId
+      );
+      const perspective = await loadEntity<Signed<Perspective>>(
+        client,
+        newPerspectiveId
+      );
+      if (!perspective) throw new Error('perspective not found');
+
+      return {
+        id: newPerspectiveId,
+        name: name,
+        head: headId,
+        context: {
+          id: context,
+          perspectives: {
+            newPerspectiveId,
+          },
+        },
+        payload: perspective.object.payload,
       };
     },
 

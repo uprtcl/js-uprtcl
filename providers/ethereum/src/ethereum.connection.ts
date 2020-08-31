@@ -1,41 +1,23 @@
-import Web3 from 'web3';
-import { provider } from 'web3-core';
-
+import { ethers } from 'ethers';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 
 export interface EthereumConnectionOptions {
-  provider?: provider;
+  provider: string | ethers.providers.JsonRpcProvider;
 }
-
-const safeSend = (provider, data): Promise<any> => {
-  const send = (Boolean(provider.sendAsync) ? provider.sendAsync : provider.send).bind(provider);
-  return new Promise((resolve, reject) => {
-    send(data, function (err, result) {
-      if (err) reject(err);
-      else if (result.error) reject(result.error);
-      else resolve(result.result);
-    });
-  });
-};
-
-const encodeRpcCall = (method, params, fromAddress) => ({
-  jsonrpc: '2.0',
-  id: 1,
-  method,
-  params,
-  fromAddress,
-});
-
-const callRpc = async (provider, method, params, fromAddress): Promise<string> =>
-  safeSend(provider, encodeRpcCall(method, params, fromAddress));
-
 export class EthereumConnection extends Connection {
-  provider: any;
-  web3!: Web3;
-  accounts!: string[];
-  networkId!: number;
+  provider!: ethers.providers.JsonRpcProvider;
+  signer!: ethers.providers.JsonRpcSigner | undefined;
 
-  constructor(protected ethOptions: EthereumConnectionOptions, options?: ConnectionOptions) {
+  account!: string;
+  private network!: ethers.providers.Network;
+  private networkId!: string;
+
+  constructor(
+    protected ethOptions: EthereumConnectionOptions = {
+      provider: 'http://localhost:8545',
+    },
+    options?: ConnectionOptions
+  ) {
     super(options);
   }
 
@@ -43,44 +25,50 @@ export class EthereumConnection extends Connection {
    * @override
    */
   protected async connect(): Promise<void> {
-    let provider = window['ethereum'];
-
-    if (this.ethOptions.provider) {
-      this.web3 = new Web3(this.ethOptions.provider);
-    } else if (typeof provider !== 'undefined') {
-      this.accounts = await provider.enable();
-
-      this.web3 = new Web3(provider);
-
-      provider.on('accountsChanged', (accounts) => {
-        if (accounts != this.accounts) {
-          // Time to reload your interface with accounts[0]!
-          window.location.reload();
-        }
-      });
+    if (typeof this.ethOptions.provider === 'string') {
+      this.provider = new ethers.providers.JsonRpcProvider(
+        this.ethOptions.provider
+      );
     } else {
-      throw new Error('No available web3 provider was found');
+      this.provider = this.ethOptions.provider;
     }
 
-    this.accounts = await this.web3.eth.getAccounts();
-    this.networkId = await this.web3.eth.net.getId();
+    this.signer =
+      this.provider['getSigner'] !== undefined
+        ? this.provider.getSigner()
+        : undefined;
+
+    this.account = this.signer ? await this.signer.getAddress() : '';
+    this.network = await this.provider.getNetwork();
+    this.networkId = this.provider.send
+      ? await this.provider.send('net_version', [])
+      : this.network.chainId;
+  }
+
+  public async connectWallet() {
+    await window['ethereum'].enable();
+    const provider = new ethers.providers.Web3Provider(window['ethereum']);
+    this.ethOptions = { provider };
+    await this.connect();
+  }
+
+  public canSign() {
+    return !!this.signer;
   }
 
   /**
    * @returns the current used account for this ethereum connection
    */
   public getCurrentAccount(): string {
-    return this.accounts[0].toLowerCase();
+    return this.account.toLowerCase();
+  }
+
+  public getNetworkId(): string {
+    return this.networkId;
   }
 
   public async signText(text: string, account: string): Promise<string> {
-    const provider = this.web3.currentProvider;
-    if (!provider) throw new Error('Ethereum provider not found');
-
-    if ((provider as any).isAuthereum) return (provider as any).signMessageWithAdminKey(text);
-    var msg = '0x' + Buffer.from(text, 'utf8').toString('hex');
-    var params = [msg, account];
-    var method = 'personal_sign';
-    return callRpc(provider, method, params, account);
+    if (!this.signer) throw new Error('signer not set');
+    return this.signer.signMessage(text);
   }
 }

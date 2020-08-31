@@ -133,7 +133,7 @@ export class CortexEntity extends moduleConnect(LitElement) {
   render() {
     return html`
       ${!this.selectedLens
-        ? html` <cortex-loading-placeholder></cortex-loading-placeholder> `
+        ? html` <uprtcl-loading></uprtcl-loading> `
         : this.renderLens()}
     `;
   }

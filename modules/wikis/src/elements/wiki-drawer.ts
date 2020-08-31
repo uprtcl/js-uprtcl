@@ -33,6 +33,7 @@ import {
   RemoteMap,
   EveesHelpers,
   Perspective,
+  EveesInfoPage,
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -42,7 +43,6 @@ import { Wiki } from '../types';
 
 import { WikiBindings } from '../bindings';
 
-const LOGINFO = false;
 const MAX_LENGTH = 999;
 
 interface PageData {
@@ -62,6 +62,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Array })
   editableRemotes: string[] = [];
 
+  @property({ type: Boolean, attribute: 'show-exit' })
+  showExit: boolean = false;
+
   @property({ attribute: false })
   uref!: string;
 
@@ -71,11 +74,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   wiki: Entity<Wiki> | undefined;
 
-  @property({ type: Number })
-  selectedPageIx: number | undefined = undefined;
-
   @property({ attribute: false })
   pagesList: PageData[] | undefined = undefined;
+
+  @property({ attribute: false })
+  selectedPageIx: number | undefined = undefined;
 
   @property({ attribute: false })
   creatingNewPage: boolean = false;
@@ -90,13 +93,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   hasSelectedPage = false;
 
   @property({ attribute: false })
-  firstRefAuthor: string = '';
+  editable: boolean = false;
 
   @property({ attribute: false })
   author: string = '';
-
-  @property({ type: Boolean, attribute: 'show-exit' })
-  showExit: boolean = false;
 
   @property({ attribute: false })
   showEditTitle: boolean = false;
@@ -104,11 +104,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   updatingTitle: boolean = false;
 
+  @query('#evees-info-page')
+  evessInfoPageEl!: EveesInfoPage;
+
   remote: string = '';
-  path: string = '';
   context: string | undefined = undefined;
   currentHeadId: string | undefined = undefined;
-  editable: boolean = false;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -118,7 +119,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   constructor() {
     super();
     this.isViewportMobile();
-    window.addEventListener('resize', this.isViewportMobile.bind(this));
+    window.addEventListener('resize', () => this.isViewportMobile());
   }
 
   async firstUpdated() {
@@ -131,14 +132,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.uref = this.firstRef;
     this.loadWiki();
-
-    const firstPerspective = await loadEntity<Signed<Perspective>>(
-      this.client,
-      this.firstRef
-    );
-    if (firstPerspective) {
-      this.firstRefAuthor = firstPerspective.object.payload.creatorId;
-    }
   }
 
   updated(changedProperties) {
@@ -204,7 +197,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!remote) throw new Error(`remote not found ${this.remote}`);
     const canWrite = await remote.canWrite(this.uref);
 
-    this.path = perspective.object.payload.path;
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;
     this.editable =
@@ -465,6 +457,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     );
   }
 
+  loggedIn() {
+    /* relaod evees info */
+    this.evessInfoPageEl.load();
+  }
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -477,9 +474,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   renderPageList(showOptions: boolean = true) {
     if (this.pagesList === undefined)
       return html`
-        <cortex-loading-placeholder
-          class="empty-pages-loader"
-        ></cortex-loading-placeholder>
+        <uprtcl-loading class="empty-pages-loader"></uprtcl-loading>
       `;
 
     return html`
@@ -500,8 +495,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                 icon="add_circle_outline"
                 @click=${() => this.newPage()}
                 loading=${this.creatingNewPage ? 'true' : 'false'}
-                label=${this.t('wikis:new-page')}
               >
+                ${this.t('wikis:new-page')}
               </uprtcl-button-loading>
             </div>
           `
@@ -545,127 +540,56 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
         ${this.editable && showOptions
           ? html`
-              <uprtcl-options-menu
-                @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
-                .config=${menuConfig}
-              >
-              </uprtcl-options-menu>
+              <div class="item-menu-container">
+                <uprtcl-options-menu
+                  class="options-menu"
+                  @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
+                  .config=${menuConfig}
+                >
+                </uprtcl-options-menu>
+              </div>
             `
           : ''}
       </div>
     `;
   }
 
-  renderColorBar() {
+  renderBreadcrumb() {
     return html`
-      <div
-        class="color-bar"
-        style=${styleMap({
-          backgroundColor: this.color(),
-        })}
-      ></div>
+      ${this.showExit
+        ? html`
+            <uprtcl-button @click=${() => this.goBack()}>exit</uprtcl-button>
+          `
+        : ''}
+      <uprtcl-button
+        .skinny=${this.uref !== this.firstRef}
+        @click=${() => this.goToOfficial()}
+      >
+        official
+      </uprtcl-button>
+      ${this.uref !== this.firstRef
+        ? html`
+            <uprtcl-button
+              style=${`--background-color: ${this.color()}`}
+              class="evees-author"
+              >by
+              <evees-author
+                user-id=${this.author}
+                show-name
+                short
+                color=${eveeColor(this.uref)}
+                @click=${() => this.goToHome()}
+              ></evees-author
+            ></uprtcl-button>
+          `
+        : ''}
     `;
   }
 
-  renderNavBar() {
-    return html`
-      <div class="nav-bar-top">
-        ${this.showExit
-          ? html`
-              <uprtcl-button @click=${() => this.goBack()}>exit</uprtcl-button>
-            `
-          : ''}
-        <uprtcl-button @click=${() => this.goToOfficial()}>
-          official
-        </uprtcl-button>
-        <div class="perspective-author-wrapper">
-          ${this.uref !== this.firstRef
-            ? html`
-                <evees-author
-                  user-id=${this.author}
-                  show-name="false"
-                  color=${eveeColor(this.uref)}
-                  @click=${() => this.goToHome()}
-                ></evees-author>
-              `
-            : ''}
-        </div>
-      </div>
-      <div>
-        ${this.renderPageList()}
-      </div>
-    `;
-  }
-
-  renderSummary() {
-    const contextConfig: MenuConfig = {};
-
-    contextConfig['edit-title'] = {
-      disabled: false,
-      graphic: 'edit',
-      text: 'edit',
-    };
-
-    return html`
-      <div class="title-padding-div"></div>
-      <div class="title-card-container">
-        <div class="section">
-          <div class="section-header">
-            ${this.wiki ? this.wiki.object.title : ''}
-          </div>
-
-          <div class="section-content">
-            <div class="row center-aligned">
-              ${this.uref === this.firstRef
-                ? html` <div class="official-name">(Official)</div> `
-                : html`
-                    <span class="by-3box">by</span>
-                    <evees-author user-id=${this.author}></evees-author>
-                  `}
-            </div>
-            <div class="row center-aligned title-form">
-              ${this.showEditTitle
-                ? html`
-                    <uprtcl-form-string
-                      value=${this.wiki ? this.wiki.object.title : ''}
-                      label="new title"
-                      @cancel=${() => (this.showEditTitle = false)}
-                      @accept=${(e) => this.editTitle(e.detail.value)}
-                      ?loading=${this.updatingTitle}
-                    ></uprtcl-form-string>
-                  `
-                : ''}
-            </div>
-            ${this.isMobile
-              ? html`<div class="pages-summary">
-                  <b>pages:</b>
-                  ${this.renderPageList(false)}
-                </div>`
-              : html``}
-          </div>
-
-          <div class="context-menu">
-            <uprtcl-help>
-              <span>
-                This Wiki is multi-perspective. <br /><br />It has one
-                "official" perspective, and many different "personal"
-                perspectives.<br /><br />
-                The owner of the official perspective is shown below, under
-                "Access Control".
-              </span>
-            </uprtcl-help>
-            ${this.editable
-              ? html`
-                  <uprtcl-options-menu
-                    .config=${contextConfig}
-                    @option-click=${this.titleOptionClicked}
-                  ></uprtcl-options-menu>
-                `
-              : ''}
-          </div>
-        </div>
-      </div>
-    `;
+  renderLoginWidget() {
+    return html`<evees-login-widget
+      @logged-in=${() => this.loggedIn()}
+    ></evees-login-widget>`;
   }
 
   render() {
@@ -674,47 +598,55 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       uref: this.uref,
       editable: this.editable,
     });
-    if (this.loading || !this.uref)
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+    if (!this.uref) return html` <uprtcl-placeholder></uprtcl-placeholder> `;
 
     return html`
       <div class="app-drawer">
-        ${this.renderColorBar()}
-
-        <div class="app-navbar">
-          ${this.renderNavBar()}
+        <div
+          class="app-topbar"
+          style=${styleMap({
+            borderColor: this.color(),
+          })}
+        >
+          <div class="breadcrum-container">${this.renderBreadcrumb()}</div>
+          <div class="login-widget-container">${this.renderLoginWidget()}</div>
         </div>
 
-        <div class="app-content">
-          ${this.selectedPageIx !== undefined
-            ? html`
-                <wiki-page
-                  id="wiki-page"
-                  @nav-back=${() => this.selectPage(undefined)}
-                  @page-title-changed=${() => this.loadPagesData()}
-                  pageHash=${this.wiki
-                    ? this.wiki.object.pages[this.selectedPageIx]
-                    : ''}
-                  color=${this.color() ? this.color() : ''}
-                  .editableRemotes=${this.editableRemotes}
-                >
-                </wiki-page>
-              `
-            : html`
-                <div class="home-container">
-                  ${this.renderSummary()}
+        <div class="app-content-with-nav">
+          <div class="app-navbar">
+            ${this.renderPageList()}
+          </div>
 
-                  <div class="evee-info">
-                    <evees-info-page
-                      slot="evee-page"
-                      uref=${this.uref}
-                      first-uref=${this.firstRef as string}
-                      evee-color=${this.color()}
-                      default-remote=${this.defaultRemoteId as string}
-                    ></evees-info-page>
+          <div class="app-content">
+            ${this.selectedPageIx !== undefined
+              ? html`
+                  <wiki-page
+                    id="wiki-page"
+                    @nav-back=${() => this.selectPage(undefined)}
+                    @page-title-changed=${() => this.loadPagesData()}
+                    pageHash=${this.wiki
+                      ? this.wiki.object.pages[this.selectedPageIx]
+                      : ''}
+                    color=${this.color() ? this.color() : ''}
+                    .editableRemotes=${this.editableRemotes}
+                  >
+                  </wiki-page>
+                `
+              : html`
+                  <div class="home-container">
+                    <div class="evee-info">
+                      <evees-info-page
+                        id="evees-info-page"
+                        slot="evee-page"
+                        uref=${this.uref}
+                        first-uref=${this.firstRef as string}
+                        evee-color=${this.color()}
+                        default-remote=${this.defaultRemoteId as string}
+                      ></evees-info-page>
+                    </div>
                   </div>
-                </div>
-              `}
+                `}
+          </div>
         </div>
       </div>
     `;
@@ -731,16 +663,52 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
             'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
             'Segoe UI Symbol';
-          font-size: 1.6rem;
+          font-size: 16px;
           color: #37352f;
           --mdc-theme-primary: #2196f3;
           width: 100%;
+          position: relative;
         }
         .app-drawer {
+          width: 100%;
           flex: 1 1 0;
           display: flex;
-          flex-direction: horizontal;
-          padding-top: 5px;
+          flex-direction: column;
+        }
+        .app-topbar {
+          width: 100%;
+          display: flex;
+          flex-direction: row;
+          height: 68px;
+          border-width: 5px;
+          border-bottom-style: solid;
+        }
+        .breadcrum-container {
+          flex: 1 1 0;
+          padding: 16px;
+          display: flex;
+          flex-direction: row;
+        }
+        .breadcrum-container uprtcl-button {
+          display: block;
+          width: auto;
+          margin-right: 8px;
+        }
+        .breadcrum-container .evees-author {
+          --background-color: red;
+        }
+        .breadcrum-container uprtcl-button evees-author {
+          --color: white;
+        }
+        .login-widget-container {
+          flex: 0 0 0;
+          padding: 16px;
+        }
+        .app-content-with-nav {
+          flex: 1 1 0;
+          display: flex;
+          flex-direction: row;
+          position: relative;
         }
         .app-navbar {
           width: 260px;
@@ -753,36 +721,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           flex-grow: 1;
           display: flex;
           flex-direction: column;
-        }
-        .column {
-          height: 100%;
-        }
-        .color-bar {
-          height: 1vw;
-          max-height: 5px;
-          flex-shrink: 0;
-          width: 100%;
-          position: absolute;
-          top: 0px;
-        }
-        .nav-bar-top {
-          display: flex;
-          padding: 14px 10px 0px 0px;
-          width: calc(100% - 10px);
-          justify-content: space-between;
-          border-color: #a2a8aa;
-          border-bottom-style: solid;
-          border-bottom-width: 1px;
-        }
-        .nav-bar-top .slash {
-          margin-right: 6px;
-        }
-        .perspective-author-wrapper {
-          width: 48px;
-          height: 48px;
-        }
-        .nav-bar-top evees-author {
-          cursor: pointer;
+          position: relative;
         }
         .empty-pages-loader {
           margin-top: 22px;
@@ -806,12 +745,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           flex-direction: column;
           justify-content: center;
         }
+        .page-item .item-menu-container {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .page-item .item-menu-container .options-menu {
+          --box-width: 160px;
+        }
         .page-item:hover {
           background-color: #e8ecec;
-        }
-        uprtcl-options-menu {
-          padding-top: 6px;
-          --box-with: 200px;
         }
         .title-empty {
           color: #a2a8aa;
@@ -838,31 +781,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .button-row uprtcl-button-loading {
           margin: 0 auto;
+          width: 180px;
         }
-        .app-top-nav {
-          padding: 5px 0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .app-content {
-          flex-grow: 1;
-          display: flex;
-          flex-direction: column;
-        }
-
         .home-container {
           text-align: center;
           height: auto;
+          padding: 6vw 0vw;
         }
-
-        .title-padding-div {
-          width: 100%;
-          height: 5vw;
-          min-height: 32px;
-        }
-
         .title-card-container {
           padding: 0px 5vw;
         }
@@ -881,7 +806,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .section-header {
           font-weight: bold;
           padding: 2vw 0px 0.8vw 0px;
-          font-size: 3rem;
+          font-size: 30px;
           border-style: solid 2px;
         }
         .section-content evees-author {
@@ -892,7 +817,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           padding-bottom: 2vw;
         }
         .official-name {
-          font-size: 3rem;
+          font-size: 30px;
           font-weight: bold;
           color: #4e585c;
         }
@@ -917,15 +842,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         }
         .title-form {
           margin-top: 22px;
-        }
-
-        @media (max-width: 768px) {
-          .app-content {
-            min-width: 100% !important;
-          }
-          .section {
-            padding-top: 33px;
-          }
         }
       `,
     ];

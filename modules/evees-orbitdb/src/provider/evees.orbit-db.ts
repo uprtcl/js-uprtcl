@@ -249,6 +249,7 @@ export class EveesOrbitDB implements EveesRemote {
     if (this.loggedIn) {
       return;
     }
+    await this.ethConnection.connectWallet();
     const signature = await this.ethConnection.signText(
       msg(window.location.origin),
       this.ethConnection.getCurrentAccount()

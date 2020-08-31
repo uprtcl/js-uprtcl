@@ -5,31 +5,23 @@ import { HttpConnection } from './http.connection';
 
 const store_api = 'store';
 
-export class HttpStore extends HttpProvider implements CASStore {
-  constructor(
-    protected host: string,
-    protected connection: HttpConnection,
-    public cidConfig: CidConfig
-  ) {
-    super(
-      {
-        host: host,
-        apiId: store_api,
-      },
-      connection
-    );
-  }
+export class HttpStore implements CASStore {
+  constructor(protected provider: HttpProvider, public cidConfig: CidConfig) {}
 
   get casID() {
-    return `http:${store_api}:${this.host}`;
+    return `http:${store_api}:${this.provider.pOptions.host}`;
+  }
+
+  ready() {
+    return Promise.resolve();
   }
 
   async get(hash: string): Promise<object> {
-    return super.getObject<object>(`/get/${hash}`);
+    return this.provider.getObject<object>(`/get/${hash}`);
   }
 
   async create(object: object, hash?: string): Promise<string> {
-    const result = await super.httpPost(`/data`, {
+    const result = await this.provider.post(`/data`, {
       id: '',
       object: object,
     });

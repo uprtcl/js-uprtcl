@@ -119,17 +119,9 @@ export class WikiPage extends moduleConnect(LitElement) {
   }
 
   render() {
-    if (!this.textNode)
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+    if (!this.textNode) return html` <uprtcl-loading></uprtcl-loading> `;
 
     return html`
-      <div class="top-row">
-        <uprtcl-icon-button
-          icon="arrow_back_ios"
-          @click=${this.back}
-        ></uprtcl-icon-button>
-      </div>
-
       <div class="page-content">
         <documents-editor
           id="doc-editor"
@@ -170,16 +162,8 @@ export class WikiPage extends moduleConnect(LitElement) {
           display: flex;
           flex-direction: column;
         }
-        .top-row {
-          margin: 16px 0px 2vw 1.5vw;
-        }
         .text-editor {
           padding: 0vw 0vw;
-        }
-        @media (max-width: 768px) {
-          .top-row {
-            display: none;
-          }
         }
       `,
     ];

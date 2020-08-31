@@ -47,19 +47,24 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
       EveesBindings.EveesRemote
     ) as EveesRemote[]).find((remote) => remote.id === this.remoteId);
 
-    if (eveesRemote === undefined) throw new Error(`remote ${this.remoteId} not found`);
-    if (eveesRemote.proposals === undefined) throw new Error(`proposal of remote ${this.remoteId} undefined`);
+    if (eveesRemote === undefined)
+      throw new Error(`remote ${this.remoteId} not found`);
+    if (eveesRemote.proposals === undefined)
+      throw new Error(`proposal of remote ${this.remoteId} undefined`);
     const proposal = await eveesRemote.proposals.getProposal(this.proposalId);
 
-    if (proposal === undefined) throw new Error(`proposal ${this.proposalId} not found on remote ${this.remoteId}`);
+    if (proposal === undefined)
+      throw new Error(
+        `proposal ${this.proposalId} not found on remote ${this.remoteId}`
+      );
     this.workspace = new EveesWorkspace(this.client);
-    
+
     if (proposal.updates !== undefined) {
       for (const update of proposal.updates) {
         this.workspace.update(update);
       }
     }
-    
+
     this.loading = false;
     await this.updateComplete;
 
@@ -68,10 +73,11 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
-    return html`<evees-update-diff id="evees-update-diff"> </evees-update-diff>`;
+    return html`<evees-update-diff id="evees-update-diff">
+    </evees-update-diff>`;
   }
 
   static get styles() {

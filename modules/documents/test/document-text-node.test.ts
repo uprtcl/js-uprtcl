@@ -89,13 +89,13 @@ describe('<cortex-entity>', () => {
       '<cortex-entity uref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></cortex-entity>'
     );
     expect(cortexEntity).shadowDom.to.equal(
-      '<cortex-loading-placeholder></cortex-loading-placeholder>'
+      '<uprtcl-loading></uprtcl-loading>'
     );
 
     await waitUntil(
       () =>
         !(cortexEntity.shadowRoot as ShadowRoot).querySelector(
-          'cortex-loading-placeholder'
+          'uprtcl-loading'
         ),
       'Never stopped loading'
     );

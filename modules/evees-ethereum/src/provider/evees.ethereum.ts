@@ -1,4 +1,4 @@
-import { Container } from 'inversify';
+import { ethers } from 'ethers';
 
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -114,12 +114,12 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   }
 
   get id() {
-    return `eth-${this.ethConnection.networkId}:${evees_if}`;
+    return `eth-${this.ethConnection.getNetworkId()}:${evees_if}`;
   }
 
   get defaultPath() {
-    return this.uprtclRoot.contractInstance.options.address
-      ? this.uprtclRoot.contractInstance.options.address.toLocaleLowerCase()
+    return this.uprtclRoot.contractInstance.address
+      ? this.uprtclRoot.contractInstance.address.toLocaleLowerCase()
       : '';
   }
 
@@ -288,27 +288,28 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       context,
     ]);
 
-    let perspectiveContextUpdatedEvents = await this.uprtclDetails.contractInstance.getPastEvents(
-      'PerspectiveDetailsSet',
-      {
-        filter: { contextHash: contextHash },
-        fromBlock: 0,
-      }
+    let contextFilter = this.uprtclDetails.contractInstance.filters.PerspectiveDetailsSet(
+      null,
+      contextHash,
+      null
     );
 
-    let perspectiveIdHashes = perspectiveContextUpdatedEvents.map(
-      (e) => e.returnValues.perspectiveIdHash
+    let perspectiveContextUpdatedEvents = await this.uprtclDetails.contractInstance.queryFilter(
+      contextFilter,
+      0
     );
 
-    const hashToIdPromises = perspectiveIdHashes.map((idHash) =>
-      this.hashToId(idHash)
+    const perspectiveIds = await Promise.all(
+      perspectiveContextUpdatedEvents.map((event) =>
+        this.hashToId(event.args ? event.args.perspectiveIdHash : undefined)
+      )
     );
     this.logger.log(
       `[ETH] getContextPerspectives of ${context}`,
-      perspectiveIdHashes
+      perspectiveIds
     );
 
-    return Promise.all(hashToIdPromises);
+    return perspectiveIds;
   }
 
   /**
@@ -356,11 +357,11 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
     await this.uprtclRoot.send(UPDATE_OWNER, [perspectiveIdHash, ZERO_ADD]);
   }
 
-  isLogged(): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async isLogged() {
+    return this.ethConnection.canSign();
   }
-  login(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async login(): Promise<void> {
+    await this.ethConnection.connectWallet();
   }
   logout(): Promise<void> {
     throw new Error('Method not implemented.');

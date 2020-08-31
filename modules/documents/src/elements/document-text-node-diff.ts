@@ -29,7 +29,7 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.newData === undefined || this.oldData === undefined) {
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     return html`

@@ -30,10 +30,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'first-perspective-id' })
   firstPerspectiveId!: string;
 
+  @property({ type: Boolean, attribute: 'can-propose' })
+  canPropose: Boolean = false;
+
   @property({ attribute: false })
   loadingPerspectives: boolean = true;
-
-  perspectivesData: PerspectiveData[] = [];
 
   @property({ attribute: false })
   otherPerspectivesData: PerspectiveData[] = [];
@@ -44,20 +45,20 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   @property({ attribute: 'force-update' })
   forceUpdate: string = 'true';
 
+  perspectivesData: PerspectiveData[] = [];
+
   protected client!: ApolloClient<any>;
 
   async firstUpdated() {
+    if (!this.isConnected) return;
+
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.load();
   }
 
   async load() {
     this.loadingPerspectives = true;
-
-    const client: ApolloClient<any> = this.request(
-      ApolloClientModule.bindings.Client
-    );
-    const result = await client.query({
+    const result = await this.client.query({
       query: gql`{
         entity(uref: "${this.perspectiveId}") {
           id
@@ -197,27 +198,22 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     }
   }
 
-  getPerspectiveActionDisaled(perspectiveData: PerspectiveData) {
-    return [MERGE_ACTION, PRIVATE_PERSPECTIVE].includes(
-      this.getPerspectiveAction(perspectiveData)
-    );
-  }
-
   renderLoading() {
     return html`
       <div class="loading-container">
-        <cortex-loading-placeholder></cortex-loading-placeholder>
+        <uprtcl-loading></uprtcl-loading>
       </div>
     `;
   }
 
   renderPerspectiveRow(perspectiveData: PerspectiveData) {
-    const action = this.getPerspectiveAction(perspectiveData);
     return html`
       <uprtcl-list-item
+        style=${`--selected-border-color: ${this.perspectiveColor(
+          perspectiveData.id
+        )}`}
         hasMeta
         ?selected=${this.perspectiveId === perspectiveData.id}
-        ?activated=${this.perspectiveId === perspectiveData.id}
         @click=${() => this.perspectiveClicked(perspectiveData.id)}
       >
         <evees-author
@@ -225,14 +221,21 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           user-id=${perspectiveData.creatorId}
         ></evees-author>
 
-        ${!this.getPerspectiveActionDisaled(perspectiveData)
-          ? html` <uprtcl-icon
+        <!-- just enable merges to the official perspective for now -->
+        ${this.canPropose && this.perspectiveId === this.firstPerspectiveId
+          ? html` <uprtcl-button
               slot="meta"
+              icon="call_merge"
+              skinny
               @click=${(e) =>
-                this.perspectiveButtonClicked(e, action, perspectiveData)}
+                this.perspectiveButtonClicked(
+                  e,
+                  this.getPerspectiveAction(perspectiveData),
+                  perspectiveData
+                )}
             >
-              call_merge
-            </uprtcl-icon>`
+              merge
+            </uprtcl-button>`
           : ''}
       </uprtcl-list-item>
     `;
@@ -258,10 +261,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-      }
-
-      uprtcl-list-item {
-        padding-left: 12px;
       }
 
       .loading-container {

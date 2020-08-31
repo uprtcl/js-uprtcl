@@ -26,6 +26,13 @@ export const eveesTypeDefs: DocumentNode = gql`
       parentId: String
     ): Perspective!
 
+    forkPerspective(
+      perspectiveId: ID!
+      remote: String
+      parentId: String
+      name: String
+    ): Perspective!
+
     deletePerspective(perspectiveId: ID!): Perspective!
 
     addProposal(

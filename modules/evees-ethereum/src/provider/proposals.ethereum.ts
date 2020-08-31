@@ -198,8 +198,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     const updates: any = await Promise.all(updatesPromises);
 
     const executed =
-      ethHeadUpdates.find((update: any) => update.executed === '0') ===
-      undefined;
+      ethHeadUpdates.find((update: any) => update.executed === 0) === undefined;
     const canAuthorize =
       this.uprtclProposals.userId !== undefined
         ? ethProposal.owner.toLocaleLowerCase() ===
@@ -214,8 +213,8 @@ export class ProposalsEthereum implements ProposalsProvider {
       toHeadId: ethProposalDetails.toHeadId,
       fromHeadId: ethProposalDetails.fromHeadId,
       updates: updates,
-      status: ethProposal.status === '1',
-      authorized: ethProposal.authorized === '1',
+      status: ethProposal.status === 1,
+      authorized: ethProposal.authorized === 1,
       executed: executed,
       canAuthorize: canAuthorize,
     };
@@ -230,20 +229,28 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('getProposalsToPerspective() - pre', { perspectiveId });
 
-    let requestsCreatedEvents = await this.uprtclProposals.contractInstance.getPastEvents(
-      'ProposalCreated',
-      {
-        filter: {
-          toPerspectiveIdHash: await this.uprtclRoot.call(GET_PERSP_HASH, [
-            perspectiveId,
-          ]),
-        },
-        fromBlock: 0,
-      }
+    const toPerspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [
+      perspectiveId,
+    ]);
+    const filter = this.uprtclProposals.contractInstance.filters.ProposalCreated(
+      toPerspectiveIdHash,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    );
+
+    let requestsCreatedEvents = await this.uprtclProposals.contractInstance.queryFilter(
+      filter,
+      0
     );
 
     const requestsIds = requestsCreatedEvents.map((event) => {
-      return event.returnValues.proposalId;
+      return event.args ? event.args.proposalId : undefined;
     });
 
     this.logger.info('getProposalsToPerspective() - post', { requestsIds });
