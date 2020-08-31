@@ -3,13 +3,13 @@ import { KnownSourcesHttp, HttpProvider } from '@uprtcl/http-provider';
 import { KnownSourcesService, CASStore } from '@uprtcl/multiplatform';
 
 import {
-  ProposalsProvider,
   EveesRemote,
   PerspectiveDetails,
   NewPerspectiveData,
 } from '@uprtcl/evees';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
+import { ProposalsHttp } from './proposals.http';
 
 const evees_api: string = 'evees-v1';
 
@@ -19,10 +19,11 @@ export class EveesHttp implements EveesRemote {
   knownSources: KnownSourcesService;
 
   accessControl: EveesAccessControlHttp;
-  proposals: ProposalsProvider | undefined;
+  proposals: ProposalsHttp;
 
   constructor(protected provider: HttpProvider, public store: CASStore) {
     this.accessControl = new EveesAccessControlHttp(this.provider);
+    this.proposals = new ProposalsHttp(this.provider, this);
     this.knownSources = new KnownSourcesHttp(this.provider);
   }
 
