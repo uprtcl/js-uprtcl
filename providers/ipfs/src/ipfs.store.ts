@@ -155,7 +155,8 @@ export class IpfsStore extends Connection implements CASStore {
     /** recursively try */
     return this.tryGet(hash, 500, 0)
       .then((raw) => {
-        let object = CBOR.decode(raw.value.buffer);
+        const forceBuffer = Uint8Array.from(raw.value);
+        let object = CBOR.decode(forceBuffer.buffer);
         this.logger.log(`Object retrieved ${hash}`, { raw, object });
         return object;
       })

@@ -103,6 +103,7 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
   }
 
   async getOwner(hash: string): Promise<string> {
+    await this.remote.uprtclRoot.ready();
     const perspectiveIdHash = await this.remote.uprtclRoot.call(
       GET_PERSP_HASH,
       [hash]

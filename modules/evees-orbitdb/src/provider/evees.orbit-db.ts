@@ -125,6 +125,8 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    this.logger.log('createPerspective', perspectiveData);
+
     if (!(await this.isLogged())) throw notLogged();
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
@@ -159,6 +161,7 @@ export class EveesOrbitDB implements EveesRemote {
     perspectiveId: string,
     details: PerspectiveDetails
   ): Promise<void> {
+    this.logger.log('updatePerspective', { perspectiveId, details });
     if (!(await this.isLogged())) throw notLogged();
     if (!this.orbitdbConnection)
       throw new Error('orbit db connection undefined');
@@ -191,12 +194,14 @@ export class EveesOrbitDB implements EveesRemote {
       );
       await contextStore.add(perspectiveId);
     }
+    this.logger.log('updatePerspective - done', { perspectiveId, details });
   }
 
   /**
    * @override
    */
   async getContextPerspectives(context: string): Promise<string[]> {
+    this.logger.log('getContextPerspectives', { context });
     if (!this.orbitdbConnection)
       throw new Error('orbit db connection undefined');
 
@@ -208,6 +213,10 @@ export class EveesOrbitDB implements EveesRemote {
       perspectiveIds
     );
 
+    this.logger.log('getContextPerspectives - done ', {
+      context,
+      perspectiveIds,
+    });
     return perspectiveIds;
   }
 

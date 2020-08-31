@@ -32,13 +32,6 @@ import { SimpleWiki } from './simple-wiki';
   });
   // const ethHost = 'ws://localhost:8545';
 
-  // const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
-  const ipfsConfig = {
-    host: 'ipfs.intercreativity.io',
-    port: 443,
-    protocol: 'https',
-  };
-
   const ipfsCidConfig = {
     version: 1,
     type: 'sha2-256',
