@@ -39,23 +39,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     'google-oauth2|108882209031762642189',
   ];
 
-  setCutomCliekced() {}
-
-  // TODO:
-
-  // private user permissions
-  // - change permissions for each user
-
-  // add new user permissions
-
-  // refactor permission methods to be unique
-
-  // remove custom permissions
-
-  // later:
-  // search users
-
-
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(
@@ -175,9 +158,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     return userPermissions;
   }
-
-  changeDelegateTo() {}
-
 
   async addRole(e) {
     if (!this.remote.accessControl) {
