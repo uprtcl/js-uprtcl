@@ -42,6 +42,9 @@ import { SimpleWiki } from './simple-wiki';
   const pinnerUrl = 'http://localhost:3000';
 
   const ipfsJSConfig = {
+    preload: { enabled: false },
+    relay: { enabled: true, hop: { enabled: true, active: true } },
+    EXPERIMENTAL: { pubsub: true },
     config: {
       Addresses: {
         Swarm: [
@@ -50,21 +53,28 @@ import { SimpleWiki } from './simple-wiki';
           '/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star/',
         ],
       },
+      Bootstrap: [
+        '/ip4/192.168.1.13/tcp/4002/p2p/QmaYSNkfQkXDkuuX1wj7uWkJUW4ZazSVudZMAzGsRTE1CN',
+      ],
     },
   };
 
   const orchestrator = new MicroOrchestrator();
 
-  const ipfsInstance = await IPFS.create(ipfsJSConfig);
+  const ipfs = await IPFS.create(ipfsJSConfig);
 
-  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfsInstance);
+  const config = await ipfs.config.getAll();
+  await ipfs.swarm.connect(
+    '/ip4/192.168.1.13/tcp/4002/p2p/QmaYSNkfQkXDkuuX1wj7uWkJUW4ZazSVudZMAzGsRTE1CN'
+  );
+
+  const peers = await ipfs.swarm.peers();
+  console.log({ peers, ipfs });
+
+  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs);
   await ipfsStore.ready();
 
-  const orbitDBConnection = new OrbitDBConnection(
-    pinnerUrl,
-    ipfsStore,
-    ipfsInstance
-  );
+  const orbitDBConnection = new OrbitDBConnection(pinnerUrl, ipfsStore, ipfs);
   await orbitDBConnection.ready();
 
   const ethConnection = new EthereumConnection({ provider });
