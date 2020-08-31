@@ -334,25 +334,26 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
             </div>
             ${this.canAdmin
               ? html`
-                  <div class="row">
-                    <uprtcl-button
+                  <div class="row flex-center">
+                    <uprtcl-toggle
                       icon=${this.permissions.effectivePermissions.publicWrite
-                        ? 'visibility_off'
-                        : 'visibility'}
+                        ? 'visibility'
+                        : 'visibility_off'}
+                      .active=${this.permissions.effectivePermissions.publicWrite}
                       @click=${this.togglePublicWrite}
                     >
-                      togglePublicWrite
-                    </uprtcl-button>
-                    <uprtcl-button
+                    Public write
+                    </uprtcl-toggle>
+
+                    <uprtcl-toggle
                       icon=${this.permissions.effectivePermissions.publicRead
-                        ? 'visibility_off'
-                        : 'visibility'}
+                        ? 'visibility'
+                        : 'visibility_off'}
+                      .active=${this.permissions.effectivePermissions.publicRead}
                       @click=${this.togglePublicRead}
                     >
-                      ${!this.permissions.effectivePermissions.publicRead
-                        ? this.t('access-control:make-public')
-                        : this.t('access-control:make-private')}
-                    </uprtcl-button>
+                    Public read
+                    </uprtcl-toggle>
                   </div>
 
                   <div class="row">
