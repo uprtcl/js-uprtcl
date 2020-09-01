@@ -198,7 +198,9 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   render() {
-    if (this.perspectiveData === undefined) return html``;
+    if (this.perspectiveData === undefined)
+      return html`<uprtcl-loading></uprtcl-loading>`;
+
     return html`
       <div class="container">
         <div class="column">

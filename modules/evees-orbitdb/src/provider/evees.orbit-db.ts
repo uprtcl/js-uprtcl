@@ -35,12 +35,9 @@ const defaultDetails: PerspectiveDetails = {
 const notLogged = () => new Error('must be logged in to use this method');
 
 const msg = (website) => `
---UPRTCL SITE: ${website}--
+Please Read!
 
-PLEASE READ
-
-DO NOT SIGN THIS SAME MESSAGE ON OTHER SITES
-BECAUSE YOUR PASSWORD WILL BE STOLEN
+I authorize this app to update my _Prtcl content in OrbitDB.
 `;
 
 export class EveesOrbitDB implements EveesRemote {

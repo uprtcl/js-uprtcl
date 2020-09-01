@@ -296,7 +296,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
   }
 
   render() {
-    return this.loadingProposals
+    return true || this.loadingProposals
       ? this.renderLoading()
       : html`
           ${this.pendingProposals.length > 0 || this.mergedProposals.length > 0
