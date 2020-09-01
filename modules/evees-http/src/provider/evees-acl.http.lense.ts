@@ -75,6 +75,60 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
+  getUserList() {
+    // TODO: get correct users
+    const { canAdmin } = this.permissions.effectivePermissions;
+    return this.userList.filter((user) => canAdmin[0] !== user);
+  }
+
+  getUserPermissionList() {
+    const {
+      canAdmin,
+      canWrite,
+      canRead,
+    } = this.permissions.effectivePermissions;
+    let userPermissions: any[] = [];
+
+    userPermissions = userPermissions.concat(
+      canAdmin
+        .filter((_, adminIndex) => adminIndex !== 0)
+        .map((admin) => ({ userId: admin, permission: PermissionType.Admin }))
+    );
+
+    userPermissions = userPermissions.concat(
+      canWrite.map((write) => ({ userId: write, permission: PermissionType.Write }))
+    );
+
+    userPermissions = userPermissions.concat(
+      canRead.map((read) => ({ userId: read, permission: PermissionType.Read }))
+    );
+
+    return userPermissions;
+  }
+
+
+  async toggleDelegate() {
+    if (!this.remote.accessControl) {
+      throw new Error(`remote accessControl not found`);
+    }
+
+    await this.remote.accessControl.toggleDelegate(
+      this.uref,
+      !this.permissions.delegate,
+      this.permissions.delegate
+        ? ''
+        : 'zb2wwxENKCBxVfyBxCp5dzCFM9AG4nU48fAFnYasc6HcrKrkP',
+    );
+
+    this.dispatchEvent(
+      new CustomEvent('permissions-updated', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
+  }
+
   async togglePublicRead() {
     if (!this.remote.accessControl) {
       throw new Error(`remote accessControl not found`);
@@ -125,38 +179,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
         cancelable: true,
       })
     );
-  }
-
-
-  getUserList() {
-    // TODO: get correct users
-    const { canAdmin } = this.permissions.effectivePermissions;
-    return this.userList.filter((user) => canAdmin[0] !== user);
-  }
-
-  getUserPermissionList() {
-    const {
-      canAdmin,
-      canWrite,
-      canRead,
-    } = this.permissions.effectivePermissions;
-    let userPermissions: any[] = [];
-
-    userPermissions = userPermissions.concat(
-      canAdmin
-        .filter((_, adminIndex) => adminIndex !== 0)
-        .map((admin) => ({ userId: admin, permission: PermissionType.Admin }))
-    );
-
-    userPermissions = userPermissions.concat(
-      canWrite.map((write) => ({ userId: write, permission: PermissionType.Write }))
-    );
-
-    userPermissions = userPermissions.concat(
-      canRead.map((read) => ({ userId: read, permission: PermissionType.Read }))
-    );
-
-    return userPermissions;
   }
 
   async addRole(e) {
@@ -323,6 +345,22 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     `
   }
 
+  renderChangeDelegate() {
+
+
+
+    return html`
+      <uprtcl-toggle
+        @click=${this.toggleDelegate}
+        .active=${this.permissions.delegate}
+      >Delegate</uprtcl-toggle>
+      <uprtcl-textfield
+        label="delegateTo"
+        .value=${this.testDelegateValue}
+      ></uprtcl-textfield>
+    `
+  }
+
   render() {
     return this.loading
       ? html`<uprtcl-loading></uprtcl-loading>`
@@ -334,35 +372,48 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
             </div>
             ${this.canAdmin
               ? html`
-                  <div class="row flex-center">
-                    <uprtcl-toggle
-                      icon=${this.permissions.effectivePermissions.publicWrite
-                        ? 'visibility'
-                        : 'visibility_off'}
-                      .active=${this.permissions.effectivePermissions.publicWrite}
-                      @click=${this.togglePublicWrite}
-                    >
-                    Public write
-                    </uprtcl-toggle>
+                ${this.permissions.delegate
+                  ? html`
+                    <p>Permissions being delegated from: ${this.permissions.delegateTo}</p>
+                    ${this.renderChangeDelegate()}
+                  `
+                  : html`
+                    <div class="row flex-center">
+                      <uprtcl-toggle
+                        icon=${this.permissions.effectivePermissions.publicWrite
+                          ? 'visibility'
+                          : 'visibility_off'}
+                        .active=${this.permissions.effectivePermissions.publicWrite}
+                        @click=${this.togglePublicWrite}
+                      >
+                      Public write
+                      </uprtcl-toggle>
 
-                    <uprtcl-toggle
-                      icon=${this.permissions.effectivePermissions.publicRead
-                        ? 'visibility'
-                        : 'visibility_off'}
-                      .active=${this.permissions.effectivePermissions.publicRead}
-                      @click=${this.togglePublicRead}
-                    >
-                    Public read
-                    </uprtcl-toggle>
-                  </div>
+                      <uprtcl-toggle
+                        icon=${this.permissions.effectivePermissions.publicRead
+                          ? 'visibility'
+                          : 'visibility_off'}
+                        .active=${this.permissions.effectivePermissions.publicRead}
+                        @click=${this.togglePublicRead}
+                      >
+                      Public read
+                      </uprtcl-toggle>
+                    </div>
 
-                  <div class="row">
-                    ${this.renderUserPermissionList()}
-                  </div>
+                    <div class="row">
+                      ${this.renderUserPermissionList()}
+                    </div>
 
-                  <div class="row">
-                    ${this.renderAddUserPermission()}
-                  </div>
+                    <div class="row">
+                      ${this.renderAddUserPermission()}
+                    </div>
+
+                    <div class="row">
+                      ${this.renderChangeDelegate()}
+                    </div>
+                  `
+                }
+                  
                 `
               : ''}
           </div>
