@@ -12,6 +12,13 @@ export class EveesAccessControlHttp implements AccessControlService {
 
   constructor(protected provider: HttpProvider) {}
 
+  async toggleDelegate(hash: string, delegate: boolean, delegateTo: string) {
+    await this.provider.put(
+      `/permissions/${hash}/delegate?delegate=${delegate}&delegateTo=${delegateTo}`,
+      {}
+    );
+  }
+
   async getPermissions(hash: string): Promise<any | undefined> {
     return this.provider.getObject(`/permissions/${hash}`);
   }
