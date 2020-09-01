@@ -11,6 +11,9 @@ const LOGINFO = true;
 export class TextNodeDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
+  @property({ type: Boolean })
+  summary: boolean = false;
+
   @property({ attribute: false })
   workspace!: EveesWorkspace;
 

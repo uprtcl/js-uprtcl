@@ -472,7 +472,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   renderPageList(showOptions: boolean = true) {
-    if (this.pagesList === undefined)
+    if (true || this.pagesList === undefined)
       return html`
         <uprtcl-loading class="empty-pages-loader"></uprtcl-loading>
       `;
@@ -642,6 +642,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                         first-uref=${this.firstRef as string}
                         evee-color=${this.color()}
                         default-remote=${this.defaultRemoteId as string}
+                        show-perspectives
+                        show-proposals
+                        show-acl
+                        show-info
                       ></evees-info-page>
                     </div>
                   </div>

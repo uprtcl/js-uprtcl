@@ -7,7 +7,7 @@ export class UprtclIconButton extends LitElement {
   icon!: string;
 
   render() {
-    return html`<div class="button-filled icon-button-layout cursor">
+    return html`<div class="button-filled-secondary icon-button-layout cursor">
       ${icons[this.icon]}
     </div>`;
   }

@@ -183,7 +183,8 @@ export class TextNodeTitle implements HasTitle, HasDiffLenses {
         render: (
           workspace: EveesWorkspace,
           newEntity: Entity<TextNode>,
-          oldEntity: Entity<TextNode>
+          oldEntity: Entity<TextNode>,
+          summary: boolean
         ) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
@@ -191,6 +192,7 @@ export class TextNodeTitle implements HasTitle, HasDiffLenses {
               .workspace=${workspace}
               .newData=${newEntity}
               .oldData=${oldEntity}
+              ?summary=${summary}
             >
             </documents-text-node-diff>
           `;

@@ -11,6 +11,7 @@ export class UprtclLoading extends LitElement {
       css`
         .container {
           height: 40px;
+          text-align: center;
         }
         svg {
           height: 100%;

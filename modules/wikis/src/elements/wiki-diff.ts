@@ -17,6 +17,9 @@ interface PageDetails {
 export class WikiDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
+  @property({ type: Boolean })
+  summary: boolean = false;
+
   @property({ attribute: false })
   workspace!: EveesWorkspace;
 
@@ -86,27 +89,43 @@ export class WikiDiff extends moduleConnect(LitElement) {
     const deletedPages =
       this.deletedPages !== undefined ? this.deletedPages : [];
 
+    if (this.summary) {
+      return html`
+        ${titleChanged ? html`<span class="">Title changed, </span>` : ''}
+        ${newPages.length
+          ? html`<span>${newPages.length} new pages added,</span>`
+          : ''}
+        ${deletedPages.length
+          ? html`<span>${deletedPages.length} pages deleted.</span>`
+          : ''}
+      `;
+    }
+
     return html`
       ${titleChanged
         ? html`<div class="pages-list">
             <div class="page-list-title">New Title</div>
-            ${this.renderTitleChange(this.newData.object.title, ['page-added'])}
+            ${this.renderTitleChange(this.newData.object.title, [
+              'green-background',
+            ])}
             ${this.renderTitleChange(this.oldData.object.title, [
-              'page-removed',
+              'red-background',
             ])}
           </div>`
         : ''}
       ${newPages.length > 0
         ? html` <div class="pages-list">
             <div class="page-list-title">Pages Added</div>
-            ${newPages.map((page) => this.renderPage(page, ['page-added']))}
+            ${newPages.map((page) =>
+              this.renderPage(page, ['green-background'])
+            )}
           </div>`
         : ''}
       ${deletedPages.length > 0
         ? html` <div class="pages-list">
             <div class="page-list-title">Pages Removed</div>
             ${deletedPages.map((page) =>
-              this.renderPage(page, ['page-removed'])
+              this.renderPage(page, ['red-background'])
             )}
           </div>`
         : ''}
@@ -128,10 +147,10 @@ export class WikiDiff extends moduleConnect(LitElement) {
         border-radius: 3px;
         margin-bottom: 16px;
       }
-      .page-added {
+      .green-background {
         background-color: #abdaab;
       }
-      .page-removed {
+      .red-background {
         background-color: #dab6ab;
       }
     `;

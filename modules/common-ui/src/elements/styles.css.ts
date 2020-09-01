@@ -21,6 +21,16 @@ export const styles = css`
   .button-filled:hover {
     background-color: #50b0ff;
   }
+  .button-filled-secondary {
+    background-color: var(--background-color, #c9d4db);
+    color: #ffffff;
+  }
+  .button-filled-secondary svg {
+    fill: white;
+  }
+  .button-filled-secondary:hover {
+    background-color: #89b7da;
+  }
   .button-disabled {
     background-color: #bbd6ec;
     color: #ffffff;

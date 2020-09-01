@@ -23,7 +23,7 @@
     "@uprtcl/multiplatform": "^0.0.7-alpha.51",
     "apollo-boost": "^0.4.7",
     "inversify": "^5.0.1",
-    "ipfs": "^0.47.0",
+    "ipfs": "^0.49.1",
     "orbit-db": "^0.24.1"
   },
   "devDependencies": {
