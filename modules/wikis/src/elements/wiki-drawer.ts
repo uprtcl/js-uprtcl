@@ -472,7 +472,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   renderPageList(showOptions: boolean = true) {
-    if (true || this.pagesList === undefined)
+    if (this.pagesList === undefined)
       return html`
         <uprtcl-loading class="empty-pages-loader"></uprtcl-loading>
       `;

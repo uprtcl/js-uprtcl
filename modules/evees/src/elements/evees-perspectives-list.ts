@@ -242,7 +242,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   render() {
-    return true || this.loadingPerspectives
+    return this.loadingPerspectives
       ? this.renderLoading()
       : this.otherPerspectivesData.length > 0
       ? html`
