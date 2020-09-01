@@ -25,6 +25,18 @@ export class EveesInfoPopper extends LitElement {
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
+  @property({ type: Boolean, attribute: 'show-perspectives' })
+  showPerspectives: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-proposals' })
+  showProposals: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-acl' })
+  showAcl: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-info' })
+  showInfo: boolean = false;
+
   @query('#info-popper')
   infoPopper!: UprtclPopper;
 
@@ -57,6 +69,10 @@ export class EveesInfoPopper extends LitElement {
           ></div>
         </div>
         <evees-info-page
+          ?show-perspectives=${this.showPerspectives}
+          ?show-proposals=${this.showProposals}
+          ?show-acl=${this.showAcl}
+          ?show-info=${this.showInfo}
           uref=${this.uref}
           first-uref=${this.firstRef as string}
           evee-color=${this.color()}

@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import IPFS from 'ipfs';
+import { env } from '../env';
 
 import {
   MicroOrchestrator,
@@ -13,7 +14,11 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import { OrbitDBConnection, EveesOrbitDB } from '@uprtcl/evees-orbitdb';
+import {
+  OrbitDBConnection,
+  EveesOrbitDB,
+  EveesOrbitDBModule,
+} from '@uprtcl/evees-orbitdb';
 import { EveesEthereum, EveesEthereumModule } from '@uprtcl/evees-ethereum';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
@@ -26,10 +31,7 @@ import { SimpleWiki } from './simple-wiki';
 
 (async function () {
   // const provider = '';
-  const provider = ethers.getDefaultProvider('rinkeby', {
-    etherscan: '6H4I43M46DJ4IJ9KKR8SFF1MF2TMUQTS2F',
-    infura: '73e0929fc849451dae4662585aea9a7b',
-  });
+  const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
   // const ethHost = 'ws://localhost:8545';
 
   const ipfsCidConfig = {
@@ -39,37 +41,24 @@ import { SimpleWiki } from './simple-wiki';
     base: 'base58btc',
   };
 
-  const pinnerUrl = 'http://localhost:3000';
+  const pinnerUrl = env.pinner.url;
 
   const ipfsJSConfig = {
     preload: { enabled: false },
     relay: { enabled: true, hop: { enabled: true, active: true } },
     EXPERIMENTAL: { pubsub: true },
     config: {
+      init: true,
       Addresses: {
-        Swarm: [
-          '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star/',
-          '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star/',
-          '/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star/',
-        ],
+        Swarm: env.pinner.Swarm,
       },
-      Bootstrap: [
-        '/ip4/192.168.1.13/tcp/4002/p2p/QmaYSNkfQkXDkuuX1wj7uWkJUW4ZazSVudZMAzGsRTE1CN',
-      ],
+      Bootstrap: env.pinner.Bootstrap,
     },
   };
 
   const orchestrator = new MicroOrchestrator();
 
   const ipfs = await IPFS.create(ipfsJSConfig);
-
-  const config = await ipfs.config.getAll();
-  await ipfs.swarm.connect(
-    '/ip4/192.168.1.13/tcp/4002/p2p/QmaYSNkfQkXDkuuX1wj7uWkJUW4ZazSVudZMAzGsRTE1CN'
-  );
-
-  const peers = await ipfs.swarm.peers();
-  console.log({ peers, ipfs });
 
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs);
   await ipfsStore.ready();
@@ -103,6 +92,7 @@ import { SimpleWiki } from './simple-wiki';
     new DiscoveryModule([orbitdbEvees.casID]),
     new LensesModule(),
     new EveesEthereumModule(),
+    new EveesOrbitDBModule(),
     evees,
     documents,
     wikis,

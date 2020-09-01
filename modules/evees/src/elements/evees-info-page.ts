@@ -9,13 +9,23 @@ const styleMap = (style) => {
   }, '');
 };
 
-import { MenuConfig } from '@uprtcl/common-ui';
-
 import { EveesInfoBase } from './evee-info-base';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
 
 export class EveesInfoPage extends EveesInfoBase {
+  @property({ type: Boolean, attribute: 'show-perspectives' })
+  showPerspectives: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-proposals' })
+  showProposals: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-acl' })
+  showAcl: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-info' })
+  showInfo: boolean = false;
+
   @property({ attribute: false })
   showEditName: boolean = false;
 
@@ -192,41 +202,42 @@ export class EveesInfoPage extends EveesInfoBase {
     return html`
       <div class="container">
         <div class="column">
-          <div class="section">
-            <div class="section-header perspective-title">
-              Perspectives
-            </div>
+          ${this.showPerspectives
+            ? html`<div class="section">
+                <div class="section-header perspective-title">
+                  Perspectives
+                </div>
 
-            <div class="section-content">
-              ${this.renderPerspectiveActions()}
-              <div class="list-container">
-                ${!this.loading
-                  ? html`<evees-perspectives-list
-                      force-update=${this.forceUpdate}
-                      perspective-id=${this.uref}
-                      first-perspective-id=${this.firstRef}
-                      ?can-propose=${this.isLogged}
-                      @perspective-selected=${(e) =>
-                        this.checkoutPerspective(e.detail.id)}
-                      @merge-perspective=${(e) =>
-                        this.otherPerspectiveMerge(
-                          e.detail.perspectiveId,
-                          this.uref,
-                          false
-                        )}
-                      @create-proposal=${(e) =>
-                        this.otherPerspectiveMerge(
-                          e.detail.perspectiveId,
-                          this.uref,
-                          true
-                        )}
-                    ></evees-perspectives-list>`
-                  : html`<uprtcl-loading></uprtcl-loading>`}
-              </div>
-            </div>
-          </div>
-
-          ${this.uref === this.firstRef
+                <div class="section-content">
+                  ${this.renderPerspectiveActions()}
+                  <div class="list-container">
+                    ${!this.loading
+                      ? html`<evees-perspectives-list
+                          force-update=${this.forceUpdate}
+                          perspective-id=${this.uref}
+                          first-perspective-id=${this.firstRef}
+                          ?can-propose=${this.isLogged}
+                          @perspective-selected=${(e) =>
+                            this.checkoutPerspective(e.detail.id)}
+                          @merge-perspective=${(e) =>
+                            this.otherPerspectiveMerge(
+                              e.detail.perspectiveId,
+                              this.uref,
+                              false
+                            )}
+                          @create-proposal=${(e) =>
+                            this.otherPerspectiveMerge(
+                              e.detail.perspectiveId,
+                              this.uref,
+                              true
+                            )}
+                        ></evees-perspectives-list>`
+                      : html`<uprtcl-loading></uprtcl-loading>`}
+                  </div>
+                </div>
+              </div>`
+            : ''}
+          ${this.showProposals && this.uref === this.firstRef
             ? html`<div class="section">
                 <div class="section-header">
                   Proposals
@@ -246,7 +257,7 @@ export class EveesInfoPage extends EveesInfoBase {
                 </div>
               </div>`
             : ''}
-          ${true
+          ${this.showAcl
             ? html`
                 <div class="section">
                   <div class="section-header">
@@ -259,15 +270,16 @@ export class EveesInfoPage extends EveesInfoBase {
                 </div>
               `
             : ''}
-
-          <div class="section">
-            <div class="section-header">
-              Evee Info
-            </div>
-            <div class="section-content info-text">
-              ${this.renderInfo()}
-            </div>
-          </div>
+          ${this.showInfo
+            ? html`<div class="section">
+                <div class="section-header">
+                  Evee Info
+                </div>
+                <div class="section-content info-text">
+                  ${this.renderInfo()}
+                </div>
+              </div>`
+            : ''}
         </div>
       </div>
       ${this.showUpdatesDialog ? this.renderUpdatesDialog() : ''}

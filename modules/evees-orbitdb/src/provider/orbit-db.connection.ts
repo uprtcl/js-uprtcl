@@ -116,14 +116,28 @@ export class OrbitDBConnection extends Connection {
     return db;
   }
 
-  public async perspectiveStore(perspective: Perspective): Promise<any> {
+  public async perspectiveStore(
+    perspective: Perspective,
+    pin: boolean
+  ): Promise<any> {
     const address = await this.perspectiveAddress(perspective);
-    return this.openStore(address);
+    const store = this.openStore(address);
+    if (pin) {
+      this.pin(address);
+    }
+    return store;
   }
 
-  public async contextStore(context: string): Promise<any> {
+  public async contextStore(
+    context: string,
+    pin: boolean = false
+  ): Promise<any> {
     const address = await this.contextAddress(context);
-    return this.openStore(address);
+    const store = await this.openStore(address);
+    if (pin) {
+      this.pin(address);
+    }
+    return store;
   }
 
   public async pin(address: string) {

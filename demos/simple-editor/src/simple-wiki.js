@@ -195,6 +195,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       }
       .wiki-container {
         flex-grow: 1;
+        max-width: 100%;
         background-color: white;
       }
     `;

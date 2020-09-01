@@ -97,7 +97,8 @@ export interface DiffLens {
   render: (
     workspace: EveesWorkspace,
     newEntity: any,
-    oldEntity: any
+    oldEntity: any,
+    summary: boolean
   ) => TemplateResult;
   type?: string;
 }

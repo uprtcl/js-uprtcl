@@ -642,6 +642,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                         first-uref=${this.firstRef as string}
                         evee-color=${this.color()}
                         default-remote=${this.defaultRemoteId as string}
+                        show-perspectives
+                        show-proposals
+                        show-acl
+                        show-info
                       ></evees-info-page>
                     </div>
                   </div>

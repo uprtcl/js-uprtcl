@@ -110,7 +110,8 @@ export class WikiCommon
         render: (
           workspace: EveesWorkspace,
           newEntity: Entity<Wiki>,
-          oldEntity: Entity<Wiki>
+          oldEntity: Entity<Wiki>,
+          summary: boolean
         ) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
@@ -118,6 +119,7 @@ export class WikiCommon
               .workspace=${workspace}
               .newData=${newEntity}
               .oldData=${oldEntity}
+              ?summary=${summary}
             >
             </wiki-diff>
           `;
