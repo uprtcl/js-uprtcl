@@ -11,6 +11,9 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   @property({ attribute: false })
   logged!: boolean;
 
+  @property({ attribute: false })
+  userIds: string[] = [];
+
   remotes!: EveesRemote[];
 
   async firstUpdated() {
@@ -22,11 +25,16 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
     const loggedList = await Promise.all(
       this.remotes.map((remote) => remote.isLogged())
     );
+    this.userIds = [];
+    this.remotes.map((remote) => {
+      if (remote.userId !== undefined) this.userIds.push(remote.userId);
+    });
     this.logged = !loggedList.includes(false);
     this.dispatchEvent(new CustomEvent('logged-in'));
   }
 
   async loginAll() {
+    this.userIds = [];
     await Promise.all(
       this.remotes.map(async (remote) => {
         const isLogged = await remote.isLogged();
@@ -36,9 +44,24 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
     this.checkLogged();
   }
 
+  async logoutAll() {
+    await Promise.all(
+      this.remotes.map(async (remote) => {
+        const isLogged = await remote.isLogged();
+        if (isLogged) await remote.logout();
+      })
+    );
+    this.checkLogged();
+  }
+
   render() {
     if (this.logged) {
-      return html` <uprtcl-button disabled>connected</uprtcl-button> `;
+      return html`
+        <uprtcl-button @click=${() => this.logoutAll()}>logout</uprtcl-button
+        >${this.userIds.map(
+          (userId) => html`<evees-author user-id=${userId}></evees-author>`
+        )}
+      `;
     } else {
       return html`
         <uprtcl-button @click=${() => this.loginAll()}>login</uprtcl-button>
@@ -47,6 +70,14 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   }
 
   static get styles() {
-    return css``;
+    return css`
+      :host {
+        display: flex;
+      }
+
+      uprtcl-button {
+        margin-right: 10px;
+      }
+    `;
   }
 }

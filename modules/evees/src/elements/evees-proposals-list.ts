@@ -241,6 +241,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
         @click=${() => this.showProposalChanges(proposal)}
       >
         <evees-author
+          show-name
           color=${eveeColor(proposal.fromPerspectiveId)}
           user-id=${proposal.creatorId as string}
         ></evees-author>

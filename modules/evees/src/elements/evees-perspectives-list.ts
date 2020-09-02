@@ -217,6 +217,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         @click=${() => this.perspectiveClicked(perspectiveData.id)}
       >
         <evees-author
+          show-name
           color=${this.perspectiveColor(perspectiveData.id)}
           user-id=${perspectiveData.creatorId}
         ></evees-author>

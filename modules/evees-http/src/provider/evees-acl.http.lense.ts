@@ -96,7 +96,10 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     );
 
     userPermissions = userPermissions.concat(
-      canWrite.map((write) => ({ userId: write, permission: PermissionType.Write }))
+      canWrite.map((write) => ({
+        userId: write,
+        permission: PermissionType.Write,
+      }))
     );
 
     userPermissions = userPermissions.concat(
@@ -105,7 +108,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     return userPermissions;
   }
-
 
   async toggleDelegate() {
     if (!this.remote.accessControl) {
@@ -117,7 +119,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       !this.permissions.delegate,
       this.permissions.delegate
         ? ''
-        : 'zb2wwxENKCBxVfyBxCp5dzCFM9AG4nU48fAFnYasc6HcrKrkP',
+        : 'zb2wwxENKCBxVfyBxCp5dzCFM9AG4nU48fAFnYasc6HcrKrkP'
     );
 
     this.dispatchEvent(
@@ -188,7 +190,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     const selectedUserId = e.detail.key;
 
-
     // add user to user permissions list
     // if the selected user is not on the list
     if (
@@ -215,7 +216,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
         })
       );
     }
-
   }
 
   async changeRole(userId, event) {
@@ -225,20 +225,25 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     const selectedRole = event.detail.key;
 
-
     await this.remote.accessControl.setPrivatePermissions(
       this.uref,
       selectedRole,
-      userId,
+      userId
     );
 
-    let {canAdmin, canRead, canWrite} = this.permissions.effectivePermissions;
-    
-    this.permissions.effectivePermissions.canAdmin = canAdmin.filter(admin => admin !== userId);
-    this.permissions.effectivePermissions.canRead = canRead.filter(read => read !== userId);
-    this.permissions.effectivePermissions.canWrite = canWrite.filter(write => write !== userId);
+    let { canAdmin, canRead, canWrite } = this.permissions.effectivePermissions;
 
-    this.permissions.effectivePermissions[`can${selectedRole}`].push(userId)
+    this.permissions.effectivePermissions.canAdmin = canAdmin.filter(
+      (admin) => admin !== userId
+    );
+    this.permissions.effectivePermissions.canRead = canRead.filter(
+      (read) => read !== userId
+    );
+    this.permissions.effectivePermissions.canWrite = canWrite.filter(
+      (write) => write !== userId
+    );
+
+    this.permissions.effectivePermissions[`can${selectedRole}`].push(userId);
 
     await this.requestUpdate();
 
@@ -256,16 +261,19 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       throw new Error(`remote accessControl not found`);
     }
 
-    await this.remote.accessControl.removePermissions(
-      this.uref,
-      userId,
-    );
+    await this.remote.accessControl.removePermissions(this.uref, userId);
 
-    let {canAdmin, canRead, canWrite} = this.permissions.effectivePermissions;
-    
-    this.permissions.effectivePermissions.canAdmin = canAdmin.filter(admin => admin !== userId);
-    this.permissions.effectivePermissions.canRead = canRead.filter(read => read !== userId);
-    this.permissions.effectivePermissions.canWrite = canWrite.filter(write => write !== userId);
+    let { canAdmin, canRead, canWrite } = this.permissions.effectivePermissions;
+
+    this.permissions.effectivePermissions.canAdmin = canAdmin.filter(
+      (admin) => admin !== userId
+    );
+    this.permissions.effectivePermissions.canRead = canRead.filter(
+      (read) => read !== userId
+    );
+    this.permissions.effectivePermissions.canWrite = canWrite.filter(
+      (write) => write !== userId
+    );
 
     await this.requestUpdate();
 
@@ -280,15 +288,15 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   renderOwner() {
     return html`<evees-author
+      show-name
       user-id=${this.permissions.effectivePermissions.canAdmin[0]}
     ></evees-author>`;
   }
 
   renderUserPermissionList() {
-
     const permissionListConfig = {};
 
-    Object.values(PermissionType).forEach(permission => {
+    Object.values(PermissionType).forEach((permission) => {
       permissionListConfig[permission] = {
         disabled: false,
         graphic: '',
@@ -300,15 +308,16 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       ${this.getUserPermissionList().map(
         (userPermission) => html`
           <div class="row flex-center">
-            <evees-author
-              user-id=${userPermission.userId}
-            ></evees-author>
+            <evees-author user-id=${userPermission.userId}></evees-author>
 
             <uprtcl-options-menu
-              @option-click=${event => this.changeRole(userPermission.userId, event)}
+              @option-click=${(event) =>
+                this.changeRole(userPermission.userId, event)}
               .config=${permissionListConfig}
             >
-              <span class="user-permission" slot="icon">${userPermission.permission}</span>
+              <span class="user-permission" slot="icon"
+                >${userPermission.permission}</span
+              >
             </uprtcl-options-menu>
 
             <uprtcl-button
@@ -318,47 +327,42 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
           </div>
         `
       )}
-    `
+    `;
   }
 
   renderAddUserPermission() {
     const userListConfig = {};
 
-    this.getUserList().forEach(user => {
+    this.getUserList().forEach((user) => {
       userListConfig[user] = {
         disabled: false,
         graphic: '',
         text: user,
       };
-    })
+    });
 
     return html`
       <uprtcl-options-menu
         @option-click=${this.addRole}
         .config=${userListConfig}
       >
-        <uprtcl-textfield
-          slot="icon"
-          label="Search users"
-        ></uprtcl-textfield>
+        <uprtcl-textfield slot="icon" label="Search users"></uprtcl-textfield>
       </uprtcl-options-menu>
-    `
+    `;
   }
 
   renderChangeDelegate() {
-
-
-
     return html`
       <uprtcl-toggle
         @click=${this.toggleDelegate}
         .active=${this.permissions.delegate}
-      >Delegate</uprtcl-toggle>
+        >Delegate</uprtcl-toggle
+      >
       <uprtcl-textfield
         label="delegateTo"
         .value=${this.testDelegateValue}
       ></uprtcl-textfield>
-    `
+    `;
   }
 
   render() {
@@ -372,48 +376,53 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
             </div>
             ${this.canAdmin
               ? html`
-                ${this.permissions.delegate
-                  ? html`
-                    <p>Permissions being delegated from: ${this.permissions.delegateTo}</p>
-                    ${this.renderChangeDelegate()}
-                  `
-                  : html`
-                    <div class="row flex-center">
-                      <uprtcl-toggle
-                        icon=${this.permissions.effectivePermissions.publicWrite
-                          ? 'visibility'
-                          : 'visibility_off'}
-                        .active=${this.permissions.effectivePermissions.publicWrite}
-                        @click=${this.togglePublicWrite}
-                      >
-                      Public write
-                      </uprtcl-toggle>
+                  ${this.permissions.delegate
+                    ? html`
+                        <p>
+                          Permissions being delegated from:
+                          ${this.permissions.delegateTo}
+                        </p>
+                        ${this.renderChangeDelegate()}
+                      `
+                    : html`
+                        <div class="row flex-center">
+                          <uprtcl-toggle
+                            icon=${this.permissions.effectivePermissions
+                              .publicWrite
+                              ? 'visibility'
+                              : 'visibility_off'}
+                            .active=${this.permissions.effectivePermissions
+                              .publicWrite}
+                            @click=${this.togglePublicWrite}
+                          >
+                            Public write
+                          </uprtcl-toggle>
 
-                      <uprtcl-toggle
-                        icon=${this.permissions.effectivePermissions.publicRead
-                          ? 'visibility'
-                          : 'visibility_off'}
-                        .active=${this.permissions.effectivePermissions.publicRead}
-                        @click=${this.togglePublicRead}
-                      >
-                      Public read
-                      </uprtcl-toggle>
-                    </div>
+                          <uprtcl-toggle
+                            icon=${this.permissions.effectivePermissions
+                              .publicRead
+                              ? 'visibility'
+                              : 'visibility_off'}
+                            .active=${this.permissions.effectivePermissions
+                              .publicRead}
+                            @click=${this.togglePublicRead}
+                          >
+                            Public read
+                          </uprtcl-toggle>
+                        </div>
 
-                    <div class="row">
-                      ${this.renderUserPermissionList()}
-                    </div>
+                        <div class="row">
+                          ${this.renderUserPermissionList()}
+                        </div>
 
-                    <div class="row">
-                      ${this.renderAddUserPermission()}
-                    </div>
+                        <div class="row">
+                          ${this.renderAddUserPermission()}
+                        </div>
 
-                    <div class="row">
-                      ${this.renderChangeDelegate()}
-                    </div>
-                  `
-                }
-                  
+                        <div class="row">
+                          ${this.renderChangeDelegate()}
+                        </div>
+                      `}
                 `
               : ''}
           </div>
@@ -439,9 +448,8 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       }
 
       .user-permission {
-        cursor: pointer; 
+        cursor: pointer;
       }
-
 
       .user-permission:hover {
         color: #e8e8e8;

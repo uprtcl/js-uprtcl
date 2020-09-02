@@ -175,7 +175,7 @@ export class Home extends moduleConnect(LitElement) {
           const space = this.spaces[address];
           return html`
             <uprtcl-list-item @click=${() => this.go(space.perspectiveId)}>
-              <evees-author user-id=${address}></evees-author>
+              <evees-author user-id=${address} show-name></evees-author>
             </uprtcl-list-item>
           `;
         })}

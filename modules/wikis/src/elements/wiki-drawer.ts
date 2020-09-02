@@ -574,6 +574,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               class="evees-author"
               >by
               <evees-author
+                show-name
                 user-id=${this.author}
                 show-name
                 short
