@@ -32,6 +32,7 @@ export class UprtclToggle extends LitElement {
       css`
         .toggle-container {
           display: flex;
+          flex-direction: column;
         }
         .toggle {
           display: flex;

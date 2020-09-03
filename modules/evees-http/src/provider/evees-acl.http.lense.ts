@@ -410,6 +410,9 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                           >
                             Public read
                           </uprtcl-toggle>
+
+                          ${this.renderChangeDelegate()}
+
                         </div>
 
                         <div class="row">
@@ -420,9 +423,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                           ${this.renderAddUserPermission()}
                         </div>
 
-                        <div class="row">
-                          ${this.renderChangeDelegate()}
-                        </div>
                       `}
                 `
               : ''}
