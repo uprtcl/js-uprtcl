@@ -53,6 +53,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   editable: string = 'true';
 
+  @property({ type: String })
+  parentId: string = '';
+
   @property({ attribute: false })
   client!: ApolloClient<any>;
 
@@ -1002,6 +1005,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           ${true
             ? html`
                 <evees-info-popper
+                  parentId=${this.parentId}
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}

@@ -12,6 +12,9 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   @property()
   uref!: string;
 
+  @property()
+  parentId!: string | null;
+
   @property({ attribute: false })
   loading: boolean = true;
 
@@ -114,12 +117,15 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       throw new Error(`remote accessControl not found`);
     }
 
+    const parentId = this.parentId as string;
+
+    // If there is parent, change delegate status
+    const newDelegate = parentId ? !this.permissions.delegate : false;
+    
     await this.remote.accessControl.toggleDelegate(
       this.uref,
-      !this.permissions.delegate,
-      this.permissions.delegate
-        ? ''
-        : 'zb2wwxENKCBxVfyBxCp5dzCFM9AG4nU48fAFnYasc6HcrKrkP'
+      newDelegate,
+      newDelegate ? parentId : '',
     );
 
     this.dispatchEvent(
@@ -356,13 +362,8 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       <uprtcl-toggle
         @click=${this.toggleDelegate}
         .active=${this.permissions.delegate}
-        >Delegate</uprtcl-toggle
-      >
-      <uprtcl-textfield
-        label="delegateTo"
-        .value=${this.testDelegateValue}
-      ></uprtcl-textfield>
-    `;
+      >Delegate</uprtcl-toggle>
+    `
   }
 
   render() {

@@ -37,6 +37,9 @@ export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
+  @property({ type: String })
+  wikiId!: string;
+
   @property({ type: Array })
   editableRemotes: string[] = [];
 
@@ -127,6 +130,7 @@ export class WikiPage extends moduleConnect(LitElement) {
           id="doc-editor"
           .client=${this.client}
           uref=${this.pageHash}
+          parentId=${this.wikiId}
           color=${this.color}
           editable=${this.editable}
         >

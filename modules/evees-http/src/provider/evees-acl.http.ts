@@ -58,9 +58,12 @@ export class EveesAccessControlHttp implements AccessControlService {
     return {
       name: 'evees-http:access-control',
       type: 'access-control',
-      render: (entity: string) => {
+      render: (entity: any) => {
         return html`
-          <evees-http-permissions uref=${entity}> </evees-http-permissions>
+          <evees-http-permissions
+            uref=${entity.uref}
+            parentId=${entity.parentId}
+          > </evees-http-permissions>
         `;
       },
     };

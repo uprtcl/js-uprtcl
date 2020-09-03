@@ -630,6 +630,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                       : ''}
                     color=${this.color() ? this.color() : ''}
                     .editableRemotes=${this.editableRemotes}
+                    wikiId=${this.uref}
                   >
                   </wiki-page>
                 `
@@ -640,6 +641,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                         id="evees-info-page"
                         slot="evee-page"
                         uref=${this.uref}
+                        .parentId=${null}
                         first-uref=${this.firstRef as string}
                         evee-color=${this.color()}
                         default-remote=${this.defaultRemoteId as string}
