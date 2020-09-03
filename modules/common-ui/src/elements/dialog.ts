@@ -13,7 +13,7 @@ export class UprtclDialog extends LitElement {
   @property({ type: String, attribute: 'show-secondary' })
   showSecondary: string = 'false';
 
-  @property({ type: Function, attribute: false })
+  @property({ attribute: false })
   resolved: Function | undefined = undefined;
 
   secondaryClicked(e) {
@@ -73,12 +73,12 @@ export class UprtclDialog extends LitElement {
 
       .modal-content {
         width: 90vw;
+        max-width: 900px;
         margin: 0 auto;
         padding: 3vw 3vw;
         background-color: white;
         border-radius: 4px;
         box-shadow: 10px 10px 67px 0px rgba(0, 0, 0, 0.75);
-        text-align: right;
       }
 
       .slot-container {

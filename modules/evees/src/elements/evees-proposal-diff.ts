@@ -18,6 +18,9 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'remote-id' })
   remoteId!: string;
 
+  @property({ type: Boolean })
+  summary: boolean = false;
+
   @property({ attribute: false })
   loading: boolean = true;
 
@@ -76,7 +79,10 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
       return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
-    return html`<evees-update-diff id="evees-update-diff">
+    return html`<evees-update-diff
+      id="evees-update-diff"
+      ?summary=${this.summary}
+    >
     </evees-update-diff>`;
   }
 
@@ -84,7 +90,7 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
     return css`
       :host {
         display: block;
-        padding: 30px 20px 30px 0px;
+        padding: 30px 0px 30px 0px;
         text-align: center;
       }
     `;

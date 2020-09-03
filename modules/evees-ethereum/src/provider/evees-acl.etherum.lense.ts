@@ -19,6 +19,9 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
   owner!: string;
 
   @property({ attribute: false })
+  descendants!: string[];
+
+  @property({ attribute: false })
   canWrite!: boolean;
 
   @property({ attribute: false })
@@ -54,6 +57,7 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
     this.remote = (this.requestAll(
       EveesModule.bindings.EveesRemote
     ) as EveesRemote[]).find((r) => r.id === remoteId) as EveesEthereum;
+    await this.remote.ready();
 
     this.owner = await this.getOwner(this.uref);
     this.canWrite = await this.remote.canWrite(this.uref);
@@ -61,15 +65,12 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
-  async changeOwner(uref: string, newOwnerId: string): Promise<void> {
-    const remote = await EveesHelpers.getPerspectiveRemoteId(this.client, uref);
-    if (!remote) throw new Error(`${uref} is not a perspective`);
-
+  async getDescendants() {
     /** recursively search for children owned by this owner and change also those */
     const descendants = await EveesHelpers.getDescendants(
       this.client,
       this.recognizer,
-      uref
+      this.uref
     );
 
     /** filter the descendants with the same owner and in the same remote */
@@ -83,13 +84,16 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
         this.client,
         descendantRef
       );
-      return thisRemoteId === remote;
+      return thisRemoteId === this.remote.id;
     });
 
-    const all = [uref].concat(owned);
-    const getPerspectivesIdsHashes = all.map(async (id) =>
-      this.remote.uprtclRoot.call(GET_PERSP_HASH, [id])
-    );
+    this.descendants = owned;
+  }
+
+  async changeOwner(uref: string, newOwnerId: string): Promise<void> {
+    const getPerspectivesIdsHashes = [this.uref]
+      .concat(this.descendants)
+      .map(async (id) => this.remote.uprtclRoot.call(GET_PERSP_HASH, [id]));
     const perspectivesIdsHashes = await Promise.all(getPerspectivesIdsHashes);
 
     await this.remote.uprtclRoot.send(UPDATE_OWNER_BATCH, [
@@ -99,6 +103,7 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
   }
 
   async getOwner(hash: string): Promise<string> {
+    await this.remote.uprtclRoot.ready();
     const perspectiveIdHash = await this.remote.uprtclRoot.call(
       GET_PERSP_HASH,
       [hash]
@@ -112,18 +117,18 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
 
   async showTransferDialog() {
     this.showDialog = true;
+    await this.getDescendants();
     await this.updateComplete;
-
     this.newAddressEl.focus();
   }
 
   async changeOwnerClicked() {
-    this.showDialog = false;
     this.changingOwner = true;
 
     const newAddress = this.newAddressEl.value;
 
     await this.changeOwner(this.uref, newAddress);
+    this.showDialog = false;
 
     this.dispatchEvent(
       new CustomEvent('permissions-updated', {
@@ -145,11 +150,17 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
       <uprtcl-dialog
         primary-text="Transfer"
         secondary-text="Cancel"
-        @primary=${this.changeOwner}
+        @primary=${() => this.changeOwnerClicked()}
         @secondary=${() => (this.showDialog = false)}
         show-secondary="true"
       >
-        <p>Transfer the ownership of all these perspectives to:</p>
+        <p>Transfer the ownership of this perspective and its children:</p>
+        <ul>
+          ${this.descendants
+            ? this.descendants.map((el) => html`<li>${el}</li>`)
+            : ''}
+        </ul>
+        <p>to:</p>
         <uprtcl-textfield
           class="address-field"
           id="new-address"
@@ -188,8 +199,13 @@ export class PermissionsEthereum extends moduleConnect(LitElement) {
         width: 220px;
       }
 
+      uprtcl-button-loading {
+        margin: 0 auto;
+      }
+
       .address-field {
         margin-top: 50px;
+        width: 100%;
       }
 
       .title {

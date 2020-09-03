@@ -22,6 +22,9 @@ interface UpdateDetails {
 export class EveesDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
+  @property({ type: Boolean })
+  summary: boolean = false;
+
   @property({ attribute: false })
   workspace!: EveesWorkspace;
 
@@ -90,7 +93,8 @@ export class EveesDiff extends moduleConnect(LitElement) {
         ${details.diffLense.render(
           this.workspace,
           details.newData,
-          details.oldData
+          details.oldData,
+          this.summary
         )}
       </div>
     `;

@@ -32,15 +32,6 @@ import { SimpleWiki } from './simple-wiki';
 
   const c1host = 'http://localhost:3100/uprtcl/1';
 
-  // const ipfsConfig = { host: 'localhost', port: 5001, protocol: 'http' };
-  // const ipfsConfig = { host: 'ipfs.infura.io', port: 5001, protocol: 'https' };
-  // const ipfsConfig = { host: 'ec2-54-145-41-139.compute-1.amazonaws.com', port: 5001, protocol: 'http' };
-  const ipfsConfig = {
-    host: 'ipfs.intercreativity.io',
-    port: 443,
-    protocol: 'https',
-  };
-
   const httpCidConfig = {
     version: 1,
     type: 'sha3-256',
@@ -52,6 +43,18 @@ import { SimpleWiki } from './simple-wiki';
     type: 'sha2-256',
     codec: 'raw',
     base: 'base58btc',
+  };
+  const ipfsJSConfig = {
+    preload: { enabled: false },
+    relay: { enabled: true, hop: { enabled: true, active: true } },
+    EXPERIMENTAL: { pubsub: true },
+    config: {
+      init: true,
+      Addresses: {
+        Swarm: env.pinner.Swarm,
+      },
+      Bootstrap: env.pinner.Bootstrap,
+    },
   };
 
   const orchestrator = new MicroOrchestrator();
@@ -65,7 +68,9 @@ import { SimpleWiki } from './simple-wiki';
   );
   const httpStore = new HttpStore(httpProvider, httpCidConfig);
   const httpEvees = new EveesHttp(httpProvider, httpStore);
-  const ipfsStore = new IpfsStore(ipfsConfig, ipfsCidConfig);
+  
+  const ipfs = await IPFS.create(ipfsJSConfig);
+  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs);
   const ethEvees = new EveesEthereum(ethConnection, ipfsStore);
   await httpEvees.connect();
 

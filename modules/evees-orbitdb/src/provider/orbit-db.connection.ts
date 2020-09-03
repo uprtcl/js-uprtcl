@@ -2,6 +2,7 @@ import OrbitDB from 'orbit-db';
 import OrbitDBSet from '@tabcat/orbit-db-set';
 import IPFS from 'ipfs';
 
+import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Perspective } from '@uprtcl/evees';
 
@@ -30,11 +31,13 @@ export class OrbitDBConnection extends Connection {
   private storeQueue = {};
   public identity: null | any = null;
 
+  logger = new Logger('OrbitDB-Connection');
+
   constructor(
     protected pinnerUrl: string,
     protected ipfsStore: any,
-    options?: ConnectionOptions,
-    protected ipfs?: any
+    protected ipfs?: any,
+    options?: ConnectionOptions
   ) {
     super(options);
     const AccessController = attachIpfsStore(this.ipfsStore);
@@ -46,12 +49,17 @@ export class OrbitDBConnection extends Connection {
   /**
    * @override
    */
-  protected async connect(params: any): Promise<void> {
+  public async connect(params: any): Promise<void> {
+    this.logger.log('Connecting');
     if (!this.ipfs) {
       this.ipfs = await IPFS.create(params);
     }
     this.instance = await OrbitDB.createInstance(this.ipfs);
     this.identity = this.instance.identity;
+    this.logger.log('Connected', {
+      instance: this.instance,
+      identity: this.identity,
+    });
   }
 
   // public async disconnect(): Promise<void> {
@@ -88,6 +96,7 @@ export class OrbitDBConnection extends Connection {
   }
 
   private async openStore(address: string | any): Promise<any> {
+    this.logger.log('Openning store', { address });
     let db;
 
     if (this.instance.stores[address]) db = this.instance.stores[address];
@@ -103,17 +112,32 @@ export class OrbitDBConnection extends Connection {
     db = await db;
 
     if (db.identity.id !== this.identity.id) db.setIdentity(this.identity);
+    this.logger.log('store opened', { db });
     return db;
   }
 
-  public async perspectiveStore(perspective: Perspective): Promise<any> {
+  public async perspectiveStore(
+    perspective: Perspective,
+    pin: boolean
+  ): Promise<any> {
     const address = await this.perspectiveAddress(perspective);
-    return this.openStore(address);
+    const store = this.openStore(address);
+    if (pin) {
+      this.pin(address);
+    }
+    return store;
   }
 
-  public async contextStore(context: string): Promise<any> {
+  public async contextStore(
+    context: string,
+    pin: boolean = false
+  ): Promise<any> {
     const address = await this.contextAddress(context);
-    return this.openStore(address);
+    const store = await this.openStore(address);
+    if (pin) {
+      this.pin(address);
+    }
+    return store;
   }
 
   public async pin(address: string) {

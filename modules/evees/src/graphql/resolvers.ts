@@ -22,7 +22,7 @@ import { EveesRemote } from '../services/evees.remote';
 import { Secured } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
 import { EveesHelpers } from './helpers';
-import { EveesWorkspace } from 'src/uprtcl-evees';
+import { EveesWorkspace } from '../services/evees.workspace';
 
 export const eveesResolvers: IResolvers = {
   Commit: {

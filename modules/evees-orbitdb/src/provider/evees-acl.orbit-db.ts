@@ -34,7 +34,8 @@ export class EveesAccessControlOrbitDB implements AccessControlService {
       type: 'access-control',
       render: (entity: string) => {
         return html`
-          <evees-http-permissions uref=${entity}> </evees-http-permissions>
+          <evees-orbitdb-permissions uref=${entity}>
+          </evees-orbitdb-permissions>
         `;
       },
     };

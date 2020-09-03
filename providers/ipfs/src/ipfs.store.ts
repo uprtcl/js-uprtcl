@@ -1,5 +1,5 @@
 import CBOR from 'cbor-js';
-import ipfsClient, { Buffer } from 'ipfs-http-client';
+import IPFS from 'ipfs';
 
 import {
   CidConfig,
@@ -21,13 +21,13 @@ export interface PutConfig {
 
 export class IpfsStore extends Connection implements CASStore {
   logger = new Logger('IpfsStore');
-  client: any;
 
   casID = 'ipfs';
 
   constructor(
-    protected ipfsOptions: IpfsConnectionOptions,
     public cidConfig: CidConfig = defaultCidConfig,
+    protected client?: any,
+    protected pinnerUrl?: string,
     connectionOptions: ConnectionOptions = {}
   ) {
     super(connectionOptions);
@@ -36,35 +36,37 @@ export class IpfsStore extends Connection implements CASStore {
   /**
    * @override
    */
-  protected async connect(): Promise<void> {
-    this.client = ipfsClient(this.ipfsOptions);
+  public async connect(ipfsOptions?: IpfsConnectionOptions): Promise<void> {
+    if (!this.client) {
+      this.client = new IPFS.create();
+    }
   }
 
   public tryPut(
-    buffer: Buffer,
+    buffer: any,
     putConfig: object,
     wait: number,
     attempt: number
   ): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.logger.log(`Try put. Attempt: ${attempt}`, {
+      this.logger.log(`Try put. Remaining attempts: ${attempt}`, {
         client: this.client,
         buffer,
         putConfig,
       });
 
       let timeout;
-      if (attempt < 4) {
+      if (attempt > 0) {
         /** retry recursively with twice as much the wait time setting */
         timeout = setTimeout(() => {
-          this.tryPut(buffer, putConfig, wait * 2, attempt + 1)
+          this.tryPut(buffer, putConfig, wait * 2, attempt - 1)
             .then((result: any) => resolve(result))
             .catch((e) => reject(e));
         }, wait);
       }
 
       this.client.dag
-        .put(buffer, putConfig)
+        .put(Buffer.from(buffer), putConfig)
         .then((result: object) => {
           clearTimeout(timeout);
           resolve(result);
@@ -87,14 +89,14 @@ export class IpfsStore extends Connection implements CASStore {
     let timeout;
 
     return new Promise((resolve, reject) => {
-      this.logger.log(`Trying to get ${hash}. Attempt: ${attempt}`);
+      this.logger.log(`Trying to get ${hash}. Remaining attempts: ${attempt}`);
 
       let found = false;
 
       /** retry recursively with twice as much the wait time setting */
-      if (attempt < 1) {
+      if (attempt > 0) {
         timeout = setTimeout(() => {
-          this.tryGet(hash, wait * 2, attempt + 1)
+          this.tryGet(hash, wait * 2, attempt - 1)
             .then((result) => resolve(result))
             .catch((e) => {
               if (!found) reject(e);
@@ -108,6 +110,34 @@ export class IpfsStore extends Connection implements CASStore {
         resolve(result);
       });
     });
+  }
+
+  tryPin(hash: string, wait: number, attempt: number) {
+    let timeout;
+
+    return new Promise((resolve, reject) => {
+      this.logger.log(`Trying to pin ${hash}. Remaining attempts: ${attempt}`);
+
+      let found = false;
+
+      /** retry recursively with twice as much the wait time setting */
+      if (attempt > 0) {
+        timeout = setTimeout(() => {
+          this.tryPin(hash, wait * 2, attempt - 1)
+            .then((result) => resolve(result))
+            .catch((e) => {
+              if (!found) reject(e);
+            });
+        }, wait);
+      }
+
+      fetch(`${this.pinnerUrl}/pin_hash?cid=${hash}`).then((result) => {
+        clearTimeout(timeout);
+        resolve(result);
+      });
+    });
+
+    
   }
 
   /**
@@ -130,7 +160,7 @@ export class IpfsStore extends Connection implements CASStore {
     };
 
     /** recursively try */
-    return this.tryPut(buffer, putConfig, 500, 0)
+    return this.tryPut(buffer, putConfig, 500, 4)
       .then((result: any) => {
         let hashString = result.toString(this.cidConfig.base);
         this.logger.log(`Object stored`, {
@@ -139,6 +169,11 @@ export class IpfsStore extends Connection implements CASStore {
           buffer,
           hashString,
         });
+        if (this.pinnerUrl) {
+          this.tryPin(hashString, 5000, 4).then((result) => {
+            this.logger.info(`hash pinned`, result);
+          });
+        }
         return hashString;
       })
       .catch((e) => {
@@ -152,9 +187,10 @@ export class IpfsStore extends Connection implements CASStore {
    */
   async get(hash: string): Promise<object | undefined> {
     /** recursively try */
-    return this.tryGet(hash, 500, 0)
+    return this.tryGet(hash, 500, 4)
       .then((raw) => {
-        let object = CBOR.decode(raw.value.buffer);
+        const forceBuffer = Uint8Array.from(raw.value);
+        let object = CBOR.decode(forceBuffer.buffer);
         this.logger.log(`Object retrieved ${hash}`, { raw, object });
         return object;
       })

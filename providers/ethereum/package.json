@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/ethereum-provider",
-  "version": "0.0.7-alpha.50",
+  "version": "0.0.7-alpha.53",
   "description": "_Prtcl provider wrappers around web3",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,9 +11,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.0.7-alpha.50",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.50",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.50",
+    "@uprtcl/cortex": "^0.0.7-alpha.53",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.53",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.53",
     "ethers": "^5.0.8",
     "inversify": "^5.0.1",
     "reflect-metadata": "^0.1.13"
@@ -69,5 +69,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "2ac07cf8bffa6e1ac3da6844e49336a396ca75df"
+  "gitHead": "0ddb697897a75f59fd9f0db83a18bc8121702995"
 }

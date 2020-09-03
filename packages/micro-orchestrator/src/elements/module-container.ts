@@ -24,6 +24,13 @@ export class RequestDependencyEvent extends CustomEvent<{
 
 export function ModuleContainer(container: Container): typeof HTMLElement {
   class ModuleContainer extends LitElement {
+    container: any;
+
+    constructor() {
+      super();
+      this.container = container;
+    }
+
     connectedCallback() {
       super.connectedCallback();
 
@@ -33,11 +40,11 @@ export function ModuleContainer(container: Container): typeof HTMLElement {
         const dependencyId = e.detail.request;
         const options = e.detail.options;
 
-        if (container.isBound(dependencyId)) {
+        if (this.container.isBound(dependencyId)) {
           if (options.multiple) {
-            e.dependencies = container.getAll(dependencyId);
+            e.dependencies = this.container.getAll(dependencyId);
           } else {
-            e.dependencies = [container.get(dependencyId)];
+            e.dependencies = [this.container.get(dependencyId)];
           }
         } else if (!options.optional) {
           throw new Error(

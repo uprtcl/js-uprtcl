@@ -126,7 +126,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
     this.remoteMap = this.request(EveesBindings.RemoteMap);
-    this.remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
     if (this.defaultRemoteId !== undefined) {
       this.defaultRemote = (this.requestAll(
@@ -151,6 +150,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async load() {
+    this.remote = await this.evees.getPerspectiveRemoteById(this.uref);
+
     const entity = await loadEntity(this.client, this.uref);
     if (!entity) throw Error(`Entity not found ${this.uref}`);
 
@@ -303,10 +304,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     );
 
     const workspace = new EveesWorkspace(this.client, this.recognizer);
+    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(
+      this.client,
+      toPerspectiveId
+    );
 
     const config = {
       forceOwner: true,
-      remote: this.remote.id,
+      remote: toRemoteId,
       parentId: toPerspectiveId,
     };
 

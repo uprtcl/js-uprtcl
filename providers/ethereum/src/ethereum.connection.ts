@@ -24,7 +24,7 @@ export class EthereumConnection extends Connection {
   /**
    * @override
    */
-  protected async connect(): Promise<void> {
+  public async connect(): Promise<void> {
     if (typeof this.ethOptions.provider === 'string') {
       this.provider = new ethers.providers.JsonRpcProvider(
         this.ethOptions.provider

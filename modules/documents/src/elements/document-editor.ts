@@ -1005,6 +1005,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}
+                  show-acl
+                  show-info
                 ></evees-info-popper>
               `
             : ''}
