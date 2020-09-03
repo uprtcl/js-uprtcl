@@ -28,7 +28,10 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   canRead!: string[];
 
   @property({ attribute: false })
-  canAdmin!: string[];
+  canAdmin!: boolean;
+
+  @property({ attribute: false })
+  currentUser!: string;
 
   client!: ApolloClient<any>;
   remote!: EveesHttp;
@@ -57,6 +60,10 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     this.remote = remote as EveesHttp;
 
+    const isLoggedIn = this.remote.isLogged()
+    
+    this.currentUser = isLoggedIn ? this.remote.userId as string : ''
+
     this.loadPermissions();
   }
 
@@ -72,9 +79,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       this.uref
     );
 
-    this.canWrite = this.permissions.effectivePermissions.canWrite;
-    this.canRead = this.permissions.effectivePermissions.canRead;
-    this.canAdmin = this.permissions.effectivePermissions.canAdmin;
+    this.canAdmin = this.permissions.effectivePermissions.canAdmin.includes(this.currentUser);
     this.loading = false;
   }
 
