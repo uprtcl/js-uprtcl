@@ -60,7 +60,7 @@ import { SimpleWiki } from './simple-wiki';
 
   const ipfs = await IPFS.create(ipfsJSConfig);
 
-  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs);
+  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, pinnerUrl);
   await ipfsStore.ready();
 
   const orbitDBConnection = new OrbitDBConnection(pinnerUrl, ipfsStore, ipfs);
