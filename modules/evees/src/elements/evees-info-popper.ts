@@ -19,6 +19,9 @@ export class EveesInfoPopper extends LitElement {
   @property({ type: String, attribute: 'first-uref' })
   firstRef!: string;
 
+  @property({ type: String })
+  parentId!: string;
+
   @property({ type: String, attribute: 'default-authority' })
   defaultAuthority: string | undefined = undefined;
 
@@ -74,6 +77,7 @@ export class EveesInfoPopper extends LitElement {
           ?show-acl=${this.showAcl}
           ?show-info=${this.showInfo}
           uref=${this.uref}
+          parentId=${this.parentId}
           first-uref=${this.firstRef as string}
           evee-color=${this.color()}
           .default-authority=${this.defaultAuthority}

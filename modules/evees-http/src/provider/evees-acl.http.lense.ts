@@ -12,6 +12,9 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   @property()
   uref!: string;
 
+  @property()
+  parentId!: string | null;
+
   @property({ attribute: false })
   loading: boolean = true;
 
@@ -25,7 +28,10 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   canRead!: string[];
 
   @property({ attribute: false })
-  canAdmin!: string[];
+  canAdmin!: boolean;
+
+  @property({ attribute: false })
+  currentUser!: string;
 
   client!: ApolloClient<any>;
   remote!: EveesHttp;
@@ -54,6 +60,10 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     this.remote = remote as EveesHttp;
 
+    const isLoggedIn = this.remote.isLogged()
+    
+    this.currentUser = isLoggedIn ? this.remote.userId as string : ''
+
     this.loadPermissions();
   }
 
@@ -69,9 +79,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       this.uref
     );
 
-    this.canWrite = this.permissions.effectivePermissions.canWrite;
-    this.canRead = this.permissions.effectivePermissions.canRead;
-    this.canAdmin = this.permissions.effectivePermissions.canAdmin;
+    this.canAdmin = this.permissions.effectivePermissions.canAdmin.includes(this.currentUser);
     this.loading = false;
   }
 
@@ -114,12 +122,15 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       throw new Error(`remote accessControl not found`);
     }
 
+    const parentId = this.parentId as string;
+
+    // If there is parent, change delegate status
+    const newDelegate = parentId ? !this.permissions.delegate : false;
+    
     await this.remote.accessControl.toggleDelegate(
       this.uref,
-      !this.permissions.delegate,
-      this.permissions.delegate
-        ? ''
-        : 'zb2wwxENKCBxVfyBxCp5dzCFM9AG4nU48fAFnYasc6HcrKrkP'
+      newDelegate,
+      newDelegate ? parentId : '',
     );
 
     this.dispatchEvent(
@@ -356,13 +367,8 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       <uprtcl-toggle
         @click=${this.toggleDelegate}
         .active=${this.permissions.delegate}
-        >Delegate</uprtcl-toggle
-      >
-      <uprtcl-textfield
-        label="delegateTo"
-        .value=${this.testDelegateValue}
-      ></uprtcl-textfield>
-    `;
+      >Delegate</uprtcl-toggle>
+    `
   }
 
   render() {
@@ -409,6 +415,9 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                           >
                             Public read
                           </uprtcl-toggle>
+
+                          ${this.renderChangeDelegate()}
+
                         </div>
 
                         <div class="row">
@@ -419,9 +428,6 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                           ${this.renderAddUserPermission()}
                         </div>
 
-                        <div class="row">
-                          ${this.renderChangeDelegate()}
-                        </div>
                       `}
                 `
               : ''}
