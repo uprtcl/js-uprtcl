@@ -12,7 +12,11 @@ export class Doc extends moduleConnect(LitElement) {
   @property({ attribute: false })
   defaultRemote!: string;
 
+  @property({ attribute: false })
+  loading: boolean = true;
+
   async firstUpdated() {
+    this.loading = true;
     this.docId = window.location.pathname.split('/')[2];
 
     const eveesHttpProvider = this.requestAll(
@@ -23,6 +27,7 @@ export class Doc extends moduleConnect(LitElement) {
 
     await eveesHttpProvider.connect();
     this.defaultRemote = eveesHttpProvider.id;
+    this.loading = false;
   }
 
   goHome() {
@@ -31,6 +36,8 @@ export class Doc extends moduleConnect(LitElement) {
 
   render() {
     if (this.docId === undefined) return '';
+    if (this.loading) return html`<uprtcl-loading></uprtcl-loading>`;
+    
     return html`
       <wiki-drawer
         @back=${() => this.goHome()}

@@ -208,6 +208,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
 
     this.isLogged = await this.remote.isLogged();
+    
+    if (this.defaultRemote) await this.defaultRemote.ready();
+
     this.isLoggedOnDefault =
       this.defaultRemote !== undefined
         ? await this.defaultRemote.isLogged()
