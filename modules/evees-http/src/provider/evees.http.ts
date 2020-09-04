@@ -46,7 +46,7 @@ export class EveesHttp implements EveesRemote {
   }
 
   canWrite(uref: string): Promise<boolean> {
-    return this.accessControl.canWrite(uref, this.userId);
+    return this.accessControl.canWrite(uref);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
