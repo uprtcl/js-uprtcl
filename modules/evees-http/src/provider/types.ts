@@ -19,3 +19,9 @@ export interface BasicAdminInheritedPermissions {
   customPermissions?: BasicAdminPermissions,
   effectivePermissions: BasicAdminPermissions,
 }
+
+export interface UserPermissions {
+  canRead: boolean,
+  canWrite: boolean,
+  canAdmin: boolean
+}
