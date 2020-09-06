@@ -170,7 +170,7 @@ export class IpfsStore extends Connection implements CASStore {
           hashString,
         });
         if (this.pinnerUrl) {
-          this.tryPin(hashString, 5000, 4).then((result) => {
+          this.tryPin(hashString, 5000, 0).then((result) => {
             this.logger.info(`hash pinned`, result);
           });
         }
