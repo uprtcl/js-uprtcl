@@ -12,7 +12,6 @@ import {
 } from '@uprtcl/evees';
 
 import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
-import { ProposalsPolkadot } from './proposals.polkadot';
 
 const evees_if = 'evees-identity';
 
@@ -20,11 +19,10 @@ export class EveesPolkadot implements EveesRemote {
   logger: Logger = new Logger('EveesEtereum');
 
   accessControl: EveesAccessControlPolkadot;
-  proposals: ProposalsProvider;
+  proposals: ProposalsProvider | undefined;
 
   constructor(public connection: PolkadotConnection, public store: CASStore) {
-    this.accessControl = new EveesAccessControlPolkadot();
-    this.proposals = new ProposalsPolkadot();
+    this.accessControl = new EveesAccessControlPolkadot(store);
   }
 
   get id() {
@@ -98,11 +96,11 @@ export class EveesPolkadot implements EveesRemote {
   }
 
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
-    const perspective: Secured<Perspective> = await this.store.get(perspectiveId);
+    const perspective = (await this.store.get(perspectiveId)) as Secured<Perspective>;
     const userPerspectivesHash = await this.connection.getUserPerspectivesHash(
       perspective.object.payload.creatorId
     );
-    const userPerspectives = await this.store.getObject(userPerspectivesHash);
+    const userPerspectives = (await this.store.get(userPerspectivesHash)) as UserPerspectives;
 
     const userPerspectivesNew = this.updateUserPerspectivesEntry(
       userPerspectives,
@@ -144,7 +142,7 @@ export class EveesPolkadot implements EveesRemote {
     });
 
     const userPerspectivesHash = await this.connection.getUserPerspectivesHash(owner);
-    const userPerspectives = await this.store.getObject(userPerspectivesHash);
+    const userPerspectives = (await this.store.get(userPerspectivesHash)) as UserPerspectives;
 
     let userPerspectivesNew;
 
@@ -164,11 +162,11 @@ export class EveesPolkadot implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    const perspective: Secured<Perspective> = await this.store.get(perspectiveId);
+    const perspective = (await this.store.get(perspectiveId)) as Secured<Perspective>;
     const userPerspectivesHash = await this.connection.getUserPerspectivesHash(
       perspective.object.payload.creatorId
     );
-    const userPerspectives = await this.store.getObject(userPerspectivesHash);
+    const userPerspectives = (await this.store.get(userPerspectivesHash)) as UserPerspectives;
 
     return userPerspectives[perspectiveId];
   }

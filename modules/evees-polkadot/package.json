@@ -11,8 +11,8 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
+    "@polkadot/api": "^1.32.1",
     "@uprtcl/cortex": "^0.0.7-alpha.53",
-    "@uprtcl/ethereum-provider": "^0.0.7-alpha.53",
     "@uprtcl/evees": "^0.0.7-alpha.53",
     "@uprtcl/graphql": "^0.0.7-alpha.53",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.53",
@@ -21,7 +21,6 @@
     "@uprtcl/multiplatform": "^0.0.7-alpha.53",
     "apollo-boost": "^0.4.7",
     "cids": "^0.8.1",
-    "ethers": "^5.0.9",
     "inversify": "^5.0.1",
     "multihashing-async": "^0.8.0"
   },
@@ -58,9 +57,9 @@
     }
   ],
   "license": "MIT",
-  "main": "dist/uprtcl-evees-ethereum.umd.js",
-  "module": "dist/uprtcl-evees-ethereum.es5.js",
-  "typings": "dist/types/uprtcl-evees-ethereum.d.ts",
+  "main": "dist/uprtcl-evees-polkadot.umd.js",
+  "module": "dist/uprtcl-evees-polkadot.es5.js",
+  "typings": "dist/types/uprtcl-evees-polkadot.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"

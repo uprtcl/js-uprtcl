@@ -48,10 +48,10 @@ export class PolkadotConnection extends Connection {
 
   public async getUserPerspectivesHash(userId: string) {
     // read evees entry
-    return {};
+    return '';
   }
 
-  public async updateUserPerspectivesHash(userPerspectives: UserPerspectives) {
+  public async updateUserPerspectivesHash(userPerspectivesHash: string) {
     // update evees entry
   }
 }

@@ -1,17 +1,14 @@
 import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
 
-import { EveesEthereumBindings } from './bindings';
-import { PermissionsEthereum } from './provider/evees-acl.etherum.lense';
+import { EveesPolkadotBindings } from './bindings';
 
-export class EveesEthereumModule extends MicroModule {
-  static id = 'evees-ethereum-module';
-  static bindings = EveesEthereumBindings;
+export class EveesPolkadotModule extends MicroModule {
+  static id = 'evees-polkadot-module';
+  static bindings = EveesPolkadotBindings;
 
-  logger = new Logger('EVEES-ETHEREUM-MODULE');
+  logger = new Logger('EVEES-POLKADOT-MODULE');
 
-  async onLoad() {
-    customElements.define('evees-ethereum-permissions', PermissionsEthereum);
-  }
+  async onLoad() {}
 
   get submodules() {
     return [];

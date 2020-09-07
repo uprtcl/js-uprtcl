@@ -1,4 +1,4 @@
-# @uprtcl/evees-ethereum
+# @uprtcl/evees-polkadot
 
 TBW
 
