@@ -1,4 +1,6 @@
-export const env = {
+const env = {
+  // entry: './src/index.polkadot.js',
+  entry: './src/index.orbitdb.js',
   officialRemote: 'eth',
   pinner: {
     url: 'http://localhost:3000',
@@ -15,4 +17,8 @@ export const env = {
       infura: '73e0929fc849451dae4662585aea9a7b'
     }
   }
+};
+
+module.exports = {
+  env
 };
