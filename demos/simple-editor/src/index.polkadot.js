@@ -63,7 +63,7 @@ import { SimpleWiki } from './simple-wiki';
 
   await orchestrator.loadModules(modules);
 
-  orchestrator.container.bind('polkadot-connection').toConstantValue(pkdConnection);
+  orchestrator.container.bind('official-connection').toConstantValue(pkdConnection);
 
   console.log(orchestrator);
   customElements.define('simple-wiki', SimpleWiki);

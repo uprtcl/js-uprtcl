@@ -1,9 +1,10 @@
 import { LitElement, html, css } from 'lit-element';
-import { ethers } from 'ethers';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { EveesModule, EveesHelpers } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
+
+import { env } from './../env';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
   static get properties() {
@@ -54,7 +55,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.requestAll(EveesModule.bindings.EveesRemote).map(remote => remote.ready())
     );
 
-    this.connection = this.request('polkadot-connection');
+    this.connection = this.request('official-connection');
     await this.connection.ready();
 
     this.canCreate = this.connection.canSign();
@@ -69,7 +70,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   async createSpace() {
     this.creatingSpace = true;
     const eveesRemote = this.requestAll(EveesModule.bindings.EveesRemote).find(instance =>
-      instance.id.startsWith('polkadot')
+      instance.id.startsWith(env.officialRemote)
     );
 
     await eveesRemote.ready();
@@ -82,12 +83,12 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       pages: []
     };
 
-    const dataId = await EveesHelpers.createEntity(client, eveesEthRemote.store, wiki);
-    const headId = await EveesHelpers.createCommit(client, eveesEthRemote.store, {
+    const dataId = await EveesHelpers.createEntity(client, eveesRemote.store, wiki);
+    const headId = await EveesHelpers.createCommit(client, eveesRemote.store, {
       dataId
     });
 
-    const perspectiveId = await EveesHelpers.createPerspective(client, eveesEthRemote, {
+    const perspectiveId = await EveesHelpers.createPerspective(client, eveesRemote, {
       headId,
       context: `my-wiki-${randint}`,
       canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'

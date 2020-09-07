@@ -1,13 +1,15 @@
 // Fill and rename as env.js
 export const env = {
+  officialRemote: '',
   pinner: {
     url: '',
-    ma: '',
+    Swarm: [''],
+    Bootstrap: ['']
   },
   ethers: {
     apiKeys: {
       etherscan: '',
-      infura: '',
-    },
-  },
+      infura: ''
+    }
+  }
 };
