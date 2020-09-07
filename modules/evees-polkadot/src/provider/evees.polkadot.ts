@@ -184,11 +184,9 @@ export class EveesPolkadot implements EveesRemote {
   logout(): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  connect(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  isConnected(): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async connect() {}
+  async isConnected() {
+    return true;
   }
   disconnect(): Promise<void> {
     throw new Error('Method not implemented.');

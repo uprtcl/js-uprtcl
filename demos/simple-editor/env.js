@@ -1,7 +1,7 @@
 const env = {
   // entry: './src/index.polkadot.js',
-  entry: './src/index.orbitdb.js',
-  officialRemote: 'eth',
+  entry: './src/index.polkadot.js',
+  officialRemote: 'polkadot',
   pinner: {
     url: 'http://localhost:3000',
     Swarm: [

@@ -11,7 +11,7 @@ export interface UserPerspectives {
 }
 
 export class PolkadotConnection extends Connection {
-  public api: ApiPromise;
+  public api!: ApiPromise;
 
   get account() {
     return '';
@@ -26,8 +26,8 @@ export class PolkadotConnection extends Connection {
   public async connect(): Promise<void> {
     this.logger.log('Connecting');
 
-    const wsProvider = new WsProvider(this.ws);
-    this.api = await ApiPromise.create({ provider: wsProvider });
+    // const wsProvider = new WsProvider(this.ws);
+    // this.api = await ApiPromise.create({ provider: wsProvider });
 
     this.logger.log('Connected', {
       api: this.api
