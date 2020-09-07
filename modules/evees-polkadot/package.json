@@ -1,7 +1,7 @@
 {
-  "name": "@uprtcl/evees-ethereum",
+  "name": "@uprtcl/evees-polkadot",
   "version": "0.0.7-alpha.53",
-  "description": "EveesRemote implemented on the Ethereum Blockchain",
+  "description": "EveesRemote implemented on a Polkadot Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
     "clean": "rimraf dist",
