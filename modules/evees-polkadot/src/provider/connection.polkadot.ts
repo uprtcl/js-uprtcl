@@ -3,8 +3,19 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
+export interface UserPerspectives {
+  [perspectiveId: string]: {
+    headId?: string;
+    context?: string;
+  };
+}
+
 export class PolkadotConnection extends Connection {
   public api: ApiPromise;
+
+  get account() {
+    return '';
+  }
 
   logger = new Logger('Polkadot-Connection');
 
@@ -21,5 +32,26 @@ export class PolkadotConnection extends Connection {
     this.logger.log('Connected', {
       api: this.api
     });
+  }
+
+  public getNetworkId() {
+    return 'kusama';
+  }
+
+  public async canSign(): Promise<boolean> {
+    return true;
+  }
+
+  public async connectWallet(): Promise<void> {
+    return;
+  }
+
+  public async getUserPerspectivesHash(userId: string) {
+    // read evees entry
+    return {};
+  }
+
+  public async updateUserPerspectivesHash(userPerspectives: UserPerspectives) {
+    // update evees entry
   }
 }
