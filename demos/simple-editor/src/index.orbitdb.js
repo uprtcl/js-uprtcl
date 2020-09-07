@@ -56,7 +56,7 @@ import { SimpleWiki } from './simple-wiki';
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, pinnerUrl);
   await ipfsStore.ready();
 
-  const orbitDBConnection = new OrbitDBConnection(pinnerUrl, ipfsStore, ipfs);
+  const orbitDBConnection = new OrbitDBConnection(pinnerUrl, ipfs);
   await orbitDBConnection.ready();
 
   const ethConnection = new EthereumConnection({ provider });

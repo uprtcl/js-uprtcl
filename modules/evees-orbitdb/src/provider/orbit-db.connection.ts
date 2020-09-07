@@ -7,7 +7,7 @@ import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Perspective } from '@uprtcl/evees';
 
 import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
-import { contextsAccesssControl } from './context-access-controller';
+import { ContextAccessController } from './context-access-controller';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
@@ -30,16 +30,10 @@ export class OrbitDBConnection extends Connection {
 
   logger = new Logger('OrbitDB-Connection');
 
-  constructor(
-    protected pinnerUrl: string,
-    protected ipfsStore: any,
-    protected ipfs?: any,
-    options?: ConnectionOptions
-  ) {
+  constructor(protected pinnerUrl: string, protected ipfs: any, options?: ConnectionOptions) {
     super(options);
-    const AccessController = contextsAccesssControl(this.ipfsStore);
-    if (!OrbitDB.AccessControllers.isSupported(AccessController.type)) {
-      OrbitDB.AccessControllers.addAccessController({ AccessController });
+    if (!OrbitDB.AccessControllers.isSupported(ContextAccessController.type)) {
+      OrbitDB.AccessControllers.addAccessController({ AccessController: ContextAccessController });
     }
   }
 
