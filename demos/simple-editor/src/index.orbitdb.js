@@ -2,10 +2,7 @@ import { ethers } from 'ethers';
 import IPFS from 'ipfs';
 import { env } from '../env';
 
-import {
-  MicroOrchestrator,
-  i18nextBaseModule,
-} from '@uprtcl/micro-orchestrator';
+import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { LensesModule } from '@uprtcl/lenses';
 import { DocumentsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
@@ -14,11 +11,7 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import {
-  OrbitDBConnection,
-  EveesOrbitDB,
-  EveesOrbitDBModule,
-} from '@uprtcl/evees-orbitdb';
+import { OrbitDBConnection, EveesOrbitDB, EveesOrbitDBModule } from '@uprtcl/evees-orbitdb';
 import { EveesEthereum, EveesEthereumModule } from '@uprtcl/evees-ethereum';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
@@ -29,7 +22,7 @@ import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { SimpleEditor } from './simple-editor';
 import { SimpleWiki } from './simple-wiki';
 
-(async function () {
+(async function() {
   // const provider = '';
   const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
   // const ethHost = 'ws://localhost:8545';
@@ -38,7 +31,7 @@ import { SimpleWiki } from './simple-wiki';
     version: 1,
     type: 'sha2-256',
     codec: 'raw',
-    base: 'base58btc',
+    base: 'base58btc'
   };
 
   const pinnerUrl = env.pinner.url;
@@ -50,10 +43,10 @@ import { SimpleWiki } from './simple-wiki';
     config: {
       init: true,
       Addresses: {
-        Swarm: env.pinner.Swarm,
+        Swarm: env.pinner.Swarm
       },
-      Bootstrap: env.pinner.Bootstrap,
-    },
+      Bootstrap: env.pinner.Bootstrap
+    }
   };
 
   const orchestrator = new MicroOrchestrator();
@@ -95,15 +88,13 @@ import { SimpleWiki } from './simple-wiki';
     new EveesOrbitDBModule(),
     evees,
     documents,
-    wikis,
+    wikis
   ];
 
   await orchestrator.loadModules(modules);
 
   /*** add other services to the container */
-  orchestrator.container
-    .bind('ethereum-connection')
-    .toConstantValue(ethConnection);
+  orchestrator.container.bind('official-connection').toConstantValue(ethConnection);
 
   console.log(orchestrator);
   customElements.define('simple-editor', SimpleEditor);
