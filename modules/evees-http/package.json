@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-http",
-  "version": "0.0.7-alpha.53",
+  "version": "0.0.7-alpha.55",
   "description": "EveesRemote implemented on the Ethereum Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,13 +11,13 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/ethereum-provider": "^0.0.7-alpha.53",
-    "@uprtcl/evees": "^0.0.7-alpha.53",
-    "@uprtcl/graphql": "^0.0.7-alpha.53",
-    "@uprtcl/http-provider": "^0.0.7-alpha.53",
-    "@uprtcl/lenses": "^0.0.7-alpha.53",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.53",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.53",
+    "@uprtcl/ethereum-provider": "^0.0.7-alpha.55",
+    "@uprtcl/evees": "^0.0.7-alpha.55",
+    "@uprtcl/graphql": "^0.0.7-alpha.55",
+    "@uprtcl/http-provider": "^0.0.7-alpha.55",
+    "@uprtcl/lenses": "^0.0.7-alpha.55",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.55",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.55",
     "apollo-boost": "^0.4.7"
   },
   "devDependencies": {
@@ -64,5 +64,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "0ddb697897a75f59fd9f0db83a18bc8121702995"
+  "gitHead": "65672ddaa7a0c899a38a500bdc6fb26fb94d6a74"
 }

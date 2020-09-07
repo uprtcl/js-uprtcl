@@ -6,16 +6,13 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Perspective } from '@uprtcl/evees';
 
-import {
-  IdentityProvider,
-  Keystore,
-} from '@tabcat/orbit-db-identity-provider-d';
-import { attachIpfsStore } from './context-access-controller';
+import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
+import { contextsAccesssControl } from './context-access-controller';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
 
-const keystorePath = (id) => `./orbitdb/identity/odbipd-${id}`;
+const keystorePath = id => `./orbitdb/identity/odbipd-${id}`;
 
 export interface OrbitDBConnectionOptions {
   directory?: string;
@@ -40,7 +37,7 @@ export class OrbitDBConnection extends Connection {
     options?: ConnectionOptions
   ) {
     super(options);
-    const AccessController = attachIpfsStore(this.ipfsStore);
+    const AccessController = contextsAccesssControl(this.ipfsStore);
     if (!OrbitDB.AccessControllers.isSupported(AccessController.type)) {
       OrbitDB.AccessControllers.addAccessController({ AccessController });
     }
@@ -58,7 +55,7 @@ export class OrbitDBConnection extends Connection {
     this.identity = this.instance.identity;
     this.logger.log('Connected', {
       instance: this.instance,
-      identity: this.identity,
+      identity: this.identity
     });
   }
 
@@ -74,7 +71,7 @@ export class OrbitDBConnection extends Connection {
       keystore: new Keystore(keystorePath(id)),
       type: IdentityProvider.type,
       id: id,
-      derive: sig,
+      derive: sig
     });
   }
 
@@ -85,13 +82,13 @@ export class OrbitDBConnection extends Connection {
   public async perspectiveAddress(perspective: Perspective): Promise<any> {
     return this.instance.determineAddress('perspective-store', 'eventlog', {
       accessController: { type: 'ipfs', write: [perspective.creatorId] },
-      meta: { timestamp: perspective.timestamp },
+      meta: { timestamp: perspective.timestamp }
     });
   }
 
   public async contextAddress(context: string): Promise<any> {
     return this.instance.determineAddress(`context-store/${context}`, 'set', {
-      accessController: { type: 'context', write: ['*'] },
+      accessController: { type: 'context', write: ['*'] }
     });
   }
 
@@ -104,7 +101,7 @@ export class OrbitDBConnection extends Connection {
     else
       db = this.storeQueue[address] = this.instance
         .open(address, { identity: this.identity })
-        .then(async (store) => {
+        .then(async store => {
           await store.load();
           return store;
         })
@@ -116,10 +113,7 @@ export class OrbitDBConnection extends Connection {
     return db;
   }
 
-  public async perspectiveStore(
-    perspective: Perspective,
-    pin: boolean
-  ): Promise<any> {
+  public async perspectiveStore(perspective: Perspective, pin: boolean): Promise<any> {
     const address = await this.perspectiveAddress(perspective);
     const store = this.openStore(address);
     if (pin) {
@@ -128,10 +122,7 @@ export class OrbitDBConnection extends Connection {
     return store;
   }
 
-  public async contextStore(
-    context: string,
-    pin: boolean = false
-  ): Promise<any> {
+  public async contextStore(context: string, pin: boolean = false): Promise<any> {
     const address = await this.contextAddress(context);
     const store = await this.openStore(address);
     if (pin) {
@@ -142,8 +133,8 @@ export class OrbitDBConnection extends Connection {
 
   public async pin(address: string) {
     fetch(`${this.pinnerUrl}/pin?address=${address}`, {
-      method: 'GET',
-    }).then((response) => {
+      method: 'GET'
+    }).then(response => {
       console.log(response);
     });
   }

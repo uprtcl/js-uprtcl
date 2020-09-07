@@ -1,7 +1,7 @@
 {
   "name": "simple-editor",
   "private": false,
-  "version": "0.0.7-alpha.53",
+  "version": "0.0.7-alpha.55",
   "contributors": [
     {
       "name": "Guillem Cordoba",
@@ -25,21 +25,21 @@
     "build": "rm -rf dist && webpack --config webpack.config.js"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.0.7-alpha.53",
-    "@uprtcl/documents": "^0.0.7-alpha.53",
-    "@uprtcl/ethereum-provider": "^0.0.7-alpha.53",
-    "@uprtcl/evees": "^0.0.7-alpha.53",
-    "@uprtcl/evees-ethereum": "^0.0.7-alpha.53",
-    "@uprtcl/evees-http": "^0.0.7-alpha.53",
-    "@uprtcl/evees-orbitdb": "^0.0.7-alpha.53",
-    "@uprtcl/evees-polkadot": "^0.0.7-alpha.53",
-    "@uprtcl/graphql": "^0.0.7-alpha.53",
-    "@uprtcl/http-provider": "^0.0.7-alpha.53",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.53",
-    "@uprtcl/lenses": "^0.0.7-alpha.53",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.53",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.53",
-    "@uprtcl/wikis": "^0.0.7-alpha.53",
+    "@uprtcl/cortex": "^0.0.7-alpha.55",
+    "@uprtcl/documents": "^0.0.7-alpha.55",
+    "@uprtcl/ethereum-provider": "^0.0.7-alpha.55",
+    "@uprtcl/evees": "^0.0.7-alpha.55",
+    "@uprtcl/evees-ethereum": "^0.0.7-alpha.55",
+    "@uprtcl/evees-http": "^0.0.7-alpha.55",
+    "@uprtcl/evees-orbitdb": "^0.0.7-alpha.55",
+    "@uprtcl/evees-polkadot": "^0.0.7-alpha.55",
+    "@uprtcl/graphql": "^0.0.7-alpha.55",
+    "@uprtcl/http-provider": "^0.0.7-alpha.55",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.55",
+    "@uprtcl/lenses": "^0.0.7-alpha.55",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.55",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.55",
+    "@uprtcl/wikis": "^0.0.7-alpha.55",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "apollo-boost": "^0.4.7",
     "ethers": "^5.0.9",
@@ -82,5 +82,5 @@
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.4"
   },
-  "gitHead": "0ddb697897a75f59fd9f0db83a18bc8121702995"
+  "gitHead": "65672ddaa7a0c899a38a500bdc6fb26fb94d6a74"
 }
