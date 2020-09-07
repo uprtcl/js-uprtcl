@@ -32,6 +32,7 @@
     "@uprtcl/evees-ethereum": "^0.0.7-alpha.53",
     "@uprtcl/evees-http": "^0.0.7-alpha.53",
     "@uprtcl/evees-orbitdb": "^0.0.7-alpha.53",
+    "@uprtcl/evees-polkadot": "^0.0.7-alpha.53",
     "@uprtcl/graphql": "^0.0.7-alpha.53",
     "@uprtcl/http-provider": "^0.0.7-alpha.53",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.53",
