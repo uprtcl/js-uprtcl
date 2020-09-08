@@ -273,6 +273,30 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     return this.remoteMap(remoteInstance);
   }
 
+  handlePageDrag(e, pageId) {
+    e.dataTransfer.setData("text/plain", pageId);
+  }
+
+  async handlePageDrop(e) {
+    const pageId = e.dataTransfer.getData("text/plain");
+    
+    if (!this.wiki) return;
+    if(!pageId) return;
+
+    const index = this.wiki.object.pages.length;
+    
+    const result = await this.splicePages([pageId], index, 0);
+
+    if (!result.entity) throw Error('problem with splice pages');
+
+    await this.updateContent(result.entity);
+  }
+
+  dragOverEffect(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  }
+
   async createPage(page: TextNode, remote: string) {
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
@@ -534,7 +558,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (selected) classes.push('title-selected');
 
     return html`
-      <div class=${classes.join(' ')} @click=${() => this.selectPage(ix)}>
+      <div class=${classes.join(' ')}
+        draggable="true"
+        @dragstart=${e => this.handlePageDrag(e, page.id)}
+        @click=${() => this.selectPage(ix)}>
         <div class="text-container">
           ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
         </div>
@@ -614,7 +641,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
 
         <div class="app-content-with-nav">
-          <div class="app-navbar">
+          <div
+            class="app-navbar"
+            @dragover=${this.dragOverEffect}
+            @drop=${this.handlePageDrop}
+          >
             ${this.renderPageList()}
           </div>
 
