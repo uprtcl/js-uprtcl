@@ -18,7 +18,7 @@
     "cids": "^0.8.1",
     "concat-stream": "^2.0.0",
     "inversify": "^5.0.1",
-    "ipfs": "^0.49.1",
+    "ipfs": "^0.50.1",
     "multihashing-async": "^0.8.1",
     "reflect-metadata": "^0.1.13"
   },
