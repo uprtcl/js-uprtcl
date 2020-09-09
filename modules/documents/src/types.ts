@@ -3,7 +3,7 @@ import { HasDocNodeLenses } from './patterns/document-patterns';
 
 export enum TextType {
   Title = 'Title',
-  Paragraph = 'Paragraph',
+  Paragraph = 'Paragraph'
 }
 
 export interface TextNode {
@@ -15,6 +15,7 @@ export interface TextNode {
 export interface DocNode {
   uref: string;
   isPlaceholder: boolean;
+  placeholderRef?: string;
   remote?: string;
   context?: string;
   data?: Entity<any>;

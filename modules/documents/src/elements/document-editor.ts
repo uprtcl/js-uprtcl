@@ -323,10 +323,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async preparePersistRec(node: DocNode, defaultAuthority: string, message?: string) {
-    const persistChildren = node.childrenNodes.map(child =>
+    const prepareChildren = node.childrenNodes.map(child =>
       this.preparePersistRec(child, defaultAuthority, message)
     );
-    await Promise.all(persistChildren);
+    await Promise.all(prepareChildren);
 
     /** set the children with the children refs (which were created above) */
     const { object } = node.hasChildren.replaceChildrenLinks({
@@ -362,9 +362,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     switch (this.defaultType) {
       case EveesModule.bindings.PerspectiveType:
+        node.remote = node.remote !== undefined ? node.remote : defaultRemote;
         const secured = await this.derivePerspective(node);
         node.uref = secured.id;
-        node.remote = node.remote !== undefined ? node.remote : defaultRemote;
         node.type = EveesModule.bindings.PerspectiveType;
         break;
 
@@ -386,6 +386,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   /* top down persist all new nodes in their backend */
   async persistRec(node: DocNode) {
     await this.persist(node);
+
+    const persistChildren = node.childrenNodes.map(child => this.persistRec(child));
+    await Promise.all(persistChildren);
   }
 
   async persist(node: DocNode, message: string = '') {
@@ -420,6 +423,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         }
         break;
     }
+
+    await this.draftService.removeDraft(node.placeholderRef ? node.placeholderRef : node.uref);
   }
 
   async createEntity(content: any, remote: string): Promise<string> {
@@ -538,6 +543,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     return {
       uref,
+      placeholderRef: uref,
       isPlaceholder: true,
       ix,
       parent,
@@ -975,7 +981,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return html`
       <div class="row">
         <div class="evee-info">
-          ${true
+          ${!node.isPlaceholder
             ? html`
                 <evees-info-popper
                   parentId=${this.parentId}
