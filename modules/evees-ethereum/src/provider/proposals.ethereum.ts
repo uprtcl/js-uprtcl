@@ -2,12 +2,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { EthereumContract } from '@uprtcl/ethereum-provider';
 
 import { ProposalsProvider } from '@uprtcl/evees';
-import {
-  UpdateRequest,
-  Proposal,
-  NewProposal,
-  NewPerspectiveData,
-} from '@uprtcl/evees';
+import { UpdateRequest, Proposal, NewProposal, NewPerspectiveData } from '@uprtcl/evees';
 import {
   INIT_PROPOSAL,
   GET_PROPOSAL,
@@ -22,7 +17,7 @@ import {
   CREATE_AND_PROPOSE,
   hashToId,
   ZERO_HEX_32,
-  PerspectiveCreator,
+  PerspectiveCreator
 } from './common';
 import { EveesAccessControlEthereum } from './evees-acl.ethereum';
 
@@ -48,7 +43,7 @@ export class ProposalsEthereum implements ProposalsProvider {
     await Promise.all([
       this.uprtclProposals.ready(),
       this.uprtclRoot.ready(),
-      this.uprtclWrapper.ready(),
+      this.uprtclWrapper.ready()
     ]);
   }
 
@@ -62,15 +57,11 @@ export class ProposalsEthereum implements ProposalsProvider {
           : [ZERO_HEX_32, ZERO_HEX_32];
 
         return {
-          perspectiveIdHash: await this.uprtclRoot.call(GET_PERSP_HASH, [
-            update.perspectiveId,
-          ]),
+          perspectiveIdHash: await this.uprtclRoot.call(GET_PERSP_HASH, [update.perspectiveId]),
           headCid1: headCidParts[0],
           headCid0: headCidParts[1],
-          fromPerspectiveId: update.fromPerspectiveId
-            ? update.fromPerspectiveId
-            : '',
-          fromHeadId: update.oldHeadId ? update.oldHeadId : '',
+          fromPerspectiveId: update.fromPerspectiveId ? update.fromPerspectiveId : '',
+          fromHeadId: update.oldHeadId ? update.oldHeadId : ''
         };
       }
     );
@@ -85,7 +76,7 @@ export class ProposalsEthereum implements ProposalsProvider {
       owner: owner,
       nonce: nonce,
       headUpdates: ethHeadUpdates,
-      approvedAddresses: [],
+      approvedAddresses: []
     };
 
     return ethProposal;
@@ -100,20 +91,17 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const ethProposal = await this.prepareProposal(proposal, owner);
 
-    await this.uprtclProposals.send(INIT_PROPOSAL, [
-      ethProposal,
-      this.uprtclProposals.userId,
-    ]);
+    await this.uprtclProposals.send(INIT_PROPOSAL, [ethProposal, this.uprtclProposals.userId]);
 
     const requestId = this.uprtclProposals.call(GET_PROPOSAL_ID, [
       proposal.toPerspectiveId,
       proposal.fromPerspectiveId,
-      ethProposal.nonce,
+      ethProposal.nonce
     ]);
 
     this.logger.info('createProposal() - post', {
       requestId,
-      updates: proposal.updates,
+      updates: proposal.updates
     });
 
     return requestId;
@@ -130,25 +118,23 @@ export class ProposalsEthereum implements ProposalsProvider {
     const owner = await this.accessControl.getOwner(proposal.toPerspectiveId);
 
     const ethProposal = await this.prepareProposal(proposal, owner);
-    const ethPerspectives = await this.perspectiveCreator.preparePerspectives(
-      newPerspectivesData
-    );
+    const ethPerspectives = await this.perspectiveCreator.preparePerspectives(newPerspectivesData);
 
     await this.uprtclWrapper.send(CREATE_AND_PROPOSE, [
       ethPerspectives,
       ethProposal,
-      this.uprtclProposals.userId,
+      this.uprtclProposals.userId
     ]);
 
     const requestId = this.uprtclProposals.call(GET_PROPOSAL_ID, [
       proposal.toPerspectiveId,
       proposal.fromPerspectiveId,
-      ethProposal.nonce,
+      ethProposal.nonce
     ]);
 
     this.logger.info('createProposal() - post', {
       requestId,
-      updates: proposal.updates,
+      updates: proposal.updates
     });
 
     return requestId;
@@ -159,9 +145,7 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('getProposal() - pre', { proposalId });
 
-    const ethProposal = await this.uprtclProposals.call(GET_PROPOSAL, [
-      proposalId,
-    ]);
+    const ethProposal = await this.uprtclProposals.call(GET_PROPOSAL, [proposalId]);
 
     const ethProposalDetails = await getProposalDetails(
       this.uprtclProposals.contractInstance,
@@ -172,14 +156,8 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     const updatesPromises = ethHeadUpdates.map(
       async (ethUpdateRequest): Promise<UpdateRequest> => {
-        const perspectiveId = await hashToId(
-          this.uprtclRoot,
-          ethUpdateRequest.perspectiveIdHash
-        );
-        const headId = bytes32ToCid([
-          ethUpdateRequest.headCid1,
-          ethUpdateRequest.headCid0,
-        ]);
+        const perspectiveId = await hashToId(this.uprtclRoot, ethUpdateRequest.perspectiveIdHash);
+        const headId = bytes32ToCid([ethUpdateRequest.headCid1, ethUpdateRequest.headCid0]);
         const headUpdateDetails = await getHeadUpdateDetails(
           this.uprtclProposals.contractInstance,
           proposalId,
@@ -190,20 +168,18 @@ export class ProposalsEthereum implements ProposalsProvider {
           perspectiveId: perspectiveId,
           newHeadId: headId,
           fromPerspectiveId: headUpdateDetails.fromPerspectiveId,
-          oldHeadId: headUpdateDetails.fromHeadId,
+          oldHeadId: headUpdateDetails.fromHeadId
         };
       }
     );
 
     const updates: any = await Promise.all(updatesPromises);
 
-    const executed =
-      ethHeadUpdates.find((update: any) => update.executed === 0) === undefined;
+    const executed = ethHeadUpdates.find((update: any) => update.executed === 0) === undefined;
 
     const canAuthorize =
       this.uprtclProposals.userId !== undefined
-        ? ethProposal.owner.toLocaleLowerCase() ===
-          this.uprtclProposals.userId.toLocaleLowerCase()
+        ? ethProposal.owner.toLocaleLowerCase() === this.uprtclProposals.userId.toLocaleLowerCase()
         : false;
 
     const proposal: Proposal = {
@@ -217,7 +193,7 @@ export class ProposalsEthereum implements ProposalsProvider {
       status: ethProposal.status === 1,
       authorized: ethProposal.authorized === 1,
       executed: executed,
-      canAuthorize: canAuthorize,
+      canAuthorize: canAuthorize
     };
 
     this.logger.info('getProposal() - post', { proposal });
@@ -230,9 +206,7 @@ export class ProposalsEthereum implements ProposalsProvider {
 
     this.logger.info('getProposalsToPerspective() - pre', { perspectiveId });
 
-    const toPerspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [
-      perspectiveId,
-    ]);
+    const toPerspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
     const filter = this.uprtclProposals.contractInstance.filters.ProposalCreated(
       toPerspectiveIdHash,
       null,
@@ -245,12 +219,9 @@ export class ProposalsEthereum implements ProposalsProvider {
       null
     );
 
-    let requestsCreatedEvents = await this.uprtclProposals.contractInstance.queryFilter(
-      filter,
-      0
-    );
+    let requestsCreatedEvents = await this.uprtclProposals.contractInstance.queryFilter(filter, 0);
 
-    const requestsIds = requestsCreatedEvents.map((event) => {
+    const requestsIds = requestsCreatedEvents.map(event => {
       return event.args ? event.args.proposalId : undefined;
     });
 

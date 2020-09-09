@@ -4,10 +4,11 @@ import IPFS from 'ipfs';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { Perspective } from '@uprtcl/evees';
+import { Perspective, Proposal } from '@uprtcl/evees';
 
 import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 import { ContextAccessController } from './context-access-controller';
+import { ProposalManifest } from './proposals.orbit-db';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
@@ -86,6 +87,21 @@ export class OrbitDBConnection extends Connection {
     });
   }
 
+  public async proposalAddress(proposal: ProposalManifest): Promise<any> {
+    return this.instance.determineAddress('proposal-store', 'eventlog', {
+      accessController: { type: 'ipfs', write: proposal.owners },
+      meta: {
+        timestamp: proposal.timestamp
+      }
+    });
+  }
+
+  public async proposalsToPerspectiveAddress(toPerspectiveId: string): Promise<any> {
+    return this.instance.determineAddress(`proposals-store/${toPerspectiveId}`, 'set', {
+      accessController: { type: 'proposals', write: ['*'] }
+    });
+  }
+
   private async openStore(address: string | any): Promise<any> {
     this.logger.log('Openning store', { address });
     let db;
@@ -119,6 +135,27 @@ export class OrbitDBConnection extends Connection {
   public async contextStore(context: string, pin: boolean = false): Promise<any> {
     const address = await this.contextAddress(context);
     const store = await this.openStore(address);
+    if (pin) {
+      this.pin(address);
+    }
+    return store;
+  }
+
+  public async proposalStore(proposal: ProposalManifest, pin: boolean): Promise<any> {
+    const address = await this.proposalAddress(proposal);
+    const store = this.openStore(address);
+    if (pin) {
+      this.pin(address);
+    }
+    return store;
+  }
+
+  public async proposalsToPerspectiveStore(
+    toPerspectiveId: string,
+    pin: boolean = false
+  ): Promise<any> {
+    const address = await this.proposalsToPerspectiveAddress(toPerspectiveId);
+    const store = this.openStore(address);
     if (pin) {
       this.pin(address);
     }
