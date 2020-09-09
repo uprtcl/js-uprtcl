@@ -9,7 +9,7 @@ const env = {
       '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star/',
       '/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star/'
     ],
-    Bootstrap: ['/ip4/192.168.1.13/tcp/4003/ws/p2p/QmUVf4cVkRfCTdWVgVmCfe3p3KahaeQR6WUAzSMBrMqRLr']
+    Bootstrap: ['/ip4/192.168.0.109/tcp/4003/ws/p2p/QmWnNSM1jwxdf1gUWSrgxkDFWGFJQCNLJkcGSrfFsqJxLx']
   },
   ethers: {
     apiKeys: {
