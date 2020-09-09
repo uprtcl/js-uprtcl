@@ -14,10 +14,13 @@ export interface TextNode {
 
 export interface DocNode {
   uref: string;
+  isPlaceholder: boolean;
   remote?: string;
   context?: string;
   data?: Entity<any>;
   draft: any;
+  type?: string;
+  timestamp: number;
   append?: any; // used by upper layer to tell the docnode lense to append content using its internal appending logic.
   childrenNodes: DocNode[];
   headId?: string;
