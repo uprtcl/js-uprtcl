@@ -11,7 +11,13 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import { OrbitDBConnection, EveesOrbitDB, EveesOrbitDBModule } from '@uprtcl/evees-orbitdb';
+import {
+  OrbitDBConnection,
+  EveesOrbitDB,
+  EveesOrbitDBModule,
+  ProposalsOrbitDB,
+  EthereumIdentity
+} from '@uprtcl/evees-orbitdb';
 import { EveesEthereum, EveesEthereumModule } from '@uprtcl/evees-ethereum';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
@@ -56,21 +62,18 @@ import { SimpleWiki } from './simple-wiki';
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, pinnerUrl);
   await ipfsStore.ready();
 
-  const orbitDBConnection = new OrbitDBConnection(pinnerUrl, ipfs);
-  await orbitDBConnection.ready();
-
   const ethConnection = new EthereumConnection({ provider });
   await ethConnection.ready();
+  const identity = new EthereumIdentity(ethConnection);
 
-  const orbitdbEvees = new EveesOrbitDB(
-    ethConnection,
-    orbitDBConnection,
-    ipfsStore,
-    orchestrator.container
-  );
+  const orbitDBConnection = new OrbitDBConnection(pinnerUrl, ipfs, identity);
+  await orbitDBConnection.ready();
+
+  const orbitdbEvees = new EveesOrbitDB(orbitDBConnection, ipfsStore);
   await orbitdbEvees.connect();
 
-  const ethEvees = new EveesEthereum(ethConnection, ipfsStore);
+  const proposals = new ProposalsOrbitDB(orbitDBConnection, ipfsStore);
+  const ethEvees = new EveesEthereum(ethConnection, ipfsStore, proposals);
   await ethEvees.ready();
 
   const evees = new EveesModule([ethEvees, orbitdbEvees], orbitdbEvees);

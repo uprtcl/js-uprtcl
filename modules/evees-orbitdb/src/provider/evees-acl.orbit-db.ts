@@ -1,27 +1,17 @@
-import { Container } from 'inversify';
-import { ApolloClient } from 'apollo-boost';
 import { html } from 'lit-element';
 
-import { CASStore, loadEntity } from '@uprtcl/multiplatform';
-import { Signed, Entity } from '@uprtcl/cortex';
-import { ApolloClientModule } from '@uprtcl/graphql';
+import { CASStore } from '@uprtcl/multiplatform';
 
-import { Perspective, AccessControlService } from '@uprtcl/evees';
+import { Perspective, AccessControlService, Secured } from '@uprtcl/evees';
 import { Lens } from '@uprtcl/lenses';
+import { Signed } from '@uprtcl/cortex';
 
 export class EveesAccessControlOrbitDB implements AccessControlService {
-  constructor(protected container: Container, protected store: CASStore) {}
+  constructor(protected store: CASStore) {}
 
   async getOwner(perspectiveId: string): Promise<any | undefined> {
-    const client: ApolloClient<any> = this.container.get(
-      ApolloClientModule.bindings.Client
-    );
-
-    const singedPerspective = (await loadEntity(
-      client,
-      perspectiveId
-    )) as Entity<Signed<Perspective>>;
-    return singedPerspective.object.payload.creatorId;
+    const singedPerspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
+    return singedPerspective.payload.creatorId;
   }
 
   async canWrite(uref: string, userId: string) {
@@ -34,10 +24,9 @@ export class EveesAccessControlOrbitDB implements AccessControlService {
       type: 'access-control',
       render: (entity: string) => {
         return html`
-          <evees-orbitdb-permissions uref=${entity}>
-          </evees-orbitdb-permissions>
+          <evees-orbitdb-permissions uref=${entity}> </evees-orbitdb-permissions>
         `;
-      },
+      }
     };
   }
 }

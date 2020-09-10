@@ -7,7 +7,7 @@ import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { ConnectionOptions, loadEntity } from '@uprtcl/multiplatform';
+import { loadEntity, CASStore } from '@uprtcl/multiplatform';
 
 import {
   Secured,
@@ -31,25 +31,13 @@ const defaultDetails: PerspectiveDetails = {
 
 const notLogged = () => new Error('must be logged in to use this method');
 
-const msg = website => `
-Please Read!
-
-I authorize this app to update my _Prtcl content in OrbitDB.
-`;
-
 export class EveesOrbitDB implements EveesRemote {
   logger: Logger = new Logger('EveesOrbitDB');
   accessControl: any;
   proposals!: ProposalsProvider;
-  loggedIn: boolean = false;
 
-  constructor(
-    protected ethConnection: EthereumConnection,
-    protected orbitdbConnection: OrbitDBConnection,
-    public store: IpfsStore,
-    protected container: Container
-  ) {
-    this.accessControl = new EveesAccessControlOrbitDB(container, this.store);
+  constructor(protected orbitdbConnection: OrbitDBConnection, public store: CASStore) {
+    this.accessControl = new EveesAccessControlOrbitDB(this.store);
   }
 
   get id() {
@@ -73,11 +61,7 @@ export class EveesOrbitDB implements EveesRemote {
    * @override
    */
   async ready(): Promise<void> {
-    await Promise.all([
-      this.ethConnection.ready(),
-      this.orbitdbConnection.ready(),
-      this.store.ready()
-    ]);
+    await Promise.all([this.orbitdbConnection.ready(), this.store.ready()]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
@@ -98,15 +82,11 @@ export class EveesOrbitDB implements EveesRemote {
   async getPerspectiveStore(perspectiveId: string, pin: boolean = false) {
     if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
 
-    const client: ApolloClient<any> = this.container.get(ApolloClientModule.bindings.Client);
-
-    const signedPerspective = (await loadEntity(client, perspectiveId)) as Entity<
-      Signed<Perspective>
-    >;
+    const signedPerspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
     this.logger.log('getting', { perspectiveId, signedPerspective });
 
-    return this.orbitdbConnection.perspectiveStore(signedPerspective.object.payload, pin);
+    return this.orbitdbConnection.perspectiveStore(signedPerspective.payload, pin);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
@@ -221,29 +201,15 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   async isLogged(): Promise<boolean> {
-    return this.loggedIn;
+    return this.orbitdbConnection.isLogged();
   }
 
   async login(): Promise<void> {
-    if (this.loggedIn) {
-      return;
-    }
-    await this.ethConnection.connectWallet();
-    const signature = await this.ethConnection.signText(
-      msg(window.location.origin),
-      this.ethConnection.getCurrentAccount()
-    );
-    const identity = await this.orbitdbConnection.deriveIdentity(signature);
-    this.orbitdbConnection.useIdentity(identity);
-    this.loggedIn = true;
+    return this.orbitdbConnection.login();
   }
 
   async logout(): Promise<void> {
-    if (!this.loggedIn) {
-      return;
-    }
-    this.orbitdbConnection.useIdentity(this.orbitdbConnection.instance.identity);
-    this.loggedIn = false;
+    return this.orbitdbConnection.logout();
   }
 
   async connect(): Promise<void> {}

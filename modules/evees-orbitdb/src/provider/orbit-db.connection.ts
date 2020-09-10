@@ -1,14 +1,17 @@
 import OrbitDB from 'orbit-db';
-import OrbitDBSet from '@tabcat/orbit-db-set';
 import IPFS from 'ipfs';
+
+import OrbitDBSet from '@tabcat/orbit-db-set';
+import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { Perspective, Proposal } from '@uprtcl/evees';
+import { Perspective } from '@uprtcl/evees';
 
-import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
-import { ContextAccessController } from './context-access-controller';
 import { ProposalManifest } from './proposals.orbit-db';
+import { EntropyGenerator } from '../identity-providers/entropy.generator';
+import { ContextAccessController } from './context-access-controller';
+import { ProposalsAccessController } from './proposals-access-controller';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
@@ -28,13 +31,24 @@ export class OrbitDBConnection extends Connection {
   public instance: any;
   private storeQueue = {};
   public identity: null | any = null;
+  loggedIn: boolean = false;
 
   logger = new Logger('OrbitDB-Connection');
 
-  constructor(protected pinnerUrl: string, protected ipfs: any, options?: ConnectionOptions) {
+  constructor(
+    protected pinnerUrl: string,
+    protected ipfs: any,
+    protected entropy: EntropyGenerator,
+    options?: ConnectionOptions
+  ) {
     super(options);
     if (!OrbitDB.AccessControllers.isSupported(ContextAccessController.type)) {
       OrbitDB.AccessControllers.addAccessController({ AccessController: ContextAccessController });
+    }
+    if (!OrbitDB.AccessControllers.isSupported(ProposalsAccessController.type)) {
+      OrbitDB.AccessControllers.addAccessController({
+        AccessController: ProposalsAccessController
+      });
     }
   }
 
@@ -54,11 +68,21 @@ export class OrbitDBConnection extends Connection {
     });
   }
 
-  // public async disconnect(): Promise<void> {
-  //   await this.identity.provider.keystore.close()
-  //   await this.instance.stop()
-  //   this.instance = null
-  // }
+  public async login() {
+    const privateKey = await this.entropy.get();
+    const identity = await this.deriveIdentity(privateKey);
+    this.useIdentity(identity);
+    this.loggedIn = true;
+  }
+
+  public async logout() {
+    this.useIdentity(this.instance.identity);
+    this.loggedIn = false;
+  }
+
+  public isLogged() {
+    return this.loggedIn;
+  }
 
   public async deriveIdentity(sig: string): Promise<any> {
     const id = sig.slice(-8);

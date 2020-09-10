@@ -53,7 +53,6 @@ import {
   GET_PERSP_OWNER
 } from './common';
 import { EveesAccessControlEthereum } from './evees-acl.ethereum';
-import { ProposalsOrbitDB } from './proposals.orbit-db';
 
 const evees_if = 'evees-v0';
 
@@ -61,7 +60,6 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   logger: Logger = new Logger('EveesEtereum');
 
   accessControl: EveesAccessControlEthereum;
-  proposals: ProposalsProvider;
 
   public uprtclRoot: EthereumContract;
   public uprtclDetails: EthereumContract;
@@ -71,6 +69,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   constructor(
     public ethConnection: EthereumConnection,
     public store: CASStore,
+    public proposals: ProposalsProvider,
     uprtclRootOptions: EthereumContractOptions = {
       contract: UprtclRoot as any
     },
@@ -90,7 +89,6 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
     this.uprtclWrapper = new EthereumContract(uprtclWrapperOptions, ethConnection);
 
     this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot);
-    this.proposals = new ProposalsOrbitDB(this.orbitdbConnection);
   }
 
   get id() {
