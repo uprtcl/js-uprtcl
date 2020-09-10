@@ -1,30 +1,16 @@
 import { property, html, css, LitElement, query } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-const styleMap = (style) => {
+const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(
-      /([A-Z])/g,
-      (matches) => `-${matches[0].toLowerCase()}`
-    );
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
 
-import {
-  htmlToText,
-  TextType,
-  TextNode,
-  DocumentsModule,
-} from '@uprtcl/documents';
+import { htmlToText, TextType, TextNode, DocumentsModule } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import {
-  Entity,
-  HasTitle,
-  CortexModule,
-  PatternRecognizer,
-  Signed,
-} from '@uprtcl/cortex';
+import { Entity, HasTitle, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import {
   EveesRemote,
   EveesModule,
@@ -33,7 +19,7 @@ import {
   RemoteMap,
   EveesHelpers,
   Perspective,
-  EveesInfoPage,
+  EveesInfoPage
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -179,21 +165,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.loading = true;
 
-    const perspective = (await loadEntity(this.client, this.uref)) as Entity<
-      Signed<Perspective>
-    >;
-    const headId = await EveesHelpers.getPerspectiveHeadId(
-      this.client,
-      this.uref
-    );
-    const context = await EveesHelpers.getPerspectiveContext(
-      this.client,
-      this.uref
-    );
+    const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
+    const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
+    const context = await EveesHelpers.getPerspectiveContext(this.client, this.uref);
 
     this.remote = perspective.object.payload.remote;
 
-    const remote = this.eveesRemotes.find((r) => r.id === this.remote);
+    const remote = this.eveesRemotes.find(r => r.id === this.remote);
     if (!remote) throw new Error(`remote not found ${this.remote}`);
     const canWrite = await remote.canWrite(this.uref);
 
@@ -228,13 +206,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
         const hasTitle: HasTitle = this.recognizer
           .recognizeBehaviours(data)
-          .find((b) => (b as HasTitle).title);
+          .find(b => (b as HasTitle).title);
 
         const title = hasTitle.title(data);
 
         return {
           id: pageId,
-          title,
+          title
         };
       }
     );
@@ -256,8 +234,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.dispatchEvent(
       new CustomEvent('page-selected', {
         detail: {
-          pageId: this.wiki.object.pages[this.selectedPageIx],
-        },
+          pageId: this.wiki.object.pages[this.selectedPageIx]
+        }
       })
     );
     this.hasSelectedPage = true;
@@ -267,25 +245,29 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   getStore(remote: string, type: string): CASStore | undefined {
-    const remoteInstance = this.eveesRemotes.find((r) => r.id === remote);
-    if (!remoteInstance)
-      throw new Error(`Remote not found for remote ${remote}`);
+    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
     return this.remoteMap(remoteInstance);
   }
 
   handlePageDrag(e, pageId) {
-    e.dataTransfer.setData("text/plain", pageId);
+    const dragged = { uref: pageId, parentId: this.uref };
+    this.logger.info('dragging', dragged);
+    e.dataTransfer.setData('text/plain', JSON.stringify(dragged));
   }
 
   async handlePageDrop(e) {
-    const pageId = e.dataTransfer.getData("text/plain");
-    
+    const dragged = JSON.parse(e.dataTransfer.getData('text/plain'));
+
+    this.logger.info('dropped', dragged);
+
     if (!this.wiki) return;
-    if(!pageId) return;
+    if (!dragged.uref) return;
+    if (dragged.parentId === this.uref) return;
 
     const index = this.wiki.object.pages.length;
-    
-    const result = await this.splicePages([pageId], index, 0);
+
+    const result = await this.splicePages([dragged.uref], index, 0);
 
     if (!result.entity) throw Error('problem with splice pages');
 
@@ -294,33 +276,28 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   dragOverEffect(e) {
     e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
+    e.dataTransfer.dropEffect = 'move';
   }
 
   async createPage(page: TextNode, remote: string) {
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
 
-    const remoteInstance = this.eveesRemotes.find((r) => r.id === remote);
-    if (!remoteInstance)
-      throw new Error(`Remote not found for remote ${remote}`);
+    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
 
     const store = this.getStore(remote, DocumentsModule.bindings.TextNodeType);
     if (!store) throw new Error('store is undefined');
 
     const dataId = await EveesHelpers.createEntity(this.client, store, page);
-    const headId = await EveesHelpers.createCommit(
-      this.client,
-      remoteInstance.store,
-      {
-        dataId,
-        parentsIds: [],
-      }
-    );
+    const headId = await EveesHelpers.createCommit(this.client, remoteInstance.store, {
+      dataId,
+      parentsIds: []
+    });
     return EveesHelpers.createPerspective(this.client, remoteInstance, {
       headId,
       context: `${this.context}_${Date.now()}`,
-      parentId: this.uref,
+      parentId: this.uref
     });
   }
 
@@ -328,13 +305,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const store = this.getStore(this.remote, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const remote = this.eveesRemotes.find((r) => r.id === this.remote);
+    const remote = this.eveesRemotes.find(r => r.id === this.remote);
     if (!remote) throw Error(`Remote not found for remote ${this.remote}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
     const headId = await EveesHelpers.createCommit(this.client, remote.store, {
       dataId,
-      parentsIds: [this.currentHeadId ? this.currentHeadId : ''],
+      parentsIds: [this.currentHeadId ? this.currentHeadId : '']
     });
     await EveesHelpers.updateHead(this.client, this.uref, headId);
 
@@ -346,7 +323,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async splicePages(pages: any[], index: number, count: number) {
     if (!this.wiki) throw new Error('wiki undefined');
 
-    const getPages = pages.map((page) => {
+    const getPages = pages.map(page => {
       if (typeof page !== 'string') {
         return this.createPage(page, this.remote);
       } else {
@@ -361,7 +338,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return {
       entity: newObject,
-      removed,
+      removed
     };
   }
 
@@ -372,7 +349,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const newPage: TextNode = {
       text: '',
       type: TextType.Title,
-      links: [],
+      links: []
     };
 
     index = index === undefined ? this.wiki.object.pages.length : index;
@@ -476,9 +453,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   goBack() {
-    this.dispatchEvent(
-      new CustomEvent('back', { bubbles: true, composed: true })
-    );
+    this.dispatchEvent(new CustomEvent('back', { bubbles: true, composed: true }));
   }
 
   loggedIn() {
@@ -503,15 +478,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     return html`
       ${this.pagesList.length === 0
-        ? html`<div class="empty">
-            <span><i>${this.t('wikis:no-pages-yet')}</i></span>
-          </div>`
-        : html`<uprtcl-list>
-            ${this.pagesList.map((page, ix) => {
-              // this.logger.log(`rendering page title ${page.id}`, menuConfig);
-              return this.renderPageItem(page, ix, showOptions);
-            })}
-          </uprtcl-list>`}
+        ? html`
+            <div class="empty">
+              <span><i>${this.t('wikis:no-pages-yet')}</i></span>
+            </div>
+          `
+        : html`
+            <uprtcl-list>
+              ${this.pagesList.map((page, ix) => {
+                // this.logger.log(`rendering page title ${page.id}`, menuConfig);
+                return this.renderPageItem(page, ix, showOptions);
+              })}
+            </uprtcl-list>
+          `}
       ${this.editable
         ? html`
             <div class="button-row">
@@ -533,18 +512,18 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       'move-up': {
         disabled: ix === 0,
         text: 'move up',
-        graphic: 'arrow_upward',
+        graphic: 'arrow_upward'
       },
       'move-down': {
         disabled: ix === (this.pagesList as any[]).length - 1,
         text: 'move down',
-        graphic: 'arrow_downward',
+        graphic: 'arrow_downward'
       },
       remove: {
         disabled: false,
         text: 'remove',
-        graphic: 'clear',
-      },
+        graphic: 'clear'
+      }
     };
 
     const text = htmlToText(page.title);
@@ -558,10 +537,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (selected) classes.push('title-selected');
 
     return html`
-      <div class=${classes.join(' ')}
+      <div
+        class=${classes.join(' ')}
         draggable="true"
         @dragstart=${e => this.handlePageDrag(e, page.id)}
-        @click=${() => this.selectPage(ix)}>
+        @click=${() => this.selectPage(ix)}
+      >
         <div class="text-container">
           ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
         </div>
@@ -570,7 +551,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               <div class="item-menu-container">
                 <uprtcl-options-menu
                   class="options-menu"
-                  @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
+                  @option-click=${e => this.optionOnPage(ix, e.detail.key)}
                   .config=${menuConfig}
                 >
                 </uprtcl-options-menu>
@@ -588,17 +569,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
             <uprtcl-button @click=${() => this.goBack()}>exit</uprtcl-button>
           `
         : ''}
-      <uprtcl-button
-        .skinny=${this.uref !== this.firstRef}
-        @click=${() => this.goToOfficial()}
-      >
+      <uprtcl-button .skinny=${this.uref !== this.firstRef} @click=${() => this.goToOfficial()}>
         official
       </uprtcl-button>
       ${this.uref !== this.firstRef
         ? html`
-            <uprtcl-button
-              style=${`--background-color: ${this.color()}`}
-              class="evees-author"
+            <uprtcl-button style=${`--background-color: ${this.color()}`} class="evees-author"
               >by
               <evees-author
                 show-name
@@ -615,25 +591,28 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   renderLoginWidget() {
-    return html`<evees-login-widget
-      @logged-in=${() => this.loggedIn()}
-    ></evees-login-widget>`;
+    return html`
+      <evees-login-widget @logged-in=${() => this.loggedIn()}></evees-login-widget>
+    `;
   }
 
   render() {
     this.logger.log('render()', {
       wiki: this.wiki,
       uref: this.uref,
-      editable: this.editable,
+      editable: this.editable
     });
-    if (!this.uref) return html` <uprtcl-placeholder></uprtcl-placeholder> `;
+    if (!this.uref)
+      return html`
+        <uprtcl-placeholder></uprtcl-placeholder>
+      `;
 
     return html`
       <div class="app-drawer">
         <div
           class="app-topbar"
           style=${styleMap({
-            borderColor: this.color(),
+            borderColor: this.color()
           })}
         >
           <div class="breadcrum-container">${this.renderBreadcrumb()}</div>
@@ -641,11 +620,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
 
         <div class="app-content-with-nav">
-          <div
-            class="app-navbar"
-            @dragover=${this.dragOverEffect}
-            @drop=${this.handlePageDrop}
-          >
+          <div class="app-navbar" @dragover=${this.dragOverEffect} @drop=${this.handlePageDrop}>
             ${this.renderPageList()}
           </div>
 
@@ -656,9 +631,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
                     id="wiki-page"
                     @nav-back=${() => this.selectPage(undefined)}
                     @page-title-changed=${() => this.loadPagesData()}
-                    pageHash=${this.wiki
-                      ? this.wiki.object.pages[this.selectedPageIx]
-                      : ''}
+                    pageHash=${this.wiki ? this.wiki.object.pages[this.selectedPageIx] : ''}
                     color=${this.color() ? this.color() : ''}
                     .editableRemotes=${this.editableRemotes}
                     wikiId=${this.uref}
@@ -698,9 +671,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           display: flex;
           flex: 1 1 0;
           flex-direction: column;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
-            'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
-            'Segoe UI Symbol';
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
+            Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
           font-size: 16px;
           color: #37352f;
           --mdc-theme-primary: #2196f3;
@@ -881,7 +853,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .title-form {
           margin-top: 22px;
         }
-      `,
+      `
     ];
   }
 }

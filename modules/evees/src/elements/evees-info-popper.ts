@@ -1,18 +1,19 @@
 import { html, css, property, LitElement, query } from 'lit-element';
 import { DEFAULT_COLOR, eveeColor } from './support';
 import { UprtclPopper } from '@uprtcl/common-ui';
+import { threadId } from 'worker_threads';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
-const styleMap = (style) => {
+const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(
-      /([A-Z])/g,
-      (matches) => `-${matches[0].toLowerCase()}`
-    );
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
 
 export class EveesInfoPopper extends LitElement {
+  logger = new Logger('EVEES-INFO-POPPER');
+
   @property({ type: String, attribute: 'uref' })
   uref!: string;
 
@@ -60,14 +61,20 @@ export class EveesInfoPopper extends LitElement {
     }) as EventListener);
   }
 
+  handleDragStart(e) {
+    const dragged = { uref: this.uref, parentId: this.parentId };
+    this.logger.info('dragging', dragged);
+    e.dataTransfer.setData('text/plain', JSON.stringify(dragged));
+  }
+
   render() {
     return html`
       <uprtcl-popper id="info-popper" position="right">
-        <div slot="icon" class="button">
+        <div draggable="true" @dragstart=${this.handleDragStart} slot="icon" class="button">
           <div
             class="evee-stripe"
             style=${styleMap({
-              backgroundColor: this.color() + 'FF',
+              backgroundColor: this.color() + 'FF'
             })}
           ></div>
         </div>
@@ -120,7 +127,7 @@ export class EveesInfoPopper extends LitElement {
           height: calc(100% - 10px);
           border-radius: 3px;
         }
-      `,
+      `
     ];
   }
 }
