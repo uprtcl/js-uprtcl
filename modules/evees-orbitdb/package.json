@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-orbitdb",
-  "version": "0.0.7-alpha.55",
+  "version": "0.0.7-alpha.56",
   "description": "EveesRemote implemented on the Ethereum Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -13,18 +13,19 @@
   "dependencies": {
     "@tabcat/orbit-db-identity-provider-d": "^1.0.0",
     "@tabcat/orbit-db-set": "^1.0.2",
-    "@uprtcl/cortex": "^0.0.7-alpha.55",
-    "@uprtcl/ethereum-provider": "^0.0.7-alpha.55",
-    "@uprtcl/evees": "^0.0.7-alpha.55",
-    "@uprtcl/graphql": "^0.0.7-alpha.55",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.55",
-    "@uprtcl/lenses": "^0.0.7-alpha.55",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.55",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.55",
+    "@uprtcl/cortex": "^0.0.7-alpha.56",
+    "@uprtcl/ethereum-provider": "^0.0.7-alpha.56",
+    "@uprtcl/evees": "^0.0.7-alpha.56",
+    "@uprtcl/graphql": "^0.0.7-alpha.56",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.56",
+    "@uprtcl/lenses": "^0.0.7-alpha.56",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.56",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.56",
     "apollo-boost": "^0.4.7",
+    "cbor-js": "^0.1.0",
     "inversify": "^5.0.1",
-    "ipfs": "^0.49.1",
-    "orbit-db": "^0.24.1"
+    "ipfs": "^0.50.1",
+    "orbit-db": "^0.25.1"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
@@ -71,5 +72,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "65672ddaa7a0c899a38a500bdc6fb26fb94d6a74"
+  "gitHead": "bffc5351809da6d4898bf11032fb3010df7df52d"
 }

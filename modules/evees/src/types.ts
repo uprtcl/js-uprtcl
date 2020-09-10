@@ -7,15 +7,10 @@ import { EveesRemote } from './services/evees.remote';
 import { Secured } from './utils/cid-hash';
 import { EveesWorkspace } from './services/evees.workspace';
 
-export type RemoteMap = (
-  eveesAuthority: EveesRemote,
-  contentType?: string
-) => CASStore;
+export type RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) => CASStore;
 
-export const defaultRemoteMap: RemoteMap = (
-  eveesAuthority: EveesRemote,
-  contentType?: string
-) => eveesAuthority.store;
+export const defaultRemoteMap: RemoteMap = (eveesAuthority: EveesRemote, contentType?: string) =>
+  eveesAuthority.store;
 
 export type Context = string;
 
@@ -55,6 +50,7 @@ export interface UpdateRequest {
 export interface Proposal {
   id: string;
   creatorId?: string;
+  timestamp?: number;
   toPerspectiveId?: string;
   fromPerspectiveId: string;
   toHeadId?: string;

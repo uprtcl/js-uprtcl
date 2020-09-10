@@ -51,23 +51,15 @@ export const eveesResolvers: IResolvers = {
 
       if (context === undefined) return [];
 
-      const eveesRemotes: EveesRemote[] = container.getAll(
-        EveesBindings.EveesRemote
-      );
+      const eveesRemotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
       const knownSources: KnownSourcesService = container.get(
         DiscoveryModule.bindings.LocalKnownSources
       );
 
       const promises = eveesRemotes.map(async (instance) => {
-        const thisPerspectivesIds = await instance.getContextPerspectives(
-          context
-        );
+        const thisPerspectivesIds = await instance.getContextPerspectives(context);
         thisPerspectivesIds.forEach((pId) => {
-          knownSources.addKnownSources(
-            pId,
-            [instance.store.casID],
-            EveesBindings.PerspectiveType
-          );
+          knownSources.addKnownSources(pId, [instance.store.casID], EveesBindings.PerspectiveType);
         });
         return thisPerspectivesIds;
       });
@@ -138,9 +130,7 @@ export const eveesResolvers: IResolvers = {
 
       if (!remote.proposals) return [];
 
-      const proposalsIds = await remote.proposals.getProposalsToPerspective(
-        parent.id
-      );
+      const proposalsIds = await remote.proposals.getProposalsToPerspective(parent.id);
       const proposalsPromises = proposalsIds.map((proposalId) => {
         return (remote.proposals as ProposalsProvider).getProposal(proposalId);
       });
@@ -151,18 +141,12 @@ export const eveesResolvers: IResolvers = {
     },
   },
   Mutation: {
-    async updatePerspectiveHead(
-      parent,
-      { perspectiveId, headId, context, name },
-      { container }
-    ) {
+    async updatePerspectiveHead(parent, { perspectiveId, headId, context, name }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const multiSource: MultiSourceService = container.get(
         DiscoveryModule.bindings.MultiSourceService
       );
-      const client: ApolloClient<any> = container.get(
-        ApolloClientModule.bindings.Client
-      );
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
 
       const provider = await evees.getPerspectiveRemoteById(perspectiveId);
 
@@ -175,10 +159,7 @@ export const eveesResolvers: IResolvers = {
       const detailsRead = await provider.getPerspective(perspectiveId);
 
       if (((provider as unknown) as KnownSourcesSource).knownSources) {
-        await multiSource.postEntityUpdate(
-          (provider as unknown) as KnownSourcesSource,
-          [headId]
-        );
+        await multiSource.postEntityUpdate((provider as unknown) as KnownSourcesSource, [headId]);
       }
 
       const result = await client.query({
@@ -194,8 +175,7 @@ export const eveesResolvers: IResolvers = {
 
       const perspective = result.data.entity._context.object;
 
-      if (!perspective)
-        throw new Error(`Perspective with id ${perspectiveId} not found`);
+      if (!perspective) throw new Error(`Perspective with id ${perspectiveId} not found`);
 
       return {
         id: perspectiveId,
@@ -230,9 +210,7 @@ export const eveesResolvers: IResolvers = {
         casID,
       };
 
-      const entityCache: EntityCache = container.get(
-        DiscoveryModule.bindings.EntityCache
-      );
+      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
       entityCache.cacheEntity(entity);
 
       return { id, ...object };
@@ -240,24 +218,12 @@ export const eveesResolvers: IResolvers = {
 
     async createPerspective(
       _,
-      {
-        remote,
-        path,
-        creatorId,
-        timestamp,
-        headId,
-        context,
-        name,
-        canWrite,
-        parentId,
-      },
+      { remote, path, creatorId, timestamp, headId, context, name, canWrite, parentId },
       { container }
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
 
-      const remoteInstance: EveesRemote = remotes.find(
-        (instance) => instance.id === remote
-      );
+      const remoteInstance: EveesRemote = remotes.find((instance) => instance.id === remote);
 
       path = path !== undefined ? path : remoteInstance.defaultPath;
 
@@ -282,9 +248,7 @@ export const eveesResolvers: IResolvers = {
         remoteInstance.store.cidConfig
       );
 
-      const entityCache: EntityCache = container.get(
-        DiscoveryModule.bindings.EntityCache
-      );
+      const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
       entityCache.cacheEntity({
         ...perspective,
         casID: remoteInstance.store.casID,
@@ -307,37 +271,18 @@ export const eveesResolvers: IResolvers = {
       };
     },
 
-    async forkPerspective(
-      _,
-      { perspectiveId, remote, parentId, name },
-      { container }
-    ) {
+    async forkPerspective(_, { perspectiveId, remote, parentId, name }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
-      const client: ApolloClient<any> = container.get(
-        ApolloClientModule.bindings.Client
-      );
+      const client: ApolloClient<any> = container.get(ApolloClientModule.bindings.Client);
       const recognizer = container.get(CortexModule.bindings.Recognizer);
 
       const workspace = new EveesWorkspace(client, recognizer);
-      const newPerspectiveId = await evees.forkPerspective(
-        perspectiveId,
-        workspace,
-        remote
-      );
+      const newPerspectiveId = await evees.forkPerspective(perspectiveId, workspace, remote);
       await workspace.execute(client);
 
-      const headId = await EveesHelpers.getPerspectiveHeadId(
-        client,
-        newPerspectiveId
-      );
-      const context = await EveesHelpers.getPerspectiveContext(
-        client,
-        newPerspectiveId
-      );
-      const perspective = await loadEntity<Signed<Perspective>>(
-        client,
-        newPerspectiveId
-      );
+      const headId = await EveesHelpers.getPerspectiveHeadId(client, newPerspectiveId);
+      const context = await EveesHelpers.getPerspectiveContext(client, newPerspectiveId);
+      const perspective = await loadEntity<Signed<Perspective>>(client, newPerspectiveId);
       if (!perspective) throw new Error('perspective not found');
 
       return {
@@ -354,39 +299,9 @@ export const eveesResolvers: IResolvers = {
       };
     },
 
-    async createAndAddProposal(_, { perspectives, proposal }, { container }) {
-      const evees: Evees = container.get(EveesBindings.Evees);
-
-      const remote = await evees.getPerspectiveRemoteById(
-        proposal.toPerspectiveId
-      );
-      if (!remote.proposals) throw new Error('remote cant handle proposals');
-
-      const proposalId = await remote.proposals.createAndPropose(
-        perspectives,
-        proposal
-      );
-
-      return {
-        id: proposalId,
-        toPerspectiveId: proposal.toPerspectiveId,
-        fromPerspectiveId: proposal.fromPerspectiveId,
-        updates: proposal.updates,
-        authorized: false,
-        canAuthorize: false,
-        executed: false,
-      };
-    },
-
     async addProposal(
       _,
-      {
-        toPerspectiveId,
-        fromPerspectiveId,
-        toHeadId,
-        fromHeadId,
-        updateRequests,
-      },
+      { toPerspectiveId, fromPerspectiveId, toHeadId, fromHeadId, updateRequests },
       { container }
     ) {
       const evees: Evees = container.get(EveesBindings.Evees);
@@ -411,79 +326,6 @@ export const eveesResolvers: IResolvers = {
         authorized: false,
         canAuthorize: false,
         executed: false,
-      };
-    },
-
-    async authorizeProposal(
-      _,
-      { proposalId, perspectiveId, authorize },
-      { container }
-    ) {
-      const client: ApolloClient<any> = container.get(
-        ApolloClientModule.bindings.Client
-      );
-      const evees: Evees = container.get(EveesBindings.Evees);
-
-      const perspectiveResult = await client.query({
-        query: gql`{
-        entity(uref: "${perspectiveId}") {
-          id
-          _context {
-            object
-          }
-        }
-      }`,
-      });
-
-      const perspective = perspectiveResult.data.entity._context.object;
-
-      const remote = evees.getRemote(perspective.payload.remote);
-      if (!remote.proposals) throw new Error('remote cant handle proposals');
-
-      if (authorize) {
-        await remote.proposals.acceptProposal(proposalId);
-      } else {
-        await remote.proposals.declineProposal(proposalId);
-      }
-
-      const proposalRead = await remote.proposals.getProposal(proposalId);
-
-      return {
-        id: proposalId,
-        authorized: authorize,
-        executed:
-          proposalRead.executed !== undefined ? proposalRead.executed : false,
-        toPerspectiveId: perspectiveId,
-      };
-    },
-    async executeProposal(_, { proposalId, perspectiveId }, { container }) {
-      const client: ApolloClient<any> = container.get(
-        ApolloClientModule.bindings.Client
-      );
-      const evees: Evees = container.get(EveesBindings.Evees);
-
-      const perspectiveResult = await client.query({
-        query: gql`{
-        entity(uref: "${perspectiveId}") {
-          id
-          _context {
-            object
-          }
-        }
-      }`,
-      });
-
-      const perspective = perspectiveResult.data.entity._context.object;
-
-      const remote = evees.getRemote(perspective.payload.remote);
-      if (!remote.proposals) throw new Error('remote cant handle proposals');
-
-      await remote.proposals.executeProposal(proposalId);
-
-      return {
-        id: proposalId,
-        toPerspectiveId: perspectiveId,
-        executed: true,
       };
     },
   },

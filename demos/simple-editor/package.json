@@ -1,7 +1,7 @@
 {
   "name": "simple-editor",
   "private": false,
-  "version": "0.0.7-alpha.55",
+  "version": "0.0.7-alpha.56",
   "contributors": [
     {
       "name": "Guillem Cordoba",
@@ -25,28 +25,28 @@
     "build": "rm -rf dist && webpack --config webpack.config.js"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.0.7-alpha.55",
-    "@uprtcl/documents": "^0.0.7-alpha.55",
-    "@uprtcl/ethereum-provider": "^0.0.7-alpha.55",
-    "@uprtcl/evees": "^0.0.7-alpha.55",
-    "@uprtcl/evees-ethereum": "^0.0.7-alpha.55",
-    "@uprtcl/evees-http": "^0.0.7-alpha.55",
-    "@uprtcl/evees-orbitdb": "^0.0.7-alpha.55",
-    "@uprtcl/evees-polkadot": "^0.0.7-alpha.55",
-    "@uprtcl/graphql": "^0.0.7-alpha.55",
-    "@uprtcl/http-provider": "^0.0.7-alpha.55",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.55",
-    "@uprtcl/lenses": "^0.0.7-alpha.55",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.55",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.55",
-    "@uprtcl/wikis": "^0.0.7-alpha.55",
+    "@uprtcl/cortex": "^0.0.7-alpha.56",
+    "@uprtcl/documents": "^0.0.7-alpha.56",
+    "@uprtcl/ethereum-provider": "^0.0.7-alpha.56",
+    "@uprtcl/evees": "^0.0.7-alpha.56",
+    "@uprtcl/evees-ethereum": "^0.0.7-alpha.56",
+    "@uprtcl/evees-http": "^0.0.7-alpha.56",
+    "@uprtcl/evees-orbitdb": "^0.0.7-alpha.56",
+    "@uprtcl/evees-polkadot": "^0.0.7-alpha.56",
+    "@uprtcl/graphql": "^0.0.7-alpha.56",
+    "@uprtcl/http-provider": "^0.0.7-alpha.56",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.56",
+    "@uprtcl/lenses": "^0.0.7-alpha.56",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.56",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.56",
+    "@uprtcl/wikis": "^0.0.7-alpha.56",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "apollo-boost": "^0.4.7",
     "ethers": "^5.0.9",
     "graphql": "^14.6.0",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^5.0.0",
-    "ipfs": "^0.49.1",
+    "ipfs": "^0.50.1",
     "lit-element": "^2.3.0",
     "pwa-helpers": "^0.9.0",
     "redux": "^4.0.0",
@@ -82,5 +82,5 @@
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.4"
   },
-  "gitHead": "65672ddaa7a0c899a38a500bdc6fb26fb94d6a74"
+  "gitHead": "bffc5351809da6d4898bf11032fb3010df7df52d"
 }

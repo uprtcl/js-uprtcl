@@ -3,10 +3,11 @@ import CBOR from 'cbor-js';
 import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
 import { Signed } from '@uprtcl/cortex';
 import { Perspective } from '@uprtcl/evees';
+import { ProposalManifest } from './proposals.orbit-db';
 
-const type = 'context';
+const type = 'proposals';
 
-export class ContextAccessController extends IPFSAccessController {
+export class ProposalsAccessController extends IPFSAccessController {
   [x: string]: any;
   // Returns the type of the access controller
   static get type() {
@@ -22,12 +23,12 @@ export class ContextAccessController extends IPFSAccessController {
     const key = entry.identity.id;
     try {
       if (this.write.includes(key) || this.write.includes('*')) {
-        const perspectiveId = entry.payload.value;
-        const result = await this._ipfs.dag.get(perspectiveId);
+        const proposalId = entry.payload.value;
+        const result = await this._ipfs.dag.get(proposalId);
         const forceBuffer = Uint8Array.from(result.value);
-        const { payload: perspective } = CBOR.decode(forceBuffer.buffer) as Signed<Perspective>;
+        const proposalManifest = CBOR.decode(forceBuffer.buffer) as ProposalManifest;
 
-        if (perspective.creatorId !== entry.identity.id) return false;
+        if (!proposalManifest.owners.includes(entry.identity.id)) return false;
 
         // check identity is valid
         return identityProvider.verifyIdentity(entry.identity);
@@ -40,6 +41,6 @@ export class ContextAccessController extends IPFSAccessController {
 
   static async create(orbitdb, options: any = {}) {
     options = { ...options, ...{ write: options.write || [orbitdb.identity.id] } };
-    return new ContextAccessController(orbitdb._ipfs, options);
+    return new ProposalsAccessController(orbitdb._ipfs, options);
   }
 }

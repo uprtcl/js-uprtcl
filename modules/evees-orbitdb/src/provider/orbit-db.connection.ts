@@ -1,13 +1,17 @@
 import OrbitDB from 'orbit-db';
-import OrbitDBSet from '@tabcat/orbit-db-set';
 import IPFS from 'ipfs';
+
+import OrbitDBSet from '@tabcat/orbit-db-set';
+import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Perspective } from '@uprtcl/evees';
 
-import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
-import { contextsAccesssControl } from './context-access-controller';
+import { ProposalManifest } from './proposals.orbit-db';
+import { EntropyGenerator } from '../identity-providers/entropy.generator';
+import { ContextAccessController } from './context-access-controller';
+import { ProposalsAccessController } from './proposals-access-controller';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
@@ -27,19 +31,24 @@ export class OrbitDBConnection extends Connection {
   public instance: any;
   private storeQueue = {};
   public identity: null | any = null;
+  loggedIn: boolean = false;
 
   logger = new Logger('OrbitDB-Connection');
 
   constructor(
     protected pinnerUrl: string,
-    protected ipfsStore: any,
-    protected ipfs?: any,
+    protected ipfs: any,
+    protected entropy: EntropyGenerator,
     options?: ConnectionOptions
   ) {
     super(options);
-    const AccessController = contextsAccesssControl(this.ipfsStore);
-    if (!OrbitDB.AccessControllers.isSupported(AccessController.type)) {
-      OrbitDB.AccessControllers.addAccessController({ AccessController });
+    if (!OrbitDB.AccessControllers.isSupported(ContextAccessController.type)) {
+      OrbitDB.AccessControllers.addAccessController({ AccessController: ContextAccessController });
+    }
+    if (!OrbitDB.AccessControllers.isSupported(ProposalsAccessController.type)) {
+      OrbitDB.AccessControllers.addAccessController({
+        AccessController: ProposalsAccessController
+      });
     }
   }
 
@@ -59,11 +68,21 @@ export class OrbitDBConnection extends Connection {
     });
   }
 
-  // public async disconnect(): Promise<void> {
-  //   await this.identity.provider.keystore.close()
-  //   await this.instance.stop()
-  //   this.instance = null
-  // }
+  public async login() {
+    const privateKey = await this.entropy.get();
+    const identity = await this.deriveIdentity(privateKey);
+    this.useIdentity(identity);
+    this.loggedIn = true;
+  }
+
+  public async logout() {
+    this.useIdentity(this.instance.identity);
+    this.loggedIn = false;
+  }
+
+  public isLogged() {
+    return this.loggedIn;
+  }
 
   public async deriveIdentity(sig: string): Promise<any> {
     const id = sig.slice(-8);
@@ -89,6 +108,21 @@ export class OrbitDBConnection extends Connection {
   public async contextAddress(context: string): Promise<any> {
     return this.instance.determineAddress(`context-store/${context}`, 'set', {
       accessController: { type: 'context', write: ['*'] }
+    });
+  }
+
+  public async proposalAddress(proposal: ProposalManifest): Promise<any> {
+    return this.instance.determineAddress('proposal-store', 'eventlog', {
+      accessController: { type: 'ipfs', write: proposal.owners },
+      meta: {
+        timestamp: proposal.timestamp
+      }
+    });
+  }
+
+  public async proposalsToPerspectiveAddress(toPerspectiveId: string): Promise<any> {
+    return this.instance.determineAddress(`proposals-store/${toPerspectiveId}`, 'set', {
+      accessController: { type: 'proposals', write: ['*'] }
     });
   }
 
@@ -125,6 +159,27 @@ export class OrbitDBConnection extends Connection {
   public async contextStore(context: string, pin: boolean = false): Promise<any> {
     const address = await this.contextAddress(context);
     const store = await this.openStore(address);
+    if (pin) {
+      this.pin(address);
+    }
+    return store;
+  }
+
+  public async proposalStore(proposal: ProposalManifest, pin: boolean): Promise<any> {
+    const address = await this.proposalAddress(proposal);
+    const store = this.openStore(address);
+    if (pin) {
+      this.pin(address);
+    }
+    return store;
+  }
+
+  public async proposalsToPerspectiveStore(
+    toPerspectiveId: string,
+    pin: boolean = false
+  ): Promise<any> {
+    const address = await this.proposalsToPerspectiveAddress(toPerspectiveId);
+    const store = this.openStore(address);
     if (pin) {
       this.pin(address);
     }
