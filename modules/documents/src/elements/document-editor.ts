@@ -984,7 +984,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           ${!node.isPlaceholder
             ? html`
                 <evees-info-popper
-                  parentId=${this.parentId}
+                  parentId=${node.parent ? node.parent.uref : this.parentId}
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}
