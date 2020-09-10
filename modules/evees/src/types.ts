@@ -62,6 +62,11 @@ export interface Proposal {
   canAuthorize?: boolean;
 }
 
+export interface ProposalDetails {
+  updates: UpdateRequest[];
+  newPerspectives: NewPerspectiveData[];
+}
+
 export interface NewProposal {
   fromPerspectiveId: string;
   toPerspectiveId: string;

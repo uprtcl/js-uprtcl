@@ -1,7 +1,7 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { ProposalsProvider } from '@uprtcl/evees';
-import { UpdateRequest, Proposal, NewProposal, NewPerspectiveData } from '@uprtcl/evees';
+import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { OrbitDBConnection } from './orbit-db.connection';
 import { CASStore } from '@uprtcl/multiplatform';
 
@@ -10,11 +10,6 @@ export interface ProposalManifest {
   fromPerspectiveId: string;
   timestamp: number;
   owners: string[];
-}
-
-export interface ProposalDetails {
-  updates: UpdateRequest[];
-  newPerspectives: NewPerspectiveData[];
 }
 
 const defaultDetails: ProposalDetails = {

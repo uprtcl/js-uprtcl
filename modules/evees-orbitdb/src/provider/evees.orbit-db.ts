@@ -120,6 +120,7 @@ export class EveesOrbitDB implements EveesRemote {
     details: PerspectiveDetails,
     pin: boolean
   ): Promise<void> {
+    debugger;
     this.logger.log('updatePerspective', { perspectiveId, details });
     if (!(await this.isLogged())) throw notLogged();
     if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
