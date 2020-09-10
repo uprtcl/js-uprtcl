@@ -91,7 +91,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     const perspectiveId = await EveesHelpers.createPerspective(client, eveesRemote, {
       headId,
       context: `my-wiki-${randint}`,
-      canWrite: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'
+      canWrite: eveesRemote.userId
     });
     this.creatingSpace = false;
     window.history.pushState('', '', `/?id=${perspectiveId}`);
