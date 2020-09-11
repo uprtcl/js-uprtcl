@@ -109,7 +109,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    document.addEventListener('created-page-perspective', (e:any) => {
+    this.addEventListener('created-child-perspective', (e:any) => {
       const {oldPerspectiveId, newPerspectiveId} = e.detail
       this.replacePagePerspective(oldPerspectiveId, newPerspectiveId);
     });

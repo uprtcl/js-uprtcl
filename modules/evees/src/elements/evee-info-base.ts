@@ -463,11 +463,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
 
     const newPerspectiveId = result.data.forkPerspective.id;
-    document.dispatchEvent(new CustomEvent('created-page-perspective', {
+
+    this.dispatchEvent(new CustomEvent('created-child-perspective', {
       detail: {
         oldPerspectiveId: this.uref,
         newPerspectiveId: newPerspectiveId,
-      }
+      },
+      bubbles: true,
+      composed: true,
     }));
     this.checkoutPerspective(newPerspectiveId);
 
