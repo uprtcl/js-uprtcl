@@ -463,6 +463,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
 
     const newPerspectiveId = result.data.forkPerspective.id;
+    document.dispatchEvent(new CustomEvent('created-page-perspective', {
+      detail: {
+        oldPerspectiveId: this.uref,
+        newPerspectiveId: newPerspectiveId,
+      }
+    }));
     this.checkoutPerspective(newPerspectiveId);
 
     this.logger.info('newPerspectiveClicked() - perspective created', {
