@@ -330,6 +330,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     
     const ix = this.wiki.object.pages.findIndex(pageId => pageId === oldId);
 
+    if(ix === -1) return;
+
     const result = await this.splicePages([newId], ix, 1);
     if (!result.entity) throw Error('problem with splice pages');
 
