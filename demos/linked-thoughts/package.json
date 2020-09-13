@@ -23,7 +23,7 @@
     "@uprtcl/wikis": "0.0.7-alpha.50",
     "@vaadin/router": "^1.7.2",
     "apollo-boost": "^0.4.7",
-    "cids": "^0.8.1",
+    "cids": "^1.0.0",
     "graphql": "^14.6.0",
     "lit-element": "^2.2.3",
     "navigo": "^7.1.2",
