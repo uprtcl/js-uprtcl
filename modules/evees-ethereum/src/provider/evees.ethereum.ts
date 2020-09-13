@@ -5,6 +5,7 @@ import {
   EthereumContractOptions,
   EthereumContract
 } from '@uprtcl/ethereum-provider';
+import { cidToHex32, bytes32ToCid } from '@uprtcl/ipfs-provider';
 
 import { abi as abiRoot, networks as networksRoot } from './contracts-json/UprtclRoot.min.json';
 import {
@@ -38,8 +39,6 @@ import {
   UPDATE_PERSP_DETAILS,
   INIT_PERSP,
   GET_CONTEXT_HASH,
-  cidToHex32,
-  bytes32ToCid,
   GET_PERSP_HASH,
   INIT_PERSP_BATCH,
   UPDATE_OWNER,
