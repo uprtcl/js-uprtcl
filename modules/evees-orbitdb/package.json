@@ -25,7 +25,7 @@
     "cbor-js": "^0.1.0",
     "inversify": "^5.0.1",
     "ipfs": "^0.50.2",
-    "orbit-db": "next"
+    "orbit-db": "^0.26.0-rc2"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
