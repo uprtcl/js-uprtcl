@@ -1,23 +1,23 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css, query } from 'lit-element';
 
-import { loadEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-
-import { Proposal, Perspective } from '../types';
-import { eveeColor } from './support';
-
-import { EveesWorkspace } from '../services/evees.workspace';
 import { UprtclDialog } from '@uprtcl/common-ui';
+
+import { Proposal } from '../types';
+import { eveeColor } from './support';
+import { EveesRemote } from '../services/evees.remote';
+
+import { EveesBindings } from '../bindings';
+import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDiff } from './evees-diff';
+import { EveesHelpers } from '../graphql/helpers';
 
 export const DEFAULT_COLOR = '#d0dae0';
-import { Signed } from '@uprtcl/cortex';
 
 const PENDING_ACTION: string = 'Pending';
-const AUTHORIZE_ACTION: string = 'Authorize';
-const EXECUTE_ACTION: string = 'Execute';
+const EXECUTE_ACTION: string = 'Accept';
 const MERGE_EXECUTED: string = 'Accepted';
 
 export class ProposalsList extends moduleConnect(LitElement) {
@@ -51,11 +51,13 @@ export class ProposalsList extends moduleConnect(LitElement) {
   eveesDiffEl!: EveesDiff;
 
   protected client!: ApolloClient<any>;
+  protected eveesRemotes!: EveesRemote[];
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
     this.client = this.request(ApolloClientModule.bindings.Client);
+    this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
     this.load();
   }
 
@@ -76,8 +78,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
                 fromPerspective {
                   id
                 }
-                canExecute
-                executed
                 updates {
                   toPerspective {
                     id
@@ -113,13 +113,33 @@ export class ProposalsList extends moduleConnect(LitElement) {
                   })
                 : [];
 
+            /* check the update list, if user canWrite on all the target perspectives, 
+              the user can execute the proposal */
+            const canExecuteVector = await Promise.all(
+              updates.map(
+                async (update): Promise<boolean> => {
+                  const remoteId = await EveesHelpers.getPerspectiveRemoteId(
+                    this.client,
+                    update.perspectiveId
+                  );
+                  const remote = (this.eveesRemotes as EveesRemote[]).find(
+                    remote => remote.id === remoteId
+                  );
+                  if (remote === undefined) throw new Error('remote undefined');
+                  return remote.canWrite(update.perspectiveId);
+                }
+              )
+            );
+
+            const canExecute = !canExecuteVector.includes(false);
+
             return {
               id: prop.id,
-              toPerspectiveId: prop.toPerspective.id,
+              toPerspectiveId: this.perspectiveId,
               fromPerspectiveId: prop.fromPerspective.id,
               creatorId: prop.creatorId,
-              canExecute: prop.canExecute,
-              executed: prop.executed,
+              executed: false,
+              canExecute,
               details: {
                 newPerspectives: [],
                 updates
@@ -132,8 +152,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
     const proposals = await Promise.all(getProposals);
 
     /** data on other perspectives (proposals are injected on them) */
-    this.pendingProposals = proposals.filter(proposal => proposal.executed !== true);
-    this.mergedProposals = proposals.filter(proposal => proposal.executed === true);
+    this.pendingProposals = proposals;
 
     this.loadingProposals = false;
 
@@ -166,8 +185,8 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
     this.eveesDiffEl.workspace = workspace;
 
-    const canAuthorize = this.getProposalAction(proposal) === AUTHORIZE_ACTION;
-    if (canAuthorize) {
+    const canExecute = this.getProposalAction(proposal) === EXECUTE_ACTION;
+    if (canExecute) {
       this.updatesDialogEl.primaryText = 'accept';
       this.updatesDialogEl.secondaryText = 'close';
       this.updatesDialogEl.showSecondary = 'true';
@@ -182,34 +201,25 @@ export class ProposalsList extends moduleConnect(LitElement) {
       };
     });
 
-    if (canAuthorize && value) {
-      this.authorizeProposal(proposal);
+    if (canExecute && value) {
+      await workspace.execute(this.client);
     }
   }
 
-  authorizeProposal(proposal: Proposal) {
-    this.dispatchEvent(
-      new CustomEvent('authorize-proposal', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          proposalId: proposal.id,
-          perspectiveId: this.perspectiveId
-        }
-      })
-    );
-  }
-
   getProposalAction(proposal: Proposal): string {
-    if (proposal.executed === undefined || !proposal.executed) {
-      return EXECUTE_ACTION;
+    if (proposal.canExecute) {
+      if (proposal.executed === undefined || !proposal.executed) {
+        return EXECUTE_ACTION;
+      } else {
+        return PENDING_ACTION;
+      }
     } else {
       return MERGE_EXECUTED;
     }
   }
 
   getProposalActionDisaled(proposal: Proposal) {
-    return [PENDING_ACTION, MERGE_EXECUTED].includes(this.getProposalAction(proposal));
+    return [MERGE_EXECUTED].includes(this.getProposalAction(proposal));
   }
 
   renderLoading() {
@@ -233,7 +243,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
         ${!this.getProposalActionDisaled(proposal)
           ? html`
               <uprtcl-button slot="meta" icon="call_merge" skinny>
-                approve
+                accept
               </uprtcl-button>
             `
           : ''}

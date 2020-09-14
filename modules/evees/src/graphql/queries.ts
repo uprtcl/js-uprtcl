@@ -135,7 +135,7 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
     $toHeadId: ID!
     $fromHeadId: ID!
     $newPerspectives: [NewPerspectiveInput]!
-    $updateRequests: [HeadUpdateInput!]
+    $updates: [HeadUpdateInput!]
   ) {
     addProposal(
       toPerspectiveId: $toPerspectiveId
@@ -143,7 +143,7 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
       toHeadId: $toHeadId
       fromHeadId: $fromHeadId
       newPerspectives: $newPerspectives
-      updateRequests: $updateRequests
+      updates: $updates
     ) {
       id
       toPerspective {
@@ -157,8 +157,6 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
       }
       updates
       newPerspectives
-      canExecute
-      executed
     }
   }
 `;
@@ -176,7 +174,6 @@ export const EXECUTE_PROPOSAL: DocumentNode = gql`
           }
         }
       }
-      executed
     }
   }
 `;

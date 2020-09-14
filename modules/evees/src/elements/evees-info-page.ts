@@ -104,7 +104,7 @@ export class EveesInfoPage extends EveesInfoBase {
       return;
     }
 
-    await this.applyWorkspace(this.pullWorkspace);
+    await this.pullWorkspace.execute(this.client);
 
     this.checkoutPerspective(this.uref);
   }

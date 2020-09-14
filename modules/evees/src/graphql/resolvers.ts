@@ -124,7 +124,6 @@ export const eveesResolvers: IResolvers = {
       return details && details.context;
     },
     async proposals(parent, _, { container }) {
-      debugger;
       const evees: Evees = container.get(EveesBindings.Evees);
 
       const remote = evees.getPerspectiveProvider(parent);
@@ -137,8 +136,17 @@ export const eveesResolvers: IResolvers = {
       });
 
       const proposals = await Promise.all(proposalsPromises);
-
-      return proposals;
+      return proposals.map(proposal => {
+        return {
+          id: proposal.id,
+          toPerspectiveId: proposal.toPerspectiveId,
+          fromPerspectiveId: proposal.fromPerspectiveId,
+          toHeadId: proposal.toHeadId,
+          fromHeadId: proposal.fromHeadId,
+          creatorId: proposal.creatorId,
+          updates: proposal.details.updates
+        };
+      });
     }
   },
   Mutation: {
@@ -302,7 +310,7 @@ export const eveesResolvers: IResolvers = {
 
     async addProposal(
       _,
-      { toPerspectiveId, fromPerspectiveId, toHeadId, fromHeadId, newPerspectives, updateRequests },
+      { toPerspectiveId, fromPerspectiveId, toHeadId, fromHeadId, newPerspectives, updates },
       { container }
     ) {
       const evees: Evees = container.get(EveesBindings.Evees);
@@ -316,7 +324,7 @@ export const eveesResolvers: IResolvers = {
         fromHeadId,
         toHeadId,
         details: {
-          updates: updateRequests,
+          updates: updates,
           newPerspectives: newPerspectives
         }
       };
@@ -326,7 +334,7 @@ export const eveesResolvers: IResolvers = {
         id: proposalId,
         toPerspectiveId,
         fromPerspectiveId,
-        updates: updateRequests,
+        updates: updates,
         canExecute: false,
         executed: false
       };

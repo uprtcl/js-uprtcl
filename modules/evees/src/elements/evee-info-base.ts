@@ -312,7 +312,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         workspace
       );
     } else {
-      await this.applyWorkspace(workspace);
+      await workspace.execute(this.client);
     }
 
     if (this.uref !== toPerspectiveId) {
@@ -321,22 +321,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       /** reload perspectives-list */
       this.reloadChildren();
     }
-  }
-
-  async applyWorkspace(workspace: EveesWorkspace): Promise<void> {
-    await workspace.execute(this.client);
-
-    const update = workspace.getUpdates().map(async update => {
-      return this.client.mutate({
-        mutation: UPDATE_HEAD,
-        variables: {
-          perspectiveId: update.perspectiveId,
-          headId: update.newHeadId
-        }
-      });
-    });
-
-    await Promise.all(update);
   }
 
   async createMergeProposal(

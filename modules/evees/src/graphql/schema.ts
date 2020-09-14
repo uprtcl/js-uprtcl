@@ -41,7 +41,7 @@ export const eveesTypeDefs: DocumentNode = gql`
       toHeadId: ID!
       fromHeadId: ID!
       newPerspectives: [NewPerspectiveInput!]
-      updateRequests: [HeadUpdateInput!]
+      updates: [HeadUpdateInput!]
     ): UpdateProposal!
 
     executeProposal(proposalId: ID!, perspectiveId: ID!): UpdateProposal!
@@ -133,8 +133,6 @@ export const eveesTypeDefs: DocumentNode = gql`
     fromPerspective: Perspective! @discover
     toHead: Commit! @discover
     fromHead: Commit! @discover
-    canExecute: Boolean
-    executed: Boolean
     newPerspectives: [NewPerspective!]
     updates: [HeadUpdate!]
   }
