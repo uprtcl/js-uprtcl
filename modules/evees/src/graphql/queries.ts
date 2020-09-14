@@ -128,36 +128,13 @@ export const FORK_PERSPECTIVE: DocumentNode = gql`
   }
 `;
 
-export const CREATE_AND_ADD_PROPOSAL: DocumentNode = gql`
-  mutation CreateAndAddProposal(
-    $perspectives: [NewPerspectiveInput]!
-    $proposal: ProposalInput!
-  ) {
-    createAndAddProposal(perspectives: $perspectives, proposal: $proposal) {
-      id
-      toPerspective {
-        id
-        proposals {
-          id
-        }
-      }
-      fromPerspective {
-        id
-      }
-      updates
-      authorized
-      canAuthorize
-      executed
-    }
-  }
-`;
-
 export const CREATE_PROPOSAL: DocumentNode = gql`
   mutation AddProposal(
     $toPerspectiveId: ID!
     $fromPerspectiveId: ID!
     $toHeadId: ID!
     $fromHeadId: ID!
+    $newPerspectives: [NewPerspectiveInput]!
     $updateRequests: [HeadUpdateInput!]
   ) {
     addProposal(
@@ -165,6 +142,7 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
       fromPerspectiveId: $fromPerspectiveId
       toHeadId: $toHeadId
       fromHeadId: $fromHeadId
+      newPerspectives: $newPerspectives
       updateRequests: $updateRequests
     ) {
       id
@@ -178,36 +156,9 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
         id
       }
       updates
-      authorized
-      canAuthorize
+      newPerspectives
+      canExecute
       executed
-    }
-  }
-`;
-
-export const AUTHORIZE_PROPOSAL: DocumentNode = gql`
-  mutation AuthorizeProposal(
-    $proposalId: ID!
-    $perspectiveId: ID!
-    $authorize: Boolean!
-  ) {
-    authorizeProposal(
-      proposalId: $proposalId
-      perspectiveId: $perspectiveId
-      authorize: $authorize
-    ) {
-      id
-      authorized
-      executed
-      toPerspective {
-        id
-        head {
-          id
-          data {
-            id
-          }
-        }
-      }
     }
   }
 `;

@@ -40,14 +40,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     /** Derive a proposal id from the proposal manifest */
     const proposalId = await this.store.create(proposalManifest);
 
-    await this.updateProposalInternal(
-      proposalId,
-      {
-        newPerspectives: [],
-        updates: proposal.updates
-      },
-      true
-    );
+    await this.updateProposalInternal(proposalId, proposal.details, true);
 
     const proposalsStore = await this.connection.proposalsToPerspectiveStore(
       proposal.toPerspectiveId,
@@ -102,7 +95,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
       creatorId: '',
       toPerspectiveId: proposalManifest.toPerspectiveId,
       fromPerspectiveId: proposalManifest.fromPerspectiveId,
-      updates: proposalDetails.updates
+      details: proposalDetails
     };
 
     this.logger.info('getProposal() - post', { proposal });

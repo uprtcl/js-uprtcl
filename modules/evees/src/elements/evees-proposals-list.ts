@@ -76,8 +76,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
                 fromPerspective {
                   id
                 }
-                authorized
-                canAuthorize
+                canExecute
                 executed
                 updates {
                   toPerspective {
@@ -96,36 +95,35 @@ export class ProposalsList extends moduleConnect(LitElement) {
               }
             }
           }
-        }`,
+        }`
     });
 
     const getProposals: Proposal[] = result.data
       ? result.data.entity.proposals.map(
           async (prop): Promise<Proposal> => {
-            const updates = prop.updates.map((update) => {
-              return {
-                perspectiveId: update.toPerspective.id,
-                fromPerspectiveId: update.fromPerspective.id,
-                oldHeadId: update.oldHead.id,
-                newHeadId: update.newHead.id,
-              };
-            });
-
-            const fromPerspective = await loadEntity<Signed<Perspective>>(
-              this.client,
-              prop.fromPerspective.id
-            );
+            const updates =
+              prop.updates !== null
+                ? prop.updates.map(update => {
+                    return {
+                      perspectiveId: update.toPerspective.id,
+                      fromPerspectiveId: update.fromPerspective.id,
+                      oldHeadId: update.oldHead.id,
+                      newHeadId: update.newHead.id
+                    };
+                  })
+                : [];
 
             return {
               id: prop.id,
+              toPerspectiveId: prop.toPerspective.id,
               fromPerspectiveId: prop.fromPerspective.id,
-              creatorId: fromPerspective
-                ? fromPerspective.object.payload.creatorId
-                : '',
-              authorized: prop.authorized,
-              canAuthorize: prop.canAuthorize,
+              creatorId: prop.creatorId,
+              canExecute: prop.canExecute,
               executed: prop.executed,
-              updates,
+              details: {
+                newPerspectives: [],
+                updates
+              }
             };
           }
         )
@@ -134,12 +132,8 @@ export class ProposalsList extends moduleConnect(LitElement) {
     const proposals = await Promise.all(getProposals);
 
     /** data on other perspectives (proposals are injected on them) */
-    this.pendingProposals = proposals.filter(
-      (proposal) => proposal.executed !== true
-    );
-    this.mergedProposals = proposals.filter(
-      (proposal) => proposal.executed === true
-    );
+    this.pendingProposals = proposals.filter(proposal => proposal.executed !== true);
+    this.mergedProposals = proposals.filter(proposal => proposal.executed === true);
 
     this.loadingProposals = false;
 
@@ -159,10 +153,12 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
   async showProposalChanges(proposal: Proposal) {
     const workspace = new EveesWorkspace(this.client);
-    if (proposal.updates) {
-      for (const update of proposal.updates) {
-        workspace.update(update);
-      }
+    for (const update of proposal.details.updates) {
+      workspace.update(update);
+    }
+
+    for (const newPerspective of proposal.details.newPerspectives) {
+      workspace.newPerspective(newPerspective);
     }
 
     this.showDiff = true;
@@ -179,8 +175,8 @@ export class ProposalsList extends moduleConnect(LitElement) {
       this.updatesDialogEl.primaryText = 'close';
     }
 
-    const value = await new Promise((resolve) => {
-      this.updatesDialogEl.resolved = (value) => {
+    const value = await new Promise(resolve => {
+      this.updatesDialogEl.resolved = value => {
         this.showDiff = false;
         resolve(value);
       };
@@ -198,32 +194,22 @@ export class ProposalsList extends moduleConnect(LitElement) {
         composed: true,
         detail: {
           proposalId: proposal.id,
-          perspectiveId: this.perspectiveId,
-        },
+          perspectiveId: this.perspectiveId
+        }
       })
     );
   }
 
   getProposalAction(proposal: Proposal): string {
-    if (!proposal.authorized) {
-      if (proposal.canAuthorize) {
-        return AUTHORIZE_ACTION;
-      } else {
-        return PENDING_ACTION;
-      }
+    if (proposal.executed === undefined || !proposal.executed) {
+      return EXECUTE_ACTION;
     } else {
-      if (proposal.executed === undefined || !proposal.executed) {
-        return EXECUTE_ACTION;
-      } else {
-        return MERGE_EXECUTED;
-      }
+      return MERGE_EXECUTED;
     }
   }
 
   getProposalActionDisaled(proposal: Proposal) {
-    return [PENDING_ACTION, MERGE_EXECUTED].includes(
-      this.getProposalAction(proposal)
-    );
+    return [PENDING_ACTION, MERGE_EXECUTED].includes(this.getProposalAction(proposal));
   }
 
   renderLoading() {
@@ -236,19 +222,20 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
   renderProposalRow(proposal: Proposal) {
     return html`
-      <uprtcl-list-item
-        hasMeta
-        @click=${() => this.showProposalChanges(proposal)}
-      >
+      <uprtcl-list-item hasMeta @click=${() => this.showProposalChanges(proposal)}>
         <evees-author
-          color=${eveeColor(proposal.fromPerspectiveId)}
+          color=${proposal.fromPerspectiveId
+            ? eveeColor(proposal.fromPerspectiveId)
+            : DEFAULT_COLOR}
           user-id=${proposal.creatorId as string}
         ></evees-author>
 
         ${!this.getProposalActionDisaled(proposal)
-          ? html` <uprtcl-button slot="meta" icon="call_merge" skinny>
-              approve
-            </uprtcl-button>`
+          ? html`
+              <uprtcl-button slot="meta" icon="call_merge" skinny>
+                approve
+              </uprtcl-button>
+            `
           : ''}
       </uprtcl-list-item>
     `;
@@ -257,9 +244,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
   renderProposals() {
     return this.pendingProposals.length > 0
       ? html`
-          ${this.pendingProposals.map((proposal) =>
-            this.renderProposalRow(proposal)
-          )}
+          ${this.pendingProposals.map(proposal => this.renderProposalRow(proposal))}
         `
       : '';
   }
@@ -271,17 +256,13 @@ export class ProposalsList extends moduleConnect(LitElement) {
       <div class="list-section">
         <strong
           >Old Proposals
-          <span
-            class="inline-button"
-            @click=${() => (this.showHistory = !this.showHistory)}
+          <span class="inline-button" @click=${() => (this.showHistory = !this.showHistory)}
             >(${this.showHistory ? 'hide' : 'show'})</span
           >
         </strong>
       </div>
       ${this.showHistory
-        ? this.mergedProposals.map((proposal) =>
-            this.renderProposalRow(proposal)
-          )
+        ? this.mergedProposals.map(proposal => this.renderProposalRow(proposal))
         : ''}
     `;
   }
@@ -305,7 +286,9 @@ export class ProposalsList extends moduleConnect(LitElement) {
                   ${this.renderProposals()} ${this.renderOldProposals()}
                 </uprtcl-list>
               `
-            : html`<div class="empty"><i>No proposals found</i></div>`}
+            : html`
+                <div class="empty"><i>No proposals found</i></div>
+              `}
           ${this.showDiff ? this.renderDiff() : ''}
         `;
   }

@@ -1,10 +1,7 @@
 import { html, css, property, query } from 'lit-element';
-const styleMap = (style) => {
+const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(
-      /([A-Z])/g,
-      (matches) => `-${matches[0].toLowerCase()}`
-    );
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -39,7 +36,7 @@ export class EveesInfoPage extends EveesInfoBase {
   connectedCallback() {
     super.connectedCallback();
 
-    this.addEventListener('keydown', (event) => {
+    this.addEventListener('keydown', event => {
       if (event.keyCode === 27) {
         // 27 is esc
         this.showEditName = false;
@@ -71,8 +68,8 @@ export class EveesInfoPage extends EveesInfoBase {
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.uref,
-        name: newName,
-      },
+        name: newName
+      }
     });
 
     this.load();
@@ -101,11 +98,7 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   async showPullChanges() {
-    const confirm = await this.updatesDialog(
-      this.pullWorkspace,
-      'apply',
-      'close'
-    );
+    const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close');
 
     if (!confirm) {
       return;
@@ -119,9 +112,7 @@ export class EveesInfoPage extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        ${!this.loading
-          ? this.remote.accessControl.lense().render(this.uref)
-          : ''}
+        ${!this.loading ? this.remote.accessControl.lense().render(this.uref) : ''}
       </div>
     `;
   }
@@ -159,13 +150,17 @@ export class EveesInfoPage extends EveesInfoBase {
     const actionButton = html`
         ${
           this.isLogged && this.firstRef !== this.uref
-            ? html`<div class="action-button">
-                ${this.renderMakeProposalButton()}
-              </div>`
+            ? html`
+                <div class="action-button">
+                  ${this.renderMakeProposalButton()}
+                </div>
+              `
             : this.isLoggedOnDefault
-            ? html`<div class="action-button">
-                ${this.renderNewPerspectiveButton()}
-              </div>`
+            ? html`
+                <div class="action-button">
+                  ${this.renderNewPerspectiveButton()}
+                </div>
+              `
             : ''
         }
       </div>
@@ -175,10 +170,9 @@ export class EveesInfoPage extends EveesInfoBase {
       <div class="context-menu">
         <uprtcl-help>
           <span>
-            To update the "Official Version" of this Wiki you need to create a
-            new "Perspective"<br /><br />
-            Once changes have been made to that perspectective, click "Propose
-            Update" to update the "Official" perspective.
+            To update the "Official Version" of this Wiki you need to create a new "Perspective"<br /><br />
+            Once changes have been made to that perspectective, click "Propose Update" to update the
+            "Official" perspective.
           </span>
         </uprtcl-help>
       </div>
@@ -199,65 +193,73 @@ export class EveesInfoPage extends EveesInfoBase {
 
   render() {
     if (this.perspectiveData === undefined)
-      return html`<uprtcl-loading></uprtcl-loading>`;
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
 
     return html`
       <div class="container">
         <div class="column">
           ${this.showPerspectives
-            ? html`<div class="section">
-                <div class="section-header perspective-title">
-                  Perspectives
-                </div>
+            ? html`
+                <div class="section">
+                  <div class="section-header perspective-title">
+                    Perspectives
+                  </div>
 
-                <div class="section-content">
-                  ${this.renderPerspectiveActions()}
-                  <div class="list-container">
-                    ${!this.loading
-                      ? html`<evees-perspectives-list
-                          force-update=${this.forceUpdate}
-                          perspective-id=${this.uref}
-                          first-perspective-id=${this.firstRef}
-                          ?can-propose=${this.isLogged}
-                          @perspective-selected=${(e) =>
-                            this.checkoutPerspective(e.detail.id)}
-                          @merge-perspective=${(e) =>
-                            this.otherPerspectiveMerge(
-                              e.detail.perspectiveId,
-                              this.uref,
-                              false
-                            )}
-                          @create-proposal=${(e) =>
-                            this.otherPerspectiveMerge(
-                              e.detail.perspectiveId,
-                              this.uref,
-                              true
-                            )}
-                        ></evees-perspectives-list>`
-                      : html`<uprtcl-loading></uprtcl-loading>`}
+                  <div class="section-content">
+                    ${this.renderPerspectiveActions()}
+                    <div class="list-container">
+                      ${!this.loading
+                        ? html`
+                            <evees-perspectives-list
+                              force-update=${this.forceUpdate}
+                              perspective-id=${this.uref}
+                              first-perspective-id=${this.firstRef}
+                              ?can-propose=${this.isLogged}
+                              @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
+                              @merge-perspective=${e =>
+                                this.otherPerspectiveMerge(
+                                  e.detail.perspectiveId,
+                                  this.uref,
+                                  false
+                                )}
+                              @create-proposal=${e =>
+                                this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref, true)}
+                            ></evees-perspectives-list>
+                          `
+                        : html`
+                            <uprtcl-loading></uprtcl-loading>
+                          `}
+                    </div>
                   </div>
                 </div>
-              </div>`
+              `
             : ''}
           ${this.showProposals && this.uref === this.firstRef
-            ? html`<div class="section">
-                <div class="section-header">
-                  Proposals
-                </div>
+            ? html`
+                <div class="section">
+                  <div class="section-header">
+                    Proposals
+                  </div>
 
-                <div class="section-content">
-                  <div class="list-container">
-                    ${!this.loading
-                      ? html`<evees-proposals-list
-                          force-update=${this.forceUpdate}
-                          perspective-id=${this.uref}
-                          @authorize-proposal=${this.authorizeProposal}
-                          @execute-proposal=${this.executeProposal}
-                        ></evees-proposals-list>`
-                      : html`<uprtcl-loading></uprtcl-loading>`}
+                  <div class="section-content">
+                    <div class="list-container">
+                      ${!this.loading
+                        ? html`
+                            <evees-proposals-list
+                              force-update=${this.forceUpdate}
+                              perspective-id=${this.uref}
+                              @execute-proposal=${this.executeProposal}
+                            ></evees-proposals-list>
+                          `
+                        : html`
+                            <uprtcl-loading></uprtcl-loading>
+                          `}
+                    </div>
                   </div>
                 </div>
-              </div>`
+              `
             : ''}
           ${this.showAcl
             ? html`
@@ -273,14 +275,16 @@ export class EveesInfoPage extends EveesInfoBase {
               `
             : ''}
           ${this.showInfo
-            ? html`<div class="section">
-                <div class="section-header">
-                  Evee Info
+            ? html`
+                <div class="section">
+                  <div class="section-header">
+                    Evee Info
+                  </div>
+                  <div class="section-content info-text">
+                    ${this.renderInfo()}
+                  </div>
                 </div>
-                <div class="section-content info-text">
-                  ${this.renderInfo()}
-                </div>
-              </div>`
+              `
             : ''}
         </div>
       </div>
@@ -384,7 +388,7 @@ export class EveesInfoPage extends EveesInfoBase {
             width: 85%;
           }
         }
-      `,
+      `
     ]);
   }
 }

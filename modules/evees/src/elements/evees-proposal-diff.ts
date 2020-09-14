@@ -46,26 +46,24 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
   async loadProposal() {
     this.loading = true;
 
-    const eveesRemote = (this.requestAll(
-      EveesBindings.EveesRemote
-    ) as EveesRemote[]).find((remote) => remote.id === this.remoteId);
+    const eveesRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+      remote => remote.id === this.remoteId
+    );
 
-    if (eveesRemote === undefined)
-      throw new Error(`remote ${this.remoteId} not found`);
+    if (eveesRemote === undefined) throw new Error(`remote ${this.remoteId} not found`);
     if (eveesRemote.proposals === undefined)
       throw new Error(`proposal of remote ${this.remoteId} undefined`);
     const proposal = await eveesRemote.proposals.getProposal(this.proposalId);
 
     if (proposal === undefined)
-      throw new Error(
-        `proposal ${this.proposalId} not found on remote ${this.remoteId}`
-      );
+      throw new Error(`proposal ${this.proposalId} not found on remote ${this.remoteId}`);
     this.workspace = new EveesWorkspace(this.client);
 
-    if (proposal.updates !== undefined) {
-      for (const update of proposal.updates) {
-        this.workspace.update(update);
-      }
+    for (const update of proposal.details.updates) {
+      this.workspace.update(update);
+    }
+    for (const newPerspective of proposal.details.newPerspectives) {
+      this.workspace.newPerspective(newPerspective);
     }
 
     this.loading = false;
@@ -76,14 +74,14 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html` <uprtcl-loading></uprtcl-loading> `;
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
     }
 
-    return html`<evees-update-diff
-      id="evees-update-diff"
-      ?summary=${this.summary}
-    >
-    </evees-update-diff>`;
+    return html`
+      <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
+    `;
   }
 
   static get styles() {

@@ -40,18 +40,8 @@ export const eveesTypeDefs: DocumentNode = gql`
       fromPerspectiveId: ID!
       toHeadId: ID!
       fromHeadId: ID!
+      newPerspectives: [NewPerspectiveInput!]
       updateRequests: [HeadUpdateInput!]
-    ): UpdateProposal!
-
-    createAndAddProposal(
-      perspectives: [NewPerspectiveInput]
-      proposal: ProposalInput
-    ): UpdateProposal!
-
-    authorizeProposal(
-      proposalId: ID!
-      perspectiveId: ID!
-      authorize: Boolean!
     ): UpdateProposal!
 
     executeProposal(proposalId: ID!, perspectiveId: ID!): UpdateProposal!
@@ -118,7 +108,21 @@ export const eveesTypeDefs: DocumentNode = gql`
     fromPerspectiveId: String!
     toHeadId: String!
     fromHeadId: String!
+    newPerspectives: [NewPerspectiveInput!]
     updates: [HeadUpdateInput!]
+  }
+
+  type NewPerspective {
+    perspective: Perspective
+    details: PerspectiveDetails
+    canWrite: String
+    parentId: String
+  }
+
+  type PerspectiveDetails {
+    context: String
+    name: String
+    headId: String
   }
 
   type UpdateProposal {
@@ -129,10 +133,10 @@ export const eveesTypeDefs: DocumentNode = gql`
     fromPerspective: Perspective! @discover
     toHead: Commit! @discover
     fromHead: Commit! @discover
-    updates: [HeadUpdate!]
-    authorized: Boolean
-    canAuthorize: Boolean
+    canExecute: Boolean
     executed: Boolean
+    newPerspectives: [NewPerspective!]
+    updates: [HeadUpdate!]
   }
 
   type Commit implements Entity {

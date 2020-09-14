@@ -51,15 +51,13 @@ export interface Proposal {
   id: string;
   creatorId?: string;
   timestamp?: number;
-  toPerspectiveId?: string;
-  fromPerspectiveId: string;
+  toPerspectiveId: string;
+  fromPerspectiveId?: string;
   toHeadId?: string;
   fromHeadId?: string;
-  updates?: Array<UpdateRequest>;
-  status?: boolean;
-  authorized?: boolean;
   executed?: boolean;
-  canAuthorize?: boolean;
+  canExecute?: boolean;
+  details: ProposalDetails;
 }
 
 export interface ProposalDetails {
@@ -72,7 +70,7 @@ export interface NewProposal {
   toPerspectiveId: string;
   fromHeadId: string;
   toHeadId: string;
-  updates: UpdateRequest[];
+  details: ProposalDetails;
 }
 
 export interface ProposalCreatedDetail {
