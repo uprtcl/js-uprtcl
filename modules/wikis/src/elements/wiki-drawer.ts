@@ -109,6 +109,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
+    this.addEventListener('created-child-perspective', (e:any) => {
+      const {oldPerspectiveId, newPerspectiveId} = e.detail
+      this.replacePagePerspective(oldPerspectiveId, newPerspectiveId);
+    });
+
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
@@ -318,6 +323,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.logger.info('updateContent()', newWiki);
 
     this.loadWiki();
+  }
+
+  async replacePagePerspective(oldId, newId) {
+    if (!this.wiki) throw new Error('wiki undefined');
+    
+    const ix = this.wiki.object.pages.findIndex(pageId => pageId === oldId);
+
+    if(ix === -1) return;
+
+    const result = await this.splicePages([newId], ix, 1);
+    if (!result.entity) throw Error('problem with splice pages');
+
+    await this.updateContent(result.entity);
   }
 
   async splicePages(pages: any[], index: number, count: number) {
