@@ -308,7 +308,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   renderChangeDelegate() {
     if (!this.permissions) return;
     return html`
-      <uprtcl-toggle @click=${this.toggleDelegate} .active=${this.permissions.delegate}
+      <uprtcl-toggle @toggle-click=${this.toggleDelegate} .active=${this.permissions.delegate}
         >Delegate</uprtcl-toggle
       >
     `;
@@ -341,7 +341,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                               ? 'visibility'
                               : 'visibility_off'}
                             .active=${this.permissions.effectivePermissions.publicWrite}
-                            @click=${this.togglePublicWrite}
+                            @toggle-click=${this.togglePublicWrite}
                           >
                             Public write
                           </uprtcl-toggle>
@@ -351,7 +351,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                               ? 'visibility'
                               : 'visibility_off'}
                             .active=${this.permissions.effectivePermissions.publicRead}
-                            @click=${this.togglePublicRead}
+                            @toggle-click=${this.togglePublicRead}
                           >
                             Public read
                           </uprtcl-toggle>

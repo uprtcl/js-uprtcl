@@ -12,6 +12,10 @@ export class UprtclToggle extends LitElement {
   @property({ type: Boolean })
   active: boolean = false;
 
+  handleToggleClick() {
+    this.dispatchEvent(new CustomEvent('toggle-click'))
+  }
+
   render() {
     return html`
     <div class="toggle-container">
@@ -19,7 +23,8 @@ export class UprtclToggle extends LitElement {
         ? html`<div class="icon-container">${icons[this.icon]}</div>`
         : ''}
       <slot></slot>
-      <div 
+      <div
+        @click=${this.handleToggleClick}
         class="toggle toggled-${this.active ? 'on' : 'off'} ${this.disabled ? 'disabled' : ''}"
       ></div>
     </div>
