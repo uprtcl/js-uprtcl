@@ -24,7 +24,7 @@ import {
   CREATE_PROPOSAL,
   FORK_PERSPECTIVE
 } from '../graphql/queries';
-import { EveesHelpers } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/evees.helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 

@@ -53,7 +53,7 @@ export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
 export { UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
-export { EveesHelpers, CreatePerspective, CreateCommit } from './graphql/helpers';
+export { EveesHelpers, CreatePerspective, CreateCommit } from './graphql/evees.helpers';
 
 /** Patterns */
 export { PerspectivePattern, PerspectiveLinks } from './patterns/perspective.pattern';

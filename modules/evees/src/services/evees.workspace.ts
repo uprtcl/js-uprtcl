@@ -4,7 +4,7 @@ import cloneDeep from 'lodash-es/cloneDeep';
 import { CREATE_ENTITY, CREATE_PERSPECTIVE, UPDATE_HEAD } from '../graphql/queries';
 import { Entity, PatternRecognizer } from '@uprtcl/cortex';
 import { UpdateRequest, NewPerspectiveData } from '../types';
-import { EveesHelpers } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/evees.helpers';
 
 export class EveesWorkspace {
   private entities: Entity<any>[] = [];

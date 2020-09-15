@@ -3,7 +3,7 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { EveesHelpers } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/evees.helpers';
 
 export class ProposalsList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');

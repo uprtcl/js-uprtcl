@@ -21,7 +21,7 @@ import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
 import { Secured } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
-import { EveesHelpers } from './helpers';
+import { EveesHelpers } from './evees.helpers';
 import { EveesWorkspace } from '../services/evees.workspace';
 
 export const eveesResolvers: IResolvers = {

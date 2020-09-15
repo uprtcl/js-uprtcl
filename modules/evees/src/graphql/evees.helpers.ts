@@ -237,4 +237,61 @@ export class EveesHelpers {
 
     return headId;
   }
+
+  static async isAncestorCommit(
+    client: ApolloClient<any>,
+    perspectiveId: string,
+    commitId: string,
+    stopAt?: string
+  ) {
+    const headId = await this.getPerspectiveHeadId(client, perspectiveId);
+    if (headId === undefined) return false;
+    const findAncestor = new FindAncestor(client, commitId, stopAt);
+    return findAncestor.checkIfParent(headId);
+  }
+}
+
+export class FindAncestor {
+  done: boolean = false;
+
+  constructor(
+    protected client: ApolloClient<any>,
+    protected lookingFor: string,
+    protected stopAt?: string
+  ) {}
+
+  async checkIfParent(commitId: string) {
+    /* stop searching all paths once one path finds it */
+    if (this.done) {
+      return false;
+    }
+
+    if (this.lookingFor === commitId) {
+      this.done = true;
+      return true;
+    }
+
+    if (this.stopAt !== undefined) {
+      if (this.stopAt === commitId) {
+        this.done = true;
+        return false;
+      }
+    }
+
+    const commit = await loadEntity<Signed<Commit>>(this.client, commitId);
+    if (!commit) throw new Error(`commit ${commitId} not found`);
+
+    if (commit.object.payload.parentsIds.length === 0) {
+      return false;
+    }
+
+    const seeParents = await Promise.all(
+      commit.object.payload.parentsIds.map(parentId => {
+        /* recursively look on parents */
+        return this.checkIfParent(parentId);
+      })
+    );
+
+    return seeParents.includes(true);
+  }
 }

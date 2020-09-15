@@ -10,7 +10,7 @@ import { EveesWorkspace } from '../services/evees.workspace';
 import { ApolloClient } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
-import { EveesHelpers } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/evees.helpers';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -35,6 +35,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
   remote!: EveesRemote | undefined;
   proposal!: Proposal;
+  executed: boolean = false;
   canExecute: boolean = false;
 
   protected client!: ApolloClient<any>;
@@ -66,8 +67,25 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     this.proposal = await this.remote.proposals.getProposal(this.proposalId);
     await this.checkCanExecute();
+    await this.checkExecuted();
 
     this.loading = false;
+  }
+
+  async checkExecuted() {
+    /* a proposal is considered accepted if all the updates are now ancestors of their target */
+    const isAncestorVector = await Promise.all(
+      this.proposal.details.updates.map(update => {
+        return EveesHelpers.isAncestorCommit(
+          this.client,
+          update.perspectiveId,
+          update.newHeadId,
+          update.oldHeadId
+        );
+      })
+    );
+
+    this.executed = !isAncestorVector.includes(false);
   }
 
   async checkCanExecute() {
@@ -149,7 +167,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     return html`
       <div @click=${() => this.showProposalChanges()} class="">
-        ${this.proposal.fromPerspectiveId}
+        ${this.proposal.fromPerspectiveId} ${this.executed ? 'exectued' : ''}
       </div>
       ${this.showDiff ? this.renderDiff() : ''}
     `;
