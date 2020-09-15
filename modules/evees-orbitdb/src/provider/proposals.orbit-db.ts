@@ -49,6 +49,12 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
     await proposalsStore.add(proposalId);
 
+    this.logger.info('createProposal() - done', {
+      proposalId,
+      proposalManifest,
+      details: proposal.details
+    });
+
     return proposalId;
   }
 

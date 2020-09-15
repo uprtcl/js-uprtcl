@@ -130,23 +130,7 @@ export const eveesResolvers: IResolvers = {
 
       if (!remote.proposals) return [];
 
-      const proposalsIds = await remote.proposals.getProposalsToPerspective(parent.id);
-      const proposalsPromises = proposalsIds.map(proposalId => {
-        return (remote.proposals as ProposalsProvider).getProposal(proposalId);
-      });
-
-      const proposals = await Promise.all(proposalsPromises);
-      return proposals.map(proposal => {
-        return {
-          id: proposal.id,
-          toPerspectiveId: proposal.toPerspectiveId,
-          fromPerspectiveId: proposal.fromPerspectiveId,
-          toHeadId: proposal.toHeadId,
-          fromHeadId: proposal.fromHeadId,
-          creatorId: proposal.creatorId,
-          updates: proposal.details.updates
-        };
-      });
+      return remote.proposals.getProposalsToPerspective(parent.id);
     }
   },
   Mutation: {

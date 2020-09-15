@@ -6,10 +6,7 @@ import { CASModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { CommonUIModule } from '@uprtcl/common-ui';
 
-import {
-  PerspectiveLinks,
-  PerspectivePattern,
-} from './patterns/perspective.pattern';
+import { PerspectiveLinks, PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
@@ -29,6 +26,7 @@ import { EveesAuthor } from './elements/evees-author';
 import { ProposalsList } from './elements/evees-proposals-list';
 import { EveesProposalDiff } from './elements/evees-proposal-diff';
 import { EveesLoginWidget } from './elements/evees-login';
+import { EveesProposalRow } from './elements/evees-proposal-row';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -84,15 +82,9 @@ export class EveesModule extends MicroModule {
 
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.bindings.Evees).to(Evees);
-    container
-      .bind(EveesModule.bindings.MergeStrategy)
-      .to(RecursiveContextMergeStrategy);
-    container
-      .bind(EveesModule.bindings.DefaultRemote)
-      .toConstantValue(this.defaultRemote);
-    container
-      .bind(EveesModule.bindings.RemoteMap)
-      .toConstantValue(this.remoteMap);
+    container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
+    container.bind(EveesModule.bindings.DefaultRemote).toConstantValue(this.defaultRemote);
+    container.bind(EveesModule.bindings.RemoteMap).toConstantValue(this.remoteMap);
 
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
@@ -108,6 +100,7 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-proposal-diff', EveesProposalDiff);
     customElements.define('evees-author', EveesAuthor);
     customElements.define('evees-login-widget', EveesLoginWidget);
+    customElements.define('evees-proposal-row', EveesProposalRow);
   }
 
   get submodules() {
@@ -116,10 +109,10 @@ export class EveesModule extends MicroModule {
       new i18nextModule('evees', { en: en }),
       new PatternsModule([
         new CommitPattern([CommitLinked]),
-        new PerspectivePattern([PerspectiveLinks]),
+        new PerspectivePattern([PerspectiveLinks])
       ]),
-      new CASModule(this.eveesProviders.map((p) => p.store)),
-      new CommonUIModule(),
+      new CASModule(this.eveesProviders.map(p => p.store)),
+      new CommonUIModule()
     ];
   }
 }

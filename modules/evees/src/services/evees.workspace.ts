@@ -86,9 +86,11 @@ export class EveesWorkspace {
     this.cacheCreateEntity(this.workspace, entity);
   }
 
-  public newPerspective(perspective: NewPerspectiveData) {
-    this.newPerspectives.push(perspective);
-    this.cacheInitPerspective(this.workspace, perspective);
+  public newPerspective(newPerspective: NewPerspectiveData) {
+    /* perspective entity is stored as an entity too */
+    this.create(newPerspective.perspective);
+    this.newPerspectives.push(newPerspective);
+    this.cacheInitPerspective(this.workspace, newPerspective);
   }
 
   public update(update: UpdateRequest) {
