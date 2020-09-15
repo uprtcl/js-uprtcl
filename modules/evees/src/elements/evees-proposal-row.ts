@@ -10,6 +10,7 @@ import { EveesWorkspace } from '../services/evees.workspace';
 import { ApolloClient } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { EveesHelpers } from '../graphql/helpers';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -34,13 +35,16 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
   remote!: EveesRemote | undefined;
   proposal!: Proposal;
+  canExecute: boolean = false;
 
   protected client!: ApolloClient<any>;
   protected recognizer!: PatternRecognizer;
+  protected eveesRemotes!: EveesRemote[];
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
+    this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
     this.load();
   }
 
@@ -59,60 +63,34 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     if (this.remote === undefined) throw new Error(`remote ${this.remoteId} not found`);
     if (this.remote.proposals === undefined)
       throw new Error(`remote ${this.remoteId} cant handle proposals`);
+
     this.proposal = await this.remote.proposals.getProposal(this.proposalId);
+    await this.checkCanExecute();
+
     this.loading = false;
   }
 
-  // const getProposals: Proposal[] = result.data
-  //   ? result.data.entity.proposals.map(
-  //       async (prop): Promise<Proposal> => {
-  //         const updates =
-  //           prop.updates !== null
-  //             ? prop.updates.map(update => {
-  //                 return {
-  //                   perspectiveId: update.toPerspective.id,
-  //                   fromPerspectiveId: update.fromPerspective.id,
-  //                   oldHeadId: update.oldHead.id,
-  //                   newHeadId: update.newHead.id
-  //                 };
-  //               })
-  //             : [];
+  async checkCanExecute() {
+    /* check the update list, if user canWrite on all the target perspectives,
+    the user can execute the proposal */
+    const canExecuteVector = await Promise.all(
+      this.proposal.details.updates.map(
+        async (update): Promise<boolean> => {
+          const remoteId = await EveesHelpers.getPerspectiveRemoteId(
+            this.client,
+            update.perspectiveId
+          );
+          const remote = (this.eveesRemotes as EveesRemote[]).find(
+            remote => remote.id === remoteId
+          );
+          if (remote === undefined) throw new Error('remote undefined');
+          return remote.canWrite(update.perspectiveId);
+        }
+      )
+    );
 
-  //         /* check the update list, if user canWrite on all the target perspectives,
-  //           the user can execute the proposal */
-  //         const canExecuteVector = await Promise.all(
-  //           updates.map(
-  //             async (update): Promise<boolean> => {
-  //               const remoteId = await EveesHelpers.getPerspectiveRemoteId(
-  //                 this.client,
-  //                 update.perspectiveId
-  //               );
-  //               const remote = (this.eveesRemotes as EveesRemote[]).find(
-  //                 remote => remote.id === remoteId
-  //               );
-  //               if (remote === undefined) throw new Error('remote undefined');
-  //               return remote.canWrite(update.perspectiveId);
-  //             }
-  //           )
-  //         );
-
-  //         const canExecute = !canExecuteVector.includes(false);
-
-  //         return {
-  //           id: prop.id,
-  //           toPerspectiveId: this.perspectiveId,
-  //           fromPerspectiveId: prop.fromPerspective.id,
-  //           creatorId: prop.creatorId,
-  //           executed: false,
-  //           canExecute,
-  //           details: {
-  //             newPerspectives: [],
-  //             updates
-  //           }
-  //         };
-  //       }
-  //     )
-  //   : [];
+    this.canExecute = !canExecuteVector.includes(false);
+  }
 
   async showProposalChanges() {
     const workspace = new EveesWorkspace(this.client, this.recognizer);
@@ -132,7 +110,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     this.eveesDiffEl.workspace = workspace;
 
-    if (this.proposal.canExecute) {
+    if (this.canExecute) {
       this.updatesDialogEl.primaryText = 'accept';
       this.updatesDialogEl.secondaryText = 'close';
       this.updatesDialogEl.showSecondary = 'true';
@@ -149,7 +127,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     this.showDiff = false;
 
-    if (this.proposal.canExecute && value) {
+    if (this.canExecute && value) {
       await workspace.execute(this.client);
     }
   }

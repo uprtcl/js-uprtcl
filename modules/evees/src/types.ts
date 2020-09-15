@@ -55,8 +55,6 @@ export interface Proposal {
   fromPerspectiveId?: string;
   toHeadId?: string;
   fromHeadId?: string;
-  executed?: boolean;
-  canExecute?: boolean;
   details: ProposalDetails;
 }
 
