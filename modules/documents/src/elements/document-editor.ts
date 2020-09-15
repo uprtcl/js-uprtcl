@@ -72,6 +72,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
+  @property({ attribute: false })
+  checkedOutPerspectives: { [key: string]: string } = {};
+  
+  checkedOutPerspectivesStorageId: string = 'CHECKED_OUT_PERSPECTIVES';
+  
   protected eveesRemotes!: EveesRemote[];
   protected remotesMap!: RemoteMap;
   protected recognizer!: PatternRecognizer;
@@ -90,6 +95,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
     this.loadDoc();
+
+    const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
+    if(storageRes) this.checkedOutPerspectives = JSON.parse(storageRes);
   }
 
   updated(changedProperties) {
@@ -964,6 +972,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.persistAll(message);
   }
 
+  handlePerspectiveCheckout(e, uref) {
+    let checkedOutPerspectives = {};
+    
+    const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
+    if(storageRes) checkedOutPerspectives = JSON.parse(storageRes);
+
+    checkedOutPerspectives[uref] = e.detail.perspectiveId;
+    
+    localStorage.setItem(this.checkedOutPerspectivesStorageId, JSON.stringify(checkedOutPerspectives))
+    
+    this.checkedOutPerspectives = checkedOutPerspectives;
+  }
+
   renderWithCortex(node: DocNode) {
     return html`
       <cortex-entity hash=${node.uref}></cortex-entity>
@@ -988,6 +1009,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}
+                  @checkout-perspective=${e => this.handlePerspectiveCheckout(e, node.uref)}
                   show-perspectives
                   show-acl
                   show-info
@@ -1031,6 +1053,15 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderDocNode(node: DocNode) {
+    if (this.checkedOutPerspectives[node.uref] !== undefined) {
+      return html`
+        <documents-editor
+          uref=${this.checkedOutPerspectives[node.uref]}
+        >
+        </documents-editor>
+      `
+    }
+   
     return html`
       <div
         style=${styleMap({
