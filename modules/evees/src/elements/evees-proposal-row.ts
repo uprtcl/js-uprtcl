@@ -1,7 +1,7 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Proposal } from '../types';
+import { Perspective, Proposal } from '../types';
 import { EveesRemote } from 'src/services/evees.remote';
 import { EveesBindings } from 'src/bindings';
 import { UprtclDialog } from '@uprtcl/common-ui';
@@ -9,8 +9,9 @@ import { EveesDiff } from './evees-diff';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { ApolloClient } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { EveesHelpers } from '../graphql/evees.helpers';
+import { loadEntity } from '@uprtcl/multiplatform';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -25,7 +26,13 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   loading: boolean = true;
 
   @property({ attribute: false })
+  loadingCreator: boolean = true;
+
+  @property({ attribute: false })
   showDiff: Boolean = false;
+
+  @property({ attribute: false })
+  creatorId: string | undefined = undefined;
 
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
@@ -57,6 +64,8 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
+    this.loadingCreator = true;
+
     this.remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
       r => r.id === this.remoteId
     );
@@ -66,6 +75,15 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       throw new Error(`remote ${this.remoteId} cant handle proposals`);
 
     this.proposal = await this.remote.proposals.getProposal(this.proposalId);
+
+    const fromPerspective = this.proposal.fromPerspectiveId
+      ? await loadEntity<Signed<Perspective>>(this.client, this.proposal.fromPerspectiveId)
+      : undefined;
+
+    this.creatorId = fromPerspective?.object.payload.creatorId;
+
+    this.loadingCreator = false;
+
     await this.checkCanExecute();
     await this.checkExecuted();
 
@@ -128,7 +146,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     this.eveesDiffEl.workspace = workspace;
 
-    if (this.canExecute) {
+    if (this.canExecute && !this.executed) {
       this.updatesDialogEl.primaryText = 'accept';
       this.updatesDialogEl.secondaryText = 'close';
       this.updatesDialogEl.showSecondary = 'true';
@@ -159,21 +177,58 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   }
 
   render() {
-    if (this.loading) {
+    if (this.loadingCreator) {
       return html`
-        <div class="">${this.proposalId} <uprtcl-loading></uprtcl-loading></div>
+        <div class=""><uprtcl-loading></uprtcl-loading></div>
       `;
     }
 
     return html`
-      <div @click=${() => this.showProposalChanges()} class="">
-        ${this.proposal.fromPerspectiveId} ${this.executed ? 'exectued' : ''}
+      <div @click=${() => this.showProposalChanges()} class="row-container">
+        <div class="proposal-name">
+          ${this.creatorId !== undefined
+            ? html`
+                <evees-author user-id=${this.creatorId}></evees-author>
+              `
+            : 'unknown'}
+        </div>
+        <div class="proposal-state">
+          ${this.loading
+            ? html`
+                <uprtcl-loading></uprtcl-loading>
+              `
+            : html`
+                <uprtcl-button skinny ?disabled=${this.executed}
+                  >${this.executed ? 'merged' : this.canExecute ? 'merge' : ''}</uprtcl-button
+                >
+              `}
+        </div>
       </div>
       ${this.showDiff ? this.renderDiff() : ''}
     `;
   }
 
   static get styles() {
-    return css``;
+    return css`
+      .row-container {
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+      }
+      .proposal-name {
+        height: 100%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .proposal-state {
+        width: 150px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+    `;
   }
 }
