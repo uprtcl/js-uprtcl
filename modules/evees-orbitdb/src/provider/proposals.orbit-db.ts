@@ -1,7 +1,7 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { ProposalsProvider } from '@uprtcl/evees';
-import { UpdateRequest, Proposal, NewProposal, NewPerspectiveData } from '@uprtcl/evees';
+import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { OrbitDBConnection } from './orbit-db.connection';
 import { CASStore } from '@uprtcl/multiplatform';
 
@@ -10,11 +10,6 @@ export interface ProposalManifest {
   fromPerspectiveId: string;
   timestamp: number;
   owners: string[];
-}
-
-export interface ProposalDetails {
-  updates: UpdateRequest[];
-  newPerspectives: NewPerspectiveData[];
 }
 
 const defaultDetails: ProposalDetails = {
@@ -45,14 +40,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     /** Derive a proposal id from the proposal manifest */
     const proposalId = await this.store.create(proposalManifest);
 
-    await this.updateProposalInternal(
-      proposalId,
-      {
-        newPerspectives: [],
-        updates: proposal.updates
-      },
-      true
-    );
+    await this.updateProposalInternal(proposalId, proposal.details, true);
 
     const proposalsStore = await this.connection.proposalsToPerspectiveStore(
       proposal.toPerspectiveId,
@@ -60,6 +48,12 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     );
 
     await proposalsStore.add(proposalId);
+
+    this.logger.info('createProposal() - done', {
+      proposalId,
+      proposalManifest,
+      details: proposal.details
+    });
 
     return proposalId;
   }
@@ -107,7 +101,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
       creatorId: '',
       toPerspectiveId: proposalManifest.toPerspectiveId,
       fromPerspectiveId: proposalManifest.fromPerspectiveId,
-      updates: proposalDetails.updates
+      details: proposalDetails
     };
 
     this.logger.info('getProposal() - post', { proposal });

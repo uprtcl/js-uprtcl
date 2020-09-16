@@ -1,10 +1,10 @@
 import { ApolloClient, ApolloLink, gql } from 'apollo-boost';
 import Observable from 'zen-observable-ts';
 import cloneDeep from 'lodash-es/cloneDeep';
-import { CREATE_ENTITY, CREATE_PERSPECTIVE } from '../graphql/queries';
+import { CREATE_ENTITY, CREATE_PERSPECTIVE, UPDATE_HEAD } from '../graphql/queries';
 import { Entity, PatternRecognizer } from '@uprtcl/cortex';
-import { UpdateRequest, NewPerspectiveData } from '../types';
-import { EveesHelpers } from '../graphql/helpers';
+import { UpdateRequest, NewPerspectiveData, Proposal } from '../types';
+import { EveesHelpers } from '../graphql/evees.helpers';
 
 export class EveesWorkspace {
   private entities: Entity<any>[] = [];
@@ -13,27 +13,24 @@ export class EveesWorkspace {
 
   public workspace: ApolloClient<any>;
 
-  constructor(
-    client: ApolloClient<any>,
-    protected recognizer?: PatternRecognizer
-  ) {
+  constructor(client: ApolloClient<any>, protected recognizer?: PatternRecognizer) {
     this.workspace = this.buildWorkspace(client);
   }
 
   private buildWorkspace(client: ApolloClient<any>): ApolloClient<any> {
     const link = new ApolloLink((operation, forward) => {
-      return new Observable((observer) => {
+      return new Observable(observer => {
         client
           .query({
             query: operation.query,
             variables: operation.variables,
-            context: operation.getContext(),
+            context: operation.getContext()
           })
-          .then((result) => {
+          .then(result => {
             observer.next(result);
             observer.complete();
           })
-          .catch((error) => {
+          .catch(error => {
             observer.error(error);
             observer.complete();
           });
@@ -45,7 +42,7 @@ export class EveesWorkspace {
     const workspace = new ApolloClient<any>({
       cache: cloneDeep(client.cache),
       typeDefs: client.typeDefs,
-      link: link,
+      link: link
     });
 
     return workspace;
@@ -57,19 +54,16 @@ export class EveesWorkspace {
 
   public async isSingleAuthority(remote: string) {
     const newNot = this.newPerspectives.find(
-      (newPerspective) =>
-        newPerspective.perspective.object.payload.remote !== remote
+      newPerspective => newPerspective.perspective.object.payload.remote !== remote
     );
     if (newNot !== undefined) return false;
 
-    const check = this.updates.map(async (update) =>
+    const check = this.updates.map(async update =>
       EveesHelpers.getPerspectiveRemoteId(this.workspace, update.perspectiveId)
     );
     const checktoPerspectives = await Promise.all(check);
 
-    const updateNot = checktoPerspectives.find(
-      (_remoteId) => _remoteId !== remote
-    );
+    const updateNot = checktoPerspectives.find(_remoteId => _remoteId !== remote);
     if (updateNot !== undefined) return false;
 
     return true;
@@ -92,9 +86,11 @@ export class EveesWorkspace {
     this.cacheCreateEntity(this.workspace, entity);
   }
 
-  public newPerspective(perspective: NewPerspectiveData) {
-    this.newPerspectives.push(perspective);
-    this.cacheInitPerspective(this.workspace, perspective);
+  public newPerspective(newPerspective: NewPerspectiveData) {
+    /* perspective entity is stored as an entity too */
+    this.create(newPerspective.perspective);
+    this.newPerspectives.push(newPerspective);
+    this.cacheInitPerspective(this.workspace, newPerspective);
   }
 
   public update(update: UpdateRequest) {
@@ -126,24 +122,17 @@ export class EveesWorkspace {
           _context: {
             __typename: 'EntityContext',
             object: entity.object,
-            casID: entity.casID,
-          },
-        },
-      },
+            casID: entity.casID
+          }
+        }
+      }
     });
   }
 
-  public cacheInitPerspective(
-    client: ApolloClient<any>,
-    newPerspective: NewPerspectiveData
-  ) {
+  public cacheInitPerspective(client: ApolloClient<any>, newPerspective: NewPerspectiveData) {
     const perspectiveId = newPerspective.perspective.id;
-    const headId = newPerspective.details
-      ? newPerspective.details.headId
-      : undefined;
-    const context = newPerspective.details
-      ? newPerspective.details.context
-      : undefined;
+    const headId = newPerspective.details ? newPerspective.details.headId : undefined;
+    const context = newPerspective.details ? newPerspective.details.context : undefined;
     const object = newPerspective.perspective.object;
 
     client.cache.writeQuery({
@@ -170,19 +159,19 @@ export class EveesWorkspace {
           id: perspectiveId,
           head: {
             __typename: 'Commit',
-            id: headId,
+            id: headId
           },
           context: {
             __typename: 'Context',
-            id: context,
+            id: context
           },
           _context: {
             __typename: 'EntityContext',
             object,
-            casID: '',
-          },
-        },
-      },
+            casID: ''
+          }
+        }
+      }
     });
   }
 
@@ -207,10 +196,10 @@ export class EveesWorkspace {
           id: perspectiveId,
           head: {
             __typename: 'Commit',
-            id: update.newHeadId,
-          },
-        },
-      },
+            id: update.newHeadId
+          }
+        }
+      }
     });
   }
 
@@ -218,24 +207,23 @@ export class EveesWorkspace {
   public async execute(client: ApolloClient<any>) {
     await this.executeCreate(client);
     await this.executeInit(client);
+    return this.executeUpdate(client);
   }
 
   public async executeCreate(client: ApolloClient<any>) {
-    const create = this.entities.map(async (entity) => {
+    const create = this.entities.map(async entity => {
       const mutation = await client.mutate({
         mutation: CREATE_ENTITY,
         variables: {
           object: entity.object,
-          casID: entity.casID,
-        },
+          casID: entity.casID
+        }
       });
 
       const dataId = mutation.data.createEntity.id;
 
       if (dataId !== entity.id) {
-        throw new Error(
-          `created entity id ${dataId} not as expected ${entity.id}`
-        );
+        throw new Error(`created entity id ${dataId} not as expected ${entity.id}`);
       }
     });
 
@@ -256,8 +244,8 @@ export class EveesWorkspace {
           remote: newPerspective.perspective.object.payload.remote,
           path: newPerspective.perspective.object.payload.path,
           canWrite: newPerspective.canWrite,
-          parentId: newPerspective.parentId,
-        },
+          parentId: newPerspective.parentId
+        }
       });
       if (result.data.createPerspective.id !== newPerspective.perspective.id) {
         throw new Error(
@@ -270,17 +258,28 @@ export class EveesWorkspace {
      *  permissions depend on previous ones */
     await this.newPerspectives
       .reverse()
-      .reduce(
-        (promise, action) => promise.then((_) => createPerspective(action)),
-        Promise.resolve()
-      );
+      .reduce((promise, action) => promise.then(_ => createPerspective(action)), Promise.resolve());
   }
 
   /** copies the new perspective data (head) in the workspace into the
    *  cache of an apollo client */
   public async precacheNewPerspectives(client: ApolloClient<any>) {
-    this.newPerspectives.reverse().map((newPerspective) => {
+    this.newPerspectives.reverse().map(newPerspective => {
       this.cacheInitPerspective(client, newPerspective);
     });
+  }
+
+  public async executeUpdate(client: ApolloClient<any>) {
+    const update = this.getUpdates().map(async update => {
+      return client.mutate({
+        mutation: UPDATE_HEAD,
+        variables: {
+          perspectiveId: update.perspectiveId,
+          headId: update.newHeadId
+        }
+      });
+    });
+
+    return Promise.all(update);
   }
 }

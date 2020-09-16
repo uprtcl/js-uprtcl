@@ -51,15 +51,16 @@ export interface Proposal {
   id: string;
   creatorId?: string;
   timestamp?: number;
-  toPerspectiveId?: string;
-  fromPerspectiveId: string;
+  toPerspectiveId: string;
+  fromPerspectiveId?: string;
   toHeadId?: string;
   fromHeadId?: string;
-  updates?: Array<UpdateRequest>;
-  status?: boolean;
-  authorized?: boolean;
-  executed?: boolean;
-  canAuthorize?: boolean;
+  details: ProposalDetails;
+}
+
+export interface ProposalDetails {
+  updates: UpdateRequest[];
+  newPerspectives: NewPerspectiveData[];
 }
 
 export interface NewProposal {
@@ -67,17 +68,17 @@ export interface NewProposal {
   toPerspectiveId: string;
   fromHeadId: string;
   toHeadId: string;
-  updates: UpdateRequest[];
+  details: ProposalDetails;
 }
 
 export interface ProposalCreatedDetail {
-  proposalId: string;
   remote: string;
+  proposalDetails: ProposalDetails;
 }
 
 export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
   constructor(eventInitDict?: CustomEventInit<ProposalCreatedDetail>) {
-    super('evees-proposal-created', eventInitDict);
+    super('evees-proposal', eventInitDict);
   }
 }
 
@@ -101,4 +102,12 @@ export interface DiffLens {
 
 export interface HasDiffLenses<T = any> extends Behaviour<T> {
   diffLenses: () => DiffLens[];
+}
+
+export interface EveesConfig {
+  defaultRemote?: EveesRemote;
+  emitIf?: {
+    remote: string;
+    owner: string;
+  };
 }

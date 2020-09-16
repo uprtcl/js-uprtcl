@@ -34,6 +34,15 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     };
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener('evees-proposal', e => {
+      console.log('CATCHED EVENT: evees-proposal ', { e });
+      e.stopPropagation();
+    });
+  }
+
   async firstUpdated() {
     this.loading = true;
 
@@ -45,7 +54,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = state[2].split('id=')[1];
     });
 
-    const defaultRemote = this.request(EveesModule.bindings.DefaultRemote);
+    const defaultRemote = this.request(EveesModule.bindings.Config).defaultRemote;
     await defaultRemote.ready();
 
     this.defaultRemoteId = defaultRemote.id;
@@ -109,14 +118,14 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return html`
       <div class="home">
         ${this.canCreate
-      ? html`
+          ? html`
               <uprtcl-button-loading
                 @click=${() => this.createSpace()}
                 loading=${this.creatingSpace ? 'true' : 'false'}
                 >create space</uprtcl-button-loading
               >
             `
-      : html`
+          : html`
               <uprtcl-button @click=${() => this.connectWallet()}>connect</uprtcl-button>
             `}
       </div>
@@ -138,14 +147,14 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   render() {
     return html`
       ${!this.loading
-      ? html`
+        ? html`
             <div class="app-header">HEADER</div>
             <div class="app-content">
               <div class="app-bar">BAR</div>
               ${this.rootHash === undefined ? this.renderCreate() : this.renderWiki()}
             </div>
           `
-      : html`
+        : html`
             Loading...
           `}
     `;
