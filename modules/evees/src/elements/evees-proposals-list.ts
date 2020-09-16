@@ -1,24 +1,9 @@
 import { ApolloClient, gql } from 'apollo-boost';
-import { LitElement, property, html, css, query } from 'lit-element';
+import { LitElement, property, html, css } from 'lit-element';
 
-import { loadEntity } from '@uprtcl/multiplatform';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-
-import { Proposal, Perspective } from '../types';
-import { eveeColor } from './support';
-
-import { EveesWorkspace } from '../services/evees.workspace';
-import { UprtclDialog } from '@uprtcl/common-ui';
-import { EveesDiff } from './evees-diff';
-
-export const DEFAULT_COLOR = '#d0dae0';
-import { Signed } from '@uprtcl/cortex';
-
-const PENDING_ACTION: string = 'Pending';
-const AUTHORIZE_ACTION: string = 'Authorize';
-const EXECUTE_ACTION: string = 'Execute';
-const MERGE_EXECUTED: string = 'Accepted';
+import { EveesHelpers } from '../graphql/evees.helpers';
 
 export class ProposalsList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
@@ -29,28 +14,12 @@ export class ProposalsList extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loadingProposals: boolean = true;
 
-  @property({ attribute: false })
-  pendingProposals: Proposal[] = [];
-
-  @property({ attribute: false })
-  mergedProposals: Proposal[] = [];
-
-  @property({ attribute: false })
-  showDiff: Boolean = false;
-
-  @property({ attribute: false })
-  showHistory: Boolean = false;
-
   @property({ attribute: 'force-update' })
   forceUpdate: string = 'true';
 
-  @query('#updates-dialog')
-  updatesDialogEl!: UprtclDialog;
-
-  @query('#evees-update-diff')
-  eveesDiffEl!: EveesDiff;
-
-  protected client!: ApolloClient<any>;
+  proposalsIds: string[] = [];
+  remoteId!: string;
+  client!: ApolloClient<any>;
 
   async firstUpdated() {
     if (!this.isConnected) return;
@@ -71,79 +40,18 @@ export class ProposalsList extends moduleConnect(LitElement) {
           entity(uref: "${this.perspectiveId}") {
             id
             ... on Perspective {
-              proposals {
-                id
-                fromPerspective {
-                  id
-                }
-                authorized
-                canAuthorize
-                executed
-                updates {
-                  toPerspective {
-                    id
-                  }
-                  fromPerspective {
-                    id
-                  }
-                  oldHead {
-                    id 
-                  }
-                  newHead {
-                    id
-                  }
-                }
-              }
+              proposals
             }
           }
-        }`,
+        }`
     });
 
-    const getProposals: Proposal[] = result.data
-      ? result.data.entity.proposals.map(
-          async (prop): Promise<Proposal> => {
-            const updates = prop.updates.map((update) => {
-              return {
-                perspectiveId: update.toPerspective.id,
-                fromPerspectiveId: update.fromPerspective.id,
-                oldHeadId: update.oldHead.id,
-                newHeadId: update.newHead.id,
-              };
-            });
-
-            const fromPerspective = await loadEntity<Signed<Perspective>>(
-              this.client,
-              prop.fromPerspective.id
-            );
-
-            return {
-              id: prop.id,
-              fromPerspectiveId: prop.fromPerspective.id,
-              creatorId: fromPerspective
-                ? fromPerspective.object.payload.creatorId
-                : '',
-              authorized: prop.authorized,
-              canAuthorize: prop.canAuthorize,
-              executed: prop.executed,
-              updates,
-            };
-          }
-        )
-      : [];
-
-    const proposals = await Promise.all(getProposals);
-
     /** data on other perspectives (proposals are injected on them) */
-    this.pendingProposals = proposals.filter(
-      (proposal) => proposal.executed !== true
-    );
-    this.mergedProposals = proposals.filter(
-      (proposal) => proposal.executed === true
-    );
+    this.proposalsIds = result.data.entity.proposals;
+    this.remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.perspectiveId);
 
     this.loadingProposals = false;
-
-    this.logger.info('getProposals()', { proposals });
+    this.logger.info('getProposals()', { proposalsIds: this.proposalsIds });
   }
 
   updated(changedProperties) {
@@ -157,156 +65,33 @@ export class ProposalsList extends moduleConnect(LitElement) {
     }
   }
 
-  async showProposalChanges(proposal: Proposal) {
-    const workspace = new EveesWorkspace(this.client);
-    if (proposal.updates) {
-      for (const update of proposal.updates) {
-        workspace.update(update);
-      }
-    }
-
-    this.showDiff = true;
-    await this.updateComplete;
-
-    this.eveesDiffEl.workspace = workspace;
-
-    const canAuthorize = this.getProposalAction(proposal) === AUTHORIZE_ACTION;
-    if (canAuthorize) {
-      this.updatesDialogEl.primaryText = 'accept';
-      this.updatesDialogEl.secondaryText = 'close';
-      this.updatesDialogEl.showSecondary = 'true';
-    } else {
-      this.updatesDialogEl.primaryText = 'close';
-    }
-
-    const value = await new Promise((resolve) => {
-      this.updatesDialogEl.resolved = (value) => {
-        this.showDiff = false;
-        resolve(value);
-      };
-    });
-
-    if (canAuthorize && value) {
-      this.authorizeProposal(proposal);
-    }
-  }
-
-  authorizeProposal(proposal: Proposal) {
-    this.dispatchEvent(
-      new CustomEvent('authorize-proposal', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          proposalId: proposal.id,
-          perspectiveId: this.perspectiveId,
-        },
-      })
-    );
-  }
-
-  getProposalAction(proposal: Proposal): string {
-    if (!proposal.authorized) {
-      if (proposal.canAuthorize) {
-        return AUTHORIZE_ACTION;
-      } else {
-        return PENDING_ACTION;
-      }
-    } else {
-      if (proposal.executed === undefined || !proposal.executed) {
-        return EXECUTE_ACTION;
-      } else {
-        return MERGE_EXECUTED;
-      }
-    }
-  }
-
-  getProposalActionDisaled(proposal: Proposal) {
-    return [PENDING_ACTION, MERGE_EXECUTED].includes(
-      this.getProposalAction(proposal)
-    );
-  }
-
-  renderLoading() {
-    return html`
-      <div class="loading-container">
-        <uprtcl-loading></uprtcl-loading>
-      </div>
-    `;
-  }
-
-  renderProposalRow(proposal: Proposal) {
-    return html`
-      <uprtcl-list-item
-        hasMeta
-        @click=${() => this.showProposalChanges(proposal)}
-      >
-        <evees-author
-          color=${eveeColor(proposal.fromPerspectiveId)}
-          user-id=${proposal.creatorId as string}
-        ></evees-author>
-
-        ${!this.getProposalActionDisaled(proposal)
-          ? html` <uprtcl-button slot="meta" icon="call_merge" skinny>
-              approve
-            </uprtcl-button>`
-          : ''}
-      </uprtcl-list-item>
-    `;
-  }
-
-  renderProposals() {
-    return this.pendingProposals.length > 0
-      ? html`
-          ${this.pendingProposals.map((proposal) =>
-            this.renderProposalRow(proposal)
-          )}
-        `
-      : '';
-  }
-
-  renderOldProposals() {
-    if (this.mergedProposals.length === 0) return '';
-
-    return html`
-      <div class="list-section">
-        <strong
-          >Old Proposals
-          <span
-            class="inline-button"
-            @click=${() => (this.showHistory = !this.showHistory)}
-            >(${this.showHistory ? 'hide' : 'show'})</span
-          >
-        </strong>
-      </div>
-      ${this.showHistory
-        ? this.mergedProposals.map((proposal) =>
-            this.renderProposalRow(proposal)
-          )
-        : ''}
-    `;
-  }
-
-  renderDiff() {
-    this.logger.log('renderDiff()');
-    return html`
-      <uprtcl-dialog id="updates-dialog">
-        <evees-update-diff id="evees-update-diff"> </evees-update-diff>
-      </uprtcl-dialog>
-    `;
-  }
-
   render() {
     return this.loadingProposals
-      ? this.renderLoading()
+      ? html`
+          <div class="loading-container">
+            <uprtcl-loading></uprtcl-loading>
+          </div>
+        `
       : html`
-          ${this.pendingProposals.length > 0 || this.mergedProposals.length > 0
+          ${this.proposalsIds.length > 0
             ? html`
-                <uprtcl-list activatable>
-                  ${this.renderProposals()} ${this.renderOldProposals()}
+                <uprtcl-list>
+                  ${this.proposalsIds.map(
+                    id =>
+                      html`
+                        <uprtcl-list-item
+                          ><evees-proposal-row
+                            proposal-id=${id}
+                            remote-id=${this.remoteId}
+                          ></evees-proposal-row
+                        ></uprtcl-list-item>
+                      `
+                  )}
                 </uprtcl-list>
               `
-            : html`<div class="empty"><i>No proposals found</i></div>`}
-          ${this.showDiff ? this.renderDiff() : ''}
+            : html`
+                <div class="empty"><i>No proposals found</i></div>
+              `}
         `;
   }
 
@@ -317,72 +102,16 @@ export class ProposalsList extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
       }
-      .row {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        flex: 1;
-      }
       .loading-container {
         flex-grow: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;
       }
-
-      .perspective-mark {
-        height: 30px;
-        width: 10px;
-        border-radius: 4px;
-        float: left;
-      }
-
-      .list-row {
-        width: 100%;
-        display: flex;
-      }
-
-      .list-section {
-        text-align: left;
-        padding: 6px 12px 0px 16px;
-        color: #4e585c;
-      }
-
-      .perspective-title {
-        flex-grow: 1;
-      }
-
-      .perspective-action {
-        display: flex;
-        flex-direction: column;
-        padding-right: 16px;
-        justify-content: center;
-      }
-
-      .button-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding-right: 16px;
-      }
-
       .empty {
         margin-top: 60px;
         color: #d0d8db;
         text-align: center;
-      }
-
-      .inline-button {
-        cursor: pointer;
-        text-decoration: underline;
-        color: #2196f3;
-      }
-
-      @media (max-width: 768px) {
-        .proposals,
-        .perspectives {
-          flex-direction: column;
-        }
       }
     `;
   }

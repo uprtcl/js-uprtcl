@@ -1,18 +1,9 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { inject, injectable } from 'inversify';
 
-import {
-  DiscoveryModule,
-  EntityCache,
-  loadEntity,
-} from '@uprtcl/multiplatform';
+import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
 import { Dictionary } from '@uprtcl/micro-orchestrator';
-import {
-  CortexModule,
-  PatternRecognizer,
-  Entity,
-  Signed,
-} from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer, Entity, Signed } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { UpdateRequest, Commit, RemoteMap } from '../types';
@@ -25,7 +16,7 @@ import { mergeResult } from './utils';
 import { deriveEntity } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
 import { EveesWorkspace } from '../services/evees.workspace';
-import { EveesHelpers } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/evees.helpers';
 
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
@@ -46,12 +37,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     workspace: EveesWorkspace,
     config: any
   ): Promise<string> {
-    return this.mergePerspectives(
-      toPerspectiveId,
-      fromPerspectiveId,
-      config,
-      workspace
-    );
+    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config, workspace);
   }
 
   async mergePerspectives(
@@ -60,12 +46,11 @@ export class SimpleMergeStrategy implements MergeStrategy {
     workspace: EveesWorkspace,
     config: any
   ): Promise<string> {
-    const promises = [toPerspectiveId, fromPerspectiveId].map(async (id) =>
+    const promises = [toPerspectiveId, fromPerspectiveId].map(async id =>
       EveesHelpers.getPerspectiveHeadId(this.client, id)
     );
     const [toHeadId, fromHeadId] = await Promise.all(promises);
-    if (fromHeadId === undefined)
-      throw new Error('cannot merged undefined head');
+    if (fromHeadId === undefined) throw new Error('cannot merged undefined head');
 
     const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
@@ -74,13 +59,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     if (toHeadId === undefined) {
       newHead = fromHeadId;
     } else {
-      newHead = await this.mergeCommits(
-        toHeadId,
-        fromHeadId,
-        remote.id,
-        workspace,
-        config
-      );
+      newHead = await this.mergeCommits(toHeadId, fromHeadId, remote.id, workspace, config);
     }
 
     /** prevent an update head to the same head */
@@ -92,16 +71,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
       fromPerspectiveId,
       perspectiveId: toPerspectiveId,
       oldHeadId: toHeadId,
-      newHeadId: newHead,
+      newHeadId: newHead
     };
 
     workspace.update(request);
     return toPerspectiveId;
   }
 
-  protected async loadPerspectiveData(
-    perspectiveId: string
-  ): Promise<Entity<any>> {
+  protected async loadPerspectiveData(perspectiveId: string): Promise<Entity<any>> {
     const result = await this.client.query({
       query: gql`{
         entity(uref: "${perspectiveId}") {
@@ -118,13 +95,13 @@ export class SimpleMergeStrategy implements MergeStrategy {
             }
           }
         }
-      }`,
+      }`
     });
 
     const object = result.data.entity.head.data._context.object;
     return {
       id: result.data.entity.head.data.id,
-      object,
+      object
     };
   }
 
@@ -140,13 +117,13 @@ export class SimpleMergeStrategy implements MergeStrategy {
             }
           }
         }
-      }`,
+      }`
     });
 
     const object = result.data.entity.data._context.object;
     return {
       id: result.data.entity.data.id,
-      object,
+      object
     };
   }
 
@@ -172,26 +149,15 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg);
 
     const commitsIds = [toCommitId, fromCommitId];
-    const ancestorId = await findMostRecentCommonAncestor(this.client)(
-      commitsIds
-    );
+    const ancestorId = await findMostRecentCommonAncestor(this.client)(commitsIds);
 
-    const datasPromises = commitsIds.map(async (commitId) =>
-      this.loadCommitData(commitId)
-    );
+    const datasPromises = commitsIds.map(async commitId => this.loadCommitData(commitId));
     const newDatas = await Promise.all(datasPromises);
 
     const ancestorData: any =
-      ancestorId !== undefined
-        ? await this.loadCommitData(ancestorId)
-        : newDatas[0];
+      ancestorId !== undefined ? await this.loadCommitData(ancestorId) : newDatas[0];
 
-    const mergedData = await this.mergeData(
-      ancestorData,
-      newDatas,
-      workspace,
-      config
-    );
+    const mergedData = await this.mergeData(ancestorData, newDatas, workspace, config);
 
     const type = this.recognizer.recognizeType(ancestorData);
     const instance = this.evees.getRemote(remote);
@@ -208,21 +174,17 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     workspace.create(entity);
 
-    if (!instance.userId)
-      throw new Error('Cannot create commits in a casID you are not signed in');
+    if (!instance.userId) throw new Error('Cannot create commits in a casID you are not signed in');
 
     const newCommit: Commit = {
       dataId: entity.id,
       parentsIds: commitsIds,
       message: `Merge commits ${commitsIds.toString()}`,
       timestamp: Date.now(),
-      creatorsIds: [instance.userId],
+      creatorsIds: [instance.userId]
     };
 
-    const securedCommit = await deriveSecured(
-      newCommit,
-      instance.store.cidConfig
-    );
+    const securedCommit = await deriveSecured(newCommit, instance.store.cidConfig);
 
     securedCommit.casID = instance.store.casID;
     workspace.create(securedCommit);
@@ -238,7 +200,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   ): Promise<T> {
     const merge: Merge | undefined = this.recognizer
       .recognizeBehaviours(originalData)
-      .find((prop) => !!(prop as Merge).merge);
+      .find(prop => !!(prop as Merge).merge);
 
     if (!merge)
       throw new Error(
@@ -263,7 +225,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       const link = originalLinks[i];
       originalLinksDic[link] = {
         index: i,
-        link: link,
+        link: link
       };
     }
 
@@ -275,7 +237,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
         const link = newData[j];
         links[link] = {
           index: j,
-          link: link,
+          link: link
         };
         allLinks[link] = true;
       }
@@ -286,7 +248,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     for (const link of Object.keys(allLinks)) {
       const linkResult = mergeResult(
         originalLinksDic[link],
-        newLinks.map((newLink) => newLink[link])
+        newLinks.map(newLink => newLink[link])
       );
       if (linkResult) {
         resultLinks.push(linkResult);
@@ -295,7 +257,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const sortedLinks = resultLinks
       .sort((link1, link2) => link1.index - link2.index)
-      .map((link) => link.link);
+      .map(link => link.link);
 
     return sortedLinks;
   }

@@ -9,7 +9,7 @@ export {
   PerspectiveDetails,
   RemoteMap,
   HasDiffLenses,
-  DiffLens,
+  DiffLens
 } from './types';
 
 /** Services interfaces */
@@ -44,7 +44,7 @@ export {
   UpdateContentArgs,
   ContentUpdatedEvent,
   SpliceChildrenEvent,
-  CONTENT_UPDATED_TAG,
+  CONTENT_UPDATED_TAG
 } from './elements/events';
 
 /** UI support components */
@@ -52,22 +52,11 @@ export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
-export {
-  UPDATE_HEAD,
-  CREATE_PERSPECTIVE,
-  CREATE_ENTITY,
-} from './graphql/queries';
-export {
-  EveesHelpers,
-  CreatePerspective,
-  CreateCommit,
-} from './graphql/helpers';
+export { UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
+export { EveesHelpers, CreatePerspective, CreateCommit } from './graphql/evees.helpers';
 
 /** Patterns */
-export {
-  PerspectivePattern,
-  PerspectiveLinks,
-} from './patterns/perspective.pattern';
+export { PerspectivePattern, PerspectiveLinks } from './patterns/perspective.pattern';
 export { CommitLinked, CommitPattern } from './patterns/commit.pattern';
 export { Secured, hashObject, deriveEntity } from './utils/cid-hash';
 export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';
@@ -76,7 +65,7 @@ export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';
 export { isAncestorOf } from './utils/ancestor';
 
 /** Proposals */
-export { Proposal, UpdateRequest, NewProposal } from './types';
+export { Proposal, UpdateRequest, NewProposal, ProposalDetails } from './types';
 export { ProposalsProvider } from './services/proposals.provider';
 
 /** Aceess Control */

@@ -21,23 +21,30 @@ export class UprtclButton extends LitElement {
     if (this.disabled) {
       classes.push('button-disabled');
     } else {
-      if (this.skinny) {
-        classes.push('button-skinny', 'cursor');
-      } else {
-        classes.push('button-filled', 'cursor');
-      }
-
-      if (this.raised) {
-        classes.push('button-raised', 'cursor');
-      }
+      classes.push('cursor');
     }
-    return html` <div class=${classes.join(' ')}>
-      ${this.icon !== undefined
-        ? html`<div class="icon-container">${icons[this.icon]}</div>`
-        : ''}
 
-      <slot></slot>
-    </div>`;
+    if (this.skinny) {
+      classes.push('button-skinny');
+    } else {
+      classes.push('button-filled');
+    }
+
+    if (this.raised) {
+      classes.push('button-raised');
+    }
+
+    return html`
+      <div class=${classes.join(' ')}>
+        ${this.icon !== undefined
+          ? html`
+              <div class="icon-container">${icons[this.icon]}</div>
+            `
+          : ''}
+
+        <slot></slot>
+      </div>
+    `;
   }
 
   static get styles() {
@@ -66,7 +73,7 @@ export class UprtclButton extends LitElement {
           justify-content: center;
           margin-right: 10px;
         }
-      `,
+      `
     ];
   }
 }

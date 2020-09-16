@@ -80,7 +80,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             }
           }
         }
-      }`,
+      }`
     });
 
     /** data on other perspectives (proposals are injected on them) */
@@ -91,35 +91,30 @@ export class PerspectivesList extends moduleConnect(LitElement) {
             result.data.entity.context.perspectives.map(
               async (perspective): Promise<PerspectiveData> => {
                 /** data on this perspective */
-                const remote = (this.requestAll(
-                  EveesBindings.EveesRemote
-                ) as EveesRemote[]).find(
-                  (r) => r.id === perspective.payload.remote
+                const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+                  r => r.id === perspective.payload.remote
                 );
-                if (!remote)
-                  throw new Error(
-                    `remote not found for ${perspective.payload.remote}`
-                  );
+                if (!remote) throw new Error(`remote not found for ${perspective.payload.remote}`);
                 this.canWrite = await remote.canWrite(this.perspectiveId);
                 return {
                   id: perspective.id,
                   name: perspective.name,
                   creatorId: perspective.payload.creatorId,
                   timestamp: perspective.payload.timestamp,
-                  remote: perspective.payload.remote,
+                  remote: perspective.payload.remote
                 };
               }
             )
           );
 
     this.otherPerspectivesData = this.perspectivesData.filter(
-      (perspectiveData) => perspectiveData.id !== this.firstPerspectiveId
+      perspectiveData => perspectiveData.id !== this.firstPerspectiveId
     );
 
     this.loadingPerspectives = false;
 
     this.logger.info('getOtherPersepectives() - post', {
-      persperspectivesData: this.perspectivesData,
+      persperspectivesData: this.perspectivesData
     });
   }
 
@@ -129,8 +124,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         bubbles: true,
         composed: true,
         detail: {
-          id,
-        },
+          id
+        }
       })
     );
   }
@@ -140,10 +135,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       this.logger.log('updating getOtherPersepectivesData');
       this.load();
     }
-    if (
-      changedProperties.has('perspectiveId') ||
-      changedProperties.has('firstPerspectiveId')
-    ) {
+    if (changedProperties.has('perspectiveId') || changedProperties.has('firstPerspectiveId')) {
       this.logger.log('updating getOtherPersepectivesData');
       this.load();
     }
@@ -157,37 +149,17 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     }
   }
 
-  perspectiveButtonClicked(
-    event: Event,
-    action: string,
-    perspectiveData: PerspectiveData
-  ) {
+  perspectiveButtonClicked(event: Event, perspectiveData: PerspectiveData) {
     event.stopPropagation();
-    switch (action) {
-      case MERGE_ACTION:
-        this.dispatchEvent(
-          new CustomEvent('merge-perspective', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              perspectiveId: perspectiveData.id,
-            },
-          })
-        );
-        break;
-
-      case MERGE_PROPOSAL_ACTION:
-        this.dispatchEvent(
-          new CustomEvent('create-proposal', {
-            bubbles: true,
-            composed: true,
-            detail: {
-              perspectiveId: perspectiveData.id,
-            },
-          })
-        );
-        break;
-    }
+    this.dispatchEvent(
+      new CustomEvent('merge-perspective', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          perspectiveId: perspectiveData.id
+        }
+      })
+    );
   }
 
   getPerspectiveAction(perspectiveData: PerspectiveData) {
@@ -209,9 +181,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   renderPerspectiveRow(perspectiveData: PerspectiveData) {
     return html`
       <uprtcl-list-item
-        style=${`--selected-border-color: ${this.perspectiveColor(
-          perspectiveData.id
-        )}`}
+        style=${`--selected-border-color: ${this.perspectiveColor(perspectiveData.id)}`}
         hasMeta
         ?selected=${this.perspectiveId === perspectiveData.id}
         @click=${() => this.perspectiveClicked(perspectiveData.id)}
@@ -223,19 +193,16 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
         <!-- just enable merges to the official perspective for now -->
         ${this.canPropose && this.perspectiveId === this.firstPerspectiveId
-          ? html` <uprtcl-button
-              slot="meta"
-              icon="call_merge"
-              skinny
-              @click=${(e) =>
-                this.perspectiveButtonClicked(
-                  e,
-                  this.getPerspectiveAction(perspectiveData),
-                  perspectiveData
-                )}
-            >
-              merge
-            </uprtcl-button>`
+          ? html`
+              <uprtcl-button
+                slot="meta"
+                icon="call_merge"
+                skinny
+                @click=${e => this.perspectiveButtonClicked(e, perspectiveData)}
+              >
+                merge
+              </uprtcl-button>
+            `
           : ''}
       </uprtcl-list-item>
     `;
@@ -247,12 +214,14 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       : this.otherPerspectivesData.length > 0
       ? html`
           <uprtcl-list activatable>
-            ${this.otherPerspectivesData.map((perspectiveData) =>
+            ${this.otherPerspectivesData.map(perspectiveData =>
               this.renderPerspectiveRow(perspectiveData)
             )}
           </uprtcl-list>
         `
-      : html`<div class="empty"><i>No other perspectives found</i></div>`;
+      : html`
+          <div class="empty"><i>No other perspectives found</i></div>
+        `;
   }
 
   static get styles() {

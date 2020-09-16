@@ -1,7 +1,5 @@
 import CID from 'cids';
 
-export const ZERO_HEX_32 = '0x' + new Array(32).fill(0).join('');
-
 const constants: [string, number][] = [
   ['base8', 37],
   ['base10', 39],
@@ -25,6 +23,27 @@ const multibaseToUint = (multibaseName: string): number => {
 
 const uintToMultibase = (number: number): string => {
   return constants.filter(e => e[1] == number)[0][0];
+};
+
+export const cidToHex32 = cidStr => {
+  /** store the encoded cids as they are, including the multibase bytes */
+  const cid = new CID(cidStr);
+  const bytes = cid.bytes;
+
+  /* push the code of the multibse (UTF8 number of the string) */
+  const bytesWithMultibase = new Uint8Array(bytes.length + 1);
+  bytesWithMultibase.set(Uint8Array.from([multibaseToUint(cid.multibaseName)]));
+  bytesWithMultibase.set(bytes, 1);
+
+  /** convert to hex */
+  let cidEncoded16 = Buffer.from(bytesWithMultibase).toString('hex');
+  /** pad with zeros */
+  cidEncoded16 = cidEncoded16.padStart(128, '0');
+
+  const cidHex0 = cidEncoded16.slice(-64); /** LSB */
+  const cidHex1 = cidEncoded16.slice(-128, -64);
+
+  return ['0x' + cidHex1, '0x' + cidHex0];
 };
 
 export const bytes32ToCid = bytes => {

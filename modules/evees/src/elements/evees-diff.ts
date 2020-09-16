@@ -8,7 +8,7 @@ import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
 import { EveesWorkspace } from '../services/evees.workspace';
-import { EveesHelpers } from '../graphql/helpers';
+import { EveesHelpers } from '../graphql/evees.helpers';
 
 const LOGINFO = true;
 
@@ -55,29 +55,22 @@ export class EveesDiff extends moduleConnect(LitElement) {
 
     this.loading = true;
 
-    const getDetails = this.workspace.getUpdates().map(async (update) => {
-      const newData = await EveesHelpers.getCommitData(
-        this.workspace.workspace,
-        update.newHeadId
-      );
+    const getDetails = this.workspace.getUpdates().map(async update => {
+      const newData = await EveesHelpers.getCommitData(this.workspace.workspace, update.newHeadId);
 
-      if (update.oldHeadId === undefined)
-        throw new Error('old commit not specified');
-      const oldData = await EveesHelpers.getCommitData(
-        this.workspace.workspace,
-        update.oldHeadId
-      );
+      if (update.oldHeadId === undefined) throw new Error('old commit not specified');
+      const oldData = await EveesHelpers.getCommitData(this.workspace.workspace, update.oldHeadId);
 
       const hasDiffLenses = this.recognizer
         .recognizeBehaviours(oldData)
-        .find((b) => (b as HasDiffLenses<any>).diffLenses);
+        .find(b => (b as HasDiffLenses<any>).diffLenses);
       if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
 
       this.updatesDetails[update.perspectiveId] = {
         diffLense: hasDiffLenses.diffLenses()[0],
         update,
         oldData,
-        newData,
+        newData
       };
     });
 
@@ -90,25 +83,24 @@ export class EveesDiff extends moduleConnect(LitElement) {
     // TODO: review if old data needs to be
     return html`
       <div class="evee-diff">
-        ${details.diffLense.render(
-          this.workspace,
-          details.newData,
-          details.oldData,
-          this.summary
-        )}
+        ${details.diffLense.render(this.workspace, details.newData, details.oldData, this.summary)}
       </div>
     `;
   }
 
   render() {
     if (this.loading) {
-      return html` <uprtcl-loading></uprtcl-loading> `;
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
     }
 
     const perspectiveIds = Object.keys(this.updatesDetails);
     return perspectiveIds.length === 0
-      ? html`<span><i>no changes found</i></span>`
-      : perspectiveIds.map((perspectiveId) =>
+      ? html`
+          <span><i>no changes found</i></span>
+        `
+      : perspectiveIds.map(perspectiveId =>
           this.renderUpdateDiff(this.updatesDetails[perspectiveId])
         );
   }

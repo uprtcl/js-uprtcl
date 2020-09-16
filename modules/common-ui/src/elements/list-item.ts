@@ -11,14 +11,18 @@ export class UprtclListItem extends LitElement {
     let classes = ['container'];
     if (this.selected) classes.push('selected');
 
-    return html`<div class=${classes.join(' ')}>
-      <div class="vertically-centered">
-        <div class="main-item"><slot></slot></div>
-        ${this.hasMeta
-          ? html`<div class="meta-item"><slot name="meta"></slot></div>`
-          : ''}
+    return html`
+      <div class=${classes.join(' ')}>
+        <div class="vertically-centered">
+          <div class="main-item"><slot></slot></div>
+          ${this.hasMeta
+            ? html`
+                <div class="meta-item"><slot name="meta"></slot></div>
+              `
+            : ''}
+        </div>
       </div>
-    </div>`;
+    `;
   }
 
   static get styles() {
@@ -48,14 +52,21 @@ export class UprtclListItem extends LitElement {
         .vertically-centered {
           display: flex;
           flex-direction: row;
+          flex-grow: 1;
         }
         .main-item {
           flex: 1 1 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
         }
         .meta-item {
           flex: 0 0 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
         }
-      `,
+      `
     ];
   }
 }

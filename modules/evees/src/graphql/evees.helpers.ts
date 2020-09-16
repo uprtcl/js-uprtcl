@@ -6,7 +6,7 @@ import { Signed, Entity, PatternRecognizer, HasChildren } from '@uprtcl/cortex';
 
 import { CREATE_ENTITY, CREATE_PERSPECTIVE, UPDATE_HEAD } from './queries';
 import { EveesRemote } from '../services/evees.remote';
-import { Commit, Perspective } from '../types';
+import { Commit, EveesConfig, Perspective } from '../types';
 import { signObject } from '../utils/signed';
 import { EveesBindings } from '../bindings';
 
@@ -236,5 +236,82 @@ export class EveesHelpers {
     });
 
     return headId;
+  }
+
+  static async isAncestorCommit(
+    client: ApolloClient<any>,
+    perspectiveId: string,
+    commitId: string,
+    stopAt?: string
+  ) {
+    const headId = await this.getPerspectiveHeadId(client, perspectiveId);
+    if (headId === undefined) return false;
+    const findAncestor = new FindAncestor(client, commitId, stopAt);
+    return findAncestor.checkIfParent(headId);
+  }
+
+  static async checkEmit(
+    config: EveesConfig,
+    client: ApolloClient<any>,
+    eveesRemotes: EveesRemote[],
+    perspectiveId: string
+  ): Promise<boolean> {
+    if (config.emitIf === undefined) return false;
+
+    const remoteId = await EveesHelpers.getPerspectiveRemoteId(client, perspectiveId);
+    const toRemote = eveesRemotes.find(r => r.id === remoteId);
+    if (!toRemote) throw new Error(`remote not found for ${remoteId}`);
+
+    if (remoteId === config.emitIf.remote) {
+      const owner = await (toRemote.accessControl as any).getOwner(perspectiveId);
+      return owner.toLocaleLowerCase() === config.emitIf.owner.toLocaleLowerCase();
+    }
+
+    return false;
+  }
+}
+
+export class FindAncestor {
+  done: boolean = false;
+
+  constructor(
+    protected client: ApolloClient<any>,
+    protected lookingFor: string,
+    protected stopAt?: string
+  ) {}
+
+  async checkIfParent(commitId: string) {
+    /* stop searching all paths once one path finds it */
+    if (this.done) {
+      return false;
+    }
+
+    if (this.lookingFor === commitId) {
+      this.done = true;
+      return true;
+    }
+
+    if (this.stopAt !== undefined) {
+      if (this.stopAt === commitId) {
+        this.done = true;
+        return false;
+      }
+    }
+
+    const commit = await loadEntity<Signed<Commit>>(this.client, commitId);
+    if (!commit) throw new Error(`commit ${commitId} not found`);
+
+    if (commit.object.payload.parentsIds.length === 0) {
+      return false;
+    }
+
+    const seeParents = await Promise.all(
+      commit.object.payload.parentsIds.map(parentId => {
+        /* recursively look on parents */
+        return this.checkIfParent(parentId);
+      })
+    );
+
+    return seeParents.includes(true);
   }
 }

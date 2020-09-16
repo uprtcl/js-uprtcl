@@ -6,10 +6,7 @@ import { CASModule } from '@uprtcl/multiplatform';
 import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { CommonUIModule } from '@uprtcl/common-ui';
 
-import {
-  PerspectiveLinks,
-  PerspectivePattern,
-} from './patterns/perspective.pattern';
+import { PerspectiveLinks, PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
 import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
@@ -21,7 +18,7 @@ import { PerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
 import en from './i18n/en.json';
-import { RemoteMap, defaultRemoteMap } from './types';
+import { RemoteMap, defaultRemoteMap, EveesConfig } from './types';
 import { EveesInfoPage } from './elements/evees-info-page';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 import { EveesDiff } from './elements/evees-diff';
@@ -29,6 +26,7 @@ import { EveesAuthor } from './elements/evees-author';
 import { ProposalsList } from './elements/evees-proposals-list';
 import { EveesProposalDiff } from './elements/evees-proposal-diff';
 import { EveesLoginWidget } from './elements/evees-login';
+import { EveesProposalRow } from './elements/evees-proposal-row';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -76,7 +74,7 @@ export class EveesModule extends MicroModule {
 
   constructor(
     protected eveesProviders: Array<EveesRemote>,
-    protected defaultRemote: EveesRemote,
+    protected config: EveesConfig,
     protected remoteMap: RemoteMap = defaultRemoteMap
   ) {
     super();
@@ -84,15 +82,12 @@ export class EveesModule extends MicroModule {
 
   async onLoad(container: interfaces.Container) {
     container.bind(EveesModule.bindings.Evees).to(Evees);
-    container
-      .bind(EveesModule.bindings.MergeStrategy)
-      .to(RecursiveContextMergeStrategy);
-    container
-      .bind(EveesModule.bindings.DefaultRemote)
-      .toConstantValue(this.defaultRemote);
-    container
-      .bind(EveesModule.bindings.RemoteMap)
-      .toConstantValue(this.remoteMap);
+    container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
+
+    // set first remote as default remote by default
+    this.config.defaultRemote = this.config.defaultRemote || this.eveesProviders[0];
+    container.bind(EveesModule.bindings.Config).toConstantValue(this.config);
+    container.bind(EveesModule.bindings.RemoteMap).toConstantValue(this.remoteMap);
 
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
@@ -108,6 +103,7 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-proposal-diff', EveesProposalDiff);
     customElements.define('evees-author', EveesAuthor);
     customElements.define('evees-login-widget', EveesLoginWidget);
+    customElements.define('evees-proposal-row', EveesProposalRow);
   }
 
   get submodules() {
@@ -116,10 +112,10 @@ export class EveesModule extends MicroModule {
       new i18nextModule('evees', { en: en }),
       new PatternsModule([
         new CommitPattern([CommitLinked]),
-        new PerspectivePattern([PerspectiveLinks]),
+        new PerspectivePattern([PerspectiveLinks])
       ]),
-      new CASModule(this.eveesProviders.map((p) => p.store)),
-      new CommonUIModule(),
+      new CASModule(this.eveesProviders.map(p => p.store)),
+      new CommonUIModule()
     ];
   }
 }
