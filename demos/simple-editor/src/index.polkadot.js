@@ -49,7 +49,7 @@ import { env } from '../env';
   const pkdEvees = new EveesPolkadot(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
-  const evees = new EveesModule([pkdEvees], pkdEvees);
+  const evees = new EveesModule([pkdEvees]);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
