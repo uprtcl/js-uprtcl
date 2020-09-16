@@ -85,7 +85,9 @@ export class EveesModule extends MicroModule {
     container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
 
     // set first remote as default remote by default
-    this.config.defaultRemote = this.config.defaultRemote || this.eveesProviders[0];
+    this.config = this.config || {};
+    this.config.defaultRemote =
+      (this.config && this.config.defaultRemote) || this.eveesProviders[0];
     container.bind(EveesModule.bindings.Config).toConstantValue(this.config);
     container.bind(EveesModule.bindings.RemoteMap).toConstantValue(this.remoteMap);
 

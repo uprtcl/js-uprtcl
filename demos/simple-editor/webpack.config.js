@@ -13,7 +13,6 @@ module.exports = {
       'lit-html': path.resolve('./node_modules/lit-html')
     }
   },
-  // entry: ['babel-polyfill', './src/index.http.js'],
   entry: ['babel-polyfill', env.entry],
   devServer: {
     historyApiFallback: true,

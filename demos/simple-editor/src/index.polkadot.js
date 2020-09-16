@@ -1,3 +1,5 @@
+import IPFS from 'ipfs';
+
 import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { LensesModule } from '@uprtcl/lenses';
 import { DocumentsModule } from '@uprtcl/documents';
@@ -12,6 +14,8 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 
 import { SimpleWiki } from './simple-wiki';
+
+import { env } from '../env';
 
 (async function() {
   const polkadotWs = '';
@@ -45,7 +49,7 @@ import { SimpleWiki } from './simple-wiki';
   const pkdEvees = new EveesPolkadot(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
-  const evees = new EveesModule([pkdEvees], pkdEvees);
+  const evees = new EveesModule([pkdEvees]);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
@@ -54,7 +58,7 @@ import { SimpleWiki } from './simple-wiki';
     new i18nextBaseModule(),
     new ApolloClientModule(),
     new CortexModule(),
-    new DiscoveryModule([httpEvees.casID]),
+    new DiscoveryModule([pkdEvees.casID]),
     new LensesModule(),
     evees,
     documents,

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@polkadot/api": "^1.32.1",
+    "@polkadot/extension-dapp": "^0.33.4",
     "@uprtcl/cortex": "^0.0.7-alpha.56",
     "@uprtcl/evees": "^0.0.7-alpha.56",
     "@uprtcl/graphql": "^0.0.7-alpha.56",
