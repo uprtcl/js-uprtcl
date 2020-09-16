@@ -6,7 +6,7 @@ import { Signed, Entity, PatternRecognizer, HasChildren } from '@uprtcl/cortex';
 
 import { CREATE_ENTITY, CREATE_PERSPECTIVE, UPDATE_HEAD } from './queries';
 import { EveesRemote } from '../services/evees.remote';
-import { Commit, Perspective } from '../types';
+import { Commit, EveesConfig, Perspective } from '../types';
 import { signObject } from '../utils/signed';
 import { EveesBindings } from '../bindings';
 
@@ -248,6 +248,26 @@ export class EveesHelpers {
     if (headId === undefined) return false;
     const findAncestor = new FindAncestor(client, commitId, stopAt);
     return findAncestor.checkIfParent(headId);
+  }
+
+  static async checkEmit(
+    config: EveesConfig,
+    client: ApolloClient<any>,
+    eveesRemotes: EveesRemote[],
+    perspectiveId: string
+  ): Promise<boolean> {
+    if (config.emitIf === undefined) return false;
+
+    const remoteId = await EveesHelpers.getPerspectiveRemoteId(client, perspectiveId);
+    const toRemote = eveesRemotes.find(r => r.id === remoteId);
+    if (!toRemote) throw new Error(`remote not found for ${remoteId}`);
+
+    if (remoteId === config.emitIf.remote) {
+      const owner = await (toRemote.accessControl as any).getOwner(perspectiveId);
+      return owner.toLocaleLowerCase() === config.emitIf.owner.toLocaleLowerCase();
+    }
+
+    return false;
   }
 }
 

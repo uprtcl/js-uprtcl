@@ -6,7 +6,7 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Perspective, Commit, RemoteMap } from '../types';
+import { Perspective, Commit, RemoteMap, EveesConfig } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
 import { Secured, deriveEntity } from '../utils/cid-hash';
@@ -28,8 +28,8 @@ export class Evees {
     protected eveesRemotes: EveesRemote[],
     @inject(ApolloClientModule.bindings.Client)
     protected client: ApolloClient<any>,
-    @inject(EveesBindings.DefaultRemote)
-    protected defaultRemote: EveesRemote,
+    @inject(EveesBindings.Config)
+    protected config: EveesConfig,
     @inject(EveesBindings.RemoteMap)
     protected remoteMap: RemoteMap
   ) {}
@@ -152,7 +152,8 @@ export class Evees {
     parentId?: string,
     name?: string
   ): Promise<string> {
-    const eveesRemote = remote !== undefined ? this.getRemote(remote) : this.defaultRemote;
+    const eveesRemote =
+      remote !== undefined ? this.getRemote(remote) : (this.config.defaultRemote as EveesRemote);
 
     const object: Perspective = {
       creatorId: eveesRemote.userId ? eveesRemote.userId : '',

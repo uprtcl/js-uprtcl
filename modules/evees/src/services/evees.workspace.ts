@@ -3,7 +3,7 @@ import Observable from 'zen-observable-ts';
 import cloneDeep from 'lodash-es/cloneDeep';
 import { CREATE_ENTITY, CREATE_PERSPECTIVE, UPDATE_HEAD } from '../graphql/queries';
 import { Entity, PatternRecognizer } from '@uprtcl/cortex';
-import { UpdateRequest, NewPerspectiveData } from '../types';
+import { UpdateRequest, NewPerspectiveData, Proposal } from '../types';
 import { EveesHelpers } from '../graphql/evees.helpers';
 
 export class EveesWorkspace {

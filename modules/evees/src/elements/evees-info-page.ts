@@ -6,9 +6,11 @@ const styleMap = style => {
   }, '');
 };
 
+import { EveesHelpers } from '../graphql/evees.helpers';
 import { EveesInfoBase } from './evee-info-base';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
+import { EveesBindings } from 'src/bindings';
 
 export class EveesInfoPage extends EveesInfoBase {
   @property({ type: Boolean, attribute: 'show-perspectives' })
@@ -26,11 +28,21 @@ export class EveesInfoPage extends EveesInfoBase {
   @property({ attribute: false })
   showEditName: boolean = false;
 
+  @property({ attribute: false })
+  isEmit: boolean = false;
+
   @query('#draft-textfield')
   draftTextField!: any;
 
   async firstUpdated() {
     super.firstUpdated();
+
+    this.isEmit = await EveesHelpers.checkEmit(
+      this.config,
+      this.client,
+      this.requestAll(EveesBindings.EveesRemote),
+      this.uref
+    );
   }
 
   connectedCallback() {
@@ -219,13 +231,7 @@ export class EveesInfoPage extends EveesInfoBase {
                               ?can-propose=${this.isLogged}
                               @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
                               @merge-perspective=${e =>
-                                this.otherPerspectiveMerge(
-                                  e.detail.perspectiveId,
-                                  this.uref,
-                                  false
-                                )}
-                              @create-proposal=${e =>
-                                this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref, true)}
+                                this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref)}
                             ></evees-perspectives-list>
                           `
                         : html`
@@ -236,7 +242,7 @@ export class EveesInfoPage extends EveesInfoBase {
                 </div>
               `
             : ''}
-          ${this.showProposals && this.uref === this.firstRef
+          ${this.showProposals && this.uref === this.firstRef && !this.isEmit
             ? html`
                 <div class="section">
                   <div class="section-header">

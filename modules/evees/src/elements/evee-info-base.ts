@@ -14,11 +14,11 @@ import {
   Perspective,
   PerspectiveDetails,
   Commit,
-  getAuthority
+  getAuthority,
+  EveesConfig
 } from '../types';
 import { EveesBindings } from '../bindings';
 import {
-  UPDATE_HEAD,
   EXECUTE_PROPOSAL,
   DELETE_PERSPECTIVE,
   CREATE_PROPOSAL,
@@ -101,6 +101,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   pullWorkspace!: EveesWorkspace;
 
   protected client!: ApolloClient<any>;
+  protected config!: EveesConfig;
   protected merge!: MergeStrategy;
   protected evees!: Evees;
   protected remote!: EveesRemote;
@@ -111,6 +112,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
+    this.config = this.request(EveesBindings.Config);
     this.merge = this.request(EveesBindings.MergeStrategy);
     this.evees = this.request(EveesBindings.Evees);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
@@ -267,14 +269,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.load();
   }
 
-  async otherPerspectiveMerge(
-    fromPerspectiveId: string,
-    toPerspectiveId: string,
-    isProposal: boolean
-  ) {
-    this.logger.info(
-      `merge ${fromPerspectiveId} on ${toPerspectiveId} - isProposal: ${isProposal}`
-    );
+  async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string) {
+    this.logger.info(`merge ${fromPerspectiveId} on ${toPerspectiveId}`);
 
     const workspace = new EveesWorkspace(this.client, this.recognizer);
     const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
@@ -285,6 +281,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       parentId: toPerspectiveId
     };
 
+    const toHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, toPerspectiveId);
+    const fromHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, fromPerspectiveId);
+
     await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
       fromPerspectiveId,
@@ -292,18 +291,58 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       config
     );
 
-    const confirm = await this.updatesDialog(workspace, isProposal ? 'propose' : 'merge', 'cancel');
+    const confirm = await this.updatesDialog(workspace, 'merge', 'cancel');
 
     if (!confirm) {
       return;
     }
 
-    const toHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, toPerspectiveId);
-    const fromHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, fromPerspectiveId);
+    /* for some remotes the proposal is not created but sent to a parent component who will 
+       take care of executing it */
+    if (
+      await EveesHelpers.checkEmit(
+        this.config,
+        this.client,
+        this.requestAll(EveesBindings.EveesRemote),
+        toPerspectiveId
+      )
+    ) {
+      /* entities are just cloned, not part of the proposal */
+      await workspace.executeCreate(this.client);
+      await workspace.precacheNewPerspectives(this.client);
 
-    if (fromHeadId === undefined) throw new Error(`undefuned head for ${fromPerspectiveId}`);
+      this.dispatchEvent(
+        new ProposalCreatedEvent({
+          detail: {
+            remote: await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId),
+            proposalDetails: {
+              newPerspectives: workspace.getNewPerspectives(),
+              updates: workspace.getUpdates()
+            }
+          },
+          bubbles: true,
+          composed: true
+        })
+      );
 
-    if (isProposal) {
+      return;
+    }
+
+    /* if the merge execution is not delegated, it is done here. A proposal is created
+       on the toPerspective remote, or the changes are directly applied.
+       Note that it is assumed that if a user canWrite on toPerspectiveId, he can write 
+       on all the perspectives inside the workspace.updates array. */
+
+    const canWrite = toPerspectiveId;
+
+    if (canWrite) {
+      await workspace.execute(this.client);
+    } else {
+      /** create commits and data */
+      await workspace.executeCreate(this.client);
+      await workspace.precacheNewPerspectives(this.client);
+
+      if (fromHeadId === undefined) throw new Error(`undefined head for ${fromPerspectiveId}`);
       await this.createMergeProposal(
         fromPerspectiveId,
         toPerspectiveId,
@@ -311,15 +350,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         toHeadId,
         workspace
       );
-    } else {
-      await workspace.execute(this.client);
+      this.reloadChildren();
     }
 
     if (this.uref !== toPerspectiveId) {
       this.checkoutPerspective(toPerspectiveId);
-    } else {
-      /** reload perspectives-list */
-      this.reloadChildren();
     }
   }
 
@@ -336,10 +371,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const not = await workspace.isSingleAuthority(remote);
     if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
 
-    /** create commits and data */
-    await workspace.executeCreate(this.client);
-    await workspace.precacheNewPerspectives(this.client);
-
     const result = await this.client.mutate({
       mutation: CREATE_PROPOSAL,
       variables: {
@@ -354,16 +385,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const proposalId = result.data.addProposal.id;
 
-    this.logger.info('created proposal');
-
-    this.dispatchEvent(
-      new ProposalCreatedEvent({
-        detail: { proposalId, remote },
-        cancelable: true,
-        composed: true,
-        bubbles: true
-      })
-    );
+    this.logger.info('created proposal', { proposalId });
   }
 
   async executeProposal(e: CustomEvent) {
@@ -429,7 +451,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async proposeMergeClicked() {
     this.proposingUpdate = true;
-    await this.otherPerspectiveMerge(this.uref, this.firstRef, true);
+    await this.otherPerspectiveMerge(this.uref, this.firstRef);
     this.proposingUpdate = false;
   }
 
