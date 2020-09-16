@@ -1,9 +1,4 @@
 {
-  "packages": [
-    "modules/*",
-    "packages/*",
-    "providers/*",
-    "demos/linked-thoughts"
-  ],
+  "packages": ["modules/*", "packages/*", "providers/*", "demos/simple-editor"],
   "version": "0.0.7-alpha.56"
 }

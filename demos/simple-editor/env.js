@@ -4,12 +4,8 @@ const env = {
   officialRemote: 'eth',
   pinner: {
     url: 'http://localhost:3000',
-    Swarm: [
-      '/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star/',
-      '/dns4/wrtc-star2.sjc.dwebops.pub/tcp/443/wss/p2p-webrtc-star/',
-      '/dns4/webrtc-star.discovery.libp2p.io/tcp/443/wss/p2p-webrtc-star/'
-    ],
-    Bootstrap: ['/ip4/192.168.1.13/tcp/4003/ws/p2p/QmXJTMaeckNpzWFviw6Fhh848n2iwMTJe96RfVyGQFvfpw']
+    Swarm: ['/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star/'],
+    Bootstrap: ['/ip4/192.168.0.108/tcp/4003/ws/p2p/QmdzkHm5uj4Va14iyYpzmFMTwMJC6SPVvUBz7ChpMcE9R9']
   },
   ethers: {
     apiKeys: {
