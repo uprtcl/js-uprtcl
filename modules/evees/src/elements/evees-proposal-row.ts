@@ -198,7 +198,10 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
                 <uprtcl-loading></uprtcl-loading>
               `
             : html`
-                <uprtcl-button skinny ?disabled=${this.executed}
+                <uprtcl-button
+                  icon=${this.executed ? 'done' : this.canExecute ? 'call_merge' : ''}
+                  skinny
+                  ?disabled=${this.executed}
                   >${this.executed ? 'merged' : this.canExecute ? 'merge' : ''}</uprtcl-button
                 >
               `}
@@ -223,11 +226,15 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
         justify-content: center;
       }
       .proposal-state {
-        width: 150px;
+        width: 140px;
         height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
+      }
+
+      .proposal-state uprtcl-button {
+        margin: 0 auto;
       }
     `;
   }

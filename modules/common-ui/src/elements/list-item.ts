@@ -56,9 +56,15 @@ export class UprtclListItem extends LitElement {
         }
         .main-item {
           flex: 1 1 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
         }
         .meta-item {
           flex: 0 0 0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
         }
       `
     ];
