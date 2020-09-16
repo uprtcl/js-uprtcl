@@ -19,8 +19,8 @@ export class EveesAuthor extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'user-id' })
   userId!: string;
 
-  @property({ type: Boolean })
-  showName: boolean = true;
+  @property({ type: Boolean, attribute: 'show-name' })
+  showName: boolean = false;
 
   @property({ type: Boolean })
   short: boolean = false;

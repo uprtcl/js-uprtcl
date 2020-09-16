@@ -188,6 +188,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
 
     this.isLogged = await this.remote.isLogged();
+
+    if (this.defaultRemote) await this.defaultRemote.ready();
+
     this.isLoggedOnDefault =
       this.defaultRemote !== undefined ? await this.defaultRemote.isLogged() : false;
 
@@ -429,6 +432,17 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
 
     const newPerspectiveId = result.data.forkPerspective.id;
+
+    this.dispatchEvent(
+      new CustomEvent('created-child-perspective', {
+        detail: {
+          oldPerspectiveId: this.uref,
+          newPerspectiveId: newPerspectiveId
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
     this.checkoutPerspective(newPerspectiveId);
 
     this.logger.info('newPerspectiveClicked() - perspective created', {
