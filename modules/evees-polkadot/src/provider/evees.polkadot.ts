@@ -114,7 +114,6 @@ export class EveesPolkadot implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    debugger;
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
 
@@ -125,7 +124,7 @@ export class EveesPolkadot implements EveesRemote {
       );
     }
 
-    this.updatePerspective(secured.id, details);
+    await this.updatePerspective(secured.id, details);
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
