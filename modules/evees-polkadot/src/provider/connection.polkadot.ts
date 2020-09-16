@@ -29,7 +29,6 @@ const getCID = (info: IdentityInfo): string => {
   return cid;
 };
 
-
 export interface UserPerspectives {
   [perspectiveId: string]: {
     headId?: string;
@@ -113,13 +112,13 @@ export class PolkadotConnection extends Connection {
 
   public async updateUserPerspectivesHash(userPerspectivesHash: string) {
     // update evees entry
-    const cid0 = userPerspectivesHash.substring(0, 32);
-    const cid1 = userPerspectivesHash.substring(32, 64);
+    const cid1 = userPerspectivesHash.substring(0, 32);
+    const cid0 = userPerspectivesHash.substring(32, 64);
     const result = this.api?.tx.identity.setIdentity({
       ...this.identityInfo,
       additional: [
-        [{ Raw: 'cid0' }, { Raw: cid0 }],
-        [{ Raw: 'cid1' }, { Raw: cid1 }]
+        [{ Raw: 'evees-cid1' }, { Raw: cid1 }],
+        [{ Raw: 'evees-cid0' }, { Raw: cid0 }]
       ]
     });
     const txHash = await result?.signAndSend(<AddressOrPair>this?.account);

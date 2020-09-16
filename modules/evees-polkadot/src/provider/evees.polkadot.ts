@@ -12,6 +12,7 @@ import {
 } from '@uprtcl/evees';
 
 import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
+import { Signed } from '@uprtcl/cortex';
 
 const evees_if = 'evees-identity';
 
@@ -96,9 +97,9 @@ export class EveesPolkadot implements EveesRemote {
   }
 
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
-    const perspective = (await this.store.get(perspectiveId)) as Secured<Perspective>;
+    const perspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
     const userPerspectivesHash = await this.connection.getUserPerspectivesHash(
-      perspective.object.payload.creatorId
+      perspective.payload.creatorId
     );
     const userPerspectives = (await this.store.get(userPerspectivesHash)) as UserPerspectives;
 
@@ -117,6 +118,8 @@ export class EveesPolkadot implements EveesRemote {
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
 
+    const perspectiveId = await this.persistPerspectiveEntity(secured);
+
     const owner = await this.getOwnerOfNewPerspective(perspectiveData);
     if (owner !== secured.object.payload.creatorId) {
       throw new Error(
@@ -124,7 +127,7 @@ export class EveesPolkadot implements EveesRemote {
       );
     }
 
-    await this.updatePerspective(secured.id, details);
+    await this.updatePerspective(perspectiveId, details);
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
