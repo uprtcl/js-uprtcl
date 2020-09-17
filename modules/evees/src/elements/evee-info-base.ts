@@ -336,7 +336,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
        Note that it is assumed that if a user canWrite on toPerspectiveId, he can write 
        on all the perspectives inside the workspace.updates array. */
 
-    const canWrite = toPerspectiveId;
+    const toRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+      r => r.id === toRemoteId
+    );
+
+    if (toRemote === undefined) throw new Error('remote not found');
+
+    const canWrite = await toRemote.canWrite(toPerspectiveId);
 
     if (canWrite) {
       await workspace.execute(this.client);

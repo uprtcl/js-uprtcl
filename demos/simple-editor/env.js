@@ -1,11 +1,12 @@
 const env = {
   // entry: './src/index.polkadot.js',
-  entry: './src/index.polkadot.js',
-  officialRemote: 'polkadot',
+  // officialRemote: 'polkadot',
+  entry: './src/index.orbitdb.js',
+  officialRemote: 'eth',
   pinner: {
     url: 'http://localhost:3000',
     Swarm: ['/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star/'],
-    Bootstrap: ['/ip4/192.168.0.108/tcp/4003/ws/p2p/QmdzkHm5uj4Va14iyYpzmFMTwMJC6SPVvUBz7ChpMcE9R9']
+    Bootstrap: ['/ip4/192.168.0.108/tcp/4003/ws/p2p/QmUbLFpzX7hj7VHX75bBo63xD2AadiQdyW74bRQSqCroGF']
   },
   ethers: {
     apiKeys: {
