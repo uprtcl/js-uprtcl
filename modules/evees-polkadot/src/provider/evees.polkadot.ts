@@ -98,9 +98,12 @@ export class EveesPolkadot implements EveesRemote {
 
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
     const perspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
-    const userPerspectivesHash = await this.connection.getUserPerspectivesHash(
+    let userPerspectivesHash = await this.connection.getUserPerspectivesHash(
       perspective.payload.creatorId
     );
+    // if (!userPerspectivesHash) {
+    //   userPerspectivesHash = await
+    // }
     const userPerspectives = (await this.store.get(userPerspectivesHash)) as UserPerspectives;
 
     const userPerspectivesNew = this.updateUserPerspectivesEntry(
@@ -126,8 +129,10 @@ export class EveesPolkadot implements EveesRemote {
         `cannot create a perspective whose owner ${owner} is not the creatorId ${secured.object.payload.creatorId}`
       );
     }
+    //TODO: store hash perspectiveID in profile
+    await this.connection.updateUserPerspectivesHash(perspectiveId);
 
-    await this.updatePerspective(perspectiveId, details);
+    // await this.updatePerspective(perspectiveId, details);
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
@@ -181,16 +186,22 @@ export class EveesPolkadot implements EveesRemote {
   async isLogged() {
     return this.connection.canSign();
   }
+
   async login(): Promise<void> {
     await this.connection.connectWallet();
   }
+
   logout(): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  async connect() {}
+
+  async connect() {
+  }
+
   async isConnected() {
     return true;
   }
+
   disconnect(): Promise<void> {
     throw new Error('Method not implemented.');
   }

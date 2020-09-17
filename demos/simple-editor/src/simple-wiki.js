@@ -4,7 +4,7 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { EveesModule, EveesHelpers } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { env } from './../env';
+import { env } from '../env';
 
 export class SimpleWiki extends moduleConnect(LitElement) {
   static get properties() {
@@ -98,7 +98,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       dataId
     });
 
-    console.log('USERID', eveesRemote.userId, client, eveesRemote, headId);
+    // TODO: handle insufficient funds error & cancelled tx
     const perspectiveId = await EveesHelpers.createPerspective(client, eveesRemote, {
       headId,
       context: `my-wiki-${randint}`,
@@ -118,14 +118,14 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     return html`
       <div class="home">
         ${this.canCreate
-          ? html`
+      ? html`
               <uprtcl-button-loading
                 @click=${() => this.createSpace()}
                 loading=${this.creatingSpace ? 'true' : 'false'}
                 >create space</uprtcl-button-loading
               >
             `
-          : html`
+      : html`
               <uprtcl-button @click=${() => this.connectWallet()}>connect</uprtcl-button>
             `}
       </div>
@@ -147,14 +147,14 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   render() {
     return html`
       ${!this.loading
-        ? html`
+      ? html`
             <div class="app-header">HEADER</div>
             <div class="app-content">
               <div class="app-bar">BAR</div>
               ${this.rootHash === undefined ? this.renderCreate() : this.renderWiki()}
             </div>
           `
-        : html`
+      : html`
             Loading...
           `}
     `;

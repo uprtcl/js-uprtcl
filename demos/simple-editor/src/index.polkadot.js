@@ -49,7 +49,8 @@ import { env } from '../env';
   const pkdEvees = new EveesPolkadot(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
-  const evees = new EveesModule([pkdEvees]);
+  // TODO: had to restore this or it wouldn't work. figure out why 2nd arg was removed
+  const evees = new EveesModule([pkdEvees], pkdEvees);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();

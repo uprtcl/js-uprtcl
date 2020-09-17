@@ -107,6 +107,7 @@ export class PolkadotConnection extends Connection {
     // read evees entry
     const identity = await this.api?.query.identity.identityOf(userId);
     const identityInfo = getIdentityInfo(<Option<Registration>>identity);
+    // TODO: identityInfo is empty {}
     return getCID(<IdentityInfo>this.identityInfo);
   }
 
@@ -122,6 +123,5 @@ export class PolkadotConnection extends Connection {
       ]
     });
     const txHash = await result?.signAndSend(<AddressOrPair>this?.account);
-    console.log(txHash);
   }
 }
