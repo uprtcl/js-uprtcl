@@ -75,7 +75,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ attribute: false })
   checkedOutPerspectives: { [key: string]: string } = {};
   
-  checkedOutPerspectivesStorageId: string = 'CHECKED_OUT_PERSPECTIVES';
+  checkedOutPerspectivesStorageId!: string;
   
   protected eveesRemotes!: EveesRemote[];
   protected remotesMap!: RemoteMap;
@@ -96,8 +96,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     this.loadDoc();
 
-    const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
-    if(storageRes) this.checkedOutPerspectives = JSON.parse(storageRes);
+    this.checkedOutPerspectivesStorageId = `CHECKED_OUT_PERSPECTIVES_${this.uref}` 
   }
 
   updated(changedProperties) {
@@ -121,12 +120,23 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!this.uref) return;
     this.doc = await this.loadNodeRec(this.uref);
+    
+    const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
+    if(storageRes) {
+      this.checkedOutPerspectives = JSON.parse(storageRes);
+    }
   }
 
   async loadNodeRec(uref: string, ix?: number, parent?: DocNode): Promise<DocNode> {
     if (LOGINFO) this.logger.log('loadNodeRec()', { uref, ix, parent });
 
     const node = await this.loadNode(uref, parent, ix);
+
+    // Add node coordinates
+    const currentIndex = ix ? ix : 0
+    node.coord = parent && parent.coord
+      ? parent.coord.concat([currentIndex])
+      : [currentIndex]
 
     const loadChildren = node.hasChildren.getChildrenLinks({ id: '', object: node.draft }).map(
       async (child, ix): Promise<DocNode> => {
@@ -972,13 +982,15 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.persistAll(message);
   }
 
-  handlePerspectiveCheckout(e, uref) {
+  handlePerspectiveCheckout(e, coord) {
     let checkedOutPerspectives = {};
     
     const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
     if(storageRes) checkedOutPerspectives = JSON.parse(storageRes);
 
-    checkedOutPerspectives[uref] = e.detail.perspectiveId;
+    const coordString = JSON.stringify(coord);
+
+    checkedOutPerspectives[coordString] = e.detail.perspectiveId;
     
     localStorage.setItem(this.checkedOutPerspectivesStorageId, JSON.stringify(checkedOutPerspectives))
     
@@ -1009,7 +1021,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}
-                  @checkout-perspective=${e => this.handlePerspectiveCheckout(e, node.uref)}
+                  @checkout-perspective=${e => this.handlePerspectiveCheckout(e, node.coord)}
                   show-perspectives
                   show-acl
                   show-info
@@ -1053,10 +1065,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderDocNode(node: DocNode) {
-    if (this.checkedOutPerspectives[node.uref] !== undefined) {
+    const coordString = JSON.stringify(node.coord);
+
+    if (this.checkedOutPerspectives[coordString] !== undefined) {
       return html`
         <documents-editor
-          uref=${this.checkedOutPerspectives[node.uref]}
+          uref=${this.checkedOutPerspectives[coordString]}
+          editable=${this.editable}
         >
         </documents-editor>
       `

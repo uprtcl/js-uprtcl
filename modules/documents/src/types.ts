@@ -22,6 +22,7 @@ export interface DocNode {
   draft: any;
   type?: string;
   timestamp: number;
+  coord?: number[];
   append?: any; // used by upper layer to tell the docnode lense to append content using its internal appending logic.
   childrenNodes: DocNode[];
   headId?: string;
