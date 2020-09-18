@@ -444,7 +444,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
             );
           }
         } else {
-          this.updateEvee(node, message);
+          await this.updateEvee(node, message);
         }
         break;
 
