@@ -229,13 +229,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
 
     // Add node coordinates
-    const currentIndex = ix ? ix : 0
-    const coord = parent && parent.coord
-      ? parent.coord.concat([currentIndex])
-      : [currentIndex]
+    const coord = this.setNodeCoordinates(parent, ix);
 
     // Add node level
-    const level = this.rootLevel + (coord.length - 1)
+    const level = this.setNodeLevel(coord);
 
     const node: DocNode = {
       uref: entity.id,
@@ -258,6 +255,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     };
 
     return node;
+  }
+
+  setNodeCoordinates(parent?: DocNode, ix?: number) {
+    const currentIndex = ix ? ix : 0
+    const coord = parent && parent.coord
+      ? parent.coord.concat([currentIndex])
+      : [currentIndex]
+
+    return coord;
+  }
+
+  setNodeLevel(coord) {
+    return this.rootLevel + (coord.length - 1)
   }
 
   isPlaceholder(uref: string): boolean {
@@ -569,13 +579,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const uref = PLACEHOLDER_TOKEN + `-${ix !== undefined ? ix : 0}-${randint}`;
     
     // Add node coordinates
-    const currentIndex = ix ? ix : 0
-    const coord = parent && parent.coord
-      ? parent.coord.concat([currentIndex])
-      : [currentIndex]
+    const coord = this.setNodeCoordinates(parent, ix);
 
     // Add node level
-    const level = this.rootLevel + (coord.length - 1)
+    const level = this.setNodeLevel(coord);
 
     return {
       uref,
