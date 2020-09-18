@@ -40,19 +40,6 @@ const typeToTextNode = (textNode: TextNode, type: TextType): TextNode => {
   };
 };
 
-const nodeLevel = (node: DocNode) => {
-  let level = 1;
-  let parent: DocNode | undefined = node;
-  parent = parent.parent;
-
-  while (parent !== undefined) {
-    level = level + 1;
-    parent = parent.parent;
-  }
-
-  return level;
-};
-
 export class TextNodePattern extends Pattern<Entity<TextNode>> {
   recognize(entity: object): boolean {
     return (
@@ -112,7 +99,7 @@ export class TextNodeCommon
               type=${node.draft.type}
               init=${node.draft.text}
               to-append=${node.append}
-              level=${nodeLevel(node)}
+              level=${node.level + 1}
               editable=${node.editable ? 'true' : 'false'}
               focus-init=${node.focused}
               @focus=${events.focus}
