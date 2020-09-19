@@ -1011,18 +1011,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   handlePerspectiveCheckout(e: CustomEvent, coord) {
     e.stopPropagation();
-    let checkedOutPerspectives = {};
-    
-    // const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
-    // if(storageRes) checkedOutPerspectives = JSON.parse(storageRes);
-
-    const coordString = JSON.stringify(coord);
-
-    checkedOutPerspectives[coordString] = e.detail.perspectiveId;
-    
-    // localStorage.setItem(this.checkedOutPerspectivesStorageId, JSON.stringify(checkedOutPerspectives))
-    
-    this.checkedOutPerspectives = checkedOutPerspectives;
+    this.checkedOutPerspectives[JSON.stringify(coord)] = e.detail.perspectiveId;
   }
 
   renderWithCortex(node: DocNode) {
