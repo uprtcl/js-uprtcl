@@ -213,7 +213,7 @@ export class EveesHelpers {
     const timestamp =
       commit.timestamp !== undefined ? commit.timestamp : Date.now();
     const creatorsIds =
-      commit.creatorsIds !== undefined ? commit.creatorsIds : [];
+      commit.creatorsIds !== undefined ? commit.creatorsIds : [''];
     const parentsIds = commit.parentsIds !== undefined ? commit.parentsIds : [];
 
     const commitData: Commit = {
