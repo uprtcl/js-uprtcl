@@ -56,7 +56,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
   }
 
   async canWrite(uref: string) {
-    return this.accessControl.canWrite(uref, this.userId);
+    return this.userId ? this.accessControl.canWrite(uref, this.userId) : false;
   }
 
   /** */
@@ -195,8 +195,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
     throw new Error('Method not implemented.');
   }
 
-  async connect() {
-  }
+  async connect() {}
 
   async isConnected() {
     return true;

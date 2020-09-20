@@ -12,10 +12,8 @@ import {
 } from '@uprtcl/evees';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
-import { CustomStores, OrbitDBCustom } from './orbit-db.custom';
+import { OrbitDBCustom } from './orbit-db.custom';
 import { EntropyGenerator } from '../identity-providers/entropy.generator';
-import { ContextAccessController } from './context-access-controller';
-import { ProposalsAccessController } from './proposals-access-controller';
 
 const evees_if = 'evees-v0';
 // const timeout = 200;
@@ -27,78 +25,19 @@ const defaultDetails: PerspectiveDetails = {
 
 const notLogged = () => new Error('must be logged in to use this method');
 
-enum EveesOrbitDBEntities {
+export enum EveesOrbitDBEntities {
   Perspective = 'PERSPECTIVE',
   Context = 'CONTEXT',
   Proposal = 'PROPOSAL',
   ProposalsToPerspective = 'PROPOSALS_TO_PERSPECTIVE'
 }
 
-export interface OrbitDBConfig {
-  pinnerUrl: string;
-  entropy: EntropyGenerator;
-  ipfs?: any;
-}
-
 export class EveesOrbitDB implements EveesRemote {
   logger: Logger = new Logger('EveesOrbitDB');
   accessControl: any;
   proposals!: ProposalsProvider;
-  orbitdbcustom: OrbitDBCustom;
 
-  constructor(protected config: OrbitDBConfig, public store: CASStore) {
-    const acls = [ContextAccessController, ProposalsAccessController];
-    const stores: CustomStores = {
-      [EveesOrbitDBEntities.Perspective]: {
-        recognize: (entity: any) => entity.type === EveesOrbitDBEntities.Perspective,
-        type: 'eventlog',
-        name: () => 'perspective-store',
-        options: (perspective: Perspective) => {
-          return {
-            accessController: { type: 'ipfs', write: [perspective.creatorId] },
-            meta: { timestamp: perspective.timestamp }
-          };
-        }
-      },
-      [EveesOrbitDBEntities.Context]: {
-        recognize: (entity: any) => entity.type === EveesOrbitDBEntities.Context,
-        type: 'set',
-        name: (entity: any) => `context-store/${entity.context}`,
-        options: (entity: any) => {
-          return {
-            accessController: { type: 'context', write: ['*'] }
-          };
-        }
-      },
-      [EveesOrbitDBEntities.Proposal]: {
-        recognize: (entity: any) => entity.type === EveesOrbitDBEntities.Proposal,
-        type: 'eventlog',
-        name: () => 'proposal-store',
-        options: (perspective: Perspective) => {
-          return {
-            accessController: { type: 'ipfs', write: [perspective.creatorId] },
-            meta: { timestamp: perspective.timestamp }
-          };
-        }
-      },
-      [EveesOrbitDBEntities.ProposalsToPerspective]: {
-        recognize: (entity: any) => entity.type === EveesOrbitDBEntities.ProposalsToPerspective,
-        type: 'set',
-        name: (entity: any) => `proposals-store/${entity.toPerspectiveId}`,
-        options: (entity: any) => {
-          return {
-            accessController: { type: 'proposals', write: ['*'] }
-          };
-        }
-      }
-    };
-    this.orbitdbcustom = new OrbitDBCustom(
-      stores,
-      acls,
-      config.entropy,
-      config.pinnerUrl,
-      config.ipfs
-    );
+  constructor(protected orbitdbcustom: OrbitDBCustom, public store: CASStore) {
     this.accessControl = new EveesAccessControlOrbitDB(this.store);
   }
 

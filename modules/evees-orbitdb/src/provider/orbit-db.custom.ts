@@ -147,7 +147,7 @@ export class OrbitDBCustom extends Connection {
     return db;
   }
 
-  public async getStore(entity: any, pin?: boolean = false): Promise<any> {
+  public async getStore(entity: any, pin: boolean = false): Promise<any> {
     const address = await this.storeAddress(entity);
     const store = this.openStore(address);
     if (pin) {
