@@ -2,7 +2,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { ProposalsProvider } from '@uprtcl/evees';
 import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
-import { OrbitDBConnection } from './orbit-db.connection';
+import { OrbitDBConnection } from './orbit-db.custom';
 import { CASStore } from '@uprtcl/multiplatform';
 
 export interface ProposalManifest {

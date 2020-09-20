@@ -6,12 +6,8 @@ import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { Perspective } from '@uprtcl/evees';
 
-import { ProposalManifest } from './proposals.orbit-db';
 import { EntropyGenerator } from '../identity-providers/entropy.generator';
-import { ContextAccessController } from './context-access-controller';
-import { ProposalsAccessController } from './proposals-access-controller';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
@@ -27,7 +23,18 @@ export interface OrbitDBConnectionOptions {
   offline?: boolean;
 }
 
-export class OrbitDBConnection extends Connection {
+export interface CustomStore {
+  type: string;
+  recognize: (entity: any) => boolean;
+  name: (entity: any) => any;
+  options: (entity: any) => any;
+}
+
+export interface CustomStores {
+  [name: string]: CustomStore;
+}
+
+export class OrbitDBCustom extends Connection {
   public instance: any;
   private storeQueue = {};
   public identity: null | any = null;
@@ -36,20 +43,21 @@ export class OrbitDBConnection extends Connection {
   logger = new Logger('OrbitDB-Connection');
 
   constructor(
-    protected pinnerUrl: string,
-    protected ipfs: any,
+    protected storeManifests: CustomStores,
+    protected acls: any[],
     protected entropy: EntropyGenerator,
+    protected pinnerUrl?: string,
+    protected ipfs?: any,
     options?: ConnectionOptions
   ) {
     super(options);
-    if (!OrbitDB.AccessControllers.isSupported(ContextAccessController.type)) {
-      OrbitDB.AccessControllers.addAccessController({ AccessController: ContextAccessController });
-    }
-    if (!OrbitDB.AccessControllers.isSupported(ProposalsAccessController.type)) {
-      OrbitDB.AccessControllers.addAccessController({
-        AccessController: ProposalsAccessController
-      });
-    }
+
+    /** register AccessControllers */
+    this.acls.map(AccessController => {
+      if (!OrbitDB.AccessControllers.isSupported(AccessController.type)) {
+        OrbitDB.AccessControllers.addAccessController({ AccessController });
+      }
+    });
   }
 
   /**
@@ -98,32 +106,24 @@ export class OrbitDBConnection extends Connection {
     this.identity = identity;
   }
 
-  public async perspectiveAddress(perspective: Perspective): Promise<any> {
-    return this.instance.determineAddress('perspective-store', 'eventlog', {
-      accessController: { type: 'ipfs', write: [perspective.creatorId] },
-      meta: { timestamp: perspective.timestamp }
+  private storeManifestName(entity: any): string | undefined {
+    const entry = Object.entries(this.storeManifests).find(entry => {
+      return entry[1].recognize(entity);
     });
+    return entry ? entry[0] : undefined;
   }
 
-  public async contextAddress(context: string): Promise<any> {
-    return this.instance.determineAddress(`context-store/${context}`, 'set', {
-      accessController: { type: 'context', write: ['*'] }
-    });
-  }
+  public async storeAddress(entity: any): Promise<string> {
+    const storeName = this.storeManifestName(entity);
+    if (storeName === undefined)
+      throw new Error(`store for entity ${JSON.stringify(entity)} not found`);
+    const storeManifest = this.storeManifests[storeName];
 
-  public async proposalAddress(proposal: ProposalManifest): Promise<any> {
-    return this.instance.determineAddress('proposal-store', 'eventlog', {
-      accessController: { type: 'ipfs', write: proposal.owners },
-      meta: {
-        timestamp: proposal.timestamp
-      }
-    });
-  }
-
-  public async proposalsToPerspectiveAddress(toPerspectiveId: string): Promise<any> {
-    return this.instance.determineAddress(`proposals-store/${toPerspectiveId}`, 'set', {
-      accessController: { type: 'proposals', write: ['*'] }
-    });
+    return this.instance.determineAddress(
+      storeManifest.name,
+      storeManifest.type,
+      storeManifest.options(entity)
+    );
   }
 
   private async openStore(address: string | any): Promise<any> {
@@ -147,38 +147,8 @@ export class OrbitDBConnection extends Connection {
     return db;
   }
 
-  public async perspectiveStore(perspective: Perspective, pin: boolean): Promise<any> {
-    const address = await this.perspectiveAddress(perspective);
-    const store = this.openStore(address);
-    if (pin) {
-      this.pin(address);
-    }
-    return store;
-  }
-
-  public async contextStore(context: string, pin: boolean = false): Promise<any> {
-    const address = await this.contextAddress(context);
-    const store = await this.openStore(address);
-    if (pin) {
-      this.pin(address);
-    }
-    return store;
-  }
-
-  public async proposalStore(proposal: ProposalManifest, pin: boolean): Promise<any> {
-    const address = await this.proposalAddress(proposal);
-    const store = this.openStore(address);
-    if (pin) {
-      this.pin(address);
-    }
-    return store;
-  }
-
-  public async proposalsToPerspectiveStore(
-    toPerspectiveId: string,
-    pin: boolean = false
-  ): Promise<any> {
-    const address = await this.proposalsToPerspectiveAddress(toPerspectiveId);
+  public async getStore(entity: any, pin?: boolean = false): Promise<any> {
+    const address = await this.storeAddress(entity);
     const store = this.openStore(address);
     if (pin) {
       this.pin(address);

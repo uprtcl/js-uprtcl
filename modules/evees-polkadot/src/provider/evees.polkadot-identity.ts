@@ -16,7 +16,7 @@ import { Signed } from '@uprtcl/cortex';
 
 const evees_if = 'evees-identity';
 
-export class EveesPolkadot implements EveesRemote {
+export class EveesPolkadotIdentity implements EveesRemote {
   logger: Logger = new Logger('EveesEtereum');
 
   accessControl: EveesAccessControlPolkadot;

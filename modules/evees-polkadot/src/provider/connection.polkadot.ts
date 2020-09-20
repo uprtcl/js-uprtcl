@@ -20,7 +20,7 @@ const getCID = (info: IdentityInfo): string => {
   if (!info.additional) {
     return '';
   }
-  const [[, { Raw: cid0 }], [, { Raw: cid1 }]] = info.additional
+  const [[, { Raw: cid0 }], [, { Raw: cid1 }]] = (info.additional as any)
     .filter(([k]) => k.Raw === 'cid0' || k.Raw === 'cid1')
     .sort(([a], [b]) => (a.Raw < b.Raw ? -1 : 1));
   console.log(cid0, cid1);
@@ -116,7 +116,7 @@ export class PolkadotConnection extends Connection {
     const cid1 = userPerspectivesHash.substring(0, 32);
     const cid0 = userPerspectivesHash.substring(32, 64);
     const result = this.api?.tx.identity.setIdentity({
-      ...this.identityInfo,
+      ...this.identityInfo as any,
       additional: [
         [{ Raw: 'evees-cid1' }, { Raw: cid1 }],
         [{ Raw: 'evees-cid0' }, { Raw: cid0 }]
@@ -124,4 +124,5 @@ export class PolkadotConnection extends Connection {
     });
     const txHash = await result?.signAndSend(<AddressOrPair>this?.account);
   }
+
 }
