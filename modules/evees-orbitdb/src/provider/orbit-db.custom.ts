@@ -8,6 +8,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 
 import { EntropyGenerator } from '../identity-providers/entropy.generator';
+import { EveesOrbitDBEntities } from './orbit-db.stores';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
@@ -24,14 +25,10 @@ export interface OrbitDBConnectionOptions {
 }
 
 export interface CustomStore {
+  customType: EveesOrbitDBEntities;
   type: string;
-  recognize: (entity: any) => boolean;
   name: (entity: any) => any;
   options: (entity: any) => any;
-}
-
-export interface CustomStores {
-  [name: string]: CustomStore;
 }
 
 export class OrbitDBCustom extends Connection {
@@ -43,7 +40,7 @@ export class OrbitDBCustom extends Connection {
   logger = new Logger('OrbitDB-Connection');
 
   constructor(
-    protected storeManifests: CustomStores,
+    protected storeManifests: CustomStore[],
     protected acls: any[],
     protected entropy: EntropyGenerator,
     protected pinnerUrl?: string,
@@ -106,21 +103,16 @@ export class OrbitDBCustom extends Connection {
     this.identity = identity;
   }
 
-  private storeManifestName(entity: any): string | undefined {
-    const entry = Object.entries(this.storeManifests).find(entry => {
-      return entry[1].recognize(entity);
-    });
-    return entry ? entry[0] : undefined;
+  public getManifest(type: EveesOrbitDBEntities) {
+    return this.storeManifests.find(s => s.customType === type);
   }
 
-  public async storeAddress(entity: any): Promise<string> {
-    const storeName = this.storeManifestName(entity);
-    if (storeName === undefined)
-      throw new Error(`store for entity ${JSON.stringify(entity)} not found`);
-    const storeManifest = this.storeManifests[storeName];
+  public async storeAddress(type: EveesOrbitDBEntities, entity: any): Promise<string> {
+    const storeManifest = this.getManifest(type);
+    if (storeManifest === undefined) throw new Error(`store if type ${type} not found`);
 
     return this.instance.determineAddress(
-      storeManifest.name,
+      storeManifest.name(entity),
       storeManifest.type,
       storeManifest.options(entity)
     );
@@ -147,8 +139,12 @@ export class OrbitDBCustom extends Connection {
     return db;
   }
 
-  public async getStore(entity: any, pin: boolean = false): Promise<any> {
-    const address = await this.storeAddress(entity);
+  public async getStore(
+    type: EveesOrbitDBEntities,
+    entity?: any,
+    pin: boolean = false
+  ): Promise<any> {
+    const address = await this.storeAddress(type, entity);
     const store = this.openStore(address);
     if (pin) {
       this.pin(address);

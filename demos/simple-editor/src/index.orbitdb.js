@@ -25,7 +25,15 @@ import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 
-import { stores, acls } from './orbitdb.config';
+import {
+  PerspectiveStore,
+  ContextStore,
+  ProposalStore,
+  ProposalsToPerspectiveStore,
+  ContextAccessController,
+  ProposalsAccessController
+} from '@uprtcl/evees-orbitdb';
+
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
@@ -66,7 +74,13 @@ import { SimpleWiki } from './simple-wiki';
   await ethConnection.ready();
   const identity = new EthereumIdentity(ethConnection);
 
-  const orbitDBCustom = new OrbitDBCustom(stores, acls, identity, pinnerUrl, ipfs);
+  const orbitDBCustom = new OrbitDBCustom(
+    [PerspectiveStore, ContextStore, ProposalStore, ProposalsToPerspectiveStore],
+    [ContextAccessController, ProposalsAccessController],
+    identity,
+    pinnerUrl,
+    ipfs
+  );
   await orbitDBCustom.ready();
 
   const orbitdbEvees = new EveesOrbitDB(orbitDBCustom, ipfsStore);

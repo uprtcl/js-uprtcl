@@ -3,8 +3,8 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { ProposalsProvider } from '@uprtcl/evees';
 import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { CASStore } from '@uprtcl/multiplatform';
-import { EveesOrbitDBEntities } from './evees.orbit-db';
 import { OrbitDBCustom } from './orbit-db.custom';
+import { EveesOrbitDBEntities } from './orbit-db.stores';
 
 export interface ProposalManifest {
   toPerspectiveId: string;
@@ -21,7 +21,16 @@ const defaultDetails: ProposalDetails = {
 export class ProposalsOrbitDB implements ProposalsProvider {
   logger = new Logger('PROPOSALS-ORBITDB');
 
-  constructor(protected orbitdb: OrbitDBCustom, protected store: CASStore) {}
+  constructor(protected orbitdb: OrbitDBCustom, protected store: CASStore) {
+    if (
+      orbitdb.getManifest(EveesOrbitDBEntities.Proposal) === undefined ||
+      orbitdb.getManifest(EveesOrbitDBEntities.ProposalsToPerspective) === undefined
+    ) {
+      throw new Error(
+        'orbitdb custom must include the EveesOrbitDBEntities.Proposal EveesOrbitDBEntities.ProposalsToPerspective stores'
+      );
+    }
+  }
 
   async ready(): Promise<void> {
     await Promise.all([this.orbitdb.ready()]);
@@ -43,9 +52,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
     await this.updateProposalInternal(proposalId, proposal.details, true);
 
-    const proposalsStore = await this.orbitdb.getStore({
-      type: EveesOrbitDBEntities.Proposal
-    });
+    const proposalsStore = await this.orbitdb.getStore(EveesOrbitDBEntities.Proposal);
 
     await proposalsStore.add(proposalId);
 
@@ -60,7 +67,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
   async getProposalStore(proposalId: string, pin: boolean = false) {
     const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
-    return this.orbitdb.getStore(proposalManifest);
+    return this.orbitdb.getStore(EveesOrbitDBEntities.ProposalsToPerspective, proposalManifest);
   }
 
   async getProposalDetails(proposalId): Promise<ProposalDetails> {
@@ -114,9 +121,10 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
     this.logger.info('getProposalsToPerspective() - pre', { perspectiveId });
 
-    const proposalsStore = await this.orbitdb.getStore({
-      type: EveesOrbitDBEntities.ProposalsToPerspective
-    });
+    const proposalsStore = await this.orbitdb.getStore(
+      EveesOrbitDBEntities.ProposalsToPerspective,
+      { toPerspectiveId: perspectiveId }
+    );
 
     const proposalIds = [...proposalsStore.values()];
     this.logger.info('getProposalsToPerspective() - post', { proposalIds });
