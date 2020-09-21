@@ -3,8 +3,8 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { ProposalsProvider } from '@uprtcl/evees';
 import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { CASStore } from '@uprtcl/multiplatform';
-import { OrbitDBCustom } from './orbit-db.custom';
-import { EveesOrbitDBEntities } from './orbit-db.stores';
+import { OrbitDBCustom } from '../orbit-db.custom';
+import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
 
 export interface ProposalManifest {
   toPerspectiveId: string;

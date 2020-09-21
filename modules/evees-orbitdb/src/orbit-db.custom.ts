@@ -7,8 +7,8 @@ import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 
-import { EntropyGenerator } from '../identity-providers/entropy.generator';
-import { EveesOrbitDBEntities } from './orbit-db.stores';
+import { EntropyGenerator } from './identity-providers/entropy.generator';
+import { EveesOrbitDBEntities } from './custom-stores/orbit-db.stores';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);

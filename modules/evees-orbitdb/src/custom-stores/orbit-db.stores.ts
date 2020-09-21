@@ -1,4 +1,4 @@
-import { CustomStore } from './orbit-db.custom';
+import { CustomStore } from '../orbit-db.custom';
 
 export enum EveesOrbitDBEntities {
   Perspective = 'PERSPECTIVE',

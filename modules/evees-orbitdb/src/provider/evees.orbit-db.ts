@@ -12,8 +12,8 @@ import {
 } from '@uprtcl/evees';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
-import { OrbitDBCustom } from './orbit-db.custom';
-import { EveesOrbitDBEntities } from './orbit-db.stores';
+import { OrbitDBCustom } from '../orbit-db.custom';
+import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
 
 const evees_if = 'evees-v0';
 // const timeout = 200;
