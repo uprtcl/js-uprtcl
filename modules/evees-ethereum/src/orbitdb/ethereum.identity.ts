@@ -1,7 +1,7 @@
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { EntropyGenerator } from './entropy.generator';
+import { EntropyGenerator } from '@uprtcl/orbitdb-provider';
 
-const msg = (website) => `
+const msg = website => `
 Please Read!
 
 I authorize this app to update my _Prtcl content in OrbitDB.

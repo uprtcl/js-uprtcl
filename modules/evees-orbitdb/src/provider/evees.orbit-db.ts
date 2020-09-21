@@ -10,9 +10,9 @@ import {
   EveesRemote,
   ProposalsProvider
 } from '@uprtcl/evees';
+import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
-import { OrbitDBCustom } from '../orbit-db.custom';
 import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
 
 const evees_if = 'evees-v0';

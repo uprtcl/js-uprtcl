@@ -7,29 +7,13 @@ import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 
-import { EntropyGenerator } from './identity-providers/entropy.generator';
-import { EveesOrbitDBEntities } from './custom-stores/orbit-db.stores';
+import { EntropyGenerator } from './entropy.generator';
+import { CustomStore } from './types';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
 
 const keystorePath = id => `./orbitdb/identity/odbipd-${id}`;
-
-export interface OrbitDBConnectionOptions {
-  directory?: string;
-  peerId?: string;
-  keystore?: any;
-  cache?: any;
-  identity?: any;
-  offline?: boolean;
-}
-
-export interface CustomStore {
-  customType: EveesOrbitDBEntities;
-  type: string;
-  name: (entity: any) => any;
-  options: (entity: any) => any;
-}
 
 export class OrbitDBCustom extends Connection {
   public instance: any;

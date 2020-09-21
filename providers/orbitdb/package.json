@@ -1,7 +1,7 @@
 {
-  "name": "@uprtcl/evees-orbitdb",
+  "name": "@uprtcl/orbitdb-provider",
   "version": "0.0.7-alpha.56",
-  "description": "EveesRemote implemented on the Ethereum Blockchain",
+  "description": "Orbitdb wrapper that can be programed with different custom stores",
   "homepage": "https://uprtcl.io",
   "scripts": {
     "clean": "rimraf dist",
@@ -11,18 +11,11 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.0.7-alpha.56",
-    "@uprtcl/ethereum-provider": "^0.0.7-alpha.56",
-    "@uprtcl/evees": "^0.0.7-alpha.56",
-    "@uprtcl/graphql": "^0.0.7-alpha.56",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.56",
-    "@uprtcl/lenses": "^0.0.7-alpha.56",
+    "@tabcat/orbit-db-identity-provider-d": "^1.0.0",
+    "@tabcat/orbit-db-set": "^1.0.2",
+    "orbit-db": "^0.26.0-rc2",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.56",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.56",
-    "apollo-boost": "^0.4.7",
-    "cbor-js": "^0.1.0",
-    "inversify": "^5.0.1",
-    "ipfs": "^0.50.2"
+    "@uprtcl/multiplatform": "^0.0.7-alpha.56"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
@@ -33,11 +26,9 @@
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^4.4.1",
     "karma-webpack": "^4.0.2",
-    "path": "^0.12.7",
-    "reflect-metadata": "^0.1.13",
+    "lit-html": "^1.1.2",
     "rimraf": "^2.6.2",
     "rollup": "^2.0.5",
-    "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-sourcemaps": "^0.5.0",
     "rollup-plugin-typescript2": "^0.25.3",
     "temp-dir": "^2.0.0",
@@ -45,26 +36,34 @@
     "typescript": "^3.8.3",
     "webpack": "^4.42.1"
   },
-  "contributors": [
-    {
-      "name": "Pepo Ospina",
-      "email": "pepo@uprtcl.io",
-      "url": "https://github.com/pepoospina"
-    },
-    {
-      "name": "Guillem Cordoba",
-      "email": "guillem.cordoba@gmail.com",
-      "url": "https://github.com/guillemcordoba"
-    }
-  ],
-  "license": "MIT",
-  "main": "dist/uprtcl-evees-orbitdb.umd.js",
-  "module": "dist/uprtcl-evees-orbitdb.es5.js",
-  "typings": "dist/types/uprtcl-evees-orbitdb.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"
   },
+  "contributors": [
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    },
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@collectiveone.org",
+      "url": "https://github.com/pepoospina"
+    }
+  ],
+  "keywords": [
+    "service",
+    "provider",
+    "backend",
+    "websocket",
+    "web3",
+    "holochain"
+  ],
+  "license": "MIT",
+  "main": "dist/uprtcl-ipfs-provider.umd.js",
+  "module": "dist/uprtcl-ipfs-provider.es5.js",
+  "typings": "dist/types/uprtcl-ipfs-provider.d.ts",
   "sideEffects": false,
   "engines": {
     "node": ">=10.0.0"
