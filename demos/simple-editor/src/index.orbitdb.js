@@ -85,14 +85,7 @@ import { SimpleWiki } from './simple-wiki';
   const ethEvees = new EveesEthereum(ethConnection, ipfsStore, proposals);
   await ethEvees.ready();
 
-  const eveesConfig = {
-    defaultRemote: orbitdbEvees,
-    emitIf: {
-      remote: ethEvees.id,
-      owner: '0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0'.toLocaleLowerCase()
-    }
-  };
-  const evees = new EveesModule([ethEvees, orbitdbEvees], eveesConfig);
+  const evees = new EveesModule([orbitdbEvees, ethEvees]);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
