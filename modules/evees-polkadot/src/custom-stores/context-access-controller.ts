@@ -46,6 +46,6 @@ export class PolkadotContextAccessController extends IPFSAccessController {
 
   static async create(orbitdb, options: any = {}) {
     options = { ...options, ...{ write: options.write || [orbitdb.identity.id] } };
-    return new ContextAccessController(orbitdb._ipfs, options);
+    return new PolkadotContextAccessController(orbitdb._ipfs, options);
   }
 }
