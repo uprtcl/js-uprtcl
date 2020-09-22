@@ -9,7 +9,7 @@ export class EveesAccessControlPolkadot implements AccessControlService {
 
   async getOwner(perspectiveId: string) {
     const perspective = (await this.store.get(perspectiveId)) as Secured<Perspective>;
-    return perspective.object.payload.creatorId;
+    return perspective.payload.creatorId;
   }
 
   async canWrite(uref: string, userId: string) {

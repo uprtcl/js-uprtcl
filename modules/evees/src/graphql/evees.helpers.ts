@@ -67,8 +67,7 @@ export class EveesHelpers {
           }
         }`
     });
-    if (result.data.entity.context === undefined) return undefined;
-    return result.data.entity.context.id;
+    return result.data.entity.context?.id;
   }
 
   static async getPerspectiveRemoteId(

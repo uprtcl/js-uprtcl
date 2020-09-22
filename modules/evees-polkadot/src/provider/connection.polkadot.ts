@@ -20,16 +20,16 @@ const getCID = (info: IdentityInfo): string => {
   if (!info.additional) {
     return '';
   }
-  const [[, { Raw: cid0 }], [, { Raw: cid1 }]] = (info.additional as any)
-    .filter(([k]) => k.Raw === 'cid0' || k.Raw === 'cid1')
-    .sort(([a], [b]) => (a.Raw < b.Raw ? -1 : 1));
-  console.log(cid0, cid1);
+  const [[, { Raw: cid1 }], [, { Raw: cid0 }]] = (info.additional as any)
+    .filter(([k]) => k.Raw === 'evees-cid1' || k.Raw === 'evees-cid0')
+    .sort(([a], [b]) => (a.Raw > b.Raw ? -1 : 1));
+  console.log(cid1, cid0);
 
-  const cid = cid0 + cid1;
+  const cid = cid1 + cid0;
   return cid;
 };
 
-export interface UserPerspectives {
+export interface UserPerspectivesDetails {
   [perspectiveId: string]: {
     headId?: string;
     context?: string;
@@ -103,20 +103,20 @@ export class PolkadotConnection extends Connection {
     return;
   }
 
-  public async getUserPerspectivesHash(userId: string) {
+  public async getUserPerspectivesDetailsHash(userId: string) {
     // read evees entry
     const identity = await this.api?.query.identity.identityOf(userId);
-    const identityInfo = getIdentityInfo(<Option<Registration>>identity);
+    this.identityInfo = getIdentityInfo(<Option<Registration>>identity);
     // TODO: identityInfo is empty {}
     return getCID(<IdentityInfo>this.identityInfo);
   }
 
-  public async updateUserPerspectivesHash(userPerspectivesHash: string) {
+  public async updateUserPerspectivesDetailsHash(userPerspectivesDetailsHash: string) {
     // update evees entry
-    const cid1 = userPerspectivesHash.substring(0, 32);
-    const cid0 = userPerspectivesHash.substring(32, 64);
+    const cid1 = userPerspectivesDetailsHash.substring(0, 32);
+    const cid0 = userPerspectivesDetailsHash.substring(32, 64);
     const result = this.api?.tx.identity.setIdentity({
-      ...this.identityInfo as any,
+      ...(this.identityInfo as any),
       additional: [
         [{ Raw: 'evees-cid1' }, { Raw: cid1 }],
         [{ Raw: 'evees-cid0' }, { Raw: cid0 }]
@@ -124,5 +124,4 @@ export class PolkadotConnection extends Connection {
     });
     const txHash = await result?.signAndSend(<AddressOrPair>this?.account);
   }
-
 }

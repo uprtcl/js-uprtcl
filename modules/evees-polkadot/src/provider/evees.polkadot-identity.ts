@@ -1,6 +1,6 @@
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { PolkadotConnection, UserPerspectives } from './connection.polkadot';
+import { PolkadotConnection, UserPerspectivesDetails } from './connection.polkadot';
 
 import {
   EveesRemote,
@@ -17,7 +17,7 @@ import { Signed } from '@uprtcl/cortex';
 const evees_if = 'evees-identity';
 
 export class EveesPolkadotIdentity implements EveesRemote {
-  logger: Logger = new Logger('EveesEtereum');
+  logger: Logger = new Logger('EveesPolkadot');
 
   accessControl: EveesAccessControlPolkadot;
   proposals: ProposalsProvider | undefined;
@@ -62,59 +62,56 @@ export class EveesPolkadotIdentity implements EveesRemote {
   /** */
   async getOwnerOfNewPerspective(perspectiveData: NewPerspectiveData) {
     let owner: String | undefined = undefined;
-    if (perspectiveData.parentId !== undefined) {
+    // TODO: shouldnt be null
+    if (perspectiveData.parentId !== undefined && perspectiveData.parentId !== null) {
       owner = await this.accessControl.getOwner(perspectiveData.parentId);
     } else {
       owner =
-        perspectiveData.canWrite !== undefined ? perspectiveData.canWrite : this.connection.account;
+        perspectiveData.canWrite !== undefined && perspectiveData.canWrite !== null
+          ? perspectiveData.canWrite
+          : this.connection.account;
     }
     return owner;
   }
 
-  async updateUserPerspectivesEntry(
-    userPerspectives: UserPerspectives,
+  async updateUserPerspectivesDetailsEntry(
+    userPerspectivesDetails: UserPerspectivesDetails,
     perspectiveId: string,
     details: PerspectiveDetails
   ) {
-    const currentDetails = userPerspectives[perspectiveId];
+    const currentDetails = userPerspectivesDetails[perspectiveId];
 
-    userPerspectives[perspectiveId] = {
-      headId:
-        details.headId !== undefined
-          ? details.headId
-          : currentDetails !== undefined
-          ? currentDetails.headId
-          : undefined,
-      context:
-        details.context !== undefined
-          ? details.context
-          : currentDetails !== undefined
-          ? currentDetails.context
-          : undefined
+    // TODO: should this even be checked?
+    userPerspectivesDetails[perspectiveId] = {
+      headId: details.headId ?? currentDetails?.headId,
+      context: details.context ?? currentDetails?.context
     };
 
-    return userPerspectives;
+    return userPerspectivesDetails;
   }
 
+  // updatePerspectiveDetails?
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
-    const perspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
-    let userPerspectivesHash = await this.connection.getUserPerspectivesHash(
-      perspective.payload.creatorId
-    );
-    // if (!userPerspectivesHash) {
-    //   userPerspectivesHash = await
-    // }
-    const userPerspectives = (await this.store.get(userPerspectivesHash)) as UserPerspectives;
+    // TODO: move this as an optimization? createPerspective already has this
+    const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
-    const userPerspectivesNew = this.updateUserPerspectivesEntry(
-      userPerspectives,
+    let userPerspectivesDetailsHash = await this.connection.getUserPerspectivesDetailsHash(
+      perspective.creatorId
+    );
+    const userPerspectivesDetails =
+      userPerspectivesDetailsHash !== ''
+        ? ((await this.store.get(userPerspectivesDetailsHash)) as UserPerspectivesDetails)
+        : {};
+
+    const userPerspectivesDetailsNew = await this.updateUserPerspectivesDetailsEntry(
+      userPerspectivesDetails,
       perspectiveId,
       details
     );
 
-    const userPerspectivesHashNew = await this.store.create(userPerspectivesNew);
+    const userPerspectivesDetailsHashNew = await this.store.create(userPerspectivesDetailsNew);
 
-    await this.connection.updateUserPerspectivesHash(userPerspectivesHashNew);
+    await this.connection.updateUserPerspectivesDetailsHash(userPerspectivesDetailsHashNew);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
@@ -129,10 +126,8 @@ export class EveesPolkadotIdentity implements EveesRemote {
         `cannot create a perspective whose owner ${owner} is not the creatorId ${secured.object.payload.creatorId}`
       );
     }
-    //TODO: store hash perspectiveID in profile
-    await this.connection.updateUserPerspectivesHash(perspectiveId);
-
-    // await this.updatePerspective(perspectiveId, details);
+    // await this.connection.updateUserPerspectivesDetailsHash()
+    await this.updatePerspective(perspectiveId, details);
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
@@ -142,6 +137,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
      * - that the parentId owner is that owner if present */
 
     const owner = newPerspectivesData[0].perspective.object.payload.creatorId;
+    // TODO: remove .object. ????
     newPerspectivesData.map(newPerspective => {
       if (newPerspective.perspective.object.payload.creatorId !== owner)
         throw new Error('unexpected creatorId');
@@ -149,20 +145,26 @@ export class EveesPolkadotIdentity implements EveesRemote {
         throw new Error('unexpected canWrite');
     });
 
-    const userPerspectivesHash = await this.connection.getUserPerspectivesHash(owner);
-    const userPerspectives = (await this.store.get(userPerspectivesHash)) as UserPerspectives;
+    const userPerspectivesHash = await this.connection.getUserPerspectivesDetailsHash(owner);
+    const userPerspectives = (await this.store.get(
+      userPerspectivesHash
+    )) as UserPerspectivesDetails;
 
     let userPerspectivesNew;
 
     newPerspectivesData.map(perspectiveData => {
       const secured = perspectiveData.perspective;
       const details = perspectiveData.details;
-      userPerspectivesNew = this.updateUserPerspectivesEntry(userPerspectives, secured.id, details);
+      userPerspectivesNew = this.updateUserPerspectivesDetailsEntry(
+        userPerspectives,
+        secured.id,
+        details
+      );
     });
 
     const userPerspectivesHashNew = await this.store.create(userPerspectivesNew);
 
-    await this.connection.updateUserPerspectivesHash(userPerspectivesHashNew);
+    await this.connection.updateUserPerspectivesDetailsHash(userPerspectivesHashNew);
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
@@ -170,13 +172,16 @@ export class EveesPolkadotIdentity implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    const perspective = (await this.store.get(perspectiveId)) as Secured<Perspective>;
-    const userPerspectivesHash = await this.connection.getUserPerspectivesHash(
-      perspective.object.payload.creatorId
+    const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
+    const userPerspectivesDetailsHash = await this.connection.getUserPerspectivesDetailsHash(
+      perspective.creatorId
     );
-    const userPerspectives = (await this.store.get(userPerspectivesHash)) as UserPerspectives;
+    // TODO: this is empty?
+    const userPerspectivesDetails = (await this.store.get(
+      userPerspectivesDetailsHash
+    )) as UserPerspectivesDetails;
 
-    return userPerspectives[perspectiveId];
+    return userPerspectivesDetails[perspectiveId];
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
