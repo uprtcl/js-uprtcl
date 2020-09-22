@@ -63,7 +63,7 @@ export class Evees {
       query: gql`
         {
           entity(uref: "${perspectiveId}") {
-            id 
+            id
             ... on Perspective {
               payload {
                 remote
@@ -74,6 +74,7 @@ export class Evees {
       `
     });
 
+    // TODO: this throws: cannot read property entity of null
     const remote = result.data.entity.payload.remote;
     return this.getRemote(remote);
   }
