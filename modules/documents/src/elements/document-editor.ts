@@ -1007,7 +1007,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.persistAll(message);
   }
 
-  handlePerspectiveCheckout(e: CustomEvent, node: DocNode) {
+  handleNodePerspectiveCheckout(e: CustomEvent, node: DocNode) {
     if (node.coord.length === 1 && node.coord[0] === 0) {
       return;
     }
@@ -1027,13 +1027,15 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     e.stopPropagation();
 
-    if (this.checkedOutPerspectives[JSON.stringify(node.coord)] !== undefined) {
+    const nodeCoord = JSON.stringify(node.coord);
+
+    if (this.checkedOutPerspectives[nodeCoord] !== undefined) {
       if (
-        this.checkedOutPerspectives[JSON.stringify(node.coord)].firstUref === e.detail.perspectiveId
+        this.checkedOutPerspectives[nodeCoord].firstUref === e.detail.perspectiveId
       ) {
-        delete this.checkedOutPerspectives[JSON.stringify(node.coord)];
+        delete this.checkedOutPerspectives[nodeCoord];
       } else {
-        this.checkedOutPerspectives[JSON.stringify(node.coord)].newUref = e.detail.perspectiveId;
+        this.checkedOutPerspectives[nodeCoord].newUref = e.detail.perspectiveId;
       }
     }
 
@@ -1064,7 +1066,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}
-                  @checkout-perspective=${e => this.handlePerspectiveCheckout(e, node)}
+                  @checkout-perspective=${e => this.handleNodePerspectiveCheckout(e, node)}
                   show-perspectives
                   show-acl
                   show-info
