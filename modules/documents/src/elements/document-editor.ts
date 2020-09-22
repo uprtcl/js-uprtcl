@@ -78,9 +78,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   checkedOutPerspectives: { [key: string]: string } = {};
-  
+
   // checkedOutPerspectivesStorageId!: string;
-  
+
   protected eveesRemotes!: EveesRemote[];
   protected remotesMap!: RemoteMap;
   protected recognizer!: PatternRecognizer;
@@ -122,9 +122,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!this.uref) return;
     this.doc = await this.loadNodeRec(this.uref);
-    
-    // this.checkedOutPerspectivesStorageId = `CHECKED_OUT_PERSPECTIVES_${this.uref}` 
-    
+
+    // this.checkedOutPerspectivesStorageId = `CHECKED_OUT_PERSPECTIVES_${this.uref}`
+
     // const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
     // if(storageRes) {
     //   this.checkedOutPerspectives = JSON.parse(storageRes);
@@ -258,16 +258,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {
-    const currentIndex = ix ? ix : 0
-    const coord = parent && parent.coord
-      ? parent.coord.concat([currentIndex])
-      : [currentIndex]
+    const currentIndex = ix ? ix : 0;
+    const coord = parent && parent.coord ? parent.coord.concat([currentIndex]) : [currentIndex];
 
     return coord;
   }
 
   setNodeLevel(coord) {
-    return this.rootLevel + (coord.length - 1)
+    return this.rootLevel + (coord.length - 1);
   }
 
   isPlaceholder(uref: string): boolean {
@@ -577,7 +575,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const randint = 0 + Math.floor((10000 - 0) * Math.random());
     const uref = PLACEHOLDER_TOKEN + `-${ix !== undefined ? ix : 0}-${randint}`;
-    
+
     // Add node coordinates
     const coord = this.setNodeCoordinates(parent, ix);
 
@@ -1012,6 +1010,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   handlePerspectiveCheckout(e: CustomEvent, coord) {
     e.stopPropagation();
     this.checkedOutPerspectives[JSON.stringify(coord)] = e.detail.perspectiveId;
+    this.requestUpdate();
   }
 
   renderWithCortex(node: DocNode) {
@@ -1093,9 +1092,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           color=${eveeColor(this.uref)}
         >
         </documents-editor>
-      `
+      `;
     }
-   
+
     return html`
       <div
         style=${styleMap({
