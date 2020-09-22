@@ -3,12 +3,13 @@ import { html } from 'lit-element';
 import { AccessControlService, Secured, Perspective } from '@uprtcl/evees';
 import { Lens } from '@uprtcl/lenses';
 import { CASStore } from '@uprtcl/multiplatform';
+import { Signed } from '@uprtcl/cortex';
 
 export class EveesAccessControlPolkadot implements AccessControlService {
   constructor(protected store: CASStore) {}
 
   async getOwner(perspectiveId: string) {
-    const perspective = (await this.store.get(perspectiveId)) as Secured<Perspective>;
+    const perspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
     return perspective.payload.creatorId;
   }
 

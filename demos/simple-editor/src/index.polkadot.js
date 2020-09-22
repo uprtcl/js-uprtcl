@@ -7,7 +7,7 @@ import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
-import { EveesPolkadot, PolkadotConnection } from '@uprtcl/evees-polkadot';
+import { EveesPolkadotIdentity, PolkadotConnection } from '@uprtcl/evees-polkadot';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -46,7 +46,7 @@ import { env } from '../env';
 
   const ipfs = await IPFS.create(ipfsJSConfig);
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs);
-  const pkdEvees = new EveesPolkadot(pkdConnection, ipfsStore);
+  const pkdEvees = new EveesPolkadotIdentity(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
   // TODO: had to restore this or it wouldn't work. figure out why 2nd arg was removed
