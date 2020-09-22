@@ -11,14 +11,9 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import {
-  OrbitDBCustom,
-  EveesOrbitDB,
-  EveesOrbitDBModule,
-  ProposalsOrbitDB,
-  EthereumIdentity
-} from '@uprtcl/evees-orbitdb';
-import { EveesEthereum, EveesEthereumModule } from '@uprtcl/evees-ethereum';
+import { EveesOrbitDB, EveesOrbitDBModule, ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
+import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+import { EveesEthereum, EveesEthereumModule, EthereumIdentity } from '@uprtcl/evees-ethereum';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 

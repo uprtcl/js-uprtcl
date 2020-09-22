@@ -87,11 +87,11 @@ export class OrbitDBCustom extends Connection {
     this.identity = identity;
   }
 
-  public getManifest(type: EveesOrbitDBEntities) {
+  public getManifest(type: string) {
     return this.storeManifests.find(s => s.customType === type);
   }
 
-  public async storeAddress(type: EveesOrbitDBEntities, entity: any): Promise<string> {
+  public async storeAddress(type: string, entity: any): Promise<string> {
     const storeManifest = this.getManifest(type);
     if (storeManifest === undefined) throw new Error(`store if type ${type} not found`);
 
@@ -123,11 +123,7 @@ export class OrbitDBCustom extends Connection {
     return db;
   }
 
-  public async getStore(
-    type: EveesOrbitDBEntities,
-    entity?: any,
-    pin: boolean = false
-  ): Promise<any> {
+  public async getStore(type: string, entity?: any, pin: boolean = false): Promise<any> {
     const address = await this.storeAddress(type, entity);
     const store = this.openStore(address);
     if (pin) {
