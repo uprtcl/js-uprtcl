@@ -77,7 +77,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   color!: string;
 
   @property({ attribute: false })
-  checkedOutPerspectives: { [key: string]: string } = {};
+  checkedOutPerspectives: { [key: string]: { firstUref: string; newUref: string } } = {};
 
   // checkedOutPerspectivesStorageId!: string;
 
@@ -1007,9 +1007,36 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.persistAll(message);
   }
 
-  handlePerspectiveCheckout(e: CustomEvent, coord) {
+  handlePerspectiveCheckout(e: CustomEvent, node: DocNode) {
+    if (node.coord.length === 1 && node.coord[0] === 0) {
+      return;
+    }
+
     e.stopPropagation();
-    this.checkedOutPerspectives[JSON.stringify(coord)] = e.detail.perspectiveId;
+
+    this.checkedOutPerspectives[JSON.stringify(node.coord)] = {
+      firstUref: node.uref,
+      newUref: e.detail.perspectiveId
+    };
+
+    this.requestUpdate();
+  }
+
+  handleEditorPerspectiveCheckout(e: CustomEvent, node: DocNode) {
+    // we are in the parent document editor
+
+    e.stopPropagation();
+
+    if (this.checkedOutPerspectives[JSON.stringify(node.coord)] !== undefined) {
+      if (
+        this.checkedOutPerspectives[JSON.stringify(node.coord)].firstUref === e.detail.perspectiveId
+      ) {
+        delete this.checkedOutPerspectives[JSON.stringify(node.coord)];
+      } else {
+        this.checkedOutPerspectives[JSON.stringify(node.coord)].newUref = e.detail.perspectiveId;
+      }
+    }
+
     this.requestUpdate();
   }
 
@@ -1037,7 +1064,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}
-                  @checkout-perspective=${e => this.handlePerspectiveCheckout(e, node.coord)}
+                  @checkout-perspective=${e => this.handlePerspectiveCheckout(e, node)}
                   show-perspectives
                   show-acl
                   show-info
@@ -1086,10 +1113,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (this.checkedOutPerspectives[coordString] !== undefined) {
       return html`
         <documents-editor
-          uref=${this.checkedOutPerspectives[coordString]}
+          uref=${this.checkedOutPerspectives[coordString].newUref}
           editable=${this.editable}
           root-level=${node.level}
           color=${eveeColor(this.uref)}
+          @checkout-perspective=${e => this.handleEditorPerspectiveCheckout(e, node)}
         >
         </documents-editor>
       `;
