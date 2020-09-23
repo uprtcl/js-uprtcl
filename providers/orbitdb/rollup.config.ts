@@ -1,11 +1,10 @@
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
-import commonjs from 'rollup-plugin-commonjs';
 import json from '@rollup/plugin-json';
 
 const pkg = require('./package.json');
 
-const libraryName = 'uprtcl-evees-polkadot';
+const libraryName = 'uprtcl-orbitdb-provider';
 
 export default {
   input: `src/${libraryName}.ts`,
@@ -13,6 +12,7 @@ export default {
     { file: pkg.main, name: libraryName, format: 'umd', sourcemap: true },
     { file: pkg.module, format: 'es', sourcemap: true }
   ],
+  // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash-es')
   external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],
   watch: {
     include: 'src/**'
@@ -28,15 +28,9 @@ export default {
       useTsconfigDeclarationDir: true,
       cacheRoot: `${require('temp-dir')}/.rpt2_cache`
     }),
-    commonjs({
-      include: 'node_modules/**',
-      namedExports: {
-        'node_modules/orbit-db-access-controllers/src/ipfs-access-controller.js': [
-          'IPFSAccessController'
-        ]
-      }
-    }),
+
     // Resolve source maps to the original source
     sourceMaps()
-  ]
+  ],
+  preserveSymlinks: true
 };

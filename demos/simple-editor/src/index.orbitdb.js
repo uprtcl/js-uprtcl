@@ -11,21 +11,24 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import {
-  OrbitDBConnection,
-  EveesOrbitDB,
-  EveesOrbitDBModule,
-  ProposalsOrbitDB,
-  EthereumIdentity
-} from '@uprtcl/evees-orbitdb';
-import { EveesEthereum, EveesEthereumModule } from '@uprtcl/evees-ethereum';
+import { EveesOrbitDB, EveesOrbitDBModule, ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
+import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+import { EveesEthereum, EveesEthereumModule, EthereumIdentity } from '@uprtcl/evees-ethereum';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 
-import { SimpleEditor } from './simple-editor';
+import {
+  PerspectiveStore,
+  ContextStore,
+  ProposalStore,
+  ProposalsToPerspectiveStore,
+  ContextAccessController,
+  ProposalsAccessController
+} from '@uprtcl/evees-orbitdb';
+
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
@@ -66,13 +69,19 @@ import { SimpleWiki } from './simple-wiki';
   await ethConnection.ready();
   const identity = new EthereumIdentity(ethConnection);
 
-  const orbitDBConnection = new OrbitDBConnection(pinnerUrl, ipfs, identity);
-  await orbitDBConnection.ready();
+  const orbitDBCustom = new OrbitDBCustom(
+    [PerspectiveStore, ContextStore, ProposalStore, ProposalsToPerspectiveStore],
+    [ContextAccessController, ProposalsAccessController],
+    identity,
+    pinnerUrl,
+    ipfs
+  );
+  await orbitDBCustom.ready();
 
-  const orbitdbEvees = new EveesOrbitDB(orbitDBConnection, ipfsStore);
+  const orbitdbEvees = new EveesOrbitDB(orbitDBCustom, ipfsStore);
   await orbitdbEvees.connect();
 
-  const proposals = new ProposalsOrbitDB(orbitDBConnection, ipfsStore);
+  const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
   const ethEvees = new EveesEthereum(ethConnection, ipfsStore, proposals);
   await ethEvees.ready();
 
@@ -100,6 +109,5 @@ import { SimpleWiki } from './simple-wiki';
   orchestrator.container.bind('official-connection').toConstantValue(ethConnection);
 
   console.log(orchestrator);
-  customElements.define('simple-editor', SimpleEditor);
   customElements.define('simple-wiki', SimpleWiki);
 })();

@@ -1,11 +1,13 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { Option } from '@polkadot/types';
+import { AddressOrPair } from '@polkadot/api/types';
+import { stringToU8a } from '@polkadot/util';
+import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
+import { IdentityInfo, IdentityInfoAdditional, Registration } from '@polkadot/types/interfaces';
+import keyring from '@polkadot/ui-keyring';
 
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
-import { IdentityInfo, IdentityInfoAdditional, Registration } from '@polkadot/types/interfaces';
-import { Option } from '@polkadot/types';
-import { AddressOrPair } from '@polkadot/api/types';
 
 const getIdentityInfo = (identity: Option<Registration>) => {
   if (identity && identity.isSome) {
@@ -20,16 +22,16 @@ const getCID = (info: IdentityInfo): string => {
   if (!info.additional) {
     return '';
   }
-  const [[, { Raw: cid0 }], [, { Raw: cid1 }]] = info.additional
-    .filter(([k]) => k.Raw === 'cid0' || k.Raw === 'cid1')
-    .sort(([a], [b]) => (a.Raw < b.Raw ? -1 : 1));
-  console.log(cid0, cid1);
+  const [[, { Raw: cid1 }], [, { Raw: cid0 }]] = (info.additional as any)
+    .filter(([k]) => k.Raw === 'evees-cid1' || k.Raw === 'evees-cid0')
+    .sort(([a], [b]) => (a.Raw > b.Raw ? -1 : 1));
+  console.log(cid1, cid0);
 
-  const cid = cid0 + cid1;
+  const cid = cid1 + cid0;
   return cid;
 };
 
-export interface UserPerspectives {
+export interface UserPerspectivesDetails {
   [perspectiveId: string]: {
     headId?: string;
     context?: string;
@@ -103,25 +105,38 @@ export class PolkadotConnection extends Connection {
     return;
   }
 
-  public async getUserPerspectivesHash(userId: string) {
-    // read evees entry
+  public async getUserPerspectivesDetailsHash(userId: string) {
     const identity = await this.api?.query.identity.identityOf(userId);
-    const identityInfo = getIdentityInfo(<Option<Registration>>identity);
+    this.identityInfo = getIdentityInfo(<Option<Registration>>identity);
     return getCID(<IdentityInfo>this.identityInfo);
   }
 
-  public async updateUserPerspectivesHash(userPerspectivesHash: string) {
+  public async updateUserPerspectivesDetailsHash(userPerspectivesDetailsHash: string) {
     // update evees entry
-    const cid1 = userPerspectivesHash.substring(0, 32);
-    const cid0 = userPerspectivesHash.substring(32, 64);
+    const cid1 = userPerspectivesDetailsHash.substring(0, 32);
+    const cid0 = userPerspectivesDetailsHash.substring(32, 64);
     const result = this.api?.tx.identity.setIdentity({
-      ...this.identityInfo,
+      ...(this.identityInfo as any),
       additional: [
         [{ Raw: 'evees-cid1' }, { Raw: cid1 }],
         [{ Raw: 'evees-cid0' }, { Raw: cid0 }]
       ]
     });
-    const txHash = await result?.signAndSend(<AddressOrPair>this?.account);
-    console.log(txHash);
+    // TODO: Dont block here, cache value
+    await new Promise(async (resolve, reject) => {
+      const unsub = await result?.signAndSend(<AddressOrPair>this?.account, result => {
+        if (result.status.isInBlock) {
+        } else if (result.status.isFinalized) {
+          if (unsub) unsub();
+          resolve();
+        }
+      });
+    });
+  }
+
+  public async signText(messageText) {
+    const message = stringToU8a(messageText);
+    const currentPair = keyring.getPairs()[0];
+    return currentPair.sign(message);
   }
 }

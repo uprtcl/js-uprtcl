@@ -1,13 +1,6 @@
-// import pEvent from 'p-event';
-import { Container } from 'inversify';
-import { ApolloClient } from 'apollo-boost';
-
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { Signed, Entity } from '@uprtcl/cortex';
-import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { loadEntity, CASStore } from '@uprtcl/multiplatform';
+import { Signed } from '@uprtcl/cortex';
+import { CASStore } from '@uprtcl/multiplatform';
 
 import {
   Secured,
@@ -17,9 +10,10 @@ import {
   EveesRemote,
   ProposalsProvider
 } from '@uprtcl/evees';
+import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
-import { OrbitDBConnection, OrbitDBConnectionOptions } from './orbit-db.connection';
+import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
 
 const evees_if = 'evees-v0';
 // const timeout = 200;
@@ -36,7 +30,15 @@ export class EveesOrbitDB implements EveesRemote {
   accessControl: any;
   proposals!: ProposalsProvider;
 
-  constructor(protected orbitdbConnection: OrbitDBConnection, public store: CASStore) {
+  constructor(protected orbitdbcustom: OrbitDBCustom, public store: CASStore) {
+    if (
+      orbitdbcustom.getManifest(EveesOrbitDBEntities.Perspective) === undefined ||
+      orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined
+    ) {
+      throw new Error(
+        'orbitdb custom must include the EveesOrbitDBEntities.Perspective EveesOrbitDBEntities.Context stores'
+      );
+    }
     this.accessControl = new EveesAccessControlOrbitDB(this.store);
   }
 
@@ -49,8 +51,8 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   get userId() {
-    if (!this.orbitdbConnection) return undefined;
-    return this.orbitdbConnection.identity.id;
+    if (!this.orbitdbcustom) return undefined;
+    return this.orbitdbcustom.identity.id;
   }
 
   canWrite(uref: string): Promise<boolean> {
@@ -61,7 +63,7 @@ export class EveesOrbitDB implements EveesRemote {
    * @override
    */
   async ready(): Promise<void> {
-    await Promise.all([this.orbitdbConnection.ready(), this.store.ready()]);
+    await Promise.all([this.orbitdbcustom.ready(), this.store.ready()]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
@@ -80,13 +82,17 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   async getPerspectiveStore(perspectiveId: string, pin: boolean = false) {
-    if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
+    if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
     const signedPerspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
     this.logger.log('getting', { perspectiveId, signedPerspective });
 
-    return this.orbitdbConnection.perspectiveStore(signedPerspective.payload, pin);
+    return this.orbitdbcustom.getStore(
+      EveesOrbitDBEntities.Perspective,
+      signedPerspective.payload,
+      pin
+    );
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
@@ -122,7 +128,7 @@ export class EveesOrbitDB implements EveesRemote {
   ): Promise<void> {
     this.logger.log('updatePerspective', { perspectiveId, details });
     if (!(await this.isLogged())) throw notLogged();
-    if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
+    if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
     if (details.name) throw new Error('details.name is not supported');
 
     const currentDetails: PerspectiveDetails = await this.getPerspective(perspectiveId);
@@ -144,11 +150,19 @@ export class EveesOrbitDB implements EveesRemote {
     const contextChange = currentDetails.context !== newDetails.context;
 
     if (contextChange && currentDetails.context) {
-      const contextStore = await this.orbitdbConnection.contextStore(currentDetails.context);
+      const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+        context: currentDetails.context
+      });
       await contextStore.delete(perspectiveId);
     }
     if (contextChange && newDetails.context) {
-      const contextStore = await this.orbitdbConnection.contextStore(newDetails.context, pin);
+      const contextStore = await this.orbitdbcustom.getStore(
+        EveesOrbitDBEntities.Context,
+        {
+          context: newDetails.context
+        },
+        pin
+      );
       await contextStore.add(perspectiveId);
     }
     this.logger.log('updatePerspective - done', { perspectiveId, details });
@@ -159,9 +173,11 @@ export class EveesOrbitDB implements EveesRemote {
    */
   async getContextPerspectives(context: string): Promise<string[]> {
     this.logger.log('getContextPerspectives', { context });
-    if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
+    if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    const contextStore = await this.orbitdbConnection.contextStore(context);
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context
+    });
     const perspectiveIds = [...contextStore.values()];
 
     this.logger.log(`[OrbitDB] getContextPerspectives of ${context}`, perspectiveIds);
@@ -186,14 +202,16 @@ export class EveesOrbitDB implements EveesRemote {
 
   async deletePerspective(perspectiveId: string): Promise<void> {
     if (!(await this.isLogged())) throw notLogged();
-    if (!this.orbitdbConnection) throw new Error('orbit db connection undefined');
+    if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
     const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
     const [latestEntry] = perspectiveStore.iterator({ limit: 1 }).collect();
 
     const context = latestEntry && latestEntry.payload.value.context;
     if (context) {
-      const contextStore = await this.orbitdbConnection.contextStore(context);
+      const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+        context
+      });
       await contextStore.delete(perspectiveId);
     }
 
@@ -201,15 +219,15 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   async isLogged(): Promise<boolean> {
-    return this.orbitdbConnection.isLogged();
+    return this.orbitdbcustom.isLogged();
   }
 
   async login(): Promise<void> {
-    return this.orbitdbConnection.login();
+    return this.orbitdbcustom.login();
   }
 
   async logout(): Promise<void> {
-    return this.orbitdbConnection.logout();
+    return this.orbitdbcustom.logout();
   }
 
   async connect(): Promise<void> {}

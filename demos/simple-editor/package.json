@@ -36,6 +36,7 @@
     "@uprtcl/graphql": "^0.0.7-alpha.56",
     "@uprtcl/http-provider": "^0.0.7-alpha.56",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.56",
+    "@uprtcl/orbitdb-provider": "^0.0.7-alpha.56",
     "@uprtcl/lenses": "^0.0.7-alpha.56",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.56",
     "@uprtcl/multiplatform": "^0.0.7-alpha.56",

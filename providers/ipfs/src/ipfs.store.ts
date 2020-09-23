@@ -6,11 +6,12 @@ import {
   defaultCidConfig,
   CASStore,
   Connection,
-  ConnectionOptions,
+  ConnectionOptions
 } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { IpfsConnectionOptions } from './types';
 import { sortObject } from './utils';
+import CID from 'cids';
 
 export interface PutConfig {
   format: string;
@@ -42,17 +43,12 @@ export class IpfsStore extends Connection implements CASStore {
     }
   }
 
-  public tryPut(
-    buffer: any,
-    putConfig: object,
-    wait: number,
-    attempt: number
-  ): Promise<any> {
+  public tryPut(buffer: any, putConfig: object, wait: number, attempt: number): Promise<any> {
     return new Promise((resolve, reject) => {
       this.logger.log(`Try put. Remaining attempts: ${attempt}`, {
         client: this.client,
         buffer,
-        putConfig,
+        putConfig
       });
 
       let timeout;
@@ -61,7 +57,7 @@ export class IpfsStore extends Connection implements CASStore {
         timeout = setTimeout(() => {
           this.tryPut(buffer, putConfig, wait * 2, attempt - 1)
             .then((result: any) => resolve(result))
-            .catch((e) => reject(e));
+            .catch(e => reject(e));
         }, wait);
       }
 
@@ -71,22 +67,23 @@ export class IpfsStore extends Connection implements CASStore {
           clearTimeout(timeout);
           resolve(result);
         })
-        .catch((e) => {
-          this.logger.error(
-            `Error putting object on IPFS on attempt: ${attempt}`,
-            {
-              e,
-              client: this.client,
-              buffer,
-              putConfig,
-            }
-          );
+        .catch(e => {
+          this.logger.error(`Error putting object on IPFS on attempt: ${attempt}`, {
+            e,
+            client: this.client,
+            buffer,
+            putConfig
+          });
         });
     });
   }
 
   public tryGet(hash: string, wait: number, attempt: number): Promise<any> {
     let timeout;
+
+    if (CID.isCID(hash)) {
+      throw new Error(`Invalid CID ${hash}`);
+    }
 
     return new Promise((resolve, reject) => {
       this.logger.log(`Trying to get ${hash}. Remaining attempts: ${attempt}`);
@@ -97,8 +94,8 @@ export class IpfsStore extends Connection implements CASStore {
       if (attempt > 0) {
         timeout = setTimeout(() => {
           this.tryGet(hash, wait * 2, attempt - 1)
-            .then((result) => resolve(result))
-            .catch((e) => {
+            .then(result => resolve(result))
+            .catch(e => {
               if (!found) reject(e);
             });
         }, wait);
@@ -124,20 +121,18 @@ export class IpfsStore extends Connection implements CASStore {
       if (attempt > 0) {
         timeout = setTimeout(() => {
           this.tryPin(hash, wait * 2, attempt - 1)
-            .then((result) => resolve(result))
-            .catch((e) => {
+            .then(result => resolve(result))
+            .catch(e => {
               if (!found) reject(e);
             });
         }, wait);
       }
 
-      fetch(`${this.pinnerUrl}/pin_hash?cid=${hash}`).then((result) => {
+      fetch(`${this.pinnerUrl}/pin_hash?cid=${hash}`).then(result => {
         clearTimeout(timeout);
         resolve(result);
       });
     });
-
-    
   }
 
   /**
@@ -156,7 +151,7 @@ export class IpfsStore extends Connection implements CASStore {
       format: this.cidConfig.codec,
       hashAlg: this.cidConfig.type,
       cidVersion: this.cidConfig.version,
-      pin: true,
+      pin: true
     };
 
     /** recursively try */
@@ -167,16 +162,16 @@ export class IpfsStore extends Connection implements CASStore {
           object,
           sorted,
           buffer,
-          hashString,
+          hashString
         });
         if (this.pinnerUrl) {
-          this.tryPin(hashString, 5000, 0).then((result) => {
+          this.tryPin(hashString, 5000, 0).then(result => {
             this.logger.info(`hash pinned`, result);
           });
         }
         return hashString;
       })
-      .catch((e) => {
+      .catch(e => {
         this.logger.error('error', e);
         throw new Error('Sorry but it seems impossible to store this on IPFS');
       });
@@ -188,17 +183,14 @@ export class IpfsStore extends Connection implements CASStore {
   async get(hash: string): Promise<object | undefined> {
     /** recursively try */
     return this.tryGet(hash, 500, 4)
-      .then((raw) => {
+      .then(raw => {
         const forceBuffer = Uint8Array.from(raw.value);
         let object = CBOR.decode(forceBuffer.buffer);
         this.logger.log(`Object retrieved ${hash}`, { raw, object });
         return object;
       })
-      .catch((e) => {
-        this.logger.warn(
-          `Object with ${hash} not found in IPFS, returning undefined`,
-          e
-        );
+      .catch(e => {
+        this.logger.warn(`Object with ${hash} not found in IPFS, returning undefined`, e);
         return undefined;
       });
   }
