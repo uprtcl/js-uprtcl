@@ -34,10 +34,10 @@ export const proposal: CustomStore = {
   customType: EveesOrbitDBEntities.Proposal,
   type: 'eventlog',
   name: () => 'proposal-store',
-  options: perspective => {
+  options: proposal => {
     return {
-      accessController: { type: 'ipfs', write: [perspective.creatorId] },
-      meta: { timestamp: perspective.timestamp }
+      accessController: { type: 'ipfs', write: proposal.owners },
+      meta: { timestamp: proposal.timestamp }
     };
   }
 };
