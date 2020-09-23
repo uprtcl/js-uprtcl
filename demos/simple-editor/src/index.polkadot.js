@@ -25,6 +25,7 @@ import { SimpleWiki } from './simple-wiki';
 import { env } from '../env';
 
 (async function() {
+  const pinnerUrl = '';
   const polkadotWs = '';
 
   const ipfsCidConfig = {
