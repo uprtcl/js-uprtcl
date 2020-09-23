@@ -106,10 +106,8 @@ export class PolkadotConnection extends Connection {
   }
 
   public async getUserPerspectivesDetailsHash(userId: string) {
-    // read evees entry
     const identity = await this.api?.query.identity.identityOf(userId);
     this.identityInfo = getIdentityInfo(<Option<Registration>>identity);
-    // TODO: identityInfo is empty {}
     return getCID(<IdentityInfo>this.identityInfo);
   }
 
@@ -124,7 +122,16 @@ export class PolkadotConnection extends Connection {
         [{ Raw: 'evees-cid0' }, { Raw: cid0 }]
       ]
     });
-    const txHash = await result?.signAndSend(<AddressOrPair>this?.account);
+    // TODO: Dont block here, cache value
+    await new Promise(async (resolve, reject) => {
+      const unsub = await result?.signAndSend(<AddressOrPair>this?.account, (result) => {
+        if (result.status.isInBlock) {
+        } else if (result.status.isFinalized) {
+          unsub();
+          resolve();
+        }
+      });
+    });
   }
 
   public async signText(messageText) {
