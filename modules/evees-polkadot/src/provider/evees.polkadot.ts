@@ -90,12 +90,12 @@ export class EveesPolkadot implements EveesRemote {
 
   // updatePerspectiveDetails?
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
-    // TODO: move this as an optimization? createPerspective already has this
     const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
     let userPerspectivesDetailsHash = await this.connection.getUserPerspectivesDetailsHash(
       perspective.creatorId
     );
+    // TODO: Check again if still needed
     const userPerspectivesDetails = userPerspectivesDetailsHash !== '' ? (await this.store.get(userPerspectivesDetailsHash)) as UserPerspectivesDetails : {};
 
     const userPerspectivesDetailsNew = await this.updateUserPerspectivesDetailsEntry(
@@ -141,14 +141,14 @@ export class EveesPolkadot implements EveesRemote {
     });
 
     const userPerspectivesHash = await this.connection.getUserPerspectivesDetailsHash(owner);
-    const userPerspectives = (await this.store.get(userPerspectivesHash)) as UserPerspectivesDetails;
+    const userPerspectivesDetails = (await this.store.get(userPerspectivesHash)) as UserPerspectivesDetails;
 
     let userPerspectivesNew;
 
     newPerspectivesData.map(perspectiveData => {
       const secured = perspectiveData.perspective;
       const details = perspectiveData.details;
-      userPerspectivesNew = this.updateUserPerspectivesDetailsEntry(userPerspectives, secured.id, details);
+      userPerspectivesNew = this.updateUserPerspectivesDetailsEntry(userPerspectivesDetails, secured.id, details);
     });
 
     const userPerspectivesHashNew = await this.store.create(userPerspectivesNew);
@@ -165,7 +165,6 @@ export class EveesPolkadot implements EveesRemote {
     const userPerspectivesDetailsHash = await this.connection.getUserPerspectivesDetailsHash(
       perspective.creatorId
     );
-    // TODO: this is empty?
     const userPerspectivesDetails = (await this.store.get(userPerspectivesDetailsHash)) as UserPerspectivesDetails;
 
     return userPerspectivesDetails[perspectiveId];
