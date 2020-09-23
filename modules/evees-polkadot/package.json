@@ -13,6 +13,9 @@
   "dependencies": {
     "@polkadot/api": "^1.32.1",
     "@polkadot/extension-dapp": "^0.33.4",
+    "@polkadot/ui-keyring": "^0.58.1",
+    "@polkadot/ui-settings": "^0.58.1",
+    "@polkadot/util": "^3.4.1",
     "@uprtcl/cortex": "^0.0.7-alpha.56",
     "@uprtcl/evees": "^0.0.7-alpha.56",
     "@uprtcl/graphql": "^0.0.7-alpha.56",
@@ -21,11 +24,11 @@
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.56",
     "@uprtcl/multiplatform": "^0.0.7-alpha.56",
     "@uprtcl/orbitdb-provider": "^0.0.7-alpha.56",
-    "orbit-db-access-controllers": "^0.2.6",
     "apollo-boost": "^0.4.7",
     "cids": "^1.0.0",
     "inversify": "^5.0.1",
-    "multihashing-async": "^0.8.0"
+    "multihashing-async": "^0.8.0",
+    "orbit-db-access-controllers": "^0.2.6"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",

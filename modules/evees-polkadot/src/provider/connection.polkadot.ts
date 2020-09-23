@@ -1,11 +1,13 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { Option } from '@polkadot/types';
+import { AddressOrPair } from '@polkadot/api/types';
+import { stringToU8a } from '@polkadot/util';
+import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
+import { IdentityInfo, IdentityInfoAdditional, Registration } from '@polkadot/types/interfaces';
+import keyring from '@polkadot/ui-keyring';
 
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
-import { IdentityInfo, IdentityInfoAdditional, Registration } from '@polkadot/types/interfaces';
-import { Option } from '@polkadot/types';
-import { AddressOrPair } from '@polkadot/api/types';
 
 const getIdentityInfo = (identity: Option<Registration>) => {
   if (identity && identity.isSome) {
@@ -123,5 +125,11 @@ export class PolkadotConnection extends Connection {
       ]
     });
     const txHash = await result?.signAndSend(<AddressOrPair>this?.account);
+  }
+
+  public async signText(messageText) {
+    const message = stringToU8a(messageText);
+    const currentPair = keyring.getPairs()[0];
+    return currentPair.sign(message);
   }
 }
