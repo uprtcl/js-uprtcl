@@ -161,6 +161,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async resetWikiPerspective() {
     // await this.client.resetStore();
     this.pagesList = undefined;
+    this.selectedPageIx = undefined;
+    this.wiki = undefined;
     this.editable = false;
     this.loadWiki();
   }
@@ -322,7 +324,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.logger.info('updateContent()', newWiki);
 
-    this.loadWiki();
+    await this.loadWiki();
   }
 
   async replacePagePerspective(oldId, newId) {

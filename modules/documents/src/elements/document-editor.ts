@@ -18,6 +18,7 @@ import {
   EveesModule,
   UPDATE_HEAD,
   RemoteMap,
+  eveeColor,
   ContentUpdatedEvent,
   CREATE_PERSPECTIVE,
   CREATE_ENTITY,
@@ -48,6 +49,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   editable: string = 'true';
 
+  @property({ type: Number, attribute: 'root-level' })
+  rootLevel: number = 0;
+
   @property({ type: String })
   parentId: string = '';
 
@@ -73,10 +77,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   color!: string;
 
   @property({ attribute: false })
-  checkedOutPerspectives: { [key: string]: string } = {};
-  
-  checkedOutPerspectivesStorageId: string = 'CHECKED_OUT_PERSPECTIVES';
-  
+  checkedOutPerspectives: { [key: string]: { firstUref: string; newUref: string } } = {};
+
+  // checkedOutPerspectivesStorageId!: string;
+
   protected eveesRemotes!: EveesRemote[];
   protected remotesMap!: RemoteMap;
   protected recognizer!: PatternRecognizer;
@@ -95,9 +99,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
     this.loadDoc();
-
-    const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
-    if(storageRes) this.checkedOutPerspectives = JSON.parse(storageRes);
   }
 
   updated(changedProperties) {
@@ -121,6 +122,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!this.uref) return;
     this.doc = await this.loadNodeRec(this.uref);
+
+    // this.checkedOutPerspectivesStorageId = `CHECKED_OUT_PERSPECTIVES_${this.uref}`
+
+    // const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
+    // if(storageRes) {
+    //   this.checkedOutPerspectives = JSON.parse(storageRes);
+    // }
   }
 
   async loadNodeRec(uref: string, ix?: number, parent?: DocNode): Promise<DocNode> {
@@ -220,6 +228,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       editable = false;
     }
 
+    // Add node coordinates
+    const coord = this.setNodeCoordinates(parent, ix);
+
+    // Add node level
+    const level = this.setNodeLevel(coord);
+
     const node: DocNode = {
       uref: entity.id,
       isPlaceholder: false,
@@ -229,6 +243,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       childrenNodes: [],
       data,
       draft: data ? data.object : undefined,
+      coord,
+      level,
       headId,
       hasDocNodeLenses,
       editable,
@@ -239,6 +255,17 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     };
 
     return node;
+  }
+
+  setNodeCoordinates(parent?: DocNode, ix?: number) {
+    const currentIndex = ix ? ix : 0;
+    const coord = parent && parent.coord ? parent.coord.concat([currentIndex]) : [currentIndex];
+
+    return coord;
+  }
+
+  setNodeLevel(coord) {
+    return this.rootLevel + (coord.length - 1);
   }
 
   isPlaceholder(uref: string): boolean {
@@ -415,7 +442,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
             );
           }
         } else {
-          this.updateEvee(node, message);
+          await this.updateEvee(node, message);
         }
         break;
 
@@ -549,6 +576,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const randint = 0 + Math.floor((10000 - 0) * Math.random());
     const uref = PLACEHOLDER_TOKEN + `-${ix !== undefined ? ix : 0}-${randint}`;
 
+    // Add node coordinates
+    const coord = this.setNodeCoordinates(parent, ix);
+
+    // Add node level
+    const level = this.setNodeLevel(coord);
+
     return {
       uref,
       placeholderRef: uref,
@@ -556,6 +589,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       ix,
       parent,
       draft,
+      coord,
+      level,
       childrenNodes: [],
       hasChildren,
       hasDocNodeLenses,
@@ -972,17 +1007,39 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.persistAll(message);
   }
 
-  handlePerspectiveCheckout(e, uref) {
-    let checkedOutPerspectives = {};
-    
-    const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
-    if(storageRes) checkedOutPerspectives = JSON.parse(storageRes);
+  handleNodePerspectiveCheckout(e: CustomEvent, node: DocNode) {
+    if (node.coord.length === 1 && node.coord[0] === 0) {
+      return;
+    }
 
-    checkedOutPerspectives[uref] = e.detail.perspectiveId;
-    
-    localStorage.setItem(this.checkedOutPerspectivesStorageId, JSON.stringify(checkedOutPerspectives))
-    
-    this.checkedOutPerspectives = checkedOutPerspectives;
+    e.stopPropagation();
+
+    this.checkedOutPerspectives[JSON.stringify(node.coord)] = {
+      firstUref: node.uref,
+      newUref: e.detail.perspectiveId
+    };
+
+    this.requestUpdate();
+  }
+
+  handleEditorPerspectiveCheckout(e: CustomEvent, node: DocNode) {
+    // we are in the parent document editor
+
+    e.stopPropagation();
+
+    const nodeCoord = JSON.stringify(node.coord);
+
+    if (this.checkedOutPerspectives[nodeCoord] !== undefined) {
+      if (
+        this.checkedOutPerspectives[nodeCoord].firstUref === e.detail.perspectiveId
+      ) {
+        delete this.checkedOutPerspectives[nodeCoord];
+      } else {
+        this.checkedOutPerspectives[nodeCoord].newUref = e.detail.perspectiveId;
+      }
+    }
+
+    this.requestUpdate();
   }
 
   renderWithCortex(node: DocNode) {
@@ -1009,7 +1066,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}
-                  @checkout-perspective=${e => this.handlePerspectiveCheckout(e, node.uref)}
+                  @checkout-perspective=${e => this.handleNodePerspectiveCheckout(e, node)}
                   show-perspectives
                   show-acl
                   show-info
@@ -1053,15 +1110,21 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderDocNode(node: DocNode) {
-    if (this.checkedOutPerspectives[node.uref] !== undefined) {
+    const coordString = JSON.stringify(node.coord);
+
+    if (this.checkedOutPerspectives[coordString] !== undefined) {
       return html`
         <documents-editor
-          uref=${this.checkedOutPerspectives[node.uref]}
+          uref=${this.checkedOutPerspectives[coordString].newUref}
+          editable=${this.editable}
+          root-level=${node.level}
+          color=${eveeColor(this.uref)}
+          @checkout-perspective=${e => this.handleEditorPerspectiveCheckout(e, node)}
         >
         </documents-editor>
-      `
+      `;
     }
-   
+
     return html`
       <div
         style=${styleMap({
