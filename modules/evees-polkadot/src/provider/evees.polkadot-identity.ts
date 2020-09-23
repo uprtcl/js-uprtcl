@@ -76,15 +76,16 @@ export class EveesPolkadotIdentity implements EveesRemote {
     perspectiveId: string,
     details: PerspectiveDetails
   ) {
-    const currentDetails = userPerspectivesDetails[perspectiveId];
+    const newUserPerspectiveDetails = { ...userPerspectivesDetails };
 
+    const currentDetails = newUserPerspectiveDetails[perspectiveId];
     // TODO: should this even be checked?
-    userPerspectivesDetails[perspectiveId] = {
+    newUserPerspectiveDetails[perspectiveId] = {
       headId: details.headId ?? currentDetails?.headId,
       context: details.context ?? currentDetails?.context
     };
 
-    return userPerspectivesDetails;
+    return newUserPerspectiveDetails;
   }
 
   // updatePerspectiveDetails?
@@ -116,27 +117,35 @@ export class EveesPolkadotIdentity implements EveesRemote {
 
     /** update the context store */
     const currentDetails = userPerspectivesDetails[perspectiveId];
-    const contextChange = currentDetails.context !== details.context;
 
-    if (contextChange && currentDetails.context) {
+    const currentContext = currentDetails?.context;
+    const newContext = details?.context;
+
+    // if the new context is not specify, the user wanted to leave the context untouched
+    if (newContext === undefined) return;
+    if (newContext === currentContext) return;
+
+    // remove the perspective from the previous contexg
+    if (currentContext !== undefined) {
       const contextStore = await this.orbitdbcustom.getStore(PolkadotEveesOrbitDBEntities.Context, {
         context: currentDetails.context
       });
       await contextStore.delete(perspectiveId);
     }
-    if (contextChange && details.context) {
-      const contextStore = await this.orbitdbcustom.getStore(
-        PolkadotEveesOrbitDBEntities.Context,
-        {
-          context: details.context
-        },
-        pin
-      );
-      await contextStore.add(perspectiveId);
-    }
+
+    // add the perspective to the new context
+    const contextStore = await this.orbitdbcustom.getStore(
+      PolkadotEveesOrbitDBEntities.Context,
+      {
+        context: newContext
+      },
+      pin
+    );
+    await contextStore.add(perspectiveId);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    debugger;
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
 

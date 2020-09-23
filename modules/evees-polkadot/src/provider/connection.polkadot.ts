@@ -124,10 +124,10 @@ export class PolkadotConnection extends Connection {
     });
     // TODO: Dont block here, cache value
     await new Promise(async (resolve, reject) => {
-      const unsub = await result?.signAndSend(<AddressOrPair>this?.account, (result) => {
+      const unsub = await result?.signAndSend(<AddressOrPair>this?.account, result => {
         if (result.status.isInBlock) {
         } else if (result.status.isFinalized) {
-          unsub();
+          if (unsub) unsub();
           resolve();
         }
       });
