@@ -52,13 +52,6 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
     await this.updateProposalInternal(proposalId, proposal.details, true);
 
-    const proposalStore = await this.orbitdb.getStore(
-      EveesOrbitDBEntities.Proposal,
-      proposalManifest
-    );
-
-    await proposalStore.add(proposalId);
-
     /** Now add the proposal to the set of proposals to perspective */
     const proposalsToPerspeciveStore = await this.orbitdb.getStore(
       EveesOrbitDBEntities.ProposalsToPerspective,
