@@ -188,6 +188,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
 
     this.isLogged = await this.remote.isLogged();
+
+    if (this.defaultRemote) await this.defaultRemote.ready();
+
     this.isLoggedOnDefault =
       this.defaultRemote !== undefined ? await this.defaultRemote.isLogged() : false;
 
@@ -333,7 +336,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
        Note that it is assumed that if a user canWrite on toPerspectiveId, he can write 
        on all the perspectives inside the workspace.updates array. */
 
-    const canWrite = toPerspectiveId;
+    const toRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+      r => r.id === toRemoteId
+    );
+
+    if (toRemote === undefined) throw new Error('remote not found');
+
+    const canWrite = await toRemote.canWrite(toPerspectiveId);
 
     if (canWrite) {
       await workspace.execute(this.client);
@@ -429,6 +438,17 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
 
     const newPerspectiveId = result.data.forkPerspective.id;
+
+    this.dispatchEvent(
+      new CustomEvent('created-child-perspective', {
+        detail: {
+          oldPerspectiveId: this.uref,
+          newPerspectiveId: newPerspectiveId
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
     this.checkoutPerspective(newPerspectiveId);
 
     this.logger.info('newPerspectiveClicked() - perspective created', {

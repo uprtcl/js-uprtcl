@@ -3,7 +3,7 @@ import CBOR from 'cbor-js';
 import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
 import { Signed } from '@uprtcl/cortex';
 import { Perspective } from '@uprtcl/evees';
-import { ProposalManifest } from './proposals.orbit-db';
+import { ProposalManifest } from '../provider/proposals.orbit-db';
 
 const type = 'proposals';
 

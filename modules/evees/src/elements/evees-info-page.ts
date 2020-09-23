@@ -31,6 +31,9 @@ export class EveesInfoPage extends EveesInfoBase {
   @property({ attribute: false })
   isEmit: boolean = false;
 
+  @property({ attribute: true })
+  parentId: string = '';
+
   @query('#draft-textfield')
   draftTextField!: any;
 
@@ -124,7 +127,9 @@ export class EveesInfoPage extends EveesInfoBase {
   renderPermissions() {
     return html`
       <div class="perspectives-permissions">
-        ${!this.loading ? this.remote.accessControl.lense().render(this.uref) : ''}
+        ${!this.loading
+          ? this.remote.accessControl.lense().render({ uref: this.uref, parentId: this.parentId })
+          : ''}
       </div>
     `;
   }

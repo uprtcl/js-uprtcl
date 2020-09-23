@@ -7,8 +7,15 @@ import { WikisModule } from '@uprtcl/wikis';
 
 import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
-import { EveesPolkadot, PolkadotConnection } from '@uprtcl/evees-polkadot';
+import {
+  EveesPolkadotIdentity,
+  PolkadotIdentity,
+  PolkadotConnection,
+  PolkadotContextStore,
+  PolkadotContextAccessController
+} from '@uprtcl/evees-polkadot';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
+import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
@@ -18,6 +25,7 @@ import { SimpleWiki } from './simple-wiki';
 import { env } from '../env';
 
 (async function() {
+  const pinnerUrl = '';
   const polkadotWs = '';
 
   const ipfsCidConfig = {
@@ -46,7 +54,19 @@ import { env } from '../env';
 
   const ipfs = await IPFS.create(ipfsJSConfig);
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs);
-  const pkdEvees = new EveesPolkadot(pkdConnection, ipfsStore);
+
+  const identity = new PolkadotIdentity(pkdConnection);
+
+  const orbitDBCustom = new OrbitDBCustom(
+    [PolkadotContextStore],
+    [PolkadotContextAccessController],
+    identity,
+    pinnerUrl,
+    ipfs
+  );
+  await orbitDBCustom.ready();
+
+  const pkdEvees = new EveesPolkadotIdentity(pkdConnection, orbitDBCustom, ipfsStore);
   await pkdEvees.connect();
 
   // TODO: had to restore this or it wouldn't work. figure out why 2nd arg was removed

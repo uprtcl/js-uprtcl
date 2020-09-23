@@ -22,9 +22,9 @@ export class EveesAccessControlOrbitDB implements AccessControlService {
     return {
       name: 'evees-http:access-control',
       type: 'access-control',
-      render: (entity: string) => {
+      render: (entity: any) => {
         return html`
-          <evees-orbitdb-permissions uref=${entity}> </evees-orbitdb-permissions>
+          <evees-orbitdb-permissions uref=${entity.uref}> </evees-orbitdb-permissions>
         `;
       }
     };
