@@ -158,6 +158,10 @@ export class Evees {
 
     const perspective = await eveesRemote.snapPerspective(parentId);
 
+    /* BUG-FIXED: this is needed so that the getOwner of the snapPerspective function has the parent object. 
+       TODO: How to add the concept of workspaces to the fork process? how to snapPerspectives based on a workspace ? */
+    await EveesHelpers.createEntity(this.client, eveesRemote.store, perspective.object);
+
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, perspectiveId);
     const context = await EveesHelpers.getPerspectiveContext(this.client, perspectiveId);
 
