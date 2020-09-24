@@ -118,16 +118,14 @@ export class PolkadotConnection extends Connection {
     });
   }
 
-  public async signText(messageText): Promise<SignerResult | void> {
-    // const message = stringToU8a(messageText);
-    // const currentPair = keyring.getPairs()[0];
-    // return currentPair.sign(message);
+  public async signText(messageText): Promise<string | void> {
     if (this.signer?.signRaw !== undefined && this.account !== undefined) {
-      return await this.signer.signRaw({
+      const { signature } = await this.signer.signRaw({
         address: this.account,
         data: stringToHex(messageText),
         type: 'bytes'
       });
+      return signature;
     }
   }
 }
