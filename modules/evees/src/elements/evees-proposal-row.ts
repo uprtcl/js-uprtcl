@@ -163,7 +163,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     this.showDiff = false;
 
-    if (this.canExecute && value) {
+    if (this.canExecute && !this.executed && value) {
       await workspace.execute(this.client);
     }
   }

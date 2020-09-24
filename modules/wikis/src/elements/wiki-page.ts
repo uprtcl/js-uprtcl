@@ -2,12 +2,9 @@ import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 // import { styleMap } from 'lit-html/directives/style-map';
 // https://github.com/Polymer/lit-html/issues/729
-const styleMap = (style) => {
+const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(
-      /([A-Z])/g,
-      (matches) => `-${matches[0].toLowerCase()}`
-    );
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -22,7 +19,7 @@ import {
   EveesHelpers,
   Evees,
   EveesModule,
-  EveesRemote,
+  EveesRemote
 } from '@uprtcl/evees';
 
 export class WikiPage extends moduleConnect(LitElement) {
@@ -58,14 +55,15 @@ export class WikiPage extends moduleConnect(LitElement) {
     this.addEventListener(CONTENT_UPDATED_TAG, ((e: ContentUpdatedEvent) => {
       this.logger.info('CATCHED EVENT: content-updated ', {
         pageHash: this.pageHash,
-        e,
+        e
       });
-      e.stopPropagation();
-      this.dispatchEvent(
-        new CustomEvent('page-title-changed', {
-          detail: { pageId: e.detail.uref },
-        })
-      );
+      if (e.detail.uref === this.pageHash) {
+        this.dispatchEvent(
+          new CustomEvent('page-title-changed', {
+            detail: { pageId: e.detail.uref }
+          })
+        );
+      }
     }) as EventListener);
   }
 
@@ -93,19 +91,16 @@ export class WikiPage extends moduleConnect(LitElement) {
           }
 
         }
-      }`,
+      }`
     });
 
     this.textNode = result.data.entity.head.data;
 
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(
-      this.client,
-      this.pageHash
-    );
+    const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.pageHash);
 
-    const remote = (this.requestAll(
-      EveesModule.bindings.EveesRemote
-    ) as EveesRemote[]).find((r) => r.id === remoteId);
+    const remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(
+      r => r.id === remoteId
+    );
     if (!remote) throw new Error(`remote not found ${remoteId}`);
     const canWrite = await remote.canWrite(this.pageHash);
 
@@ -122,7 +117,10 @@ export class WikiPage extends moduleConnect(LitElement) {
   }
 
   render() {
-    if (!this.textNode) return html` <uprtcl-loading></uprtcl-loading> `;
+    if (!this.textNode)
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
 
     return html`
       <div class="page-content">
@@ -169,7 +167,7 @@ export class WikiPage extends moduleConnect(LitElement) {
         .text-editor {
           padding: 0vw 0vw;
         }
-      `,
+      `
     ];
   }
 }
