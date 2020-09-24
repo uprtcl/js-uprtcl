@@ -83,6 +83,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     );
 
     await eveesRemote.ready();
+    await eveesRemote.login();
     // TODO: connectWallet?
 
     const client = this.request(ApolloClientModule.bindings.Client);
