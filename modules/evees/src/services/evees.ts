@@ -156,19 +156,7 @@ export class Evees {
     const eveesRemote =
       remote !== undefined ? this.getRemote(remote) : (this.config.defaultRemote as EveesRemote);
 
-    const object: Perspective = {
-      creatorId: eveesRemote.userId ? eveesRemote.userId : '',
-      remote: eveesRemote.id,
-      path: eveesRemote.defaultPath,
-      timestamp: Date.now()
-    };
-
-    const perspective: Secured<Perspective> = await deriveSecured(
-      object,
-      eveesRemote.store.cidConfig
-    );
-
-    perspective.casID = eveesRemote.store.casID;
+    const perspective = await eveesRemote.snapPerspective(parentId);
 
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, perspectiveId);
     const context = await EveesHelpers.getPerspectiveContext(this.client, perspectiveId);

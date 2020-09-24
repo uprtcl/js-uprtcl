@@ -1,5 +1,6 @@
-import { PerspectiveDetails, NewPerspectiveData } from '../types';
+import { PerspectiveDetails, NewPerspectiveData, Perspective } from '../types';
 import { EveesSource } from './evees.source';
+import { Secured } from '../utils/cid-hash';
 
 export interface EveesProvider extends EveesSource {
   /**
@@ -10,7 +11,21 @@ export interface EveesProvider extends EveesSource {
   deletePerspective(perspectiveId: string): Promise<void>;
 
   /**
-   * Clone a perspective, set its details and forces a user canWrite in the service. 
+   * Create a perspective payload entity, inside the context of the remote, and
+   * thus with the ability to fetch remote specific information
+   
+   * @param parentId: (optional) the id of an object to be used as context
+   * @param timestamp: (optional)
+   * @param path: (optional)
+   */
+  snapPerspective(
+    parentId?: string,
+    timestamp?: number,
+    path?: string
+  ): Promise<Secured<Perspective>>;
+
+  /**
+   * Create a perspective, set its details and configures its access control. 
    
    * @param newPerspectiveData: TBW
    */
@@ -21,9 +36,7 @@ export interface EveesProvider extends EveesSource {
    *
    * @param newPerspectivesData: TBW
    */
-  createPerspectiveBatch(
-    newPerspectivesData: NewPerspectiveData[]
-  ): Promise<void>;
+  createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void>;
 
   /** Modifiers */
 
@@ -33,8 +46,5 @@ export interface EveesProvider extends EveesSource {
    * @param perspectiveId id of the perspective of which to update the head
    * @param details details to update the perspective to
    */
-  updatePerspective(
-    perspectiveId: string,
-    details: Partial<PerspectiveDetails>
-  ): Promise<void>;
+  updatePerspective(perspectiveId: string, details: Partial<PerspectiveDetails>): Promise<void>;
 }

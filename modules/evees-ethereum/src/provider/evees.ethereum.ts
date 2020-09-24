@@ -32,7 +32,8 @@ import {
   PerspectiveDetails,
   NewPerspectiveData,
   Secured,
-  ProposalsProvider
+  ProposalsProvider,
+  deriveSecured
 } from '@uprtcl/evees';
 
 import {
@@ -146,6 +147,25 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
           : this.ethConnection.getCurrentAccount();
     }
     return owner;
+  }
+
+  async snapPerspective(
+    parentId?: string,
+    timestamp?: number,
+    path?: string
+  ): Promise<Secured<Perspective>> {
+    const object: Perspective = {
+      creatorId: this.userId ? this.userId : '',
+      remote: this.id,
+      path: path !== undefined ? path : this.defaultPath,
+      timestamp: timestamp ? timestamp : Date.now()
+    };
+
+    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
+
+    perspective.casID = this.store.casID;
+
+    return perspective;
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
