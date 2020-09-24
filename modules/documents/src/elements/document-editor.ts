@@ -174,7 +174,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         r => r.id === remoteId
       );
       if (!remote) throw new Error(`remote not found for ${remoteId}`);
-      const canWrite = await remote.canWrite(uref);
+      const canWrite = this.editable === 'true' ? await remote.canWrite(uref) : false;
 
       if (this.editable === 'true') {
         editable = canWrite;
@@ -1030,9 +1030,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const nodeCoord = JSON.stringify(node.coord);
 
     if (this.checkedOutPerspectives[nodeCoord] !== undefined) {
-      if (
-        this.checkedOutPerspectives[nodeCoord].firstUref === e.detail.perspectiveId
-      ) {
+      if (this.checkedOutPerspectives[nodeCoord].firstUref === e.detail.perspectiveId) {
         delete this.checkedOutPerspectives[nodeCoord];
       } else {
         this.checkedOutPerspectives[nodeCoord].newUref = e.detail.perspectiveId;
