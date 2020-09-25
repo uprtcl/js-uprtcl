@@ -163,7 +163,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     this.showDiff = false;
 
-    if (this.canExecute && value) {
+    if (this.canExecute && !this.executed && value) {
       await workspace.execute(this.client);
     }
   }
@@ -188,7 +188,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
         <div class="proposal-name">
           ${this.creatorId !== undefined
             ? html`
-                <evees-author user-id=${this.creatorId}></evees-author>
+                <evees-author user-id=${this.creatorId} show-name></evees-author>
               `
             : 'unknown'}
         </div>

@@ -8,7 +8,8 @@ import {
   PerspectiveDetails,
   NewPerspectiveData,
   EveesRemote,
-  ProposalsProvider
+  ProposalsProvider,
+  deriveSecured
 } from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
@@ -93,6 +94,30 @@ export class EveesOrbitDB implements EveesRemote {
       signedPerspective.payload,
       pin
     );
+  }
+
+  async snapPerspective(
+    parentId?: string,
+    timestamp?: number,
+    path?: string
+  ): Promise<Secured<Perspective>> {
+    let parentOwner: string | undefined = undefined;
+    if (parentId !== undefined) {
+      parentOwner = await this.accessControl.getOwner(parentId);
+    }
+
+    const object: Perspective = {
+      creatorId: parentOwner ? parentOwner : this.userId ? this.userId : '',
+      remote: this.id,
+      path: path !== undefined ? path : this.defaultPath,
+      timestamp: timestamp ? timestamp : Date.now()
+    };
+
+    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
+
+    perspective.casID = this.store.casID;
+
+    return perspective;
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {

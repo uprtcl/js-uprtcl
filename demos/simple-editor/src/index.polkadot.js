@@ -14,7 +14,14 @@ import {
   PolkadotContextStore,
   PolkadotContextAccessController
 } from '@uprtcl/evees-polkadot';
+import {
+  ProposalsOrbitDB,
+  ProposalStore,
+  ProposalsToPerspectiveStore,
+  ProposalsAccessController
+} from '@uprtcl/evees-orbitdb';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
+import {} from '@uprtcl/evees-orbitdb';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -58,15 +65,17 @@ import { env } from '../env';
   const identity = new PolkadotIdentity(pkdConnection);
 
   const orbitDBCustom = new OrbitDBCustom(
-    [PolkadotContextStore],
-    [PolkadotContextAccessController],
+    [PolkadotContextStore, ProposalStore, ProposalsToPerspectiveStore],
+    [PolkadotContextAccessController, ProposalsAccessController],
     identity,
     pinnerUrl,
     ipfs
   );
   await orbitDBCustom.ready();
 
-  const pkdEvees = new EveesPolkadotIdentity(pkdConnection, orbitDBCustom, ipfsStore);
+  const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
+
+  const pkdEvees = new EveesPolkadotIdentity(pkdConnection, orbitDBCustom, ipfsStore, proposals);
   await pkdEvees.connect();
 
   // TODO: had to restore this or it wouldn't work. figure out why 2nd arg was removed

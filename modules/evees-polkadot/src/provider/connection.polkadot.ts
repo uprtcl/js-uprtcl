@@ -1,10 +1,14 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Option } from '@polkadot/types';
-import { AddressOrPair } from '@polkadot/api/types';
-import { stringToU8a } from '@polkadot/util';
-import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
-import { IdentityInfo, IdentityInfoAdditional, Registration } from '@polkadot/types/interfaces';
-import keyring from '@polkadot/ui-keyring';
+import { AddressOrPair, Signer, SignerResult } from '@polkadot/api/types';
+import { stringToHex } from '@polkadot/util';
+import {
+  web3Accounts,
+  web3Enable,
+  web3FromAddress
+} from '@polkadot/extension-dapp';
+import { IdentityInfo, Registration } from '@polkadot/types/interfaces';
+// import { ExtensionStore } from '@polkadot/ui-keyring/stores';
 
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -25,7 +29,6 @@ const getCID = (info: IdentityInfo): string => {
   const [[, { Raw: cid1 }], [, { Raw: cid0 }]] = (info.additional as any)
     .filter(([k]) => k.Raw === 'evees-cid1' || k.Raw === 'evees-cid0')
     .sort(([a], [b]) => (a.Raw > b.Raw ? -1 : 1));
-  console.log(cid1, cid0);
 
   const cid = cid1 + cid0;
   return cid;
@@ -43,6 +46,7 @@ export class PolkadotConnection extends Connection {
   public account?: string;
   private chain?: string;
   private identityInfo?: IdentityInfo;
+  private signer?: Signer;
 
   logger = new Logger('Polkadot-Connection');
 
@@ -55,23 +59,6 @@ export class PolkadotConnection extends Connection {
 
     const wsProvider = new WsProvider('ws://127.0.0.1:9944');
     this.api = await ApiPromise.create({ provider: wsProvider });
-
-    // const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
-    // const timestamp: any = await api.query.timestamp.now.at(blockHash);
-    // const date = new Date(timestamp.toNumber());
-    // Returns an array of all the injected sources
-    // (this needs to be called first, before other requests)
-    const allInjected = await web3Enable('uprtcl-wiki');
-
-    // returns an array of { address, meta: { name, source } }
-    // meta.source contains the name of the extension that provides this account
-    const allAccounts = await web3Accounts();
-    this.account = allAccounts[0]?.address;
-
-    // Set extension account as signer
-    const injector = await web3FromAddress(this.account);
-    this.api?.setSigner(injector.signer);
-
     // Retrieve the chain name
     // E.g. "Westend", "Kusama"
     this.chain = (await this.api.rpc.system.chain()).toString();
@@ -86,22 +73,19 @@ export class PolkadotConnection extends Connection {
   }
 
   public async canSign(): Promise<boolean> {
-    return true;
+    return this.signer !== undefined;
   }
 
   public async connectWallet(): Promise<void> {
-    // Returns an array of all the injected sources
-    // (this needs to be called first, before other requests)
-    // const allInjected = await web3Enable('uprtcl-wiki');
-    //
-    // // returns an array of { address, meta: { name, source } }
-    // // meta.source contains the name of the extension that provides this account
-    // const allAccounts = await web3Accounts();
-    // this.account = allAccounts[0]?.address;
-    //
-    // // Set extension account as signer
-    // const injector = await web3FromAddress(this.account);
-    // this.api?.setSigner(injector.signer);
+    const allInjected = await web3Enable('uprtcl-wiki');
+
+    const allAccounts = await web3Accounts();
+    this.account = allAccounts[0]?.address;
+
+    // Set extension account as signer
+    const injector = await web3FromAddress(this.account);
+    this.api?.setSigner(injector.signer);
+    this.signer = injector.signer;
     return;
   }
 
@@ -134,9 +118,14 @@ export class PolkadotConnection extends Connection {
     });
   }
 
-  public async signText(messageText) {
-    const message = stringToU8a(messageText);
-    const currentPair = keyring.getPairs()[0];
-    return currentPair.sign(message);
+  public async signText(messageText): Promise<string | void> {
+    if (this.signer?.signRaw !== undefined && this.account !== undefined) {
+      const { signature } = await this.signer.signRaw({
+        address: this.account,
+        data: stringToHex(messageText),
+        type: 'bytes'
+      });
+      return signature;
+    }
   }
 }

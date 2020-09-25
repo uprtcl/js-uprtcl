@@ -20,6 +20,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   constructor() {
     super();
     this.loading = true;
+    this.officalRemote = undefined;
   }
 
   subscribeToHistory(history, callback) {
@@ -59,15 +60,16 @@ export class SimpleWiki extends moduleConnect(LitElement) {
 
     this.defaultRemoteId = defaultRemote.id;
 
+    this.officalRemote = this.requestAll(EveesModule.bindings.EveesRemote).find(instance =>
+      instance.id.startsWith(env.officialRemote)
+    );
+
     // wait all remotes to be ready
     await Promise.all(
       this.requestAll(EveesModule.bindings.EveesRemote).map(remote => remote.ready())
     );
 
-    this.connection = this.request('official-connection');
-    await this.connection.ready();
-
-    this.canCreate = this.connection.canSign();
+    this.canCreate = await this.officalRemote.isLogged();
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
@@ -76,14 +78,15 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
+  async login() {
+    await this.officalRemote.login();
+    this.canCreate = await this.officalRemote.isLogged();
+  }
+
   async createSpace() {
     this.creatingSpace = true;
-    const eveesRemote = this.requestAll(EveesModule.bindings.EveesRemote).find(instance =>
-      instance.id.startsWith(env.officialRemote)
-    );
 
-    await eveesRemote.ready();
-    // TODO: connectWallet?
+    await this.officalRemote.ready();
 
     const client = this.request(ApolloClientModule.bindings.Client);
 
@@ -93,40 +96,34 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       pages: []
     };
 
-    const dataId = await EveesHelpers.createEntity(client, eveesRemote.store, wiki);
-    const headId = await EveesHelpers.createCommit(client, eveesRemote.store, {
+    const dataId = await EveesHelpers.createEntity(client, this.officalRemote.store, wiki);
+    const headId = await EveesHelpers.createCommit(client, this.officalRemote.store, {
       dataId
     });
 
     // TODO: handle insufficient funds error & cancelled tx
-    const perspectiveId = await EveesHelpers.createPerspective(client, eveesRemote, {
+    const perspectiveId = await EveesHelpers.createPerspective(client, this.officalRemote, {
       headId,
       context: `my-wiki-${randint}`,
-      canWrite: eveesRemote.userId
+      canWrite: this.officalRemote.userId
     });
     this.creatingSpace = false;
     window.history.pushState('', '', `/?id=${perspectiveId}`);
-  }
-
-  async connectWallet() {
-    await this.connection.connectWallet();
-
-    this.canCreate = this.connection.canSign();
   }
 
   renderCreate() {
     return html`
       <div class="home">
         ${this.canCreate
-      ? html`
+          ? html`
               <uprtcl-button-loading
                 @click=${() => this.createSpace()}
                 loading=${this.creatingSpace ? 'true' : 'false'}
                 >create space</uprtcl-button-loading
               >
             `
-      : html`
-              <uprtcl-button @click=${() => this.connectWallet()}>connect</uprtcl-button>
+          : html`
+              <uprtcl-button @click=${() => this.login()}>connect</uprtcl-button>
             `}
       </div>
     `;
@@ -147,14 +144,14 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   render() {
     return html`
       ${!this.loading
-      ? html`
+        ? html`
             <div class="app-header">HEADER</div>
             <div class="app-content">
               <div class="app-bar">BAR</div>
               ${this.rootHash === undefined ? this.renderCreate() : this.renderWiki()}
             </div>
           `
-      : html`
+        : html`
             Loading...
           `}
     `;

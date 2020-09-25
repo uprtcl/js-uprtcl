@@ -32,6 +32,7 @@ import { EveesRemote } from '../services/evees.remote';
 
 import { EveesWorkspace } from '../services/evees.workspace';
 import { EveesDiff } from './evees-diff';
+import { ContentUpdatedEvent } from './events';
 
 interface PerspectiveData {
   id?: string;
@@ -346,6 +347,17 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     if (canWrite) {
       await workspace.execute(this.client);
+      /* inform the world */
+
+      workspace.getUpdates().map(update => {
+        this.dispatchEvent(
+          new ContentUpdatedEvent({
+            detail: { uref: update.perspectiveId },
+            bubbles: true,
+            composed: true
+          })
+        );
+      });
     } else {
       /** create commits and data */
       await workspace.executeCreate(this.client);

@@ -19,7 +19,9 @@ import {
   RemoteMap,
   EveesHelpers,
   Perspective,
-  EveesInfoPage
+  EveesInfoPage,
+  CONTENT_UPDATED_TAG,
+  ContentUpdatedEvent
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -109,8 +111,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    this.addEventListener('created-child-perspective', (e:any) => {
-      const {oldPerspectiveId, newPerspectiveId} = e.detail
+    this.addEventListener('created-child-perspective', (e: any) => {
+      const { oldPerspectiveId, newPerspectiveId } = e.detail;
       this.replacePagePerspective(oldPerspectiveId, newPerspectiveId);
     });
 
@@ -123,6 +125,21 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.uref = this.firstRef;
     this.loadWiki();
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener(CONTENT_UPDATED_TAG, ((e: ContentUpdatedEvent) => {
+      if (e.detail.uref === this.uref) {
+        this.loadWiki();
+      }
+    }) as EventListener);
+
+    this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
+      this.uref = event.detail.perspectiveId;
+      this.resetWikiPerspective();
+    }) as EventListener);
   }
 
   updated(changedProperties) {
@@ -161,6 +178,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async resetWikiPerspective() {
     // await this.client.resetStore();
     this.pagesList = undefined;
+    this.selectedPageIx = undefined;
+    this.wiki = undefined;
     this.editable = false;
     this.loadWiki();
   }
@@ -322,15 +341,15 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.logger.info('updateContent()', newWiki);
 
-    this.loadWiki();
+    await this.loadWiki();
   }
 
   async replacePagePerspective(oldId, newId) {
     if (!this.wiki) throw new Error('wiki undefined');
-    
+
     const ix = this.wiki.object.pages.findIndex(pageId => pageId === oldId);
 
-    if(ix === -1) return;
+    if (ix === -1) return;
 
     const result = await this.splicePages([newId], ix, 1);
     if (!result.entity) throw Error('problem with splice pages');
@@ -477,15 +496,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   loggedIn() {
     /* relaod evees info */
     this.evessInfoPageEl.load();
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-
-    this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
-      this.uref = event.detail.perspectiveId;
-      this.resetWikiPerspective();
-    }) as EventListener);
   }
 
   renderPageList(showOptions: boolean = true) {
