@@ -1,6 +1,6 @@
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { PolkadotConnection, UserPerspectives } from './connection.polkadot';
+import { PolkadotConnection } from './connection.polkadot';
 
 import {
   EveesRemote,
@@ -12,9 +12,9 @@ import {
 } from '@uprtcl/evees';
 
 import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
-import { Signed } from '@uprtcl/cortex';
 
 const evees_if = 'evees-council';
+const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 
 export class EveesPolkadotCouncil implements EveesRemote {
   logger: Logger = new Logger('EveesPolkadot');
@@ -51,6 +51,14 @@ export class EveesPolkadotCouncil implements EveesRemote {
     throw new Error('Method not implemented.');
   }
 
+  snapPerspective(
+    parentId?: string,
+    timestamp?: number,
+    path?: string
+  ): Promise<Secured<Perspective>> {
+    throw new Error('Method not implemented.');
+  }
+
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     /** perspectives dont need to be created */
     return;
@@ -67,7 +75,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    const attestation = this.connection.getAttestation();    
+    const attestation = this.connection.getAttestation();
     return attestation[perspectiveId];
   }
 
@@ -87,8 +95,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
     throw new Error('Method not implemented.');
   }
 
-  async connect() {
-  }
+  async connect() {}
 
   async isConnected() {
     return true;
