@@ -13,19 +13,21 @@ export class UprtclToggle extends LitElement {
   active: boolean = false;
 
   handleToggleClick() {
-    this.dispatchEvent(new CustomEvent('toggle-click'))
+    if(!this.disabled) {
+      this.dispatchEvent(new CustomEvent('toggle-click'))
+    }
   }
 
   render() {
     return html`
-    <div class="toggle-container">
+    <div class="toggle-container ${this.disabled ? 'disabled' : ''}">
       ${this.icon !== undefined
         ? html`<div class="icon-container">${icons[this.icon]}</div>`
         : ''}
       <slot></slot>
       <div
         @click=${this.handleToggleClick}
-        class="toggle toggled-${this.active ? 'on' : 'off'} ${this.disabled ? 'disabled' : ''}"
+        class="toggle toggled-${this.active ? 'on' : 'off'} ${this.disabled ? 'toggle-disabled' : ''}"
       ></div>
     </div>
     `;
@@ -61,6 +63,12 @@ export class UprtclToggle extends LitElement {
         .toggled-on:after {
           right: 5px;
           background-color: #2196f3; 
+        }
+        .disabled {
+          opacity: 0.5;
+        }
+        .toggle-disabled {
+          cursor: initial;
         }
         .icon-container {
           height: 100%;

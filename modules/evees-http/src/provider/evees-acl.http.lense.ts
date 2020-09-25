@@ -5,7 +5,7 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesBindings, EveesHelpers, EveesRemote } from '@uprtcl/evees';
 
-import { BasicAdminInheritedPermissions, PermissionType, UserPermissions } from './types';
+import { BasicAdminInheritedPermissions, BasicAdminPermissions, PermissionType, UserPermissions } from './types';
 import { EveesHttp } from './evees.http';
 
 export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
@@ -120,6 +120,22 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     return userPermissions;
   }
 
+  getCorrespondingPermissions(): BasicAdminPermissions {
+    if (!this.permissions) {
+      throw new Error(`permissions not found`);
+    }
+
+    if (this.permissions.delegate) {
+      return this.permissions.effectivePermissions
+    }
+    
+    if (this.permissions.customPermissions) {
+      return this.permissions.customPermissions
+    }
+
+    return this.permissions.effectivePermissions
+  }
+
   async toggleDelegate() {
     if (!this.permissions) {
       throw new Error(`permissions not found`);
@@ -212,7 +228,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     }
   }
 
-  async changeRole(userId, event) {
+  async changeRole(userId, role) {
     if (!this.permissions) {
       throw new Error(`permissions not found`);
     }
@@ -221,7 +237,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       throw new Error(`remote accessControl not found`);
     }
 
-    const selectedRole = event.detail.key;
+    const selectedRole = role;
 
     await this.remote.accessControl.setPrivatePermissions(this.uref, selectedRole, userId);
 
@@ -270,17 +286,23 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
           <div class="row flex-center">
             <evees-author user-id=${userPermission.userId}></evees-author>
 
-            <uprtcl-options-menu
-              @option-click=${event => this.changeRole(userPermission.userId, event)}
-              .config=${permissionListConfig}
-            >
-              <span class="user-permission" slot="icon">${userPermission.permission}</span>
-            </uprtcl-options-menu>
+            ${this.permissions && !this.permissions.delegate ? html`
+              <uprtcl-options-menu
+                @option-click=${event => this.changeRole(userPermission.userId, event.detail.key)}
+                .config=${permissionListConfig}
+              >
+                <span class="user-permission" slot="icon">${userPermission.permission}</span>
+              </uprtcl-options-menu>
+            ` : html`
+              <span>${userPermission.permission}</span>
+            `}
 
-            <uprtcl-button
-              icon="clear"
-              @click=${() => this.removeRole(userPermission.userId)}
-            ></uprtcl-button>
+            ${this.permissions && !this.permissions.delegate ? html`
+              <uprtcl-button
+                icon="clear"
+                @click=${() => this.removeRole(userPermission.userId)}
+              ></uprtcl-button>
+            ` : ''}
           </div>
         `
       )}
@@ -323,52 +345,54 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
           <div class="container">
             ${this.permissions
               ? html`
-                  <div class="row title">
-                    <strong>${this.t('access-control:owner')}:</strong>
-                    ${this.renderOwner()}
+                <div class="row title">
+                  <strong>${this.t('access-control:owner')}:</strong>
+                  ${this.renderOwner()}
+                </div>
+
+                ${this.permissions.delegate ? html`
+                  <p>
+                    Permissions being delegated from: ${this.permissions.delegateTo}
+                  </p>
+                ` : ''}
+
+                <div class="row flex-center">
+
+                  <uprtcl-toggle
+                    icon=${this.getCorrespondingPermissions().publicWrite
+                      ? 'visibility'
+                      : 'visibility_off'}
+                    .active=${this.getCorrespondingPermissions().publicWrite}
+                    .disabled=${this.permissions.delegate}
+                    @toggle-click=${this.togglePublicWrite}
+                  >
+                    Public write
+                  </uprtcl-toggle>
+
+                  <uprtcl-toggle
+                    icon=${this.getCorrespondingPermissions().publicRead
+                      ? 'visibility'
+                      : 'visibility_off'}
+                    .active=${this.getCorrespondingPermissions().publicRead}
+                    .disabled=${this.permissions.delegate}
+                    @toggle-click=${this.togglePublicRead}
+                  >
+                    Public read
+                  </uprtcl-toggle>
+
+                  ${this.renderChangeDelegate()}
+                </div>
+
+                <div class="row">
+                  ${this.renderUserPermissionList()}
+                </div>
+
+                ${!this.permissions.delegate ? html`
+                  <div class="row">
+                    ${this.renderAddUserPermission()}
                   </div>
-                  ${this.permissions.delegate
-                    ? html`
-                        <p>
-                          Permissions being delegated from: ${this.permissions.delegateTo}
-                        </p>
-                        ${this.renderChangeDelegate()}
-                      `
-                    : html`
-                        <div class="row flex-center">
-                          <uprtcl-toggle
-                            icon=${this.permissions.effectivePermissions.publicWrite
-                              ? 'visibility'
-                              : 'visibility_off'}
-                            .active=${this.permissions.effectivePermissions.publicWrite}
-                            @toggle-click=${this.togglePublicWrite}
-                          >
-                            Public write
-                          </uprtcl-toggle>
-
-                          <uprtcl-toggle
-                            icon=${this.permissions.effectivePermissions.publicRead
-                              ? 'visibility'
-                              : 'visibility_off'}
-                            .active=${this.permissions.effectivePermissions.publicRead}
-                            @toggle-click=${this.togglePublicRead}
-                          >
-                            Public read
-                          </uprtcl-toggle>
-
-                          ${this.renderChangeDelegate()}
-                        </div>
-
-                        <div class="row">
-                          ${this.renderUserPermissionList()}
-                        </div>
-
-                        <div class="row">
-                          ${this.renderAddUserPermission()}
-                        </div>
-                      `}
-                `
-              : ''}
+                ` : ''}
+              ` : ''}
           </div>
         `;
   }
