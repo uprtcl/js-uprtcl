@@ -2,11 +2,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Option } from '@polkadot/types';
 import { AddressOrPair, Signer, SignerResult } from '@polkadot/api/types';
 import { stringToHex } from '@polkadot/util';
-import {
-  web3Accounts,
-  web3Enable,
-  web3FromAddress
-} from '@polkadot/extension-dapp';
+import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
 import { IdentityInfo, Registration } from '@polkadot/types/interfaces';
 // import { ExtensionStore } from '@polkadot/ui-keyring/stores';
 
@@ -22,12 +18,12 @@ const getIdentityInfo = (identity: Option<Registration>) => {
 };
 
 // Picks out the the cid parts from the users additional fields and assembles the final string
-const getCID = (info: IdentityInfo): string => {
+const getCID = (info: IdentityInfo, keys: string[]): string => {
   if (!info.additional) {
     return '';
   }
   const [[, { Raw: cid1 }], [, { Raw: cid0 }]] = (info.additional as any)
-    .filter(([k]) => k.Raw === 'evees-cid1' || k.Raw === 'evees-cid0')
+    .filter(([k]) => k.Raw === keys[0] || k.Raw === keys[1])
     .sort(([a], [b]) => (a.Raw > b.Raw ? -1 : 1));
 
   const cid = cid1 + cid0;
@@ -89,21 +85,21 @@ export class PolkadotConnection extends Connection {
     return;
   }
 
-  public async getUserPerspectivesDetailsHash(userId: string) {
+  public async getHead(userId: string, keys: string[]) {
     const identity = await this.api?.query.identity.identityOf(userId);
     this.identityInfo = getIdentityInfo(<Option<Registration>>identity);
-    return getCID(<IdentityInfo>this.identityInfo);
+    return getCID(<IdentityInfo>this.identityInfo, keys);
   }
 
-  public async updateUserPerspectivesDetailsHash(userPerspectivesDetailsHash: string) {
+  public async update(head: string, keys: string[]) {
     // update evees entry
-    const cid1 = userPerspectivesDetailsHash.substring(0, 32);
-    const cid0 = userPerspectivesDetailsHash.substring(32, 64);
+    const cid1 = head.substring(0, 32);
+    const cid0 = head.substring(32, 64);
     const result = this.api?.tx.identity.setIdentity({
       ...(this.identityInfo as any),
       additional: [
-        [{ Raw: 'evees-cid1' }, { Raw: cid1 }],
-        [{ Raw: 'evees-cid0' }, { Raw: cid0 }]
+        [{ Raw: keys[0] }, { Raw: cid1 }],
+        [{ Raw: keys[1] }, { Raw: cid0 }]
       ]
     });
     // TODO: Dont block here, cache value
