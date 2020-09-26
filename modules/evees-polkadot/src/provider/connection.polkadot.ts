@@ -114,14 +114,19 @@ export class PolkadotConnection extends Connection {
     });
   }
 
-  public async signText(messageText): Promise<string | void> {
-    if (this.signer?.signRaw !== undefined && this.account !== undefined) {
-      const { signature } = await this.signer.signRaw({
-        address: this.account,
-        data: stringToHex(messageText),
-        type: 'bytes'
-      });
-      return signature;
-    }
+  public async signText(messageText): Promise<string> {
+    if (this.signer?.signRaw === undefined) throw new Error('signer not found');
+    if (this.account === undefined) throw new Error('account not found');
+
+    const { signature } = await this.signer.signRaw({
+      address: this.account,
+      data: stringToHex(messageText),
+      type: 'bytes'
+    });
+    return signature;
+  }
+
+  public async getCouncil(at?: number): Promise<string[]> {
+    return [];
   }
 }

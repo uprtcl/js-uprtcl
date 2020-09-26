@@ -1,6 +1,6 @@
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { PolkadotConnection } from './connection.polkadot';
+import { PolkadotConnection } from '../connection.polkadot';
 
 import {
   EveesRemote,
@@ -11,10 +11,10 @@ import {
   ProposalsProvider
 } from '@uprtcl/evees';
 
-import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
+import { EveesAccessControlPolkadot } from '../evees-acl.polkadot';
+import { PolkadotCouncilEveesStorage } from './evees.council.store';
 
 const evees_if = 'evees-council';
-const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 
 export class EveesPolkadotCouncil implements EveesRemote {
   logger: Logger = new Logger('EveesPolkadot');
@@ -22,8 +22,15 @@ export class EveesPolkadotCouncil implements EveesRemote {
   accessControl: EveesAccessControlPolkadot;
   proposals: ProposalsProvider | undefined;
 
+  councilStorage: PolkadotCouncilEveesStorage;
+
   constructor(public connection: PolkadotConnection, public store: CASStore) {
     this.accessControl = new EveesAccessControlPolkadot(store);
+    this.councilStorage = new PolkadotCouncilEveesStorage(connection, store, {
+      duration: 10,
+      quorum: 0.2,
+      thresehold: 0.5
+    });
   }
 
   get id() {
@@ -75,8 +82,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    const attestation = this.connection.getAttestation();
-    return attestation[perspectiveId];
+    return this.councilStorage.getPerspective(perspectiveId);
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {

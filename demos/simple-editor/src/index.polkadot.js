@@ -9,6 +9,7 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import {
   EveesPolkadotIdentity,
+  EveesPolkadotCouncil,
   PolkadotIdentity,
   PolkadotConnection,
   PolkadotContextStore,
@@ -75,7 +76,8 @@ import { env } from '../env';
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
 
-  const pkdEvees = new EveesPolkadotIdentity(pkdConnection, orbitDBCustom, ipfsStore, proposals);
+  // const pkdEvees = new EveesPolkadotIdentity(pkdConnection, orbitDBCustom, ipfsStore, proposals);
+  const pkdEvees = new EveesPolkadotCouncil(pkdConnection, orbitDBCustom, ipfsStore, proposals);
   await pkdEvees.connect();
 
   // TODO: had to restore this or it wouldn't work. figure out why 2nd arg was removed
