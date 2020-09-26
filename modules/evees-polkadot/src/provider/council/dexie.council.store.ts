@@ -4,7 +4,7 @@ import { CouncilMember, DexieProposal } from './types';
 
 export class EveesCouncilDB extends Dexie {
   proposals: Dexie.Table<DexieProposal, string>;
-  council: Dexie.Table<CouncilMember, number>;
+  council: Dexie.Table<CouncilMember, string>;
 
   constructor() {
     super('evees-council');

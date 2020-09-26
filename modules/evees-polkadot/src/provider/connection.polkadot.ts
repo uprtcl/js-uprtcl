@@ -85,13 +85,16 @@ export class PolkadotConnection extends Connection {
     return;
   }
 
-  public async getHead(userId: string, keys: string[]) {
+  public async getHead(userId: string, keys: string[], atBlockHash?: string) {
+    if (atBlockHash !== undefined) {
+      this.logger.error('cant get idenity at block yet... ups');
+    }
     const identity = await this.api?.query.identity.identityOf(userId);
     this.identityInfo = getIdentityInfo(<Option<Registration>>identity);
     return getCID(<IdentityInfo>this.identityInfo, keys);
   }
 
-  public async update(head: string, keys: string[]) {
+  public async updateHead(head: string, keys: string[]) {
     // update evees entry
     const cid1 = head.substring(0, 32);
     const cid0 = head.substring(32, 64);
@@ -126,7 +129,13 @@ export class PolkadotConnection extends Connection {
     return signature;
   }
 
-  public async getCouncil(at?: number): Promise<string[]> {
+  public async getCouncil(at?: BigInt): Promise<string[]> {
     return [];
+  }
+
+  public async getLatestBlock(): Promise<bigint> {
+    if (!this.api) throw new Error('api undefined');
+    const header = await this.api.rpc.chain.getHeader();
+    return header.number.toBigInt();
   }
 }

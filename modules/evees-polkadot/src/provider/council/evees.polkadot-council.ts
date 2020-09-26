@@ -8,7 +8,8 @@ import {
   PerspectiveDetails,
   NewPerspectiveData,
   Secured,
-  ProposalsProvider
+  ProposalsProvider,
+  deriveSecured
 } from '@uprtcl/evees';
 
 import { EveesAccessControlPolkadot } from '../evees-acl.polkadot';
@@ -55,29 +56,38 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
-    throw new Error('Method not implemented.');
+    throw new Error('cant create perspective directly. Need to create a proposal.');
   }
 
-  snapPerspective(
+  async snapPerspective(
     parentId?: string,
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
-    throw new Error('Method not implemented.');
+    const object: Perspective = {
+      creatorId: this.userId ? this.userId : '',
+      remote: this.id,
+      path: path !== undefined ? path : this.defaultPath,
+      timestamp: timestamp ? timestamp : Date.now()
+    };
+
+    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
+
+    perspective.casID = this.store.casID;
+
+    return perspective;
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    /** perspectives dont need to be created */
-    return;
+    throw new Error('cant create perspective directly. Need to create a proposal.');
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    /** perspectives dont need to be created */
-    return;
+    throw new Error('cant create perspective directly. Need to create a proposal.');
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
-    // TODO: read the latest attestation and look for perspectives with that context?
+    // TODO: add context to updates in proposals
     return [];
   }
 

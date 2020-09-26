@@ -61,7 +61,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
   }
 
   async updateUserPerspectivesDetailsHash(head: string) {
-    return this.connection.update(head, EVEES_KEYS);
+    return this.connection.updateHead(head, EVEES_KEYS);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {

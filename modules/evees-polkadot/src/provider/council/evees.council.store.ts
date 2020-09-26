@@ -5,9 +5,16 @@ import { PerspectiveDetails } from '@uprtcl/evees';
 import { PolkadotConnection } from '../connection.polkadot';
 import { EveesCouncilDB } from './dexie.council.store';
 
-import { CouncilData, ProposalConfig } from './types';
+import { CouncilData, DexieProposal, ProposalManifest } from './types';
+import { getProposalStatus, isValid } from './proposal.logic';
+import { ProposalConfig } from './proposal.config.types';
 
-const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
+export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
+export const EXPECTED_CONFIG: ProposalConfig = {
+  duration: (1.0 * 86400.0) / 5.0,
+  quorum: 1.0 / 3.0,
+  thresehold: 0.5
+};
 
 /* a store that keeps track of the council common state regarding the council proposals */
 export class PolkadotCouncilEveesStorage {
@@ -42,22 +49,16 @@ export class PolkadotCouncilEveesStorage {
     await this.db.transaction('rw', [this.db.proposals], async () => {
       await Promise.all(
         councilDatas.map(data => {
-          this.db.proposals.bulkAdd(
-            data.proposals.map(proposal => {
-              return {
-                id: proposal.id,
-                toPerspectiveId: proposal.toPerspectiveId,
-                blockStart: proposal.TBD
-              };
-            })
-          );
+          if (data.proposals !== undefined) {
+            this.db.proposals.bulkAdd(data.proposals);
+          }
         })
       );
     });
   }
 
   /* council at is a constant function, can be cached */
-  async getCouncil(at: number) {
+  async getCouncil(at: bigint) {
     const councilCache = await this.db.council.where('block').equals(at);
     if ((await councilCache.count()) > 0) {
       return councilCache.toArray;
@@ -68,9 +69,43 @@ export class PolkadotCouncilEveesStorage {
     return council;
   }
 
+  async updateCouncilData(hash: string) {
+    return this.connection.updateHead(hash, COUNCIL_KEYS);
+  }
+
+  async getCouncilDataOf(member: string, blockHash?: string): Promise<CouncilData> {
+    const head = await this.connection.getHead(member, COUNCIL_KEYS, blockHash);
+    const councilData = await this.store.get(head);
+    return councilData ? councilData : {};
+  }
+
   /** check the proposal had enough votes at block */
-  async verifyProposal(proposalId: string, block: number): Promise<boolean> {
-    return true;
+  async verifyProposal(proposalId: string, blockHash: string): Promise<boolean> {
+    const manifest = (await this.store.get(proposalId)) as ProposalManifest;
+
+    if (manifest.config.duration !== EXPECTED_CONFIG.duration) {
+      this.logger.error(`unexpected duration ${manifest.config.duration}`);
+      return false;
+    }
+    if (manifest.config.quorum !== EXPECTED_CONFIG.quorum) {
+      this.logger.error(`unexpected quorum ${manifest.config.quorum}`);
+      return false;
+    }
+    if (manifest.config.thresehold !== EXPECTED_CONFIG.thresehold) {
+      this.logger.error(`unexpected thresehold ${manifest.config.thresehold}`);
+      return false;
+    }
+
+    const council = await this.connection.getCouncil(manifest.block);
+    const votes = await Promise.all(
+      council.map(async member => {
+        const memberCouncilData = await this.getCouncilDataOf(member);
+        return memberCouncilData.votes ? memberCouncilData.votes[proposalId] : undefined;
+      })
+    );
+
+    const block = await this.connection.getLatestBlock();
+    return isValid(getProposalStatus(manifest, votes, block));
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
@@ -79,7 +114,7 @@ export class PolkadotCouncilEveesStorage {
     const proposals = this.db.proposals
       .where('updatedPerspectives')
       .equals(perspectiveId)
-      .and(proposal => proposal.blockEnd !== undefined);
+      .and(proposal => proposal.blockEndHash !== undefined);
 
     const proposalsSorted = await proposals.sortBy('blockEnd');
 
@@ -88,8 +123,11 @@ export class PolkadotCouncilEveesStorage {
       if (proposal.verified) {
         return proposal;
       } else {
-        const valid = await this.verifyProposal(proposal.id, proposal.blockEnd);
+        const valid = await this.verifyProposal(proposal.id, proposal.blockEndHash as string);
         if (valid) {
+          /** cache the verification */
+          proposal.verified = true;
+          this.db.proposals.put(proposal, proposal.id);
           return proposal;
         }
       }
@@ -98,45 +136,36 @@ export class PolkadotCouncilEveesStorage {
     if (!validProposal) return {};
 
     const update = validProposal.updates.find(u => u.perspectiveId === perspectiveId);
-    return update ? update.head : {};
+    return update ? { headId: update.newHeadId } : {};
   }
 
-  // async vote(proposalHash: string, value: Vote): Promise<void> {
-  //   await this.connection.vote(proposalHash, value);
-  //   const status = await this.checkProposal(proposalHash);
-  //   if (status) {
-  //     /** if the status is positive go on and cache it*/
-  //     this.orbitdb.updateCouncilPerspectives(proposalHash);
-  //   }
-  // }
+  async createProposal(proposalManifest: ProposalManifest): Promise<string> {
+    if (this.connection.account === undefined) throw new Error('user not logged in');
+    if (!this.connection.canSign) throw new Error('user cant sign');
 
-  // async getVotes(proposalHash: string, council: string[]): Promise<Vote[]> {
-  //   return Promise.all(
-  //     council.map(
-  //       async (member): Promise<Vote> => {
-  //         const memberVotes = await this.connection.getVotes(member);
-  //         if (memberVotes === undefined || memberVotes[proposalHash] === undefined) {
-  //           return Vote.Undefined;
-  //         }
+    const proposalId = this.store.create(proposalManifest);
+    const council = await this.connection.getCouncil();
+    if (!council.includes(this.connection.account)) throw new Error('user not a council member');
 
-  //         return memberVotes[proposalHash];
-  //       }
-  //     )
-  //   );
-  // }
+    const myCouncilData = await this.getCouncilDataOf(this.connection.account);
+    let newCouncilData = { ...myCouncilData };
+    if (newCouncilData.proposals === undefined) {
+      newCouncilData.proposals = [];
+    }
 
-  // checkVotes(votes: Vote[]) {
-  //   const N = votes.length;
-  //   const nYes = votes.filter(v => v === Vote.Yes).length;
-  //   const nNo = votes.filter(v => v === Vote.No).length;
+    const updatedPerspectives = proposalManifest.updates.map(update => update.perspectiveId);
 
-  //   return (nYes + nNo) / N >= this.config.quorum && nYes / nNo > this.config.thesehold;
-  // }
+    const dexieProposal: DexieProposal = {
+      id: proposalManifest.toPerspectiveId,
+      toPerspectiveId: proposalManifest.toPerspectiveId,
+      updates: proposalManifest.updates,
+      updatedPerspectives: updatedPerspectives
+    };
 
-  // async checkProposal(proposalHash: string): Promise<boolean> {
-  //   const proposal = (await this.store.get(proposalHash)) as CouncilProposal;
-  //   const council = this.connection.getCouncil(proposal.block);
-  //   const votes = await this.getVotes(proposalHash, council);
-  //   return this.checkVotes(votes);
-  // }
+    newCouncilData.proposals.push(dexieProposal);
+    const newCouncilDataHash = await this.store.create(newCouncilData);
+    await this.updateCouncilData(newCouncilDataHash);
+
+    return proposalId;
+  }
 }
