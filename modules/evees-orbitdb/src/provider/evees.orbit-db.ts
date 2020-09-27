@@ -135,6 +135,16 @@ export class EveesOrbitDB implements EveesRemote {
     const perspectiveId = await this.persistPerspectiveEntity(secured);
 
     await this.updatePerspectiveInternal(perspectiveId, details, true);
+
+    /** register it for reverse mapping */
+    const contextStore = await this.orbitdbcustom.getStore(
+      EveesOrbitDBEntities.Context,
+      {
+        context: secured.object.payload.context
+      },
+      true
+    );
+    await contextStore.add(perspectiveId);
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
@@ -172,24 +182,6 @@ export class EveesOrbitDB implements EveesRemote {
       await perspectiveStore.add(newDetails);
     }
 
-    const contextChange = currentDetails.context !== newDetails.context;
-
-    if (contextChange && currentDetails.context) {
-      const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
-        context: currentDetails.context
-      });
-      await contextStore.delete(perspectiveId);
-    }
-    if (contextChange && newDetails.context) {
-      const contextStore = await this.orbitdbcustom.getStore(
-        EveesOrbitDBEntities.Context,
-        {
-          context: newDetails.context
-        },
-        pin
-      );
-      await contextStore.add(perspectiveId);
-    }
     this.logger.log('updatePerspective - done', { perspectiveId, details });
   }
 

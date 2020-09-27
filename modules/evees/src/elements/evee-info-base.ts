@@ -553,11 +553,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
               <div class="prop-name">perspective-id</div>
               <pre class="prop-value">${JSON.stringify(this.perspectiveData.id)}</pre>
 
-              <div class="prop-name">context</div>
-              <pre class="prop-value">
-${this.perspectiveData.details ? this.perspectiveData.details.context : 'undefined'}</pre
-              >
-
               <div class="prop-name">authority</div>
               <pre class="prop-value">
 ${this.perspectiveData.perspective ? getAuthority(this.perspectiveData.perspective) : ''}</pre

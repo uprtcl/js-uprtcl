@@ -18,6 +18,7 @@ export interface Perspective {
   remote: string;
   path: string;
   creatorId: string;
+  context: string;
   timestamp: number;
 }
 
@@ -27,7 +28,6 @@ export const getAuthority = (perspective: Perspective): string => {
 
 export interface PerspectiveDetails {
   name?: string;
-  context?: string | undefined;
   headId?: string | undefined;
 }
 

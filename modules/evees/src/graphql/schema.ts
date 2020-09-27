@@ -5,12 +5,7 @@ export const eveesTypeDefs: DocumentNode = gql`
   scalar Date
 
   extend type Mutation {
-    updatePerspectiveHead(
-      perspectiveId: ID!
-      headId: ID
-      context: String
-      name: String
-    ): Perspective!
+    updatePerspectiveHead(perspectiveId: ID!, headId: ID, name: String): Perspective!
 
     createEntity(object: JSON!, casID: ID): Entity!
 
@@ -77,6 +72,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     path: String
     timestamp: Float
     creatorId: String
+    context: Context
   }
 
   input PerspectiveEntityInput {
@@ -91,7 +87,6 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   input PerspectiveDetailsInput {
-    context: String
     name: String
     headId: String
   }
@@ -120,7 +115,6 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   type PerspectiveDetails {
-    context: String
     name: String
     headId: String
   }
@@ -154,7 +148,6 @@ export const eveesTypeDefs: DocumentNode = gql`
 
     head: Commit @discover
     name: String
-    context: Context
     payload: Payload
     proposals: [String!]
 
@@ -166,5 +159,6 @@ export const eveesTypeDefs: DocumentNode = gql`
     path: String
     creatorId: String
     timestamp: Date
+    context: Context
   }
 `;

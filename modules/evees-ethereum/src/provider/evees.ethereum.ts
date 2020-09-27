@@ -184,7 +184,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       owner: owner
     };
 
-    const context = details.context ? details.context : '';
+    const context = secured.object.payload.;
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     await this.uprtclDetails.send(INIT_PERSP, [
@@ -215,7 +215,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
           owner: owner
         };
 
-        return { perspective, context: perspectiveData.details.context };
+        return { perspective, context: perspectiveData.perspective.object.payload.context };
       }
     );
 
@@ -239,13 +239,6 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
    */
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails): Promise<void> {
     const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
-
-    if (details.context !== undefined) {
-      await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
-        perspectiveIdHash,
-        details.context ? details.context : ''
-      ]);
-    }
 
     if (details.headId !== undefined) {
       const headCidParts = cidToHex32(details.headId);

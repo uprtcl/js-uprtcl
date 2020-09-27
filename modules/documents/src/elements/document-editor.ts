@@ -510,7 +510,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: node.uref,
-        context: node.context,
         headId: commitId,
         message
       }
@@ -529,11 +528,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async createEvee(node: DocNode): Promise<string> {
-    const context =
-      node.parent && node.parent.context !== undefined
-        ? `${node.parent.context}_${Date.now().toString()}`
-        : Date.now().toString();
-
     if (node.remote === undefined) throw new Error('undefined remote for node');
 
     if (LOGINFO) this.logger.log('createEvee()', { node });
@@ -551,7 +545,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       creatorId: secured.object.payload.creatorId,
       timestamp: secured.object.payload.timestamp,
       headId: commitId,
-      context,
       parentId: node.parent ? node.parent.uref : undefined
     });
   }
@@ -565,8 +558,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const hasDocNodeLenses = this.recognizer
       .recognizeBehaviours(draftForReco)
       .find(b => (b as HasDocNodeLenses).docNodeLenses);
-
-    const context = `${parent ? parent.context : 'ROOT'}-${ix}-${Date.now()}`;
 
     if (!hasChildren)
       throw new Error(`hasChildren not found for object ${JSON.stringify(draftForReco)}`);
@@ -594,7 +585,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       childrenNodes: [],
       hasChildren,
       hasDocNodeLenses,
-      context,
       editable: true,
       focused: false,
       timestamp: Date.now()

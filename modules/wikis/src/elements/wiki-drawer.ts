@@ -96,7 +96,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   evessInfoPageEl!: EveesInfoPage;
 
   remote: string = '';
-  context: string | undefined = undefined;
   currentHeadId: string | undefined = undefined;
 
   protected client!: ApolloClient<any>;
@@ -191,7 +190,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
-    const context = await EveesHelpers.getPerspectiveContext(this.client, this.uref);
 
     this.remote = perspective.object.payload.remote;
 
@@ -207,7 +205,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           ? canWrite
           : false
         : canWrite;
-    this.context = context;
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
@@ -320,7 +317,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     });
     return EveesHelpers.createPerspective(this.client, remoteInstance, {
       headId,
-      context: `${this.context}_${Date.now()}`,
       parentId: this.uref
     });
   }

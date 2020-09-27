@@ -50,26 +50,6 @@ export class EveesHelpers {
     return result.data.entity.head.id;
   }
 
-  static async getPerspectiveContext(
-    client: ApolloClient<any>,
-    perspectiveId: string
-  ): Promise<string | undefined> {
-    const result = await client.query({
-      query: gql`
-        {
-          entity(uref: "${perspectiveId}") {
-            id
-            ... on Perspective {
-              context {
-                id
-              }
-            }
-          }
-        }`
-    });
-    return result.data.entity.context?.id;
-  }
-
   static async getPerspectiveRemoteId(
     client: ApolloClient<any>,
     perspectiveId: string

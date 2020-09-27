@@ -91,8 +91,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
     const currentDetails = newUserPerspectiveDetails[perspectiveId];
     // TODO: should this even be checked?
     newUserPerspectiveDetails[perspectiveId] = {
-      headId: details.headId ?? currentDetails?.headId,
-      context: details.context ?? currentDetails?.context
+      headId: details.headId ?? currentDetails?.headId
     };
 
     return newUserPerspectiveDetails;
@@ -124,34 +123,6 @@ export class EveesPolkadotIdentity implements EveesRemote {
     const userPerspectivesDetailsHashNew = await this.store.create(userPerspectivesDetailsNew);
 
     await this.updateUserPerspectivesDetailsHash(userPerspectivesDetailsHashNew);
-
-    /** update the context store */
-    const currentDetails = userPerspectivesDetails[perspectiveId];
-
-    const currentContext = currentDetails?.context;
-    const newContext = details?.context;
-
-    // if the new context is not specify, the user wanted to leave the context untouched
-    if (newContext === undefined) return;
-    if (newContext === currentContext) return;
-
-    // remove the perspective from the previous contexg
-    if (currentContext !== undefined) {
-      const contextStore = await this.orbitdbcustom.getStore(PolkadotEveesOrbitDBEntities.Context, {
-        context: currentDetails.context
-      });
-      await contextStore.delete(perspectiveId);
-    }
-
-    // add the perspective to the new context
-    const contextStore = await this.orbitdbcustom.getStore(
-      PolkadotEveesOrbitDBEntities.Context,
-      {
-        context: newContext
-      },
-      pin
-    );
-    await contextStore.add(perspectiveId);
   }
 
   /** set the parent owner as creatorId (and thus owner) */
@@ -192,6 +163,15 @@ export class EveesPolkadotIdentity implements EveesRemote {
     const perspectiveId = await this.persistPerspectiveEntity(secured);
     // await this.connection.updateUserPerspectivesDetailsHash()
     await this.updatePerspective(perspectiveId, details, true);
+
+    const contextStore = await this.orbitdbcustom.getStore(
+      PolkadotEveesOrbitDBEntities.Context,
+      {
+        context: secured.object.payload.context
+      },
+      true
+    );
+    await contextStore.add(perspectiveId);
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {

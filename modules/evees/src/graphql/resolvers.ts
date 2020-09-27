@@ -114,15 +114,6 @@ export const eveesResolvers: IResolvers = {
 
       return details && details.name;
     },
-    async context(parent, _, { container }) {
-      const evees: Evees = container.get(EveesBindings.Evees);
-
-      const remote = evees.getPerspectiveProvider(parent);
-
-      const details = await remote.getPerspective(parent.id);
-
-      return details && details.context;
-    },
     async proposals(parent, _, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
 
@@ -134,7 +125,7 @@ export const eveesResolvers: IResolvers = {
     }
   },
   Mutation: {
-    async updatePerspectiveHead(parent, { perspectiveId, headId, context, name }, { container }) {
+    async updatePerspectiveHead(parent, { perspectiveId, headId, name }, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const multiSource: MultiSourceService = container.get(
         DiscoveryModule.bindings.MultiSourceService
@@ -145,7 +136,6 @@ export const eveesResolvers: IResolvers = {
 
       await provider.updatePerspective(perspectiveId, {
         headId,
-        context,
         name
       });
       /** needed to return the current values in case one of the inputs is undefined */
@@ -175,9 +165,6 @@ export const eveesResolvers: IResolvers = {
         ...perspective,
         head: {
           id: detailsRead.headId
-        },
-        context: {
-          id: detailsRead.context
         },
         name: detailsRead.name
       };
@@ -249,7 +236,7 @@ export const eveesResolvers: IResolvers = {
 
       const newPerspectiveData: NewPerspectiveData = {
         perspective,
-        details: { headId, name, context },
+        details: { headId, name },
         canWrite,
         parentId
       };
@@ -273,7 +260,6 @@ export const eveesResolvers: IResolvers = {
       await workspace.execute(client);
 
       const headId = await EveesHelpers.getPerspectiveHeadId(client, newPerspectiveId);
-      const context = await EveesHelpers.getPerspectiveContext(client, newPerspectiveId);
       const perspective = await loadEntity<Signed<Perspective>>(client, newPerspectiveId);
       if (!perspective) throw new Error('perspective not found');
 
