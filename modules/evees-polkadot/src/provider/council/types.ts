@@ -18,7 +18,7 @@ export interface ProposalManifest {
   toHeadId?: string;
   fromHeadId?: string;
   updates: UpdateRequest[];
-  block: bigint;
+  block: number;
   config: ProposalConfig;
 }
 
@@ -29,9 +29,4 @@ export interface DexieProposal {
   updates: UpdateRequest[]; // not indexed
   blockEndHash?: string;
   verified?: boolean; // not indexed
-}
-
-export interface CouncilMember {
-  block: bigint;
-  member: string;
 }

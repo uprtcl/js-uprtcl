@@ -129,13 +129,15 @@ export class PolkadotConnection extends Connection {
     return signature;
   }
 
-  public async getCouncil(at?: BigInt): Promise<string[]> {
-    return [];
+  public async getCouncil(at?: number): Promise<string[]> {
+    if (!this.api) throw new Error('api undefined');
+    const blockHash = await this.api.rpc.chain.getBlockHash(at);
+    return this.api.query.council.members.at(blockHash);
   }
 
-  public async getLatestBlock(): Promise<bigint> {
+  public async getLatestBlock(): Promise<number> {
     if (!this.api) throw new Error('api undefined');
     const header = await this.api.rpc.chain.getHeader();
-    return header.number.toBigInt();
+    return header.number.toNumber();
   }
 }

@@ -7,7 +7,7 @@ import { EXPECTED_CONFIG, PolkadotCouncilEveesStorage } from './evees.council.st
 import { ProposalManifest } from './types';
 import { PolkadotConnection } from '../connection.polkadot';
 
-export class ProposalsOrbitDB implements ProposalsProvider {
+export class ProposalsPolkadotCouncil implements ProposalsProvider {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
 
   constructor(
@@ -39,7 +39,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     const proposalManifest: ProposalManifest = {
       fromPerspectiveId: proposal.fromPerspectiveId,
       toPerspectiveId: proposal.toPerspectiveId,
-      blockHash: await this.connection.getLatestBlock(),
+      block: await this.connection.getLatestBlock(),
       config: EXPECTED_CONFIG,
       updates: updates,
       creatorId: this.connection.account,

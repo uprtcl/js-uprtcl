@@ -8,12 +8,12 @@ import {
   PerspectiveDetails,
   NewPerspectiveData,
   Secured,
-  ProposalsProvider,
   deriveSecured
 } from '@uprtcl/evees';
 
 import { EveesAccessControlPolkadot } from '../evees-acl.polkadot';
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
+import { ProposalsPolkadotCouncil } from './evees.polkadot-council.proposals';
 
 const evees_if = 'evees-council';
 
@@ -21,7 +21,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
   logger: Logger = new Logger('EveesPolkadot');
 
   accessControl: EveesAccessControlPolkadot;
-  proposals: ProposalsProvider | undefined;
+  proposals: ProposalsPolkadotCouncil;
 
   councilStorage: PolkadotCouncilEveesStorage;
 
@@ -32,6 +32,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
       quorum: 0.2,
       thresehold: 0.5
     });
+    this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, store);
   }
 
   get id() {
@@ -47,7 +48,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async ready(): Promise<void> {
-    await Promise.all([this.store.ready()]);
+    await Promise.all([this.store.ready(), this.councilStorage.ready()]);
   }
 
   async canWrite(uref: string) {
@@ -92,6 +93,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
+    debugger;
     return this.councilStorage.getPerspective(perspectiveId);
   }
 

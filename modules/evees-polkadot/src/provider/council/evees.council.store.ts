@@ -20,6 +20,7 @@ export const EXPECTED_CONFIG: ProposalConfig = {
 export class PolkadotCouncilEveesStorage {
   logger: Logger = new Logger('PolkadotCouncilEveesStorage');
   protected db: EveesCouncilDB;
+  private initialized: boolean = false;
 
   /* in memory cache */
   protected council!: string[];
@@ -37,11 +38,18 @@ export class PolkadotCouncilEveesStorage {
     await this.fetchCouncilDatas();
   }
 
+  async ready(): Promise<void> {
+    if (!this.initialized) {
+      return this.init();
+    }
+  }
+
   /** reads all the council datas and populate the DB */
   async fetchCouncilDatas() {
     const councilDatas = await Promise.all(
       this.council.map(async member => {
         const head = await this.connection.getHead(member, COUNCIL_KEYS);
+        if (!head) return {};
         return (await this.store.get(head)) as CouncilData;
       })
     );
@@ -58,15 +66,8 @@ export class PolkadotCouncilEveesStorage {
   }
 
   /* council at is a constant function, can be cached */
-  async getCouncil(at: bigint) {
-    const councilCache = await this.db.council.where('block').equals(at);
-    if ((await councilCache.count()) > 0) {
-      return councilCache.toArray;
-    }
-
-    const council = await this.connection.getCouncil(at);
-    await Promise.all(council.map(member => this.db.council.add({ block: at, member })));
-    return council;
+  async getCouncil(at: number) {
+    return this.connection.getCouncil(at);
   }
 
   async updateCouncilData(hash: string) {
@@ -109,8 +110,8 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
+    await this.ready();
     /** assume cache data is uptodate */
-    // TODO search attestations backwards.
     const proposals = this.db.proposals
       .where('updatedPerspectives')
       .equals(perspectiveId)

@@ -4,9 +4,9 @@ import { ProposalManifest } from './types';
 export const getProposalStatus = (
   manifest: ProposalManifest,
   votes: any[],
-  time: BigInt
+  time: number
 ): ProposalStatus => {
-  if (time < manifest.block + BigInt(manifest.config.duration)) {
+  if (time < manifest.block + manifest.config.duration) {
     return ProposalStatus.Pending;
   }
 
