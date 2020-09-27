@@ -20,6 +20,7 @@ export interface EveesProvider extends EveesSource {
    */
   snapPerspective(
     parentId?: string,
+    context?: string,
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>>;

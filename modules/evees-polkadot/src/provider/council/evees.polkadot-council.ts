@@ -8,7 +8,8 @@ import {
   PerspectiveDetails,
   NewPerspectiveData,
   Secured,
-  deriveSecured
+  deriveSecured,
+  hashObject
 } from '@uprtcl/evees';
 
 import { EveesAccessControlPolkadot } from '../evees-acl.polkadot';
@@ -62,14 +63,26 @@ export class EveesPolkadotCouncil implements EveesRemote {
 
   async snapPerspective(
     parentId?: string,
+    context?: string,
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
+    const creatorId = this.userId ? this.userId : '';
+    timestamp = timestamp ? timestamp : Date.now();
+
+    const defaultContext = await hashObject({
+      creatorId,
+      timestamp
+    });
+
+    context = context || defaultContext;
+
     const object: Perspective = {
-      creatorId: this.userId ? this.userId : '',
+      creatorId,
       remote: this.id,
       path: path !== undefined ? path : this.defaultPath,
-      timestamp: timestamp ? timestamp : Date.now()
+      timestamp,
+      context
     };
 
     const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);

@@ -150,8 +150,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       return this.allPerspectives[perspectiveId];
     } else {
       const secured = await loadEntity<Signed<Perspective>>(this.client, perspectiveId);
-
-      return secured?.object.payload.;
+      if (!secured) throw new Error(`perspective ${perspectiveId} not found`);
+      return secured.object.payload.context;
     }
   }
 

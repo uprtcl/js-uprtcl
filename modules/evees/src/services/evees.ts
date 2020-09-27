@@ -156,14 +156,19 @@ export class Evees {
     const eveesRemote =
       remote !== undefined ? this.getRemote(remote) : (this.config.defaultRemote as EveesRemote);
 
-    const perspective = await eveesRemote.snapPerspective(parentId);
+    const refPerspective = await loadEntity<Signed<Perspective>>(this.client, perspectiveId);
+    if (!refPerspective) throw new Error(`base perspective ${perspectiveId} not found`);
+
+    const perspective = await eveesRemote.snapPerspective(
+      parentId,
+      refPerspective?.object.payload.context
+    );
 
     /* BUG-FIXED: this is needed so that the getOwner of the snapPerspective function has the parent object. 
        TODO: How to add the concept of workspaces to the fork process? how to snapPerspectives based on a workspace ? */
     await EveesHelpers.createEntity(this.client, eveesRemote.store, perspective.object);
 
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, perspectiveId);
-    const context = await EveesHelpers.getPerspectiveContext(this.client, perspectiveId);
 
     let forkCommitId: string | undefined = undefined;
 
@@ -178,7 +183,7 @@ export class Evees {
 
     workspace.newPerspective({
       perspective,
-      details: { headId: forkCommitId, name, context },
+      details: { headId: forkCommitId, name },
       parentId
     });
 

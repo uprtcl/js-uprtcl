@@ -220,7 +220,8 @@ export const eveesResolvers: IResolvers = {
         creatorId,
         remote,
         path,
-        timestamp
+        timestamp,
+        context
       };
 
       const perspective: Secured<Perspective> = await deriveSecured(

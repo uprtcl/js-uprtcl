@@ -154,7 +154,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     if (this.entityType === EveesBindings.PerspectiveType) {
       const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
-      const context = await EveesHelpers.getPerspectiveContext(this.client, this.uref);
 
       const head = headId !== undefined ? await loadEntity<Commit>(this.client, headId) : undefined;
       const data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
@@ -164,7 +163,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.perspectiveData = {
         id: this.uref,
         details: {
-          context: context,
           headId: headId
         },
         perspective: (entity.object as Signed<Perspective>).payload,

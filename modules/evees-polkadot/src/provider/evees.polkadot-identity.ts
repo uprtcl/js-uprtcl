@@ -1,6 +1,7 @@
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+import { EveesOrbitDBEntities } from '@uprtcl/evees-orbitdb';
 import { Signed } from '@uprtcl/cortex';
 
 import {
@@ -10,13 +11,13 @@ import {
   NewPerspectiveData,
   Secured,
   ProposalsProvider,
-  deriveSecured
+  deriveSecured,
+  hashObject
 } from '@uprtcl/evees';
 
 import { PolkadotConnection, UserPerspectivesDetails } from './connection.polkadot';
 
 import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
-import { PolkadotEveesOrbitDBEntities } from '../custom-stores/orbitdb.stores';
 
 const evees_if = 'evees-identity';
 const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
@@ -32,7 +33,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
     public store: CASStore,
     public proposals: ProposalsProvider
   ) {
-    if (orbitdbcustom.getManifest(PolkadotEveesOrbitDBEntities.Context) === undefined) {
+    if (orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined) {
       throw new Error(
         'orbitdb custom must include the PolkadotEveesOrbitDBEntities.Context stores'
       );
@@ -128,6 +129,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
   /** set the parent owner as creatorId (and thus owner) */
   async snapPerspective(
     parentId?: string,
+    context?: string,
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
@@ -136,11 +138,22 @@ export class EveesPolkadotIdentity implements EveesRemote {
       parentOwner = await this.accessControl.getOwner(parentId);
     }
 
+    const creatorId = parentOwner ? parentOwner : this.userId ? this.userId : '';
+    timestamp = timestamp ? timestamp : Date.now();
+
+    const defaultContext = await hashObject({
+      creatorId,
+      timestamp
+    });
+
+    context = context || defaultContext;
+
     const object: Perspective = {
-      creatorId: parentOwner ? parentOwner : this.userId ? this.userId : '',
+      creatorId,
       remote: this.id,
       path: path !== undefined ? path : this.defaultPath,
-      timestamp: timestamp ? timestamp : Date.now()
+      timestamp,
+      context
     };
 
     const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
@@ -165,7 +178,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
     await this.updatePerspective(perspectiveId, details, true);
 
     const contextStore = await this.orbitdbcustom.getStore(
-      PolkadotEveesOrbitDBEntities.Context,
+      EveesOrbitDBEntities.Context,
       {
         context: secured.object.payload.context
       },
@@ -214,7 +227,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
     this.logger.log('getContextPerspectives', { context });
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    const contextStore = await this.orbitdbcustom.getStore(PolkadotEveesOrbitDBEntities.Context, {
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
       context
     });
     const perspectiveIds = [...contextStore.values()];
