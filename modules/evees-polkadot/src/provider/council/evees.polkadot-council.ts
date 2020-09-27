@@ -93,7 +93,6 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    debugger;
     return this.councilStorage.getPerspective(perspectiveId);
   }
 

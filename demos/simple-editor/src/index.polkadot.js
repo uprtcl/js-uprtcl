@@ -74,13 +74,13 @@ import { env } from '../env';
   );
   await orbitDBCustom.ready();
 
-  // const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-  // const pkdEvees = new EveesPolkadotIdentity(pkdConnection, orbitDBCustom, ipfsStore, proposals);
-  const pkdEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
+  const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
+  const pkdEvees = new EveesPolkadotIdentity(pkdConnection, orbitDBCustom, ipfsStore, proposals);
+  const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
   // TODO: had to restore this or it wouldn't work. figure out why 2nd arg was removed
-  const evees = new EveesModule([pkdEvees], pkdEvees);
+  const evees = new EveesModule([pkdEvees, pkdCouncilEvees]);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
