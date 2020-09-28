@@ -18,16 +18,20 @@ const getIdentityInfo = (identity: Option<Registration>) => {
 };
 
 // Picks out the the cid parts from the users additional fields and assembles the final string
-const getCID = (info: IdentityInfo, keys: string[]): string => {
+const getCID = (info: IdentityInfo, keys: string[]): string | undefined => {
   if (!info.additional) {
     return '';
   }
-  const [[, { Raw: cid1 }], [, { Raw: cid0 }]] = (info.additional as any)
-    .filter(([k]) => k.Raw === keys[0] || k.Raw === keys[1])
-    .sort(([a], [b]) => (a.Raw > b.Raw ? -1 : 1));
+  // const [[, { Raw: cid1 }], [, { Raw: cid0 }]] = (info.additional as any)
+  //   .filter(([k]) => k.Raw === keys[0] || k.Raw === keys[1])
+  //   .sort(([a], [b]) => (a.Raw > b.Raw ? -1 : 1));
 
-  const cid = cid1 + cid0;
-  return cid;
+  const cid1 = info.additional.find((entry: any[]) => entry[0].Raw === keys[0]);
+  const cid0 = info.additional.find((entry: any[]) => entry[0].Raw === keys[1]);
+
+  if (cid1 === undefined || cid0 === undefined) return undefined;
+
+  return (cid1[1] as any).Raw + (cid1[0] as any).Raw;
 };
 
 export interface UserPerspectivesDetails {

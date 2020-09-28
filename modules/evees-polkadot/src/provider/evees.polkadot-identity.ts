@@ -111,10 +111,9 @@ export class EveesPolkadotIdentity implements EveesRemote {
     let userPerspectivesDetailsHash = await this.getUserPerspectivesDetailsHash(
       perspective.creatorId
     );
-    const userPerspectivesDetails =
-      userPerspectivesDetailsHash !== ''
-        ? ((await this.store.get(userPerspectivesDetailsHash)) as UserPerspectivesDetails)
-        : {};
+    const userPerspectivesDetails = userPerspectivesDetailsHash
+      ? ((await this.store.get(userPerspectivesDetailsHash)) as UserPerspectivesDetails)
+      : {};
 
     const userPerspectivesDetailsNew = await this.updateUserPerspectivesDetailsEntry(
       userPerspectivesDetails,
@@ -184,9 +183,9 @@ export class EveesPolkadotIdentity implements EveesRemote {
     });
 
     const userPerspectivesHash = await this.getUserPerspectivesDetailsHash(owner);
-    const userPerspectives = (await this.store.get(
-      userPerspectivesHash
-    )) as UserPerspectivesDetails;
+    const userPerspectives = userPerspectivesHash
+      ? ((await this.store.get(userPerspectivesHash)) as UserPerspectivesDetails)
+      : {};
 
     let userPerspectivesNew;
 
@@ -228,10 +227,9 @@ export class EveesPolkadotIdentity implements EveesRemote {
     const userPerspectivesDetailsHash = await this.getUserPerspectivesDetailsHash(
       perspective.creatorId
     );
-    // TODO: this is empty?
-    const userPerspectivesDetails = (await this.store.get(
-      userPerspectivesDetailsHash
-    )) as UserPerspectivesDetails;
+    const userPerspectivesDetails = userPerspectivesDetailsHash
+      ? ((await this.store.get(userPerspectivesDetailsHash)) as UserPerspectivesDetails)
+      : {};
 
     return userPerspectivesDetails[perspectiveId];
   }

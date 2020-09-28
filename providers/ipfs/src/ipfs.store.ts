@@ -182,6 +182,7 @@ export class IpfsStore extends Connection implements CASStore {
    */
   async get(hash: string): Promise<object | undefined> {
     /** recursively try */
+    if (!hash) throw new Error('hash undefined or empty');
     return this.tryGet(hash, 500, 4)
       .then(raw => {
         const forceBuffer = Uint8Array.from(raw.value);

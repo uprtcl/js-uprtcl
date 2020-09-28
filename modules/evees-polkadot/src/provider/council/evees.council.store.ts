@@ -76,6 +76,7 @@ export class PolkadotCouncilEveesStorage {
 
   async getCouncilDataOf(member: string, blockHash?: string): Promise<CouncilData> {
     const head = await this.connection.getHead(member, COUNCIL_KEYS, blockHash);
+    if (head === undefined) return {};
     const councilData = await this.store.get(head);
     return councilData ? councilData : {};
   }
