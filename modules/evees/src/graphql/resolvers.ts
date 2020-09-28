@@ -268,13 +268,18 @@ export const eveesResolvers: IResolvers = {
         id: newPerspectiveId,
         name: name,
         head: headId,
-        context: {
-          id: context,
-          perspectives: {
-            newPerspectiveId
+        payload: {
+          remote: perspective.object.payload.remote,
+          path: perspective.object.payload.path,
+          creatorId: perspective.object.payload.creatorId,
+          timestamp: perspective.object.payload.timestamp,
+          context: {
+            id: perspective.object.payload.context,
+            perspectives: {
+              newPerspectiveId
+            }
           }
-        },
-        payload: perspective.object.payload
+        }
       };
     },
 
