@@ -8,7 +8,8 @@ import {
   NewPerspectiveData,
   Perspective,
   Secured,
-  deriveSecured
+  deriveSecured,
+  EveesHelpers
 } from '@uprtcl/evees';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
@@ -54,21 +55,11 @@ export class EveesHttp implements EveesRemote {
 
   async snapPerspective(
     parentId?: string,
+    context?: string,
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
-    const object: Perspective = {
-      creatorId: this.userId ? this.userId : '',
-      remote: this.id,
-      path: path !== undefined ? path : this.defaultPath,
-      timestamp: timestamp ? timestamp : Date.now()
-    };
-
-    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
-
-    perspective.casID = this.store.casID;
-
-    return perspective;
+    return EveesHelpers.snapDefaultPerspective(this);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {

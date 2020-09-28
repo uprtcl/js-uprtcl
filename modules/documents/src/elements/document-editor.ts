@@ -26,7 +26,8 @@ import {
   EveesHelpers,
   deriveSecured,
   Perspective,
-  Secured
+  Secured,
+  hashObject
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { loadEntity, CASStore } from '@uprtcl/multiplatform';
@@ -178,7 +179,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
       if (this.editable === 'true') {
         editable = canWrite;
-        context = await EveesHelpers.getPerspectiveContext(this.client, entity.id);
         headId = await EveesHelpers.getPerspectiveHeadId(this.client, entity.id);
         dataId =
           headId !== undefined
@@ -379,11 +379,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remoteInstance}`);
 
+    const creatorId = remoteInstance.userId ? remoteInstance.userId : '';
+
+    const context = await hashObject({
+      creatorId,
+      timestamp: node.timestamp
+    });
+
     const perspective: Perspective = {
-      creatorId: remoteInstance.userId ? remoteInstance.userId : '',
+      creatorId,
       remote: remoteInstance.id,
       path: remoteInstance.defaultPath,
-      timestamp: node.timestamp
+      timestamp: node.timestamp,
+      context
     };
 
     return deriveSecured<Perspective>(perspective, remoteInstance.store.cidConfig);
@@ -544,6 +552,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return EveesHelpers.createPerspective(this.client, remoteInstance, {
       creatorId: secured.object.payload.creatorId,
       timestamp: secured.object.payload.timestamp,
+      context: secured.object.payload.context,
       headId: commitId,
       parentId: node.parent ? node.parent.uref : undefined
     });

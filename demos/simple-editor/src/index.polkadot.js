@@ -11,18 +11,17 @@ import {
   EveesPolkadotIdentity,
   EveesPolkadotCouncil,
   PolkadotIdentity,
-  PolkadotConnection,
-  PolkadotContextStore,
-  PolkadotContextAccessController
+  PolkadotConnection
 } from '@uprtcl/evees-polkadot';
 import {
   ProposalsOrbitDB,
   ProposalStore,
   ProposalsToPerspectiveStore,
-  ProposalsAccessController
+  ProposalsAccessController,
+  ContextStore,
+  ContextAccessController
 } from '@uprtcl/evees-orbitdb';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
-import {} from '@uprtcl/evees-orbitdb';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -66,8 +65,8 @@ import { env } from '../env';
   const identity = new PolkadotIdentity(pkdConnection);
 
   const orbitDBCustom = new OrbitDBCustom(
-    [PolkadotContextStore, ProposalStore, ProposalsToPerspectiveStore],
-    [PolkadotContextAccessController, ProposalsAccessController],
+    [ContextStore, ProposalStore, ProposalsToPerspectiveStore],
+    [ContextAccessController, ProposalsAccessController],
     identity,
     pinnerUrl,
     ipfs

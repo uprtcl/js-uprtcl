@@ -12,7 +12,8 @@ import {
   Secured,
   ProposalsProvider,
   deriveSecured,
-  hashObject
+  hashObject,
+  EveesHelpers
 } from '@uprtcl/evees';
 
 import { PolkadotConnection, UserPerspectivesDetails } from './connection.polkadot';
@@ -138,26 +139,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
       parentOwner = await this.accessControl.getOwner(parentId);
     }
 
-    const creatorId = parentOwner ? parentOwner : this.userId ? this.userId : '';
-    timestamp = timestamp ? timestamp : Date.now();
-
-    const defaultContext = await hashObject({
-      creatorId,
-      timestamp
-    });
-
-    context = context || defaultContext;
-
-    const object: Perspective = {
-      creatorId,
-      remote: this.id,
-      path: path !== undefined ? path : this.defaultPath,
-      timestamp,
-      context
-    };
-
-    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
-
+    const perspective = await EveesHelpers.snapDefaultPerspective(this, parentOwner);
     perspective.casID = this.store.casID;
 
     return perspective;

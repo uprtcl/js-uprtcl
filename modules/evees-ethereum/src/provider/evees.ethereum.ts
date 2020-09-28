@@ -33,7 +33,8 @@ import {
   NewPerspectiveData,
   Secured,
   ProposalsProvider,
-  deriveSecured, hashObject
+  deriveSecured,
+  hashObject
 } from '@uprtcl/evees';
 
 import {
@@ -48,7 +49,7 @@ import {
   ZERO_HEX_32,
   ZERO_ADDRESS,
   hashToId,
-  PerspectiveCreator,
+  PerspectiveCreator
 } from './common';
 import { EveesAccessControlEthereum } from './evees-acl.ethereum';
 
@@ -153,15 +154,14 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
-
     const creatorId = this.userId ? this.userId : '';
     timestamp = timestamp ? timestamp : Date.now();
 
     const defaultContext = await hashObject({
       creatorId,
-      timestamp 
+      timestamp
     });
-    
+
     context = context || defaultContext;
 
     const object: Perspective = {
@@ -195,7 +195,7 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
       owner: owner
     };
 
-    const context = secured.object.payload.;
+    const context = secured.object.payload.context;
 
     /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
     await this.uprtclDetails.send(INIT_PERSP, [
