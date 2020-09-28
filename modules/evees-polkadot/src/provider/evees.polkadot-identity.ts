@@ -202,6 +202,19 @@ export class EveesPolkadotIdentity implements EveesRemote {
     const userPerspectivesHashNew = await this.store.create(userPerspectivesNew);
 
     await this.updateUserPerspectivesDetailsHash(userPerspectivesHashNew);
+
+    await Promise.all(
+      newPerspectivesData.map(async perspectiveData => {
+        const contextStore = await this.orbitdbcustom.getStore(
+          EveesOrbitDBEntities.Context,
+          {
+            context: perspectiveData.perspective.object.payload.context
+          },
+          true
+        );
+        return contextStore.add(perspectiveData.perspective.id);
+      })
+    );
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {

@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule, EveesHelpers, deriveSecured } from '@uprtcl/evees';
+import { EveesModule, EveesHelpers, deriveSecured, hashObject } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { env } from '../env';
@@ -76,11 +76,17 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     }
 
     if (window.location.href.includes('remoteHome=')) {
+      const context = await hashObject({
+        creatorId: '',
+        timestamp: 0
+      });
+
       const remoteHome = {
         remote: this.officalRemote.id,
         path: '',
         creatorId: '',
-        timestamp: 0
+        timestamp: 0,
+        context: context
       };
 
       const perspective = await deriveSecured(remoteHome, this.officalRemote.store.cidConfig);

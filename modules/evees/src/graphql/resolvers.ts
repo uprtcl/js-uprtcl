@@ -14,10 +14,9 @@ import {
 import { Entity, Signed, CortexModule } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Commit, Perspective, NewProposal, NewPerspectiveData } from '../types';
+import { Perspective, NewProposal, NewPerspectiveData } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
-import { ProposalsProvider } from '../services/proposals.provider';
 import { EveesRemote } from '../services/evees.remote';
 import { Secured } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
@@ -44,7 +43,7 @@ export const eveesResolvers: IResolvers = {
   },
   Context: {
     id(parent) {
-      return typeof parent === 'string' ? parent : parent.context;
+      return typeof parent === 'string' ? parent : parent.id;
     },
     async perspectives(parent, _, { container }) {
       const context = typeof parent === 'string' ? parent : parent.context;
@@ -122,6 +121,18 @@ export const eveesResolvers: IResolvers = {
       if (!remote.proposals) return [];
 
       return remote.proposals.getProposalsToPerspective(parent.id);
+    },
+    async payload(parent, _, { container }) {
+      debugger;
+      return {
+        remote: parent.payload.remote,
+        path: parent.payload.path,
+        creatorId: parent.payload.creatorId,
+        timestamp: parent.payload.timestamp,
+        context: {
+          id: parent.payload.context
+        }
+      };
     }
   },
   Mutation: {
