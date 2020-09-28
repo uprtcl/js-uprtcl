@@ -450,7 +450,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const newPerspectiveId = result.data.forkPerspective.id;
 
     this.dispatchEvent(
-      new CustomEvent('created-child-perspective', {
+      new CustomEvent('new-perspective-created', {
         detail: {
           oldPerspectiveId: this.uref,
           newPerspectiveId: newPerspectiveId

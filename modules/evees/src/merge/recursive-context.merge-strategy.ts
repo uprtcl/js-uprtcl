@@ -74,15 +74,16 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const context = result.data.entity.payload.context.id;
 
+    this.setPerspective(perspectiveId, context, to);
+
     if (result.data.entity.head == null) {
-      throw new Error(`head null reading perspective ${perspectiveId}`);
+      return;
     }
 
+    /** read children recursively */
     const dataObject = result.data.entity.head.data._context.object;
     const dataId = result.data.entity.head.data.id;
     const data = { id: dataId, object: dataObject };
-
-    this.setPerspective(perspectiveId, context, to);
 
     const hasChildren: HasChildren | undefined = this.recognizer
       .recognizeBehaviours(data)

@@ -123,7 +123,6 @@ export const eveesResolvers: IResolvers = {
       return remote.proposals.getProposalsToPerspective(parent.id);
     },
     async payload(parent, _, { container }) {
-      debugger;
       return {
         remote: parent.payload.remote,
         path: parent.payload.path,
