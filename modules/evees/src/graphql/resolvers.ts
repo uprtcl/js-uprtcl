@@ -46,7 +46,7 @@ export const eveesResolvers: IResolvers = {
       return typeof parent === 'string' ? parent : parent.id;
     },
     async perspectives(parent, _, { container }) {
-      const context = typeof parent === 'string' ? parent : parent.context;
+      const context = typeof parent === 'string' ? parent : parent.id;
 
       if (context === undefined) return [];
 

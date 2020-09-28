@@ -32,7 +32,8 @@ export class ContextAccessController extends IPFSAccessController {
         // if (perspective.context !== this.db.context) return false;
 
         // check identity is valid
-        return identityProvider.verifyIdentity(entry.identity);
+        // return identityProvider.verifyIdentity(entry.identity);
+        return true;
       }
     } catch (e) {
       console.error(e);

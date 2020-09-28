@@ -145,6 +145,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    debugger;
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
 
