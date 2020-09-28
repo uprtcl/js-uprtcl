@@ -157,10 +157,6 @@ export class EveesWorkspace {
             __typename: 'Commit',
             id: headId
           },
-          context: {
-            __typename: 'Context',
-            id: context
-          },
           _context: {
             __typename: 'EntityContext',
             object,

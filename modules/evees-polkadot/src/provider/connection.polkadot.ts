@@ -31,7 +31,7 @@ const getCID = (info: IdentityInfo, keys: string[]): string | undefined => {
 
   if (cid1 === undefined || cid0 === undefined) return undefined;
 
-  return (cid1[1] as any).Raw + (cid1[0] as any).Raw;
+  return (cid1[1] as any).Raw + (cid0[1] as any).Raw;
 };
 
 export interface UserPerspectivesDetails {
