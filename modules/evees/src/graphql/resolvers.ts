@@ -212,31 +212,14 @@ export const eveesResolvers: IResolvers = {
       { container }
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
-
       const remoteInstance: EveesRemote = remotes.find(instance => instance.id === remote);
 
-      path = path !== undefined ? path : remoteInstance.defaultPath;
-
-      creatorId =
-        creatorId !== undefined
-          ? creatorId
-          : remoteInstance.userId !== undefined
-          ? remoteInstance.userId
-          : '';
-      timestamp = timestamp !== undefined ? timestamp : Date.now();
-      name = name !== undefined && name != null ? name : '';
-
-      const payload: Perspective = {
+      const perspective = await EveesHelpers.snapDefaultPerspective(
+        remoteInstance,
         creatorId,
-        remote,
-        path,
+        context,
         timestamp,
-        context
-      };
-
-      const perspective: Secured<Perspective> = await deriveSecured(
-        payload,
-        remoteInstance.store.cidConfig
+        path
       );
 
       const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
@@ -256,8 +239,7 @@ export const eveesResolvers: IResolvers = {
         id: perspective.id,
         name: name,
         head: headId,
-        context: context,
-        payload: payload
+        payload: perspective.object.payload
       };
     },
 

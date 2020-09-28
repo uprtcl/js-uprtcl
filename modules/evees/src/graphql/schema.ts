@@ -15,7 +15,7 @@ export const eveesTypeDefs: DocumentNode = gql`
       creatorId: String
       timestamp: Date
       headId: ID
-      context: String!
+      context: String
       name: String
       canWrite: String
       parentId: String

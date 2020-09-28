@@ -60,7 +60,7 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
     $creatorId: String
     $timestamp: Date
     $headId: ID
-    $context: String!
+    $context: String
     $name: String
     $canWrite: String
     $parentId: String
@@ -89,6 +89,12 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
         remote
         path
         timestamp
+        context {
+          id
+          perspectives {
+            id
+          }
+        }
       }
     }
   }
