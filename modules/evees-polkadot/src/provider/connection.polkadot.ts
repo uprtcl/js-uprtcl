@@ -45,7 +45,6 @@ export class PolkadotConnection extends Connection {
   public api?: ApiPromise;
   public account?: string;
   private chain?: string;
-  private identityInfo?: IdentityInfo;
   private signer?: Signer;
 
   logger = new Logger('Polkadot-Connection');
@@ -89,26 +88,47 @@ export class PolkadotConnection extends Connection {
     return;
   }
 
+  public async getIdentityInfo(userId: string) {
+    if (!this.api) throw new Error('api not defined');
+    const identity = await this.api.query.identity.identityOf(userId);
+    return getIdentityInfo(<Option<Registration>>identity);
+  }
+
   public async getHead(userId: string, keys: string[], atBlock?: number) {
     if (atBlock !== undefined) {
       this.logger.error('cant get idenity at block yet... ups');
     }
-    const identity = await this.api?.query.identity.identityOf(userId);
-    this.identityInfo = getIdentityInfo(<Option<Registration>>identity);
-    return getCID(<IdentityInfo>this.identityInfo, keys);
+    const identityInfo = await this.getIdentityInfo(userId);
+    return getCID(<IdentityInfo>identityInfo, keys);
   }
 
   public async updateHead(head: string, keys: string[]) {
+    if (!this.account) throw new Error('cannot update identity if account not defined');
     // update evees entry
     const cid1 = head.substring(0, 32);
     const cid0 = head.substring(32, 64);
-    const result = this.api?.tx.identity.setIdentity({
-      ...(this.identityInfo as any),
-      additional: [
-        [{ Raw: keys[0] }, { Raw: cid1 }],
-        [{ Raw: keys[1] }, { Raw: cid0 }]
-      ]
-    });
+
+    const identityInfo = await this.getIdentityInfo(this.account);
+    const additional = identityInfo.additional;
+
+    const currentIndexes = [
+      additional.findIndex(entry => entry[0].Raw === keys[0]),
+      additional.findIndex(entry => entry[0].Raw === keys[1])
+    ];
+
+    if (!currentIndexes.includes(-1)) {
+      additional[currentIndexes[0]][1].Raw = cid1;
+      additional[currentIndexes[1]][1].Raw = cid0;
+    } else {
+      additional.push([{ Raw: keys[0] }, { Raw: cid1 }], [{ Raw: keys[1] }, { Raw: cid0 }]);
+    }
+
+    const newIdentity = {
+      ...(identityInfo as any),
+      additional: [...additional]
+    };
+
+    const result = this.api?.tx.identity.setIdentity(newIdentity);
     // TODO: Dont block here, cache value
     await new Promise(async (resolve, reject) => {
       const unsub = await result?.signAndSend(<AddressOrPair>this?.account, result => {

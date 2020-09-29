@@ -58,7 +58,7 @@ export class PolkadotCouncilEveesStorage {
       await Promise.all(
         councilDatas.map(data => {
           if (data.proposals !== undefined) {
-            if (data.proposal) this.db.proposals.bulkAdd(data.proposals);
+            if (data.proposals) this.db.proposals.bulkAdd(data.proposals);
           }
         })
       );
@@ -173,5 +173,14 @@ export class PolkadotCouncilEveesStorage {
     await this.db.proposals.add(dexieProposal);
 
     return proposalId;
+  }
+
+  async getProposalsToPerspective(perspectiveId: string) {
+    const proposals = await this.db.proposals
+      .where('toPerspectiveId')
+      .equals(perspectiveId)
+      .toArray();
+
+    return proposals.map(p => p.id);
   }
 }

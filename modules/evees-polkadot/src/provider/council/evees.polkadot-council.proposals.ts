@@ -92,6 +92,6 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
 
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
     await this.ready();
-    return [];
+    return this.councilStore.getProposalsToPerspective(perspectiveId);
   }
 }
