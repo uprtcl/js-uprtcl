@@ -4,6 +4,7 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesBindings, EveesHelpers, EveesRemote } from '@uprtcl/evees';
+import { HasTitle, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
 import { BasicAdminInheritedPermissions, BasicAdminPermissions, PermissionType, UserPermissions } from './types';
 import { EveesHttp } from './evees.http';
@@ -36,7 +37,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   client!: ApolloClient<any>;
   remote!: EveesHttp;
 
+  delegatedTitle: string = "";
+
   userPermissions!: Object[];
+
+  protected recognizer!: PatternRecognizer;
 
   // TODO: remove
   userList: string[] = [
@@ -52,6 +57,8 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
       remote => remote.id === remoteId
     );
+
+    this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     if (!remote) throw new Error(`remote not registered ${remoteId}`);
 
@@ -79,7 +86,24 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       ? await this.remote.accessControl.getPermissions(this.uref)
       : undefined;
 
+    await this.loadDelegatedTitle(); 
+
     this.loading = false;
+  }
+
+  async loadDelegatedTitle() {
+    if (!this.permissions || !this.permissions.delegateTo) return
+
+    const delegatedUref = this.permissions.delegateTo;
+
+    const data = await EveesHelpers.getPerspectiveData(this.client, delegatedUref);
+    const hasTitle: HasTitle = this.recognizer
+      .recognizeBehaviours(data)
+      .find(b => (b as HasTitle).title);
+
+    const title = hasTitle.title(data);
+    
+    this.delegatedTitle = title;
   }
 
   getUserList() {
@@ -352,7 +376,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
                 ${this.permissions.delegate ? html`
                   <p>
-                    Permissions being delegated from: ${this.permissions.delegateTo}
+                    Permissions being delegated from: ${this.delegatedTitle}
                   </p>
                 ` : ''}
 
