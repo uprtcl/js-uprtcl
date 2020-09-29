@@ -5,8 +5,8 @@ import { PerspectiveDetails } from '@uprtcl/evees';
 import { PolkadotConnection } from '../connection.polkadot';
 import { EveesCouncilDB } from './dexie.council.store';
 
-import { CouncilData, DexieProposal, ProposalManifest } from './types';
-import { getProposalStatus, isValid } from './proposal.logic';
+import { CouncilData, DexieProposal, ProposalManifest, ProposalStatusCache } from './types';
+import { getProposalStatus, getIsValid, ProposalLogicQuorum } from './proposal.logic.quorum';
 import { ProposalConfig } from './proposal.config.types';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
@@ -22,9 +22,6 @@ export class PolkadotCouncilEveesStorage {
   protected db: EveesCouncilDB;
   private initialized: boolean = false;
 
-  /* in memory cache */
-  protected council!: string[];
-
   constructor(
     protected connection: PolkadotConnection,
     public store: CASStore,
@@ -34,7 +31,6 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async init() {
-    this.council = await this.connection.getCouncil();
     await this.fetchCouncilDatas();
   }
 
@@ -46,19 +42,40 @@ export class PolkadotCouncilEveesStorage {
 
   /** reads all the council datas and populate the DB */
   async fetchCouncilDatas() {
-    const councilDatas = await Promise.all(
-      this.council.map(async member => {
-        const head = await this.connection.getHead(member, COUNCIL_KEYS);
-        if (!head) return {};
-        return (await this.store.get(head)) as CouncilData;
-      })
-    );
+    const council = await this.connection.getCouncil();
 
     await this.db.transaction('rw', [this.db.proposals], async () => {
       await Promise.all(
-        councilDatas.map(data => {
+        council.map(async member => {
+          // get council data of member.
+          const head = await this.connection.getHead(member, COUNCIL_KEYS);
+          if (!head) return;
+
+          const data = (await this.store.get(head)) as CouncilData;
           if (data.proposals !== undefined) {
-            if (data.proposals) this.db.proposals.bulkAdd(data.proposals);
+            data.proposals.map(async proposal => {
+              // store proposals of that member on my local db.
+              const mine = this.db.proposals.get(proposal.id);
+              if (mine === undefined) {
+                // if the proposal is new to me
+                if (proposal.blockEnd !== undefined) {
+                  // if closed, verify it and if valid, store it in local storage.
+                  const valid = await this.verifyProposal(proposal.id, proposal.blockEnd);
+                  if (valid) {
+                    proposal.verified = true;
+                    this.db.proposals.add(proposal);
+                  } else {
+                    this.logger.error(
+                      `proposal ${proposal.id} from council member ${member} is corrupted!`
+                    );
+                  }
+                } else {
+                  // if proposal not yet closed, see if it closed.
+                  const status = await this.computeStatus(proposal.id, this.connection.getLatestBlock());
+                  if (status !== ProposalStatus.P)
+                }
+              }
+            });
           }
         })
       );
@@ -82,7 +99,7 @@ export class PolkadotCouncilEveesStorage {
   }
 
   /** check the proposal had enough votes at block */
-  async verifyProposal(proposalId: string, atBlock: number): Promise<boolean> {
+  async isApproved(proposalId: string, atBlock: number): Promise<any> {
     const manifest = (await this.store.get(proposalId)) as ProposalManifest;
 
     if (manifest.config.duration !== EXPECTED_CONFIG.duration) {
@@ -99,14 +116,27 @@ export class PolkadotCouncilEveesStorage {
     }
 
     const council = await this.connection.getCouncil(manifest.block);
-    const votes = await Promise.all(
+    const memberVotes = await Promise.all(
       council.map(async member => {
         const memberCouncilData = await this.getCouncilDataOf(member, atBlock);
-        return memberCouncilData.votes ? memberCouncilData.votes[proposalId] : undefined;
+        const voteValue = memberCouncilData.votes ? memberCouncilData.votes[proposalId] : undefined;
+        return { member, value: voteValue };
       })
     );
 
-    return isValid(getProposalStatus(manifest, votes, atBlock));
+    const proposalLogic = new ProposalLogicQuorum(
+      manifest,
+      memberVotes.map(memberVote => memberVote.value),
+      atBlock
+    );
+
+    return proposalLogic.isApproved();
+  }
+
+  async verifyProposal(proposalId: string, atBlock: number): Promise<boolean> {
+    const status = await this.... WHAT !!! (proposalId, atBlock);
+    const isValid = getIsValid(status);
+    return isValid;
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
@@ -127,12 +157,7 @@ export class PolkadotCouncilEveesStorage {
         if (!proposal.blockEnd) return false;
 
         const valid = await this.verifyProposal(proposal.id, proposal.blockEnd);
-        if (valid) {
-          /** cache the verification */
-          proposal.verified = true;
-          this.db.proposals.put(proposal, proposal.id);
-          return true;
-        }
+        return valid;
       }
     });
 
@@ -156,14 +181,7 @@ export class PolkadotCouncilEveesStorage {
       newCouncilData.proposals = [];
     }
 
-    const updatedPerspectives = proposalManifest.updates.map(update => update.perspectiveId);
-
-    const dexieProposal: DexieProposal = {
-      id: proposalId,
-      toPerspectiveId: proposalManifest.toPerspectiveId,
-      updatedPerspectives: updatedPerspectives,
-      updates: proposalManifest.updates
-    };
+    const dexieProposal = await this.initDexieProposal(proposalId);
 
     newCouncilData.proposals.push(dexieProposal);
     const newCouncilDataHash = await this.store.create(newCouncilData);
@@ -182,5 +200,17 @@ export class PolkadotCouncilEveesStorage {
       .toArray();
 
     return proposals.map(p => p.id);
+  }
+
+  async getProposalStatus(proposalId): Promise<ProposalStatusCache> {
+    /* check if already computed and verified */
+    const proposal = await this.db.proposals.get(proposalId);
+    if (proposal && proposal.verified && proposal.status) {
+      return proposal.status;
+    }
+
+    /* not verified, maybe it's still open, 
+    maybe its the first time this peer see this proposal */
+    await this.verifyProposal(proposalId, await this.connection.getLatestBlock());
   }
 }

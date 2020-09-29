@@ -29,4 +29,10 @@ export interface DexieProposal {
   blockEnd?: number;
   updates: UpdateRequest[]; // not indexed
   verified?: boolean; // not indexed
+  status?: ProposalStatusCache;
+}
+
+export interface ProposalStatusCache {
+  status: any;
+  votes: { member: string; value: VoteValue }[];
 }

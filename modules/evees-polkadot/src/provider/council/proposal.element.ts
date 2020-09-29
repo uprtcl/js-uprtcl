@@ -43,6 +43,25 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
+  renderProposalStatus() {
+    return html``;
+  }
+
+  renderDetails() {
+    return html`
+      <uprtcl-dialog id="updates-dialog">
+        <div>
+          by
+          <evees-author
+            user-id=${this.proposalManifest.creatorId ? this.proposalManifest.creatorId : ''}
+          ></evees-author>
+        </div>
+        <evees-update-diff id="evees-update-diff"> </evees-update-diff>
+        ${this.renderProposalStatus()}
+      </uprtcl-dialog>
+    `;
+  }
+
   render() {
     return this.loading
       ? html`
