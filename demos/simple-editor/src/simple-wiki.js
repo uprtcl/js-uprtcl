@@ -61,7 +61,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     this.defaultRemoteId = defaultRemote.id;
 
     this.officalRemote = this.requestAll(EveesModule.bindings.EveesRemote).find(instance =>
-      instance.id.startsWith(env.officialRemote)
+      instance.id.includes(env.officialRemote)
     );
 
     // wait all remotes to be ready

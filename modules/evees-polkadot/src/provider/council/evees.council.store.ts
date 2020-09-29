@@ -58,7 +58,7 @@ export class PolkadotCouncilEveesStorage {
       await Promise.all(
         councilDatas.map(data => {
           if (data.proposals !== undefined) {
-            this.db.proposals.bulkAdd(data.proposals);
+            if (data.proposal) this.db.proposals.bulkAdd(data.proposals);
           }
         })
       );
@@ -74,15 +74,15 @@ export class PolkadotCouncilEveesStorage {
     return this.connection.updateHead(hash, COUNCIL_KEYS);
   }
 
-  async getCouncilDataOf(member: string, blockHash?: string): Promise<CouncilData> {
-    const head = await this.connection.getHead(member, COUNCIL_KEYS, blockHash);
+  async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
+    const head = await this.connection.getHead(member, COUNCIL_KEYS, block);
     if (head === undefined) return {};
     const councilData = await this.store.get(head);
     return councilData ? councilData : {};
   }
 
   /** check the proposal had enough votes at block */
-  async verifyProposal(proposalId: string, blockHash: string): Promise<boolean> {
+  async verifyProposal(proposalId: string, atBlock: number): Promise<boolean> {
     const manifest = (await this.store.get(proposalId)) as ProposalManifest;
 
     if (manifest.config.duration !== EXPECTED_CONFIG.duration) {
@@ -101,13 +101,12 @@ export class PolkadotCouncilEveesStorage {
     const council = await this.connection.getCouncil(manifest.block);
     const votes = await Promise.all(
       council.map(async member => {
-        const memberCouncilData = await this.getCouncilDataOf(member);
+        const memberCouncilData = await this.getCouncilDataOf(member, atBlock);
         return memberCouncilData.votes ? memberCouncilData.votes[proposalId] : undefined;
       })
     );
 
-    const block = await this.connection.getLatestBlock();
-    return isValid(getProposalStatus(manifest, votes, block));
+    return isValid(getProposalStatus(manifest, votes, atBlock));
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
@@ -116,21 +115,23 @@ export class PolkadotCouncilEveesStorage {
     const proposals = this.db.proposals
       .where('updatedPerspectives')
       .equals(perspectiveId)
-      .and(proposal => proposal.blockEndHash !== undefined);
+      .and(proposal => proposal.blockEnd !== undefined);
 
     const proposalsSorted = await proposals.sortBy('blockEnd');
 
     /** check validity */
     const validProposal = proposalsSorted.find(async proposal => {
       if (proposal.verified) {
-        return proposal;
+        return true;
       } else {
-        const valid = await this.verifyProposal(proposal.id, proposal.blockEndHash as string);
+        if (!proposal.blockEnd) return false;
+
+        const valid = await this.verifyProposal(proposal.id, proposal.blockEnd);
         if (valid) {
           /** cache the verification */
           proposal.verified = true;
           this.db.proposals.put(proposal, proposal.id);
-          return proposal;
+          return true;
         }
       }
     });
@@ -143,9 +144,9 @@ export class PolkadotCouncilEveesStorage {
 
   async createProposal(proposalManifest: ProposalManifest): Promise<string> {
     if (this.connection.account === undefined) throw new Error('user not logged in');
-    if (!this.connection.canSign) throw new Error('user cant sign');
+    if (!(await this.connection.canSign())) throw new Error('user cant sign');
 
-    const proposalId = this.store.create(proposalManifest);
+    const proposalId = await this.store.create(proposalManifest);
     const council = await this.connection.getCouncil();
     if (!council.includes(this.connection.account)) throw new Error('user not a council member');
 
@@ -158,15 +159,18 @@ export class PolkadotCouncilEveesStorage {
     const updatedPerspectives = proposalManifest.updates.map(update => update.perspectiveId);
 
     const dexieProposal: DexieProposal = {
-      id: proposalManifest.toPerspectiveId,
+      id: proposalId,
       toPerspectiveId: proposalManifest.toPerspectiveId,
-      updates: proposalManifest.updates,
-      updatedPerspectives: updatedPerspectives
+      updatedPerspectives: updatedPerspectives,
+      updates: proposalManifest.updates
     };
 
     newCouncilData.proposals.push(dexieProposal);
     const newCouncilDataHash = await this.store.create(newCouncilData);
     await this.updateCouncilData(newCouncilDataHash);
+
+    /** cache this proposal for filtering */
+    await this.db.proposals.add(dexieProposal);
 
     return proposalId;
   }

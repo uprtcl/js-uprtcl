@@ -89,8 +89,8 @@ export class PolkadotConnection extends Connection {
     return;
   }
 
-  public async getHead(userId: string, keys: string[], atBlockHash?: string) {
-    if (atBlockHash !== undefined) {
+  public async getHead(userId: string, keys: string[], atBlock?: number) {
+    if (atBlock !== undefined) {
       this.logger.error('cant get idenity at block yet... ups');
     }
     const identity = await this.api?.query.identity.identityOf(userId);
@@ -136,7 +136,8 @@ export class PolkadotConnection extends Connection {
   public async getCouncil(at?: number): Promise<string[]> {
     if (!this.api) throw new Error('api undefined');
     const blockHash = await this.api.rpc.chain.getBlockHash(at);
-    return this.api.query.council.members.at(blockHash);
+    const councilAddr = await this.api.query.council.members.at(blockHash);
+    return councilAddr.map(address => address.toString());
   }
 
   public async getLatestBlock(): Promise<number> {

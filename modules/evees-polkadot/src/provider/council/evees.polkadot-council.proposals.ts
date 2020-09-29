@@ -20,6 +20,7 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
 
   async createProposal(proposal: NewProposal): Promise<string> {
     await this.ready();
+    debugger;
 
     this.logger.info('createProposal()', { proposal });
 

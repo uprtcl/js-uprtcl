@@ -26,7 +26,7 @@ export interface DexieProposal {
   id: string;
   toPerspectiveId: string;
   updatedPerspectives: string[]; // for indexing
+  blockEnd?: number;
   updates: UpdateRequest[]; // not indexed
-  blockEndHash?: string;
   verified?: boolean; // not indexed
 }
