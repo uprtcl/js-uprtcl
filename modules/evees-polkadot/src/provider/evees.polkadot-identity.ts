@@ -138,14 +138,19 @@ export class EveesPolkadotIdentity implements EveesRemote {
       parentOwner = await this.accessControl.getOwner(parentId);
     }
 
-    const perspective = await EveesHelpers.snapDefaultPerspective(this, parentOwner);
+    const perspective = await EveesHelpers.snapDefaultPerspective(
+      this,
+      parentOwner,
+      context,
+      timestamp,
+      path
+    );
     perspective.casID = this.store.casID;
 
     return perspective;
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    debugger;
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
 

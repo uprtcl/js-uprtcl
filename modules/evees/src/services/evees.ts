@@ -161,7 +161,7 @@ export class Evees {
 
     const perspective = await eveesRemote.snapPerspective(
       parentId,
-      refPerspective?.object.payload.context
+      refPerspective.object.payload.context
     );
 
     /* BUG-FIXED: this is needed so that the getOwner of the snapPerspective function has the parent object. 

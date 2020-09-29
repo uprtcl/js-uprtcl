@@ -58,11 +58,13 @@ export class EveesDiff extends moduleConnect(LitElement) {
     const getDetails = this.workspace.getUpdates().map(async update => {
       const newData = await EveesHelpers.getCommitData(this.workspace.workspace, update.newHeadId);
 
-      if (update.oldHeadId === undefined) throw new Error('old commit not specified');
-      const oldData = await EveesHelpers.getCommitData(this.workspace.workspace, update.oldHeadId);
+      const oldData =
+        update.oldHeadId !== undefined
+          ? await EveesHelpers.getCommitData(this.workspace.workspace, update.oldHeadId)
+          : undefined;
 
       const hasDiffLenses = this.recognizer
-        .recognizeBehaviours(oldData)
+        .recognizeBehaviours(newData)
         .find(b => (b as HasDiffLenses<any>).diffLenses);
       if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
 

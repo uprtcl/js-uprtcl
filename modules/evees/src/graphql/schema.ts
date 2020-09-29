@@ -33,7 +33,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     addProposal(
       toPerspectiveId: ID!
       fromPerspectiveId: ID!
-      toHeadId: ID!
+      toHeadId: ID
       fromHeadId: ID!
       newPerspectives: [NewPerspectiveInput!]
       updates: [HeadUpdateInput!]

@@ -59,7 +59,7 @@ export class EveesHttp implements EveesRemote {
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
-    return EveesHelpers.snapDefaultPerspective(this);
+    return EveesHelpers.snapDefaultPerspective(this, undefined, context, timestamp, path);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {

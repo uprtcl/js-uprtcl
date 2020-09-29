@@ -310,7 +310,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async createPage(page: TextNode, remote: string) {
-    debugger;
     if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
 

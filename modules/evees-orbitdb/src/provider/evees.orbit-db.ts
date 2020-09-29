@@ -106,7 +106,13 @@ export class EveesOrbitDB implements EveesRemote {
     if (parentId !== undefined) {
       parentOwner = await this.accessControl.getOwner(parentId);
     }
-    const perspective = await EveesHelpers.snapDefaultPerspective(this, parentOwner);
+    const perspective = await EveesHelpers.snapDefaultPerspective(
+      this,
+      parentOwner,
+      context,
+      timestamp,
+      path
+    );
     perspective.casID = this.store.casID;
 
     return perspective;
