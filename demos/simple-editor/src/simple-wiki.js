@@ -76,9 +76,10 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     }
 
     if (window.location.href.includes('remoteHome=')) {
+      const randint = 0 + Math.floor((10000 - 0) * Math.random());
       const context = await hashObject({
         creatorId: '',
-        timestamp: 0
+        timestamp: randint
       });
 
       const remoteHome = {
