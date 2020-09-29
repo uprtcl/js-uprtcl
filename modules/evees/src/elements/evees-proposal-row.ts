@@ -12,6 +12,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { EveesHelpers } from '../graphql/evees.helpers';
 import { loadEntity } from '@uprtcl/multiplatform';
+import { Lens } from '@uprtcl/lenses';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -176,13 +177,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     `;
   }
 
-  render() {
-    if (this.loadingCreator) {
-      return html`
-        <div class=""><uprtcl-loading></uprtcl-loading></div>
-      `;
-    }
-
+  renderDefault() {
     return html`
       <div @click=${() => this.showProposalChanges()} class="row-container">
         <div class="proposal-name">
@@ -209,6 +204,23 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       </div>
       ${this.showDiff ? this.renderDiff() : ''}
     `;
+  }
+
+  render() {
+    if (this.loadingCreator) {
+      return html`
+        <div class=""><uprtcl-loading></uprtcl-loading></div>
+      `;
+    }
+
+    let renderDefault = true;
+    let lense: any = undefined;
+    if (this.remote && this.remote.proposals && this.remote.proposals.lense !== undefined) {
+      renderDefault = false;
+      lense = this.remote.proposals.lense as any;
+    }
+
+    return renderDefault ? this.renderDefault() : lense().render({ proposalId: this.proposalId });
   }
 
   static get styles() {

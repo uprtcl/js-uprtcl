@@ -109,7 +109,7 @@ export class PolkadotConnection extends Connection {
     const cid0 = head.substring(32, 64);
 
     const identityInfo = await this.getIdentityInfo(this.account);
-    const additional = identityInfo.additional;
+    const additional = identityInfo.additional ? identityInfo.additional : [];
 
     const currentIndexes = [
       additional.findIndex(entry => entry[0].Raw === keys[0]),

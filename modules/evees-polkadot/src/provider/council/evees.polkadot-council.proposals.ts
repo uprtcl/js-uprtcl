@@ -1,4 +1,5 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { html } from 'lit-element';
 
 import { ProposalsProvider, UpdateRequest } from '@uprtcl/evees';
 import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
@@ -6,6 +7,7 @@ import { CASStore } from '@uprtcl/multiplatform';
 import { EXPECTED_CONFIG, PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
 import { PolkadotConnection } from '../connection.polkadot';
+import { Lens } from '@uprtcl/lenses';
 
 export class ProposalsPolkadotCouncil implements ProposalsProvider {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
@@ -20,8 +22,6 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
 
   async createProposal(proposal: NewProposal): Promise<string> {
     await this.ready();
-    debugger;
-
     this.logger.info('createProposal()', { proposal });
 
     const updates = proposal.details.newPerspectives
@@ -93,5 +93,18 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
     await this.ready();
     return this.councilStore.getProposalsToPerspective(perspectiveId);
+  }
+
+  lense(): Lens {
+    return {
+      name: 'evees-polkadot:proposal',
+      type: 'proposal',
+      render: (entity: any) => {
+        return html`
+          <evees-polkadot-council-proposal proposal-id=${entity.proposalId}>
+          </evees-polkadot-council-proposal>
+        `;
+      }
+    };
   }
 }

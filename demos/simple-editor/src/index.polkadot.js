@@ -11,7 +11,8 @@ import {
   EveesPolkadotIdentity,
   EveesPolkadotCouncil,
   PolkadotIdentity,
-  PolkadotConnection
+  PolkadotConnection,
+  EveesPolkadotModule
 } from '@uprtcl/evees-polkadot';
 import {
   ProposalsOrbitDB,
@@ -78,7 +79,6 @@ import { env } from '../env';
   const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
-  // TODO: had to restore this or it wouldn't work. figure out why 2nd arg was removed
   const evees = new EveesModule([pkdEvees, pkdCouncilEvees]);
 
   const documents = new DocumentsModule();
@@ -90,14 +90,13 @@ import { env } from '../env';
     new CortexModule(),
     new DiscoveryModule([pkdEvees.casID]),
     new LensesModule(),
+    new EveesPolkadotModule(),
     evees,
     documents,
     wikis
   ];
 
   await orchestrator.loadModules(modules);
-
-  orchestrator.container.bind('official-connection').toConstantValue(pkdConnection);
 
   console.log(orchestrator);
   customElements.define('simple-wiki', SimpleWiki);
