@@ -6,8 +6,8 @@ import { PolkadotConnection } from '../connection.polkadot';
 import { EveesCouncilDB } from './dexie.council.store';
 
 import { CouncilData, DexieProposal, ProposalManifest, ProposalStatusCache } from './types';
-import { getProposalStatus, getIsValid, ProposalLogicQuorum } from './proposal.logic.quorum';
-import { ProposalConfig } from './proposal.config.types';
+import { ProposalLogicQuorum } from './proposal.logic.quorum';
+import { ProposalConfig, ProposalLogic } from './proposal.config.types';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 export const EXPECTED_CONFIG: ProposalConfig = {
@@ -40,55 +40,31 @@ export class PolkadotCouncilEveesStorage {
     }
   }
 
-  /** reads all the council datas and populate the DB */
-  async fetchCouncilDatas() {
-    const council = await this.connection.getCouncil();
-
-    await this.db.transaction('rw', [this.db.proposals], async () => {
-      await Promise.all(
-        council.map(async member => {
-          // get council data of member.
-          const head = await this.connection.getHead(member, COUNCIL_KEYS);
-          if (!head) return;
-
-          const data = (await this.store.get(head)) as CouncilData;
-          if (data.proposals !== undefined) {
-            data.proposals.map(async proposal => {
-              // store proposals of that member on my local db.
-              const mine = this.db.proposals.get(proposal.id);
-              if (mine === undefined) {
-                // if the proposal is new to me
-                if (proposal.blockEnd !== undefined) {
-                  // if closed, verify it and if valid, store it in local storage.
-                  const valid = await this.verifyProposal(proposal.id, proposal.blockEnd);
-                  if (valid) {
-                    proposal.verified = true;
-                    this.db.proposals.add(proposal);
-                  } else {
-                    this.logger.error(
-                      `proposal ${proposal.id} from council member ${member} is corrupted!`
-                    );
-                  }
-                } else {
-                  // if proposal not yet closed, see if it closed.
-                  const status = await this.computeStatus(proposal.id, this.connection.getLatestBlock());
-                  if (status !== ProposalStatus.P)
-                }
-              }
-            });
-          }
-        })
-      );
-    });
-  }
-
   /* council at is a constant function, can be cached */
   async getCouncil(at: number) {
     return this.connection.getCouncil(at);
   }
 
   async updateCouncilData(hash: string) {
-    return this.connection.updateHead(hash, COUNCIL_KEYS);
+    const newHash = await this.gossipProposals();
+    return this.connection.updateHead(newHash, COUNCIL_KEYS);
+  }
+
+  async gossipProposals() {
+    if (!this.connection.account) throw new Error('cant update data if not logged in');
+    // gossip consist on adding all new proposals to my own councilData object.
+    const head = await this.connection.getHead(this.connection.account, COUNCIL_KEYS);
+    const myCouncilData = head ? ((await this.store.get(head)) as CouncilData) : {};
+
+    const proposals = myCouncilData.proposals ? myCouncilData.proposals : [];
+    this.db.proposals.each(proposal => {
+      if (proposals.findIndex(myProposal => myProposal.id === proposal.id) === -1) {
+        proposals.push(proposal);
+      }
+    });
+
+    myCouncilData.proposals = [...proposals];
+    return this.store.create(myCouncilData);
   }
 
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
@@ -99,20 +75,17 @@ export class PolkadotCouncilEveesStorage {
   }
 
   /** check the proposal had enough votes at block */
-  async isApproved(proposalId: string, atBlock: number): Promise<any> {
+  async getProposalLogic(proposalId: string, atBlock: number): Promise<ProposalLogic> {
     const manifest = (await this.store.get(proposalId)) as ProposalManifest;
 
     if (manifest.config.duration !== EXPECTED_CONFIG.duration) {
-      this.logger.error(`unexpected duration ${manifest.config.duration}`);
-      return false;
+      throw new Error(`unexpected duration ${manifest.config.duration}`);
     }
     if (manifest.config.quorum !== EXPECTED_CONFIG.quorum) {
-      this.logger.error(`unexpected quorum ${manifest.config.quorum}`);
-      return false;
+      throw new Error(`unexpected quorum ${manifest.config.quorum}`);
     }
     if (manifest.config.thresehold !== EXPECTED_CONFIG.thresehold) {
-      this.logger.error(`unexpected thresehold ${manifest.config.thresehold}`);
-      return false;
+      throw new Error(`unexpected thresehold ${manifest.config.thresehold}`);
     }
 
     const council = await this.connection.getCouncil(manifest.block);
@@ -124,19 +97,74 @@ export class PolkadotCouncilEveesStorage {
       })
     );
 
-    const proposalLogic = new ProposalLogicQuorum(
+    return new ProposalLogicQuorum(
       manifest,
       memberVotes.map(memberVote => memberVote.value),
       atBlock
     );
-
-    return proposalLogic.isApproved();
   }
 
-  async verifyProposal(proposalId: string, atBlock: number): Promise<boolean> {
-    const status = await this.... WHAT !!! (proposalId, atBlock);
-    const isValid = getIsValid(status);
-    return isValid;
+  /** reads all the council datas and populate the DB */
+  async fetchCouncilDatas() {
+    const council = await this.connection.getCouncil();
+
+    await Promise.all(
+      council.map(async member => {
+        // get council data of member.
+        const head = await this.connection.getHead(member, COUNCIL_KEYS);
+        if (!head) return;
+
+        const data = (await this.store.get(head)) as CouncilData;
+        if (data.proposals !== undefined) {
+          data.proposals.map(async proposal => {
+            // store proposals of that member on my local db.
+            const mine = await this.db.proposals.get(proposal.id);
+
+            // if I have it and is verified, that's it.
+            if (mine && mine.blockEnd) return;
+
+            // if the proposal is new to me
+            if (proposal.blockEnd !== undefined) {
+              const logic = await this.getProposalLogic(proposal.id, proposal.blockEnd);
+              // if approved, verify it and if valid, store it in local storage.
+              if (logic.isApproved()) {
+                if (mine === undefined) {
+                  // if it's new to me
+                  this.db.proposals.add(proposal);
+                } else {
+                  // if I already had it, but not verified
+                  this.db.proposals.put(proposal, proposal.id);
+                }
+              } else {
+                this.logger.error(
+                  `Corrupt state for proposal ${proposal.id} comming from councile member ${member}`
+                );
+              }
+            } else {
+              // if proposal not yet closed, see if it is closed.
+              const logic = await this.getProposalLogic(
+                proposal.id,
+                await this.connection.getLatestBlock()
+              );
+              if (logic.isPending()) {
+                // add it as pending (with blockEnd undefined)
+                if (mine === undefined) {
+                  this.db.proposals.add(proposal);
+                } else {
+                  this.db.proposals.put(proposal, proposal.id);
+                }
+              } else {
+                this.logger.error(
+                  `Corrupt state for proposal ${proposal.id} comming from council member ${member}`
+                );
+              }
+            }
+          });
+        }
+      })
+    );
+
+    // after this promise, my local DB will be synched with data the rest of council members
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
@@ -149,21 +177,7 @@ export class PolkadotCouncilEveesStorage {
 
     const proposalsSorted = await proposals.sortBy('blockEnd');
 
-    /** check validity */
-    const validProposal = proposalsSorted.find(async proposal => {
-      if (proposal.verified) {
-        return true;
-      } else {
-        if (!proposal.blockEnd) return false;
-
-        const valid = await this.verifyProposal(proposal.id, proposal.blockEnd);
-        return valid;
-      }
-    });
-
-    if (!validProposal) return {};
-
-    const update = validProposal.updates.find(u => u.perspectiveId === perspectiveId);
+    const update = proposalsSorted[0].updates.find(u => u.perspectiveId === perspectiveId);
     return update ? { headId: update.newHeadId } : {};
   }
 
@@ -181,13 +195,19 @@ export class PolkadotCouncilEveesStorage {
       newCouncilData.proposals = [];
     }
 
-    const dexieProposal = await this.initDexieProposal(proposalId);
+    const dexieProposal: DexieProposal = {
+      id: proposalId,
+      toPerspectiveId: proposalManifest.toPerspectiveId,
+      updatedPerspectives: proposalManifest.updates.map(update => update.perspectiveId),
+      updates: proposalManifest.updates
+    };
 
     newCouncilData.proposals.push(dexieProposal);
     const newCouncilDataHash = await this.store.create(newCouncilData);
+
     await this.updateCouncilData(newCouncilDataHash);
 
-    /** cache this proposal for filtering */
+    /** cache this proposal on my localdb */
     await this.db.proposals.add(dexieProposal);
 
     return proposalId;
@@ -202,15 +222,9 @@ export class PolkadotCouncilEveesStorage {
     return proposals.map(p => p.id);
   }
 
-  async getProposalStatus(proposalId): Promise<ProposalStatusCache> {
-    /* check if already computed and verified */
+  async getProposal(proposalId): Promise<DexieProposal> {
     const proposal = await this.db.proposals.get(proposalId);
-    if (proposal && proposal.verified && proposal.status) {
-      return proposal.status;
-    }
-
-    /* not verified, maybe it's still open, 
-    maybe its the first time this peer see this proposal */
-    await this.verifyProposal(proposalId, await this.connection.getLatestBlock());
+    if (!proposal) throw new Error(`proposal ${proposalId} not on memory`);
+    return proposal;
   }
 }

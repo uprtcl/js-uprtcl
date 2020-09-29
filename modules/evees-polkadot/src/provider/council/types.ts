@@ -28,7 +28,6 @@ export interface DexieProposal {
   updatedPerspectives: string[]; // for indexing
   blockEnd?: number;
   updates: UpdateRequest[]; // not indexed
-  verified?: boolean; // not indexed
   status?: ProposalStatusCache;
 }
 
