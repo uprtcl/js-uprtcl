@@ -31,8 +31,8 @@ export class UprtclFormString extends LitElement {
     this.dispatchEvent(
       new CustomEvent('accept', {
         detail: {
-          value: this.newTitleEl.value,
-        },
+          value: this.newTitleEl.value
+        }
       })
     );
   }
@@ -40,19 +40,11 @@ export class UprtclFormString extends LitElement {
   render() {
     return html`
       <div class="form">
-        <uprtcl-textfield
-          skinny
-          id="text-input"
-          value=${this.fieldValue}
-          label=${this.fieldLabel}
-        >
+        <uprtcl-textfield skinny id="text-input" value=${this.fieldValue} label=${this.fieldLabel}>
         </uprtcl-textfield>
 
         <div class="icon-container">
-          <uprtcl-icon-button
-            icon=${this.cancelIcon}
-            @click=${this.cancelClick}
-          >
+          <uprtcl-icon-button icon=${this.cancelIcon} @click=${this.cancelClick} button>
           </uprtcl-icon-button>
         </div>
 
@@ -60,6 +52,7 @@ export class UprtclFormString extends LitElement {
           <uprtcl-icon-button
             @click=${this.acceptClick}
             icon=${this.loading ? 'loading' : this.acceptIcon}
+            button
           ></uprtcl-icon-button>
         </div>
       </div>

@@ -1185,9 +1185,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         ${this.showCommitMessage
           ? html`
               <uprtcl-textfield id="COMMIT_MESSAGE" label="Message"> </uprtcl-textfield>
-              <uprtcl-icon-button icon="clear" @click=${this.cancelCommitClicked}>
+              <uprtcl-icon-button icon="clear" @click=${this.cancelCommitClicked} button>
               </uprtcl-icon-button>
-              <uprtcl-icon-button icon="done" @click=${this.acceptCommitClicked}>
+              <uprtcl-icon-button icon="done" @click=${this.acceptCommitClicked} button>
               </uprtcl-icon-button>
             `
           : ''}

@@ -3,6 +3,7 @@ import { ProposalConfig, VoteValue } from './proposal.config.types';
 
 export interface Vote {
   proposalId: string;
+  member: string;
   value: VoteValue;
 }
 
@@ -46,5 +47,5 @@ export interface LocalProposal {
 
 export interface ProposalStatusCache {
   status: any;
-  votes: { member: string; value: VoteValue }[];
+  votes: Vote[];
 }

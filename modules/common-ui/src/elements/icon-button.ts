@@ -6,10 +6,18 @@ export class UprtclIconButton extends LitElement {
   @property({ type: String })
   icon!: string;
 
+  @property({ type: Boolean })
+  button: boolean = false;
+
   render() {
-    return html`<div class="button-filled-secondary icon-button-layout cursor">
-      ${icons[this.icon]}
-    </div>`;
+    const classes = ['icon-button-layout'].concat(
+      this.button ? ['button-filled-secondary', 'cursor'] : []
+    );
+    return html`
+      <div class=${classes.join(' ')}>
+        ${icons[this.icon]}
+      </div>
+    `;
   }
 
   static get styles() {
@@ -28,7 +36,7 @@ export class UprtclIconButton extends LitElement {
           justify-content: center;
           align-items: center;
         }
-      `,
+      `
     ];
   }
 }

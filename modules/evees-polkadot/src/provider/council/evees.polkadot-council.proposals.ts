@@ -14,9 +14,9 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
   private canProposeCache: boolean = false;
 
   constructor(
-    protected connection: PolkadotConnection,
-    protected councilStore: PolkadotCouncilEveesStorage,
-    protected store: CASStore
+    public connection: PolkadotConnection,
+    public councilStore: PolkadotCouncilEveesStorage,
+    public store: CASStore
   ) {}
 
   async ready(): Promise<void> {

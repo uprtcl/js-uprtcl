@@ -12,10 +12,10 @@ import {
   Secured
 } from '@uprtcl/evees';
 
-import { LocalProposal, ProposalManifest } from './types';
+import { LocalProposal, ProposalManifest, Vote } from './types';
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import { ProposalStatus } from './proposal.config.types';
+import { ProposalStatus, VoteValue } from './proposal.config.types';
 
 export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'proposal-id' })
@@ -30,10 +30,16 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   client!: ApolloClient<any>;
   remote!: EveesPolkadotCouncil;
 
-  proposalManifest!: ProposalManifest;
   recognizer!: PatternRecognizer;
   workspace!: EveesWorkspace;
   proposalStatus!: LocalProposal;
+  proposalManifest!: ProposalManifest;
+  proposalStatusUI!: {
+    status: ProposalStatus;
+    votedYes: Vote[];
+    votedNo: Vote[];
+    council: string[];
+  };
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -93,6 +99,22 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
 
   async loadProposalStatus() {
     this.proposalStatus = await this.remote.proposals.getProposalStatus(this.proposalId);
+
+    if (!this.proposalStatus.status) throw new Error('Vote status not found');
+
+    const status = this.proposalStatus.status;
+    const votedYes = status.votes.filter(vote => vote.value === VoteValue.Yes);
+    const votedNo = status.votes.filter(vote => vote.value === VoteValue.No);
+    const council = await this.remote.proposals.councilStore.getCouncil(
+      this.proposalManifest.block
+    );
+
+    this.proposalStatusUI = {
+      status: status.status,
+      votedYes,
+      votedNo,
+      council
+    };
   }
 
   showProposalDetails() {
@@ -101,7 +123,43 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
 
   renderProposalStatus() {
     return html`
-      <pre class="prop-value">${JSON.stringify(this.proposalStatus, undefined, 2)}</pre>
+      <div class="status-top">
+        <div class="status-status">${this.proposalStatusUI.status}</div>
+        <div>${this.proposalStatusUI.votedYes.length}/${this.proposalStatusUI.council.length}</div>
+        <div>
+          ${this.proposalStatusUI.council.length -
+            this.proposalStatusUI.votedYes.length -
+            this.proposalStatusUI.votedNo.length}
+          pending
+        </div>
+      </div>
+      <uprtcl-list
+        >${this.proposalStatusUI.votedYes.concat(this.proposalStatusUI.votedNo).map(vote => {
+          let icon: string;
+          switch (vote.value) {
+            case VoteValue.Yes:
+              icon = 'done';
+              break;
+            case VoteValue.No:
+              icon = 'clear';
+              break;
+
+            case VoteValue.Undefined:
+              icon = 'question';
+              break;
+
+            default:
+              throw new Error(`Unexpected vote value ${vote.value}`);
+          }
+
+          html`
+            <uprtcl-list-item
+              ><uprtcl-icon-button icon=${icon} button></uprtcl-icon-button
+              ><evees-author user-id=${vote.member} show-name></evees-author
+            ></uprtcl-list-item>
+          `;
+        })}</uprtcl-list
+      >
     `;
   }
 
