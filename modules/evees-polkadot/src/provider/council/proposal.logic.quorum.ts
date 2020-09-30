@@ -8,6 +8,10 @@ export class ProposalLogicQuorum implements ProposalLogic {
     protected time: number
   ) {}
 
+  getVotes() {
+    return this.votes;
+  }
+
   status() {
     if (this.time < this.manifest.block + this.manifest.config.duration) {
       return ProposalStatus.Pending;

@@ -17,7 +17,8 @@ export enum ProposalStatus {
 }
 
 export interface ProposalLogic {
-  isPending: () => boolean;
-  status: () => any;
-  isApproved: () => boolean;
+  isPending(): boolean;
+  status(): any;
+  isApproved(): boolean;
+  getVotes(): any[];
 }

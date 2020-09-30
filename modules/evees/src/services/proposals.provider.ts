@@ -13,4 +13,6 @@ export interface ProposalsProvider {
   updateProposal(proposalId: string, details: ProposalDetails): Promise<void>;
 
   lense?(): Lens;
+
+  canPropose(): Boolean;
 }

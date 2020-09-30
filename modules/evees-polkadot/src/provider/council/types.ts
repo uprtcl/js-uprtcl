@@ -7,7 +7,7 @@ export interface Vote {
 }
 
 export interface CouncilData {
-  proposals?: DexieProposal[];
+  proposals?: CouncilProposal[];
   votes?: Vote[];
 }
 
@@ -22,7 +22,20 @@ export interface ProposalManifest {
   config: ProposalConfig;
 }
 
-export interface DexieProposal {
+/* Council proposals are stored inside CouncilData 
+   Proposals are like "blocks", you only need
+   their hash, and a "mined" flag (blockEnd) in
+   this case to consider that proposal valid. */
+export interface CouncilProposal {
+  id: string;
+  blockEnd?: number;
+}
+
+/* LocalProposal proposals are stored on local storage,
+   they include further details about a proposal
+   that are not in the proposal manifest, and properties 
+   for indexing and filtering */
+export interface LocalProposal {
   id: string;
   toPerspectiveId: string;
   updatedPerspectives: string[]; // for indexing

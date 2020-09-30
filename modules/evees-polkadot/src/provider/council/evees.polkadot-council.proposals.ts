@@ -11,6 +11,7 @@ import { Lens } from '@uprtcl/lenses';
 
 export class ProposalsPolkadotCouncil implements ProposalsProvider {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
+  private canProposeCache: boolean = false;
 
   constructor(
     protected connection: PolkadotConnection,
@@ -18,7 +19,19 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
     protected store: CASStore
   ) {}
 
-  async ready(): Promise<void> {}
+  async ready(): Promise<void> {
+    await this.init();
+  }
+
+  async init() {
+    if (!this.connection.account) return false;
+    const council = await this.connection.getCouncil();
+    this.canProposeCache = council.includes(this.connection.account);
+  }
+
+  canPropose() {
+    return this.canProposeCache;
+  }
 
   async createProposal(proposal: NewProposal): Promise<string> {
     await this.ready();
@@ -106,5 +119,9 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
         `;
       }
     };
+  }
+
+  async getProposalStatus(proposalId: string) {
+    return this.councilStore.getProposalStatus(proposalId);
   }
 }

@@ -369,7 +369,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         toHeadId,
         workspace
       );
-      this.reloadChildren();
     }
 
     if (this.uref !== toPerspectiveId) {
