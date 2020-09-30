@@ -2,7 +2,7 @@ import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { Pattern, Entity, HasChildren, recognizeEntity } from '@uprtcl/cortex';
+import { Pattern, Entity, HasChildren, recognizeEntity, HasTitle } from '@uprtcl/cortex';
 import {
   MergeStrategy,
   mergeStrings,
@@ -80,7 +80,7 @@ export class WikiLinks
 
 @injectable()
 export class WikiCommon
-  implements HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
+  implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
   lenses = (wiki: Entity<Wiki>): Lens[] => {
     return [
       {
@@ -127,4 +127,6 @@ export class WikiCommon
       },
     ];
   };
+
+  title = (wiki: Entity<Wiki>) => wiki.object.title;
 }

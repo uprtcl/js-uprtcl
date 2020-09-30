@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@uprtcl/ethereum-provider": "^0.0.7-alpha.56",
+    "@uprtcl/cortex": "^0.0.7-alpha.56",
     "@uprtcl/evees": "^0.0.7-alpha.56",
     "@uprtcl/graphql": "^0.0.7-alpha.56",
     "@uprtcl/http-provider": "^0.0.7-alpha.56",
