@@ -37,8 +37,12 @@ const getCID = (info: IdentityInfo, keys: string[]): string | undefined => {
 export interface UserPerspectivesDetails {
   [perspectiveId: string]: {
     headId?: string;
-    context?: string;
   };
+}
+
+export interface TransactionReceipt {
+  hash: string;
+  block: number;
 }
 
 export class PolkadotConnection extends Connection {
@@ -102,7 +106,7 @@ export class PolkadotConnection extends Connection {
     return getCID(<IdentityInfo>identityInfo, keys);
   }
 
-  public async updateHead(head: string, keys: string[]) {
+  public async updateHead(head: string, keys: string[]): Promise<TransactionReceipt> {
     if (!this.account) throw new Error('cannot update identity if account not defined');
     // update evees entry
     const cid1 = head.substring(0, 32);
@@ -130,12 +134,15 @@ export class PolkadotConnection extends Connection {
 
     const result = this.api?.tx.identity.setIdentity(newIdentity);
     // TODO: Dont block here, cache value
-    await new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const unsub = await result?.signAndSend(<AddressOrPair>this?.account, result => {
         if (result.status.isInBlock) {
         } else if (result.status.isFinalized) {
           if (unsub) unsub();
-          resolve();
+          resolve({
+            hash: result.status.hash.toString(),
+            block: 1000
+          });
         }
       });
     });

@@ -39,6 +39,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     votedYes: Vote[];
     votedNo: Vote[];
     council: string[];
+    isCouncilMember: boolean;
   };
 
   async firstUpdated() {
@@ -97,6 +98,11 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.workspace.precacheNewPerspectives(this.client);
   }
 
+  async vote(value: VoteValue) {
+    await this.remote.proposals.vote(this.proposalId, value);
+    this.load();
+  }
+
   async loadProposalStatus() {
     this.proposalStatus = await this.remote.proposals.getProposalStatus(this.proposalId);
 
@@ -113,12 +119,22 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       status: status.status,
       votedYes,
       votedNo,
-      council
+      council,
+      isCouncilMember: this.remote.userId ? council.includes(this.remote.userId) : false
     };
   }
 
   showProposalDetails() {
     this.showDetails = true;
+  }
+
+  renderCouncilMember() {
+    return html`
+      <div>
+        <uprtcl-button @click=${() => this.vote(VoteValue.Yes)} icon="done">Approve</uprtcl-button>
+        <uprtcl-button @click=${() => this.vote(VoteValue.No)} icon="clear">Reject</uprtcl-button>
+      </div>
+    `;
   }
 
   renderProposalStatus() {
@@ -196,6 +212,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           <uprtcl-button icon=${'done'} skinny ?disabled=${false}>merge</uprtcl-button>
         </div>
         ${this.showDetails ? this.renderDetails() : ''}
+        ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
       </div>
     `;
   }

@@ -21,4 +21,5 @@ export interface ProposalLogic {
   status(): any;
   isApproved(): boolean;
   getVotes(): any[];
+  addVote(any): void;
 }
