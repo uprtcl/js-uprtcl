@@ -30,35 +30,38 @@ export class UprtclOptionsMenu extends LitElement {
         bubbles: true,
         composed: true,
         detail: {
-          key: key,
-        },
+          key: key
+        }
       })
     );
   }
 
   render() {
-    return html` <uprtcl-popper id="popper" icon=${this.icon}>
-      <slot name="icon" slot="icon"
-        ><uprtcl-icon-button icon=${this.icon}></uprtcl-icon-button
-      ></slot>
-      <uprtcl-list>
-        ${Object.keys(this.config).map((itemKey) => {
-          const item = this.config[itemKey];
-          return item.disabled !== undefined && item.disabled
-            ? html` <uprtcl-list-item graphic="icon" disabled>
-                <span>${item.text}</span>
-                <uprtcl-icon slot="graphic">${item.graphic}</uprtcl-icon>
-              </uprtcl-list-item>`
-            : html` <uprtcl-list-item
-                graphic="icon"
-                @click=${(e) => this.optionClicked(itemKey, e)}
-              >
-                <span>${item.text}</span>
-                <uprtcl-icon slot="graphic">${item.graphic}</uprtcl-icon>
-              </uprtcl-list-item>`;
-        })}
-      </uprtcl-list>
-    </uprtcl-popper>`;
+    return html`
+      <uprtcl-popper id="popper" icon=${this.icon}>
+        <slot name="icon" slot="icon"
+          ><uprtcl-icon-button icon=${this.icon} button></uprtcl-icon-button
+        ></slot>
+        <uprtcl-list>
+          ${Object.keys(this.config).map(itemKey => {
+            const item = this.config[itemKey];
+            return item.disabled !== undefined && item.disabled
+              ? html`
+                  <uprtcl-list-item graphic="icon" disabled>
+                    <span>${item.text}</span>
+                    <uprtcl-icon slot="graphic">${item.graphic}</uprtcl-icon>
+                  </uprtcl-list-item>
+                `
+              : html`
+                  <uprtcl-list-item graphic="icon" @click=${e => this.optionClicked(itemKey, e)}>
+                    <span>${item.text}</span>
+                    <uprtcl-icon slot="graphic">${item.graphic}</uprtcl-icon>
+                  </uprtcl-list-item>
+                `;
+          })}
+        </uprtcl-list>
+      </uprtcl-popper>
+    `;
   }
 
   static get styles() {

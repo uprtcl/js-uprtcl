@@ -7,8 +7,9 @@ import { Signed, Entity, PatternRecognizer, HasChildren } from '@uprtcl/cortex';
 import { CREATE_ENTITY, CREATE_PERSPECTIVE, UPDATE_HEAD } from './queries';
 import { EveesRemote } from '../services/evees.remote';
 import { Commit, EveesConfig, Perspective } from '../types';
-import { signObject } from '../utils/signed';
+import { deriveSecured, signObject } from '../utils/signed';
 import { EveesBindings } from '../bindings';
+import { hashObject } from '../utils/cid-hash';
 
 export interface CreateCommit {
   dataId: string;
@@ -48,26 +49,6 @@ export class EveesHelpers {
     });
     if (result.data.entity.head === undefined || result.data.entity.head == null) return undefined;
     return result.data.entity.head.id;
-  }
-
-  static async getPerspectiveContext(
-    client: ApolloClient<any>,
-    perspectiveId: string
-  ): Promise<string | undefined> {
-    const result = await client.query({
-      query: gql`
-        {
-          entity(uref: "${perspectiveId}") {
-            id
-            ... on Perspective {
-              context {
-                id
-              }
-            }
-          }
-        }`
-    });
-    return result.data.entity.context?.id;
   }
 
   static async getPerspectiveRemoteId(
@@ -267,6 +248,36 @@ export class EveesHelpers {
     }
 
     return false;
+  }
+
+  static async snapDefaultPerspective(
+    remote: EveesRemote,
+    creatorId?: string,
+    context?: string,
+    timestamp?: number,
+    path?: string
+  ) {
+    creatorId = creatorId ? creatorId : remote.userId ? remote.userId : '';
+    timestamp = timestamp ? timestamp : Date.now();
+
+    const defaultContext = await hashObject({
+      creatorId,
+      timestamp
+    });
+
+    context = context || defaultContext;
+
+    const object: Perspective = {
+      creatorId,
+      remote: remote.id,
+      path: path !== undefined ? path : remote.defaultPath,
+      timestamp,
+      context
+    };
+
+    const perspective = await deriveSecured<Perspective>(object, remote.store.cidConfig);
+    perspective.casID = remote.store.casID;
+    return perspective;
   }
 }
 

@@ -27,7 +27,9 @@ export class ContextAccessController extends IPFSAccessController {
         const forceBuffer = Uint8Array.from(result.value);
         const { payload: perspective } = CBOR.decode(forceBuffer.buffer) as Signed<Perspective>;
 
-        if (perspective.creatorId !== entry.identity.id) return false;
+        // TODO: context is now fixed, so this is a common reverse mapping store only
+        // Check this store is for this context. Should be simpler
+        // if (perspective.context !== this.db.context) return false;
 
         // check identity is valid
         return identityProvider.verifyIdentity(entry.identity);

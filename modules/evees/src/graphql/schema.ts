@@ -5,12 +5,7 @@ export const eveesTypeDefs: DocumentNode = gql`
   scalar Date
 
   extend type Mutation {
-    updatePerspectiveHead(
-      perspectiveId: ID!
-      headId: ID
-      context: String
-      name: String
-    ): Perspective!
+    updatePerspectiveHead(perspectiveId: ID!, headId: ID, name: String): Perspective!
 
     createEntity(object: JSON!, casID: ID): Entity!
 
@@ -20,7 +15,7 @@ export const eveesTypeDefs: DocumentNode = gql`
       creatorId: String
       timestamp: Date
       headId: ID
-      context: String!
+      context: String
       name: String
       canWrite: String
       parentId: String
@@ -38,13 +33,17 @@ export const eveesTypeDefs: DocumentNode = gql`
     addProposal(
       toPerspectiveId: ID!
       fromPerspectiveId: ID!
-      toHeadId: ID!
+      toHeadId: ID
       fromHeadId: ID!
       newPerspectives: [NewPerspectiveInput!]
       updates: [HeadUpdateInput!]
     ): UpdateProposal!
 
     executeProposal(proposalId: ID!, perspectiveId: ID!): UpdateProposal!
+  }
+
+  input ContextInput {
+    id: String!
   }
 
   type Context {
@@ -72,16 +71,17 @@ export const eveesTypeDefs: DocumentNode = gql`
     type: String
   }
 
-  input PerspectivePayload {
+  input PerspectivePayloadInput {
     remote: String
     path: String
     timestamp: Float
     creatorId: String
+    context: ContextInput
   }
 
   input PerspectiveEntityInput {
     proof: ProofInput
-    payload: PerspectivePayload
+    payload: PerspectivePayloadInput
   }
 
   input PerspectiveInput {
@@ -91,7 +91,6 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   input PerspectiveDetailsInput {
-    context: String
     name: String
     headId: String
   }
@@ -120,7 +119,6 @@ export const eveesTypeDefs: DocumentNode = gql`
   }
 
   type PerspectiveDetails {
-    context: String
     name: String
     headId: String
   }
@@ -154,7 +152,6 @@ export const eveesTypeDefs: DocumentNode = gql`
 
     head: Commit @discover
     name: String
-    context: Context
     payload: Payload
     proposals: [String!]
 
@@ -166,5 +163,6 @@ export const eveesTypeDefs: DocumentNode = gql`
     path: String
     creatorId: String
     timestamp: Date
+    context: Context
   }
 `;

@@ -71,17 +71,6 @@ export const getEthPerspectiveHead = async (uprtclRoot, perspectiveIdHash) => {
   };
 };
 
-export const getEthPerspectiveContext = async (uprtclDetails, perspectiveIdHash) => {
-  const filter = uprtclDetails.filters.PerspectiveDetailsSet(perspectiveIdHash, null);
-  const events = await uprtclDetails.queryFilter(filter, 0);
-
-  if (events.length === 0) return undefined;
-
-  const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber ? 1 : -1)).pop();
-
-  return last.args.context;
-};
-
 export interface ProposalDetails {
   toPerspectiveId: string;
   fromPerspectiveId: string;

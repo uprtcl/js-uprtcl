@@ -9,7 +9,8 @@ import {
   NewPerspectiveData,
   EveesRemote,
   ProposalsProvider,
-  deriveSecured
+  deriveSecured,
+  EveesHelpers
 } from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
@@ -20,7 +21,6 @@ const evees_if = 'evees-v0';
 // const timeout = 200;
 const defaultDetails: PerspectiveDetails = {
   name: '',
-  context: undefined,
   headId: undefined
 };
 
@@ -98,6 +98,7 @@ export class EveesOrbitDB implements EveesRemote {
 
   async snapPerspective(
     parentId?: string,
+    context?: string,
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
@@ -105,16 +106,13 @@ export class EveesOrbitDB implements EveesRemote {
     if (parentId !== undefined) {
       parentOwner = await this.accessControl.getOwner(parentId);
     }
-
-    const object: Perspective = {
-      creatorId: parentOwner ? parentOwner : this.userId ? this.userId : '',
-      remote: this.id,
-      path: path !== undefined ? path : this.defaultPath,
-      timestamp: timestamp ? timestamp : Date.now()
-    };
-
-    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
-
+    const perspective = await EveesHelpers.snapDefaultPerspective(
+      this,
+      parentOwner,
+      context,
+      timestamp,
+      path
+    );
     perspective.casID = this.store.casID;
 
     return perspective;
@@ -135,6 +133,16 @@ export class EveesOrbitDB implements EveesRemote {
     const perspectiveId = await this.persistPerspectiveEntity(secured);
 
     await this.updatePerspectiveInternal(perspectiveId, details, true);
+
+    /** register it for reverse mapping */
+    const contextStore = await this.orbitdbcustom.getStore(
+      EveesOrbitDBEntities.Context,
+      {
+        context: secured.object.payload.context
+      },
+      true
+    );
+    await contextStore.add(perspectiveId);
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
@@ -172,24 +180,6 @@ export class EveesOrbitDB implements EveesRemote {
       await perspectiveStore.add(newDetails);
     }
 
-    const contextChange = currentDetails.context !== newDetails.context;
-
-    if (contextChange && currentDetails.context) {
-      const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
-        context: currentDetails.context
-      });
-      await contextStore.delete(perspectiveId);
-    }
-    if (contextChange && newDetails.context) {
-      const contextStore = await this.orbitdbcustom.getStore(
-        EveesOrbitDBEntities.Context,
-        {
-          context: newDetails.context
-        },
-        pin
-      );
-      await contextStore.add(perspectiveId);
-    }
     this.logger.log('updatePerspective - done', { perspectiveId, details });
   }
 

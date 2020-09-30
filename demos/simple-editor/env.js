@@ -1,6 +1,6 @@
 const env = {
   entry: './src/index.polkadot.js',
-  officialRemote: 'polkadot',
+  officialRemote: 'evees-council',
   // entry: './src/index.orbitdb.js',
   // officialRemote: 'eth',
   pinner: {

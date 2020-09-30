@@ -26,7 +26,8 @@ import {
   EveesHelpers,
   deriveSecured,
   Perspective,
-  Secured
+  Secured,
+  hashObject
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { loadEntity, CASStore } from '@uprtcl/multiplatform';
@@ -178,7 +179,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
       if (this.editable === 'true') {
         editable = canWrite;
-        context = await EveesHelpers.getPerspectiveContext(this.client, entity.id);
         headId = await EveesHelpers.getPerspectiveHeadId(this.client, entity.id);
         dataId =
           headId !== undefined
@@ -379,11 +379,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remoteInstance}`);
 
+    const creatorId = remoteInstance.userId ? remoteInstance.userId : '';
+
+    const context = await hashObject({
+      creatorId,
+      timestamp: node.timestamp
+    });
+
     const perspective: Perspective = {
-      creatorId: remoteInstance.userId ? remoteInstance.userId : '',
+      creatorId,
       remote: remoteInstance.id,
       path: remoteInstance.defaultPath,
-      timestamp: node.timestamp
+      timestamp: node.timestamp,
+      context
     };
 
     return deriveSecured<Perspective>(perspective, remoteInstance.store.cidConfig);
@@ -510,7 +518,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: node.uref,
-        context: node.context,
         headId: commitId,
         message
       }
@@ -529,11 +536,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async createEvee(node: DocNode): Promise<string> {
-    const context =
-      node.parent && node.parent.context !== undefined
-        ? `${node.parent.context}_${Date.now().toString()}`
-        : Date.now().toString();
-
     if (node.remote === undefined) throw new Error('undefined remote for node');
 
     if (LOGINFO) this.logger.log('createEvee()', { node });
@@ -550,8 +552,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return EveesHelpers.createPerspective(this.client, remoteInstance, {
       creatorId: secured.object.payload.creatorId,
       timestamp: secured.object.payload.timestamp,
+      context: secured.object.payload.context,
       headId: commitId,
-      context,
       parentId: node.parent ? node.parent.uref : undefined
     });
   }
@@ -565,8 +567,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const hasDocNodeLenses = this.recognizer
       .recognizeBehaviours(draftForReco)
       .find(b => (b as HasDocNodeLenses).docNodeLenses);
-
-    const context = `${parent ? parent.context : 'ROOT'}-${ix}-${Date.now()}`;
 
     if (!hasChildren)
       throw new Error(`hasChildren not found for object ${JSON.stringify(draftForReco)}`);
@@ -594,7 +594,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       childrenNodes: [],
       hasChildren,
       hasDocNodeLenses,
-      context,
       editable: true,
       focused: false,
       timestamp: Date.now()
@@ -1188,9 +1187,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         ${this.showCommitMessage
           ? html`
               <uprtcl-textfield id="COMMIT_MESSAGE" label="Message"> </uprtcl-textfield>
-              <uprtcl-icon-button icon="clear" @click=${this.cancelCommitClicked}>
+              <uprtcl-icon-button icon="clear" @click=${this.cancelCommitClicked} button>
               </uprtcl-icon-button>
-              <uprtcl-icon-button icon="done" @click=${this.acceptCommitClicked}>
+              <uprtcl-icon-button icon="done" @click=${this.acceptCommitClicked} button>
               </uprtcl-icon-button>
             `
           : ''}

@@ -154,7 +154,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     if (this.entityType === EveesBindings.PerspectiveType) {
       const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
-      const context = await EveesHelpers.getPerspectiveContext(this.client, this.uref);
 
       const head = headId !== undefined ? await loadEntity<Commit>(this.client, headId) : undefined;
       const data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
@@ -164,7 +163,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.perspectiveData = {
         id: this.uref,
         details: {
-          context: context,
           headId: headId
         },
         perspective: (entity.object as Signed<Perspective>).payload,
@@ -371,7 +369,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         toHeadId,
         workspace
       );
-      this.reloadChildren();
     }
 
     if (this.uref !== toPerspectiveId) {
@@ -452,7 +449,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const newPerspectiveId = result.data.forkPerspective.id;
 
     this.dispatchEvent(
-      new CustomEvent('created-child-perspective', {
+      new CustomEvent('new-perspective-created', {
         detail: {
           oldPerspectiveId: this.uref,
           newPerspectiveId: newPerspectiveId
@@ -550,12 +547,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         <div class="prop-name"><h2>${this.entityType}</h2></div>
         ${this.entityType === EveesBindings.PerspectiveType
           ? html`
-              <div class="prop-name">perspective-id</div>
-              <pre class="prop-value">${JSON.stringify(this.perspectiveData.id)}</pre>
-
-              <div class="prop-name">context</div>
+              <div class="prop-name">perspective</div>
               <pre class="prop-value">
-${this.perspectiveData.details ? this.perspectiveData.details.context : 'undefined'}</pre
+${JSON.stringify(this.perspectiveData.perspective, undefined, 2)}</pre
               >
 
               <div class="prop-name">authority</div>

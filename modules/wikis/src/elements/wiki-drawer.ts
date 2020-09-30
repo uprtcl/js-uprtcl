@@ -96,7 +96,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   evessInfoPageEl!: EveesInfoPage;
 
   remote: string = '';
-  context: string | undefined = undefined;
   currentHeadId: string | undefined = undefined;
 
   protected client!: ApolloClient<any>;
@@ -111,9 +110,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    this.addEventListener('created-child-perspective', (e: any) => {
+    this.addEventListener('new-perspective-created', (e: any) => {
       const { oldPerspectiveId, newPerspectiveId } = e.detail;
-      this.replacePagePerspective(oldPerspectiveId, newPerspectiveId);
+      if (oldPerspectiveId !== this.uref) {
+        this.replacePagePerspective(oldPerspectiveId, newPerspectiveId);
+      }
     });
 
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -191,7 +192,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
-    const context = await EveesHelpers.getPerspectiveContext(this.client, this.uref);
 
     this.remote = perspective.object.payload.remote;
 
@@ -207,7 +207,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           ? canWrite
           : false
         : canWrite;
-    this.context = context;
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
@@ -281,6 +280,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async handlePageDrop(e) {
+    const wikiObject = this.wiki
+      ? this.wiki.object
+      : {
+          title: '',
+          pages: []
+        };
+
     const dragged = JSON.parse(e.dataTransfer.getData('text/plain'));
 
     this.logger.info('dropped', dragged);
@@ -291,7 +297,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const index = this.wiki.object.pages.length;
 
-    const result = await this.splicePages([dragged.uref], index, 0);
+    const result = await this.splicePages(wikiObject, [dragged.uref], index, 0);
 
     if (!result.entity) throw Error('problem with splice pages');
 
@@ -320,7 +326,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     });
     return EveesHelpers.createPerspective(this.client, remoteInstance, {
       headId,
-      context: `${this.context}_${Date.now()}`,
       parentId: this.uref
     });
   }
@@ -351,15 +356,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     if (ix === -1) return;
 
-    const result = await this.splicePages([newId], ix, 1);
+    const result = await this.splicePages(this.wiki.object, [newId], ix, 1);
     if (!result.entity) throw Error('problem with splice pages');
 
     await this.updateContent(result.entity);
   }
 
-  async splicePages(pages: any[], index: number, count: number) {
-    if (!this.wiki) throw new Error('wiki undefined');
-
+  async splicePages(wikiObject: Wiki, pages: any[], index: number, count: number) {
     const getPages = pages.map(page => {
       if (typeof page !== 'string') {
         return this.createPage(page, this.remote);
@@ -370,7 +373,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     const pagesIds = await Promise.all(getPages);
 
-    const newObject = { ...this.wiki.object };
+    const newObject = { ...wikiObject };
     const removed = newObject.pages.splice(index, count, ...pagesIds);
 
     return {
@@ -380,7 +383,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async newPage(index?: number) {
-    if (!this.wiki) return;
+    const wikiObject = this.wiki
+      ? this.wiki.object
+      : {
+          title: '',
+          pages: []
+        };
+
     this.creatingNewPage = true;
 
     const newPage: TextNode = {
@@ -389,9 +398,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       links: []
     };
 
-    index = index === undefined ? this.wiki.object.pages.length : index;
+    index = index === undefined ? wikiObject.pages.length : index;
 
-    const result = await this.splicePages([newPage], index, 0);
+    const result = await this.splicePages(wikiObject, [newPage], index, 0);
     if (!result.entity) throw Error('problem with splice pages');
 
     await this.updateContent(result.entity);
@@ -402,8 +411,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async movePage(fromIndex: number, toIndex: number) {
-    const { removed } = await this.splicePages([], fromIndex, 1);
-    const { entity } = await this.splicePages(removed as string[], toIndex, 0);
+    if (!this.wiki) throw new Error('wiki not defined');
+
+    const { removed } = await this.splicePages(this.wiki.object, [], fromIndex, 1);
+    const { entity } = await this.splicePages(this.wiki.object, removed as string[], toIndex, 0);
 
     await this.updateContent(entity);
 
@@ -421,7 +432,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async removePage(pageIndex: number) {
-    const { entity } = await this.splicePages([], pageIndex, 1);
+    if (!this.wiki) throw new Error('wiki not defined');
+
+    const { entity } = await this.splicePages(this.wiki.object, [], pageIndex, 1);
     await this.updateContent(entity);
 
     if (this.selectedPageIx === undefined) return;

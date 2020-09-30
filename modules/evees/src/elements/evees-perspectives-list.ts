@@ -65,18 +65,18 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           ... on Perspective {
             payload {
               remote
-            }
-            context {
-              id
-              perspectives {
+              context {
                 id
-                name
-                payload {
-                  creatorId
-                  timestamp
-                  remote
-                }
-              } 
+                perspectives {
+                  id
+                  name
+                  payload {
+                    creatorId
+                    timestamp
+                    remote
+                  }
+                } 
+              }
             }
           }
         }
@@ -85,10 +85,10 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
     /** data on other perspectives (proposals are injected on them) */
     this.perspectivesData =
-      result.data.entity.context === null
+      result.data.entity.payload.context === null
         ? []
         : await Promise.all(
-            result.data.entity.context.perspectives.map(
+            result.data.entity.payload.context.perspectives.map(
               async (perspective): Promise<PerspectiveData> => {
                 /** data on this perspective */
                 const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(

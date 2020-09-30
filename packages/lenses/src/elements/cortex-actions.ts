@@ -1,11 +1,4 @@
-import {
-  LitElement,
-  html,
-  property,
-  query,
-  PropertyValues,
-  css,
-} from 'lit-element';
+import { LitElement, html, property, query, PropertyValues, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect, Dictionary } from '@uprtcl/micro-orchestrator';
@@ -19,8 +12,7 @@ export class CortexActions extends moduleConnect(LitElement) {
   public hash!: string;
 
   @property({ type: String })
-  public toolbar: 'responsive' | 'none' | 'only-icon' | 'icon-text' =
-    'responsive';
+  public toolbar: 'responsive' | 'none' | 'only-icon' | 'icon-text' = 'responsive';
 
   @property({ type: Array })
   public actionTypesOrder: string[] | undefined;
@@ -38,9 +30,7 @@ export class CortexActions extends moduleConnect(LitElement) {
     this.actions = undefined;
     if (!this.hash) return;
 
-    const client: ApolloClient<any> = this.request(
-      ApolloClientModule.bindings.Client
-    );
+    const client: ApolloClient<any> = this.request(ApolloClientModule.bindings.Client);
 
     const result = await client.query({
       query: gql`
@@ -66,15 +56,14 @@ export class CortexActions extends moduleConnect(LitElement) {
           }
         }
       }
-      `,
+      `
     });
 
-    const actions: PatternAction[] =
-      result.data.entity._context.content._context.patterns.actions;
+    const actions: PatternAction[] = result.data.entity._context.content._context.patterns.actions;
 
     this.actions = {};
 
-    for (const action of actions.filter((iso) => !!iso)) {
+    for (const action of actions.filter(iso => !!iso)) {
       const type = action.type || '';
       if (!this.actions[type]) this.actions[type] = [];
 
@@ -101,7 +90,7 @@ export class CortexActions extends moduleConnect(LitElement) {
         .divider {
           opacity: 0.3;
         }
-      `,
+      `
     ];
   }
 
@@ -115,14 +104,14 @@ export class CortexActions extends moduleConnect(LitElement) {
     const actions = this.actions;
     if (!actions) return [];
 
-    return Object.keys(actions).map((key) => actions[key]);
+    return Object.keys(actions).map(key => actions[key]);
   }
 
   getMenuActions(): PatternAction[][] {
     const actions = this.actions;
     if (!actions) return [];
 
-    return Object.keys(actions).map((key) => actions[key]);
+    return Object.keys(actions).map(key => actions[key]);
   }
 
   getAllActions(): PatternAction[][] {
@@ -136,7 +125,7 @@ export class CortexActions extends moduleConnect(LitElement) {
       ${toolbarActions.map(
         (actionTypeList, index) => html`
           ${actionTypeList.map(
-            (action) => html`
+            action => html`
               <uprtcl-button
                 .icon=${action.icon}
                 .label=${this.t(action.title)}
@@ -145,7 +134,9 @@ export class CortexActions extends moduleConnect(LitElement) {
             `
           )}
           ${index < toolbarActions.length - 1
-            ? html` <span class="divider">|</span> `
+            ? html`
+                <span class="divider">|</span>
+              `
             : html``}
         `
       )}
@@ -159,22 +150,21 @@ export class CortexActions extends moduleConnect(LitElement) {
       ${toolbarActions.map(
         (actionTypeList, index) => html`
           ${actionTypeList.map(
-            (action) => html`
+            action => html`
               <uprtcl-icon-button
                 .icon=${action.icon}
                 label=${action.title}
                 @click=${() => this.actionClicked(action)}
+                button
               >
-                <uprtcl-tooltip
-                  .text=${action.title}
-                  showDelay="200"
-                  gap="5"
-                ></uprtcl-tooltip>
+                <uprtcl-tooltip .text=${action.title} showDelay="200" gap="5"></uprtcl-tooltip>
               </uprtcl-icon-button>
             `
           )}
           ${index < toolbarActions.length - 1
-            ? html` <span class="divider">|</span> `
+            ? html`
+                <span class="divider">|</span>
+              `
             : html``}
         `
       )}
@@ -191,18 +181,17 @@ export class CortexActions extends moduleConnect(LitElement) {
       <uprtcl-icon-button
         icon="more_vert"
         @click=${() => (this.menu.open = !this.menu.open)}
+        button
       ></uprtcl-icon-button>
 
       <uprtcl-menu id="menu">
         <uprtcl-list>
           ${menuActions.map(
-            (actionTypeList) =>
+            actionTypeList =>
               html`
                 ${actionTypeList.map(
-                  (action) => html`
-                    <uprtcl-list-item
-                      @click=${() => this.actionClicked(action)}
-                    >
+                  action => html`
+                    <uprtcl-list-item @click=${() => this.actionClicked(action)}>
                       <uprtcl-icon slot="graphic">${action.icon}</uprtcl-icon>
                       ${action.title}
                     </uprtcl-list-item>
@@ -232,7 +221,7 @@ export class CortexActions extends moduleConnect(LitElement) {
   }
 
   actionClicked(action: PatternAction) {
-    action.action((newContent) => {
+    action.action(newContent => {
       this.updateContent(newContent);
     });
   }
@@ -242,7 +231,7 @@ export class CortexActions extends moduleConnect(LitElement) {
       new CustomEvent('content-changed', {
         bubbles: true,
         composed: true,
-        detail: { newContent },
+        detail: { newContent }
       })
     );
   }

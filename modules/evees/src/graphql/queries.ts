@@ -60,7 +60,7 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
     $creatorId: String
     $timestamp: Date
     $headId: ID
-    $context: String!
+    $context: String
     $name: String
     $canWrite: String
     $parentId: String
@@ -89,6 +89,12 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
         remote
         path
         timestamp
+        context {
+          id
+          perspectives {
+            id
+          }
+        }
       }
     }
   }
@@ -132,7 +138,7 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
   mutation AddProposal(
     $toPerspectiveId: ID!
     $fromPerspectiveId: ID!
-    $toHeadId: ID!
+    $toHeadId: ID
     $fromHeadId: ID!
     $newPerspectives: [NewPerspectiveInput]!
     $updates: [HeadUpdateInput!]

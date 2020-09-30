@@ -9,19 +9,20 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import {
   EveesPolkadotIdentity,
+  EveesPolkadotCouncil,
   PolkadotIdentity,
   PolkadotConnection,
-  PolkadotContextStore,
-  PolkadotContextAccessController
+  EveesPolkadotModule
 } from '@uprtcl/evees-polkadot';
 import {
   ProposalsOrbitDB,
   ProposalStore,
   ProposalsToPerspectiveStore,
-  ProposalsAccessController
+  ProposalsAccessController,
+  ContextStore,
+  ContextAccessController
 } from '@uprtcl/evees-orbitdb';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
-import {} from '@uprtcl/evees-orbitdb';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -65,8 +66,8 @@ import { env } from '../env';
   const identity = new PolkadotIdentity(pkdConnection);
 
   const orbitDBCustom = new OrbitDBCustom(
-    [PolkadotContextStore, ProposalStore, ProposalsToPerspectiveStore],
-    [PolkadotContextAccessController, ProposalsAccessController],
+    [ContextStore, ProposalStore, ProposalsToPerspectiveStore],
+    [ContextAccessController, ProposalsAccessController],
     identity,
     pinnerUrl,
     ipfs
@@ -74,12 +75,11 @@ import { env } from '../env';
   await orbitDBCustom.ready();
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-
   const pkdEvees = new EveesPolkadotIdentity(pkdConnection, orbitDBCustom, ipfsStore, proposals);
+  const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
-  // TODO: had to restore this or it wouldn't work. figure out why 2nd arg was removed
-  const evees = new EveesModule([pkdEvees], pkdEvees);
+  const evees = new EveesModule([pkdEvees, pkdCouncilEvees]);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
@@ -90,14 +90,13 @@ import { env } from '../env';
     new CortexModule(),
     new DiscoveryModule([pkdEvees.casID]),
     new LensesModule(),
+    new EveesPolkadotModule(),
     evees,
     documents,
     wikis
   ];
 
   await orchestrator.loadModules(modules);
-
-  orchestrator.container.bind('official-connection').toConstantValue(pkdConnection);
 
   console.log(orchestrator);
   customElements.define('simple-wiki', SimpleWiki);

@@ -32,7 +32,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
     if (!this.isConnected) return;
 
     this.loadingProposals = true;
-
     this.logger.info('loadProposals');
 
     const result = await this.client.query({

@@ -1,5 +1,4 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { gql, ApolloClient } from 'apollo-boost';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Entity } from '@uprtcl/cortex';
@@ -34,11 +33,12 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
   newPages!: string[];
   deletedPages!: string[];
+  oldTitle: string = '';
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', {
       newData: this.newData,
-      oldData: this.oldData,
+      oldData: this.oldData
     });
 
     this.loadChanges();
@@ -47,12 +47,15 @@ export class WikiDiff extends moduleConnect(LitElement) {
   async loadChanges() {
     this.loading = true;
 
-    this.newPages = this.newData.object.pages.filter(
-      (page) => !this.oldData.object.pages.includes(page)
+    const oldPages = this.oldData ? this.oldData.object.pages : [];
+    this.oldTitle = this.oldData ? this.oldData.object.title : '';
+
+    this.newPages = this.newData.object.pages.filter(page =>
+      this.oldData ? !oldPages.includes(page) : true
     );
-    this.deletedPages = this.oldData.object.pages.filter(
-      (page) => !this.newData.object.pages.includes(page)
-    );
+    this.deletedPages = this.oldData
+      ? oldPages.filter(page => !this.newData.object.pages.includes(page))
+      : [];
 
     this.loading = false;
   }
@@ -79,55 +82,61 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html` <uprtcl-loading></uprtcl-loading> `;
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
     }
 
-    const titleChanged =
-      this.newData.object.title !== this.oldData.object.title;
+    const titleChanged = this.newData.object.title !== this.oldTitle;
 
     const newPages = this.newPages !== undefined ? this.newPages : [];
-    const deletedPages =
-      this.deletedPages !== undefined ? this.deletedPages : [];
+    const deletedPages = this.deletedPages !== undefined ? this.deletedPages : [];
 
     if (this.summary) {
       return html`
-        ${titleChanged ? html`<span class="">Title changed, </span>` : ''}
+        ${titleChanged
+          ? html`
+              <span class="">Title changed, </span>
+            `
+          : ''}
         ${newPages.length
-          ? html`<span>${newPages.length} new pages added,</span>`
+          ? html`
+              <span>${newPages.length} new pages added,</span>
+            `
           : ''}
         ${deletedPages.length
-          ? html`<span>${deletedPages.length} pages deleted.</span>`
+          ? html`
+              <span>${deletedPages.length} pages deleted.</span>
+            `
           : ''}
       `;
     }
 
     return html`
       ${titleChanged
-        ? html`<div class="pages-list">
-            <div class="page-list-title">New Title</div>
-            ${this.renderTitleChange(this.newData.object.title, [
-              'green-background',
-            ])}
-            ${this.renderTitleChange(this.oldData.object.title, [
-              'red-background',
-            ])}
-          </div>`
+        ? html`
+            <div class="pages-list">
+              <div class="page-list-title">New Title</div>
+              ${this.renderTitleChange(this.newData.object.title, ['green-background'])}
+              ${this.renderTitleChange(this.oldData.object.title, ['red-background'])}
+            </div>
+          `
         : ''}
       ${newPages.length > 0
-        ? html` <div class="pages-list">
-            <div class="page-list-title">Pages Added</div>
-            ${newPages.map((page) =>
-              this.renderPage(page, ['green-background'])
-            )}
-          </div>`
+        ? html`
+            <div class="pages-list">
+              <div class="page-list-title">Pages Added</div>
+              ${newPages.map(page => this.renderPage(page, ['green-background']))}
+            </div>
+          `
         : ''}
       ${deletedPages.length > 0
-        ? html` <div class="pages-list">
-            <div class="page-list-title">Pages Removed</div>
-            ${deletedPages.map((page) =>
-              this.renderPage(page, ['red-background'])
-            )}
-          </div>`
+        ? html`
+            <div class="pages-list">
+              <div class="page-list-title">Pages Removed</div>
+              ${deletedPages.map(page => this.renderPage(page, ['red-background']))}
+            </div>
+          `
         : ''}
     `;
   }

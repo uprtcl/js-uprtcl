@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule, EveesHelpers } from '@uprtcl/evees';
+import { EveesModule, EveesHelpers, deriveSecured, hashObject } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { env } from '../env';
@@ -61,7 +61,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     this.defaultRemoteId = defaultRemote.id;
 
     this.officalRemote = this.requestAll(EveesModule.bindings.EveesRemote).find(instance =>
-      instance.id.startsWith(env.officialRemote)
+      instance.id.includes(env.officialRemote)
     );
 
     // wait all remotes to be ready
@@ -73,6 +73,27 @@ export class SimpleWiki extends moduleConnect(LitElement) {
 
     if (window.location.href.includes('?id=')) {
       this.rootHash = window.location.href.split('id=')[1];
+    }
+
+    if (window.location.href.includes('remoteHome=')) {
+      const randint = 0 + Math.floor((10000 - 0) * Math.random());
+      const context = await hashObject({
+        creatorId: '',
+        timestamp: randint
+      });
+
+      const remoteHome = {
+        remote: this.officalRemote.id,
+        path: '',
+        creatorId: '',
+        timestamp: 0,
+        context: context
+      };
+
+      const perspective = await deriveSecured(remoteHome, this.officalRemote.store.cidConfig);
+      await this.officalRemote.store.create(perspective.object);
+
+      window.history.pushState('', '', `/?id=${perspective.id}`);
     }
 
     this.loading = false;

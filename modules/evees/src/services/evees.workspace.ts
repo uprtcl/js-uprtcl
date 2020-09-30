@@ -132,7 +132,6 @@ export class EveesWorkspace {
   public cacheInitPerspective(client: ApolloClient<any>, newPerspective: NewPerspectiveData) {
     const perspectiveId = newPerspective.perspective.id;
     const headId = newPerspective.details ? newPerspective.details.headId : undefined;
-    const context = newPerspective.details ? newPerspective.details.context : undefined;
     const object = newPerspective.perspective.object;
 
     client.cache.writeQuery({
@@ -141,9 +140,6 @@ export class EveesWorkspace {
           id
           ... on Perspective {
             head {
-              id
-            }
-            context {
               id
             }
           }
@@ -160,10 +156,6 @@ export class EveesWorkspace {
           head: {
             __typename: 'Commit',
             id: headId
-          },
-          context: {
-            __typename: 'Context',
-            id: context
           },
           _context: {
             __typename: 'EntityContext',

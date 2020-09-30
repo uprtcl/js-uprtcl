@@ -197,7 +197,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
     const pullButton = html`
       <div class="pull-menu">
-        <uprtcl-icon-button @click=${this.showPullChanges} icon="play_for_work">
+        <uprtcl-icon-button @click=${this.showPullChanges} icon="play_for_work" button>
         </uprtcl-icon-button>
       </div>
     `;

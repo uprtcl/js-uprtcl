@@ -1,6 +1,7 @@
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+import { EveesOrbitDBEntities } from '@uprtcl/evees-orbitdb';
 import { Signed } from '@uprtcl/cortex';
 
 import {
@@ -10,15 +11,17 @@ import {
   NewPerspectiveData,
   Secured,
   ProposalsProvider,
-  deriveSecured
+  deriveSecured,
+  hashObject,
+  EveesHelpers
 } from '@uprtcl/evees';
 
 import { PolkadotConnection, UserPerspectivesDetails } from './connection.polkadot';
 
 import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
-import { PolkadotEveesOrbitDBEntities } from '../custom-stores/orbitdb.stores';
 
 const evees_if = 'evees-identity';
+const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
 
 export class EveesPolkadotIdentity implements EveesRemote {
   logger: Logger = new Logger('EveesPolkadot');
@@ -31,7 +34,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
     public store: CASStore,
     public proposals: ProposalsProvider
   ) {
-    if (orbitdbcustom.getManifest(PolkadotEveesOrbitDBEntities.Context) === undefined) {
+    if (orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined) {
       throw new Error(
         'orbitdb custom must include the PolkadotEveesOrbitDBEntities.Context stores'
       );
@@ -53,6 +56,14 @@ export class EveesPolkadotIdentity implements EveesRemote {
 
   async ready(): Promise<void> {
     await Promise.all([this.store.ready()]);
+  }
+
+  async getUserPerspectivesDetailsHash(userId: string) {
+    return this.connection.getHead(userId, EVEES_KEYS);
+  }
+
+  async updateUserPerspectivesDetailsHash(head: string) {
+    return this.connection.updateHead(head, EVEES_KEYS);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
@@ -82,8 +93,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
     const currentDetails = newUserPerspectiveDetails[perspectiveId];
     // TODO: should this even be checked?
     newUserPerspectiveDetails[perspectiveId] = {
-      headId: details.headId ?? currentDetails?.headId,
-      context: details.context ?? currentDetails?.context
+      headId: details.headId ?? currentDetails?.headId
     };
 
     return newUserPerspectiveDetails;
@@ -98,13 +108,12 @@ export class EveesPolkadotIdentity implements EveesRemote {
     // TODO: move this as an optimization? createPerspective already has this
     const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
-    let userPerspectivesDetailsHash = await this.connection.getUserPerspectivesDetailsHash(
+    let userPerspectivesDetailsHash = await this.getUserPerspectivesDetailsHash(
       perspective.creatorId
     );
-    const userPerspectivesDetails =
-      userPerspectivesDetailsHash !== ''
-        ? ((await this.store.get(userPerspectivesDetailsHash)) as UserPerspectivesDetails)
-        : {};
+    const userPerspectivesDetails = userPerspectivesDetailsHash
+      ? ((await this.store.get(userPerspectivesDetailsHash)) as UserPerspectivesDetails)
+      : {};
 
     const userPerspectivesDetailsNew = await this.updateUserPerspectivesDetailsEntry(
       userPerspectivesDetails,
@@ -114,40 +123,13 @@ export class EveesPolkadotIdentity implements EveesRemote {
 
     const userPerspectivesDetailsHashNew = await this.store.create(userPerspectivesDetailsNew);
 
-    await this.connection.updateUserPerspectivesDetailsHash(userPerspectivesDetailsHashNew);
-
-    /** update the context store */
-    const currentDetails = userPerspectivesDetails[perspectiveId];
-
-    const currentContext = currentDetails?.context;
-    const newContext = details?.context;
-
-    // if the new context is not specify, the user wanted to leave the context untouched
-    if (newContext === undefined) return;
-    if (newContext === currentContext) return;
-
-    // remove the perspective from the previous contexg
-    if (currentContext !== undefined) {
-      const contextStore = await this.orbitdbcustom.getStore(PolkadotEveesOrbitDBEntities.Context, {
-        context: currentDetails.context
-      });
-      await contextStore.delete(perspectiveId);
-    }
-
-    // add the perspective to the new context
-    const contextStore = await this.orbitdbcustom.getStore(
-      PolkadotEveesOrbitDBEntities.Context,
-      {
-        context: newContext
-      },
-      pin
-    );
-    await contextStore.add(perspectiveId);
+    await this.updateUserPerspectivesDetailsHash(userPerspectivesDetailsHashNew);
   }
 
   /** set the parent owner as creatorId (and thus owner) */
   async snapPerspective(
     parentId?: string,
+    context?: string,
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
@@ -156,15 +138,13 @@ export class EveesPolkadotIdentity implements EveesRemote {
       parentOwner = await this.accessControl.getOwner(parentId);
     }
 
-    const object: Perspective = {
-      creatorId: parentOwner ? parentOwner : this.userId ? this.userId : '',
-      remote: this.id,
-      path: path !== undefined ? path : this.defaultPath,
-      timestamp: timestamp ? timestamp : Date.now()
-    };
-
-    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
-
+    const perspective = await EveesHelpers.snapDefaultPerspective(
+      this,
+      parentOwner,
+      context,
+      timestamp,
+      path
+    );
     perspective.casID = this.store.casID;
 
     return perspective;
@@ -183,6 +163,15 @@ export class EveesPolkadotIdentity implements EveesRemote {
     const perspectiveId = await this.persistPerspectiveEntity(secured);
     // await this.connection.updateUserPerspectivesDetailsHash()
     await this.updatePerspective(perspectiveId, details, true);
+
+    const contextStore = await this.orbitdbcustom.getStore(
+      EveesOrbitDBEntities.Context,
+      {
+        context: secured.object.payload.context
+      },
+      true
+    );
+    await contextStore.add(perspectiveId);
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
@@ -199,10 +188,10 @@ export class EveesPolkadotIdentity implements EveesRemote {
         throw new Error('unexpected canWrite');
     });
 
-    const userPerspectivesHash = await this.connection.getUserPerspectivesDetailsHash(owner);
-    const userPerspectives = (await this.store.get(
-      userPerspectivesHash
-    )) as UserPerspectivesDetails;
+    const userPerspectivesHash = await this.getUserPerspectivesDetailsHash(owner);
+    const userPerspectives = userPerspectivesHash
+      ? ((await this.store.get(userPerspectivesHash)) as UserPerspectivesDetails)
+      : {};
 
     let userPerspectivesNew;
 
@@ -218,14 +207,27 @@ export class EveesPolkadotIdentity implements EveesRemote {
 
     const userPerspectivesHashNew = await this.store.create(userPerspectivesNew);
 
-    await this.connection.updateUserPerspectivesDetailsHash(userPerspectivesHashNew);
+    await this.updateUserPerspectivesDetailsHash(userPerspectivesHashNew);
+
+    await Promise.all(
+      newPerspectivesData.map(async perspectiveData => {
+        const contextStore = await this.orbitdbcustom.getStore(
+          EveesOrbitDBEntities.Context,
+          {
+            context: perspectiveData.perspective.object.payload.context
+          },
+          true
+        );
+        return contextStore.add(perspectiveData.perspective.id);
+      })
+    );
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
     this.logger.log('getContextPerspectives', { context });
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    const contextStore = await this.orbitdbcustom.getStore(PolkadotEveesOrbitDBEntities.Context, {
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
       context
     });
     const perspectiveIds = [...contextStore.values()];
@@ -241,13 +243,12 @@ export class EveesPolkadotIdentity implements EveesRemote {
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
     const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
-    const userPerspectivesDetailsHash = await this.connection.getUserPerspectivesDetailsHash(
+    const userPerspectivesDetailsHash = await this.getUserPerspectivesDetailsHash(
       perspective.creatorId
     );
-    // TODO: this is empty?
-    const userPerspectivesDetails = (await this.store.get(
-      userPerspectivesDetailsHash
-    )) as UserPerspectivesDetails;
+    const userPerspectivesDetails = userPerspectivesDetailsHash
+      ? ((await this.store.get(userPerspectivesDetailsHash)) as UserPerspectivesDetails)
+      : {};
 
     return userPerspectivesDetails[perspectiveId];
   }

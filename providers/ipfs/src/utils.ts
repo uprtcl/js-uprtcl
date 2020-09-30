@@ -1,5 +1,5 @@
 export function sortObject(object: object): object {
-  if (typeof object !== 'object' || object instanceof Array) {
+  if (typeof object !== 'object' || object instanceof Array || object === null) {
     // Not to sort the array
     return object;
   }

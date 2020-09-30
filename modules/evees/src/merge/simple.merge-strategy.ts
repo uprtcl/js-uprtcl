@@ -50,7 +50,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
       EveesHelpers.getPerspectiveHeadId(this.client, id)
     );
     const [toHeadId, fromHeadId] = await Promise.all(promises);
-    if (fromHeadId === undefined) throw new Error('cannot merged undefined head');
+    if (fromHeadId === undefined) {
+      return toPerspectiveId;
+    }
 
     const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
