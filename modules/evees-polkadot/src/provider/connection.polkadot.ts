@@ -137,14 +137,16 @@ export class PolkadotConnection extends Connection {
 
     // TODO: Dont block here, cache value
     return new Promise(async (resolve, reject) => {
-      const unsub = await result?.signAndSend(<AddressOrPair>this?.account, result => {
+      const unsub = await result?.signAndSend(<AddressOrPair>this?.account, async result => {
         if (result.status.isInBlock) {
         } else if (result.status.isFinalized) {
           if (unsub) unsub();
           // TODO: resolve with the txHash and the blockNumber
+          const txHash = result.status.asFinalized.toHex(); // .toString() if string is needed
+          const blockData = await this.api?.rpc.chain.getBlock(txHash);
           resolve({
-            txHash: '',
-            blockNumber: 0
+            txHash,
+            blockNumber: <number>blockData?.block.header.number.toJSON()
           });
         }
       });
