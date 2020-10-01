@@ -7,6 +7,10 @@ const uprtcl_api: string = 'uprtcl-ac-v1';
 export class ProposalsHttp implements ProposalsProvider {
   constructor(protected provider: HttpProvider, protected evees: EveesHttp) {}
 
+  canPropose(): Boolean {
+    return true;
+  }
+
   async createProposal(proposal: NewProposal): Promise<string> {
     const result = await this.provider.post(`/proposal`, proposal);
     return result.elementIds[0];
