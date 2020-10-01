@@ -12,6 +12,10 @@ export class ProposalLogicQuorum implements ProposalLogic {
     return this.votes;
   }
 
+  addVote(vote) {
+    this.votes.push(vote);
+  }
+
   status() {
     if (this.time < this.manifest.block + this.manifest.config.duration) {
       return ProposalStatus.Pending;

@@ -2,14 +2,11 @@ import { html, fixture, expect } from '@open-wc/testing';
 import { waitUntil } from '@open-wc/testing-helpers';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
-import {
-  MicroOrchestrator,
-  i18nextBaseModule,
-} from '@uprtcl/micro-orchestrator';
+import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { CortexModule } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
-import { EveesModule, RemoteMap } from '@uprtcl/evees';
+import { EveesModule } from '@uprtcl/evees';
 
 import { DocumentsModule } from '../src/documents.module';
 import { MockStore } from './mocks/mock-store';
@@ -22,8 +19,8 @@ describe('<cortex-entity>', () => {
     QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN: {
       text: 'node1 content',
       type: TextType.Paragraph,
-      links: [],
-    },
+      links: []
+    }
   });
   let eveesProvider = new MockEveesProvider(
     {
@@ -31,9 +28,9 @@ describe('<cortex-entity>', () => {
         payload: {
           remote: 'local',
           creatorId: 'user1',
-          timestamp: 0,
+          timestamp: 0
         },
-        proof: { signature: '', type: '' },
+        proof: { signature: '', type: '' }
       },
       QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN: {
         payload: {
@@ -41,25 +38,23 @@ describe('<cortex-entity>', () => {
           timestamp: 0,
           message: 'commit message',
           parentsIds: [],
-          dataId: 'QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN',
+          dataId: 'QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN'
         },
         proof: {
           signature: '',
-          type: '',
-        },
-      },
+          type: ''
+        }
+      }
     },
     {
       Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw: {
-        headId: 'QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN',
-      },
+        headId: 'QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN'
+      }
     }
   );
 
   beforeEach(async () => {
     orchestrator = new MicroOrchestrator();
-
-    const remoteMap: RemoteMap = (eveesAuthority) => documentsProvider;
 
     await orchestrator.loadModules([
       new i18nextBaseModule(),
@@ -67,8 +62,8 @@ describe('<cortex-entity>', () => {
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
-      new EveesModule([eveesProvider], eveesProvider, remoteMap),
-      new DocumentsModule([documentsProvider]),
+      new EveesModule([eveesProvider]),
+      new DocumentsModule([documentsProvider])
     ]);
   });
 
@@ -76,9 +71,7 @@ describe('<cortex-entity>', () => {
     const el: HTMLElement = await fixture(
       html`
         <module-container
-          ><cortex-entity
-            uref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"
-          ></cortex-entity
+          ><cortex-entity uref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></cortex-entity
         ></module-container>
       `
     );
@@ -88,15 +81,10 @@ describe('<cortex-entity>', () => {
     expect(el).lightDom.to.equal(
       '<cortex-entity uref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></cortex-entity>'
     );
-    expect(cortexEntity).shadowDom.to.equal(
-      '<uprtcl-loading></uprtcl-loading>'
-    );
+    expect(cortexEntity).shadowDom.to.equal('<uprtcl-loading></uprtcl-loading>');
 
     await waitUntil(
-      () =>
-        !(cortexEntity.shadowRoot as ShadowRoot).querySelector(
-          'uprtcl-loading'
-        ),
+      () => !(cortexEntity.shadowRoot as ShadowRoot).querySelector('uprtcl-loading'),
       'Never stopped loading'
     );
 

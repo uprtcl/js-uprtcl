@@ -6,7 +6,7 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { Perspective, Commit, RemoteMap, EveesConfig } from '../types';
+import { Perspective, Commit, EveesConfig } from '../types';
 import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
 import { Secured, deriveEntity } from '../utils/cid-hash';
@@ -29,9 +29,7 @@ export class Evees {
     @inject(ApolloClientModule.bindings.Client)
     protected client: ApolloClient<any>,
     @inject(EveesBindings.Config)
-    protected config: EveesConfig,
-    @inject(EveesBindings.RemoteMap)
-    protected remoteMap: RemoteMap
+    protected config: EveesConfig
   ) {}
 
   /** Public functions */
@@ -243,11 +241,9 @@ export class Evees {
     if (!remoteInstance)
       throw new Error(`Could not find registered evees remote for remote with ID ${remote}`);
 
-    const store = this.remoteMap(remoteInstance, this.recognizer.recognizeType(data));
+    const newData = await deriveEntity(tempData.object, remoteInstance.store.cidConfig);
 
-    const newData = await deriveEntity(tempData.object, store.cidConfig);
-
-    newData.casID = store.casID;
+    newData.casID = remoteInstance.store.casID;
     workspace.create(newData);
 
     return newData.id;

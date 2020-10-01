@@ -2,15 +2,7 @@
 import 'reflect-metadata';
 
 /** Types */
-export {
-  Commit,
-  Perspective,
-  Context,
-  PerspectiveDetails,
-  RemoteMap,
-  HasDiffLenses,
-  DiffLens
-} from './types';
+export { Commit, Perspective, Context, PerspectiveDetails, HasDiffLenses, DiffLens } from './types';
 
 /** Services interfaces */
 export { EveesSource } from './services/evees.source';

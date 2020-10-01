@@ -39,6 +39,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     votedYes: Vote[];
     votedNo: Vote[];
     council: string[];
+    isCouncilMember: boolean;
   };
 
   async firstUpdated() {
@@ -97,6 +98,11 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.workspace.precacheNewPerspectives(this.client);
   }
 
+  async vote(value: VoteValue) {
+    await this.remote.proposals.vote(this.proposalId, value);
+    this.load();
+  }
+
   async loadProposalStatus() {
     this.proposalStatus = await this.remote.proposals.getProposalStatus(this.proposalId);
 
@@ -113,12 +119,29 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       status: status.status,
       votedYes,
       votedNo,
-      council
+      council,
+      isCouncilMember: this.remote.userId ? council.includes(this.remote.userId) : false
     };
   }
 
   showProposalDetails() {
     this.showDetails = true;
+  }
+
+  renderCouncilMember() {
+    return html`
+      <div class="row vote-row">
+        <uprtcl-button class="vote-btn" skinny @click=${() => this.vote(VoteValue.No)} icon="clear"
+          >Reject</uprtcl-button
+        >
+        <uprtcl-button
+          class="vote-btn vote-btn-approve"
+          @click=${() => this.vote(VoteValue.Yes)}
+          icon="done"
+          >Approve</uprtcl-button
+        >
+      </div>
+    `;
   }
 
   renderProposalStatus() {
@@ -174,6 +197,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           ></evees-author>
         </div>
         <evees-update-diff .workspace=${this.workspace}> </evees-update-diff>
+        ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
         ${this.renderProposalStatus()}
       </uprtcl-dialog>
     `;
@@ -231,6 +255,19 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       }
       .row evees-author {
         margin-left: 10px;
+      }
+
+      .vote-row {
+        justify-content: center;
+      }
+
+      .vote-btn {
+        width: 150px;
+        margin-left: 12px;
+      }
+
+      .vote-btn-approve {
+        --background-color: #01c03a;
       }
     `;
   }
