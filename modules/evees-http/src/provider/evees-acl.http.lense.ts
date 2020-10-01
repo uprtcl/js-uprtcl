@@ -6,7 +6,12 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesBindings, EveesHelpers, EveesRemote } from '@uprtcl/evees';
 import { HasTitle, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
-import { BasicAdminInheritedPermissions, BasicAdminPermissions, PermissionType, UserPermissions } from './types';
+import {
+  BasicAdminInheritedPermissions,
+  BasicAdminPermissions,
+  PermissionType,
+  UserPermissions
+} from './types';
 import { EveesHttp } from './evees.http';
 
 export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
@@ -37,7 +42,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   client!: ApolloClient<any>;
   remote!: EveesHttp;
 
-  delegatedTitle: string = "";
+  delegatedTitle: string = '';
 
   userPermissions!: Object[];
 
@@ -86,13 +91,13 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       ? await this.remote.accessControl.getPermissions(this.uref)
       : undefined;
 
-    await this.loadDelegatedTitle(); 
+    await this.loadDelegatedTitle();
 
     this.loading = false;
   }
 
   async loadDelegatedTitle() {
-    if (!this.permissions || !this.permissions.delegateTo) return
+    if (!this.permissions || !this.permissions.delegateTo) return;
 
     const delegatedUref = this.permissions.delegateTo;
 
@@ -102,7 +107,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       .find(b => (b as HasTitle).title);
 
     const title = hasTitle.title(data);
-    
+
     this.delegatedTitle = title;
   }
 
@@ -150,14 +155,14 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     }
 
     if (this.permissions.delegate) {
-      return this.permissions.effectivePermissions
-    }
-    
-    if (this.permissions.customPermissions) {
-      return this.permissions.customPermissions
+      return this.permissions.effectivePermissions;
     }
 
-    return this.permissions.effectivePermissions
+    if (this.permissions.customPermissions) {
+      return this.permissions.customPermissions;
+    }
+
+    return this.permissions.effectivePermissions;
   }
 
   async toggleDelegate() {
@@ -310,23 +315,27 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
           <div class="row flex-center">
             <evees-author user-id=${userPermission.userId}></evees-author>
 
-            ${this.permissions && !this.permissions.delegate ? html`
-              <uprtcl-options-menu
-                @option-click=${event => this.changeRole(userPermission.userId, event.detail.key)}
-                .config=${permissionListConfig}
-              >
-                <span class="user-permission" slot="icon">${userPermission.permission}</span>
-              </uprtcl-options-menu>
-            ` : html`
-              <span>${userPermission.permission}</span>
-            `}
-
-            ${this.permissions && !this.permissions.delegate ? html`
-              <uprtcl-button
-                icon="clear"
-                @click=${() => this.removeRole(userPermission.userId)}
-              ></uprtcl-button>
-            ` : ''}
+            ${this.permissions && !this.permissions.delegate
+              ? html`
+                  <uprtcl-options-menu
+                    @option-click=${event =>
+                      this.changeRole(userPermission.userId, event.detail.key)}
+                    .config=${permissionListConfig}
+                  >
+                    <span class="user-permission" slot="icon">${userPermission.permission}</span>
+                  </uprtcl-options-menu>
+                `
+              : html`
+                  <span>${userPermission.permission}</span>
+                `}
+            ${this.permissions && !this.permissions.delegate
+              ? html`
+                  <uprtcl-button
+                    icon="clear"
+                    @click=${() => this.removeRole(userPermission.userId)}
+                  ></uprtcl-button>
+                `
+              : ''}
           </div>
         `
       )}
@@ -369,54 +378,58 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
           <div class="container">
             ${this.permissions
               ? html`
-                <div class="row title">
-                  <strong>${this.t('access-control:owner')}:</strong>
-                  ${this.renderOwner()}
-                </div>
-
-                ${this.permissions.delegate ? html`
-                  <p>
-                    Permissions being delegated from: ${this.delegatedTitle}
-                  </p>
-                ` : ''}
-
-                <div class="row flex-center">
-
-                  <uprtcl-toggle
-                    icon=${this.getCorrespondingPermissions().publicWrite
-                      ? 'visibility'
-                      : 'visibility_off'}
-                    .active=${this.getCorrespondingPermissions().publicWrite}
-                    .disabled=${this.permissions.delegate}
-                    @toggle-click=${this.togglePublicWrite}
-                  >
-                    Public write
-                  </uprtcl-toggle>
-
-                  <uprtcl-toggle
-                    icon=${this.getCorrespondingPermissions().publicRead
-                      ? 'visibility'
-                      : 'visibility_off'}
-                    .active=${this.getCorrespondingPermissions().publicRead}
-                    .disabled=${this.permissions.delegate}
-                    @toggle-click=${this.togglePublicRead}
-                  >
-                    Public read
-                  </uprtcl-toggle>
-
-                  ${this.renderChangeDelegate()}
-                </div>
-
-                <div class="row">
-                  ${this.renderUserPermissionList()}
-                </div>
-
-                ${!this.permissions.delegate ? html`
-                  <div class="row">
-                    ${this.renderAddUserPermission()}
+                  <div class="row title">
+                    <strong>${this.t('access-control:owner')}:</strong>
+                    ${this.renderOwner()}
                   </div>
-                ` : ''}
-              ` : ''}
+
+                  ${this.permissions.delegate
+                    ? html`
+                        <p>
+                          Permissions being delegated from: ${this.delegatedTitle}
+                        </p>
+                      `
+                    : ''}
+
+                  <div class="row flex-center">
+                    <uprtcl-toggle
+                      icon=${this.getCorrespondingPermissions().publicWrite
+                        ? 'visibility'
+                        : 'visibility_off'}
+                      .active=${this.getCorrespondingPermissions().publicWrite}
+                      .disabled=${this.permissions.delegate}
+                      @toggle-click=${this.togglePublicWrite}
+                    >
+                      Public write
+                    </uprtcl-toggle>
+
+                    <uprtcl-toggle
+                      icon=${this.getCorrespondingPermissions().publicRead
+                        ? 'visibility'
+                        : 'visibility_off'}
+                      .active=${this.getCorrespondingPermissions().publicRead}
+                      .disabled=${this.permissions.delegate}
+                      @toggle-click=${this.togglePublicRead}
+                    >
+                      Public read
+                    </uprtcl-toggle>
+
+                    ${this.renderChangeDelegate()}
+                  </div>
+
+                  <div class="row">
+                    ${this.renderUserPermissionList()}
+                  </div>
+
+                  ${!this.permissions.delegate
+                    ? html`
+                        <div class="row">
+                          ${this.renderAddUserPermission()}
+                        </div>
+                      `
+                    : ''}
+                `
+              : ''}
           </div>
         `;
   }

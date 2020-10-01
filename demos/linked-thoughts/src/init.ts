@@ -4,10 +4,7 @@ import { EveesHttp, EveesHttpModule } from '@uprtcl/evees-http';
 
 import { HttpStore, HttpAuth0Provider } from '@uprtcl/http-provider';
 
-import {
-  MicroOrchestrator,
-  i18nextBaseModule,
-} from '@uprtcl/micro-orchestrator';
+import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { LensesModule } from '@uprtcl/lenses';
 import { DocumentsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
@@ -26,7 +23,7 @@ export const initUprtcl = async () => {
     version: 1,
     type: 'sha3-256',
     codec: 'raw',
-    base: 'base58btc',
+    base: 'base58btc'
   };
 
   const orchestrator = new MicroOrchestrator();
@@ -35,17 +32,14 @@ export const initUprtcl = async () => {
     domain: 'linked-thoughts-dev.eu.auth0.com',
     client_id: 'I7cwQfbSOm9zzU29Lt0Z3TjQsdB6GVEf',
     redirect_uri: `${window.location.origin}/homeBLYAT`,
-    cacheLocation: 'localstorage',
+    cacheLocation: 'localstorage'
   };
 
-  const httpProvider = new HttpAuth0Provider(
-    { host: c1host, apiId: 'evees-v1' },
-    auth0Config
-  );
+  const httpProvider = new HttpAuth0Provider({ host: c1host, apiId: 'evees-v1' }, auth0Config);
   const httpStore = new HttpStore(httpProvider, httpCidConfig);
   const httpEvees = new EveesHttp(httpProvider, httpStore);
 
-  const evees = new EveesModule([httpEvees], httpEvees);
+  const evees = new EveesModule([httpEvees]);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
@@ -60,7 +54,7 @@ export const initUprtcl = async () => {
       new EveesHttpModule(),
       evees,
       documents,
-      wikis,
+      wikis
     ]);
   } catch (e) {
     console.error('error loading modules', e);
