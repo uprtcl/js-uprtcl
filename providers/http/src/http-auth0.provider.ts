@@ -12,6 +12,8 @@ export class HttpAuth0Provider extends HttpProvider {
 
   account: string | undefined = undefined;
 
+  isParsingData = false;
+  
   auth0: Auth0Client;
 
   constructor(
@@ -24,6 +26,7 @@ export class HttpAuth0Provider extends HttpProvider {
   }
 
   async connect() {
+    /** check if HTTP currentUserId is available */
     const currentUserId = super.userId;
 
     if (currentUserId !== undefined) {
@@ -43,7 +46,7 @@ export class HttpAuth0Provider extends HttpProvider {
       }
     }
 
-    /** chech if HTTP authToken is available */
+    /** check if HTTP authToken is available */
     const currentToken = super.authToken;
 
     if (currentToken !== undefined) {
@@ -55,6 +58,15 @@ export class HttpAuth0Provider extends HttpProvider {
         super.authToken = undefined;
       }
     }
+
+    /** check if url has code and state to login */
+    const query = window.location.search;
+    const shouldParseResult =
+      query.includes('code=') && query.includes('state=');
+
+    if (shouldParseResult) {
+      await this.parseLoginResult();
+    }
   }
 
   async isLogged() {
@@ -64,8 +76,10 @@ export class HttpAuth0Provider extends HttpProvider {
 
   async logout(): Promise<void> {
     try {
+      const url = window.location.origin + '/home';
+      
       this.auth0.logout({
-        returnTo: window.location.origin,
+        returnTo: url,
       });
     } catch (err) {
       console.log('Log out failed', err);
@@ -76,10 +90,12 @@ export class HttpAuth0Provider extends HttpProvider {
   }
 
   async parseLoginResult() {
+    this.isParsingData = true;
     try {
       const result = await this.auth0.handleRedirectCallback();
 
       if (result.appState && result.appState.targetUrl) {
+        
         const user = await this.auth0.getUser();
         const auth0Claims = await this.auth0.getIdTokenClaims();
 
@@ -87,12 +103,18 @@ export class HttpAuth0Provider extends HttpProvider {
         super.authToken = 'Bearer ' + auth0Claims.__raw;
 
         const url = window.location.origin + window.location.pathname;
-
-        window.history.replaceState({}, document.title, url);
+        const targetUrl = result.appState.targetUrl;
+        
+        if(url === targetUrl) {
+          window.history.replaceState({}, document.title, url);
+        } else {
+          window.location.replace(targetUrl);
+        }
       }
     } catch (err) {
       console.log('Error parsing redirect:', err);
     }
+    this.isParsingData = false;
   }
 
   async makeLoginRedirect() {
@@ -103,7 +125,7 @@ export class HttpAuth0Provider extends HttpProvider {
         const url = window.location.origin + window.location.pathname;
 
         const options = {
-          redirect_uri: url,
+          redirect_uri: window.location.origin + '/home',
           appState: { targetUrl: url },
         };
 
@@ -119,10 +141,12 @@ export class HttpAuth0Provider extends HttpProvider {
     const shouldParseResult =
       query.includes('code=') && query.includes('state=');
 
-    if (shouldParseResult) {
-      this.parseLoginResult();
-    } else {
-      this.makeLoginRedirect();
+    if(!this.isParsingData) {
+      if (shouldParseResult) {
+        this.parseLoginResult();
+      } else {
+        this.makeLoginRedirect();
+      }
     }
   }
 
