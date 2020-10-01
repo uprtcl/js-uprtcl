@@ -17,10 +17,8 @@ import {
   EveesRemote,
   EveesModule,
   UPDATE_HEAD,
-  RemoteMap,
   eveeColor,
   ContentUpdatedEvent,
-  CREATE_PERSPECTIVE,
   CREATE_ENTITY,
   EveesDraftsLocal,
   EveesHelpers,
@@ -83,14 +81,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   // checkedOutPerspectivesStorageId!: string;
 
   protected eveesRemotes!: EveesRemote[];
-  protected remotesMap!: RemoteMap;
   protected recognizer!: PatternRecognizer;
 
   draftService = new EveesDraftsLocal();
 
   firstUpdated() {
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    this.remotesMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     if (!this.client) {
@@ -301,15 +297,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     };
   }
 
-  getStore(remote: string, type: string): CASStore {
-    if (!this.remotesMap) throw new Error('remotes config undefined');
-    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
-
-    if (!remoteInstance) throw new Error(`Could not find evees remote with remote ${remote}`);
-
-    return this.remotesMap(remoteInstance, type);
-  }
-
   hasChangesAll() {
     if (!this.doc) return false;
     return this.hasChangesRec(this.doc);
@@ -475,7 +462,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       id: '',
       object: content
     });
-    const store = this.getStore(remote, entityType);
+
+    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
+    const store = remoteInstance.store;
 
     const createTextNode = await this.client.mutate({
       mutation: CREATE_ENTITY,

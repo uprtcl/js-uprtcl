@@ -9,7 +9,6 @@ import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform'
 import { UprtclDialog } from '@uprtcl/common-ui';
 
 import {
-  RemoteMap,
   ProposalCreatedEvent,
   Perspective,
   PerspectiveDetails,
@@ -108,7 +107,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected remote!: EveesRemote;
   protected recognizer!: PatternRecognizer;
   protected cache!: EntityCache;
-  protected remoteMap!: RemoteMap;
   protected defaultRemote: EveesRemote | undefined = undefined;
 
   async firstUpdated() {
@@ -118,7 +116,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.evees = this.request(EveesBindings.Evees);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
-    this.remoteMap = this.request(EveesBindings.RemoteMap);
 
     if (this.defaultRemoteId !== undefined) {
       this.defaultRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(

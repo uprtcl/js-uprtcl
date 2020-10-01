@@ -6,7 +6,7 @@ import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Entity, Signed } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { UpdateRequest, Commit, RemoteMap } from '../types';
+import { UpdateRequest, Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
@@ -21,7 +21,6 @@ import { EveesHelpers } from '../graphql/evees.helpers';
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(
-    @inject(EveesBindings.RemoteMap) protected remoteMap: RemoteMap,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer)
     protected recognizer: PatternRecognizer,
@@ -164,7 +163,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const type = this.recognizer.recognizeType(ancestorData);
     const instance = this.evees.getRemote(remote);
 
-    const sourceRemote = this.remoteMap(instance, type);
+    const sourceRemote = instance.store;
 
     const entity = await deriveEntity(mergedData, sourceRemote.cidConfig);
     entity.casID = sourceRemote.casID;
