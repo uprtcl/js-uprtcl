@@ -133,10 +133,12 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async pin(address: string) {
-    fetch(`${this.pinnerUrl}/pin?address=${address}`, {
-      method: 'GET'
-    }).then(response => {
-      console.log(response);
-    });
+    if (this.pinnerUrl) {
+      fetch(`${this.pinnerUrl}/pin?address=${address}`, {
+        method: 'GET'
+      }).then(response => {
+        console.log(response);
+      });
+    }
   }
 }

@@ -10,39 +10,33 @@ This repo contains a set of tools and libraries to help develop \_Prtcl compatib
 
 Visit our [documentation](<(https://uprtcl.github.io/js-uprtcl)> "it's WIP, so contribution and feedback are much appreciated") to learn how to make your content-management app \_Prtcl-compatible.
 
-### Setup for development
+### Run demo (OrbitDB)
 
-Clone the project, and run:
+To run the demo configured to use OrbitDB
+
+Clone the project, configure lerna to work with our eb3-ready configuration and install all the dependencies:
 
 ```bash
+cp ./lerna.web3.json ./lerna.json
 npm install
 npm run bootstrap
 ```
 
-### Build all packages
-
-To build all packages, run:
+Build all packages (it takes as much as 5min):
 
 ```bash
 npm run build
 ```
 
-You might need to extend node memory allocation to build all packages using
+I you have memory issues while building you might need to extend node memory allocation to build all packages using
 
 ```
 export NODE_OPTIONS=--max-old-space-size=8192
 ```
 
-### Run demo
-
-To run the demo from `demos/simple-editor`. Chose which provider (type of backend) you want to test this demo at.
-
-If you don't knoe, our OrbitDB provider should be a good choice as it will work without having to run other services.
-
-To run the demo configured to use OrbitDB
+Once built, head into the demo folder and run it
 
 ```
-cp ./lerna.web3.json ./lerna.json
 cd demos/simple-editor
 cp ./env.orbitdb.js ./env.js
 npm run dev
@@ -51,6 +45,37 @@ npm run dev
 This will configure lerna to use the web3 compatible demo app, and replace `env.js` with the provided `env.orbitdb.js` file:
 
 Once running open http://localhost:8084.
+
+You can alo run the demo with other providers (Like Ethereum, Holochain or Kusama).
+
+### Run demo (Web2)
+
+Deploy the backend and run it locally. Then:
+
+```bash
+cp ./lerna.web2.json ./lerna.json
+npm install
+npm run bootstrap
+```
+
+Build all packages (it takes as much as 5min):
+
+```bash
+npm run build
+```
+
+I you have memory issues while building you might need to extend node memory allocation to build all packages using
+
+```
+export NODE_OPTIONS=--max-old-space-size=8192
+```
+
+Once built, head into the demo folder and run it
+
+```
+cd demos/linked-thoughts
+npm run dev
+```
 
 ### Hack the packages
 

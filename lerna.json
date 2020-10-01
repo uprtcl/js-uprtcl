@@ -1,0 +1,4 @@
+{
+  "packages": ["modules/*", "packages/*", "providers/*", "demos/linked-thoughts"],
+  "version": "0.0.7-alpha.56"
+}
