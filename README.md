@@ -1,20 +1,16 @@
-# \_Prtcl infrastructure monorepo
+# \_Prtcl
 
 [![](https://img.shields.io/npm/v/@uprtcl/micro-orchestrator)](https://www.npmjs.com/package/@uprtcl/micro-orchestrator)
 
-[![CircleCI](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop.svg?style=shield)](https://circleci.com/gh/uprtcl/js-uprtcl/tree/develop)
+This repo contains a set of tools and libraries to help develop \_Prtcl compatible web-applications.
 
-This repo contains a set of tools and libraries to help develop \_Prtcl compatible web-applications. It does so by implementing a full blown micro-frontend architecture, with pluggable and composable modules to build whole SPAs from simple slices of functionality.
+\_Prtcl web-applications are content management applications that work eith Evees (GIT-like entities) and are built aroud reusable content rendering and manipulation modules.
 
 > Important: these packages are under heavy development, with alpha release. Expect breaking changes.
 
-## Documentation
+Visit our [documentation](<(https://uprtcl.github.io/js-uprtcl)> "it's WIP, so contribution and feedback are much appreciated") to learn how to make your content-management app \_Prtcl-compatible.
 
-To learn about \_Prtcl and how to use the packages in this repository, visit our [specification](https://github.com/uprtcl/spec) and our [documentation site](https://uprtcl.github.io/js-uprtcl) (it's WIP, so contribution and feedback are much appreciated).
-
-## Setup for development
-
-### Usage
+### Setup for development
 
 Clone the project, and run:
 
@@ -31,84 +27,36 @@ To build all packages, run:
 npm run build
 ```
 
-### Run tests
+You might need to extend node memory allocation to build all packages using
 
-To run the tests from all packages, run:
-
-```bash
-npm test
+```
+export NODE_OPTIONS=--max-old-space-size=8192
 ```
 
 ### Run demo
 
-To run the demo from `demo/simple-editor`:
+To run the demo from `demos/simple-editor`. Chose which provider (type of backend) you want to test this demo at.
 
-1. Run the [ethereum provider](https://github.com/uprtcl/eth-uprtcl) in the background.
-2. Run the [http provider](https://github.com/uprtcl/js-uprtcl-server) in the background.
-3. Run `npm run dev` in the root folder of this repository.
+If you don't knoe, our OrbitDB provider should be a good choice as it will work without having to run other services.
 
-And go to http://localhost:8080. Refer to [simple-editor](https://github.com/uprtcl/js-uprtcl/tree/develop/demos/simple-editor) for more advanced instructions.
+To run the demo configured to use OrbitDB
 
-## Packages
+```
+cp ./lerna.web3.json ./lerna.json
+cd demos/simple-editor
+cp ./env.orbitdb.js ./env.js
+npm run dev
+```
 
-### [Micro-orchestrator](https://github.com/uprtcl/js-uprtcl/tree/master/packages/micro-orchestrator)
+This will configure lerna to use the web3 compatible demo app, and replace `env.js` with the provided `env.orbitdb.js` file:
 
-Orchestrates micro modules in one single web application, following the micro-frontend pattern. Manages the dependencies between modules.
+Once running open http://localhost:8084.
 
-### [Cortex](https://github.com/uprtcl/js-uprtcl/tree/master/packages/cortex)
+### Hack the packages
 
-Base modules that make up the Cortex framework, its building blocks and controllers.
+If you want to change the code of one of our packages and have hot reload on the demo app run:
 
-### [Multiplatform](https://github.com/uprtcl/js-uprtcl/tree/master/packages/multiplatform)
-
-Implements services, apollo directives and interfaces that allow your application to consume data from different (de)centralized technologies.
-
-### [Lenses](https://github.com/uprtcl/js-uprtcl/tree/master/packages/lenses)
-
-Implements a basic Cortex rendering engine to reinterpret the data together with Cortex patterns.
-
-### [GraphQl](https://github.com/uprtcl/js-uprtcl/tree/master/packages/graphql)
-
-Provides modules to integrate `ApolloClient` in your \_Prtcl applications.
-
-### [Redux](https://github.com/uprtcl/js-uprtcl/tree/master/packages/redux)
-
-Provides modules to integrate `redux` in your \_Prtcl applications.
-
-## Providers
-
-These packages provide convenience classes and wrappers around different (de)centralized web technologies so that micro modules can consume them easily.
-
-These services include standard funcionality like a retry mechanism, or a `ready()` function to wait for them to be ready.
-
-### [Holochain](https://github.com/uprtcl/js-uprtcl/tree/master/providers/holochain)
-
-\_Prtcl provider wrappers around @holochain/hc-web-client.
-
-### [Ipfs](https://github.com/uprtcl/js-uprtcl/tree/master/providers/ipfs)
-
-\_Prtcl provider wrappers around ipfs-http-client.
-
-### [Ethereum](https://github.com/uprtcl/js-uprtcl/tree/master/providers/ethereum)
-
-\_Prtcl provider wrappers around web3.
-
-### [Http](https://github.com/uprtcl/js-uprtcl/tree/master/providers/http)
-
-\_Prtcl provider wrappers around the native `fetch` API.
-
-## Modules
-
-These are application modules compatible with `micro-orchestrator` that define patterns, lenses and services that can work together to create, interpret and share different kind of objects.
-
-### [Evees](https://github.com/uprtcl/js-uprtcl/tree/master/modules/evees)
-
-Implements version control for any kind of content addressable object, with different perspectives (branches in git), and proposals to update those perspectives.
-
-### [Documents](https://github.com/uprtcl/js-uprtcl/tree/master/modules/documents)
-
-Implements documents and folders that can be updated with evees and rendered with cortex.
-
-### [Wikis](https://github.com/uprtcl/js-uprtcl/tree/master/modules/wikis)
-
-Implements wikis that can be updated with evees and rendered with cortex.
+```
+cd [some package folder]
+npm run dev
+```
