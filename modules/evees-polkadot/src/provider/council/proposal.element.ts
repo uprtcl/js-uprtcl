@@ -130,9 +130,16 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
 
   renderCouncilMember() {
     return html`
-      <div>
-        <uprtcl-button @click=${() => this.vote(VoteValue.Yes)} icon="done">Approve</uprtcl-button>
-        <uprtcl-button @click=${() => this.vote(VoteValue.No)} icon="clear">Reject</uprtcl-button>
+      <div class="row vote-row">
+        <uprtcl-button class="vote-btn" skinny @click=${() => this.vote(VoteValue.No)} icon="clear"
+          >Reject</uprtcl-button
+        >
+        <uprtcl-button
+          class="vote-btn vote-btn-approve"
+          @click=${() => this.vote(VoteValue.Yes)}
+          icon="done"
+          >Approve</uprtcl-button
+        >
       </div>
     `;
   }
@@ -190,6 +197,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           ></evees-author>
         </div>
         <evees-update-diff .workspace=${this.workspace}> </evees-update-diff>
+        ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
         ${this.renderProposalStatus()}
       </uprtcl-dialog>
     `;
@@ -212,7 +220,6 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           <uprtcl-button icon=${'done'} skinny ?disabled=${false}>merge</uprtcl-button>
         </div>
         ${this.showDetails ? this.renderDetails() : ''}
-        ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
       </div>
     `;
   }
@@ -248,6 +255,19 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       }
       .row evees-author {
         margin-left: 10px;
+      }
+
+      .vote-row {
+        justify-content: center;
+      }
+
+      .vote-btn {
+        width: 150px;
+        margin-left: 12px;
+      }
+
+      .vote-btn-approve {
+        --background-color: #01c03a;
       }
     `;
   }

@@ -114,7 +114,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async isLogged() {
-    return false;
+    return this.userId !== undefined;
   }
 
   async login(): Promise<void> {

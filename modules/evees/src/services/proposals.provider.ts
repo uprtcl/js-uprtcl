@@ -14,5 +14,5 @@ export interface ProposalsProvider {
 
   lense?(): Lens;
 
-  canPropose(): Boolean;
+  canPropose(perspectiveId?: string): Boolean;
 }

@@ -7,7 +7,7 @@ import { EveesCouncilDB } from './dexie.council.store';
 
 import { CouncilData, CouncilProposal, LocalProposal, ProposalManifest, Vote } from './types';
 import { ProposalLogicQuorum } from './proposal.logic.quorum';
-import { ProposalConfig, ProposalLogic, ProposalStatus } from './proposal.config.types';
+import { ProposalConfig, ProposalLogic, ProposalStatus, VoteValue } from './proposal.config.types';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 export const EXPECTED_CONFIG: ProposalConfig = {
@@ -73,7 +73,7 @@ export class PolkadotCouncilEveesStorage {
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
     block = block || (await this.db.meta.get('block'));
     const head = await this.connection.getHead(member, COUNCIL_KEYS, block);
-    if (head === undefined) return {};
+    if (!head) return {};
     const councilData = await this.store.get(head);
     return councilData ? councilData : {};
   }
@@ -308,7 +308,10 @@ export class PolkadotCouncilEveesStorage {
     return proposal;
   }
 
-  async vote(proposalId: string, vote: any) {
+  async vote(proposalId: string, value: VoteValue) {
+    if (!this.connection.account) throw new Error(`cant vote if not logged in`);
+    debugger;
+
     const proposal = await this.db.proposals.get(proposalId);
     if (!proposal) throw new Error(`proposal not found ${proposalId}`);
 
@@ -317,12 +320,17 @@ export class PolkadotCouncilEveesStorage {
 
     /** as far as I know, this proposal is pending, so cast my vote and mine it */
     /** add it to my CouncilData */
+    const vote: Vote = {
+      member: this.connection.account,
+      proposalId,
+      value
+    };
     const newCouncilData = await this.addVoteToCouncilData(vote);
     const newCouncilDataHash = await this.store.create(newCouncilData);
     const tx = await this.updateCouncilData(newCouncilDataHash);
 
     /** update local data to the block my vote was mined */
-    await this.fetchCouncilDatas(tx.block);
+    await this.fetchCouncilDatas(tx.blockNumber);
 
     /** now verify the proposal status */
     const atAfter = await this.db.meta.get('block');

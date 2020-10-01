@@ -41,8 +41,8 @@ export interface UserPerspectivesDetails {
 }
 
 export interface TransactionReceipt {
-  hash: string;
-  block: number;
+  txHash: string;
+  blockNumber: number;
 }
 
 export class PolkadotConnection extends Connection {
@@ -100,7 +100,7 @@ export class PolkadotConnection extends Connection {
 
   public async getHead(userId: string, keys: string[], atBlock?: number) {
     if (atBlock !== undefined) {
-      this.logger.error('cant get idenity at block yet... ups');
+      this.logger.warn('cant get idenity at block yet... ups');
     }
     const identityInfo = await this.getIdentityInfo(userId);
     return getCID(<IdentityInfo>identityInfo, keys);
@@ -132,16 +132,19 @@ export class PolkadotConnection extends Connection {
       additional: [...additional]
     };
 
-    const result = this.api?.tx.identity.setIdentity(newIdentity);
+    if (!this.api) throw new Error('api undefined');
+    const result = this.api.tx.identity.setIdentity(newIdentity);
+
     // TODO: Dont block here, cache value
     return new Promise(async (resolve, reject) => {
       const unsub = await result?.signAndSend(<AddressOrPair>this?.account, result => {
         if (result.status.isInBlock) {
         } else if (result.status.isFinalized) {
           if (unsub) unsub();
+          // TODO: resolve with the txHash and the blockNumber
           resolve({
-            hash: result.status.hash.toString(),
-            block: 1000
+            txHash: '',
+            blockNumber: 0
           });
         }
       });
