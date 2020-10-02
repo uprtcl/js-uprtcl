@@ -76,7 +76,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     path: String
     timestamp: Float
     creatorId: String
-    context: ContextInput
+    context: String
   }
 
   input PerspectiveEntityInput {
