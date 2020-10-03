@@ -334,7 +334,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
     const headId = await EveesHelpers.createCommit(this.client, remote.store, {
       dataId,
-      parentsIds: [this.currentHeadId ? this.currentHeadId : '']
+      parentsIds: this.currentHeadId ? [this.currentHeadId] : undefined
     });
     await EveesHelpers.updateHead(this.client, this.uref, headId);
 
