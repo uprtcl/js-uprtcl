@@ -27,6 +27,9 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   @property({ attribute: false })
   showDetails: boolean = false;
 
+  @property({ attribute: false })
+  voting: boolean = false;
+
   client!: ApolloClient<any>;
   remote!: EveesPolkadotCouncil;
 
@@ -35,9 +38,10 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   proposalStatus!: LocalProposal;
   proposalManifest!: ProposalManifest;
   proposalStatusUI!: {
-    status: ProposalStatus;
-    votedYes: Vote[];
-    votedNo: Vote[];
+    status: {
+      status: ProposalStatus;
+      votes: Vote[];
+    };
     council: string[];
     isCouncilMember: boolean;
   };
@@ -99,8 +103,10 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   }
 
   async vote(value: VoteValue) {
+    this.voting = true;
     await this.remote.proposals.vote(this.proposalId, value);
-    this.load();
+    await this.load();
+    this.voting = false;
   }
 
   async loadProposalStatus() {
@@ -109,16 +115,12 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     if (!this.proposalStatus.status) throw new Error('Vote status not found');
 
     const status = this.proposalStatus.status;
-    const votedYes = status.votes.filter(vote => vote.value === VoteValue.Yes);
-    const votedNo = status.votes.filter(vote => vote.value === VoteValue.No);
     const council = await this.remote.proposals.councilStore.getCouncil(
       this.proposalManifest.block
     );
 
     this.proposalStatusUI = {
-      status: status.status,
-      votedYes,
-      votedNo,
+      status: status,
       council,
       isCouncilMember: this.remote.userId ? council.includes(this.remote.userId) : false
     };
@@ -129,35 +131,55 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   }
 
   renderCouncilMember() {
+    const vote = this.proposalStatusUI.status.votes.find(
+      vote => vote.member === this.remote.userId
+    );
+
     return html`
       <div class="row vote-row">
-        <uprtcl-button class="vote-btn" skinny @click=${() => this.vote(VoteValue.No)} icon="clear"
-          >Reject</uprtcl-button
-        >
-        <uprtcl-button
-          class="vote-btn vote-btn-approve"
-          @click=${() => this.vote(VoteValue.Yes)}
-          icon="done"
-          >Approve</uprtcl-button
-        >
+        ${this.voting
+          ? html`
+              <uprtcl-loading>Please dont close your tab</uprtcl-loading>
+            `
+          : vote
+          ? html`
+              <uprtcl-status>${vote.value}</uprtcl-status>
+            `
+          : html`
+              <uprtcl-button
+                class="vote-btn"
+                skinny
+                @click=${() => this.vote(VoteValue.No)}
+                icon="clear"
+                >Reject</uprtcl-button
+              >
+              <uprtcl-button
+                class="vote-btn vote-btn-approve"
+                @click=${() => this.vote(VoteValue.Yes)}
+                icon="done"
+                >Approve</uprtcl-button
+              >
+            `}
       </div>
     `;
   }
 
   renderProposalStatus() {
+    const votedYes = this.proposalStatusUI.status.votes.filter(
+      vote => vote.value === VoteValue.Yes
+    );
+    const votedNo = this.proposalStatusUI.status.votes.filter(vote => vote.value === VoteValue.No);
+
     return html`
       <div class="status-top">
-        <div class="status-status">${this.proposalStatusUI.status}</div>
-        <div>${this.proposalStatusUI.votedYes.length}/${this.proposalStatusUI.council.length}</div>
+        <div class="status-status">${this.proposalStatusUI.status.status}</div>
+        <div>${votedYes.length}/${this.proposalStatusUI.council.length}</div>
         <div>
-          ${this.proposalStatusUI.council.length -
-            this.proposalStatusUI.votedYes.length -
-            this.proposalStatusUI.votedNo.length}
-          pending
+          ${this.proposalStatusUI.council.length - votedYes.length - votedNo.length} pending
         </div>
       </div>
       <uprtcl-list
-        >${this.proposalStatusUI.votedYes.concat(this.proposalStatusUI.votedNo).map(vote => {
+        >${votedYes.concat(votedNo).map(vote => {
           let icon: string;
           switch (vote.value) {
             case VoteValue.Yes:

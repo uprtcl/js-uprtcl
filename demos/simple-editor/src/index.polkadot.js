@@ -33,7 +33,6 @@ import { SimpleWiki } from './simple-wiki';
 import { env } from '../env';
 
 (async function() {
-  const pinnerUrl = '';
   const polkadotWs = '';
 
   const ipfsCidConfig = {
@@ -61,7 +60,7 @@ import { env } from '../env';
   await pkdConnection.ready();
 
   const ipfs = await IPFS.create(ipfsJSConfig);
-  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs);
+  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
 
   const identity = new PolkadotIdentity(pkdConnection);
 
@@ -69,7 +68,7 @@ import { env } from '../env';
     [ContextStore, ProposalStore, ProposalsToPerspectiveStore],
     [ContextAccessController, ProposalsAccessController],
     identity,
-    pinnerUrl,
+    env.pinner.url,
     ipfs
   );
   await orbitDBCustom.ready();

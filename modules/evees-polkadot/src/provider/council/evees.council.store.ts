@@ -77,7 +77,7 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
-    block = block || (await this.db.meta.get('block'));
+    block = block || (await this.db.meta.get('block')).value;
     const head = await this.connection.getHead(member, COUNCIL_KEYS, block);
     if (!head) {
       this.logger.log(`Council Data of ${member} is undefined`);
@@ -138,7 +138,7 @@ export class PolkadotCouncilEveesStorage {
     );
 
     /** timestamp the latest sync */
-    this.db.meta.put(at);
+    this.db.meta.put({ entry: 'block', value: at });
   }
 
   cacheProposals(data: CouncilData, member: string): Promise<void>[] {
@@ -163,6 +163,7 @@ export class PolkadotCouncilEveesStorage {
         if (logic.isApproved()) {
           const proposal = mine || (await this.initLocalProposal(proposalId));
 
+          proposal.blockEnd = councilProposal.blockEnd;
           proposal.status = {
             status: logic.status(),
             votes: logic.getVotes()
@@ -275,7 +276,7 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async addProposalToCouncilData(councilProposal: CouncilProposal, at?: number) {
-    at = at || (await this.db.meta.get('block'));
+    at = at || (await this.db.meta.get('block')).value;
     if (this.connection.account === undefined) throw new Error('user not logged in');
     const myCouncilData = await this.getCouncilDataOf(this.connection.account);
 
@@ -390,7 +391,7 @@ export class PolkadotCouncilEveesStorage {
     await this.fetchCouncilDatas(tx.blockNumber);
 
     /** now verify the proposal status */
-    const atAfter = await this.db.meta.get('block');
+    const atAfter = (await this.db.meta.get('block')).value;
     const logic = await this.getProposalLogic(proposalId, atAfter);
 
     if (!logic.isPending()) {

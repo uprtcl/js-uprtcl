@@ -17,10 +17,6 @@ export class ProposalLogicQuorum implements ProposalLogic {
   }
 
   status() {
-    if (this.time < this.manifest.block + this.manifest.config.duration) {
-      return ProposalStatus.Pending;
-    }
-
     const nYes = this.votes.filter(v => v === VoteValue.Yes).length;
     const nNo = this.votes.filter(v => v === VoteValue.No).length;
 
@@ -33,6 +29,10 @@ export class ProposalLogicQuorum implements ProposalLogic {
 
     if (nYes / N >= this.manifest.config.thresehold) {
       return ProposalStatus.Accepted;
+    }
+
+    if (this.time < this.manifest.block + this.manifest.config.duration) {
+      return ProposalStatus.Pending;
     }
 
     return ProposalStatus.Rejected;

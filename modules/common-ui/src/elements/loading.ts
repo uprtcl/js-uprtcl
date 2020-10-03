@@ -3,7 +3,9 @@ import { icons } from './icons';
 
 export class UprtclLoading extends LitElement {
   render() {
-    return html`<div class="container">${icons.loading}</div>`;
+    return html`
+      <div class="container">${icons.loading}<br /><slot></slot></div>
+    `;
   }
 
   static get styles() {
@@ -16,7 +18,7 @@ export class UprtclLoading extends LitElement {
         svg {
           height: 100%;
         }
-      `,
+      `
     ];
   }
 }
