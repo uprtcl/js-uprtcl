@@ -54,6 +54,14 @@ export class EveesPolkadotIdentity implements EveesRemote {
     return this.connection.account;
   }
 
+  async getAccounts() {
+    await this.connection.getAccounts();
+  }
+
+  get accounts() {
+    return this.connection.accounts;
+  }
+
   async ready(): Promise<void> {
     await Promise.all([this.store.ready()]);
   }
@@ -261,12 +269,12 @@ export class EveesPolkadotIdentity implements EveesRemote {
     return this.connection.canSign();
   }
 
-  async login(): Promise<void> {
-    await this.connection.connectWallet();
+  async login(userId?: string): Promise<void> {
+    await this.connection.connectWallet(userId);
   }
 
-  logout(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async logout(): Promise<void> {
+    await this.connection.disconnectWallet();
   }
 
   async connect() {}
