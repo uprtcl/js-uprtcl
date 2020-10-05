@@ -1,5 +1,5 @@
 import { UpdateRequest } from '@uprtcl/evees';
-import { ProposalConfig, VoteValue } from './proposal.config.types';
+import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
 
 export interface Vote {
   proposalId: string;
@@ -40,12 +40,11 @@ export interface LocalProposal {
   id: string;
   toPerspectiveId: string;
   updatedPerspectives: string[]; // for indexing
-  blockEnd?: number;
   updates: UpdateRequest[]; // not indexed
-  status?: ProposalStatusCache;
+  status: ProposalStatus;
 }
 
-export interface ProposalStatusCache {
-  status: any;
+export interface ProposalSummary {
+  status: ProposalStatus;
   votes: Vote[];
 }

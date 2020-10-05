@@ -1,48 +1,24 @@
-import { ProposalLogic, ProposalStatus, VoteValue } from './proposal.config.types';
+import { ProposalStatus, VoteValue } from './proposal.config.types';
 import { ProposalManifest } from './types';
 
-export class ProposalLogicQuorum implements ProposalLogic {
-  constructor(
-    protected manifest: ProposalManifest,
-    protected votes: any[],
-    protected time: number
-  ) {}
-
-  getVotes() {
-    return this.votes;
+export const getStatus = (votes: VoteValue[], block: number, manifest: ProposalManifest) => {
+  if (block < manifest.block + manifest.config.duration) {
+    return ProposalStatus.Pending;
   }
 
-  addVote(vote) {
-    this.votes.push(vote);
-  }
+  const nYes = votes.filter(v => v === VoteValue.Yes).length;
+  const nNo = votes.filter(v => v === VoteValue.No).length;
 
-  status() {
-    const nYes = this.votes.filter(v => v === VoteValue.Yes).length;
-    const nNo = this.votes.filter(v => v === VoteValue.No).length;
+  const N = votes.length;
+  const nVoted = nYes + nNo;
 
-    const N = this.votes.length;
-    const nVoted = nYes + nNo;
-
-    if (nVoted / N < this.manifest.config.quorum) {
-      return ProposalStatus.Rejected;
-    }
-
-    if (nYes / N >= this.manifest.config.thresehold) {
-      return ProposalStatus.Accepted;
-    }
-
-    if (this.time < this.manifest.block + this.manifest.config.duration) {
-      return ProposalStatus.Pending;
-    }
-
+  if (nVoted / N < manifest.config.quorum) {
     return ProposalStatus.Rejected;
   }
 
-  isPending() {
-    return this.status() === ProposalStatus.Pending;
+  if (nYes / N >= manifest.config.thresehold) {
+    return ProposalStatus.Accepted;
   }
 
-  isApproved() {
-    return this.status() === ProposalStatus.Accepted;
-  }
-}
+  return ProposalStatus.Rejected;
+};
