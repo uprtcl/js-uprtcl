@@ -6,7 +6,7 @@ const env = {
   pinner: {
     url: 'http://localhost:3000',
     Swarm: ['/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star/'],
-    Bootstrap: ['/ip4/192.168.0.108/tcp/4003/ws/p2p/Qme7DoczDprdiLDXxqApzi36wJSGcN5GuVU3auPB7Naq77']
+    Bootstrap: ['/ip4/192.168.0.108/tcp/4003/ws/p2p/QmeWfNxfkLXa8oon1hsQdmMVXo27CSimE67iU3X6rTjwCk']
   },
   ethers: {
     apiKeys: {

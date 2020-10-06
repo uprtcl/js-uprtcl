@@ -47,4 +47,5 @@ export interface LocalProposal {
 export interface ProposalSummary {
   status: ProposalStatus;
   votes: Vote[];
+  block: number;
 }

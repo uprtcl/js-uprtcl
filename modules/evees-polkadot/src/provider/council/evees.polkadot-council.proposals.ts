@@ -122,8 +122,8 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
     };
   }
 
-  async getProposalStatus(proposalId: string) {
-    return this.councilStore.getProposalStatus(proposalId);
+  async getProposalSummary(proposalId: string) {
+    return this.councilStore.getProposalSummary(proposalId);
   }
 
   async vote(proposalId: string, vote: VoteValue) {

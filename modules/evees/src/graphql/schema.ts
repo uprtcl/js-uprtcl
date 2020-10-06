@@ -42,10 +42,6 @@ export const eveesTypeDefs: DocumentNode = gql`
     executeProposal(proposalId: ID!, perspectiveId: ID!): UpdateProposal!
   }
 
-  input ContextInput {
-    id: String!
-  }
-
   type Context {
     id: String!
     perspectives: [Perspective!] @discover
@@ -76,7 +72,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     path: String
     timestamp: Float
     creatorId: String
-    context: ContextInput
+    context: String
   }
 
   input PerspectiveEntityInput {
