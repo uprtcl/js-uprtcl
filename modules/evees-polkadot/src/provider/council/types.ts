@@ -41,7 +41,8 @@ export interface LocalProposal {
   toPerspectiveId: string;
   updatedPerspectives: string[]; // for indexing
   updates: UpdateRequest[]; // not indexed
-  status: ProposalStatus;
+  status: ProposalStatus; // not indexed
+  endBlock: number; // not indexed, for sorting
 }
 
 export interface ProposalSummary {

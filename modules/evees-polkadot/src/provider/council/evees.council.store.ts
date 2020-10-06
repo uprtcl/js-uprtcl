@@ -230,7 +230,8 @@ export class PolkadotCouncilEveesStorage {
       toPerspectiveId: proposalManifest.toPerspectiveId,
       updatedPerspectives: proposalManifest.updates.map(update => update.perspectiveId),
       updates: proposalManifest.updates,
-      status: ProposalStatus.Pending
+      status: ProposalStatus.Pending,
+      endBlock: proposalManifest.block + proposalManifest.config.duration
     };
   }
 
@@ -240,12 +241,13 @@ export class PolkadotCouncilEveesStorage {
 
     this.logger.log(`getting perspective ${perspectiveId}`);
 
-    const proposals = this.db.proposals
+    const proposalsSorted = await this.db.proposals
       .where('updatedPerspectives')
       .equals(perspectiveId)
-      .and(proposal => proposal.status === ProposalStatus.Accepted);
+      .and(proposal => proposal.status === ProposalStatus.Accepted)
+      .reverse()
+      .sortBy('endBlock');
 
-    const proposalsSorted = await proposals.sortBy('blockEnd');
     this.logger.log(`proposalsSorted`, { proposalsSorted });
 
     if (proposalsSorted.length === 0) return {};
