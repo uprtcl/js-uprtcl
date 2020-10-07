@@ -12,7 +12,7 @@ import {
   Secured
 } from '@uprtcl/evees';
 
-import { LocalProposal, ProposalManifest, Vote } from './types';
+import { LocalProposal, ProposalManifest, ProposalSummary, Vote } from './types';
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { ProposalStatus, VoteValue } from './proposal.config.types';
@@ -27,18 +27,19 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   @property({ attribute: false })
   showDetails: boolean = false;
 
+  @property({ attribute: false })
+  voting: boolean = false;
+
   client!: ApolloClient<any>;
   remote!: EveesPolkadotCouncil;
 
   recognizer!: PatternRecognizer;
   workspace!: EveesWorkspace;
-  proposalStatus!: LocalProposal;
   proposalManifest!: ProposalManifest;
   proposalStatusUI!: {
-    status: ProposalStatus;
-    votedYes: Vote[];
-    votedNo: Vote[];
+    summary: ProposalSummary;
     council: string[];
+    isCouncilMember: boolean;
   };
 
   async firstUpdated() {
@@ -97,23 +98,26 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.workspace.precacheNewPerspectives(this.client);
   }
 
+  async vote(value: VoteValue) {
+    this.voting = true;
+    await this.remote.proposals.vote(this.proposalId, value);
+    await this.load();
+    this.voting = false;
+  }
+
   async loadProposalStatus() {
-    this.proposalStatus = await this.remote.proposals.getProposalStatus(this.proposalId);
+    const proposalSummary = await this.remote.proposals.getProposalSummary(this.proposalId);
 
-    if (!this.proposalStatus.status) throw new Error('Vote status not found');
+    if (!proposalSummary) throw new Error('Vote status not found');
 
-    const status = this.proposalStatus.status;
-    const votedYes = status.votes.filter(vote => vote.value === VoteValue.Yes);
-    const votedNo = status.votes.filter(vote => vote.value === VoteValue.No);
     const council = await this.remote.proposals.councilStore.getCouncil(
       this.proposalManifest.block
     );
 
     this.proposalStatusUI = {
-      status: status.status,
-      votedYes,
-      votedNo,
-      council
+      summary: proposalSummary,
+      council,
+      isCouncilMember: this.remote.userId ? council.includes(this.remote.userId) : false
     };
   }
 
@@ -121,20 +125,61 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.showDetails = true;
   }
 
+  renderCouncilMember() {
+    const vote = this.proposalStatusUI.summary.votes.find(
+      vote => vote.member === this.remote.userId
+    );
+
+    return html`
+      <div class="row vote-row">
+        ${this.voting
+          ? html`
+              <uprtcl-loading></uprtcl-loading>
+            `
+          : vote
+          ? html`
+              <uprtcl-status>${vote.value}</uprtcl-status>
+            `
+          : html`
+              <uprtcl-button
+                class="vote-btn"
+                skinny
+                @click=${() => this.vote(VoteValue.No)}
+                icon="clear"
+                >Reject</uprtcl-button
+              >
+              <uprtcl-button
+                class="vote-btn vote-btn-approve"
+                @click=${() => this.vote(VoteValue.Yes)}
+                icon="done"
+                >Approve</uprtcl-button
+              >
+            `}
+      </div>
+    `;
+  }
+
   renderProposalStatus() {
+    const votedYes = this.proposalStatusUI.summary.votes.filter(
+      vote => vote.value === VoteValue.Yes
+    );
+    const votedNo = this.proposalStatusUI.summary.votes.filter(vote => vote.value === VoteValue.No);
+    const blocksRemaining =
+      this.proposalManifest.block +
+      this.proposalManifest.config.duration -
+      this.proposalStatusUI.summary.block;
+
     return html`
       <div class="status-top">
-        <div class="status-status">${this.proposalStatusUI.status}</div>
-        <div>${this.proposalStatusUI.votedYes.length}/${this.proposalStatusUI.council.length}</div>
+        <div class="status-status">${this.proposalStatusUI.summary.status}</div>
+        <div class="status-status">${blocksRemaining * 5.0} seconds left</div>
+        <div>${votedYes.length}/${this.proposalStatusUI.council.length}</div>
         <div>
-          ${this.proposalStatusUI.council.length -
-            this.proposalStatusUI.votedYes.length -
-            this.proposalStatusUI.votedNo.length}
-          pending
+          ${this.proposalStatusUI.council.length - votedYes.length - votedNo.length} pending
         </div>
       </div>
       <uprtcl-list
-        >${this.proposalStatusUI.votedYes.concat(this.proposalStatusUI.votedNo).map(vote => {
+        >${votedYes.concat(votedNo).map(vote => {
           let icon: string;
           switch (vote.value) {
             case VoteValue.Yes:
@@ -174,6 +219,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           ></evees-author>
         </div>
         <evees-update-diff .workspace=${this.workspace}> </evees-update-diff>
+        ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
         ${this.renderProposalStatus()}
       </uprtcl-dialog>
     `;
@@ -231,6 +277,19 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       }
       .row evees-author {
         margin-left: 10px;
+      }
+
+      .vote-row {
+        justify-content: center;
+      }
+
+      .vote-btn {
+        width: 150px;
+        margin-left: 12px;
+      }
+
+      .vote-btn-approve {
+        --background-color: #01c03a;
       }
     `;
   }

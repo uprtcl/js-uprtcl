@@ -8,6 +8,7 @@ import { EXPECTED_CONFIG, PolkadotCouncilEveesStorage } from './evees.council.st
 import { ProposalManifest } from './types';
 import { PolkadotConnection } from '../connection.polkadot';
 import { Lens } from '@uprtcl/lenses';
+import { VoteValue } from './proposal.config.types';
 
 export class ProposalsPolkadotCouncil implements ProposalsProvider {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
@@ -121,7 +122,11 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
     };
   }
 
-  async getProposalStatus(proposalId: string) {
-    return this.councilStore.getProposalStatus(proposalId);
+  async getProposalSummary(proposalId: string) {
+    return this.councilStore.getProposalSummary(proposalId);
+  }
+
+  async vote(proposalId: string, vote: VoteValue) {
+    return this.councilStore.vote(proposalId, vote);
   }
 }

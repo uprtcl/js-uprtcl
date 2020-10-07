@@ -6,7 +6,7 @@ import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Entity, Signed } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { UpdateRequest, Commit, RemoteMap } from '../types';
+import { UpdateRequest, Commit } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
@@ -21,7 +21,6 @@ import { EveesHelpers } from '../graphql/evees.helpers';
 @injectable()
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(
-    @inject(EveesBindings.RemoteMap) protected remoteMap: RemoteMap,
     @inject(EveesBindings.Evees) protected evees: Evees,
     @inject(CortexModule.bindings.Recognizer)
     protected recognizer: PatternRecognizer,
@@ -50,23 +49,22 @@ export class SimpleMergeStrategy implements MergeStrategy {
       EveesHelpers.getPerspectiveHeadId(this.client, id)
     );
     const [toHeadId, fromHeadId] = await Promise.all(promises);
-    if (fromHeadId === undefined) {
-      return toPerspectiveId;
-    }
 
     const remote = await this.evees.getPerspectiveRemoteById(toPerspectiveId);
 
-    let newHead: string;
+    let newHead: string | undefined;
 
-    if (toHeadId === undefined) {
-      newHead = fromHeadId;
-    } else {
-      newHead = await this.mergeCommits(toHeadId, fromHeadId, remote.id, workspace, config);
-    }
+    newHead = fromHeadId
+      ? await this.mergeCommits(toHeadId, fromHeadId, remote.id, workspace, config)
+      : toHeadId;
 
     /** prevent an update head to the same head */
     if (newHead === toHeadId) {
       return toPerspectiveId;
+    }
+
+    if (newHead === undefined) {
+      throw new Error('New head is undefined');
     }
 
     const request: UpdateRequest = {
@@ -107,7 +105,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     };
   }
 
-  protected async loadCommitData(commitId: string): Promise<Entity<any>> {
+  protected async loadCommitData(commitId: string | undefined): Promise<Entity<any> | undefined> {
+    if (commitId === undefined) return undefined;
+
     const result = await this.client.query({
       query: gql`{
         entity(uref: "${commitId}") {
@@ -122,6 +122,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
       }`
     });
 
+    if (!result.data.entity.data) return undefined;
+
     const object = result.data.entity.data._context.object;
     return {
       id: result.data.entity.data.id,
@@ -129,7 +131,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     };
   }
 
-  async findLatestNonFork(commitId) {
+  async findLatestNonFork(commitId: string) {
     const commit = await loadEntity<Signed<Commit>>(this.client, commitId);
     if (commit === undefined) throw new Error('commit not found');
 
@@ -141,17 +143,19 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   async mergeCommits(
-    toCommitIdOrg: string,
+    toCommitIdOrg: string | undefined,
     fromCommitIdOrg: string,
     remote: string,
     workspace: EveesWorkspace,
     config: any
   ): Promise<string> {
-    const toCommitId = await this.findLatestNonFork(toCommitIdOrg);
+    const toCommitId = toCommitIdOrg ? await this.findLatestNonFork(toCommitIdOrg) : undefined;
     const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg);
 
     const commitsIds = [toCommitId, fromCommitId];
-    const ancestorId = await findMostRecentCommonAncestor(this.client)(commitsIds);
+    const ancestorId = toCommitId
+      ? await findMostRecentCommonAncestor(this.client)(commitsIds)
+      : fromCommitId;
 
     const datasPromises = commitsIds.map(async commitId => this.loadCommitData(commitId));
     const newDatas = await Promise.all(datasPromises);
@@ -161,16 +165,17 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const mergedData = await this.mergeData(ancestorData, newDatas, workspace, config);
 
-    const type = this.recognizer.recognizeType(ancestorData);
     const instance = this.evees.getRemote(remote);
-
-    const sourceRemote = this.remoteMap(instance, type);
+    const sourceRemote = instance.store;
 
     const entity = await deriveEntity(mergedData, sourceRemote.cidConfig);
     entity.casID = sourceRemote.casID;
 
     /** prevent an update head to the same data */
-    if (entity.id === newDatas[0].id || toCommitId === fromCommitId) {
+    if (
+      ((!!newDatas[0] && entity.id === newDatas[0].id) || toCommitId === fromCommitId) &&
+      toCommitIdOrg !== undefined
+    ) {
       return toCommitIdOrg;
     }
 

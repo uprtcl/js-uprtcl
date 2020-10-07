@@ -32,6 +32,10 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     }
   }
 
+  canPropose() {
+    return true;
+  }
+
   async ready(): Promise<void> {
     await Promise.all([this.orbitdb.ready()]);
   }

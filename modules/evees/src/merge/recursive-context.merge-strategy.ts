@@ -173,8 +173,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   ): Promise<string[]> {
     if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
 
-    /** The context is used as Merge ID for perspective to have a context-based merge. For othe
-     * type of entities, like commits or data, the link itself is used is mergeId */
+    /** The context is used as Merge ID for perspective to have a context-based merge. For other
+     * type of entities, like commits or data, the link itself is used as mergeId */
     const originalPromises = originalLinks.map(link => this.getLinkMergeId(link));
     const modificationsPromises = modificationsLinks.map(links =>
       links.map(link => this.getLinkMergeId(link))

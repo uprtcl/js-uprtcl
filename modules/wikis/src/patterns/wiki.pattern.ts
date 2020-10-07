@@ -9,7 +9,7 @@ import {
   Merge,
   HasDiffLenses,
   DiffLens,
-  EveesWorkspace,
+  EveesWorkspace
 } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
@@ -22,65 +22,56 @@ const logger = new Logger('WIKI-ENTITY');
 
 export class WikiPattern extends Pattern<Wiki> {
   recognize(entity: object): boolean {
-    return (
-      recognizeEntity(entity) &&
-      propertyOrder.every((p) => entity.object.hasOwnProperty(p))
-    );
+    return recognizeEntity(entity) && propertyOrder.every(p => entity.object.hasOwnProperty(p));
   }
 
   type = WikiBindings.WikiType;
 }
 
 @injectable()
-export class WikiLinks
-  implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>> {
-  replaceChildrenLinks = (wiki: Entity<Wiki>) => (
-    childrenHashes: string[]
-  ): Entity<Wiki> => ({
+export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>> {
+  replaceChildrenLinks = (wiki: Entity<Wiki>) => (childrenHashes: string[]): Entity<Wiki> => ({
     ...wiki,
     object: {
       ...wiki.object,
-      pages: childrenHashes,
-    },
+      pages: childrenHashes
+    }
   });
 
-  getChildrenLinks: (wiki: Entity<Wiki>) => string[] = (
-    wiki: Entity<Wiki>
-  ): string[] => wiki.object.pages;
+  getChildrenLinks: (wiki: Entity<Wiki>) => string[] = (wiki: Entity<Wiki>): string[] =>
+    wiki.object.pages;
 
-  links: (wiki: Entity<Wiki>) => Promise<string[]> = async (
-    wiki: Entity<Wiki>
-  ) => this.getChildrenLinks(wiki);
+  links: (wiki: Entity<Wiki>) => Promise<string[]> = async (wiki: Entity<Wiki>) =>
+    this.getChildrenLinks(wiki);
 
   merge = (originalNode: Entity<Wiki>) => async (
-    modifications: Entity<Wiki>[],
+    modifications: (Entity<Wiki> | undefined)[],
     mergeStrategy: MergeStrategy,
     workspace: EveesWorkspace,
     config
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
       originalNode.object.title,
-      modifications.map((data) => data.object.title)
+      modifications.map(data => (!!data ? data.object.title : originalNode.object.title))
     );
 
     // TODO: add entity
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
-      modifications.map((data) => data.object.pages),
+      modifications.map(data => (!!data ? data.object.pages : originalNode.object.pages)),
       workspace,
       config
     );
 
     return {
       title: mergedTitle,
-      pages: mergedPages,
+      pages: mergedPages
     };
   };
 }
 
 @injectable()
-export class WikiCommon
-  implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
+export class WikiCommon implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
   lenses = (wiki: Entity<Wiki>): Lens[] => {
     return [
       {
@@ -97,8 +88,8 @@ export class WikiCommon
             >
             </wiki-drawer>
           `;
-        },
-      },
+        }
+      }
     ];
   };
 
@@ -123,8 +114,8 @@ export class WikiCommon
             >
             </wiki-diff>
           `;
-        },
-      },
+        }
+      }
     ];
   };
 

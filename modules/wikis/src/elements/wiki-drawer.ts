@@ -16,7 +16,6 @@ import {
   EveesModule,
   eveeColor,
   DEFAULT_COLOR,
-  RemoteMap,
   EveesHelpers,
   Perspective,
   EveesInfoPage,
@@ -101,7 +100,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
-  protected remoteMap!: RemoteMap;
 
   constructor() {
     super();
@@ -119,7 +117,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    this.remoteMap = this.request(EveesModule.bindings.RemoteMap);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     this.logger.log('firstUpdated()', { uref: this.uref });
@@ -270,7 +267,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   getStore(remote: string, type: string): CASStore | undefined {
     const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
-    return this.remoteMap(remoteInstance);
+    return remoteInstance.store;
   }
 
   handlePageDrag(e, pageId) {
@@ -316,10 +313,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
 
-    const store = this.getStore(remote, DocumentsModule.bindings.TextNodeType);
-    if (!store) throw new Error('store is undefined');
-
-    const dataId = await EveesHelpers.createEntity(this.client, store, page);
+    const dataId = await EveesHelpers.createEntity(this.client, remoteInstance.store, page);
     const headId = await EveesHelpers.createCommit(this.client, remoteInstance.store, {
       dataId,
       parentsIds: []
@@ -340,7 +334,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
     const headId = await EveesHelpers.createCommit(this.client, remote.store, {
       dataId,
-      parentsIds: [this.currentHeadId ? this.currentHeadId : '']
+      parentsIds: this.currentHeadId ? [this.currentHeadId] : undefined
     });
     await EveesHelpers.updateHead(this.client, this.uref, headId);
 

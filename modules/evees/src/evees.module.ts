@@ -18,7 +18,7 @@ import { PerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
 import en from './i18n/en.json';
-import { RemoteMap, defaultRemoteMap, EveesConfig } from './types';
+import { EveesConfig } from './types';
 import { EveesInfoPage } from './elements/evees-info-page';
 import { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 import { EveesDiff } from './elements/evees-diff';
@@ -63,7 +63,6 @@ import { EveesProposalRow } from './elements/evees-proposal-row';
  *
  * @param eveesProviders array of remote services that implement Evees behaviour
  * @param defaultRemote default remote service to which to create Perspective and Commits
- * @param remoteMap optional map between the given evees remotes and the CASSources to create the data to by default
  */
 export class EveesModule extends MicroModule {
   static id = 'evees-module';
@@ -72,11 +71,7 @@ export class EveesModule extends MicroModule {
 
   static bindings = EveesBindings;
 
-  constructor(
-    protected eveesProviders: Array<EveesRemote>,
-    protected config: EveesConfig,
-    protected remoteMap: RemoteMap = defaultRemoteMap
-  ) {
+  constructor(protected eveesProviders: Array<EveesRemote>, protected config?: EveesConfig) {
     super();
   }
 
@@ -88,8 +83,8 @@ export class EveesModule extends MicroModule {
     this.config = this.config || {};
     this.config.defaultRemote =
       (this.config && this.config.defaultRemote) || this.eveesProviders[0];
+
     container.bind(EveesModule.bindings.Config).toConstantValue(this.config);
-    container.bind(EveesModule.bindings.RemoteMap).toConstantValue(this.remoteMap);
 
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
