@@ -43,7 +43,7 @@ import { SimpleWiki } from './simple-wiki';
     base: 'base58btc'
   };
 
-  const pinnerUrl = env.pinner.url;
+  const pinnerUrl = ''; // env.pinner.url;
 
   const ipfsJSConfig = {
     preload: { enabled: false },

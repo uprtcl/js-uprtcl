@@ -1,5 +1,5 @@
 // Fill and rename as env.js
-export const env = {
+const env = {
   entry: '',
   officialRemote: '',
   pinner: {
@@ -13,4 +13,8 @@ export const env = {
       infura: ''
     }
   }
+};
+
+module.exports = {
+  env
 };
