@@ -235,7 +235,6 @@ export class EveesWorkspace {
           ...newPerspective.details,
           remote: newPerspective.perspective.object.payload.remote,
           path: newPerspective.perspective.object.payload.path,
-          canWrite: newPerspective.canWrite,
           parentId: newPerspective.parentId
         }
       });

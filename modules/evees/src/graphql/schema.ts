@@ -17,7 +17,6 @@ export const eveesTypeDefs: DocumentNode = gql`
       headId: ID
       context: String
       name: String
-      canWrite: String
       parentId: String
     ): Perspective!
 
@@ -94,7 +93,6 @@ export const eveesTypeDefs: DocumentNode = gql`
   input NewPerspectiveInput {
     perspective: PerspectiveInput
     details: PerspectiveDetailsInput
-    canWrite: String
     parentId: String
   }
 
@@ -110,7 +108,6 @@ export const eveesTypeDefs: DocumentNode = gql`
   type NewPerspective {
     perspective: Perspective
     details: PerspectiveDetails
-    canWrite: String
     parentId: String
   }
 
