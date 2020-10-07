@@ -134,7 +134,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       <div class="row vote-row">
         ${this.voting
           ? html`
-              <uprtcl-loading>Please dont close your tab</uprtcl-loading>
+              <uprtcl-loading></uprtcl-loading>
             `
           : vote
           ? html`

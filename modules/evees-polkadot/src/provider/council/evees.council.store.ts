@@ -111,16 +111,29 @@ export class PolkadotCouncilEveesStorage {
       throw new Error(`unexpected thresehold ${manifest.config.thresehold}`);
     }
 
-    const votes = await this.db.votes
+    const votesCasted = await this.db.votes
       .where('proposalId')
       .equals(proposalId)
       .toArray();
 
-    return getStatus(
-      votes.map(v => v.value),
-      at as number,
-      manifest
+    /** fill empty votes for non voters */
+    const council = await this.getCouncil(manifest.block);
+
+    const nonVoter = council.filter(
+      member => votesCasted.findIndex(casted => casted.member === member) === -1
     );
+
+    const emptyVotes = nonVoter.map(
+      (member): Vote => {
+        return {
+          member,
+          proposalId,
+          value: VoteValue.Undefined
+        };
+      }
+    );
+
+    return getStatus(votesCasted.concat(emptyVotes), at as number, manifest);
   }
 
   /** reads all the council datas and populate the DB */

@@ -1,13 +1,13 @@
 import { ProposalStatus, VoteValue } from './proposal.config.types';
-import { ProposalManifest } from './types';
+import { ProposalManifest, Vote } from './types';
 
-export const getStatus = (votes: VoteValue[], block: number, manifest: ProposalManifest) => {
+export const getStatus = (votes: Vote[], block: number, manifest: ProposalManifest) => {
   if (block < manifest.block + manifest.config.duration) {
     return ProposalStatus.Pending;
   }
 
-  const nYes = votes.filter(v => v === VoteValue.Yes).length;
-  const nNo = votes.filter(v => v === VoteValue.No).length;
+  const nYes = votes.filter(v => v.value === VoteValue.Yes).length;
+  const nNo = votes.filter(v => v.value !== VoteValue.Yes).length;
 
   const N = votes.length;
   const nVoted = nYes + nNo;
