@@ -33,7 +33,7 @@ export class EveesOrbitDB implements EveesRemote {
   accessControl: any;
   proposals!: ProposalsProvider;
 
-  constructor(protected orbitdbcustom: OrbitDBCustom, public store: CASStore) {
+  constructor(public orbitdbcustom: OrbitDBCustom, public store: CASStore) {
     if (
       orbitdbcustom.getManifest(EveesOrbitDBEntities.Perspective) === undefined ||
       orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined
