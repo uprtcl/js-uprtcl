@@ -209,7 +209,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.requestUpdate();
     await this.loadPagesData();
-    this.evessInfoPageEl.load();
+    if (this.evessInfoPageEl) this.evessInfoPageEl.load();
 
     this.loading = false;
   }

@@ -1,3 +1,5 @@
+import { html } from 'lit-element';
+
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
@@ -18,9 +20,14 @@ import { PolkadotConnection, UserPerspectivesDetails } from './connection.polkad
 
 import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
 import { EveesCacheDB } from './evees.cache.db';
+import { Lens } from '@uprtcl/lenses';
 
 const evees_if = 'evees-identity';
 const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
+
+export interface RemoteStatus {
+  pendingActions: number;
+}
 
 export class EveesPolkadotIdentity implements EveesRemote {
   logger: Logger = new Logger('EveesPolkadot');
@@ -84,30 +91,12 @@ export class EveesPolkadotIdentity implements EveesRemote {
     return this.userId ? this.accessControl.canWrite(uref, this.userId) : false;
   }
 
-  async updateUserPerspectivesDetailsEntry(
-    userPerspectivesDetails: UserPerspectivesDetails,
-    perspectiveId: string,
-    details: PerspectiveDetails
-  ) {
-    const newUserPerspectiveDetails = { ...userPerspectivesDetails };
-
-    const currentDetails = newUserPerspectiveDetails[perspectiveId];
-    // TODO: should this even be checked?
-    newUserPerspectiveDetails[perspectiveId] = {
-      headId: details.headId ?? currentDetails?.headId
-    };
-
-    return newUserPerspectiveDetails;
-  }
-
   // updatePerspectiveDetails?
   async updatePerspective(
     perspectiveId: string,
     details: PerspectiveDetails,
     pin: boolean = false
   ) {
-    const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
-
     // action is done on the cache
     await this.cacheInitialized();
 
@@ -256,6 +245,36 @@ export class EveesPolkadotIdentity implements EveesRemote {
     return userPerspectives[perspectiveId];
   }
 
+  async flushCache() {
+    if (!this.userId) throw new Error('user not logged in');
+
+    const newPerspectives = await this.cache.newPerspectives.toArray();
+    const updates = await this.cache.newPerspectives.toArray();
+
+    const eveesData = await this.getEveesDataOf(this.userId);
+
+    newPerspectives.map(newPerspective => {
+      eveesData[newPerspective.id] = { headId: newPerspective.head };
+    });
+
+    updates.map(update => {
+      eveesData[update.id] = { headId: update.head };
+    });
+
+    const newEveesDetailsHash = await this.store.create(eveesData);
+
+    this.logger.log('flushing cache and updateing evees data ', {
+      eveesData,
+      newPerspectives,
+      updates
+    });
+
+    await this.connection.updateHead(newEveesDetailsHash, EVEES_KEYS);
+
+    /* delete cache */
+    await this.cache.delete();
+  }
+
   async deletePerspective(perspectiveId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
@@ -280,5 +299,33 @@ export class EveesPolkadotIdentity implements EveesRemote {
 
   disconnect(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  lense(): Lens {
+    return {
+      name: 'evees-orbitb:remote',
+      type: 'remote',
+      render: () => {
+        return html`
+          <evees-polkadot-identity-remote> </evees-polkadot-identity-remote>
+        `;
+      }
+    };
+  }
+
+  async getPendingActions(): Promise<number> {
+    const hasCache = (await this.cache.meta.get('block')) !== undefined;
+    if (!hasCache) return 0;
+
+    const nNew = await this.cache.newPerspectives.count();
+    const nUpdates = await this.cache.updates.count();
+
+    return nNew + nUpdates;
+  }
+
+  async getStatus(): Promise<RemoteStatus> {
+    return {
+      pendingActions: await this.getPendingActions()
+    };
   }
 }
