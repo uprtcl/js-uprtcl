@@ -7,7 +7,7 @@ export const eveesTypeDefs: DocumentNode = gql`
   extend type Mutation {
     updatePerspectiveHead(perspectiveId: ID!, headId: ID, name: String): Perspective!
 
-    createEntity(object: JSON!, casID: ID): Entity!
+    createEntity(id: String, object: JSON!, casID: ID): Entity!
 
     createPerspective(
       remote: String!

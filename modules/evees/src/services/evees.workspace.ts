@@ -207,6 +207,7 @@ export class EveesWorkspace {
       const mutation = await client.mutate({
         mutation: CREATE_ENTITY,
         variables: {
+          id: entity.id,
           object: entity.object,
           casID: entity.casID
         }

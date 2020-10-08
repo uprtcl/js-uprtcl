@@ -187,23 +187,34 @@ export const eveesResolvers: IResolvers = {
       return { id: perspectiveId };
     },
 
-    async createEntity(_, { object, casID }, { container }) {
+    async createEntity(_, { id, object, casID }, { container }) {
       const stores: CASStore[] = container.getAll(CASModule.bindings.CASStore);
       const store = stores.find(d => d.casID === casID);
 
       if (!store) throw new Error(`No store registered for casID ${casID}`);
-      const id = await store.create(object);
+      const newId = await store.create(object, id);
 
       const entity: Entity<any> = {
-        id,
+        id: newId,
         object,
         casID
       };
 
+      if (id !== undefined) {
+        if (id !== newId) {
+          throw new Error(
+            `Unexpected id ${newId} for object ${JSON.stringify(object)}, expected ${id}`
+          );
+        }
+      }
+
       const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);
       entityCache.cacheEntity(entity);
 
-      return { id, ...object };
+      return {
+        id: newId,
+        ...object
+      };
     },
 
     async createPerspective(

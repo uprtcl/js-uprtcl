@@ -46,8 +46,8 @@ export const DELETE_PERSPECTIVE: DocumentNode = gql`
 `;
 
 export const CREATE_ENTITY: DocumentNode = gql`
-  mutation CreateEntity($object: JSON!, $casID: ID) {
-    createEntity(object: $object, casID: $casID) {
+  mutation CreateEntity($id: String, $object: JSON!, $casID: ID) {
+    createEntity(id: $id, object: $object, casID: $casID) {
       id
     }
   }

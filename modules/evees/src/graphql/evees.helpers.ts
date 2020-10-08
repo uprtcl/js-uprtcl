@@ -176,12 +176,12 @@ export class EveesHelpers {
       parentsIds: parentsIds
     };
 
-    const commitEntity = signObject(commitData);
+    const commitObject = signObject(commitData);
 
     const create = await client.mutate({
       mutation: CREATE_ENTITY,
       variables: {
-        object: commitEntity,
+        object: commitObject,
         casID: store.casID
       }
     });
