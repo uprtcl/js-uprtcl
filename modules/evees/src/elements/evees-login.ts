@@ -43,15 +43,14 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
       };
     });
 
-    this.dispatchEvent(new CustomEvent('logged-in'));
+    this.dispatchEvent(new CustomEvent('changed'));
   }
 
   async loginAll() {
     await Promise.all(
       this.remotes.map(async remote => {
         const isLogged = await remote.isLogged();
-        // TODO: pass in account to polkadot remote only
-        if (!isLogged) await remote.login(account);
+        if (!isLogged) await remote.login();
       })
     );
     /** invalidate all the cache :) */

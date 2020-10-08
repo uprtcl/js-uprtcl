@@ -16,11 +16,11 @@ export class EveesCacheDB extends Dexie {
   newPerspectives: Dexie.Table<NewPerspectiveLocal, string>;
   meta: Dexie.Table<any, string>;
 
-  constructor() {
-    super('evees-cache');
+  constructor(name: string) {
+    super(name);
     this.version(1).stores({
       updates: '&id',
-      newPerspectives: '$id,context',
+      newPerspectives: '&id,context',
       meta: '&entry'
     });
     this.updates = this.table('updates');

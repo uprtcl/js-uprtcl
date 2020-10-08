@@ -40,7 +40,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
       );
     }
     this.accessControl = new EveesAccessControlPolkadot(store);
-    this.cache = new EveesCacheDB();
+    this.cache = new EveesCacheDB('polkadot-evees-cache');
   }
 
   get id() {
@@ -161,7 +161,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
     // action is done on the cache
     await this.cacheInitialized();
 
-    this.cache.newPerspectives.put({
+    await this.cache.newPerspectives.put({
       id: perspectiveId,
       context: secured.object.payload.context,
       head: details.headId
@@ -170,7 +170,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
 
   async cacheInitialized(): Promise<void> {
     const block = await this.cache.meta.get('block');
-    if (block.value !== undefined) {
+    if (block !== undefined && block.value !== undefined) {
       return;
     }
 
@@ -232,18 +232,26 @@ export class EveesPolkadotIdentity implements EveesRemote {
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
     const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
-    if (this.userId && perspective.creatorId === this.userId) {
-      // logged user perspective, check cache too
-      const cachedNewPerspective = await this.cache.newPerspectives.get(perspectiveId);
-      if (cachedNewPerspective !== undefined) {
-        return { headId: cachedNewPerspective.head };
-      }
+    /** even if I'm not logged in, show the cached data (valid for the local user) */
+    if ((await this.cache.meta.get('block')) !== undefined) {
+      /** head update have priority over newPerspective (in case a newPerspective head is updated) */
       const cachedUpdate = await this.cache.updates.get(perspectiveId);
       if (cachedUpdate !== undefined) {
         return { headId: cachedUpdate.head };
       }
+
+      const cachedNewPerspective = await this.cache.newPerspectives.get(perspectiveId);
+      if (cachedNewPerspective !== undefined) {
+        return { headId: cachedNewPerspective.head };
+      }
+
+      const cachedUserPerspectives = (await this.cache.meta.get('eveesData')).value;
+      if (cachedUserPerspectives[perspectiveId]) {
+        return cachedUserPerspectives[perspectiveId];
+      }
     }
 
+    /** if nothing found on the cache, then read it from the blockchain */
     const userPerspectives = await this.getEveesDataOf(perspective.creatorId);
     return userPerspectives[perspectiveId];
   }
