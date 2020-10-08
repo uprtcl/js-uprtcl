@@ -23,21 +23,26 @@ export class EveesPolkadotIdentityRemoteLense extends moduleConnect(LitElement) 
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
-    this.load();
-  }
-
-  async load() {
-    this.loading = true;
     const remotes = this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[];
     this.remote = remotes.find(r => r.id.includes('evees-identity')) as EveesPolkadotIdentity;
     await this.remote.ready();
 
-    const status = await this.remote.getStatus();
+    this.load();
 
+    setInterval(() => {
+      this.refresh();
+    }, 1000);
+  }
+
+  async refresh() {
+    const status = await this.remote.getStatus();
     this.remoteUI = {
       pendingActions: status.pendingActions
     };
-
+  }
+  async load() {
+    this.loading = true;
+    await this.refresh();
     this.loading = false;
   }
 

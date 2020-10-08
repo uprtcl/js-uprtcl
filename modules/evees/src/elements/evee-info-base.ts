@@ -544,6 +544,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         <div class="prop-name"><h2>${this.entityType}</h2></div>
         ${this.entityType === EveesBindings.PerspectiveType
           ? html`
+              <div class="prop-name">perspective id</div>
+              <pre class="prop-value">${this.perspectiveData.id}</pre>
+
               <div class="prop-name">perspective</div>
               <pre class="prop-value">
 ${JSON.stringify(this.perspectiveData.perspective, undefined, 2)}</pre

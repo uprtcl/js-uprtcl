@@ -24,7 +24,6 @@ import { Lens } from '@uprtcl/lenses';
 
 const evees_if = 'evees-identity';
 const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
-
 export interface RemoteStatus {
   pendingActions: number;
 }
@@ -113,14 +112,9 @@ export class EveesPolkadotIdentity implements EveesRemote {
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
-    let parentOwner: string | undefined = undefined;
-    if (parentId !== undefined) {
-      parentOwner = await this.accessControl.getOwner(parentId);
-    }
-
     const perspective = await EveesHelpers.snapDefaultPerspective(
       this,
-      parentOwner,
+      undefined,
       context,
       timestamp,
       path
@@ -249,7 +243,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
     if (!this.userId) throw new Error('user not logged in');
 
     const newPerspectives = await this.cache.newPerspectives.toArray();
-    const updates = await this.cache.newPerspectives.toArray();
+    const updates = await this.cache.updates.toArray();
 
     const eveesData = await this.getEveesDataOf(this.userId);
 
@@ -272,7 +266,9 @@ export class EveesPolkadotIdentity implements EveesRemote {
     await this.connection.updateHead(newEveesDetailsHash, EVEES_KEYS);
 
     /* delete cache */
-    await this.cache.delete();
+    await this.cache.meta.clear();
+    await this.cache.newPerspectives.clear();
+    await this.cache.updates.clear();
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
