@@ -52,13 +52,11 @@ export class UprtclListItem extends LitElement {
         .vertically-centered {
           display: flex;
           flex-direction: row;
-          flex-grow: 1;
         }
         .main-item {
           flex: 1 1 0;
           display: flex;
-          flex-direction: column;
-          justify-content: center;
+          flex-direction: row;
         }
         .meta-item {
           flex: 0 0 0;

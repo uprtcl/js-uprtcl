@@ -225,6 +225,9 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
   static get styles() {
     return css`
+      :host {
+        width: 100%;
+      }
       .row-container {
         height: 100%;
         display: flex;

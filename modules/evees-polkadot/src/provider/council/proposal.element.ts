@@ -197,7 +197,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
               throw new Error(`Unexpected vote value ${vote.value}`);
           }
 
-          html`
+          return html`
             <uprtcl-list-item
               ><uprtcl-icon-button icon=${icon} button></uprtcl-icon-button
               ><evees-author user-id=${vote.member} show-name></evees-author
