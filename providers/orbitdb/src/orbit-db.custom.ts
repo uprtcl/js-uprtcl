@@ -1,3 +1,5 @@
+import { Observable } from 'rxjs';
+
 import OrbitDB from 'orbit-db';
 import IPFS from 'ipfs';
 
@@ -15,11 +17,21 @@ OrbitDB.Identities.addIdentityProvider(IdentityProvider);
 
 const keystorePath = id => `./orbitdb/identity/odbipd-${id}`;
 
+interface Status {
+  pinnerHttpConnected: boolean;
+  pinnerPeerConnected: boolean;
+  logged: boolean;
+}
+
 export class OrbitDBCustom extends Connection {
   public instance: any;
   private storeQueue = {};
   public identity: null | any = null;
-  loggedIn: boolean = false;
+  readonly status: Status = {
+    pinnerHttpConnected: false,
+    pinnerPeerConnected: false,
+    logged: false
+  };
 
   logger = new Logger('OrbitDB-Connection');
 
@@ -28,7 +40,7 @@ export class OrbitDBCustom extends Connection {
     protected acls: any[],
     protected entropy: EntropyGenerator,
     protected pinnerUrl?: string,
-    protected ipfs?: any,
+    public ipfs?: any,
     options?: ConnectionOptions
   ) {
     super(options);
@@ -46,11 +58,16 @@ export class OrbitDBCustom extends Connection {
    */
   public async connect(params: any): Promise<void> {
     this.logger.log('Connecting');
+
     if (!this.ipfs) {
       this.ipfs = await IPFS.create(params);
     }
+
     this.instance = await OrbitDB.createInstance(this.ipfs);
     this.identity = this.instance.identity;
+
+    // TODO: set status when peer connected is pinner address
+
     this.logger.log('Connected', {
       instance: this.instance,
       identity: this.identity
@@ -61,16 +78,16 @@ export class OrbitDBCustom extends Connection {
     const privateKey = await this.entropy.get();
     const identity = await this.deriveIdentity(privateKey);
     this.useIdentity(identity);
-    this.loggedIn = true;
+    this.status.logged = true;
   }
 
   public async logout() {
     this.useIdentity(this.instance.identity);
-    this.loggedIn = false;
+    this.status.logged = false;
   }
 
   public isLogged() {
-    return this.loggedIn;
+    return this.status.logged;
   }
 
   public async deriveIdentity(sig: string): Promise<any> {
@@ -133,10 +150,12 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async pin(address: string) {
-    fetch(`${this.pinnerUrl}/pin?address=${address}`, {
-      method: 'GET'
-    }).then(response => {
-      console.log(response);
-    });
+    if (this.pinnerUrl) {
+      fetch(`${this.pinnerUrl}/pin?address=${address}`, {
+        method: 'GET'
+      }).then(response => {
+        console.log(response);
+      });
+    }
   }
 }

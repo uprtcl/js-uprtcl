@@ -6,6 +6,7 @@ import { EveesRemote } from '../services/evees.remote';
 import { EveesBindings } from '../bindings';
 import { ApolloClient } from 'apollo-boost';
 import { ApolloClientModule } from '@uprtcl/graphql';
+import { Lens } from '@uprtcl/lenses';
 
 export class EveesLoginWidget extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
@@ -14,7 +15,10 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   logged!: boolean;
 
   @property({ attribute: false })
-  userIds: string[] = [];
+  remotesUI: {
+    userId?: string;
+    lense?: () => Lens;
+  }[] = [];
 
   remotes!: EveesRemote[];
   client!: ApolloClient<any>;
@@ -25,28 +29,26 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.remotes = this.requestAll(EveesBindings.EveesRemote);
     this.client = this.request(ApolloClientModule.bindings.Client);
-    await Promise.all(this.remotes.map(async (remote) => {
-      await remote.getAccounts?.();
-    }));
-    await this.checkLogged();
+    this.load();
   }
 
-  async checkLogged() {
-    const loggedList = await Promise.all(
-      this.remotes.map((remote) => remote.isLogged())
-    );
-    this.userIds = [];
-    this.remotes.map((remote) => {
-      if (remote.userId !== undefined) this.userIds.push(remote.userId);
-    });
+  async load() {
+    const loggedList = await Promise.all(this.remotes.map(remote => remote.isLogged()));
     this.logged = !loggedList.includes(false);
+
+    this.remotesUI = this.remotes.map(remote => {
+      return {
+        userId: remote.userId,
+        lense: remote.lense
+      };
+    });
+
     this.dispatchEvent(new CustomEvent('logged-in'));
   }
 
-  async login(account: string) {
-    this.userIds = [];
+  async loginAll() {
     await Promise.all(
-      this.remotes.map(async (remote) => {
+      this.remotes.map(async remote => {
         const isLogged = await remote.isLogged();
         // TODO: pass in account to polkadot remote only
         if (!isLogged) await remote.login(account);
@@ -54,17 +56,12 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
     );
     /** invalidate all the cache :) */
     await this.client.resetStore();
-    await this.checkLogged();
-    this.showAccountSelection = false;
-  }
-
-  async onLoginClick() {
-    this.showAccountSelection = true;
+    this.load();
   }
 
   async logoutAll() {
     await Promise.all(
-      this.remotes.map(async (remote) => {
+      this.remotes.map(async remote => {
         const isLogged = await remote.isLogged();
         if (isLogged) {
           try {
@@ -75,24 +72,26 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
         }
       })
     );
-    await this.checkLogged();
+    this.load();
   }
 
   render() {
-    return html`
-        ${this.logged ? html`<uprtcl-button @click=${() => this.logoutAll()}>logout</uprtcl-button>`
-      : html`<uprtcl-button @click=${() => this.onLoginClick()}>login</uprtcl-button>`}
-        ${this.showAccountSelection ? html`
-        <uprtcl-dialog .actions=${false}>
-          <h1 class="account-list-title">Select account</h1>
-          <uprtcl-list class="account-list-item">
-            ${this.remotes?.map(remote => remote.accounts?.map(account => html`
-              <uprtcl-list-item @click=${() => this.login(account)}>${account}</uprtcl-list-item>
-            `))}
-          </uprtcl-list>
-        </uprtcl-dialog>
-        ` : ''}
+    if (!this.logged) {
+      return html`
+        <uprtcl-button @click=${() => this.loginAll()}>login</uprtcl-button>
       `;
+    }
+
+    return html`
+      <uprtcl-button @click=${() => this.logoutAll()}>logout</uprtcl-button>
+      ${this.remotesUI.map(remoteUI => {
+        return remoteUI.lense !== undefined
+          ? remoteUI.lense().render({})
+          : html`
+              <evees-author user-id=${remoteUI.userId as string}></evees-author>
+            `;
+      })}
+    `;
   }
 
   static get styles() {

@@ -43,8 +43,6 @@ import { SimpleWiki } from './simple-wiki';
     base: 'base58btc'
   };
 
-  const pinnerUrl = env.pinner.url;
-
   const ipfsJSConfig = {
     preload: { enabled: false },
     relay: { enabled: true, hop: { enabled: true, active: true } },
@@ -62,7 +60,7 @@ import { SimpleWiki } from './simple-wiki';
 
   const ipfs = await IPFS.create(ipfsJSConfig);
 
-  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, pinnerUrl);
+  const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
   await ipfsStore.ready();
 
   const ethConnection = new EthereumConnection({ provider });
@@ -73,7 +71,7 @@ import { SimpleWiki } from './simple-wiki';
     [PerspectiveStore, ContextStore, ProposalStore, ProposalsToPerspectiveStore],
     [ContextAccessController, ProposalsAccessController],
     identity,
-    pinnerUrl,
+    env.pinner.url,
     ipfs
   );
   await orbitDBCustom.ready();

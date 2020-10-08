@@ -1,8 +1,6 @@
 const env = {
-  entry: './src/index.polkadot.js',
-  officialRemote: 'evees-council',
-  // entry: './src/index.orbitdb.js',
-  // officialRemote: 'eth',
+  entry: './src/index.orbitdb.js',
+  officialRemote: 'eth',
   pinner: {
     url: 'http://localhost:3000',
     Swarm: ['/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star/'],

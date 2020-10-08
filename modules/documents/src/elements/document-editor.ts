@@ -646,6 +646,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     node.childrenNodes.map((child, ix) => {
       child.ix = ix;
       child.parent = node;
+      child.coord = node.coord.concat(ix);
+      child.level = node.level + 1;
     });
 
     const { object } = node.hasChildren.replaceChildrenLinks({
