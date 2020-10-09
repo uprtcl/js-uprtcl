@@ -81,7 +81,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       ? await loadEntity<Signed<Perspective>>(this.client, this.proposal.fromPerspectiveId)
       : undefined;
 
-    this.creatorId = fromPerspective?.object.payload.creatorId;
+    this.creatorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
 
     this.loadingCreator = false;
 
