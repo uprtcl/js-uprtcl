@@ -209,6 +209,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.requestUpdate();
     await this.loadPagesData();
+    if (this.evessInfoPageEl) this.evessInfoPageEl.load();
 
     this.loading = false;
   }
@@ -502,7 +503,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   loggedIn() {
     /* relaod evees info */
-    this.evessInfoPageEl.load();
+    this.loadWiki();
   }
 
   renderPageList(showOptions: boolean = true) {
@@ -627,7 +628,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   renderLoginWidget() {
     return html`
-      <evees-login-widget @logged-in=${() => this.loggedIn()}></evees-login-widget>
+      <evees-login-widget @changed=${() => this.loggedIn()}></evees-login-widget>
     `;
   }
 

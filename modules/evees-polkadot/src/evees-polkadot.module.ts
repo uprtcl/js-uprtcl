@@ -2,6 +2,7 @@ import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesPolkadotBindings } from './bindings';
 import { EveesPolkadotCouncilProposal } from './provider/council/proposal.element';
+import { EveesPolkadotIdentityRemoteLense } from './provider/evees-remote.polkadot-identity.lense';
 
 export class EveesPolkadotModule extends MicroModule {
   static id = 'evees-polkadot-module';
@@ -11,6 +12,7 @@ export class EveesPolkadotModule extends MicroModule {
 
   async onLoad() {
     customElements.define('evees-polkadot-council-proposal', EveesPolkadotCouncilProposal);
+    customElements.define('evees-polkadot-identity-remote', EveesPolkadotIdentityRemoteLense);
   }
 
   get submodules() {

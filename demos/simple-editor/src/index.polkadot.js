@@ -20,7 +20,8 @@ import {
   ProposalsToPerspectiveStore,
   ProposalsAccessController,
   ContextStore,
-  ContextAccessController
+  ContextAccessController,
+  EveesOrbitDBModule
 } from '@uprtcl/evees-orbitdb';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
@@ -90,6 +91,7 @@ import { env } from '../env';
     new DiscoveryModule([pkdEvees.casID]),
     new LensesModule(),
     new EveesPolkadotModule(),
+    new EveesOrbitDBModule(),
     evees,
     documents,
     wikis
