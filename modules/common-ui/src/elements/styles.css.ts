@@ -10,6 +10,7 @@ export const styles = css`
     font-weight: 500;
     font-stretch: 100%;
     letter-spacing: 1.25px;
+    user-select: none;
   }
   .button-filled {
     background-color: var(--background-color, #2196f3);

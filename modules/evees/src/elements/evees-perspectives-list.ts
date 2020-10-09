@@ -245,6 +245,10 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         color: #d0d8db;
         text-align: center;
       }
+
+      uprtcl-list-item {
+        user-select: none;
+      }
     `;
   }
 }
