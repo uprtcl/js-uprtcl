@@ -655,7 +655,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
 
         <div class="app-content-with-nav">
-          <div class="app-navbar" @dragover=${this.dragOverEffect} @drop=${this.handlePageDrop}>
+          <div 
+            class="app-navbar" 
+            @dragover=${this.dragOverEffect} 
+            @drop=${this.handlePageDrop}>
+            
             ${this.renderPageList()}
           </div>
 

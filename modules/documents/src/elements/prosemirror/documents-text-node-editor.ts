@@ -53,22 +53,22 @@ export class DocumentTextNodeEditor extends LitElement {
   @property({ type: Number })
   level: number = 0;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   selected: Boolean = false;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   empty: Boolean = false;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   showMenu: Boolean = false;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   showUrlMenu: Boolean = false;
 
-  @property({ type: Boolean, attribute: false })
+  @property({  attribute: false })
   showDimMenu: Boolean = false;
 
-  @property({ type: ActiveSubMenu, attribute: false })
+  @property({ attribute: false })
   activeSubMenu!: ActiveSubMenu | null;
 
   editor: any = {};
@@ -100,7 +100,6 @@ export class DocumentTextNodeEditor extends LitElement {
 
     if (changedProperties.has('focusInit')) {
       if (this.focusInit === 'true') {
-        this.setShowMenu(true);
         this.editor.view.focus();
       } else {
         this.setShowMenu(false);
@@ -137,16 +136,6 @@ export class DocumentTextNodeEditor extends LitElement {
         input.focus();
       }
     }
-
-    // if (changedProperties.has('selected')) {
-    //   if (!this.selected) {
-    //     if (!this.preventHide) {
-    //       this.setShowMenu(false);
-    //     }
-    //   } else {
-    //     this.setShowMenu(true);
-    //   }
-    // }
   }
 
   runAction(action: any) {
@@ -397,16 +386,22 @@ export class DocumentTextNodeEditor extends LitElement {
               detail: { value: true }
             })
           ),
-        blur: () =>
+        blur: () => {
           this.dispatchEvent(
             new CustomEvent('focus-changed', {
               bubbles: true,
               composed: true,
               detail: { value: false }
             })
-          ),
+          )
+          return true;
+        },
         keydown: (view, event) => {
           this.keydown(view, event);
+          return true;
+        },
+        dblclick: (view, event) => {
+          this.setShowMenu(true);
           return true;
         }
       },
@@ -447,6 +442,7 @@ export class DocumentTextNodeEditor extends LitElement {
   dispatchTransaction(transaction: any) {
     if (!transaction.curSelection.empty) {
       this.selected = true;
+      this.setShowMenu(true);
     } else {
       this.selected = false;
     }
@@ -909,7 +905,10 @@ export class DocumentTextNodeEditor extends LitElement {
     if (LOGINFO) this.logger.log('render()', { this: this });
     return html`
       ${this.showMenu ? this.renderMenu() : ''}
-      <div id="editor-content" class="editor-content"></div>
+      <div 
+        id="editor-content" 
+        class="editor-content">
+      </div>
     `;
   }
 

@@ -1038,6 +1038,27 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
+  dragOverEffect(e, node: DocNode) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }
+
+  async handleDrop(e, node: DocNode) {
+    e.preventDefault();
+    e.stopPropagation();
+   
+    const dragged = JSON.parse(e.dataTransfer.getData('text/plain'));
+
+    if (!dragged.uref) return;
+    if (dragged.parentId === this.uref) return;
+    if (node.parent === undefined) return;
+
+    const ix = node.ix !== undefined ? node.ix : node.parent.childrenNodes.length - 1;
+    await this.spliceChildren(node.parent, [dragged.uref], ix + 1, 0);
+
+    this.requestUpdate();    
+  }
+
   renderWithCortex(node: DocNode) {
     return html`
       <cortex-entity hash=${node.uref}></cortex-entity>
@@ -1053,7 +1074,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const icon = node.uref === '' ? icons.add_box : icons.edit;
 
     return html`
-      <div class="row">
+      <div 
+        class="row"
+        @dragover=${(e) => this.dragOverEffect(e, node)} 
+        @drop=${(e) => this.handleDrop(e, node)}>
+
         <div class="evee-info">
           ${!node.isPlaceholder
             ? html`
