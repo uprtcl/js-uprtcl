@@ -1,6 +1,9 @@
 import { LitElement, html, property, css } from 'lit-element';
 
 export class UprtclDialog extends LitElement {
+  @property({ type: Boolean, attribute: 'actions' })
+  actions: boolean = true;
+
   @property({ type: String, attribute: 'primary-text' })
   primaryText: string = 'Ok';
 
@@ -35,21 +38,23 @@ export class UprtclDialog extends LitElement {
           <div class="slot-container">
             <slot></slot>
           </div>
+          ${this.actions ? html`
           <div class="buttons-container">
             ${this.showSecondary === 'true'
               ? html`
-                  <uprtcl-button
-                    @click=${this.secondaryClicked}
-                    icon=${this.secondaryIcon}
-                    skinny
-                  >
-                    ${this.secondaryText}
-                  </uprtcl-button>
-                `
+                <uprtcl-button
+                  @click=${this.secondaryClicked}
+                  icon=${this.secondaryIcon}
+                  skinny
+                >
+                  ${this.secondaryText}
+                </uprtcl-button>
+              `
               : ''}
-            <uprtcl-button @click=${this.primaryClicked}>
-              ${this.primaryText}
-            </uprtcl-button>
+              <uprtcl-button @click=${this.primaryClicked}>
+                ${this.primaryText}
+              </uprtcl-button>
+          ` : ''}
           </div>
         </div>
       </div>

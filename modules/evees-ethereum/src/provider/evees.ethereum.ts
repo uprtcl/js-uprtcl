@@ -136,16 +136,9 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
 
   /** */
   async getOwnerOfNewPerspective(perspectiveData: NewPerspectiveData) {
-    let owner: String | undefined = undefined;
-    if (perspectiveData.parentId !== undefined) {
-      owner = await this.accessControl.getOwner(perspectiveData.parentId);
-    } else {
-      owner =
-        perspectiveData.canWrite !== undefined
-          ? perspectiveData.canWrite
-          : this.ethConnection.getCurrentAccount();
-    }
-    return owner;
+    return perspectiveData.parentId
+      ? await this.accessControl.getOwner(perspectiveData.parentId)
+      : this.ethConnection.getCurrentAccount();
   }
 
   async snapPerspective(

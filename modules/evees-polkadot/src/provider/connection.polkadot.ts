@@ -48,6 +48,7 @@ export interface TransactionReceipt {
 export class PolkadotConnection extends Connection {
   public api?: ApiPromise;
   public account?: string;
+  public accounts?: string[];
   private chain?: string;
   private signer?: Signer;
 
@@ -79,17 +80,30 @@ export class PolkadotConnection extends Connection {
     return this.signer !== undefined;
   }
 
-  public async connectWallet(): Promise<void> {
+  public async getAccounts(): Promise<string[]> {
     const allInjected = await web3Enable('uprtcl-wiki');
 
-    const allAccounts = await web3Accounts();
-    this.account = allAccounts[0]?.address;
+    this.accounts = (await web3Accounts()).map(a => a.address);
+    return this.accounts;
+  }
+
+  public async connectWallet(userId?: string): Promise<void> {
+    if (!this.accounts) {
+      await this.getAccounts();
+    }
+    this.account = userId ?? this.accounts![0];
 
     // Set extension account as signer
     const injector = await web3FromAddress(this.account);
     this.api?.setSigner(injector.signer);
     this.signer = injector.signer;
     return;
+  }
+
+  public async disconnectWallet(): Promise<void> {
+    this.api?.setSigner({});
+    this.signer = undefined;
+    this.account = undefined;
   }
 
   public async getIdentityInfo(userId: string) {

@@ -1,3 +1,5 @@
+import { html } from 'lit-element';
+
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Signed } from '@uprtcl/cortex';
 import { CASStore } from '@uprtcl/multiplatform';
@@ -9,13 +11,13 @@ import {
   NewPerspectiveData,
   EveesRemote,
   ProposalsProvider,
-  deriveSecured,
   EveesHelpers
 } from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
 import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
+import { Lens } from '@uprtcl/lenses';
 
 const evees_if = 'evees-v0';
 // const timeout = 200;
@@ -31,7 +33,7 @@ export class EveesOrbitDB implements EveesRemote {
   accessControl: any;
   proposals!: ProposalsProvider;
 
-  constructor(protected orbitdbcustom: OrbitDBCustom, public store: CASStore) {
+  constructor(public orbitdbcustom: OrbitDBCustom, public store: CASStore) {
     if (
       orbitdbcustom.getManifest(EveesOrbitDBEntities.Perspective) === undefined ||
       orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined
@@ -58,6 +60,18 @@ export class EveesOrbitDB implements EveesRemote {
 
   canWrite(uref: string): Promise<boolean> {
     return this.accessControl.canWrite(uref, this.userId);
+  }
+
+  lense(): Lens {
+    return {
+      name: 'evees-orbitb:remote',
+      type: 'remote',
+      render: () => {
+        return html`
+          <evees-orbitdb-remote> </evees-orbitdb-remote>
+        `;
+      }
+    };
   }
 
   /**

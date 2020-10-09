@@ -80,7 +80,6 @@ export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
 export interface NewPerspectiveData {
   perspective: Secured<Perspective>;
   details: PerspectiveDetails;
-  canWrite?: string;
   parentId?: string;
 }
 

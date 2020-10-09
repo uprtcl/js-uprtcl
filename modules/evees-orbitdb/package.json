@@ -25,7 +25,8 @@
     "inversify": "^5.0.1",
     "ipfs": "^0.50.2",
     "orbit-db-access-controllers": "^0.2.6",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^6.6.3"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",

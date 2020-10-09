@@ -151,12 +151,9 @@ export class PolkadotCouncilEveesStorage {
         // get council data of member.
         const data = await this.getCouncilDataOf(member, at);
 
-        const cacheVotes = this.cacheVotes(data, at, member);
+        await Promise.all(this.cacheVotes(data, at, member));
         /** proposal status uses the latest cached votes */
-        const cacheProposals = this.cacheProposals(data, at);
-
-        // after this promise, my local DB will be synched with data the rest of council members
-        return Promise.all([...cacheProposals, ...cacheVotes]);
+        await Promise.all(this.cacheProposals(data, at));
       })
     );
 
