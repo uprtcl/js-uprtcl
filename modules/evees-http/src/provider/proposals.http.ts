@@ -10,14 +10,27 @@ export class ProposalsHttp implements ProposalsProvider {
   canPropose(): Boolean {
     return true;
   }
-
+  
   async createProposal(proposal: NewProposal): Promise<string> {
     const result = await this.provider.post(`/proposal`, proposal);
     return result.elementIds[0];
   }
 
   async getProposal(proposalId: string): Promise<Proposal> {
-    return this.provider.getObject<Proposal>(`/proposal/${proposalId}`);
+    const proposal = await this.provider.getObject<Proposal>(`/proposal/${proposalId}`);
+    /** inject the casID of the remote store */
+    proposal.details.newPerspectives = proposal.details.newPerspectives.map(
+      newPerspective => { 
+        return {
+          ...newPerspective,
+          perspective: {
+            ...newPerspective.perspective,
+            casID: this.evees.store.casID
+          }
+        } 
+      })
+
+    return proposal;
   }
 
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
