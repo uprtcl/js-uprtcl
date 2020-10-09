@@ -84,10 +84,12 @@ export class PolkadotConnection extends Connection {
     const allInjected = await web3Enable('uprtcl-wiki');
 
     this.accounts = (await web3Accounts()).map(a => a.address);
-    return this.accounts;
+    return this.accounts ? this.accounts : [];
   }
 
   public async connectWallet(userId?: string): Promise<void> {
+    if (!this.api) throw new Error('api not defined');
+
     if (!this.accounts) {
       await this.getAccounts();
     }
@@ -95,13 +97,15 @@ export class PolkadotConnection extends Connection {
 
     // Set extension account as signer
     const injector = await web3FromAddress(this.account);
-    this.api?.setSigner(injector.signer);
+    this.api.setSigner(injector.signer);
     this.signer = injector.signer;
     return;
   }
 
   public async disconnectWallet(): Promise<void> {
-    this.api?.setSigner({});
+    if (!this.api) throw new Error('api not defined');
+
+    this.api.setSigner({});
     this.signer = undefined;
     this.account = undefined;
   }
@@ -151,16 +155,23 @@ export class PolkadotConnection extends Connection {
 
     // TODO: Dont block here, cache value
     return new Promise(async (resolve, reject) => {
-      const unsub = await result?.signAndSend(<AddressOrPair>this?.account, async result => {
+      if (result === undefined) reject();
+      if (this === undefined) reject();
+
+      const unsub = await result.signAndSend(<AddressOrPair>this.account, async result => {
         if (result.status.isInBlock) {
         } else if (result.status.isFinalized) {
           if (unsub) unsub();
+          if (this.api === undefined) throw new Error('api is undefined');
+
           // TODO: resolve with the txHash and the blockNumber
           const txHash = result.status.asFinalized.toHex(); // .toString() if string is needed
-          const blockData = await this.api?.rpc.chain.getBlock(txHash);
+          const blockData = await this.api.rpc.chain.getBlock(txHash);
+          if (blockData === undefined) throw new Error('blockData is undefined');
+
           resolve({
             txHash,
-            blockNumber: <number>blockData?.block.header.number.toJSON()
+            blockNumber: <number>blockData.block.header.number.toJSON()
           });
         }
       });
@@ -168,7 +179,8 @@ export class PolkadotConnection extends Connection {
   }
 
   public async signText(messageText): Promise<string> {
-    if (this.signer?.signRaw === undefined) throw new Error('signer not found');
+    if (this.signer === undefined) throw new Error('signer not found');
+    if (this.signer.signRaw === undefined) throw new Error('signer not found');
     if (this.account === undefined) throw new Error('account not found');
 
     const { signature } = await this.signer.signRaw({
