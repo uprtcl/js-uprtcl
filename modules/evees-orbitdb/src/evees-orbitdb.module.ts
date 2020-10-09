@@ -2,7 +2,7 @@ import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesOrbitDBBindings } from './bindings';
 import { PermissionsOrbitdDb } from './provider/evees-acl.orbit-db.lense';
-import { EveesPolkadotIdentityRemoteLense } from '../../evees-polkadot/src/provider/evees-remote.polkadot-identity.lense';
+import { RemoteOrbitdDbLense } from './provider/evees-remote.orbit-db.lense';
 
 export class EveesOrbitDBModule extends MicroModule {
   static id = 'evees-orbitdb-module';
@@ -12,7 +12,7 @@ export class EveesOrbitDBModule extends MicroModule {
 
   async onLoad() {
     customElements.define('evees-orbitdb-permissions', PermissionsOrbitdDb);
-    customElements.define('evees-orbitdb-remote', EveesPolkadotIdentityRemoteLense);
+    customElements.define('evees-orbitdb-remote', RemoteOrbitdDbLense);
   }
 
   get submodules() {
