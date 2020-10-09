@@ -9,6 +9,7 @@ export { EveesSource } from './services/evees.source';
 export { EveesProvider } from './services/evees.provider';
 export { EveesRemote } from './services/evees.remote';
 export { NewPerspectiveData } from './types';
+export { EveesConfig } from './types';
 
 /** Service providers */
 export { Evees } from './services/evees';

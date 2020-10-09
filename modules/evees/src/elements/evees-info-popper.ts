@@ -23,8 +23,8 @@ export class EveesInfoPopper extends LitElement {
   @property({ type: String })
   parentId!: string;
 
-  @property({ type: String, attribute: 'default-authority' })
-  defaultAuthority: string | undefined = undefined;
+  @property({ type: String, attribute: 'default-remote' })
+  defaultRemote: string | undefined = undefined;
 
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
@@ -87,7 +87,7 @@ export class EveesInfoPopper extends LitElement {
           parentId=${this.parentId}
           first-uref=${this.firstRef as string}
           evee-color=${this.color()}
-          .default-authority=${this.defaultAuthority}
+          default-remote=${this.defaultRemote as string}
         ></evees-info-page>
       </uprtcl-popper>
     `;

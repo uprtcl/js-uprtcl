@@ -192,6 +192,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.reloadChildren();
     this.loading = false;
+    this.logger.log(`evee ${this.uref} loaded`, {
+      perspectiveData: this.perspectiveData,
+      isLogged: this.isLogged,
+      isLoggedOnDefault: this.isLoggedOnDefault
+    })
   }
 
   async checkPull() {

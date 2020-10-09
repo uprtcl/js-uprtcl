@@ -28,12 +28,13 @@ import {
   hashObject
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
-import { loadEntity, CASStore } from '@uprtcl/multiplatform';
+import { loadEntity } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode } from '../types';
 import { HasDocNodeLenses } from '../patterns/document-patterns';
 import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
+import { EveesConfig } from '@uprtcl/evees';
 
 const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
@@ -75,8 +76,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
+  @property({ type: String })
+  defaultRemoteId!: string;
+  
   @property({ attribute: false })
   checkedOutPerspectives: { [key: string]: { firstUref: string; newUref: string } } = {};
+
 
   // checkedOutPerspectivesStorageId!: string;
 
@@ -92,6 +97,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (!this.client) {
       this.client = this.request(ApolloClientModule.bindings.Client);
     }
+
+    this.defaultRemoteId = (this.request(EveesModule.bindings.Config) as EveesConfig).defaultRemote.id;
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
@@ -1055,6 +1062,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}
+                  default-remote=${this.defaultRemoteId}
                   @checkout-perspective=${e => this.handleNodePerspectiveCheckout(e, node)}
                   show-perspectives
                   show-acl
