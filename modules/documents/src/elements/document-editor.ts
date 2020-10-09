@@ -98,7 +98,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       this.client = this.request(ApolloClientModule.bindings.Client);
     }
 
-    this.defaultRemoteId = (this.request(EveesModule.bindings.Config) as EveesConfig).defaultRemote.id;
+    const config: EveesConfig = this.request(EveesModule.bindings.Config)
+    if (config.defaultRemote === undefined) {
+      throw new Error('default remote not defined');
+    }
+    
+    this.defaultRemoteId = config.defaultRemote.id;
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 

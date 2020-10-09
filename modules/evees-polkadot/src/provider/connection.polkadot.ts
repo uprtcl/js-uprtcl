@@ -101,7 +101,7 @@ export class PolkadotConnection extends Connection {
   }
 
   public async disconnectWallet(): Promise<void> {
-    this.api?.setSigner();
+    this.api?.setSigner({});
     this.signer = undefined;
     this.account = undefined;
   }
