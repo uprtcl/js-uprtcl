@@ -1,19 +1,16 @@
 import { html } from 'lit-element';
 
-import { EthereumContract } from '@uprtcl/ethereum-provider';
-import { AccessControlService } from '@uprtcl/evees';
+import { AccessControlService, Secured, Perspective } from '@uprtcl/evees';
 import { Lens } from '@uprtcl/lenses';
-
-import { GET_PERSP_HASH, GET_PERSP_OWNER } from './common';
+import { CASStore } from '@uprtcl/multiplatform';
+import { Signed } from '@uprtcl/cortex';
 
 export class EveesAccessControlEthereum implements AccessControlService {
-  constructor(protected uprtclRoot: EthereumContract) {}
+  constructor(protected store: CASStore) {}
 
   async getOwner(perspectiveId: string) {
-    const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
-
-    const owner = await this.uprtclRoot.call(GET_PERSP_OWNER, [perspectiveIdHash]);
-    return owner.toLowerCase();
+    const perspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
+    return perspective.payload.creatorId;
   }
 
   async canWrite(uref: string, userId: string) {
@@ -22,11 +19,11 @@ export class EveesAccessControlEthereum implements AccessControlService {
 
   lense(): Lens {
     return {
-      name: 'evees-ethereum:access-control',
+      name: 'evees-polkadot:access-control',
       type: 'access-control',
-      render: (details: any) => {
+      render: (uref: string) => {
         return html`
-          <evees-ethereum-permissions uref=${details.uref}> </evees-ethereum-permissions>
+          <evees-polkadot-permissions uref=${uref}> </evees-polkadot-permissions>
         `;
       }
     };

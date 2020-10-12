@@ -1,30 +1,10 @@
+import { html } from 'lit-element';
+
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import {
-  EthereumConnection,
-  EthereumContractOptions,
-  EthereumContract
-} from '@uprtcl/ethereum-provider';
-import { cidToHex32, bytes32ToCid } from '@uprtcl/ipfs-provider';
-
-import { abi as abiRoot, networks as networksRoot } from './contracts-json/UprtclRoot.min.json';
-import {
-  abi as abiDetails,
-  networks as networksDetails
-} from './contracts-json/UprtclDetails.min.json';
-import {
-  abi as abiProposals,
-  networks as networksProposals
-} from './contracts-json/UprtclProposals.min.json';
-import {
-  abi as abiWrapper,
-  networks as networksWrapper
-} from './contracts-json/UprtclWrapper.min.json';
-
-const UprtclRoot = { abi: abiRoot, networks: networksRoot };
-const UprtclDetails = { abi: abiDetails, networks: networksDetails };
-const UprtclProposals = { abi: abiProposals, networks: networksProposals };
-const UprtclWrapper = { abi: abiWrapper, networks: networksWrapper };
+import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+import { EveesOrbitDBEntities } from '@uprtcl/evees-orbitdb';
+import { Signed } from '@uprtcl/cortex';
 
 import {
   EveesRemote,
@@ -33,88 +13,58 @@ import {
   NewPerspectiveData,
   Secured,
   ProposalsProvider,
-  deriveSecured,
-  hashObject
+  EveesHelpers
 } from '@uprtcl/evees';
 
-import {
-  UPDATE_PERSP_DETAILS,
-  INIT_PERSP,
-  GET_CONTEXT_HASH,
-  GET_PERSP_HASH,
-  INIT_PERSP_BATCH,
-  UPDATE_OWNER,
-  UPDATED_HEAD,
-  getEthPerspectiveHead,
-  ZERO_HEX_32,
-  ZERO_ADDRESS,
-  hashToId,
-  PerspectiveCreator
-} from './common';
+import { UserPerspectivesDetails } from './connection.polkadot';
+
+import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
+import { EveesCacheDB } from './evees.cache.db';
+import { Lens } from '@uprtcl/lenses';
+import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { EveesAccessControlEthereum } from './evees-acl.ethereum';
 
-const evees_if = 'evees-v0';
+const evees_if = 'evees-identity';
+const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
+export interface RemoteStatus {
+  pendingActions: number;
+}
 
-export class EveesEthereum implements EveesRemote, PerspectiveCreator {
-  logger: Logger = new Logger('EveesEtereum');
+export class EveesEthereum implements EveesRemote {
+  logger: Logger = new Logger('EveesEthereum');
 
   accessControl: EveesAccessControlEthereum;
-
-  public uprtclRoot: EthereumContract;
-  public uprtclDetails: EthereumContract;
-  public uprtclProposals: EthereumContract;
-  public uprtclWrapper: EthereumContract;
+  cache: EveesCacheDB;
 
   constructor(
-    public ethConnection: EthereumConnection,
+    public connection: EthereumConnection,
+    protected orbitdbcustom: OrbitDBCustom,
     public store: CASStore,
-    public proposals: ProposalsProvider,
-    uprtclRootOptions: EthereumContractOptions = {
-      contract: UprtclRoot as any
-    },
-    uprtclDetailsOptions: EthereumContractOptions = {
-      contract: UprtclDetails as any
-    },
-    uprtclProposalsOptions: EthereumContractOptions = {
-      contract: UprtclProposals as any
-    },
-    uprtclWrapperOptions: EthereumContractOptions = {
-      contract: UprtclWrapper as any
-    }
+    public proposals: ProposalsProvider
   ) {
-    this.uprtclRoot = new EthereumContract(uprtclRootOptions, ethConnection);
-    this.uprtclDetails = new EthereumContract(uprtclDetailsOptions, ethConnection);
-    this.uprtclProposals = new EthereumContract(uprtclProposalsOptions, ethConnection);
-    this.uprtclWrapper = new EthereumContract(uprtclWrapperOptions, ethConnection);
-
-    this.accessControl = new EveesAccessControlEthereum(this.uprtclRoot);
+    if (orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined) {
+      throw new Error(
+        'orbitdb custom must include the PolkadotEveesOrbitDBEntities.Context stores'
+      );
+    }
+    this.accessControl = new EveesAccessControlEthereum(store);
+    this.cache = new EveesCacheDB('ethereum-evees-cache');
   }
 
   get id() {
-    return `eth-${this.ethConnection.getNetworkId()}:${evees_if}`;
+    return `eth-${this.connection.getNetworkId()}:${evees_if}`;
   }
 
   get defaultPath() {
-    return this.uprtclRoot.contractInstance.address
-      ? this.uprtclRoot.contractInstance.address.toLocaleLowerCase()
-      : '';
+    return '';
   }
 
   get userId() {
-    return this.ethConnection.getCurrentAccount();
+    return this.connection.account;
   }
 
-  /**
-   * @override
-   */
   async ready(): Promise<void> {
-    await Promise.all([
-      this.uprtclRoot.ready(),
-      this.uprtclDetails.ready(),
-      this.uprtclProposals.ready(),
-      this.uprtclWrapper.ready(),
-      this.store.ready()
-    ]);
+    await Promise.all([this.store.ready()]);
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
@@ -131,42 +81,38 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   }
 
   async canWrite(uref: string) {
-    return this.accessControl.canWrite(uref, this.userId);
+    return this.userId ? this.accessControl.canWrite(uref, this.userId) : false;
   }
 
-  /** */
-  async getOwnerOfNewPerspective(perspectiveData: NewPerspectiveData) {
-    return perspectiveData.parentId
-      ? await this.accessControl.getOwner(perspectiveData.parentId)
-      : this.ethConnection.getCurrentAccount();
+  // updatePerspectiveDetails?
+  async updatePerspective(
+    perspectiveId: string,
+    details: PerspectiveDetails,
+    pin: boolean = false
+  ) {
+    // action is done on the cache
+    await this.cacheInitialized();
+
+    this.cache.updates.put({
+      id: perspectiveId,
+      head: details.headId as string
+    });
   }
 
+  /** set the parent owner as creatorId (and thus owner) */
   async snapPerspective(
     parentId?: string,
     context?: string,
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
-    const creatorId = this.userId ? this.userId : '';
-    timestamp = timestamp ? timestamp : Date.now();
-
-    const defaultContext = await hashObject({
-      creatorId,
-      timestamp
-    });
-
-    context = context || defaultContext;
-
-    const object: Perspective = {
-      creatorId,
-      remote: this.id,
-      path: path !== undefined ? path : this.defaultPath,
+    const perspective = await EveesHelpers.snapDefaultPerspective(
+      this,
+      undefined,
+      context,
       timestamp,
-      context
-    };
-
-    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
-
+      path
+    );
     perspective.casID = this.store.casID;
 
     return perspective;
@@ -175,171 +121,201 @@ export class EveesEthereum implements EveesRemote, PerspectiveCreator {
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
-    const owner = await this.getOwnerOfNewPerspective(perspectiveData);
-    /** Store the perspective data in the data layer */
+
+    if (this.userId !== secured.object.payload.creatorId) {
+      throw new Error(
+        `cannot create a perspective whose creatorId ${secured.object.payload.creatorId} is not you`
+      );
+    }
+
     const perspectiveId = await this.persistPerspectiveEntity(secured);
+    if (perspectiveId !== secured.id) {
+      throw new Error(
+        `Unexpected perspective id ${perspectiveId} for perspective ${JSON.stringify(secured)}`
+      );
+    }
 
-    const headCidParts = details.headId ? cidToHex32(details.headId) : [ZERO_HEX_32, ZERO_HEX_32];
+    // action is done on the cache
+    await this.cacheInitialized();
 
-    const newPerspective = {
-      perspectiveId: perspectiveId,
-      headCid1: headCidParts[0],
-      headCid0: headCidParts[1],
-      owner: owner
-    };
-
-    const context = secured.object.payload.context;
-
-    /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
-    await this.uprtclDetails.send(INIT_PERSP, [
-      { perspective: newPerspective, context: context },
-      this.uprtclDetails.userId
-    ]);
+    await this.cache.newPerspectives.put({
+      id: perspectiveId,
+      context: secured.object.payload.context,
+      head: details.headId
+    });
   }
 
-  async preparePerspectives(newPerspectivesData: NewPerspectiveData[]) {
-    const persistPromises = newPerspectivesData.map(perspectiveData => {
-      return this.persistPerspectiveEntity(perspectiveData.perspective);
-    });
+  async cacheInitialized(): Promise<void> {
+    const block = await this.cache.meta.get('block');
+    if (block !== undefined && block.value !== undefined) {
+      return;
+    }
 
-    await Promise.all(persistPromises);
+    await this.initCache();
+  }
 
-    const ethPerspectivesDataPromises = newPerspectivesData.map(
-      async (perspectiveData): Promise<any> => {
-        const owner = await this.getOwnerOfNewPerspective(perspectiveData);
+  async getEveesDataOf(userId: string, block?: number): Promise<UserPerspectivesDetails> {
+    block = block || (await this.connection.getLatestBlock());
+    const head = await this.connection.getHead(userId, EVEES_KEYS, block);
+    if (!head) {
+      this.logger.log(`Evees Data of ${userId} is undefined`);
+      return {};
+    }
 
-        const headCidParts = perspectiveData.details.headId
-          ? cidToHex32(perspectiveData.details.headId)
-          : [ZERO_HEX_32, ZERO_HEX_32];
+    const eveesData = (await this.store.get(head)) as UserPerspectivesDetails;
+    this.logger.log(`Evees Data of ${userId}`, eveesData);
+    return eveesData ? eveesData : {};
+  }
 
-        const perspective = {
-          perspectiveId: perspectiveData.perspective.id,
-          headCid1: headCidParts[0],
-          headCid0: headCidParts[1],
-          owner: owner
-        };
+  async initCache(): Promise<void> {
+    if (!this.userId) throw new Error('user not defined');
 
-        return { perspective, context: perspectiveData.perspective.object.payload.context };
-      }
-    );
-
-    const ethPerspectivesData = await Promise.all(ethPerspectivesDataPromises);
-
-    return ethPerspectivesData;
+    const block = await this.connection.getLatestBlock();
+    const eveesData = await this.getEveesDataOf(this.userId, block);
+    await this.cache.meta.put({ entry: 'block', value: block });
+    await this.cache.meta.put({ entry: 'eveesData', value: eveesData });
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    const ethPerspectivesData = await this.preparePerspectives(newPerspectivesData);
-
-    /** TX is sent, and await to force order (preent head update on an unexisting perspective) */
-    await this.uprtclDetails.send(INIT_PERSP_BATCH, [
-      ethPerspectivesData,
-      this.ethConnection.getCurrentAccount()
-    ]);
-  }
-
-  /**
-   * @override
-   */
-  async updatePerspective(perspectiveId: string, details: PerspectiveDetails): Promise<void> {
-    const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
-
-    if (details.headId !== undefined) {
-      const headCidParts = cidToHex32(details.headId);
-
-      await this.uprtclRoot.send(UPDATED_HEAD, [
-        perspectiveIdHash,
-        headCidParts[0],
-        headCidParts[1],
-        ZERO_ADDRESS
-      ]);
+    for (var newPerspectiveData of newPerspectivesData) {
+      await this.createPerspective(newPerspectiveData);
     }
   }
 
-  async hashToId(hash: string) {
-    return hashToId(this.uprtclRoot, hash);
-  }
-
-  /**
-   * @override
-   */
   async getContextPerspectives(context: string): Promise<string[]> {
-    const contextHash = await this.uprtclDetails.call(GET_CONTEXT_HASH, [context]);
+    this.logger.log('getContextPerspectives', { context });
+    if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    let contextFilter = this.uprtclDetails.contractInstance.filters.PerspectiveDetailsSet(
-      null,
-      contextHash,
-      null
-    );
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context
+    });
+    const perspectiveIds = [...contextStore.values()];
 
-    let perspectiveContextUpdatedEvents = await this.uprtclDetails.contractInstance.queryFilter(
-      contextFilter,
-      0
-    );
+    // include perspectives of the cache
+    const cachedPerspectives = await this.cache.newPerspectives
+      .where('context')
+      .equals(context)
+      .toArray();
 
-    const perspectiveIds = await Promise.all(
-      perspectiveContextUpdatedEvents.map(event =>
-        this.hashToId(event.args ? event.args.perspectiveIdHash : undefined)
-      )
-    );
-    this.logger.log(`[ETH] getContextPerspectives of ${context}`, perspectiveIds);
+    const allPerspectivesIds = perspectiveIds.concat(cachedPerspectives.map(e => e.id));
 
-    return perspectiveIds;
+    this.logger.log('getContextPerspectives - done ', {
+      context,
+      allPerspectivesIds
+    });
+    return allPerspectivesIds;
   }
 
-  /**
-   * @override
-   */
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
+    const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
-    const ethPerspective = await getEthPerspectiveHead(
-      this.uprtclRoot.contractInstance,
-      perspectiveIdHash
-    );
+    /** even if I'm not logged in, show the cached data (valid for the local user) */
+    if ((await this.cache.meta.get('block')) !== undefined) {
+      /** head update have priority over newPerspective (in case a newPerspective head is updated) */
+      const cachedUpdate = await this.cache.updates.get(perspectiveId);
+      if (cachedUpdate !== undefined) {
+        return { headId: cachedUpdate.head };
+      }
 
-    const headId =
-      ethPerspective !== undefined
-        ? bytes32ToCid([ethPerspective.headCid1, ethPerspective.headCid0])
-        : undefined;
+      const cachedNewPerspective = await this.cache.newPerspectives.get(perspectiveId);
+      if (cachedNewPerspective !== undefined) {
+        return { headId: cachedNewPerspective.head };
+      }
 
-    return { name: '', headId };
+      const cachedUserPerspectives = (await this.cache.meta.get('eveesData')).value;
+      if (cachedUserPerspectives[perspectiveId]) {
+        return cachedUserPerspectives[perspectiveId];
+      }
+    }
+
+    /** if nothing found on the cache, then read it from the blockchain */
+    const userPerspectives = await this.getEveesDataOf(perspective.creatorId);
+    return userPerspectives[perspectiveId];
+  }
+
+  async flushCache() {
+    if (!this.userId) throw new Error('user not logged in');
+
+    const newPerspectives = await this.cache.newPerspectives.toArray();
+    const updates = await this.cache.updates.toArray();
+
+    const eveesData = await this.getEveesDataOf(this.userId);
+
+    newPerspectives.map(newPerspective => {
+      eveesData[newPerspective.id] = { headId: newPerspective.head };
+    });
+
+    updates.map(update => {
+      eveesData[update.id] = { headId: update.head };
+    });
+
+    const newEveesDetailsHash = await this.store.create(eveesData);
+
+    this.logger.log('flushing cache and updateing evees data ', {
+      eveesData,
+      newPerspectives,
+      updates
+    });
+
+    await this.connection.updateHead(newEveesDetailsHash, EVEES_KEYS);
+
+    /* delete cache */
+    await this.cache.meta.clear();
+    await this.cache.newPerspectives.clear();
+    await this.cache.updates.clear();
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
-    const perspectiveIdHash = await this.uprtclRoot.call(GET_PERSP_HASH, [perspectiveId]);
-    let contextHash = ZERO_HEX_32;
-
-    /** set null values */
-    await this.uprtclDetails.send(UPDATE_PERSP_DETAILS, [
-      perspectiveIdHash,
-      contextHash,
-      '',
-      '',
-      ''
-    ]);
-
-    /** set null owner (cannot be undone) */
-    const ZERO_ADD = '0x' + new Array(40).fill(0).join('');
-    await this.uprtclRoot.send(UPDATE_OWNER, [perspectiveIdHash, ZERO_ADD]);
+    throw new Error('Method not implemented.');
   }
 
   async isLogged() {
-    return this.ethConnection.canSign();
+    return this.connection.canSign();
   }
-  async login(): Promise<void> {
-    await this.ethConnection.connectWallet();
+
+  async login(userId?: string): Promise<void> {
+    await this.connection.connectWallet(userId);
   }
-  logout(): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async logout(): Promise<void> {
+    await this.connection.disconnectWallet();
   }
-  connect(): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async connect() {}
+
+  async isConnected() {
+    return true;
   }
-  isConnected(): Promise<boolean> {
-    throw new Error('Method not implemented.');
-  }
+
   disconnect(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  lense(): Lens {
+    return {
+      name: 'evees-orbitb:remote',
+      type: 'remote',
+      render: () => {
+        return html`
+          <evees-polkadot-identity-remote> </evees-polkadot-identity-remote>
+        `;
+      }
+    };
+  }
+
+  async getPendingActions(): Promise<number> {
+    const hasCache = (await this.cache.meta.get('block')) !== undefined;
+    if (!hasCache) return 0;
+
+    const nNew = await this.cache.newPerspectives.count();
+    const nUpdates = await this.cache.updates.count();
+
+    return nNew + nUpdates;
+  }
+
+  async getStatus(): Promise<RemoteStatus> {
+    return {
+      pendingActions: await this.getPendingActions()
+    };
   }
 }
