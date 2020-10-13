@@ -2,7 +2,7 @@ import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { PerspectiveDetails } from '@uprtcl/evees';
 
-import { PolkadotConnection, TransactionReceipt } from '../connection.polkadot';
+import { PolkadotConnection, TransactionReceipt } from '../../connection.polkadot';
 import { EveesCouncilDB } from './dexie.council.store';
 
 import {
@@ -54,14 +54,14 @@ export class PolkadotCouncilEveesStorage {
 
   async updateCouncilData(hash: string): Promise<TransactionReceipt> {
     const newHash = await this.gossipProposals(hash);
-    return this.connection.updateHead(newHash, COUNCIL_KEYS);
+    return this.connection.updateMutableHead(newHash, COUNCIL_KEYS);
   }
 
   async gossipProposals(head?: string) {
     if (!this.connection.account) throw new Error('cant update data if not logged in');
 
     // gossip consist on adding all new proposals from other council members to my own councilData object.
-    head = head || (await this.connection.getHead(this.connection.account, COUNCIL_KEYS));
+    head = head || (await this.connection.getMutableHead(this.connection.account, COUNCIL_KEYS));
     const myCouncilData = head ? ((await this.store.get(head)) as CouncilData) : {};
 
     const councilProposals = myCouncilData.proposals ? myCouncilData.proposals : [];
@@ -84,7 +84,7 @@ export class PolkadotCouncilEveesStorage {
 
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
     block = block || (await this.db.meta.get('block')).value;
-    const head = await this.connection.getHead(member, COUNCIL_KEYS, block);
+    const head = await this.connection.getMutableHead(member, COUNCIL_KEYS, block);
     if (!head) {
       this.logger.log(`Council Data of ${member} is undefined`);
       return {};

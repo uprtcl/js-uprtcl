@@ -6,8 +6,8 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { EveesModule, EveesHelpers, EveesRemote, Perspective } from '@uprtcl/evees';
 import { loadEntity } from '@uprtcl/multiplatform';
-import { EveesBlockchainCached } from './evees.blockchain';
 
+import { EveesBlockchainCached } from './evees.blockchain.cached';
 
 export class PermissionsFixedLense extends moduleConnect(LitElement) {
   @property({ type: String })

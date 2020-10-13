@@ -5,13 +5,13 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
-import { EveesPolkadotIdentity } from './evees.polkadot-identity';
+import { EveesBlockchainCached } from './evees.blockchain.cached';
 
 interface remoteUI {
   pendingActions: number;
 }
 
-export class EveesPolkadotIdentityRemoteLense extends moduleConnect(LitElement) {
+export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
@@ -19,12 +19,12 @@ export class EveesPolkadotIdentityRemoteLense extends moduleConnect(LitElement) 
   remoteUI!: remoteUI;
 
   client!: ApolloClient<any>;
-  remote!: EveesPolkadotIdentity;
+  remote!: EveesBlockchainCached;
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     const remotes = this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[];
-    this.remote = remotes.find(r => r.id.includes('evees-identity')) as EveesPolkadotIdentity;
+    this.remote = remotes.find(r => r.id.includes('evees-identity')) as EveesBlockchainCached;
     await this.remote.ready();
 
     this.load();
