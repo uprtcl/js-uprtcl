@@ -1,5 +1,5 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { PolkadotConnection } from './connection.polkadot';
+import { PolkadotConnection } from '../../connection.polkadot';
 
 const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
 
