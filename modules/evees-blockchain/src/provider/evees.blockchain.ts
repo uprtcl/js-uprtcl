@@ -18,12 +18,17 @@ import {
 
 import { Lens } from '@uprtcl/lenses';
 
-import { UserPerspectivesDetails } from './connection.polkadot';
 import { EveesCacheDB } from './evees.cache.db';
 import { EveesAccessControlFixed } from './evees-acl.fixed';
 import { BlockchainConnection } from './evees.blockchain.connection';
 
-const evees_if = 'evees-identity';
+const evees_if = 'fixed';
+
+export interface UserPerspectivesDetails {
+  [perspectiveId: string]: {
+    headId?: string;
+  };
+}
 
 export interface RemoteStatus {
   pendingActions: number;

@@ -34,12 +34,6 @@ const getCID = (info: IdentityInfo, keys: string[]): string | undefined => {
   return (cid1[1] as any).Raw + (cid0[1] as any).Raw;
 };
 
-export interface UserPerspectivesDetails {
-  [perspectiveId: string]: {
-    headId?: string;
-  };
-}
-
 export interface TransactionReceipt {
   txHash: string;
   blockNumber: number;
