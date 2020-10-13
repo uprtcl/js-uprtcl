@@ -13,7 +13,8 @@ import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 import { EveesOrbitDB, EveesOrbitDBModule, ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
-import { EveesEthereum, EveesEthereumModule, EthereumIdentity } from '@uprtcl/evees-ethereum';
+import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
+import { EthereumOrbitDBIdentity, EveesEthereumConnection } from '@uprtcl/evees-ethereum';
 
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
@@ -65,7 +66,7 @@ import { SimpleWiki } from './simple-wiki';
 
   const ethConnection = new EthereumConnection({ provider });
   await ethConnection.ready();
-  const identity = new EthereumIdentity(ethConnection);
+  const identity = new EthereumOrbitDBIdentity(ethConnection);
 
   const orbitDBCustom = new OrbitDBCustom(
     [PerspectiveStore, ContextStore, ProposalStore, ProposalsToPerspectiveStore],
@@ -80,7 +81,8 @@ import { SimpleWiki } from './simple-wiki';
   await orbitdbEvees.connect();
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-  const ethEvees = new EveesEthereum(ethConnection, ipfsStore, proposals);
+  const ethEveesConnection = new EveesEthereumConnection();
+  const ethEvees = new EveesBlockchainCached(ethEveesConnection, orbitDBCustom, ipfsStore, proposals, 'ethereum-evees-cache');
   await ethEvees.ready();
 
   const evees = new EveesModule([orbitdbEvees, ethEvees]);
@@ -94,7 +96,7 @@ import { SimpleWiki } from './simple-wiki';
     new CortexModule(),
     new DiscoveryModule([orbitdbEvees.casID]),
     new LensesModule(),
-    new EveesEthereumModule(),
+    new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
     evees,
     documents,
