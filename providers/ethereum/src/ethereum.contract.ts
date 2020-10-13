@@ -32,7 +32,7 @@ export class EthereumContract {
 
     const contractAddress =
       this.options.contractAddress ||
-      this.options.contract.networks[this.connection.getNetworkId()].address;
+      this.options.contract.networks[await this.connection.getNetworkId()].address;
 
     this.contractInstance = new ethers.Contract(
       contractAddress,

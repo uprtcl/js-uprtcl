@@ -10,16 +10,19 @@ const ZERO_ADDRESS = '0x' + new Array(40).fill(0).join('');
 
 import { UPDATED_HEAD } from './common';
 
-export class EveesEthereumConnection extends EthereumConnection implements BlockchainConnection {
-  logger: Logger = new Logger('EveesPolkadot');
+export class EveesEthereumConnection implements BlockchainConnection {
+  logger: Logger = new Logger('EveesEthereum');
 
   public uprtclRoot: EthereumContract;
 
-  constructor(uprtclRootOptions: EthereumContractOptions = {
+  constructor(protected connection: EthereumConnection, uprtclRootOptions: EthereumContractOptions = {
     contract: UprtclRoot as any
   }) {
-    super();
-    this.uprtclRoot = new EthereumContract(uprtclRootOptions, this);
+    this.uprtclRoot = new EthereumContract(uprtclRootOptions, connection);
+  }
+
+  async ready() {
+    await Promise.all([this.connection.ready(), this.uprtclRoot.ready()]);
   }
 
   async getHead(userId: string, block?: number) {
@@ -43,5 +46,23 @@ export class EveesEthereumConnection extends EthereumConnection implements Block
       ZERO_ADDRESS
     ]);    
   }
- 
+
+  get account() {
+    return this.connection.account;
+  }
+  async getNetworkId() {
+    return this.connection.getNetworkId();
+  }
+  async getLatestBlock() {
+    return this.connection.getLatestBlock();
+  }
+  async canSign() {
+    return this.connection.canSign();
+  }
+  async connectWallet() {
+    return this.connection.connectWallet();
+  }
+  async disconnectWallet() {
+    return this.connection.disconnectWallet();
+  }
 }

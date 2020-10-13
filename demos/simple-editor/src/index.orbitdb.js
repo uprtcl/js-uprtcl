@@ -34,8 +34,8 @@ import { SimpleWiki } from './simple-wiki';
 
 (async function() {
   // const provider = '';
-  const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
-  // const ethHost = 'ws://localhost:8545';
+  // const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
+  const provider = new ethers.providers.Web3Provider(window.ethereum)
 
   const ipfsCidConfig = {
     version: 1,
@@ -81,7 +81,9 @@ import { SimpleWiki } from './simple-wiki';
   await orbitdbEvees.connect();
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-  const ethEveesConnection = new EveesEthereumConnection();
+  const ethEveesConnection = new EveesEthereumConnection(ethConnection);
+  await ethEveesConnection.ready();
+
   const ethEvees = new EveesBlockchainCached(ethEveesConnection, orbitDBCustom, ipfsStore, proposals, 'ethereum-evees-cache');
   await ethEvees.ready();
 
