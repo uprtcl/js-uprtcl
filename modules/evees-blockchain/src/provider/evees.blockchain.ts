@@ -18,11 +18,11 @@ import {
 
 import { UserPerspectivesDetails } from './connection.polkadot';
 
-import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
 import { EveesCacheDB } from './evees.cache.db';
 import { Lens } from '@uprtcl/lenses';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { EveesAccessControlEthereum } from './evees-acl.ethereum';
+import { EveesAccessControlEthereum, EveesAccessControlFixed } from './evees-acl.fixed';
+import { BlockchainConnection } from './evees.blockchain.connection';
 
 const evees_if = 'evees-identity';
 const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
@@ -30,14 +30,14 @@ export interface RemoteStatus {
   pendingActions: number;
 }
 
-export class EveesEthereum implements EveesRemote {
-  logger: Logger = new Logger('EveesEthereum');
+export class EveesBlockchainCached implements EveesRemote {
+  logger: Logger = new Logger('EveesBlockchain');
 
-  accessControl: EveesAccessControlEthereum;
+  accessControl: EveesAccessControlFixed;
   cache: EveesCacheDB;
 
   constructor(
-    public connection: EthereumConnection,
+    public connection: BlockchainConnection,
     protected orbitdbcustom: OrbitDBCustom,
     public store: CASStore,
     public proposals: ProposalsProvider
@@ -156,7 +156,7 @@ export class EveesEthereum implements EveesRemote {
 
   async getEveesDataOf(userId: string, block?: number): Promise<UserPerspectivesDetails> {
     block = block || (await this.connection.getLatestBlock());
-    const head = await this.connection.getHead(userId, EVEES_KEYS, block);
+    const head = await this.connection.getHead(userId, block);
     if (!head) {
       this.logger.log(`Evees Data of ${userId} is undefined`);
       return {};
@@ -257,7 +257,7 @@ export class EveesEthereum implements EveesRemote {
       updates
     });
 
-    await this.connection.updateHead(newEveesDetailsHash, EVEES_KEYS);
+    await this.connection.updateHead(newEveesDetailsHash);
 
     /* delete cache */
     await this.cache.meta.clear();
