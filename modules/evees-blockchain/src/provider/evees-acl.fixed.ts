@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
 
-import { AccessControlService, Secured, Perspective } from '@uprtcl/evees';
+import { AccessControlService, Perspective } from '@uprtcl/evees';
 import { Lens } from '@uprtcl/lenses';
 import { CASStore } from '@uprtcl/multiplatform';
 import { Signed } from '@uprtcl/cortex';

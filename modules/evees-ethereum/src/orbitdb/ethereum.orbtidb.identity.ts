@@ -7,7 +7,7 @@ Please Read!
 I authorize this app to update my _Prtcl content in OrbitDB.
 `;
 
-export class EthereumIdentity implements EntropyGenerator {
+export class EthereumOrbitDBIdentity implements EntropyGenerator {
   constructor(protected connection: EthereumConnection) {}
 
   public async get() {

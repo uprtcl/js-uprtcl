@@ -18,6 +18,7 @@
     "@polkadot/util": "^3.4.1",
     "@uprtcl/cortex": "^0.0.7-alpha.59",
     "@uprtcl/evees": "^0.0.7-alpha.59",
+    "@uprtcl/evees-blockchain": "^0.0.7-alpha.59",
     "@uprtcl/evees-orbitdb": "^0.0.7-alpha.59",
     "@uprtcl/graphql": "^0.0.7-alpha.59",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.59",

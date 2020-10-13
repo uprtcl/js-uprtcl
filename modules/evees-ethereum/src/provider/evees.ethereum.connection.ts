@@ -23,11 +23,13 @@ export class EveesEthereumConnection extends EthereumConnection implements Block
   }
 
   async getHead(userId: string, block?: number) {
-    const filter = this.uprtclRoot.filters.HeadUpdated(userId, null, null);
-    const events = await this.uprtclRoot.queryFilter(filter, 0, block);
+    const filter = this.uprtclRoot.contractInstance.filters.HeadUpdated(userId, null, null);
+    const events = await this.uprtclRoot.contractInstance.queryFilter(filter, 0, block);
 
     if (events.length === 0) return undefined;
     const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber ? 1 : -1)).pop();
+    if (!last) return undefined;
+    if (!last.args) return undefined;
 
     return bytes32ToCid([last.args.headCid1, last.args.headCid0]);
   }
