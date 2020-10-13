@@ -12,6 +12,10 @@ interface remoteUI {
 }
 
 export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) {
+
+  @property({ type: String, attribute: 'remote-id'})
+  remoteId!: string;
+
   @property({ attribute: false })
   loading: boolean = true;
 
@@ -24,7 +28,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     const remotes = this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[];
-    this.remote = remotes.find(r => r.id.includes('evees-identity')) as EveesBlockchainCached;
+    this.remote = remotes.find(r => r.id.includes(this.remoteId)) as EveesBlockchainCached;
     await this.remote.ready();
 
     this.load();

@@ -300,9 +300,9 @@ export class EveesBlockchainCached implements EveesRemote {
     return {
       name: 'evees-orbitb:remote',
       type: 'remote',
-      render: () => {
+      render: (entity: any) => {
         return html`
-          <evees-polkadot-identity-remote> </evees-polkadot-identity-remote>
+          <evees-blockchain-remote remote-id=${entity.remoteId}></evees-blockchain-remote>
         `;
       }
     };
