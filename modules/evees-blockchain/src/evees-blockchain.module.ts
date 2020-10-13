@@ -1,11 +1,11 @@
 import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
 
-import { EveesEthereumBindings } from './bindings';
+import { EveesBlockchainBindings } from './bindings';
 import { PermissionsFixedLense } from './provider/evees-acl.fixed.lense';
 
-export class EveesEthereumModule extends MicroModule {
-  static id = 'evees-ethereum-module';
-  static bindings = EveesEthereumBindings;
+export class EveesBlockchainModule extends MicroModule {
+  static id = 'evees-blockchain-module';
+  static bindings = EveesBlockchainBindings;
 
   logger = new Logger('EVEES-BLOCKCHAIN-MODULE');
 

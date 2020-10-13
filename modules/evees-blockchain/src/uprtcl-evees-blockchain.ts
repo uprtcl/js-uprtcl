@@ -2,4 +2,4 @@
 import 'reflect-metadata';
 
 export { EveesAccessControlFixed } from './provider/evees-acl.fixed';
-export { EveesEthereumModule } from './evees-blockchain.module';
+export { EveesBlockchainModule } from './evees-blockchain.module';

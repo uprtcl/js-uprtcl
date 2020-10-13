@@ -55,9 +55,9 @@
     }
   ],
   "license": "MIT",
-  "main": "dist/uprtcl-evees-ethereum.umd.js",
-  "module": "dist/uprtcl-evees-ethereum.es5.js",
-  "typings": "dist/types/uprtcl-evees-ethereum.d.ts",
+  "main": "dist/uprtcl-evees-blockchain.umd.js",
+  "module": "dist/uprtcl-evees-blockchain.es5.js",
+  "typings": "dist/types/uprtcl-evees-blockchain.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"

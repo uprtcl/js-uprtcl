@@ -1,1 +1,1 @@
-export const EveesEthereumBindings = {};
+export const EveesBlockchainBindings = {};

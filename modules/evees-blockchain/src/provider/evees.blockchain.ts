@@ -16,16 +16,15 @@ import {
   EveesHelpers
 } from '@uprtcl/evees';
 
-import { UserPerspectivesDetails } from './connection.polkadot';
-
-import { EveesCacheDB } from './evees.cache.db';
 import { Lens } from '@uprtcl/lenses';
-import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { EveesAccessControlEthereum, EveesAccessControlFixed } from './evees-acl.fixed';
+
+import { UserPerspectivesDetails } from './connection.polkadot';
+import { EveesCacheDB } from './evees.cache.db';
+import { EveesAccessControlFixed } from './evees-acl.fixed';
 import { BlockchainConnection } from './evees.blockchain.connection';
 
 const evees_if = 'evees-identity';
-const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
+
 export interface RemoteStatus {
   pendingActions: number;
 }
@@ -40,15 +39,16 @@ export class EveesBlockchainCached implements EveesRemote {
     public connection: BlockchainConnection,
     protected orbitdbcustom: OrbitDBCustom,
     public store: CASStore,
-    public proposals: ProposalsProvider
+    public proposals: ProposalsProvider,
+    cacheName: string
   ) {
     if (orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined) {
       throw new Error(
         'orbitdb custom must include the PolkadotEveesOrbitDBEntities.Context stores'
       );
     }
-    this.accessControl = new EveesAccessControlEthereum(store);
-    this.cache = new EveesCacheDB('ethereum-evees-cache');
+    this.accessControl = new EveesAccessControlFixed(store);
+    this.cache = new EveesCacheDB(cacheName);
   }
 
   get id() {
