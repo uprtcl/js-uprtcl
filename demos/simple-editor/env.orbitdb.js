@@ -1,5 +1,5 @@
 const env = {
-  entry: './src/index.orbitdb.js',
+  entry: './src/index.eth.orbitdb.js',
   officialRemote: 'eth',
   pinner: {
     url: 'http://localhost:3000',
