@@ -51,6 +51,25 @@ export class EveesHelpers {
     return result.data.entity.head.id;
   }
 
+  static async canWrite(
+    client: ApolloClient<any>,
+    perspectiveId: string
+  ): Promise<boolean> {
+    const result = await client.query({
+      query: gql`
+        {
+          entity(uref: "${perspectiveId}") {
+            id
+            ... on Perspective {
+              canWrite
+            }
+          }
+        }`
+    });
+    if (result.data.entity.canWrite === undefined || result.data.entity.canWrite == null) return false;
+    return result.data.entity.canWrite;
+  }
+
   static async getPerspectiveRemoteId(
     client: ApolloClient<any>,
     perspectiveId: string

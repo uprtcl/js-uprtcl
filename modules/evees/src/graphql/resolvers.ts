@@ -132,7 +132,12 @@ export const eveesResolvers: IResolvers = {
           id: parent.payload.context
         }
       };
-    }
+    },
+    async canWrite(parent, _, { container }) {
+      const evees: Evees = container.get(EveesBindings.Evees);
+      const remote = evees.getPerspectiveProvider(parent);
+      return remote.canWrite(parent.id);
+    },
   },
   Mutation: {
     async updatePerspectiveHead(parent, { perspectiveId, headId, name }, { container }) {

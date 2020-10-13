@@ -97,12 +97,7 @@ export class WikiPage extends moduleConnect(LitElement) {
     this.textNode = result.data.entity.head.data;
 
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.pageHash);
-
-    const remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(
-      r => r.id === remoteId
-    );
-    if (!remote) throw new Error(`remote not found ${remoteId}`);
-    const canWrite = await remote.canWrite(this.pageHash);
+    const canWrite = await EveesHelpers.canWrite(this.client, this.pageHash);
 
     this.editable =
       this.editableRemotes.length > 0

@@ -147,6 +147,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     name: String
     payload: Payload
     proposals: [String!]
+    canWrite: Boolean
 
     _context: EntityContext!
   }

@@ -155,7 +155,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       const head = headId !== undefined ? await loadEntity<Commit>(this.client, headId) : undefined;
       const data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
-      const canWrite = await this.remote.canWrite(this.uref);
+      const canWrite = await EveesHelpers.canWrite(this.client, this.uref);
 
       this.perspectiveData = {
         id: this.uref,
@@ -336,14 +336,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
        on the toPerspective remote, or the changes are directly applied.
        Note that it is assumed that if a user canWrite on toPerspectiveId, he can write 
        on all the perspectives inside the workspace.updates array. */
-
-    const toRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-      r => r.id === toRemoteId
-    );
-
-    if (toRemote === undefined) throw new Error('remote not found');
-
-    const canWrite = await toRemote.canWrite(toPerspectiveId);
+    const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
 
     if (canWrite) {
       await workspace.execute(this.client);

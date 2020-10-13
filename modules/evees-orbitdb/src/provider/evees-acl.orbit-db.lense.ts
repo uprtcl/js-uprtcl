@@ -41,7 +41,7 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
     await this.remote.ready();
 
     this.owner = await this.getOwner(this.uref);
-    this.canWrite = await this.remote.canWrite(this.uref);
+    this.canWrite = await EveesHelpers.canWrite(this.client, this.uref);
 
     this.loading = false;
   }

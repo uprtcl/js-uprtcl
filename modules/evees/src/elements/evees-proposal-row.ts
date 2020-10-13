@@ -121,7 +121,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
             remote => remote.id === remoteId
           );
           if (remote === undefined) throw new Error('remote undefined');
-          return remote.canWrite(update.perspectiveId);
+          return EveesHelpers.canWrite(this.client, update.perspectiveId);
         }
       )
     );
