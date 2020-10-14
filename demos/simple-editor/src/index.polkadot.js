@@ -8,12 +8,12 @@ import { WikisModule } from '@uprtcl/wikis';
 import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import {
-  EveesPolkadotIdentity,
   EveesPolkadotCouncil,
-  PolkadotIdentity,
+  PolkadotOrbitDBIdentity,
   PolkadotConnection,
-  EveesPolkadotModule
+  EveesPolkadotConnection
 } from '@uprtcl/evees-polkadot';
+import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import {
   ProposalsOrbitDB,
   ProposalStore,
@@ -63,7 +63,7 @@ import { env } from '../env';
   const ipfs = await IPFS.create(ipfsJSConfig);
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
 
-  const identity = new PolkadotIdentity(pkdConnection);
+  const identity = new PolkadotOrbitDBIdentity(pkdConnection);
 
   const orbitDBCustom = new OrbitDBCustom(
     [ContextStore, ProposalStore, ProposalsToPerspectiveStore],
@@ -75,7 +75,11 @@ import { env } from '../env';
   await orbitDBCustom.ready();
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-  const pkdEvees = new EveesPolkadotIdentity(pkdConnection, orbitDBCustom, ipfsStore, proposals);
+  
+  const pdkEveesConnection = new EveesPolkadotConnection(pkdConnection);
+  await pdkEveesConnection.ready();
+
+  const pkdEvees = new EveesBlockchainCached(pdkEveesConnection, orbitDBCustom, ipfsStore, proposals, 'polkadot-evees-cache');
   const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
@@ -90,7 +94,7 @@ import { env } from '../env';
     new CortexModule(),
     new DiscoveryModule([pkdEvees.casID]),
     new LensesModule(),
-    new EveesPolkadotModule(),
+    new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
     evees,
     documents,

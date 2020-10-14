@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@uprtcl/cortex": "^0.0.7-alpha.59",
+    "@uprtcl/evees-blockchain": "^0.0.7-alpha.59",
     "@uprtcl/ethereum-provider": "^0.0.7-alpha.59",
     "@uprtcl/evees": "^0.0.7-alpha.59",
     "@uprtcl/graphql": "^0.0.7-alpha.59",

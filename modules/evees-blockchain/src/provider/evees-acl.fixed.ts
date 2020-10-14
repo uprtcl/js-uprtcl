@@ -1,11 +1,11 @@
 import { html } from 'lit-element';
 
-import { AccessControlService, Secured, Perspective } from '@uprtcl/evees';
+import { AccessControlService, Perspective } from '@uprtcl/evees';
 import { Lens } from '@uprtcl/lenses';
 import { CASStore } from '@uprtcl/multiplatform';
 import { Signed } from '@uprtcl/cortex';
 
-export class EveesAccessControlPolkadot implements AccessControlService {
+export class EveesAccessControlFixed implements AccessControlService {
   constructor(protected store: CASStore) {}
 
   async getOwner(perspectiveId: string) {
@@ -19,11 +19,11 @@ export class EveesAccessControlPolkadot implements AccessControlService {
 
   lense(): Lens {
     return {
-      name: 'evees-polkadot:access-control',
+      name: 'evees-blockchain:access-control',
       type: 'access-control',
       render: (uref: string) => {
         return html`
-          <evees-polkadot-permissions uref=${uref}> </evees-polkadot-permissions>
+          <evees-permissions-fixed uref=${uref}> </evees-permissions-fixed>
         `;
       }
     };

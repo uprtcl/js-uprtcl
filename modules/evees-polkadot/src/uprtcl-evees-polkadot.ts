@@ -1,12 +1,8 @@
 // Required by inversify
 import 'reflect-metadata';
 
-export { PolkadotConnection } from './provider/connection.polkadot';
-export { EveesAccessControlPolkadot } from './provider/evees-acl.polkadot';
-
-export { EveesPolkadotIdentity } from './provider/evees.polkadot-identity';
+export { PolkadotConnection } from './connection.polkadot';
 export { EveesPolkadotCouncil } from './provider/council/evees.polkadot-council';
-
+export { EveesPolkadotConnection } from './provider/identity-based/evees.polkadot-identity';
 export { EveesPolkadotModule } from './evees-polkadot.module';
-
-export { PolkadotIdentity } from './orbitdb-identity/polkadot.identity';
+export { PolkadotOrbitDBIdentity } from './orbitdb/polkadot.orbitdb.identity';

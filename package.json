@@ -14,6 +14,8 @@
     "ibuild": "npm i && npm run clean && npm run bootstrap && npm run build",
     "reset": "lerna clean --yes && npm run bootstrap && npm run build",
     "hard-reset": "find . -type d -name node_modules -prune -exec rm -rf {} \\; && find . -type d -name dist -prune -exec rm -rf {} \\; &&  find . -name \"package-lock.json\" -delete && npm i && npm run clean && npm run bootstrap && npm run build",
+    "eth-setup": "cp ./lerna.web3.json ./lerna.json && cp ./demos/simple-editor/env.orbitdb.js ./demos/simple-editor/env.js",
+    "polkadot-setup": "cp ./lerna.web3.json ./lerna.json && cp ./demos/simple-editor/env.polkadot.js ./demos/simple-editor/env.js",
     "test": "lerna run test",
     "test:watch": "lerna run test:watch --parallel",
     "docs:dev": "vuepress dev docs",

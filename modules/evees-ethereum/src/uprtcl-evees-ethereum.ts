@@ -1,7 +1,6 @@
 // Required by inversify
 import 'reflect-metadata';
 
-export { EveesEthereum } from './provider/evees.ethereum';
-export { EveesAccessControlEthereum } from './provider/evees-acl.ethereum';
+export { EveesEthereumConnection } from './provider/evees.ethereum.connection';
 export { EveesEthereumModule } from './evees-ethereum.module';
-export { EthereumIdentity } from './orbitdb/ethereum.identity';
+export { EthereumOrbitDBIdentity } from './orbitdb/ethereum.orbtidb.identity';

@@ -45,11 +45,19 @@ export class EthereumConnection extends Connection {
       : this.network.chainId;
   }
 
+  public getLatestBlock() {
+    return this.provider.getBlockNumber()
+  }
+
   public async connectWallet() {
     await window['ethereum'].enable();
     const provider = new ethers.providers.Web3Provider(window['ethereum']);
     this.ethOptions = { provider };
     await this.connect();
+  }
+
+  public async disconnectWallet() {
+    throw new Error('method not implemented');
   }
 
   public canSign() {

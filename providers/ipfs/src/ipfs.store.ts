@@ -9,6 +9,7 @@ import {
   ConnectionOptions
 } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
+
 import { IpfsConnectionOptions } from './types';
 import { sortObject } from './utils';
 import CID from 'cids';

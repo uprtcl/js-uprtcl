@@ -1,13 +1,15 @@
-import { Logger } from '@uprtcl/micro-orchestrator';
 import { html } from 'lit-element';
 
+import { Logger } from '@uprtcl/micro-orchestrator';
 import { ProposalsProvider, UpdateRequest } from '@uprtcl/evees';
 import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { CASStore } from '@uprtcl/multiplatform';
+import { Lens } from '@uprtcl/lenses';
+
+
 import { EXPECTED_CONFIG, PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
-import { PolkadotConnection } from '../connection.polkadot';
-import { Lens } from '@uprtcl/lenses';
+import { PolkadotConnection } from '../../connection.polkadot';
 import { VoteValue } from './proposal.config.types';
 
 export class ProposalsPolkadotCouncil implements ProposalsProvider {

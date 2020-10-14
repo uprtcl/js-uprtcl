@@ -16,41 +16,48 @@ import {
   EveesHelpers
 } from '@uprtcl/evees';
 
-import { PolkadotConnection, UserPerspectivesDetails } from './connection.polkadot';
-
-import { EveesAccessControlPolkadot } from './evees-acl.polkadot';
-import { EveesCacheDB } from './evees.cache.db';
 import { Lens } from '@uprtcl/lenses';
 
-const evees_if = 'evees-identity';
-const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
+import { EveesCacheDB } from './evees.cache.db';
+import { EveesAccessControlFixed } from './evees-acl.fixed';
+import { BlockchainConnection } from './evees.blockchain.connection';
+
+const evees_if = 'fixed';
+
+export interface UserPerspectivesDetails {
+  [perspectiveId: string]: {
+    headId?: string;
+  };
+}
+
 export interface RemoteStatus {
   pendingActions: number;
 }
 
-export class EveesPolkadotIdentity implements EveesRemote {
-  logger: Logger = new Logger('EveesPolkadot');
+export class EveesBlockchainCached implements EveesRemote {
+  logger: Logger = new Logger('EveesBlockchain');
 
-  accessControl: EveesAccessControlPolkadot;
+  accessControl: EveesAccessControlFixed;
   cache: EveesCacheDB;
 
   constructor(
-    public connection: PolkadotConnection,
+    public connection: BlockchainConnection,
     protected orbitdbcustom: OrbitDBCustom,
     public store: CASStore,
-    public proposals: ProposalsProvider
+    public proposals: ProposalsProvider,
+    cacheName: string
   ) {
     if (orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined) {
       throw new Error(
         'orbitdb custom must include the PolkadotEveesOrbitDBEntities.Context stores'
       );
     }
-    this.accessControl = new EveesAccessControlPolkadot(store);
-    this.cache = new EveesCacheDB('polkadot-evees-cache');
+    this.accessControl = new EveesAccessControlFixed(store);
+    this.cache = new EveesCacheDB(cacheName);
   }
 
   get id() {
-    return `polkadot-${this.connection.getNetworkId()}:${evees_if}`;
+    return `${this.connection.getNetworkId()}:${evees_if}`;
   }
 
   get defaultPath() {
@@ -59,14 +66,6 @@ export class EveesPolkadotIdentity implements EveesRemote {
 
   get userId() {
     return this.connection.account;
-  }
-
-  async getAccounts() {
-    await this.connection.getAccounts();
-  }
-
-  get accounts() {
-    return this.connection.accounts;
   }
 
   async ready(): Promise<void> {
@@ -162,7 +161,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
 
   async getEveesDataOf(userId: string, block?: number): Promise<UserPerspectivesDetails> {
     block = block || (await this.connection.getLatestBlock());
-    const head = await this.connection.getHead(userId, EVEES_KEYS, block);
+    const head = await this.connection.getHead(userId, block);
     if (!head) {
       this.logger.log(`Evees Data of ${userId} is undefined`);
       return {};
@@ -263,7 +262,7 @@ export class EveesPolkadotIdentity implements EveesRemote {
       updates
     });
 
-    await this.connection.updateHead(newEveesDetailsHash, EVEES_KEYS);
+    await this.connection.updateHead(newEveesDetailsHash);
 
     /* delete cache */
     await this.cache.meta.clear();
@@ -301,9 +300,9 @@ export class EveesPolkadotIdentity implements EveesRemote {
     return {
       name: 'evees-orbitb:remote',
       type: 'remote',
-      render: () => {
+      render: (entity: any) => {
         return html`
-          <evees-polkadot-identity-remote> </evees-polkadot-identity-remote>
+          <evees-blockchain-remote remote-id=${entity.remoteId}></evees-blockchain-remote>
         `;
       }
     };

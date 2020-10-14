@@ -1,6 +1,5 @@
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { PolkadotConnection } from '../connection.polkadot';
 
 import {
   EveesRemote,
@@ -11,23 +10,24 @@ import {
   deriveSecured,
   hashObject
 } from '@uprtcl/evees';
+import { EveesAccessControlFixed } from '@uprtcl/evees-blockchain';
 
-import { EveesAccessControlPolkadot } from '../evees-acl.polkadot';
+import { PolkadotConnection } from '../../connection.polkadot';
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalsPolkadotCouncil } from './evees.polkadot-council.proposals';
 
-const evees_if = 'evees-council';
+const evees_if = 'council';
 
 export class EveesPolkadotCouncil implements EveesRemote {
   logger: Logger = new Logger('EveesPolkadot');
 
-  accessControl: EveesAccessControlPolkadot;
+  accessControl: EveesAccessControlFixed;
   proposals: ProposalsPolkadotCouncil;
 
   councilStorage: PolkadotCouncilEveesStorage;
 
   constructor(public connection: PolkadotConnection, public store: CASStore) {
-    this.accessControl = new EveesAccessControlPolkadot(store);
+    this.accessControl = new EveesAccessControlFixed(store);
     this.councilStorage = new PolkadotCouncilEveesStorage(connection, store, {
       duration: 10,
       quorum: 0.2,
@@ -37,7 +37,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   get id() {
-    return `polkadot-${this.connection.getNetworkId()}:${evees_if}`;
+    return `${this.connection.getNetworkId()}-council:${evees_if}`;
   }
 
   get defaultPath() {
@@ -118,14 +118,16 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async login(): Promise<void> {
-    return;
+    return this.connection.connectWallet();
   }
 
   logout(): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  async connect() {}
+  async connect() {
+    return this.connection.connect();
+  }
 
   async isConnected() {
     return true;

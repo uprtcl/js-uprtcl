@@ -34,12 +34,6 @@ const getCID = (info: IdentityInfo, keys: string[]): string | undefined => {
   return (cid1[1] as any).Raw + (cid0[1] as any).Raw;
 };
 
-export interface UserPerspectivesDetails {
-  [perspectiveId: string]: {
-    headId?: string;
-  };
-}
-
 export interface TransactionReceipt {
   txHash: string;
   blockNumber: number;
@@ -73,7 +67,7 @@ export class PolkadotConnection extends Connection {
   }
 
   public getNetworkId() {
-    return this.chain;
+    return this.chain
   }
 
   public async canSign(): Promise<boolean> {
@@ -116,7 +110,7 @@ export class PolkadotConnection extends Connection {
     return getIdentityInfo(<Option<Registration>>identity);
   }
 
-  public async getHead(userId: string, keys: string[], atBlock?: number) {
+  public async getMutableHead(userId: string, keys: string[], atBlock?: number) {
     if (atBlock !== undefined) {
       this.logger.warn('cant get idenity at block yet... ups');
     }
@@ -124,7 +118,7 @@ export class PolkadotConnection extends Connection {
     return getCID(<IdentityInfo>identityInfo, keys);
   }
 
-  public async updateHead(head: string, keys: string[]): Promise<TransactionReceipt> {
+  public async updateMutableHead(head: string, keys: string[]): Promise<TransactionReceipt> {
     if (!this.account) throw new Error('cannot update identity if account not defined');
     // update evees entry
     const cid1 = head.substring(0, 32);
