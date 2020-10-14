@@ -2,7 +2,7 @@
  * to a userId */
 export interface BlockchainConnection {
   account?: string | undefined;
-  getNetworkId(): Promise<string>;
+  getNetworkId(): string;
   getLatestBlock(): Promise<number>;
   getHead(userId: string, block?: number): Promise<string | undefined>;
   updateHead(head: string): Promise<void>;

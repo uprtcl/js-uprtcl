@@ -71,7 +71,7 @@ export class EthereumConnection extends Connection {
     return this.account.toLowerCase();
   }
 
-  public async getNetworkId(): Promise<string> {
+  public getNetworkId(): string {
     return this.networkId;
   }
 

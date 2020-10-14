@@ -34,7 +34,7 @@ export class EveesEthereumConnection implements BlockchainConnection {
     if (!last) return undefined;
     if (!last.args) return undefined;
 
-    return bytes32ToCid([last.args.headCid1, last.args.headCid0]);
+    return bytes32ToCid([last.args.val1, last.args.val0]);
   }
 
   async updateHead(head: string) {
@@ -50,8 +50,8 @@ export class EveesEthereumConnection implements BlockchainConnection {
   get account() {
     return this.connection.account;
   }
-  async getNetworkId() {
-    return this.connection.getNetworkId();
+  getNetworkId() {
+    return `eth-${this.connection.getNetworkId()}`;;
   }
   async getLatestBlock() {
     return this.connection.getLatestBlock();

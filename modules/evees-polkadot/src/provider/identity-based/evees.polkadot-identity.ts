@@ -25,8 +25,8 @@ export class EveesPolkadotConnection implements BlockchainConnection {
   get account() {
     return this.connection.account;
   }
-  async getNetworkId() {
-    return this.connection.getNetworkId();
+  getNetworkId() {
+    return `polkadot-${this.connection.getNetworkId()}`;;
   }
   async getLatestBlock() {
     return this.connection.getLatestBlock();

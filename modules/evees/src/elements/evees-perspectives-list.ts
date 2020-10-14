@@ -84,7 +84,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
     });
 
     /** data on other perspectives (proposals are injected on them) */
-    this.perspectivesData =
+    const perspectivesData: PerspectiveData[] =
       result.data.entity.payload.context === null
         ? []
         : await Promise.all(
@@ -106,6 +106,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
               }
             )
           );
+
+    // remove duplicates
+    const map = new Map<string, PerspectiveData>();
+    perspectivesData.forEach((perspectiveData => map.set(perspectiveData.id, perspectiveData)));
+    this.perspectivesData = Array.from(map, key => key[1]);
 
     this.otherPerspectivesData = this.perspectivesData.filter(
       perspectiveData => perspectiveData.id !== this.firstPerspectiveId
