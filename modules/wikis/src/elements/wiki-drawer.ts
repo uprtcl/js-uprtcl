@@ -191,10 +191,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
 
     this.remote = perspective.object.payload.remote;
-
-    const remote = this.eveesRemotes.find(r => r.id === this.remote);
-    if (!remote) throw new Error(`remote not found ${this.remote}`);
-    const canWrite = await remote.canWrite(this.uref);
+    const canWrite = await EveesHelpers.canWrite(this.client, this.uref);
 
     this.author = perspective.object.payload.creatorId;
     this.currentHeadId = headId;

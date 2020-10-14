@@ -183,7 +183,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         r => r.id === remoteId
       );
       if (!remote) throw new Error(`remote not found for ${remoteId}`);
-      const canWrite = this.editable === 'true' ? await remote.canWrite(uref) : false;
+      const canWrite = this.editable === 'true' ? await EveesHelpers.canWrite(this.client, uref) : false;
 
       if (this.editable === 'true') {
         editable = canWrite;
