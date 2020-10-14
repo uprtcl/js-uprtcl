@@ -57,7 +57,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   get id() {
-    return `eth-${this.connection.getNetworkId()}:${evees_if}`;
+    return `${this.connection.getNetworkId()}:${evees_if}`;
   }
 
   get defaultPath() {

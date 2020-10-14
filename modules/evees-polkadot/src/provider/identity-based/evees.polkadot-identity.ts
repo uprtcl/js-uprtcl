@@ -1,16 +1,43 @@
+import { BlockchainConnection } from '@uprtcl/evees-blockchain';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { PolkadotConnection } from '../../connection.polkadot';
 
 const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
 
-export class EveesPolkadotConnection extends PolkadotConnection implements BlockchainConnection {
+export class EveesPolkadotConnection implements BlockchainConnection {
   logger: Logger = new Logger('EveesPolkadot');
 
-  updateHead(head: string) {
-    return super.updateMutableHead(head, EVEES_KEYS);
+  constructor(protected connection: PolkadotConnection) {
+  }
+
+  async ready() {
+    await Promise.all([this.connection.ready()]);
+  }
+
+  async updateHead(head: string) {
+    await this.connection.updateMutableHead(head, EVEES_KEYS);
   }
 
   getHead(userId: string, block?: number) {
-    return super.getMutableHead(userId, EVEES_KEYS, block);
+    return this.connection.getMutableHead(userId, EVEES_KEYS, block);
+  }
+
+  get account() {
+    return this.connection.account;
+  }
+  async getNetworkId() {
+    return this.connection.getNetworkId();
+  }
+  async getLatestBlock() {
+    return this.connection.getLatestBlock();
+  }
+  async canSign() {
+    return this.connection.canSign();
+  }
+  async connectWallet() {
+    return this.connection.connectWallet();
+  }
+  async disconnectWallet() {
+    return this.connection.disconnectWallet();
   }
 }

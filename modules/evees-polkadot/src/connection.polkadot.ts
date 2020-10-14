@@ -66,8 +66,8 @@ export class PolkadotConnection extends Connection {
     });
   }
 
-  public getNetworkId() {
-    return this.chain;
+  public async getNetworkId() {
+    return `polkadot-${this.chain}`;
   }
 
   public async canSign(): Promise<boolean> {

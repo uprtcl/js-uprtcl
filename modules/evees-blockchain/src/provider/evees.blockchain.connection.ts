@@ -1,7 +1,7 @@
 /** an evees blockchain connection keeps a mutable hash associated
  * to a userId */
 export interface BlockchainConnection {
-  account: string;
+  account?: string | undefined;
   getNetworkId(): Promise<string>;
   getLatestBlock(): Promise<number>;
   getHead(userId: string, block?: number): Promise<string | undefined>;

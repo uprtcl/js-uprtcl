@@ -12,7 +12,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
 
   @property({ attribute: false })
-  loading!: boolean = true;
+  loading: boolean = true;
 
   @property({ attribute: false })
   logged!: boolean;
