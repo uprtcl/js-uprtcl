@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
 
-import { CASStore } from '@uprtcl/multiplatform';
+import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EveesOrbitDBEntities } from '@uprtcl/evees-orbitdb';
@@ -13,7 +13,9 @@ import {
   NewPerspectiveData,
   Secured,
   ProposalsProvider,
-  EveesHelpers
+  EveesHelpers,
+  hashObject,
+  deriveSecured
 } from '@uprtcl/evees';
 
 import { Lens } from '@uprtcl/lenses';
@@ -111,13 +113,33 @@ export class EveesBlockchainCached implements EveesRemote {
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
-    const perspective = await EveesHelpers.snapDefaultPerspective(
-      this,
-      undefined,
-      context,
+   
+    let creatorId = '';
+    timestamp = timestamp ? timestamp : Date.now();
+    
+    if (parentId !== undefined) {
+      const parent = await this.store.get(parentId) as Signed<Perspective>;
+      creatorId = parent.payload.creatorId;
+    } else {
+      creatorId = this.userId as string
+    }
+
+    const defaultContext = await hashObject({
+      creatorId,
+      timestamp
+    });
+
+    context = context || defaultContext;
+
+    const object: Perspective = {
+      creatorId,
+      remote: this.id,
+      path: path !== undefined ? path : this.defaultPath,
       timestamp,
-      path
-    );
+      context
+    };
+
+    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
     perspective.casID = this.store.casID;
 
     return perspective;

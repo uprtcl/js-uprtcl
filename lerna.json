@@ -1,9 +1,4 @@
 {
-  "packages": [
-    "modules/*",
-    "packages/*",
-    "providers/*",
-    "demos/simple-editor"
-  ],
-  "version": "0.0.7-alpha.61"
+  "packages": ["modules/*", "packages/*", "providers/*", "demos/simple-editor"],
+  "version": "0.0.7-alpha.56"
 }
