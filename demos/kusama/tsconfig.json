@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ESNEXT",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": ["es2017", "dom"],
+    "allowJs": true,
+    "checkJs": false,
+    "strict": false,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noImplicitThis": false,
+    "alwaysStrict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "paths": {
+      "apollo-client": ["node_modules/apollo-client"],
+      "apollo-client/*": ["node_modules/apollo-client/*"],
+      "@uprtcl/ethereum-provider": ["node_modules/@uprtcl/ethereum-provider"],
+      "@uprtcl/ethereum-provider/*": [
+        "node_modules/@uprtcl/ethereum-provider/*"
+      ],
+      "@uprtcl/http-provider": ["node_modules/@uprtcl/http-provider"],
+      "@uprtcl/http-provider/*": ["node_modules/@uprtcl/http-provider/*"],
+      "inversify": ["node_modules/inversify"],
+      "inversify/*": ["node_modules/inversify/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
