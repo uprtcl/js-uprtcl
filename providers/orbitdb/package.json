@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/orbitdb-provider",
-  "version": "0.0.7-alpha.61",
+  "version": "0.0.7-alpha.62",
   "description": "Orbitdb wrapper that can be programed with different custom stores",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -13,8 +13,8 @@
   "dependencies": {
     "@tabcat/orbit-db-identity-provider-d": "^1.0.0",
     "@tabcat/orbit-db-set": "^1.0.2",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.61",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.61",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.62",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.62",
     "ipfs": "^0.50.2",
     "orbit-db": "^0.26.0-rc2",
     "reflect-metadata": "^0.1.13"
