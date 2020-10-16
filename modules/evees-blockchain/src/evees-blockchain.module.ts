@@ -1,6 +1,7 @@
 import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesBlockchainBindings } from './bindings';
+import { EveesBlockchainUpdateDiff } from './elements/blockchain.update.diff';
 import { PermissionsFixedLense } from './provider/evees-acl.fixed.lense';
 import { EveesBlockchainCachedRemoteLense } from './provider/evees-remote.cached.lense';
 
@@ -12,7 +13,8 @@ export class EveesBlockchainModule extends MicroModule {
 
   async onLoad() {
     customElements.define('evees-permissions-fixed', PermissionsFixedLense);
-    customElements.define('evees-blockchain-remote', EveesBlockchainCachedRemoteLense);    
+    customElements.define('evees-blockchain-remote', EveesBlockchainCachedRemoteLense);   
+    customElements.define('evees-blockchain-update-diff', EveesBlockchainUpdateDiff);        
   }
 
   get submodules() {

@@ -1,4 +1,4 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html, css, query } from 'lit-element';
 import { ApolloClient } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
@@ -6,6 +6,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
 import { EveesBlockchainCached } from './evees.blockchain.cached';
+import { UprtclDialog } from '@uprtcl/common-ui';
 
 interface remoteUI {
   pendingActions: number;
@@ -20,8 +21,17 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
   loading: boolean = true;
 
   @property({ attribute: false })
-  remoteUI!: remoteUI;
+  showDiff: boolean = false;
 
+  @property({ attribute: false })
+  remoteUI!: remoteUI;
+  
+  @property({ attribute: false })
+  newHash!: string;
+
+  @query('#updates-dialog')
+  updatesDialogEl!: UprtclDialog;
+  
   client!: ApolloClient<any>;
   remote!: EveesBlockchainCached;
 
@@ -44,6 +54,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
       pendingActions: status.pendingActions
     };
   }
+
   async load() {
     this.loading = true;
     await this.refresh();
@@ -52,20 +63,52 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
 
   async remoteClicked() {
     this.loading = true;
-    await this.remote.flushCache();
+    this.newHash = await this.remote.createNewEveesData();
+
+    this.showDiff = true;
+    await this.updateComplete;
+
+    if (this.remote.isLogged()) {
+      this.updatesDialogEl.primaryText = 'update';
+      this.updatesDialogEl.secondaryText = 'close';
+      this.updatesDialogEl.showSecondary = 'true';
+    } else {
+      this.updatesDialogEl.primaryText = 'close';
+    }
+
+    const value = await new Promise(resolve => {
+      this.updatesDialogEl.resolved = value => {
+        this.showDiff = false;
+        resolve(value);
+      };
+    });
+
+    this.showDiff = false;
+
+    if (this.remote.isLogged() && value) {
+      await this.remote.flushCache();
+    }
     this.loading = false;
   }
 
-  render() {
-    if (this.loading) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
-    }
+  renderDiff() {
     return html`
-      <div @click=${() => this.remoteClicked()} class="status-container">
+      <uprtcl-dialog id="updates-dialog">
+        <evees-blockchain-update-diff 
+          owner=${this.remote.userId as string} 
+          remote=${this.remote.id} 
+          new-hash=${this.newHash}>
+        </evees-blockchain-update-diff>
+      </uprtcl-dialog>
+    `;
+  }
+
+  render() {
+    return html`
+      ${this.loading ? html`<uprtcl-loading></uprtcl-loading>` : html`<div @click=${() => this.remoteClicked()} class="status-container">
         ${this.remoteUI.pendingActions}
-      </div>
+      </div>`}
+      ${this.showDiff ? this.renderDiff() : ''}
     `;
   }
 
