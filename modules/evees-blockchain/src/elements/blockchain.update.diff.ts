@@ -66,7 +66,7 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
           throw new Error(`Evee head cannot be undefined`);
         }
 
-        if (eveesData[perspectiveId] !== newHead) {
+        if (eveesData[perspectiveId].headId !== newHead) {
           const update = {
             newHeadId: newHead,
             perspectiveId: perspectiveId,
