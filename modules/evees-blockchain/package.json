@@ -20,6 +20,7 @@
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.62",
     "@uprtcl/multiplatform": "^0.0.7-alpha.62",
     "@uprtcl/orbitdb-provider": "^0.0.7-alpha.62",
+    "@uprtcl/common-ui": "^0.0.7-alpha.62",
     "apollo-boost": "^0.4.7",
     "dexie": "^3.0.2"
   },
