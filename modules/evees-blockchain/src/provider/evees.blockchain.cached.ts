@@ -260,7 +260,7 @@ export class EveesBlockchainCached implements EveesRemote {
     return userPerspectives[perspectiveId];
   }
 
-  async flushCache() {
+  async createNewEveesData() {
     if (!this.userId) throw new Error('user not logged in');
 
     const newPerspectives = await this.cache.newPerspectives.toArray();
@@ -276,15 +276,19 @@ export class EveesBlockchainCached implements EveesRemote {
       eveesData[update.id] = { headId: update.head };
     });
 
-    const newEveesDetailsHash = await this.store.create(eveesData);
-
-    this.logger.log('flushing cache and updateing evees data ', {
+    const hash = await this.store.create(eveesData);
+    this.logger.log('new evees data object created', {
+      hash,
       eveesData,
       newPerspectives,
       updates
     });
+    return hash;
+  }
 
-    await this.connection.updateHead(newEveesDetailsHash);
+  async flushCache() {
+    const newHash = await this.createNewEveesData();
+    await this.connection.updateHead(newHash);
 
     /* delete cache */
     await this.cache.meta.clear();

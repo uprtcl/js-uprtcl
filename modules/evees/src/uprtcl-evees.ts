@@ -39,6 +39,7 @@ export {
   SpliceChildrenEvent,
   CONTENT_UPDATED_TAG
 } from './elements/events';
+export { EveesDiff } from './elements/evees-diff';
 
 /** UI support components */
 export { prettyAddress } from './elements/support';

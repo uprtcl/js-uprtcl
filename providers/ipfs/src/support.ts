@@ -46,7 +46,7 @@ export const cidToHex32 = cidStr => {
   return ['0x' + cidHex1, '0x' + cidHex0];
 };
 
-export const bytes32ToCid = bytes => {
+export const bytes32ToCid = (bytes: [string, string]) => {
   const cidHex1 = bytes[0].substring(2);
   const cidHex0 = bytes[1].substring(2); /** LSB */
 
