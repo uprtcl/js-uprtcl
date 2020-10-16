@@ -66,13 +66,15 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
           throw new Error(`Evee head cannot be undefined`);
         }
 
-        const update = {
-          newHeadId: newHead,
-          perspectiveId: perspectiveId,
-          oldHeadId: eveesData[perspectiveId].headId
+        if (eveesData[perspectiveId] !== newHead) {
+          const update = {
+            newHeadId: newHead,
+            perspectiveId: perspectiveId,
+            oldHeadId: eveesData[perspectiveId].headId
+          }
+  
+          this.workspace.update(update);
         }
-
-        this.workspace.update(update);
       } else {
         // new
         const perspective = await loadEntity<Signed<Perspective>>(this.client, perspectiveId);
