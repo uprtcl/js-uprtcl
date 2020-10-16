@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/ipfs-provider",
-  "version": "0.0.7-alpha.64",
+  "version": "0.0.7-alpha.65",
   "description": "_Prtcl provider wrappers around ipfs-http-client",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,9 +11,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.0.7-alpha.64",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.64",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.64",
+    "@uprtcl/cortex": "^0.0.7-alpha.65",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.65",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.65",
     "cbor-js": "^0.1.0",
     "cids": "^1.0.0",
     "concat-stream": "^2.0.0",
