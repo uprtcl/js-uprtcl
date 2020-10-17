@@ -36,7 +36,7 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
     }
 
     return html`
-      <div class="page-edited-title">Page Updated</div>
+      <div class="page-edited-title">Updated</div>
       <div class="document-container old-page">
         <documents-editor
           .client=${this.workspace.workspace}

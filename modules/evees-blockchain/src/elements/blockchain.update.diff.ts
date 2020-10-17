@@ -52,8 +52,10 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   async load() {
     this.loading = true;
 
+    const newHash = await this.remote.createNewEveesData();
+    
     const eveesData = await this.remote.getEveesDataOf(this.owner);
-    const newEveesData = (await this.remote.store.get(this.newHash)) as UserPerspectivesDetails;
+    const newEveesData = (await this.remote.store.get(newHash)) as UserPerspectivesDetails;
     
     /** compare the two evees objects and derive a workspace */
     this.workspace = new EveesWorkspace(this.client, this.recognizer);

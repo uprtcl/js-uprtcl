@@ -59,7 +59,8 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     /** Now add the proposal to the set of proposals to perspective */
     const proposalsToPerspeciveStore = await this.orbitdb.getStore(
       EveesOrbitDBEntities.ProposalsToPerspective,
-      { toPerspectiveId: proposal.toPerspectiveId }
+      { toPerspectiveId: proposal.toPerspectiveId },
+      true
     );
 
     await proposalsToPerspeciveStore.add(proposalId);
@@ -75,7 +76,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
   async getProposalStore(proposalId: string, pin: boolean = false) {
     const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
-    return this.orbitdb.getStore(EveesOrbitDBEntities.Proposal, proposalManifest);
+    return this.orbitdb.getStore(EveesOrbitDBEntities.Proposal, proposalManifest, pin);
   }
 
   async getProposalDetails(proposalId): Promise<ProposalDetails> {

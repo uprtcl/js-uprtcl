@@ -118,7 +118,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
             <div class="pages-list">
               <div class="page-list-title">New Title</div>
               ${this.renderTitleChange(this.newData.object.title, ['green-background'])}
-              ${this.renderTitleChange(this.oldData.object.title, ['red-background'])}
+              ${this.renderTitleChange(this.oldTitle, ['red-background'])}
             </div>
           `
         : ''}

@@ -21,9 +21,9 @@ export class EveesAccessControlFixed implements AccessControlService {
     return {
       name: 'evees-blockchain:access-control',
       type: 'access-control',
-      render: (uref: string) => {
+      render: (entity: any) => {
         return html`
-          <evees-permissions-fixed uref=${uref}> </evees-permissions-fixed>
+          <evees-permissions-fixed uref=${entity.uref}> </evees-permissions-fixed>
         `;
       }
     };

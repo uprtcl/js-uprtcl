@@ -7,6 +7,7 @@ import { cidToHex32, bytes32ToCid } from '@uprtcl/ipfs-provider';
 import { abi as abiRoot, networks as networksRoot } from './contracts-json/UprtclRoot.min.json';
 const UprtclRoot = { abi: abiRoot, networks: networksRoot };
 const ZERO_ADDRESS = '0x' + new Array(40).fill(0).join('');
+const ZERO_HEX_32 = '0x' + new Array(64).fill(0).join('');
 
 import { UPDATED_HEAD } from './common';
 
@@ -37,8 +38,11 @@ export class EveesEthereumConnection implements BlockchainConnection {
     return bytes32ToCid([last.args.val1, last.args.val0]);
   }
 
-  async updateHead(head: string) {
-    const headCidParts = cidToHex32(head);
+  async updateHead(head: string | undefined) {
+    const headCidParts = head !== undefined ? cidToHex32(head) : [
+      ZERO_HEX_32,
+      ZERO_HEX_32
+    ];
 
     return this.uprtclRoot.send(UPDATED_HEAD, [
       headCidParts[0],

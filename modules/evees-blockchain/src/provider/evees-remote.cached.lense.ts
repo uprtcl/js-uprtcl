@@ -8,7 +8,7 @@ import { EveesModule, EveesRemote } from '@uprtcl/evees';
 import { EveesBlockchainCached } from './evees.blockchain.cached';
 import { UprtclDialog } from '@uprtcl/common-ui';
 
-interface remoteUI {
+interface RemoteUI {
   pendingActions: number;
 }
 
@@ -24,7 +24,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
   showDiff: boolean = false;
 
   @property({ attribute: false })
-  remoteUI!: remoteUI;
+  remoteUI!: RemoteUI;
   
   @property({ attribute: false })
   newHash!: string;
@@ -61,64 +61,44 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
     this.loading = false;
   }
 
-  async remoteClicked() {
-    this.loading = true;
-    this.newHash = await this.remote.createNewEveesData();
-
-    this.showDiff = true;
-    await this.updateComplete;
-
-    if (this.remote.isLogged()) {
-      this.updatesDialogEl.primaryText = 'update';
-      this.updatesDialogEl.secondaryText = 'close';
-      this.updatesDialogEl.showSecondary = 'true';
-    } else {
-      this.updatesDialogEl.primaryText = 'close';
-    }
-
-    const value = await new Promise(resolve => {
-      this.updatesDialogEl.resolved = value => {
-        this.showDiff = false;
-        resolve(value);
-      };
-    });
-
-    this.showDiff = false;
-
-    if (this.remote.isLogged() && value) {
-      await this.remote.flushCache();
-    }
-    this.loading = false;
-  }
-
   renderDiff() {
     return html`
-      <uprtcl-dialog id="updates-dialog">
-        <evees-blockchain-update-diff 
-          owner=${this.remote.userId as string} 
-          remote=${this.remote.id} 
-          new-hash=${this.newHash}>
-        </evees-blockchain-update-diff>
+      <uprtcl-dialog id="updates-dialog" 
+        @primary=${() => this.showDiff = false } 
+        show-secondary="false"
+        primary-text="close">
+        <evees-blockchain-status
+          remote=${this.remote.id}>
+        </evees-blockchain-status>
       </uprtcl-dialog>
     `;
   }
 
   render() {
     return html`
-      ${this.loading ? html`<uprtcl-loading></uprtcl-loading>` : html`<div @click=${() => this.remoteClicked()} class="status-container">
-        ${this.remoteUI.pendingActions}
-      </div>`}
+      ${this.loading ? 
+        html`<uprtcl-loading></uprtcl-loading>` : 
+        html`<div class="container">
+          <evees-author user-id=${this.remote.userId as string}></evees-author>
+          <div @click=${() => this.showDiff = true } class="status-container">${this.remoteUI.pendingActions}</div>
+        </div>`}
+
       ${this.showDiff ? this.renderDiff() : ''}
     `;
   }
 
   static get styles() {
     return css`
+      .container {
+        position: relative;
+      }
       .status-container {
+        position: absolute;
+        top: 0;
+        left: 0;
         height: 32px;
         width: 32px;
         border-radius: 16px;
-        background-color: #2a3279;
         color: white;
         display: flex;
         flex-direction: column;

@@ -121,16 +121,16 @@ export class OrbitDBCustom extends Connection {
   }
 
   private async openStore(address: string | any): Promise<any> {
-    this.logger.log(`${address} -- Openning store`);
+    // this.logger.log(`${address} -- Openning store`);
     let db;
 
     const hadDB = await this.instance._haveLocalData(this.instance.cache, address);
 
     if (this.instance.stores[address]) {
-      this.logger.log(`${address} -- Store loaded. HadDB: ${hadDB}`);
+      // this.logger.log(`${address} -- Store loaded. HadDB: ${hadDB}`);
       db = this.instance.stores[address];
     } else if (this.storeQueue[address]) {
-      this.logger.log(`${address} -- Store already queue. HadDB: ${hadDB}`);
+      // this.logger.log(`${address} -- Store already queue. HadDB: ${hadDB}`);
       db = this.storeQueue[address];
     }
     else {

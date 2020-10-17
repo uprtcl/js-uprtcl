@@ -53,6 +53,7 @@ export class UprtclButton extends LitElement {
       css`
         :host {
           width: fit-content;
+          display: block;
         }
         .cursor {
           cursor: pointer;

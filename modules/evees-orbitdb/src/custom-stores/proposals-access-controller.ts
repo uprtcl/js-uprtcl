@@ -23,12 +23,12 @@ export class ProposalsAccessController extends IPFSAccessController {
     const key = entry.identity.id;
     try {
       if (this.write.includes(key) || this.write.includes('*')) {
-        const proposalId = entry.payload.value;
-        const result = await this._ipfs.dag.get(proposalId);
-        const forceBuffer = Uint8Array.from(result.value);
-        const proposalManifest = CBOR.decode(forceBuffer.buffer) as ProposalManifest;
+        // const proposalId = entry.payload.value;
+        // const result = await this._ipfs.dag.get(proposalId);
+        // const forceBuffer = Uint8Array.from(result.value);
+        // const proposalManifest = CBOR.decode(forceBuffer.buffer) as ProposalManifest;
 
-        if (!proposalManifest.owners.includes(entry.identity.id)) return false;
+        // if (!proposalManifest.owners.includes(entry.identity.id)) return false;
 
         // check identity is valid
         return identityProvider.verifyIdentity(entry.identity);

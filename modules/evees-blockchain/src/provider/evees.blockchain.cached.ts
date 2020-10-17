@@ -288,6 +288,10 @@ export class EveesBlockchainCached implements EveesRemote {
 
   async flushCache() {
     const newHash = await this.createNewEveesData();
+    return this.updateHead(newHash);
+  }
+
+  async updateHead(newHash: string | undefined) {
     await this.connection.updateHead(newHash);
 
     /* delete cache */

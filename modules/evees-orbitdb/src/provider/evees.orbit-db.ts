@@ -66,9 +66,9 @@ export class EveesOrbitDB implements EveesRemote {
     return {
       name: 'evees-orbitb:remote',
       type: 'remote',
-      render: () => {
+      render: (entity: any) => {
         return html`
-          <evees-orbitdb-remote> </evees-orbitdb-remote>
+          <evees-orbitdb-remote remote-id=${entity.remoteId}></evees-orbitdb-remote>
         `;
       }
     };
