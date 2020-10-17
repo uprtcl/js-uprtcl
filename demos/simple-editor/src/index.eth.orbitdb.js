@@ -35,8 +35,9 @@ import { SimpleWiki } from './simple-wiki';
 (async function() {
   // const provider = '';
   // const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
+  const provider = new ethers.providers.JsonRpcProvider('https://rpc.xdaichain.com/');
 
+  
   const ipfsCidConfig = {
     version: 1,
     type: 'sha2-256',
@@ -61,6 +62,10 @@ import { SimpleWiki } from './simple-wiki';
 
   const ipfs = await IPFS.create(ipfsJSConfig);
 
+  console.log('connecting to pinner peer')
+  await ipfs.swarm.connect(env.pinner.peerMultiaddr);
+  console.log('connected!!!')
+
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
   await ipfsStore.ready();
 
@@ -73,6 +78,7 @@ import { SimpleWiki } from './simple-wiki';
     [ContextAccessController, ProposalsAccessController],
     identity,
     env.pinner.url,
+    env.pinner.peerMultiaddr,
     ipfs
   );
   await orbitDBCustom.ready();
