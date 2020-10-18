@@ -52,7 +52,7 @@ export class UprtclButton extends LitElement {
       styles,
       css`
         :host {
-          width: fit-content;
+          width: initial;
           display: block;
         }
         .cursor {

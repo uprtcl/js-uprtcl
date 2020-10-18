@@ -115,7 +115,6 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     return css`
       :host {
         display: block;
-        padding: 30px 0px 30px 0px;
         text-align: center;
       }
     `;

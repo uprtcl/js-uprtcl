@@ -82,7 +82,6 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
     return css`
       :host {
         display: block;
-        padding: 30px 0px 30px 0px;
         text-align: center;
       }
       .row {
@@ -93,6 +92,7 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
       }
       evees-blockchain-update-diff {
         flex-grow: 1;
+        overflow: auto;
       }
       uprtcl-button {
         margin: 0 auto;
