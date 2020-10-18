@@ -11,8 +11,12 @@ import { EveesInfoBase } from './evee-info-base';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
 import { EveesBindings } from 'src/bindings';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 export class EveesInfoPage extends EveesInfoBase {
+
+  logger = new Logger('EVEES-INFO-PAGE');
+
   @property({ type: Boolean, attribute: 'show-perspectives' })
   showPerspectives: boolean = false;
 
@@ -51,6 +55,8 @@ export class EveesInfoPage extends EveesInfoBase {
   connectedCallback() {
     super.connectedCallback();
 
+    this.logger.log('Connected', this.uref)
+
     this.addEventListener('keydown', event => {
       if (event.keyCode === 27) {
         // 27 is esc
@@ -64,6 +70,11 @@ export class EveesInfoPage extends EveesInfoBase {
         }
       }
     });
+  }
+
+  async disconnectedCallback() {
+    super.disconnectedCallback();
+    this.logger.log('Disconnected', this.uref)
   }
 
   async editNameClicked() {

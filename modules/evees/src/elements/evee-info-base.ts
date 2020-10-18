@@ -140,6 +140,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async load() {
+    this.logger.info('Loading evee perspective', this.uref);
+    
     this.remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
     const entity = await loadEntity(this.client, this.uref);

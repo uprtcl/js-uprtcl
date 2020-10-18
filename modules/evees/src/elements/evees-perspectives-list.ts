@@ -50,6 +50,17 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   protected client!: ApolloClient<any>;
 
+  async connectedCallback() {
+    super.connectedCallback();
+    this.logger.log('Connected', this.perspectiveId)
+  }
+
+  async disconnectedCallback() {
+    super.disconnectedCallback();
+    this.logger.log('Disconnected', this.perspectiveId)
+  }
+
+
   async firstUpdated() {
     if (!this.isConnected) return;
 
@@ -141,10 +152,10 @@ export class PerspectivesList extends moduleConnect(LitElement) {
       this.logger.log('updating getOtherPersepectivesData');
       this.load();
     }
-    if (changedProperties.has('perspectiveId') || changedProperties.has('firstPerspectiveId')) {
-      this.logger.log('updating getOtherPersepectivesData');
-      this.load();
-    }
+    // if (changedProperties.has('perspectiveId') || changedProperties.has('firstPerspectiveId')) {
+    //   this.logger.log('updating getOtherPersepectivesData');
+    //   this.load();
+    // }
   }
 
   perspectiveColor(perspectiveId: string) {

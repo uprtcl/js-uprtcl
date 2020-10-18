@@ -56,7 +56,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   uref!: string;
 
   @property({ attribute: false })
-  loading: boolean = false;
+  loading: boolean = true;
 
   @property({ attribute: false })
   wiki: Entity<Wiki> | undefined;
@@ -130,6 +130,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener(CONTENT_UPDATED_TAG, ((e: ContentUpdatedEvent) => {
       if (e.detail.uref === this.uref) {
+        this.logger.log('ContentUpdatedEvent()', this.uref);
         this.loadWiki();
       }
     }) as EventListener);
@@ -143,12 +144,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   updated(changedProperties) {
     if (changedProperties.has('uref')) {
       if (changedProperties.get('uref') !== undefined) {
+        this.logger.log('uref updated', this.uref);
         this.loadWiki();
       }
     }
 
     if (changedProperties.has('firstRef')) {
       this.uref = this.firstRef;
+      this.logger.log('firstRef updated', this.uref);
       this.loadWiki();
     }
   }
@@ -179,12 +182,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.selectedPageIx = undefined;
     this.wiki = undefined;
     this.editable = false;
+    this.logger.log('resetWikiPerspective()', this.uref);
     this.loadWiki();
   }
 
   async loadWiki() {
     if (this.uref === undefined) return;
 
+    this.logger.log('loadWiki()');
     this.loading = true;
 
     const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
@@ -204,10 +209,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
-    this.requestUpdate();
     await this.loadPagesData();
-    if (this.evessInfoPageEl) this.evessInfoPageEl.load();
-
+    
     this.loading = false;
   }
 
@@ -500,6 +503,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   loggedIn() {
     /* relaod evees info */
+    this.logger.log('loggedIn. Calling loadWiki()')
     this.loadWiki();
   }
 
@@ -630,15 +634,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   render() {
-    this.logger.log('render()', {
-      wiki: this.wiki,
-      uref: this.uref,
-      editable: this.editable
-    });
-    if (!this.uref)
+    if (this.loading)
       return html`
-        <uprtcl-placeholder></uprtcl-placeholder>
+        <uprtcl-loading></uprtcl-loading>
       `;
+
+    this.logger.log('rendering wiki after loading')
 
     return html`
       <div class="app-drawer">

@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient } from 'apollo-boost';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { EveesModule, EveesHelpers, EveesRemote, Perspective } from '@uprtcl/evees';
@@ -10,6 +10,9 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { EveesOrbitDB } from './evees.orbit-db';
 
 export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
+
+  logger = new Logger('PermissionsOrbitdDb');
+
   @property({ type: String })
   uref!: string;
 
@@ -24,6 +27,16 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
 
   client!: ApolloClient<any>;
   remote!: EveesOrbitDB;
+
+  async connectedCallback() {
+    super.connectedCallback();
+    this.logger.log('Connected', this.uref)
+  }
+
+  async disconnectedCallback() {
+    super.disconnectedCallback();
+    this.logger.log('Disconnected', this.uref)
+  }
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -55,7 +68,7 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
 
   renderOwner() {
     return html`
-      <evees-author user-id=${this.owner}></evees-author>
+      <evees-author user-id=${this.owner} show-name></evees-author>
     `;
   }
 

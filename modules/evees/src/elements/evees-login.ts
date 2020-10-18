@@ -52,9 +52,13 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
       };
     });
 
-    this.dispatchEvent(new CustomEvent('changed'));
-
     this.loading = false;
+  }
+
+  async reload() {
+    await this.client.resetStore();
+    this.dispatchEvent(new CustomEvent('changed'));
+    await this.load();
   }
 
   async loginAll() {
@@ -64,9 +68,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
         if (!isLogged) await remote.login();
       })
     );
-    /** invalidate all the cache :) */
-    await this.client.resetStore();
-    this.load();
+    this.reload();
   }
 
   async logoutAll() {
@@ -82,7 +84,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
         }
       })
     );
-    this.load();
+    this.reload();
   }
 
   render() {
