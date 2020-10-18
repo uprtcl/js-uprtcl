@@ -10,14 +10,7 @@ const styleMap = style => {
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 import { Entity, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import {
-  EveesRemote,
-  EveesModule,
-  eveeColor,
-  DEFAULT_COLOR,
-  Perspective,
-  EveesPerspectives
-} from '@uprtcl/evees';
+import { EveesRemote, EveesModule, eveeColor, DEFAULT_COLOR, EveesInfoRow } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { UprtclPopper } from '@uprtcl/common-ui';
@@ -35,17 +28,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
-  @property({ attribute: false })
-  author: string = '';
-
-  @query('#drafts-popper')
-  dratfsPopper!: UprtclPopper;
-
   @query('#wiki-drawer-content')
   content!: WikiDrawerContent;
 
-  @query('#evees-perspectives')
-  eveesPerspectives!: EveesPerspectives;
+  @query('#evees-info')
+  eveesInfoRow!: EveesInfoRow;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -70,28 +57,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     super.connectedCallback();
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
-      this.dratfsPopper.showDropdown = false;
       this.uref = event.detail.perspectiveId;
+      this.load();
     }) as EventListener);
   }
 
   async load() {
     this.loading = true;
-    const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
-    this.author = perspective.object.payload.creatorId;
     this.loading = false;
-  }
-
-  draftsClicked() {}
-
-  loggedIn() {
-    this.content.load();
-    this.eveesPerspectives.load();
-  }
-
-  checkoutOfficial() {
-    this.uref = this.firstRef;
-    this.load();
   }
 
   color() {
@@ -102,48 +75,22 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }
   }
 
+  loggedIn() {
+    this.content.load();
+    this.eveesInfoRow.load();
+  }
+
+  checkoutOfficial() {
+    this.uref = this.firstRef;
+    this.load();
+  }
+
   renderBreadcrumb() {
     return html`
       <uprtcl-button .skinny=${this.uref !== this.firstRef} @click=${() => this.checkoutOfficial()}>
         official
       </uprtcl-button>
-      <uprtcl-button
-        .skinny=${this.uref === this.firstRef}
-        @click=${() => this.checkoutOfficial()}
-        style=${`--background-color: ${this.color()}`}
-      >
-        ${this.uref === this.firstRef ? 'proposals' : 'propose'}
-      </uprtcl-button>
-      <uprtcl-popper id="drafts-popper" position="bottom-left" class="drafts-popper">
-        <uprtcl-button
-          slot="icon"
-          style=${`--background-color: ${this.color()}`}
-          class="evees-author"
-          @click=${() => this.draftsClicked()}
-          >${this.uref === this.firstRef
-            ? html`
-                drafts
-              `
-            : html`
-                draft by
-                <evees-author
-                  show-name
-                  user-id=${this.author}
-                  show-name
-                  short
-                  color=${eveeColor(this.uref)}
-                ></evees-author>
-              `}
-        </uprtcl-button>
-        <div class="">
-          <evees-perspectives
-            id="evees-perspectives"
-            uref=${this.uref}
-            .hidePerspectives=${[this.firstRef]}
-          >
-          </evees-perspectives>
-        </div>
-      </uprtcl-popper>
+      <evees-info-row uref=${this.uref} first-uref=${this.firstRef}> </evees-info-row>
     `;
   }
 
