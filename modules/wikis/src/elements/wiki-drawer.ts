@@ -93,6 +93,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <uprtcl-button .skinny=${this.uref !== this.firstRef} @click=${() => this.checkoutOfficial()}>
         official
       </uprtcl-button>
+      <uprtcl-button @click=${() => this.checkoutOfficial()}>
+        proposals
+      </uprtcl-button>
       <uprtcl-popper>
         <uprtcl-button 
           slot="icon"
@@ -115,10 +118,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           <evees-info-page uref=${this.uref} show-perspectives></evees-info-page>
         </div>
       </uprtcl-popper>
-      
-      <uprtcl-button @click=${() => this.checkoutOfficial()}>
-        proposals
-      </uprtcl-button>
     `;
   }
 
