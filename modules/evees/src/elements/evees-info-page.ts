@@ -32,9 +32,6 @@ export class EveesInfoPage extends EveesInfoBase {
   @property({ attribute: false })
   showEditName: boolean = false;
 
-  @property({ attribute: false })
-  isEmit: boolean = false;
-
   @property({ attribute: true })
   parentId: string = '';
 
@@ -43,13 +40,6 @@ export class EveesInfoPage extends EveesInfoBase {
 
   async firstUpdated() {
     super.firstUpdated();
-
-    this.isEmit = await EveesHelpers.checkEmit(
-      this.config,
-      this.client,
-      this.requestAll(EveesBindings.EveesRemote),
-      this.uref
-    );
   }
 
   connectedCallback() {
@@ -177,7 +167,7 @@ export class EveesInfoPage extends EveesInfoBase {
     /** most likely action button */
     const actionButton = html`
         ${
-          this.isLogged && this.firstRef !== this.uref
+          this.isLogged && this.makeProposal
             ? html`
                 <div class="action-button">
                   ${this.renderMakeProposalButton()}
@@ -243,7 +233,6 @@ export class EveesInfoPage extends EveesInfoBase {
                             <evees-perspectives-list
                               force-update=${this.forceUpdate}
                               perspective-id=${this.uref}
-                              first-perspective-id=${this.firstRef}
                               ?can-propose=${this.isLogged}
                               @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
                               @merge-perspective=${e =>
@@ -258,7 +247,7 @@ export class EveesInfoPage extends EveesInfoBase {
                 </div>
               `
             : ''}
-          ${this.showProposals && this.uref === this.firstRef && !this.isEmit
+          ${this.showProposals
             ? html`
                 <div class="section">
                   <div class="section-header">
