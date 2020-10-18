@@ -31,7 +31,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @query('#wiki-drawer-content')
   content!: WikiDrawerContent;
 
-  @query('#evees-info')
+  @query('#evees-info-row')
   eveesInfoRow!: EveesInfoRow;
 
   protected client!: ApolloClient<any>;
@@ -87,10 +87,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   renderBreadcrumb() {
     return html`
-      <uprtcl-button .skinny=${this.uref !== this.firstRef} @click=${() => this.checkoutOfficial()}>
+      <uprtcl-button ?skinny=${this.uref !== this.firstRef} @click=${() => this.checkoutOfficial()}>
         official
       </uprtcl-button>
-      <evees-info-row uref=${this.uref} first-uref=${this.firstRef}> </evees-info-row>
+      <evees-info-row id="evees-info-row" uref=${this.uref} first-uref=${this.firstRef}>
+      </evees-info-row>
     `;
   }
 
@@ -166,6 +167,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           display: block;
           width: auto;
           margin-right: 8px;
+          width: 150px;
         }
         .drafts-popper {
           --box-width: 400px;

@@ -104,24 +104,36 @@ export class EveesInfoRow extends EveesInfoBase {
     return html`
       ${this.uref === this.firstRef
         ? html`
-            <uprtcl-button skinny @click=${() => this.showProposals()}>
+            <uprtcl-button
+              class="proposals-button"
+              icon="arrow_drop_down"
+              skinny
+              @click=${() => this.showProposals()}
+              transition
+            >
               proposals
             </uprtcl-button>
           `
         : html`
             <uprtcl-button
-              @click=${() => this.showPropose()}
+              ?disabled=${!this.isLogged}
+              icon="arrow_back"
+              @click=${() => this.otherPerspectiveMerge(this.uref, this.firstRef)}
               style=${`--background-color: ${this.color()}`}
-              >propose
+              class="proposals-button"
+              transition
+              >${this.perspectiveData.canWrite ? 'merge' : 'propose'}
             </uprtcl-button>
           `}
 
       <uprtcl-popper id="drafts-popper" position="bottom-left" class="drafts-popper">
         <uprtcl-button
+          icon="arrow_drop_down"
+          ?skinny=${this.uref === this.firstRef}
           slot="icon"
-          style=${`--background-color: ${this.color()}`}
-          class="evees-author"
-          }
+          style=${`--background-color: ${this.uref !== this.firstRef ? this.color() : 'initial'}`}
+          class=${this.uref === this.firstRef ? 'draft-button' : ''}
+          transition
           >${this.uref === this.firstRef
             ? html`
                 drafts
@@ -139,6 +151,7 @@ export class EveesInfoRow extends EveesInfoBase {
         </uprtcl-button>
         ${this.renderOtherPerspectives()}
       </uprtcl-popper>
+      ${this.showUpdatesDialog ? this.renderUpdatesDialog() : ''}
     `;
   }
 
@@ -149,8 +162,20 @@ export class EveesInfoRow extends EveesInfoBase {
           display: flex;
           flex-direction: row;
         }
+        .drafts-popper {
+          margin-left: 8px;
+        }
         uprtcl-button-loading {
-          margin: 0 auto;
+          margin: 16px auto;
+        }
+        .proposals-button {
+          width: 150px;
+        }
+        .draft-button {
+          width: 150px;
+        }
+        evees-perspectives-list {
+          margin-bottom: 1px solid #cccccc;
         }
       `
     ]);
