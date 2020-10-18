@@ -14,7 +14,6 @@ import { EveesBindings } from 'src/bindings';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 export class EveesInfoPage extends EveesInfoBase {
-
   logger = new Logger('EVEES-INFO-PAGE');
 
   @property({ type: Boolean, attribute: 'show-perspectives' })
@@ -45,7 +44,7 @@ export class EveesInfoPage extends EveesInfoBase {
   connectedCallback() {
     super.connectedCallback();
 
-    this.logger.log('Connected', this.uref)
+    this.logger.log('Connected', this.uref);
 
     this.addEventListener('keydown', event => {
       if (event.keyCode === 27) {
@@ -64,7 +63,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
   async disconnectedCallback() {
     super.disconnectedCallback();
-    this.logger.log('Disconnected', this.uref)
+    this.logger.log('Disconnected', this.uref);
   }
 
   async editNameClicked() {
@@ -167,7 +166,7 @@ export class EveesInfoPage extends EveesInfoBase {
     /** most likely action button */
     const actionButton = html`
         ${
-          this.isLogged && this.makeProposal
+          this.isLogged && this.uref !== this.firstRef
             ? html`
                 <div class="action-button">
                   ${this.renderMakeProposalButton()}

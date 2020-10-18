@@ -10,15 +10,10 @@ const styleMap = style => {
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 import { Entity, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import {
-  EveesRemote,
-  EveesModule,
-  eveeColor,
-  DEFAULT_COLOR,
-  Perspective,
-} from '@uprtcl/evees';
+import { EveesRemote, EveesModule, eveeColor, DEFAULT_COLOR, Perspective } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { loadEntity } from '@uprtcl/multiplatform';
+import { UprtclPopper } from '@uprtcl/common-ui';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
@@ -34,6 +29,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   author: string = '';
+
+  @query('#drafts-popper')
+  dratfsPopper!: UprtclPopper;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -58,6 +56,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     super.connectedCallback();
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
+      this.dratfsPopper.showDropdown = false;
       this.uref = event.detail.perspectiveId;
     }) as EventListener);
   }
@@ -69,14 +68,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
-  draftsClicked() {
-  }
+  draftsClicked() {}
 
-  loggedIn() {
-  }
+  loggedIn() {}
 
   checkoutOfficial() {
-    this.uref = this.firstRef
+    this.uref = this.firstRef;
     this.load();
   }
 
@@ -93,29 +90,37 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       <uprtcl-button .skinny=${this.uref !== this.firstRef} @click=${() => this.checkoutOfficial()}>
         official
       </uprtcl-button>
-      <uprtcl-button @click=${() => this.checkoutOfficial()}>
-        proposals
+      <uprtcl-button
+        .skinny=${this.uref === this.firstRef}
+        @click=${() => this.checkoutOfficial()}
+        style=${`--background-color: ${this.color()}`}
+      >
+        ${this.uref === this.firstRef ? 'proposals' : 'propose'}
       </uprtcl-button>
-      <uprtcl-popper>
-        <uprtcl-button 
+      <uprtcl-popper id="drafts-popper" position="bottom-left" class="drafts-popper">
+        <uprtcl-button
           slot="icon"
-          style=${`--background-color: ${this.color()}`} 
+          style=${`--background-color: ${this.color()}`}
           class="evees-author"
           @click=${() => this.draftsClicked()}
-          >${this.uref === this.firstRef ? 
-            html`drafts` : 
-            html`draft by
-              <evees-author
-                show-name
-                user-id=${this.author}
-                show-name
-                short
-                color=${eveeColor(this.uref)}
-              ></evees-author
-            >`}
+          >${this.uref === this.firstRef
+            ? html`
+                drafts
+              `
+            : html`
+                draft by
+                <evees-author
+                  show-name
+                  user-id=${this.author}
+                  show-name
+                  short
+                  color=${eveeColor(this.uref)}
+                ></evees-author>
+              `}
         </uprtcl-button>
         <div class="">
-          <evees-info-page uref=${this.uref} show-perspectives></evees-info-page>
+          <evees-perspectives uref=${this.uref} .hidePerspectives=${[this.firstRef]}>
+          </evees-perspectives>
         </div>
       </uprtcl-popper>
     `;
@@ -133,7 +138,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <uprtcl-loading></uprtcl-loading>
       `;
 
-    this.logger.log('rendering wiki after loading')
+    this.logger.log('rendering wiki after loading');
 
     return html`
       <div class="app-drawer">
@@ -148,7 +153,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         </div>
 
         <wiki-drawer-content uref=${this.uref}></wiki-drawer-content>
-        
       </div>
     `;
   }
@@ -193,6 +197,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           display: block;
           width: auto;
           margin-right: 8px;
+        }
+        .drafts-popper {
+          --box-width: 400px;
         }
         .breadcrum-container .evees-author {
           --background-color: red;

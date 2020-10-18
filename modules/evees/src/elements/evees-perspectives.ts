@@ -1,9 +1,12 @@
-import { html, css } from 'lit-element';
+import { html, css, property } from 'lit-element';
 import { EveesInfoBase } from './evee-info-base';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-export class EveesInfoPage extends EveesInfoBase {
+export class EveesPerspectives extends EveesInfoBase {
   logger = new Logger('EVEES-PERSPECTIVES');
+
+  @property({ type: Array })
+  hidePerspectives!: string[];
 
   async firstUpdated() {
     super.firstUpdated();
@@ -47,6 +50,7 @@ export class EveesInfoPage extends EveesInfoBase {
                   <evees-perspectives-list
                     force-update=${this.forceUpdate}
                     perspective-id=${this.uref}
+                    .hidePerspectives=${this.hidePerspectives}
                     ?can-propose=${this.isLogged}
                     @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
                     @merge-perspective=${e =>

@@ -6,16 +6,14 @@ export class UprtclPopper extends LitElement {
   icon: string = 'more_vert';
 
   @property({ type: String })
-  position: string = 'bottom';
+  position: string = 'bottom-right';
 
   @property({ type: Boolean, attribute: false })
   showDropdown: boolean = false;
 
   firstUpdated() {
-    document.addEventListener('click', (event) => {
-      const ix = event
-        .composedPath()
-        .findIndex((el: any) => el.id === 'popper-menu');
+    document.addEventListener('click', event => {
+      const ix = event.composedPath().findIndex((el: any) => el.id === 'popper-menu');
       if (ix === -1) {
         this.showDropdown = false;
       }
@@ -33,8 +31,12 @@ export class UprtclPopper extends LitElement {
   }
 
   render() {
-    let classes =
-      this.position === 'bottom' ? ['info-box-bottom'] : ['info-box-right'];
+    const positions = {
+      'bottom-left': 'info-box-bottom-left',
+      'bottom-right': 'info-box-bottom-right',
+      right: 'info-box-right'
+    };
+    let classes = [positions[this.position]];
 
     classes.push('info-box');
 
@@ -45,9 +47,11 @@ export class UprtclPopper extends LitElement {
         </slot>
       </div>
       ${this.showDropdown
-        ? html` <uprtcl-card id="popper-menu" class=${classes.join(' ')}>
-            <slot></slot>
-          </uprtcl-card>`
+        ? html`
+            <uprtcl-card id="popper-menu" class=${classes.join(' ')}>
+              <slot></slot>
+            </uprtcl-card>
+          `
         : ''}
     `;
   }
@@ -80,8 +84,12 @@ export class UprtclPopper extends LitElement {
         position: absolute;
         width: var(--box-width, 250px);
       }
-      .info-box-bottom {
+      .info-box-bottom-right {
         right: 0px;
+        top: calc(100% + 5px);
+      }
+      .info-box-bottom-left {
+        left: 0px;
         top: calc(100% + 5px);
       }
       .info-box-right {

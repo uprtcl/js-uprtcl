@@ -28,8 +28,8 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
 
-  @property({ type: String, attribute: 'first-perspective-id' })
-  firstPerspectiveId!: string;
+  @property({ type: Array })
+  hidePerspectives: string[] = [];
 
   @property({ type: Boolean, attribute: 'can-propose' })
   canPropose: Boolean = false;
@@ -52,14 +52,13 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
   async connectedCallback() {
     super.connectedCallback();
-    this.logger.log('Connected', this.perspectiveId)
+    this.logger.log('Connected', this.perspectiveId);
   }
 
   async disconnectedCallback() {
     super.disconnectedCallback();
-    this.logger.log('Disconnected', this.perspectiveId)
+    this.logger.log('Disconnected', this.perspectiveId);
   }
-
 
   async firstUpdated() {
     if (!this.isConnected) return;
@@ -121,11 +120,11 @@ export class PerspectivesList extends moduleConnect(LitElement) {
 
     // remove duplicates
     const map = new Map<string, PerspectiveData>();
-    perspectivesData.forEach((perspectiveData => map.set(perspectiveData.id, perspectiveData)));
+    perspectivesData.forEach(perspectiveData => map.set(perspectiveData.id, perspectiveData));
     this.perspectivesData = Array.from(map, key => key[1]);
 
     this.otherPerspectivesData = this.perspectivesData.filter(
-      perspectiveData => perspectiveData.id !== this.firstPerspectiveId
+      perspectiveData => !this.hidePerspectives.includes(perspectiveData.id)
     );
 
     this.loadingPerspectives = false;
@@ -159,11 +158,7 @@ export class PerspectivesList extends moduleConnect(LitElement) {
   }
 
   perspectiveColor(perspectiveId: string) {
-    if (perspectiveId === this.firstPerspectiveId) {
-      return DEFAULT_COLOR;
-    } else {
-      return eveeColor(perspectiveId);
-    }
+    return eveeColor(perspectiveId);
   }
 
   perspectiveButtonClicked(event: Event, perspectiveData: PerspectiveData) {
@@ -208,20 +203,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           color=${this.perspectiveColor(perspectiveData.id)}
           user-id=${perspectiveData.creatorId}
         ></evees-author>
-
-        <!-- just enable merges to the official perspective for now -->
-        ${this.canPropose && this.perspectiveId === this.firstPerspectiveId
-          ? html`
-              <uprtcl-button
-                slot="meta"
-                icon="call_merge"
-                skinny
-                @click=${e => this.perspectiveButtonClicked(e, perspectiveData)}
-              >
-                merge
-              </uprtcl-button>
-            `
-          : ''}
       </uprtcl-list-item>
     `;
   }
