@@ -164,6 +164,7 @@ export class EveesInfoRow extends EveesInfoBase {
         }
         .drafts-popper {
           margin-left: 8px;
+          --box-width: 340px;
         }
         uprtcl-button-loading {
           margin: 16px auto;

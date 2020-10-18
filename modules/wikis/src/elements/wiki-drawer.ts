@@ -121,7 +121,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           <div class="login-widget-container">${this.renderLoginWidget()}</div>
         </div>
 
-        <wiki-drawer-content id="wiki-drawer-content" uref=${this.uref} editable>
+        <wiki-drawer-content
+          id="wiki-drawer-content"
+          uref=${this.uref}
+          editable
+          color=${this.color()}
+        >
         </wiki-drawer-content>
       </div>
     `;

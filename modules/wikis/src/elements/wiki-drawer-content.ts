@@ -122,8 +122,18 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   updated(changedProperties) {
     if (changedProperties.get('uref') !== undefined) {
       this.logger.info('updated()', { changedProperties });
-      this.load();
+      this.reset();
     }
+  }
+
+  async reset() {
+    // await this.client.resetStore();
+    this.pagesList = undefined;
+    this.selectedPageIx = undefined;
+    this.wiki = undefined;
+    this.editable = false;
+    this.logger.log('reset()', this.uref);
+    this.load();
   }
 
   async load() {
