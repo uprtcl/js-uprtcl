@@ -152,7 +152,9 @@ export class Evees {
     name?: string
   ): Promise<string> {
     const eveesRemote =
-      remote !== undefined ? this.getRemote(remote) : (this.config.defaultRemote as EveesRemote);
+      remote !== undefined && remote !== null
+        ? this.getRemote(remote)
+        : (this.config.defaultRemote as EveesRemote);
 
     const refPerspective = await loadEntity<Signed<Perspective>>(this.client, perspectiveId);
     if (!refPerspective) throw new Error(`base perspective ${perspectiveId} not found`);

@@ -14,7 +14,7 @@ import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { eveesTypeDefs } from './graphql/schema';
 import { eveesResolvers } from './graphql/resolvers';
-import { PerspectivesList } from './elements/evees-perspectives-list';
+import { EveesPerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
 import en from './i18n/en.json';
@@ -96,7 +96,7 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-info-popper', EveesInfoPopper);
     customElements.define('evees-info-page', EveesInfoPage);
     customElements.define('evees-perspectives', EveesPerspectives);
-    customElements.define('evees-perspectives-list', PerspectivesList);
+    customElements.define('evees-perspectives-list', EveesPerspectivesList);
     customElements.define('evees-proposals-list', ProposalsList);
     customElements.define('evees-update-diff', EveesDiff);
     customElements.define('evees-proposal-diff', EveesProposalDiff);

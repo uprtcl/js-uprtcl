@@ -117,11 +117,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
 
-    if (this.defaultRemoteId !== undefined) {
-      this.defaultRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-        remote => remote.id === this.defaultRemoteId
-      );
-    }
+    this.defaultRemote =
+      this.defaultRemoteId !== undefined
+        ? (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+            remote => remote.id === this.defaultRemoteId
+          )
+        : (this.request(EveesBindings.Config) as EveesConfig).defaultRemote;
 
     this.load();
   }
@@ -132,7 +133,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.load();
     }
 
-    if (changedProperties.has('defaultAuthority')) {
+    if (changedProperties.has('defaultRemoteId')) {
       this.defaultRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
         remote => remote.id === this.defaultRemoteId
       );
@@ -141,7 +142,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async load() {
     this.logger.info('Loading evee perspective', this.uref);
-    
+
     this.remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
     const entity = await loadEntity(this.client, this.uref);
@@ -198,7 +199,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       perspectiveData: this.perspectiveData,
       isLogged: this.isLogged,
       isLoggedOnDefault: this.isLoggedOnDefault
-    })
+    });
   }
 
   async checkPull() {

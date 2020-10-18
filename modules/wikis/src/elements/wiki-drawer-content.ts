@@ -93,7 +93,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
     this.logger.log('firstUpdated()', { uref: this.uref });
 
-    this.loadWiki();
+    this.load();
   }
 
   connectedCallback() {
@@ -102,7 +102,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     this.addEventListener(CONTENT_UPDATED_TAG, ((e: ContentUpdatedEvent) => {
       if (e.detail.uref === this.uref) {
         this.logger.log('ContentUpdatedEvent()', this.uref);
-        this.loadWiki();
+        this.load();
       }
     }) as EventListener);
   }
@@ -119,10 +119,17 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     }
   }
 
-  async loadWiki() {
+  updated(changedProperties) {
+    if (changedProperties.get('uref') !== undefined) {
+      this.logger.info('updated()', { changedProperties });
+      this.load();
+    }
+  }
+
+  async load() {
     if (this.uref === undefined) return;
 
-    this.logger.log('loadWiki()');
+    this.logger.log('load()');
     this.loading = true;
 
     const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
@@ -137,7 +144,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
     await this.loadPagesData();
-    
+
     this.loading = false;
   }
 
@@ -268,7 +275,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
     this.logger.info('updateContent()', newWiki);
 
-    await this.loadWiki();
+    await this.load();
   }
 
   async replacePagePerspective(oldId, newId) {
@@ -399,12 +406,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     this.dispatchEvent(new CustomEvent('back', { bubbles: true, composed: true }));
   }
 
-  loggedIn() {
-    /* relaod evees info */
-    this.logger.log('loggedIn. Calling loadWiki()')
-    this.loadWiki();
-  }
-
   renderPageList(showOptions: boolean = true) {
     if (this.pagesList === undefined)
       return html`
@@ -426,7 +427,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
               })}
             </uprtcl-list>
           `}
-      ${this.editable
+      ${this.editableActual
         ? html`
             <div class="button-row">
               <uprtcl-button-loading
@@ -481,7 +482,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         <div class="text-container">
           ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
         </div>
-        ${this.editable && showOptions
+        ${this.editableActual && showOptions
           ? html`
               <div class="item-menu-container">
                 <uprtcl-options-menu
@@ -503,15 +504,11 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         <uprtcl-loading></uprtcl-loading>
       `;
 
-    this.logger.log('rendering wiki after loading')
+    this.logger.log('rendering wiki after loading');
 
     return html`
       <div class="app-content-with-nav">
-        <div 
-          class="app-navbar" 
-          @dragover=${this.dragOverEffect} 
-          @drop=${this.handlePageDrop}>
-          
+        <div class="app-navbar" @dragover=${this.dragOverEffect} @drop=${this.handlePageDrop}>
           ${this.renderPageList()}
         </div>
 

@@ -20,9 +20,8 @@ interface PerspectiveData {
 
 const MERGE_ACTION: string = 'Merge';
 const MERGE_PROPOSAL_ACTION: string = 'Propose';
-const PRIVATE_PERSPECTIVE: string = 'Private';
 
-export class PerspectivesList extends moduleConnect(LitElement) {
+export class EveesPerspectivesList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
 
   @property({ type: String, attribute: 'perspective-id' })
@@ -219,7 +218,9 @@ export class PerspectivesList extends moduleConnect(LitElement) {
           </uprtcl-list>
         `
       : html`
-          <div class="empty"><i>No other perspectives found</i></div>
+          <uprtcl-list-item>
+            <i>No other perspectives found</i>
+          </uprtcl-list-item>
         `;
   }
 
@@ -237,13 +238,6 @@ export class PerspectivesList extends moduleConnect(LitElement) {
         flex-direction: column;
         justify-content: center;
       }
-
-      .empty {
-        margin-top: 60px;
-        color: #d0d8db;
-        text-align: center;
-      }
-
       uprtcl-list-item {
         user-select: none;
       }

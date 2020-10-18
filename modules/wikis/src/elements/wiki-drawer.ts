@@ -10,10 +10,18 @@ const styleMap = style => {
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 import { Entity, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import { EveesRemote, EveesModule, eveeColor, DEFAULT_COLOR, Perspective } from '@uprtcl/evees';
+import {
+  EveesRemote,
+  EveesModule,
+  eveeColor,
+  DEFAULT_COLOR,
+  Perspective,
+  EveesPerspectives
+} from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { UprtclPopper } from '@uprtcl/common-ui';
+import { WikiDrawerContent } from './wiki-drawer-content';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
@@ -32,6 +40,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @query('#drafts-popper')
   dratfsPopper!: UprtclPopper;
+
+  @query('#wiki-drawer-content')
+  content!: WikiDrawerContent;
+
+  @query('#evees-perspectives')
+  eveesPerspectives!: EveesPerspectives;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -70,7 +84,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   draftsClicked() {}
 
-  loggedIn() {}
+  loggedIn() {
+    this.content.load();
+    this.eveesPerspectives.load();
+  }
 
   checkoutOfficial() {
     this.uref = this.firstRef;
@@ -119,7 +136,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               `}
         </uprtcl-button>
         <div class="">
-          <evees-perspectives uref=${this.uref} .hidePerspectives=${[this.firstRef]}>
+          <evees-perspectives
+            id="evees-perspectives"
+            uref=${this.uref}
+            .hidePerspectives=${[this.firstRef]}
+          >
           </evees-perspectives>
         </div>
       </uprtcl-popper>
@@ -152,7 +173,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           <div class="login-widget-container">${this.renderLoginWidget()}</div>
         </div>
 
-        <wiki-drawer-content uref=${this.uref}></wiki-drawer-content>
+        <wiki-drawer-content id="wiki-drawer-content" uref=${this.uref} editable>
+        </wiki-drawer-content>
       </div>
     `;
   }
