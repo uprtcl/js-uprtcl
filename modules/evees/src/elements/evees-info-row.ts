@@ -7,6 +7,7 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { Perspective } from '../types';
 import { Entity, Signed } from '@uprtcl/cortex';
 import { UprtclPopper } from '@uprtcl/common-ui';
+import { ProposalsList } from './evees-proposals-list';
 
 export class EveesInfoRow extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-ROW');
@@ -19,6 +20,9 @@ export class EveesInfoRow extends EveesInfoBase {
 
   @query('#evees-perspectives-list')
   eveesPerspectivesList!: EveesPerspectivesList;
+
+  @query('#evees-proposals-list')
+  eveesProposalsList!: ProposalsList;
 
   async firstUpdated() {
     super.firstUpdated();
@@ -37,6 +41,7 @@ export class EveesInfoRow extends EveesInfoBase {
   async load() {
     super.load();
     this.eveesPerspectivesList.load();
+    this.eveesProposalsList.load();
     const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
     this.author = perspective.object.payload.creatorId;
   }
@@ -100,19 +105,42 @@ export class EveesInfoRow extends EveesInfoBase {
     `;
   }
 
+  renderProposals() {
+    return html`
+      <div class="list-container">
+        ${!this.loading
+          ? html`
+              <evees-proposals-list
+                id="evees-proposals-list"
+                force-update=${this.forceUpdate}
+                perspective-id=${this.uref}
+                @execute-proposal=${this.executeProposal}
+              ></evees-proposals-list>
+            `
+          : html`
+              <uprtcl-loading></uprtcl-loading>
+            `}
+      </div>
+    `;
+  }
+
   render() {
     return html`
       ${this.uref === this.firstRef
         ? html`
-            <uprtcl-button
-              class="proposals-button"
-              icon="arrow_drop_down"
-              skinny
-              @click=${() => this.showProposals()}
-              transition
-            >
-              proposals
-            </uprtcl-button>
+            <uprtcl-popper id="drafts-popper" position="bottom-left" class="drafts-popper">
+              <uprtcl-button
+                slot="icon"
+                class="proposals-button"
+                icon="arrow_drop_down"
+                skinny
+                @click=${() => this.showProposals()}
+                transition
+              >
+                proposals
+              </uprtcl-button>
+              ${this.renderProposals()}
+            </uprtcl-popper>
           `
         : html`
             <uprtcl-button
@@ -176,7 +204,7 @@ export class EveesInfoRow extends EveesInfoBase {
           width: 150px;
         }
         evees-perspectives-list {
-          margin-bottom: 1px solid #cccccc;
+          border-bottom: 1px solid #cccccc;
         }
       `
     ]);
