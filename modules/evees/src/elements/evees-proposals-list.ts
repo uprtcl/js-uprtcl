@@ -83,7 +83,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
               `
             : html`
                 <uprtcl-list-item>
-                  <i>No other perspectives found</i>
+                  <i>No proposals found</i>
                 </uprtcl-list-item>
               `}
         `;

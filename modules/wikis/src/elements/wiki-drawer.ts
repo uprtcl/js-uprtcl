@@ -82,15 +82,22 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   checkoutOfficial() {
     this.uref = this.firstRef;
+    this.content.selectedPageIx = undefined;
     this.load();
   }
 
   renderBreadcrumb() {
     return html`
       <uprtcl-button ?skinny=${this.uref !== this.firstRef} @click=${() => this.checkoutOfficial()}>
-        official
+        home
       </uprtcl-button>
-      <evees-info-row id="evees-info-row" uref=${this.uref} first-uref=${this.firstRef}>
+      <evees-info-row
+        id="evees-info-row"
+        uref=${this.uref}
+        first-uref=${this.firstRef}
+        show-proposals
+        show-info
+      >
       </evees-info-row>
     `;
   }

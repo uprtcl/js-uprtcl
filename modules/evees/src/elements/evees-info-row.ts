@@ -12,6 +12,15 @@ import { ProposalsList } from './evees-proposals-list';
 export class EveesInfoRow extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-ROW');
 
+  @property({ type: Boolean, attribute: 'show-proposals' })
+  proposalsEnabled: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-perspectives' })
+  perspectivesEnabled: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-info' })
+  infoEnabled: boolean = false;
+
   @property({ attribute: false })
   author: string = '';
 
@@ -130,8 +139,13 @@ export class EveesInfoRow extends EveesInfoBase {
   }
 
   render() {
+    if (this.perspectiveData === undefined)
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
+
     return html`
-      ${this.uref === this.firstRef
+      ${this.uref === this.firstRef && this.proposalsEnabled
         ? html`
             <uprtcl-popper id="drafts-popper" position="bottom-left" class="drafts-popper">
               <uprtcl-button
@@ -158,32 +172,44 @@ export class EveesInfoRow extends EveesInfoBase {
               >${this.perspectiveData.canWrite ? 'merge' : 'propose'}
             </uprtcl-button>
           `}
-
-      <uprtcl-popper id="drafts-popper" position="bottom-left" class="drafts-popper">
-        <uprtcl-button
-          icon="arrow_drop_down"
-          ?skinny=${this.uref === this.firstRef}
-          slot="icon"
-          style=${`--background-color: ${this.uref !== this.firstRef ? this.color() : 'initial'}`}
-          class=${this.uref === this.firstRef ? 'draft-button' : ''}
-          transition
-          >${this.uref === this.firstRef
-            ? html`
-                drafts
-              `
-            : html`
-                draft by
-                <evees-author
-                  show-name
-                  user-id=${this.author}
-                  show-name
-                  short
-                  color=${eveeColor(this.uref)}
-                ></evees-author>
-              `}
-        </uprtcl-button>
-        ${this.renderOtherPerspectives()}
-      </uprtcl-popper>
+      ${this.perspectivesEnabled
+        ? html`
+            <uprtcl-popper id="drafts-popper" position="bottom-left" class="drafts-popper">
+              <uprtcl-button
+                icon="arrow_drop_down"
+                ?skinny=${this.uref === this.firstRef}
+                slot="icon"
+                style=${`--background-color: ${
+                  this.uref !== this.firstRef ? this.color() : 'initial'
+                }`}
+                class=${this.uref === this.firstRef ? 'draft-button' : ''}
+                transition
+                >${this.uref === this.firstRef
+                  ? html`
+                      drafts
+                    `
+                  : html`
+                      draft by
+                      <evees-author
+                        show-name
+                        user-id=${this.author}
+                        show-name
+                        short
+                        color=${eveeColor(this.uref)}
+                      ></evees-author>
+                    `}
+              </uprtcl-button>
+              ${this.renderOtherPerspectives()}
+            </uprtcl-popper>
+          `
+        : ''}
+      ${this.infoEnabled
+        ? html`
+            <uprtcl-popper icon="info" id="info-popper" position="bottom-left" class="info-popper">
+              ${this.renderInfo()}
+            </uprtcl-popper>
+          `
+        : ''}
       ${this.showUpdatesDialog ? this.renderUpdatesDialog() : ''}
     `;
   }
@@ -198,6 +224,10 @@ export class EveesInfoRow extends EveesInfoBase {
         .drafts-popper {
           margin-left: 8px;
           --box-width: 340px;
+        }
+        .info-popper {
+          --box-width: 490px;
+          --max-height: 70vh;
         }
         uprtcl-button-loading {
           margin: 16px auto;

@@ -83,6 +83,8 @@ export class UprtclPopper extends LitElement {
         z-index: 20;
         position: absolute;
         width: var(--box-width, 250px);
+        max-height: var(--max-height, initial);
+        overflow: auto;
       }
       .info-box-bottom-right {
         right: 0px;
