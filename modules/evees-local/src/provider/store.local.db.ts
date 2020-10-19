@@ -1,3 +1,4 @@
+import { Entity } from '@uprtcl/cortex';
 import Dexie from 'dexie';
 
 export class CASStoreLocalDB extends Dexie {

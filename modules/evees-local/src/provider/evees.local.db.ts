@@ -2,11 +2,11 @@ import Dexie from 'dexie';
 
 export interface PerspectiveLocal {
   id: string;
-  context: string;
+  context?: string;
   headId?: string;
 }
 
-export class EveesDB extends Dexie {
+export class EveesLocalDB extends Dexie {
   perspectives: Dexie.Table<PerspectiveLocal, string>;
 
   constructor(name: string) {

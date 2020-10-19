@@ -9,9 +9,9 @@ import {
   Secured,
   EveesHelpers
 } from '@uprtcl/evees';
-
-import { EveesCacheDB } from './evees.cache.db';
-import { EveesAccessControlFixed } from './evees-acl.local';
+import { CASStoreLocal } from './store.local';
+import { EveesAccessControlLocal } from './evees-acl.local';
+import { EveesLocalDB } from './evees.local.db';
 
 const evees_if = 'dexie';
 
@@ -19,13 +19,13 @@ export class EveesLocal implements EveesRemote {
   logger: Logger = new Logger('EveesLocal');
 
   accessControl: EveesAccessControlLocal;
-  db: EveesDB;
+  db: EveesLocalDB;
   store: CASStore;
 
   constructor() {
-    this.store = new CASStoreLocal('cas-store');
-    this.accessControl = new EveesAccessControlFixed();
-    this.db = new EveesCacheDB('evees-local');
+    this.store = new CASStoreLocal();
+    this.db = new EveesLocalDB('evees-local');
+    this.accessControl = new EveesAccessControlLocal(this.db);
   }
 
   get id() {
@@ -47,9 +47,9 @@ export class EveesLocal implements EveesRemote {
   }
 
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
-    return this.db.perspectives.put({
+    await this.db.perspectives.put({
       id: perspectiveId,
-      head: details.headId as string
+      headId: details.headId
     });
   }
 
@@ -60,7 +60,7 @@ export class EveesLocal implements EveesRemote {
     timestamp?: number,
     path?: string
   ): Promise<Secured<Perspective>> {
-    return EveesHelpers.snapPerspective(this, undefined, context, timestamp, path);
+    return EveesHelpers.snapDefaultPerspective(this, undefined, context, timestamp, path);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
@@ -83,7 +83,7 @@ export class EveesLocal implements EveesRemote {
     await this.db.perspectives.put({
       id: perspectiveId,
       context: secured.object.payload.context,
-      head: details.headId
+      headId: details.headId
     });
   }
 
@@ -110,9 +110,9 @@ export class EveesLocal implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    const details = this.db.perspectives.get(perspectiveId);
+    const details = await this.db.perspectives.get(perspectiveId);
     return {
-      headId: details.headId
+      headId: details ? details.headId : undefined
     };
   }
 
