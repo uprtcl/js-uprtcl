@@ -89,7 +89,7 @@ export class EveesLocal implements EveesRemote {
       id: perspectiveId,
       context: secured.object.payload.context,
       headId: details.headId,
-      fromPerspectiveId: 
+      fromPerspectiveId: secured.object.payload.fromPerspectiveId
     });
   }
 

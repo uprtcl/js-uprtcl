@@ -9,11 +9,9 @@ const styleMap = style => {
 
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { Entity, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import { EveesRemote, EveesModule, eveeColor, DEFAULT_COLOR, EveesInfoLocal } from '@uprtcl/evees';
+import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
+import { EveesRemote, EveesModule, eveeColor, DEFAULT_COLOR, EveesInfoBase } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
-import { loadEntity } from '@uprtcl/multiplatform';
-import { UprtclPopper } from '@uprtcl/common-ui';
 import { WikiDrawerContent } from './wiki-drawer-content';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
@@ -32,7 +30,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   content!: WikiDrawerContent;
 
   @query('#evees-info-row')
-  eveesInfoRow!: EveesInfoLocal;
+  eveesInfoRow!: EveesInfoBase;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];

@@ -27,7 +27,6 @@ import { ProposalsList } from './elements/evees-proposals-list';
 import { EveesProposalDiff } from './elements/evees-proposal-diff';
 import { EveesLoginWidget } from './elements/evees-login';
 import { EveesProposalRow } from './elements/evees-proposal-row';
-import { EveesInfoLocal } from '../../evees-local/src/elements/evees-info-local';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
