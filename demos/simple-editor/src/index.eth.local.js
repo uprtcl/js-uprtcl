@@ -12,7 +12,7 @@ import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 import { ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
-import { EveesLocal } from '@uprtcl/evees-local';
+import { EveesLocal, EveesLocalModule } from '@uprtcl/evees-local';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { EthereumOrbitDBIdentity, EveesEthereumConnection } from '@uprtcl/evees-ethereum';
@@ -110,6 +110,7 @@ import { SimpleWiki } from './simple-wiki';
     new DiscoveryModule([localEvees.store.casID]),
     new LensesModule(),
     new EveesBlockchainModule(),
+    new EveesLocalModule(),
     evees,
     documents,
     wikis

@@ -127,7 +127,9 @@ export class EveesOrbitDB implements EveesRemote {
       parentOwner,
       context,
       timestamp,
-      path
+      path,
+      fromPerspectiveId,
+      fromHeadId
     );
     perspective.casID = this.store.casID;
 

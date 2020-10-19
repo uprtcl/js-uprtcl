@@ -291,10 +291,11 @@ export class EveesHelpers {
       remote: remote.id,
       path: path !== undefined ? path : remote.defaultPath,
       timestamp,
-      context,
-      fromPerspectiveId,
-      fromHeadId
+      context
     };
+
+    if (fromPerspectiveId) object.fromPerspectiveId = fromPerspectiveId;
+    if (fromHeadId) object.fromHeadId = fromHeadId;
 
     const perspective = await deriveSecured<Perspective>(object, remote.store.cidConfig);
     perspective.casID = remote.store.casID;

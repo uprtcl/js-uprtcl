@@ -66,7 +66,15 @@ export class EveesLocal implements EveesRemote {
     fromPerspectiveId?: string,
     fromHeadId?: string
   ): Promise<Secured<Perspective>> {
-    return EveesHelpers.snapDefaultPerspective(this, undefined, context, timestamp, path);
+    return EveesHelpers.snapDefaultPerspective(
+      this,
+      undefined,
+      context,
+      timestamp,
+      path,
+      fromPerspectiveId,
+      fromHeadId
+    );
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {

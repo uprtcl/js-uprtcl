@@ -78,10 +78,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   @property({ type: String })
   defaultRemoteId!: string;
-  
+
   @property({ attribute: false })
   checkedOutPerspectives: { [key: string]: { firstUref: string; newUref: string } } = {};
-
 
   // checkedOutPerspectivesStorageId!: string;
 
@@ -98,11 +97,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       this.client = this.request(ApolloClientModule.bindings.Client);
     }
 
-    const config: EveesConfig = this.request(EveesModule.bindings.Config)
+    const config: EveesConfig = this.request(EveesModule.bindings.Config);
     if (config.defaultRemote === undefined) {
       throw new Error('default remote not defined');
     }
-    
+
     this.defaultRemoteId = config.defaultRemote.id;
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
@@ -183,7 +182,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         r => r.id === remoteId
       );
       if (!remote) throw new Error(`remote not found for ${remoteId}`);
-      const canWrite = this.editable === 'true' ? await EveesHelpers.canWrite(this.client, uref) : false;
+      const canWrite =
+        this.editable === 'true' ? await EveesHelpers.canWrite(this.client, uref) : false;
 
       if (this.editable === 'true') {
         editable = canWrite;
@@ -552,9 +552,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const secured = await this.derivePerspective(node);
 
     return EveesHelpers.createPerspective(this.client, remoteInstance, {
-      creatorId: secured.object.payload.creatorId,
-      timestamp: secured.object.payload.timestamp,
-      context: secured.object.payload.context,
+      ...secured.object.payload,
       headId: commitId,
       parentId: node.parent ? node.parent.uref : undefined
     });
@@ -1051,7 +1049,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async handleDrop(e, node: DocNode) {
     e.preventDefault();
     e.stopPropagation();
-   
+
     const dragged = JSON.parse(e.dataTransfer.getData('text/plain'));
 
     if (!dragged.uref) return;
@@ -1061,7 +1059,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const ix = node.ix !== undefined ? node.ix : node.parent.childrenNodes.length - 1;
     await this.spliceChildren(node.parent, [dragged.uref], ix + 1, 0);
 
-    this.requestUpdate();    
+    this.requestUpdate();
   }
 
   renderWithCortex(node: DocNode) {
@@ -1079,11 +1077,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const icon = node.uref === '' ? icons.add_box : icons.edit;
 
     return html`
-      <div 
+      <div
         class="row"
-        @dragover=${(e) => this.dragOverEffect(e, node)} 
-        @drop=${(e) => this.handleDrop(e, node)}>
-
+        @dragover=${e => this.dragOverEffect(e, node)}
+        @drop=${e => this.handleDrop(e, node)}
+      >
         <div class="evee-info">
           ${!node.isPlaceholder
             ? html`

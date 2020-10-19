@@ -4,7 +4,16 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { UprtclPopper } from '@uprtcl/common-ui';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { Signed } from '@uprtcl/cortex';
-import { EveesInfoBase, ProposalsList } from '@uprtcl/evees';
+import {
+  DEFAULT_COLOR,
+  eveeColor,
+  EveesInfoBase,
+  EveesRemote,
+  Perspective,
+  ProposalsList,
+  Secured
+} from '@uprtcl/evees';
+import { EveesLocal } from '../provider/evees.local';
 
 /** An evees handler designed to create a single draft per evee on the local storage */
 export class EveesInfoLocal extends EveesInfoBase {
@@ -25,7 +34,7 @@ export class EveesInfoLocal extends EveesInfoBase {
   @property({ attribute: false })
   hasDrafts: boolean = false;
 
-  @query('#drafts-popper')
+  @query('#proposals-popper')
   dratfsPopper!: UprtclPopper;
 
   @query('#evees-proposals-list')
@@ -50,19 +59,21 @@ export class EveesInfoLocal extends EveesInfoBase {
     if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
 
     if (!this.defaultRemote) throw new Error('default remote not found');
+    const defaultRemote: EveesRemote = this.defaultRemote;
 
     const official = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
     if (!official) throw new Error(`official perspective ${this.firstRef}`);
 
-    const [draftId] = await this.defaultRemote.getContextPerspectives(
+    const otherPerspectives = await defaultRemote.getContextPerspectives(
       official.object.payload.context
     );
-    this.draftId = draftId;
-  }
 
-  async loadDraftsStatus() {
-    const defaultRemote = this.defaultRemote as EveesLocal;
-    this.defaultRemote.getAl;
+    /** force one perspective per user on the default remote (this perspective is the draft of that user) */
+    this.draftId = otherPerspectives.find(async id => {
+      const perspective = await loadEntity<Secured<Perspective>>(this.client, id);
+      if (!perspective) throw new Error('default remote not found');
+      return perspective.object.object.payload.creatorId === defaultRemote.userId;
+    });
   }
 
   draftClicked() {
@@ -133,12 +144,23 @@ export class EveesInfoLocal extends EveesInfoBase {
 
       <uprtcl-button
         ?skinny=${this.uref === this.firstRef}
-        icon="edit"
         @click=${() => this.draftClicked()}
         class="margin-left draft-button"
         transition
-        >draft</uprtcl-button
       >
+        mine
+      </uprtcl-button>
+
+      ${this.uref !== this.firstRef
+        ? html`
+            <uprtcl-button
+              @click=${() => this.proposeDraft()}
+              class="margin-left draft-button"
+              transition
+              >propose</uprtcl-button
+            >
+          `
+        : ''}
     `;
   }
 
@@ -177,7 +199,7 @@ export class EveesInfoLocal extends EveesInfoBase {
         : ''}
       ${this.proposalsEnabled
         ? html`
-            <uprtcl-popper id="drafts-popper" position="bottom-left" class="drafts-popper">
+            <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
               <uprtcl-button
                 slot="icon"
                 class="proposals-button"
@@ -192,7 +214,7 @@ export class EveesInfoLocal extends EveesInfoBase {
             </uprtcl-popper>
           `
         : ''}
-      ${this.draftEnabled ? this.renderDraftControl() : ''}
+      ${this.draftEnabled && this.isLogged ? this.renderDraftControl() : ''}
       ${this.showUpdatesDialog ? this.renderUpdatesDialog() : ''}
     `;
   }
@@ -204,7 +226,7 @@ export class EveesInfoLocal extends EveesInfoBase {
           display: flex;
           flex-direction: row;
         }
-        .drafts-popper {
+        .proposals-popper {
           margin-left: 8px;
           --box-width: 340px;
         }
@@ -212,17 +234,8 @@ export class EveesInfoLocal extends EveesInfoBase {
           --box-width: 490px;
           --max-height: 70vh;
         }
-        uprtcl-button-loading {
-          margin: 16px auto;
-        }
         .proposals-button {
           width: 150px;
-        }
-        .drafts-icon {
-          display: flex;
-        }
-        .draft-status {
-          padding: 6px 12px;
         }
         .margin-left {
           margin-left: 10px;
