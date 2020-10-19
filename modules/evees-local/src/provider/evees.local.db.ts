@@ -4,6 +4,8 @@ export interface PerspectiveLocal {
   id: string;
   context?: string;
   headId?: string;
+  fromPerspectiveId?: string;
+  fromHeadId?: string;
 }
 
 export class EveesLocalDB extends Dexie {
@@ -12,7 +14,7 @@ export class EveesLocalDB extends Dexie {
   constructor(name: string) {
     super(name);
     this.version(0.1).stores({
-      perspectives: '&id,context'
+      perspectives: '&id,context,fromPerspectiveId'
     });
     this.perspectives = this.table('perspectives');
   }

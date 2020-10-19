@@ -3,10 +3,11 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+
 import { eveeColor } from './support';
 import { EveesBindings } from './../bindings';
 import { EveesRemote } from './../services/evees.remote';
-import { EveesHelpers } from 'src/uprtcl-evees';
+import { EveesHelpers } from '../graphql/evees.helpers';
 
 export const DEFAULT_COLOR = '#d0dae0';
 

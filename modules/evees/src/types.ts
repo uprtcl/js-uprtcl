@@ -1,7 +1,6 @@
 import { TemplateResult } from 'lit-element';
 
 import { Behaviour } from '@uprtcl/cortex';
-import { CASStore } from '@uprtcl/multiplatform';
 
 import { EveesRemote } from './services/evees.remote';
 import { Secured } from './utils/cid-hash';

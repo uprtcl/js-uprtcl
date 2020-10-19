@@ -11,6 +11,6 @@
       "apollo-client": ["node_modules/apollo-client"]
     }
   },
-  "include": ["src", "../evees-local/src/elements/evees-info-local.ts"],
+  "include": ["src"],
   "exclude": ["test"]
 }

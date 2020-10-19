@@ -9,6 +9,7 @@ import {
   Secured,
   EveesHelpers
 } from '@uprtcl/evees';
+
 import { CASStoreLocal } from './store.local';
 import { EveesAccessControlLocal } from './evees-acl.local';
 import { EveesLocalDB } from './evees.local.db';

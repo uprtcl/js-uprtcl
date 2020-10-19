@@ -4,14 +4,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { UprtclPopper } from '@uprtcl/common-ui';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { Signed } from '@uprtcl/cortex';
-import { EveesInfoBase } from '@uprtcl/evees';
-
-enum DraftState {
-  Create = 'CreateDraft',
-  SeeDraft = 'SeeDraft',
-  SeeingDraft = 'SeeingDraft',
-  Unexpected = 'Unexpected',
-}
+import { EveesInfoBase, ProposalsList } from '@uprtcl/evees';
 
 /** An evees handler designed to create a single draft per evee on the local storage */
 export class EveesInfoLocal extends EveesInfoBase {
@@ -104,10 +97,10 @@ export class EveesInfoLocal extends EveesInfoBase {
     this.dispatchEvent(
       new CustomEvent('checkout-perspective', {
         detail: {
-          perspectiveId: perspectiveId,
+          perspectiveId: perspectiveId
         },
         composed: true,
-        bubbles: true,
+        bubbles: true
       })
     );
   }
@@ -125,7 +118,11 @@ export class EveesInfoLocal extends EveesInfoBase {
   }
 
   renderDraftSummary() {
-    return this.hasDrafts ? html` <uprtcl-button>my drafts</uprtcl-button> ` : '';
+    return this.hasDrafts
+      ? html`
+          <uprtcl-button>my drafts</uprtcl-button>
+        `
+      : '';
   }
 
   renderDraftControl() {
@@ -157,13 +154,18 @@ export class EveesInfoLocal extends EveesInfoBase {
                 @execute-proposal=${this.executeProposal}
               ></evees-proposals-list>
             `
-          : html` <uprtcl-loading></uprtcl-loading> `}
+          : html`
+              <uprtcl-loading></uprtcl-loading>
+            `}
       </div>
     `;
   }
 
   render() {
-    if (this.perspectiveData === undefined) return html` <uprtcl-loading></uprtcl-loading> `;
+    if (this.perspectiveData === undefined)
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
 
     return html`
       ${this.infoEnabled
@@ -229,7 +231,7 @@ export class EveesInfoLocal extends EveesInfoBase {
           --background-color: #00ad3a;
           --background-color-hover: #4fd47c;
         }
-      `,
+      `
     ]);
   }
 }
