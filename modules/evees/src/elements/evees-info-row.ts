@@ -40,8 +40,13 @@ export class EveesInfoRow extends EveesInfoBase {
 
   async load() {
     super.load();
-    this.eveesPerspectivesList.load();
-    this.eveesProposalsList.load();
+
+    if (this.eveesPerspectivesList && this.eveesPerspectivesList !== null) {
+      this.eveesPerspectivesList.load();
+    }
+
+    if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
+
     const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
     this.author = perspective.object.payload.creatorId;
   }

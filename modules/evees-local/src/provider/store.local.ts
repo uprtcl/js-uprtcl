@@ -43,6 +43,7 @@ export class CASStoreLocal extends Connection implements CASStore {
   }
 
   async get(hash: string): Promise<object | undefined> {
-    return this.db.entities.get(hash);
+    const entity = await this.db.entities.get(hash);
+    return entity ? entity.object : undefined;
   }
 }

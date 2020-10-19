@@ -131,7 +131,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     this.pagesList = undefined;
     this.selectedPageIx = undefined;
     this.wiki = undefined;
-    this.editable = false;
     this.logger.log('reset()', this.uref);
     this.load();
   }

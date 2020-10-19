@@ -34,6 +34,7 @@
     "@uprtcl/evees-http": "^0.0.7-alpha.65",
     "@uprtcl/evees-orbitdb": "^0.0.7-alpha.65",
     "@uprtcl/evees-polkadot": "^0.0.7-alpha.65",
+    "@uprtcl/evees-local": "^0.0.7-alpha.65",
     "@uprtcl/graphql": "^0.0.7-alpha.65",
     "@uprtcl/http-provider": "^0.0.7-alpha.65",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.65",
