@@ -433,7 +433,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.reloadChildren();
   }
 
-  async newPerspectiveClicked() {
+  async forkPerspective() {
     this.creatingNewPerspective = true;
 
     const result = await this.client.mutate({

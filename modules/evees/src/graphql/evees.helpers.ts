@@ -51,10 +51,7 @@ export class EveesHelpers {
     return result.data.entity.head.id;
   }
 
-  static async canWrite(
-    client: ApolloClient<any>,
-    perspectiveId: string
-  ): Promise<boolean> {
+  static async canWrite(client: ApolloClient<any>, perspectiveId: string): Promise<boolean> {
     const result = await client.query({
       query: gql`
         {
@@ -66,7 +63,8 @@ export class EveesHelpers {
           }
         }`
     });
-    if (result.data.entity.canWrite === undefined || result.data.entity.canWrite == null) return false;
+    if (result.data.entity.canWrite === undefined || result.data.entity.canWrite == null)
+      return false;
     return result.data.entity.canWrite;
   }
 
@@ -274,7 +272,9 @@ export class EveesHelpers {
     creatorId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ) {
     creatorId = creatorId ? creatorId : remote.userId ? remote.userId : '';
     timestamp = timestamp ? timestamp : Date.now();
@@ -291,7 +291,9 @@ export class EveesHelpers {
       remote: remote.id,
       path: path !== undefined ? path : remote.defaultPath,
       timestamp,
-      context
+      context,
+      fromPerspectiveId,
+      fromHeadId
     };
 
     const perspective = await deriveSecured<Perspective>(object, remote.store.cidConfig);

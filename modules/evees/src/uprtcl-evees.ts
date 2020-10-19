@@ -30,9 +30,10 @@ export { EveesBindings } from './bindings';
 /** Elements */
 export { CommitHistory } from './elements/evees-commit-history';
 export { EveesPerspectivesList } from './elements/evees-perspectives-list';
-export { EveesInfoRow } from './elements/evees-info-row';
+export { EveesInfoLocal } from '../../evees-local/src/elements/evees-info-local';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
+export { EveesInfoBase } from './elements/evees-info-base';
 export {
   UpdateContentEvent,
   UpdateContentArgs,

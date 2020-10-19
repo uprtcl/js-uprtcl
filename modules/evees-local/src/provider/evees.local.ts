@@ -19,8 +19,8 @@ export class EveesLocal implements EveesRemote {
   logger: Logger = new Logger('EveesLocal');
 
   accessControl: EveesAccessControlLocal;
-  db: EveesLocalDB;
-  store: CASStore;
+  public db: EveesLocalDB;
+  public store: CASStore;
 
   constructor() {
     this.store = new CASStoreLocal();
@@ -47,9 +47,12 @@ export class EveesLocal implements EveesRemote {
   }
 
   async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
+    const current = await this.db.perspectives.get(perspectiveId);
+    if (!current) throw new Error(`Perspective ${perspectiveId} not found on the dexie`);
     await this.db.perspectives.put({
       id: perspectiveId,
-      headId: details.headId
+      headId: details.headId,
+      context: current.context
     });
   }
 
@@ -83,7 +86,8 @@ export class EveesLocal implements EveesRemote {
     await this.db.perspectives.put({
       id: perspectiveId,
       context: secured.object.payload.context,
-      headId: details.headId
+      headId: details.headId,
+      fromPerspectiveId: 
     });
   }
 

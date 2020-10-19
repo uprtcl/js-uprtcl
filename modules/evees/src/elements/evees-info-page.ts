@@ -6,12 +6,11 @@ const styleMap = style => {
   }, '');
 };
 
-import { EveesHelpers } from '../graphql/evees.helpers';
-import { EveesInfoBase } from './evee-info-base';
+import { Logger } from '@uprtcl/micro-orchestrator';
+
+import { EveesInfoBase } from './evees-info-base';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
-import { EveesBindings } from 'src/bindings';
-import { Logger } from '@uprtcl/micro-orchestrator';
 
 export class EveesInfoPage extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-PAGE');
@@ -140,7 +139,7 @@ export class EveesInfoPage extends EveesInfoBase {
         class="section-button"
         skinny
         icon="call_split"
-        @click=${this.newPerspectiveClicked}
+        @click=${this.forkPerspective}
         loading=${this.creatingNewPerspective ? 'true' : 'false'}
       >
         new perspective

@@ -20,7 +20,7 @@ export const styles = css`
     fill: white;
   }
   .button-filled:hover {
-    background-color: #50b0ff;
+    background-color: var(--background-color-hover, #50b0ff);
   }
   .button-filled-secondary {
     background-color: var(--background-color, #c9d4db);

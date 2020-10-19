@@ -8,6 +8,9 @@ export class UprtclPopper extends LitElement {
   @property({ type: String })
   position: string = 'bottom-right';
 
+  @property({ type: Boolean, attribute: 'disable-dropdown' })
+  disableDropdown: boolean = false;
+
   @property({ type: Boolean, attribute: false })
   showDropdown: boolean = false;
 
@@ -26,8 +29,10 @@ export class UprtclPopper extends LitElement {
   }
 
   showDropDownClicked(e) {
-    e.stopPropagation();
-    this.showDropdown = !this.showDropdown;
+    if (!this.disableDropdown) {
+      e.stopPropagation();
+      this.showDropdown = !this.showDropdown;
+    }
   }
 
   render() {

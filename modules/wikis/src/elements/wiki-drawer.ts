@@ -10,7 +10,7 @@ const styleMap = style => {
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 import { Entity, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import { EveesRemote, EveesModule, eveeColor, DEFAULT_COLOR, EveesInfoRow } from '@uprtcl/evees';
+import { EveesRemote, EveesModule, eveeColor, DEFAULT_COLOR, EveesInfoLocal } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { UprtclPopper } from '@uprtcl/common-ui';
@@ -32,7 +32,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   content!: WikiDrawerContent;
 
   @query('#evees-info-row')
-  eveesInfoRow!: EveesInfoRow;
+  eveesInfoRow!: EveesInfoLocal;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -80,25 +80,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.eveesInfoRow.load();
   }
 
-  checkoutOfficial() {
-    this.uref = this.firstRef;
-    this.content.selectedPageIx = undefined;
-    this.load();
-  }
-
   renderBreadcrumb() {
     return html`
-      <uprtcl-button ?skinny=${this.uref !== this.firstRef} @click=${() => this.checkoutOfficial()}>
-        home
-      </uprtcl-button>
-      <evees-info-row
+      <evees-info-local
         id="evees-info-row"
         uref=${this.uref}
         first-uref=${this.firstRef}
         show-proposals
         show-info
+        show-draft
       >
-      </evees-info-row>
+      </evees-info-local>
     `;
   }
 

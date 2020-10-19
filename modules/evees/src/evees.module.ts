@@ -27,7 +27,7 @@ import { ProposalsList } from './elements/evees-proposals-list';
 import { EveesProposalDiff } from './elements/evees-proposal-diff';
 import { EveesLoginWidget } from './elements/evees-login';
 import { EveesProposalRow } from './elements/evees-proposal-row';
-import { EveesInfoRow } from './elements/evees-info-row';
+import { EveesInfoLocal } from '../../evees-local/src/elements/evees-info-local';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -95,7 +95,6 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-commit-history', CommitHistory);
     customElements.define('evees-info-popper', EveesInfoPopper);
     customElements.define('evees-info-page', EveesInfoPage);
-    customElements.define('evees-info-row', EveesInfoRow);
     customElements.define('evees-perspectives-list', EveesPerspectivesList);
     customElements.define('evees-proposals-list', ProposalsList);
     customElements.define('evees-update-diff', EveesDiff);

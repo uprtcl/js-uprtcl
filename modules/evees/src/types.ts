@@ -15,6 +15,8 @@ export interface Perspective {
   creatorId: string;
   context: string;
   timestamp: number;
+  fromPerspectiveId?: string; // optional parameters to hardcode
+  fromHeadId?: string; // forks on the perspective id
 }
 
 export const getAuthority = (perspective: Perspective): string => {
