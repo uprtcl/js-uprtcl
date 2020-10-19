@@ -114,7 +114,9 @@ export class EveesOrbitDB implements EveesRemote {
     parentId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ): Promise<Secured<Perspective>> {
     let parentOwner: string | undefined = undefined;
     if (parentId !== undefined) {

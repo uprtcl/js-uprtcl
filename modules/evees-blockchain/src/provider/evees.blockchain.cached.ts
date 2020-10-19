@@ -111,17 +111,18 @@ export class EveesBlockchainCached implements EveesRemote {
     parentId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ): Promise<Secured<Perspective>> {
-   
     let creatorId = '';
     timestamp = timestamp ? timestamp : Date.now();
-    
+
     if (parentId !== undefined) {
-      const parent = await this.store.get(parentId) as Signed<Perspective>;
+      const parent = (await this.store.get(parentId)) as Signed<Perspective>;
       creatorId = parent.payload.creatorId;
     } else {
-      creatorId = this.userId as string
+      creatorId = this.userId as string;
     }
 
     const defaultContext = await hashObject({

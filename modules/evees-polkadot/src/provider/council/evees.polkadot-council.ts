@@ -65,7 +65,9 @@ export class EveesPolkadotCouncil implements EveesRemote {
     parentId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ): Promise<Secured<Perspective>> {
     const creatorId = this.userId ? this.userId : '';
     timestamp = timestamp ? timestamp : Date.now();

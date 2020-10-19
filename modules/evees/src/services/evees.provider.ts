@@ -22,7 +22,9 @@ export interface EveesProvider extends EveesSource {
     parentId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ): Promise<Secured<Perspective>>;
 
   /**
