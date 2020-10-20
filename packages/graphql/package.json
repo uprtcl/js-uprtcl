@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/graphql",
-  "version": "0.0.7-alpha.64",
+  "version": "0.0.7-alpha.65",
   "description": "Graphql schemas, resolvers and wrappers to be used with the @uprtcl infrastructure",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,7 +11,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.64",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.65",
     "apollo-boost": "^0.4.7",
     "apollo-cache-persist": "^0.1.1",
     "apollo-link-schema": "^1.2.4",
@@ -70,5 +70,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "0db80d77546c586a46f45a0db9cf4349d81a4c5d"
+  "gitHead": "2501b382c25bd03e1098e477188de843799339e0"
 }

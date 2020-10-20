@@ -118,11 +118,11 @@ export class PolkadotConnection extends Connection {
     return getCID(<IdentityInfo>identityInfo, keys);
   }
 
-  public async updateMutableHead(head: string, keys: string[]): Promise<TransactionReceipt> {
+  public async updateMutableHead(head: string | undefined, keys: string[]): Promise<TransactionReceipt> {
     if (!this.account) throw new Error('cannot update identity if account not defined');
     // update evees entry
-    const cid1 = head.substring(0, 32);
-    const cid0 = head.substring(32, 64);
+    const cid1 = head !== undefined ? head.substring(0, 32) : '';
+    const cid0 = head !== undefined ? head.substring(32, 64) : '';
 
     const identityInfo = await this.getIdentityInfo(this.account);
     const additional = identityInfo.additional ? identityInfo.additional : [];

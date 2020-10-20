@@ -8,8 +8,11 @@ import { EveesModule, EveesRemote } from '@uprtcl/evees';
 import { EveesOrbitDB } from './evees.orbit-db';
 
 export class RemoteOrbitdDbLense extends moduleConnect(LitElement) {
+  @property({ type: String, attribute: 'remote-id'})
+  remoteId!: string;
+  
   @property({ attribute: false })
-  loading: boolean = false;
+  loading: boolean = true;
 
   client!: ApolloClient<any>;
   remote!: EveesOrbitDB;
@@ -21,9 +24,8 @@ export class RemoteOrbitdDbLense extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-    this.remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(r =>
-      r.id.includes('orbitdb')
-    ) as EveesOrbitDB;
+    const remotes = this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[];
+    this.remote = remotes.find(r => r.id.includes(this.remoteId)) as EveesOrbitDB;
     await this.remote.ready();
 
     this.loading = false;
@@ -36,9 +38,7 @@ export class RemoteOrbitdDbLense extends moduleConnect(LitElement) {
       `;
     }
     return html`
-      <div class="">
-        ODB
-      </div>
+      <evees-author user-id=${this.remote.userId as string}></evees-author>
     `;
   }
 

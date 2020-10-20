@@ -13,6 +13,7 @@ import { WikiPage } from './elements/wiki-page';
 import en from './i18n/en.json';
 import { WikiBindings } from './bindings';
 import { WikiDiff } from './elements/wiki-diff';
+import { WikiDrawerContent } from './elements/wiki-drawer-content';
 
 /**
  * Configure a wikis module with the given providers
@@ -49,6 +50,7 @@ export class WikisModule extends EveesContentModule {
   async onLoad(container: Container) {
     super.onLoad(container);
     customElements.define('wiki-drawer', WikiDrawer);
+    customElements.define('wiki-drawer-content', WikiDrawerContent);
     customElements.define('wiki-page', WikiPage);
     customElements.define('wiki-diff', WikiDiff);
   }

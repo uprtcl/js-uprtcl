@@ -55,7 +55,7 @@ export class PermissionsFixedLense extends moduleConnect(LitElement) {
 
   renderOwner() {
     return html`
-      <evees-author user-id=${this.owner}></evees-author>
+      <evees-author user-id=${this.owner} show-name></evees-author>
     `;
   }
 

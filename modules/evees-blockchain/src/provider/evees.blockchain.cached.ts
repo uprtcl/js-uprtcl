@@ -111,17 +111,18 @@ export class EveesBlockchainCached implements EveesRemote {
     parentId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ): Promise<Secured<Perspective>> {
-   
     let creatorId = '';
     timestamp = timestamp ? timestamp : Date.now();
-    
+
     if (parentId !== undefined) {
-      const parent = await this.store.get(parentId) as Signed<Perspective>;
+      const parent = (await this.store.get(parentId)) as Signed<Perspective>;
       creatorId = parent.payload.creatorId;
     } else {
-      creatorId = this.userId as string
+      creatorId = this.userId as string;
     }
 
     const defaultContext = await hashObject({
@@ -136,7 +137,9 @@ export class EveesBlockchainCached implements EveesRemote {
       remote: this.id,
       path: path !== undefined ? path : this.defaultPath,
       timestamp,
-      context
+      context,
+      fromPerspectiveId,
+      fromHeadId
     };
 
     const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
@@ -288,6 +291,10 @@ export class EveesBlockchainCached implements EveesRemote {
 
   async flushCache() {
     const newHash = await this.createNewEveesData();
+    return this.updateHead(newHash);
+  }
+
+  async updateHead(newHash: string | undefined) {
     await this.connection.updateHead(newHash);
 
     /* delete cache */

@@ -47,10 +47,28 @@ export const icons = {
       <path d="M24 0v24H0V0h24z" fill="none" />
     </svg>
   `,
-  arrow_rigth: html`
+  arrow_right: html`
     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
       <path d="M10 17l5-5-5-5v10z" />
       <path d="M0 24V0h24v24H0z" fill="none" />
+    </svg>
+  `,
+  arrow_drop_down: html`
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="black"
+      width="18px"
+      height="18px"
+    >
+      <path d="M0 0h24v24H0z" fill="none" />
+      <path d="M7 10l5 5 5-5z" />
+    </svg>
+  `,
+  arrow_back: html`
+    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+      <path d="M0 0h24v24H0z" fill="none" />
+      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
     </svg>
   `,
   add: html`

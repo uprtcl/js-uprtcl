@@ -7,6 +7,9 @@ export class UprtclButton extends LitElement {
   icon!: string;
 
   @property({ type: Boolean })
+  transition: boolean = false;
+
+  @property({ type: Boolean })
   disabled: boolean = false;
 
   @property({ type: Boolean })
@@ -15,6 +18,19 @@ export class UprtclButton extends LitElement {
   @property({ type: Boolean })
   raised: boolean = false;
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.checkDisabled();
+  }
+
+  checkDisabled() {
+    if (this.disabled) {
+      this.addEventListener('click', e => {
+        e.stopPropagation();
+      });
+    }
+  }
+
   render() {
     let classes = ['button-layout', 'button-text'];
 
@@ -22,16 +38,20 @@ export class UprtclButton extends LitElement {
       classes.push('button-disabled');
     } else {
       classes.push('cursor');
-    }
 
-    if (this.skinny) {
-      classes.push('button-skinny');
-    } else {
-      classes.push('button-filled');
-    }
+      if (this.skinny) {
+        classes.push('button-skinny');
+      } else {
+        classes.push('button-filled');
+      }
 
-    if (this.raised) {
-      classes.push('button-raised');
+      if (this.raised) {
+        classes.push('button-raised');
+      }
+
+      if (this.transition) {
+        classes.push('bg-transition');
+      }
     }
 
     return html`
@@ -52,10 +72,8 @@ export class UprtclButton extends LitElement {
       styles,
       css`
         :host {
-          width: fit-content;
-        }
-        .cursor {
-          cursor: pointer;
+          width: initial;
+          display: block;
         }
         .button-layout {
           border-radius: 4px;
@@ -65,6 +83,9 @@ export class UprtclButton extends LitElement {
           line-height: 36px;
           height: 36px;
           padding: 0px 16px;
+        }
+        .bg-transition {
+          transition: background-color 0.5s ease;
         }
         .icon-container {
           height: 100%;

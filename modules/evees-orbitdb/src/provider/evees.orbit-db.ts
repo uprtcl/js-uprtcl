@@ -66,9 +66,9 @@ export class EveesOrbitDB implements EveesRemote {
     return {
       name: 'evees-orbitb:remote',
       type: 'remote',
-      render: () => {
+      render: (entity: any) => {
         return html`
-          <evees-orbitdb-remote> </evees-orbitdb-remote>
+          <evees-orbitdb-remote remote-id=${entity.remoteId}></evees-orbitdb-remote>
         `;
       }
     };
@@ -114,7 +114,9 @@ export class EveesOrbitDB implements EveesRemote {
     parentId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ): Promise<Secured<Perspective>> {
     let parentOwner: string | undefined = undefined;
     if (parentId !== undefined) {
@@ -125,7 +127,9 @@ export class EveesOrbitDB implements EveesRemote {
       parentOwner,
       context,
       timestamp,
-      path
+      path,
+      fromPerspectiveId,
+      fromHeadId
     );
     perspective.casID = this.store.casID;
 

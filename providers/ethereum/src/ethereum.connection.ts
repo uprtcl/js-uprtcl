@@ -33,12 +33,9 @@ export class EthereumConnection extends Connection {
       this.provider = this.ethOptions.provider;
     }
 
-    this.signer =
-      this.provider['getSigner'] !== undefined
-        ? this.provider.getSigner()
-        : undefined;
+    this.signer = undefined;
+    this.account = '';
 
-    this.account = this.signer ? await this.signer.getAddress() : '';
     this.network = await this.provider.getNetwork();
     this.networkId = this.provider.send
       ? await this.provider.send('net_version', [])
@@ -54,6 +51,8 @@ export class EthereumConnection extends Connection {
     const provider = new ethers.providers.Web3Provider(window['ethereum']);
     this.ethOptions = { provider };
     await this.connect();
+    this.signer = this.provider.getSigner();
+    this.account = this.signer ? await this.signer.getAddress() : '';
   }
 
   public async disconnectWallet() {

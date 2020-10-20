@@ -14,7 +14,7 @@ export class EveesPolkadotConnection implements BlockchainConnection {
     await Promise.all([this.connection.ready()]);
   }
 
-  async updateHead(head: string) {
+  async updateHead(head: string | undefined) {
     await this.connection.updateMutableHead(head, EVEES_KEYS);
   }
 

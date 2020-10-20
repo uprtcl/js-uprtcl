@@ -18,6 +18,8 @@ export const eveesTypeDefs: DocumentNode = gql`
       context: String
       name: String
       parentId: String
+      fromPerspectiveId: String
+      fromHeadId: String
     ): Perspective!
 
     forkPerspective(

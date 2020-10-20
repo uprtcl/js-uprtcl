@@ -40,6 +40,7 @@ export class OrbitDBCustom extends Connection {
     protected acls: any[],
     protected entropy: EntropyGenerator,
     protected pinnerUrl?: string,
+    protected pinnerMultiaddr?: string,
     public ipfs?: any,
     options?: ConnectionOptions
   ) {
@@ -120,12 +121,19 @@ export class OrbitDBCustom extends Connection {
   }
 
   private async openStore(address: string | any): Promise<any> {
-    this.logger.log('Openning store', { address });
+    // this.logger.log(`${address} -- Openning store`);
     let db;
 
-    if (this.instance.stores[address]) db = this.instance.stores[address];
-    else if (this.storeQueue[address]) db = this.storeQueue[address];
-    else
+    const hadDB = await this.instance._haveLocalData(this.instance.cache, address);
+
+    if (this.instance.stores[address]) {
+      // this.logger.log(`${address} -- Store loaded. HadDB: ${hadDB}`);
+      db = this.instance.stores[address];
+    } else if (this.storeQueue[address]) {
+      // this.logger.log(`${address} -- Store already queue. HadDB: ${hadDB}`);
+      db = this.storeQueue[address];
+    } else {
+      this.logger.log(`${address} -- Store init - first time. HadDB: ${hadDB}`);
       db = this.storeQueue[address] = this.instance
         .open(address, { identity: this.identity })
         .then(async store => {
@@ -133,10 +141,31 @@ export class OrbitDBCustom extends Connection {
           return store;
         })
         .finally(() => delete this.storeQueue[address]);
+    }
+
     db = await db;
 
     if (db.identity.id !== this.identity.id) db.setIdentity(this.identity);
-    this.logger.log('store opened', { db });
+    this.logger.log(`${db.address} -- Opened. HadDB: ${hadDB}`);
+
+    if (!hadDB) {
+      const result = await fetch(`${this.pinnerUrl}/includes?address=${address}`, {
+        method: 'GET'
+      });
+
+      const { includes } = await result.json();
+
+      if (includes) {
+        this.logger.log(`${db.address} -- Awaiting replication. HadDB: ${hadDB}`);
+        await new Promise(resolve => {
+          db.events.on('replicated', async r => {
+            this.logger.log(`${r} -- Replicated`);
+            resolve();
+          });
+        });
+      }
+    }
+
     return db;
   }
 

@@ -16,7 +16,7 @@ const MAX_GAS: number = 1000000;
 
 export class EthereumContract {
   logger = new Logger('EthereumContract');
-  contractInstance!: ethers.Contract;
+  contractAddress!: string;
 
   constructor(
     protected options: EthereumContractOptions,
@@ -27,18 +27,21 @@ export class EthereumContract {
     return this.connection.getCurrentAccount();
   }
 
-  async ready() {
-    await this.connection.ready();
-
-    const contractAddress =
-      this.options.contractAddress ||
-      this.options.contract.networks[await this.connection.getNetworkId()].address;
-
-    this.contractInstance = new ethers.Contract(
-      contractAddress,
+  /** must be created everytime to have the up to date signer */
+  get contractInstance() {
+    return new ethers.Contract(
+      this.contractAddress,
       this.options.contract.abi,
       this.connection.signer ? this.connection.signer : this.connection.provider
     );
+  }
+
+  async ready() {
+    await this.connection.ready();
+
+    this.contractAddress =
+      this.options.contractAddress ||
+      this.options.contract.networks[await this.connection.getNetworkId()].address;
   }
 
   /**

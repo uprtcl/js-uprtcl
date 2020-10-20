@@ -5,7 +5,7 @@ export interface BlockchainConnection {
   getNetworkId(): string;
   getLatestBlock(): Promise<number>;
   getHead(userId: string, block?: number): Promise<string | undefined>;
-  updateHead(head: string): Promise<void>;
+  updateHead(head: string | undefined): Promise<void>;
   canSign(): Promise<boolean>;
   connectWallet(userId?: string): Promise<void>;
   disconnectWallet(): Promise<void>;

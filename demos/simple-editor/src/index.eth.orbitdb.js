@@ -13,6 +13,8 @@ import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 import { EveesOrbitDB, EveesOrbitDBModule, ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+import { EveesLocalModule } from '@uprtcl/evees-local';
+
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { EthereumOrbitDBIdentity, EveesEthereumConnection } from '@uprtcl/evees-ethereum';
 
@@ -33,9 +35,9 @@ import {
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
-  // const provider = '';
+  const provider = '';
   // const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
+  // const provider = 'https://rpc.xdaichain.com/';
 
   const ipfsCidConfig = {
     version: 1,
@@ -61,6 +63,10 @@ import { SimpleWiki } from './simple-wiki';
 
   const ipfs = await IPFS.create(ipfsJSConfig);
 
+  console.log('connecting to pinner peer');
+  await ipfs.swarm.connect(env.pinner.peerMultiaddr);
+  console.log('connected!!!');
+
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
   await ipfsStore.ready();
 
@@ -73,6 +79,7 @@ import { SimpleWiki } from './simple-wiki';
     [ContextAccessController, ProposalsAccessController],
     identity,
     env.pinner.url,
+    env.pinner.peerMultiaddr,
     ipfs
   );
   await orbitDBCustom.ready();
@@ -84,7 +91,13 @@ import { SimpleWiki } from './simple-wiki';
   const ethEveesConnection = new EveesEthereumConnection(ethConnection);
   await ethEveesConnection.ready();
 
-  const ethEvees = new EveesBlockchainCached(ethEveesConnection, orbitDBCustom, ipfsStore, proposals, 'ethereum-evees-cache');
+  const ethEvees = new EveesBlockchainCached(
+    ethEveesConnection,
+    orbitDBCustom,
+    ipfsStore,
+    proposals,
+    'ethereum-evees-cache'
+  );
   await ethEvees.ready();
 
   const evees = new EveesModule([orbitdbEvees, ethEvees]);
@@ -100,6 +113,7 @@ import { SimpleWiki } from './simple-wiki';
     new LensesModule(),
     new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
+    new EveesLocalModule(),
     evees,
     documents,
     wikis

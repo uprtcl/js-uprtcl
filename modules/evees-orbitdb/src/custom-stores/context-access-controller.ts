@@ -22,10 +22,10 @@ export class ContextAccessController extends IPFSAccessController {
     const key = entry.identity.id;
     try {
       if (this.write.includes(key) || this.write.includes('*')) {
-        const perspectiveId = entry.payload.value;
-        const result = await this._ipfs.dag.get(perspectiveId);
-        const forceBuffer = Uint8Array.from(result.value);
-        const { payload: perspective } = CBOR.decode(forceBuffer.buffer) as Signed<Perspective>;
+        // const perspectiveId = entry.payload.value;
+        // const result = await this._ipfs.dag.get(perspectiveId);
+        // const forceBuffer = Uint8Array.from(result.value);
+        // const { payload: perspective } = CBOR.decode(forceBuffer.buffer) as Signed<Perspective>;
 
         // TODO: context is now fixed, so this is a common reverse mapping store only
         // Check this store is for this context. Should be simpler
