@@ -132,8 +132,7 @@ export class OrbitDBCustom extends Connection {
     } else if (this.storeQueue[address]) {
       // this.logger.log(`${address} -- Store already queue. HadDB: ${hadDB}`);
       db = this.storeQueue[address];
-    }
-    else {
+    } else {
       this.logger.log(`${address} -- Store init - first time. HadDB: ${hadDB}`);
       db = this.storeQueue[address] = this.instance
         .open(address, { identity: this.identity })
@@ -149,23 +148,22 @@ export class OrbitDBCustom extends Connection {
     if (db.identity.id !== this.identity.id) db.setIdentity(this.identity);
     this.logger.log(`${db.address} -- Opened. HadDB: ${hadDB}`);
 
-    const result = await fetch(`${this.pinnerUrl}/includes?address=${address}`, {
-      method: 'GET'
-    });
-
-    const { includes } = await result.json()
-
-    if (!hadDB && includes) {
-      this.logger.log(`${db.address} -- Awaiting replication. HadDB: ${hadDB}`);
-      await new Promise((resolve) => {
-        db.events.on('replicated', async (r) => {
-          this.logger.log(`${r} -- Replicated`);
-          resolve()
-        })
-        db.events.on('peer', (p) => {
-          this.logger.log(`${p} -- Peer`);
-        })
+    if (!hadDB) {
+      const result = await fetch(`${this.pinnerUrl}/includes?address=${address}`, {
+        method: 'GET'
       });
+
+      const { includes } = await result.json();
+
+      if (includes) {
+        this.logger.log(`${db.address} -- Awaiting replication. HadDB: ${hadDB}`);
+        await new Promise(resolve => {
+          db.events.on('replicated', async r => {
+            this.logger.log(`${r} -- Replicated`);
+            resolve();
+          });
+        });
+      }
     }
 
     return db;

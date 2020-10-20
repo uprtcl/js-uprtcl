@@ -173,6 +173,7 @@ export class EveesInfoLocal extends EveesInfoBase {
         class="tab-button"
         ?skinny=${this.uref !== this.firstRef}
         @click=${() => this.seeOriginal()}
+        transition
       >
         common
       </uprtcl-button>
