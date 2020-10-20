@@ -1,10 +1,11 @@
 const env = {
-  entry: './src/index.eth.orbitdb.js',
-  officialRemote: 'eth',
+  entry: './src/index.orbitdb.js',
+  officialRemote: 'orbitdb',
   pinner: {
     url: 'http://localhost:3000',
     Swarm: ['/dns4/wrtc-star1.par.dwebops.pub/tcp/443/wss/p2p-webrtc-star/'],
-    Bootstrap: ['/ip4/192.168.0.108/tcp/4003/ws/p2p/Qmf2kibryk2v6H3pmHzq4BxLPDCYjGjSch5LPaDykf3gJz']
+    Bootstrap: ['/ip4/192.168.1.13/tcp/4003/ws/...'],
+    peerMultiaddr: '/ip4/127.0.0.1/tcp/4003/ws/...'
   },
   ethers: {
     apiKeys: {
