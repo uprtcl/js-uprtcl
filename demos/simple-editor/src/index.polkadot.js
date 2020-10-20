@@ -26,6 +26,7 @@ import {
 } from '@uprtcl/evees-orbitdb';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+import { EveesLocalModule } from '@uprtcl/evees-local';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
@@ -62,6 +63,11 @@ import { env } from '../env';
   await pkdConnection.ready();
 
   const ipfs = await IPFS.create(ipfsJSConfig);
+
+  console.log('connecting to pinner peer');
+  await ipfs.swarm.connect(env.pinner.peerMultiaddr);
+  console.log('connected!!!');
+
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
 
   const identity = new PolkadotOrbitDBIdentity(pkdConnection);
@@ -71,6 +77,7 @@ import { env } from '../env';
     [ContextAccessController, ProposalsAccessController],
     identity,
     env.pinner.url,
+    env.pinner.peerMultiaddr,
     ipfs
   );
   await orbitDBCustom.ready();
@@ -104,6 +111,7 @@ import { env } from '../env';
     new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
     new EveesPolkadotModule(),
+    new EveesLocalModule(),
     evees,
     documents,
     wikis
