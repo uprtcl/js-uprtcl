@@ -11,7 +11,8 @@ import {
   EveesPolkadotCouncil,
   PolkadotOrbitDBIdentity,
   PolkadotConnection,
-  EveesPolkadotConnection
+  EveesPolkadotConnection,
+  EveesPolkadotModule
 } from '@uprtcl/evees-polkadot';
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import {
@@ -75,11 +76,17 @@ import { env } from '../env';
   await orbitDBCustom.ready();
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-  
+
   const pdkEveesConnection = new EveesPolkadotConnection(pkdConnection);
   await pdkEveesConnection.ready();
 
-  const pkdEvees = new EveesBlockchainCached(pdkEveesConnection, orbitDBCustom, ipfsStore, proposals, 'polkadot-evees-cache');
+  const pkdEvees = new EveesBlockchainCached(
+    pdkEveesConnection,
+    orbitDBCustom,
+    ipfsStore,
+    proposals,
+    'polkadot-evees-cache'
+  );
   const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
@@ -96,6 +103,7 @@ import { env } from '../env';
     new LensesModule(),
     new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
+    new EveesPolkadotModule(),
     evees,
     documents,
     wikis
