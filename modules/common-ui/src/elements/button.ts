@@ -75,9 +75,6 @@ export class UprtclButton extends LitElement {
           width: initial;
           display: block;
         }
-        .cursor {
-          cursor: pointer;
-        }
         .button-layout {
           border-radius: 4px;
           display: flex;

@@ -1,5 +1,4 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { icons } from './icons';
 
 export class UprtclPopper extends LitElement {
   @property({ type: String })
@@ -48,7 +47,7 @@ export class UprtclPopper extends LitElement {
     return html`
       <div class="popper-button" @click=${this.showDropDownClicked}>
         <slot name="icon">
-          <div class="icon-container">${icons[this.icon]}</div>
+          <uprtcl-icon-button button icon=${this.icon}></uprtcl-icon-button>
         </slot>
       </div>
       ${this.showDropdown
@@ -69,16 +68,6 @@ export class UprtclPopper extends LitElement {
         flex-direction: column;
       }
 
-      .icon-container {
-        width: 36px;
-        height: 36px;
-        border-radius: 18px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-
       .popper-button {
         flex-grow: 1;
       }
@@ -88,8 +77,8 @@ export class UprtclPopper extends LitElement {
         z-index: 20;
         position: absolute;
         width: var(--box-width, 250px);
-        max-height: var(--max-height, initial);
-        overflow: auto;
+        /* max-height: var(--max-height, initial);
+        overflow: auto; */
       }
       .info-box-bottom-right {
         right: 0px;

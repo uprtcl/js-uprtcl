@@ -30,7 +30,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   content!: WikiDrawerContent;
 
   @query('#evees-info-row')
-  eveesInfoRow!: EveesInfoBase;
+  eveesInfoLocal!: any;
 
   protected client!: ApolloClient<any>;
   protected eveesRemotes!: EveesRemote[];
@@ -75,7 +75,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   loggedIn() {
     this.content.load();
-    this.eveesInfoRow.load();
+    this.eveesInfoLocal.load();
   }
 
   renderBreadcrumb() {
@@ -165,20 +165,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           display: flex;
           flex-direction: row;
         }
-        .breadcrum-container uprtcl-button {
-          display: block;
-          width: auto;
-          margin-right: 8px;
-          width: 150px;
-        }
-        .drafts-popper {
-          --box-width: 400px;
-        }
-        .breadcrum-container .evees-author {
-          --background-color: red;
-        }
-        .breadcrum-container uprtcl-button evees-author {
-          --color: white;
+        evees-info-local {
+          width: 100%;
         }
         .login-widget-container {
           flex: 0 0 0;

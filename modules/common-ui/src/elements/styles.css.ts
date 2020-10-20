@@ -47,4 +47,7 @@ export const styles = css`
     color: #50b0ff;
     background-color: #eef7ff;
   }
+  .cursor {
+    cursor: pointer;
+  }
 `;

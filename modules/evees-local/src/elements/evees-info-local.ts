@@ -8,6 +8,7 @@ import {
   DEFAULT_COLOR,
   eveeColor,
   EveesInfoBase,
+  EveesPerspectivesList,
   EveesRemote,
   Perspective,
   ProposalsList,
@@ -32,10 +33,16 @@ export class EveesInfoLocal extends EveesInfoBase {
   draftId: string | undefined = undefined;
 
   @property({ attribute: false })
-  hasDrafts: boolean = false;
+  author!: string;
 
   @query('#proposals-popper')
-  dratfsPopper!: UprtclPopper;
+  proposalsPopper!: UprtclPopper;
+
+  @query('#perspectives-popper')
+  perspectivesPopper!: UprtclPopper;
+
+  @query('#evees-perspectives-list')
+  perspectivesList!: EveesPerspectivesList;
 
   @query('#evees-proposals-list')
   eveesProposalsList!: ProposalsList;
@@ -68,12 +75,22 @@ export class EveesInfoLocal extends EveesInfoBase {
       official.object.payload.context
     );
 
+    const thisPerspective = await loadEntity<Signed<Perspective>>(this.client, this.uref);
+    if (!thisPerspective) throw new Error(`official perspective ${this.uref}`);
+
+    this.author = thisPerspective.object.payload.creatorId;
+
     /** force one perspective per user on the default remote (this perspective is the draft of that user) */
-    this.draftId = otherPerspectives.find(async id => {
-      const perspective = await loadEntity<Secured<Perspective>>(this.client, id);
+    for (const id of otherPerspectives) {
+      const perspective = await loadEntity<Signed<Perspective>>(this.client, id);
       if (!perspective) throw new Error('default remote not found');
-      return perspective.object.object.payload.creatorId === defaultRemote.userId;
-    });
+      if (perspective.object.payload.creatorId === defaultRemote.userId) {
+        this.draftId = id;
+        break;
+      }
+    }
+
+    if (this.perspectivesList) this.perspectivesList.load();
   }
 
   draftClicked() {
@@ -85,17 +102,20 @@ export class EveesInfoLocal extends EveesInfoBase {
   }
 
   createDraft() {
-    this.dratfsPopper.showDropdown = false;
+    this.proposalsPopper.showDropdown = false;
+    this.perspectivesPopper.showDropdown = false;
     this.forkPerspective();
   }
 
   seeDraft() {
-    this.dratfsPopper.showDropdown = false;
+    this.proposalsPopper.showDropdown = false;
+    this.perspectivesPopper.showDropdown = false;
     this.checkoutPerspective(this.draftId);
   }
 
   proposeDraft() {
-    this.dratfsPopper.showDropdown = false;
+    this.proposalsPopper.showDropdown = false;
+    this.perspectivesPopper.showDropdown = false;
     this.otherPerspectiveMerge(this.uref, this.firstRef);
   }
 
@@ -104,7 +124,8 @@ export class EveesInfoLocal extends EveesInfoBase {
   }
 
   checkoutPerspective(perspectiveId) {
-    this.dratfsPopper.showDropdown = false;
+    this.proposalsPopper.showDropdown = false;
+    this.perspectivesPopper.showDropdown = false;
     this.dispatchEvent(
       new CustomEvent('checkout-perspective', {
         detail: {
@@ -128,39 +149,86 @@ export class EveesInfoLocal extends EveesInfoBase {
     }
   }
 
-  renderDraftSummary() {
-    return this.hasDrafts
-      ? html`
-          <uprtcl-button>my drafts</uprtcl-button>
-        `
-      : '';
+  renderOtherPerspectives() {
+    return html`
+      <div class="list-container">
+        <evees-perspectives-list
+          id="evees-perspectives-list"
+          perspective-id=${this.uref}
+          .hidePerspectives=${[this.firstRef, this.draftId]}
+          ?can-propose=${this.isLogged}
+          @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
+          @merge-perspective=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref)}
+        ></evees-perspectives-list>
+      </div>
+    `;
   }
 
   renderDraftControl() {
+    const isTheirs = this.firstRef !== this.uref && this.uref !== this.draftId;
+    const isMine = this.firstRef !== this.uref && this.uref === this.draftId;
+
     return html`
-      <uprtcl-button ?skinny=${this.uref !== this.firstRef} @click=${() => this.seeOriginal()}>
-        original
-      </uprtcl-button>
-
       <uprtcl-button
-        ?skinny=${this.uref === this.firstRef}
-        @click=${() => this.draftClicked()}
-        class="margin-left draft-button"
-        transition
+        class="tab-button"
+        ?skinny=${this.uref !== this.firstRef}
+        @click=${() => this.seeOriginal()}
       >
-        mine
+        common
       </uprtcl-button>
-
-      ${this.uref !== this.firstRef
+      ${this.isLogged
         ? html`
-            <uprtcl-button
+            <uprtcl-icon-button
+              button
+              class=${isTheirs || isMine ? 'margin-left highlighted' : 'margin-left'}
+              icon="arrow_back"
               @click=${() => this.proposeDraft()}
-              class="margin-left draft-button"
-              transition
-              >propose</uprtcl-button
             >
+            </uprtcl-icon-button>
           `
         : ''}
+      ${this.isLogged
+        ? html`
+            <uprtcl-button
+              ?skinny=${!isMine}
+              @click=${() => this.draftClicked()}
+              class="margin-left tab-button"
+              style=${`--background-color: ${isMine ? this.color() : 'initial'}`}
+              transition
+            >
+              mine
+            </uprtcl-button>
+          `
+        : ''}
+
+      <uprtcl-popper
+        id="perspectives-popper"
+        position="bottom-left"
+        class="perspectives-popper margin-left"
+      >
+        <uprtcl-button
+          slot="icon"
+          icon="arrow_drop_down"
+          ?skinny=${!isTheirs}
+          style=${`--background-color: ${isTheirs ? this.color() : 'initial'}`}
+          class="tab-other"
+          transition
+          >${isTheirs
+            ? html`
+                <evees-author
+                  show-name
+                  user-id=${this.author}
+                  show-name
+                  short
+                  color=${eveeColor(this.uref)}
+                ></evees-author>
+              `
+            : html`
+                other
+              `}
+        </uprtcl-button>
+        ${this.renderOtherPerspectives()}
+      </uprtcl-popper>
     `;
   }
 
@@ -190,31 +258,40 @@ export class EveesInfoLocal extends EveesInfoBase {
       `;
 
     return html`
-      ${this.infoEnabled
-        ? html`
-            <uprtcl-popper icon="info" id="info-popper" position="bottom-left" class="info-popper">
-              ${this.renderInfo()}
-            </uprtcl-popper>
-          `
-        : ''}
-      ${this.proposalsEnabled
-        ? html`
-            <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
-              <uprtcl-button
-                slot="icon"
-                class="proposals-button"
-                icon="arrow_drop_down"
-                skinny
-                @click=${() => this.showProposals()}
-                transition
+      <div class="left-buttons">
+        ${this.infoEnabled
+          ? html`
+              <uprtcl-popper
+                icon="info"
+                id="info-popper"
+                position="bottom-left"
+                class="info-popper"
               >
-                proposals
-              </uprtcl-button>
-              ${this.renderProposals()}
-            </uprtcl-popper>
-          `
-        : ''}
-      ${this.draftEnabled && this.isLogged ? this.renderDraftControl() : ''}
+                ${this.renderInfo()}
+              </uprtcl-popper>
+            `
+          : ''}
+        ${this.proposalsEnabled
+          ? html`
+              <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
+                <uprtcl-button
+                  slot="icon"
+                  class="proposals-button"
+                  icon="arrow_drop_down"
+                  skinny
+                  @click=${() => this.showProposals()}
+                  transition
+                >
+                  proposals
+                </uprtcl-button>
+                ${this.renderProposals()}
+              </uprtcl-popper>
+            `
+          : ''}
+      </div>
+      <div class="center-buttons">
+        ${this.draftEnabled ? this.renderDraftControl() : ''}
+      </div>
       ${this.showUpdatesDialog ? this.renderUpdatesDialog() : ''}
     `;
   }
@@ -240,9 +317,23 @@ export class EveesInfoLocal extends EveesInfoBase {
         .margin-left {
           margin-left: 10px;
         }
-        .draft-button {
-          --background-color: #00ad3a;
-          --background-color-hover: #4fd47c;
+        .tab-button {
+          width: 120px;
+        }
+        .tab-other {
+          width: 160px;
+        }
+        .left-buttons {
+          flex: 0 0 auto;
+          display: flex;
+        }
+        .center-buttons {
+          flex: 1 1 auto;
+          display: flex;
+          justify-content: center;
+        }
+        .highlighted {
+          --background-color: #00b31e;
         }
       `
     ]);

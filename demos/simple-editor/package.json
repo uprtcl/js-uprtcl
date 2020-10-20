@@ -25,6 +25,7 @@
     "build": "rm -rf dist && webpack --config webpack.config.js"
   },
   "dependencies": {
+    "@uprtcl/common-ui": "^0.0.7-alpha.65",
     "@uprtcl/cortex": "^0.0.7-alpha.65",
     "@uprtcl/documents": "^0.0.7-alpha.65",
     "@uprtcl/ethereum-provider": "^0.0.7-alpha.65",
