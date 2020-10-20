@@ -179,13 +179,13 @@ export class EveesInfoLocal extends EveesInfoBase {
       </uprtcl-button>
       ${this.isLogged
         ? html`
-            <uprtcl-icon-button
-              button
+            <uprtcl-button
               class=${isTheirs || isMine ? 'margin-left highlighted' : 'margin-left'}
               icon="arrow_back"
               @click=${() => this.proposeDraft()}
             >
-            </uprtcl-icon-button>
+              merge
+            </uprtcl-button>
           `
         : ''}
       ${this.isLogged
