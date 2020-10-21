@@ -8,6 +8,7 @@ import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
+import { PinnedCacheDB } from '@uprtcl/ipfs-provider';
 
 import { EntropyGenerator } from './entropy.generator';
 import { CustomStore } from './types';
@@ -25,6 +26,7 @@ interface Status {
 
 export class OrbitDBCustom extends Connection {
   public instance: any;
+  pinnedCache: PinnedCacheDB;
   private storeQueue = {};
   public identity: null | any = null;
   readonly status: Status = {
@@ -52,6 +54,8 @@ export class OrbitDBCustom extends Connection {
         OrbitDB.AccessControllers.addAccessController({ AccessController });
       }
     });
+
+    this.pinnedCache = new PinnedCacheDB(`pinned-at-${this.pinnerUrl}`);
   }
 
   /**
@@ -162,6 +166,8 @@ export class OrbitDBCustom extends Connection {
             this.logger.log(`${r} -- Replicated`);
             resolve();
           });
+          /** timeout protection */
+          setTimeout(() => resolve(), 5000);
         });
       }
     }
@@ -180,11 +186,16 @@ export class OrbitDBCustom extends Connection {
 
   public async pin(address: string) {
     if (this.pinnerUrl) {
-      fetch(`${this.pinnerUrl}/pin?address=${address}`, {
-        method: 'GET'
-      }).then(response => {
-        console.log(response);
-      });
+      const addr = address.toString();
+      const pinned = await this.pinnedCache.pinned.get(addr);
+      if (!pinned) {
+        this.logger.log(`pinning`, addr);
+        fetch(`${this.pinnerUrl}/pin?address=${addr}`, {
+          method: 'GET'
+        }).then(response => {
+          this.pinnedCache.pinned.put({ id: addr });
+        });
+      }
     }
   }
 }

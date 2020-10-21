@@ -15,6 +15,7 @@
     "@tabcat/orbit-db-set": "^1.0.2",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.65",
     "@uprtcl/multiplatform": "^0.0.7-alpha.65",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.65",
     "ipfs": "^0.50.2",
     "orbit-db": "^0.26.0-rc2",
     "reflect-metadata": "^0.1.13"
