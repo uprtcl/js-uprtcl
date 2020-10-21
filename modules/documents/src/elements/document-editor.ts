@@ -112,6 +112,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (changedProperties.has('uref')) {
       this.loadDoc();
     }
+    if (changedProperties.has('firstRef')) {
+      this.uref = this.firstRef;
+      this.loadDoc();
+    }
     if (changedProperties.has('client')) {
       this.loadDoc();
     }
@@ -1143,6 +1147,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           root-level=${node.level}
           color=${this.getColor()}
           @checkout-perspective=${e => this.handleEditorPerspectiveCheckout(e, node)}
+          official-owner=${this.officialOwner}
           show-info
         >
         </documents-editor>
