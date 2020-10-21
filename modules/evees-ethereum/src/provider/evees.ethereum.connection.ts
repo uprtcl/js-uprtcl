@@ -1,8 +1,11 @@
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { EthereumConnection, EthereumContractOptions, EthereumContract } from '@uprtcl/ethereum-provider';
+import {
+  EthereumConnection,
+  EthereumContractOptions,
+  EthereumContract
+} from '@uprtcl/ethereum-provider';
 import { BlockchainConnection } from '@uprtcl/evees-blockchain';
 import { cidToHex32, bytes32ToCid } from '@uprtcl/ipfs-provider';
-
 
 import { abi as abiRoot, networks as networksRoot } from './contracts-json/UprtclRoot.min.json';
 const UprtclRoot = { abi: abiRoot, networks: networksRoot };
@@ -16,9 +19,12 @@ export class EveesEthereumConnection implements BlockchainConnection {
 
   public uprtclRoot: EthereumContract;
 
-  constructor(protected connection: EthereumConnection, uprtclRootOptions: EthereumContractOptions = {
-    contract: UprtclRoot as any
-  }) {
+  constructor(
+    protected connection: EthereumConnection,
+    uprtclRootOptions: EthereumContractOptions = {
+      contract: UprtclRoot as any
+    }
+  ) {
     this.uprtclRoot = new EthereumContract(uprtclRootOptions, connection);
   }
 
@@ -39,23 +45,16 @@ export class EveesEthereumConnection implements BlockchainConnection {
   }
 
   async updateHead(head: string | undefined) {
-    const headCidParts = head !== undefined ? cidToHex32(head) : [
-      ZERO_HEX_32,
-      ZERO_HEX_32
-    ];
+    const headCidParts = head !== undefined ? cidToHex32(head) : [ZERO_HEX_32, ZERO_HEX_32];
 
-    return this.uprtclRoot.send(UPDATED_HEAD, [
-      headCidParts[0],
-      headCidParts[1],
-      ZERO_ADDRESS
-    ]);    
+    return this.uprtclRoot.send(UPDATED_HEAD, [headCidParts[0], headCidParts[1], ZERO_ADDRESS]);
   }
 
   get account() {
-    return this.connection.account;
+    return this.connection.account.toLocaleLowerCase();
   }
   getNetworkId() {
-    return `eth-${this.connection.getNetworkId()}`;;
+    return `eth-${this.connection.getNetworkId()}`;
   }
   async getLatestBlock() {
     return this.connection.getLatestBlock();

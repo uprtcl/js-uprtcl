@@ -291,6 +291,25 @@ export class EveesBlockchainCached implements EveesRemote {
 
   async flushCache() {
     const newHash = await this.createNewEveesData();
+
+    /** create the context stores for the new perspectives */
+    const newPerspectives = await this.cache.newPerspectives.toArray();
+
+    this.logger.info('updating context stores');
+    await Promise.all(
+      newPerspectives.map(async newPerspective => {
+        const contextStore = await this.orbitdbcustom.getStore(
+          EveesOrbitDBEntities.Context,
+          {
+            context: newPerspective.context
+          },
+          true
+        );
+        return contextStore.add(newPerspective.id);
+      })
+    );
+    this.logger.info('updating context stores - done');
+
     return this.updateHead(newHash);
   }
 

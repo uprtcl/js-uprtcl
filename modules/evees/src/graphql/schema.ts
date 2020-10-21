@@ -74,6 +74,8 @@ export const eveesTypeDefs: DocumentNode = gql`
     timestamp: Float
     creatorId: String
     context: String
+    fromPerspectiveId: String
+    fromHeadId: String
   }
 
   input PerspectiveEntityInput {
@@ -160,5 +162,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     creatorId: String
     timestamp: Date
     context: Context
+    fromPerspectiveId: String
+    fromHeadId: String
   }
 `;
