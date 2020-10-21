@@ -3,13 +3,14 @@ import { html, css, property, query } from 'lit-element';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { UprtclPopper } from '@uprtcl/common-ui';
 import { loadEntity } from '@uprtcl/multiplatform';
-import { Signed } from '@uprtcl/cortex';
+import { Entity, Signed } from '@uprtcl/cortex';
 import { EveesInfoBase } from './evees-info-base';
 import { EveesPerspectivesList } from './evees-perspectives-list';
 import { ProposalsList } from './evees-proposals-list';
 import { Perspective } from '../types';
 import { EveesRemote } from '../services/evees.remote';
 import { DEFAULT_COLOR, eveeColor } from './support';
+import { Secured } from '../utils/cid-hash';
 
 /** An evees info with
  *  - one official remote with the official perspective
@@ -66,54 +67,49 @@ export class EveesInfoUserBased extends EveesInfoBase {
   }
 
   async load() {
+    await super.firstUpdated();
     super.load();
 
     this.loading = true;
 
-    if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
+    /** from all the perspectives of this evee we must identify the official perspective and this
+     * user perspective in the default remote  */
+    const first = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
+    if (!first) throw new Error(`first perspective ${this.firstRef}`);
+
+    const perspectiveIds = await this.getContextPerspectives(this.firstRef);
+    const perspectives = ((await Promise.all(
+      perspectiveIds.map(perspectiveId =>
+        loadEntity<Signed<Perspective>>(this.client, perspectiveId)
+      )
+    )) as unknown) as Secured<Perspective>[];
 
     if (!this.defaultRemote) throw new Error('default remote not found');
     const defaultRemote: EveesRemote = this.defaultRemote;
 
-    const first = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
-    if (!first) throw new Error(`first perspective ${this.firstRef}`);
-
-    const otherPerspectives = await defaultRemote.getContextPerspectives(
-      first.object.payload.context
-    );
-
-    /** force one perspective per user on the default remote */
-    for (const id of otherPerspectives) {
-      const perspective = await loadEntity<Signed<Perspective>>(this.client, id);
-      if (!perspective) throw new Error('default remote not found');
-      if (perspective.object.payload.creatorId === defaultRemote.userId) {
-        this.mineId = id;
-        break;
-      }
-    }
-
-    /** the perspective on the official remote owned by the "official owner" should be the official one */
-    if (!this.officialRemote) throw new Error('default remote not found');
+    if (!this.officialRemote) throw new Error('official remote not found');
     const officialRemote: EveesRemote = this.officialRemote;
 
-    const officialPerspectives = await officialRemote.getContextPerspectives(
-      first.object.payload.context
+    const official = perspectives.find(
+      p =>
+        p.object.payload.remote === officialRemote.id &&
+        p.object.payload.creatorId === this.officialOwner
+    );
+    const mine = perspectives.find(
+      p =>
+        p.object.payload.remote === defaultRemote.id &&
+        p.object.payload.creatorId === defaultRemote.userId
     );
 
-    for (const id of officialPerspectives) {
-      const perspective = await loadEntity<Signed<Perspective>>(this.client, id);
-      if (!perspective) throw new Error('default remote not found');
-      if (perspective.object.payload.creatorId === this.officialOwner) {
-        this.officialId = id;
-        break;
-      }
-    }
+    this.officialId = official ? official.id : undefined;
+    this.mineId = mine ? mine.id : undefined;
 
     const nowPerspective = await loadEntity<Signed<Perspective>>(this.client, this.uref);
     if (!nowPerspective) throw new Error(`official perspective ${this.uref}`);
 
     this.author = nowPerspective.object.payload.creatorId;
 
+    if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
     if (this.perspectivesList) this.perspectivesList.load();
 
     this.loading = false;
@@ -207,7 +203,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
       >
         common
       </uprtcl-button>
-      ${this.isLogged
+      ${this.isLogged && this.isLoggedOnDefault
         ? html`
             <uprtcl-button
               class=${isTheirs || isMine ? 'margin-left highlighted' : 'margin-left'}

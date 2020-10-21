@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-import { ApolloClient } from 'apollo-boost';
+import { ApolloClient, gql } from 'apollo-boost';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
@@ -246,6 +246,39 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.logger.info('checkPull()');
     this.firstHasChanges = this.pullWorkspace.hasUpdates();
+  }
+
+  async getContextPerspectives(perspectiveId?: string): Promise<string[]> {
+    perspectiveId = perspectiveId || this.uref;
+    const result = await this.client.query({
+      query: gql`{
+          entity(uref: "${perspectiveId}") {
+            id
+            ... on Perspective {
+              payload {
+                remote
+                context {
+                  id
+                  perspectives {
+                    id
+                  } 
+                }
+              }
+            }
+          }
+        }`
+    });
+
+    /** data on other perspectives (proposals are injected on them) */
+    const perspectives =
+      result.data.entity.payload.context === null
+        ? []
+        : result.data.entity.payload.context.perspectives;
+
+    // remove duplicates
+    const map = new Map<string, null>();
+    perspectives.forEach(perspective => map.set(perspective.id, null));
+    return Array.from(map, key => key[0]);
   }
 
   connectedCallback() {
