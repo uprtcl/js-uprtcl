@@ -34,7 +34,6 @@ import { TextType, DocNode } from '../types';
 import { HasDocNodeLenses } from '../patterns/document-patterns';
 import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
-import { EveesConfig } from '@uprtcl/evees';
 
 const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
@@ -63,6 +62,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   @property({ type: String, attribute: 'default-type' })
   defaultType: string = EveesModule.bindings.PerspectiveType;
+
+  @property({ type: Boolean, attribute: 'show-info' })
+  renderInfo: boolean = false;
 
   @property({ attribute: false })
   docHasChanges: boolean = false;
@@ -1050,6 +1052,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
+  getColor() {
+    return this.color ? this.color : eveeColor(this.uref);
+  }
+
   renderWithCortex(node: DocNode) {
     return html`
       <cortex-entity hash=${node.uref}></cortex-entity>
@@ -1059,10 +1065,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   renderTopRow(node: DocNode) {
     if (LOGINFO) this.logger.log('renderTopRow()', { node });
     /** the uref to which the parent is pointing at */
-    const color = this.color;
+
     const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
     const hasIcon = this.hasChanges(node);
     const icon = node.uref === '' ? icons.add_box : icons.edit;
+
+    // for the topNode (the docId), the uref can change, for the other nodes it can't (if it does, a new editor is rendered)
+    const uref = node.coord.length === 1 && node.coord[0] === 0 ? this.uref : node.uref;
+    const firstRef = node.coord.length === 1 && node.coord[0] === 0 ? this.firstRef : node.uref;
 
     return html`
       <div
@@ -1071,14 +1081,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         @drop=${e => this.handleDrop(e, node)}
       >
         <div class="evee-info">
-          ${!node.isPlaceholder
+          ${!node.isPlaceholder && this.renderInfo
             ? html`
                 <evees-info-popper
                   parentId=${node.parent ? node.parent.uref : this.parentId}
-                  uref=${node.uref}
-                  first-uref=${node.uref}
-                  evee-color=${color}
+                  uref=${uref}
+                  first-uref=${firstRef}
                   official-owner=${this.officialOwner}
+                  evee-color=${this.getColor()}
                   @checkout-perspective=${e => this.handleNodePerspectiveCheckout(e, node)}
                   show-perspectives
                   show-acl
@@ -1131,8 +1141,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           uref=${this.checkedOutPerspectives[coordString].newUref}
           editable=${this.editable}
           root-level=${node.level}
-          color=${eveeColor(this.uref)}
+          color=${this.getColor()}
           @checkout-perspective=${e => this.handleEditorPerspectiveCheckout(e, node)}
+          show-info
         >
         </documents-editor>
       `;

@@ -95,6 +95,7 @@ export class WikiPage extends moduleConnect(LitElement) {
           color=${this.color}
           editable=${this.editable}
           official-owner=${this.officialOwner}
+          show-info
         >
         </documents-editor>
       </div>

@@ -2,7 +2,12 @@ import { html, css, property, LitElement, query } from 'lit-element';
 import { DEFAULT_COLOR, eveeColor } from './support';
 import { UprtclPopper } from '@uprtcl/common-ui';
 import { threadId } from 'worker_threads';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
+import { loadEntity } from '@uprtcl/multiplatform';
+import { ApolloClient } from 'apollo-boost';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { Signed } from '@uprtcl/cortex';
+import { Perspective } from '../types';
 
 const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -11,7 +16,7 @@ const styleMap = style => {
   }, '');
 };
 
-export class EveesInfoPopper extends LitElement {
+export class EveesInfoPopper extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO-POPPER');
 
   @property({ type: String, attribute: 'uref' })
@@ -23,8 +28,8 @@ export class EveesInfoPopper extends LitElement {
   @property({ type: String })
   parentId!: string;
 
-  @property({ type: String, attribute: 'default-remote' })
-  defaultRemote: string | undefined = undefined;
+  @property({ type: String, attribute: 'official-owner' })
+  officialOwner: string | undefined = undefined;
 
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
@@ -41,14 +46,38 @@ export class EveesInfoPopper extends LitElement {
   @property({ type: Boolean, attribute: 'show-info' })
   showInfo: boolean = false;
 
+  @property({ attribute: false })
+  officialId!: string;
+
+  @property({ attribute: false })
+  creatorId!: string;
+
   @query('#info-popper')
   infoPopper!: UprtclPopper;
 
+  protected client!: ApolloClient<any>;
+
+  async firstUpdated() {
+    this.client = this.request(ApolloClientModule.bindings.Client);
+    await this.load();
+  }
+
+  async load() {
+    const current = await loadEntity<Signed<Perspective>>(this.client, this.uref);
+    if (!current) throw new Error(`cant find current perspective ${this.uref}`);
+
+    this.creatorId = current.object.payload.creatorId;
+  }
+
   color() {
-    if (this.uref === this.firstRef) {
-      return this.eveeColor ? this.eveeColor : DEFAULT_COLOR;
-    } else {
-      return eveeColor(this.uref);
+    return this.officialId && this.uref === this.officialId
+      ? DEFAULT_COLOR
+      : eveeColor(this.creatorId);
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('uref')) {
+      this.load();
     }
   }
 
@@ -59,6 +88,10 @@ export class EveesInfoPopper extends LitElement {
       this.infoPopper.showDropdown = false;
       this.requestUpdate();
     }) as EventListener);
+  }
+
+  officialIdReceived(perspectiveId: string) {
+    this.officialId = perspectiveId;
   }
 
   handleDragStart(e) {
@@ -86,8 +119,8 @@ export class EveesInfoPopper extends LitElement {
             uref=${this.uref}
             parentId=${this.parentId}
             first-uref=${this.firstRef as string}
-            evee-color=${this.color()}
-            default-remote=${this.defaultRemote as string}
+            official-owner=${this.officialOwner as string}
+            @official-id=${e => this.officialIdReceived(e.detail.perspectiveId)}
           ></evees-info-user-based>
         </div>
       </uprtcl-popper>

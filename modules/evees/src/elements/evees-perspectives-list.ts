@@ -149,14 +149,10 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
       this.logger.log('updating getOtherPersepectivesData');
       this.load();
     }
-    // if (changedProperties.has('perspectiveId') || changedProperties.has('firstPerspectiveId')) {
-    //   this.logger.log('updating getOtherPersepectivesData');
-    //   this.load();
-    // }
   }
 
-  perspectiveColor(perspectiveId: string) {
-    return eveeColor(perspectiveId);
+  perspectiveColor(creatorId: string) {
+    return eveeColor(creatorId);
   }
 
   perspectiveButtonClicked(event: Event, perspectiveData: PerspectiveData) {
@@ -172,14 +168,6 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
     );
   }
 
-  getPerspectiveAction(perspectiveData: PerspectiveData) {
-    if (this.canWrite) {
-      return MERGE_ACTION;
-    } else {
-      return MERGE_PROPOSAL_ACTION;
-    }
-  }
-
   renderLoading() {
     return html`
       <div class="loading-container">
@@ -191,14 +179,14 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
   renderPerspectiveRow(perspectiveData: PerspectiveData) {
     return html`
       <uprtcl-list-item
-        style=${`--selected-border-color: ${this.perspectiveColor(perspectiveData.id)}`}
+        style=${`--selected-border-color: ${this.perspectiveColor(perspectiveData.creatorId)}`}
         hasMeta
         ?selected=${this.perspectiveId === perspectiveData.id}
         @click=${() => this.perspectiveClicked(perspectiveData.id)}
       >
         <evees-author
           show-name
-          color=${this.perspectiveColor(perspectiveData.id)}
+          color=${this.perspectiveColor(perspectiveData.creatorId)}
           user-id=${perspectiveData.creatorId}
         ></evees-author>
       </uprtcl-list-item>

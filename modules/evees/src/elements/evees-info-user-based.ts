@@ -39,6 +39,15 @@ export class EveesInfoUserBased extends EveesInfoBase {
   @property({ attribute: false })
   author!: string;
 
+  @property({ attribute: false })
+  isTheirs!: boolean;
+
+  @property({ attribute: false })
+  isMine!: boolean;
+
+  @property({ attribute: false })
+  isOfficial!: boolean;
+
   @query('#proposals-popper')
   proposalsPopper!: UprtclPopper;
 
@@ -101,8 +110,24 @@ export class EveesInfoUserBased extends EveesInfoBase {
         p.object.payload.creatorId === defaultRemote.userId
     );
 
-    this.officialId = official ? official.id : undefined;
+    if (official) {
+      this.dispatchEvent(
+        new CustomEvent('official-id', {
+          detail: {
+            perspectiveId: official.id
+          },
+          bubbles: false,
+          composed: false
+        })
+      );
+      this.officialId = official.id;
+    }
+
     this.mineId = mine ? mine.id : undefined;
+
+    this.isTheirs = this.uref !== this.mineId && this.uref !== this.officialId;
+    this.isMine = this.uref === this.mineId;
+    this.isOfficial = this.uref === this.officialId;
 
     const nowPerspective = await loadEntity<Signed<Perspective>>(this.client, this.uref);
     if (!nowPerspective) throw new Error(`official perspective ${this.uref}`);
@@ -139,13 +164,14 @@ export class EveesInfoUserBased extends EveesInfoBase {
   }
 
   proposeDraft() {
+    if (!this.officialId) throw new Error('can only propose to official');
     this.closePoppers();
-    this.otherPerspectiveMerge(this.uref, this.firstRef);
+    this.otherPerspectiveMerge(this.uref, this.officialId);
   }
 
-  seeOriginal() {
+  seeOfficial() {
     this.closePoppers();
-    this.checkoutPerspective(this.firstRef);
+    this.checkoutPerspective(this.officialId);
   }
 
   checkoutPerspective(perspectiveId) {
@@ -162,10 +188,10 @@ export class EveesInfoUserBased extends EveesInfoBase {
   }
 
   color() {
-    if (this.firstRef === this.uref) {
+    if (this.isOfficial) {
       return DEFAULT_COLOR;
     } else {
-      return eveeColor(this.uref as string);
+      return eveeColor(this.author);
     }
   }
 
@@ -190,15 +216,12 @@ export class EveesInfoUserBased extends EveesInfoBase {
   }
 
   renderDraftControl() {
-    const isTheirs = this.uref !== this.mineId && this.uref !== this.officialId;
-    const isMine = this.uref === this.mineId;
-    const isOfficial = this.uref === this.officialId;
-
     return html`
       <uprtcl-button
         class="tab-button"
         ?skinny=${this.uref !== this.firstRef}
-        @click=${() => this.seeOriginal()}
+        @click=${() => this.seeOfficial()}
+        ?disabled=${this.officialId === undefined}
         transition
       >
         common
@@ -206,11 +229,13 @@ export class EveesInfoUserBased extends EveesInfoBase {
       ${this.isLogged && this.isLoggedOnDefault
         ? html`
             <uprtcl-button
-              class=${isTheirs || isMine ? 'margin-left highlighted' : 'margin-left'}
+              class=${this.isTheirs || this.isMine ? 'margin-left highlighted' : 'margin-left'}
               icon="arrow_back"
-              @click=${() => (isTheirs || isMine ? this.proposeDraft() : undefined)}
-              ?disabled=${isOfficial}
-              style=${`--background-color: ${isTheirs || isMine ? this.color() : 'initial'}`}
+              @click=${() => (this.isTheirs || this.isMine ? this.proposeDraft() : undefined)}
+              ?disabled=${this.isOfficial}
+              style=${`--background-color: ${
+                this.isTheirs || this.isMine ? this.color() : 'initial'
+              }`}
             >
               merge
             </uprtcl-button>
@@ -219,10 +244,10 @@ export class EveesInfoUserBased extends EveesInfoBase {
       ${this.isLoggedOnDefault
         ? html`
             <uprtcl-button
-              ?skinny=${!isMine}
+              ?skinny=${!this.isMine}
               @click=${() => this.draftClicked()}
               class="margin-left tab-button"
-              style=${`--background-color: ${isMine ? this.color() : 'initial'}`}
+              style=${`--background-color: ${this.isMine ? this.color() : 'initial'}`}
               transition
             >
               mine
@@ -238,11 +263,11 @@ export class EveesInfoUserBased extends EveesInfoBase {
         <uprtcl-button
           slot="icon"
           icon="arrow_drop_down"
-          ?skinny=${!isTheirs}
-          style=${`--background-color: ${isTheirs ? this.color() : 'initial'}`}
+          ?skinny=${!this.isTheirs}
+          style=${`--background-color: ${this.isTheirs ? this.color() : 'initial'}`}
           class="tab-other"
           transition
-          >${isTheirs
+          >${this.isTheirs
             ? html`
                 <evees-author
                   show-name
@@ -294,7 +319,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
                 icon="info"
                 id="info-popper"
                 position="bottom-left"
-                class="info-popper"
+                class="info-popper margin-right"
               >
                 ${this.renderInfo()}
               </uprtcl-popper>
@@ -332,7 +357,6 @@ export class EveesInfoUserBased extends EveesInfoBase {
           flex-direction: row;
         }
         .proposals-popper {
-          margin-left: 8px;
           --box-width: 340px;
         }
         .info-popper {
@@ -345,6 +369,9 @@ export class EveesInfoUserBased extends EveesInfoBase {
         }
         .margin-left {
           margin-left: 10px;
+        }
+        .margin-right {
+          margin-right: 10px;
         }
         .tab-button {
           width: 120px;

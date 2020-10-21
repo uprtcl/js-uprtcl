@@ -37,6 +37,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
+  @property({ attribute: false })
+  creatorId!: string;
+
   @query('#wiki-drawer-content')
   content!: WikiDrawerContent;
 
@@ -66,6 +69,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!official) throw new Error(`cant find official perspective ${this.firstRef}`);
     this.officialOwner = official.object.payload.creatorId;
 
+    await this.load();
     this.loading = false;
   }
 
@@ -77,11 +81,24 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
+  async load() {
+    const current = await loadEntity<Signed<Perspective>>(this.client, this.uref);
+    if (!current) throw new Error(`cant find current perspective ${this.uref}`);
+
+    this.creatorId = current.object.payload.creatorId;
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('uref')) {
+      this.load();
+    }
+  }
+
   color() {
     if (this.firstRef === this.uref) {
       return DEFAULT_COLOR;
     } else {
-      return eveeColor(this.uref as string);
+      return eveeColor(this.creatorId);
     }
   }
 
