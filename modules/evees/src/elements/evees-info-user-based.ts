@@ -4,21 +4,18 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { UprtclPopper } from '@uprtcl/common-ui';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { Signed } from '@uprtcl/cortex';
-import {
-  DEFAULT_COLOR,
-  eveeColor,
-  EveesInfoBase,
-  EveesPerspectivesList,
-  EveesRemote,
-  Perspective,
-  ProposalsList,
-  Secured
-} from '@uprtcl/evees';
-import { EveesLocal } from '../provider/evees.local';
+import { EveesInfoBase } from './evees-info-base';
+import { EveesPerspectivesList } from './evees-perspectives-list';
+import { ProposalsList } from './evees-proposals-list';
+import { Perspective } from '../types';
+import { EveesRemote } from '../services/evees.remote';
+import { DEFAULT_COLOR, eveeColor } from './support';
 
-/** An evees handler designed to create a single draft per evee on the local storage */
-export class EveesInfoLocal extends EveesInfoBase {
-  logger = new Logger('EVEES-INFO-LOCAL');
+/** An evees info with
+ *  - one official remote with the official perspective
+ *  - one defaultRemote with one perspective per user */
+export class EveesInfoUserBased extends EveesInfoBase {
+  logger = new Logger('EVEES-INFO-UserBased');
 
   @property({ type: Boolean, attribute: 'show-proposals' })
   proposalsEnabled: boolean = false;
@@ -29,8 +26,14 @@ export class EveesInfoLocal extends EveesInfoBase {
   @property({ type: Boolean, attribute: 'show-info' })
   infoEnabled: boolean = false;
 
+  @property({ type: String, attribute: 'official-owner' })
+  officialOwner!: string;
+
   @property({ attribute: false })
-  draftId: string | undefined = undefined;
+  officialId: string | undefined = undefined;
+
+  @property({ attribute: false })
+  mineId: string | undefined = undefined;
 
   @property({ attribute: false })
   author!: string;
@@ -48,7 +51,8 @@ export class EveesInfoLocal extends EveesInfoBase {
   eveesProposalsList!: ProposalsList;
 
   async firstUpdated() {
-    super.firstUpdated();
+    await super.firstUpdated();
+    this.load();
   }
 
   connectedCallback() {
@@ -63,69 +67,93 @@ export class EveesInfoLocal extends EveesInfoBase {
 
   async load() {
     super.load();
+
+    this.loading = true;
+
     if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
 
     if (!this.defaultRemote) throw new Error('default remote not found');
     const defaultRemote: EveesRemote = this.defaultRemote;
 
-    const official = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
-    if (!official) throw new Error(`official perspective ${this.firstRef}`);
+    const first = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
+    if (!first) throw new Error(`first perspective ${this.firstRef}`);
 
     const otherPerspectives = await defaultRemote.getContextPerspectives(
-      official.object.payload.context
+      first.object.payload.context
     );
 
-    const thisPerspective = await loadEntity<Signed<Perspective>>(this.client, this.uref);
-    if (!thisPerspective) throw new Error(`official perspective ${this.uref}`);
-
-    this.author = thisPerspective.object.payload.creatorId;
-
-    /** force one perspective per user on the default remote (this perspective is the draft of that user) */
+    /** force one perspective per user on the default remote */
     for (const id of otherPerspectives) {
       const perspective = await loadEntity<Signed<Perspective>>(this.client, id);
       if (!perspective) throw new Error('default remote not found');
       if (perspective.object.payload.creatorId === defaultRemote.userId) {
-        this.draftId = id;
+        this.mineId = id;
         break;
       }
     }
 
+    /** the perspective on the official remote owned by the "official owner" should be the official one */
+    if (!this.officialRemote) throw new Error('default remote not found');
+    const officialRemote: EveesRemote = this.officialRemote;
+
+    const officialPerspectives = await officialRemote.getContextPerspectives(
+      first.object.payload.context
+    );
+
+    for (const id of officialPerspectives) {
+      const perspective = await loadEntity<Signed<Perspective>>(this.client, id);
+      if (!perspective) throw new Error('default remote not found');
+      if (perspective.object.payload.creatorId === this.officialOwner) {
+        this.officialId = id;
+        break;
+      }
+    }
+
+    const nowPerspective = await loadEntity<Signed<Perspective>>(this.client, this.uref);
+    if (!nowPerspective) throw new Error(`official perspective ${this.uref}`);
+
+    this.author = nowPerspective.object.payload.creatorId;
+
     if (this.perspectivesList) this.perspectivesList.load();
+
+    this.loading = false;
   }
 
   draftClicked() {
-    if (this.draftId) {
+    if (this.mineId) {
       this.seeDraft();
     } else {
       this.createDraft();
     }
   }
 
+  closePoppers() {
+    if (this.proposalsPopper) this.proposalsPopper.showDropdown = false;
+    if (this.perspectivesPopper) this.perspectivesPopper.showDropdown = false;
+  }
+
   createDraft() {
-    this.proposalsPopper.showDropdown = false;
-    this.perspectivesPopper.showDropdown = false;
+    this.closePoppers();
     this.forkPerspective();
   }
 
   seeDraft() {
-    this.proposalsPopper.showDropdown = false;
-    this.perspectivesPopper.showDropdown = false;
-    this.checkoutPerspective(this.draftId);
+    this.closePoppers();
+    this.checkoutPerspective(this.mineId);
   }
 
   proposeDraft() {
-    this.proposalsPopper.showDropdown = false;
-    this.perspectivesPopper.showDropdown = false;
+    this.closePoppers();
     this.otherPerspectiveMerge(this.uref, this.firstRef);
   }
 
   seeOriginal() {
+    this.closePoppers();
     this.checkoutPerspective(this.firstRef);
   }
 
   checkoutPerspective(perspectiveId) {
-    this.proposalsPopper.showDropdown = false;
-    this.perspectivesPopper.showDropdown = false;
+    this.closePoppers();
     this.dispatchEvent(
       new CustomEvent('checkout-perspective', {
         detail: {
@@ -137,10 +165,6 @@ export class EveesInfoLocal extends EveesInfoBase {
     );
   }
 
-  showPropose() {}
-
-  showProposals() {}
-
   color() {
     if (this.firstRef === this.uref) {
       return DEFAULT_COLOR;
@@ -150,12 +174,17 @@ export class EveesInfoLocal extends EveesInfoBase {
   }
 
   renderOtherPerspectives() {
+    const hidePerspectives: string[] = [];
+
+    if (this.officialId) hidePerspectives.push(this.officialId);
+    if (this.mineId) hidePerspectives.push(this.mineId);
+
     return html`
       <div class="list-container">
         <evees-perspectives-list
           id="evees-perspectives-list"
           perspective-id=${this.uref}
-          .hidePerspectives=${[this.firstRef, this.draftId]}
+          .hidePerspectives=${hidePerspectives}
           ?can-propose=${this.isLogged}
           @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
           @merge-perspective=${e => this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref)}
@@ -165,8 +194,9 @@ export class EveesInfoLocal extends EveesInfoBase {
   }
 
   renderDraftControl() {
-    const isTheirs = this.firstRef !== this.uref && this.uref !== this.draftId;
-    const isMine = this.firstRef !== this.uref && this.uref === this.draftId;
+    const isTheirs = this.uref !== this.mineId && this.uref !== this.officialId;
+    const isMine = this.uref === this.mineId;
+    const isOfficial = this.uref === this.officialId;
 
     return html`
       <uprtcl-button
@@ -182,13 +212,15 @@ export class EveesInfoLocal extends EveesInfoBase {
             <uprtcl-button
               class=${isTheirs || isMine ? 'margin-left highlighted' : 'margin-left'}
               icon="arrow_back"
-              @click=${() => this.proposeDraft()}
+              @click=${() => (isTheirs || isMine ? this.proposeDraft() : undefined)}
+              ?disabled=${isOfficial}
+              style=${`--background-color: ${isTheirs || isMine ? this.color() : 'initial'}`}
             >
               merge
             </uprtcl-button>
           `
         : ''}
-      ${this.isLogged
+      ${this.isLoggedOnDefault
         ? html`
             <uprtcl-button
               ?skinny=${!isMine}
@@ -280,7 +312,6 @@ export class EveesInfoLocal extends EveesInfoBase {
                   class="proposals-button"
                   icon="arrow_drop_down"
                   skinny
-                  @click=${() => this.showProposals()}
                   transition
                 >
                   proposals
@@ -311,6 +342,7 @@ export class EveesInfoLocal extends EveesInfoBase {
         .info-popper {
           --box-width: 490px;
           --max-height: 70vh;
+          --overflow: auto;
         }
         .proposals-button {
           width: 150px;

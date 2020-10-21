@@ -9,10 +9,18 @@ const styleMap = style => {
 
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
-import { EveesRemote, EveesModule, eveeColor, DEFAULT_COLOR, EveesInfoBase } from '@uprtcl/evees';
+import { CortexModule, Entity, PatternRecognizer, Signed } from '@uprtcl/cortex';
+import {
+  EveesRemote,
+  EveesModule,
+  eveeColor,
+  DEFAULT_COLOR,
+  EveesInfoBase,
+  Perspective
+} from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { WikiDrawerContent } from './wiki-drawer-content';
+import { loadEntity } from '@uprtcl/multiplatform';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
@@ -22,6 +30,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   uref!: string;
+
+  @property({ attribute: false })
+  officialOwner!: string;
 
   @property({ attribute: false })
   loading: boolean = true;
@@ -48,7 +59,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     this.logger.log('firstUpdated()', { uref: this.uref });
 
     this.uref = this.firstRef;
-    this.load();
+
+    /** the official owner is the creator of the firstRef of the Wiki,
+     * the firstRef is comming from the outside e.g. browser url. */
+    const official = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
+    if (!official) throw new Error(`cant find official perspective ${this.firstRef}`);
+    this.officialOwner = official.object.payload.creatorId;
+
+    this.loading = false;
   }
 
   connectedCallback() {
@@ -56,13 +74,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       this.uref = event.detail.perspectiveId;
-      this.load();
     }) as EventListener);
-  }
-
-  async load() {
-    this.loading = true;
-    this.loading = false;
   }
 
   color() {
@@ -80,15 +92,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   renderBreadcrumb() {
     return html`
-      <evees-info-local
+      <evees-info-user-based
         id="evees-info-row"
         uref=${this.uref}
         first-uref=${this.firstRef}
+        official-owner=${this.officialOwner}
         show-proposals
         show-info
         show-draft
       >
-      </evees-info-local>
+      </evees-info-user-based>
     `;
   }
 
@@ -123,6 +136,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           uref=${this.uref}
           editable
           color=${this.color()}
+          official-owner=${this.officialOwner}
         >
         </wiki-drawer-content>
       </div>
@@ -165,7 +179,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           display: flex;
           flex-direction: row;
         }
-        evees-info-local {
+        evees-info-user-based {
           width: 100%;
         }
         .login-widget-container {

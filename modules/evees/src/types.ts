@@ -101,6 +101,7 @@ export interface HasDiffLenses<T = any> extends Behaviour<T> {
 
 export interface EveesConfig {
   defaultRemote?: EveesRemote;
+  officialRemote?: EveesRemote;
   emitIf?: {
     remote: string;
     owner: string;

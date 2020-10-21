@@ -9,8 +9,6 @@ import { EveesBindings } from './../bindings';
 import { EveesRemote } from './../services/evees.remote';
 import { EveesHelpers } from '../graphql/evees.helpers';
 
-export const DEFAULT_COLOR = '#d0dae0';
-
 interface PerspectiveData {
   id: string;
   name: string;

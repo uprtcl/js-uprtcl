@@ -78,17 +78,18 @@ export class EveesInfoPopper extends LitElement {
             })}
           ></div>
         </div>
-        <evees-info-page
-          ?show-perspectives=${this.showPerspectives}
-          ?show-proposals=${this.showProposals}
-          ?show-acl=${this.showAcl}
-          ?show-info=${this.showInfo}
-          uref=${this.uref}
-          parentId=${this.parentId}
-          first-uref=${this.firstRef as string}
-          evee-color=${this.color()}
-          default-remote=${this.defaultRemote as string}
-        ></evees-info-page>
+        <div class="evees-info">
+          <evees-info-user-based
+            ?show-draft=${this.showPerspectives}
+            ?show-proposals=${this.showProposals}
+            ?show-info=${this.showInfo}
+            uref=${this.uref}
+            parentId=${this.parentId}
+            first-uref=${this.firstRef as string}
+            evee-color=${this.color()}
+            default-remote=${this.defaultRemote as string}
+          ></evees-info-user-based>
+        </div>
       </uprtcl-popper>
     `;
   }
@@ -103,14 +104,11 @@ export class EveesInfoPopper extends LitElement {
         }
         uprtcl-popper {
           flex-grow: 1;
-          --box-width: 500px;
         }
-
-        evees-info-page {
-          padding: 5vw 0vw;
+        .evees-info {
+          padding: 10px;
           display: block;
         }
-
         .button {
           cursor: pointer;
           padding-top: 5px;

@@ -43,8 +43,14 @@ const PLACEHOLDER_TOKEN = '_PLACEHOLDER_';
 export class DocumentEditor extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
 
-  @property({ type: String })
+  @property({ type: String, attribute: 'uref' })
+  firstRef!: string;
+
+  @property({ attribute: false })
   uref!: string;
+
+  @property({ type: String, attribute: 'official-owner' })
+  officialOwner!: string;
 
   @property({ type: String })
   editable: string = 'true';
@@ -59,12 +65,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   defaultType: string = EveesModule.bindings.PerspectiveType;
 
   @property({ attribute: false })
-  client!: ApolloClient<any>;
-
-  @property({ attribute: false })
-  doc!: DocNode;
-
-  @property({ attribute: false })
   docHasChanges: boolean = false;
 
   @property({ attribute: false })
@@ -76,13 +76,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
-  @property({ type: String })
-  defaultRemoteId!: string;
-
   @property({ attribute: false })
   checkedOutPerspectives: { [key: string]: { firstUref: string; newUref: string } } = {};
 
-  // checkedOutPerspectivesStorageId!: string;
+  @property({ type: Object })
+  doc!: DocNode;
+
+  client!: ApolloClient<any>;
 
   protected eveesRemotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
@@ -97,12 +97,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       this.client = this.request(ApolloClientModule.bindings.Client);
     }
 
-    const config: EveesConfig = this.request(EveesModule.bindings.Config);
-    if (config.defaultRemote === undefined) {
-      throw new Error('default remote not defined');
-    }
-
-    this.defaultRemoteId = config.defaultRemote.id;
+    this.uref = this.firstRef;
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
@@ -130,13 +125,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!this.uref) return;
     this.doc = await this.loadNodeRec(this.uref);
-
-    // this.checkedOutPerspectivesStorageId = `CHECKED_OUT_PERSPECTIVES_${this.uref}`
-
-    // const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
-    // if(storageRes) {
-    //   this.checkedOutPerspectives = JSON.parse(storageRes);
-    // }
   }
 
   async loadNodeRec(uref: string, ix?: number, parent?: DocNode): Promise<DocNode> {
@@ -1090,7 +1078,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   uref=${node.uref}
                   first-uref=${node.uref}
                   evee-color=${color}
-                  default-remote=${this.defaultRemoteId}
+                  official-owner=${this.officialOwner}
                   @checkout-perspective=${e => this.handleNodePerspectiveCheckout(e, node)}
                   show-perspectives
                   show-acl

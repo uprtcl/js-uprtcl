@@ -13,7 +13,6 @@ import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 import { EveesOrbitDB, EveesOrbitDBModule, ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
-import { EveesLocalModule } from '@uprtcl/evees-local';
 
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { EthereumOrbitDBIdentity, EveesEthereumConnection } from '@uprtcl/evees-ethereum';
@@ -113,7 +112,6 @@ import { SimpleWiki } from './simple-wiki';
     new LensesModule(),
     new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
-    new EveesLocalModule(),
     evees,
     documents,
     wikis

@@ -43,6 +43,9 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
+  @property({ type: String, attribute: 'official-owner' })
+  officialOwner!: string;
+
   @property({ type: Boolean })
   editable: boolean = false;
 
@@ -531,6 +534,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
                   pageHash=${this.wiki ? this.wiki.object.pages[this.selectedPageIx] : ''}
                   color=${this.color}
                   wikiId=${this.uref}
+                  official-owner=${this.officialOwner}
                 >
                 </wiki-page>
               `

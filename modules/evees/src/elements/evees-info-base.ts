@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-import { ApolloClient, gql } from 'apollo-boost';
+import { ApolloClient } from 'apollo-boost';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
@@ -55,6 +55,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'default-remote' })
   defaultRemoteId: string | undefined = undefined;
 
+  @property({ type: String, attribute: 'official-remote' })
+  officialRemoteId: string | undefined = undefined;
+
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
@@ -107,6 +110,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected remote!: EveesRemote;
   protected recognizer!: PatternRecognizer;
   protected cache!: EntityCache;
+
+  /** official remote is used to indentity the special perspective, "the master branch" */
+  protected officialRemote: EveesRemote | undefined = undefined;
+
+  /** default remote is used to create new branches */
   protected defaultRemote: EveesRemote | undefined = undefined;
 
   async firstUpdated() {
@@ -124,7 +132,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
           )
         : (this.request(EveesBindings.Config) as EveesConfig).defaultRemote;
 
-    this.load();
+    this.officialRemote =
+      this.officialRemoteId !== undefined
+        ? (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+            remote => remote.id === this.officialRemoteId
+          )
+        : (this.request(EveesBindings.Config) as EveesConfig).officialRemote;
   }
 
   updated(changedProperties) {
@@ -140,6 +153,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
   }
 
+  /** must be called from subclass as super.load() */
   async load() {
     this.logger.info('Loading evee perspective', this.uref);
 
@@ -193,7 +207,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.isLoggedOnDefault =
       this.defaultRemote !== undefined ? await this.defaultRemote.isLogged() : false;
 
-    this.reloadChildren();
     this.loading = false;
     this.logger.log(`evee ${this.uref} loaded`, {
       perspectiveData: this.perspectiveData,
@@ -248,21 +261,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
-  reloadChildren() {
-    if (this.forceUpdate === 'true') {
-      this.forceUpdate = 'false';
-    } else {
-      this.forceUpdate = 'true';
-    }
-  }
-
   async login() {
     if (this.defaultRemote === undefined) throw new Error('default remote undefined');
     this.loggingIn = true;
     await this.defaultRemote.login();
 
     await this.client.resetStore();
-    this.reloadChildren();
     this.load();
     this.loggingIn = false;
   }
@@ -272,7 +276,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.defaultRemote.logout();
 
     await this.client.resetStore();
-    this.reloadChildren();
     this.load();
   }
 
@@ -429,8 +432,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         bubbles: true
       })
     );
-
-    this.reloadChildren();
   }
 
   async forkPerspective() {
