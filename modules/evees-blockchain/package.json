@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-blockchain",
-  "version": "0.0.7-alpha.66",
+  "version": "0.0.7-alpha.67",
   "description": "EveesRemote base class to implement Evees on any blockchain + Orbitdb",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,16 +11,16 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.0.7-alpha.66",
-    "@uprtcl/cortex": "^0.0.7-alpha.66",
-    "@uprtcl/evees": "^0.0.7-alpha.66",
-    "@uprtcl/evees-orbitdb": "^0.0.7-alpha.66",
-    "@uprtcl/graphql": "^0.0.7-alpha.66",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.66",
-    "@uprtcl/lenses": "^0.0.7-alpha.66",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.66",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.66",
-    "@uprtcl/orbitdb-provider": "^0.0.7-alpha.66",
+    "@uprtcl/common-ui": "^0.0.7-alpha.67",
+    "@uprtcl/cortex": "^0.0.7-alpha.67",
+    "@uprtcl/evees": "^0.0.7-alpha.67",
+    "@uprtcl/evees-orbitdb": "^0.0.7-alpha.67",
+    "@uprtcl/graphql": "^0.0.7-alpha.67",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.67",
+    "@uprtcl/lenses": "^0.0.7-alpha.67",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.67",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.67",
+    "@uprtcl/orbitdb-provider": "^0.0.7-alpha.67",
     "apollo-boost": "^0.4.7",
     "dexie": "^3.0.2"
   },
