@@ -142,7 +142,7 @@ export class EveesInfoPage extends EveesInfoBase {
         skinny
         icon="call_split"
         @click=${this.forkPerspective}
-        loading=${this.creatingNewPerspective ? 'true' : 'false'}
+        ?loading=${this.creatingNewPerspective}
       >
         new perspective
       </uprtcl-button-loading>
@@ -156,7 +156,7 @@ export class EveesInfoPage extends EveesInfoBase {
         skinny
         icon="call_merge"
         @click=${this.proposeMergeClicked}
-        loading=${this.proposingUpdate ? 'true' : 'false'}
+        ?loading=${this.proposingUpdate}
       >
         Propose Merge
       </uprtcl-button-loading>

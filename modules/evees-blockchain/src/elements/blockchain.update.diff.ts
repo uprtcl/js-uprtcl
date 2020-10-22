@@ -34,6 +34,18 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
+  @property({ attribute: false })
+  applyingChanges: boolean = false;
+
+  @property({ attribute: false })
+  nNew!: number;
+
+  @property({ attribute: false })
+  nUpdated!: number;
+
+  @property({ attribute: false })
+  hasChanges!: boolean;
+
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
@@ -102,10 +114,24 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
       }
     }
 
-    this.loading = false;
     await this.updateComplete;
 
-    this.eveesDiffEl.workspace = this.workspace;
+    if (this.eveesDiffEl !== null) {
+      this.eveesDiffEl.workspace = this.workspace;
+    }
+
+    this.nNew = this.workspace.getNewPerspectives().length;
+    this.nUpdated = this.workspace.getUpdates().length;
+    this.hasChanges = this.newHash !== this.currentHash;
+
+    this.loading = false;
+  }
+
+  async applyChanges() {
+    this.applyingChanges = true;
+    await this.remote.flushCache();
+    this.applyingChanges = false;
+    this.load();
   }
 
   render() {
@@ -116,11 +142,43 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     }
 
     return html`
-      <div class="prop-name">details:</div>
-      <pre class="prop-value">
-${JSON.stringify({ current: this.currentHash, new: this.newHash }, null, 2)}</pre
-      >
-      <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
+      <div class="row">
+        <div class="column">
+          <div class="prop-name">current head</div>
+          <pre class="prop-value">${this.currentHash}</pre>
+        </div>
+        ${this.hasChanges
+          ? html`
+              <div class="column">
+                <div class="prop-name">new head</div>
+                <pre class="prop-value">${this.newHash}</pre>
+              </div>
+            `
+          : ''}
+      </div>
+
+      <div class="row">
+        <ul>
+          <li>new perspectives: ${this.workspace.getNewPerspectives().length}</li>
+          <li>perspectives updated: ${this.workspace.getUpdates().length}</li>
+        </ul>
+      </div>
+
+      ${this.nUpdated > 0
+        ? html`
+            <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
+          `
+        : ''}
+
+      <div class="row">
+        <uprtcl-button-loading
+          class="update-button"
+          ?loading=${this.applyingChanges}
+          @click=${() => (this.hasChanges ? this.applyChanges() : undefined)}
+          ?disabled=${!this.hasChanges}
+          >update</uprtcl-button-loading
+        >
+      </div>
     `;
   }
 
@@ -128,7 +186,17 @@ ${JSON.stringify({ current: this.currentHash, new: this.newHash }, null, 2)}</pr
     return css`
       :host {
         display: block;
-        text-align: center;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+      }
+      .row {
+        width: 100%;
+        display: flex;
+      }
+      .column {
+        flex: 1 1 auto;
+        padding: 0px 16px;
       }
       .prop-name {
         width: 100%;
@@ -146,6 +214,16 @@ ${JSON.stringify({ current: this.currentHash, new: this.newHash }, null, 2)}</pr
         overflow: auto;
         width: calc(100% - 32px);
         overflow-x: auto;
+      }
+      evees-update-diff {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .update-button {
+        margin: 0 auto;
+        width: 180px;
       }
     `;
   }

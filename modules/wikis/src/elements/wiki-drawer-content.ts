@@ -445,7 +445,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
               <uprtcl-button-loading
                 icon="add_circle_outline"
                 @click=${() => this.newPage()}
-                loading=${this.creatingNewPage ? 'true' : 'false'}
+                ?loading=${this.creatingNewPage}
               >
                 ${this.t('wikis:new-page')}
               </uprtcl-button-loading>

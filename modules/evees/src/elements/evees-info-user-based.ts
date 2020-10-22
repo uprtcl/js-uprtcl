@@ -52,6 +52,9 @@ export class EveesInfoUserBased extends EveesInfoBase {
   @property({ attribute: false })
   hasPull!: boolean;
 
+  @property({ attribute: false })
+  creatingMine: boolean = false;
+
   @query('#proposals-popper')
   proposalsPopper!: UprtclPopper;
 
@@ -176,9 +179,11 @@ export class EveesInfoUserBased extends EveesInfoBase {
     if (this.perspectivesPopper) this.perspectivesPopper.showDropdown = false;
   }
 
-  createDraft() {
+  async createDraft() {
     this.closePoppers();
-    this.forkPerspective();
+    this.creatingMine = true;
+    await this.forkPerspective();
+    this.creatingMine = false;
   }
 
   seeDraft() {
@@ -301,15 +306,16 @@ export class EveesInfoUserBased extends EveesInfoBase {
         : ''}
       ${this.isLoggedOnDefault
         ? html`
-            <uprtcl-button
+            <uprtcl-button-loading
               ?skinny=${!this.isMine}
               @click=${() => this.draftClicked()}
               class="margin-left tab-button"
               style=${`--background-color: ${this.isMine ? this.color() : 'initial'}`}
+              ?loading=${this.creatingMine}
               transition
             >
               mine
-            </uprtcl-button>
+            </uprtcl-button-loading>
           `
         : ''}
 
@@ -421,6 +427,9 @@ export class EveesInfoUserBased extends EveesInfoBase {
           --box-width: 490px;
           --max-height: 70vh;
           --overflow: auto;
+        }
+        .perspectives-popper {
+          --box-width: 340px;
         }
         .proposals-button {
           width: 150px;

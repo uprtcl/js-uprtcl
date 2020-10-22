@@ -138,7 +138,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
           ? html`
               <uprtcl-button-loading
                 @click=${() => this.createSpace()}
-                loading=${this.creatingSpace ? 'true' : 'false'}
+                ?loading=${this.creatingSpace}
                 >create space</uprtcl-button-loading
               >
             `

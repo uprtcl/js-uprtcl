@@ -18,15 +18,6 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
-  @property({ attribute: false })
-  applying: boolean = false;
-
-  @property({ attribute: false })
-  deleting: boolean = false;
-
-  @property({ attribute: false })
-  remoteUI!: RemoteUI;
-
   protected remote!: EveesBlockchainCached;
 
   async firstUpdated() {
@@ -38,25 +29,7 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
     }
 
     this.remote = remote;
-    this.load();
-  }
-
-  async load() {
-    this.loading = true;
     this.loading = false;
-  }
-
-  async applyChanges() {
-    this.applying = true;
-    await this.remote.flushCache();
-    this.applying = false;
-  }
-
-  async deleteAll() {
-    this.deleting = true;
-    this.remote.updateHead(undefined);
-    this.deleting = false;
-    this.load();
   }
 
   render() {
@@ -67,13 +40,20 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
     }
 
     return html`
+      <div class="row margin-bottom">
+        Logged as
+        <evees-author
+          class="margin-left"
+          user-id=${this.remote.userId as string}
+          show-name
+        ></evees-author>
+      </div>
       <div class="row">
         <evees-blockchain-update-diff
           owner=${this.remote.userId as string}
           remote=${this.remote.id}
         >
         </evees-blockchain-update-diff>
-        <uprtcl-button @click=${() => this.applyChanges()}>apply changes</uprtcl-button>
       </div>
     `;
   }
@@ -86,17 +66,18 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
       }
       .row {
         width: 100%;
-        height: 50vh;
         display: flex;
-        flex-direction: column;
+        align-items: center;
+      }
+      .margin-bottom {
+        margin-bottom: 25px;
+      }
+      .margin-left {
+        margin-left: 10px;
       }
       evees-blockchain-update-diff {
         flex-grow: 1;
         overflow: auto;
-      }
-      uprtcl-button {
-        margin: 0 auto;
-        margin-top: 16px;
       }
     `;
   }

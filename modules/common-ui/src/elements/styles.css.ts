@@ -36,6 +36,9 @@ export const styles = css`
     background-color: #bbd6ec;
     color: #ffffff;
   }
+  .button-disabled svg {
+    fill: white;
+  }
   .button-skinny {
     background-color: transparent;
     color: #2196f3;

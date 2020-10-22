@@ -45,7 +45,7 @@ export class UprtclButton extends LitElement {
 
     return html`
       <div class=${classes.join(' ')}>
-        ${this.icon !== undefined
+        ${this.icon
           ? html`
               <div class="icon-container">${icons[this.icon]}</div>
             `
