@@ -16,9 +16,6 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
   remoteId!: string;
 
   @property({ attribute: false })
-  newHash!: string;
-
-  @property({ attribute: false })
   loading: boolean = true;
 
   @property({ attribute: false })
@@ -31,13 +28,15 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
   remoteUI!: RemoteUI;
 
   protected remote!: EveesBlockchainCached;
-  
+
   async firstUpdated() {
-    const remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
+    const remote = (this.requestAll(
+      EveesModule.bindings.EveesRemote
+    ) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
     if (!remote) {
-        throw new Error(`remote ${this.remoteId} not found`)
+      throw new Error(`remote ${this.remoteId} not found`);
     }
-        
+
     this.remote = remote;
     this.load();
   }
@@ -69,9 +68,10 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
 
     return html`
       <div class="row">
-        <evees-blockchain-update-diff 
-          owner=${this.remote.userId as string} 
-          remote=${this.remote.id}>
+        <evees-blockchain-update-diff
+          owner=${this.remote.userId as string}
+          remote=${this.remote.id}
+        >
         </evees-blockchain-update-diff>
         <uprtcl-button @click=${() => this.applyChanges()}>apply changes</uprtcl-button>
       </div>

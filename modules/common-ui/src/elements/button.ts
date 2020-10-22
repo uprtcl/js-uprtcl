@@ -18,18 +18,7 @@ export class UprtclButton extends LitElement {
   @property({ type: Boolean })
   raised: boolean = false;
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.checkDisabled();
-  }
-
-  checkDisabled() {
-    if (this.disabled) {
-      this.addEventListener('click', e => {
-        e.stopPropagation();
-      });
-    }
-  }
+  /** Seems I cant prevent the click event from being emitted outside of this element  */
 
   render() {
     let classes = ['button-layout', 'button-text'];

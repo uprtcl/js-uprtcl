@@ -112,6 +112,8 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   async showPullChanges() {
+    if (!this.pullWorkspace) throw new Error('pullWorkspace undefined');
+
     const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close');
 
     if (!confirm) {

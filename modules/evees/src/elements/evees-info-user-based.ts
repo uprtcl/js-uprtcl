@@ -11,6 +11,7 @@ import { Perspective } from '../types';
 import { EveesRemote } from '../services/evees.remote';
 import { DEFAULT_COLOR, eveeColor } from './support';
 import { Secured } from '../utils/cid-hash';
+import { ContentUpdatedEvent, CONTENT_UPDATED_TAG } from './events';
 
 /** An evees info with
  *  - one official remote with the official perspective
@@ -48,6 +49,9 @@ export class EveesInfoUserBased extends EveesInfoBase {
   @property({ attribute: false })
   isOfficial!: boolean;
 
+  @property({ attribute: false })
+  hasPull!: boolean;
+
   @query('#proposals-popper')
   proposalsPopper!: UprtclPopper;
 
@@ -75,9 +79,19 @@ export class EveesInfoUserBased extends EveesInfoBase {
     this.logger.log('Disconnected', this.uref);
   }
 
+  /** overwrite  */
+  updated(changedProperties) {
+    if (changedProperties.has('uref')) {
+      this.logger.info('updated() UserBased reload', { changedProperties });
+      this.load();
+    }
+  }
+
   async load() {
+    this.logger.info('load() UserBased', { uref: this.uref, firstRef: this.firstRef });
+
     await super.firstUpdated();
-    super.load();
+    await super.load();
 
     this.loading = true;
 
@@ -129,11 +143,20 @@ export class EveesInfoUserBased extends EveesInfoBase {
     this.isMine = this.uref === this.mineId;
     this.isOfficial = this.uref === this.officialId;
 
+    /** check pull from official*/
+    if (this.isMine && this.officialId !== undefined) {
+      this.checkPull(this.officialId).then(() => {
+        this.hasPull = this.pullWorkspace !== undefined && this.pullWorkspace.hasUpdates();
+      });
+    }
+
+    /** get the current perspective author */
     const nowPerspective = await loadEntity<Signed<Perspective>>(this.client, this.uref);
     if (!nowPerspective) throw new Error(`official perspective ${this.uref}`);
 
     this.author = nowPerspective.object.payload.creatorId;
 
+    /** force load of perspectives and proposals lists */
     if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
     if (this.perspectivesList) this.perspectivesList.load();
 
@@ -164,6 +187,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
   }
 
   proposeDraft() {
+    this.logger.log('propose draft');
     if (!this.officialId) throw new Error('can only propose to official');
     this.closePoppers();
     this.otherPerspectiveMerge(this.uref, this.officialId);
@@ -172,6 +196,29 @@ export class EveesInfoUserBased extends EveesInfoBase {
   seeOfficial() {
     this.closePoppers();
     this.checkoutPerspective(this.officialId);
+  }
+
+  async showPull() {
+    this.logger.log('show pull');
+
+    if (!this.pullWorkspace) throw new Error('pullWorkspace undefined');
+
+    const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close');
+
+    if (!confirm) {
+      return;
+    }
+    await this.pullWorkspace.execute(this.client);
+
+    this.dispatchEvent(
+      new ContentUpdatedEvent({
+        detail: {
+          uref: this.uref
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
   }
 
   checkoutPerspective(perspectiveId) {
@@ -228,7 +275,8 @@ export class EveesInfoUserBased extends EveesInfoBase {
       </uprtcl-button>
       ${this.isLogged && this.isLoggedOnDefault
         ? html`
-            <uprtcl-button
+            <uprtcl-icon-button
+              button
               class=${this.isTheirs || this.isMine ? 'margin-left highlighted' : 'margin-left'}
               icon="arrow_back"
               @click=${() => (this.isTheirs || this.isMine ? this.proposeDraft() : undefined)}
@@ -237,8 +285,18 @@ export class EveesInfoUserBased extends EveesInfoBase {
                 this.isTheirs || this.isMine ? this.color() : 'initial'
               }`}
             >
-              merge
-            </uprtcl-button>
+            </uprtcl-icon-button>
+            <uprtcl-icon-button
+              button
+              class=${this.hasPull ? 'margin-left highlighted' : 'margin-left'}
+              icon="arrow_forward"
+              @click=${() => (this.isMine && this.hasPull ? this.showPull() : undefined)}
+              ?disabled=${!this.hasPull}
+              style=${`--background-color: ${
+                this.isTheirs || this.isMine ? this.color() : 'initial'
+              }`}
+            >
+            </uprtcl-icon-button>
           `
         : ''}
       ${this.isLoggedOnDefault

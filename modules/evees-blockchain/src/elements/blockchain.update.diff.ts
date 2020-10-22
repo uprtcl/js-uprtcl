@@ -8,7 +8,10 @@ import { EveesModule, EveesWorkspace, Perspective, EveesDiff } from '@uprtcl/eve
 import { loadEntity } from '@uprtcl/multiplatform';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 
-import { EveesBlockchainCached, UserPerspectivesDetails } from '../provider/evees.blockchain.cached';
+import {
+  EveesBlockchainCached,
+  UserPerspectivesDetails
+} from '../provider/evees.blockchain.cached';
 
 export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-BLOCKCHAIN-UPDATE-DIFF');
@@ -19,9 +22,12 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   @property({ type: String })
   owner!: string;
 
-  @property({ type: String, attribute: 'new-hash' })
+  @property({ attribute: false })
+  currentHash!: string | undefined;
+
+  @property({ attribute: false })
   newHash!: string;
-  
+
   @property({ type: Boolean })
   summary: boolean = false;
 
@@ -41,9 +47,11 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
-    const remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
+    const remote = (this.requestAll(
+      EveesModule.bindings.EveesRemote
+    ) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
     if (!remote) {
-        throw new Error(`remote ${this.remoteId} not found`)
+      throw new Error(`remote ${this.remoteId} not found`);
     }
     this.remote = remote;
     this.load();
@@ -52,11 +60,12 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   async load() {
     this.loading = true;
 
-    const newHash = await this.remote.createNewEveesData();
-    
-    const eveesData = await this.remote.getEveesDataOf(this.owner);
-    const newEveesData = (await this.remote.store.get(newHash)) as UserPerspectivesDetails;
-    
+    this.newHash = await this.remote.createNewEveesData();
+    this.currentHash = await this.remote.getEveesHeadOf(this.owner);
+
+    const eveesData = await this.remote.getEveesDataFromHead(this.currentHash);
+    const newEveesData = (await this.remote.store.get(this.newHash)) as UserPerspectivesDetails;
+
     /** compare the two evees objects and derive a workspace */
     this.workspace = new EveesWorkspace(this.client, this.recognizer);
 
@@ -73,8 +82,8 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
             newHeadId: newHead,
             perspectiveId: perspectiveId,
             oldHeadId: eveesData[perspectiveId].headId
-          }
-  
+          };
+
           this.workspace.update(update);
         }
       } else {
@@ -88,11 +97,11 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
             headId: newEveesData[perspectiveId].headId
           },
           perspective
-        }
+        };
         this.workspace.newPerspective(newPerspective);
       }
     }
-    
+
     this.loading = false;
     await this.updateComplete;
 
@@ -107,6 +116,10 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     }
 
     return html`
+      <div class="prop-name">details:</div>
+      <pre class="prop-value">
+${JSON.stringify({ current: this.currentHash, new: this.newHash }, null, 2)}</pre
+      >
       <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
     `;
   }
@@ -116,6 +129,23 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
       :host {
         display: block;
         text-align: center;
+      }
+      .prop-name {
+        width: 100%;
+      }
+      .prop-value {
+        font-family: Lucida Console, Monaco, monospace;
+        font-size: 12px;
+        text-align: left;
+        background-color: #a0a3cb;
+        color: #1c1d27;
+        padding: 16px 16px;
+        margin-bottom: 16px;
+        border-radius: 6px;
+        width: 100%;
+        overflow: auto;
+        width: calc(100% - 32px);
+        overflow-x: auto;
       }
     `;
   }

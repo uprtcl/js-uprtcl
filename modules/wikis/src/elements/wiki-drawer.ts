@@ -16,7 +16,9 @@ import {
   eveeColor,
   DEFAULT_COLOR,
   EveesInfoBase,
-  Perspective
+  Perspective,
+  CONTENT_UPDATED_TAG,
+  ContentUpdatedEvent
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { WikiDrawerContent } from './wiki-drawer-content';
@@ -78,6 +80,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       this.uref = event.detail.perspectiveId;
+    }) as EventListener);
+
+    this.addEventListener(CONTENT_UPDATED_TAG, ((event: ContentUpdatedEvent) => {
+      if (this.uref === event.detail.uref) {
+        this.content.load();
+      }
     }) as EventListener);
   }
 

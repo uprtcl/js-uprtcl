@@ -184,17 +184,25 @@ export class EveesBlockchainCached implements EveesRemote {
     await this.initCache();
   }
 
-  async getEveesDataOf(userId: string, block?: number): Promise<UserPerspectivesDetails> {
+  async getEveesHeadOf(userId: string, block?: number): Promise<string | undefined> {
     block = block || (await this.connection.getLatestBlock());
     const head = await this.connection.getHead(userId, block);
     if (!head) {
       this.logger.log(`Evees Data of ${userId} is undefined`);
-      return {};
+      return undefined;
     }
+    return head;
+  }
 
+  async getEveesDataFromHead(head: string | undefined): Promise<UserPerspectivesDetails> {
+    if (!head) return {};
     const eveesData = (await this.store.get(head)) as UserPerspectivesDetails;
-    this.logger.log(`Evees Data of ${userId}`, eveesData);
     return eveesData ? eveesData : {};
+  }
+
+  async getEveesDataOf(userId: string, block?: number): Promise<UserPerspectivesDetails> {
+    const head = await this.getEveesHeadOf(userId, block);
+    return this.getEveesDataFromHead(head);
   }
 
   async initCache(): Promise<void> {

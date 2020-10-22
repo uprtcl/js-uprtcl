@@ -101,7 +101,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   eveesDiffEl!: EveesDiff;
 
   perspectiveData!: PerspectiveData;
-  pullWorkspace!: EveesWorkspace;
+  pullWorkspace: EveesWorkspace | undefined = undefined;
 
   protected client!: ApolloClient<any>;
   protected config!: EveesConfig;
@@ -145,12 +145,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.logger.info('updated() reload', { changedProperties });
       this.load();
     }
-
-    if (changedProperties.has('defaultRemoteId')) {
-      this.defaultRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-        remote => remote.id === this.defaultRemoteId
-      );
-    }
   }
 
   /** must be called from subclass as super.load() */
@@ -186,8 +180,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       };
 
       this.logger.info('load', { perspectiveData: this.perspectiveData });
-
-      this.checkPull();
     }
 
     if (this.entityType === EveesBindings.CommitType) {
@@ -215,13 +207,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
   }
 
-  async checkPull() {
+  async checkPull(fromUref: string) {
     if (this.entityType !== EveesBindings.PerspectiveType) {
-      this.firstHasChanges = false;
+      this.pullWorkspace = undefined;
+      return;
     }
 
-    if (this.uref === this.firstRef || !this.perspectiveData.canWrite) {
-      this.firstHasChanges = false;
+    if (this.uref === fromUref || !this.perspectiveData.canWrite) {
+      this.pullWorkspace = undefined;
       return;
     }
 
@@ -237,15 +230,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.pullWorkspace = new EveesWorkspace(this.client, this.recognizer);
 
-    await this.merge.mergePerspectivesExternal(
-      this.uref,
-      this.firstRef,
-      this.pullWorkspace,
-      config
-    );
+    await this.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullWorkspace, config);
 
-    this.logger.info('checkPull()');
-    this.firstHasChanges = this.pullWorkspace.hasUpdates();
+    this.logger.info('checkPull()', this.pullWorkspace);
   }
 
   async getContextPerspectives(perspectiveId?: string): Promise<string[]> {
