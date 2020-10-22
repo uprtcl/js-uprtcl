@@ -137,7 +137,7 @@ export const eveesResolvers: IResolvers = {
       const evees: Evees = container.get(EveesBindings.Evees);
       const remote = evees.getPerspectiveProvider(parent);
       return remote.canWrite(parent.id);
-    },
+    }
   },
   Mutation: {
     async updatePerspectiveHead(parent, { perspectiveId, headId, name }, { container }) {
@@ -224,7 +224,18 @@ export const eveesResolvers: IResolvers = {
 
     async createPerspective(
       _,
-      { remote, path, creatorId, timestamp, headId, context, name, parentId },
+      {
+        remote,
+        path,
+        creatorId,
+        timestamp,
+        headId,
+        context,
+        name,
+        parentId,
+        fromPerspectiveId,
+        fromHeadId
+      },
       { container }
     ) {
       const remotes = container.getAll(EveesBindings.EveesRemote);
@@ -235,7 +246,9 @@ export const eveesResolvers: IResolvers = {
         creatorId,
         context,
         timestamp,
-        path
+        path,
+        fromPerspectiveId,
+        fromHeadId
       );
 
       const entityCache: EntityCache = container.get(DiscoveryModule.bindings.EntityCache);

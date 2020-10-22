@@ -14,7 +14,7 @@ export class EthereumConnection extends Connection {
 
   constructor(
     protected ethOptions: EthereumConnectionOptions = {
-      provider: 'http://localhost:8545',
+      provider: 'http://localhost:8545'
     },
     options?: ConnectionOptions
   ) {
@@ -26,9 +26,7 @@ export class EthereumConnection extends Connection {
    */
   public async connect(): Promise<void> {
     if (typeof this.ethOptions.provider === 'string') {
-      this.provider = new ethers.providers.JsonRpcProvider(
-        this.ethOptions.provider
-      );
+      this.provider = new ethers.providers.JsonRpcProvider(this.ethOptions.provider);
     } else {
       this.provider = this.ethOptions.provider;
     }
@@ -43,7 +41,7 @@ export class EthereumConnection extends Connection {
   }
 
   public getLatestBlock() {
-    return this.provider.getBlockNumber()
+    return this.provider.getBlockNumber();
   }
 
   public async connectWallet() {
@@ -52,7 +50,8 @@ export class EthereumConnection extends Connection {
     this.ethOptions = { provider };
     await this.connect();
     this.signer = this.provider.getSigner();
-    this.account = this.signer ? await this.signer.getAddress() : '';
+    const account = await this.signer.getAddress();
+    this.account = this.signer ? account.toString() : '';
   }
 
   public async disconnectWallet() {

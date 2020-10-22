@@ -111,17 +111,18 @@ export class EveesBlockchainCached implements EveesRemote {
     parentId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ): Promise<Secured<Perspective>> {
-   
     let creatorId = '';
     timestamp = timestamp ? timestamp : Date.now();
-    
+
     if (parentId !== undefined) {
-      const parent = await this.store.get(parentId) as Signed<Perspective>;
+      const parent = (await this.store.get(parentId)) as Signed<Perspective>;
       creatorId = parent.payload.creatorId;
     } else {
-      creatorId = this.userId as string
+      creatorId = this.userId as string;
     }
 
     const defaultContext = await hashObject({
@@ -136,7 +137,9 @@ export class EveesBlockchainCached implements EveesRemote {
       remote: this.id,
       path: path !== undefined ? path : this.defaultPath,
       timestamp,
-      context
+      context,
+      fromPerspectiveId,
+      fromHeadId
     };
 
     const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
@@ -170,6 +173,15 @@ export class EveesBlockchainCached implements EveesRemote {
       context: secured.object.payload.context,
       head: details.headId
     });
+
+    /** start pinning the context store already */
+    this.orbitdbcustom.getStore(
+      EveesOrbitDBEntities.Context,
+      {
+        context: secured.object.payload.context
+      },
+      true
+    );
   }
 
   async cacheInitialized(): Promise<void> {
@@ -181,17 +193,25 @@ export class EveesBlockchainCached implements EveesRemote {
     await this.initCache();
   }
 
-  async getEveesDataOf(userId: string, block?: number): Promise<UserPerspectivesDetails> {
+  async getEveesHeadOf(userId: string, block?: number): Promise<string | undefined> {
     block = block || (await this.connection.getLatestBlock());
     const head = await this.connection.getHead(userId, block);
     if (!head) {
       this.logger.log(`Evees Data of ${userId} is undefined`);
-      return {};
+      return undefined;
     }
+    return head;
+  }
 
+  async getEveesDataFromHead(head: string | undefined): Promise<UserPerspectivesDetails> {
+    if (!head) return {};
     const eveesData = (await this.store.get(head)) as UserPerspectivesDetails;
-    this.logger.log(`Evees Data of ${userId}`, eveesData);
     return eveesData ? eveesData : {};
+  }
+
+  async getEveesDataOf(userId: string, block?: number): Promise<UserPerspectivesDetails> {
+    const head = await this.getEveesHeadOf(userId, block);
+    return this.getEveesDataFromHead(head);
   }
 
   async initCache(): Promise<void> {
@@ -288,6 +308,29 @@ export class EveesBlockchainCached implements EveesRemote {
 
   async flushCache() {
     const newHash = await this.createNewEveesData();
+
+    /** create the context stores for the new perspectives */
+    const newPerspectives = await this.cache.newPerspectives.toArray();
+
+    this.logger.info('updating context stores');
+    await Promise.all(
+      newPerspectives.map(async newPerspective => {
+        /** create and pin context stores */
+        const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+          context: newPerspective.context
+        });
+
+        this.logger.info(`contextStore.add(${newPerspective.id})`);
+        const contextP = contextStore.add(newPerspective.id);
+
+        /** force pin of proposals to each perspective stores */
+        const proposalP = this.proposals.getProposalsToPerspective(newPerspective.id);
+
+        return Promise.all([proposalP, contextP]);
+      })
+    );
+    this.logger.info('updating context stores - done');
+
     return this.updateHead(newHash);
   }
 

@@ -55,6 +55,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'default-remote' })
   defaultRemoteId: string | undefined = undefined;
 
+  @property({ type: String, attribute: 'official-remote' })
+  officialRemoteId: string | undefined = undefined;
+
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
@@ -98,7 +101,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   eveesDiffEl!: EveesDiff;
 
   perspectiveData!: PerspectiveData;
-  pullWorkspace!: EveesWorkspace;
+  pullWorkspace: EveesWorkspace | undefined = undefined;
 
   protected client!: ApolloClient<any>;
   protected config!: EveesConfig;
@@ -107,6 +110,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected remote!: EveesRemote;
   protected recognizer!: PatternRecognizer;
   protected cache!: EntityCache;
+
+  /** official remote is used to indentity the special perspective, "the master branch" */
+  protected officialRemote: EveesRemote | undefined = undefined;
+
+  /** default remote is used to create new branches */
   protected defaultRemote: EveesRemote | undefined = undefined;
 
   async firstUpdated() {
@@ -117,13 +125,19 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
 
-    if (this.defaultRemoteId !== undefined) {
-      this.defaultRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-        remote => remote.id === this.defaultRemoteId
-      );
-    }
+    this.defaultRemote =
+      this.defaultRemoteId !== undefined
+        ? (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+            remote => remote.id === this.defaultRemoteId
+          )
+        : (this.request(EveesBindings.Config) as EveesConfig).defaultRemote;
 
-    this.load();
+    this.officialRemote =
+      this.officialRemoteId !== undefined
+        ? (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+            remote => remote.id === this.officialRemoteId
+          )
+        : (this.request(EveesBindings.Config) as EveesConfig).officialRemote;
   }
 
   updated(changedProperties) {
@@ -131,17 +145,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.logger.info('updated() reload', { changedProperties });
       this.load();
     }
-
-    if (changedProperties.has('defaultAuthority')) {
-      this.defaultRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-        remote => remote.id === this.defaultRemoteId
-      );
-    }
   }
 
+  /** must be called from subclass as super.load() */
   async load() {
     this.logger.info('Loading evee perspective', this.uref);
-    
+
     this.remote = await this.evees.getPerspectiveRemoteById(this.uref);
 
     const entity = await loadEntity(this.client, this.uref);
@@ -171,8 +180,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       };
 
       this.logger.info('load', { perspectiveData: this.perspectiveData });
-
-      this.checkPull();
     }
 
     if (this.entityType === EveesBindings.CommitType) {
@@ -192,22 +199,22 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.isLoggedOnDefault =
       this.defaultRemote !== undefined ? await this.defaultRemote.isLogged() : false;
 
-    this.reloadChildren();
     this.loading = false;
     this.logger.log(`evee ${this.uref} loaded`, {
       perspectiveData: this.perspectiveData,
       isLogged: this.isLogged,
       isLoggedOnDefault: this.isLoggedOnDefault
-    })
+    });
   }
 
-  async checkPull() {
+  async checkPull(fromUref: string) {
     if (this.entityType !== EveesBindings.PerspectiveType) {
-      this.firstHasChanges = false;
+      this.pullWorkspace = undefined;
+      return;
     }
 
-    if (this.uref === this.firstRef || !this.perspectiveData.canWrite) {
-      this.firstHasChanges = false;
+    if (this.uref === fromUref || !this.perspectiveData.canWrite) {
+      this.pullWorkspace = undefined;
       return;
     }
 
@@ -223,15 +230,42 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.pullWorkspace = new EveesWorkspace(this.client, this.recognizer);
 
-    await this.merge.mergePerspectivesExternal(
-      this.uref,
-      this.firstRef,
-      this.pullWorkspace,
-      config
-    );
+    await this.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullWorkspace, config);
 
-    this.logger.info('checkPull()');
-    this.firstHasChanges = this.pullWorkspace.hasUpdates();
+    this.logger.info('checkPull()', this.pullWorkspace);
+  }
+
+  async getContextPerspectives(perspectiveId?: string): Promise<string[]> {
+    perspectiveId = perspectiveId || this.uref;
+    const result = await this.client.query({
+      query: gql`{
+          entity(uref: "${perspectiveId}") {
+            id
+            ... on Perspective {
+              payload {
+                remote
+                context {
+                  id
+                  perspectives {
+                    id
+                  } 
+                }
+              }
+            }
+          }
+        }`
+    });
+
+    /** data on other perspectives (proposals are injected on them) */
+    const perspectives =
+      result.data.entity.payload.context === null
+        ? []
+        : result.data.entity.payload.context.perspectives;
+
+    // remove duplicates
+    const map = new Map<string, null>();
+    perspectives.forEach(perspective => map.set(perspective.id, null));
+    return Array.from(map, key => key[0]);
   }
 
   connectedCallback() {
@@ -247,21 +281,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
-  reloadChildren() {
-    if (this.forceUpdate === 'true') {
-      this.forceUpdate = 'false';
-    } else {
-      this.forceUpdate = 'true';
-    }
-  }
-
   async login() {
     if (this.defaultRemote === undefined) throw new Error('default remote undefined');
     this.loggingIn = true;
     await this.defaultRemote.login();
 
     await this.client.resetStore();
-    this.reloadChildren();
     this.load();
     this.loggingIn = false;
   }
@@ -271,7 +296,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.defaultRemote.logout();
 
     await this.client.resetStore();
-    this.reloadChildren();
     this.load();
   }
 
@@ -428,11 +452,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         bubbles: true
       })
     );
-
-    this.reloadChildren();
   }
 
-  async newPerspectiveClicked() {
+  async forkPerspective() {
     this.creatingNewPerspective = true;
 
     const result = await this.client.mutate({

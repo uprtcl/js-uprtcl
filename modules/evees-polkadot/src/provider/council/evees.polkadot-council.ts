@@ -65,7 +65,9 @@ export class EveesPolkadotCouncil implements EveesRemote {
     parentId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ): Promise<Secured<Perspective>> {
     const creatorId = this.userId ? this.userId : '';
     timestamp = timestamp ? timestamp : Date.now();
@@ -82,7 +84,9 @@ export class EveesPolkadotCouncil implements EveesRemote {
       remote: this.id,
       path: path !== undefined ? path : this.defaultPath,
       timestamp,
-      context
+      context,
+      fromPerspectiveId,
+      fromHeadId
     };
 
     const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);

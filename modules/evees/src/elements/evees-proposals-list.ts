@@ -14,9 +14,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loadingProposals: boolean = true;
 
-  @property({ attribute: 'force-update' })
-  forceUpdate: string = 'true';
-
   proposalsIds: string[] = [];
   remoteId!: string;
   client!: ApolloClient<any>;
@@ -30,6 +27,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
   async load() {
     if (!this.isConnected) return;
+    if (!this.client) return;
 
     this.loadingProposals = true;
     this.logger.info('loadProposals');
@@ -54,10 +52,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if (changedProperties.has('forceUpdate')) {
-      this.logger.log('updating proposals');
-      this.load();
-    }
     if (changedProperties.has('perspectiveId')) {
       this.logger.log('updating proposals');
       this.load();
@@ -89,7 +83,9 @@ export class ProposalsList extends moduleConnect(LitElement) {
                 </uprtcl-list>
               `
             : html`
-                <div class="empty"><i>No proposals found</i></div>
+                <uprtcl-list-item>
+                  <i>No proposals found</i>
+                </uprtcl-list-item>
               `}
         `;
   }
@@ -106,11 +102,6 @@ export class ProposalsList extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: center;
-      }
-      .empty {
-        margin-top: 60px;
-        color: #d0d8db;
-        text-align: center;
       }
     `;
   }

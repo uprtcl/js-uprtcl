@@ -13,6 +13,7 @@ import { IpfsStore } from '@uprtcl/ipfs-provider';
 
 import { EveesOrbitDB, EveesOrbitDBModule, ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { EthereumOrbitDBIdentity, EveesEthereumConnection } from '@uprtcl/evees-ethereum';
 
@@ -33,11 +34,10 @@ import {
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
-  // const provider = '';
+  const provider = '';
   // const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
-  const provider = new ethers.providers.JsonRpcProvider('https://rpc.xdaichain.com/');
+  // const provider = 'https://rpc.xdaichain.com/';
 
-  
   const ipfsCidConfig = {
     version: 1,
     type: 'sha2-256',
@@ -62,9 +62,9 @@ import { SimpleWiki } from './simple-wiki';
 
   const ipfs = await IPFS.create(ipfsJSConfig);
 
-  console.log('connecting to pinner peer')
+  console.log('connecting to pinner peer');
   await ipfs.swarm.connect(env.pinner.peerMultiaddr);
-  console.log('connected!!!')
+  console.log('connected!!!');
 
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
   await ipfsStore.ready();
@@ -90,7 +90,13 @@ import { SimpleWiki } from './simple-wiki';
   const ethEveesConnection = new EveesEthereumConnection(ethConnection);
   await ethEveesConnection.ready();
 
-  const ethEvees = new EveesBlockchainCached(ethEveesConnection, orbitDBCustom, ipfsStore, proposals, 'ethereum-evees-cache');
+  const ethEvees = new EveesBlockchainCached(
+    ethEveesConnection,
+    orbitDBCustom,
+    ipfsStore,
+    proposals,
+    'ethereum-evees-cache'
+  );
   await ethEvees.ready();
 
   const evees = new EveesModule([orbitdbEvees, ethEvees]);

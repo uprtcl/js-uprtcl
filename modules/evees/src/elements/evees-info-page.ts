@@ -6,15 +6,13 @@ const styleMap = style => {
   }, '');
 };
 
-import { EveesHelpers } from '../graphql/evees.helpers';
-import { EveesInfoBase } from './evee-info-base';
-import { UPDATE_HEAD } from '../graphql/queries';
-import { ApolloClient } from 'apollo-boost';
-import { EveesBindings } from 'src/bindings';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-export class EveesInfoPage extends EveesInfoBase {
+import { EveesInfoBase } from './evees-info-base';
+import { UPDATE_HEAD } from '../graphql/queries';
+import { ApolloClient } from 'apollo-boost';
 
+export class EveesInfoPage extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-PAGE');
 
   @property({ type: Boolean, attribute: 'show-perspectives' })
@@ -32,9 +30,6 @@ export class EveesInfoPage extends EveesInfoBase {
   @property({ attribute: false })
   showEditName: boolean = false;
 
-  @property({ attribute: false })
-  isEmit: boolean = false;
-
   @property({ attribute: true })
   parentId: string = '';
 
@@ -43,19 +38,12 @@ export class EveesInfoPage extends EveesInfoBase {
 
   async firstUpdated() {
     super.firstUpdated();
-
-    this.isEmit = await EveesHelpers.checkEmit(
-      this.config,
-      this.client,
-      this.requestAll(EveesBindings.EveesRemote),
-      this.uref
-    );
   }
 
   connectedCallback() {
     super.connectedCallback();
 
-    this.logger.log('Connected', this.uref)
+    this.logger.log('Connected', this.uref);
 
     this.addEventListener('keydown', event => {
       if (event.keyCode === 27) {
@@ -74,7 +62,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
   async disconnectedCallback() {
     super.disconnectedCallback();
-    this.logger.log('Disconnected', this.uref)
+    this.logger.log('Disconnected', this.uref);
   }
 
   async editNameClicked() {
@@ -124,6 +112,8 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   async showPullChanges() {
+    if (!this.pullWorkspace) throw new Error('pullWorkspace undefined');
+
     const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close');
 
     if (!confirm) {
@@ -151,7 +141,7 @@ export class EveesInfoPage extends EveesInfoBase {
         class="section-button"
         skinny
         icon="call_split"
-        @click=${this.newPerspectiveClicked}
+        @click=${this.forkPerspective}
         loading=${this.creatingNewPerspective ? 'true' : 'false'}
       >
         new perspective
@@ -177,7 +167,7 @@ export class EveesInfoPage extends EveesInfoBase {
     /** most likely action button */
     const actionButton = html`
         ${
-          this.isLogged && this.firstRef !== this.uref
+          this.isLogged && this.uref !== this.firstRef
             ? html`
                 <div class="action-button">
                   ${this.renderMakeProposalButton()}
@@ -243,7 +233,6 @@ export class EveesInfoPage extends EveesInfoBase {
                             <evees-perspectives-list
                               force-update=${this.forceUpdate}
                               perspective-id=${this.uref}
-                              first-perspective-id=${this.firstRef}
                               ?can-propose=${this.isLogged}
                               @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
                               @merge-perspective=${e =>
@@ -258,7 +247,7 @@ export class EveesInfoPage extends EveesInfoBase {
                 </div>
               `
             : ''}
-          ${this.showProposals && this.uref === this.firstRef && !this.isEmit
+          ${this.showProposals
             ? html`
                 <div class="section">
                   <div class="section-header">

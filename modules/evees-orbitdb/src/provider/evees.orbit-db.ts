@@ -16,7 +16,7 @@ import {
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
-import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
+import { EveesOrbitDBEntities, perspective } from '../custom-stores/orbit-db.stores';
 import { Lens } from '@uprtcl/lenses';
 
 const evees_if = 'evees-v0';
@@ -103,18 +103,17 @@ export class EveesOrbitDB implements EveesRemote {
 
     this.logger.log('getting', { perspectiveId, signedPerspective });
 
-    return this.orbitdbcustom.getStore(
-      EveesOrbitDBEntities.Perspective,
-      signedPerspective.payload,
-      pin
-    );
+    const secured: Secured<Perspective> = { id: perspectiveId, object: signedPerspective };
+    return this.orbitdbcustom.getStore(EveesOrbitDBEntities.Perspective, secured, pin);
   }
 
   async snapPerspective(
     parentId?: string,
     context?: string,
     timestamp?: number,
-    path?: string
+    path?: string,
+    fromPerspectiveId?: string,
+    fromHeadId?: string
   ): Promise<Secured<Perspective>> {
     let parentOwner: string | undefined = undefined;
     if (parentId !== undefined) {
@@ -125,7 +124,9 @@ export class EveesOrbitDB implements EveesRemote {
       parentOwner,
       context,
       timestamp,
-      path
+      path,
+      fromPerspectiveId,
+      fromHeadId
     );
     perspective.casID = this.store.casID;
 
@@ -148,7 +149,7 @@ export class EveesOrbitDB implements EveesRemote {
 
     await this.updatePerspectiveInternal(perspectiveId, details, true);
 
-    /** register it for reverse mapping */
+    /** create and pin the context store */
     const contextStore = await this.orbitdbcustom.getStore(
       EveesOrbitDBEntities.Context,
       {

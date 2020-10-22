@@ -1,7 +1,6 @@
 import { TemplateResult } from 'lit-element';
 
 import { Behaviour } from '@uprtcl/cortex';
-import { CASStore } from '@uprtcl/multiplatform';
 
 import { EveesRemote } from './services/evees.remote';
 import { Secured } from './utils/cid-hash';
@@ -15,6 +14,8 @@ export interface Perspective {
   creatorId: string;
   context: string;
   timestamp: number;
+  fromPerspectiveId?: string; // optional parameters to hardcode
+  fromHeadId?: string; // forks on the perspective id
 }
 
 export const getAuthority = (perspective: Perspective): string => {
@@ -100,6 +101,7 @@ export interface HasDiffLenses<T = any> extends Behaviour<T> {
 
 export interface EveesConfig {
   defaultRemote?: EveesRemote;
+  officialRemote?: EveesRemote;
   emitIf?: {
     remote: string;
     owner: string;

@@ -64,6 +64,8 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
     $name: String
     $canWrite: String
     $parentId: String
+    $fromPerspectiveId: String
+    $fromHeadId: String
   ) {
     createPerspective(
       remote: $remote
@@ -75,6 +77,8 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
       name: $name
       canWrite: $canWrite
       parentId: $parentId
+      fromPerspectiveId: $fromPerspectiveId
+      fromHeadId: $fromHeadId
     ) {
       id
       name
@@ -95,6 +99,8 @@ export const CREATE_PERSPECTIVE: DocumentNode = gql`
             id
           }
         }
+        fromPerspectiveId
+        fromHeadId
       }
     }
   }

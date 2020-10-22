@@ -89,7 +89,9 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html`<uprtcl-loading></uprtcl-loading>`;
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
     }
 
     if (!this.logged) {
@@ -99,7 +101,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
     }
 
     return html`
-      <uprtcl-button @click=${() => this.logoutAll()}>logout</uprtcl-button>
+      <uprtcl-button skinny @click=${() => this.logoutAll()}>logout</uprtcl-button>
       ${this.remotesUI.map(remoteUI => {
         return remoteUI.lense !== undefined
           ? remoteUI.lense().render({ remoteId: remoteUI.id })

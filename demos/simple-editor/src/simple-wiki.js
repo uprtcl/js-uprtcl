@@ -125,8 +125,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     // TODO: handle insufficient funds error & cancelled tx
     const perspectiveId = await EveesHelpers.createPerspective(client, this.officalRemote, {
       headId,
-      context: `my-wiki-${randint}`,
-      canWrite: this.officalRemote.userId
+      context: `my-wiki-${randint}`
     });
     this.creatingSpace = false;
     window.history.pushState('', '', `/?id=${perspectiveId}`);
@@ -153,10 +152,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   renderWiki() {
     return html`
       <div class="wiki-container">
-        <wiki-drawer
-          uref=${this.rootHash}
-          default-remote=${this.defaultRemoteId}
-        ></wiki-drawer>
+        <wiki-drawer uref=${this.rootHash} default-remote=${this.defaultRemoteId}></wiki-drawer>
       </div>
     `;
   }
