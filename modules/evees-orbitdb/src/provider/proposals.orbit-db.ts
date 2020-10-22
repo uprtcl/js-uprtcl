@@ -5,6 +5,7 @@ import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { CASStore } from '@uprtcl/multiplatform';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
+import { Entity } from '@uprtcl/cortex';
 
 export interface ProposalManifest {
   toPerspectiveId: string;
@@ -76,7 +77,11 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
   async getProposalStore(proposalId: string, pin: boolean = false) {
     const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
-    return this.orbitdb.getStore(EveesOrbitDBEntities.Proposal, proposalManifest, pin);
+    const proposalEntity: Entity<ProposalManifest> = {
+      id: proposalId,
+      object: proposalManifest
+    };
+    return this.orbitdb.getStore(EveesOrbitDBEntities.Proposal, proposalEntity, pin);
   }
 
   async getProposalDetails(proposalId): Promise<ProposalDetails> {
@@ -132,7 +137,8 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
     const proposalsStore = await this.orbitdb.getStore(
       EveesOrbitDBEntities.ProposalsToPerspective,
-      { toPerspectiveId: perspectiveId }
+      { toPerspectiveId: perspectiveId },
+      true
     );
 
     const proposalIds = [...proposalsStore.values()];

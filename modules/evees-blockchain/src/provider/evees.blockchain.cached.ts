@@ -173,6 +173,15 @@ export class EveesBlockchainCached implements EveesRemote {
       context: secured.object.payload.context,
       head: details.headId
     });
+
+    /** start pinning the context store already */
+    this.orbitdbcustom.getStore(
+      EveesOrbitDBEntities.Context,
+      {
+        context: secured.object.payload.context
+      },
+      true
+    );
   }
 
   async cacheInitialized(): Promise<void> {
@@ -306,14 +315,18 @@ export class EveesBlockchainCached implements EveesRemote {
     this.logger.info('updating context stores');
     await Promise.all(
       newPerspectives.map(async newPerspective => {
-        const contextStore = await this.orbitdbcustom.getStore(
-          EveesOrbitDBEntities.Context,
-          {
-            context: newPerspective.context
-          },
-          true
-        );
-        return contextStore.add(newPerspective.id);
+        /** create and pin context stores */
+        const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+          context: newPerspective.context
+        });
+
+        this.logger.info(`contextStore.add(${newPerspective.id})`);
+        const contextP = contextStore.add(newPerspective.id);
+
+        /** force pin of proposals to each perspective stores */
+        const proposalP = this.proposals.getProposalsToPerspective(newPerspective.id);
+
+        return Promise.all([proposalP, contextP]);
       })
     );
     this.logger.info('updating context stores - done');
