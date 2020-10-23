@@ -25,7 +25,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'first-uref' })
   firstRef!: string;
 
-  @property({ type: String })
+  @property({ type: String, attribute: 'parent-id' })
   parentId!: string;
 
   @property({ type: String, attribute: 'official-owner' })
@@ -117,7 +117,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
             ?show-proposals=${this.showProposals}
             ?show-info=${this.showInfo}
             uref=${this.uref}
-            parentId=${this.parentId}
+            parent-id=${this.parentId}
             first-uref=${this.firstRef as string}
             official-owner=${this.officialOwner as string}
             @official-id=${e => this.officialIdReceived(e.detail.perspectiveId)}

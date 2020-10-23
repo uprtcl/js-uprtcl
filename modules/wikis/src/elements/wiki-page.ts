@@ -91,7 +91,7 @@ export class WikiPage extends moduleConnect(LitElement) {
           id="doc-editor"
           .client=${this.client}
           uref=${this.pageHash}
-          parentId=${this.wikiId}
+          parent-id=${this.wikiId}
           color=${this.color}
           editable=${this.editable}
           official-owner=${this.officialOwner}

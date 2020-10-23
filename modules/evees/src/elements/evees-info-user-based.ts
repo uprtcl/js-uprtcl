@@ -369,6 +369,16 @@ export class EveesInfoUserBased extends EveesInfoBase {
     `;
   }
 
+  renderPermissions() {
+    return html`
+      <div class="perspectives-permissions">
+        ${!this.loading
+          ? this.remote.accessControl.lense().render({ uref: this.uref, parentId: this.parentId })
+          : ''}
+      </div>
+    `;
+  }
+
   render() {
     if (this.perspectiveData === undefined)
       return html`
@@ -385,6 +395,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
                 position="bottom-left"
                 class="info-popper margin-right"
               >
+                <div class="permissions-container">${this.renderPermissions()}</div>
                 ${this.renderInfo()}
               </uprtcl-popper>
             `
@@ -457,6 +468,10 @@ export class EveesInfoUserBased extends EveesInfoBase {
         }
         .highlighted {
           --background-color: #00b31e;
+        }
+        .permissions-container {
+          padding: 12px;
+          border-bottom: solid 1px #cccccc;
         }
       `
     ]);

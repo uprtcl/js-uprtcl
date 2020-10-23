@@ -52,6 +52,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'first-uref' })
   firstRef!: string;
 
+  @property({ type: String, attribute: 'parent-id' })
+  parentId!: string;
+
   @property({ type: String, attribute: 'default-remote' })
   defaultRemoteId: string | undefined = undefined;
 
