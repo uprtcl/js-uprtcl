@@ -44,7 +44,7 @@ export class EveesBlockchainCached implements EveesRemote {
 
   constructor(
     public connection: BlockchainConnection,
-    protected orbitdbcustom: OrbitDBCustom,
+    public orbitdbcustom: OrbitDBCustom,
     public store: CASStore,
     public proposals: ProposalsProvider,
     cacheName: string
