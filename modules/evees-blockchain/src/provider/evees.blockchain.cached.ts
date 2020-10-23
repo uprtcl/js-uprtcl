@@ -13,7 +13,6 @@ import {
   NewPerspectiveData,
   Secured,
   ProposalsProvider,
-  EveesHelpers,
   hashObject,
   deriveSecured
 } from '@uprtcl/evees';
@@ -175,13 +174,14 @@ export class EveesBlockchainCached implements EveesRemote {
     });
 
     /** start pinning the context store already */
-    this.orbitdbcustom.getStore(
+    const contextStore = await this.orbitdbcustom.getStore(
       EveesOrbitDBEntities.Context,
       {
         context: secured.object.payload.context
       },
       true
     );
+    await contextStore.add(perspectiveId);
   }
 
   async cacheInitialized(): Promise<void> {
