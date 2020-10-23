@@ -16,7 +16,19 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
   remoteId!: string;
 
   @property({ attribute: false })
+  currentHash!: string | undefined;
+
+  @property({ attribute: false })
+  newHash!: string;
+
+  @property({ attribute: false })
   loading: boolean = true;
+
+  @property({ attribute: false })
+  hasChanges!: boolean;
+
+  @property({ attribute: false })
+  applyingChanges: boolean = false;
 
   protected remote!: EveesBlockchainCached;
 
@@ -29,7 +41,23 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
     }
 
     this.remote = remote;
+    this.load();
+  }
+
+  async load() {
+    if (!this.remote.userId) throw new Error('user not logged on remote');
+    this.loading = true;
+    this.newHash = await this.remote.createNewEveesData();
+    this.currentHash = await this.remote.getEveesHeadOf(this.remote.userId);
+    this.hasChanges = this.newHash !== this.currentHash;
     this.loading = false;
+  }
+
+  async applyChanges() {
+    this.applyingChanges = true;
+    await this.remote.flushCache();
+    this.applyingChanges = false;
+    this.load();
   }
 
   render() {
@@ -50,11 +78,25 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
       </div>
       <div class="row">
         <evees-blockchain-update-diff
-          owner=${this.remote.userId as string}
+          current-hash=${this.currentHash ? this.currentHash : ''}
+          new-hash=${this.newHash}
           remote=${this.remote.id}
         >
         </evees-blockchain-update-diff>
       </div>
+      ${this.hasChanges
+        ? html`
+            <div class="row">
+              <uprtcl-button-loading
+                class="update-button"
+                ?loading=${this.applyingChanges}
+                @click=${() => (this.hasChanges ? this.applyChanges() : undefined)}
+                ?disabled=${!this.hasChanges}
+                >update</uprtcl-button-loading
+              >
+            </div>
+          `
+        : ''}
     `;
   }
 
@@ -78,6 +120,10 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
       evees-blockchain-update-diff {
         flex-grow: 1;
         overflow: auto;
+      }
+      .update-button {
+        margin: 0 auto;
+        width: 180px;
       }
     `;
   }

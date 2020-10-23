@@ -19,13 +19,10 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'remote' })
   remoteId!: string;
 
-  @property({ type: String })
-  owner!: string;
-
-  @property({ attribute: false })
+  @property({ type: String, attribute: 'current-hash' })
   currentHash!: string | undefined;
 
-  @property({ attribute: false })
+  @property({ type: String, attribute: 'new-hash' })
   newHash!: string;
 
   @property({ type: Boolean })
@@ -35,16 +32,10 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   loading: boolean = true;
 
   @property({ attribute: false })
-  applyingChanges: boolean = false;
-
-  @property({ attribute: false })
   nNew!: number;
 
   @property({ attribute: false })
   nUpdated!: number;
-
-  @property({ attribute: false })
-  hasChanges!: boolean;
 
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
@@ -71,9 +62,6 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-
-    this.newHash = await this.remote.createNewEveesData();
-    this.currentHash = await this.remote.getEveesHeadOf(this.owner);
 
     const eveesData = await this.remote.getEveesDataFromHead(this.currentHash);
     const newEveesData = (await this.remote.store.get(this.newHash)) as UserPerspectivesDetails;
@@ -114,24 +102,16 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
       }
     }
 
+    this.nNew = this.workspace.getNewPerspectives().length;
+    this.nUpdated = this.workspace.getUpdates().length;
+
+    this.loading = false;
     await this.updateComplete;
 
+    /** set the workspace of the evees diff once it is shown */
     if (this.eveesDiffEl !== null) {
       this.eveesDiffEl.workspace = this.workspace;
     }
-
-    this.nNew = this.workspace.getNewPerspectives().length;
-    this.nUpdated = this.workspace.getUpdates().length;
-    this.hasChanges = this.newHash !== this.currentHash;
-
-    this.loading = false;
-  }
-
-  async applyChanges() {
-    this.applyingChanges = true;
-    await this.remote.flushCache();
-    this.applyingChanges = false;
-    this.load();
   }
 
   render() {
@@ -147,7 +127,7 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
           <div class="prop-name">current head</div>
           <pre class="prop-value">${this.currentHash}</pre>
         </div>
-        ${this.hasChanges
+        ${this.newHash !== this.currentHash
           ? html`
               <div class="column">
                 <div class="prop-name">new head</div>
@@ -169,16 +149,6 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
             <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
           `
         : ''}
-
-      <div class="row">
-        <uprtcl-button-loading
-          class="update-button"
-          ?loading=${this.applyingChanges}
-          @click=${() => (this.hasChanges ? this.applyChanges() : undefined)}
-          ?disabled=${!this.hasChanges}
-          >update</uprtcl-button-loading
-        >
-      </div>
     `;
   }
 
@@ -220,10 +190,6 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: center;
-      }
-      .update-button {
-        margin: 0 auto;
-        width: 180px;
       }
     `;
   }
