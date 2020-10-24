@@ -13,6 +13,7 @@ import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { EveesHelpers } from '../graphql/evees.helpers';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { Lens } from '@uprtcl/lenses';
+import { ContentUpdatedEvent } from './events';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -166,6 +167,13 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     if (this.canExecute && !this.executed && value) {
       await workspace.execute(this.client);
+      this.dispatchEvent(
+        new ContentUpdatedEvent({
+          detail: { uref: this.proposal.toPerspectiveId },
+          bubbles: true,
+          composed: true
+        })
+      );
     }
   }
 
@@ -192,12 +200,14 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
             ? html`
                 <uprtcl-loading></uprtcl-loading>
               `
-            : html`
+            : this.canExecute
+            ? html`
                 <uprtcl-icon-button
-                  icon=${this.executed ? 'done' : this.canExecute ? 'call_merge' : ''}
+                  icon=${this.executed ? 'done' : 'call_merge'}
                   ?disabled=${this.executed}
                 ></uprtcl-icon-button>
-              `}
+              `
+            : ''}
         </div>
       </div>
       ${this.showDiff ? this.renderDiff() : ''}

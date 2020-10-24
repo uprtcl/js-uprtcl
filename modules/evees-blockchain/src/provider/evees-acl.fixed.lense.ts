@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient } from 'apollo-boost';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { Signed, Entity } from '@uprtcl/cortex';
 import { EveesModule, EveesHelpers, EveesRemote, Perspective } from '@uprtcl/evees';
@@ -10,6 +10,8 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { EveesBlockchainCached } from './evees.blockchain.cached';
 
 export class PermissionsFixedLense extends moduleConnect(LitElement) {
+  logger = new Logger('BLOCKCHAIN-PERMISSIONS-FIXED');
+
   @property({ type: String })
   uref!: string;
 
@@ -31,10 +33,13 @@ export class PermissionsFixedLense extends moduleConnect(LitElement) {
   }
 
   async load() {
+    if (!this.isConnected) return;
+
     this.loading = true;
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.uref);
     if (remoteId === undefined) throw new Error('remote not found');
 
+    if (!this.isConnected) return;
     this.remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(
       r => r.id === remoteId
     ) as EveesBlockchainCached;

@@ -3,7 +3,7 @@ import { html, css, property, query } from 'lit-element';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { UprtclPopper } from '@uprtcl/common-ui';
 import { loadEntity } from '@uprtcl/multiplatform';
-import { Entity, Signed } from '@uprtcl/cortex';
+import { Signed } from '@uprtcl/cortex';
 import { EveesInfoBase } from './evees-info-base';
 import { EveesPerspectivesList } from './evees-perspectives-list';
 import { ProposalsList } from './evees-proposals-list';
@@ -11,7 +11,7 @@ import { Perspective } from '../types';
 import { EveesRemote } from '../services/evees.remote';
 import { DEFAULT_COLOR, eveeColor } from './support';
 import { Secured } from '../utils/cid-hash';
-import { ContentUpdatedEvent, CONTENT_UPDATED_TAG } from './events';
+import { ContentUpdatedEvent } from './events';
 
 /** An evees info with
  *  - one official remote with the official perspective
@@ -191,11 +191,12 @@ export class EveesInfoUserBased extends EveesInfoBase {
     this.checkoutPerspective(this.mineId);
   }
 
-  proposeDraft() {
+  async proposeDraft() {
     this.logger.log('propose draft');
     if (!this.officialId) throw new Error('can only propose to official');
     this.closePoppers();
-    this.otherPerspectiveMerge(this.uref, this.officialId);
+    await this.otherPerspectiveMerge(this.uref, this.officialId);
+    if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
   }
 
   seeOfficial() {
@@ -353,13 +354,11 @@ export class EveesInfoUserBased extends EveesInfoBase {
   renderProposals() {
     return html`
       <div class="list-container">
-        ${!this.loading
+        ${!this.loading && this.officialId
           ? html`
               <evees-proposals-list
                 id="evees-proposals-list"
-                force-update=${this.forceUpdate}
-                perspective-id=${this.uref}
-                @execute-proposal=${this.executeProposal}
+                perspective-id=${this.officialId}
               ></evees-proposals-list>
             `
           : html`

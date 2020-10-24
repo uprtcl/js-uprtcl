@@ -41,22 +41,9 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
   @property({ attribute: false })
   canWrite: Boolean = false;
 
-  @property({ attribute: 'force-update' })
-  forceUpdate: string = 'true';
-
   perspectivesData: PerspectiveData[] = [];
 
   protected client!: ApolloClient<any>;
-
-  async connectedCallback() {
-    super.connectedCallback();
-    this.logger.log('Connected', this.perspectiveId);
-  }
-
-  async disconnectedCallback() {
-    super.disconnectedCallback();
-    this.logger.log('Disconnected', this.perspectiveId);
-  }
 
   async firstUpdated() {
     if (!this.isConnected) return;
@@ -142,13 +129,6 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
         }
       })
     );
-  }
-
-  updated(changedProperties) {
-    if (changedProperties.has('forceUpdate')) {
-      this.logger.log('updating getOtherPersepectivesData');
-      this.load();
-    }
   }
 
   perspectiveColor(creatorId: string) {

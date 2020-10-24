@@ -10,7 +10,6 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { EveesOrbitDB } from './evees.orbit-db';
 
 export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
-
   logger = new Logger('PermissionsOrbitdDb');
 
   @property({ type: String })
@@ -28,16 +27,6 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
   client!: ApolloClient<any>;
   remote!: EveesOrbitDB;
 
-  async connectedCallback() {
-    super.connectedCallback();
-    this.logger.log('Connected', this.uref)
-  }
-
-  async disconnectedCallback() {
-    super.disconnectedCallback();
-    this.logger.log('Disconnected', this.uref)
-  }
-
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.load();
@@ -48,6 +37,7 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.uref);
     if (remoteId === undefined) throw new Error('remote not found');
 
+    if (!this.isConnected) return;
     this.remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(
       r => r.id === remoteId
     ) as EveesOrbitDB;

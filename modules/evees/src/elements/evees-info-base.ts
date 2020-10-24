@@ -402,10 +402,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         workspace
       );
     }
-
-    if (this.uref !== toPerspectiveId) {
-      this.checkoutPerspective(toPerspectiveId);
-    }
   }
 
   async createMergeProposal(
@@ -436,33 +432,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const proposalId = result.data.addProposal.id;
 
     this.logger.info('created proposal', { proposalId });
-  }
-
-  async executeProposal(e: CustomEvent) {
-    if (!this.client) throw new Error('client undefined');
-
-    const proposalId = e.detail.proposalId;
-    const perspectiveId = e.detail.perspectiveId;
-
-    await this.client.mutate({
-      mutation: EXECUTE_PROPOSAL,
-      variables: {
-        proposalId: proposalId,
-        perspectiveId: perspectiveId
-      }
-    });
-
-    this.logger.info('accepted proposal', { proposalId });
-
-    this.dispatchEvent(
-      new CustomEvent('checkout-perspective', {
-        detail: {
-          perspectiveId: perspectiveId
-        },
-        composed: true,
-        bubbles: true
-      })
-    );
   }
 
   async forkPerspective() {

@@ -160,9 +160,7 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
       id
       toPerspective {
         id
-        proposals {
-          id
-        }
+        proposals
       }
       fromPerspective {
         id

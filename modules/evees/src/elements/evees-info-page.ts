@@ -231,7 +231,6 @@ export class EveesInfoPage extends EveesInfoBase {
                       ${!this.loading
                         ? html`
                             <evees-perspectives-list
-                              force-update=${this.forceUpdate}
                               perspective-id=${this.uref}
                               ?can-propose=${this.isLogged}
                               @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
@@ -259,9 +258,7 @@ export class EveesInfoPage extends EveesInfoBase {
                       ${!this.loading
                         ? html`
                             <evees-proposals-list
-                              force-update=${this.forceUpdate}
                               perspective-id=${this.uref}
-                              @execute-proposal=${this.executeProposal}
                             ></evees-proposals-list>
                           `
                         : html`
