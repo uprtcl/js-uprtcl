@@ -386,7 +386,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                   ${this.permissions.delegate
                     ? html`
                         <p>
-                          Permissions being delegated from: ${this.delegatedTitle}
+                          Access control delegated to: ${this.delegatedTitle}
                         </p>
                       `
                     : ''}

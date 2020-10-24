@@ -193,12 +193,10 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
                 <uprtcl-loading></uprtcl-loading>
               `
             : html`
-                <uprtcl-button
+                <uprtcl-icon-button
                   icon=${this.executed ? 'done' : this.canExecute ? 'call_merge' : ''}
-                  skinny
                   ?disabled=${this.executed}
-                  >${this.executed ? 'merged' : this.canExecute ? 'merge' : ''}</uprtcl-button
-                >
+                ></uprtcl-icon-button>
               `}
         </div>
       </div>

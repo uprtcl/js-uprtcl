@@ -103,6 +103,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
+  @property({ attribute: false })
+  eveesDiffInfoMessage!: string;
+
   perspectiveData!: PerspectiveData;
   pullWorkspace: EveesWorkspace | undefined = undefined;
 
@@ -324,7 +327,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       config
     );
 
-    const confirm = await this.updatesDialog(workspace, 'merge', 'cancel');
+    const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
+
+    const confirm = await this.updatesDialog(
+      workspace,
+      canWrite ? 'merge' : 'propose',
+      'cancel',
+      ''
+    );
 
     if (!confirm) {
       return;
@@ -365,8 +375,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
        on the toPerspective remote, or the changes are directly applied.
        Note that it is assumed that if a user canWrite on toPerspectiveId, he can write 
        on all the perspectives inside the workspace.updates array. */
-    const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
-
     if (canWrite) {
       await workspace.execute(this.client);
       /* inform the world */
@@ -530,7 +538,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async updatesDialog(
     workspace: EveesWorkspace,
     primaryText: string,
-    secondaryText: string
+    secondaryText: string,
+    infoMessage: string
   ): Promise<boolean> {
     this.showUpdatesDialog = true;
     await this.updateComplete;
@@ -540,6 +549,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.updatesDialogEl.showSecondary = secondaryText !== undefined ? 'true' : 'false';
 
     this.eveesDiffEl.workspace = workspace;
+
+    this.eveesDiffInfoMessage = infoMessage;
 
     return new Promise(resolve => {
       this.updatesDialogEl.resolved = value => {
@@ -552,6 +563,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   renderUpdatesDialog() {
     return html`
       <uprtcl-dialog id="updates-dialog">
+        <h3 id="evees-update-diff-info"></h3>
         <evees-update-diff id="evees-update-diff"></evees-update-diff>
       </uprtcl-dialog>
     `;

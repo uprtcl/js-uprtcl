@@ -208,7 +208,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
 
     if (!this.pullWorkspace) throw new Error('pullWorkspace undefined');
 
-    const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close');
+    const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close', '');
 
     if (!confirm) {
       return;
@@ -276,7 +276,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
         ?disabled=${this.officialId === undefined}
         transition
       >
-        common
+        official
       </uprtcl-button>
       ${this.isLogged && this.isLoggedOnDefault
         ? html`
