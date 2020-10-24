@@ -127,20 +127,19 @@ export class EveesInfoUserBased extends EveesInfoBase {
         p.object.payload.creatorId === defaultRemote.userId
     );
 
-    if (official) {
-      this.dispatchEvent(
-        new CustomEvent('official-id', {
-          detail: {
-            perspectiveId: official.id
-          },
-          bubbles: false,
-          composed: false
-        })
-      );
-      this.officialId = official.id;
-    }
-
+    this.officialId = official ? official.id : undefined;
     this.mineId = mine ? mine.id : undefined;
+
+    /** inform the parent whose the official, a bit ugly... but */
+    this.dispatchEvent(
+      new CustomEvent('official-id', {
+        detail: {
+          perspectiveId: this.officialId
+        },
+        bubbles: false,
+        composed: false
+      })
+    );
 
     this.isTheirs = this.uref !== this.mineId && this.uref !== this.officialId;
     this.isMine = this.uref === this.mineId;
