@@ -55,7 +55,7 @@ export class EthereumConnection extends Connection {
   }
 
   public async disconnectWallet() {
-    throw new Error('method not implemented');
+    await this.connect();
   }
 
   public canSign() {

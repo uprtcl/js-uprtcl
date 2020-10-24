@@ -39,14 +39,13 @@ export class EveesBlockchainCached implements EveesRemote {
   logger: Logger = new Logger('EveesBlockchain');
 
   accessControl: EveesAccessControlFixed;
-  cache: EveesCacheDB;
+  cache: EveesCacheDB | undefined;
 
   constructor(
     public connection: BlockchainConnection,
     public orbitdbcustom: OrbitDBCustom,
     public store: CASStore,
-    public proposals: ProposalsProvider,
-    cacheName: string
+    public proposals: ProposalsProvider
   ) {
     if (orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined) {
       throw new Error(
@@ -54,7 +53,6 @@ export class EveesBlockchainCached implements EveesRemote {
       );
     }
     this.accessControl = new EveesAccessControlFixed(store);
-    this.cache = new EveesCacheDB(cacheName);
   }
 
   get id() {
@@ -96,6 +94,8 @@ export class EveesBlockchainCached implements EveesRemote {
     details: PerspectiveDetails,
     pin: boolean = false
   ) {
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
+
     // action is done on the cache
     await this.cacheInitialized();
 
@@ -148,6 +148,8 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
+
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
 
@@ -185,6 +187,8 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async cacheInitialized(): Promise<void> {
+    if (!this.cache) return;
+
     const block = await this.cache.meta.get('block');
     if (block !== undefined && block.value !== undefined) {
       return;
@@ -215,6 +219,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async initCache(): Promise<void> {
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
     if (!this.userId) throw new Error('user not defined');
 
     const block = await this.connection.getLatestBlock();
@@ -239,10 +244,12 @@ export class EveesBlockchainCached implements EveesRemote {
     const perspectiveIds = [...contextStore.values()];
 
     // include perspectives of the cache
-    const cachedPerspectives = await this.cache.newPerspectives
-      .where('context')
-      .equals(context)
-      .toArray();
+    const cachedPerspectives = this.cache
+      ? await this.cache.newPerspectives
+          .where('context')
+          .equals(context)
+          .toArray()
+      : [];
 
     const allPerspectivesIds = perspectiveIds.concat(cachedPerspectives.map(e => e.id));
 
@@ -257,7 +264,7 @@ export class EveesBlockchainCached implements EveesRemote {
     const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
     /** even if I'm not logged in, show the cached data (valid for the local user) */
-    if ((await this.cache.meta.get('block')) !== undefined) {
+    if (this.cache && (await this.cache.meta.get('block')) !== undefined) {
       /** head update have priority over newPerspective (in case a newPerspective head is updated) */
       const cachedUpdate = await this.cache.updates.get(perspectiveId);
       if (cachedUpdate !== undefined) {
@@ -281,6 +288,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async createNewEveesData() {
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
     if (!this.userId) throw new Error('user not logged in');
 
     const newPerspectives = await this.cache.newPerspectives.toArray();
@@ -307,6 +315,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async flushCache() {
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
     const newHash = await this.createNewEveesData();
 
     /** create the context stores for the new perspectives */
@@ -335,6 +344,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async updateHead(newHash: string | undefined) {
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
     await this.connection.updateHead(newHash);
 
     /* delete cache */
@@ -353,10 +363,17 @@ export class EveesBlockchainCached implements EveesRemote {
 
   async login(userId?: string): Promise<void> {
     await this.connection.connectWallet(userId);
+
+    if (!this.connection.account)
+      throw new Error('userId/account should ne be undefined after wallet was connected');
+    this.cache = new EveesCacheDB(
+      `${this.connection.getNetworkId()}-${this.connection.account}-evees-cache`
+    );
   }
 
   async logout(): Promise<void> {
     await this.connection.disconnectWallet();
+    this.cache = undefined;
   }
 
   async connect() {}
@@ -382,6 +399,8 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async getPendingActions(): Promise<number> {
+    if (!this.cache) return 0;
+
     const hasCache = (await this.cache.meta.get('block')) !== undefined;
     if (!hasCache) return 0;
 

@@ -34,9 +34,9 @@ import {
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
-  // const provider = '';
+  const provider = '';
   // const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
-  const provider = 'https://rpc.xdaichain.com/';
+  // const provider = 'https://rpc.xdaichain.com/';
 
   const ipfsCidConfig = {
     version: 1,
@@ -94,8 +94,7 @@ import { SimpleWiki } from './simple-wiki';
     ethEveesConnection,
     orbitDBCustom,
     ipfsStore,
-    proposals,
-    'ethereum-evees-cache'
+    proposals
   );
   await ethEvees.ready();
 

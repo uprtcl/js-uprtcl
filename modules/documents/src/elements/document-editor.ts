@@ -982,6 +982,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       event.stopPropagation();
       this.uref = event.detail.perspectiveId;
     }) as EventListener);
+
+    this.addEventListener('keydown', ((event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 's') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.persistAll();
+      }
+    }) as EventListener);
   }
 
   commitWithMessageClicked() {

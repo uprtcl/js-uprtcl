@@ -100,7 +100,8 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   }
 
   async login() {
-    await this.officalRemote.login();
+    const remotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    await Promise.all(remotes.map(r => r.login()));
     this.canCreate = await this.officalRemote.isLogged();
   }
 
@@ -137,13 +138,16 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         ${this.canCreate
           ? html`
               <uprtcl-button-loading
+                class="main-button"
                 @click=${() => this.createSpace()}
                 ?loading=${this.creatingSpace}
                 >create space</uprtcl-button-loading
               >
             `
           : html`
-              <uprtcl-button @click=${() => this.login()}>connect</uprtcl-button>
+              <uprtcl-button class="main-button" @click=${() => this.login()}
+                >connect</uprtcl-button
+              >
             `}
       </div>
     `;
@@ -200,6 +204,9 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         justify-content: center;
         align-items: center;
         width: 100%;
+      }
+      .main-button {
+        width: 220px;
       }
       wiki-drawer {
         min-height: calc(100vh - 50px);
