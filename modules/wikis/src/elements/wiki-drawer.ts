@@ -9,13 +9,12 @@ const styleMap = style => {
 
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
-import { CortexModule, Entity, PatternRecognizer, Signed } from '@uprtcl/cortex';
+import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import {
   EveesRemote,
   EveesModule,
   eveeColor,
   DEFAULT_COLOR,
-  EveesInfoBase,
   Perspective,
   CONTENT_UPDATED_TAG,
   ContentUpdatedEvent
@@ -23,6 +22,8 @@ import {
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { WikiDrawerContent } from './wiki-drawer-content';
 import { loadEntity } from '@uprtcl/multiplatform';
+import { CREATE_PROPOSAL, PROPOSAL_CREATED_TAG } from '@uprtcl/evees';
+import { ProposalCreatedEvent } from '@uprtcl/evees/dist/types/types';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
@@ -87,6 +88,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         this.content.load();
       }
     }) as EventListener);
+
+    this.addEventListener(PROPOSAL_CREATED_TAG, ((event: ProposalCreatedEvent) => {
+      this.catchMergeProposal(event);
+    }) as EventListener);
   }
 
   async load() {
@@ -100,6 +105,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (changedProperties.has('uref')) {
       this.load();
     }
+  }
+
+  async catchMergeProposal(e: ProposalCreatedEvent) {
+    await this.client.mutate({
+      mutation: CREATE_PROPOSAL,
+      variables: {
+        toPerspectiveId: this.firstRef,
+        fromPerspectiveId: this.uref,
+        newPerspectives: e.detail.proposalDetails.newPerspectives,
+        updates: e.detail.proposalDetails.updates
+      }
+    });
+    this.eveesInfoLocal.load();
   }
 
   color() {

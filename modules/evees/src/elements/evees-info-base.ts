@@ -17,12 +17,7 @@ import {
   EveesConfig
 } from '../types';
 import { EveesBindings } from '../bindings';
-import {
-  EXECUTE_PROPOSAL,
-  DELETE_PERSPECTIVE,
-  CREATE_PROPOSAL,
-  FORK_PERSPECTIVE
-} from '../graphql/queries';
+import { DELETE_PERSPECTIVE, CREATE_PROPOSAL, FORK_PERSPECTIVE } from '../graphql/queries';
 import { EveesHelpers } from '../graphql/evees.helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
@@ -63,6 +58,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
+
+  @property({ type: Boolean, attribute: 'emit-proposals' })
+  emitProposals: boolean = false;
 
   @property({ type: String, attribute: false })
   entityType: string | undefined = undefined;
@@ -342,14 +340,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     /* for some remotes the proposal is not created but sent to a parent component who will 
        take care of executing it */
-    if (
-      await EveesHelpers.checkEmit(
-        this.config,
-        this.client,
-        this.requestAll(EveesBindings.EveesRemote),
-        toPerspectiveId
-      )
-    ) {
+    const emitBecauseOfTarget = await EveesHelpers.checkEmit(
+      this.config,
+      this.client,
+      this.requestAll(EveesBindings.EveesRemote),
+      toPerspectiveId
+    );
+
+    if (emitBecauseOfTarget || this.emitProposals) {
       /* entities are just cloned, not part of the proposal */
       await workspace.executeCreate(this.client);
       await workspace.precacheNewPerspectives(this.client);

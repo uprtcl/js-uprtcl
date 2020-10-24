@@ -46,6 +46,9 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   @property({ type: Boolean, attribute: 'show-info' })
   showInfo: boolean = false;
 
+  @property({ type: Boolean, attribute: 'emit-proposals' })
+  emitProposals: boolean = false;
+
   @property({ attribute: false })
   officialId!: string;
 
@@ -116,6 +119,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
             ?show-draft=${this.showPerspectives}
             ?show-proposals=${this.showProposals}
             ?show-info=${this.showInfo}
+            ?emit-proposals=${this.showInfo}
             uref=${this.uref}
             parent-id=${this.parentId}
             first-uref=${this.firstRef as string}

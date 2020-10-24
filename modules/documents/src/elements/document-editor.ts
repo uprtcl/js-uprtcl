@@ -1103,8 +1103,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   evee-color=${this.getColor()}
                   @checkout-perspective=${e => this.handleNodePerspectiveCheckout(e, node)}
                   show-perspectives
-                  show-acl
                   show-info
+                  emit-proposals
                 ></evees-info-popper>
               `
             : ''}

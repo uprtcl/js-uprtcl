@@ -145,7 +145,7 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
     $toPerspectiveId: ID!
     $fromPerspectiveId: ID!
     $toHeadId: ID
-    $fromHeadId: ID!
+    $fromHeadId: ID
     $newPerspectives: [NewPerspectiveInput]!
     $updates: [HeadUpdateInput!]
   ) {
