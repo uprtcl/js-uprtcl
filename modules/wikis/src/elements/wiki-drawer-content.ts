@@ -401,6 +401,10 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         this.movePage(pageIndex, pageIndex + 1);
         break;
 
+      case 'add-below':
+        this.newPage(pageIndex + 1);
+        break;
+
       case 'remove':
         this.removePage(pageIndex);
         break;
@@ -460,17 +464,22 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
       'move-up': {
         disabled: ix === 0,
         text: 'move up',
-        graphic: 'arrow_upward'
+        icon: 'arrow_upward'
       },
       'move-down': {
         disabled: ix === (this.pagesList as any[]).length - 1,
         text: 'move down',
-        graphic: 'arrow_downward'
+        icon: 'arrow_downward'
+      },
+      'add-below': {
+        disabled: false,
+        text: 'create below',
+        icon: 'add'
       },
       remove: {
         disabled: false,
         text: 'remove',
-        graphic: 'clear'
+        icon: 'clear'
       }
     };
 
@@ -607,6 +616,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         }
         .page-item .item-menu-container .options-menu {
           --box-width: 160px;
+          font-weight: normal;
         }
         .page-item:hover {
           background-color: #e8ecec;
@@ -625,10 +635,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
           padding-top: 24px;
           color: #a2a8aa;
         }
-        .center-aligned {
-          justify-content: center;
-          align-items: center;
-        }
         .button-row {
           width: calc(100% - 20px);
           padding: 16px 10px 8px 10px;
@@ -642,61 +648,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
           text-align: center;
           height: auto;
           padding: 6vw 0vw;
-        }
-        .title-card-container {
-          padding: 0px 5vw;
-        }
-
-        .section {
-          text-align: center;
-          width: 100%;
-          max-width: 700px;
-          margin: 0 auto;
-          box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2);
-          margin-bottom: 36px;
-          border-radius: 4px;
-          background-color: rgb(255, 255, 255, 0.6);
-          position: relative;
-        }
-        .section-header {
-          font-weight: bold;
-          padding: 2vw 0px 0.8vw 0px;
-          font-size: 30px;
-          border-style: solid 2px;
-        }
-        .section-content evees-author {
-          display: inline-block;
-          margin-left: 12px;
-        }
-        .section-content {
-          padding-bottom: 2vw;
-        }
-        .official-name {
-          font-size: 30px;
-          font-weight: bold;
-          color: #4e585c;
-        }
-        .by-3box {
-          color: rgb(99, 102, 104);
-          font-weight: 600;
-          letter-spacing: 0.015em;
-        }
-        .context-menu {
-          position: absolute;
-          top: 6px;
-          right: 6px;
-          display: flex;
-        }
-        .pages-summary {
-          max-height: 150px;
-          min-height: 80px;
-          overflow-y: auto;
-          text-align: left;
-          color: gray;
-          padding-left: 12px;
-        }
-        .title-form {
-          margin-top: 22px;
         }
       `
     ];

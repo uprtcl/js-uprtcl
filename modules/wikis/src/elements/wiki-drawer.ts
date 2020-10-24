@@ -31,6 +31,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'uref' })
   firstRef!: string;
 
+  @property({ type: Boolean, attribute: 'show-proposals' })
+  showProposals: boolean = false;
+
   @property({ attribute: false })
   uref!: string;
 
@@ -140,7 +143,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         uref=${this.uref}
         first-uref=${this.firstRef}
         official-owner=${this.officialOwner}
-        show-proposals
+        ?show-proposals=${this.showProposals}
         show-info
         show-draft
       >

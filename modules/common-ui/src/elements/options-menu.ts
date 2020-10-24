@@ -3,7 +3,7 @@ import { LitElement, property, html, css, query } from 'lit-element';
 export interface MenuConfig {
   [key: string]: {
     text: string;
-    graphic: string;
+    icon: string;
     disabled?: boolean;
   };
 }
@@ -47,15 +47,16 @@ export class UprtclOptionsMenu extends LitElement {
             const item = this.config[itemKey];
             return item.disabled !== undefined && item.disabled
               ? html`
-                  <uprtcl-list-item graphic="icon" disabled>
+                  <uprtcl-list-item icon=${item.icon ? item.icon : ''} disabled>
                     <span>${item.text}</span>
-                    <uprtcl-icon slot="graphic">${item.graphic}</uprtcl-icon>
                   </uprtcl-list-item>
                 `
               : html`
-                  <uprtcl-list-item graphic="icon" @click=${e => this.optionClicked(itemKey, e)}>
+                  <uprtcl-list-item
+                    icon=${item.icon ? item.icon : ''}
+                    @click=${e => this.optionClicked(itemKey, e)}
+                  >
                     <span>${item.text}</span>
-                    <uprtcl-icon slot="graphic">${item.graphic}</uprtcl-icon>
                   </uprtcl-list-item>
                 `;
           })}

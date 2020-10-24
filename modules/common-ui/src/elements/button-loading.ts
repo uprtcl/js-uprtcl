@@ -20,6 +20,9 @@ export class UprtclButtonLoading extends LitElement {
   icon: string = '';
 
   render() {
+    const loadingClasses = this.skinny ? ['loading-skinny'] : ['loading-filled'];
+    loadingClasses.push('loading');
+
     return html`
       <uprtcl-button
         ?outlined=${this.outlined}
@@ -30,7 +33,7 @@ export class UprtclButtonLoading extends LitElement {
       >
         ${this.loading
           ? html`
-              <uprtcl-loading class="loading"></uprtcl-loading>
+              <uprtcl-loading class=${loadingClasses.join(' ')}></uprtcl-loading>
             `
           : html`
               <slot></slot>
@@ -47,7 +50,12 @@ export class UprtclButtonLoading extends LitElement {
       }
       .loading {
         --height: 36px;
+      }
+      .loading-filled {
         --fill: white;
+      }
+      .loading-skinny {
+        --fill: #50b0ff;
       }
     `;
   }

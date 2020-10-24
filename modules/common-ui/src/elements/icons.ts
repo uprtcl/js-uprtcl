@@ -77,6 +77,30 @@ export const icons = {
       <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
     </svg>
   `,
+  arrow_upward: html`
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="black"
+      width="24px"
+      height="24px"
+    >
+      <path d="M0 0h24v24H0V0z" fill="none" />
+      <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" />
+    </svg>
+  `,
+  arrow_downward: html`
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="black"
+      width="24px"
+      height="24px"
+    >
+      <path d="M0 0h24v24H0V0z" fill="none" />
+      <path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z" />
+    </svg>
+  `,
   info: html`
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -105,6 +129,8 @@ export const icons = {
       <path d="M0 0h24v24H0z" fill="none" />
     </svg>
   `,
+  subdirectory: html`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="24px" height="24px"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 15l-6 6-1.42-1.42L15.17 16H4V4h2v10h9.17l-3.59-3.58L13 9l6 6z"/></svg>`;
   edit: html`
     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
       <path

@@ -156,7 +156,11 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   renderWiki() {
     return html`
       <div class="wiki-container">
-        <wiki-drawer uref=${this.rootHash} default-remote=${this.defaultRemoteId}></wiki-drawer>
+        <wiki-drawer
+          uref=${this.rootHash}
+          default-remote=${this.defaultRemoteId}
+          show-proposals
+        ></wiki-drawer>
       </div>
     `;
   }
