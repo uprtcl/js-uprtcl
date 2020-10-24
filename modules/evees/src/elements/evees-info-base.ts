@@ -400,6 +400,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         workspace
       );
     }
+    if (this.uref !== toPerspectiveId) {
+      this.checkoutPerspective(toPerspectiveId);
+    }
   }
 
   async createMergeProposal(

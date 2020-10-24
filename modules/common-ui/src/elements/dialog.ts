@@ -38,23 +38,28 @@ export class UprtclDialog extends LitElement {
           <div class="slot-container">
             <slot></slot>
           </div>
-          ${this.actions ? html`
-          <div class="buttons-container">
-            ${this.showSecondary === 'true'
+          ${
+            this.actions
               ? html`
-                <uprtcl-button
-                  @click=${this.secondaryClicked}
-                  icon=${this.secondaryIcon}
-                  skinny
-                >
-                  ${this.secondaryText}
-                </uprtcl-button>
-              `
-              : ''}
-              <uprtcl-button @click=${this.primaryClicked}>
-                ${this.primaryText}
-              </uprtcl-button>
-          ` : ''}
+                  <div class="buttons-container">
+                    ${this.showSecondary === 'true'
+                      ? html`
+                          <uprtcl-button
+                            @click=${this.secondaryClicked}
+                            icon=${this.secondaryIcon}
+                            skinny
+                          >
+                            ${this.secondaryText}
+                          </uprtcl-button>
+                        `
+                      : ''}
+                    <uprtcl-button @click=${this.primaryClicked}>
+                      ${this.primaryText}
+                    </uprtcl-button>
+                  </div>
+                `
+              : ''
+          }
           </div>
         </div>
       </div>
@@ -92,7 +97,6 @@ export class UprtclDialog extends LitElement {
         min-height: 50vh;
         overflow-y: auto;
       }
-
       .buttons-container {
         display: flex;
         justify-content: flex-end;
