@@ -163,6 +163,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       };
     });
 
+    this.dispatchEvent(new CustomEvent('dialogue-closed', { bubbles: true, composed: true }));
     this.showDiff = false;
 
     if (this.canExecute && !this.executed && value) {

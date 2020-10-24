@@ -359,6 +359,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
               <evees-proposals-list
                 id="evees-proposals-list"
                 perspective-id=${this.officialId}
+                @dialogue-closed=${() => (this.proposalsPopper.showDropdown = false)}
               ></evees-proposals-list>
             `
           : html`
