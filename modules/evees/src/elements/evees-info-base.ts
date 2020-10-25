@@ -1,4 +1,4 @@
-import { LitElement, property, html, css, query } from 'lit-element';
+import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
 
 import { ApolloClient, gql } from 'apollo-boost';
 
@@ -102,7 +102,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   eveesDiffEl!: EveesDiff;
 
   @property({ attribute: false })
-  eveesDiffInfoMessage!: string;
+  eveesDiffInfoMessage!: TemplateResult;
 
   perspectiveData!: PerspectiveData;
   pullWorkspace: EveesWorkspace | undefined = undefined;
@@ -112,6 +112,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected merge!: MergeStrategy;
   protected evees!: Evees;
   protected remote!: EveesRemote;
+  protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
   protected cache!: EntityCache;
 
@@ -129,18 +130,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
 
+    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.defaultRemote =
       this.defaultRemoteId !== undefined
-        ? (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-            remote => remote.id === this.defaultRemoteId
-          )
+        ? this.remotes.find(remote => remote.id === this.defaultRemoteId)
         : (this.request(EveesBindings.Config) as EveesConfig).defaultRemote;
 
     this.officialRemote =
       this.officialRemoteId !== undefined
-        ? (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-            remote => remote.id === this.officialRemoteId
-          )
+        ? this.remotes.find(remote => remote.id === this.officialRemoteId)
         : (this.request(EveesBindings.Config) as EveesConfig).officialRemote;
   }
 
@@ -327,11 +325,31 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
 
+    const fromPerspective = await loadEntity<Signed<Perspective>>(this.client, fromPerspectiveId);
+    if (!fromPerspective) throw new Error(`${fromPerspectiveId} entity undefined`);
+    const fromRemote = this.remotes.find(r => r.id === fromPerspective.object.payload.remote);
+
+    const toPerspective = await loadEntity<Signed<Perspective>>(this.client, toPerspectiveId);
+    if (!toPerspective) throw new Error(`${toPerspectiveId} entity undefined`);
+    const toRemote = this.remotes.find(r => r.id === toPerspective.object.payload.remote);
+
+    const message = html`
+      <div>
+        <div class="">
+          <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
+        </div>
+        <div class=""></div>
+        <div class="">
+          <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
+        </div>
+      </div>
+    `;
+
     const confirm = await this.updatesDialog(
       workspace,
       canWrite ? 'merge' : 'propose',
       'cancel',
-      ''
+      message
     );
 
     if (!confirm) {
@@ -343,7 +361,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const emitBecauseOfTarget = await EveesHelpers.checkEmit(
       this.config,
       this.client,
-      this.requestAll(EveesBindings.EveesRemote),
+      this.remotes,
       toPerspectiveId
     );
 
@@ -509,7 +527,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace,
     primaryText: string,
     secondaryText: string,
-    infoMessage: string
+    message: TemplateResult = html``
   ): Promise<boolean> {
     this.showUpdatesDialog = true;
     await this.updateComplete;
@@ -519,8 +537,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.updatesDialogEl.showSecondary = secondaryText !== undefined ? 'true' : 'false';
 
     this.eveesDiffEl.workspace = workspace;
-
-    this.eveesDiffInfoMessage = infoMessage;
+    this.eveesDiffInfoMessage = message;
 
     return new Promise(resolve => {
       this.updatesDialogEl.resolved = value => {
@@ -533,7 +550,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   renderUpdatesDialog() {
     return html`
       <uprtcl-dialog id="updates-dialog">
-        <h3 id="evees-update-diff-info"></h3>
+        <div>${this.eveesDiffInfoMessage}</div>
         <evees-update-diff id="evees-update-diff"></evees-update-diff>
       </uprtcl-dialog>
     `;

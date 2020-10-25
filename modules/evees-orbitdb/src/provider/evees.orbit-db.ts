@@ -18,6 +18,7 @@ import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
 import { EveesOrbitDBEntities, perspective } from '../custom-stores/orbit-db.stores';
 import { Lens } from '@uprtcl/lenses';
+import { TemplateResult } from 'lit-html';
 
 const evees_if = 'evees-v0';
 // const timeout = 200;
@@ -60,6 +61,18 @@ export class EveesOrbitDB implements EveesRemote {
 
   canWrite(uref: string): Promise<boolean> {
     return this.accessControl.canWrite(uref, this.userId);
+  }
+
+  icon(): TemplateResult {
+    return html`
+      <div style="display: flex;align-items: center">
+        <img
+          style="height: 28px; width: 28px;margin-right: 6px"
+          src="https://orbitdb.org/images/favicon.png"
+        />
+        orbitdb
+      </div>
+    `;
   }
 
   lense(): Lens {

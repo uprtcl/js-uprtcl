@@ -34,6 +34,7 @@ export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesInfoBase } from './elements/evees-info-base';
 export { ProposalsList } from './elements/evees-proposals-list';
+export { EveesPerspectiveIcon } from './elements/evees-perspective-icon';
 
 export {
   UpdateContentEvent,

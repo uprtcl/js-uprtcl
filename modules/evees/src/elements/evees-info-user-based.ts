@@ -218,7 +218,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
 
     if (!this.pullWorkspace) throw new Error('pullWorkspace undefined');
 
-    const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close', '');
+    const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close');
 
     if (!confirm) {
       return;
