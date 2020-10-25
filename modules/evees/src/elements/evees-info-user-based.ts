@@ -287,8 +287,10 @@ export class EveesInfoUserBased extends EveesInfoBase {
         ? html`
             <uprtcl-icon-button
               button
-              class=${this.isTheirs || this.isMine ? 'margin-left highlighted' : 'margin-left'}
-              icon="arrow_back"
+              class=${this.isTheirs || this.isMine
+                ? 'margin-left-small highlighted'
+                : 'margin-left-small'}
+              icon="menu_open"
               @click=${() => (this.isTheirs || this.isMine ? this.proposeDraft() : undefined)}
               ?disabled=${this.isOfficial}
               style=${`--background-color: ${
@@ -298,8 +300,8 @@ export class EveesInfoUserBased extends EveesInfoBase {
             </uprtcl-icon-button>
             <uprtcl-icon-button
               button
-              class=${this.hasPull ? 'margin-left highlighted' : 'margin-left'}
-              icon="arrow_forward"
+              class=${this.hasPull ? 'margin-left-small highlighted' : 'margin-left-small'}
+              icon="menu_open_180"
               @click=${() => (this.isMine && this.hasPull ? this.showPull() : undefined)}
               ?disabled=${!this.hasPull}
               style=${`--background-color: ${
@@ -314,7 +316,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
             <uprtcl-button-loading
               ?skinny=${!this.isMine}
               @click=${() => this.draftClicked()}
-              class="margin-left tab-button"
+              class="margin-left-small tab-button"
               style=${`--background-color: ${this.isMine ? this.color() : 'initial'}`}
               ?loading=${this.creatingMine}
               transition
@@ -451,6 +453,9 @@ export class EveesInfoUserBased extends EveesInfoBase {
         }
         .margin-left {
           margin-left: 10px;
+        }
+        .margin-left-small {
+          margin-left: 4px;
         }
         .margin-right {
           margin-right: 10px;

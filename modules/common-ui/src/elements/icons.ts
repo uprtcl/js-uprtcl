@@ -130,7 +130,17 @@ export const icons = {
     </svg>
   `,
   subdirectory: html`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="24px" height="24px"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 15l-6 6-1.42-1.42L15.17 16H4V4h2v10h9.17l-3.59-3.58L13 9l6 6z"/></svg>`;
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="black"
+      width="24px"
+      height="24px"
+    >
+      <path d="M0 0h24v24H0V0z" fill="none" />
+      <path d="M19 15l-6 6-1.42-1.42L15.17 16H4V4h2v10h9.17l-3.59-3.58L13 9l6 6z" />
+    </svg>
+  `,
   edit: html`
     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
       <path
@@ -229,6 +239,29 @@ export const icons = {
     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
       <path d="M0 0h24v24H0z" fill="none" />
       <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+    </svg>
+  `,
+  menu_open: html`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="24" height="24">
+      <path d="M0 0h24v24H0V0z" fill="none" />
+      <path
+        d="M3 18h13v-2H3v2zm0-5h10v-2H3v2zm0-7v2h13V6H3zm18 9.59L17.42 12 21 8.41 19.59 7l-5 5 5 5L21 15.59z"
+      />
+    </svg>
+  `,
+  menu_open_180: html`
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      transform="rotate(180)"
+      fill="black"
+      width="24"
+      height="24"
+    >
+      <path d="M0 0h24v24H0V0z" fill="none" />
+      <path
+        d="M3 18h13v-2H3v2zm0-5h10v-2H3v2zm0-7v2h13V6H3zm18 9.59L17.42 12 21 8.41 19.59 7l-5 5 5 5L21 15.59z"
+      />
     </svg>
   `,
   unarchive: html`

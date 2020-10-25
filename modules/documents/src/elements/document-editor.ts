@@ -82,7 +82,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   checkedOutPerspectives: { [key: string]: { firstUref: string; newUref: string } } = {};
 
   @property({ type: Object })
-  doc!: DocNode;
+  doc: DocNode | undefined = undefined;
 
   client!: ApolloClient<any>;
 
@@ -110,10 +110,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('updated()', { uref: this.uref, changedProperties });
 
     if (changedProperties.has('uref')) {
+      this.doc = undefined;
       this.loadDoc();
     }
     if (changedProperties.has('firstRef')) {
       this.uref = this.firstRef;
+      this.doc = undefined;
       this.loadDoc();
     }
     if (changedProperties.has('client')) {
@@ -939,6 +941,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   isNodeFocused() {
+    if (!this.doc) return false;
     return this.isNodeFocusedRec(this.doc);
   }
 
@@ -955,7 +958,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return false;
   }
 
-  getLastNode(): DocNode {
+  getLastNode(): DocNode | undefined {
+    if (!this.doc) return undefined;
     return this.getLastNodeRec(this.doc);
   }
 
@@ -970,7 +974,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   clickAreaClicked() {
     if (!this.isNodeFocused()) {
       const last = this.getLastNode();
-      last.focused = true;
+      if (last !== undefined) {
+        last.focused = true;
+      }
     }
     this.requestUpdate();
   }
@@ -1189,12 +1195,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   renderTopBar() {
     const options: MenuConfig = {
-      // 'push': {
-      //   graphic: 'unarchive',
-      //   text: 'push'
-      // },
       'push-with-message': {
-        graphic: 'notes',
+        icon: 'notes',
         text: 'push with message'
       }
     };
