@@ -53,4 +53,7 @@ export const styles = css`
   .cursor {
     cursor: pointer;
   }
+  .bg-transition {
+    transition: background-color 0.5s ease;
+  }
 `;

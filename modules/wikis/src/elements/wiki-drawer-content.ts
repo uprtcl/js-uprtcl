@@ -9,7 +9,7 @@ const styleMap = style => {
 
 import { htmlToText, TextType, TextNode } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
-import { sharedStyles } from '@uprtcl/lenses';
+import { styles } from '@uprtcl/common-ui';
 import { Entity, HasTitle, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import {
   EveesRemote,
@@ -519,6 +519,18 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     `;
   }
 
+  renderHome() {
+    return this.pagesList
+      ? this.pagesList.map((page, ix) => {
+          return html`
+            <uprtcl-card class="home-card bg-transition" @click=${() => this.selectPage(ix)}>
+              ${page.title}
+            </uprtcl-card>
+          `;
+        })
+      : '';
+  }
+
   render() {
     if (this.loading)
       return html`
@@ -549,9 +561,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
               `
             : html`
                 <div class="home-container">
-                  <div class="evee-info">
-                    <h1>List of pages</h1>
-                  </div>
+                  ${this.renderHome()}
                 </div>
               `}
         </div>
@@ -561,7 +571,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
   static get styles() {
     return [
-      sharedStyles,
+      styles,
       css`
         :host {
           display: flex;
@@ -648,6 +658,19 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
           text-align: center;
           height: auto;
           padding: 6vw 0vw;
+        }
+        .home-card {
+          width: 100%;
+          font-size: 20px;
+          display: block;
+          max-width: 340px;
+          margin: 18px auto;
+          cursor: pointer;
+          padding: 8px 24px;
+          font-weight: bold;
+        }
+        .home-card:hover {
+          background-color: #f1f1f1;
         }
       `
     ];

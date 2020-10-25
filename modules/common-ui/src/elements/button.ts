@@ -73,9 +73,6 @@ export class UprtclButton extends LitElement {
           height: 36px;
           padding: 0px 16px;
         }
-        .bg-transition {
-          transition: background-color 0.5s ease;
-        }
         .icon-container {
           height: 100%;
           display: flex;
