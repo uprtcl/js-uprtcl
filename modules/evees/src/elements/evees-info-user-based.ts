@@ -116,24 +116,29 @@ export class EveesInfoUserBased extends EveesInfoBase {
     if (!this.officialRemote) throw new Error('official remote not found');
     const officialRemote: EveesRemote = this.officialRemote;
 
+    const sortOnTimestamp = (p1, p2) => p1.object.payload.timestamp - p2.object.payload.timestamp;
+
     if (this.officialOwner) {
-      const official = perspectives.find(
+      const officials = perspectives.filter(
         p =>
           p.object.payload.remote === officialRemote.id &&
           p.object.payload.creatorId === this.officialOwner
       );
-      this.officialId = official ? official.id : undefined;
+      const officialsSorted = officials.sort(sortOnTimestamp).reverse();
+      this.officialId = officialsSorted.length > 0 ? officialsSorted[0].id : undefined;
     } else {
       this.officialId = this.firstRef;
     }
 
-    const mine = perspectives.find(
+    const mines = perspectives.filter(
       p =>
         p.object.payload.remote === defaultRemote.id &&
         p.object.payload.creatorId === defaultRemote.userId
     );
 
-    this.mineId = mine ? mine.id : undefined;
+    /** the latest perspective is considered the "mine", other perspectives might exist and are listed under other */
+    const minesSorted = mines.sort(sortOnTimestamp).reverse();
+    this.mineId = minesSorted.length > 0 ? minesSorted[0].id : undefined;
 
     /** inform the parent whose the official, a bit ugly... but */
     this.dispatchEvent(
