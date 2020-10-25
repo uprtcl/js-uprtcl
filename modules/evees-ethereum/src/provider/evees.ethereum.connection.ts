@@ -33,6 +33,8 @@ export class EveesEthereumConnection implements BlockchainConnection {
   }
 
   async getHead(userId: string, block?: number) {
+    if (!userId) return undefined;
+
     const filter = this.uprtclRoot.contractInstance.filters.HeadUpdated(userId, null, null);
     const events = await this.uprtclRoot.contractInstance.queryFilter(filter, 0, block);
 

@@ -116,18 +116,23 @@ export class EveesInfoUserBased extends EveesInfoBase {
     if (!this.officialRemote) throw new Error('official remote not found');
     const officialRemote: EveesRemote = this.officialRemote;
 
-    const official = perspectives.find(
-      p =>
-        p.object.payload.remote === officialRemote.id &&
-        p.object.payload.creatorId === this.officialOwner
-    );
+    if (this.officialOwner) {
+      const official = perspectives.find(
+        p =>
+          p.object.payload.remote === officialRemote.id &&
+          p.object.payload.creatorId === this.officialOwner
+      );
+      this.officialId = official ? official.id : undefined;
+    } else {
+      this.officialId = this.firstRef;
+    }
+
     const mine = perspectives.find(
       p =>
         p.object.payload.remote === defaultRemote.id &&
         p.object.payload.creatorId === defaultRemote.userId
     );
 
-    this.officialId = official ? official.id : undefined;
     this.mineId = mine ? mine.id : undefined;
 
     /** inform the parent whose the official, a bit ugly... but */

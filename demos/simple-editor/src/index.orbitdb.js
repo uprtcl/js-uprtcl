@@ -103,9 +103,6 @@ import { SimpleWiki } from './simple-wiki';
 
   await orchestrator.loadModules(modules);
 
-  /*** add other services to the container */
-  orchestrator.container.bind('official-connection').toConstantValue(ethConnection);
-
   console.log(orchestrator);
   customElements.define('simple-wiki', SimpleWiki);
 })();

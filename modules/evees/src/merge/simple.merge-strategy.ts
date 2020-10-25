@@ -183,10 +183,13 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     if (!instance.userId) throw new Error('Cannot create commits in a casID you are not signed in');
 
+    /** some commits might be undefined */
+    const parentsIds = commitsIds.filter(commit => !!commit);
+
     const newCommit: Commit = {
       dataId: entity.id,
-      parentsIds: commitsIds,
-      message: `Merge commits ${commitsIds.toString()}`,
+      parentsIds: parentsIds,
+      message: `Merging commits ${parentsIds.toString()}`,
       timestamp: Date.now(),
       creatorsIds: [instance.userId]
     };
