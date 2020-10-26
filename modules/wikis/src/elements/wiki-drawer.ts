@@ -146,6 +146,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         ?show-proposals=${this.showProposals}
         show-info
         show-icon
+        ?show-debug=${false}
         show-draft
       >
       </evees-info-user-based>

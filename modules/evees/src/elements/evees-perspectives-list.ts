@@ -44,11 +44,13 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
   perspectivesData: PerspectiveData[] = [];
 
   protected client!: ApolloClient<any>;
+  protected remotes!: EveesRemote[];
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
     this.client = this.request(ApolloClientModule.bindings.Client);
+    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.load();
   }
 
@@ -87,9 +89,7 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
             result.data.entity.payload.context.perspectives.map(
               async (perspective): Promise<PerspectiveData> => {
                 /** data on this perspective */
-                const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-                  r => r.id === perspective.payload.remote
-                );
+                const remote = this.remotes.find(r => r.id === perspective.payload.remote);
                 if (!remote) throw new Error(`remote not found for ${perspective.payload.remote}`);
                 this.canWrite = await EveesHelpers.canWrite(this.client, this.perspectiveId);
                 return {

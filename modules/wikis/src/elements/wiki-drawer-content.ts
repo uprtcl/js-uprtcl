@@ -179,6 +179,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     const pagesListPromises = this.wiki.object.pages.map(
       async (pageId): Promise<PageData> => {
         const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
+        if (!data) throw new Error(`data not found for page ${pageId}`);
         const hasTitle: HasTitle = this.recognizer
           .recognizeBehaviours(data)
           .find(b => (b as HasTitle).title);

@@ -433,13 +433,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.logger.info('created proposal', { proposalId });
   }
 
-  async forkPerspective() {
+  async forkPerspective(perspectiveId?: string) {
     this.creatingNewPerspective = true;
 
     const result = await this.client.mutate({
       mutation: FORK_PERSPECTIVE,
       variables: {
-        perspectiveId: this.uref,
+        perspectiveId: perspectiveId || this.uref,
         remote: this.defaultRemoteId
       }
     });

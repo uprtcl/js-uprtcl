@@ -200,7 +200,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
   async createDraft() {
     this.closePoppers();
     this.creatingMine = true;
-    await this.forkPerspective();
+    await this.forkPerspective(this.officialId);
     this.creatingMine = false;
   }
 

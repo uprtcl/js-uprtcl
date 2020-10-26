@@ -1119,6 +1119,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   show-draft
                   show-info
                   show-icon
+                  ?show-debug=${false}
                   emit-proposals
                 ></evees-info-popper>
               `
@@ -1171,7 +1172,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           color=${this.getColor()}
           @checkout-perspective=${e => this.handleEditorPerspectiveCheckout(e, node)}
           official-owner=${this.officialOwner}
+          show-draft
           show-info
+          show-icon
+          ?show-debug=${false}
         >
         </documents-editor>
       `;
