@@ -26,6 +26,13 @@ export const styles = css`
     background-color: var(--background-color, #c9d4db);
     color: #ffffff;
   }
+  .button-filled-secondary-no-hover {
+    background-color: var(--background-color, #c9d4db);
+    color: #ffffff;
+  }
+  .button-filled-secondary-no-hover svg {
+    fill: white;
+  }
   .button-filled-secondary svg {
     fill: white;
   }

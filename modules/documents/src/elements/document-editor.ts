@@ -1108,8 +1108,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   official-owner=${this.officialOwner}
                   evee-color=${this.getColor()}
                   @checkout-perspective=${e => this.handleNodePerspectiveCheckout(e, node)}
-                  show-perspectives
+                  show-draft
                   show-info
+                  show-icon
                   emit-proposals
                 ></evees-info-popper>
               `

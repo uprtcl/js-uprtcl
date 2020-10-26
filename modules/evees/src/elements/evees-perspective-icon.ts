@@ -25,6 +25,12 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
     this.load();
   }
 
+  updated(changedProperties) {
+    if (changedProperties.has('perspectiveId')) {
+      this.load();
+    }
+  }
+
   async load() {
     this.loading = true;
     const perspective = await loadEntity<Signed<Perspective>>(this.client, this.perspectiveId);
@@ -48,19 +54,21 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
     }
     return html`
       <div class="row">
-        <b>by</b>
+        <b class="tag-text">by</b>
         <evees-author user-id=${this.perspective.object.payload.creatorId} show-name></evees-author>
       </div>
       <div class="row">
-        <b>on</b>
-        ${this.remote.icon
-          ? html`
-              <div class="remote-icon">${this.remote.icon()}</div>
-            `
-          : html`
-              remote
-              <pre>${this.perspective.object.payload.remote}</pre>
-            `}
+        <b class="tag-text">on</b>
+        <div class="remote-icon">
+          ${this.remote.icon
+            ? html`
+                ${this.remote.icon()}
+              `
+            : html`
+                remote
+                <pre>${this.perspective.object.payload.remote}</pre>
+              `}
+        </div>
       </div>
     `;
   }
@@ -78,8 +86,14 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
           display: flex;
           align-items: center;
         }
+        .tag-text {
+          color: #cccccc;
+        }
         evees-author {
           margin-left: 8px;
+        }
+        .remote-icon {
+          margin-left: 6px;
         }
       `
     ];

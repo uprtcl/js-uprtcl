@@ -71,7 +71,7 @@ export class EveesEthereumConnection implements BlockchainConnection {
         chainName = 'xDAI';
     }
     return html`
-      <div style="display: flex;align-items: center">
+      <div style="display:flex;align-items: center;color: #636668;font-weight:bold">
         <div style="height: 28px;width: 28px;margin-right: 6px">
           ${icons.ethereum}
         </div>

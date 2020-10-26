@@ -20,13 +20,22 @@ export class EveesInfoUserBased extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-UserBased');
 
   @property({ type: Boolean, attribute: 'show-proposals' })
-  proposalsEnabled: boolean = false;
+  showProposals: boolean = false;
 
   @property({ type: Boolean, attribute: 'show-draft' })
-  draftEnabled: boolean = false;
+  showDraftControl: boolean = false;
 
   @property({ type: Boolean, attribute: 'show-info' })
-  infoEnabled: boolean = false;
+  showInfo: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-icon' })
+  showIcon: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-acl' })
+  showAcl: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-debug' })
+  showDebugInfo: boolean = false;
 
   @property({ type: String, attribute: 'official-owner' })
   officialOwner!: string;
@@ -398,7 +407,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
 
     return html`
       <div class="left-buttons">
-        ${this.infoEnabled
+        ${this.showInfo
           ? html`
               <uprtcl-popper
                 icon="info"
@@ -406,12 +415,21 @@ export class EveesInfoUserBased extends EveesInfoBase {
                 position="bottom-left"
                 class="info-popper margin-right"
               >
-                <div class="permissions-container">${this.renderPermissions()}</div>
-                ${this.renderInfo()}
+                ${this.showIcon
+                  ? html`
+                      <div class="icon-container">${this.renderIcon()}</div>
+                    `
+                  : ''}
+                ${this.showAcl
+                  ? html`
+                      <div class="permissions-container">${this.renderPermissions()}</div>
+                    `
+                  : ''}
+                ${this.showDebugInfo ? this.renderInfo() : ''}
               </uprtcl-popper>
             `
           : ''}
-        ${this.proposalsEnabled
+        ${this.showProposals
           ? html`
               <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
                 <uprtcl-button
@@ -429,7 +447,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
           : ''}
       </div>
       <div class="center-buttons">
-        ${this.draftEnabled ? this.renderDraftControl() : ''}
+        ${this.showDraftControl ? this.renderDraftControl() : ''}
       </div>
       ${this.showUpdatesDialog ? this.renderUpdatesDialog() : ''}
     `;
@@ -446,7 +464,6 @@ export class EveesInfoUserBased extends EveesInfoBase {
           --box-width: 340px;
         }
         .info-popper {
-          --box-width: 490px;
           --max-height: 70vh;
           --overflow: auto;
         }
@@ -486,6 +503,10 @@ export class EveesInfoUserBased extends EveesInfoBase {
         .permissions-container {
           padding: 12px;
           border-bottom: solid 1px #cccccc;
+        }
+        .icon-container {
+          margin: 0 auto;
+          padding: 12px;
         }
       `
     ]);

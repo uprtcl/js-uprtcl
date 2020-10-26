@@ -561,7 +561,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
               `
             : html`
                 <div class="home-container">
-                  <evees-perspective-icon perspective-id=${this.uref}></evees-perspective-icon>
                   ${this.renderHome()}
                 </div>
               `}

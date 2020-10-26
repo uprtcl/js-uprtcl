@@ -325,22 +325,16 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
 
-    const fromPerspective = await loadEntity<Signed<Perspective>>(this.client, fromPerspectiveId);
-    if (!fromPerspective) throw new Error(`${fromPerspectiveId} entity undefined`);
-    const fromRemote = this.remotes.find(r => r.id === fromPerspective.object.payload.remote);
-
-    const toPerspective = await loadEntity<Signed<Perspective>>(this.client, toPerspectiveId);
-    if (!toPerspective) throw new Error(`${toPerspectiveId} entity undefined`);
-    const toRemote = this.remotes.find(r => r.id === toPerspective.object.payload.remote);
-
     const message = html`
-      <div>
-        <div class="">
+      <div class="row merge-message">
+        <div class="column perspective">
           <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
         </div>
-        <div class=""></div>
-        <div class="">
-          <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
+        <div class="column arrow">
+          <uprtcl-icon-button icon="arrow_back"></uprtcl-icon-button>
+        </div>
+        <div class="column perspective">
+          <evees-perspective-icon perspective-id=${fromPerspectiveId}></evees-perspective-icon>
         </div>
       </div>
     `;
@@ -562,6 +556,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     `;
   }
 
+  /** overwrite */
+  renderIcon() {
+    return html`
+      <evees-perspective-icon perspective-id=${this.uref}></evees-perspective-icon>
+    `;
+  }
+
   renderInfo() {
     return html`
       <div class="perspective-details">
@@ -599,6 +600,7 @@ ${this.perspectiveData.perspective ? getAuthority(this.perspectiveData.perspecti
           padding: 5px;
           text-align: left;
           max-width: calc(100vw - 72px);
+          min-width: 490px;
         }
 
         .prop-name {
@@ -619,6 +621,29 @@ ${this.perspectiveData.perspective ? getAuthority(this.perspectiveData.perspecti
           overflow: auto;
           width: calc(100% - 32px);
           overflow-x: auto;
+        }
+        .row {
+          width: 100%;
+          display: flex;
+          padding-bottom: 20px;
+          border-bottom: solid 1px #cccccc;
+          margin-bottom: 20px;
+        }
+        .merge-message .column {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 8px 14px;
+        }
+        .merge-message .column.perspective {
+          flex: 2 1 auto;
+          padding: 12px;
+          border-radius: 4px;
+          border: solid 1px #cccccc;
+        }
+        .merge-message .column .arrow {
+          flex: 1 1 auto;
         }
       `
     ];
