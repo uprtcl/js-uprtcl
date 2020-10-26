@@ -4,17 +4,11 @@ import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator
 import { LensesModule } from '@uprtcl/lenses';
 import { DocumentsModule } from '@uprtcl/documents';
 import { WikisModule } from '@uprtcl/wikis';
-
-import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
-import {
-  EveesPolkadotCouncil,
-  PolkadotOrbitDBIdentity,
-  PolkadotConnection,
-  EveesPolkadotConnection,
-  EveesPolkadotModule
-} from '@uprtcl/evees-polkadot';
-import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
+import { CortexModule } from '@uprtcl/cortex';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { CidConfig, DiscoveryModule } from '@uprtcl/multiplatform';
+import { PolkadotOrbitDBIdentity, PolkadotConnection, EveesPolkadotConnection, EveesPolkadotCouncil } from '@uprtcl/evees-polkadot';
 import {
   ProposalsOrbitDB,
   ProposalStore,
@@ -24,21 +18,18 @@ import {
   ContextAccessController,
   EveesOrbitDBModule
 } from '@uprtcl/evees-orbitdb';
+import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
-import { EveesLocalModule } from '@uprtcl/evees-local';
 
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { DiscoveryModule } from '@uprtcl/multiplatform';
+import { env } from './env';
 
-import { SimpleWiki } from './simple-wiki';
+export const EveesEthereumBinding = 'evees-ethereum';
 
-import { env } from '../env';
-
-(async function() {
+export const initUprtcl = async () => {
   const polkadotWs = '';
 
-  const ipfsCidConfig = {
+  const ipfsCidConfig: CidConfig = {
     version: 1,
     type: 'sha2-256',
     codec: 'raw',
@@ -63,11 +54,6 @@ import { env } from '../env';
   await pkdConnection.ready();
 
   const ipfs = await IPFS.create(ipfsJSConfig);
-
-  console.log('connecting to pinner peer');
-  await ipfs.swarm.connect(env.pinner.peerMultiaddr);
-  console.log('connected!!!');
-
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
 
   const identity = new PolkadotOrbitDBIdentity(pkdConnection);
@@ -77,22 +63,16 @@ import { env } from '../env';
     [ContextAccessController, ProposalsAccessController],
     identity,
     env.pinner.url,
-    env.pinner.peerMultiaddr,
     ipfs
   );
   await orbitDBCustom.ready();
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-
+  
   const pdkEveesConnection = new EveesPolkadotConnection(pkdConnection);
   await pdkEveesConnection.ready();
 
-  const pkdEvees = new EveesBlockchainCached(
-    pdkEveesConnection,
-    orbitDBCustom,
-    ipfsStore,
-    proposals
-  );
+  const pkdEvees = new EveesBlockchainCached(pdkEveesConnection, orbitDBCustom, ipfsStore, proposals, 'polkadot-evees-cache');
   const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
@@ -101,23 +81,20 @@ import { env } from '../env';
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
 
-  const modules = [
-    new i18nextBaseModule(),
-    new ApolloClientModule(),
-    new CortexModule(),
-    new DiscoveryModule([pkdEvees.casID]),
-    new LensesModule(),
-    new EveesBlockchainModule(),
-    new EveesOrbitDBModule(),
-    new EveesPolkadotModule(),
-    new EveesLocalModule(),
-    evees,
-    documents,
-    wikis
-  ];
-
-  await orchestrator.loadModules(modules);
-
-  console.log(orchestrator);
-  customElements.define('simple-wiki', SimpleWiki);
-})();
+  try {
+    await orchestrator.loadModules([
+      new i18nextBaseModule(),
+      new ApolloClientModule(),
+      new CortexModule(),
+      new DiscoveryModule([pkdEvees.casID]),
+      new LensesModule(),
+      new EveesBlockchainModule(),
+      new EveesOrbitDBModule(),
+      evees,
+      documents,
+      wikis
+    ]);
+  } catch (e) {
+    console.error('error loading modules', e);
+  }
+};

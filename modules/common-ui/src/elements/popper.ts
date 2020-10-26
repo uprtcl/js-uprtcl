@@ -77,6 +77,7 @@ export class UprtclPopper extends LitElement {
         z-index: 20;
         position: absolute;
         width: var(--box-width, 'initial');
+        min-width: var(--box-min-width, 200px);
         max-height: var(--max-height, initial);
         overflow: var(--overflow, 'visible');
         user-select: none;

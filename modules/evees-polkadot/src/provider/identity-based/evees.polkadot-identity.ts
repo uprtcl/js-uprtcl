@@ -1,14 +1,16 @@
+import { html } from 'lit-element';
+
 import { BlockchainConnection } from '@uprtcl/evees-blockchain';
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { PolkadotConnection } from '../../connection.polkadot';
+import { icons } from '../icons';
 
 const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
 
 export class EveesPolkadotConnection implements BlockchainConnection {
   logger: Logger = new Logger('EveesPolkadot');
 
-  constructor(protected connection: PolkadotConnection) {
-  }
+  constructor(protected connection: PolkadotConnection) {}
 
   async ready() {
     await Promise.all([this.connection.ready()]);
@@ -26,7 +28,29 @@ export class EveesPolkadotConnection implements BlockchainConnection {
     return this.connection.account;
   }
   getNetworkId() {
-    return `polkadot-${this.connection.getNetworkId()}`;;
+    return `polkadot-${this.connection.getNetworkId()}`;
+  }
+  icon() {
+    let name = '';
+    let iconName = '';
+    switch (this.connection.getNetworkId()) {
+      case 'Development':
+        name = 'dev';
+        iconName = 'kusama';
+        break;
+
+      case 'Kusama':
+        name = 'Kusama';
+        iconName = 'kusama';
+    }
+    return html`
+      <div style="display:flex;align-items: center;color: #636668;font-weight:bold">
+        <div style="height: 28px;width: 28px;margin-right: 6px">
+          ${icons[iconName]}
+        </div>
+        ${name} Identity
+      </div>
+    `;
   }
   async getLatestBlock() {
     return this.connection.getLatestBlock();

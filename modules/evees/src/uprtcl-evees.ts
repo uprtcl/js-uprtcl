@@ -33,6 +33,7 @@ export { EveesPerspectivesList } from './elements/evees-perspectives-list';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesInfoBase } from './elements/evees-info-base';
+export { EveesInfoUserBased } from './elements/evees-info-user-based';
 export { ProposalsList } from './elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './elements/evees-perspective-icon';
 

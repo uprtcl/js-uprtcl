@@ -31,7 +31,8 @@
     "dexie": "^3.0.2",
     "inversify": "^5.0.1",
     "multihashing-async": "^0.8.0",
-    "orbit-db-access-controllers": "^0.2.6"
+    "orbit-db-access-controllers": "^0.2.6",
+    "lit-html": "^1.1.2"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
