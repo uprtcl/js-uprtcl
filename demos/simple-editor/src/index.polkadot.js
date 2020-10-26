@@ -70,16 +70,22 @@ import { env } from '../env';
     [ContextAccessController, ProposalsAccessController],
     identity,
     env.pinner.url,
+    env.pinner.peerMultiaddr,
     ipfs
   );
   await orbitDBCustom.ready();
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-  
+
   const pdkEveesConnection = new EveesPolkadotConnection(pkdConnection);
   await pdkEveesConnection.ready();
 
-  const pkdEvees = new EveesBlockchainCached(pdkEveesConnection, orbitDBCustom, ipfsStore, proposals, 'polkadot-evees-cache');
+  const pkdEvees = new EveesBlockchainCached(
+    pdkEveesConnection,
+    orbitDBCustom,
+    ipfsStore,
+    proposals
+  );
   const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 
