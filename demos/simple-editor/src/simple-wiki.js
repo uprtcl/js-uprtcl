@@ -70,24 +70,12 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     }
 
     if (window.location.href.includes('remoteHome=')) {
-      const randint = 0 + Math.floor((10000 - 0) * Math.random());
-      const context = await hashObject({
-        creatorId: '',
-        timestamp: randint
-      });
-
-      const remoteHome = {
-        remote: this.officalRemote.id,
-        path: '',
-        creatorId: '',
-        timestamp: 0,
-        context: context
-      };
-
-      const perspective = await deriveSecured(remoteHome, this.officalRemote.store.cidConfig);
-      await this.officalRemote.store.create(perspective.object);
-
-      window.history.pushState('', '', `/?id=${perspective.id}`);
+      const remoteHome = this.officalRemote.getHome
+        ? await this.officalRemote.getHome()
+        : undefined;
+      if (!remoteHome) throw new Error('home remote perspective not defined');
+      await this.officalRemote.store.create(remoteHome.object);
+      window.history.pushState('', '', `/?id=${remoteHome.id}`);
     }
 
     this.loading = false;

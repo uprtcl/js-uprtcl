@@ -53,10 +53,17 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
       `;
     }
     return html`
-      <div class="row">
-        <b class="tag-text">by</b>
-        <evees-author user-id=${this.perspective.object.payload.creatorId} show-name></evees-author>
-      </div>
+      ${this.perspective.object.payload.creatorId
+        ? html`
+            <div class="row">
+              <b class="tag-text">by</b>
+              <evees-author
+                user-id=${this.perspective.object.payload.creatorId}
+                show-name
+              ></evees-author>
+            </div>
+          `
+        : ''}
       <div class="row">
         <b class="tag-text">on</b>
         <div class="remote-icon">

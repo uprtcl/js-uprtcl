@@ -12,10 +12,10 @@ import {
   Secured
 } from '@uprtcl/evees';
 
-import { LocalProposal, ProposalManifest, ProposalSummary, Vote } from './types';
+import { ProposalManifest, ProposalSummary, Vote } from './types';
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import { ProposalStatus, VoteValue } from './proposal.config.types';
+import { VoteValue } from './proposal.config.types';
 
 export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'proposal-id' })
@@ -239,7 +239,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           <evees-author user-id=${creatorId} show-name></evees-author>
         </div>
         <div class="proposal-state">
-          <uprtcl-button icon=${'done'} skinny ?disabled=${false}>merge</uprtcl-button>
+          <uprtcl-icon-button icon="done"></uprtcl-icon-button>
         </div>
         ${this.showDetails ? this.renderDetails() : ''}
       </div>
