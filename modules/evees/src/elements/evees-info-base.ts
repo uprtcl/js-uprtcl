@@ -325,25 +325,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
 
-    const message = html`
-      <div class="row merge-message">
-        <div class="column perspective">
-          <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
-        </div>
-        <div class="column arrow">
-          <uprtcl-icon-button icon="arrow_back"></uprtcl-icon-button>
-        </div>
-        <div class="column perspective">
-          <evees-perspective-icon perspective-id=${fromPerspectiveId}></evees-perspective-icon>
-        </div>
-      </div>
-    `;
-
     const confirm = await this.updatesDialog(
       workspace,
       canWrite ? 'merge' : 'propose',
       'cancel',
-      message
+      this.renderFromToPerspective(toPerspectiveId, fromPerspectiveId)
     );
 
     if (!confirm) {
@@ -550,6 +536,22 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     `;
   }
 
+  renderFromToPerspective(toPerspectiveId: string, fromPerspectiveId: string) {
+    return html`
+      <div class="row merge-message">
+        <div class="column perspective">
+          <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
+        </div>
+        <div class="column arrow">
+          <uprtcl-icon-button icon="arrow_back"></uprtcl-icon-button>
+        </div>
+        <div class="column perspective">
+          <evees-perspective-icon perspective-id=${fromPerspectiveId}></evees-perspective-icon>
+        </div>
+      </div>
+    `;
+  }
+
   renderLoading() {
     return html`
       <uprtcl-loading></uprtcl-loading>
@@ -625,8 +627,6 @@ ${this.perspectiveData.perspective ? getAuthority(this.perspectiveData.perspecti
         .row {
           width: 100%;
           display: flex;
-          padding-bottom: 20px;
-          border-bottom: solid 1px #cccccc;
           margin-bottom: 20px;
         }
         .merge-message .column {
