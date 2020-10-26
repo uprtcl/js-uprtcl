@@ -20,6 +20,7 @@ import { Evees } from '../services/evees';
 import { EveesRemote } from '../services/evees.remote';
 import { EveesHelpers } from './evees.helpers';
 import { EveesWorkspace } from '../services/evees.workspace';
+import { GET_PERSPECTIVE_CONTEXTS } from './queries';
 
 const getContextPerspectives = async (context, container) => {
   if (context === undefined) return [];
@@ -195,9 +196,25 @@ export const eveesResolvers: IResolvers = {
       const remote = await evees.getPerspectiveRemoteById(perspectiveId);
       await remote.deletePerspective(perspectiveId);
 
-      // const queryResult = cache.readQuery({
-      //   query: GET_CONTEXT_PERSPECTIVES
-      // });
+      /** we need to remove the perspective from the cache.
+       * this code is based on
+       * https://www.apollographql.com/docs/tutorial/local-state/ */
+      const queryResult = cache.readQuery({
+        query: GET_PERSPECTIVE_CONTEXTS(perspectiveId)
+      });
+
+      const entity = { ...queryResult.entity };
+
+      /** remove this perspective from the perspectives array */
+      entity.payload.context.perspectives = [
+        ...entity.payload.context.perspectives.filter(persp => persp.id !== perspectiveId)
+      ];
+
+      /** overwrite cache */
+      cache.writeQuery({
+        query: GET_PERSPECTIVE_CONTEXTS(perspectiveId),
+        data: entity
+      });
 
       return { id: perspectiveId };
     },
