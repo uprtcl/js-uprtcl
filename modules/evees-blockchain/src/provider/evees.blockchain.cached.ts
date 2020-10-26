@@ -282,6 +282,11 @@ export class EveesBlockchainCached implements EveesRemote {
       if (cachedUserPerspectives[perspectiveId]) {
         return cachedUserPerspectives[perspectiveId];
       }
+
+      const cacheDelete = await this.cache.deletePerspectives.get(perspectiveId);
+      if (cacheDelete !== undefined) {
+        return { headId: undefined };
+      }
     }
 
     /** if nothing found on the cache, then read it from the blockchain */
@@ -295,6 +300,7 @@ export class EveesBlockchainCached implements EveesRemote {
 
     const newPerspectives = await this.cache.newPerspectives.toArray();
     const updates = await this.cache.updates.toArray();
+    const deletes = await this.cache.deletePerspectives.toArray();
 
     const eveesData = await this.getEveesDataOf(this.userId);
 
@@ -304,6 +310,10 @@ export class EveesBlockchainCached implements EveesRemote {
 
     updates.map(update => {
       eveesData[update.id] = { headId: update.head };
+    });
+
+    deletes.map(toDelete => {
+      delete eveesData[toDelete.id];
     });
 
     const hash = await this.store.create(eveesData);
@@ -356,7 +366,34 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
-    throw new Error('Method not implemented.');
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
+    if (!this.userId) throw new Error('user logged in');
+
+    // action is done on the cache
+    await this.cacheInitialized();
+
+    await this.cache.deletePerspectives.put({
+      id: perspectiveId
+    });
+
+    // delete from cache in case it was there
+    try {
+      await this.cache.newPerspectives.delete(perspectiveId);
+      await this.cache.updates.delete(perspectiveId);
+    } catch (e) {
+      // nop
+    }
+
+    /* remove from context store */
+    const perspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
+    const contextStore = await this.orbitdbcustom.getStore(
+      EveesOrbitDBEntities.Context,
+      {
+        context: perspective.payload.context
+      },
+      true
+    );
+    await contextStore.delete(perspectiveId);
   }
 
   async isLogged() {

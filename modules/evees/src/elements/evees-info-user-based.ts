@@ -1,7 +1,7 @@
 import { html, css, property, query } from 'lit-element';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { UprtclPopper } from '@uprtcl/common-ui';
+import { MenuConfig, UprtclPopper } from '@uprtcl/common-ui';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { Signed } from '@uprtcl/cortex';
 import { EveesInfoBase } from './evees-info-base';
@@ -250,6 +250,16 @@ export class EveesInfoUserBased extends EveesInfoBase {
     );
   }
 
+  async optionOnMine(option: string) {
+    switch (option) {
+      case 'delete':
+        await this.deletePerspective();
+        break;
+    }
+
+    this.checkoutPerspective(this.officialId);
+  }
+
   checkoutPerspective(perspectiveId) {
     this.closePoppers();
     this.dispatchEvent(
@@ -292,6 +302,14 @@ export class EveesInfoUserBased extends EveesInfoBase {
   }
 
   renderDraftControl() {
+    const mineConfig: MenuConfig = {
+      delete: {
+        disabled: false,
+        text: 'delete',
+        icon: 'delete'
+      }
+    };
+
     return html`
       <uprtcl-button
         class="tab-button"
@@ -317,17 +335,12 @@ export class EveesInfoUserBased extends EveesInfoBase {
               }`}
             >
             </uprtcl-icon-button>
-            <uprtcl-icon-button
-              button
-              class=${this.hasPull ? 'margin-left-small highlighted' : 'margin-left-small'}
-              icon="menu_open_180"
-              @click=${() => (this.isMine && this.hasPull ? this.showPull() : undefined)}
-              ?disabled=${!this.hasPull}
-              style=${`--background-color: ${
-                this.isTheirs || this.isMine ? this.color() : 'initial'
-              }`}
+            <uprtcl-options-menu
+              class="options-menu"
+              @option-click=${e => this.optionOnMine(e.detail.key)}
+              .config=${mineConfig}
             >
-            </uprtcl-icon-button>
+            </uprtcl-options-menu>
           `
         : ''}
       ${this.isLoggedOnDefault
@@ -342,6 +355,11 @@ export class EveesInfoUserBased extends EveesInfoBase {
             >
               mine
             </uprtcl-button-loading>
+            <uprtcl-popper icon="settings">
+              <uprtcl-list>
+                <uprtcl-list-item>delete</uprtcl-list-item>
+              </uprtcl-list>
+            </uprtcl-popper>
           `
         : ''}
 

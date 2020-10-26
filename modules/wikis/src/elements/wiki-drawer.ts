@@ -1,5 +1,5 @@
 import { property, html, css, LitElement, query } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
+import { ApolloClient, gql } from 'apollo-boost';
 const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
@@ -74,6 +74,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     const official = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
     if (!official) throw new Error(`cant find official perspective ${this.firstRef}`);
     this.officialOwner = official.object.payload.creatorId;
+
+    const context = official.object.payload.context;
+
+    const perspectives = await this.client.query({
+      query: gql`
+        {
+          contextPerspectives(context: "${context}") {
+            id
+          }
+        }`
+    });
+
+    this.logger.log('perspectives found', perspectives);
 
     await this.load();
     this.loading = false;
