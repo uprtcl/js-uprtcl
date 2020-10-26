@@ -81,8 +81,11 @@ export class EveesModule extends MicroModule {
     container.bind(EveesModule.bindings.Evees).to(Evees);
     container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
 
-    // set first remote as default remote, the second as official remote, by default
+    /** set first remote as default remote, the second as official remote, and only the
+     * first remote ad editable by default */
+
     this.config = this.config || {};
+
     this.config.defaultRemote = this.config.defaultRemote
       ? this.config.defaultRemote[0]
       : this.eveesProviders[0];
@@ -92,6 +95,10 @@ export class EveesModule extends MicroModule {
       : this.eveesProviders.length > 1
       ? this.eveesProviders[1]
       : this.eveesProviders[0];
+
+    this.config.editableRemotesIds = this.config.editableRemotesIds
+      ? this.config.editableRemotesIds
+      : [this.eveesProviders[0].id];
 
     container.bind(EveesModule.bindings.Config).toConstantValue(this.config);
 

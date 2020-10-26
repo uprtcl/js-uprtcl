@@ -17,7 +17,8 @@ import {
   EveesHelpers,
   Perspective,
   CONTENT_UPDATED_TAG,
-  ContentUpdatedEvent
+  ContentUpdatedEvent,
+  EveesConfig
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -80,8 +81,9 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   currentHeadId: string | undefined = undefined;
 
   protected client!: ApolloClient<any>;
-  protected eveesRemotes!: EveesRemote[];
+  protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
+  protected editableRemotesIds!: string[];
 
   constructor() {
     super();
@@ -91,8 +93,11 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
-    this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
+
+    const config = this.request(EveesModule.bindings.Config) as EveesConfig;
+    this.editableRemotesIds = config.editableRemotesIds ? config.editableRemotesIds : [];
 
     this.logger.log('firstUpdated()', { uref: this.uref });
 
@@ -151,7 +156,10 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     const canWrite = await EveesHelpers.canWrite(this.client, this.uref);
 
     this.currentHeadId = headId;
-    this.editableActual = this.editable && canWrite;
+    this.editableActual =
+      this.editableRemotesIds.length > 0
+        ? this.editableRemotesIds.includes(this.remote) && canWrite
+        : canWrite;
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
@@ -212,7 +220,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   }
 
   getStore(remote: string, type: string): CASStore | undefined {
-    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    const remoteInstance = this.remotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
     return remoteInstance.store;
   }
@@ -254,10 +262,10 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   }
 
   async createPage(page: TextNode, remote: string) {
-    if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
+    if (!this.remotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
 
-    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    const remoteInstance = this.remotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, remoteInstance.store, page);
@@ -275,7 +283,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     const store = this.getStore(this.remote, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const remote = this.eveesRemotes.find(r => r.id === this.remote);
+    const remote = this.remotes.find(r => r.id === this.remote);
     if (!remote) throw Error(`Remote not found for remote ${this.remote}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);

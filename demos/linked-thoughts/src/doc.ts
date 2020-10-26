@@ -18,15 +18,6 @@ export class Doc extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.loading = true;
     this.docId = window.location.pathname.split('/')[2];
-
-    const eveesHttpProvider = this.requestAll(
-      EveesModule.bindings.EveesRemote
-    ).find((provider: EveesRemote) =>
-      provider.id.startsWith('http')
-    ) as HttpEthAuthProvider;
-
-    await eveesHttpProvider.connect();
-    this.defaultRemote = eveesHttpProvider.id;
     this.loading = false;
   }
 
@@ -36,15 +27,13 @@ export class Doc extends moduleConnect(LitElement) {
 
   render() {
     if (this.docId === undefined) return '';
-    if (this.loading) return html`<uprtcl-loading></uprtcl-loading>`;
-    
+    if (this.loading)
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
+
     return html`
-      <wiki-drawer
-        @back=${() => this.goHome()}
-        uref=${this.docId}
-        default-remote=${this.defaultRemote}
-        .editableRemotes=${[this.defaultRemote]}
-      ></wiki-drawer>
+      <wiki-drawer @back=${() => this.goHome()} uref=${this.docId}></wiki-drawer>
     `;
   }
 

@@ -4,7 +4,13 @@ import { ApolloClient, gql } from 'apollo-boost';
 import { sharedStyles } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { ContentUpdatedEvent, CONTENT_UPDATED_TAG, EveesHelpers } from '@uprtcl/evees';
+import {
+  ContentUpdatedEvent,
+  CONTENT_UPDATED_TAG,
+  EveesConfig,
+  EveesHelpers,
+  EveesModule
+} from '@uprtcl/evees';
 
 export class WikiPage extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-PAGE');
@@ -21,11 +27,8 @@ export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
   wikiId!: string;
 
-  @property({ type: Array })
-  editableRemotes: string[] = [];
-
   @property({ attribute: false })
-  editable: string = 'false';
+  editable: boolean = false;
 
   @property({ attribute: false })
   loading: boolean = true;
@@ -61,21 +64,6 @@ export class WikiPage extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.pageHash);
-    const canWrite = await EveesHelpers.canWrite(this.client, this.pageHash);
-
-    this.editable =
-      this.editableRemotes.length > 0
-        ? this.editableRemotes.includes(remoteId)
-          ? canWrite
-            ? 'true'
-            : 'false'
-          : 'false'
-        : canWrite
-        ? 'true'
-        : 'false';
-
     this.loading = false;
   }
 
@@ -93,7 +81,6 @@ export class WikiPage extends moduleConnect(LitElement) {
           uref=${this.pageHash}
           parent-id=${this.wikiId}
           color=${this.color}
-          editable=${this.editable}
           official-owner=${this.officialOwner}
           show-info
         >

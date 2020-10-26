@@ -26,13 +26,15 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.logger.log('firstUpdated()', {
       newData: this.newData,
-      oldData: this.oldData,
+      oldData: this.oldData
     });
   }
 
   render() {
     if (this.newData === undefined || this.oldData === undefined) {
-      return html` <uprtcl-loading></uprtcl-loading> `;
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
     }
 
     return html`
@@ -41,14 +43,14 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
         <documents-editor
           .client=${this.workspace.workspace}
           uref=${this.oldData.id}
-          editable="false"
+          read-only
         ></documents-editor>
       </div>
       <div class="document-container new-page">
         <documents-editor
           .client=${this.workspace.workspace}
           uref=${this.newData.id}
-          editable="false"
+          read-only
         ></documents-editor>
       </div>
     `;

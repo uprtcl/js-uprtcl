@@ -12,8 +12,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       rootHash: { type: String },
       loading: { attribute: false },
       canCreate: { attribute: false },
-      creatingSpace: { attribute: false },
-      defaultRemoteId: { type: String }
+      creatingSpace: { attribute: false }
     };
   }
 
@@ -54,11 +53,6 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     this.subscribeToHistory(window.history, state => {
       this.rootHash = state[2].split('id=')[1];
     });
-
-    const defaultRemote = this.request(EveesModule.bindings.Config).defaultRemote;
-    await defaultRemote.ready();
-
-    this.defaultRemoteId = defaultRemote.id;
 
     this.officalRemote = this.requestAll(EveesModule.bindings.EveesRemote).find(instance =>
       instance.id.includes(env.officialRemote)
@@ -156,11 +150,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   renderWiki() {
     return html`
       <div class="wiki-container">
-        <wiki-drawer
-          uref=${this.rootHash}
-          default-remote=${this.defaultRemoteId}
-          show-proposals
-        ></wiki-drawer>
+        <wiki-drawer uref=${this.rootHash} show-proposals></wiki-drawer>
       </div>
     `;
   }

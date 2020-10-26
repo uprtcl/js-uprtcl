@@ -25,7 +25,8 @@ import {
   deriveSecured,
   Perspective,
   Secured,
-  hashObject
+  hashObject,
+  EveesConfig
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { loadEntity } from '@uprtcl/multiplatform';
@@ -51,8 +52,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'official-owner' })
   officialOwner!: string;
 
-  @property({ type: String })
-  editable: string = 'true';
+  @property({ type: Boolean, attribute: 'read-only' })
+  readOnly: boolean = false;
 
   @property({ type: Number, attribute: 'root-level' })
   rootLevel: number = 0;
@@ -86,14 +87,17 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   client!: ApolloClient<any>;
 
-  protected eveesRemotes!: EveesRemote[];
+  protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
+  protected editableRemotesIds!: string[];
 
   draftService = new EveesDraftsLocal();
 
   firstUpdated() {
-    this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
+    const config = this.request(EveesModule.bindings.Config) as EveesConfig;
+    this.editableRemotesIds = config.editableRemotesIds ? config.editableRemotesIds : [];
 
     if (!this.client) {
       this.client = this.request(ApolloClientModule.bindings.Client);
@@ -174,14 +178,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (entityType === EveesModule.bindings.PerspectiveType) {
       remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, entity.id);
 
-      const remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(
-        r => r.id === remoteId
-      );
+      const remote = this.remotes.find(r => r.id === remoteId);
       if (!remote) throw new Error(`remote not found for ${remoteId}`);
-      const canWrite =
-        this.editable === 'true' ? await EveesHelpers.canWrite(this.client, uref) : false;
 
-      if (this.editable === 'true') {
+      let canWrite: boolean = false;
+
+      if (!this.readOnly) {
+        const editableRemote =
+          this.editableRemotesIds.length > 0 ? this.editableRemotesIds.includes(remote.id) : true;
+        if (editableRemote) {
+          canWrite = await EveesHelpers.canWrite(this.client, uref);
+        }
+      }
+
+      if (!this.readOnly) {
         editable = canWrite;
         headId = await EveesHelpers.getPerspectiveHeadId(this.client, entity.id);
         dataId =
@@ -228,7 +238,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (!hasDocNodeLenses) throw Error('hasDocNodeLenses undefined');
 
     /** disable editable */
-    if (this.editable !== 'true') {
+    if (this.readOnly) {
       editable = false;
     }
 
@@ -369,8 +379,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async derivePerspective(node: DocNode): Promise<Secured<Perspective>> {
-    if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
-    const remoteInstance = this.eveesRemotes.find(r => r.id == node.remote);
+    const remoteInstance = this.remotes.find(r => r.id == node.remote);
 
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remoteInstance}`);
 
@@ -471,7 +480,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       object: content
     });
 
-    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    const remoteInstance = this.remotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
     const store = remoteInstance.store;
 
@@ -494,7 +503,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   ): Promise<string> {
     const dataId = await this.createEntity(content, remote);
 
-    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    const remoteInstance = this.remotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
 
     return await EveesHelpers.createCommit(this.client, remoteInstance.store, {
@@ -540,8 +549,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const commitId = await this.createCommit(node.draft, node.remote);
 
-    if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
-    const remoteInstance = this.eveesRemotes.find(r => r.id === node.remote);
+    const remoteInstance = this.remotes.find(r => r.id === node.remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${node.remote}`);
 
     // using the same function used in preparePersist to get the same id
@@ -1018,7 +1026,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   handleNodePerspectiveCheckout(e: CustomEvent, node: DocNode) {
     if (node.coord.length === 1 && node.coord[0] === 0) {
-      return;
+      this.uref = e.detail.perspectiveId;
     }
 
     e.stopPropagation();
@@ -1158,7 +1166,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       return html`
         <documents-editor
           uref=${this.checkedOutPerspectives[coordString].newUref}
-          editable=${this.editable}
+          ?read-only=${this.readOnly}
           root-level=${node.level}
           color=${this.getColor()}
           @checkout-perspective=${e => this.handleEditorPerspectiveCheckout(e, node)}
@@ -1249,7 +1257,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const editorClasses = ['editor-container'];
 
-    if (this.editable === 'true') {
+    if (!this.readOnly) {
       editorClasses.concat(['padding-bottom']);
     }
 

@@ -345,7 +345,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       toPerspectiveId
     );
 
-    if (emitBecauseOfTarget || this.emitProposals) {
+    if (!canWrite && (emitBecauseOfTarget || this.emitProposals)) {
       /* entities are just cloned, not part of the proposal */
       await workspace.executeCreate(this.client);
       await workspace.precacheNewPerspectives(this.client);
