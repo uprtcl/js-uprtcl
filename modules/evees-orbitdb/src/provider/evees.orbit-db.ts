@@ -251,18 +251,15 @@ export class EveesOrbitDB implements EveesRemote {
     if (!(await this.isLogged())) throw notLogged();
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
-    const [latestEntry] = perspectiveStore.iterator({ limit: 1 }).collect();
+    const signedPerspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context: signedPerspective.payload.context
+    });
+    await contextStore.delete(perspectiveId);
 
-    const context = latestEntry && latestEntry.payload.value.context;
-    if (context) {
-      const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
-        context
-      });
-      await contextStore.delete(perspectiveId);
-    }
-
-    await perspectiveStore.drop();
+    /** drop and unpin */
+    const secured: Secured<Perspective> = { id: perspectiveId, object: signedPerspective };
+    await this.orbitdbcustom.dropStore(EveesOrbitDBEntities.Perspective, secured);
   }
 
   async isLogged(): Promise<boolean> {
