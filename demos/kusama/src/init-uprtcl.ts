@@ -24,8 +24,6 @@ import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { env } from './env';
 
-export const EveesEthereumBinding = 'evees-ethereum';
-
 export const initUprtcl = async () => {
   const polkadotWs = '';
 
@@ -68,7 +66,7 @@ export const initUprtcl = async () => {
   await orbitDBCustom.ready();
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-  
+
   const pdkEveesConnection = new EveesPolkadotConnection(pkdConnection);
   await pdkEveesConnection.ready();
 
@@ -86,7 +84,7 @@ export const initUprtcl = async () => {
       new i18nextBaseModule(),
       new ApolloClientModule(),
       new CortexModule(),
-      new DiscoveryModule([pkdEvees.casID]),
+      new DiscoveryModule([pkdEvees.id]),
       new LensesModule(),
       new EveesBlockchainModule(),
       new EveesOrbitDBModule(),

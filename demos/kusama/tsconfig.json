@@ -22,8 +22,8 @@
       "@uprtcl/ethereum-provider/*": [
         "node_modules/@uprtcl/ethereum-provider/*"
       ],
-      "@uprtcl/http-provider": ["node_modules/@uprtcl/http-provider"],
-      "@uprtcl/http-provider/*": ["node_modules/@uprtcl/http-provider/*"],
+      "@uprtcl/http-provider": ["node_modules/@uprtcl/http"],
+      "@uprtcl/http-provider/*": ["node_modules/@uprtcl/http/*"],
       "inversify": ["node_modules/inversify"],
       "inversify/*": ["node_modules/inversify/*"]
     }

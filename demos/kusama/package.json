@@ -19,6 +19,7 @@
     "@uprtcl/evees-polkadot": "^0.0.7-alpha.64",
     "@uprtcl/graphql": "^0.0.7-alpha.64",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.64",
+    "@uprtcl/http-provider": "^0.0.7-alpha.64",
     "@uprtcl/lenses": "^0.0.7-alpha.64",
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.64",
     "@uprtcl/multiplatform": "^0.0.7-alpha.64",
