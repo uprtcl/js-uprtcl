@@ -17,9 +17,6 @@ interface PerspectiveData {
   timestamp: number;
 }
 
-const MERGE_ACTION: string = 'Merge';
-const MERGE_PROPOSAL_ACTION: string = 'Propose';
-
 export class EveesPerspectivesList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
 

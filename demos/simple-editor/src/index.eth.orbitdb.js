@@ -34,10 +34,10 @@ import {
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
-  // const provider = '';
+  const provider = '';
   // const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
   // const provider = 'https://rpc.xdaichain.com/';
-  const provider = 'https://xdai.poanetwork.dev';
+  // const provider = 'https://xdai.poanetwork.dev';
 
   const ipfsCidConfig = {
     version: 1,

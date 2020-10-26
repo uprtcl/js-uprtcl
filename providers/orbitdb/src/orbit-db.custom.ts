@@ -184,6 +184,13 @@ export class OrbitDBCustom extends Connection {
     return store;
   }
 
+  public async dropStore(type: string, entity?: any): Promise<any> {
+    const address = await this.storeAddress(type, entity);
+    const store = await this.openStore(address);
+    await store.drop();
+    this.unpin(address);
+  }
+
   public async pin(address: string) {
     if (this.pinnerUrl) {
       const addr = address.toString();
@@ -196,6 +203,18 @@ export class OrbitDBCustom extends Connection {
           this.pinnedCache.pinned.put({ id: addr });
         });
       }
+    }
+  }
+
+  public async unpin(address: string) {
+    if (this.pinnerUrl) {
+      const addr = address.toString();
+      this.logger.log(`un pinning`, addr);
+      fetch(`${this.pinnerUrl}/unpin?address=${addr}`, {
+        method: 'GET'
+      }).then(response => {
+        this.pinnedCache.pinned.delete(addr);
+      });
     }
   }
 }

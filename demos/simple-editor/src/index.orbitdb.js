@@ -32,9 +32,9 @@ import {
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
-  // const provider = '';
+  const provider = '';
   // const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
-  const provider = 'https://rpc.xdaichain.com/';
+  // const provider = 'https://rpc.xdaichain.com/';
 
   const ipfsCidConfig = {
     version: 1,

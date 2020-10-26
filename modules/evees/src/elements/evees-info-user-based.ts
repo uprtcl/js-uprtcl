@@ -1,7 +1,7 @@
 import { html, css, property, query } from 'lit-element';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { UprtclPopper } from '@uprtcl/common-ui';
+import { MenuConfig, UprtclPopper } from '@uprtcl/common-ui';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { Signed } from '@uprtcl/cortex';
 import { EveesInfoBase } from './evees-info-base';
@@ -250,6 +250,16 @@ export class EveesInfoUserBased extends EveesInfoBase {
     );
   }
 
+  async optionOnMine(option: string) {
+    switch (option) {
+      case 'delete':
+        await this.deletePerspective();
+        break;
+    }
+
+    this.checkoutPerspective(this.officialId);
+  }
+
   checkoutPerspective(perspectiveId) {
     this.closePoppers();
     this.dispatchEvent(
@@ -292,6 +302,14 @@ export class EveesInfoUserBased extends EveesInfoBase {
   }
 
   renderDraftControl() {
+    const mineConfig: MenuConfig = {
+      delete: {
+        disabled: false,
+        text: 'delete',
+        icon: 'delete'
+      }
+    };
+
     return html`
       <uprtcl-button
         class="tab-button"
@@ -332,16 +350,32 @@ export class EveesInfoUserBased extends EveesInfoBase {
         : ''}
       ${this.isLoggedOnDefault
         ? html`
-            <uprtcl-button-loading
-              ?skinny=${!this.isMine}
-              @click=${() => this.draftClicked()}
-              class="margin-left-small tab-button"
-              style=${`--background-color: ${this.isMine ? this.color() : 'initial'}`}
-              ?loading=${this.creatingMine}
-              transition
-            >
-              mine
-            </uprtcl-button-loading>
+            <div class="mine-and-settings">
+              <uprtcl-button-loading
+                ?skinny=${!this.isMine}
+                @click=${() => this.draftClicked()}
+                class="margin-left-small tab-button"
+                style=${`--background-color: ${this.isMine ? this.color() : 'initial'}`}
+                ?loading=${this.creatingMine}
+                transition
+              >
+                mine
+              </uprtcl-button-loading>
+              ${this.isMine
+                ? html`
+                    <div class="options-menu-container">
+                      <uprtcl-options-menu
+                        icon="settings"
+                        class="options-menu"
+                        style=${`--background-color: ${this.isMine ? this.color() : 'initial'}`}
+                        @option-click=${e => this.optionOnMine(e.detail.key)}
+                        .config=${mineConfig}
+                      >
+                      </uprtcl-options-menu>
+                    </div>
+                  `
+                : ''}
+            </div>
           `
         : ''}
 
@@ -490,6 +524,11 @@ export class EveesInfoUserBased extends EveesInfoBase {
         .tab-button {
           width: 120px;
         }
+        .mine-and-settings {
+          width: 142px;
+          display: flex;
+          align-items: center;
+        }
         .tab-other {
           width: 160px;
         }
@@ -501,6 +540,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
           flex: 1 1 auto;
           display: flex;
           justify-content: center;
+          align-items: center;
         }
         .highlighted {
           --background-color: #00b31e;
@@ -512,6 +552,11 @@ export class EveesInfoUserBased extends EveesInfoBase {
         .icon-container {
           margin: 0 auto;
           padding: 12px;
+        }
+        .options-menu-container {
+          margin-left: -18px;
+          border: solid 2px white;
+          border-radius: 20px;
         }
       `
     ]);

@@ -43,6 +43,10 @@ export const eveesTypeDefs: DocumentNode = gql`
     executeProposal(proposalId: ID!, perspectiveId: ID!): UpdateProposal!
   }
 
+  extend type Query {
+    contextPerspectives(context: String!): [Perspective!]
+  }
+
   type Context {
     id: String!
     perspectives: [Perspective!] @discover

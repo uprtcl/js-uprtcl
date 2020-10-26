@@ -433,6 +433,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.logger.info('created proposal', { proposalId });
   }
 
+  async deletePerspective(perspectiveId?: string) {
+    const result = await this.client.mutate({
+      mutation: DELETE_PERSPECTIVE,
+      variables: {
+        perspectiveId: perspectiveId || this.uref
+      }
+    });
+  }
+
   async forkPerspective(perspectiveId?: string) {
     this.creatingNewPerspective = true;
 

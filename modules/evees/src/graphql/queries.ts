@@ -187,3 +187,21 @@ export const EXECUTE_PROPOSAL: DocumentNode = gql`
     }
   }
 `;
+
+export const GET_PERSPECTIVE_CONTEXTS = (perspectiveId: string) => {
+  return gql`{
+    entity(uref: "${perspectiveId}") {
+      id
+      ... on Perspective {
+        payload {
+          context {
+            id
+            perspectives {
+              id
+            } 
+          }
+        }
+      }
+    }
+  }`;
+};
