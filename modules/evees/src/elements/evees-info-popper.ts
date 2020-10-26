@@ -34,8 +34,8 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
-  @property({ type: Boolean, attribute: 'show-perspectives' })
-  showPerspectives: boolean = false;
+  @property({ type: Boolean, attribute: 'show-draft' })
+  showDraft: boolean = false;
 
   @property({ type: Boolean, attribute: 'show-proposals' })
   showProposals: boolean = false;
@@ -45,6 +45,12 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
 
   @property({ type: Boolean, attribute: 'show-info' })
   showInfo: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-icon' })
+  showIcon: boolean = false;
+
+  @property({ type: Boolean, attribute: 'show-debug' })
+  showDebug: boolean = false;
 
   @property({ type: Boolean, attribute: 'emit-proposals' })
   emitProposals: boolean = false;
@@ -116,9 +122,11 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
         </div>
         <div class="evees-info">
           <evees-info-user-based
-            ?show-draft=${this.showPerspectives}
+            ?show-draft=${this.showDraft}
             ?show-proposals=${this.showProposals}
             ?show-info=${this.showInfo}
+            ?show-icon=${this.showIcon}
+            ?show-debug=${this.showDebug}
             ?emit-proposals=${this.showInfo}
             uref=${this.uref}
             parent-id=${this.parentId}

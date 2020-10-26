@@ -25,7 +25,8 @@
     "cids": "^1.0.0",
     "ethers": "^5.0.9",
     "inversify": "^5.0.1",
-    "multihashing-async": "^0.8.0"
+    "multihashing-async": "^0.8.0",
+    "lit-html": "^1.1.2"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",

@@ -28,6 +28,7 @@ import { EveesProposalDiff } from './elements/evees-proposal-diff';
 import { EveesLoginWidget } from './elements/evees-login';
 import { EveesProposalRow } from './elements/evees-proposal-row';
 import { EveesInfoUserBased } from './elements/evees-info-user-based';
+import { EveesPerspectiveIcon } from './uprtcl-evees';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -110,6 +111,7 @@ export class EveesModule extends MicroModule {
     customElements.define('evees-author', EveesAuthor);
     customElements.define('evees-login-widget', EveesLoginWidget);
     customElements.define('evees-proposal-row', EveesProposalRow);
+    customElements.define('evees-perspective-icon', EveesPerspectiveIcon);
   }
 
   get submodules() {

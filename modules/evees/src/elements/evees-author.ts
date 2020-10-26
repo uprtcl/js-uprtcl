@@ -3,12 +3,9 @@ import { LitElement, property, html, css, query } from 'lit-element';
 import { blockies } from './blockies.js';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-const styleMap = (style) => {
+const styleMap = style => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(
-      /([A-Z])/g,
-      (matches) => `-${matches[0].toLowerCase()}`
-    );
+    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -64,7 +61,7 @@ export class EveesAuthor extends moduleConnect(LitElement) {
         {
           seed: this.profile.userId,
           size: 8,
-          scale: 4,
+          scale: 4
         },
         this.blockie
       );
@@ -110,19 +107,25 @@ export class EveesAuthor extends moduleConnect(LitElement) {
         <div
           class="box-img"
           style="${styleMap({
-            borderColor: this.color,
+            borderColor: this.color
           })}"
         >
           ${this.image !== undefined
-            ? html`<img src=${this.image} />`
-            : html`<canvas id="blockie-canvas"></canvas> `}
+            ? html`
+                <img src=${this.image} />
+              `
+            : html`
+                <canvas id="blockie-canvas"></canvas>
+              `}
           }
         </div>
 
         ${this.showName
-          ? html`<div class=${addressBoxClasses.join(' ')}>
-              ${this.profile.name ? this.profile.name : this.profile.userId}
-            </div>`
+          ? html`
+              <div class=${addressBoxClasses.join(' ')}>
+                ${this.profile.name ? this.profile.name : this.profile.userId}
+              </div>
+            `
           : ''}
       </div>
     `;
@@ -141,7 +144,6 @@ export class EveesAuthor extends moduleConnect(LitElement) {
         background: transparent;
         height: fit-content;
         padding: 0px;
-        font-family: Arial, sans-serif;
         position: relative;
         width: fit-content;
         display: flex;
@@ -172,7 +174,7 @@ export class EveesAuthor extends moduleConnect(LitElement) {
         font-weight: 600;
         letter-spacing: 0.015em;
         display: block;
-        padding: 0 16px;
+        padding: 0 16px 0px 10px;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;

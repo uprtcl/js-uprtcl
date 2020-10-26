@@ -20,7 +20,11 @@ export class UprtclIconButton extends LitElement {
     if (this.disabled) {
       classes.push('button-disabled');
     } else {
-      classes.push('button-filled-secondary', 'cursor');
+      if (this.button) {
+        classes.push('button-filled-secondary', 'cursor');
+      } else {
+        classes.push('button-filled-secondary-no-hover');
+      }
     }
 
     return html`

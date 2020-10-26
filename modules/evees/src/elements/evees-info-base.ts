@@ -1,4 +1,4 @@
-import { LitElement, property, html, css, query } from 'lit-element';
+import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
 
 import { ApolloClient, gql } from 'apollo-boost';
 
@@ -102,7 +102,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   eveesDiffEl!: EveesDiff;
 
   @property({ attribute: false })
-  eveesDiffInfoMessage!: string;
+  eveesDiffInfoMessage!: TemplateResult;
 
   perspectiveData!: PerspectiveData;
   pullWorkspace: EveesWorkspace | undefined = undefined;
@@ -112,6 +112,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected merge!: MergeStrategy;
   protected evees!: Evees;
   protected remote!: EveesRemote;
+  protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
   protected cache!: EntityCache;
 
@@ -129,18 +130,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
 
+    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.defaultRemote =
       this.defaultRemoteId !== undefined
-        ? (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-            remote => remote.id === this.defaultRemoteId
-          )
+        ? this.remotes.find(remote => remote.id === this.defaultRemoteId)
         : (this.request(EveesBindings.Config) as EveesConfig).defaultRemote;
 
     this.officialRemote =
       this.officialRemoteId !== undefined
-        ? (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-            remote => remote.id === this.officialRemoteId
-          )
+        ? this.remotes.find(remote => remote.id === this.officialRemoteId)
         : (this.request(EveesBindings.Config) as EveesConfig).officialRemote;
   }
 
@@ -331,7 +329,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       workspace,
       canWrite ? 'merge' : 'propose',
       'cancel',
-      ''
+      this.renderFromToPerspective(toPerspectiveId, fromPerspectiveId)
     );
 
     if (!confirm) {
@@ -343,7 +341,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const emitBecauseOfTarget = await EveesHelpers.checkEmit(
       this.config,
       this.client,
-      this.requestAll(EveesBindings.EveesRemote),
+      this.remotes,
       toPerspectiveId
     );
 
@@ -509,7 +507,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace,
     primaryText: string,
     secondaryText: string,
-    infoMessage: string
+    message: TemplateResult = html``
   ): Promise<boolean> {
     this.showUpdatesDialog = true;
     await this.updateComplete;
@@ -519,8 +517,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.updatesDialogEl.showSecondary = secondaryText !== undefined ? 'true' : 'false';
 
     this.eveesDiffEl.workspace = workspace;
-
-    this.eveesDiffInfoMessage = infoMessage;
+    this.eveesDiffInfoMessage = message;
 
     return new Promise(resolve => {
       this.updatesDialogEl.resolved = value => {
@@ -533,15 +530,38 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   renderUpdatesDialog() {
     return html`
       <uprtcl-dialog id="updates-dialog">
-        <h3 id="evees-update-diff-info"></h3>
+        <div>${this.eveesDiffInfoMessage}</div>
         <evees-update-diff id="evees-update-diff"></evees-update-diff>
       </uprtcl-dialog>
+    `;
+  }
+
+  renderFromToPerspective(toPerspectiveId: string, fromPerspectiveId: string) {
+    return html`
+      <div class="row merge-message">
+        <div class="column perspective">
+          <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
+        </div>
+        <div class="column arrow">
+          <uprtcl-icon-button icon="arrow_back"></uprtcl-icon-button>
+        </div>
+        <div class="column perspective">
+          <evees-perspective-icon perspective-id=${fromPerspectiveId}></evees-perspective-icon>
+        </div>
+      </div>
     `;
   }
 
   renderLoading() {
     return html`
       <uprtcl-loading></uprtcl-loading>
+    `;
+  }
+
+  /** overwrite */
+  renderIcon() {
+    return html`
+      <evees-perspective-icon perspective-id=${this.uref}></evees-perspective-icon>
     `;
   }
 
@@ -582,6 +602,7 @@ ${this.perspectiveData.perspective ? getAuthority(this.perspectiveData.perspecti
           padding: 5px;
           text-align: left;
           max-width: calc(100vw - 72px);
+          min-width: 490px;
         }
 
         .prop-name {
@@ -602,6 +623,27 @@ ${this.perspectiveData.perspective ? getAuthority(this.perspectiveData.perspecti
           overflow: auto;
           width: calc(100% - 32px);
           overflow-x: auto;
+        }
+        .row {
+          width: 100%;
+          display: flex;
+          margin-bottom: 20px;
+        }
+        .merge-message .column {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 8px 14px;
+        }
+        .merge-message .column.perspective {
+          flex: 2 1 auto;
+          padding: 12px;
+          border-radius: 4px;
+          border: solid 1px #cccccc;
+        }
+        .merge-message .column .arrow {
+          flex: 1 1 auto;
         }
       `
     ];

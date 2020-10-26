@@ -22,6 +22,7 @@ import { Lens } from '@uprtcl/lenses';
 import { EveesCacheDB } from './evees.cache.db';
 import { EveesAccessControlFixed } from './evees-acl.fixed';
 import { BlockchainConnection } from './evees.blockchain.connection';
+import { TemplateResult } from 'lit-html';
 
 const evees_if = 'fixed';
 
@@ -384,6 +385,10 @@ export class EveesBlockchainCached implements EveesRemote {
 
   disconnect(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  icon(): TemplateResult {
+    return this.connection.icon();
   }
 
   lense(): Lens {

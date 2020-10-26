@@ -13,6 +13,8 @@ const ZERO_ADDRESS = '0x' + new Array(40).fill(0).join('');
 const ZERO_HEX_32 = '0x' + new Array(64).fill(0).join('');
 
 import { UPDATED_HEAD } from './common';
+import { icons } from './icons';
+import { html, TemplateResult } from 'lit-html';
 
 export class EveesEthereumConnection implements BlockchainConnection {
   logger: Logger = new Logger('EveesEthereum');
@@ -57,6 +59,25 @@ export class EveesEthereumConnection implements BlockchainConnection {
   }
   getNetworkId() {
     return `eth-${this.connection.getNetworkId()}`;
+  }
+  icon(): TemplateResult {
+    let chainName = 'unkown';
+    switch (this.connection.getNetworkId()) {
+      case '1':
+        chainName = 'mainnet';
+      case '4':
+        chainName = 'rinkeby';
+      case '100':
+        chainName = 'xDAI';
+    }
+    return html`
+      <div style="display:flex;align-items: center;color: #636668;font-weight:bold">
+        <div style="height: 28px;width: 28px;margin-right: 6px">
+          ${icons.ethereum}
+        </div>
+        ${chainName}
+      </div>
+    `;
   }
   async getLatestBlock() {
     return this.connection.getLatestBlock();
