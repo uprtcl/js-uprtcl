@@ -84,10 +84,11 @@ export class EveesPolkadotCouncil implements EveesRemote {
       remote: this.id,
       path: path !== undefined ? path : this.defaultPath,
       timestamp,
-      context,
-      fromPerspectiveId,
-      fromHeadId
+      context
     };
+
+    if (fromPerspectiveId) object.fromPerspectiveId = fromPerspectiveId;
+    if (fromHeadId) object.fromHeadId = fromHeadId;
 
     const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
 

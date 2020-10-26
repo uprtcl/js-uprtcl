@@ -47,7 +47,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(remote =>
-      remote.id.includes('evees-council')
+      remote.id.includes('council')
     );
 
     if (!remote) throw new Error(`council remote not registered`);
