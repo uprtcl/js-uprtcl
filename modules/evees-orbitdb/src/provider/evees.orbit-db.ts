@@ -34,7 +34,11 @@ export class EveesOrbitDB implements EveesRemote {
   accessControl: any;
   proposals!: ProposalsProvider;
 
-  constructor(public orbitdbcustom: OrbitDBCustom, public store: CASStore) {
+  constructor(
+    public orbitdbcustom: OrbitDBCustom,
+    public store: CASStore,
+    private postFix?: string
+  ) {
     if (
       orbitdbcustom.getManifest(EveesOrbitDBEntities.Perspective) === undefined ||
       orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined
@@ -47,7 +51,7 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   get id() {
-    return `orbitdb:${evees_if}`;
+    return `orbitdb:${evees_if}${this.postFix ? `:${this.postFix}` : ''}`;
   }
 
   get defaultPath() {

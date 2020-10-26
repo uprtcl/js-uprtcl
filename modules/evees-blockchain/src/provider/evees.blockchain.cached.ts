@@ -388,7 +388,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   icon(): TemplateResult {
-    return this.connection.icon();
+    return this.connection.icon ? this.connection.icon() : html``;
   }
 
   lense(): Lens {

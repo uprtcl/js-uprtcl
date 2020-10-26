@@ -32,9 +32,9 @@ import {
 import { SimpleWiki } from './simple-wiki';
 
 (async function() {
-  const provider = '';
+  // const provider = '';
   // const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
-  // const provider = 'https://rpc.xdaichain.com/';
+  const provider = 'https://rpc.xdaichain.com/';
 
   const ipfsCidConfig = {
     version: 1,
@@ -81,10 +81,13 @@ import { SimpleWiki } from './simple-wiki';
   );
   await orbitDBCustom.ready();
 
+  const orbitdbEveesMaster = new EveesOrbitDB(orbitDBCustom, ipfsStore, 'master');
+  await orbitdbEveesMaster.connect();
+
   const orbitdbEvees = new EveesOrbitDB(orbitDBCustom, ipfsStore);
   await orbitdbEvees.connect();
 
-  const evees = new EveesModule([orbitdbEvees]);
+  const evees = new EveesModule([orbitdbEveesMaster, orbitdbEvees]);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
