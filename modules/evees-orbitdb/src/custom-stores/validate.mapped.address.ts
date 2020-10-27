@@ -10,7 +10,7 @@ export const checkToPerspectiveCreator = async (
   perspectiveId: string,
   orbitdbKey: string,
   identitySources: IdentitySource[]
-) => {
+): Promise<boolean> => {
   const result = await orbitdb._ipfs.dag.get(perspectiveId);
   const forceBuffer = Uint8Array.from(result.value);
   const { payload: toPerspective } = CBOR.decode(forceBuffer.buffer) as Signed<Perspective>;
@@ -19,8 +19,8 @@ export const checkToPerspectiveCreator = async (
 
   if (!toPerspIdentitySource) {
     // if not identity source for this remote, creator must be the orbtidb identity
-    if (toPerspective.creatorId !== orbitdbKey) {
-      return false;
+    if (toPerspective.creatorId === orbitdbKey) {
+      return true;
     }
   } else {
     const valid = await validateMappedAddress(
@@ -33,8 +33,8 @@ export const checkToPerspectiveCreator = async (
     if (valid) {
       return true;
     }
-    return false;
   }
+  return false;
 };
 
 export const validateMappedAddress = async (

@@ -6,15 +6,14 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
 import { EveesBlockchainCached } from './evees.blockchain.cached';
-import { UprtclDialog } from '@uprtcl/common-ui';
+import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
 interface RemoteUI {
   pendingActions: number;
 }
 
 export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) {
-
-  @property({ type: String, attribute: 'remote-id'})
+  @property({ type: String, attribute: 'remote-id' })
   remoteId!: string;
 
   @property({ attribute: false })
@@ -25,13 +24,10 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
 
   @property({ attribute: false })
   remoteUI!: RemoteUI;
-  
+
   @property({ attribute: false })
   newHash!: string;
 
-  @query('#updates-dialog')
-  updatesDialogEl!: UprtclDialog;
-  
   client!: ApolloClient<any>;
   remote!: EveesBlockchainCached;
 
@@ -62,27 +58,33 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
   }
 
   renderDiff() {
+    const options: MenuConfig = {
+      close: {
+        text: 'close',
+        icon: 'clear'
+      }
+    };
     return html`
-      <uprtcl-dialog id="updates-dialog" 
-        @primary=${() => this.showDiff = false } 
-        show-secondary="false"
-        primary-text="close">
-        <evees-blockchain-status
-          remote=${this.remote.id}>
-        </evees-blockchain-status>
+      <uprtcl-dialog .options=${options} @option-selected=${() => (this.showDiff = false)}>
+        <evees-blockchain-status remote=${this.remote.id}> </evees-blockchain-status>
       </uprtcl-dialog>
     `;
   }
 
   render() {
     return html`
-      ${this.loading ? 
-        html`<uprtcl-loading></uprtcl-loading>` : 
-        html`<div class="container">
-          <evees-author user-id=${this.remote.userId as string}></evees-author>
-          <div @click=${() => this.showDiff = true } class="status-container">${this.remoteUI.pendingActions}</div>
-        </div>`}
-
+      ${this.loading
+        ? html`
+            <uprtcl-loading></uprtcl-loading>
+          `
+        : html`
+            <div class="container">
+              <evees-author user-id=${this.remote.userId as string}></evees-author>
+              <div @click=${() => (this.showDiff = true)} class="status-container">
+                ${this.remoteUI.pendingActions}
+              </div>
+            </div>
+          `}
       ${this.showDiff ? this.renderDiff() : ''}
     `;
   }

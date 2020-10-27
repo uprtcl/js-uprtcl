@@ -8,14 +8,19 @@ import { EveesModule } from '@uprtcl/evees';
 import { CortexModule } from '@uprtcl/cortex';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { CidConfig, DiscoveryModule } from '@uprtcl/multiplatform';
-import { PolkadotOrbitDBIdentity, PolkadotConnection, EveesPolkadotConnection, EveesPolkadotCouncil } from '@uprtcl/evees-polkadot';
+import {
+  PolkadotOrbitDBIdentity,
+  PolkadotConnection,
+  EveesPolkadotConnection,
+  EveesPolkadotCouncil
+} from '@uprtcl/evees-polkadot';
 import {
   ProposalsOrbitDB,
   ProposalStore,
   ProposalsToPerspectiveStore,
-  ProposalsAccessController,
   ContextStore,
-  ContextAccessController,
+  getProposalsAcl,
+  getContextAcl,
   EveesOrbitDBModule
 } from '@uprtcl/evees-orbitdb';
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
@@ -60,7 +65,7 @@ export const initUprtcl = async () => {
 
   const orbitDBCustom = new OrbitDBCustom(
     [ContextStore, ProposalStore, ProposalsToPerspectiveStore],
-    [ContextAccessController, ProposalsAccessController],
+    [getContextAcl([identity]), getProposalsAcl([identity])],
     identity,
     env.pinner.url,
     ipfs
@@ -68,11 +73,17 @@ export const initUprtcl = async () => {
   await orbitDBCustom.ready();
 
   const proposals = new ProposalsOrbitDB(orbitDBCustom, ipfsStore);
-  
+
   const pdkEveesConnection = new EveesPolkadotConnection(pkdConnection);
   await pdkEveesConnection.ready();
 
-  const pkdEvees = new EveesBlockchainCached(pdkEveesConnection, orbitDBCustom, ipfsStore, proposals, 'polkadot-evees-cache');
+  const pkdEvees = new EveesBlockchainCached(
+    pdkEveesConnection,
+    orbitDBCustom,
+    ipfsStore,
+    proposals,
+    'polkadot-evees-cache'
+  );
   const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();
 

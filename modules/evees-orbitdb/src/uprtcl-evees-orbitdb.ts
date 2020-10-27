@@ -6,7 +6,7 @@ export { EveesAccessControlOrbitDB } from './provider/evees-acl.orbit-db';
 export { EveesOrbitDBModule } from './evees-orbitdb.module';
 export { ProposalsOrbitDB } from './provider/proposals.orbit-db';
 export { getContextAcl } from './custom-stores/context-access-controller';
-export { ProposalsAccessController } from './custom-stores/proposals-access-controller';
+export { getProposalsAcl } from './custom-stores/proposals-access-controller';
 
 export {
   EveesOrbitDBEntities,

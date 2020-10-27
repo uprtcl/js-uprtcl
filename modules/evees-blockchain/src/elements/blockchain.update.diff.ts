@@ -185,6 +185,9 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
         width: calc(100% - 32px);
         overflow-x: auto;
       }
+      ul {
+        margin-top: 0px;
+      }
       evees-update-diff {
         flex: 1 1 auto;
         display: flex;

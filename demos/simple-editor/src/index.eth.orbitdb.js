@@ -29,7 +29,7 @@ import {
   ProposalStore,
   ProposalsToPerspectiveStore,
   getContextAcl,
-  ProposalsAccessController
+  getProposalsAcl
 } from '@uprtcl/evees-orbitdb';
 
 import { SimpleWiki } from './simple-wiki';
@@ -77,6 +77,7 @@ import { SimpleWiki } from './simple-wiki';
 
   const identitySources = [identity];
   const contextAcl = getContextAcl(identitySources);
+  const proposalsAcl = getProposalsAcl(identitySources);
   const customStores = [
     PerspectiveStore,
     ContextStore,
@@ -87,7 +88,7 @@ import { SimpleWiki } from './simple-wiki';
 
   const orbitDBCustom = new OrbitDBCustom(
     customStores,
-    [contextAcl, ProposalsAccessController],
+    [contextAcl, proposalsAcl],
     identity,
     env.pinner.url,
     env.pinner.peerMultiaddr,

@@ -9,7 +9,6 @@ export function getContextAcl(identitySources: IdentitySource[]) {
   return class ContextAccessController extends IPFSAccessController {
     [x: string]: any;
 
-    storeQueue: any = {};
     orbitdb: any;
 
     static get type() {

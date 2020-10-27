@@ -1,34 +1,19 @@
 import { LitElement, html, property, css } from 'lit-element';
+import { MenuConfig } from './options-menu';
 
 export class UprtclDialog extends LitElement {
-  @property({ type: Boolean, attribute: 'actions' })
-  actions: boolean = true;
-
-  @property({ type: String, attribute: 'primary-text' })
-  primaryText: string = 'Ok';
-
-  @property({ type: String, attribute: 'secondary-text' })
-  secondaryText: string = 'Cancel';
-
-  @property({ type: String, attribute: 'secondary-icon' })
-  secondaryIcon: string = 'clear';
-
-  @property({ type: String, attribute: 'show-secondary' })
-  showSecondary: string = 'false';
+  @property({ type: Object })
+  options!: MenuConfig;
 
   @property({ attribute: false })
   resolved: Function | undefined = undefined;
 
-  secondaryClicked(e) {
+  optionClicked(e, option) {
     e.stopPropagation();
-    this.dispatchEvent(new CustomEvent('secondary'));
-    if (this.resolved) this.resolved(false);
-  }
-
-  primaryClicked(e) {
-    e.stopPropagation();
-    this.dispatchEvent(new CustomEvent('primary'));
-    if (this.resolved) this.resolved(true);
+    this.dispatchEvent(
+      new CustomEvent('option-selected', { detail: { option }, bubbles: true, composed: true })
+    );
+    if (this.resolved) this.resolved(option);
   }
 
   render() {
@@ -38,28 +23,22 @@ export class UprtclDialog extends LitElement {
           <div class="slot-container">
             <slot></slot>
           </div>
-          ${
-            this.actions
-              ? html`
-                  <div class="buttons-container">
-                    ${this.showSecondary === 'true'
-                      ? html`
-                          <uprtcl-button
-                            @click=${this.secondaryClicked}
-                            icon=${this.secondaryIcon}
-                            skinny
-                          >
-                            ${this.secondaryText}
-                          </uprtcl-button>
-                        `
-                      : ''}
-                    <uprtcl-button @click=${this.primaryClicked}>
-                      ${this.primaryText}
-                    </uprtcl-button>
-                  </div>
-                `
-              : ''
-          }
+          <div class="buttons-container">
+            ${Object.getOwnPropertyNames(this.options)
+              .reverse()
+              .map(option => {
+                const details = this.options[option];
+                return html`
+                  <uprtcl-button
+                    @click=${e => this.optionClicked(e, option)}
+                    icon=${details.icon as string}
+                    ?skinny=${details.skinny}
+                    style${details.background ? `--background-color: ${details.background}` : ''}
+                  >
+                    ${this.options[option].text}
+                  </uprtcl-button>
+                `;
+              })}
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Perspective, Proposal } from '../types';
 import { EveesRemote } from 'src/services/evees.remote';
 import { EveesBindings } from 'src/bindings';
-import { UprtclDialog } from '@uprtcl/common-ui';
+import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { ApolloClient } from 'apollo-boost';
@@ -12,7 +12,6 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { EveesHelpers } from '../graphql/evees.helpers';
 import { loadEntity } from '@uprtcl/multiplatform';
-import { Lens } from '@uprtcl/lenses';
 import { ContentUpdatedEvent } from './events';
 import { ProposalsProvider } from 'src/services/proposals.provider';
 
@@ -33,6 +32,9 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
   @property({ attribute: false })
   showDiff: Boolean = false;
+
+  @property({ attribute: false })
+  isCreator: Boolean = false;
 
   @property({ attribute: false })
   creatorId: string | undefined = undefined;
@@ -98,8 +100,11 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     await this.checkCanExecute();
     await this.checkExecuted();
 
+    this.isCreator = this.creatorId !== undefined && this.remote.userId === this.creatorId;
     this.loading = false;
   }
+
+  async checkIsOwner() {}
 
   async checkExecuted() {
     /* a proposal is considered accepted if all the updates are now ancestors of their target */
@@ -127,9 +132,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
             this.client,
             update.perspectiveId
           );
-          const remote = (this.eveesRemotes as EveesRemote[]).find(
-            remote => remote.id === remoteId
-          );
+          const remote = this.eveesRemotes.find(remote => remote.id === remoteId);
           if (remote === undefined) throw new Error('remote undefined');
           return EveesHelpers.canWrite(this.client, update.perspectiveId);
         }
@@ -153,17 +156,35 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     await workspace.precacheNewPerspectives(this.client);
 
     this.showDiff = true;
+    const options: MenuConfig = {};
+
+    if (this.canExecute && !this.executed) {
+      options['accept'] = {
+        disabled: false,
+        text: 'accept',
+        icon: 'done'
+      };
+    }
+
+    if (this.canExecute || this.isCreator) {
+      options['delete'] = {
+        disabled: false,
+        text: 'delete',
+        icon: 'clear'
+        // background: '#c93131'
+      };
+    }
+
+    options['close'] = {
+      disabled: false,
+      text: 'close',
+      icon: 'clear'
+    };
+
     await this.updateComplete;
 
     this.eveesDiffEl.workspace = workspace;
-
-    if (this.canExecute && !this.executed) {
-      this.updatesDialogEl.primaryText = 'accept';
-      this.updatesDialogEl.secondaryText = 'close';
-      this.updatesDialogEl.showSecondary = 'true';
-    } else {
-      this.updatesDialogEl.primaryText = 'close';
-    }
+    this.updatesDialogEl.options = options;
 
     const value = await new Promise(resolve => {
       this.updatesDialogEl.resolved = value => {
@@ -175,7 +196,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.dispatchEvent(new CustomEvent('dialogue-closed', { bubbles: true, composed: true }));
     this.showDiff = false;
 
-    if (this.canExecute && !this.executed && value) {
+    if (value === 'accept') {
       /** run the proposal changes as the logged user */
       await workspace.execute(this.client);
       await this.proposals.deleteProposal(this.proposalId);
@@ -189,6 +210,11 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
           composed: true
         })
       );
+    }
+
+    if (value === 'delete') {
+      await this.proposals.deleteProposal(this.proposalId);
+      this.load();
     }
   }
 

@@ -10,13 +10,16 @@ const type = 'proposals';
 export function getProposalsAcl(identitySources: IdentitySource[]) {
   return class ProposalsAccessController extends IPFSAccessController {
     [x: string]: any;
-    // Returns the type of the access controller
+
+    orbitdb: any;
+
     static get type() {
       return type;
     }
 
-    constructor(ipfs, options) {
-      super(ipfs, options);
+    constructor(orbitdb: any, options: any) {
+      super(orbitdb._ipfs, options);
+      this.orbitdb = orbitdb;
     }
 
     async canAppend(entry, identityProvider) {
@@ -55,7 +58,7 @@ export function getProposalsAcl(identitySources: IdentitySource[]) {
 
     static async create(orbitdb, options: any = {}) {
       options = { ...options, ...{ write: options.write || [orbitdb.identity.id] } };
-      return new ProposalsAccessController(orbitdb._ipfs, options);
+      return new ProposalsAccessController(orbitdb, options);
     }
   };
 }

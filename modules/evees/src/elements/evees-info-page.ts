@@ -11,6 +11,8 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { EveesInfoBase } from './evees-info-base';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
+import { MenuConfig } from '@uprtcl/common-ui';
+import { doesNotReject } from 'assert';
 
 export class EveesInfoPage extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-PAGE');
@@ -114,9 +116,22 @@ export class EveesInfoPage extends EveesInfoBase {
   async showPullChanges() {
     if (!this.pullWorkspace) throw new Error('pullWorkspace undefined');
 
-    const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close');
+    const options: MenuConfig = {
+      apply: {
+        text: 'apply',
+        icon: 'done',
+        skinny: false
+      },
+      close: {
+        text: 'close',
+        icon: 'clear',
+        skinny: true
+      }
+    };
 
-    if (!confirm) {
+    const result = await this.updatesDialog(this.pullWorkspace, options);
+
+    if (result !== 'apply') {
       return;
     }
 
