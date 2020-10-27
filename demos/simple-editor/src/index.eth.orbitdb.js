@@ -11,23 +11,24 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import { EveesOrbitDB, EveesOrbitDBModule, ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
-import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
-
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { EthereumOrbitDBIdentity, EveesEthereumConnection } from '@uprtcl/evees-ethereum';
 
+import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 
 import {
+  EveesOrbitDB,
+  EveesOrbitDBModule,
+  ProposalsOrbitDB,
   PerspectiveStore,
   ContextStore,
   ProposalStore,
   ProposalsToPerspectiveStore,
-  ContextAccessController,
+  getContextAclController,
   ProposalsAccessController
 } from '@uprtcl/evees-orbitdb';
 
@@ -74,9 +75,12 @@ import { SimpleWiki } from './simple-wiki';
   await ethConnection.ready();
   const identity = new EthereumOrbitDBIdentity(ethConnection);
 
+  const identitySources = [identity];
+  const contextAcl = getContextAclController(identitySources);
+
   const orbitDBCustom = new OrbitDBCustom(
     [PerspectiveStore, ContextStore, ProposalStore, ProposalsToPerspectiveStore],
-    [ContextAccessController, ProposalsAccessController],
+    [contextAcl, ProposalsAccessController],
     identity,
     env.pinner.url,
     env.pinner.peerMultiaddr,

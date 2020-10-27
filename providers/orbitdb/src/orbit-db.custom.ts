@@ -10,13 +10,23 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { PinnedCacheDB } from '@uprtcl/ipfs-provider';
 
-import { EntropyGenerator } from './entropy.generator';
+import { IdentitySource } from './identity.source';
 import { CustomStore } from './types';
+import { EveesOrbitDBRootEntities } from './custom.stores';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
 
 const keystorePath = id => `./orbitdb/identity/odbipd-${id}`;
+
+export const loginMsg = `
+Please Read!
+
+I authorize this app to update my _Prtcl content in OrbitDB.
+`;
+
+export const mappingMsg = (identity: string) =>
+  `I confirm to be the owner of OrbitDB identity:${identity}`;
 
 interface Status {
   pinnerHttpConnected: boolean;
@@ -40,7 +50,7 @@ export class OrbitDBCustom extends Connection {
   constructor(
     protected storeManifests: CustomStore[],
     protected acls: any[],
-    protected entropy: EntropyGenerator,
+    protected identitySource: IdentitySource,
     protected pinnerUrl?: string,
     protected pinnerMultiaddr?: string,
     public ipfs?: any,
@@ -80,8 +90,20 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async login() {
-    const privateKey = await this.entropy.get();
+    const privateKey = await this.identitySource.signText(loginMsg);
     const identity = await this.deriveIdentity(privateKey);
+
+    const mappingStore = await this.getStore(EveesOrbitDBRootEntities.AddressMapping, {
+      sourceId: this.identitySource.sourceId,
+      publicKey: this.identitySource.publicKey
+    });
+
+    const [currentSignature] = mappingStore.iterator({ limit: 1 }).collect();
+    if (!currentSignature) {
+      const signature = this.identitySource.signText(mappingMsg(identity));
+      mappingStore.add(signature);
+    }
+
     this.useIdentity(identity);
     this.status.logged = true;
   }

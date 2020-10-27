@@ -96,6 +96,26 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     return this.updateProposalInternal(proposalId, details);
   }
 
+  async deleteProposal(proposalId: string): Promise<void> {
+    const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
+
+    /** remove from list of proposals */
+    const proposalsToPerspeciveStore = await this.orbitdb.getStore(
+      EveesOrbitDBEntities.ProposalsToPerspective,
+      { toPerspectiveId: proposalManifest.toPerspectiveId },
+      true
+    );
+
+    await proposalsToPerspeciveStore.delete(proposalId);
+
+    /** drop and unpin */
+    const proposalEntity: Entity<ProposalManifest> = {
+      id: proposalId,
+      object: proposalManifest
+    };
+    return this.orbitdb.dropStore(EveesOrbitDBEntities.Proposal, proposalEntity);
+  }
+
   private async updateProposalInternal(
     proposalId: string,
     details: ProposalDetails,

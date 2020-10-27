@@ -14,6 +14,7 @@ import { EveesHelpers } from '../graphql/evees.helpers';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { Lens } from '@uprtcl/lenses';
 import { ContentUpdatedEvent } from './events';
+import { ProposalsProvider } from 'src/services/proposals.provider';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -42,7 +43,8 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
-  remote!: EveesRemote | undefined;
+  remote!: EveesRemote;
+  proposals!: ProposalsProvider;
   proposal!: Proposal;
   executed: boolean = false;
   canExecute: boolean = false;
@@ -55,6 +57,18 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
+    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+      r => r.id === this.remoteId
+    );
+    if (remote === undefined) throw new Error(`remote ${this.remoteId} not found`);
+
+    const proposals = remote.proposals;
+    if (proposals === undefined)
+      throw new Error(`remote ${this.remoteId} proposals provider not found`);
+
+    this.remote = remote;
+    this.proposals = proposals;
+
     this.load();
   }
 
@@ -68,15 +82,10 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.loading = true;
     this.loadingCreator = true;
 
-    this.remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-      r => r.id === this.remoteId
-    );
-
-    if (this.remote === undefined) throw new Error(`remote ${this.remoteId} not found`);
     if (this.remote.proposals === undefined)
       throw new Error(`remote ${this.remoteId} cant handle proposals`);
 
-    this.proposal = await this.remote.proposals.getProposal(this.proposalId);
+    this.proposal = await this.proposals.getProposal(this.proposalId);
 
     const fromPerspective = this.proposal.fromPerspectiveId
       ? await loadEntity<Signed<Perspective>>(this.client, this.proposal.fromPerspectiveId)
@@ -167,7 +176,12 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.showDiff = false;
 
     if (this.canExecute && !this.executed && value) {
+      /** run the proposal changes as the logged user */
       await workspace.execute(this.client);
+      await this.proposals.deleteProposal(this.proposalId);
+
+      this.load();
+
       this.dispatchEvent(
         new ContentUpdatedEvent({
           detail: { uref: this.proposal.toPerspectiveId },

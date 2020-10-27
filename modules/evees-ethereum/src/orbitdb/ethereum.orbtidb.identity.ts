@@ -1,21 +1,23 @@
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { EntropyGenerator } from '@uprtcl/orbitdb-provider';
+import { IdentitySource } from '@uprtcl/orbitdb-provider';
 
-const msg = website => `
-Please Read!
+// TODO: THe identity soruce id must be the same as the remote id, but circular dependency
+const evees_if = 'fixed';
 
-I authorize this app to update my _Prtcl content in OrbitDB.
-`;
-
-export class EthereumOrbitDBIdentity implements EntropyGenerator {
+export class EthereumOrbitDBIdentity implements IdentitySource {
   constructor(protected connection: EthereumConnection) {}
 
-  public async get() {
+  get sourceId() {
+    return `${this.connection.getNetworkId()}:${evees_if}`;
+  }
+
+  get publicKey() {
+    return this.connection.getCurrentAccount();
+  }
+
+  public async signText(msg: string) {
     await this.connection.connectWallet();
-    const signature = await this.connection.signText(
-      msg(window.location.origin),
-      this.connection.getCurrentAccount()
-    );
+    const signature = await this.connection.signText(msg, this.connection.getCurrentAccount());
     return signature;
   }
 }
