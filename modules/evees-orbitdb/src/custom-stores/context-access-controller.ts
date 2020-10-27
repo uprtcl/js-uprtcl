@@ -3,7 +3,7 @@ import CBOR from 'cbor-js';
 import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
 import { Signed } from '@uprtcl/cortex';
 import { Perspective } from '@uprtcl/evees';
-import { IdentitySource, AddressMapping } from '@uprtcl/orbitdb-provider';
+import { IdentitySource, AddressMapping, mappingMsg } from '@uprtcl/orbitdb-provider';
 
 const type = 'context';
 
@@ -33,25 +33,24 @@ export function getContextAcl(identitySources: IdentitySource[]) {
           const forceBuffer = Uint8Array.from(result.value);
           const { payload: perspective } = CBOR.decode(forceBuffer.buffer) as Signed<Perspective>;
 
-          /** only the creator of a perspective can add or remove the perspective from the context store */
-          if (perspective.creatorId !== key) return false;
-
           /** TODO: I cant reuse orbitdb custom here due to a circular dependency. investigate and fix. */
           const mappingEntity = {
             sourceId: perspective.remote,
-            publickey: key
+            key: key
           };
 
-          const address = this.orbitdb.determineAddress(
-            AddressMapping.name(mappingEntity),
-            AddressMapping.type,
-            AddressMapping.options(mappingEntity)
-          );
+          const address = (
+            await this.orbitdb.determineAddress(
+              AddressMapping.name(mappingEntity),
+              AddressMapping.type,
+              AddressMapping.options(mappingEntity)
+            )
+          ).toString();
 
           let db;
-          if (this.stores[address]) {
+          if (this.orbitdb.stores[address]) {
             // this.logger.log(`${address} -- Store loaded. HadDB: ${hadDB}`);
-            db = this.instance.stores[address];
+            db = this.orbitdb.stores[address];
           } else if (this.storeQueue[address]) {
             // this.logger.log(`${address} -- Store already queue. HadDB: ${hadDB}`);
             db = this.storeQueue[address];
@@ -67,23 +66,18 @@ export function getContextAcl(identitySources: IdentitySource[]) {
           db = await db;
           delete this.storeQueue[address];
 
-          const [signedAccount] = db.iterator({ limit: 1 }).collect();
+          const [signedAccountEntry] = db.iterator({ limit: 1 }).collect();
 
-          if (signedAccount.account !== perspective.creatorId) {
-            console.error(
-              `${signedAccount.account} is not the expected creatorId ${perspective.creatorId}`
-            );
-          }
-
+          const signature = signedAccountEntry.payload.value;
           const identitySource = identitySources.find(s => s.sourceId === perspective.remote);
           if (!identitySource) throw new Error(`identitySource ${perspective.remote} not found`);
-          const valid = identitySource.verify(signedAccount.signature, signedAccount.account);
 
-          if (!valid) {
+          const message = mappingMsg(key);
+          const signer = await identitySource.verify(message, signature);
+
+          if (signer !== perspective.creatorId) {
             console.error(
-              `${key} cannot write as user ${perspective.creatorId} on remote ${
-                perspective.remote
-              }. Signature ${JSON.stringify(signedAccount)} not valid`
+              `${key} cannot write as user ${perspective.creatorId} on remote ${perspective.remote}. Signature ${signature} not valid`
             );
             return false;
           }

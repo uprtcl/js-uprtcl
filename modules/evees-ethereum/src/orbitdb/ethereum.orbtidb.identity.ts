@@ -8,7 +8,7 @@ export class EthereumOrbitDBIdentity implements IdentitySource {
   constructor(protected connection: EthereumConnection) {}
 
   get sourceId() {
-    return `${this.connection.getNetworkId()}:${evees_if}`;
+    return `eth-${this.connection.getNetworkId()}:${evees_if}`;
   }
 
   get publicKey() {
@@ -19,5 +19,9 @@ export class EthereumOrbitDBIdentity implements IdentitySource {
     await this.connection.connectWallet();
     const signature = await this.connection.signText(msg, this.connection.getCurrentAccount());
     return signature;
+  }
+
+  async verify(msg: string, signature: string): Promise<string> {
+    return this.connection.verifySignature(msg, signature);
   }
 }

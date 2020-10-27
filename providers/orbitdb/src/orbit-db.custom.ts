@@ -90,22 +90,29 @@ export class OrbitDBCustom extends Connection {
   public async login() {
     const privateKey = await this.identitySource.signText(loginMsg);
     const identity = await this.deriveIdentity(privateKey);
+    this.useIdentity(identity);
 
-    const mappingStore = await this.getStore(EveesOrbitDBRootEntities.AddressMapping, {
-      sourceId: this.identitySource.sourceId,
-      key: identity.id,
-    });
+    const mappingStore = await this.getStore(
+      EveesOrbitDBRootEntities.AddressMapping,
+      {
+        sourceId: this.identitySource.sourceId,
+        key: identity.id,
+      },
+      true
+    );
 
-    const [signedAccount] = mappingStore.iterator({ limit: 1 }).collect();
-    if (!signedAccount) {
+    const [signedAccountEntry] = mappingStore.iterator({ limit: 1 }).collect();
+    this.logger.log(
+      `Address mapping on store ${mappingStore.address}`,
+      signedAccountEntry ? signedAccountEntry.payload.value : undefined
+    );
+
+    if (!signedAccountEntry) {
       const signature = await this.identitySource.signText(mappingMsg(identity.id));
-      await mappingStore.add({
-        signature,
-        account: this.identitySource.publicKey,
-      });
+      this.logger.log(`Address mapping added to store ${mappingStore.address}`, signature);
+      await mappingStore.add(signature);
     }
 
-    this.useIdentity(identity);
     this.status.logged = true;
   }
 
