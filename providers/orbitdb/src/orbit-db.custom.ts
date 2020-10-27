@@ -15,7 +15,7 @@ import { EveesOrbitDBRootEntities } from './custom.stores';
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
 
-const keystorePath = (id) => `./orbitdb/identity/odbipd-${id}`;
+const keystorePath = id => `./orbitdb/identity/odbipd-${id}`;
 
 export const loginMsg = `
 Please Read!
@@ -40,7 +40,7 @@ export class OrbitDBCustom extends Connection {
   readonly status: Status = {
     pinnerHttpConnected: false,
     pinnerPeerConnected: false,
-    logged: false,
+    logged: false
   };
 
   logger = new Logger('OrbitDB-Connection');
@@ -57,7 +57,7 @@ export class OrbitDBCustom extends Connection {
     super(options);
 
     /** register AccessControllers */
-    this.acls.map((AccessController) => {
+    this.acls.map(AccessController => {
       if (!OrbitDB.AccessControllers.isSupported(AccessController.type)) {
         OrbitDB.AccessControllers.addAccessController({ AccessController });
       }
@@ -83,7 +83,7 @@ export class OrbitDBCustom extends Connection {
 
     this.logger.log('Connected', {
       instance: this.instance,
-      identity: this.identity,
+      identity: this.identity
     });
   }
 
@@ -96,7 +96,7 @@ export class OrbitDBCustom extends Connection {
       EveesOrbitDBRootEntities.AddressMapping,
       {
         sourceId: this.identitySource.sourceId,
-        key: identity.id,
+        key: identity.id
       },
       true
     );
@@ -131,7 +131,7 @@ export class OrbitDBCustom extends Connection {
       keystore: new Keystore(keystorePath(id)),
       type: IdentityProvider.type,
       id: id,
-      derive: sig,
+      derive: sig
     });
   }
 
@@ -140,7 +140,7 @@ export class OrbitDBCustom extends Connection {
   }
 
   public getManifest(type: string) {
-    return this.storeManifests.find((s) => s.customType === type);
+    return this.storeManifests.find(s => s.customType === type);
   }
 
   public async storeAddress(type: string, entity: any): Promise<string> {
@@ -170,7 +170,7 @@ export class OrbitDBCustom extends Connection {
       this.logger.log(`${address} -- Store init - first time. HadDB: ${hadDB}`);
       db = this.storeQueue[address] = this.instance
         .open(address, { identity: this.identity })
-        .then(async (store) => {
+        .then(async store => {
           await store.load();
           return store;
         })
@@ -184,15 +184,15 @@ export class OrbitDBCustom extends Connection {
 
     if (!hadDB) {
       const result = await fetch(`${this.pinnerUrl}/includes?address=${address}`, {
-        method: 'GET',
+        method: 'GET'
       });
 
       const { includes } = await result.json();
 
       if (includes) {
         this.logger.log(`${db.address} -- Awaiting replication. HadDB: ${hadDB}`);
-        await new Promise((resolve) => {
-          db.events.on('replicated', async (r) => {
+        await new Promise(resolve => {
+          db.events.on('replicated', async r => {
             this.logger.log(`${r} -- Replicated`);
             resolve();
           });
@@ -228,8 +228,8 @@ export class OrbitDBCustom extends Connection {
       if (!pinned) {
         this.logger.log(`pinning`, addr);
         fetch(`${this.pinnerUrl}/pin?address=${addr}`, {
-          method: 'GET',
-        }).then((response) => {
+          method: 'GET'
+        }).then(response => {
           this.pinnedCache.pinned.put({ id: addr });
         });
       }

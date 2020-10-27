@@ -51,7 +51,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     );
 
     if (!remote) throw new Error(`council remote not registered`);
-    this.remote = remote as EveesPolkadotCouncil;
+    this.remote = (remote as unknown) as EveesPolkadotCouncil;
     this.load();
   }
 
