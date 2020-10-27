@@ -25,6 +25,9 @@ export class EveesInfoUserBased extends EveesInfoBase {
   @property({ type: Boolean, attribute: 'show-draft' })
   showDraftControl: boolean = false;
 
+  @property({ type: Boolean, attribute: 'show-edit-draft' })
+  showEditDraft: boolean = false;
+
   @property({ type: Boolean, attribute: 'show-info' })
   showInfo: boolean = false;
 
@@ -361,7 +364,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
               >
                 mine
               </uprtcl-button-loading>
-              ${this.isMine
+              ${this.isMine && this.showEditDraft
                 ? html`
                     <div class="options-menu-container">
                       <uprtcl-options-menu

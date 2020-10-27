@@ -207,14 +207,16 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async unpin(address: string) {
-    if (this.pinnerUrl) {
-      const addr = address.toString();
-      this.logger.log(`un pinning`, addr);
-      fetch(`${this.pinnerUrl}/unpin?address=${addr}`, {
-        method: 'GET'
-      }).then(response => {
-        this.pinnedCache.pinned.delete(addr);
-      });
-    }
+    /** unpin is not working on the pinner */
+    return;
+    // if (this.pinnerUrl) {
+    //   const addr = address.toString();
+    //   this.logger.log(`un pinning`, addr);
+    //   fetch(`${this.pinnerUrl}/unpin?address=${addr}`, {
+    //     method: 'GET'
+    //   }).then(response => {
+    //     this.pinnedCache.pinned.delete(addr);
+    //   });
+    // }
   }
 }

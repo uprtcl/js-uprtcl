@@ -161,6 +161,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         show-icon
         ?show-debug=${false}
         show-draft
+        show-edit-draft
       >
       </evees-info-user-based>
     `;
