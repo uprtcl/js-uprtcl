@@ -1,10 +1,7 @@
 'use strict';
-import CBOR from 'cbor-js';
 import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
-import { Signed } from '@uprtcl/cortex';
-import { Perspective } from '@uprtcl/evees';
 import { IdentitySource } from '@uprtcl/orbitdb-provider';
-import { validateMappedAddress } from './validate.mapped.address';
+import { checkToPerspectiveCreator } from './validate.mapped.address';
 
 const type = 'context';
 
@@ -30,31 +27,16 @@ export function getContextAcl(identitySources: IdentitySource[]) {
       try {
         if (this.write.includes(orbitdbKey) || this.write.includes('*')) {
           const perspectiveId = entry.payload.value;
-          const result = await this.orbitdb._ipfs.dag.get(perspectiveId);
-          const forceBuffer = Uint8Array.from(result.value);
-          const { payload: perspective } = CBOR.decode(forceBuffer.buffer) as Signed<Perspective>;
 
-          const identitySource = identitySources.find(s => s.sourceId === perspective.remote);
+          const valid = await checkToPerspectiveCreator(
+            this.orbitdb,
+            perspectiveId,
+            orbitdbKey,
+            identitySources
+          );
 
-          if (!identitySource) {
-            // if not identity source for this remote, creator must be the orbtidb identity
-            if (perspective.creatorId !== orbitdbKey) {
-              return false;
-            }
-          } else {
-            const valid = await validateMappedAddress(
-              this.orbitdb,
-              identitySource,
-              perspective.remote,
-              perspective.creatorId,
-              orbitdbKey
-            );
-            if (!valid) {
-              console.error(
-                `${orbitdbKey} cannot write as user ${perspective.creatorId} on remote ${perspective.remote}.`
-              );
-              return false;
-            }
+          if (!valid) {
+            return false;
           }
 
           // check identity is valid

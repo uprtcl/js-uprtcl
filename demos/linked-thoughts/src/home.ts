@@ -44,27 +44,18 @@ export class Home extends moduleConnect(LitElement) {
   async newDocument(title: string) {
     this.creatingNewDocument = true;
 
-    const eveesProvider = this.requestAll(
-      EveesModule.bindings.EveesRemote
-    ).find((provider: EveesRemote) => provider.id.startsWith('http')) as EveesRemote;
+    const remote = this.requestAll(EveesModule.bindings.EveesRemote).find((provider: EveesRemote) =>
+      provider.id.startsWith('http')
+    ) as EveesRemote;
 
-    const client = this.request(ApolloClientModule.bindings.Client) as ApolloClient<any>;
+    const perspective = await remote.getHome(remote.userId);
+    const id = await remote.store.create(perspective.object);
 
-    const wiki = {
-      title: title,
-      pages: []
-    };
+    if (id !== perspective.id) {
+      throw new Error('unexpected id');
+    }
 
-    const dataId = await EveesHelpers.createEntity(client, eveesProvider.store, wiki);
-    const headId = await EveesHelpers.createCommit(client, eveesProvider.store, {
-      dataId
-    });
-
-    const perspectiveId = await EveesHelpers.createPerspective(client, eveesProvider, {
-      headId: headId,
-      context: Date.now().toString()
-    });
-    this.go(perspectiveId);
+    this.go(perspective.id);
   }
 
   go(perspectiveId: string) {
