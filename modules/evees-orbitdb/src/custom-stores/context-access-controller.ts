@@ -3,22 +3,24 @@ import CBOR from 'cbor-js';
 import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
 import { Signed } from '@uprtcl/cortex';
 import { Perspective } from '@uprtcl/evees';
-import { IdentitySource, addressMappings } from '@uprtcl/orbitdb-provider';
+import { IdentitySource, AddressMapping } from '@uprtcl/orbitdb-provider';
 
 const type = 'context';
 
-function getContextAclContructor(identitySources: IdentitySource[]) {
+export function getContextAcl(identitySources: IdentitySource[]) {
   return class ContextAccessController extends IPFSAccessController {
     [x: string]: any;
 
     storeQueue: any = {};
+    orbitdb: any;
 
     static get type() {
       return type;
     }
 
-    constructor(public orbitdb: any, public options: any) {
+    constructor(orbitdb: any, options: any) {
       super(orbitdb._ipfs, options);
+      this.orbitdb = orbitdb;
     }
 
     async canAppend(entry, identityProvider) {
@@ -41,9 +43,9 @@ function getContextAclContructor(identitySources: IdentitySource[]) {
           };
 
           const address = this.orbitdb.determineAddress(
-            addressMappings.name(mappingEntity),
-            addressMappings.type,
-            addressMappings.options(mappingEntity)
+            AddressMapping.name(mappingEntity),
+            AddressMapping.type,
+            AddressMapping.options(mappingEntity)
           );
 
           let db;
@@ -65,16 +67,23 @@ function getContextAclContructor(identitySources: IdentitySource[]) {
           db = await db;
           delete this.storeQueue[address];
 
-          const [signature] = db.iterator({ limit: 1 }).collect();
+          const [signedAccount] = db.iterator({ limit: 1 }).collect();
 
-          const valid = identitySources[perspective.remote].verify(
-            signature,
-            perspective.creatorId
-          );
+          if (signedAccount.account !== perspective.creatorId) {
+            console.error(
+              `${signedAccount.account} is not the expected creatorId ${perspective.creatorId}`
+            );
+          }
+
+          const identitySource = identitySources.find(s => s.sourceId === perspective.remote);
+          if (!identitySource) throw new Error(`identitySource ${perspective.remote} not found`);
+          const valid = identitySource.verify(signedAccount.signature, signedAccount.account);
 
           if (!valid) {
             console.error(
-              `${key} cannot write as user ${perspective.creatorId} on remote ${perspective.remote}. Signature ${signature} not valid`
+              `${key} cannot write as user ${perspective.creatorId} on remote ${
+                perspective.remote
+              }. Signature ${JSON.stringify(signedAccount)} not valid`
             );
             return false;
           }
@@ -94,5 +103,3 @@ function getContextAclContructor(identitySources: IdentitySource[]) {
     }
   };
 }
-
-export { getContextAclContructor };

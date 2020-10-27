@@ -14,12 +14,12 @@ import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { EthereumOrbitDBIdentity, EveesEthereumConnection } from '@uprtcl/evees-ethereum';
 
-import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 
+import { OrbitDBCustom, AddressMapping } from '@uprtcl/orbitdb-provider';
 import {
   EveesOrbitDB,
   EveesOrbitDBModule,
@@ -28,7 +28,7 @@ import {
   ContextStore,
   ProposalStore,
   ProposalsToPerspectiveStore,
-  getContextAclController,
+  getContextAcl,
   ProposalsAccessController
 } from '@uprtcl/evees-orbitdb';
 
@@ -76,10 +76,17 @@ import { SimpleWiki } from './simple-wiki';
   const identity = new EthereumOrbitDBIdentity(ethConnection);
 
   const identitySources = [identity];
-  const contextAcl = getContextAclController(identitySources);
+  const contextAcl = getContextAcl(identitySources);
+  const customStores = [
+    PerspectiveStore,
+    ContextStore,
+    ProposalStore,
+    ProposalsToPerspectiveStore,
+    AddressMapping
+  ];
 
   const orbitDBCustom = new OrbitDBCustom(
-    [PerspectiveStore, ContextStore, ProposalStore, ProposalsToPerspectiveStore],
+    customStores,
     [contextAcl, ProposalsAccessController],
     identity,
     env.pinner.url,
