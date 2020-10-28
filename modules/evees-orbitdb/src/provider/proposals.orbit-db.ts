@@ -33,7 +33,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     }
   }
 
-  canPropose(perspectiveId?: string) {
+  async canPropose(perspectiveId?: string) {
     return false;
   }
 

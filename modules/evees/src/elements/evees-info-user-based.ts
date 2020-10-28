@@ -184,6 +184,10 @@ export class EveesInfoUserBased extends EveesInfoBase {
     if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
     if (this.perspectivesList) this.perspectivesList.load();
 
+    this.showInfo = false;
+    await this.updateComplete;
+    this.showInfo = true;
+
     this.loading = false;
   }
 
