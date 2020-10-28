@@ -6,12 +6,16 @@ export function setupRouter(outlet: HTMLElement) {
   router.setRoutes([
     {
       path: '/',
-      component: '/kusama-home',
-      children: [
-        {path: '/council', component: 'council-space'},
-        {path: '/account/:accountId', component: 'account-space'},
-      ]
-    }
+      redirect: '/home',
+    },
+    {
+      path: '/home',
+      component: 'app-home',
+    },
+    {
+      path: '/doc/:ref',
+      component: 'app-doc',
+    },
   ]);
 
   return router;
