@@ -18,10 +18,34 @@ import { Perspective, NewProposal, NewPerspectiveData } from '../types';
 import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees';
 import { EveesRemote } from '../services/evees.remote';
-import { Secured } from '../utils/cid-hash';
-import { deriveSecured } from '../utils/signed';
 import { EveesHelpers } from './evees.helpers';
 import { EveesWorkspace } from '../services/evees.workspace';
+import { GET_PERSPECTIVE_CONTEXTS } from './queries';
+
+const getContextPerspectives = async (context, container) => {
+  if (context === undefined) return [];
+
+  const eveesRemotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
+  const knownSources: KnownSourcesService = container.get(
+    DiscoveryModule.bindings.LocalKnownSources
+  );
+
+  const promises = eveesRemotes.map(async remote => {
+    const thisPerspectivesIds = await remote.getContextPerspectives(context);
+    thisPerspectivesIds.forEach(pId => {
+      knownSources.addKnownSources(pId, [remote.store.casID], EveesBindings.PerspectiveType);
+    });
+    return thisPerspectivesIds;
+  });
+
+  const perspectivesIdsPerRemote = await Promise.all(promises);
+
+  const perspectivesIds = ([] as string[]).concat(...perspectivesIdsPerRemote);
+  // remove duplicates
+  const map = new Map<string, null>();
+  perspectivesIds.forEach(id => map.set(id, null));
+  return Array.from(map, key => key[0]);
+};
 
 export const eveesResolvers: IResolvers = {
   Commit: {
@@ -47,25 +71,7 @@ export const eveesResolvers: IResolvers = {
     },
     async perspectives(parent, _, { container }) {
       const context = typeof parent === 'string' ? parent : parent.id;
-
-      if (context === undefined) return [];
-
-      const eveesRemotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
-      const knownSources: KnownSourcesService = container.get(
-        DiscoveryModule.bindings.LocalKnownSources
-      );
-
-      const promises = eveesRemotes.map(async remote => {
-        const thisPerspectivesIds = await remote.getContextPerspectives(context);
-        thisPerspectivesIds.forEach(pId => {
-          knownSources.addKnownSources(pId, [remote.store.casID], EveesBindings.PerspectiveType);
-        });
-        return thisPerspectivesIds;
-      });
-
-      const perspectivesIds = await Promise.all(promises);
-
-      return ([] as string[]).concat(...perspectivesIds);
+      return getContextPerspectives(context, container);
     }
   },
   UpdateProposal: {
@@ -185,10 +191,31 @@ export const eveesResolvers: IResolvers = {
       };
     },
 
-    async deletePerspective(parent, { perspectiveId }, { container }) {
+    async deletePerspective(parent, { perspectiveId }, { container, cache }) {
       const evees: Evees = container.get(EveesBindings.Evees);
       const remote = await evees.getPerspectiveRemoteById(perspectiveId);
       await remote.deletePerspective(perspectiveId);
+
+      /** we need to remove the perspective from the cache.
+       * this code is based on
+       * https://www.apollographql.com/docs/tutorial/local-state/ */
+      const queryResult = cache.readQuery({
+        query: GET_PERSPECTIVE_CONTEXTS(perspectiveId)
+      });
+
+      const entity = { ...queryResult.entity };
+
+      /** remove this perspective from the perspectives array */
+      entity.payload.context.perspectives = [
+        ...entity.payload.context.perspectives.filter(persp => persp.id !== perspectiveId)
+      ];
+
+      /** overwrite cache */
+      cache.writeQuery({
+        query: GET_PERSPECTIVE_CONTEXTS(perspectiveId),
+        data: entity
+      });
+
       return { id: perspectiveId };
     },
 
@@ -333,6 +360,11 @@ export const eveesResolvers: IResolvers = {
         canExecute: false,
         executed: false
       };
+    }
+  },
+  Query: {
+    async contextPerspectives(parent, { context }, { container }) {
+      return getContextPerspectives(context, container);
     }
   }
 };

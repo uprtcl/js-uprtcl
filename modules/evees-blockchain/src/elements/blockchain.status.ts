@@ -16,64 +16,104 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
   remoteId!: string;
 
   @property({ attribute: false })
+  currentHash!: string | undefined;
+
+  @property({ attribute: false })
   newHash!: string;
 
   @property({ attribute: false })
   loading: boolean = true;
 
   @property({ attribute: false })
-  applying: boolean = false;
+  hasChanges!: boolean;
 
   @property({ attribute: false })
-  deleting: boolean = false;
+  applyingChanges: boolean = false;
 
   @property({ attribute: false })
-  remoteUI!: RemoteUI;
+  resetting: boolean = false;
 
-  protected remote!: EveesBlockchainCached;
-  
+  @property({ attribute: false })
+  remote!: EveesBlockchainCached;
+
   async firstUpdated() {
-    const remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
+    const remote = (this.requestAll(
+      EveesModule.bindings.EveesRemote
+    ) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
     if (!remote) {
-        throw new Error(`remote ${this.remoteId} not found`)
+      throw new Error(`remote ${this.remoteId} not found`);
     }
-        
+
     this.remote = remote;
     this.load();
   }
 
   async load() {
+    if (!this.remote.userId) throw new Error('user not logged on remote');
     this.loading = true;
+    this.newHash = await this.remote.createNewEveesData();
+    this.currentHash = await this.remote.getEveesHeadOf(this.remote.userId);
+    this.hasChanges = this.newHash !== this.currentHash;
     this.loading = false;
   }
 
   async applyChanges() {
-    this.applying = true;
+    this.applyingChanges = true;
     await this.remote.flushCache();
-    this.applying = false;
+    this.applyingChanges = false;
+    this.load();
   }
 
-  async deleteAll() {
-    this.deleting = true;
-    this.remote.updateHead(undefined);
-    this.deleting = false;
+  async resetData() {
+    this.resetting = true;
+    await this.remote.updateHead(undefined);
+    this.resetting = false;
     this.load();
   }
 
   render() {
-    if (this.loading) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
-    }
-
     return html`
+      ${this.remote
+        ? html`
+            <div class="row margin-bottom">
+              Logged as
+              <evees-author
+                class="margin-left"
+                user-id=${this.remote.userId as string}
+                show-name
+              ></evees-author>
+            </div>
+          `
+        : ''}
+      ${this.loading
+        ? html`
+            <uprtcl-loading></uprtcl-loading>
+          `
+        : html`
+            <div class="row">
+              <evees-blockchain-update-diff
+                current-hash=${this.currentHash ? this.currentHash : ''}
+                new-hash=${this.newHash}
+                remote=${this.remote.id}
+              >
+              </evees-blockchain-update-diff>
+            </div>
+          `}
+
       <div class="row">
-        <evees-blockchain-update-diff 
-          owner=${this.remote.userId as string} 
-          remote=${this.remote.id}>
-        </evees-blockchain-update-diff>
-        <uprtcl-button @click=${() => this.applyChanges()}>apply changes</uprtcl-button>
+        <uprtcl-button-loading
+          class="update-button reset-button"
+          ?loading=${this.resetting}
+          @click=${() => this.resetData()}
+          >delete</uprtcl-button-loading
+        >
+        <uprtcl-button-loading
+          class="margin-left update-button"
+          ?loading=${this.applyingChanges}
+          @click=${() => (this.hasChanges ? this.applyChanges() : undefined)}
+          ?disabled=${!this.hasChanges}
+          >update</uprtcl-button-loading
+        >
       </div>
     `;
   }
@@ -86,17 +126,25 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
       }
       .row {
         width: 100%;
-        height: 50vh;
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .margin-bottom {
+        margin-bottom: 25px;
+      }
+      .margin-left {
+        margin-left: 10px;
       }
       evees-blockchain-update-diff {
         flex-grow: 1;
         overflow: auto;
       }
-      uprtcl-button {
-        margin: 0 auto;
-        margin-top: 16px;
+      .update-button {
+        width: 140px;
+      }
+      .reset-button {
+        --background-color: #c93131;
       }
     `;
   }

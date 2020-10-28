@@ -1,3 +1,5 @@
+import { html } from 'lit-element';
+
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
@@ -15,6 +17,7 @@ import { EveesAccessControlFixed } from '@uprtcl/evees-blockchain';
 import { PolkadotConnection } from '../../connection.polkadot';
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalsPolkadotCouncil } from './evees.polkadot-council.proposals';
+import { icons } from '../icons';
 
 const evees_if = 'council';
 
@@ -37,7 +40,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   get id() {
-    return `${this.connection.getNetworkId()}-council:${evees_if}`;
+    return `${this.connection.getNetworkId()}:${evees_if}`;
   }
 
   get defaultPath() {
@@ -46,6 +49,42 @@ export class EveesPolkadotCouncil implements EveesRemote {
 
   get userId() {
     return this.connection.account;
+  }
+
+  async getHome() {
+    this.logger.warn('remote random int when done');
+    const remoteHome = {
+      remote: this.id,
+      path: '',
+      creatorId: 'root',
+      timestamp: 0,
+      context: `home`
+    };
+
+    return deriveSecured(remoteHome, this.store.cidConfig);
+  }
+
+  icon() {
+    let name = '';
+    let iconName = '';
+    switch (this.connection.getNetworkId()) {
+      case 'Development':
+        name = 'dev';
+        iconName = 'kusama';
+        break;
+
+      case 'Kusama':
+        name = 'Kusama';
+        iconName = 'kusama';
+    }
+    return html`
+      <div style="display:flex;align-items: center;color: #636668;font-weight:bold">
+        <div style="height: 32px;width: 32px;margin-right: 6px;border-radius:16px;overflow:hidden;">
+          ${icons[iconName]}
+        </div>
+        ${name} Council
+      </div>
+    `;
   }
 
   async ready(): Promise<void> {
@@ -106,8 +145,12 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
-    // TODO: add context to updates in proposals
-    return [];
+    const perspectives = await this.councilStorage.getContextPerspectives(context);
+    if (context === `home`) {
+      const home = await this.getHome();
+      perspectives.push(home.id);
+    }
+    return perspectives;
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {

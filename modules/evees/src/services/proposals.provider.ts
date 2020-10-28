@@ -12,7 +12,12 @@ export interface ProposalsProvider {
 
   updateProposal(proposalId: string, details: ProposalDetails): Promise<void>;
 
+  deleteProposal(proposalId: string): Promise<void>;
+
+  /** UI interaction */
   lense?(): Lens;
 
-  canPropose(perspectiveId?: string): Boolean;
+  canPropose(perspectiveId?: string): Promise<Boolean>;
+
+  canRemove(proposalId: string, userId?: string): Promise<Boolean>;
 }

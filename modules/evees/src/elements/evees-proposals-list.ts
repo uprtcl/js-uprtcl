@@ -27,6 +27,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
   async load() {
     if (!this.isConnected) return;
+    if (!this.client) return;
 
     this.loadingProposals = true;
     this.logger.info('loadProposals');

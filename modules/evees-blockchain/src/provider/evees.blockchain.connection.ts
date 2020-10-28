@@ -1,7 +1,10 @@
+import { TemplateResult } from 'lit-html';
+
 /** an evees blockchain connection keeps a mutable hash associated
  * to a userId */
 export interface BlockchainConnection {
   account?: string | undefined;
+  icon?(): TemplateResult;
   getNetworkId(): string;
   getLatestBlock(): Promise<number>;
   getHead(userId: string, block?: number): Promise<string | undefined>;

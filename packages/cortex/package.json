@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/cortex",
-  "version": "0.0.7-alpha.65",
+  "version": "0.0.7-alpha.71",
   "description": "A new way to build web-applications, by recognizing the patterns that generic objects implement",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,8 +11,8 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/graphql": "^0.0.7-alpha.65",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.65",
+    "@uprtcl/graphql": "^0.0.7-alpha.71",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.71",
     "graphql": "^14.6.0",
     "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
@@ -74,5 +74,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "2501b382c25bd03e1098e477188de843799339e0"
+  "gitHead": "f7ed186e9e13bcab77e0d70a7643d33364995dbd"
 }

@@ -145,7 +145,7 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
     $toPerspectiveId: ID!
     $fromPerspectiveId: ID!
     $toHeadId: ID
-    $fromHeadId: ID!
+    $fromHeadId: ID
     $newPerspectives: [NewPerspectiveInput]!
     $updates: [HeadUpdateInput!]
   ) {
@@ -160,9 +160,7 @@ export const CREATE_PROPOSAL: DocumentNode = gql`
       id
       toPerspective {
         id
-        proposals {
-          id
-        }
+        proposals
       }
       fromPerspective {
         id
@@ -189,3 +187,21 @@ export const EXECUTE_PROPOSAL: DocumentNode = gql`
     }
   }
 `;
+
+export const GET_PERSPECTIVE_CONTEXTS = (perspectiveId: string) => {
+  return gql`{
+    entity(uref: "${perspectiveId}") {
+      id
+      ... on Perspective {
+        payload {
+          context {
+            id
+            perspectives {
+              id
+            } 
+          }
+        }
+      }
+    }
+  }`;
+};

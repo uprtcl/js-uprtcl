@@ -25,7 +25,8 @@ import {
   deriveSecured,
   Perspective,
   Secured,
-  hashObject
+  hashObject,
+  EveesConfig
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { loadEntity } from '@uprtcl/multiplatform';
@@ -34,7 +35,6 @@ import { TextType, DocNode } from '../types';
 import { HasDocNodeLenses } from '../patterns/document-patterns';
 import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
-import { EveesConfig } from '@uprtcl/evees';
 
 const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
@@ -43,11 +43,17 @@ const PLACEHOLDER_TOKEN = '_PLACEHOLDER_';
 export class DocumentEditor extends moduleConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
 
-  @property({ type: String })
+  @property({ type: String, attribute: 'uref' })
+  firstRef!: string;
+
+  @property({ attribute: false })
   uref!: string;
 
-  @property({ type: String })
-  editable: string = 'true';
+  @property({ type: String, attribute: 'official-owner' })
+  officialOwner!: string;
+
+  @property({ type: Boolean, attribute: 'read-only' })
+  readOnly: boolean = false;
 
   @property({ type: Number, attribute: 'root-level' })
   rootLevel: number = 0;
@@ -58,11 +64,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'default-type' })
   defaultType: string = EveesModule.bindings.PerspectiveType;
 
-  @property({ attribute: false })
-  client!: ApolloClient<any>;
-
-  @property({ attribute: false })
-  doc!: DocNode;
+  @property({ type: Boolean, attribute: 'show-info' })
+  renderInfo: boolean = false;
 
   @property({ attribute: false })
   docHasChanges: boolean = false;
@@ -76,33 +79,31 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
-  @property({ type: String })
-  defaultRemoteId!: string;
-
   @property({ attribute: false })
   checkedOutPerspectives: { [key: string]: { firstUref: string; newUref: string } } = {};
 
-  // checkedOutPerspectivesStorageId!: string;
+  @property({ type: Object })
+  doc: DocNode | undefined = undefined;
 
-  protected eveesRemotes!: EveesRemote[];
+  client!: ApolloClient<any>;
+
+  protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
+  protected editableRemotesIds!: string[];
 
   draftService = new EveesDraftsLocal();
 
   firstUpdated() {
-    this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
+    const config = this.request(EveesModule.bindings.Config) as EveesConfig;
+    this.editableRemotesIds = config.editableRemotesIds ? config.editableRemotesIds : [];
 
     if (!this.client) {
       this.client = this.request(ApolloClientModule.bindings.Client);
     }
 
-    const config: EveesConfig = this.request(EveesModule.bindings.Config);
-    if (config.defaultRemote === undefined) {
-      throw new Error('default remote not defined');
-    }
-
-    this.defaultRemoteId = config.defaultRemote.id;
+    this.uref = this.firstRef;
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
@@ -113,6 +114,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('updated()', { uref: this.uref, changedProperties });
 
     if (changedProperties.has('uref')) {
+      this.doc = undefined;
+      this.loadDoc();
+    }
+    if (changedProperties.has('firstRef')) {
+      this.uref = this.firstRef;
+      this.doc = undefined;
       this.loadDoc();
     }
     if (changedProperties.has('client')) {
@@ -130,13 +137,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!this.uref) return;
     this.doc = await this.loadNodeRec(this.uref);
-
-    // this.checkedOutPerspectivesStorageId = `CHECKED_OUT_PERSPECTIVES_${this.uref}`
-
-    // const storageRes = localStorage.getItem(this.checkedOutPerspectivesStorageId);
-    // if(storageRes) {
-    //   this.checkedOutPerspectives = JSON.parse(storageRes);
-    // }
   }
 
   async loadNodeRec(uref: string, ix?: number, parent?: DocNode): Promise<DocNode> {
@@ -178,14 +178,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (entityType === EveesModule.bindings.PerspectiveType) {
       remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, entity.id);
 
-      const remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(
-        r => r.id === remoteId
-      );
+      const remote = this.remotes.find(r => r.id === remoteId);
       if (!remote) throw new Error(`remote not found for ${remoteId}`);
-      const canWrite =
-        this.editable === 'true' ? await EveesHelpers.canWrite(this.client, uref) : false;
 
-      if (this.editable === 'true') {
+      let canWrite: boolean = false;
+
+      if (!this.readOnly) {
+        const editableRemote =
+          this.editableRemotesIds.length > 0 ? this.editableRemotesIds.includes(remote.id) : true;
+        if (editableRemote) {
+          canWrite = await EveesHelpers.canWrite(this.client, uref);
+        }
+      }
+
+      if (!this.readOnly) {
         editable = canWrite;
         headId = await EveesHelpers.getPerspectiveHeadId(this.client, entity.id);
         dataId =
@@ -232,7 +238,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (!hasDocNodeLenses) throw Error('hasDocNodeLenses undefined');
 
     /** disable editable */
-    if (this.editable !== 'true') {
+    if (this.readOnly) {
       editable = false;
     }
 
@@ -373,8 +379,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async derivePerspective(node: DocNode): Promise<Secured<Perspective>> {
-    if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
-    const remoteInstance = this.eveesRemotes.find(r => r.id == node.remote);
+    const remoteInstance = this.remotes.find(r => r.id == node.remote);
 
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remoteInstance}`);
 
@@ -475,7 +480,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       object: content
     });
 
-    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    const remoteInstance = this.remotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
     const store = remoteInstance.store;
 
@@ -498,7 +503,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   ): Promise<string> {
     const dataId = await this.createEntity(content, remote);
 
-    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    const remoteInstance = this.remotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
 
     return await EveesHelpers.createCommit(this.client, remoteInstance.store, {
@@ -544,8 +549,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const commitId = await this.createCommit(node.draft, node.remote);
 
-    if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
-    const remoteInstance = this.eveesRemotes.find(r => r.id === node.remote);
+    const remoteInstance = this.remotes.find(r => r.id === node.remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${node.remote}`);
 
     // using the same function used in preparePersist to get the same id
@@ -945,6 +949,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   isNodeFocused() {
+    if (!this.doc) return false;
     return this.isNodeFocusedRec(this.doc);
   }
 
@@ -961,7 +966,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return false;
   }
 
-  getLastNode(): DocNode {
+  getLastNode(): DocNode | undefined {
+    if (!this.doc) return undefined;
     return this.getLastNodeRec(this.doc);
   }
 
@@ -976,7 +982,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   clickAreaClicked() {
     if (!this.isNodeFocused()) {
       const last = this.getLastNode();
-      last.focused = true;
+      if (last !== undefined) {
+        last.focused = true;
+      }
     }
     this.requestUpdate();
   }
@@ -987,6 +995,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       event.stopPropagation();
       this.uref = event.detail.perspectiveId;
+    }) as EventListener);
+
+    this.addEventListener('keydown', ((event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 's') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.persistAll();
+      }
     }) as EventListener);
   }
 
@@ -1010,7 +1026,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   handleNodePerspectiveCheckout(e: CustomEvent, node: DocNode) {
     if (node.coord.length === 1 && node.coord[0] === 0) {
-      return;
+      this.uref = e.detail.perspectiveId;
     }
 
     e.stopPropagation();
@@ -1062,6 +1078,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
+  getColor() {
+    return this.color ? this.color : eveeColor(this.uref);
+  }
+
   renderWithCortex(node: DocNode) {
     return html`
       <cortex-entity hash=${node.uref}></cortex-entity>
@@ -1071,10 +1091,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   renderTopRow(node: DocNode) {
     if (LOGINFO) this.logger.log('renderTopRow()', { node });
     /** the uref to which the parent is pointing at */
-    const color = this.color;
+
     const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
     const hasIcon = this.hasChanges(node);
     const icon = node.uref === '' ? icons.add_box : icons.edit;
+
+    // for the topNode (the docId), the uref can change, for the other nodes it can't (if it does, a new editor is rendered)
+    const uref = node.coord.length === 1 && node.coord[0] === 0 ? this.uref : node.uref;
+    const firstRef = node.coord.length === 1 && node.coord[0] === 0 ? this.firstRef : node.uref;
 
     return html`
       <div
@@ -1083,18 +1107,20 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         @drop=${e => this.handleDrop(e, node)}
       >
         <div class="evee-info">
-          ${!node.isPlaceholder
+          ${!node.isPlaceholder && this.renderInfo
             ? html`
                 <evees-info-popper
-                  parentId=${node.parent ? node.parent.uref : this.parentId}
-                  uref=${node.uref}
-                  first-uref=${node.uref}
-                  evee-color=${color}
-                  default-remote=${this.defaultRemoteId}
+                  parent-id=${node.parent ? node.parent.uref : this.parentId}
+                  uref=${uref}
+                  first-uref=${firstRef}
+                  official-owner=${this.officialOwner}
+                  evee-color=${this.getColor()}
                   @checkout-perspective=${e => this.handleNodePerspectiveCheckout(e, node)}
-                  show-perspectives
-                  show-acl
+                  show-draft
                   show-info
+                  show-icon
+                  ?show-debug=${false}
+                  emit-proposals
                 ></evees-info-popper>
               `
             : ''}
@@ -1141,10 +1167,15 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       return html`
         <documents-editor
           uref=${this.checkedOutPerspectives[coordString].newUref}
-          editable=${this.editable}
+          ?read-only=${this.readOnly}
           root-level=${node.level}
-          color=${eveeColor(this.uref)}
+          color=${this.getColor()}
           @checkout-perspective=${e => this.handleEditorPerspectiveCheckout(e, node)}
+          official-owner=${this.officialOwner}
+          show-draft
+          show-info
+          show-icon
+          ?show-debug=${false}
         >
         </documents-editor>
       `;
@@ -1177,12 +1208,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   renderTopBar() {
     const options: MenuConfig = {
-      // 'push': {
-      //   graphic: 'unarchive',
-      //   text: 'push'
-      // },
       'push-with-message': {
-        graphic: 'notes',
+        icon: 'notes',
         text: 'push with message'
       }
     };
@@ -1193,7 +1220,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               <uprtcl-button-loading
                 icon="unarchive"
                 @click=${() => this.persistAll()}
-                loading=${this.persistingAll ? 'true' : 'false'}
+                ?loading=${this.persistingAll}
               >
                 push
               </uprtcl-button-loading>
@@ -1234,7 +1261,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const editorClasses = ['editor-container'];
 
-    if (this.editable === 'true') {
+    if (!this.readOnly) {
       editorClasses.concat(['padding-bottom']);
     }
 

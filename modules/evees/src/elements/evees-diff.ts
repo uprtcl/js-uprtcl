@@ -1,8 +1,6 @@
-import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';

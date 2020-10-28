@@ -39,10 +39,15 @@ export interface CouncilProposal {
 export interface LocalProposal {
   id: string;
   toPerspectiveId: string;
-  updatedPerspectives: string[]; // for indexing
   updates: UpdateRequest[]; // not indexed
   status: ProposalStatus; // not indexed
   endBlock: number; // not indexed, for sorting
+}
+
+export interface LocalPerspective {
+  id: string;
+  context: string;
+  headId: string;
 }
 
 export interface ProposalSummary {

@@ -18,9 +18,9 @@ import {
   ProposalsOrbitDB,
   ProposalStore,
   ProposalsToPerspectiveStore,
-  ProposalsAccessController,
   ContextStore,
-  ContextAccessController,
+  getProposalsAcl,
+  getContextAcl,
   EveesOrbitDBModule
 } from '@uprtcl/evees-orbitdb';
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
@@ -69,7 +69,7 @@ export const initUprtcl = async () => {
 
   const orbitDBCustom = new OrbitDBCustom(
     [ContextStore, ProposalStore, ProposalsToPerspectiveStore],
-    [ContextAccessController, ProposalsAccessController],
+    [getContextAcl([identity]), getProposalsAcl([identity])],
     identity,
     env.pinner.url,
     ipfs

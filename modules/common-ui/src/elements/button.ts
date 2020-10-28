@@ -18,18 +18,7 @@ export class UprtclButton extends LitElement {
   @property({ type: Boolean })
   raised: boolean = false;
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.checkDisabled();
-  }
-
-  checkDisabled() {
-    if (this.disabled) {
-      this.addEventListener('click', e => {
-        e.stopPropagation();
-      });
-    }
-  }
+  /** Seems I cant prevent the click event from being emitted outside of this element  */
 
   render() {
     let classes = ['button-layout', 'button-text'];
@@ -56,7 +45,7 @@ export class UprtclButton extends LitElement {
 
     return html`
       <div class=${classes.join(' ')}>
-        ${this.icon !== undefined
+        ${this.icon
           ? html`
               <div class="icon-container">${icons[this.icon]}</div>
             `
@@ -83,9 +72,6 @@ export class UprtclButton extends LitElement {
           line-height: 36px;
           height: 36px;
           padding: 0px 16px;
-        }
-        .bg-transition {
-          transition: background-color 0.5s ease;
         }
         .icon-container {
           height: 100%;

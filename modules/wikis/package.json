@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/wikis",
-  "version": "0.0.7-alpha.65",
+  "version": "0.0.7-alpha.71",
   "description": "Cortex module implementing texts and folders",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,17 +11,17 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.0.7-alpha.65",
-    "@uprtcl/cortex": "^0.0.7-alpha.65",
-    "@uprtcl/documents": "^0.0.7-alpha.65",
-    "@uprtcl/evees": "^0.0.7-alpha.65",
-    "@uprtcl/graphql": "^0.0.7-alpha.65",
-    "@uprtcl/holochain-provider": "^0.0.7-alpha.65",
-    "@uprtcl/http-provider": "^0.0.7-alpha.65",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.65",
-    "@uprtcl/lenses": "^0.0.7-alpha.65",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.65",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.65",
+    "@uprtcl/common-ui": "^0.0.7-alpha.71",
+    "@uprtcl/cortex": "^0.0.7-alpha.71",
+    "@uprtcl/documents": "^0.0.7-alpha.71",
+    "@uprtcl/evees": "^0.0.7-alpha.71",
+    "@uprtcl/graphql": "^0.0.7-alpha.71",
+    "@uprtcl/holochain-provider": "^0.0.7-alpha.71",
+    "@uprtcl/http-provider": "^0.0.7-alpha.71",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.71",
+    "@uprtcl/lenses": "^0.0.7-alpha.71",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.71",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.71",
     "apollo-boost": "^0.4.7",
     "graphql-tag": "^2.10.1",
     "inversify": "^5.0.1",
@@ -71,5 +71,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "2501b382c25bd03e1098e477188de843799339e0"
+  "gitHead": "f7ed186e9e13bcab77e0d70a7643d33364995dbd"
 }

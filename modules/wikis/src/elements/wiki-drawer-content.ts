@@ -9,7 +9,7 @@ const styleMap = style => {
 
 import { htmlToText, TextType, TextNode } from '@uprtcl/documents';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
-import { sharedStyles } from '@uprtcl/lenses';
+import { styles } from '@uprtcl/common-ui';
 import { Entity, HasTitle, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import {
   EveesRemote,
@@ -17,7 +17,8 @@ import {
   EveesHelpers,
   Perspective,
   CONTENT_UPDATED_TAG,
-  ContentUpdatedEvent
+  ContentUpdatedEvent,
+  EveesConfig
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -42,6 +43,9 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
   @property({ type: String })
   color!: string;
+
+  @property({ type: String, attribute: 'official-owner' })
+  officialOwner!: string;
 
   @property({ type: Boolean })
   editable: boolean = false;
@@ -77,8 +81,9 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   currentHeadId: string | undefined = undefined;
 
   protected client!: ApolloClient<any>;
-  protected eveesRemotes!: EveesRemote[];
+  protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
+  protected editableRemotesIds!: string[];
 
   constructor() {
     super();
@@ -88,8 +93,11 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
-    this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
+
+    const config = this.request(EveesModule.bindings.Config) as EveesConfig;
+    this.editableRemotesIds = config.editableRemotesIds ? config.editableRemotesIds : [];
 
     this.logger.log('firstUpdated()', { uref: this.uref });
 
@@ -148,7 +156,10 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     const canWrite = await EveesHelpers.canWrite(this.client, this.uref);
 
     this.currentHeadId = headId;
-    this.editableActual = this.editable && canWrite;
+    this.editableActual =
+      this.editableRemotesIds.length > 0
+        ? this.editableRemotesIds.includes(this.remote) && canWrite
+        : canWrite;
 
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
@@ -168,6 +179,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     const pagesListPromises = this.wiki.object.pages.map(
       async (pageId): Promise<PageData> => {
         const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
+        if (!data) throw new Error(`data not found for page ${pageId}`);
         const hasTitle: HasTitle = this.recognizer
           .recognizeBehaviours(data)
           .find(b => (b as HasTitle).title);
@@ -209,7 +221,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   }
 
   getStore(remote: string, type: string): CASStore | undefined {
-    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    const remoteInstance = this.remotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
     return remoteInstance.store;
   }
@@ -251,10 +263,10 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   }
 
   async createPage(page: TextNode, remote: string) {
-    if (!this.eveesRemotes) throw new Error('eveesRemotes undefined');
+    if (!this.remotes) throw new Error('eveesRemotes undefined');
     if (!this.client) throw new Error('client undefined');
 
-    const remoteInstance = this.eveesRemotes.find(r => r.id === remote);
+    const remoteInstance = this.remotes.find(r => r.id === remote);
     if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, remoteInstance.store, page);
@@ -272,7 +284,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     const store = this.getStore(this.remote, WikiBindings.WikiType);
     if (!store) throw new Error('store is undefined');
 
-    const remote = this.eveesRemotes.find(r => r.id === this.remote);
+    const remote = this.remotes.find(r => r.id === this.remote);
     if (!remote) throw Error(`Remote not found for remote ${this.remote}`);
 
     const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
@@ -398,6 +410,10 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         this.movePage(pageIndex, pageIndex + 1);
         break;
 
+      case 'add-below':
+        this.newPage(pageIndex + 1);
+        break;
+
       case 'remove':
         this.removePage(pageIndex);
         break;
@@ -442,7 +458,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
               <uprtcl-button-loading
                 icon="add_circle_outline"
                 @click=${() => this.newPage()}
-                loading=${this.creatingNewPage ? 'true' : 'false'}
+                ?loading=${this.creatingNewPage}
               >
                 ${this.t('wikis:new-page')}
               </uprtcl-button-loading>
@@ -457,17 +473,22 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
       'move-up': {
         disabled: ix === 0,
         text: 'move up',
-        graphic: 'arrow_upward'
+        icon: 'arrow_upward'
       },
       'move-down': {
         disabled: ix === (this.pagesList as any[]).length - 1,
         text: 'move down',
-        graphic: 'arrow_downward'
+        icon: 'arrow_downward'
+      },
+      'add-below': {
+        disabled: false,
+        text: 'create below',
+        icon: 'add'
       },
       remove: {
         disabled: false,
         text: 'remove',
-        graphic: 'clear'
+        icon: 'clear'
       }
     };
 
@@ -507,6 +528,18 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     `;
   }
 
+  renderHome() {
+    return this.pagesList
+      ? this.pagesList.map((page, ix) => {
+          return html`
+            <uprtcl-card class="home-card bg-transition" @click=${() => this.selectPage(ix)}>
+              ${page.title}
+            </uprtcl-card>
+          `;
+        })
+      : '';
+  }
+
   render() {
     if (this.loading)
       return html`
@@ -531,14 +564,13 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
                   pageHash=${this.wiki ? this.wiki.object.pages[this.selectedPageIx] : ''}
                   color=${this.color}
                   wikiId=${this.uref}
+                  official-owner=${this.officialOwner}
                 >
                 </wiki-page>
               `
             : html`
                 <div class="home-container">
-                  <div class="evee-info">
-                    <h1>List of pages</h1>
-                  </div>
+                  ${this.renderHome()}
                 </div>
               `}
         </div>
@@ -548,7 +580,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
   static get styles() {
     return [
-      sharedStyles,
+      styles,
       css`
         :host {
           display: flex;
@@ -603,6 +635,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         }
         .page-item .item-menu-container .options-menu {
           --box-width: 160px;
+          font-weight: normal;
         }
         .page-item:hover {
           background-color: #e8ecec;
@@ -621,10 +654,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
           padding-top: 24px;
           color: #a2a8aa;
         }
-        .center-aligned {
-          justify-content: center;
-          align-items: center;
-        }
         .button-row {
           width: calc(100% - 20px);
           padding: 16px 10px 8px 10px;
@@ -639,60 +668,18 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
           height: auto;
           padding: 6vw 0vw;
         }
-        .title-card-container {
-          padding: 0px 5vw;
-        }
-
-        .section {
-          text-align: center;
+        .home-card {
           width: 100%;
-          max-width: 700px;
-          margin: 0 auto;
-          box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2);
-          margin-bottom: 36px;
-          border-radius: 4px;
-          background-color: rgb(255, 255, 255, 0.6);
-          position: relative;
-        }
-        .section-header {
+          font-size: 20px;
+          display: block;
+          max-width: 340px;
+          margin: 18px auto;
+          cursor: pointer;
+          padding: 8px 24px;
           font-weight: bold;
-          padding: 2vw 0px 0.8vw 0px;
-          font-size: 30px;
-          border-style: solid 2px;
         }
-        .section-content evees-author {
-          display: inline-block;
-          margin-left: 12px;
-        }
-        .section-content {
-          padding-bottom: 2vw;
-        }
-        .official-name {
-          font-size: 30px;
-          font-weight: bold;
-          color: #4e585c;
-        }
-        .by-3box {
-          color: rgb(99, 102, 104);
-          font-weight: 600;
-          letter-spacing: 0.015em;
-        }
-        .context-menu {
-          position: absolute;
-          top: 6px;
-          right: 6px;
-          display: flex;
-        }
-        .pages-summary {
-          max-height: 150px;
-          min-height: 80px;
-          overflow-y: auto;
-          text-align: left;
-          color: gray;
-          padding-left: 12px;
-        }
-        .title-form {
-          margin-top: 22px;
+        .home-card:hover {
+          background-color: #f1f1f1;
         }
       `
     ];

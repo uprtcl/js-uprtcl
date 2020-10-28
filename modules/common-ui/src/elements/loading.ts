@@ -12,11 +12,12 @@ export class UprtclLoading extends LitElement {
     return [
       css`
         .container {
-          height: 40px;
+          height: var(--height, 40px);
           text-align: center;
         }
         svg {
           height: 100%;
+          fill: var(--fill, #50b0ff);
         }
       `
     ];

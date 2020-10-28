@@ -13,6 +13,7 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { IpfsConnectionOptions } from './types';
 import { sortObject } from './utils';
 import CID from 'cids';
+import { PinnedCacheDB } from './pinner.cache';
 
 export interface PutConfig {
   format: string;
@@ -23,6 +24,7 @@ export interface PutConfig {
 
 export class IpfsStore extends Connection implements CASStore {
   logger = new Logger('IpfsStore');
+  pinnedCache: PinnedCacheDB;
 
   casID = 'ipfs';
 
@@ -33,6 +35,7 @@ export class IpfsStore extends Connection implements CASStore {
     connectionOptions: ConnectionOptions = {}
   ) {
     super(connectionOptions);
+    this.pinnedCache = new PinnedCacheDB(`pinned-at-${this.pinnerUrl}`);
   }
 
   /**
@@ -110,32 +113,6 @@ export class IpfsStore extends Connection implements CASStore {
     });
   }
 
-  tryPin(hash: string, wait: number, attempt: number) {
-    let timeout;
-
-    return new Promise((resolve, reject) => {
-      this.logger.log(`Trying to pin ${hash}. Remaining attempts: ${attempt}`);
-
-      let found = false;
-
-      /** retry recursively with twice as much the wait time setting */
-      if (attempt > 0) {
-        timeout = setTimeout(() => {
-          this.tryPin(hash, wait * 2, attempt - 1)
-            .then(result => resolve(result))
-            .catch(e => {
-              if (!found) reject(e);
-            });
-        }, wait);
-      }
-
-      fetch(`${this.pinnerUrl}/pin_hash?cid=${hash}`).then(result => {
-        clearTimeout(timeout);
-        resolve(result);
-      });
-    });
-  }
-
   /**
    * Adds a raw js object to IPFS with the given cid configuration
    */
@@ -166,8 +143,13 @@ export class IpfsStore extends Connection implements CASStore {
           hashString
         });
         if (this.pinnerUrl) {
-          this.tryPin(hashString, 5000, 0).then(result => {
-            this.logger.info(`hash pinned`, result);
+          this.pinnedCache.pinned.get(hashString).then(pinned => {
+            if (!pinned) {
+              this.logger.log(`pinning`, hashString);
+              fetch(`${this.pinnerUrl}/pin_hash?cid=${hashString}`).then(response => {
+                this.pinnedCache.pinned.put({ id: hashString });
+              });
+            }
           });
         }
         return hashString;

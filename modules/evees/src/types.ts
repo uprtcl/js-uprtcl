@@ -72,9 +72,11 @@ export interface ProposalCreatedDetail {
   proposalDetails: ProposalDetails;
 }
 
+export const PROPOSAL_CREATED_TAG: string = 'evees-proposal';
+
 export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
   constructor(eventInitDict?: CustomEventInit<ProposalCreatedDetail>) {
-    super('evees-proposal', eventInitDict);
+    super(PROPOSAL_CREATED_TAG, eventInitDict);
   }
 }
 
@@ -101,6 +103,8 @@ export interface HasDiffLenses<T = any> extends Behaviour<T> {
 
 export interface EveesConfig {
   defaultRemote?: EveesRemote;
+  officialRemote?: EveesRemote;
+  editableRemotesIds?: string[];
   emitIf?: {
     remote: string;
     owner: string;

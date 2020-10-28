@@ -35,12 +35,16 @@ export const eveesTypeDefs: DocumentNode = gql`
       toPerspectiveId: ID!
       fromPerspectiveId: ID!
       toHeadId: ID
-      fromHeadId: ID!
+      fromHeadId: ID
       newPerspectives: [NewPerspectiveInput!]
       updates: [HeadUpdateInput!]
     ): UpdateProposal!
 
     executeProposal(proposalId: ID!, perspectiveId: ID!): UpdateProposal!
+  }
+
+  extend type Query {
+    contextPerspectives(context: String!): [Perspective!]
   }
 
   type Context {
@@ -74,6 +78,8 @@ export const eveesTypeDefs: DocumentNode = gql`
     timestamp: Float
     creatorId: String
     context: String
+    fromPerspectiveId: String
+    fromHeadId: String
   }
 
   input PerspectiveEntityInput {
@@ -160,5 +166,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     creatorId: String
     timestamp: Date
     context: Context
+    fromPerspectiveId: String
+    fromHeadId: String
   }
 `;

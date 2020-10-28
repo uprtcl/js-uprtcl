@@ -1,5 +1,3 @@
-import { Observable } from 'rxjs';
-
 import OrbitDB from 'orbit-db';
 import IPFS from 'ipfs';
 
@@ -8,14 +6,25 @@ import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
+import { PinnedCacheDB } from '@uprtcl/ipfs-provider';
 
-import { EntropyGenerator } from './entropy.generator';
+import { IdentitySource } from './identity.source';
 import { CustomStore } from './types';
+import { EveesOrbitDBRootEntities } from './custom.stores';
 
 OrbitDB.addDatabaseType(OrbitDBSet.type, OrbitDBSet);
 OrbitDB.Identities.addIdentityProvider(IdentityProvider);
 
 const keystorePath = id => `./orbitdb/identity/odbipd-${id}`;
+
+export const loginMsg = `
+Please Read!
+
+I authorize this app to update my _Prtcl content in OrbitDB.
+`;
+
+export const mappingMsg = (identity: string) =>
+  `I confirm to be the owner of OrbitDB identity:${identity}`;
 
 interface Status {
   pinnerHttpConnected: boolean;
@@ -25,6 +34,7 @@ interface Status {
 
 export class OrbitDBCustom extends Connection {
   public instance: any;
+  pinnedCache: PinnedCacheDB;
   private storeQueue = {};
   public identity: null | any = null;
   readonly status: Status = {
@@ -38,7 +48,7 @@ export class OrbitDBCustom extends Connection {
   constructor(
     protected storeManifests: CustomStore[],
     protected acls: any[],
-    protected entropy: EntropyGenerator,
+    protected identitySource: IdentitySource,
     protected pinnerUrl?: string,
     protected pinnerMultiaddr?: string,
     public ipfs?: any,
@@ -52,6 +62,8 @@ export class OrbitDBCustom extends Connection {
         OrbitDB.AccessControllers.addAccessController({ AccessController });
       }
     });
+
+    this.pinnedCache = new PinnedCacheDB(`pinned-at-${this.pinnerUrl}`);
   }
 
   /**
@@ -76,9 +88,31 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async login() {
-    const privateKey = await this.entropy.get();
+    const privateKey = await this.identitySource.signText(loginMsg);
     const identity = await this.deriveIdentity(privateKey);
     this.useIdentity(identity);
+
+    const mappingStore = await this.getStore(
+      EveesOrbitDBRootEntities.AddressMapping,
+      {
+        sourceId: this.identitySource.sourceId,
+        key: identity.id
+      },
+      true
+    );
+
+    const [signedAccountEntry] = mappingStore.iterator({ limit: 1 }).collect();
+    this.logger.log(
+      `Address mapping on store ${mappingStore.address}`,
+      signedAccountEntry ? signedAccountEntry.payload.value : undefined
+    );
+
+    if (!signedAccountEntry) {
+      const signature = await this.identitySource.signText(mappingMsg(identity.id));
+      this.logger.log(`Address mapping added to store ${mappingStore.address}`, signature);
+      await mappingStore.add(signature);
+    }
+
     this.status.logged = true;
   }
 
@@ -162,6 +196,8 @@ export class OrbitDBCustom extends Connection {
             this.logger.log(`${r} -- Replicated`);
             resolve();
           });
+          /** timeout protection */
+          setTimeout(() => resolve(), 5000);
         });
       }
     }
@@ -178,13 +214,39 @@ export class OrbitDBCustom extends Connection {
     return store;
   }
 
+  public async dropStore(type: string, entity?: any): Promise<any> {
+    const address = await this.storeAddress(type, entity);
+    const store = await this.openStore(address);
+    await store.drop();
+    this.unpin(address);
+  }
+
   public async pin(address: string) {
     if (this.pinnerUrl) {
-      fetch(`${this.pinnerUrl}/pin?address=${address}`, {
-        method: 'GET'
-      }).then(response => {
-        console.log(response);
-      });
+      const addr = address.toString();
+      const pinned = await this.pinnedCache.pinned.get(addr);
+      if (!pinned) {
+        this.logger.log(`pinning`, addr);
+        fetch(`${this.pinnerUrl}/pin?address=${addr}`, {
+          method: 'GET'
+        }).then(response => {
+          this.pinnedCache.pinned.put({ id: addr });
+        });
+      }
     }
+  }
+
+  public async unpin(address: string) {
+    /** unpin is not working on the pinner */
+    return;
+    // if (this.pinnerUrl) {
+    //   const addr = address.toString();
+    //   this.logger.log(`un pinning`, addr);
+    //   fetch(`${this.pinnerUrl}/unpin?address=${addr}`, {
+    //     method: 'GET'
+    //   }).then(response => {
+    //     this.pinnedCache.pinned.delete(addr);
+    //   });
+    // }
   }
 }

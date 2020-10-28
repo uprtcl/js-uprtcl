@@ -9,8 +9,6 @@ import { EveesBindings } from './../bindings';
 import { EveesRemote } from './../services/evees.remote';
 import { EveesHelpers } from '../graphql/evees.helpers';
 
-export const DEFAULT_COLOR = '#d0dae0';
-
 interface PerspectiveData {
   id: string;
   name: string;
@@ -18,9 +16,6 @@ interface PerspectiveData {
   creatorId: string;
   timestamp: number;
 }
-
-const MERGE_ACTION: string = 'Merge';
-const MERGE_PROPOSAL_ACTION: string = 'Propose';
 
 export class EveesPerspectivesList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
@@ -43,27 +38,16 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
   @property({ attribute: false })
   canWrite: Boolean = false;
 
-  @property({ attribute: 'force-update' })
-  forceUpdate: string = 'true';
-
   perspectivesData: PerspectiveData[] = [];
 
   protected client!: ApolloClient<any>;
-
-  async connectedCallback() {
-    super.connectedCallback();
-    this.logger.log('Connected', this.perspectiveId);
-  }
-
-  async disconnectedCallback() {
-    super.disconnectedCallback();
-    this.logger.log('Disconnected', this.perspectiveId);
-  }
+  protected remotes!: EveesRemote[];
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
     this.client = this.request(ApolloClientModule.bindings.Client);
+    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.load();
   }
 
@@ -102,9 +86,7 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
             result.data.entity.payload.context.perspectives.map(
               async (perspective): Promise<PerspectiveData> => {
                 /** data on this perspective */
-                const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-                  r => r.id === perspective.payload.remote
-                );
+                const remote = this.remotes.find(r => r.id === perspective.payload.remote);
                 if (!remote) throw new Error(`remote not found for ${perspective.payload.remote}`);
                 this.canWrite = await EveesHelpers.canWrite(this.client, this.perspectiveId);
                 return {
@@ -146,19 +128,8 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
     );
   }
 
-  updated(changedProperties) {
-    if (changedProperties.has('forceUpdate')) {
-      this.logger.log('updating getOtherPersepectivesData');
-      this.load();
-    }
-    // if (changedProperties.has('perspectiveId') || changedProperties.has('firstPerspectiveId')) {
-    //   this.logger.log('updating getOtherPersepectivesData');
-    //   this.load();
-    // }
-  }
-
-  perspectiveColor(perspectiveId: string) {
-    return eveeColor(perspectiveId);
+  perspectiveColor(creatorId: string) {
+    return eveeColor(creatorId);
   }
 
   perspectiveButtonClicked(event: Event, perspectiveData: PerspectiveData) {
@@ -174,14 +145,6 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
     );
   }
 
-  getPerspectiveAction(perspectiveData: PerspectiveData) {
-    if (this.canWrite) {
-      return MERGE_ACTION;
-    } else {
-      return MERGE_PROPOSAL_ACTION;
-    }
-  }
-
   renderLoading() {
     return html`
       <div class="loading-container">
@@ -193,14 +156,14 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
   renderPerspectiveRow(perspectiveData: PerspectiveData) {
     return html`
       <uprtcl-list-item
-        style=${`--selected-border-color: ${this.perspectiveColor(perspectiveData.id)}`}
+        style=${`--selected-border-color: ${this.perspectiveColor(perspectiveData.creatorId)}`}
         hasMeta
         ?selected=${this.perspectiveId === perspectiveData.id}
         @click=${() => this.perspectiveClicked(perspectiveData.id)}
       >
         <evees-author
           show-name
-          color=${this.perspectiveColor(perspectiveData.id)}
+          color=${this.perspectiveColor(perspectiveData.creatorId)}
           user-id=${perspectiveData.creatorId}
         ></evees-author>
       </uprtcl-list-item>

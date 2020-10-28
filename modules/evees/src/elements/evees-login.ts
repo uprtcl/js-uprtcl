@@ -116,6 +116,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
     return css`
       :host {
         display: flex;
+        align-items: center;
       }
 
       .account-list-title {

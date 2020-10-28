@@ -66,7 +66,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
         <documents-editor
           .client=${this.workspace.workspace}
           uref=${page}
-          editable="false"
+          read-only
         ></documents-editor>
       </div>
     `;

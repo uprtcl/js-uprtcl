@@ -9,10 +9,24 @@ export class UprtclIconButton extends LitElement {
   @property({ type: Boolean })
   button: boolean = false;
 
+  @property({ type: Boolean })
+  disabled: boolean = false;
+
+  /** Seems I cant prevent the click event from being emitted outside of this element  */
+
   render() {
-    const classes = ['icon-button-layout'].concat(
-      this.button ? ['button-filled-secondary', 'cursor'] : []
-    );
+    const classes = ['icon-button-layout'];
+
+    if (this.disabled) {
+      classes.push('button-disabled');
+    } else {
+      if (this.button) {
+        classes.push('button-filled-secondary', 'cursor');
+      } else {
+        classes.push('button-filled-secondary-no-hover');
+      }
+    }
+
     return html`
       <div class=${classes.join(' ')}>
         ${icons[this.icon]}

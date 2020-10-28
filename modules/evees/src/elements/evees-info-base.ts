@@ -1,4 +1,4 @@
-import { LitElement, property, html, css, query } from 'lit-element';
+import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
 
 import { ApolloClient, gql } from 'apollo-boost';
 
@@ -6,7 +6,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Entity, Signed } from '@uprtcl/cortex';
 import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
-import { UprtclDialog } from '@uprtcl/common-ui';
+import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
 import {
   ProposalCreatedEvent,
@@ -17,12 +17,7 @@ import {
   EveesConfig
 } from '../types';
 import { EveesBindings } from '../bindings';
-import {
-  EXECUTE_PROPOSAL,
-  DELETE_PERSPECTIVE,
-  CREATE_PROPOSAL,
-  FORK_PERSPECTIVE
-} from '../graphql/queries';
+import { DELETE_PERSPECTIVE, CREATE_PROPOSAL, FORK_PERSPECTIVE } from '../graphql/queries';
 import { EveesHelpers } from '../graphql/evees.helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
@@ -52,11 +47,20 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'first-uref' })
   firstRef!: string;
 
+  @property({ type: String, attribute: 'parent-id' })
+  parentId!: string;
+
   @property({ type: String, attribute: 'default-remote' })
   defaultRemoteId: string | undefined = undefined;
 
+  @property({ type: String, attribute: 'official-remote' })
+  officialRemoteId: string | undefined = undefined;
+
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
+
+  @property({ type: Boolean, attribute: 'emit-proposals' })
+  emitProposals: boolean = false;
 
   @property({ type: String, attribute: false })
   entityType: string | undefined = undefined;
@@ -97,16 +101,25 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
+  @property({ attribute: false })
+  eveesDiffInfoMessage!: TemplateResult;
+
   perspectiveData!: PerspectiveData;
-  pullWorkspace!: EveesWorkspace;
+  pullWorkspace: EveesWorkspace | undefined = undefined;
 
   protected client!: ApolloClient<any>;
   protected config!: EveesConfig;
   protected merge!: MergeStrategy;
   protected evees!: Evees;
   protected remote!: EveesRemote;
+  protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
   protected cache!: EntityCache;
+
+  /** official remote is used to indentity the special perspective, "the master branch" */
+  protected officialRemote: EveesRemote | undefined = undefined;
+
+  /** default remote is used to create new branches */
   protected defaultRemote: EveesRemote | undefined = undefined;
 
   async firstUpdated() {
@@ -117,14 +130,16 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.cache = this.request(DiscoveryModule.bindings.EntityCache);
 
+    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.defaultRemote =
       this.defaultRemoteId !== undefined
-        ? (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-            remote => remote.id === this.defaultRemoteId
-          )
+        ? this.remotes.find(remote => remote.id === this.defaultRemoteId)
         : (this.request(EveesBindings.Config) as EveesConfig).defaultRemote;
 
-    this.load();
+    this.officialRemote =
+      this.officialRemoteId !== undefined
+        ? this.remotes.find(remote => remote.id === this.officialRemoteId)
+        : (this.request(EveesBindings.Config) as EveesConfig).officialRemote;
   }
 
   updated(changedProperties) {
@@ -132,14 +147,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.logger.info('updated() reload', { changedProperties });
       this.load();
     }
-
-    if (changedProperties.has('defaultRemoteId')) {
-      this.defaultRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-        remote => remote.id === this.defaultRemoteId
-      );
-    }
   }
 
+  /** must be called from subclass as super.load() */
   async load() {
     this.logger.info('Loading evee perspective', this.uref);
 
@@ -172,8 +182,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       };
 
       this.logger.info('load', { perspectiveData: this.perspectiveData });
-
-      this.checkPull();
     }
 
     if (this.entityType === EveesBindings.CommitType) {
@@ -193,7 +201,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.isLoggedOnDefault =
       this.defaultRemote !== undefined ? await this.defaultRemote.isLogged() : false;
 
-    this.reloadChildren();
     this.loading = false;
     this.logger.log(`evee ${this.uref} loaded`, {
       perspectiveData: this.perspectiveData,
@@ -202,13 +209,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     });
   }
 
-  async checkPull() {
+  async checkPull(fromUref: string) {
     if (this.entityType !== EveesBindings.PerspectiveType) {
-      this.firstHasChanges = false;
+      this.pullWorkspace = undefined;
+      return;
     }
 
-    if (this.uref === this.firstRef || !this.perspectiveData.canWrite) {
-      this.firstHasChanges = false;
+    if (this.uref === fromUref || !this.perspectiveData.canWrite) {
+      this.pullWorkspace = undefined;
       return;
     }
 
@@ -224,15 +232,42 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.pullWorkspace = new EveesWorkspace(this.client, this.recognizer);
 
-    await this.merge.mergePerspectivesExternal(
-      this.uref,
-      this.firstRef,
-      this.pullWorkspace,
-      config
-    );
+    await this.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullWorkspace, config);
 
-    this.logger.info('checkPull()');
-    this.firstHasChanges = this.pullWorkspace.hasUpdates();
+    this.logger.info('checkPull()', this.pullWorkspace);
+  }
+
+  async getContextPerspectives(perspectiveId?: string): Promise<string[]> {
+    perspectiveId = perspectiveId || this.uref;
+    const result = await this.client.query({
+      query: gql`{
+          entity(uref: "${perspectiveId}") {
+            id
+            ... on Perspective {
+              payload {
+                remote
+                context {
+                  id
+                  perspectives {
+                    id
+                  } 
+                }
+              }
+            }
+          }
+        }`
+    });
+
+    /** data on other perspectives (proposals are injected on them) */
+    const perspectives =
+      result.data.entity.payload.context === null
+        ? []
+        : result.data.entity.payload.context.perspectives;
+
+    // remove duplicates
+    const map = new Map<string, null>();
+    perspectives.forEach(perspective => map.set(perspective.id, null));
+    return Array.from(map, key => key[0]);
   }
 
   connectedCallback() {
@@ -248,21 +283,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }) as EventListener);
   }
 
-  reloadChildren() {
-    if (this.forceUpdate === 'true') {
-      this.forceUpdate = 'false';
-    } else {
-      this.forceUpdate = 'true';
-    }
-  }
-
   async login() {
     if (this.defaultRemote === undefined) throw new Error('default remote undefined');
     this.loggingIn = true;
     await this.defaultRemote.login();
 
     await this.client.resetStore();
-    this.reloadChildren();
     this.load();
     this.loggingIn = false;
   }
@@ -272,7 +298,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.defaultRemote.logout();
 
     await this.client.resetStore();
-    this.reloadChildren();
     this.load();
   }
 
@@ -298,22 +323,41 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       config
     );
 
-    const confirm = await this.updatesDialog(workspace, 'merge', 'cancel');
+    const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
 
-    if (!confirm) {
+    const options: MenuConfig = {
+      apply: {
+        text: canWrite ? 'merge' : 'propose',
+        icon: 'done',
+        skinny: false
+      },
+      close: {
+        text: 'close',
+        icon: 'clear',
+        skinny: true
+      }
+    };
+
+    const result = await this.updatesDialog(
+      workspace,
+      options,
+      this.renderFromToPerspective(toPerspectiveId, fromPerspectiveId)
+    );
+
+    if (result !== 'apply') {
       return;
     }
 
     /* for some remotes the proposal is not created but sent to a parent component who will 
        take care of executing it */
-    if (
-      await EveesHelpers.checkEmit(
-        this.config,
-        this.client,
-        this.requestAll(EveesBindings.EveesRemote),
-        toPerspectiveId
-      )
-    ) {
+    const emitBecauseOfTarget = await EveesHelpers.checkEmit(
+      this.config,
+      this.client,
+      this.remotes,
+      toPerspectiveId
+    );
+
+    if (!canWrite && (emitBecauseOfTarget || this.emitProposals)) {
       /* entities are just cloned, not part of the proposal */
       await workspace.executeCreate(this.client);
       await workspace.precacheNewPerspectives(this.client);
@@ -339,8 +383,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
        on the toPerspective remote, or the changes are directly applied.
        Note that it is assumed that if a user canWrite on toPerspectiveId, he can write 
        on all the perspectives inside the workspace.updates array. */
-    const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
-
     if (canWrite) {
       await workspace.execute(this.client);
       /* inform the world */
@@ -368,7 +410,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         workspace
       );
     }
-
     if (this.uref !== toPerspectiveId) {
       this.checkoutPerspective(toPerspectiveId);
     }
@@ -382,9 +423,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
-    const remote = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
+    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
 
-    const not = await workspace.isSingleAuthority(remote);
+    const not = await workspace.isSingleAuthority(toRemoteId);
     if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
 
     const result = await this.client.mutate({
@@ -404,42 +445,22 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.logger.info('created proposal', { proposalId });
   }
 
-  async executeProposal(e: CustomEvent) {
-    if (!this.client) throw new Error('client undefined');
-
-    const proposalId = e.detail.proposalId;
-    const perspectiveId = e.detail.perspectiveId;
-
-    await this.client.mutate({
-      mutation: EXECUTE_PROPOSAL,
+  async deletePerspective(perspectiveId?: string) {
+    const result = await this.client.mutate({
+      mutation: DELETE_PERSPECTIVE,
       variables: {
-        proposalId: proposalId,
-        perspectiveId: perspectiveId
+        perspectiveId: perspectiveId || this.uref
       }
     });
-
-    this.logger.info('accepted proposal', { proposalId });
-
-    this.dispatchEvent(
-      new CustomEvent('checkout-perspective', {
-        detail: {
-          perspectiveId: perspectiveId
-        },
-        composed: true,
-        bubbles: true
-      })
-    );
-
-    this.reloadChildren();
   }
 
-  async forkPerspective() {
+  async forkPerspective(perspectiveId?: string) {
     this.creatingNewPerspective = true;
 
     const result = await this.client.mutate({
       mutation: FORK_PERSPECTIVE,
       variables: {
-        perspectiveId: this.uref,
+        perspectiveId: perspectiveId || this.uref,
         remote: this.defaultRemoteId
       }
     });
@@ -505,17 +526,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async updatesDialog(
     workspace: EveesWorkspace,
-    primaryText: string,
-    secondaryText: string
-  ): Promise<boolean> {
+    options: MenuConfig,
+    message: TemplateResult = html``
+  ): Promise<string> {
     this.showUpdatesDialog = true;
     await this.updateComplete;
 
-    this.updatesDialogEl.primaryText = primaryText;
-    this.updatesDialogEl.secondaryText = secondaryText;
-    this.updatesDialogEl.showSecondary = secondaryText !== undefined ? 'true' : 'false';
-
+    this.updatesDialogEl.options = options;
     this.eveesDiffEl.workspace = workspace;
+    this.eveesDiffInfoMessage = message;
 
     return new Promise(resolve => {
       this.updatesDialogEl.resolved = value => {
@@ -528,14 +547,38 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   renderUpdatesDialog() {
     return html`
       <uprtcl-dialog id="updates-dialog">
+        <div>${this.eveesDiffInfoMessage}</div>
         <evees-update-diff id="evees-update-diff"></evees-update-diff>
       </uprtcl-dialog>
+    `;
+  }
+
+  renderFromToPerspective(toPerspectiveId: string, fromPerspectiveId: string) {
+    return html`
+      <div class="row merge-message">
+        <div class="column perspective">
+          <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
+        </div>
+        <div class="column arrow">
+          <uprtcl-icon-button icon="arrow_back"></uprtcl-icon-button>
+        </div>
+        <div class="column perspective">
+          <evees-perspective-icon perspective-id=${fromPerspectiveId}></evees-perspective-icon>
+        </div>
+      </div>
     `;
   }
 
   renderLoading() {
     return html`
       <uprtcl-loading></uprtcl-loading>
+    `;
+  }
+
+  /** overwrite */
+  renderIcon() {
+    return html`
+      <evees-perspective-icon perspective-id=${this.uref}></evees-perspective-icon>
     `;
   }
 
@@ -576,6 +619,7 @@ ${this.perspectiveData.perspective ? getAuthority(this.perspectiveData.perspecti
           padding: 5px;
           text-align: left;
           max-width: calc(100vw - 72px);
+          min-width: 490px;
         }
 
         .prop-name {
@@ -596,6 +640,27 @@ ${this.perspectiveData.perspective ? getAuthority(this.perspectiveData.perspecti
           overflow: auto;
           width: calc(100% - 32px);
           overflow-x: auto;
+        }
+        .row {
+          width: 100%;
+          display: flex;
+          margin-bottom: 20px;
+        }
+        .merge-message .column {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 8px 14px;
+        }
+        .merge-message .column.perspective {
+          flex: 2 1 auto;
+          padding: 12px;
+          border-radius: 4px;
+          border: solid 1px #cccccc;
+        }
+        .merge-message .column .arrow {
+          flex: 1 1 auto;
         }
       `
     ];

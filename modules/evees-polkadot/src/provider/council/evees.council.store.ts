@@ -1,6 +1,6 @@
 import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
-import { PerspectiveDetails } from '@uprtcl/evees';
+import { Perspective, PerspectiveDetails } from '@uprtcl/evees';
 
 import { PolkadotConnection, TransactionReceipt } from '../../connection.polkadot';
 import { EveesCouncilDB } from './dexie.council.store';
@@ -8,6 +8,7 @@ import { EveesCouncilDB } from './dexie.council.store';
 import {
   CouncilData,
   CouncilProposal,
+  LocalPerspective,
   LocalProposal,
   ProposalManifest,
   ProposalSummary,
@@ -15,6 +16,8 @@ import {
 } from './types';
 import { getStatus } from './proposal.logic.quorum';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
+import { Signed } from '@uprtcl/cortex';
+import { perspective } from '@uprtcl/evees-orbitdb/dist/types/custom-stores/orbit-db.stores';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 export const EXPECTED_CONFIG: ProposalConfig = {
@@ -179,12 +182,25 @@ export class PolkadotCouncilEveesStorage {
     // if I have it and is not pending, that's it.
     if (mine && mine.status !== ProposalStatus.Pending) return;
 
-    // check if time period has passed
     const proposal = mine || (await this.initLocalProposal(proposalId));
     proposal.status = await this.getProposalStatus(proposalId, at);
 
     this.logger.log(`adding proposal to cache ${proposalId}`, { proposal });
-    this.db.proposals.put(proposal);
+    await this.db.proposals.put(proposal);
+
+    /** accepted proposals are converted into valid perspectives */
+    if (proposal.status === ProposalStatus.Accepted) {
+      await Promise.all(
+        proposal.updates.map(async update => {
+          const perspective = (await this.store.get(update.perspectiveId)) as Signed<Perspective>;
+          await this.db.perspectives.put({
+            id: update.perspectiveId,
+            context: perspective.payload.context,
+            headId: update.newHeadId
+          });
+        })
+      );
+    }
   }
 
   cacheVotes(data: CouncilData, at: number, member: string): Promise<void>[] {
@@ -238,7 +254,6 @@ export class PolkadotCouncilEveesStorage {
     return {
       id: proposalId,
       toPerspectiveId: proposalManifest.toPerspectiveId,
-      updatedPerspectives: proposalManifest.updates.map(update => update.perspectiveId),
       updates: proposalManifest.updates,
       status: ProposalStatus.Pending,
       endBlock: proposalManifest.block + proposalManifest.config.duration
@@ -247,24 +262,21 @@ export class PolkadotCouncilEveesStorage {
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
     await this.ready();
-    /** assume cache data is uptodate */
-
+    /** at this point cache data is up to date */
     this.logger.log(`getting perspective ${perspectiveId}`);
+    const perspective = await this.db.perspectives.get(perspectiveId);
+    return { headId: perspective ? perspective.headId : undefined };
+  }
 
-    const proposalsSorted = await this.db.proposals
-      .where('updatedPerspectives')
-      .equals(perspectiveId)
-      .and(proposal => proposal.status === ProposalStatus.Accepted)
-      .reverse()
-      .sortBy('endBlock');
+  async getContextPerspectives(context: string) {
+    const perspectives = await this.db.perspectives
+      .where('context')
+      .equals(context)
+      .toArray();
 
-    this.logger.log(`proposalsSorted`, { proposalsSorted });
+    this.logger.log(`getting context perspectives ${context}`, perspectives);
 
-    if (proposalsSorted.length === 0) return {};
-
-    const update = proposalsSorted[0].updates.find(u => u.perspectiveId === perspectiveId);
-    this.logger.log(`valid update found`, { update });
-    return update ? { headId: update.newHeadId } : {};
+    return perspectives.map(e => e.id);
   }
 
   async addProposalToCouncilData(councilProposal: CouncilProposal, at?: number) {

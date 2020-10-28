@@ -1,4 +1,5 @@
 import { LitElement, html, css, property } from 'lit-element';
+import { icons } from './icons';
 
 export class UprtclListItem extends LitElement {
   @property({ type: Boolean })
@@ -7,6 +8,9 @@ export class UprtclListItem extends LitElement {
   @property({ type: Boolean })
   hasMeta: boolean = false;
 
+  @property({ type: String })
+  icon!: string;
+
   render() {
     let classes = ['container'];
     if (this.selected) classes.push('selected');
@@ -14,6 +18,11 @@ export class UprtclListItem extends LitElement {
     return html`
       <div class=${classes.join(' ')}>
         <div class="vertically-centered">
+          ${this.icon
+            ? html`
+                <div class="icon-container">${icons[this.icon]}</div>
+              `
+            : ''}
           <div class="main-item"><slot></slot></div>
           ${this.hasMeta
             ? html`
@@ -57,12 +66,21 @@ export class UprtclListItem extends LitElement {
           flex: 1 1 0;
           display: flex;
           flex-direction: row;
+          margin-left: 6px;
+          vertical-align: middle;
+          line-height: 24px;
         }
         .meta-item {
           flex: 0 0 0;
           display: flex;
           flex-direction: column;
           justify-content: center;
+        }
+        .icon-container {
+          height: 24px;
+        }
+        .icon-container svg {
+          fill: #717377;
         }
       `
     ];

@@ -11,10 +11,6 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import { EveesOrbitDB, EveesOrbitDBModule, ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
-import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
-import { EveesLocalModule } from '@uprtcl/evees-local';
-
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { EthereumOrbitDBIdentity, EveesEthereumConnection } from '@uprtcl/evees-ethereum';
 
@@ -23,13 +19,17 @@ import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 
+import { OrbitDBCustom, AddressMapping } from '@uprtcl/orbitdb-provider';
 import {
+  EveesOrbitDB,
+  EveesOrbitDBModule,
+  ProposalsOrbitDB,
   PerspectiveStore,
   ContextStore,
   ProposalStore,
   ProposalsToPerspectiveStore,
-  ContextAccessController,
-  ProposalsAccessController
+  getContextAcl,
+  getProposalsAcl
 } from '@uprtcl/evees-orbitdb';
 
 import { SimpleWiki } from './simple-wiki';
@@ -38,6 +38,7 @@ import { SimpleWiki } from './simple-wiki';
   const provider = '';
   // const provider = ethers.getDefaultProvider('rinkeby', env.ethers.apiKeys);
   // const provider = 'https://rpc.xdaichain.com/';
+  // const provider = 'https://xdai.poanetwork.dev';
 
   const ipfsCidConfig = {
     version: 1,
@@ -65,7 +66,7 @@ import { SimpleWiki } from './simple-wiki';
 
   console.log('connecting to pinner peer');
   await ipfs.swarm.connect(env.pinner.peerMultiaddr);
-  console.log('connected!!!');
+  console.log(`connected to ${env.pinner.peerMultiaddr}`);
 
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
   await ipfsStore.ready();
@@ -74,9 +75,20 @@ import { SimpleWiki } from './simple-wiki';
   await ethConnection.ready();
   const identity = new EthereumOrbitDBIdentity(ethConnection);
 
+  const identitySources = [identity];
+  const contextAcl = getContextAcl(identitySources);
+  const proposalsAcl = getProposalsAcl(identitySources);
+  const customStores = [
+    PerspectiveStore,
+    ContextStore,
+    ProposalStore,
+    ProposalsToPerspectiveStore,
+    AddressMapping
+  ];
+
   const orbitDBCustom = new OrbitDBCustom(
-    [PerspectiveStore, ContextStore, ProposalStore, ProposalsToPerspectiveStore],
-    [ContextAccessController, ProposalsAccessController],
+    customStores,
+    [contextAcl, proposalsAcl],
     identity,
     env.pinner.url,
     env.pinner.peerMultiaddr,
@@ -95,8 +107,7 @@ import { SimpleWiki } from './simple-wiki';
     ethEveesConnection,
     orbitDBCustom,
     ipfsStore,
-    proposals,
-    'ethereum-evees-cache'
+    proposals
   );
   await ethEvees.ready();
 
@@ -113,7 +124,6 @@ import { SimpleWiki } from './simple-wiki';
     new LensesModule(),
     new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
-    new EveesLocalModule(),
     evees,
     documents,
     wikis

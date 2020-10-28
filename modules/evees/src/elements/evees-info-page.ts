@@ -11,6 +11,8 @@ import { Logger } from '@uprtcl/micro-orchestrator';
 import { EveesInfoBase } from './evees-info-base';
 import { UPDATE_HEAD } from '../graphql/queries';
 import { ApolloClient } from 'apollo-boost';
+import { MenuConfig } from '@uprtcl/common-ui';
+import { doesNotReject } from 'assert';
 
 export class EveesInfoPage extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-PAGE');
@@ -112,9 +114,24 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   async showPullChanges() {
-    const confirm = await this.updatesDialog(this.pullWorkspace, 'apply', 'close');
+    if (!this.pullWorkspace) throw new Error('pullWorkspace undefined');
 
-    if (!confirm) {
+    const options: MenuConfig = {
+      apply: {
+        text: 'apply',
+        icon: 'done',
+        skinny: false
+      },
+      close: {
+        text: 'close',
+        icon: 'clear',
+        skinny: true
+      }
+    };
+
+    const result = await this.updatesDialog(this.pullWorkspace, options);
+
+    if (result !== 'apply') {
       return;
     }
 
@@ -140,7 +157,7 @@ export class EveesInfoPage extends EveesInfoBase {
         skinny
         icon="call_split"
         @click=${this.forkPerspective}
-        loading=${this.creatingNewPerspective ? 'true' : 'false'}
+        ?loading=${this.creatingNewPerspective}
       >
         new perspective
       </uprtcl-button-loading>
@@ -154,7 +171,7 @@ export class EveesInfoPage extends EveesInfoBase {
         skinny
         icon="call_merge"
         @click=${this.proposeMergeClicked}
-        loading=${this.proposingUpdate ? 'true' : 'false'}
+        ?loading=${this.proposingUpdate}
       >
         Propose Merge
       </uprtcl-button-loading>
@@ -229,7 +246,6 @@ export class EveesInfoPage extends EveesInfoBase {
                       ${!this.loading
                         ? html`
                             <evees-perspectives-list
-                              force-update=${this.forceUpdate}
                               perspective-id=${this.uref}
                               ?can-propose=${this.isLogged}
                               @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
@@ -257,9 +273,7 @@ export class EveesInfoPage extends EveesInfoBase {
                       ${!this.loading
                         ? html`
                             <evees-proposals-list
-                              force-update=${this.forceUpdate}
                               perspective-id=${this.uref}
-                              @execute-proposal=${this.executeProposal}
                             ></evees-proposals-list>
                           `
                         : html`

@@ -19,6 +19,23 @@ export class UprtclFormString extends LitElement {
   @query('#text-input')
   newTitleEl!: any;
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('keyup', (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        this.acceptClick();
+      }
+    });
+
+    this.addEventListener('keyup', event => {
+      if (event.key === 'Esc') {
+        event.preventDefault();
+        this.cancelClick();
+      }
+    });
+  }
+
   firstUpdated() {
     setTimeout(() => this.newTitleEl.focus(), 50);
   }
@@ -68,10 +85,17 @@ export class UprtclFormString extends LitElement {
       .actions {
         margin-top: 16px;
       }
+      uprtcl-textfield {
+        margin-right: 8px;
+      }
       .icon-container {
         margin-left: 8px;
         width: 48px;
         height: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
       }
       .actions uprtcl-button {
         width: 180px;

@@ -16,8 +16,9 @@ import {
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
-import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
+import { EveesOrbitDBEntities, perspective } from '../custom-stores/orbit-db.stores';
 import { Lens } from '@uprtcl/lenses';
+import { TemplateResult } from 'lit-html';
 
 const evees_if = 'evees-v0';
 // const timeout = 200;
@@ -33,7 +34,11 @@ export class EveesOrbitDB implements EveesRemote {
   accessControl: any;
   proposals!: ProposalsProvider;
 
-  constructor(public orbitdbcustom: OrbitDBCustom, public store: CASStore) {
+  constructor(
+    public orbitdbcustom: OrbitDBCustom,
+    public store: CASStore,
+    private postFix?: string
+  ) {
     if (
       orbitdbcustom.getManifest(EveesOrbitDBEntities.Perspective) === undefined ||
       orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined
@@ -46,7 +51,7 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   get id() {
-    return `orbitdb:${evees_if}`;
+    return `orbitdb:${evees_if}${this.postFix ? `:${this.postFix}` : ''}`;
   }
 
   get defaultPath() {
@@ -60,6 +65,18 @@ export class EveesOrbitDB implements EveesRemote {
 
   canWrite(uref: string): Promise<boolean> {
     return this.accessControl.canWrite(uref, this.userId);
+  }
+
+  icon(): TemplateResult {
+    return html`
+      <div style="display: flex;align-items: center">
+        <img
+          style="height: 28px; width: 28px;margin-right: 6px"
+          src="https://orbitdb.org/images/favicon.png"
+        />
+        orbitdb
+      </div>
+    `;
   }
 
   lense(): Lens {
@@ -103,11 +120,8 @@ export class EveesOrbitDB implements EveesRemote {
 
     this.logger.log('getting', { perspectiveId, signedPerspective });
 
-    return this.orbitdbcustom.getStore(
-      EveesOrbitDBEntities.Perspective,
-      signedPerspective.payload,
-      pin
-    );
+    const secured: Secured<Perspective> = { id: perspectiveId, object: signedPerspective };
+    return this.orbitdbcustom.getStore(EveesOrbitDBEntities.Perspective, secured, pin);
   }
 
   async snapPerspective(
@@ -152,7 +166,7 @@ export class EveesOrbitDB implements EveesRemote {
 
     await this.updatePerspectiveInternal(perspectiveId, details, true);
 
-    /** register it for reverse mapping */
+    /** create and pin the context store */
     const contextStore = await this.orbitdbcustom.getStore(
       EveesOrbitDBEntities.Context,
       {
@@ -237,18 +251,15 @@ export class EveesOrbitDB implements EveesRemote {
     if (!(await this.isLogged())) throw notLogged();
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    const perspectiveStore = await this.getPerspectiveStore(perspectiveId);
-    const [latestEntry] = perspectiveStore.iterator({ limit: 1 }).collect();
+    const signedPerspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context: signedPerspective.payload.context
+    });
+    await contextStore.delete(perspectiveId);
 
-    const context = latestEntry && latestEntry.payload.value.context;
-    if (context) {
-      const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
-        context
-      });
-      await contextStore.delete(perspectiveId);
-    }
-
-    await perspectiveStore.drop();
+    /** drop and unpin */
+    const secured: Secured<Perspective> = { id: perspectiveId, object: signedPerspective };
+    await this.orbitdbcustom.dropStore(EveesOrbitDBEntities.Perspective, secured);
   }
 
   async isLogged(): Promise<boolean> {

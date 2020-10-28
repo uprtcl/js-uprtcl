@@ -81,10 +81,13 @@ import { SimpleWiki } from './simple-wiki';
   );
   await orbitDBCustom.ready();
 
+  const orbitdbEveesMaster = new EveesOrbitDB(orbitDBCustom, ipfsStore, 'master');
+  await orbitdbEveesMaster.connect();
+
   const orbitdbEvees = new EveesOrbitDB(orbitDBCustom, ipfsStore);
   await orbitdbEvees.connect();
 
-  const evees = new EveesModule([orbitdbEvees]);
+  const evees = new EveesModule([orbitdbEveesMaster, orbitdbEvees]);
 
   const documents = new DocumentsModule();
   const wikis = new WikisModule();
@@ -102,9 +105,6 @@ import { SimpleWiki } from './simple-wiki';
   ];
 
   await orchestrator.loadModules(modules);
-
-  /*** add other services to the container */
-  orchestrator.container.bind('official-connection').toConstantValue(ethConnection);
 
   console.log(orchestrator);
   customElements.define('simple-wiki', SimpleWiki);

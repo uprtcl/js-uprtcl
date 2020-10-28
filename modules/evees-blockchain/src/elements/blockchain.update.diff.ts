@@ -8,7 +8,10 @@ import { EveesModule, EveesWorkspace, Perspective, EveesDiff } from '@uprtcl/eve
 import { loadEntity } from '@uprtcl/multiplatform';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 
-import { EveesBlockchainCached, UserPerspectivesDetails } from '../provider/evees.blockchain.cached';
+import {
+  EveesBlockchainCached,
+  UserPerspectivesDetails
+} from '../provider/evees.blockchain.cached';
 
 export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-BLOCKCHAIN-UPDATE-DIFF');
@@ -16,17 +19,23 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'remote' })
   remoteId!: string;
 
-  @property({ type: String })
-  owner!: string;
+  @property({ type: String, attribute: 'current-hash' })
+  currentHash!: string | undefined;
 
   @property({ type: String, attribute: 'new-hash' })
   newHash!: string;
-  
+
   @property({ type: Boolean })
   summary: boolean = false;
 
   @property({ attribute: false })
   loading: boolean = true;
+
+  @property({ attribute: false })
+  nNew!: number;
+
+  @property({ attribute: false })
+  nUpdated!: number;
 
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
@@ -41,9 +50,11 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
-    const remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
+    const remote = (this.requestAll(
+      EveesModule.bindings.EveesRemote
+    ) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
     if (!remote) {
-        throw new Error(`remote ${this.remoteId} not found`)
+      throw new Error(`remote ${this.remoteId} not found`);
     }
     this.remote = remote;
     this.load();
@@ -52,11 +63,9 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   async load() {
     this.loading = true;
 
-    const newHash = await this.remote.createNewEveesData();
-    
-    const eveesData = await this.remote.getEveesDataOf(this.owner);
-    const newEveesData = (await this.remote.store.get(newHash)) as UserPerspectivesDetails;
-    
+    const eveesData = await this.remote.getEveesDataFromHead(this.currentHash);
+    const newEveesData = (await this.remote.store.get(this.newHash)) as UserPerspectivesDetails;
+
     /** compare the two evees objects and derive a workspace */
     this.workspace = new EveesWorkspace(this.client, this.recognizer);
 
@@ -73,8 +82,8 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
             newHeadId: newHead,
             perspectiveId: perspectiveId,
             oldHeadId: eveesData[perspectiveId].headId
-          }
-  
+          };
+
           this.workspace.update(update);
         }
       } else {
@@ -88,15 +97,21 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
             headId: newEveesData[perspectiveId].headId
           },
           perspective
-        }
+        };
         this.workspace.newPerspective(newPerspective);
       }
     }
-    
+
+    this.nNew = this.workspace.getNewPerspectives().length;
+    this.nUpdated = this.workspace.getUpdates().length;
+
     this.loading = false;
     await this.updateComplete;
 
-    this.eveesDiffEl.workspace = this.workspace;
+    /** set the workspace of the evees diff once it is shown */
+    if (this.eveesDiffEl !== null) {
+      this.eveesDiffEl.workspace = this.workspace;
+    }
   }
 
   render() {
@@ -107,7 +122,33 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     }
 
     return html`
-      <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
+      <div class="row">
+        <div class="column">
+          <div class="prop-name">current head</div>
+          <pre class="prop-value">${this.currentHash}</pre>
+        </div>
+        ${this.newHash !== this.currentHash
+          ? html`
+              <div class="column">
+                <div class="prop-name">new head</div>
+                <pre class="prop-value">${this.newHash}</pre>
+              </div>
+            `
+          : ''}
+      </div>
+
+      <div class="row">
+        <ul>
+          <li>new perspectives: ${this.workspace.getNewPerspectives().length}</li>
+          <li>perspectives updated: ${this.workspace.getUpdates().length}</li>
+        </ul>
+      </div>
+
+      ${this.nUpdated > 0
+        ? html`
+            <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
+          `
+        : ''}
     `;
   }
 
@@ -115,7 +156,43 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     return css`
       :host {
         display: block;
-        text-align: center;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+      }
+      .row {
+        width: 100%;
+        display: flex;
+      }
+      .column {
+        flex: 1 1 auto;
+        padding: 0px 16px;
+      }
+      .prop-name {
+        width: 100%;
+      }
+      .prop-value {
+        font-family: Lucida Console, Monaco, monospace;
+        font-size: 12px;
+        text-align: left;
+        background-color: #a0a3cb;
+        color: #1c1d27;
+        padding: 16px 16px;
+        margin-bottom: 16px;
+        border-radius: 6px;
+        width: 100%;
+        overflow: auto;
+        width: calc(100% - 32px);
+        overflow-x: auto;
+      }
+      ul {
+        margin-top: 0px;
+      }
+      evees-update-diff {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
       }
     `;
   }

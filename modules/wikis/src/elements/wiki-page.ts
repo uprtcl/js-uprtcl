@@ -1,25 +1,15 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-// import { styleMap } from 'lit-html/directives/style-map';
-// https://github.com/Polymer/lit-html/issues/729
-const styleMap = style => {
-  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
-    return `${styleString}${propName}:${propValue};`;
-  }, '');
-};
 
-import { TextNode } from '@uprtcl/documents';
 import { sharedStyles } from '@uprtcl/lenses';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import {
   ContentUpdatedEvent,
   CONTENT_UPDATED_TAG,
+  EveesConfig,
   EveesHelpers,
-  Evees,
-  EveesModule,
-  EveesRemote
+  EveesModule
 } from '@uprtcl/evees';
 
 export class WikiPage extends moduleConnect(LitElement) {
@@ -28,8 +18,8 @@ export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
   pageHash!: string;
 
-  @property({ type: Object })
-  textNode!: TextNode;
+  @property({ type: String, attribute: 'official-owner' })
+  officialOwner!: string;
 
   @property({ type: String })
   color!: string;
@@ -37,11 +27,11 @@ export class WikiPage extends moduleConnect(LitElement) {
   @property({ type: String })
   wikiId!: string;
 
-  @property({ type: Array })
-  editableRemotes: string[] = [];
+  @property({ attribute: false })
+  editable: boolean = false;
 
   @property({ attribute: false })
-  editable: string = 'false';
+  loading: boolean = true;
 
   protected client!: ApolloClient<any>;
 
@@ -73,46 +63,12 @@ export class WikiPage extends moduleConnect(LitElement) {
   }
 
   async load() {
-    const result = await this.client.query({
-      query: gql`{
-        entity(uref: "${this.pageHash}") {
-          id
-          ... on Perspective {
-            head {
-              id
-              data {
-                id
-                ... on TextNode {
-                  text
-                  links
-                }
-              }
-            }
-          }
-
-        }
-      }`
-    });
-
-    this.textNode = result.data.entity.head.data;
-
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.pageHash);
-    const canWrite = await EveesHelpers.canWrite(this.client, this.pageHash);
-
-    this.editable =
-      this.editableRemotes.length > 0
-        ? this.editableRemotes.includes(remoteId)
-          ? canWrite
-            ? 'true'
-            : 'false'
-          : 'false'
-        : canWrite
-        ? 'true'
-        : 'false';
+    this.loading = true;
+    this.loading = false;
   }
 
   render() {
-    if (!this.textNode)
+    if (this.loading)
       return html`
         <uprtcl-loading></uprtcl-loading>
       `;
@@ -123,9 +79,10 @@ export class WikiPage extends moduleConnect(LitElement) {
           id="doc-editor"
           .client=${this.client}
           uref=${this.pageHash}
-          parentId=${this.wikiId}
+          parent-id=${this.wikiId}
           color=${this.color}
-          editable=${this.editable}
+          official-owner=${this.officialOwner}
+          show-info
         >
         </documents-editor>
       </div>

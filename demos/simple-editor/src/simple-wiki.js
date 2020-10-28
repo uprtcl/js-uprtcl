@@ -12,8 +12,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       rootHash: { type: String },
       loading: { attribute: false },
       canCreate: { attribute: false },
-      creatingSpace: { attribute: false },
-      defaultRemoteId: { type: String }
+      creatingSpace: { attribute: false }
     };
   }
 
@@ -55,11 +54,6 @@ export class SimpleWiki extends moduleConnect(LitElement) {
       this.rootHash = state[2].split('id=')[1];
     });
 
-    const defaultRemote = this.request(EveesModule.bindings.Config).defaultRemote;
-    await defaultRemote.ready();
-
-    this.defaultRemoteId = defaultRemote.id;
-
     this.officalRemote = this.requestAll(EveesModule.bindings.EveesRemote).find(instance =>
       instance.id.includes(env.officialRemote)
     );
@@ -76,31 +70,20 @@ export class SimpleWiki extends moduleConnect(LitElement) {
     }
 
     if (window.location.href.includes('remoteHome=')) {
-      const randint = 0 + Math.floor((10000 - 0) * Math.random());
-      const context = await hashObject({
-        creatorId: '',
-        timestamp: randint
-      });
-
-      const remoteHome = {
-        remote: this.officalRemote.id,
-        path: '',
-        creatorId: '',
-        timestamp: 0,
-        context: context
-      };
-
-      const perspective = await deriveSecured(remoteHome, this.officalRemote.store.cidConfig);
-      await this.officalRemote.store.create(perspective.object);
-
-      window.history.pushState('', '', `/?id=${perspective.id}`);
+      const remoteHome = this.officalRemote.getHome
+        ? await this.officalRemote.getHome()
+        : undefined;
+      if (!remoteHome) throw new Error('home remote perspective not defined');
+      await this.officalRemote.store.create(remoteHome.object);
+      window.history.pushState('', '', `/?id=${remoteHome.id}`);
     }
 
     this.loading = false;
   }
 
   async login() {
-    await this.officalRemote.login();
+    const remotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    await Promise.all(remotes.map(r => r.login()));
     this.canCreate = await this.officalRemote.isLogged();
   }
 
@@ -137,13 +120,16 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         ${this.canCreate
           ? html`
               <uprtcl-button-loading
+                class="main-button"
                 @click=${() => this.createSpace()}
-                loading=${this.creatingSpace ? 'true' : 'false'}
+                ?loading=${this.creatingSpace}
                 >create space</uprtcl-button-loading
               >
             `
           : html`
-              <uprtcl-button @click=${() => this.login()}>connect</uprtcl-button>
+              <uprtcl-button class="main-button" @click=${() => this.login()}
+                >connect</uprtcl-button
+              >
             `}
       </div>
     `;
@@ -152,7 +138,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   renderWiki() {
     return html`
       <div class="wiki-container">
-        <wiki-drawer uref=${this.rootHash} default-remote=${this.defaultRemoteId}></wiki-drawer>
+        <wiki-drawer uref=${this.rootHash} show-proposals></wiki-drawer>
       </div>
     `;
   }
@@ -200,6 +186,9 @@ export class SimpleWiki extends moduleConnect(LitElement) {
         justify-content: center;
         align-items: center;
         width: 100%;
+      }
+      .main-button {
+        width: 220px;
       }
       wiki-drawer {
         min-height: calc(100vh - 50px);

@@ -26,6 +26,13 @@ export const styles = css`
     background-color: var(--background-color, #c9d4db);
     color: #ffffff;
   }
+  .button-filled-secondary-no-hover {
+    background-color: var(--background-color, #c9d4db);
+    color: #ffffff;
+  }
+  .button-filled-secondary-no-hover svg {
+    fill: white;
+  }
   .button-filled-secondary svg {
     fill: white;
   }
@@ -35,6 +42,9 @@ export const styles = css`
   .button-disabled {
     background-color: #bbd6ec;
     color: #ffffff;
+  }
+  .button-disabled svg {
+    fill: white;
   }
   .button-skinny {
     background-color: transparent;
@@ -49,5 +59,8 @@ export const styles = css`
   }
   .cursor {
     cursor: pointer;
+  }
+  .bg-transition {
+    transition: background-color 0.5s ease;
   }
 `;

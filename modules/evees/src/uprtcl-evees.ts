@@ -33,7 +33,9 @@ export { EveesPerspectivesList } from './elements/evees-perspectives-list';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesInfoBase } from './elements/evees-info-base';
+export { EveesInfoUserBased } from './elements/evees-info-user-based';
 export { ProposalsList } from './elements/evees-proposals-list';
+export { EveesPerspectiveIcon } from './elements/evees-perspective-icon';
 
 export {
   UpdateContentEvent,
@@ -49,7 +51,7 @@ export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
-export { UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY } from './graphql/queries';
+export { UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY, CREATE_PROPOSAL } from './graphql/queries';
 export { EveesHelpers, CreatePerspective, CreateCommit } from './graphql/evees.helpers';
 
 /** Patterns */
@@ -62,7 +64,13 @@ export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';
 export { isAncestorOf } from './utils/ancestor';
 
 /** Proposals */
-export { Proposal, UpdateRequest, NewProposal, ProposalDetails } from './types';
+export {
+  Proposal,
+  UpdateRequest,
+  NewProposal,
+  ProposalDetails,
+  PROPOSAL_CREATED_TAG
+} from './types';
 export { ProposalsProvider } from './services/proposals.provider';
 
 /** Aceess Control */

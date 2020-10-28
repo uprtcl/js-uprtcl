@@ -7,14 +7,16 @@ export class UprtclHelp extends LitElement {
   popper!: UprtclPopper;
 
   render() {
-    return html` <uprtcl-popper id="popper" icon="help_outline">
-      <div class="help-content">
-        <slot></slot>
-      </div>
-      <uprtcl-button @click=${() => (this.popper.showDropdown = false)}>
-        close
-      </uprtcl-button>
-    </uprtcl-popper>`;
+    return html`
+      <uprtcl-popper id="popper" icon="help_outline">
+        <div class="help-content">
+          <slot></slot>
+        </div>
+        <uprtcl-button @click=${() => (this.popper.showDropdown = false)}>
+          close
+        </uprtcl-button>
+      </uprtcl-popper>
+    `;
   }
 
   static get styles() {
@@ -26,6 +28,10 @@ export class UprtclHelp extends LitElement {
 
       uprtcl-button {
         width: 100%;
+      }
+
+      uprtcl-popper {
+        --box-with: 200px;
       }
     `;
   }
