@@ -24,23 +24,29 @@ export function getContextAcl(identitySources: IdentitySource[]) {
       // Allow if access list contain the writer's publicKey or is '*'
       const orbitdbKey = entry.identity.id;
       try {
-        if (this.write.includes(orbitdbKey) || this.write.includes('*')) {
-          const perspectiveId = entry.payload.value;
+        return identityProvider.verifyIdentity(entry.identity);
 
-          const valid = await checkToPerspectiveCreator(
-            this.orbitdb,
-            perspectiveId,
-            orbitdbKey,
-            identitySources
-          );
+        /** This works fine for external accounts on the identityProvider, but for internal
+         * accounts who can't sign, it does not work. It seems possible to use the signaling
+         * contract to let contracts "sign/approve" entries, but this will require some time.
+         */
+        // if (this.write.includes(orbitdbKey) || this.write.includes('*')) {
+        //   const perspectiveId = entry.payload.value;
 
-          if (!valid) {
-            return false;
-          }
+        //   const valid = await checkToPerspectiveCreator(
+        //     this.orbitdb,
+        //     perspectiveId,
+        //     orbitdbKey,
+        //     identitySources
+        //   );
 
-          // check identity is valid
-          return identityProvider.verifyIdentity(entry.identity);
-        }
+        //   if (!valid) {
+        //     return false;
+        //   }
+
+        //   // check identity is valid
+        //   return identityProvider.verifyIdentity(entry.identity);
+        // }
       } catch (e) {
         console.error(e);
       }
