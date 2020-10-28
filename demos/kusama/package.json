@@ -17,7 +17,7 @@
     "@uprtcl/wikis": "^0.0.7-alpha.71",
     "@uprtcl/evees": "^0.0.7-alpha.71",
     "@uprtcl/documents": "^0.0.7-alpha.71",
-    "@uprtcl/polkadot": "^0.0.7-alpha.71",
+    "@uprtcl/evees-polkadot": "^0.0.7-alpha.71",
     "@uprtcl/evees-blockchain": "^0.0.7-alpha.71",
     "@uprtcl/evees-orbitdb": "^0.0.7-alpha.71",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.71",
