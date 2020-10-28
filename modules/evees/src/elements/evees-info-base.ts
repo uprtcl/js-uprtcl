@@ -6,7 +6,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Entity, Signed } from '@uprtcl/cortex';
 import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
-import { UprtclDialog } from '@uprtcl/common-ui';
+import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
 import {
   ProposalCreatedEvent,
@@ -325,14 +325,26 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
 
-    const confirm = await this.updatesDialog(
+    const options: MenuConfig = {
+      apply: {
+        text: canWrite ? 'merge' : 'propose',
+        icon: 'done',
+        skinny: false
+      },
+      close: {
+        text: 'close',
+        icon: 'clear',
+        skinny: true
+      }
+    };
+
+    const result = await this.updatesDialog(
       workspace,
-      canWrite ? 'merge' : 'propose',
-      'cancel',
+      options,
       this.renderFromToPerspective(toPerspectiveId, fromPerspectiveId)
     );
 
-    if (!confirm) {
+    if (result !== 'apply') {
       return;
     }
 
@@ -411,9 +423,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
-    const remote = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
+    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
 
-    const not = await workspace.isSingleAuthority(remote);
+    const not = await workspace.isSingleAuthority(toRemoteId);
     if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
 
     const result = await this.client.mutate({
@@ -514,17 +526,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async updatesDialog(
     workspace: EveesWorkspace,
-    primaryText: string,
-    secondaryText: string,
+    options: MenuConfig,
     message: TemplateResult = html``
-  ): Promise<boolean> {
+  ): Promise<string> {
     this.showUpdatesDialog = true;
     await this.updateComplete;
 
-    this.updatesDialogEl.primaryText = primaryText;
-    this.updatesDialogEl.secondaryText = secondaryText;
-    this.updatesDialogEl.showSecondary = secondaryText !== undefined ? 'true' : 'false';
-
+    this.updatesDialogEl.options = options;
     this.eveesDiffEl.workspace = workspace;
     this.eveesDiffInfoMessage = message;
 

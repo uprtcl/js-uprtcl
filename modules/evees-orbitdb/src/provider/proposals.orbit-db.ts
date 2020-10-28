@@ -33,7 +33,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     }
   }
 
-  canPropose(perspectiveId?: string) {
+  async canPropose(perspectiveId?: string) {
     return false;
   }
 
@@ -75,6 +75,12 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     return proposalId;
   }
 
+  async canRemove(proposalId: string, userId?: string) {
+    userId = userId || this.orbitdb.identity.id;
+    const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
+    return proposalManifest.owners.includes(userId as string);
+  }
+
   async getProposalStore(proposalId: string, pin: boolean = false) {
     const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
     const proposalEntity: Entity<ProposalManifest> = {
@@ -94,6 +100,26 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
   async updateProposal(proposalId: string, details: ProposalDetails): Promise<void> {
     return this.updateProposalInternal(proposalId, details);
+  }
+
+  async deleteProposal(proposalId: string): Promise<void> {
+    const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
+
+    /** remove from list of proposals */
+    const proposalsToPerspeciveStore = await this.orbitdb.getStore(
+      EveesOrbitDBEntities.ProposalsToPerspective,
+      { toPerspectiveId: proposalManifest.toPerspectiveId },
+      true
+    );
+
+    await proposalsToPerspeciveStore.delete(proposalId);
+
+    /** drop and unpin */
+    const proposalEntity: Entity<ProposalManifest> = {
+      id: proposalId,
+      object: proposalManifest
+    };
+    return this.orbitdb.dropStore(EveesOrbitDBEntities.Proposal, proposalEntity);
   }
 
   private async updateProposalInternal(

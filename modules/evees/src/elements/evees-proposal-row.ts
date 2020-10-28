@@ -4,7 +4,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Perspective, Proposal } from '../types';
 import { EveesRemote } from 'src/services/evees.remote';
 import { EveesBindings } from 'src/bindings';
-import { UprtclDialog } from '@uprtcl/common-ui';
+import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { ApolloClient } from 'apollo-boost';
@@ -12,8 +12,8 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { EveesHelpers } from '../graphql/evees.helpers';
 import { loadEntity } from '@uprtcl/multiplatform';
-import { Lens } from '@uprtcl/lenses';
 import { ContentUpdatedEvent } from './events';
+import { ProposalsProvider } from 'src/services/proposals.provider';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -34,7 +34,10 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   showDiff: Boolean = false;
 
   @property({ attribute: false })
-  creatorId: string | undefined = undefined;
+  authorId: string | undefined = undefined;
+
+  @property({ attribute: false })
+  canRemove: Boolean = false;
 
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
@@ -42,7 +45,8 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
-  remote!: EveesRemote | undefined;
+  remote!: EveesRemote;
+  proposals!: ProposalsProvider;
   proposal!: Proposal;
   executed: boolean = false;
   canExecute: boolean = false;
@@ -55,6 +59,18 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
+    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+      r => r.id === this.remoteId
+    );
+    if (remote === undefined) throw new Error(`remote ${this.remoteId} not found`);
+
+    const proposals = remote.proposals;
+    if (proposals === undefined)
+      throw new Error(`remote ${this.remoteId} proposals provider not found`);
+
+    this.remote = remote;
+    this.proposals = proposals;
+
     this.load();
   }
 
@@ -68,29 +84,29 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.loading = true;
     this.loadingCreator = true;
 
-    this.remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-      r => r.id === this.remoteId
-    );
-
-    if (this.remote === undefined) throw new Error(`remote ${this.remoteId} not found`);
     if (this.remote.proposals === undefined)
       throw new Error(`remote ${this.remoteId} cant handle proposals`);
 
-    this.proposal = await this.remote.proposals.getProposal(this.proposalId);
+    this.proposal = await this.proposals.getProposal(this.proposalId);
 
     const fromPerspective = this.proposal.fromPerspectiveId
       ? await loadEntity<Signed<Perspective>>(this.client, this.proposal.fromPerspectiveId)
       : undefined;
 
-    this.creatorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
-
+    /** the author is the creator of the fromPerspective */
+    this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
     this.loadingCreator = false;
 
     await this.checkCanExecute();
     await this.checkExecuted();
 
+    /** the proposal creator is set at proposal creation */
+    this.canRemove = await this.remote.proposals.canRemove(this.proposalId);
+
     this.loading = false;
   }
+
+  async checkIsOwner() {}
 
   async checkExecuted() {
     /* a proposal is considered accepted if all the updates are now ancestors of their target */
@@ -118,9 +134,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
             this.client,
             update.perspectiveId
           );
-          const remote = (this.eveesRemotes as EveesRemote[]).find(
-            remote => remote.id === remoteId
-          );
+          const remote = this.eveesRemotes.find(remote => remote.id === remoteId);
           if (remote === undefined) throw new Error('remote undefined');
           return EveesHelpers.canWrite(this.client, update.perspectiveId);
         }
@@ -144,17 +158,35 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     await workspace.precacheNewPerspectives(this.client);
 
     this.showDiff = true;
+    const options: MenuConfig = {};
+
+    if (this.canExecute && !this.executed) {
+      options['accept'] = {
+        disabled: false,
+        text: 'accept',
+        icon: 'done'
+      };
+    }
+
+    options['close'] = {
+      disabled: false,
+      text: 'close',
+      icon: 'clear'
+    };
+
+    if (this.canExecute || this.canRemove) {
+      options['delete'] = {
+        disabled: false,
+        text: 'delete',
+        icon: 'delete',
+        background: '#c93131'
+      };
+    }
+
     await this.updateComplete;
 
     this.eveesDiffEl.workspace = workspace;
-
-    if (this.canExecute && !this.executed) {
-      this.updatesDialogEl.primaryText = 'accept';
-      this.updatesDialogEl.secondaryText = 'close';
-      this.updatesDialogEl.showSecondary = 'true';
-    } else {
-      this.updatesDialogEl.primaryText = 'close';
-    }
+    this.updatesDialogEl.options = options;
 
     const value = await new Promise(resolve => {
       this.updatesDialogEl.resolved = value => {
@@ -166,8 +198,13 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.dispatchEvent(new CustomEvent('dialogue-closed', { bubbles: true, composed: true }));
     this.showDiff = false;
 
-    if (this.canExecute && !this.executed && value) {
+    if (value === 'accept') {
+      /** run the proposal changes as the logged user */
       await workspace.execute(this.client);
+      await this.proposals.deleteProposal(this.proposalId);
+
+      this.load();
+
       this.dispatchEvent(
         new ContentUpdatedEvent({
           detail: { uref: this.proposal.toPerspectiveId },
@@ -175,6 +212,11 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
           composed: true
         })
       );
+    }
+
+    if (value === 'delete') {
+      await this.proposals.deleteProposal(this.proposalId);
+      this.load();
     }
   }
 
@@ -190,9 +232,9 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     return html`
       <div @click=${() => this.showProposalChanges()} class="row-container">
         <div class="proposal-name">
-          ${this.creatorId !== undefined
+          ${this.authorId !== undefined
             ? html`
-                <evees-author user-id=${this.creatorId} show-name></evees-author>
+                <evees-author user-id=${this.authorId} show-name></evees-author>
               `
             : 'unknown'}
         </div>

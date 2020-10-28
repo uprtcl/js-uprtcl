@@ -11,9 +11,6 @@ import { CortexModule } from '@uprtcl/cortex';
 import { EveesModule } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 
-import { EveesOrbitDB, EveesOrbitDBModule, ProposalsOrbitDB } from '@uprtcl/evees-orbitdb';
-import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
-
 import { EveesBlockchainCached, EveesBlockchainModule } from '@uprtcl/evees-blockchain';
 import { EthereumOrbitDBIdentity, EveesEthereumConnection } from '@uprtcl/evees-ethereum';
 
@@ -22,13 +19,17 @@ import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 
+import { OrbitDBCustom, AddressMapping } from '@uprtcl/orbitdb-provider';
 import {
+  EveesOrbitDB,
+  EveesOrbitDBModule,
+  ProposalsOrbitDB,
   PerspectiveStore,
   ContextStore,
   ProposalStore,
   ProposalsToPerspectiveStore,
-  ContextAccessController,
-  ProposalsAccessController
+  getContextAcl,
+  getProposalsAcl
 } from '@uprtcl/evees-orbitdb';
 
 import { SimpleWiki } from './simple-wiki';
@@ -74,9 +75,20 @@ import { SimpleWiki } from './simple-wiki';
   await ethConnection.ready();
   const identity = new EthereumOrbitDBIdentity(ethConnection);
 
+  const identitySources = [identity];
+  const contextAcl = getContextAcl(identitySources);
+  const proposalsAcl = getProposalsAcl(identitySources);
+  const customStores = [
+    PerspectiveStore,
+    ContextStore,
+    ProposalStore,
+    ProposalsToPerspectiveStore,
+    AddressMapping
+  ];
+
   const orbitDBCustom = new OrbitDBCustom(
-    [PerspectiveStore, ContextStore, ProposalStore, ProposalsToPerspectiveStore],
-    [ContextAccessController, ProposalsAccessController],
+    customStores,
+    [contextAcl, proposalsAcl],
     identity,
     env.pinner.url,
     env.pinner.peerMultiaddr,

@@ -3,8 +3,10 @@ import { LitElement, property, html, css, query } from 'lit-element';
 export interface MenuConfig {
   [key: string]: {
     text: string;
-    icon: string;
+    icon?: string;
+    skinny?: boolean;
     disabled?: boolean;
+    background?: string;
   };
 }
 

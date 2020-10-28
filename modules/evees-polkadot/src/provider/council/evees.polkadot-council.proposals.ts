@@ -6,7 +6,6 @@ import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { CASStore } from '@uprtcl/multiplatform';
 import { Lens } from '@uprtcl/lenses';
 
-
 import { EXPECTED_CONFIG, PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
 import { PolkadotConnection } from '../../connection.polkadot';
@@ -104,6 +103,10 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
     this.logger.info('getProposal() - post', { proposal });
 
     return proposal;
+  }
+
+  deleteProposal(proposalId: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {

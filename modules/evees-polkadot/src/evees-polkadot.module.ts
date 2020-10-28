@@ -1,7 +1,7 @@
 import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesPolkadotBindings } from './bindings';
-import { EveesPolkadotCouncilProposal } from './provider/council/proposal.element';
+import { EveesPolkadotCouncilProposal } from './provider/council/council.proposal.element';
 
 export class EveesPolkadotModule extends MicroModule {
   static id = 'evees-polkadot-module';

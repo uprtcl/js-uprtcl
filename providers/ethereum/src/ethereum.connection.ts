@@ -77,4 +77,8 @@ export class EthereumConnection extends Connection {
     if (!this.signer) throw new Error('signer not set');
     return this.signer.signMessage(text);
   }
+
+  public async verifySignature(message: string, signature: string): Promise<string> {
+    return ethers.utils.verifyMessage(message, signature).toLocaleLowerCase();
+  }
 }

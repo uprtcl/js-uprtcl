@@ -10,7 +10,7 @@ export class ProposalsHttp implements ProposalsProvider {
   canPropose(): Boolean {
     return true;
   }
-  
+
   async createProposal(proposal: NewProposal): Promise<string> {
     const result = await this.provider.post(`/proposal`, proposal);
     return result.elementIds[0];
@@ -19,16 +19,15 @@ export class ProposalsHttp implements ProposalsProvider {
   async getProposal(proposalId: string): Promise<Proposal> {
     const proposal = await this.provider.getObject<Proposal>(`/proposal/${proposalId}`);
     /** inject the casID of the remote store */
-    proposal.details.newPerspectives = proposal.details.newPerspectives.map(
-      newPerspective => { 
-        return {
-          ...newPerspective,
-          perspective: {
-            ...newPerspective.perspective,
-            casID: this.evees.store.casID
-          }
-        } 
-      })
+    proposal.details.newPerspectives = proposal.details.newPerspectives.map(newPerspective => {
+      return {
+        ...newPerspective,
+        perspective: {
+          ...newPerspective.perspective,
+          casID: this.evees.store.casID
+        }
+      };
+    });
 
     return proposal;
   }
@@ -38,6 +37,10 @@ export class ProposalsHttp implements ProposalsProvider {
   }
 
   updateProposal(proposalId: string, details: ProposalDetails): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  deleteProposal(proposalId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

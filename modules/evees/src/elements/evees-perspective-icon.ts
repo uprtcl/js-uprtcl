@@ -18,10 +18,12 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
 
   perspective!: Secured<Perspective>;
   remote!: EveesRemote;
+  remotes!: EveesRemote[];
   client!: ApolloClient<any>;
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
+    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.load();
   }
 
@@ -36,9 +38,7 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
     const perspective = await loadEntity<Signed<Perspective>>(this.client, this.perspectiveId);
     if (!perspective) throw new Error('perspective undefined');
 
-    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-      r => r.id === perspective.object.payload.remote
-    );
+    const remote = this.remotes.find(r => r.id === perspective.object.payload.remote);
     if (!remote) throw new Error('remote undefined');
 
     this.perspective = perspective;
@@ -56,11 +56,17 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
       ${this.perspective.object.payload.creatorId
         ? html`
             <div class="row">
-              <b class="tag-text">by</b>
-              <evees-author
-                user-id=${this.perspective.object.payload.creatorId}
-                show-name
-              ></evees-author>
+              ${this.remote.userId === this.perspective.object.payload.creatorId
+                ? html`
+                    <b class="tag-text">yours</b>
+                  `
+                : html`
+                    <b class="tag-text">by</b>
+                    <evees-author
+                      user-id=${this.perspective.object.payload.creatorId}
+                      show-name
+                    ></evees-author>
+                  `}
             </div>
           `
         : ''}
@@ -88,6 +94,7 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
           width: fit-content;
           flex-direction: column;
           align-items: center;
+          width: 100%;
         }
         .row {
           display: flex;

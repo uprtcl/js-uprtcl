@@ -1,18 +1,26 @@
-import { EntropyGenerator } from '@uprtcl/orbitdb-provider';
+import { IdentitySource } from '@uprtcl/orbitdb-provider';
 import { PolkadotConnection } from '../connection.polkadot';
 
-const msg = website => `
-Please Read!
+const evees_if = 'fixed';
 
-I authorize this app to update my _Prtcl content in OrbitDB.
-`;
-
-export class PolkadotOrbitDBIdentity implements EntropyGenerator {
+export class PolkadotOrbitDBIdentity implements IdentitySource {
   constructor(protected connection: PolkadotConnection) {}
 
-  public async get() {
+  get sourceId() {
+    return `${this.connection.getNetworkId()}:${evees_if}`;
+  }
+
+  get publicKey() {
+    return this.connection.account;
+  }
+
+  async signText(msg: string) {
     await this.connection.connectWallet();
-    const signature = await this.connection.signText(msg(window.location.origin));
+    const signature = await this.connection.signText(msg);
     return signature.toString();
+  }
+
+  async verify(msg: string, sig: string) {
+    return '';
   }
 }
