@@ -30,6 +30,13 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
 
   client!: ApolloClient<any>;
   remote!: EveesBlockchainCached;
+  dialogOptions: MenuConfig = {
+    close: {
+      text: 'close',
+      icon: 'clear',
+      skinny: false
+    }
+  };
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -40,7 +47,9 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
     this.load();
 
     setInterval(() => {
-      this.refresh();
+      if (!this.showDiff) {
+        this.refresh();
+      }
     }, 1000);
   }
 
@@ -58,14 +67,11 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
   }
 
   renderDiff() {
-    const options: MenuConfig = {
-      close: {
-        text: 'close',
-        icon: 'clear'
-      }
-    };
     return html`
-      <uprtcl-dialog .options=${options} @option-selected=${() => (this.showDiff = false)}>
+      <uprtcl-dialog
+        .options=${this.dialogOptions}
+        @option-selected=${() => (this.showDiff = false)}
+      >
         <evees-blockchain-status remote=${this.remote.id}> </evees-blockchain-status>
       </uprtcl-dialog>
     `;

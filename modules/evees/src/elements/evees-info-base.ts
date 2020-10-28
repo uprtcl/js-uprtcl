@@ -423,9 +423,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
-    const remote = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
+    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
 
-    const not = await workspace.isSingleAuthority(remote);
+    const not = await workspace.isSingleAuthority(toRemoteId);
     if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
 
     const result = await this.client.mutate({

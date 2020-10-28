@@ -75,6 +75,12 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     return proposalId;
   }
 
+  async canRemove(proposalId: string, userId?: string) {
+    userId = userId || this.orbitdb.identity.id;
+    const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
+    return proposalManifest.owners.includes(userId as string);
+  }
+
   async getProposalStore(proposalId: string, pin: boolean = false) {
     const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
     const proposalEntity: Entity<ProposalManifest> = {

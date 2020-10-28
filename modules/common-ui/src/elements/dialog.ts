@@ -2,11 +2,11 @@ import { LitElement, html, property, css } from 'lit-element';
 import { MenuConfig } from './options-menu';
 
 export class UprtclDialog extends LitElement {
-  @property({ type: Object })
-  options!: MenuConfig;
-
   @property({ attribute: false })
   resolved: Function | undefined = undefined;
+
+  @property({ type: Object })
+  options: MenuConfig = {};
 
   optionClicked(e, option) {
     e.stopPropagation();
@@ -17,6 +17,8 @@ export class UprtclDialog extends LitElement {
   }
 
   render() {
+    const options = Object.getOwnPropertyNames(this.options).reverse();
+
     return html`
       <div class="modal">
         <div class="modal-content">
@@ -24,21 +26,19 @@ export class UprtclDialog extends LitElement {
             <slot></slot>
           </div>
           <div class="buttons-container">
-            ${Object.getOwnPropertyNames(this.options)
-              .reverse()
-              .map(option => {
-                const details = this.options[option];
-                return html`
-                  <uprtcl-button
-                    @click=${e => this.optionClicked(e, option)}
-                    icon=${details.icon as string}
-                    ?skinny=${details.skinny}
-                    style${details.background ? `--background-color: ${details.background}` : ''}
-                  >
-                    ${this.options[option].text}
-                  </uprtcl-button>
-                `;
-              })}
+            ${options.map(option => {
+              const details = this.options[option];
+              return html`
+                <uprtcl-button
+                  @click=${e => this.optionClicked(e, option)}
+                  icon=${details.icon as string}
+                  ?skinny=${details.skinny !== undefined ? details.skinny : false}
+                  style=${details.background ? `--background-color: ${details.background}` : ''}
+                >
+                  ${this.options[option].text}
+                </uprtcl-button>
+              `;
+            })}
           </div>
         </div>
       </div>

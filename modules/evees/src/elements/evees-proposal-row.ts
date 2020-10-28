@@ -34,10 +34,10 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   showDiff: Boolean = false;
 
   @property({ attribute: false })
-  isCreator: Boolean = false;
+  authorId: string | undefined = undefined;
 
   @property({ attribute: false })
-  creatorId: string | undefined = undefined;
+  canRemove: Boolean = false;
 
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
@@ -93,14 +93,16 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       ? await loadEntity<Signed<Perspective>>(this.client, this.proposal.fromPerspectiveId)
       : undefined;
 
-    this.creatorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
-
+    /** the author is the creator of the fromPerspective */
+    this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
     this.loadingCreator = false;
 
     await this.checkCanExecute();
     await this.checkExecuted();
 
-    this.isCreator = this.creatorId !== undefined && this.remote.userId === this.creatorId;
+    /** the proposal creator is set at proposal creation */
+    this.canRemove = await this.remote.proposals.canRemove(this.proposalId);
+
     this.loading = false;
   }
 
@@ -166,20 +168,20 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       };
     }
 
-    if (this.canExecute || this.isCreator) {
-      options['delete'] = {
-        disabled: false,
-        text: 'delete',
-        icon: 'clear'
-        // background: '#c93131'
-      };
-    }
-
     options['close'] = {
       disabled: false,
       text: 'close',
       icon: 'clear'
     };
+
+    if (this.canExecute || this.canRemove) {
+      options['delete'] = {
+        disabled: false,
+        text: 'delete',
+        icon: 'delete',
+        background: '#c93131'
+      };
+    }
 
     await this.updateComplete;
 
@@ -230,9 +232,9 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     return html`
       <div @click=${() => this.showProposalChanges()} class="row-container">
         <div class="proposal-name">
-          ${this.creatorId !== undefined
+          ${this.authorId !== undefined
             ? html`
-                <evees-author user-id=${this.creatorId} show-name></evees-author>
+                <evees-author user-id=${this.authorId} show-name></evees-author>
               `
             : 'unknown'}
         </div>
