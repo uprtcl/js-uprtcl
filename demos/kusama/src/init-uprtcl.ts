@@ -85,8 +85,7 @@ export const initUprtcl = async () => {
     pdkEveesConnection,
     orbitDBCustom,
     ipfsStore,
-    proposals,
-    'polkadot-evees-cache'
+    proposals
   );
   const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();

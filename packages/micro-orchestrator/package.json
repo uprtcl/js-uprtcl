@@ -14,7 +14,7 @@
   "dependencies": {
     "i18next": "^19.0.2",
     "inversify": "^5.0.1",
-    "lit-element": "^2.3.0",
+    "lit-element": "^2.4.0",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {

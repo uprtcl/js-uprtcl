@@ -29,7 +29,7 @@
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^4.4.1",
     "karma-webpack": "^4.0.2",
-    "lit-element": "^2.3.1",
+    "lit-element": "^2.4.0",
     "lit-html": "^1.1.2",
     "rimraf": "^2.6.2",
     "rollup": "^2.0.5",

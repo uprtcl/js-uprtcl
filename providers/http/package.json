@@ -19,7 +19,7 @@
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.71",
     "@uprtcl/multiplatform": "^0.0.7-alpha.71",
     "inversify": "^5.0.1",
-    "lit-element": "^2.3.0",
+    "lit-element": "^2.4.0",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
