@@ -1,4 +1,9 @@
 {
-  "packages": ["modules/*", "packages/*", "providers/*", "demos/kusama"],
-  "version": "0.0.7-alpha.71"
+  "packages": [
+    "modules/*",
+    "packages/*",
+    "providers/*",
+    "demos/kusama"
+  ],
+  "version": "0.0.7-alpha.71x"
 }
