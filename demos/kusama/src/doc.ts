@@ -1,7 +1,6 @@
 import { LitElement, html, css, property } from 'lit-element';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule, EveesRemote } from '@uprtcl/evees';
-import { HttpEthAuthProvider } from '@uprtcl/http-provider';
+import { EveesConfig, EveesModule, EveesRemote } from '@uprtcl/evees';
 
 import { Router } from '@vaadin/router';
 
@@ -18,6 +17,12 @@ export class Doc extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.loading = true;
     this.docId = window.location.pathname.split('/')[2];
+
+    const defaultRemote = (this.requestAll(EveesModule.bindings.Config) as EveesConfig)
+      .defaultRemote;
+
+    await defaultRemote.connect();
+    this.defaultRemote = defaultRemote.id;
     this.loading = false;
   }
 
@@ -33,7 +38,12 @@ export class Doc extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <wiki-drawer @back=${() => this.goHome()} uref=${this.docId}></wiki-drawer>
+      <wiki-drawer
+        @back=${() => this.goHome()}
+        uref=${this.docId}
+        default-remote=${this.defaultRemote}
+        .editableRemotes=${[this.defaultRemote]}
+      ></wiki-drawer>
     `;
   }
 

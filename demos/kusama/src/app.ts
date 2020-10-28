@@ -1,7 +1,6 @@
 import { LitElement, html, query, css } from 'lit-element';
-import { Router } from '@vaadin/router';
+import { router, routes } from './router';
 
-import { setupRouter } from './router';
 import { sharedStyles } from './styles';
 
 export class App extends LitElement {
@@ -9,12 +8,14 @@ export class App extends LitElement {
   outlet: HTMLElement;
 
   async firstUpdated() {
-    setupRouter(this.outlet);
-    // Router.go('/home');
+    router.setOutlet(this.outlet);
+    router.setRoutes(routes);
   }
 
   render() {
-    return html`<div id="outlet"></div> `;
+    return html`
+      <div id="outlet"></div>
+    `;
   }
 
   static get styles() {
@@ -35,7 +36,7 @@ export class App extends LitElement {
           flex-direction: column;
           overflow: auto;
         }
-      `,
+      `
     ];
   }
 }
