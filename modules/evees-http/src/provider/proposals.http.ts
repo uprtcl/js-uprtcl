@@ -7,8 +7,12 @@ const uprtcl_api: string = 'uprtcl-ac-v1';
 export class ProposalsHttp implements ProposalsProvider {
   constructor(protected provider: HttpProvider, protected evees: EveesHttp) {}
 
-  canPropose(): Boolean {
+  async canPropose() {
     return true;
+  }
+
+  async canRemove() {
+    return false;
   }
 
   async createProposal(proposal: NewProposal): Promise<string> {

@@ -31,8 +31,12 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
     this.canProposeCache = council.includes(this.connection.account);
   }
 
-  canPropose() {
+  async canPropose() {
     return this.canProposeCache;
+  }
+
+  async canRemove(proposalId: string, userId?: string) {
+    return false;
   }
 
   async createProposal(proposal: NewProposal): Promise<string> {
