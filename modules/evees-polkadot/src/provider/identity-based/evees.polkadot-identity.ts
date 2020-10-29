@@ -45,7 +45,7 @@ export class EveesPolkadotConnection implements BlockchainConnection {
     }
     return html`
       <div style="display:flex;align-items: center;color: #636668;font-weight:bold">
-        <div style="height: 28px;width: 28px;margin-right: 6px">
+        <div style="height: 32px;width: 32px;margin-right: 6px;border-radius:16px;overflow:hidden;">
           ${icons[iconName]}
         </div>
         ${name} Identity

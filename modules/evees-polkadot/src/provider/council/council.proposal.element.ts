@@ -131,14 +131,14 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     );
 
     return html`
-      <div class="row vote-row">
+      <uprtcl-indicator lanel="Your vote">
         ${this.voting
           ? html`
               <uprtcl-loading></uprtcl-loading>
             `
           : vote
           ? html`
-              <uprtcl-status>${vote.value}</uprtcl-status>
+              ${vote.value}
             `
           : html`
               <uprtcl-button
@@ -155,7 +155,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
                 >Approve</uprtcl-button
               >
             `}
-      </div>
+      </uprtcl-indicator>
     `;
   }
 
@@ -169,48 +169,73 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       this.proposalManifest.config.duration -
       this.proposalStatusUI.summary.block;
 
+    const secondsRemaining = blocksRemaining * 5.0;
+
     return html`
       <div class="status-top">
-        <div class="status-status">${this.proposalStatusUI.summary.status}</div>
-        <div class="status-status">${blocksRemaining * 5.0} seconds left</div>
-        <div>${votedYes.length}/${this.proposalStatusUI.council.length}</div>
-        <div>
-          ${this.proposalStatusUI.council.length - votedYes.length - votedNo.length} pending
-        </div>
+        <uprtcl-indicator label="Proposal status"
+          >${this.proposalStatusUI.summary.status}</uprtcl-indicator
+        >
+        ${secondsRemaining > 0
+          ? html`
+              <uprtcl-indicator label="Remaining time"
+                >${secondsRemaining} seconds left</uprtcl-indicator
+              >
+            `
+          : html`
+              <uprtcl-indicator label="Closed at block"
+                >${this.proposalManifest.block}</uprtcl-indicator
+              >
+            `}
+        <uprtcl-indicator label="Voters"
+          ><div>${votedYes.length}/${this.proposalStatusUI.council.length}</div>
+          ${secondsRemaining > 0
+            ? html`
+                ${this.proposalStatusUI.council.length - votedYes.length - votedNo.length} pending
+              `
+            : ''}
+          <div></div
+        ></uprtcl-indicator>
       </div>
-      <uprtcl-list
-        >${votedYes.concat(votedNo).map(vote => {
-          let icon: string;
-          switch (vote.value) {
-            case VoteValue.Yes:
-              icon = 'done';
-              break;
-            case VoteValue.No:
-              icon = 'clear';
-              break;
 
-            case VoteValue.Undefined:
-              icon = 'question';
-              break;
+      <uprtcl-indicator class="vote-list-indicator" label="Votes">
+        <uprtcl-list
+          >${votedYes.concat(votedNo).map(vote => {
+            let icon: string;
+            switch (vote.value) {
+              case VoteValue.Yes:
+                icon = 'done';
+                break;
+              case VoteValue.No:
+                icon = 'clear';
+                break;
 
-            default:
-              throw new Error(`Unexpected vote value ${vote.value}`);
-          }
+              case VoteValue.Undefined:
+                icon = 'question';
+                break;
 
-          return html`
-            <uprtcl-list-item
-              ><uprtcl-icon-button icon=${icon} button></uprtcl-icon-button
-              ><evees-author user-id=${vote.member} show-name></evees-author
-            ></uprtcl-list-item>
-          `;
-        })}</uprtcl-list
-      >
+              default:
+                throw new Error(`Unexpected vote value ${vote.value}`);
+            }
+
+            return html`
+              <uprtcl-list-item
+                ><uprtcl-icon-button icon=${icon} button></uprtcl-icon-button
+                ><evees-author user-id=${vote.member} show-name></evees-author
+              ></uprtcl-list-item>
+            `;
+          })}</uprtcl-list
+        >
+      </uprtcl-indicator>
     `;
   }
 
   renderDetails() {
     return html`
-      <uprtcl-dialog primary-text="close" @primary=${() => (this.showDetails = false)}>
+      <uprtcl-dialog
+        .options=${{ close: { text: 'close', icon: 'clear' } }}
+        @option-selected=${() => (this.showDetails = false)}
+      >
         <div class="row">
           by
           <evees-author
@@ -274,20 +299,31 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
         width: 100%;
         display: flex;
         align-items: center;
+        margin-bottom: 12px;
       }
       .row evees-author {
         margin-left: 10px;
       }
-
+      .status-top {
+        display: flex;
+      }
+      uprtcl-indicator {
+        flex: 1 1 auto;
+        margin: 6px;
+      }
+      .vote-list-indicator {
+        width: calc(100% - 12px);
+      }
+      uprtcl-list {
+        margin-top: 4px;
+      }
       .vote-row {
         justify-content: center;
       }
-
       .vote-btn {
         width: 150px;
         margin-left: 12px;
       }
-
       .vote-btn-approve {
         --background-color: #01c03a;
       }

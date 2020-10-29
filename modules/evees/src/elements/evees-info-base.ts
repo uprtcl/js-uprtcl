@@ -556,15 +556,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   renderFromToPerspective(toPerspectiveId: string, fromPerspectiveId: string) {
     return html`
       <div class="row merge-message">
-        <div class="column perspective">
+        <uprtcl-indicator label="To">
           <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
-        </div>
-        <div class="column arrow">
+        </uprtcl-indicator>
+        <div class="arrow">
           <uprtcl-icon-button icon="arrow_back"></uprtcl-icon-button>
         </div>
-        <div class="column perspective">
+        <uprtcl-indicator label="From">
           <evees-perspective-icon perspective-id=${fromPerspectiveId}></evees-perspective-icon>
-        </div>
+        </uprtcl-indicator>
       </div>
     `;
   }
@@ -646,21 +646,16 @@ ${this.perspectiveData.perspective ? getAuthority(this.perspectiveData.perspecti
           display: flex;
           margin-bottom: 20px;
         }
-        .merge-message .column {
+        .merge-message uprtcl-indicator {
+          flex: 1 1 auto;
+          margin: 5px;
+        }
+        .merge-message .arrow {
+          flex: 0.3 1 auto;
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: center;
-          padding: 8px 14px;
-        }
-        .merge-message .column.perspective {
-          flex: 2 1 auto;
-          padding: 12px;
-          border-radius: 4px;
-          border: solid 1px #cccccc;
-        }
-        .merge-message .column .arrow {
-          flex: 1 1 auto;
         }
       `
     ];
