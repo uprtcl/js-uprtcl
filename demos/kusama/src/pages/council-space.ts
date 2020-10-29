@@ -1,39 +1,52 @@
-import { LitElement, html, css, property } from 'lit-element';
-import { EveesModule } from '@uprtcl/evees';
-import { router } from '../router';
+import { LitElement, html, css, property, internalProperty } from 'lit-element';
+
+import { Logger } from '@uprtcl/micro-orchestrator';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 export class CouncilSpace extends moduleConnect(LitElement) {
-  // @property({ type: Object, attribute: 'location' })
-  // location!: Object;
-  @property({ type: Object }) location = router.location;
+  logger = new Logger('Account space');
 
-  private defaultRemoteId: string;
-  private officialRemote;
-  private canCreate: boolean = false;
+  @internalProperty()
+  perspectiveId!: string;
+
+  @internalProperty()
+  loading: boolean = true;
+
+  client!: any;
+  remote!: EveesRemote;
 
   async firstUpdated() {
-    const defaultRemote = (this.request(EveesModule.bindings.Config) as any).defaultRemote;
-    await defaultRemote.ready();
-    this.defaultRemoteId = defaultRemote.id;
+    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.remote = (this.request(EveesModule.bindings.Config) as any).officialRemote;
+    await this.remote.ready();
 
-    this.officialRemote = this.requestAll(EveesModule.bindings.EveesRemote).find((instance: any) =>
-      instance.id.includes('council')
-    );
+    this.load();
+  }
 
-    // wait all remotes to be ready
-    await Promise.all(
-      this.requestAll(EveesModule.bindings.EveesRemote).map((remote: any) => remote.ready())
-    );
+  async load() {
+    this.loading = true;
 
-    this.canCreate = await this.officialRemote.isLogged();
+    const homePerspective = await this.remote.getHome();
+    await this.remote.store.create(homePerspective.object);
+    this.perspectiveId = homePerspective.id;
+
+    this.logger.log(`Home perspective ${this.perspectiveId} found`);
+
+    this.loading = false;
   }
 
   render() {
+    if (this.loading) {
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
+    }
+
     return html`
-      <div>Council space</div>
-      <wiki-drawer uref=${''} default-remote=${this.defaultRemoteId}></wiki-drawer>
+      <wiki-drawer uref=${this.perspectiveId}></wiki-drawer>
     `;
   }
 
@@ -44,8 +57,8 @@ export class CouncilSpace extends moduleConnect(LitElement) {
       flex-direction: column;
       justify-content: flex-start;
       text-align: center;
-      height: 80vh;
-      padding: 10vh 10px;
+      //height: 80vh;
+      //padding: 10vh 10px;
     }
   `;
 }
