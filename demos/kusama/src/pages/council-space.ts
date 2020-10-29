@@ -46,7 +46,7 @@ export class CouncilSpace extends moduleConnect(LitElement) {
     }
 
     return html`
-      <wiki-drawer uref=${this.perspectiveId}></wiki-drawer>
+      <wiki-drawer uref=${this.perspectiveId} show-proposals></wiki-drawer>
     `;
   }
 

@@ -12,7 +12,8 @@ import {
   PolkadotOrbitDBIdentity,
   PolkadotConnection,
   EveesPolkadotConnection,
-  EveesPolkadotCouncil
+  EveesPolkadotCouncil,
+  EveesPolkadotModule
 } from '@uprtcl/evees-polkadot';
 import {
   ProposalsOrbitDB,
@@ -104,6 +105,7 @@ export const initUprtcl = async () => {
       new LensesModule(),
       new EveesBlockchainModule(),
       new EveesOrbitDBModule(),
+      new EveesPolkadotModule(),
       evees,
       documents,
       wikis

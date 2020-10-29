@@ -35,6 +35,12 @@ export class App extends LitElement {
           flex-direction: column;
           overflow: auto;
         }
+
+        layout {
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+        }
       `
     ];
   }
