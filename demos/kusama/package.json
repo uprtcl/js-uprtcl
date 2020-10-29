@@ -13,6 +13,7 @@
     "@uprtcl/micro-orchestrator": "^0.0.7-alpha.71",
     "@uprtcl/multiplatform": "^0.0.7-alpha.71",
     "@uprtcl/graphql": "^0.0.7-alpha.71",
+    "@uprtcl/cortex": "^0.0.7-alpha.71",
     "@uprtcl/lenses": "^0.0.7-alpha.71",
     "@uprtcl/wikis": "^0.0.7-alpha.71",
     "@uprtcl/evees": "^0.0.7-alpha.71",
@@ -22,7 +23,8 @@
     "@uprtcl/evees-orbitdb": "^0.0.7-alpha.71",
     "@uprtcl/ipfs-provider": "^0.0.7-alpha.71",
     "@uprtcl/orbitdb-provider": "^0.0.7-alpha.71",
-    "lit-element": "^2.3.0",
+    "lit-element": "^2.2.3",
+    "graphql": "^14.6.0",
     "@vaadin/router": "^1.7.2",
     "ipfs": "^0.50.2"
   },

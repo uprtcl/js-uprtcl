@@ -29,28 +29,6 @@ export class CouncilSpace extends moduleConnect(LitElement) {
     );
 
     this.canCreate = await this.officialRemote.isLogged();
-    // this.loading = true;
-    // if (window.location.href.includes('remoteHome=')) {
-    //   const randint = 0 + Math.floor((10000 - 0) * Math.random());
-    //   const context = await hashObject({
-    //     creatorId: '',
-    //     timestamp: randint
-    //   });
-    //
-    //   const remoteHome = {
-    //     remote: this.officialRemote.id,
-    //     path: '',
-    //     creatorId: '',
-    //     timestamp: 0,
-    //     context: context
-    //   };
-    //
-    //   const perspective = await deriveSecured(remoteHome, this.officialRemote.store.cidConfig);
-    //   await this.officialRemote.store.create(perspective.object);
-    //
-    //   window.history.pushState('', '', `/?id=${perspective.id}`);
-    // }
-    // this.loading = false;
   }
 
   render() {

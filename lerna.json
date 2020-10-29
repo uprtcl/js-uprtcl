@@ -1,4 +1,27 @@
 {
-  "packages": ["modules/**", "packages/**", "providers/**", "demos/kusama"],
+  "packages": [
+    "modules/common-ui",
+    "modules/documents",
+    "modules/evees",
+    "modules/evees-blockchain",
+    "modules/evees-ethereum",
+    "modules/evees-http",
+    "modules/evees-local",
+    "modules/evees-orbitdb",
+    "modules/evees-polkadot",
+    "modules/wikis",
+    "packages/cortex",
+    "packages/graphql",
+    "packages/lenses",
+    "packages/micro-orchestrator",
+    "packages/multiplatform",
+    "packages/redux",
+    "providers/ethereum",
+    "providers/holochain",
+    "providers/http",
+    "providers/ipfs",
+    "providers/orbitdb",
+    "demos/kusama"
+  ],
   "version": "0.0.7-alpha.71"
 }
