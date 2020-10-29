@@ -10,7 +10,7 @@ const routes = [
     children: [
       { path: '/', component: 'kusama-home' },
       { path: '/council', component: 'council-space' },
-      { path: '/account/:accountId', component: 'account-space' }
+      { path: '/account', component: 'account-space' }
     ]
   }
 ];

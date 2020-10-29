@@ -14,7 +14,8 @@ import {
   Secured,
   ProposalsProvider,
   hashObject,
-  deriveSecured
+  deriveSecured,
+  EveesHelpers
 } from '@uprtcl/evees';
 
 import { Lens } from '@uprtcl/lenses';
@@ -104,6 +105,10 @@ export class EveesBlockchainCached implements EveesRemote {
       id: perspectiveId,
       head: details.headId as string
     });
+  }
+
+  async getHome(userId?: string) {
+    return EveesHelpers.getHome(this, userId);
   }
 
   /** set the parent owner as creatorId (and thus owner) */

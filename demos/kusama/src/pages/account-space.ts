@@ -1,66 +1,68 @@
-import { LitElement, html, css, property } from 'lit-element';
-import { EveesModule } from '@uprtcl/evees';
+import { LitElement, html, css, property, internalProperty } from 'lit-element';
+
+import { Logger } from '@uprtcl/micro-orchestrator';
+import { ApolloClientModule } from '@uprtcl/graphql';
+import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { router } from '../router';
 
 export class AccountSpace extends moduleConnect(LitElement) {
-  @property({ type: Object }) location = router.location;
-  private officialRemote;
+  logger = new Logger('Account space');
+
+  @internalProperty()
+  perspectiveId!: string;
+
+  @internalProperty()
+  loading: boolean = true;
+
+  @internalProperty()
+  isLogged: boolean = true;
+
+  client!: any;
+  defaultRemote!: EveesRemote;
 
   async firstUpdated() {
-    // this.loading = true;
+    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.defaultRemote = (this.request(EveesModule.bindings.Config) as any).defaultRemote;
+    await this.defaultRemote.ready();
 
-    const defaultRemote = (this.request(EveesModule.bindings.Config) as any).defaultRemote;
-    await defaultRemote.ready();
+    this.load();
+  }
 
-    // this.defaultRemoteId = defaultRemote.id;
-    //
-    // this.officialRemote = this.requestAll(EveesModule.bindings.EveesRemote).find(instance =>
-    //   instance.id.includes(env.officialRemote)
-    // );
-    //
-    // // wait all remotes to be ready
-    // await Promise.all(
-    //   this.requestAll(EveesModule.bindings.EveesRemote).map(remote => remote.ready())
-    // );
-    //
-    // this.canCreate = await this.officialRemote.isLogged();
-    //
-    // if (window.location.href.includes('?id=')) {
-    //   this.rootHash = window.location.href.split('id=')[1];
-    // }
-    //
+  async load() {
+    this.loading = true;
+    if (await this.defaultRemote.isLogged()) {
+      this.isLogged = false;
+      this.loading = false;
+      return;
+    }
 
-    // TODO: this is how to get around proposal error
-    // if (window.location.href.includes('remoteHome=')) {
-    //   const randint = 0 + Math.floor((10000 - 0) * Math.random());
-    //   const context = await hashObject({
-    //     creatorId: '',
-    //     timestamp: randint
-    //   });
-    //
-    //   const remoteHome = {
-    //     remote: this.officialRemote.id,
-    //     path: '',
-    //     creatorId: '',
-    //     timestamp: 0,
-    //     context: context
-    //   };
-    //
-    //   const perspective = await deriveSecured(remoteHome, this.officalRemote.store.cidConfig);
-    //   await this.officalRemote.store.create(perspective.object);
-    //
-    //   window.history.pushState('', '', `/?id=${perspective.id}`);
-    // }
-    //
-    // this.loading = false;
+    const homePerspective = await this.defaultRemote.getHome(this.defaultRemote.userId);
+    await this.defaultRemote.store.create(homePerspective.object);
+    this.perspectiveId = homePerspective.id;
+
+    this.logger.log(
+      `Home perspective ${this.perspectiveId} found for user ${this.defaultRemote.userId}`
+    );
+
+    this.loading = false;
   }
 
   render() {
+    if (this.loading) {
+      return html`
+        <uprtcl-loading></uprtcl-loading>
+      `;
+    }
+
     return html`
-      <div>Council space</div>
-      <wiki-drawer uref=${this.location.params.accountId} default-remote=${''}></wiki-drawer>
+      ${!this.isLogged
+        ? html`
+            <uprtcl-button>login</uprtcl-button>
+          `
+        : html`
+            <wiki-drawer uref=${this.perspectiveId}></wiki-drawer>
+          `}
     `;
   }
 

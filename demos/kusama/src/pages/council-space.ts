@@ -1,7 +1,6 @@
-import { LitElement, html, css, property, query } from 'lit-element';
-import { EveesModule, EveesHelpers, deriveSecured, hashObject } from '@uprtcl/evees';
+import { LitElement, html, css, property } from 'lit-element';
+import { EveesModule } from '@uprtcl/evees';
 import { router } from '../router';
-// import { env } from '../env';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
