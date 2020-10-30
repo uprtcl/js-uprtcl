@@ -131,7 +131,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     );
 
     return html`
-      <uprtcl-indicator lanel="Your vote">
+      <uprtcl-indicator class="your-vote" label="Your vote">
         ${this.voting
           ? html`
               <uprtcl-loading></uprtcl-loading>
@@ -141,19 +141,21 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
               ${vote.value}
             `
           : html`
-              <uprtcl-button
-                class="vote-btn"
-                skinny
-                @click=${() => this.vote(VoteValue.No)}
-                icon="clear"
-                >Reject</uprtcl-button
-              >
-              <uprtcl-button
-                class="vote-btn vote-btn-approve"
-                @click=${() => this.vote(VoteValue.Yes)}
-                icon="done"
-                >Approve</uprtcl-button
-              >
+              <div class="vote-buttons">
+                <uprtcl-button
+                  class="vote-btn"
+                  skinny
+                  @click=${() => this.vote(VoteValue.No)}
+                  icon="clear"
+                  >Reject</uprtcl-button
+                >
+                <uprtcl-button
+                  class="vote-btn vote-btn-approve"
+                  @click=${() => this.vote(VoteValue.Yes)}
+                  icon="done"
+                  >Approve</uprtcl-button
+                >
+              </div>
             `}
       </uprtcl-indicator>
     `;
@@ -300,6 +302,15 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
         display: flex;
         align-items: center;
         margin-bottom: 12px;
+      }
+      .vote-buttons {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        padding: 16px;
+      }
+      .your-vote {
+        width: calc(100% - 12px);
       }
       .row evees-author {
         margin-left: 10px;
