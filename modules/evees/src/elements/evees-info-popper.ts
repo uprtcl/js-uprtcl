@@ -61,6 +61,9 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   @property({ attribute: false })
   creatorId!: string;
 
+  @property({ attribute: false })
+  dropdownShown: boolean = false;
+
   @query('#info-popper')
   infoPopper!: UprtclPopper;
 
@@ -111,7 +114,11 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
 
   render() {
     return html`
-      <uprtcl-popper id="info-popper" position="right">
+      <uprtcl-popper
+        id="info-popper"
+        position="right"
+        @drop-down-changed=${e => (this.dropdownShown = e.detail.shown)}
+      >
         <div draggable="true" @dragstart=${this.handleDragStart} slot="icon" class="button">
           <div
             class="evee-stripe"
@@ -120,21 +127,25 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
             })}
           ></div>
         </div>
-        <div class="evees-info">
-          <evees-info-user-based
-            ?show-draft=${this.showDraft}
-            ?show-proposals=${this.showProposals}
-            ?show-info=${this.showInfo}
-            ?show-icon=${this.showIcon}
-            ?show-debug=${this.showDebug}
-            ?emit-proposals=${this.showInfo}
-            uref=${this.uref}
-            parent-id=${this.parentId}
-            first-uref=${this.firstRef as string}
-            official-owner=${this.officialOwner as string}
-            @official-id=${e => this.officialIdReceived(e.detail.perspectiveId)}
-          ></evees-info-user-based>
-        </div>
+        ${this.dropdownShown
+          ? html`
+              <div class="evees-info">
+                <evees-info-user-based
+                  ?show-draft=${this.showDraft}
+                  ?show-proposals=${this.showProposals}
+                  ?show-info=${this.showInfo}
+                  ?show-icon=${this.showIcon}
+                  ?show-debug=${this.showDebug}
+                  ?emit-proposals=${this.showInfo}
+                  uref=${this.uref}
+                  parent-id=${this.parentId}
+                  first-uref=${this.firstRef as string}
+                  official-owner=${this.officialOwner as string}
+                  @official-id=${e => this.officialIdReceived(e.detail.perspectiveId)}
+                ></evees-info-user-based>
+              </div>
+            `
+          : ``}
       </uprtcl-popper>
     `;
   }

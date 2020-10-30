@@ -95,6 +95,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   @property({ attribute: false })
   firstHasChanges!: boolean;
 
+  @property({ attribute: false })
+  merging: boolean = false;
+
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
 
@@ -302,6 +305,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string) {
+    this.merging = true;
     this.logger.info(`merge ${fromPerspectiveId} on ${toPerspectiveId}`);
 
     const workspace = new EveesWorkspace(this.client, this.recognizer);
@@ -345,6 +349,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     );
 
     if (result !== 'apply') {
+      this.merging = false;
       return;
     }
 
@@ -376,6 +381,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         })
       );
 
+      this.merging = false;
       return;
     }
 
@@ -410,9 +416,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         workspace
       );
     }
+
     if (this.uref !== toPerspectiveId) {
       this.checkoutPerspective(toPerspectiveId);
     }
+
+    this.merging = false;
   }
 
   async createMergeProposal(

@@ -36,7 +36,7 @@ import { HasDocNodeLenses } from '../patterns/document-patterns';
 import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
 
-const LOGINFO = true;
+const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
 const PLACEHOLDER_TOKEN = '_PLACEHOLDER_';
 

@@ -133,7 +133,7 @@ export class IpfsStore extends Connection implements CASStore {
     };
 
     /** recursively try */
-    return this.tryPut(buffer, putConfig, 500, 4)
+    return this.tryPut(buffer, putConfig, 1000, 6)
       .then((result: any) => {
         let hashString = result.toString(this.cidConfig.base);
         this.logger.log(`Object stored`, {
@@ -166,7 +166,7 @@ export class IpfsStore extends Connection implements CASStore {
   async get(hash: string): Promise<object | undefined> {
     /** recursively try */
     if (!hash) throw new Error('hash undefined or empty');
-    return this.tryGet(hash, 500, 4)
+    return this.tryGet(hash, 1000, 6)
       .then(raw => {
         const forceBuffer = Uint8Array.from(raw.value);
         let object = CBOR.decode(forceBuffer.buffer);

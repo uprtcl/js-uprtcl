@@ -60,6 +60,7 @@ export class UprtclIndicator extends LitElement {
           justify-content: center;
           padding: 6px 12px;
           flex-grow: 1;
+          text-align: center;
         }
       `
     ];

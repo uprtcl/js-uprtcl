@@ -34,6 +34,17 @@ export class UprtclPopper extends LitElement {
     }
   }
 
+  updated(changedProperties) {
+    /** use litelement update watcher to inform the world about the stati of the dropdown, this way
+     * it works also if showDropdown is set from elsewhere
+     */
+    if (changedProperties.has('showDropdown')) {
+      this.dispatchEvent(
+        new CustomEvent('drop-down-changed', { detail: { shown: this.showDropdown } })
+      );
+    }
+  }
+
   render() {
     const positions = {
       'bottom-left': 'info-box-bottom-left',

@@ -86,8 +86,13 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
         : html`
             <div class="container">
               <evees-author user-id=${this.remote.userId as string}></evees-author>
-              <div @click=${() => (this.showDiff = true)} class="status-container">
-                ${this.remoteUI.pendingActions}
+              <div
+                @click=${() => (this.showDiff = true)}
+                class=${`status-container ${
+                  this.remoteUI.pendingActions > 0 ? 'status-pending' : ''
+                }`}
+              >
+                ${this.remoteUI.pendingActions > 0 ? this.remoteUI.pendingActions : ''}
               </div>
             </div>
           `}
@@ -113,6 +118,9 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
         justify-content: center;
         align-items: center;
         cursor: pointer;
+      }
+      .status-pending {
+        background-color: #c93131c3;
       }
     `;
   }

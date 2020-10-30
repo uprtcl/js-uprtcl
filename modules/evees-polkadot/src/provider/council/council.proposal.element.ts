@@ -15,7 +15,7 @@ import {
 import { ProposalManifest, ProposalSummary, Vote } from './types';
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import { VoteValue } from './proposal.config.types';
+import { ProposalStatus, VoteValue } from './proposal.config.types';
 
 export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'proposal-id' })
@@ -140,7 +140,8 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           ? html`
               ${vote.value}
             `
-          : html`
+          : this.proposalStatusUI.summary.status === ProposalStatus.Pending
+          ? html`
               <div class="vote-buttons">
                 <uprtcl-button
                   class="vote-btn"
@@ -156,7 +157,8 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
                   >Approve</uprtcl-button
                 >
               </div>
-            `}
+            `
+          : 'proposal closed'}
       </uprtcl-indicator>
     `;
   }
@@ -189,15 +191,9 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
                 >${this.proposalManifest.block}</uprtcl-indicator
               >
             `}
-        <uprtcl-indicator label="Voters"
-          ><div>${votedYes.length}/${this.proposalStatusUI.council.length}</div>
-          ${secondsRemaining > 0
-            ? html`
-                ${this.proposalStatusUI.council.length - votedYes.length - votedNo.length} pending
-              `
-            : ''}
-          <div></div
-        ></uprtcl-indicator>
+        <uprtcl-indicator label="Voters">
+          ${votedYes.length}/${this.proposalStatusUI.council.length}
+        </uprtcl-indicator>
       </div>
 
       <uprtcl-indicator class="vote-list-indicator" label="Votes">
@@ -238,16 +234,20 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
         .options=${{ close: { text: 'close', icon: 'clear' } }}
         @option-selected=${() => (this.showDetails = false)}
       >
-        <div class="row">
-          by
-          <evees-author
-            user-id=${this.proposalManifest.creatorId ? this.proposalManifest.creatorId : ''}
-            show-name
-          ></evees-author>
+        <div class="dialog-element">
+          <div class="row">
+            by
+            <evees-author
+              user-id=${this.proposalManifest.creatorId ? this.proposalManifest.creatorId : ''}
+              show-name
+            ></evees-author>
+          </div>
+          <evees-update-diff .workspace=${this.workspace}> </evees-update-diff>
+          <div class="column">
+            ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
+            ${this.renderProposalStatus()}
+          </div>
         </div>
-        <evees-update-diff .workspace=${this.workspace}> </evees-update-diff>
-        ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
-        ${this.renderProposalStatus()}
       </uprtcl-dialog>
     `;
   }
@@ -260,16 +260,30 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     }
 
     const creatorId = this.proposalManifest.creatorId ? this.proposalManifest.creatorId : '';
+    let icon;
+
+    switch (this.proposalStatusUI.summary.status) {
+      case ProposalStatus.Pending:
+        icon = 'hourglass_empty';
+        break;
+      case ProposalStatus.Accepted:
+        icon = 'done';
+        break;
+      case ProposalStatus.Rejected:
+        icon = 'clear';
+        break;
+    }
+
     return html`
       <div @click=${() => this.showProposalDetails()} class="row-container">
         <div class="proposal-name">
           <evees-author user-id=${creatorId} show-name></evees-author>
         </div>
         <div class="proposal-state">
-          <uprtcl-icon-button icon="done"></uprtcl-icon-button>
+          <uprtcl-icon-button icon=${icon}></uprtcl-icon-button>
         </div>
-        ${this.showDetails ? this.renderDetails() : ''}
       </div>
+      ${this.showDetails ? this.renderDetails() : ''}
     `;
   }
 
@@ -297,11 +311,26 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       .proposal-state uprtcl-button {
         margin: 0 auto;
       }
+      uprtcl-dialog {
+        cursor: auto;
+      }
+      .dialog-element {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
       .row {
         width: 100%;
         display: flex;
         align-items: center;
-        margin-bottom: 12px;
+      }
+      .column {
+        display: flex;
+        flex-direction: column;
+      }
+      evees-update-diff {
+        overflow: auto;
+        margin: 10px 0px;
       }
       .vote-buttons {
         display: flex;
@@ -317,6 +346,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       }
       .status-top {
         display: flex;
+        width: 100%;
       }
       uprtcl-indicator {
         flex: 1 1 auto;

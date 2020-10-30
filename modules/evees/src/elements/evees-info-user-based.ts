@@ -352,6 +352,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
               style=${`--background-color: ${
                 this.isTheirs || this.isMine ? this.color() : 'initial'
               }`}
+              ?loading=${this.merging}
             >
             </uprtcl-icon-button>
             <uprtcl-icon-button

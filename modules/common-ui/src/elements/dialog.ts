@@ -75,6 +75,8 @@ export class UprtclDialog extends LitElement {
         max-height: calc(100vh - 200px);
         min-height: 50vh;
         overflow-y: auto;
+        display: flex;
+        flex-direction: column;
       }
       .buttons-container {
         display: flex;

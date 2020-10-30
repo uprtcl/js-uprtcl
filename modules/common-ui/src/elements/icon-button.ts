@@ -12,6 +12,9 @@ export class UprtclIconButton extends LitElement {
   @property({ type: Boolean })
   disabled: boolean = false;
 
+  @property({ type: Boolean })
+  loading: boolean = false;
+
   /** Seems I cant prevent the click event from being emitted outside of this element  */
 
   render() {
@@ -29,7 +32,7 @@ export class UprtclIconButton extends LitElement {
 
     return html`
       <div class=${classes.join(' ')}>
-        ${icons[this.icon]}
+        ${this.loading ? icons.loading : icons[this.icon]}
       </div>
     `;
   }
