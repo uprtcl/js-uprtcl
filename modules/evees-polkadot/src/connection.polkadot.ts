@@ -51,11 +51,12 @@ export class PolkadotConnection extends Connection {
 
   constructor(
     public connections: any[],
-    public connectionName?: string,
+    public connectionName: string,
     options?: ConnectionOptions
   ) {
     super(options);
-    this.connectionDetails = connections.find(details => details.name === connectionName);
+    this.connectionDetails = connections[connectionName];
+    );
   }
 
   public async connect(): Promise<void> {

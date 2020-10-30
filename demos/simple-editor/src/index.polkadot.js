@@ -88,9 +88,9 @@ import { env } from '../env';
 
   const ipfs = await IPFS.create(ipfsJSConfig);
 
-  console.log('connecting to pinner peer');
+  console.log(`${env.pinner.peerMultiaddr} connecting...`);
   await ipfs.swarm.connect(env.pinner.peerMultiaddr);
-  console.log('connected!!!');
+  console.log(`${env.pinner.peerMultiaddr} connected!!!`);
 
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
 
