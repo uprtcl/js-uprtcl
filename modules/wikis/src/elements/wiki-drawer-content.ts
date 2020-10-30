@@ -353,9 +353,9 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     const result = await this.splicePages(wikiObject, [newPage], index, 0);
     if (!result.entity) throw Error('problem with splice pages');
 
-    await this.updateContent(result.entity);
-
     this.selectPage(index);
+
+    await this.updateContent(result.entity);
 
     this.creatingNewPage = false;
   }
@@ -555,18 +555,20 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         </div>
 
         <div class="app-content">
-          ${this.selectedPageIx !== undefined
+          ${this.selectedPageIx !== undefined && this.wiki
             ? html`
-                <wiki-page
-                  id="wiki-page"
-                  @nav-back=${() => this.selectPage(undefined)}
-                  @page-title-changed=${() => this.loadPagesData()}
-                  pageHash=${this.wiki ? this.wiki.object.pages[this.selectedPageIx] : ''}
-                  color=${this.color}
-                  wikiId=${this.uref}
-                  official-owner=${this.officialOwner}
-                >
-                </wiki-page>
+                <div class="page-container">
+                  <documents-editor
+                    id="doc-editor"
+                    .client=${this.client}
+                    uref=${this.wiki.object.pages[this.selectedPageIx] as string}
+                    parent-id=${this.uref}
+                    color=${this.color}
+                    official-owner=${this.officialOwner}
+                    show-info
+                  >
+                  </documents-editor>
+                </div>
               `
             : html`
                 <div class="home-container">
@@ -641,14 +643,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         .page-item:hover {
           background-color: #e8ecec;
         }
-        .title-empty {
-          color: #a2a8aa;
-          font-style: italic;
-        }
-        .title-selected {
-          font-weight: bold;
-          background-color: rgb(200, 200, 200, 0.2);
-        }
         .empty {
           width: 100%;
           text-align: center;
@@ -663,6 +657,14 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         .button-row uprtcl-button-loading {
           margin: 0 auto;
           width: 180px;
+        }
+        .page-container {
+          margin: 0 auto;
+          max-width: 900px;
+          width: 100%;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
         }
         .home-container {
           text-align: center;

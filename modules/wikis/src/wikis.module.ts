@@ -8,7 +8,6 @@ import { i18nextModule } from '@uprtcl/micro-orchestrator';
 import { WikiDrawer } from './elements/wiki-drawer';
 import { WikiCommon, WikiLinks, WikiPattern } from './patterns/wiki.pattern';
 import { wikiTypeDefs } from './graphql/schema';
-import { WikiPage } from './elements/wiki-page';
 
 import en from './i18n/en.json';
 import { WikiBindings } from './bindings';
@@ -51,7 +50,6 @@ export class WikisModule extends EveesContentModule {
     super.onLoad(container);
     customElements.define('wiki-drawer', WikiDrawer);
     customElements.define('wiki-drawer-content', WikiDrawerContent);
-    customElements.define('wiki-page', WikiPage);
     customElements.define('wiki-diff', WikiDiff);
   }
 
@@ -60,7 +58,7 @@ export class WikisModule extends EveesContentModule {
       ...super.submodules,
       new GraphQlSchemaModule(wikiTypeDefs, {}),
       new i18nextModule('wikis', { en: en }),
-      new PatternsModule([new WikiPattern([WikiCommon, WikiLinks])]),
+      new PatternsModule([new WikiPattern([WikiCommon, WikiLinks])])
     ];
   }
 }

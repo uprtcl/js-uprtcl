@@ -36,7 +36,7 @@ import { HasDocNodeLenses } from '../patterns/document-patterns';
 import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
 
-const LOGINFO = false;
+const LOGINFO = true;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
 const PLACEHOLDER_TOKEN = '_PLACEHOLDER_';
 
@@ -111,21 +111,25 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   updated(changedProperties) {
-    if (LOGINFO) this.logger.log('updated()', { uref: this.uref, changedProperties });
+    if (LOGINFO)
+      this.logger.log('updated()', { uref: this.uref, firstRef: this.firstRef, changedProperties });
 
-    if (changedProperties.has('uref')) {
-      this.doc = undefined;
-      this.loadDoc();
-    }
+    let reload: boolean = false;
+
     if (changedProperties.has('firstRef')) {
       this.uref = this.firstRef;
-      this.doc = undefined;
-      this.loadDoc();
+    }
+    if (changedProperties.has('uref')) {
+      reload = true;
     }
     if (changedProperties.has('client')) {
-      this.loadDoc();
+      reload = true;
     }
     if (changedProperties.has('editable')) {
+      reload = true;
+    }
+    if (reload) {
+      this.doc = undefined;
       this.loadDoc();
     }
   }

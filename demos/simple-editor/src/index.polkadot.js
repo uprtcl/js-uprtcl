@@ -19,13 +19,13 @@ import {
   ProposalsOrbitDB,
   ProposalStore,
   ProposalsToPerspectiveStore,
-  ProposalsAccessController,
   ContextStore,
-  ContextAccessController,
+  getContextAcl,
+  getProposalsAcl,
   EveesOrbitDBModule
 } from '@uprtcl/evees-orbitdb';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+import { OrbitDBCustom, AddressMapping } from '@uprtcl/orbitdb-provider';
 import { EveesLocalModule } from '@uprtcl/evees-local';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
@@ -72,9 +72,14 @@ import { env } from '../env';
 
   const identity = new PolkadotOrbitDBIdentity(pkdConnection);
 
+  const identitySources = [identity];
+  const contextAcl = getContextAcl(identitySources);
+  const proposalsAcl = getProposalsAcl(identitySources);
+  const customStores = [ContextStore, ProposalStore, ProposalsToPerspectiveStore, AddressMapping];
+
   const orbitDBCustom = new OrbitDBCustom(
-    [ContextStore, ProposalStore, ProposalsToPerspectiveStore],
-    [ContextAccessController, ProposalsAccessController],
+    customStores,
+    [contextAcl, proposalsAcl],
     identity,
     env.pinner.url,
     env.pinner.peerMultiaddr,
@@ -110,7 +115,6 @@ import { env } from '../env';
     new EveesBlockchainModule(),
     new EveesOrbitDBModule(),
     new EveesPolkadotModule(),
-    new EveesLocalModule(),
     evees,
     documents,
     wikis

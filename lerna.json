@@ -21,7 +21,7 @@
     "providers/http",
     "providers/ipfs",
     "providers/orbitdb",
-    "demos/kusama"
+    "demos/simple-editor"
   ],
   "version": "0.0.7-alpha.71"
 }
