@@ -10,7 +10,7 @@ const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
 export class EveesPolkadotConnection implements BlockchainConnection {
   logger: Logger = new Logger('EveesPolkadot');
 
-  constructor(protected connection: PolkadotConnection) {}
+  constructor(public connection: PolkadotConnection) {}
 
   async ready() {
     await Promise.all([this.connection.ready()]);

@@ -24,18 +24,9 @@ import { EveesCacheDB } from './evees.cache.db';
 import { EveesAccessControlFixed } from './evees-acl.fixed';
 import { BlockchainConnection } from './evees.blockchain.connection';
 import { TemplateResult } from 'lit-html';
+import { UserPerspectivesDetails, RemoteStatus } from '../types';
 
 const evees_if = 'fixed';
-
-export interface UserPerspectivesDetails {
-  [perspectiveId: string]: {
-    headId?: string;
-  };
-}
-
-export interface RemoteStatus {
-  pendingActions: number;
-}
 
 export class EveesBlockchainCached implements EveesRemote {
   logger: Logger = new Logger('EveesBlockchain');

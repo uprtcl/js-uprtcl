@@ -36,8 +36,6 @@ import { SimpleWiki } from './simple-wiki';
 import { env } from '../env';
 
 (async function() {
-  const polkadotWs = '';
-
   const ipfsCidConfig = {
     version: 1,
     type: 'sha2-256',
@@ -57,9 +55,35 @@ import { env } from '../env';
     }
   };
 
+  const chainConnectionDetails = {
+    'local-dev': {
+      name: 'Local',
+      image: '',
+      host: 'Local',
+      endpoint: 'ws://127.0.0.1:9944'
+    },
+    'kusama-parity': {
+      name: 'Kusama',
+      image: '',
+      host: 'Parity',
+      endpoint: 'wss://kusama-rpc.polkadot.io/'
+    },
+    'kusama-web3': {
+      name: 'Kusama',
+      image: '',
+      host: 'Web3 Foundation',
+      endpoint: 'wss://cc3-5.kusama.network'
+    }
+  };
+
+  let connectionName = localStorage.getItem('POLKADOT-CONNECTION-NAME');
+  if (!connectionName) {
+    connectionName = 'local-dev';
+    localStorage.setItem('POLKADOT-CONNECTION-NAME', connectionName);
+  }
   const orchestrator = new MicroOrchestrator();
 
-  const pkdConnection = new PolkadotConnection(polkadotWs);
+  const pkdConnection = new PolkadotConnection(chainConnectionDetails, connectionName);
   await pkdConnection.ready();
 
   const ipfs = await IPFS.create(ipfsJSConfig);

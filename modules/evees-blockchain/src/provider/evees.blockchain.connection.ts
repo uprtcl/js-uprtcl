@@ -3,6 +3,7 @@ import { TemplateResult } from 'lit-html';
 /** an evees blockchain connection keeps a mutable hash associated
  * to a userId */
 export interface BlockchainConnection {
+  connection: any;
   account?: string | undefined;
   icon?(): TemplateResult;
   getNetworkId(): string;

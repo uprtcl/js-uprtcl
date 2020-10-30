@@ -17,13 +17,6 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   @property({ attribute: false })
   logged!: boolean;
 
-  @property({ attribute: false })
-  remotesUI: {
-    id: string;
-    userId?: string;
-    lense?: () => Lens;
-  }[] = [];
-
   remotes!: EveesRemote[];
   client!: ApolloClient<any>;
 
@@ -43,14 +36,6 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
     this.logged = !loggedList.includes(false);
 
     await Promise.all(this.remotes.map(r => r.ready()));
-
-    this.remotesUI = this.remotes.map(remote => {
-      return {
-        id: remote.id,
-        userId: remote.userId,
-        lense: remote.lense
-      };
-    });
 
     this.loading = false;
   }
@@ -102,11 +87,11 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
     return html`
       <uprtcl-button skinny @click=${() => this.logoutAll()}>logout</uprtcl-button>
-      ${this.remotesUI.map(remoteUI => {
-        return remoteUI.lense !== undefined
-          ? remoteUI.lense().render({ remoteId: remoteUI.id })
+      ${this.remotes.map(remote => {
+        return remote.lense !== undefined
+          ? remote.lense().render({ remoteId: remote.id })
           : html`
-              <evees-author user-id=${remoteUI.userId as string}></evees-author>
+              <evees-author user-id=${remote.userId as string}></evees-author>
             `;
       })}
     `;

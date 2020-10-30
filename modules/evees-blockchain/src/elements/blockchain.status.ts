@@ -73,18 +73,6 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
 
   render() {
     return html`
-      ${this.remote
-        ? html`
-            <div class="row margin-bottom">
-              Logged as
-              <evees-author
-                class="margin-left"
-                user-id=${this.remote.userId as string}
-                show-name
-              ></evees-author>
-            </div>
-          `
-        : ''}
       ${this.loading
         ? html`
             <uprtcl-loading></uprtcl-loading>

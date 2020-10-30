@@ -1,16 +1,5 @@
 import Dexie from 'dexie';
-
-export interface UpdatePerspectiveLocal {
-  id: string;
-  head: string;
-}
-
-export interface NewPerspectiveLocal {
-  id: string;
-  head?: string;
-  context: string;
-}
-
+import { UpdatePerspectiveLocal, NewPerspectiveLocal } from '../types';
 export class EveesCacheDB extends Dexie {
   updates: Dexie.Table<UpdatePerspectiveLocal, string>;
   newPerspectives: Dexie.Table<NewPerspectiveLocal, string>;

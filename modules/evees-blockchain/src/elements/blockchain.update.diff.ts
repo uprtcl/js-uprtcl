@@ -8,10 +8,8 @@ import { EveesModule, EveesWorkspace, Perspective, EveesDiff } from '@uprtcl/eve
 import { loadEntity } from '@uprtcl/multiplatform';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 
-import {
-  EveesBlockchainCached,
-  UserPerspectivesDetails
-} from '../provider/evees.blockchain.cached';
+import { EveesBlockchainCached } from '../provider/evees.blockchain.cached';
+import { UserPerspectivesDetails } from '../types';
 
 export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-BLOCKCHAIN-UPDATE-DIFF');

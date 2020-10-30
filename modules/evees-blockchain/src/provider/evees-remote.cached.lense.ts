@@ -6,11 +6,8 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
 import { EveesBlockchainCached } from './evees.blockchain.cached';
-import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
-
-interface RemoteUI {
-  pendingActions: number;
-}
+import { MenuConfig } from '@uprtcl/common-ui';
+import { ChainConnectionDetails, RemoteUI } from '../types';
 
 export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'remote-id' })
@@ -37,11 +34,14 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
       skinny: false
     }
   };
+  currentConnection!: ChainConnectionDetails;
+  connections!: ChainConnectionDetails[];
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
     const remotes = this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[];
     this.remote = remotes.find(r => r.id.includes(this.remoteId)) as EveesBlockchainCached;
+
     await this.remote.ready();
 
     this.load();
@@ -62,16 +62,54 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
 
   async load() {
     this.loading = true;
+    this.currentConnection = this.remote.connection.connection.connectionDetails;
+    this.connections = this.remote.connection.connection.connections;
+
     await this.refresh();
     this.loading = false;
   }
 
-  renderDiff() {
+  chainSelected(chainDetails) {
+    console.log({ chainDetails });
+  }
+
+  renderChain() {
+    return html`
+      ${this.remote.userId
+        ? html`
+            <div class="row margin-bottom">
+              Logged as
+              <evees-author
+                class="margin-left"
+                user-id=${this.remote.userId as string}
+                show-name
+              ></evees-author>
+            </div>
+          `
+        : ''}
+      <uprtcl-popper>
+        <uprtcl-button slot="icon">${this.currentConnection.name}</uprtcl-button>
+        <uprtcl-list>
+          ${Object.getOwnPropertyNames(this.connections).map(connection => {
+            const connectionDetails = this.connections[connection];
+            return html`
+              <uprtcl-list-item @click=${() => this.chainSelected(connectionDetails)}
+                >${connectionDetails.name} (${connectionDetails.host})</uprtcl-list-item
+              >
+            `;
+          })}
+        </uprtcl-list>
+      </uprtcl-popper>
+    `;
+  }
+
+  renderStatus() {
     return html`
       <uprtcl-dialog
         .options=${this.dialogOptions}
         @option-selected=${() => (this.showDiff = false)}
       >
+        <div class="row">${this.renderChain()}</div>
         <evees-blockchain-status remote=${this.remote.id}> </evees-blockchain-status>
       </uprtcl-dialog>
     `;
@@ -96,7 +134,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
               </div>
             </div>
           `}
-      ${this.showDiff ? this.renderDiff() : ''}
+      ${this.showDiff ? this.renderStatus() : ''}
     `;
   }
 

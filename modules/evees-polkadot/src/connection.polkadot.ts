@@ -1,6 +1,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Option } from '@polkadot/types';
-import { AddressOrPair, Signer, SignerResult } from '@polkadot/api/types';
+import { AddressOrPair, Signer } from '@polkadot/api/types';
 import { stringToHex } from '@polkadot/util';
 import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
 import { IdentityInfo, Registration } from '@polkadot/types/interfaces';
@@ -45,20 +45,24 @@ export class PolkadotConnection extends Connection {
   public accounts?: string[];
   private chain?: string;
   private signer?: Signer;
+  public connectionDetails: any;
 
   logger = new Logger('Polkadot-Connection');
 
-  constructor(protected ws: string, protected apiOptions?: any, options?: ConnectionOptions) {
+  constructor(
+    public connections: any[],
+    public connectionName?: string,
+    options?: ConnectionOptions
+  ) {
     super(options);
+    this.connectionDetails = connections.find(details => details.name === connectionName);
   }
 
   public async connect(): Promise<void> {
     this.logger.log('Connecting');
 
-    const wsProvider = new WsProvider('ws://127.0.0.1:9944');
+    const wsProvider = new WsProvider(this.connectionDetails.endpoint);
     this.api = await ApiPromise.create({ provider: wsProvider });
-    // Retrieve the chain name
-    // E.g. "Westend", "Kusama"
     this.chain = (await this.api.rpc.system.chain()).toString();
 
     this.logger.log('Connected', {
@@ -67,7 +71,7 @@ export class PolkadotConnection extends Connection {
   }
 
   public getNetworkId() {
-    return this.chain
+    return this.chain;
   }
 
   public async canSign(): Promise<boolean> {
@@ -118,7 +122,10 @@ export class PolkadotConnection extends Connection {
     return getCID(<IdentityInfo>identityInfo, keys);
   }
 
-  public async updateMutableHead(head: string | undefined, keys: string[]): Promise<TransactionReceipt> {
+  public async updateMutableHead(
+    head: string | undefined,
+    keys: string[]
+  ): Promise<TransactionReceipt> {
     if (!this.account) throw new Error('cannot update identity if account not defined');
     // update evees entry
     const cid1 = head !== undefined ? head.substring(0, 32) : '';
