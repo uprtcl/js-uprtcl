@@ -86,7 +86,9 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
     this.logger.log('firstUpdated()', { uref: this.uref });
 
-    this.load();
+    this.loading = true;
+    await this.load();
+    this.loading = false;
   }
 
   connectedCallback() {
@@ -116,14 +118,15 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     this.selectedPageIx = undefined;
     this.wiki = undefined;
     this.logger.log('reset()', this.uref);
+    this.loading = true;
     this.load();
+    this.loading = false;
   }
 
   async load() {
     if (this.uref === undefined) return;
 
     this.logger.log('load()');
-    this.loading = true;
 
     const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
     const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
@@ -140,8 +143,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
     await this.loadPagesData();
-
-    this.loading = false;
   }
 
   async loadPagesData() {

@@ -79,12 +79,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
+  @property({ type: String })
+  reloading: boolean = true;
+
   @property({ attribute: false })
   checkedOutPerspectives: { [key: string]: { firstUref: string; newUref: string } } = {};
 
-  @property({ type: Object })
   doc: DocNode | undefined = undefined;
-
   client!: ApolloClient<any>;
 
   protected remotes!: EveesRemote[];
@@ -93,7 +94,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   draftService = new EveesDraftsLocal();
 
-  firstUpdated() {
+  async firstUpdated() {
     this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     const config = this.request(EveesModule.bindings.Config) as EveesConfig;
@@ -107,7 +108,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
-    this.loadDoc();
+    await this.loadDoc();
+    this.reloading = false;
   }
 
   updated(changedProperties) {
@@ -129,9 +131,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       reload = true;
     }
     if (reload) {
-      this.doc = undefined;
-      this.loadDoc();
+      this.reload();
     }
+  }
+
+  async reload() {
+    this.reloading = true;
+    await this.loadDoc();
+    this.reloading = false;
   }
 
   async loadDoc() {
@@ -141,6 +148,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (!this.uref) return;
     this.doc = await this.loadNodeRec(this.uref);
+    this.requestUpdate();
   }
 
   async loadNodeRec(uref: string, ix?: number, parent?: DocNode): Promise<DocNode> {
@@ -1257,7 +1265,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   render() {
     if (LOGINFO) this.logger.log('render()', { doc: this.doc });
 
-    if (!this.doc) {
+    if (this.reloading || this.doc === undefined) {
       return html`
         <uprtcl-loading></uprtcl-loading>
       `;
