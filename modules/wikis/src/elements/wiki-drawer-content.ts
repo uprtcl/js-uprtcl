@@ -66,15 +66,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   creatingNewPage: boolean = false;
 
   @property({ attribute: false })
-  isDrawerOpened = true;
-
-  @property({ attribute: false })
-  isMobile = false;
-
-  @property({ attribute: false })
-  hasSelectedPage = false;
-
-  @property({ attribute: false })
   editableActual: boolean = false;
 
   remote: string = '';
@@ -84,12 +75,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
   protected editableRemotesIds!: string[];
-
-  constructor() {
-    super();
-    this.isViewportMobile();
-    window.addEventListener('resize', () => this.isViewportMobile());
-  }
 
   async firstUpdated() {
     this.client = this.request(ApolloClientModule.bindings.Client);
@@ -112,19 +97,10 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         this.logger.log('ContentUpdatedEvent()', this.uref);
         this.load();
       }
+      if (this.pagesList && this.pagesList.findIndex(page => page.id === e.detail.uref) !== -1) {
+        this.loadPagesData();
+      }
     }) as EventListener);
-  }
-
-  private isViewportMobile() {
-    if (window.innerWidth <= 768) {
-      if (!this.isMobile) {
-        this.isMobile = true;
-      }
-    } else {
-      if (this.isMobile) {
-        this.isMobile = false;
-      }
-    }
   }
 
   updated(changedProperties) {
@@ -199,25 +175,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
   selectPage(ix: number | undefined) {
     if (!this.wiki) return;
-
     this.selectedPageIx = ix;
-
-    if (this.selectedPageIx === undefined) {
-      this.hasSelectedPage = false;
-      return;
-    }
-
-    this.dispatchEvent(
-      new CustomEvent('page-selected', {
-        detail: {
-          pageId: this.wiki.object.pages[this.selectedPageIx]
-        }
-      })
-    );
-    this.hasSelectedPage = true;
-    if (this.isMobile) {
-      this.isDrawerOpened = false;
-    }
   }
 
   getStore(remote: string, type: string): CASStore | undefined {
@@ -353,9 +311,8 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     const result = await this.splicePages(wikiObject, [newPage], index, 0);
     if (!result.entity) throw Error('problem with splice pages');
 
-    this.selectPage(index);
-
     await this.updateContent(result.entity);
+    this.selectPage(index);
 
     this.creatingNewPage = false;
   }
@@ -422,9 +379,6 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
 
   goToHome() {
     this.selectPage(undefined);
-    if (this.isMobile) {
-      this.isDrawerOpened = false;
-    }
   }
 
   goBack() {
@@ -505,7 +459,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     return html`
       <div
         class=${classes.join(' ')}
-        draggable="true"
+        draggable="false"
         @dragstart=${e => this.handlePageDrag(e, page.id)}
         @click=${() => this.selectPage(ix)}
       >
