@@ -1,18 +1,18 @@
 import { Router } from '@vaadin/router';
 
-export function setupRouter(outlet: HTMLElement) {
-  const router = new Router(outlet);
+const router = new Router();
 
-  router.setRoutes([
-    {
-      path: '/',
-      component: '/kusama-home',
-      children: [
-        {path: '/council', component: 'council-space'},
-        {path: '/account/:accountId', component: 'account-space'},
-      ]
-    }
-  ]);
+const routes = [
+  // { path: '/', component: 'kusama-home' },
+  {
+    path: '/',
+    component: 'layout',
+    children: [
+      { path: '/', component: 'kusama-home' },
+      { path: '/council', component: 'council-space' },
+      { path: '/account', component: 'account-space' }
+    ]
+  }
+];
 
-  return router;
-}
+export { router, routes };

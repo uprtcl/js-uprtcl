@@ -9,7 +9,7 @@ import { EveesRemote } from '../services/evees.remote';
 import { Commit, EveesConfig, Perspective } from '../types';
 import { deriveSecured, signObject } from '../utils/signed';
 import { EveesBindings } from '../bindings';
-import { hashObject } from '../utils/cid-hash';
+import { hashObject, Secured } from '../utils/cid-hash';
 
 export interface CreateCommit {
   dataId: string;
@@ -300,6 +300,18 @@ export class EveesHelpers {
     const perspective = await deriveSecured<Perspective>(object, remote.store.cidConfig);
     perspective.casID = remote.store.casID;
     return perspective;
+  }
+
+  static async getHome(remote: EveesRemote, userId?: string): Promise<Secured<Perspective>> {
+    const remoteHome = {
+      remote: remote.id,
+      path: '',
+      creatorId: userId === undefined ? 'root' : userId,
+      timestamp: 0,
+      context: `home`
+    };
+
+    return deriveSecured(remoteHome, remote.store.cidConfig);
   }
 }
 

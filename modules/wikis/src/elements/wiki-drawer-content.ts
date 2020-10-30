@@ -627,6 +627,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
           display: flex;
           flex-direction: column;
           justify-content: center;
+          align-items: flex-start;
         }
         .page-item .item-menu-container {
           display: flex;

@@ -1,13 +1,15 @@
-import { Home } from './home';
-import { Doc } from './doc';
-import { initUprtcl } from './init';
+import { initUprtcl } from './init-uprtcl';
 import { App } from './app';
+import { Home } from './pages/home';
+import { CouncilSpace } from './pages/council-space';
+import { AccountSpace } from './pages/account-space';
 
-(async function () {
+(async function() {
   await initUprtcl();
 
-  customElements.define('kusama-app', App);
+  // customElements.define('layout', RootLayout);
+  customElements.define('kusama-intercreativity', App);
   customElements.define('kusama-home', Home);
-  // customElements.define('council-space', KusamaSpace);
-  // customElements.define('account-space', AccountSpace);
+  customElements.define('council-space', CouncilSpace);
+  customElements.define('account-space', AccountSpace);
 })();

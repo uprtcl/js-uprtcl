@@ -10,7 +10,8 @@ import {
   NewPerspectiveData,
   Secured,
   deriveSecured,
-  hashObject
+  hashObject,
+  EveesHelpers
 } from '@uprtcl/evees';
 import { EveesAccessControlFixed } from '@uprtcl/evees-blockchain';
 
@@ -51,17 +52,8 @@ export class EveesPolkadotCouncil implements EveesRemote {
     return this.connection.account;
   }
 
-  async getHome() {
-    this.logger.warn('remote random int when done');
-    const remoteHome = {
-      remote: this.id,
-      path: '',
-      creatorId: 'root',
-      timestamp: 0,
-      context: `home`
-    };
-
-    return deriveSecured(remoteHome, this.store.cidConfig);
+  async getHome(userId?: string) {
+    return EveesHelpers.getHome(this, userId);
   }
 
   icon() {

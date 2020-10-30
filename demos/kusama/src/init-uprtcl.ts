@@ -12,7 +12,8 @@ import {
   PolkadotOrbitDBIdentity,
   PolkadotConnection,
   EveesPolkadotConnection,
-  EveesPolkadotCouncil
+  EveesPolkadotCouncil,
+  EveesPolkadotModule
 } from '@uprtcl/evees-polkadot';
 import {
   ProposalsOrbitDB,
@@ -28,8 +29,6 @@ import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { env } from './env';
-
-export const EveesEthereumBinding = 'evees-ethereum';
 
 export const initUprtcl = async () => {
   const polkadotWs = '';
@@ -59,7 +58,13 @@ export const initUprtcl = async () => {
   await pkdConnection.ready();
 
   const ipfs = await IPFS.create(ipfsJSConfig);
+
+  console.log(`${env.pinner.peerMultiaddr} connecting...`);
+  await ipfs.swarm.connect(env.pinner.peerMultiaddr);
+  console.log(`${env.pinner.peerMultiaddr} connected!`);
+
   const ipfsStore = new IpfsStore(ipfsCidConfig, ipfs, env.pinner.url);
+  await ipfsStore.ready();
 
   const identity = new PolkadotOrbitDBIdentity(pkdConnection);
 
@@ -81,8 +86,7 @@ export const initUprtcl = async () => {
     pdkEveesConnection,
     orbitDBCustom,
     ipfsStore,
-    proposals,
-    'polkadot-evees-cache'
+    proposals
   );
   const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, ipfsStore);
   await pkdEvees.connect();
@@ -97,10 +101,11 @@ export const initUprtcl = async () => {
       new i18nextBaseModule(),
       new ApolloClientModule(),
       new CortexModule(),
-      new DiscoveryModule([pkdEvees.casID]),
+      new DiscoveryModule([pkdEvees.id]),
       new LensesModule(),
       new EveesBlockchainModule(),
       new EveesOrbitDBModule(),
+      new EveesPolkadotModule(),
       evees,
       documents,
       wikis
