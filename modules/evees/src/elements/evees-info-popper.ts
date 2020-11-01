@@ -120,12 +120,14 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
         @drop-down-changed=${e => (this.dropdownShown = e.detail.shown)}
       >
         <div draggable="true" @dragstart=${this.handleDragStart} slot="icon" class="button">
-          <div
-            class="evee-stripe"
-            style=${styleMap({
-              backgroundColor: this.color() + 'FF'
-            })}
-          ></div>
+          <div class="evee-stripe">
+            <uprtcl-icon-button
+              style=${styleMap({
+                fill: this.color() + 'FF'
+              })}
+              icon="menu"
+            ></uprtcl-icon-button>
+          </div>
         </div>
         ${this.dropdownShown
           ? html`

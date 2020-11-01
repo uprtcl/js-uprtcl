@@ -55,6 +55,8 @@ import { env } from '../env';
     }
   };
 
+  const orchestrator = new MicroOrchestrator();
+
   const chainConnectionDetails = {
     'local-dev': {
       name: 'Local',
@@ -66,7 +68,7 @@ import { env } from '../env';
       name: 'Kusama',
       image: '',
       host: 'Parity',
-      endpoint: 'wss://kusama-rpc.polkadot.io/'
+      endpoint: 'wss://kusama-rpc.polkadot.io'
     },
     'kusama-web3': {
       name: 'Kusama',
@@ -77,12 +79,22 @@ import { env } from '../env';
   };
 
   let connectionName = localStorage.getItem('POLKADOT-CONNECTION-NAME');
-  if (!connectionName) {
+
+  if (connectionName) {
+    if (connectionName === 'CUSTOM') {
+      const customEndpoint = localStorage.getItem('POLKADOT-CONNECTION-ENDPOINT');
+      chainConnectionDetails['CUSTOM'] = {
+        name: 'Custom',
+        image: '',
+        host: 'Web3 Foundation',
+        endpoint: customEndpoint
+      };
+    }
+  } else {
     connectionName = 'local-dev';
     localStorage.setItem('POLKADOT-CONNECTION-NAME', connectionName);
   }
-  const orchestrator = new MicroOrchestrator();
-
+  console.log(`connecting to polkadot`, connectionName);
   const pkdConnection = new PolkadotConnection(chainConnectionDetails, connectionName);
   await pkdConnection.ready();
 

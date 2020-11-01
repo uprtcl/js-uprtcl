@@ -123,7 +123,7 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
       <div class="row">
         <div class="column">
           <div class="prop-name">current head</div>
-          <pre class="prop-value">${this.currentHash}</pre>
+          <pre class="prop-value">${this.currentHash ? this.currentHash : 'empty'}</pre>
         </div>
         ${this.newHash !== this.currentHash
           ? html`

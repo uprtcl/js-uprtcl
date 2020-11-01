@@ -56,7 +56,6 @@ export class PolkadotConnection extends Connection {
   ) {
     super(options);
     this.connectionDetails = connections[connectionName];
-    );
   }
 
   public async connect(): Promise<void> {
