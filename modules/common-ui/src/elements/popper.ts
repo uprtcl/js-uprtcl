@@ -1,6 +1,9 @@
+import { Logger } from '@uprtcl/micro-orchestrator';
 import { LitElement, property, html, css } from 'lit-element';
 
 export class UprtclPopper extends LitElement {
+  logger = new Logger('UPRTCL-POPPER');
+
   @property({ type: String })
   icon: string = 'more_vert';
 
@@ -10,13 +13,18 @@ export class UprtclPopper extends LitElement {
   @property({ type: Boolean, attribute: 'disable-dropdown' })
   disableDropdown: boolean = false;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   showDropdown: boolean = false;
 
+  @property({ attribute: false })
+  popperId!: string;
+
   firstUpdated() {
+    this.popperId = `popper-menu-${Math.floor(Math.random() * 1000000)}`;
     document.addEventListener('click', event => {
-      const ix = event.composedPath().findIndex((el: any) => el.id === 'popper-menu');
+      const ix = event.composedPath().findIndex((el: any) => el.id === this.popperId);
       if (ix === -1) {
+        this.logger.log(`click outside popper detected ${this.popperId}`);
         this.showDropdown = false;
       }
     });
@@ -29,7 +37,7 @@ export class UprtclPopper extends LitElement {
 
   showDropDownClicked(e) {
     if (!this.disableDropdown) {
-      e.stopPropagation();
+      this.logger.log(`click on popper ${this.popperId}`);
       this.showDropdown = !this.showDropdown;
     }
   }
@@ -56,31 +64,27 @@ export class UprtclPopper extends LitElement {
     classes.push('info-box');
 
     return html`
-      <div class="popper-button" @click=${this.showDropDownClicked}>
-        <slot name="icon">
-          <uprtcl-icon-button button icon=${this.icon}></uprtcl-icon-button>
-        </slot>
+      <div class="popper-container" id=${this.popperId}>
+        <div class="popper-button" @click=${this.showDropDownClicked}>
+          <slot name="icon">
+            <uprtcl-icon-button button icon=${this.icon}></uprtcl-icon-button>
+          </slot>
+        </div>
+        ${this.showDropdown
+          ? html`
+              <uprtcl-card class=${classes.join(' ')}>
+                <slot></slot>
+              </uprtcl-card>
+            `
+          : ''}
       </div>
-      ${this.showDropdown
-        ? html`
-            <uprtcl-card id="popper-menu" class=${classes.join(' ')}>
-              <slot></slot>
-            </uprtcl-card>
-          `
-        : ''}
     `;
   }
 
   static get styles() {
     return css`
-      :host {
+      .popper-container {
         position: relative;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .popper-button {
-        flex-grow: 1;
       }
 
       .info-box {
