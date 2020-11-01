@@ -83,6 +83,8 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   color() {
     return this.officialId && this.uref === this.officialId
       ? DEFAULT_COLOR
+      : this.uref === this.firstRef
+      ? this.eveeColor
       : eveeColor(this.creatorId);
   }
 
