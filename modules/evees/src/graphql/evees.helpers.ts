@@ -34,6 +34,9 @@ export class EveesHelpers {
     client: ApolloClient<any>,
     perspectiveId: string
   ): Promise<string | undefined> {
+
+    if(!perspectiveId) throw new Error('PerspectiveId undefined');
+
     const result = await client.query({
       query: gql`
         {
