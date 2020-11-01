@@ -53,6 +53,14 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
       `;
     }
     return html`
+      <div class="row">
+        <b class="tag-text">id</b>
+        <span class="perspective-id"
+          >${this.perspectiveId.substr(0, 6)}...${this.perspectiveId.slice(
+            this.perspectiveId.length - 6
+          )}</span
+        >
+      </div>
       ${this.perspective.object.payload.creatorId
         ? html`
             <div class="row">
@@ -93,12 +101,14 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
           display: flex;
           width: fit-content;
           flex-direction: column;
-          align-items: center;
+          align-items: start;
           width: 100%;
+          font-size: 15px;
         }
         .row {
           display: flex;
           align-items: center;
+          height: 35px;
         }
         .tag-text {
           color: #cccccc;
@@ -108,6 +118,15 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
         }
         .remote-icon {
           margin-left: 6px;
+        }
+        .perspective-id {
+          color: var(--color, rgb(99, 102, 104));
+          font-weight: 600;
+          letter-spacing: 0.015em;
+          display: block;
+          overflow: hidden;
+          white-space: nowrap;
+          margin-left: 12px;
         }
       `
     ];
