@@ -484,15 +484,16 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   }
 
   renderHome() {
-    return this.pagesList
-      ? this.pagesList.map((page, ix) => {
-          return html`
-            <uprtcl-card class="home-card bg-transition" @click=${() => this.selectPage(ix)}>
-              ${page.title}
-            </uprtcl-card>
-          `;
-        })
-      : '';
+    return ``;
+    // return this.pagesList
+    //   ? this.pagesList.map((page, ix) => {
+    //       return html`
+    //         <uprtcl-card class="home-card bg-transition" @click=${() => this.selectPage(ix)}>
+    //           ${page.title}
+    //         </uprtcl-card>
+    //       `;
+    //     })
+    //   : '';
   }
 
   render() {

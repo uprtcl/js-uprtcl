@@ -1,7 +1,6 @@
 import { html, css, property, LitElement, query } from 'lit-element';
 import { DEFAULT_COLOR, eveeColor } from './support';
-import { UprtclPopper } from '@uprtcl/common-ui';
-import { threadId } from 'worker_threads';
+import { UprtclPopper, icons } from '@uprtcl/common-ui';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { ApolloClient } from 'apollo-boost';
@@ -119,15 +118,17 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
         position="right"
         @drop-down-changed=${e => (this.dropdownShown = e.detail.shown)}
       >
-        <div draggable="true" @dragstart=${this.handleDragStart} slot="icon" class="button">
-          <div class="evee-stripe">
-            <uprtcl-icon-button
-              style=${styleMap({
-                fill: this.color() + 'FF'
-              })}
-              icon="menu"
-            ></uprtcl-icon-button>
-          </div>
+        <div draggable="false" @dragstart=${this.handleDragStart} slot="icon" class="evee-stripe">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill=${this.color()}
+            width="18px"
+            height="18px"
+          >
+            <path d="M0 0h24v24H0z" fill="none" />
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+          </svg>
         </div>
         ${this.dropdownShown
           ? html`
@@ -167,21 +168,16 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
           padding: 10px;
           display: block;
         }
-        .button {
+        .evee-stripe {
           cursor: pointer;
-          padding-top: 5px;
+          padding: 5px 6px 0px;
           height: 100%;
           border-radius: 3px;
           user-select: none;
           transition: background-color 100ms linear;
         }
-        .button:hover {
+        .evee-stripe:hover {
           background-color: #eef1f1;
-        }
-        .evee-stripe {
-          width: 10px;
-          height: calc(100% - 10px);
-          border-radius: 3px;
         }
       `
     ];

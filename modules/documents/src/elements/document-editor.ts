@@ -1323,10 +1323,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       }
 
       .evee-info {
-        width: 10px;
-        flex-shrink: 0 0 0;
         display: flex;
         flex-direction: column;
+        justify-content: center;
       }
 
       .node-content {

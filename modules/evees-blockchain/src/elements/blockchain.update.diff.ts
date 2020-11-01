@@ -137,8 +137,8 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
 
       <div class="row">
         <ul>
-          <li>new perspectives: ${this.workspace.getNewPerspectives().length}</li>
-          <li>perspectives updated: ${this.workspace.getUpdates().length}</li>
+          <li>new: ${this.workspace.getNewPerspectives().length}</li>
+          <li>updated: ${this.workspace.getUpdates().length}</li>
         </ul>
       </div>
 

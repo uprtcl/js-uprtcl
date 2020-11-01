@@ -21,3 +21,4 @@ export { UprtclIconButton } from './elements/icon-button';
 export { UprtclTextField } from './elements/text-field';
 export { UprtclSelect } from './elements/select';
 export { styles } from './elements/styles.css';
+export { icons } from './elements/icons';

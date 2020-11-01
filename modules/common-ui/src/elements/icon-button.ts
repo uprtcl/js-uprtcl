@@ -10,6 +10,9 @@ export class UprtclIconButton extends LitElement {
   button: boolean = false;
 
   @property({ type: Boolean })
+  skinny: boolean = false;
+
+  @property({ type: Boolean })
   disabled: boolean = false;
 
   @property({ type: Boolean })
@@ -24,9 +27,18 @@ export class UprtclIconButton extends LitElement {
       classes.push('button-disabled');
     } else {
       if (this.button) {
-        classes.push('button-filled-secondary', 'cursor');
+        if (this.skinny) {
+          classes.push('button-skinny');
+        } else {
+          classes.push('button-filled-secondary');
+        }
+        classes.push('cursor');
       } else {
-        classes.push('button-filled-secondary-no-hover');
+        if (this.skinny) {
+          classes.push('button-skinny');
+        } else {
+          classes.push('button-filled-secondary-no-hover');
+        }
       }
     }
 
