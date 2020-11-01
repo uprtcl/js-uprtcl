@@ -43,6 +43,9 @@ export class EveesInfoUserBased extends EveesInfoBase {
   @property({ type: String, attribute: 'official-owner' })
   officialOwner!: string;
 
+  @property({ type: Boolean, attribute: 'check-owner' })
+  checkOwner: boolean = false;
+
   @property({ attribute: false })
   officialId: string | undefined = undefined;
 
@@ -130,7 +133,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
 
     const sortOnTimestamp = (p1, p2) => p1.object.payload.timestamp - p2.object.payload.timestamp;
 
-    if (this.officialOwner) {
+    if (this.checkOwner) {
       const officials = perspectives.filter(
         p =>
           p.object.payload.remote === officialRemote.id &&
