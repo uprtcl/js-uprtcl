@@ -79,7 +79,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
-  @property({ type: String })
+  @property({ attribute: false })
   reloading: boolean = true;
 
   @property({ attribute: false })
