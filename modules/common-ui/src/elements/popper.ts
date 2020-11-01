@@ -19,25 +19,25 @@ export class UprtclPopper extends LitElement {
   @property({ attribute: false })
   popperId!: string;
 
+  handleDocClick = event => {
+    const ix = event.composedPath().findIndex((el: any) => el.id === this.popperId);
+    if (ix === -1) {
+      this.showDropdown = false;
+    }
+  };
+
   firstUpdated() {
     this.popperId = `popper-menu-${Math.floor(Math.random() * 1000000)}`;
-    document.addEventListener('click', event => {
-      const ix = event.composedPath().findIndex((el: any) => el.id === this.popperId);
-      if (ix === -1) {
-        this.logger.log(`click outside popper detected ${this.popperId}`);
-        this.showDropdown = false;
-      }
-    });
+    document.addEventListener('click', this.handleDocClick);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    // document.removeEventListener('click', ...);
+    document.removeEventListener('click', this.handleDocClick);
   }
 
   showDropDownClicked(e) {
     if (!this.disableDropdown) {
-      this.logger.log(`click on popper ${this.popperId}`);
       this.showDropdown = !this.showDropdown;
     }
   }
