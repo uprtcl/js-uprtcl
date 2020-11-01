@@ -75,19 +75,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!official) throw new Error(`cant find official perspective ${this.firstRef}`);
     this.officialOwner = official.object.payload.creatorId;
 
-    const context = official.object.payload.context;
-
-    const perspectives = await this.client.query({
-      query: gql`
-        {
-          contextPerspectives(context: "${context}") {
-            id
-          }
-        }`
-    });
-
-    this.logger.log('perspectives found', perspectives);
-
     await this.load();
     this.loading = false;
   }
@@ -115,6 +102,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
     if (!current) throw new Error(`cant find current perspective ${this.uref}`);
 
     this.creatorId = current.object.payload.creatorId;
+  }
+
+  async forceReload() {
+    this.loading = true;
+    await this.updateComplete;
+    await this.client.resetStore();
+    this.load();
+    this.loading = false;
   }
 
   updated(changedProperties) {
@@ -169,6 +164,12 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   renderLoginWidget() {
     return html`
+      <uprtcl-icon-button
+        button
+        class="reload-button"
+        icon="cached"
+        @click=${() => this.forceReload()}
+      ></uprtcl-icon-button>
       <evees-login-widget @changed=${() => this.loggedIn()}></evees-login-widget>
     `;
   }
@@ -247,6 +248,10 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .login-widget-container {
           flex: 0 0 0;
           padding: 16px;
+          display: flex;
+        }
+        .reload-button {
+          margin-right: 8px;
         }
       `
     ];
