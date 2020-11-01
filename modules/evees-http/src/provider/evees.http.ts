@@ -41,6 +41,10 @@ export class EveesHttp implements EveesRemote {
     return this.provider.userId;
   }
 
+  async getHome(userId?: string) {
+    return EveesHelpers.getHome(this, userId);
+  }
+
   ready() {
     return Promise.resolve();
   }
@@ -99,7 +103,16 @@ export class EveesHttp implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    return this.provider.getObject<PerspectiveDetails>(`/persp/${perspectiveId}/details`);
+    let responseObj:any = {};
+    try {      
+      responseObj = await this.provider.getObject<PerspectiveDetails>(`/persp/${perspectiveId}/details`);      
+    } catch(e) {
+      responseObj = {
+        headId: undefined
+      }
+    }    
+
+    return responseObj;
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
