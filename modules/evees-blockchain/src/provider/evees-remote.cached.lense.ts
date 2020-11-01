@@ -109,37 +109,47 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
             </div>
           `
         : ''}
-      <uprtcl-popper class="connections-popper">
-        <uprtcl-button slot="icon"
-          >${this.currentConnection.name}
-          <span class="endpoint-button">(${this.currentConnection.endpoint})</span></uprtcl-button
-        >
-        <uprtcl-list>
-          ${Object.getOwnPropertyNames(this.connections).map(connectionId => {
-            const connectionDetails = this.connections[connectionId];
-            return html`
-              <uprtcl-list-item @click=${() => this.chainSelected(connectionId)}
-                >${connectionDetails.name}
-                <span class="endpoint">(${connectionDetails.endpoint})</span></uprtcl-list-item
+      ${this.connections
+        ? html`
+            <uprtcl-popper class="connections-popper">
+              <uprtcl-button slot="icon"
+                >${this.currentConnection.name}
+                <span class="endpoint-button"
+                  >(${this.currentConnection.endpoint})</span
+                ></uprtcl-button
               >
-            `;
-          })}
-          ${this.settingCustom
-            ? html`
-                <uprtcl-list-item @click=${() => this.customSelected()}>
-                  <uprtcl-form-string
-                    value=""
-                    label="Enpoint"
-                    @cancel=${e => this.cancelSettingCustom(e)}
-                    @accept=${e => this.setCustomEndpoint(e.detail.value)}
-                  ></uprtcl-form-string
-                ></uprtcl-list-item>
-              `
-            : html`
-                <uprtcl-list-item @click=${() => this.customSelected()}> Custom</uprtcl-list-item>
-              `}
-        </uprtcl-list>
-      </uprtcl-popper>
+              <uprtcl-list>
+                ${Object.getOwnPropertyNames(this.connections).map(connectionId => {
+                  const connectionDetails = this.connections[connectionId];
+                  return html`
+                    <uprtcl-list-item @click=${() => this.chainSelected(connectionId)}
+                      >${connectionDetails.name}
+                      <span class="endpoint"
+                        >(${connectionDetails.endpoint})</span
+                      ></uprtcl-list-item
+                    >
+                  `;
+                })}
+                ${this.settingCustom
+                  ? html`
+                      <uprtcl-list-item @click=${() => this.customSelected()}>
+                        <uprtcl-form-string
+                          value=""
+                          label="Enpoint"
+                          @cancel=${e => this.cancelSettingCustom(e)}
+                          @accept=${e => this.setCustomEndpoint(e.detail.value)}
+                        ></uprtcl-form-string
+                      ></uprtcl-list-item>
+                    `
+                  : html`
+                      <uprtcl-list-item @click=${() => this.customSelected()}>
+                        Custom</uprtcl-list-item
+                      >
+                    `}
+              </uprtcl-list>
+            </uprtcl-popper>
+          `
+        : ``}
     `;
   }
 
