@@ -205,6 +205,9 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
         margin-bottom: 16px;
         justify-content: space-between;
       }
+      .margin-left {
+        margin-left: 8px;
+      }
       .endpoint-button {
         font-size: 13px;
         margin-left: 6px;
