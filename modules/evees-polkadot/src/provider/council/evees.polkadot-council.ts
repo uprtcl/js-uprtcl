@@ -53,7 +53,8 @@ export class EveesPolkadotCouncil implements EveesRemote {
   }
 
   async getHome(userId?: string) {
-    return EveesHelpers.getHome(this, userId);
+    /** this remote can only store perspectives of the council */
+    return EveesHelpers.getHome(this, 'council');
   }
 
   icon() {
@@ -100,7 +101,8 @@ export class EveesPolkadotCouncil implements EveesRemote {
     fromPerspectiveId?: string,
     fromHeadId?: string
   ): Promise<Secured<Perspective>> {
-    const creatorId = this.userId ? this.userId : '';
+    /** only the council can create perspectives */
+    const creatorId = 'council';
     timestamp = timestamp ? timestamp : Date.now();
 
     const defaultContext = await hashObject({
