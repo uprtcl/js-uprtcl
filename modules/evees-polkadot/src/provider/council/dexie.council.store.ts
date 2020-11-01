@@ -1,11 +1,11 @@
 import Dexie from 'dexie';
 
-import { LocalPerspective, LocalProposal, Vote } from './types';
+import { LocalPerspective, LocalProposal, LocalVote } from './types';
 
 export class EveesCouncilDB extends Dexie {
   proposals: Dexie.Table<LocalProposal, string>;
   perspectives: Dexie.Table<LocalPerspective, string>;
-  votes: Dexie.Table<Vote, number>;
+  votes: Dexie.Table<LocalVote, string>;
   meta: Dexie.Table<any, string>;
 
   constructor() {
@@ -13,7 +13,7 @@ export class EveesCouncilDB extends Dexie {
     this.version(1).stores({
       proposals: '&id,toPerspectiveId',
       perspectives: '&id,context',
-      votes: 'id++,proposalId,member',
+      votes: '&id,proposalId,member',
       meta: '&entry'
     });
     this.proposals = this.table('proposals');

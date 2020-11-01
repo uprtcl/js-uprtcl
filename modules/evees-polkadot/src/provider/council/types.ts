@@ -50,6 +50,13 @@ export interface LocalPerspective {
   headId: string;
 }
 
+export interface LocalVote {
+  id: string;
+  proposalId: string;
+  member: string;
+  value: VoteValue;
+}
+
 export interface ProposalSummary {
   status: ProposalStatus;
   votes: Vote[];

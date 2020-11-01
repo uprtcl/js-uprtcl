@@ -172,7 +172,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
           cursor: pointer;
           padding: 5px 6px 0px;
           height: 100%;
-          border-radius: 3px;
+          border-radius: 15px;
           user-select: none;
           transition: background-color 100ms linear;
         }

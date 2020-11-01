@@ -1112,13 +1112,31 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const uref = node.coord.length === 1 && node.coord[0] === 0 ? this.uref : node.uref;
     const firstRef = node.coord.length === 1 && node.coord[0] === 0 ? this.firstRef : node.uref;
 
+    let paddingTop = '0px';
+    if (node.draft.type === TextType.Title) {
+      switch (node.level) {
+        case 0:
+          paddingTop = '20px';
+          break;
+        case 1:
+          paddingTop = '14px';
+          break;
+        case 2:
+          paddingTop = '10px';
+          break;
+        default:
+          paddingTop = '0px';
+          break;
+      }
+    }
+
     return html`
       <div
         class="row"
         @dragover=${e => this.dragOverEffect(e, node)}
         @drop=${e => this.handleDrop(e, node)}
       >
-        <div class="evee-info">
+        <div class="evee-info" style=${`padding-top:${paddingTop}`}>
           ${!node.isPlaceholder && this.renderInfo
             ? html`
                 <evees-info-popper
@@ -1135,7 +1153,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   emit-proposals
                 ></evees-info-popper>
               `
-            : ''}
+            : html`
+                <div class="empty-evees-info"></div>
+              `}
         </div>
         <div class="node-content">
           ${nodeLense.render(node, {
@@ -1326,6 +1346,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: center;
+      }
+
+      .empty-evees-info {
+        width: 30px;
+        height: 10px;
       }
 
       .node-content {

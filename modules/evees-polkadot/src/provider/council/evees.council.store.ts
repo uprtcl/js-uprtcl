@@ -114,10 +114,20 @@ export class PolkadotCouncilEveesStorage {
       throw new Error(`unexpected thresehold ${manifest.config.thresehold}`);
     }
 
-    const votesCasted = await this.db.votes
+    const votesCastedLocal = await this.db.votes
       .where('proposalId')
       .equals(proposalId)
       .toArray();
+
+    const votesCasted = votesCastedLocal.map(
+      (vote): Vote => {
+        return {
+          proposalId: vote.proposalId,
+          member: vote.member,
+          value: vote.value
+        };
+      }
+    );
 
     /** fill empty votes for non voters */
     const council = await this.getCouncil(manifest.block);
@@ -209,21 +219,13 @@ export class PolkadotCouncilEveesStorage {
     this.logger.log(`caching votes of`, { data });
 
     return data.votes.map(async vote => {
-      const myCopy = await this.db.votes
-        .where('proposalId')
-        .equals(vote.proposalId)
-        .and(v => v.member === vote.member)
-        .toArray();
-
-      if (myCopy.length > 1)
-        throw new Error(
-          `More than one vote found for proposal ${vote.proposalId}, member ${vote.member}`
-        );
+      const voteId = `${vote.proposalId}-${vote.member}`;
+      const myCopy = await this.db.votes.get(voteId);
 
       this.logger.log(`caching vote of`, { vote, myCopy });
 
       /* if I have it that's it. This also prevents double casting votes */
-      if (myCopy.length === 1) return;
+      if (myCopy) return;
 
       // otherwise, validate and store it in our db of votes
       const proposalManifest = await this.getProposalManifest(vote.proposalId);
@@ -239,7 +241,13 @@ export class PolkadotCouncilEveesStorage {
       }
 
       this.logger.log(`adding vote to cache`, { vote });
-      this.db.votes.put(vote);
+      const voteLocal = {
+        id: voteId,
+        proposalId: vote.proposalId,
+        member: vote.member,
+        value: vote.value
+      };
+      this.db.votes.put(voteLocal);
     });
   }
 
