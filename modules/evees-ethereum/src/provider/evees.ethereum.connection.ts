@@ -22,7 +22,7 @@ export class EveesEthereumConnection implements BlockchainConnection {
   public uprtclRoot: EthereumContract;
 
   constructor(
-    protected connection: EthereumConnection,
+    public connection: EthereumConnection,
     uprtclRootOptions: EthereumContractOptions = {
       contract: UprtclRoot as any
     }
