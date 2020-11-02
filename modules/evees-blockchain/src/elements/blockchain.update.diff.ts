@@ -23,6 +23,9 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'new-hash' })
   newHash!: string;
 
+  @property({ type: String, attribute: 'root-perspective' })
+  rootPerspective!: string;
+
   @property({ type: Boolean })
   summary: boolean = false;
 
@@ -120,21 +123,6 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     }
 
     return html`
-      <!-- <div class="row">
-        <div class="column">
-          <div class="prop-name">current head</div>
-          <pre class="prop-value">${this.currentHash ? this.currentHash : 'empty'}</pre>
-        </div>
-        ${this.newHash !== this.currentHash
-        ? html`
-            <div class="column">
-              <div class="prop-name">new head</div>
-              <pre class="prop-value">${this.newHash}</pre>
-            </div>
-          `
-        : ''}
-      </div> -->
-
       ${this.newHash !== this.currentHash
         ? html`
             <div class="summary">
@@ -147,11 +135,13 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
               Your onchain data is up to date
             </div>
           `}
-      ${this.nUpdated > 0
-        ? html`
-            <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
-          `
-        : ''}
+
+      <evees-update-diff
+        id="evees-update-diff"
+        root-perspective=${this.rootPerspective ? this.rootPerspective : ''}
+        ?summary=${this.summary}
+      >
+      </evees-update-diff>
     `;
   }
 

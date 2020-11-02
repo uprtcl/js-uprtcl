@@ -11,7 +11,7 @@ import { EveesHelpers } from '../graphql/evees.helpers';
 const LOGINFO = true;
 
 interface UpdateDetails {
-  update: UpdateRequest;
+  update?: UpdateRequest;
   newData: any;
   oldData: any;
   diffLense: DiffLens;
@@ -19,6 +19,9 @@ interface UpdateDetails {
 
 export class EveesDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
+
+  @property({ type: String, attribute: 'root-perspective' })
+  rootPerspective!: string;
 
   @property({ type: Boolean })
   summary: boolean = false;
@@ -44,6 +47,10 @@ export class EveesDiff extends moduleConnect(LitElement) {
     this.logger.log('updated()', changedProperties);
 
     if (changedProperties.has('workspace')) {
+      this.loadUpdates();
+    }
+
+    if (changedProperties.has('rootPerspective')) {
       this.loadUpdates();
     }
   }
@@ -75,6 +82,34 @@ export class EveesDiff extends moduleConnect(LitElement) {
     });
 
     await Promise.all(getDetails);
+
+    /** if a new perspective with the root id is found,
+     *  shown as an update from undefined head */
+    if (this.rootPerspective) {
+      const newRoot = this.workspace
+        .getNewPerspectives()
+        .find(newPerspective => newPerspective.perspective.id === this.rootPerspective);
+      if (newRoot) {
+        if (newRoot.details.headId) {
+          const newData = await EveesHelpers.getCommitData(
+            this.workspace.workspace,
+            newRoot.details.headId
+          );
+
+          const hasDiffLenses = this.recognizer
+            .recognizeBehaviours(newData)
+            .find(b => (b as HasDiffLenses<any>).diffLenses);
+          if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
+
+          this.updatesDetails[this.rootPerspective] = {
+            diffLense: hasDiffLenses.diffLenses()[0],
+            update: undefined,
+            oldData: undefined,
+            newData
+          };
+        }
+      }
+    }
 
     this.loading = false;
   }
