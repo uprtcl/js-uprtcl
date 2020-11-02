@@ -328,11 +328,18 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     );
 
     const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
+    const toRemote = this.remotes.find(r => r.id === toRemoteId);
+    const canPropose = toRemote
+      ? toRemote.proposals
+        ? await toRemote.proposals.canPropose(this.remote.userId)
+        : false
+      : false;
 
     const options: MenuConfig = {
       apply: {
         text: canWrite ? 'merge' : 'propose',
         icon: 'done',
+        disabled: !canWrite && !canPropose,
         skinny: false
       },
       close: {

@@ -129,19 +129,18 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
               You have <b>created ${this.workspace.getNewPerspectives().length}</b> new objects and
               <b> updated ${this.workspace.getUpdates().length}</b>
             </div>
+            <evees-update-diff
+              id="evees-update-diff"
+              root-perspective=${this.rootPerspective ? this.rootPerspective : ''}
+              ?summary=${this.summary}
+            >
+            </evees-update-diff>
           `
         : html`
             <div class="summary">
               Your onchain data is up to date
             </div>
           `}
-
-      <evees-update-diff
-        id="evees-update-diff"
-        root-perspective=${this.rootPerspective ? this.rootPerspective : ''}
-        ?summary=${this.summary}
-      >
-      </evees-update-diff>
     `;
   }
 
