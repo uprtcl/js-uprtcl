@@ -135,11 +135,18 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
         : ''}
       </div> -->
 
-      <div class="summary">
-        You have <b>created ${this.workspace.getNewPerspectives().length}</b> new objects and
-        <b> updated ${this.workspace.getUpdates().length}</b>.
-      </div>
-
+      ${this.newHash !== this.currentHash
+        ? html`
+            <div class="summary">
+              You have <b>created ${this.workspace.getNewPerspectives().length}</b> new objects and
+              <b> updated ${this.workspace.getUpdates().length}</b>
+            </div>
+          `
+        : html`
+            <div class="summary">
+              Your onchain data is up to date
+            </div>
+          `}
       ${this.nUpdated > 0
         ? html`
             <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>

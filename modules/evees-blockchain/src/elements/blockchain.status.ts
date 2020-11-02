@@ -87,8 +87,11 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
               </evees-blockchain-update-diff>
             </div>
           `}
-
-      <div class="row margin-bottom"><b>Push your local changes to the blockchain:</b></div>
+      ${this.hasChanges
+        ? html`
+            <div class="row margin-bottom"><b>Push your local changes to the blockchain:</b></div>
+          `
+        : ''}
       <div class="row">
         <uprtcl-button-loading
           class="update-button reset-button"
