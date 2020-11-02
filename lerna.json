@@ -20,8 +20,7 @@
     "providers/holochain",
     "providers/http",
     "providers/ipfs",
-    "providers/orbitdb",
-    "demos/kusama"
+    "providers/orbitdb"
   ],
   "version": "0.0.7-alpha.73"
 }
