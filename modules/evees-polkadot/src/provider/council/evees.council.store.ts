@@ -8,7 +8,6 @@ import { EveesCouncilDB } from './dexie.council.store';
 import {
   CouncilData,
   CouncilProposal,
-  LocalPerspective,
   LocalProposal,
   ProposalManifest,
   ProposalSummary,
@@ -17,14 +16,8 @@ import {
 import { getStatus } from './proposal.logic.quorum';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
 import { Signed } from '@uprtcl/cortex';
-import { perspective } from '@uprtcl/evees-orbitdb/dist/types/custom-stores/orbit-db.stores';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
-export const EXPECTED_CONFIG: ProposalConfig = {
-  duration: Math.round((5.0 * 60.0) / 5.0),
-  quorum: 1.0 / 3.0,
-  thresehold: 0.5
-};
 
 /* a store that keeps track of the council common state regarding the council proposals */
 export class PolkadotCouncilEveesStorage {
@@ -103,13 +96,13 @@ export class PolkadotCouncilEveesStorage {
 
     const manifest = await this.getProposalManifest(proposalId);
 
-    if (manifest.config.duration !== EXPECTED_CONFIG.duration) {
+    if (manifest.config.duration !== this.config.duration) {
       throw new Error(`unexpected duration ${manifest.config.duration}`);
     }
-    if (manifest.config.quorum !== EXPECTED_CONFIG.quorum) {
+    if (manifest.config.quorum !== this.config.quorum) {
       throw new Error(`unexpected quorum ${manifest.config.quorum}`);
     }
-    if (manifest.config.thresehold !== EXPECTED_CONFIG.thresehold) {
+    if (manifest.config.thresehold !== this.config.thresehold) {
       throw new Error(`unexpected thresehold ${manifest.config.thresehold}`);
     }
 

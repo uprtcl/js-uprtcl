@@ -6,10 +6,10 @@ import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { CASStore } from '@uprtcl/multiplatform';
 import { Lens } from '@uprtcl/lenses';
 
-import { EXPECTED_CONFIG, PolkadotCouncilEveesStorage } from './evees.council.store';
+import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
 import { PolkadotConnection } from '../../connection.polkadot';
-import { VoteValue } from './proposal.config.types';
+import { ProposalConfig, VoteValue } from './proposal.config.types';
 
 export class ProposalsPolkadotCouncil implements ProposalsProvider {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
@@ -18,7 +18,8 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
   constructor(
     public connection: PolkadotConnection,
     public councilStore: PolkadotCouncilEveesStorage,
-    public store: CASStore
+    public store: CASStore,
+    public config: ProposalConfig
   ) {}
 
   async ready(): Promise<void> {
@@ -61,7 +62,7 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
       fromPerspectiveId: proposal.fromPerspectiveId,
       toPerspectiveId: proposal.toPerspectiveId,
       block: await this.connection.getLatestBlock(),
-      config: EXPECTED_CONFIG,
+      config: this.config,
       updates: updates,
       creatorId: this.connection.account,
       fromHeadId: proposal.fromHeadId,

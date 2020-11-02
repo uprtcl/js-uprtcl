@@ -20,7 +20,8 @@
     "providers/holochain",
     "providers/http",
     "providers/ipfs",
-    "providers/orbitdb"
+    "providers/orbitdb",
+    "demos/simple-editor"
   ],
   "version": "0.0.7-alpha.74"
 }

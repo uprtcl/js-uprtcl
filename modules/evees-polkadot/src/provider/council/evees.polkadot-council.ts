@@ -19,6 +19,7 @@ import { PolkadotConnection } from '../../connection.polkadot';
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalsPolkadotCouncil } from './evees.polkadot-council.proposals';
 import { icons } from '../icons';
+import { ProposalConfig } from './proposal.config.types';
 
 const evees_if = 'council';
 
@@ -30,14 +31,14 @@ export class EveesPolkadotCouncil implements EveesRemote {
 
   councilStorage: PolkadotCouncilEveesStorage;
 
-  constructor(public connection: PolkadotConnection, public store: CASStore) {
+  constructor(
+    public connection: PolkadotConnection,
+    public store: CASStore,
+    public config: ProposalConfig
+  ) {
     this.accessControl = new EveesAccessControlFixed(store);
-    this.councilStorage = new PolkadotCouncilEveesStorage(connection, store, {
-      duration: 10,
-      quorum: 0.2,
-      thresehold: 0.5
-    });
-    this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, store);
+    this.councilStorage = new PolkadotCouncilEveesStorage(connection, store, config);
+    this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, store, config);
   }
 
   get id() {
