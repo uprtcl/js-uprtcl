@@ -1,6 +1,6 @@
 {
   "name": "kusama-intercreativity",
-  "version": "0.0.7-alpha.71",
+  "version": "0.0.7-alpha.73",
   "author": "pepo@collectiveone.org",
   "license": "MIT",
   "scripts": {
@@ -10,23 +10,23 @@
     "deploy": "npm run build && ./deploy.sh prd"
   },
   "dependencies": {
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.71",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.71",
-    "@uprtcl/graphql": "^0.0.7-alpha.71",
-    "@uprtcl/cortex": "^0.0.7-alpha.71",
-    "@uprtcl/lenses": "^0.0.7-alpha.71",
-    "@uprtcl/wikis": "^0.0.7-alpha.71",
-    "@uprtcl/evees": "^0.0.7-alpha.71",
-    "@uprtcl/documents": "^0.0.7-alpha.71",
-    "@uprtcl/evees-polkadot": "^0.0.7-alpha.71",
-    "@uprtcl/evees-blockchain": "^0.0.7-alpha.71",
-    "@uprtcl/evees-orbitdb": "^0.0.7-alpha.71",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.71",
-    "@uprtcl/orbitdb-provider": "^0.0.7-alpha.71",
-    "lit-element": "^2.2.3",
-    "graphql": "^14.6.0",
+    "@uprtcl/cortex": "^0.0.7-alpha.73",
+    "@uprtcl/documents": "^0.0.7-alpha.73",
+    "@uprtcl/evees": "^0.0.7-alpha.73",
+    "@uprtcl/evees-blockchain": "^0.0.7-alpha.73",
+    "@uprtcl/evees-orbitdb": "^0.0.7-alpha.73",
+    "@uprtcl/evees-polkadot": "^0.0.7-alpha.73",
+    "@uprtcl/graphql": "^0.0.7-alpha.73",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.73",
+    "@uprtcl/lenses": "^0.0.7-alpha.73",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.73",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.73",
+    "@uprtcl/orbitdb-provider": "^0.0.7-alpha.73",
+    "@uprtcl/wikis": "^0.0.7-alpha.73",
     "@vaadin/router": "^1.7.2",
-    "ipfs": "^0.50.2"
+    "graphql": "^14.6.0",
+    "ipfs": "^0.50.2",
+    "lit-element": "^2.2.3"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.8.3",
