@@ -138,7 +138,7 @@ export class SimpleWiki extends moduleConnect(LitElement) {
   renderWiki() {
     return html`
       <div class="wiki-container">
-        <wiki-drawer uref=${this.rootHash} show-proposals></wiki-drawer>
+        <wiki-drawer uref=${this.rootHash} show-proposals check-owner></wiki-drawer>
       </div>
     `;
   }
