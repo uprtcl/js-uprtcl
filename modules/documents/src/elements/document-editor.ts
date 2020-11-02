@@ -52,6 +52,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'official-owner' })
   officialOwner!: string;
 
+  @property({ type: Boolean, attribute: 'check-owner' })
+  checkOwner: boolean = false;
+
   @property({ type: Boolean, attribute: 'read-only' })
   readOnly: boolean = false;
 
@@ -1038,7 +1041,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
   handleNodePerspectiveCheckout(e: CustomEvent, node: DocNode) {
     if (node.coord.length === 1 && node.coord[0] === 0) {
-      this.uref = e.detail.perspectiveId;
+      /** if this is the top element, let the parent handle this */
+      return;
     }
 
     e.stopPropagation();
@@ -1144,6 +1148,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
                   uref=${uref}
                   first-uref=${firstRef}
                   official-owner=${this.officialOwner}
+                  ?check-owner=${this.checkOwner}
                   evee-color=${this.getColor()}
                   @checkout-perspective=${e => this.handleNodePerspectiveCheckout(e, node)}
                   show-draft
@@ -1204,6 +1209,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           color=${this.getColor()}
           @checkout-perspective=${e => this.handleEditorPerspectiveCheckout(e, node)}
           official-owner=${this.officialOwner}
+          ?check-owner=${this.checkOwner}
           show-draft
           show-info
           show-icon

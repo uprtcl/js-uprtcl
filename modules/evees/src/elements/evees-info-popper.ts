@@ -30,6 +30,9 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'official-owner' })
   officialOwner: string | undefined = undefined;
 
+  @property({ type: Boolean, attribute: 'check-owner' })
+  checkOwner: boolean = false;
+
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
@@ -146,6 +149,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
                   parent-id=${this.parentId}
                   first-uref=${this.firstRef as string}
                   official-owner=${this.officialOwner as string}
+                  ?check-owner=${this.checkOwner}
                   @official-id=${e => this.officialIdReceived(e.detail.perspectiveId)}
                 ></evees-info-user-based>
               </div>

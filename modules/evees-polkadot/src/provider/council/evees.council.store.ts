@@ -29,25 +29,22 @@ export const EXPECTED_CONFIG: ProposalConfig = {
 /* a store that keeps track of the council common state regarding the council proposals */
 export class PolkadotCouncilEveesStorage {
   logger: Logger = new Logger('PolkadotCouncilEveesStorage');
-  protected db: EveesCouncilDB;
-  private initialized: boolean = false;
+  protected db!: EveesCouncilDB;
 
   constructor(
     protected connection: PolkadotConnection,
     public store: CASStore,
     public config: ProposalConfig
-  ) {
-    this.db = new EveesCouncilDB();
-  }
-
-  async init() {
-    await this.fetchCouncilDatas();
-  }
+  ) {}
 
   async ready(): Promise<void> {
-    if (!this.initialized) {
-      return this.init();
+    await this.connection.ready();
+    const localStoreName = `${this.connection.getNetworkId()}-evees-council`;
+    if (!localStoreName) {
+      throw new Error('networkId undefined');
     }
+    this.db = new EveesCouncilDB(localStoreName);
+    await this.fetchCouncilDatas();
   }
 
   /* council at is a constant function, can be cached */
@@ -61,6 +58,8 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async gossipProposals(head?: string) {
+    await this.ready();
+
     if (!this.connection.account) throw new Error('cant update data if not logged in');
 
     // gossip consist on adding all new proposals from other council members to my own councilData object.

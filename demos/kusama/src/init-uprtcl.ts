@@ -29,6 +29,7 @@ import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { env } from './env';
+import { getConnectionDetails } from './connections';
 
 export const initUprtcl = async () => {
   const polkadotWs = '';
@@ -54,7 +55,8 @@ export const initUprtcl = async () => {
 
   const orchestrator = new MicroOrchestrator();
 
-  const pkdConnection = new PolkadotConnection(polkadotWs);
+  const connections = getConnectionDetails();
+  const pkdConnection = new PolkadotConnection(connections.connections, connections.current);
   await pkdConnection.ready();
 
   const ipfs = await IPFS.create(ipfsJSConfig);

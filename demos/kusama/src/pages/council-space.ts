@@ -46,7 +46,7 @@ export class CouncilSpace extends moduleConnect(LitElement) {
     }
 
     return html`
-      <wiki-drawer uref=${this.perspectiveId} show-proposals></wiki-drawer>
+      <wiki-drawer uref=${this.perspectiveId} show-proposals check-owner></wiki-drawer>
     `;
   }
 
@@ -57,8 +57,6 @@ export class CouncilSpace extends moduleConnect(LitElement) {
       flex-direction: column;
       justify-content: flex-start;
       text-align: center;
-      //height: 80vh;
-      //padding: 10vh 10px;
     }
   `;
 }

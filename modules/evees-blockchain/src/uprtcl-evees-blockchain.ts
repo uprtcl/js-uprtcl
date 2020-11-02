@@ -5,4 +5,4 @@ export { EveesAccessControlFixed } from './provider/evees-acl.fixed';
 export { EveesBlockchainModule } from './evees-blockchain.module';
 export { BlockchainConnection } from './provider/evees.blockchain.connection';
 export { EveesBlockchainCached } from './provider/evees.blockchain.cached';
-export { ChainConnectionDetails } from './types';
+export { ChainConnectionDetails, ConnectionDetails } from './types';

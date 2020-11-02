@@ -12,13 +12,15 @@ export interface RemoteUI {
   pendingActions: number;
 }
 
+export interface ConnectionDetails {
+  name: string;
+  image: string;
+  hostName: string;
+  endpoint: string;
+}
+
 export interface ChainConnectionDetails {
-  [id: string]: {
-    name: string;
-    image: string;
-    hostName: string;
-    endpoint: string;
-  };
+  [id: string]: ConnectionDetails;
 }
 
 export interface UpdatePerspectiveLocal {

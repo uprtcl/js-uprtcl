@@ -8,8 +8,8 @@ export class EveesCouncilDB extends Dexie {
   votes: Dexie.Table<LocalVote, string>;
   meta: Dexie.Table<any, string>;
 
-  constructor() {
-    super('evees-council');
+  constructor(name: string) {
+    super(name);
     this.version(1).stores({
       proposals: '&id,toPerspectiveId',
       perspectives: '&id,context',

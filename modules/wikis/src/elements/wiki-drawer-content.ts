@@ -47,6 +47,9 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'official-owner' })
   officialOwner!: string;
 
+  @property({ type: Boolean, attribute: 'check-owner' })
+  checkOwner: boolean = false;
+
   @property({ type: Boolean })
   editable: boolean = false;
 
@@ -521,6 +524,7 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
                     parent-id=${this.uref}
                     color=${this.color}
                     official-owner=${this.officialOwner}
+                    ?check-owner=${this.checkOwner}
                     show-info
                   >
                   </documents-editor>

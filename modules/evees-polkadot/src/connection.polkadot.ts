@@ -8,6 +8,7 @@ import { IdentityInfo, Registration } from '@polkadot/types/interfaces';
 
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
+import { ChainConnectionDetails, ConnectionDetails } from '@uprtcl/evees-blockchain';
 
 const getIdentityInfo = (identity: Option<Registration>) => {
   if (identity && identity.isSome) {
@@ -45,12 +46,12 @@ export class PolkadotConnection extends Connection {
   public accounts?: string[];
   private chain?: string;
   private signer?: Signer;
-  public connectionDetails: any;
+  public connectionDetails: ConnectionDetails;
 
   logger = new Logger('Polkadot-Connection');
 
   constructor(
-    public connections: any[],
+    public connections: ChainConnectionDetails,
     public connectionName: string,
     options?: ConnectionOptions
   ) {

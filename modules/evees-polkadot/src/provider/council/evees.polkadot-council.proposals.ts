@@ -23,6 +23,7 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
 
   async ready(): Promise<void> {
     await this.init();
+    await this.councilStore.ready();
   }
 
   async init() {

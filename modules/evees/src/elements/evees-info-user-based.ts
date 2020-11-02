@@ -351,7 +351,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
                 : 'margin-left-small'}
               icon="menu_open"
               @click=${() => (this.isTheirs || this.isMine ? this.proposeDraft() : undefined)}
-              ?disabled=${this.isOfficial}
+              ?disabled=${this.isOfficial || this.officialId === undefined}
               style=${`--background-color: ${
                 this.isTheirs || this.isMine ? this.color() : 'initial'
               }`}

@@ -154,7 +154,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         uref=${this.uref}
         first-uref=${this.firstRef}
         official-owner=${this.officialOwner}
-        check-owner=${this.checkOwner}
+        ?check-owner=${this.checkOwner}
         ?show-proposals=${this.showProposals}
         show-info
         show-icon
@@ -204,6 +204,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           editable
           color=${this.color()}
           official-owner=${this.officialOwner}
+          ?check-owner=${this.checkOwner}
         >
         </wiki-drawer-content>
       </div>
