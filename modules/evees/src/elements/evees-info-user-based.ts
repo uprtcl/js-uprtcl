@@ -336,7 +336,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
       <uprtcl-button
         class="tab-button"
         ?skinny=${!this.isOfficial}
-        @click=${() => this.seeOfficial()}
+        @click=${() => (this.officialId !== undefined ? this.seeOfficial() : undefined)}
         ?disabled=${this.officialId === undefined}
         transition
       >

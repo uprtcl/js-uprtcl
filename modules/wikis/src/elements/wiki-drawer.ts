@@ -40,6 +40,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ attribute: false })
   officialOwner!: string;
 
+  @property({ type: Boolean, attribute: 'check-owner' })
+  checkOwner: boolean = false;
+
   @property({ attribute: false })
   loading: boolean = true;
 
@@ -151,10 +154,11 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         uref=${this.uref}
         first-uref=${this.firstRef}
         official-owner=${this.officialOwner}
+        check-owner=${this.checkOwner}
         ?show-proposals=${this.showProposals}
         show-info
         show-icon
-        ?show-debug=${true}
+        ?show-debug=${false}
         show-draft
         show-edit-draft
       >
