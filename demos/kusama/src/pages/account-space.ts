@@ -1,10 +1,12 @@
 import { LitElement, html, css, property, internalProperty } from 'lit-element';
 
+import { moduleConnect } from '@uprtcl/micro-orchestrator';
+
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { Router } from '@vaadin/router';
 
 export class AccountSpace extends moduleConnect(LitElement) {
   logger = new Logger('Account space');
@@ -31,8 +33,9 @@ export class AccountSpace extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-    if (await this.defaultRemote.isLogged()) {
-      this.isLogged = false;
+    this.isLogged = await this.defaultRemote.isLogged();
+
+    if (!this.isLogged) {
       this.loading = false;
       return;
     }
@@ -48,6 +51,11 @@ export class AccountSpace extends moduleConnect(LitElement) {
     this.loading = false;
   }
 
+  async login() {
+    await this.defaultRemote.login();
+    this.load();
+  }
+
   render() {
     if (this.loading) {
       return html`
@@ -58,10 +66,15 @@ export class AccountSpace extends moduleConnect(LitElement) {
     return html`
       ${!this.isLogged
         ? html`
-            <uprtcl-button>login</uprtcl-button>
+            <uprtcl-button class="login-button" @click=${() => this.login()}>login</uprtcl-button>
           `
         : html`
-            <wiki-drawer uref=${this.perspectiveId}></wiki-drawer>
+            <wiki-drawer
+              uref=${this.perspectiveId}
+              show-back
+              show-proposals
+              @back=${() => Router.go(`/`)}
+            ></wiki-drawer>
           `}
     `;
   }
@@ -73,8 +86,11 @@ export class AccountSpace extends moduleConnect(LitElement) {
       flex-direction: column;
       justify-content: flex-start;
       text-align: center;
-      //height: 80vh;
-      //padding: 10vh 10px;
+    }
+
+    .login-button {
+      margin: 36px auto;
+      width: 180px;
     }
   `;
 }

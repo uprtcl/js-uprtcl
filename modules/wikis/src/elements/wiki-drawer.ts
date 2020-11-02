@@ -34,6 +34,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: Boolean, attribute: 'show-proposals' })
   showProposals: boolean = false;
 
+  @property({ type: Boolean, attribute: 'show-back' })
+  showBack: boolean = false;
+
   @property({ attribute: false })
   uref!: string;
 
@@ -149,6 +152,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   renderBreadcrumb() {
     return html`
+      ${this.showBack
+        ? html`
+            <uprtcl-icon-button
+              button
+              class="back-button"
+              icon="arrow_back"
+              @click=${() => this.dispatchEvent(new CustomEvent('back'))}
+            ></uprtcl-icon-button>
+          `
+        : ``}
       <evees-info-user-based
         id="evees-info-row"
         uref=${this.uref}
@@ -256,6 +269,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           display: flex;
         }
         .reload-button {
+          margin-right: 8px;
+        }
+        .back-button {
           margin-right: 8px;
         }
       `

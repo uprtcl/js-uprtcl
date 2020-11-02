@@ -5,6 +5,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { Router } from '@vaadin/router';
 
 export class CouncilSpace extends moduleConnect(LitElement) {
   logger = new Logger('Account space');
@@ -46,7 +47,13 @@ export class CouncilSpace extends moduleConnect(LitElement) {
     }
 
     return html`
-      <wiki-drawer uref=${this.perspectiveId} show-proposals check-owner></wiki-drawer>
+      <wiki-drawer
+        uref=${this.perspectiveId}
+        show-back
+        show-proposals
+        check-owner
+        @back=${() => Router.go(`/`)}
+      ></wiki-drawer>
     `;
   }
 

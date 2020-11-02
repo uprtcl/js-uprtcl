@@ -34,8 +34,7 @@ export class EveesHelpers {
     client: ApolloClient<any>,
     perspectiveId: string
   ): Promise<string | undefined> {
-
-    if(!perspectiveId) throw new Error('PerspectiveId undefined');
+    if (!perspectiveId) throw new Error('PerspectiveId undefined');
 
     const result = await client.query({
       query: gql`
@@ -306,12 +305,13 @@ export class EveesHelpers {
   }
 
   static async getHome(remote: EveesRemote, userId?: string): Promise<Secured<Perspective>> {
+    const creatorId = userId === undefined ? 'root' : userId;
     const remoteHome = {
       remote: remote.id,
       path: '',
-      creatorId: userId === undefined ? 'root' : userId,
+      creatorId,
       timestamp: 0,
-      context: `home`
+      context: `${creatorId}.home`
     };
 
     return deriveSecured(remoteHome, remote.store.cidConfig);
