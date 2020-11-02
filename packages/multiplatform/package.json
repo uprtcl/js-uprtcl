@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/multiplatform",
-  "version": "0.0.7-alpha.74",
+  "version": "0.0.7-alpha.75",
   "description": "Package to add multiplatform features to applications that deal with content-addressable objects",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,9 +11,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.0.7-alpha.74",
-    "@uprtcl/graphql": "^0.0.7-alpha.74",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.74",
+    "@uprtcl/cortex": "^0.0.7-alpha.75",
+    "@uprtcl/graphql": "^0.0.7-alpha.75",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.75",
     "apollo-boost": "^0.4.7",
     "cids": "^1.0.0",
     "graphql": "^14.6.0",
