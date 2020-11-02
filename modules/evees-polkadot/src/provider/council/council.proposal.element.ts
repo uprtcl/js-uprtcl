@@ -317,6 +317,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       .dialog-element {
         display: flex;
         flex-direction: column;
+        flex-grow: 1;
         overflow: hidden;
       }
       .row {
