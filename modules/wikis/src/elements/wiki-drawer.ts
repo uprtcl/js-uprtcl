@@ -154,7 +154,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         ?show-proposals=${this.showProposals}
         show-info
         show-icon
-        ?show-debug=${false}
+        ?show-debug=${true}
         show-draft
         show-edit-draft
       >
