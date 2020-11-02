@@ -120,26 +120,24 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     }
 
     return html`
-      <div class="row">
+      <!-- <div class="row">
         <div class="column">
           <div class="prop-name">current head</div>
           <pre class="prop-value">${this.currentHash ? this.currentHash : 'empty'}</pre>
         </div>
         ${this.newHash !== this.currentHash
-          ? html`
-              <div class="column">
-                <div class="prop-name">new head</div>
-                <pre class="prop-value">${this.newHash}</pre>
-              </div>
-            `
-          : ''}
-      </div>
+        ? html`
+            <div class="column">
+              <div class="prop-name">new head</div>
+              <pre class="prop-value">${this.newHash}</pre>
+            </div>
+          `
+        : ''}
+      </div> -->
 
-      <div class="row">
-        <ul>
-          <li>new: ${this.workspace.getNewPerspectives().length}</li>
-          <li>updated: ${this.workspace.getUpdates().length}</li>
-        </ul>
+      <div class="summary">
+        You have <b>created ${this.workspace.getNewPerspectives().length}</b> new objects and
+        <b> updated ${this.workspace.getUpdates().length}</b>.
       </div>
 
       ${this.nUpdated > 0
@@ -158,9 +156,13 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
       }
-      .row {
+      .summary {
         width: 100%;
         display: flex;
+        margin-bottom: 12px;
+      }
+      .summary b {
+        margin: 0px 6px;
       }
       .column {
         flex: 1 1 auto;
@@ -191,6 +193,7 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: center;
+        overflow: auto;
       }
     `;
   }

@@ -159,8 +159,10 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
         .options=${this.dialogOptions}
         @option-selected=${() => (this.showDiff = false)}
       >
-        <div class="chain-row">${this.renderChain()}</div>
-        <evees-blockchain-status remote=${this.remote.id}> </evees-blockchain-status>
+        <div class="dialog-element">
+          <div class="chain-row">${this.renderChain()}</div>
+          <evees-blockchain-status remote=${this.remote.id}> </evees-blockchain-status>
+        </div>
       </uprtcl-dialog>
     `;
   }
@@ -235,6 +237,16 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
       .connections-popper {
         --box-width: 380px;
         margin-right: 4px;
+      }
+      .dialog-element {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      evees-blockchain-status {
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
       }
     `;
   }

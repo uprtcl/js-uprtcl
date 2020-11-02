@@ -111,6 +111,9 @@ export class EveesDiff extends moduleConnect(LitElement) {
         display: block;
         text-align: center;
       }
+      .evee-diff {
+        overflow: auto;
+      }
     `;
   }
 }

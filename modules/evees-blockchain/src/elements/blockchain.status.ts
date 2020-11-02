@@ -78,7 +78,7 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
             <uprtcl-loading></uprtcl-loading>
           `
         : html`
-            <div class="row">
+            <div class="column">
               <evees-blockchain-update-diff
                 current-hash=${this.currentHash ? this.currentHash : ''}
                 new-hash=${this.newHash}
@@ -88,6 +88,7 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
             </div>
           `}
 
+      <div class="row margin-bottom"><b>Push your local changes to the blockchain:</b></div>
       <div class="row">
         <uprtcl-button-loading
           class="update-button reset-button"
@@ -100,7 +101,7 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
           ?loading=${this.applyingChanges}
           @click=${() => (this.hasChanges ? this.applyChanges() : undefined)}
           ?disabled=${!this.hasChanges}
-          >update</uprtcl-button-loading
+          >push</uprtcl-button-loading
         >
       </div>
     `;
@@ -111,6 +112,19 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
       :host {
         display: block;
         text-align: center;
+        overflow: auto;
+      }
+      .column {
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+      }
+      evees-blockchain-update-diff {
+        overflow: hidden;
+        width: 100%;
       }
       .row {
         width: 100%;
@@ -119,7 +133,7 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
         justify-content: center;
       }
       .margin-bottom {
-        margin-bottom: 25px;
+        margin: 12px 0px;
       }
       .margin-left {
         margin-left: 10px;
