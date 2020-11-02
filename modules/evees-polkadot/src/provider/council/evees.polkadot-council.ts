@@ -140,7 +140,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
 
   async getContextPerspectives(context: string): Promise<string[]> {
     const perspectives = await this.councilStorage.getContextPerspectives(context);
-    if (context === `home`) {
+    if (context === `council.home`) {
       const home = await this.getHome();
       perspectives.push(home.id);
     }

@@ -1,5 +1,5 @@
 const peerPath = `/dns4/localhost/tcp/4003/ws/p2p`;
-const peerId = 'Qmdetfrqi3uiDTBEHtXKQuCDapmPo78f26q6v3kfqWXckh';
+const peerId = 'QmTdRTGW6cGNbWeRXXaAeKPhNxJV6ChaNoWuvzvoL36iiR';
 const env = {
   pinner: {
     url: 'http://localhost:3100',
