@@ -603,6 +603,14 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         .page-item:hover {
           background-color: #e8ecec;
         }
+        .title-empty {
+          color: #a2a8aa;
+          font-style: italic;
+        }
+        .title-selected {
+          font-weight: bold;
+          background-color: rgb(200, 200, 200, 0.2);
+        }
         .empty {
           width: 100%;
           text-align: center;

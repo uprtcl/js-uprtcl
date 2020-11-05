@@ -55,7 +55,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
 
   async getHome(userId?: string) {
     /** this remote can only store perspectives of the council */
-    return EveesHelpers.getHome(this, 'council');
+    return EveesHelpers.getHome(this, `${this.connection.getNetworkId()}-council`);
   }
 
   icon() {
@@ -141,7 +141,7 @@ export class EveesPolkadotCouncil implements EveesRemote {
 
   async getContextPerspectives(context: string): Promise<string[]> {
     const perspectives = await this.councilStorage.getContextPerspectives(context);
-    if (context === `council.home`) {
+    if (context === `${this.connection.getNetworkId()}-council.home`) {
       const home = await this.getHome();
       perspectives.push(home.id);
     }

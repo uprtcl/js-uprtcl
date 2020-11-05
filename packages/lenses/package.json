@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/lenses",
-  "version": "0.0.7-alpha.75",
+  "version": "0.0.7-alpha.76",
   "description": "Basic lenses rendering engine to use in conjunction with @uprtcl/cortex",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,10 +11,10 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.0.7-alpha.75",
-    "@uprtcl/graphql": "^0.0.7-alpha.75",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.75",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.75",
+    "@uprtcl/cortex": "^0.0.7-alpha.76",
+    "@uprtcl/graphql": "^0.0.7-alpha.76",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.76",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.76",
     "apollo-boost": "^0.4.7",
     "inversify": "^5.0.1",
     "lit-element": "^2.3.0",
@@ -74,5 +74,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "0d263a1fa5c321ae4688471b206697449c27f4c8"
+  "gitHead": "4a694f4b932472046283ecedcd65de631ab08813"
 }

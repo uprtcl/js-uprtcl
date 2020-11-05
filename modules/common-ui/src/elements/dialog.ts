@@ -30,8 +30,9 @@ export class UprtclDialog extends LitElement {
               const details = this.options[option];
               return html`
                 <uprtcl-button
-                  @click=${e => this.optionClicked(e, option)}
+                  @click=${e => (details.disabled ? undefined : this.optionClicked(e, option))}
                   icon=${details.icon as string}
+                  ?disabled=${details.disabled !== undefined ? details.disabled : false}
                   ?skinny=${details.skinny !== undefined ? details.skinny : false}
                   style=${details.background ? `--background-color: ${details.background}` : ''}
                 >

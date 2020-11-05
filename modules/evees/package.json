@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees",
-  "version": "0.0.7-alpha.75",
+  "version": "0.0.7-alpha.76",
   "description": "Cortex module that provides generic version control for any content-addressable content to become an Evolving Entity (Evee)",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -11,13 +11,13 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.0.7-alpha.75",
-    "@uprtcl/cortex": "^0.0.7-alpha.75",
-    "@uprtcl/graphql": "^0.0.7-alpha.75",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.75",
-    "@uprtcl/lenses": "^0.0.7-alpha.75",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.75",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.75",
+    "@uprtcl/common-ui": "^0.0.7-alpha.76",
+    "@uprtcl/cortex": "^0.0.7-alpha.76",
+    "@uprtcl/graphql": "^0.0.7-alpha.76",
+    "@uprtcl/ipfs-provider": "^0.0.7-alpha.76",
+    "@uprtcl/lenses": "^0.0.7-alpha.76",
+    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.76",
+    "@uprtcl/multiplatform": "^0.0.7-alpha.76",
     "apollo-boost": "^0.4.7",
     "cbor-js": "^0.1.0",
     "cids": "^1.0.0",
@@ -80,5 +80,5 @@
   "files": [
     "dist"
   ],
-  "gitHead": "0d263a1fa5c321ae4688471b206697449c27f4c8"
+  "gitHead": "4a694f4b932472046283ecedcd65de631ab08813"
 }
