@@ -308,7 +308,7 @@ export class EveesHelpers {
     const creatorId = userId === undefined ? 'root' : userId;
     const remoteHome = {
       remote: remote.id,
-      path: '',
+      path: remote.defaultPath,
       creatorId,
       timestamp: 0,
       context: `${creatorId}.home`
