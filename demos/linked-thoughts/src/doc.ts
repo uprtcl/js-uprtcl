@@ -33,7 +33,7 @@ export class Doc extends moduleConnect(LitElement) {
       `;
 
     return html`
-      <wiki-drawer show-proposals @back=${() => this.goHome()} uref=${this.docId}></wiki-drawer>
+      <wiki-drawer show-proposals show-acl @back=${() => this.goHome()} uref=${this.docId}></wiki-drawer>
     `;
   }
 
