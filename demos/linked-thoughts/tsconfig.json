@@ -18,12 +18,8 @@
     "paths": {
       "apollo-client": ["node_modules/apollo-client"],
       "apollo-client/*": ["node_modules/apollo-client/*"],
-      "@uprtcl/ethereum-provider": ["node_modules/@uprtcl/ethereum-provider"],
-      "@uprtcl/ethereum-provider/*": [
-        "node_modules/@uprtcl/ethereum-provider/*"
-      ],
-      "@uprtcl/http-provider": ["node_modules/@uprtcl/http-provider"],
-      "@uprtcl/http-provider/*": ["node_modules/@uprtcl/http-provider/*"],
+      "lit-html": ["node_modules/lit-html"],
+      "lit-html/*": ["node_modules/lit-html/*"],
       "inversify": ["node_modules/inversify"],
       "inversify/*": ["node_modules/inversify/*"]
     }
