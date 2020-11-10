@@ -58,11 +58,11 @@ export class Home extends moduleConnect(LitElement) {
       creatorId: perspective.object.payload.creatorId
     });
 
-    // if (id !== perspective.id) {
-    //   throw new Error('unexpected id');
-    // }
+    if (id !== perspective.id) {
+      throw new Error('unexpected id');
+    }
 
-    this.go(id);
+    this.go(perspective.id);
   }
 
   go(perspectiveId: string) {
