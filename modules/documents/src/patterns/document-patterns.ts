@@ -5,7 +5,10 @@ import { Entity } from '@uprtcl/cortex';
 
 export interface DocNodeLens {
   name: string;
-  render: (node: DocNode, eventHandlers: DocNodeEventsHandlers) => TemplateResult;
+  render: (
+    node: DocNode,
+    eventHandlers: DocNodeEventsHandlers
+  ) => TemplateResult;
   type?: string;
 }
 

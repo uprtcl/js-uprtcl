@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "declarationDir": "dist/types",
+    "outDir": "dist/lib",
+    "baseUrl": "./",
+    "paths": {
+      "lit-element": ["node_modules/lit-element"],
+      "inversify": ["node_modules/inversify"],
+      "@uprtcl/graphql": ["node_modules/@uprtcl/graphql"],
+      "@uprtcl/cortex": ["node_modules/@uprtcl/cortex"]
+    }
+  },
+  "include": ["src"]
+}

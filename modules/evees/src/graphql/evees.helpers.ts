@@ -279,7 +279,7 @@ export class EveesHelpers {
     fromHeadId?: string
   ) {
     creatorId = creatorId ? creatorId : remote.userId ? remote.userId : '';
-    timestamp = timestamp ? timestamp : Date.now();
+    timestamp = timestamp!== undefined ? timestamp : Date.now();
 
     const defaultContext = await hashObject({
       creatorId,
@@ -308,7 +308,7 @@ export class EveesHelpers {
     const creatorId = userId === undefined ? 'root' : userId;
     const remoteHome = {
       remote: remote.id,
-      path: '',
+      path: remote.defaultPath,
       creatorId,
       timestamp: 0,
       context: `${creatorId}.home`

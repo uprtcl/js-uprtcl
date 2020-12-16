@@ -102,8 +102,9 @@ export class TextNodeCommon
               level=${node.level + 1}
               editable=${node.editable ? 'true' : 'false'}
               focus-init=${node.focused}
+              .canConvertTo=${node.canConvertTo}
               @focus=${events.focus}
-              @blur=${events.blur}
+              @clicked-outside=${events.blur}
               @content-changed=${(e) =>
                 events.contentChanged(
                   textToTextNode(node.draft, e.detail.content),
@@ -123,6 +124,7 @@ export class TextNodeCommon
                   e.detail.lift
                 )}
               @content-appended=${events.appended}
+              @convert-to=${(e) => events.convertedTo(e.detail.type)}
             >
             </documents-text-node-editor>
           `;

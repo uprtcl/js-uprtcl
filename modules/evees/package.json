@@ -1,9 +1,10 @@
 {
   "name": "@uprtcl/evees",
-  "version": "0.0.7-alpha.76",
+  "version": "0.1.0-beta.16",
   "description": "Cortex module that provides generic version control for any content-addressable content to become an Evolving Entity (Evee)",
   "homepage": "https://uprtcl.io",
   "scripts": {
+    "update-uprtcl": "ncu -u \"/^@uprtcl.*$/\"",
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.ts",
     "build": "npm run clean && rollup -c rollup.config.ts",
@@ -11,13 +12,13 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.0.7-alpha.76",
-    "@uprtcl/cortex": "^0.0.7-alpha.76",
-    "@uprtcl/graphql": "^0.0.7-alpha.76",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.76",
-    "@uprtcl/lenses": "^0.0.7-alpha.76",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.76",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.76",
+    "@uprtcl/common-ui": "^0.1.0-beta.16",
+    "@uprtcl/cortex": "0.1.0-beta.5",
+    "@uprtcl/graphql": "0.1.0-beta.5",
+    "@uprtcl/ipfs-provider": "0.1.0-beta.12",
+    "@uprtcl/lenses": "0.1.0-beta.5",
+    "@uprtcl/micro-orchestrator": "0.1.0-beta.5",
+    "@uprtcl/multiplatform": "0.1.0-beta.5",
     "apollo-boost": "^0.4.7",
     "cbor-js": "^0.1.0",
     "cids": "^1.0.0",
@@ -39,6 +40,7 @@
     "graphql": "^14.6.0",
     "graphql-tools": "^5.0.0",
     "karma": "^4.4.1",
+    "npm-check-updates": "^10.2.1",
     "rimraf": "^2.6.2",
     "rollup": "^2.0.5",
     "rollup-plugin-sourcemaps": "^0.5.0",
@@ -48,7 +50,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/uprtcl/js-uprtcl/"
+    "url": "https://github.com/uprtcl/js-uprtcl-modules/"
   },
   "contributors": [
     {
@@ -66,10 +68,10 @@
     "_Prtcl",
     "git",
     "perspectives",
-    "commits",
+    "comBOOS-FLs",
     "proposal"
   ],
-  "license": "MIT",
+  "license": "BOOS-FL",
   "main": "dist/uprtcl-evees.umd.js",
   "module": "dist/uprtcl-evees.es5.js",
   "typings": "dist/types/uprtcl-evees.d.ts",
@@ -80,5 +82,5 @@
   "files": [
     "dist"
   ],
-  "gitHead": "4a694f4b932472046283ecedcd65de631ab08813"
+  "gitHead": "3414d6cc2d56ad396d8d26ca57aa57e970a156c7"
 }

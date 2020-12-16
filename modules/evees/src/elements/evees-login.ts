@@ -32,10 +32,12 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   async load() {
     this.loading = true;
 
-    const loggedList = await Promise.all(this.remotes.map(remote => remote.isLogged()));
+    const loggedList = await Promise.all(
+      this.remotes.map((remote) => remote.isLogged())
+    );
     this.logged = !loggedList.includes(false);
 
-    await Promise.all(this.remotes.map(r => r.ready()));
+    await Promise.all(this.remotes.map((r) => r.ready()));
 
     this.loading = false;
   }
@@ -48,7 +50,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
   async loginAll() {
     await Promise.all(
-      this.remotes.map(async remote => {
+      this.remotes.map(async (remote) => {
         const isLogged = await remote.isLogged();
         if (!isLogged) await remote.login();
       })
@@ -58,7 +60,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
   async logoutAll() {
     await Promise.all(
-      this.remotes.map(async remote => {
+      this.remotes.map(async (remote) => {
         const isLogged = await remote.isLogged();
         if (isLogged) {
           try {
@@ -74,9 +76,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     if (!this.logged) {
@@ -86,12 +86,17 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
     }
 
     return html`
-      <uprtcl-button skinny @click=${() => this.logoutAll()}>logout</uprtcl-button>
-      ${this.remotes.map(remote => {
+      <uprtcl-button skinny @click=${() => this.logoutAll()}
+        >logout</uprtcl-button
+      >
+      ${this.remotes.map((remote) => {
         return remote.lense !== undefined
           ? remote.lense().render({ remoteId: remote.id })
           : html`
-              <evees-author user-id=${remote.userId as string}></evees-author>
+              <evees-author
+                user-id=${remote.userId as string}
+                remote-id=${remote.id}
+              ></evees-author>
             `;
       })}
     `;
@@ -110,6 +115,10 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
       uprtcl-button {
         margin-right: 10px;
+      }
+
+      evees-author {
+        width: 28px;
       }
     `;
   }

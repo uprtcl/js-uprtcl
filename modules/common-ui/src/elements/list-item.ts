@@ -19,15 +19,11 @@ export class UprtclListItem extends LitElement {
       <div class=${classes.join(' ')}>
         <div class="vertically-centered">
           ${this.icon
-            ? html`
-                <div class="icon-container">${icons[this.icon]}</div>
-              `
+            ? html` <div class="icon-container">${icons[this.icon]}</div> `
             : ''}
           <div class="main-item"><slot></slot></div>
           ${this.hasMeta
-            ? html`
-                <div class="meta-item"><slot name="meta"></slot></div>
-              `
+            ? html` <div class="meta-item"><slot name="meta"></slot></div> `
             : ''}
         </div>
       </div>
@@ -50,6 +46,8 @@ export class UprtclListItem extends LitElement {
           border-width: 3px;
         }
         .container {
+          flex: 1 1 0px;
+          overflow: hidden;
           display: flex;
           height: 48px;
           flex-direction: column;
@@ -63,7 +61,8 @@ export class UprtclListItem extends LitElement {
           flex-direction: row;
         }
         .main-item {
-          flex: 1 1 0;
+          flex: 1 1 0px;
+          overflow: hidden;
           display: flex;
           flex-direction: row;
           margin-left: 6px;
@@ -82,7 +81,7 @@ export class UprtclListItem extends LitElement {
         .icon-container svg {
           fill: #717377;
         }
-      `
+      `,
     ];
   }
 }

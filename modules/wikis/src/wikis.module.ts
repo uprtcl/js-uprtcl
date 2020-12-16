@@ -21,20 +21,6 @@ import { WikiDrawerContent } from './elements/wiki-drawer-content';
  *
  * Example usage:
  *
- * ```ts
- * import { IpfsStore } from '@uprtcl/ipfs-provider';
- * import { WikisModule, WikisTypes } from '@uprtcl/wikis';
- *
- * const ipfsStore = new IpfsStore({
- *   host: 'ipfs.infura.io',
- *   port: 5001,
- *   protocol: 'https'
- * });
- *
- * const wikis = new WikisModule([ ipfsStore ]);
- * await orchestrator.loadModule(wikis);
- * ```
- *
  * @category CortexModule
  *
  * @param stores an array of CASStores in which the wiki objects can be stored/retrieved from
@@ -58,7 +44,7 @@ export class WikisModule extends EveesContentModule {
       ...super.submodules,
       new GraphQlSchemaModule(wikiTypeDefs, {}),
       new i18nextModule('wikis', { en: en }),
-      new PatternsModule([new WikiPattern([WikiCommon, WikiLinks])])
+      new PatternsModule([new WikiPattern([WikiCommon, WikiLinks])]),
     ];
   }
 }

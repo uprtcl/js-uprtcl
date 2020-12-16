@@ -12,17 +12,18 @@ export default {
   input: `src/${libraryName}.ts`,
   output: [
     { file: pkg.main, name: libraryName, format: 'umd', sourcemap: true },
-    { file: pkg.module, format: 'es', sourcemap: true }
+    { file: pkg.module, format: 'es', sourcemap: true },
   ],
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash-es')
   external: [
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.peerDependencies || {}),
     'lit-html',
-    'lodash-es/isEqual'
+    'lodash-es/isEqual',
   ],
   watch: {
-    include: 'src/**'
+    buildDelay: 1000,
+    include: 'src/**',
   },
   plugins: [
     // Allow json resolution
@@ -33,14 +34,14 @@ export default {
       abortOnError: false,
       // include: ['./node_modules/codemirror/mode/javascript.js'],
       useTsconfigDeclarationDir: true,
-      cacheRoot: `${require('temp-dir')}/.rpt2_cache`
+      cacheRoot: `${require('temp-dir')}/.rpt2_cache`,
     }),
 
     // Resolve source maps to the original source
     sourceMaps(),
     resolve(),
     commonjs({
-      extensions: ['.js', '.ts']
-    })
-  ]
+      extensions: ['.js', '.ts'],
+    }),
+  ],
 };

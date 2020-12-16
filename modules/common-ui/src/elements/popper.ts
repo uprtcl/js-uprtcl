@@ -13,14 +13,19 @@ export class UprtclPopper extends LitElement {
   @property({ type: Boolean, attribute: 'disable-dropdown' })
   disableDropdown: boolean = false;
 
+  @property({ type: Boolean })
+  skinny: boolean = false;
+
   @property({ attribute: false })
   showDropdown: boolean = false;
 
   @property({ attribute: false })
   popperId!: string;
 
-  handleDocClick = event => {
-    const ix = event.composedPath().findIndex((el: any) => el.id === this.popperId);
+  handleDocClick = (event) => {
+    const ix = event
+      .composedPath()
+      .findIndex((el: any) => el.id === this.popperId);
     if (ix === -1) {
       this.showDropdown = false;
     }
@@ -48,7 +53,9 @@ export class UprtclPopper extends LitElement {
      */
     if (changedProperties.has('showDropdown')) {
       this.dispatchEvent(
-        new CustomEvent('drop-down-changed', { detail: { shown: this.showDropdown } })
+        new CustomEvent('drop-down-changed', {
+          detail: { shown: this.showDropdown },
+        })
       );
     }
   }
@@ -57,7 +64,7 @@ export class UprtclPopper extends LitElement {
     const positions = {
       'bottom-left': 'info-box-bottom-left',
       'bottom-right': 'info-box-bottom-right',
-      right: 'info-box-right'
+      right: 'info-box-right',
     };
     let classes = [positions[this.position]];
 
@@ -67,7 +74,11 @@ export class UprtclPopper extends LitElement {
       <div class="popper-container" id=${this.popperId}>
         <div class="popper-button" @click=${this.showDropDownClicked}>
           <slot name="icon">
-            <uprtcl-icon-button button icon=${this.icon}></uprtcl-icon-button>
+            <uprtcl-icon-button
+              button
+              ?skinny=${this.skinny}
+              icon=${this.icon}
+            ></uprtcl-icon-button>
           </slot>
         </div>
         ${this.showDropdown

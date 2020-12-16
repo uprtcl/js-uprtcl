@@ -1,0 +1,75 @@
+{
+  "name": "@uprtcl/evees-blockchain",
+  "version": "0.1.0-beta.23",
+  "description": "EveesRemote base class to implement Evees on any blockchain + Orbitdb",
+  "homepage": "https://uprtcl.io",
+  "scripts": {
+    "update-uprtcl": "ncu -u \"/^@uprtcl.*$/\"",
+    "clean": "rimraf dist",
+    "dev": "rollup -w -c rollup.config.ts",
+    "build": "npm run clean && rollup -c rollup.config.ts",
+    "test": "karma start --coverage",
+    "test:watch": "karma start --auto-watch=true --single-run=false"
+  },
+  "dependencies": {
+    "@uprtcl/common-ui": "^0.1.0-beta.16",
+    "@uprtcl/cortex": "^0.1.0-beta.5",
+    "@uprtcl/evees": "^0.1.0-beta.15",
+    "@uprtcl/evees-orbitdb": "^0.1.0-beta.23",
+    "@uprtcl/graphql": "^0.1.0-beta.5",
+    "@uprtcl/ipfs-provider": "^0.1.0-beta.12",
+    "@uprtcl/lenses": "^0.1.0-beta.5",
+    "@uprtcl/micro-orchestrator": "^0.1.0-beta.5",
+    "@uprtcl/multiplatform": "^0.1.0-beta.5",
+    "@uprtcl/orbitdb-provider": "^0.1.0-beta.12",
+    "apollo-boost": "^0.4.7",
+    "dexie": "^3.0.2",
+    "lit-html": "^1.1.2"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^2.5.6",
+    "@open-wc/testing-karma": "^3.0.0",
+    "@rollup/plugin-json": "^4.0.1",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^10.11.0",
+    "istanbul-instrumenter-loader": "^3.0.1",
+    "karma": "^4.4.1",
+    "karma-webpack": "^4.0.2",
+    "npm-check-updates": "^10.2.1",
+    "path": "^0.12.7",
+    "reflect-metadata": "^0.1.13",
+    "rimraf": "^2.6.2",
+    "rollup": "^2.0.5",
+    "rollup-plugin-sourcemaps": "^0.5.0",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "temp-dir": "^2.0.0",
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1"
+  },
+  "contributors": [
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@uprtcl.io",
+      "url": "https://github.com/pepoospina"
+    },
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    }
+  ],
+  "license": "BOOS-FL",
+  "main": "dist/uprtcl-evees-blockchain.umd.js",
+  "module": "dist/uprtcl-evees-blockchain.es5.js",
+  "typings": "dist/types/uprtcl-evees-blockchain.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "gitHead": "68830108c265704d85a3ef48e7898768701f029b"
+}

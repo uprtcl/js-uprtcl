@@ -1,8 +1,11 @@
 import { property, html, css, LitElement, query } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
-const styleMap = style => {
+const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
+    propName = propName.replace(
+      /([A-Z])/g,
+      (matches) => `-${matches[0].toLowerCase()}`
+    );
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -17,12 +20,16 @@ import {
   DEFAULT_COLOR,
   Perspective,
   CONTENT_UPDATED_TAG,
-  ContentUpdatedEvent
+  ContentUpdatedEvent,
 } from '@uprtcl/evees';
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { WikiDrawerContent } from './wiki-drawer-content';
 import { loadEntity } from '@uprtcl/multiplatform';
-import { CREATE_PROPOSAL, PROPOSAL_CREATED_TAG } from '@uprtcl/evees';
+import {
+  CREATE_PROPOSAL,
+  PROPOSAL_CREATED_TAG,
+  EveesInfoConfig,
+} from '@uprtcl/evees';
 import { ProposalCreatedEvent } from '@uprtcl/evees/dist/types/types';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
@@ -31,20 +38,14 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'uref' })
   firstRef!: string;
 
-  @property({ type: Boolean, attribute: 'show-proposals' })
-  showProposals: boolean = false;
-
   @property({ type: Boolean, attribute: 'show-back' })
   showBack: boolean = false;
 
+  @property({ type: Object })
+  eveesInfoConfig!: EveesInfoConfig;
+
   @property({ attribute: false })
   uref!: string;
-
-  @property({ attribute: false })
-  officialOwner!: string;
-
-  @property({ type: Boolean, attribute: 'check-owner' })
-  checkOwner: boolean = false;
 
   @property({ attribute: false })
   loading: boolean = true;
@@ -77,9 +78,13 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     /** the official owner is the creator of the firstRef of the Wiki,
      * the firstRef is comming from the outside e.g. browser url. */
-    const official = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
-    if (!official) throw new Error(`cant find official perspective ${this.firstRef}`);
-    this.officialOwner = official.object.payload.creatorId;
+    const official = await loadEntity<Signed<Perspective>>(
+      this.client,
+      this.firstRef
+    );
+    if (!official)
+      throw new Error(`cant find official perspective ${this.firstRef}`);
+    this.eveesInfoConfig.officialOwner = official.object.payload.creatorId;
 
     await this.load();
     this.loading = false;
@@ -90,21 +95,29 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     this.addEventListener('checkout-perspective', ((event: CustomEvent) => {
       this.uref = event.detail.perspectiveId;
+      this.content.reset();
     }) as EventListener);
 
-    this.addEventListener(CONTENT_UPDATED_TAG, ((event: ContentUpdatedEvent) => {
+    this.addEventListener(CONTENT_UPDATED_TAG, ((
+      event: ContentUpdatedEvent
+    ) => {
       if (this.uref === event.detail.uref) {
         this.content.load();
       }
     }) as EventListener);
 
-    this.addEventListener(PROPOSAL_CREATED_TAG, ((event: ProposalCreatedEvent) => {
+    this.addEventListener(PROPOSAL_CREATED_TAG, ((
+      event: ProposalCreatedEvent
+    ) => {
       this.catchMergeProposal(event);
     }) as EventListener);
   }
 
   async load() {
-    const current = await loadEntity<Signed<Perspective>>(this.client, this.uref);
+    const current = await loadEntity<Signed<Perspective>>(
+      this.client,
+      this.uref
+    );
     if (!current) throw new Error(`cant find current perspective ${this.uref}`);
 
     this.creatorId = current.object.payload.creatorId;
@@ -131,8 +144,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         toPerspectiveId: this.firstRef,
         fromPerspectiveId: this.uref,
         newPerspectives: e.detail.proposalDetails.newPerspectives,
-        updates: e.detail.proposalDetails.updates
-      }
+        updates: e.detail.proposalDetails.updates,
+      },
     });
     this.eveesInfoLocal.load();
   }
@@ -155,6 +168,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       ${this.showBack
         ? html`
             <uprtcl-icon-button
+              skinny
               button
               class="back-button"
               icon="arrow_back"
@@ -166,14 +180,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         id="evees-info-row"
         uref=${this.uref}
         first-uref=${this.firstRef}
-        official-owner=${this.officialOwner}
-        ?check-owner=${this.checkOwner}
-        ?show-proposals=${this.showProposals}
-        show-info
-        show-icon
-        ?show-debug=${false}
-        show-draft
-        show-edit-draft
+        .eveesInfoConfig=${this.eveesInfoConfig}
       >
       </evees-info-user-based>
     `;
@@ -182,20 +189,20 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   renderLoginWidget() {
     return html`
       <uprtcl-icon-button
+        skinny
         button
         class="reload-button"
         icon="cached"
         @click=${() => this.forceReload()}
       ></uprtcl-icon-button>
-      <evees-login-widget @changed=${() => this.loggedIn()}></evees-login-widget>
+      <evees-login-widget
+        @changed=${() => this.loggedIn()}
+      ></evees-login-widget>
     `;
   }
 
   render() {
-    if (this.loading)
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+    if (this.loading) return html` <uprtcl-loading></uprtcl-loading> `;
 
     this.logger.log('rendering wiki after loading');
 
@@ -204,7 +211,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         <div
           class="app-topbar"
           style=${styleMap({
-            borderColor: this.color()
+            borderColor: this.color(),
           })}
         >
           <div class="breadcrum-container">${this.renderBreadcrumb()}</div>
@@ -216,8 +223,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           uref=${this.uref}
           editable
           color=${this.color()}
-          official-owner=${this.officialOwner}
-          ?check-owner=${this.checkOwner}
+          .eveesInfoConfig=${this.eveesInfoConfig}
         >
         </wiki-drawer-content>
       </div>
@@ -232,8 +238,9 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           display: flex;
           flex: 1 1 0;
           flex-direction: column;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
-            Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
+            'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
+            'Segoe UI Symbol';
           font-size: 16px;
           color: #37352f;
           --mdc-theme-primary: #2196f3;
@@ -274,7 +281,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         .back-button {
           margin-right: 8px;
         }
-      `
+      `,
     ];
   }
 }
