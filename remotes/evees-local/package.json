@@ -12,13 +12,13 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.1.0-beta.16",
-    "@uprtcl/cortex": "^0.1.0-beta.5",
-    "@uprtcl/evees": "^0.1.0-beta.16",
-    "@uprtcl/graphql": "^0.1.0-beta.5",
-    "@uprtcl/lenses": "^0.1.0-beta.5",
-    "@uprtcl/micro-orchestrator": "^0.1.0-beta.5",
-    "@uprtcl/multiplatform": "^0.1.0-beta.5",
+    "@uprtcl/common-ui": "^0.1.1",
+    "@uprtcl/cortex": "^0.1.1",
+    "@uprtcl/evees": "^0.1.1",
+    "@uprtcl/graphql": "^0.1.1",
+    "@uprtcl/lenses": "^0.1.1",
+    "@uprtcl/micro-orchestrator": "^0.1.1",
+    "@uprtcl/multiplatform": "^0.1.1",
     "apollo-boost": "^0.4.7",
     "dexie": "^3.0.2"
   },

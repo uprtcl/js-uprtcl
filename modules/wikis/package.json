@@ -17,7 +17,6 @@
     "@uprtcl/documents": "^0.1.1",
     "@uprtcl/evees": "^0.1.1",
     "@uprtcl/graphql": "^0.1.1",
-    "@uprtcl/holochain-provider": "^0.1.0-beta.12",
     "@uprtcl/http-provider": "^0.1.1",
     "@uprtcl/ipfs-provider": "^0.1.1",
     "@uprtcl/lenses": "^0.1.1",

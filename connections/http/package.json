@@ -15,7 +15,7 @@
     "@auth0/auth0-spa-js": "^1.11.0",
     "@uprtcl/cortex": "^0.1.1",
     "@uprtcl/ethereum-provider": "^0.1.1",
-    "@uprtcl/evees": "0.1.0-beta.15",
+    "@uprtcl/evees": "0.1.1",
     "@uprtcl/ipfs-provider": "^0.1.1",
     "@uprtcl/micro-orchestrator": "^0.1.1",
     "@uprtcl/multiplatform": "^0.1.1",
