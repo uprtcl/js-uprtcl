@@ -1,5 +1,24 @@
 {
   "packages": [
+    "connections/http",
+    "connections/orbitdb",
+    "connections/ethereum",
+    "connections/ipfs",
+    "core/cortex",
+    "core/graphql",
+    "core/lenses",
+    "core/micro-orchestrator",
+    "core/multiplatform",
+    "core/redux",
+    "modules/common-ui",
+    "modules/evees",
+    "modules/wikis",
+    "modules/documents",
+    "remotes/evees-http",
+    "remotes/evees-blockchain",
+    "remotes/evees-ethereum",
+    "remotes/evees-orbitdb",
+    "remotes/evees-polkadot"
   ],
-  "version": "0.0.7-alpha.76"
+  "version": "0.1.0"
 }
