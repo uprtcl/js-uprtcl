@@ -16,10 +16,6 @@
     "typeRoots": ["node_modules/@types"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "baseUrl": "./",
-    "paths": {
-      "lit-element": ["node_modules/lit-element"],
-      "graphql": ["node_modules/graphql"]
-    }
+    "baseUrl": "./"
   }
 }
