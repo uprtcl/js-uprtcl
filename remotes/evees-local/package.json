@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-local",
-  "version": "0.1.0-beta.23",
+  "version": "0.1.1",
   "description": "EveesRemote on local storage",
   "homepage": "https://uprtcl.io",
   "scripts": {
