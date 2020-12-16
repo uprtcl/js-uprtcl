@@ -58,7 +58,7 @@
   "typings": "dist/types/uprtcl-redux.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/uprtcl/js-uprtcl-core/"
+    "url": "https://github.com/uprtcl/js-uprtcl/"
   },
   "keywords": [
     "modules",
