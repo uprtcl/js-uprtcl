@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/http-provider",
-  "version": "0.1.0-beta.12",
+  "version": "0.1.1",
   "description": "_Prtcl provider wrappers around the native fetch api",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -13,12 +13,12 @@
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^1.11.0",
-    "@uprtcl/cortex": "^0.1.0-beta.5",
-    "@uprtcl/ethereum-provider": "^0.1.0-beta.12",
+    "@uprtcl/cortex": "^0.1.1",
+    "@uprtcl/ethereum-provider": "^0.1.1",
     "@uprtcl/evees": "0.1.0-beta.15",
-    "@uprtcl/ipfs-provider": "^0.1.0-beta.12",
-    "@uprtcl/micro-orchestrator": "^0.1.0-beta.5",
-    "@uprtcl/multiplatform": "^0.1.0-beta.5",
+    "@uprtcl/ipfs-provider": "^0.1.1",
+    "@uprtcl/micro-orchestrator": "^0.1.1",
+    "@uprtcl/multiplatform": "^0.1.1",
     "inversify": "^5.0.1",
     "lit-element": "^2.3.0",
     "reflect-metadata": "^0.1.13"
