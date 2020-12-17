@@ -41,7 +41,8 @@ export class EthereumContract {
 
     this.contractAddress =
       this.options.contractAddress ||
-      this.options.contract.networks[await this.connection.getNetworkId()].address;
+      this.options.contract.networks[await this.connection.getNetworkId()]
+        .address;
   }
 
   /**
