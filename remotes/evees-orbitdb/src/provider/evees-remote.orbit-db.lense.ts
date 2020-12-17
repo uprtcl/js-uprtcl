@@ -1,8 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesModule, EveesRemote } from '@uprtcl/evees';
 
 import { EveesOrbitDB } from './evees.orbit-db';
@@ -14,11 +12,11 @@ export class RemoteOrbitdDbLense extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
-  client!: ApolloClient<any>;
+  client!: EveesClient;
   remote!: EveesOrbitDB;
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.load();
   }
 

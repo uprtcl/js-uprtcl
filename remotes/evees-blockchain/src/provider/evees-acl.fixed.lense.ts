@@ -1,8 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
 
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { Signed, Entity } from '@uprtcl/cortex';
 import {
   EveesModule,
@@ -29,11 +27,11 @@ export class PermissionsFixedLense extends moduleConnect(LitElement) {
   @property({ attribute: false })
   canWrite!: boolean;
 
-  client!: ApolloClient<any>;
+  client!: EveesClient;
   remote!: EveesBlockchainCached;
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.load();
   }
 

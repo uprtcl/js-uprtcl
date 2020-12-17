@@ -1,8 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { EveesBindings, EveesHelpers, EveesRemote } from '@uprtcl/evees';
 import { HasTitle, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
@@ -30,7 +28,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   @property({ attribute: false })
   currentUser!: string;
 
-  client!: ApolloClient<any>;
+  client!: EveesClient;
   remote!: EveesHttp;
 
   delegatedTitle: string = '';
@@ -49,18 +47,16 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   async firstUpdated() {
     if (!this.isConnected) return;
 
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(
       this.client,
       this.uref
     );
 
-    if (!this.isConnected) return;
     const remote = (this.requestAll(
       EveesBindings.EveesRemote
     ) as EveesRemote[]).find((remote) => remote.id === remoteId);
 
-    if (!this.isConnected) return;
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     if (!remote) throw new Error(`remote not registered ${remoteId}`);

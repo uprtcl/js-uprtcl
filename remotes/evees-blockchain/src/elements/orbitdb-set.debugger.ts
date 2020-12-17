@@ -109,15 +109,11 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
       false
     );
 
-    const isPinned = await this.remote.orbitdbcustom.pinner.isPinned(
-      store.address
-    );
+    const isPinned = await this.remote.orbitdbcustom.isPinned(store.address);
 
     let detailsPinner;
     if (isPinned) {
-      detailsPinner = await this.remote.orbitdbcustom.pinner.getAll(
-        store.address
-      );
+      detailsPinner = await this.remote.orbitdbcustom.getAll(store.address);
     }
 
     this.details = {
@@ -143,7 +139,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
       //
     }
 
-    const objectPinner = await this.remote.orbitdbcustom.pinner.getEntity(hash);
+    const objectPinner = await this.remote.orbitdbcustom.getEntity(hash);
 
     this.entityDetails = {
       hash,

@@ -1,10 +1,13 @@
-import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 
-import { EveesModule, EveesWorkspace, Perspective, EveesDiff } from '@uprtcl/evees';
+import {
+  EveesModule,
+  EveesWorkspace,
+  Perspective,
+  EveesDiff,
+} from '@uprtcl/evees';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 
@@ -41,19 +44,19 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
-  protected client!: ApolloClient<any>;
+  protected client!: EveesClient;
   protected recognizer!: PatternRecognizer;
 
   protected remote!: EveesBlockchainCached;
   protected workspace!: EveesWorkspace;
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     const remote = (this.requestAll(
       EveesModule.bindings.EveesRemote
-    ) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
+    ) as EveesBlockchainCached[]).find((r) => r.id === this.remoteId);
     if (!remote) {
       throw new Error(`remote ${this.remoteId} not found`);
     }
@@ -65,7 +68,9 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     this.loading = true;
 
     const eveesData = await this.remote.getEveesDataFromHead(this.currentHash);
-    const newEveesData = (await this.remote.store.get(this.newHash)) as UserPerspectivesDetails;
+    const newEveesData = (await this.remote.store.get(
+      this.newHash
+    )) as UserPerspectivesDetails;
 
     /** compare the two evees objects and derive a workspace */
     this.workspace = new EveesWorkspace(this.client, this.recognizer);
@@ -82,22 +87,25 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
           const update = {
             newHeadId: newHead,
             perspectiveId: perspectiveId,
-            oldHeadId: eveesData[perspectiveId].headId
+            oldHeadId: eveesData[perspectiveId].headId,
           };
 
           this.workspace.update(update);
         }
       } else {
         // new
-        const perspective = await loadEntity<Signed<Perspective>>(this.client, perspectiveId);
+        const perspective = await loadEntity<Signed<Perspective>>(
+          this.client,
+          perspectiveId
+        );
         if (perspective === undefined) {
           throw new Error(`perspective ${perspectiveId} not found`);
         }
         const newPerspective = {
           details: {
-            headId: newEveesData[perspectiveId].headId
+            headId: newEveesData[perspectiveId].headId,
           },
-          perspective
+          perspective,
         };
         this.workspace.newPerspective(newPerspective);
       }
@@ -117,30 +125,28 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     return html`
       ${this.newHash !== this.currentHash
         ? html`
             <div class="summary">
-              You have <b>created ${this.workspace.getNewPerspectives().length}</b> new objects and
+              You have
+              <b>created ${this.workspace.getNewPerspectives().length}</b> new
+              objects and
               <b> updated ${this.workspace.getUpdates().length}</b>
             </div>
             <evees-update-diff
               id="evees-update-diff"
-              root-perspective=${this.rootPerspective ? this.rootPerspective : ''}
+              root-perspective=${this.rootPerspective
+                ? this.rootPerspective
+                : ''}
               ?summary=${this.summary}
             >
             </evees-update-diff>
           `
-        : html`
-            <div class="summary">
-              Your onchain data is up to date
-            </div>
-          `}
+        : html` <div class="summary">Your onchain data is up to date</div> `}
     `;
   }
 

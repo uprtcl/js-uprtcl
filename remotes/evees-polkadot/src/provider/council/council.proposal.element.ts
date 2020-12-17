@@ -1,8 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { prettyTimePeriod } from '@uprtcl/common-ui';
 
 import {
@@ -33,7 +31,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   @property({ attribute: false })
   voting: boolean = false;
 
-  client!: ApolloClient<any>;
+  client!: EveesClient;
   remotes!: EveesRemote[];
   remote!: EveesPolkadotCouncil;
   fromPerspective!: Signed<Perspective>;
@@ -48,7 +46,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   };
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
@@ -104,7 +102,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
         this.workspace.update(update);
       }
     }
-    /* new perspectives are added to the apollo cache to be able to read their head */
+    /* new perspectives are added to the cache to be able to read their head */
     this.workspace.precacheNewPerspectives(this.client);
   }
 
