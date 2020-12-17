@@ -1,18 +1,11 @@
 import { interfaces } from 'inversify';
 
 import { MicroModule } from '@uprtcl/micro-orchestrator';
-import { CortexModule, Pattern, PatternsModule } from '@uprtcl/cortex';
-import { ApolloClientModule, GraphQlSchemaModule } from '@uprtcl/graphql';
+import { CortexModule, PatternsModule } from '@uprtcl/cortex';
 
 import { MultiSourceService } from './references/known-sources/multi-source.service';
 import { DiscoveryBindings } from './bindings';
 import { KnownSourcesService } from './references/known-sources/known-sources.service';
-import { KnownSourcesApollo } from './graphql/known-sources.apollo';
-import { discoveryTypeDefs } from './graphql/schema';
-import { DiscoverDirective } from './graphql/directives/discover-directive';
-import { CASSourceDirective } from './graphql/directives/cas-source-directive';
-import { EntityCache } from './graphql/entity-cache';
-import { resolvers } from './graphql/resolvers';
 import {
   KnownSourcesRefPattern,
   KnownSourcesResolver,
@@ -23,7 +16,7 @@ export class DiscoveryModule extends MicroModule {
 
   static bindings = DiscoveryBindings;
 
-  dependencies = [CortexModule.id, ApolloClientModule.id];
+  dependencies = [CortexModule.id];
 
   constructor(protected defaultSources: string[] = []) {
     super();
@@ -31,10 +24,6 @@ export class DiscoveryModule extends MicroModule {
 
   get submodules() {
     return [
-      new GraphQlSchemaModule(discoveryTypeDefs, resolvers, [
-        DiscoverDirective,
-        CASSourceDirective,
-      ]),
       new PatternsModule([new KnownSourcesRefPattern([KnownSourcesResolver])]),
     ];
   }
@@ -45,12 +34,14 @@ export class DiscoveryModule extends MicroModule {
       .to(MultiSourceService);
 
     for (const source of this.defaultSources) {
-      container.bind<string>(DiscoveryModule.bindings.DefaultSource).toConstantValue(source);
+      container
+        .bind<string>(DiscoveryModule.bindings.DefaultSource)
+        .toConstantValue(source);
     }
 
     container
       .bind<KnownSourcesService>(DiscoveryModule.bindings.LocalKnownSources)
-      .to(KnownSourcesApollo);
+      .to(KnownSources);
     container
       .bind<EntityCache>(DiscoveryModule.bindings.EntityCache)
       .to(EntityCache)

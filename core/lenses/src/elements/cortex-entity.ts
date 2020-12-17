@@ -1,8 +1,6 @@
-import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, PropertyValues, html } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { Entity } from '@uprtcl/cortex';
 
 import { Lens } from '../types';
@@ -26,10 +24,10 @@ export class CortexEntity extends moduleConnect(LitElement) {
   @property({ attribute: false })
   protected selectedLens!: Lens | undefined;
 
-  protected client: ApolloClient<any> | undefined = undefined;
+  protected client: EveesClient | undefined = undefined;
 
   firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
   }
 
   connectedCallback() {

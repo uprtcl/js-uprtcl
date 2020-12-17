@@ -1,6 +1,5 @@
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 import { expect } from '@open-wc/testing';
-import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { CortexModule, PatternRecognizer } from '../src/uprtcl-cortex';
 import { MockModule } from './mocks/mock.module';
@@ -16,7 +15,6 @@ describe('basic pattern recognition', () => {
     orchestrator = new MicroOrchestrator();
 
     await orchestrator.loadModules([
-      new ApolloClientModule(),
       new CortexModule(),
       new MockModule({ hash1: object1 }),
     ]);

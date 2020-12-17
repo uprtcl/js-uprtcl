@@ -1,13 +1,10 @@
 import { interfaces } from 'inversify';
 
 import { MicroModule } from '@uprtcl/micro-orchestrator';
-import { GraphQlSchemaModule } from '@uprtcl/graphql';
 
 import { PatternRecognizer } from './recognizer/pattern-recognizer';
 import { Behaviour } from './types/behaviour';
 import { CortexBindings } from './bindings';
-import { cortexSchema } from './graphql/schema';
-import { cortexResolvers } from './graphql/resolvers';
 
 export class CortexModule extends MicroModule {
   static id = 'cortex-module';
@@ -23,7 +20,9 @@ export class CortexModule extends MicroModule {
 
         recognizer = new PatternRecognizer();
 
-        const patterns = ctx.container.getAll<Behaviour<any>>(CortexModule.bindings.Pattern);
+        const patterns = ctx.container.getAll<Behaviour<any>>(
+          CortexModule.bindings.Pattern
+        );
         recognizer.patterns = patterns;
 
         return recognizer;
@@ -31,6 +30,6 @@ export class CortexModule extends MicroModule {
   }
 
   get submodules() {
-    return [new GraphQlSchemaModule(cortexSchema, cortexResolvers)];
+    return [];
   }
 }

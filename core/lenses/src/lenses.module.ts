@@ -1,18 +1,16 @@
 import { MicroModule } from '@uprtcl/micro-orchestrator';
 import { CortexModule } from '@uprtcl/cortex';
-import { GraphQlSchemaModule } from '@uprtcl/graphql';
 
 import { CortexEntity } from './elements/cortex-entity';
 import { CortexLensSelector } from './elements/cortex-lens-selector';
 import { CortexActions } from './elements/cortex-actions';
-import { lensesSchema } from './graphql.schema';
 import { CortexPattern } from './elements/cortex-pattern';
 import { LensSelector } from './types';
 
 export class LensesModule extends MicroModule {
   dependencies = [CortexModule.id];
   get submodules() {
-    return [new GraphQlSchemaModule(lensesSchema, {})];
+    return [];
   }
 
   constructor(defaultLensSelector: LensSelector = (lenses) => lenses[0]) {

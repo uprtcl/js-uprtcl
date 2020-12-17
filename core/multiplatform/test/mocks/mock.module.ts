@@ -1,5 +1,8 @@
-import { MicroModule, Dictionary, Constructor } from '@uprtcl/micro-orchestrator';
-import { GraphQlSchemaModule } from '@uprtcl/graphql';
+import {
+  MicroModule,
+  Dictionary,
+  Constructor,
+} from '@uprtcl/micro-orchestrator';
 import { PatternsModule, Pattern } from '@uprtcl/cortex';
 
 import { mockSchema } from './mock.schema';
@@ -16,7 +19,6 @@ export class MockModule extends MicroModule {
 
   get submodules() {
     return [
-      new GraphQlSchemaModule(mockSchema),
       new PatternsModule([new MockPattern([Redirect, Text])]),
       new CASModule([new MockSource(this.initialObjects)]),
     ];

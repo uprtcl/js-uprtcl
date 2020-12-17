@@ -1,6 +1,4 @@
 import { multiInject, inject, injectable, optional } from 'inversify';
-import { ApolloClient, gql } from 'apollo-boost';
-
 import {
   PatternRecognizer,
   CortexModule,
@@ -9,7 +7,6 @@ import {
   Entity,
 } from '@uprtcl/cortex';
 import { Dictionary, Logger } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 
 import { CASSource } from '../../types/cas-source';
 import { KnownSourcesService } from './known-sources.service';
@@ -33,8 +30,8 @@ export class MultiSourceService {
     protected recognizer: PatternRecognizer,
     @inject(DiscoveryBindings.LocalKnownSources)
     public localKnownSources: KnownSourcesService,
-    @inject(ApolloClientModule.bindings.Client)
-    public client: ApolloClient<any>,
+    @inject(EveesClientModule.bindings.Client)
+    public client: EveesClient,
     @multiInject(CASBindings.CASSource)
     sources: Array<CASSource>,
     @multiInject(DiscoveryBindings.DefaultSource)

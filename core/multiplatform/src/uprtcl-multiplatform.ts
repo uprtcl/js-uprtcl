@@ -11,7 +11,6 @@ export { KnownSourcesService } from './references/known-sources/known-sources.se
 export { KnownSourcesSource } from './references/known-sources/known-sources.source';
 
 export { MultiSourceService } from './references/known-sources/multi-source.service';
-export { EntityCache } from './graphql/entity-cache';
 
 /** Behaviours */
 export { HasRedirect } from './behaviours/has-redirect';

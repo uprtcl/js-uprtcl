@@ -67,12 +67,11 @@ npm install @uprtcl/cortex
 
 ```ts
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule } from '@uprtcl/cortex';
 
 const orchestrator = new MicroOrchestrator();
 
-await orchestrator.loadModules([new ApolloClientModule(), new CortexModule()]);
+await orchestrator.loadModules([new CortexModule()]);
 ```
 
 Learn more about `MicroModules` [here](https://uprtcl.github.io/js-uprtcl/guides/use/installing-the-micro-orchestrator).
@@ -85,7 +84,9 @@ To register new `Patterns` and bind `Behaviours` to them, instantiate and load t
 import { PatternsModule } from '@uprtcl/cortex';
 import { TextPattern, TextActions, TextContent } from './text-pattern';
 
-const patternsModule = new PatternsModule([new TextPattern([TextActions, TextContent])]);
+const patternsModule = new PatternsModule([
+  new TextPattern([TextActions, TextContent]),
+]);
 
 await orchestrator.loadModule(patternsModule);
 ```

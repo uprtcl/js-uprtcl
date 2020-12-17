@@ -1,23 +1,13 @@
 import { interfaces } from 'inversify';
 
-import {
-  CheckDependencyEvent,
-  RequestDependencyEvent,
-} from './module-container';
+import { RequestDependencyEvent } from './module-container';
 import { Constructor, CustomElement } from '../types';
 import { i18nextBaseModule } from '../modules/i18n/i18next-base.module';
 
 export interface ConnectedElement {
   t: (key: string) => string;
-  request<T>(
-    dependency: interfaces.ServiceIdentifier<T>,
-    options?: { optional: boolean }
-  ): T;
-  requestAll<T>(
-    dependency: interfaces.ServiceIdentifier<T>,
-    options?: { optional: boolean }
-  ): T[];
-  hasDependency(dependency: interfaces.ServiceIdentifier<any>): boolean;
+  request<T>(dependency: interfaces.ServiceIdentifier<T>, options?: { optional: boolean }): T;
+  requestAll<T>(dependency: interfaces.ServiceIdentifier<T>, options?: { optional: boolean }): T[];
 }
 
 export const moduleConnect = <T extends Constructor<CustomElement>>(
@@ -33,9 +23,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
       super.connectedCallback();
 
       try {
-        this.t = this.request(i18nextBaseModule.bindings.Translate, {
-          optional: true,
-        });
+        this.t = this.request(i18nextBaseModule.bindings.Translate, { optional: true });
       } catch (e) {
         console.warn('No translate function present');
       }
@@ -80,10 +68,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
       dependency: interfaces.ServiceIdentifier<T>,
       options: { optional: boolean } = { optional: false }
     ): T {
-      const deps = this.requestGeneric(dependency, {
-        optional: options.optional,
-        multiple: false,
-      });
+      const deps = this.requestGeneric(dependency, { optional: options.optional, multiple: false });
       return deps[0];
     }
 
@@ -91,34 +76,7 @@ export const moduleConnect = <T extends Constructor<CustomElement>>(
       dependency: interfaces.ServiceIdentifier<T>,
       options: { optional: boolean } = { optional: false }
     ): T[] {
-      const deps = this.requestGeneric(dependency, {
-        optional: options.optional,
-        multiple: true,
-      });
+      const deps = this.requestGeneric(dependency, { optional: options.optional, multiple: true });
       return deps;
-    }
-
-    hasDependency(dependency: interfaces.ServiceIdentifier<any>): boolean {
-      if (!this.isConnected) {
-        throw new Error(
-          `Element ${
-            (this as any).tagName
-          } is requesting dependency "${dependency.toString()}", but is not connected yet: you can only use has()`
-        );
-      }
-
-      const event = new CheckDependencyEvent({
-        detail: { dependency },
-        composed: true,
-        bubbles: true,
-      });
-
-      const resolved = this.dispatchEvent(event);
-
-      if (resolved) {
-        return event.has;
-      }
-
-      return false;
     }
   };
