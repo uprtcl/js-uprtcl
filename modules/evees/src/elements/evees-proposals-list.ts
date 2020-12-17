@@ -1,9 +1,6 @@
-import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css } from 'lit-element';
 
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { EveesHelpers } from '../graphql/evees.helpers';
 
 export class ProposalsList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
@@ -16,12 +13,12 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
   proposalsIds: string[] = [];
   remoteId!: string;
-  client!: ApolloClient<any>;
+  client!: EveesClient;
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.load();
   }
 
@@ -40,12 +37,15 @@ export class ProposalsList extends moduleConnect(LitElement) {
               proposals
             }
           }
-        }`
+        }`,
     });
 
     /** data on other perspectives (proposals are injected on them) */
     this.proposalsIds = result.data.entity.proposals;
-    this.remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.perspectiveId);
+    this.remoteId = await EveesHelpers.getPerspectiveRemoteId(
+      this.client,
+      this.perspectiveId
+    );
 
     this.loadingProposals = false;
     this.logger.info('getProposals()', { proposalsIds: this.proposalsIds });
@@ -70,7 +70,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
             ? html`
                 <uprtcl-list>
                   ${this.proposalsIds.map(
-                    id =>
+                    (id) =>
                       html`
                         <uprtcl-list-item
                           ><evees-proposal-row

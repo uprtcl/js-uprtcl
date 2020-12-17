@@ -1,13 +1,10 @@
-import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css } from 'lit-element';
 
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
 import { eveeColor } from './support';
 import { EveesBindings } from './../bindings';
 import { EveesRemote } from './../services/evees.remote';
-import { EveesHelpers } from '../graphql/evees.helpers';
 
 interface PerspectiveData {
   id: string;
@@ -40,13 +37,13 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
 
   perspectivesData: PerspectiveData[] = [];
 
-  protected client!: ApolloClient<any>;
+  protected client!: EveesClient;
   protected remotes!: EveesRemote[];
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.load();
   }
@@ -163,22 +160,23 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
     `;
   }
 
-  render() {    
+  render() {
     return this.loadingPerspectives
       ? this.renderLoading()
       : this.otherPerspectivesData.length > 0
       ? html`
           <uprtcl-list activatable>
-            ${this.otherPerspectivesData.map((perspectiveData) =>              
-              html`
-                <evees-perspective-row
-                  perspective-id=${this.perspectiveId}
-                  hasMeta
-                  perspective-data-id=${perspectiveData.id}
-                  creator-id=${perspectiveData.creatorId}
-                  remote-id=${perspectiveData.remote}
-                ></evees-perspective-row>
-              `
+            ${this.otherPerspectivesData.map(
+              (perspectiveData) =>
+                html`
+                  <evees-perspective-row
+                    perspective-id=${this.perspectiveId}
+                    hasMeta
+                    perspective-data-id=${perspectiveData.id}
+                    creator-id=${perspectiveData.creatorId}
+                    remote-id=${perspectiveData.remote}
+                  ></evees-perspective-row>
+                `
             )}
           </uprtcl-list>
         `

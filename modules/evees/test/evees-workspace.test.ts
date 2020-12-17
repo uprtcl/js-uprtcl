@@ -1,8 +1,9 @@
-import { ApolloClient, gql } from 'apollo-boost';
 import { expect } from '@open-wc/testing';
 
-import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
+import {
+  MicroOrchestrator,
+  i18nextBaseModule,
+} from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
@@ -18,8 +19,8 @@ describe('evees-workspace', () => {
   let documentsProvider = new MockStore({
     QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN: {
       text: 'node1 content',
-      links: []
-    }
+      links: [],
+    },
   });
   let eveesProvider = new MockEveesProvider(
     {
@@ -27,9 +28,9 @@ describe('evees-workspace', () => {
         payload: {
           remote: 'local',
           creatorId: 'user1',
-          timestamp: 0
+          timestamp: 0,
         },
-        proof: { signature: '', type: '' }
+        proof: { signature: '', type: '' },
       },
       QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN: {
         payload: {
@@ -37,18 +38,18 @@ describe('evees-workspace', () => {
           timestamp: 0,
           message: 'commit message',
           parentsIds: [],
-          dataId: 'QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN'
+          dataId: 'QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN',
         },
         proof: {
           signature: '',
-          type: ''
-        }
-      }
+          type: '',
+        },
+      },
     },
     {
       Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw: {
-        headId: 'QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN'
-      }
+        headId: 'QmW7kKc1QxkzBfsod9M3bZFeHjQGyiR8d434dqkzfjBuTN',
+      },
     }
   );
 
@@ -57,16 +58,16 @@ describe('evees-workspace', () => {
 
     await orchestrator.loadModules([
       new i18nextBaseModule(),
-      new ApolloClientModule(),
+      new EveesClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
-      new EveesModule([eveesProvider])
+      new EveesModule([eveesProvider]),
     ]);
   });
   it('evees-workspace works', async () => {
-    const client: ApolloClient<any> = orchestrator.container.get(
-      ApolloClientModule.bindings.Client
+    const client: EveesClient = orchestrator.container.get(
+      EveesClientModule.bindings.Client
     );
     const recognizer: PatternRecognizer = orchestrator.container.get(
       CortexModule.bindings.Recognizer
@@ -83,7 +84,7 @@ describe('evees-workspace', () => {
             }
           }
         }
-      `
+      `,
     });
 
     expect(result.data).to.deep.eq({
@@ -95,16 +96,16 @@ describe('evees-workspace', () => {
             payload: {
               remote: 'local',
               creatorId: 'user1',
-              timestamp: 0
+              timestamp: 0,
             },
             proof: {
               signature: '',
-              type: ''
-            }
-          }
+              type: '',
+            },
+          },
         },
-        id: 'Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw'
-      }
+        id: 'Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw',
+      },
     });
   });
 });

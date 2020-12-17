@@ -1,6 +1,4 @@
 import { Entity, HasChildren } from '@uprtcl/cortex';
-import { EveesHelpers } from '@uprtcl/evees';
-import { ApolloClient } from 'apollo-boost';
 import { HasDocNodeLenses } from './patterns/document-patterns';
 
 export enum TextType {
@@ -58,7 +56,7 @@ export interface CustomBlock {
   default: any;
   canConvertTo: Record<
     string,
-    (node: DocNode, client: ApolloClient<any>) => Promise<any>
+    (node: DocNode, client: EveesClient) => Promise<any>
   >;
 }
 

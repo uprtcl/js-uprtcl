@@ -40,12 +40,12 @@ export class EveesAuthor extends moduleConnect(LitElement) {
   async load() {
     this.loading = true;
 
-    if (!this.remoteId || this.remoteId === 'undefined') return;
-    if (!this.userId || this.userId === 'undefined') return;
+    if (!this.remoteId) return;
+    if (!this.userId) return;
 
     const remote = this.remotes.find((r) => r.id === this.remoteId);
     if (!remote) {
-      return;
+      throw new Error(`remote ${this.remoteId} not found`);
     }
     this.remote = remote;
     this.loading = false;

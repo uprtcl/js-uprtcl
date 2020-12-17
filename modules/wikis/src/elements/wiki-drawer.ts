@@ -1,5 +1,4 @@
 import { property, html, css, LitElement, query } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(
@@ -22,7 +21,6 @@ import {
   CONTENT_UPDATED_TAG,
   ContentUpdatedEvent,
 } from '@uprtcl/evees';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { WikiDrawerContent } from './wiki-drawer-content';
 import { loadEntity } from '@uprtcl/multiplatform';
 import {
@@ -59,7 +57,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @query('#evees-info-row')
   eveesInfoLocal!: any;
 
-  protected client!: ApolloClient<any>;
+  protected client!: EveesClient;
   protected eveesRemotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
 
@@ -68,7 +66,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 

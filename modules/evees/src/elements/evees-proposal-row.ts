@@ -7,10 +7,7 @@ import { EveesBindings } from 'src/bindings';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
 import { EveesWorkspace } from '../services/evees.workspace';
-import { ApolloClient } from 'apollo-boost';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import { EveesHelpers } from '../graphql/evees.helpers';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { ContentUpdatedEvent } from './events';
 import { ProposalsProvider } from 'src/services/proposals.provider';
@@ -54,12 +51,12 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   executed: boolean = false;
   canExecute: boolean = false;
 
-  protected client!: ApolloClient<any>;
+  protected client!: EveesClient;
   protected recognizer!: PatternRecognizer;
   protected eveesRemotes!: EveesRemote[];
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
     const remote = (this.requestAll(
@@ -168,7 +165,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       workspace.newPerspective(newPerspective);
     }
 
-    /* new perspectives are added to the apollo cache to be able to read their head */
+    /* new perspectives are added to the cache to be able to read their head */
     await workspace.precacheNewPerspectives(this.client);
 
     this.showDiff = true;

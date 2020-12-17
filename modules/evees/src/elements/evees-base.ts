@@ -1,8 +1,6 @@
-import { property, css, LitElement, internalProperty } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
+import { property, LitElement, internalProperty } from 'lit-element';
 
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
-import { styles } from '@uprtcl/common-ui';
 import {
   Entity,
   CortexModule,
@@ -10,13 +8,11 @@ import {
   Signed,
   HasChildren,
 } from '@uprtcl/cortex';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { EveesInfoConfig } from './evees-info-user-based';
 import { EveesRemote } from 'src/services/evees.remote';
 import { EveesConfig, Perspective } from 'src/types';
 import { EveesBindings } from 'src/bindings';
-import { EveesHelpers } from 'src/graphql/evees.helpers';
 
 const entityStub = (object: any): Entity<any> => {
   return {
@@ -51,13 +47,13 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
 
   protected currentHeadId!: string | undefined;
   protected remote!: EveesRemote;
-  protected client!: ApolloClient<any>;
+  protected client!: EveesClient;
   protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
   protected editableRemotesIds!: string[];
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.remotes = this.requestAll(EveesBindings.EveesRemote);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
@@ -145,10 +141,6 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
       }
     );
     await EveesHelpers.updateHead(this.client, this.uref, headId);
-
-    if ((this.remote as any).flush) {
-      await (this.remote as any).flush();
-    }
 
     this.logger.info('updateContent()', newData);
 

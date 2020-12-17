@@ -1,7 +1,6 @@
 import { interfaces } from 'inversify';
 
 import { PatternsModule } from '@uprtcl/cortex';
-import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { i18nextModule } from '@uprtcl/micro-orchestrator';
 import { EveesContentModule } from '@uprtcl/evees';
 import { CommonUIModule } from '@uprtcl/common-ui';
@@ -11,7 +10,6 @@ import {
   TextNodeTitle,
   TextNodePattern,
 } from './patterns/text-node.pattern';
-import { documentsTypeDefs } from './graphql/schema';
 
 import en from './i18n/en.json';
 import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-node-editor';
@@ -45,7 +43,6 @@ export class DocumentsModule extends EveesContentModule {
   get submodules() {
     return [
       ...super.submodules,
-      new GraphQlSchemaModule(documentsTypeDefs, {}),
       new i18nextModule('documents', { en: en }),
       new PatternsModule([
         new TextNodePattern([TextNodeCommon, TextNodeTitle]),

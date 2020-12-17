@@ -2,12 +2,10 @@ import { Container } from 'inversify';
 
 import { PatternsModule } from '@uprtcl/cortex';
 import { EveesContentModule } from '@uprtcl/evees';
-import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { i18nextModule } from '@uprtcl/micro-orchestrator';
 
 import { WikiDrawer } from './elements/wiki-drawer';
 import { WikiCommon, WikiLinks, WikiPattern } from './patterns/wiki.pattern';
-import { wikiTypeDefs } from './graphql/schema';
 
 import en from './i18n/en.json';
 import { WikiBindings } from './bindings';
@@ -42,7 +40,6 @@ export class WikisModule extends EveesContentModule {
   get submodules() {
     return [
       ...super.submodules,
-      new GraphQlSchemaModule(wikiTypeDefs, {}),
       new i18nextModule('wikis', { en: en }),
       new PatternsModule([new WikiPattern([WikiCommon, WikiLinks])]),
     ];

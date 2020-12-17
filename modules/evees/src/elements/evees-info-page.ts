@@ -1,18 +1,9 @@
 import { html, css, property, query } from 'lit-element';
-const styleMap = style => {
-  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
-    return `${styleString}${propName}:${propValue};`;
-  }, '');
-};
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesInfoBase } from './evees-info-base';
-import { UPDATE_HEAD } from '../graphql/queries';
-import { ApolloClient } from 'apollo-boost';
 import { MenuConfig } from '@uprtcl/common-ui';
-import { doesNotReject } from 'assert';
 
 export class EveesInfoPage extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-PAGE');
@@ -47,7 +38,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
     this.logger.log('Connected', this.uref);
 
-    this.addEventListener('keydown', event => {
+    this.addEventListener('keydown', (event) => {
       if (event.keyCode === 27) {
         // 27 is esc
         this.showEditName = false;
@@ -75,7 +66,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
   async saveName() {
     if (!this.shadowRoot) return;
-    const client = this.client as ApolloClient<any>;
+    const client = this.client as EveesClient;
     const newName = this.draftTextField.value;
 
     this.showEditName = false;
@@ -84,8 +75,8 @@ export class EveesInfoPage extends EveesInfoBase {
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId: this.uref,
-        name: newName
-      }
+        name: newName,
+      },
     });
 
     this.load();
@@ -120,13 +111,13 @@ export class EveesInfoPage extends EveesInfoBase {
       apply: {
         text: 'apply',
         icon: 'done',
-        skinny: false
+        skinny: false,
       },
       close: {
         text: 'close',
         icon: 'clear',
-        skinny: true
-      }
+        skinny: true,
+      },
     };
 
     const result = await this.updatesDialog(this.pullWorkspace, options);
@@ -144,7 +135,9 @@ export class EveesInfoPage extends EveesInfoBase {
     return html`
       <div class="perspectives-permissions">
         ${!this.loading
-          ? this.remote.accessControl.lense().render({ uref: this.uref, parentId: this.parentId })
+          ? this.remote.accessControl
+              .lense()
+              .render({ uref: this.uref, parentId: this.parentId })
           : ''}
       </div>
     `;
@@ -203,9 +196,10 @@ export class EveesInfoPage extends EveesInfoBase {
       <div class="context-menu">
         <uprtcl-help>
           <span>
-            To update the "Official Version" of this Wiki you need to create a new "Perspective"<br /><br />
-            Once changes have been made to that perspectective, click "Propose Update" to update the
-            "Official" perspective.
+            To update the "Official Version" of this Wiki you need to create a
+            new "Perspective"<br /><br />
+            Once changes have been made to that perspectective, click "Propose
+            Update" to update the "Official" perspective.
           </span>
         </uprtcl-help>
       </div>
@@ -213,7 +207,11 @@ export class EveesInfoPage extends EveesInfoBase {
 
     const pullButton = html`
       <div class="pull-menu">
-        <uprtcl-icon-button @click=${this.showPullChanges} icon="play_for_work" button>
+        <uprtcl-icon-button
+          @click=${this.showPullChanges}
+          icon="play_for_work"
+          button
+        >
         </uprtcl-icon-button>
       </div>
     `;
@@ -226,9 +224,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
   render() {
     if (this.perspectiveData === undefined)
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
 
     return html`
       <div class="container">
@@ -248,14 +244,16 @@ export class EveesInfoPage extends EveesInfoBase {
                             <evees-perspectives-list
                               perspective-id=${this.uref}
                               ?can-propose=${this.isLogged}
-                              @perspective-selected=${e => this.checkoutPerspective(e.detail.id)}
-                              @merge-perspective=${e =>
-                                this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref)}
+                              @perspective-selected=${(e) =>
+                                this.checkoutPerspective(e.detail.id)}
+                              @merge-perspective=${(e) =>
+                                this.otherPerspectiveMerge(
+                                  e.detail.perspectiveId,
+                                  this.uref
+                                )}
                             ></evees-perspectives-list>
                           `
-                        : html`
-                            <uprtcl-loading></uprtcl-loading>
-                          `}
+                        : html` <uprtcl-loading></uprtcl-loading> `}
                     </div>
                   </div>
                 </div>
@@ -264,9 +262,7 @@ export class EveesInfoPage extends EveesInfoBase {
           ${this.showProposals
             ? html`
                 <div class="section">
-                  <div class="section-header">
-                    Proposals
-                  </div>
+                  <div class="section-header">Proposals</div>
 
                   <div class="section-content">
                     <div class="list-container">
@@ -276,9 +272,7 @@ export class EveesInfoPage extends EveesInfoBase {
                               perspective-id=${this.uref}
                             ></evees-proposals-list>
                           `
-                        : html`
-                            <uprtcl-loading></uprtcl-loading>
-                          `}
+                        : html` <uprtcl-loading></uprtcl-loading> `}
                     </div>
                   </div>
                 </div>
@@ -287,12 +281,8 @@ export class EveesInfoPage extends EveesInfoBase {
           ${this.showAcl
             ? html`
                 <div class="section">
-                  <div class="section-header">
-                    Access Control
-                  </div>
-                  <div class="section-content">
-                    ${this.renderPermissions()}
-                  </div>
+                  <div class="section-header">Access Control</div>
+                  <div class="section-content">${this.renderPermissions()}</div>
                   <div class="context-menu"></div>
                 </div>
               `
@@ -300,9 +290,7 @@ export class EveesInfoPage extends EveesInfoBase {
           ${this.showInfo
             ? html`
                 <div class="section">
-                  <div class="section-header">
-                    Evee Info
-                  </div>
+                  <div class="section-header">Evee Info</div>
                   <div class="section-content info-text">
                     ${this.renderInfo()}
                   </div>
@@ -411,7 +399,7 @@ export class EveesInfoPage extends EveesInfoBase {
             width: 85%;
           }
         }
-      `
+      `,
     ]);
   }
 }

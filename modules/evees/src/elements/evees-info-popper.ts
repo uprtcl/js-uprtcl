@@ -1,10 +1,8 @@
 import { html, css, property, LitElement, query } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
 
 import { UprtclPopper } from '@uprtcl/common-ui';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { loadEntity } from '@uprtcl/multiplatform';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { Signed } from '@uprtcl/cortex';
 
 import { DEFAULT_COLOR, eveeColor } from './support';
@@ -47,10 +45,10 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   @query('#info-popper')
   infoPopper!: UprtclPopper;
 
-  protected client!: ApolloClient<any>;
+  protected client!: EveesClient;
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     await this.load();
   }
 

@@ -3,7 +3,6 @@ import { interfaces } from 'inversify';
 import { MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 import { CASModule } from '@uprtcl/multiplatform';
-import { GraphQlSchemaModule } from '@uprtcl/graphql';
 import { CommonUIModule } from '@uprtcl/common-ui';
 
 import {
@@ -15,8 +14,6 @@ import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
 import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
-import { eveesTypeDefs } from './graphql/schema';
-import { eveesResolvers } from './graphql/resolvers';
 import { EveesPerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
@@ -105,7 +102,6 @@ export class EveesModule extends MicroModule {
 
   get submodules() {
     return [
-      new GraphQlSchemaModule(eveesTypeDefs, eveesResolvers),
       new i18nextModule('evees', { en: en }),
       new PatternsModule([
         new CommitPattern([CommitLinked]),

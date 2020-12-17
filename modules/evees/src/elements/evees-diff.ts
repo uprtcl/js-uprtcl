@@ -6,7 +6,6 @@ import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
 import { EveesWorkspace } from '../services/evees.workspace';
-import { EveesHelpers } from '../graphql/evees.helpers';
 
 const LOGINFO = true;
 
@@ -60,24 +59,30 @@ export class EveesDiff extends moduleConnect(LitElement) {
 
     this.loading = true;
 
-    const getDetails = this.workspace.getUpdates().map(async update => {
-      const newData = await EveesHelpers.getCommitData(this.workspace.workspace, update.newHeadId);
+    const getDetails = this.workspace.getUpdates().map(async (update) => {
+      const newData = await EveesHelpers.getCommitData(
+        this.workspace.workspace,
+        update.newHeadId
+      );
 
       const oldData =
         update.oldHeadId !== undefined
-          ? await EveesHelpers.getCommitData(this.workspace.workspace, update.oldHeadId)
+          ? await EveesHelpers.getCommitData(
+              this.workspace.workspace,
+              update.oldHeadId
+            )
           : undefined;
 
       const hasDiffLenses = this.recognizer
         .recognizeBehaviours(newData)
-        .find(b => (b as HasDiffLenses<any>).diffLenses);
+        .find((b) => (b as HasDiffLenses<any>).diffLenses);
       if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
 
       this.updatesDetails[update.perspectiveId] = {
         diffLense: hasDiffLenses.diffLenses()[0],
         update,
         oldData,
-        newData
+        newData,
       };
     });
 
@@ -88,7 +93,10 @@ export class EveesDiff extends moduleConnect(LitElement) {
     if (this.rootPerspective) {
       const newRoot = this.workspace
         .getNewPerspectives()
-        .find(newPerspective => newPerspective.perspective.id === this.rootPerspective);
+        .find(
+          (newPerspective) =>
+            newPerspective.perspective.id === this.rootPerspective
+        );
       if (newRoot) {
         if (newRoot.details.headId) {
           const newData = await EveesHelpers.getCommitData(
@@ -98,14 +106,14 @@ export class EveesDiff extends moduleConnect(LitElement) {
 
           const hasDiffLenses = this.recognizer
             .recognizeBehaviours(newData)
-            .find(b => (b as HasDiffLenses<any>).diffLenses);
+            .find((b) => (b as HasDiffLenses<any>).diffLenses);
           if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
 
           this.updatesDetails[this.rootPerspective] = {
             diffLense: hasDiffLenses.diffLenses()[0],
             update: undefined,
             oldData: undefined,
-            newData
+            newData,
           };
         }
       }
@@ -118,24 +126,25 @@ export class EveesDiff extends moduleConnect(LitElement) {
     // TODO: review if old data needs to be
     return html`
       <div class="evee-diff">
-        ${details.diffLense.render(this.workspace, details.newData, details.oldData, this.summary)}
+        ${details.diffLense.render(
+          this.workspace,
+          details.newData,
+          details.oldData,
+          this.summary
+        )}
       </div>
     `;
   }
 
   render() {
     if (this.loading) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     const perspectiveIds = Object.keys(this.updatesDetails);
     return perspectiveIds.length === 0
-      ? html`
-          <span><i>no changes found</i></span>
-        `
-      : perspectiveIds.map(perspectiveId =>
+      ? html` <span><i>no changes found</i></span> `
+      : perspectiveIds.map((perspectiveId) =>
           this.renderUpdateDiff(this.updatesDetails[perspectiveId])
         );
   }

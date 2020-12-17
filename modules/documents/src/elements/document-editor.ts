@@ -1,8 +1,5 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
 import isEqual from 'lodash-es/isEqual';
-
-import { ApolloClientModule } from '@uprtcl/graphql';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -94,7 +91,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   } = {};
 
   doc: DocNode | undefined = undefined;
-  client!: ApolloClient<any>;
+  client!: EveesClient;
 
   protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
@@ -106,18 +103,18 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
-
-    if (this.hasDependency(DocumentsBindings.CustomBlocks)) {
+    try {
       this.customBlocks = this.request(DocumentsBindings.CustomBlocks);
+    } catch (e) {
+      this.logger.log('custom blocks not defined');
     }
-
     const config = this.request(EveesModule.bindings.Config) as EveesConfig;
     this.editableRemotesIds = config.editableRemotesIds
       ? config.editableRemotesIds
       : [];
 
     if (!this.client) {
-      this.client = this.request(ApolloClientModule.bindings.Client);
+      this.client = this.request(EveesClientModule.bindings.Client);
     }
 
     this.uref = this.firstRef;
@@ -419,14 +416,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     await this.preparePersistRec(this.doc, this.doc.remote, message);
     await this.persistRec(this.doc);
-
-    const remote = this.remotes.find(
-      (r) => r.id == (this.doc as DocNode).remote
-    );
-    if (!remote) throw new Error('remote undefined');
-    if ((remote as any).flush) {
-      await (remote as any).flush();
-    }
 
     /** reload doc from backend */
     await this.loadDoc();

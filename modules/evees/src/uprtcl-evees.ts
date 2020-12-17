@@ -61,19 +61,6 @@ export { EveesDiff } from './elements/evees-diff';
 export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
-/** Queries */
-export {
-  UPDATE_HEAD,
-  CREATE_PERSPECTIVE,
-  CREATE_ENTITY,
-  CREATE_PROPOSAL,
-} from './graphql/queries';
-export {
-  EveesHelpers,
-  CreatePerspective,
-  CreateCommit,
-} from './graphql/evees.helpers';
-
 /** Patterns */
 export {
   PerspectivePattern,

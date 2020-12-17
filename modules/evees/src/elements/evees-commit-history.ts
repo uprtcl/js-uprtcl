@@ -1,8 +1,5 @@
 import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
-
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { ApolloClientModule } from '@uprtcl/graphql';
 
 interface CommitHistoryData {
   id: string;
@@ -27,10 +24,8 @@ export class CommitHistory extends moduleConnect(LitElement) {
   async loadCommitHistory() {
     this.commitHistory = undefined;
 
-    const apolloClient: ApolloClient<any> = this.request(
-      ApolloClientModule.bindings.Client
-    );
-    const result = await apolloClient.query({
+    const client: EveesClient = this.request(EveesClientModule.bindings.Client);
+    const result = await client.query({
       query: gql`
       {
         entity(uref: "${this.commitId}") {

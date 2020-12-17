@@ -1,12 +1,8 @@
 import { TemplateResult } from 'lit-element';
-
 import { Behaviour } from '@uprtcl/cortex';
 
 import { EveesRemote } from './services/evees.remote';
 import { Secured } from './utils/cid-hash';
-import { EveesWorkspace } from './services/evees.workspace';
-
-export type Context = string;
 
 export interface Perspective {
   remote: string;
@@ -18,15 +14,9 @@ export interface Perspective {
   fromHeadId?: string; // forks on the perspective id
 }
 
-export const getAuthority = (perspective: Perspective): string => {
-  return `${perspective.remote}:${perspective.path}`;
-};
-
 export interface PerspectiveDetails {
-  name?: string;
   headId?: string | undefined;
 }
-
 export interface Commit {
   creatorsIds: string[];
   timestamp: number;
@@ -35,6 +25,10 @@ export interface Commit {
   parentsIds: Array<string>;
   dataId: string;
 }
+
+export const getAuthority = (perspective: Perspective): string => {
+  return `${perspective.remote}:${perspective.path}`;
+};
 
 export interface UpdateRequest {
   fromPerspectiveId?: string;

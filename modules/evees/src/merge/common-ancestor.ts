@@ -1,5 +1,3 @@
-import { ApolloClient, gql } from 'apollo-boost';
-
 import { Commit } from '../types';
 import { Secured } from '../utils/cid-hash';
 
@@ -12,7 +10,7 @@ export class FindMostRecentCommonAncestor {
   allCommits: { [key: string]: Secured<Commit> } = {};
   paths: Path[];
 
-  constructor(protected client: ApolloClient<any>, commitsIds: string[]) {
+  constructor(protected client: EveesClient, commitsIds: string[]) {
     this.paths = commitsIds.map((commitId) => ({
       visited: {},
       heads: [commitId],
@@ -92,7 +90,7 @@ export class FindMostRecentCommonAncestor {
 }
 
 export default function findMostRecentCommonAncestor(
-  client: ApolloClient<any>
+  client: EveesClient
 ): (commitsIds: string[]) => Promise<string | undefined> {
   return (commitsIds: string[]) =>
     new FindMostRecentCommonAncestor(client, commitsIds).compute();

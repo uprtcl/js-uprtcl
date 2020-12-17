@@ -1,6 +1,4 @@
-import { ApolloClient, gql } from 'apollo-boost';
-
-export const isAncestorOf = (client: ApolloClient<any>) => async (
+export const isAncestorOf = (client: EveesClient) => async (
   ancestorId: string,
   commitId: string
 ): Promise<boolean> => {

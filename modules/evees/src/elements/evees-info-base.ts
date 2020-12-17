@@ -7,9 +7,6 @@ import {
   TemplateResult,
 } from 'lit-element';
 
-import { ApolloClient, gql } from 'apollo-boost';
-
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import {
   CortexModule,
@@ -33,12 +30,6 @@ import {
   EveesConfig,
 } from '../types';
 import { EveesBindings } from '../bindings';
-import {
-  DELETE_PERSPECTIVE,
-  CREATE_PROPOSAL,
-  FORK_PERSPECTIVE,
-} from '../graphql/queries';
-import { EveesHelpers } from '../graphql/evees.helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
@@ -130,7 +121,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   perspectiveData!: PerspectiveData;
   pullWorkspace: EveesWorkspace | undefined = undefined;
 
-  protected client!: ApolloClient<any>;
+  protected client!: EveesClient;
   protected config!: EveesConfig;
   protected merge!: MergeStrategy;
   protected evees!: Evees;
@@ -146,7 +137,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected defaultRemote: EveesRemote | undefined = undefined;
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
+    this.client = this.request(EveesClientModule.bindings.Client);
     this.config = this.request(EveesBindings.Config);
     this.merge = this.request(EveesBindings.MergeStrategy);
     this.evees = this.request(EveesBindings.Evees);
@@ -541,9 +532,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         remote: this.defaultRemoteId,
       },
     });
-
-    if ((this.defaultRemote as any).flush)
-      await (this.defaultRemote as any).flush();
 
     const newPerspectiveId = result.data.forkPerspective.id;
 
