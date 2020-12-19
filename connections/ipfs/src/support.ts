@@ -14,18 +14,18 @@ const constants: [string, number][] = [
   ['base64', 109],
   ['base64pad', 77],
   ['base64url', 75],
-  ['Ubase64urlpad', 55]
+  ['Ubase64urlpad', 55],
 ];
 
 const multibaseToUint = (multibaseName: string): number => {
-  return constants.filter(e => e[0] == multibaseName)[0][1];
+  return constants.filter((e) => e[0] == multibaseName)[0][1];
 };
 
 const uintToMultibase = (number: number): string => {
-  return constants.filter(e => e[1] == number)[0][0];
+  return constants.filter((e) => e[1] == number)[0][0];
 };
 
-export const cidToHex32 = cidStr => {
+export const cidToHex32 = (cidStr) => {
   /** store the encoded cids as they are, including the multibase bytes */
   const cid = new CID(cidStr);
   const bytes = cid.bytes;
@@ -63,5 +63,5 @@ export const bytes32ToCid = (bytes: [string, string]) => {
   /** Force Buffer class */
   const cid = new CID(cidBuffer);
 
-  return cid.toBaseEncodedString(multibaseName);
+  return cid.toBaseEncodedString(multibaseName as any);
 };
