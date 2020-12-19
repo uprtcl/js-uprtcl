@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-reader",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Light way wervice to resoluve an Uprtcl reference into its latest data",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -12,9 +12,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/evees": "^0.1.1",
-    "@uprtcl/cortex": "^0.1.1",
-    "@uprtcl/multiplatform": "^0.1.1"
+    "@uprtcl/cortex": "^0.1.2",
+    "@uprtcl/evees": "^0.1.2",
+    "@uprtcl/multiplatform": "^0.1.2"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
