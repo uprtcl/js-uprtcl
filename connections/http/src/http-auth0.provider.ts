@@ -13,10 +13,7 @@ export class HttpAuth0Provider extends HttpProvider {
 
   auth0: Auth0Client;
 
-  constructor(
-    public pOptions: HttpProviderOptions,
-    auth0Config: Auth0ClientOptions
-  ) {
+  constructor(public pOptions: HttpProviderOptions, auth0Config: Auth0ClientOptions) {
     super(pOptions);
 
     this.auth0 = new Auth0Client(auth0Config);
@@ -30,6 +27,8 @@ export class HttpAuth0Provider extends HttpProvider {
         const isAuthorized = await this.isLogged();
         if (isAuthorized) {
           const user = await this.auth0.getUser();
+
+          if (!user) throw new Error('User not found in auth0');
 
           if (currentUserId !== user.sub) {
             this.logout();
@@ -80,6 +79,8 @@ export class HttpAuth0Provider extends HttpProvider {
 
       if (result.appState && result.appState.targetUrl) {
         const user = await this.auth0.getUser();
+        if (!user) throw new Error('User not found in auth0');
+
         const auth0Claims = await this.auth0.getIdTokenClaims();
 
         super.userId = user.sub;
@@ -115,8 +116,7 @@ export class HttpAuth0Provider extends HttpProvider {
 
   async login(): Promise<void> {
     const query = window.location.search;
-    const shouldParseResult =
-      query.includes('code=') && query.includes('state=');
+    const shouldParseResult = query.includes('code=') && query.includes('state=');
 
     if (shouldParseResult) {
       this.parseLoginResult();

@@ -1,11 +1,4 @@
-import {
-  LitElement,
-  html,
-  css,
-  internalProperty,
-  query,
-  property,
-} from 'lit-element';
+import { LitElement, html, css, internalProperty, query, property } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { Logger } from '@uprtcl/micro-orchestrator';
@@ -95,9 +88,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
       this.perspective.object.payload.context
     );
 
-    const remote = this.remotes.find(
-      (r) => r.id === this.perspective.object.payload.remote
-    );
+    const remote = this.remotes.find((r) => r.id === this.perspective.object.payload.remote);
     if (!remote) {
       throw new Error(`remote not found`);
     }
@@ -109,15 +100,13 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
       false
     );
 
-    const isPinned = await this.remote.orbitdbcustom.pinner.isPinned(
-      store.address
-    );
+    if (!this.remote.orbitdbcustom.pinner) throw new Error('pinner not defined');
+
+    const isPinned = await this.remote.orbitdbcustom.pinner.isPinned(store.address);
 
     let detailsPinner;
     if (isPinned) {
-      detailsPinner = await this.remote.orbitdbcustom.pinner.getAll(
-        store.address
-      );
+      detailsPinner = await this.remote.orbitdbcustom.pinner.getAll(store.address);
     }
 
     this.details = {
@@ -143,6 +132,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
       //
     }
 
+    if (!this.remote.orbitdbcustom.pinner) throw new Error('pinner not defined');
     const objectPinner = await this.remote.orbitdbcustom.pinner.getEntity(hash);
 
     this.entityDetails = {
@@ -155,12 +145,9 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
   }
 
   async delete(id: string) {
-    const contextStore = await this.remote.orbitdbcustom.getStore(
-      EveesOrbitDBEntities.Context,
-      {
-        context: this.perspective.object.payload.context,
-      }
-    );
+    const contextStore = await this.remote.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context: this.perspective.object.payload.context,
+    });
 
     this.logger.info(`contextStore.delete(${id})`);
     await contextStore.delete(id);
@@ -171,14 +158,8 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
   debugPerspective() {
     return html`
       <div class="row">
-        <uprtcl-textfield
-          id="perspective-input"
-          label="perspective id"
-        ></uprtcl-textfield>
-        <uprtcl-button-loading
-          @click=${() => this.read()}
-          ?loading=${this.reading}
-        >
+        <uprtcl-textfield id="perspective-input" label="perspective id"></uprtcl-textfield>
+        <uprtcl-button-loading @click=${() => this.read()} ?loading=${this.reading}>
           read
         </uprtcl-button-loading>
       </div>
@@ -209,10 +190,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
     return html`
       <div class="row">
         <uprtcl-textfield id="entity-input" label="hash"></uprtcl-textfield>
-        <uprtcl-button-loading
-          @click=${() => this.readEntity()}
-          ?loading=${this.readingEntity}
-        >
+        <uprtcl-button-loading @click=${() => this.readEntity()} ?loading=${this.readingEntity}>
           read
         </uprtcl-button-loading>
       </div>

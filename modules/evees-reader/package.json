@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@uprtcl/evees": "^0.1.1",
+    "@uprtcl/cortex": "^0.1.1",
     "@uprtcl/multiplatform": "^0.1.1"
   },
   "devDependencies": {
