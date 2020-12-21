@@ -146,18 +146,18 @@ export class EveesHttp implements EveesRemote {
     });
   }
 
-  async getContextPerspectives(context: string): Promise<string[]> {
-    const perspectiveIds = await this.provider.getWithPut<any[]>(`/persp`, {
-      context: context,
-    });
-    const cachedPerspectives = this.cache
-      ? await this.cache.newPerspectives
-          .where('context')
-          .equals(context)
-          .toArray()
-      : [];
+  async getOtherPerspectives(perspectiveId: string): Promise<string[]> {
+    let responseObj: any = {};
 
-    return perspectiveIds.concat(cachedPerspectives.map((e) => e.id));
+    try {
+      responseObj = await this.provider.getObject<string[]>(
+        `/persp/${perspectiveId}/others?includeEcosystem=true`
+      );
+    } catch (e) {
+      responseObj = {};
+    }
+
+    return responseObj;
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
