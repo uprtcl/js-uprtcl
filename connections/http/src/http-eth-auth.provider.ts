@@ -7,7 +7,7 @@ import { Remote } from '@uprtcl/evees';
 import { HttpProvider, HttpProviderOptions } from './http.provider';
 
 export const loginMessage = (nonce: string) => {
-  return `Login to Intercreativiy \n\nnonce:${nonce}`;
+  return `Login to Intercreativity \n\nnonce:${nonce}`;
 };
 
 @injectable()
@@ -16,10 +16,7 @@ export class HttpEthAuthProvider extends HttpProvider implements Remote {
 
   account: string | undefined = undefined;
 
-  constructor(
-    public pOptions: HttpProviderOptions,
-    protected ethConnection: EthereumConnection
-  ) {
+  constructor(public pOptions: HttpProviderOptions, protected ethConnection: EthereumConnection) {
     super(pOptions);
   }
 
@@ -63,10 +60,7 @@ export class HttpEthAuthProvider extends HttpProvider implements Remote {
 
   async authorize(signature: string) {
     if (this.account === undefined) throw Error('account undefined');
-    return super.getWithPut<{ jwt: string }>(
-      `/user/${this.account}/authorize`,
-      { signature }
-    );
+    return super.getWithPut<{ jwt: string }>(`/user/${this.account}/authorize`, { signature });
   }
 
   async logout(): Promise<void> {
@@ -80,14 +74,10 @@ export class HttpEthAuthProvider extends HttpProvider implements Remote {
       await this.connect();
     }
 
-    if (this.account === undefined || this.account === '')
-      throw Error('account undefined');
+    if (this.account === undefined || this.account === '') throw Error('account undefined');
 
     const nonce = await this.getNonce();
-    const signature = await this.ethConnection.signText(
-      loginMessage(nonce),
-      this.account
-    );
+    const signature = await this.ethConnection.signText(loginMessage(nonce), this.account);
     const token = await this.authorize(signature);
 
     super.userId = this.account;
