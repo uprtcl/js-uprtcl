@@ -7,7 +7,7 @@ import {
   TemplateResult,
 } from 'lit-element';
 
-import { ApolloClient, gql } from 'apollo-boost';
+import { ApolloClient, FetchPolicy } from 'apollo-boost';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
@@ -37,6 +37,7 @@ import {
   DELETE_PERSPECTIVE,
   CREATE_PROPOSAL,
   FORK_PERSPECTIVE,
+  GET_OTHER_PERSPECTIVES
 } from '../graphql/queries';
 import { EveesHelpers } from '../graphql/evees.helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
@@ -277,32 +278,18 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.logger.info('checkPull()', this.pullWorkspace);
   }
 
-  async getContextPerspectives(perspectiveId?: string): Promise<string[]> {
+  async getOtherPerspectives(perspectiveId?: string, fetchPolicy?: FetchPolicy): Promise<string[]> {
     perspectiveId = perspectiveId || this.uref;
     const result = await this.client.query({
-      query: gql`{
-          entity(uref: "${perspectiveId}") {
-            id
-            ... on Perspective {
-              payload {
-                remote
-                context {
-                  id
-                  perspectives {
-                    id
-                  } 
-                }
-              }
-            }
-          }
-        }`,
-    });
+      fetchPolicy,
+      query: GET_OTHER_PERSPECTIVES(perspectiveId)
+    });  
 
     /** data on other perspectives (proposals are injected on them) */
     const perspectives =
-      result.data.entity.payload.context === null
+      result.data.entity.otherPerspectives === null
         ? []
-        : result.data.entity.payload.context.perspectives;
+        : result.data.entity.otherPerspectives;
 
     // remove duplicates
     const map = new Map<string, null>();
@@ -546,6 +533,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       await (this.defaultRemote as any).flush();
 
     const newPerspectiveId = result.data.forkPerspective.id;
+    await this.getOtherPerspectives(this.uref, 'network-only');
 
     this.dispatchEvent(
       new CustomEvent('new-perspective-created', {
