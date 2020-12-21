@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/documents",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Cortex module implementing texts and folders",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -16,7 +16,7 @@
     "@uprtcl/cortex": "^0.1.2",
     "@uprtcl/evees": "^0.1.2",
     "@uprtcl/graphql": "^0.1.2",
-    "@uprtcl/http-provider": "^0.1.2",
+    "@uprtcl/http-provider": "^0.1.3",
     "@uprtcl/ipfs-provider": "^0.1.2",
     "@uprtcl/lenses": "^0.1.2",
     "@uprtcl/micro-orchestrator": "^0.1.2",
