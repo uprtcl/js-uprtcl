@@ -8,7 +8,6 @@ import {
   CASModule,
   KnownSourcesSource,
   EntityCache,
-  KnownSourcesService,
   loadEntity
 } from '@uprtcl/multiplatform';
 import { Entity, Signed, CortexModule } from '@uprtcl/cortex';
@@ -22,20 +21,21 @@ import { EveesHelpers } from './evees.helpers';
 import { EveesWorkspace } from '../services/evees.workspace';
 import { GET_PERSPECTIVE_CONTEXTS } from './queries';
 
-const getContextPerspectives = async (context, container) => {
-  if (context === undefined) return [];
+const getOtherPerspectives = async (perspectiveId, container) => {
+  if (perspectiveId === undefined) return [];
 
   const eveesRemotes: EveesRemote[] = container.getAll(EveesBindings.EveesRemote);
-  const knownSources: KnownSourcesService = container.get(
-    DiscoveryModule.bindings.LocalKnownSources
-  );
 
   const promises = eveesRemotes.map(async remote => {
-    const thisPerspectivesIds = await remote.getContextPerspectives(context);
-    thisPerspectivesIds.forEach(pId => {
-      knownSources.addKnownSources(pId, [remote.store.casID], EveesBindings.PerspectiveType);
-    });
-    return thisPerspectivesIds;
+    let thisPerspectives: Array<string> = [];
+
+    try {
+      thisPerspectives = await remote.getOtherPerspectives(perspectiveId);
+    } catch(e) {
+      console.error(e);
+    }
+
+    return thisPerspectives;
   });
 
   const perspectivesIdsPerRemote = await Promise.all(promises);
@@ -63,15 +63,6 @@ export const eveesResolvers: IResolvers = {
     },
     creatorsIds(parent) {
       return parent.payload.creatorsIds;
-    }
-  },
-  Context: {
-    id(parent) {
-      return typeof parent === 'string' ? parent : parent.id;
-    },
-    async perspectives(parent, _, { container }) {
-      const context = typeof parent === 'string' ? parent : parent.id;
-      return getContextPerspectives(context, container);
     }
   },
   UpdateProposal: {
@@ -134,10 +125,11 @@ export const eveesResolvers: IResolvers = {
         path: parent.payload.path,
         creatorId: parent.payload.creatorId,
         timestamp: parent.payload.timestamp,
-        context: {
-          id: parent.payload.context
-        }
+        context: parent.payload.context
       };
+    },
+    async otherPerspectives(parent, _, { container }) {
+      return getOtherPerspectives(parent.id, container);
     },
     async canWrite(parent, _, { container }) {
       const evees: Evees = container.get(EveesBindings.Evees);
@@ -311,22 +303,21 @@ export const eveesResolvers: IResolvers = {
       const perspective = await loadEntity<Signed<Perspective>>(client, newPerspectiveId);
       if (!perspective) throw new Error('perspective not found');
 
-      return {
-        id: newPerspectiveId,
-        name: name,
-        head: headId,
-        payload: {
-          remote: perspective.object.payload.remote,
-          path: perspective.object.payload.path,
-          creatorId: perspective.object.payload.creatorId,
-          timestamp: perspective.object.payload.timestamp,
-          context: {
-            id: perspective.object.payload.context,
-            perspectives: {
-              newPerspectiveId
-            }
+      const otherPerspectives = (await getOtherPerspectives(newPerspectiveId, container)).map((persp) => {
+        return {
+          id: persp,
+          otherPerspectives: {
+            id: newPerspectiveId
           }
         }
+      });
+
+      return {
+        id: newPerspectiveId,
+        name,
+        head: headId,
+        payload: perspective.object.payload,
+        otherPerspectives
       };
     },
 
@@ -360,11 +351,6 @@ export const eveesResolvers: IResolvers = {
         canExecute: false,
         executed: false
       };
-    }
-  },
-  Query: {
-    async contextPerspectives(parent, { context }, { container }) {
-      return getContextPerspectives(context, container);
     }
   }
 };
