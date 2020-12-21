@@ -43,15 +43,6 @@ export const eveesTypeDefs: DocumentNode = gql`
     executeProposal(proposalId: ID!, perspectiveId: ID!): UpdateProposal!
   }
 
-  extend type Query {
-    contextPerspectives(context: String!): [Perspective!]
-  }
-
-  type Context {
-    id: String!
-    perspectives: [Perspective!] @discover
-  }
-
   type HeadUpdate {
     fromPerspective: Perspective! @discover
     oldHead: Commit! @discover
@@ -155,6 +146,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     name: String
     payload: Payload
     proposals: [String!]
+    otherPerspectives: [Perspective!]! @discover
     canWrite: Boolean
 
     _context: EntityContext!
@@ -165,7 +157,7 @@ export const eveesTypeDefs: DocumentNode = gql`
     path: String
     creatorId: String
     timestamp: Date
-    context: Context
+    context: String
     fromPerspectiveId: String
     fromHeadId: String
   }
