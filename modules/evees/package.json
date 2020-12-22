@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Cortex module that provides generic version control for any content-addressable content to become an Evolving Entity (Evee)",
   "homepage": "https://uprtcl.io",
   "scripts": {

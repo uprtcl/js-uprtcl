@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-orbitdb",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "EveesRemote implemented on the Ethereum Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -14,7 +14,7 @@
   "dependencies": {
     "@uprtcl/cortex": "^0.1.2",
     "@uprtcl/ethereum-provider": "^0.1.2",
-    "@uprtcl/evees": "^0.1.2",
+    "@uprtcl/evees": "^0.1.3",
     "@uprtcl/graphql": "^0.1.2",
     "@uprtcl/ipfs-provider": "^0.1.2",
     "@uprtcl/lenses": "^0.1.2",
