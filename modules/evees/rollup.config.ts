@@ -20,6 +20,7 @@ export default {
     'lodash-es/cloneDeep',
   ],
   watch: {
+    buildDelay: 1000,
     include: 'src/**',
   },
   plugins: [

@@ -2,7 +2,14 @@
 import 'reflect-metadata';
 
 /** Types */
-export { Commit, Perspective, Context, PerspectiveDetails, HasDiffLenses, DiffLens } from './types';
+export {
+  Commit,
+  Perspective,
+  Context,
+  PerspectiveDetails,
+  HasDiffLenses,
+  DiffLens,
+} from './types';
 
 /** Services interfaces */
 export { EveesSource } from './services/evees.source';
@@ -30,10 +37,14 @@ export { EveesBindings } from './bindings';
 /** Elements */
 export { CommitHistory } from './elements/evees-commit-history';
 export { EveesPerspectivesList } from './elements/evees-perspectives-list';
+export { EveesBaseElement } from './elements/evees-base';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesInfoBase } from './elements/evees-info-base';
-export { EveesInfoUserBased } from './elements/evees-info-user-based';
+export {
+  EveesInfoUserBased,
+  EveesInfoConfig,
+} from './elements/evees-info-user-based';
 export { ProposalsList } from './elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './elements/evees-perspective-icon';
 
@@ -42,7 +53,7 @@ export {
   UpdateContentArgs,
   ContentUpdatedEvent,
   SpliceChildrenEvent,
-  CONTENT_UPDATED_TAG
+  CONTENT_UPDATED_TAG,
 } from './elements/events';
 export { EveesDiff } from './elements/evees-diff';
 
@@ -51,11 +62,23 @@ export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Queries */
-export { UPDATE_HEAD, CREATE_PERSPECTIVE, CREATE_ENTITY, CREATE_PROPOSAL } from './graphql/queries';
-export { EveesHelpers, CreatePerspective, CreateCommit } from './graphql/evees.helpers';
+export {
+  UPDATE_HEAD,
+  CREATE_PERSPECTIVE,
+  CREATE_ENTITY,
+  CREATE_PROPOSAL,
+} from './graphql/queries';
+export {
+  EveesHelpers,
+  CreatePerspective,
+  CreateCommit,
+} from './graphql/evees.helpers';
 
 /** Patterns */
-export { PerspectivePattern, PerspectiveLinks } from './patterns/perspective.pattern';
+export {
+  PerspectivePattern,
+  PerspectiveLinks,
+} from './patterns/perspective.pattern';
 export { CommitLinked, CommitPattern } from './patterns/commit.pattern';
 export { Secured, hashObject, deriveEntity } from './utils/cid-hash';
 export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';
@@ -69,7 +92,7 @@ export {
   UpdateRequest,
   NewProposal,
   ProposalDetails,
-  PROPOSAL_CREATED_TAG
+  PROPOSAL_CREATED_TAG,
 } from './types';
 export { ProposalsProvider } from './services/proposals.provider';
 

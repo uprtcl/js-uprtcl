@@ -7,6 +7,9 @@ export class UprtclTextField extends LitElement {
   @property({ type: String })
   value: string = '';
 
+  @property({ type: Boolean })
+  disabled: boolean = false;
+
   @property({ attribute: false })
   focused: boolean = false;
 
@@ -23,6 +26,7 @@ export class UprtclTextField extends LitElement {
       ${this.focused ? html`<div class="label">${this.label}</div>` : ''}
       <div class="input-container">
         <input
+          ?disabled=${this.disabled}
           id="input-element"
           value=${this.value}
           @focus=${() => (this.focused = true)}

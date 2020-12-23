@@ -1,9 +1,10 @@
 {
   "name": "@uprtcl/documents",
-  "version": "0.0.7-alpha.76",
+  "version": "0.1.1",
   "description": "Cortex module implementing texts and folders",
   "homepage": "https://uprtcl.io",
   "scripts": {
+    "update-uprtcl": "ncu -u \"/^@uprtcl.*$/\"",
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.ts",
     "build": "npm run clean && rollup -c rollup.config.ts",
@@ -11,16 +12,15 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.0.7-alpha.76",
-    "@uprtcl/cortex": "^0.0.7-alpha.76",
-    "@uprtcl/evees": "^0.0.7-alpha.76",
-    "@uprtcl/graphql": "^0.0.7-alpha.76",
-    "@uprtcl/holochain-provider": "^0.0.7-alpha.76",
-    "@uprtcl/http-provider": "^0.0.7-alpha.76",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.76",
-    "@uprtcl/lenses": "^0.0.7-alpha.76",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.76",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.76",
+    "@uprtcl/common-ui": "^0.1.1",
+    "@uprtcl/cortex": "^0.1.1",
+    "@uprtcl/evees": "^0.1.1",
+    "@uprtcl/graphql": "^0.1.1",
+    "@uprtcl/http-provider": "^0.1.1",
+    "@uprtcl/ipfs-provider": "^0.1.1",
+    "@uprtcl/lenses": "^0.1.1",
+    "@uprtcl/micro-orchestrator": "^0.1.1",
+    "@uprtcl/multiplatform": "^0.1.1",
     "apollo-boost": "^0.4.7",
     "codemirror": "^5.54.0",
     "graphql-tag": "^2.10.1",
@@ -52,6 +52,7 @@
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^4.4.1",
     "karma-webpack": "^4.0.2",
+    "npm-check-updates": "^10.2.1",
     "rimraf": "^2.6.2",
     "rollup": "^2.0.5",
     "rollup-plugin-sourcemaps": "^0.5.0",
@@ -73,7 +74,7 @@
       "url": "https://github.com/pepoospina"
     }
   ],
-  "license": "MIT",
+  "license": "BOOS-FL",
   "main": "dist/uprtcl-documents.umd.js",
   "module": "dist/uprtcl-documents.es5.js",
   "typings": "dist/types/uprtcl-documents.d.ts",
@@ -85,5 +86,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "4a694f4b932472046283ecedcd65de631ab08813"
+  "gitHead": "3414d6cc2d56ad396d8d26ca57aa57e970a156c7"
 }

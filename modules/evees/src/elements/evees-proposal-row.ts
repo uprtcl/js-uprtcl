@@ -37,6 +37,9 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   authorId: string | undefined = undefined;
 
   @property({ attribute: false })
+  authorRemote: string | undefined = undefined;
+
+  @property({ attribute: false })
   canRemove: Boolean = false;
 
   @query('#updates-dialog')
@@ -59,10 +62,11 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
-    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-      r => r.id === this.remoteId
-    );
-    if (remote === undefined) throw new Error(`remote ${this.remoteId} not found`);
+    const remote = (this.requestAll(
+      EveesBindings.EveesRemote
+    ) as EveesRemote[]).find((r) => r.id === this.remoteId);
+    if (remote === undefined)
+      throw new Error(`remote ${this.remoteId} not found`);
 
     const proposals = remote.proposals;
     if (proposals === undefined)
@@ -90,11 +94,19 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.proposal = await this.proposals.getProposal(this.proposalId);
 
     const fromPerspective = this.proposal.fromPerspectiveId
-      ? await loadEntity<Signed<Perspective>>(this.client, this.proposal.fromPerspectiveId)
+      ? await loadEntity<Signed<Perspective>>(
+          this.client,
+          this.proposal.fromPerspectiveId
+        )
       : undefined;
 
     /** the author is the creator of the fromPerspective */
-    this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
+    this.authorId = fromPerspective
+      ? fromPerspective.object.payload.creatorId
+      : undefined;
+    this.authorRemote = fromPerspective
+      ? fromPerspective.object.payload.remote
+      : undefined;
     this.loadingCreator = false;
 
     await this.checkCanExecute();
@@ -111,7 +123,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   async checkExecuted() {
     /* a proposal is considered accepted if all the updates are now ancestors of their target */
     const isAncestorVector = await Promise.all(
-      this.proposal.details.updates.map(update => {
+      this.proposal.details.updates.map((update) => {
         return EveesHelpers.isAncestorCommit(
           this.client,
           update.perspectiveId,
@@ -134,7 +146,9 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
             this.client,
             update.perspectiveId
           );
-          const remote = this.eveesRemotes.find(remote => remote.id === remoteId);
+          const remote = this.eveesRemotes.find(
+            (remote) => remote.id === remoteId
+          );
           if (remote === undefined) throw new Error('remote undefined');
           return EveesHelpers.canWrite(this.client, update.perspectiveId);
         }
@@ -164,14 +178,14 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       options['accept'] = {
         disabled: false,
         text: 'accept',
-        icon: 'done'
+        icon: 'done',
       };
     }
 
     options['close'] = {
       disabled: false,
       text: 'close',
-      icon: 'clear'
+      icon: 'clear',
     };
 
     if (this.canExecute || this.canRemove) {
@@ -179,7 +193,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
         disabled: false,
         text: 'delete',
         icon: 'delete',
-        background: '#c93131'
+        background: '#c93131',
       };
     }
 
@@ -188,14 +202,16 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.eveesDiffEl.workspace = workspace;
     this.updatesDialogEl.options = options;
 
-    const value = await new Promise(resolve => {
-      this.updatesDialogEl.resolved = value => {
+    const value = await new Promise((resolve) => {
+      this.updatesDialogEl.resolved = (value) => {
         this.showDiff = false;
         resolve(value);
       };
     });
 
-    this.dispatchEvent(new CustomEvent('dialogue-closed', { bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent('dialogue-closed', { bubbles: true, composed: true })
+    );
     this.showDiff = false;
 
     if (value === 'accept') {
@@ -209,7 +225,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
         new ContentUpdatedEvent({
           detail: { uref: this.proposal.toPerspectiveId },
           bubbles: true,
-          composed: true
+          composed: true,
         })
       );
     }
@@ -234,15 +250,17 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
         <div class="proposal-name">
           ${this.authorId !== undefined
             ? html`
-                <evees-author user-id=${this.authorId} show-name></evees-author>
+                <evees-author
+                  user-id=${this.authorId}
+                  remote-id=${this.authorRemote}
+                  show-name
+                ></evees-author>
               `
             : 'unknown'}
         </div>
         <div class="proposal-state">
           ${this.loading
-            ? html`
-                <uprtcl-loading></uprtcl-loading>
-              `
+            ? html` <uprtcl-loading></uprtcl-loading> `
             : this.canExecute
             ? html`
                 <uprtcl-icon-button
@@ -259,19 +277,23 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
   render() {
     if (this.loadingCreator) {
-      return html`
-        <div class=""><uprtcl-loading></uprtcl-loading></div>
-      `;
+      return html` <div class=""><uprtcl-loading></uprtcl-loading></div> `;
     }
 
     let renderDefault = true;
     let lense: any = undefined;
-    if (this.remote && this.remote.proposals && this.remote.proposals.lense !== undefined) {
+    if (
+      this.remote &&
+      this.remote.proposals &&
+      this.remote.proposals.lense !== undefined
+    ) {
       renderDefault = false;
       lense = this.remote.proposals.lense as any;
     }
 
-    return renderDefault ? this.renderDefault() : lense().render({ proposalId: this.proposalId });
+    return renderDefault
+      ? this.renderDefault()
+      : lense().render({ proposalId: this.proposalId });
   }
 
   static get styles() {

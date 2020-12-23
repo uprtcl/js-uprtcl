@@ -3,7 +3,7 @@ import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { ApolloClient } from 'apollo-boost';
-import { LitElement, html, css, property } from 'lit-element';
+import { LitElement, html, css, property, query } from 'lit-element';
 import { EveesBindings } from 'src/bindings';
 import { Secured } from 'src/uprtcl-evees';
 import { EveesRemote } from '../services/evees.remote';
@@ -35,10 +35,15 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-    const perspective = await loadEntity<Signed<Perspective>>(this.client, this.perspectiveId);
+    const perspective = await loadEntity<Signed<Perspective>>(
+      this.client,
+      this.perspectiveId
+    );
     if (!perspective) throw new Error('perspective undefined');
 
-    const remote = this.remotes.find(r => r.id === perspective.object.payload.remote);
+    const remote = this.remotes.find(
+      (r) => r.id === perspective.object.payload.remote
+    );
     if (!remote) throw new Error('remote undefined');
 
     this.perspective = perspective;
@@ -48,30 +53,30 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
     return html`
       <div class="row">
         <b class="tag-text">id</b>
-        <span class="perspective-id"
-          >${this.perspectiveId.substr(0, 6)}...${this.perspectiveId.slice(
-            this.perspectiveId.length - 6
+        <span class="perspective-id" id="perspective-id"
+          >${this.perspectiveId.substr(0, 10)}...${this.perspectiveId.slice(
+            this.perspectiveId.length - 10
           )}</span
         >
+        <uprtcl-copy-to-clipboard
+          text=${this.perspectiveId}
+        ></uprtcl-copy-to-clipboard>
       </div>
       ${this.perspective.object.payload.creatorId
         ? html`
             <div class="row">
+              <b class="tag-text">creator</b>
               ${this.remote.userId === this.perspective.object.payload.creatorId
-                ? html`
-                    <b class="tag-text">yours</b>
-                  `
+                ? html` <b class="you-tag">you</b> `
                 : html`
-                    <b class="tag-text">by</b>
                     <evees-author
                       user-id=${this.perspective.object.payload.creatorId}
+                      remote-id=${this.perspective.object.payload.remote}
                       show-name
                     ></evees-author>
                   `}
@@ -82,9 +87,7 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
         <b class="tag-text">on</b>
         <div class="remote-icon">
           ${this.remote.icon
-            ? html`
-                ${this.remote.icon()}
-              `
+            ? html` ${this.remote.icon(this.perspective.object.payload.path)} `
             : html`
                 remote
                 <pre>${this.perspective.object.payload.remote}</pre>
@@ -109,15 +112,16 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
           display: flex;
           align-items: center;
           height: 35px;
+          width: 100%;
         }
         .tag-text {
           color: #cccccc;
+          width: 50px;
+          text-align: right;
+          margin-right: 8px;
         }
-        evees-author {
-          margin-left: 8px;
-        }
-        .remote-icon {
-          margin-left: 6px;
+        .you-tag {
+          color: #abdaab;
         }
         .perspective-id {
           color: var(--color, rgb(99, 102, 104));
@@ -126,9 +130,15 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
           display: block;
           overflow: hidden;
           white-space: nowrap;
-          margin-left: 12px;
         }
-      `
+        evees-author {
+          height: 32px;
+          width: 100%;
+        }
+        uprtcl-copy-to-clipboard {
+          margin-left: auto;
+        }
+      `,
     ];
   }
 }

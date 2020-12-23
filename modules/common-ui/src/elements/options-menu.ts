@@ -19,6 +19,9 @@ export class UprtclOptionsMenu extends LitElement {
   @property({ type: String })
   icon: string = 'more_vert';
 
+  @property({ type: Boolean })
+  skinny: boolean = false;
+
   @query('#popper')
   popper!: UprtclPopper;
 
@@ -32,8 +35,8 @@ export class UprtclOptionsMenu extends LitElement {
         bubbles: true,
         composed: true,
         detail: {
-          key: key
-        }
+          key: key,
+        },
       })
     );
   }
@@ -42,10 +45,14 @@ export class UprtclOptionsMenu extends LitElement {
     return html`
       <uprtcl-popper id="popper" icon=${this.icon}>
         <slot name="icon" slot="icon"
-          ><uprtcl-icon-button icon=${this.icon} button></uprtcl-icon-button
+          ><uprtcl-icon-button
+            icon=${this.icon}
+            button
+            ?skinny=${this.skinny}
+          ></uprtcl-icon-button
         ></slot>
         <uprtcl-list>
-          ${Object.keys(this.config).map(itemKey => {
+          ${Object.keys(this.config).map((itemKey) => {
             const item = this.config[itemKey];
             return item.disabled !== undefined && item.disabled
               ? html`
@@ -56,7 +63,7 @@ export class UprtclOptionsMenu extends LitElement {
               : html`
                   <uprtcl-list-item
                     icon=${item.icon ? item.icon : ''}
-                    @click=${e => this.optionClicked(itemKey, e)}
+                    @click=${(e) => this.optionClicked(itemKey, e)}
                   >
                     <span>${item.text}</span>
                   </uprtcl-list-item>

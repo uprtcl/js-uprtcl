@@ -10,7 +10,7 @@ export interface EveesSource {
    *
    * @param context The context
    */
-  getContextPerspectives(context: string): Promise<string[]>;
+  getOtherPerspectives(context: string): Promise<string[]>;
 
   /**
    * Get the details of a perspective

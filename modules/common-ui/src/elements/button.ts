@@ -46,9 +46,7 @@ export class UprtclButton extends LitElement {
     return html`
       <div class=${classes.join(' ')}>
         ${this.icon
-          ? html`
-              <div class="icon-container">${icons[this.icon]}</div>
-            `
+          ? html` <div class="icon-container">${icons[this.icon]}</div> `
           : ''}
 
         <slot></slot>
@@ -68,7 +66,7 @@ export class UprtclButton extends LitElement {
           border-radius: 4px;
           display: flex;
           flex-direction: row;
-          justify-content: center;
+          justify-content: var(--justify-content, center);
           line-height: 36px;
           height: 36px;
           padding: 0px 16px;
@@ -80,7 +78,7 @@ export class UprtclButton extends LitElement {
           justify-content: center;
           margin-right: 10px;
         }
-      `
+      `,
     ];
   }
 }

@@ -279,7 +279,7 @@ export class EveesHelpers {
     fromHeadId?: string
   ) {
     creatorId = creatorId ? creatorId : remote.userId ? remote.userId : '';
-    timestamp = (timestamp || timestamp === 0) ? timestamp : Date.now();
+    timestamp = timestamp!== undefined ? timestamp : Date.now();
 
     const defaultContext = await hashObject({
       creatorId,

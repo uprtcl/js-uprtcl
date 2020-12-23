@@ -1,98 +1,41 @@
-import { property, html, css, LitElement, query } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
-const styleMap = style => {
-  return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(/([A-Z])/g, matches => `-${matches[0].toLowerCase()}`);
-    return `${styleString}${propName}:${propValue};`;
-  }, '');
-};
+import { html, css, internalProperty } from 'lit-element';
 
 import { htmlToText, TextType, TextNode } from '@uprtcl/documents';
-import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/micro-orchestrator';
 import { styles } from '@uprtcl/common-ui';
-import { Entity, HasTitle, CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
+import { HasTitle } from '@uprtcl/cortex';
 import {
-  EveesRemote,
-  EveesModule,
+  EveesBaseElement,
   EveesHelpers,
-  Perspective,
   CONTENT_UPDATED_TAG,
   ContentUpdatedEvent,
-  EveesConfig
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
-import { ApolloClientModule } from '@uprtcl/graphql';
-import { CASStore, loadEntity } from '@uprtcl/multiplatform';
 
 import { Wiki } from '../types';
-
-import { WikiBindings } from '../bindings';
 
 const MAX_LENGTH = 999;
 
 interface PageData {
   id: string;
   title: string;
+  draggingOver: boolean;
 }
 
-export class WikiDrawerContent extends moduleConnect(LitElement) {
+export class WikiDrawerContent extends EveesBaseElement<Wiki> {
   logger = new Logger('WIKI-DRAWER-CONTENT');
 
-  @property({ type: String })
-  uref!: string;
-
-  @property({ type: String })
-  color!: string;
-
-  @property({ type: String, attribute: 'official-owner' })
-  officialOwner!: string;
-
-  @property({ type: Boolean, attribute: 'check-owner' })
-  checkOwner: boolean = false;
-
-  @property({ type: Boolean })
-  editable: boolean = false;
-
-  @property({ attribute: false })
-  loading: boolean = true;
-
-  @property({ attribute: false })
-  wiki: Entity<Wiki> | undefined;
-
-  @property({ attribute: false })
+  @internalProperty()
   pagesList: PageData[] | undefined = undefined;
 
-  @property({ attribute: false })
+  @internalProperty()
   selectedPageIx: number | undefined = undefined;
 
-  @property({ attribute: false })
+  @internalProperty()
   creatingNewPage: boolean = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   editableActual: boolean = false;
-
-  remote: string = '';
-  currentHeadId: string | undefined = undefined;
-
-  protected client!: ApolloClient<any>;
-  protected remotes!: EveesRemote[];
-  protected recognizer!: PatternRecognizer;
-  protected editableRemotesIds!: string[];
-
-  async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
-    this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    this.recognizer = this.request(CortexModule.bindings.Recognizer);
-
-    const config = this.request(EveesModule.bindings.Config) as EveesConfig;
-    this.editableRemotesIds = config.editableRemotesIds ? config.editableRemotesIds : [];
-
-    this.logger.log('firstUpdated()', { uref: this.uref });
-
-    this.loading = true;
-    await this.load();
-    this.loading = false;
-  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -102,7 +45,10 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         this.logger.log('ContentUpdatedEvent()', this.uref);
         this.load();
       }
-      if (this.pagesList && this.pagesList.findIndex(page => page.id === e.detail.uref) !== -1) {
+      if (
+        this.pagesList &&
+        this.pagesList.findIndex((page) => page.id === e.detail.uref) !== -1
+      ) {
         this.loadPagesData();
       }
     }) as EventListener);
@@ -119,56 +65,41 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     // await this.client.resetStore();
     this.pagesList = undefined;
     this.selectedPageIx = undefined;
-    this.wiki = undefined;
+    this.data = undefined;
     this.logger.log('reset()', this.uref);
     this.loading = true;
     this.load();
     this.loading = false;
   }
 
+  /** overwrite */
   async load() {
-    if (this.uref === undefined) return;
-
-    this.logger.log('load()');
-
-    const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
-    const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
-
-    this.remote = perspective.object.payload.remote;
-    const canWrite = await EveesHelpers.canWrite(this.client, this.uref);
-
-    this.currentHeadId = headId;
-    this.editableActual =
-      this.editableRemotesIds.length > 0
-        ? this.editableRemotesIds.includes(this.remote) && canWrite
-        : canWrite;
-
-    this.wiki = await EveesHelpers.getPerspectiveData(this.client, this.uref);
-
+    await super.load();
     await this.loadPagesData();
   }
 
   async loadPagesData() {
-    if (!this.wiki) {
+    if (!this.data) {
       this.pagesList = [];
       return;
     }
 
     this.logger.log('loadPagesData()');
 
-    const pagesListPromises = this.wiki.object.pages.map(
+    const pagesListPromises = this.data.object.pages.map(
       async (pageId): Promise<PageData> => {
         const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
         if (!data) throw new Error(`data not found for page ${pageId}`);
         const hasTitle: HasTitle = this.recognizer
           .recognizeBehaviours(data)
-          .find(b => (b as HasTitle).title);
+          .find((b) => (b as HasTitle).title);
 
         const title = hasTitle.title(data);
 
         return {
           id: pageId,
-          title
+          title,
+          draggingOver: false,
         };
       }
     );
@@ -178,45 +109,48 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   }
 
   selectPage(ix: number | undefined) {
-    if (!this.wiki) return;
+    if (!this.data) return;
     this.selectedPageIx = ix;
   }
 
-  getStore(remote: string, type: string): CASStore | undefined {
-    const remoteInstance = this.remotes.find(r => r.id === remote);
-    if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
-    return remoteInstance.store;
-  }
-
-  handlePageDrag(e, pageId) {
-    const dragged = { uref: pageId, parentId: this.uref };
+  handlePageDrag(e, ix) {
+    if (!this.pagesList) throw new Error();
+    const dragged = { uref: this.pagesList[ix].id, parentId: this.uref };
     this.logger.info('dragging', dragged);
     e.dataTransfer.setData('text/plain', JSON.stringify(dragged));
   }
 
+  dragEnterOver(e, ix) {
+    if (!this.pagesList) throw new Error();
+    this.pagesList[ix].draggingOver = true;
+    this.requestUpdate();
+  }
+
+  dragLeaveOver(e, ix) {
+    if (!this.pagesList) throw new Error();
+    this.pagesList[ix].draggingOver = false;
+    this.requestUpdate();
+  }
+
   async handlePageDrop(e) {
-    const wikiObject = this.wiki
-      ? this.wiki.object
+    const wikiObject = this.data
+      ? this.data.object
       : {
           title: '',
-          pages: []
+          pages: [],
         };
 
     const dragged = JSON.parse(e.dataTransfer.getData('text/plain'));
 
     this.logger.info('dropped', dragged);
 
-    if (!this.wiki) return;
+    if (!this.data) return;
     if (!dragged.uref) return;
     if (dragged.parentId === this.uref) return;
 
-    const index = this.wiki.object.pages.length;
+    const index = this.data.object.pages.length;
 
-    const result = await this.splicePages(wikiObject, [dragged.uref], index, 0);
-
-    if (!result.entity) throw Error('problem with splice pages');
-
-    await this.updateContent(result.entity);
+    await this.spliceChildrenAndUpdate(wikiObject, [dragged.uref], index, 0);
   }
 
   dragOverEffect(e) {
@@ -224,82 +158,22 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     e.dataTransfer.dropEffect = 'move';
   }
 
-  async createPage(page: TextNode, remote: string) {
-    if (!this.remotes) throw new Error('eveesRemotes undefined');
-    if (!this.client) throw new Error('client undefined');
-
-    const remoteInstance = this.remotes.find(r => r.id === remote);
-    if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
-
-    const dataId = await EveesHelpers.createEntity(this.client, remoteInstance.store, page);
-    const headId = await EveesHelpers.createCommit(this.client, remoteInstance.store, {
-      dataId,
-      parentsIds: []
-    });
-    return EveesHelpers.createPerspective(this.client, remoteInstance, {
-      headId,
-      parentId: this.uref
-    });
-  }
-
-  async updateContent(newWiki: Wiki) {
-    const store = this.getStore(this.remote, WikiBindings.WikiType);
-    if (!store) throw new Error('store is undefined');
-
-    const remote = this.remotes.find(r => r.id === this.remote);
-    if (!remote) throw Error(`Remote not found for remote ${this.remote}`);
-
-    const dataId = await EveesHelpers.createEntity(this.client, store, newWiki);
-    const headId = await EveesHelpers.createCommit(this.client, remote.store, {
-      dataId,
-      parentsIds: this.currentHeadId ? [this.currentHeadId] : undefined
-    });
-    await EveesHelpers.updateHead(this.client, this.uref, headId);
-
-    this.logger.info('updateContent()', newWiki);
-
-    await this.load();
-  }
-
   async replacePagePerspective(oldId, newId) {
-    if (!this.wiki) throw new Error('wiki undefined');
+    if (!this.data) throw new Error('wiki undefined');
 
-    const ix = this.wiki.object.pages.findIndex(pageId => pageId === oldId);
+    const ix = this.data.object.pages.findIndex((pageId) => pageId === oldId);
 
     if (ix === -1) return;
 
-    const result = await this.splicePages(this.wiki.object, [newId], ix, 1);
-    if (!result.entity) throw Error('problem with splice pages');
-
-    await this.updateContent(result.entity);
-  }
-
-  async splicePages(wikiObject: Wiki, pages: any[], index: number, count: number) {
-    const getPages = pages.map(page => {
-      if (typeof page !== 'string') {
-        return this.createPage(page, this.remote);
-      } else {
-        return Promise.resolve(page);
-      }
-    });
-
-    const pagesIds = await Promise.all(getPages);
-
-    const newObject = { ...wikiObject };
-    const removed = newObject.pages.splice(index, count, ...pagesIds);
-
-    return {
-      entity: newObject,
-      removed
-    };
+    await this.spliceChildrenAndUpdate(this.data.object, [newId], ix, 1);
   }
 
   async newPage(index?: number) {
-    const wikiObject = this.wiki
-      ? this.wiki.object
+    const wikiObject = this.data
+      ? this.data.object
       : {
           title: '',
-          pages: []
+          pages: [],
         };
 
     this.creatingNewPage = true;
@@ -307,27 +181,20 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     const newPage: TextNode = {
       text: '',
       type: TextType.Title,
-      links: []
+      links: [],
     };
 
     index = index === undefined ? wikiObject.pages.length : index;
 
-    const result = await this.splicePages(wikiObject, [newPage], index, 0);
-    if (!result.entity) throw Error('problem with splice pages');
+    await this.spliceChildrenAndUpdate(wikiObject, [newPage], index, 0);
 
-    await this.updateContent(result.entity);
     this.selectPage(index);
-
     this.creatingNewPage = false;
   }
 
   async movePage(fromIndex: number, toIndex: number) {
-    if (!this.wiki) throw new Error('wiki not defined');
-
-    const { removed } = await this.splicePages(this.wiki.object, [], fromIndex, 1);
-    const { entity } = await this.splicePages(this.wiki.object, removed as string[], toIndex, 0);
-
-    await this.updateContent(entity);
+    const entity = await super.moveChild(fromIndex, toIndex);
+    await this.updateContent(entity.object);
 
     if (this.selectedPageIx === undefined) return;
 
@@ -343,10 +210,8 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   }
 
   async removePage(pageIndex: number) {
-    if (!this.wiki) throw new Error('wiki not defined');
-
-    const { entity } = await this.splicePages(this.wiki.object, [], pageIndex, 1);
-    await this.updateContent(entity);
+    const entity = await super.removeEveeChild(pageIndex);
+    await this.updateContent(entity.object);
 
     if (this.selectedPageIx === undefined) return;
 
@@ -386,7 +251,9 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
   }
 
   goBack() {
-    this.dispatchEvent(new CustomEvent('back', { bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent('back', { bubbles: true, composed: true })
+    );
   }
 
   renderPageList(showOptions: boolean = true) {
@@ -431,23 +298,23 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
       'move-up': {
         disabled: ix === 0,
         text: 'move up',
-        icon: 'arrow_upward'
+        icon: 'arrow_upward',
       },
       'move-down': {
         disabled: ix === (this.pagesList as any[]).length - 1,
         text: 'move down',
-        icon: 'arrow_downward'
+        icon: 'arrow_downward',
       },
       'add-below': {
         disabled: false,
         text: 'create below',
-        icon: 'add'
+        icon: 'add',
       },
       remove: {
         disabled: false,
         text: 'remove',
-        icon: 'clear'
-      }
+        icon: 'clear',
+      },
     };
 
     const text = htmlToText(page.title);
@@ -461,80 +328,85 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
     if (selected) classes.push('title-selected');
 
     return html`
-      <div
-        class=${classes.join(' ')}
-        draggable="false"
-        @dragstart=${e => this.handlePageDrag(e, page.id)}
-        @click=${() => this.selectPage(ix)}
-      >
-        <div class="text-container">
-          ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
+      <div class="page-item-row">
+        <div
+          class=${classes.join(' ')}
+          draggable="true"
+          @dragstart=${(e) => this.handlePageDrag(e, ix)}
+          @dragenter=${(e) => this.dragEnterOver(e, ix)}
+          @dragleave=${(e) => this.dragLeaveOver(e, ix)}
+          @click=${() => this.selectPage(ix)}
+        >
+          <div class="text-container">
+            ${text.length < MAX_LENGTH
+              ? text
+              : `${text.slice(0, MAX_LENGTH)}...`}
+          </div>
+          ${this.editableActual && showOptions
+            ? html`
+                <div class="item-menu-container">
+                  <uprtcl-options-menu
+                    class="options-menu"
+                    @option-click=${(e) => this.optionOnPage(ix, e.detail.key)}
+                    .config=${menuConfig}
+                    skinny
+                  >
+                  </uprtcl-options-menu>
+                </div>
+              `
+            : ''}
         </div>
-        ${this.editableActual && showOptions
-          ? html`
-              <div class="item-menu-container">
-                <uprtcl-options-menu
-                  class="options-menu"
-                  @option-click=${e => this.optionOnPage(ix, e.detail.key)}
-                  .config=${menuConfig}
-                >
-                </uprtcl-options-menu>
-              </div>
-            `
+        ${page.draggingOver
+          ? html`<div class="title-dragging-over"></div>`
           : ''}
       </div>
     `;
   }
 
   renderHome() {
-    return ``;
-    // return this.pagesList
-    //   ? this.pagesList.map((page, ix) => {
-    //       return html`
-    //         <uprtcl-card class="home-card bg-transition" @click=${() => this.selectPage(ix)}>
-    //           ${page.title}
-    //         </uprtcl-card>
-    //       `;
-    //     })
-    //   : '';
+    return html`<div class="home-title" style=${`color: ${this.color}`}>
+        Now seeing
+      </div>
+      <uprtcl-card>
+        <evees-perspective-icon
+          perspective-id=${this.uref}
+        ></evees-perspective-icon>
+      </uprtcl-card>`;
   }
 
   render() {
-    if (this.loading)
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+    if (this.loading) return html` <uprtcl-loading></uprtcl-loading> `;
 
     this.logger.log('rendering wiki after loading');
 
     return html`
       <div class="app-content-with-nav">
-        <div class="app-navbar" @dragover=${this.dragOverEffect} @drop=${this.handlePageDrop}>
+        <div
+          class="app-navbar"
+          @dragover=${this.dragOverEffect}
+          @drop=${this.handlePageDrop}
+        >
           ${this.renderPageList()}
         </div>
 
         <div class="app-content">
-          ${this.selectedPageIx !== undefined && this.wiki
+          ${this.selectedPageIx !== undefined && this.data
             ? html`
                 <div class="page-container">
                   <documents-editor
                     id="doc-editor"
                     .client=${this.client}
-                    uref=${this.wiki.object.pages[this.selectedPageIx] as string}
+                    uref=${this.data.object.pages[
+                      this.selectedPageIx
+                    ] as string}
                     parent-id=${this.uref}
                     color=${this.color}
-                    official-owner=${this.officialOwner}
-                    ?check-owner=${this.checkOwner}
-                    show-info
+                    .eveesInfoConfig=${this.eveesInfoConfig}
                   >
                   </documents-editor>
                 </div>
               `
-            : html`
-                <div class="home-container">
-                  ${this.renderHome()}
-                </div>
-              `}
+            : html` <div class="home-container">${this.renderHome()}</div> `}
         </div>
       </div>
     `;
@@ -571,6 +443,9 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
         .empty-pages-loader {
           margin-top: 22px;
           display: block;
+        }
+        .page-item-row {
+          position: relative;
         }
         .page-item {
           min-height: 48px;
@@ -611,6 +486,13 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
           font-weight: bold;
           background-color: rgb(200, 200, 200, 0.2);
         }
+        .title-dragging-over {
+          position: absolute;
+          bottom: -1px;
+          height: 2px;
+          background-color: #2196f3;
+          width: 100%;
+        }
         .empty {
           width: 100%;
           text-align: center;
@@ -635,24 +517,24 @@ export class WikiDrawerContent extends moduleConnect(LitElement) {
           flex-direction: column;
         }
         .home-container {
+          margin: 0 auto;
+          max-width: 900px;
+          width: 100%;
           text-align: center;
           height: auto;
           padding: 6vw 0vw;
         }
-        .home-card {
-          width: 100%;
-          font-size: 20px;
-          display: block;
-          max-width: 340px;
-          margin: 18px auto;
-          cursor: pointer;
-          padding: 8px 24px;
+        .home-container .home-title {
+          font-size: 22px;
           font-weight: bold;
         }
-        .home-card:hover {
-          background-color: #f1f1f1;
+        .home-container uprtcl-card {
+          display: block;
+          width: 340px;
+          margin: 16px auto;
+          padding: 12px 16px;
         }
-      `
+      `,
     ];
   }
 }

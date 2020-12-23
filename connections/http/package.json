@@ -1,0 +1,79 @@
+{
+  "name": "@uprtcl/http-provider",
+  "version": "0.1.1",
+  "description": "_Prtcl provider wrappers around the native fetch api",
+  "homepage": "https://uprtcl.io",
+  "scripts": {
+    "update-uprtcl": "ncu -u \"/^@uprtcl.*$/\"",
+    "clean": "rimraf dist",
+    "dev": "rollup -w -c rollup.config.ts",
+    "build": "npm run clean && rollup -c rollup.config.ts",
+    "test": "karma start --coverage",
+    "test:watch": "karma start --auto-watch=true --single-run=false"
+  },
+  "dependencies": {
+    "@auth0/auth0-spa-js": "^1.11.0",
+    "@uprtcl/cortex": "^0.1.1",
+    "@uprtcl/ethereum-provider": "^0.1.1",
+    "@uprtcl/evees": "0.1.1",
+    "@uprtcl/ipfs-provider": "^0.1.1",
+    "@uprtcl/micro-orchestrator": "^0.1.1",
+    "@uprtcl/multiplatform": "^0.1.1",
+    "inversify": "^5.0.1",
+    "lit-element": "^2.3.0",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^2.5.6",
+    "@open-wc/testing-karma": "^3.0.0",
+    "@rollup/plugin-json": "^4.0.1",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^10.11.0",
+    "istanbul-instrumenter-loader": "^3.0.1",
+    "karma": "^4.4.1",
+    "karma-webpack": "^4.0.2",
+    "lit-html": "^1.1.2",
+    "npm-check-updates": "^10.2.1",
+    "rimraf": "^2.6.2",
+    "rollup": "^2.0.5",
+    "rollup-plugin-sourcemaps": "^0.5.0",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "temp-dir": "^2.0.0",
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "contributors": [
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    },
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@collectiveone.org",
+      "url": "https://github.com/pepoospina"
+    }
+  ],
+  "keywords": [
+    "service",
+    "provider",
+    "backend",
+    "websocket",
+    "web3",
+    "holochain"
+  ],
+  "license": "MIT",
+  "main": "dist/uprtcl-http-provider.umd.js",
+  "module": "dist/uprtcl-http-provider.es5.js",
+  "typings": "dist/types/uprtcl-http-provider.d.ts",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=10.0.0 <14"
+  },
+  "gitHead": "4a694f4b932472046283ecedcd65de631ab08813"
+}

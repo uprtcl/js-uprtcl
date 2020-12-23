@@ -10,14 +10,15 @@ export default {
   input: `src/${libraryName}.ts`,
   output: [
     { file: pkg.main, name: libraryName, format: 'umd', sourcemap: true },
-    { file: pkg.module, format: 'es', sourcemap: true }
+    { file: pkg.module, format: 'es', sourcemap: true },
   ],
   external: [
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.peerDependencies || {}),
   ],
   watch: {
-    include: 'src/**'
+    buildDelay: 1000,
+    include: 'src/**',
   },
   plugins: [
     json(),
@@ -26,8 +27,8 @@ export default {
       abortOnError: false,
 
       useTsconfigDeclarationDir: true,
-      cacheRoot: `${require('temp-dir')}/.rpt2_cache`
+      cacheRoot: `${require('temp-dir')}/.rpt2_cache`,
     }),
-    sourceMaps()
-  ]
+    sourceMaps(),
+  ],
 };

@@ -17,6 +17,7 @@ export default {
     ...Object.keys(pkg.peerDependencies || {}),
   ],
   watch: {
+    buildDelay: 1000,
     include: 'src/**',
   },
   plugins: [
