@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "experimentalDecorators": true,
     "declarationDir": "dist/types",
     "outDir": "dist/lib",
     "baseUrl": "./",
