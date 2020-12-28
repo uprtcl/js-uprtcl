@@ -1,10 +1,17 @@
 import { css } from 'lit-element';
 
 export const styles = css`
+  :root {
+    --primary: #2f80ed;
+    --white: #ffffff;
+    --black: #000000;
+    --black-transparent: rgba(3, 3, 3, 0.25);
+    --gray: #333333;
+    --border-radius-complete: 100vh;
+  }
   .button-text {
     font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     text-decoration: none;
-    text-transform: uppercase;
     font-family: Roboto, sans-serif;
     font-size: 14px;
     font-weight: 500;
@@ -13,7 +20,8 @@ export const styles = css`
     user-select: none;
   }
   .button-filled {
-    background-color: var(--background-color, #2196f3);
+    background-color: var(--primary, #2f80ed);
+
     color: #ffffff;
   }
   .button-filled svg {
@@ -23,7 +31,7 @@ export const styles = css`
     background-color: var(--background-color-hover, #50b0ff);
   }
   .button-filled-secondary {
-    background-color: var(--background-color, #c9d4db);
+    background-color: var(--primary, #2f80ed);
     color: #ffffff;
   }
   .button-filled-secondary-no-hover {

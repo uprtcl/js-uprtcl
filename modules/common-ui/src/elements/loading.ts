@@ -17,7 +17,7 @@ export class UprtclLoading extends LitElement {
         }
         svg {
           height: 100%;
-          fill: var(--fill, #50b0ff);
+          fill: var(--fill, --white);
         }
       `
     ];

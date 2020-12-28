@@ -252,6 +252,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           flex: 1 1 0;
           display: flex;
           flex-direction: column;
+
         }
         .app-topbar {
           width: 100%;

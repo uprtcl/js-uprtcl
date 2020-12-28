@@ -45,10 +45,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
         this.logger.log('ContentUpdatedEvent()', this.uref);
         this.load();
       }
-      if (
-        this.pagesList &&
-        this.pagesList.findIndex((page) => page.id === e.detail.uref) !== -1
-      ) {
+      if (this.pagesList && this.pagesList.findIndex((page) => page.id === e.detail.uref) !== -1) {
         this.loadPagesData();
       }
     }) as EventListener);
@@ -251,18 +248,27 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
   }
 
   goBack() {
-    this.dispatchEvent(
-      new CustomEvent('back', { bubbles: true, composed: true })
-    );
+    this.dispatchEvent(new CustomEvent('back', { bubbles: true, composed: true }));
   }
 
   renderPageList(showOptions: boolean = true) {
     if (this.pagesList === undefined)
-      return html`
-        <uprtcl-loading class="empty-pages-loader"></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading class="empty-pages-loader"></uprtcl-loading> `;
 
     return html`
+      ${this.editableActual
+        ? html`
+            <div class="button-row">
+              <uprtcl-button-loading
+                class="button-new-page"
+                @click=${() => this.newPage()}
+                ?loading=${this.creatingNewPage}
+              >
+                ${this.t('wikis:new-page')}
+              </uprtcl-button-loading>
+            </div>
+          `
+        : html``}
       ${this.pagesList.length === 0
         ? html`
             <div class="empty">
@@ -277,19 +283,6 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
               })}
             </uprtcl-list>
           `}
-      ${this.editableActual
-        ? html`
-            <div class="button-row">
-              <uprtcl-button-loading
-                icon="add_circle_outline"
-                @click=${() => this.newPage()}
-                ?loading=${this.creatingNewPage}
-              >
-                ${this.t('wikis:new-page')}
-              </uprtcl-button-loading>
-            </div>
-          `
-        : html``}
     `;
   }
 
@@ -338,9 +331,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
           @click=${() => this.selectPage(ix)}
         >
           <div class="text-container">
-            ${text.length < MAX_LENGTH
-              ? text
-              : `${text.slice(0, MAX_LENGTH)}...`}
+            ${text.length < MAX_LENGTH ? text : `${text.slice(0, MAX_LENGTH)}...`}
           </div>
           ${this.editableActual && showOptions
             ? html`
@@ -356,21 +347,15 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
               `
             : ''}
         </div>
-        ${page.draggingOver
-          ? html`<div class="title-dragging-over"></div>`
-          : ''}
+        ${page.draggingOver ? html`<div class="title-dragging-over"></div>` : ''}
       </div>
     `;
   }
 
   renderHome() {
-    return html`<div class="home-title" style=${`color: ${this.color}`}>
-        Now seeing
-      </div>
+    return html`<div class="home-title" style=${`color: ${this.color}`}>Now seeing</div>
       <uprtcl-card>
-        <evees-perspective-icon
-          perspective-id=${this.uref}
-        ></evees-perspective-icon>
+        <evees-perspective-icon perspective-id=${this.uref}></evees-perspective-icon>
       </uprtcl-card>`;
   }
 
@@ -381,11 +366,8 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
 
     return html`
       <div class="app-content-with-nav">
-        <div
-          class="app-navbar"
-          @dragover=${this.dragOverEffect}
-          @drop=${this.handlePageDrop}
-        >
+        <div class="app-navbar" @dragover=${this.dragOverEffect} @drop=${this.handlePageDrop}>
+          <evees-login-widget @showName=${true}></evees-login-widget>
           ${this.renderPageList()}
         </div>
 
@@ -396,9 +378,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
                   <documents-editor
                     id="doc-editor"
                     .client=${this.client}
-                    uref=${this.data.object.pages[
-                      this.selectedPageIx
-                    ] as string}
+                    uref=${this.data.object.pages[this.selectedPageIx] as string}
                     parent-id=${this.uref}
                     color=${this.color}
                     .eveesInfoConfig=${this.eveesInfoConfig}
@@ -426,13 +406,25 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
           display: flex;
           flex-direction: row;
           position: relative;
+          overflow: hidden;
         }
         .app-navbar {
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
           width: 260px;
           flex-shrink: 0;
+          background: var(--white);
+          box-shadow: 1px 0px 10px rgba(0, 0, 0, 0.1);
+          z-index: 1;
+          height: 100%;
+          overflow: scroll;
         }
+        .app-navbar::-webkit-scrollbar {
+          display: none;
+        }
+
         .app-content {
-          border-left: solid #cccccc 1px;
+          background: var(--background-color);
           min-width: 475px;
           max-width: calc(100% - 260px - 1px);
           flex-grow: 1;
@@ -499,6 +491,9 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
           padding-top: 24px;
           color: #a2a8aa;
         }
+        .button-new-page {
+          height: 40px;
+        }
         .button-row {
           width: calc(100% - 20px);
           padding: 16px 10px 8px 10px;
@@ -506,11 +501,10 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
         }
         .button-row uprtcl-button-loading {
           margin: 0 auto;
-          width: 180px;
+          /* width: 180px; */
         }
         .page-container {
           margin: 0 auto;
-          max-width: 900px;
           width: 100%;
           flex-grow: 1;
           display: flex;
