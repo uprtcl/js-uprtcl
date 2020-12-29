@@ -1,11 +1,7 @@
 import { html } from 'lit-html';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
-import {
-  KnownSourcesHttp,
-  HttpProvider,
-  HttpStoreCached,
-} from '@uprtcl/http-provider';
+import { KnownSourcesHttp, HttpProvider, HttpStoreCached } from '@uprtcl/http-provider';
 import { KnownSourcesService } from '@uprtcl/multiplatform';
 
 import {
@@ -35,7 +31,7 @@ export class EveesHttp implements EveesRemote {
   constructor(protected provider: HttpProvider, public store: HttpStoreCached) {
     this.cache = new EveesHttpCacheDB(`evees-cache-${this.provider.id}`);
     this.accessControl = new EveesAccessControlHttp(this.provider, this.cache);
-    this.proposals = new ProposalsHttp(this.provider, this);
+    this.proposals = new ProposalsHttp(this.provider, this.store.casID);
     this.knownSources = new KnownSourcesHttp(this.provider);
   }
 
@@ -85,9 +81,7 @@ export class EveesHttp implements EveesRemote {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    const current = await this.cache.newPerspectives.get(
-      perspectiveData.perspective.id
-    );
+    const current = await this.cache.newPerspectives.get(perspectiveData.perspective.id);
     if (!current) {
       await this.cache.newPerspectives.put({
         id: perspectiveData.perspective.id,
@@ -126,9 +120,7 @@ export class EveesHttp implements EveesRemote {
     this.logger.log('flushing done');
   }
 
-  async createPerspectiveBatch(
-    newPerspectivesData: NewPerspectiveData[]
-  ): Promise<void> {
+  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
     const promises = newPerspectivesData.map((perspectiveData) =>
       this.createPerspective(perspectiveData)
     );
@@ -151,10 +143,7 @@ export class EveesHttp implements EveesRemote {
       context: context,
     });
     const cachedPerspectives = this.cache
-      ? await this.cache.newPerspectives
-          .where('context')
-          .equals(context)
-          .toArray()
+      ? await this.cache.newPerspectives.where('context').equals(context).toArray()
       : [];
 
     return perspectiveIds.concat(cachedPerspectives.map((e) => e.id));
@@ -166,9 +155,7 @@ export class EveesHttp implements EveesRemote {
       return { headId: cachedUpdate.head };
     }
 
-    const cachedNewPerspective = await this.cache.newPerspectives.get(
-      perspectiveId
-    );
+    const cachedNewPerspective = await this.cache.newPerspectives.get(perspectiveId);
 
     if (cachedNewPerspective !== undefined) {
       return cachedNewPerspective.newPerspective.details;
@@ -216,18 +203,12 @@ export class EveesHttp implements EveesRemote {
       path = url.hostname;
     }
     return html`
-      <uprtcl-icon-and-name
-        name=${path ? path : 'unknown'}
-        show-name
-      ></uprtcl-icon-and-name>
+      <uprtcl-icon-and-name name=${path ? path : 'unknown'} show-name></uprtcl-icon-and-name>
     `;
   }
   avatar(userId: string, config: any = { showName: true }) {
     return html`
-      <uprtcl-icon-and-name
-        ?show-name=${config.showName}
-        name=${userId}
-      ></uprtcl-icon-and-name>
+      <uprtcl-icon-and-name ?show-name=${config.showName} name=${userId}></uprtcl-icon-and-name>
     `;
   }
 }

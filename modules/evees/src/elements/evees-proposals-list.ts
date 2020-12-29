@@ -40,7 +40,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
               proposals
             }
           }
-        }`
+        }`,
     });
 
     /** data on other perspectives (proposals are injected on them) */
@@ -70,7 +70,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
             ? html`
                 <uprtcl-list>
                   ${this.proposalsIds.map(
-                    id =>
+                    (id) =>
                       html`
                         <uprtcl-list-item
                           ><evees-proposal-row
@@ -102,6 +102,9 @@ export class ProposalsList extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: center;
+      }
+      evees-proposal-row {
+        height: 28px;
       }
     `;
   }

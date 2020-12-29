@@ -1,4 +1,5 @@
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
+import { Logger } from '@uprtcl/micro-orchestrator';
 
 export interface PostResult {
   result: string;
@@ -170,11 +171,7 @@ export class HttpConnection extends Connection {
    * @param body body of the request
    * @param method method of the request ('POST' or 'PUT')
    */
-  public async putOrPost(
-    url: string,
-    body: any,
-    method: string
-  ): Promise<PostResult> {
+  public async putOrPost(url: string, body: any, method: string): Promise<PostResult> {
     this.logger.log(`[HTTP ${method}]`, url, body);
     return fetch(url, {
       method: method,

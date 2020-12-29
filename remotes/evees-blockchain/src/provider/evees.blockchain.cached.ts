@@ -66,10 +66,7 @@ export class EveesBlockchainCached implements EveesRemote {
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
     const perspectiveId = await this.store.create(secured.object);
-    this.logger.log(
-      `[ETH] persistPerspectiveEntity - added to IPFS`,
-      perspectiveId
-    );
+    this.logger.log(`[ETH] persistPerspectiveEntity - added to IPFS`, perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
       throw new Error(
@@ -90,10 +87,7 @@ export class EveesBlockchainCached implements EveesRemote {
     details: PerspectiveDetails,
     pin: boolean = false
   ) {
-    if (!this.cache)
-      throw new Error(
-        'cache not initialized, probably the user was not logged in'
-      );
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
 
     // action is done on the cache
     await this.cacheInitialized();
@@ -145,20 +139,14 @@ export class EveesBlockchainCached implements EveesRemote {
     if (fromPerspectiveId) object.fromPerspectiveId = fromPerspectiveId;
     if (fromHeadId) object.fromHeadId = fromHeadId;
 
-    const perspective = await deriveSecured<Perspective>(
-      object,
-      this.store.cidConfig
-    );
+    const perspective = await deriveSecured<Perspective>(object, this.store.cidConfig);
     perspective.casID = this.store.casID;
 
     return perspective;
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    if (!this.cache)
-      throw new Error(
-        'cache not initialized, probably the user was not logged in'
-      );
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
 
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
@@ -172,9 +160,7 @@ export class EveesBlockchainCached implements EveesRemote {
     const perspectiveId = await this.persistPerspectiveEntity(secured);
     if (perspectiveId !== secured.id) {
       throw new Error(
-        `Unexpected perspective id ${perspectiveId} for perspective ${JSON.stringify(
-          secured
-        )}`
+        `Unexpected perspective id ${perspectiveId} for perspective ${JSON.stringify(secured)}`
       );
     }
 
@@ -209,10 +195,7 @@ export class EveesBlockchainCached implements EveesRemote {
     await this.initCache();
   }
 
-  async getEveesHeadOf(
-    userId: string,
-    block?: number
-  ): Promise<string | undefined> {
+  async getEveesHeadOf(userId: string, block?: number): Promise<string | undefined> {
     block = block || (await this.connection.getLatestBlock());
     const head = await this.connection.getHead(userId, block);
     if (!head) {
@@ -222,27 +205,19 @@ export class EveesBlockchainCached implements EveesRemote {
     return head;
   }
 
-  async getEveesDataFromHead(
-    head: string | undefined
-  ): Promise<UserPerspectivesDetails> {
+  async getEveesDataFromHead(head: string | undefined): Promise<UserPerspectivesDetails> {
     if (!head) return {};
     const eveesData = (await this.store.get(head)) as UserPerspectivesDetails;
     return eveesData ? eveesData : {};
   }
 
-  async getEveesDataOf(
-    userId: string,
-    block?: number
-  ): Promise<UserPerspectivesDetails> {
+  async getEveesDataOf(userId: string, block?: number): Promise<UserPerspectivesDetails> {
     const head = await this.getEveesHeadOf(userId, block);
     return this.getEveesDataFromHead(head);
   }
 
   async initCache(): Promise<void> {
-    if (!this.cache)
-      throw new Error(
-        'cache not initialized, probably the user was not logged in'
-      );
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
     if (!this.userId) throw new Error('user not defined');
 
     const block = await this.connection.getLatestBlock();
@@ -251,9 +226,7 @@ export class EveesBlockchainCached implements EveesRemote {
     await this.cache.meta.put({ entry: 'eveesData', value: eveesData });
   }
 
-  async createPerspectiveBatch(
-    newPerspectivesData: NewPerspectiveData[]
-  ): Promise<void> {
+  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
     for (var newPerspectiveData of newPerspectivesData) {
       await this.createPerspective(newPerspectiveData);
     }
@@ -263,25 +236,17 @@ export class EveesBlockchainCached implements EveesRemote {
     this.logger.log('getContextPerspectives', { context });
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    const contextStore = await this.orbitdbcustom.getStore(
-      EveesOrbitDBEntities.Context,
-      {
-        context,
-      }
-    );
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context,
+    });
     const perspectiveIds = [...contextStore.values()];
 
     // include perspectives of the cache
     const cachedPerspectives = this.cache
-      ? await this.cache.newPerspectives
-          .where('context')
-          .equals(context)
-          .toArray()
+      ? await this.cache.newPerspectives.where('context').equals(context).toArray()
       : [];
 
-    const allPerspectivesIds = perspectiveIds.concat(
-      cachedPerspectives.map((e) => e.id)
-    );
+    const allPerspectivesIds = perspectiveIds.concat(cachedPerspectives.map((e) => e.id));
 
     this.logger.log('getContextPerspectives - done ', {
       context,
@@ -291,9 +256,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    const { payload: perspective } = (await this.store.get(
-      perspectiveId
-    )) as Signed<Perspective>;
+    const { payload: perspective } = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
     /** even if I'm not logged in, show the cached data (valid for the local user) */
     if (this.cache && (await this.cache.meta.get('block')) !== undefined) {
@@ -303,22 +266,17 @@ export class EveesBlockchainCached implements EveesRemote {
         return { headId: cachedUpdate.head };
       }
 
-      const cachedNewPerspective = await this.cache.newPerspectives.get(
-        perspectiveId
-      );
+      const cachedNewPerspective = await this.cache.newPerspectives.get(perspectiveId);
       if (cachedNewPerspective !== undefined) {
         return { headId: cachedNewPerspective.head };
       }
 
-      const cachedUserPerspectives = (await this.cache.meta.get('eveesData'))
-        .value;
+      const cachedUserPerspectives = (await this.cache.meta.get('eveesData')).value;
       if (cachedUserPerspectives[perspectiveId]) {
         return cachedUserPerspectives[perspectiveId];
       }
 
-      const cacheDelete = await this.cache.deletePerspectives.get(
-        perspectiveId
-      );
+      const cacheDelete = await this.cache.deletePerspectives.get(perspectiveId);
       if (cacheDelete !== undefined) {
         return { headId: undefined };
       }
@@ -330,10 +288,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async createNewEveesData() {
-    if (!this.cache)
-      throw new Error(
-        'cache not initialized, probably the user was not logged in'
-      );
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
     if (!this.userId) throw new Error('user not logged in');
 
     const newPerspectives = await this.cache.newPerspectives.toArray();
@@ -365,10 +320,11 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async flushCache() {
-    if (!this.cache)
-      throw new Error(
-        'cache not initialized, probably the user was not logged in'
-      );
+    if ((this.store as any).flush) {
+      await (this.store as any).flush();
+    }
+
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
     const newHash = await this.createNewEveesData();
 
     /** create the context stores for the new perspectives */
@@ -379,20 +335,15 @@ export class EveesBlockchainCached implements EveesRemote {
     await Promise.all(
       newPerspectives.map(async (newPerspective) => {
         /** create and pin context stores */
-        const contextStore = await this.orbitdbcustom.getStore(
-          EveesOrbitDBEntities.Context,
-          {
-            context: newPerspective.context,
-          }
-        );
+        const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+          context: newPerspective.context,
+        });
 
         this.logger.info(`contextStore.add(${newPerspective.id})`);
         const contextP = contextStore.add(newPerspective.id);
 
         /** force pin of proposals to each perspective stores */
-        const proposalP = this.proposals.getProposalsToPerspective(
-          newPerspective.id
-        );
+        const proposalP = this.proposals.getProposalsToPerspective(newPerspective.id);
 
         return Promise.all([proposalP, contextP]);
       })
@@ -400,15 +351,10 @@ export class EveesBlockchainCached implements EveesRemote {
     await Promise.all(
       deletedPerspectivesIds.map(async (deletedPerspective) => {
         /** create and pin context stores */
-        const perspective = (await this.store.get(
-          deletedPerspective.id
-        )) as Signed<Perspective>;
-        const contextStore = await this.orbitdbcustom.getStore(
-          EveesOrbitDBEntities.Context,
-          {
-            context: perspective.payload.context,
-          }
-        );
+        const perspective = (await this.store.get(deletedPerspective.id)) as Signed<Perspective>;
+        const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+          context: perspective.payload.context,
+        });
 
         this.logger.info(`contextStore.delete(${deletedPerspective.id})`);
         const contextP = contextStore.delete(deletedPerspective.id);
@@ -423,10 +369,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async updateHead(newHash: string | undefined) {
-    if (!this.cache)
-      throw new Error(
-        'cache not initialized, probably the user was not logged in'
-      );
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
     await this.connection.updateHead(newHash);
 
     /* delete cache */
@@ -436,10 +379,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
-    if (!this.cache)
-      throw new Error(
-        'cache not initialized, probably the user was not logged in'
-      );
+    if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
     if (!this.userId) throw new Error('user logged in');
 
     // action is done on the cache
@@ -458,9 +398,7 @@ export class EveesBlockchainCached implements EveesRemote {
     }
 
     /* remove from context store */
-    const perspective = (await this.store.get(perspectiveId)) as Signed<
-      Perspective
-    >;
+    const perspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
     const contextStore = await this.orbitdbcustom.getStore(
       EveesOrbitDBEntities.Context,
       {
@@ -479,9 +417,7 @@ export class EveesBlockchainCached implements EveesRemote {
     await this.connection.connectWallet(userId);
 
     if (!this.connection.account)
-      throw new Error(
-        'userId/account should ne be undefined after wallet was connected'
-      );
+      throw new Error('userId/account should ne be undefined after wallet was connected');
     this.cache = new EveesCacheDB(
       `${this.connection.getNetworkId()}-${this.connection.account}-evees-cache`
     );
@@ -507,9 +443,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   avatar(userId: string, config: any) {
-    return this.connection.avatar
-      ? this.connection.avatar(userId, config)
-      : html``;
+    return this.connection.avatar ? this.connection.avatar(userId, config) : html``;
   }
 
   lense(): Lens {
@@ -518,9 +452,7 @@ export class EveesBlockchainCached implements EveesRemote {
       type: 'remote',
       render: (entity: any) => {
         return html`
-          <evees-blockchain-remote
-            remote-id=${entity.remoteId}
-          ></evees-blockchain-remote>
+          <evees-blockchain-remote remote-id=${entity.remoteId}></evees-blockchain-remote>
         `;
       },
     };

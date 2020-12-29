@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-local",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "EveesRemote on local storage",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -12,13 +12,13 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.1.1",
-    "@uprtcl/cortex": "^0.1.1",
-    "@uprtcl/evees": "^0.1.1",
-    "@uprtcl/graphql": "^0.1.1",
-    "@uprtcl/lenses": "^0.1.1",
-    "@uprtcl/micro-orchestrator": "^0.1.1",
-    "@uprtcl/multiplatform": "^0.1.1",
+    "@uprtcl/common-ui": "^0.1.2",
+    "@uprtcl/cortex": "^0.1.3",
+    "@uprtcl/evees": "^0.1.4",
+    "@uprtcl/graphql": "^0.1.2",
+    "@uprtcl/lenses": "^0.1.3",
+    "@uprtcl/micro-orchestrator": "^0.1.2",
+    "@uprtcl/multiplatform": "^0.1.3",
     "apollo-boost": "^0.4.7",
     "dexie": "^3.0.2"
   },
