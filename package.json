@@ -11,8 +11,11 @@
     "build": "lerna run build",
     "clean": "lerna clean --yes",
     "dev": "lerna run dev --parallel",
+    "fix:prettier": "prettier --write  . \"**/*.{js,ts}\"",
     "ibuild": "npm i && npm run clean && npm run bootstrap && npm run build",
     "hard-reset": "find . -type d -name node_modules -prune -exec rm -rf {} \\; && find . -type d -name dist -prune -exec rm -rf {} \\; &&  find . -name \"package-lock.json\" -delete && npm i && npm run clean && npm run bootstrap && npm run build",
+    "lint:prettier": "prettier  --list-different . \"**/*.{js,ts}\" ",
+    "lint": "npm run lint:prettier",
     "test": "lerna run test",
     "test:watch": "lerna run test:watch --parallel",
     "docs:dev": "vuepress dev docs",
@@ -23,11 +26,13 @@
   },
   "devDependencies": {
     "@types/node": "^10.11.0",
+    "colors": "^1.4.0",
+    "husky": "^4.3.6",
     "lerna": "^3.21.0",
+    "lint-staged": "^10.5.3",
     "shelljs": "^0.8.3",
     "ts-node": "=7.0.1",
-    "vuepress": "^1.2.0",
-    "colors": "^1.4.0"
+    "vuepress": "^1.2.0"
   },
   "contributors": [
     {
