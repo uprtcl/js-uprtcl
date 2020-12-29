@@ -8,13 +8,11 @@ export class UprtclHelp extends LitElement {
 
   render() {
     return html`
-      <uprtcl-popper id="popper" icon="help_outline">
+      <uprtcl-popper id="popper" icon="help_outline" position="top-right">
         <div class="help-content">
           <slot></slot>
         </div>
-        <uprtcl-button @click=${() => (this.popper.showDropdown = false)}>
-          close
-        </uprtcl-button>
+        <uprtcl-button @click=${() => (this.popper.showDropdown = false)}> Close </uprtcl-button>
       </uprtcl-popper>
     `;
   }
@@ -23,7 +21,8 @@ export class UprtclHelp extends LitElement {
     return css`
       .help-content {
         padding: 32px 16px;
-        color: #4e585c;
+        color: var(--gray);
+        background: var(--white);
       }
 
       uprtcl-button {

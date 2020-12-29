@@ -23,9 +23,7 @@ export class UprtclPopper extends LitElement {
   popperId!: string;
 
   handleDocClick = (event) => {
-    const ix = event
-      .composedPath()
-      .findIndex((el: any) => el.id === this.popperId);
+    const ix = event.composedPath().findIndex((el: any) => el.id === this.popperId);
     if (ix === -1) {
       this.showDropdown = false;
     }
@@ -64,6 +62,8 @@ export class UprtclPopper extends LitElement {
     const positions = {
       'bottom-left': 'info-box-bottom-left',
       'bottom-right': 'info-box-bottom-right',
+      'top-right': 'info-box-top-right',
+      'top-left': 'info-box-top-left',
       right: 'info-box-right',
     };
     let classes = [positions[this.position]];
@@ -111,6 +111,14 @@ export class UprtclPopper extends LitElement {
       .info-box-bottom-right {
         right: 0px;
         top: calc(100% + 5px);
+      }
+      .info-box-top-right {
+        right: 0;
+        bottom: calc(100% + 5px);
+      }
+      .info-box-top-left {
+        left: 0;
+        bottom: calc(100% + 5px);
       }
       .info-box-bottom-left {
         left: 0px;

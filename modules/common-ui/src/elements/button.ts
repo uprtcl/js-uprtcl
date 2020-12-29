@@ -2,6 +2,7 @@ import { LitElement, html, css, property } from 'lit-element';
 import { styles } from './styles.css';
 import { icons } from './icons';
 
+type ButtonVariant = 'normal' | 'long' | 'icon';
 export class UprtclButton extends LitElement {
   @property({ type: String })
   icon!: string;
@@ -17,6 +18,9 @@ export class UprtclButton extends LitElement {
 
   @property({ type: Boolean })
   raised: boolean = false;
+
+  @property({ type: String })
+  variant?: ButtonVariant = 'normal';
 
   /** Seems I cant prevent the click event from being emitted outside of this element  */
 
@@ -43,12 +47,17 @@ export class UprtclButton extends LitElement {
       }
     }
 
+    if (this.variant === 'normal') {
+      classes.push('variant-normal');
+    } else if (this.variant === 'long') {
+      classes.push('variant-long');
+    } else if (this.variant === 'icon') {
+      classes.push('variant-icon');
+    }
+
     return html`
       <div class=${classes.join(' ')}>
-        ${this.icon
-          ? html` <div class="icon-container">${icons[this.icon]}</div> `
-          : ''}
-
+        ${this.icon ? html` <div class="icon-container">${icons[this.icon]}</div> ` : ''}
         <slot></slot>
       </div>
     `;
@@ -61,15 +70,14 @@ export class UprtclButton extends LitElement {
         :host {
           width: initial;
           display: block;
+          background: transparent;
         }
         .button-layout {
-          border-radius: 4px;
+          border-radius: var(--border-radius-complete);
           display: flex;
           flex-direction: row;
           justify-content: var(--justify-content, center);
-          line-height: 36px;
-          height: 36px;
-          padding: 0px 16px;
+          line-height: 24px;
         }
         .icon-container {
           height: 100%;
@@ -77,6 +85,16 @@ export class UprtclButton extends LitElement {
           flex-direction: column;
           justify-content: center;
           margin-right: 10px;
+        }
+        .variant-normal {
+          padding: 0.6rem 1.5rem;
+        }
+        .variant-long {
+          padding: 1rem 4rem;
+          font-weight: 700;
+        }
+        .variant-icon {
+          padding: 0;
         }
       `,
     ];

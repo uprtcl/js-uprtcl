@@ -98,7 +98,7 @@ export class UprtclFormString extends LitElement {
         align-items: center;
       }
       .actions uprtcl-button {
-        width: 180px;
+        /* width: 180px; */
       }
     `;
   }
