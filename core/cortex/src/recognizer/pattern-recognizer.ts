@@ -6,7 +6,7 @@ import { Entity } from '../types/entity';
 
 @injectable()
 export class PatternRecognizer {
-  patterns!: Pattern<any>[];
+  constructor(public patterns: Pattern<any>[] = []) {}
 
   /**
    * Recognizes which registered patterns match the given object

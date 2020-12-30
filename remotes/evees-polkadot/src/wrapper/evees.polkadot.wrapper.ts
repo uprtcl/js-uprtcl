@@ -1,4 +1,4 @@
-import { IpfsStore } from '@uprtcl/ipfs-provider';
+import { IpfsStore, PinnerCached } from '@uprtcl/ipfs-provider';
 import { CidConfig } from '@uprtcl/multiplatform';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
@@ -44,21 +44,16 @@ export class EveesPolkadotWrapper {
 
   async load() {
     const connections = getConnectionDetails();
-    const pkdConnection = new PolkadotConnection(
-      connections.connections,
-      connections.current
-    );
+    const pkdConnection = new PolkadotConnection(connections.connections, connections.current);
     await pkdConnection.ready();
 
     console.log(`${this.pinnerConfig.peerMultiaddr} connecting...`);
     await this.ipfs.swarm.connect(this.pinnerConfig.peerMultiaddr);
     console.log(`${this.pinnerConfig.peerMultiaddr} connected!`);
 
-    this.ipfsStore = new IpfsStore(
-      this.ipfsCidConfig,
-      this.ipfs,
-      this.pinnerConfig.url
-    );
+    const pinner = new PinnerCached(this.pinnerConfig.url, 3000);
+
+    this.ipfsStore = new IpfsStore(this.ipfsCidConfig, this.ipfs, pinner);
     await this.ipfsStore.ready();
 
     const identity = new PolkadotOrbitDBIdentity(pkdConnection);
@@ -67,7 +62,7 @@ export class EveesPolkadotWrapper {
       [ContextStore, ProposalStore, ProposalsToPerspectiveStore],
       [getContextAcl([identity]), getProposalsAcl([identity])],
       identity,
-      this.pinnerConfig.url,
+      pinner,
       this.pinnerConfig.peerMultiaddr,
       this.ipfs
     );
@@ -91,11 +86,7 @@ export class EveesPolkadotWrapper {
       quorum: 1.0 / 3.0,
       thresehold: 0.5,
     };
-    const pkdCouncilEvees = new EveesPolkadotCouncil(
-      pkdConnection,
-      this.ipfsStore,
-      councilConfig
-    );
+    const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, this.ipfsStore, councilConfig);
     await pkdEvees.connect();
 
     this.remotes = [pkdEvees, pkdCouncilEvees];
