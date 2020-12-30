@@ -1,4 +1,4 @@
-import { EveesWorkspace } from '../services/evees.workspace';
+import { EveesWorkspace } from '../services/evees.client.memory';
 
 export interface MergeStrategy {
   /**

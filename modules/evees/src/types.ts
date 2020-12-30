@@ -26,10 +26,6 @@ export interface Commit {
   dataId: string;
 }
 
-export const getAuthority = (perspective: Perspective): string => {
-  return `${perspective.remote}:${perspective.path}`;
-};
-
 export interface UpdateRequest {
   fromPerspectiveId?: string;
   oldHeadId?: string;

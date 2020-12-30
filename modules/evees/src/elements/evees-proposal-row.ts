@@ -6,7 +6,7 @@ import { EveesRemote } from 'src/services/evees.remote';
 import { EveesBindings } from 'src/bindings';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
-import { EveesWorkspace } from '../services/evees.workspace';
+import { EveesWorkspace } from '../services/evees.client.memory';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { ContentUpdatedEvent } from './events';
@@ -59,11 +59,10 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.client = this.request(EveesClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
-    const remote = (this.requestAll(
-      EveesBindings.EveesRemote
-    ) as EveesRemote[]).find((r) => r.id === this.remoteId);
-    if (remote === undefined)
-      throw new Error(`remote ${this.remoteId} not found`);
+    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+      (r) => r.id === this.remoteId
+    );
+    if (remote === undefined) throw new Error(`remote ${this.remoteId} not found`);
 
     const proposals = remote.proposals;
     if (proposals === undefined)
@@ -91,19 +90,12 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.proposal = await this.proposals.getProposal(this.proposalId);
 
     const fromPerspective = this.proposal.fromPerspectiveId
-      ? await loadEntity<Signed<Perspective>>(
-          this.client,
-          this.proposal.fromPerspectiveId
-        )
+      ? await loadEntity<Signed<Perspective>>(this.client, this.proposal.fromPerspectiveId)
       : undefined;
 
     /** the author is the creator of the fromPerspective */
-    this.authorId = fromPerspective
-      ? fromPerspective.object.payload.creatorId
-      : undefined;
-    this.authorRemote = fromPerspective
-      ? fromPerspective.object.payload.remote
-      : undefined;
+    this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
+    this.authorRemote = fromPerspective ? fromPerspective.object.payload.remote : undefined;
     this.loadingCreator = false;
 
     await this.checkCanExecute();
@@ -143,9 +135,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
             this.client,
             update.perspectiveId
           );
-          const remote = this.eveesRemotes.find(
-            (remote) => remote.id === remoteId
-          );
+          const remote = this.eveesRemotes.find((remote) => remote.id === remoteId);
           if (remote === undefined) throw new Error('remote undefined');
           return EveesHelpers.canWrite(this.client, update.perspectiveId);
         }
@@ -206,9 +196,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       };
     });
 
-    this.dispatchEvent(
-      new CustomEvent('dialogue-closed', { bubbles: true, composed: true })
-    );
+    this.dispatchEvent(new CustomEvent('dialogue-closed', { bubbles: true, composed: true }));
     this.showDiff = false;
 
     if (value === 'accept') {
@@ -279,18 +267,12 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     let renderDefault = true;
     let lense: any = undefined;
-    if (
-      this.remote &&
-      this.remote.proposals &&
-      this.remote.proposals.lense !== undefined
-    ) {
+    if (this.remote && this.remote.proposals && this.remote.proposals.lense !== undefined) {
       renderDefault = false;
       lense = this.remote.proposals.lense as any;
     }
 
-    return renderDefault
-      ? this.renderDefault()
-      : lense().render({ proposalId: this.proposalId });
+    return renderDefault ? this.renderDefault() : lense().render({ proposalId: this.proposalId });
   }
 
   static get styles() {

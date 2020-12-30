@@ -2,14 +2,7 @@
 import 'reflect-metadata';
 
 /** Types */
-export {
-  Commit,
-  Perspective,
-  Context,
-  PerspectiveDetails,
-  HasDiffLenses,
-  DiffLens,
-} from './types';
+export { Commit, Perspective, PerspectiveDetails, HasDiffLenses, DiffLens } from './types';
 
 /** Services interfaces */
 export { EveesSource } from './services/evees.source';
@@ -22,7 +15,7 @@ export { EveesConfig } from './types';
 export { Evees } from './services/evees';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
-export { EveesWorkspace } from './services/evees.workspace';
+export { EveesClient } from './services/evees.client.memory';
 export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 
 /** Merge */
@@ -41,10 +34,7 @@ export { EveesBaseElement } from './elements/evees-base';
 export { EveesInfoPopper } from './elements/evees-info-popper';
 export { EveesInfoPage } from './elements/evees-info-page';
 export { EveesInfoBase } from './elements/evees-info-base';
-export {
-  EveesInfoUserBased,
-  EveesInfoConfig,
-} from './elements/evees-info-user-based';
+export { EveesInfoUserBased, EveesInfoConfig } from './elements/evees-info-user-based';
 export { ProposalsList } from './elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './elements/evees-perspective-icon';
 
@@ -62,10 +52,7 @@ export { prettyAddress } from './elements/support';
 export { eveeColor, DEFAULT_COLOR } from './elements/support';
 
 /** Patterns */
-export {
-  PerspectivePattern,
-  PerspectiveLinks,
-} from './patterns/perspective.pattern';
+export { PerspectivePattern, PerspectiveLinks } from './patterns/perspective.pattern';
 export { CommitLinked, CommitPattern } from './patterns/commit.pattern';
 export { Secured, hashObject, deriveEntity } from './utils/cid-hash';
 export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';

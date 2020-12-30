@@ -5,7 +5,7 @@ import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
-import { EveesWorkspace } from '../services/evees.workspace';
+import { EveesWorkspace } from '../services/evees.client.memory';
 
 const LOGINFO = true;
 
@@ -60,17 +60,11 @@ export class EveesDiff extends moduleConnect(LitElement) {
     this.loading = true;
 
     const getDetails = this.workspace.getUpdates().map(async (update) => {
-      const newData = await EveesHelpers.getCommitData(
-        this.workspace.workspace,
-        update.newHeadId
-      );
+      const newData = await EveesHelpers.getCommitData(this.workspace.workspace, update.newHeadId);
 
       const oldData =
         update.oldHeadId !== undefined
-          ? await EveesHelpers.getCommitData(
-              this.workspace.workspace,
-              update.oldHeadId
-            )
+          ? await EveesHelpers.getCommitData(this.workspace.workspace, update.oldHeadId)
           : undefined;
 
       const hasDiffLenses = this.recognizer
@@ -93,10 +87,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
     if (this.rootPerspective) {
       const newRoot = this.workspace
         .getNewPerspectives()
-        .find(
-          (newPerspective) =>
-            newPerspective.perspective.id === this.rootPerspective
-        );
+        .find((newPerspective) => newPerspective.perspective.id === this.rootPerspective);
       if (newRoot) {
         if (newRoot.details.headId) {
           const newData = await EveesHelpers.getCommitData(
@@ -126,12 +117,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
     // TODO: review if old data needs to be
     return html`
       <div class="evee-diff">
-        ${details.diffLense.render(
-          this.workspace,
-          details.newData,
-          details.oldData,
-          this.summary
-        )}
+        ${details.diffLense.render(this.workspace, details.newData, details.oldData, this.summary)}
       </div>
     `;
   }

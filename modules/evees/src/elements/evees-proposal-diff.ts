@@ -2,7 +2,7 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
-import { EveesWorkspace } from '../services/evees.workspace';
+import { EveesWorkspace } from '../services/evees.client.memory';
 import { EveesRemote } from '../services/evees.remote';
 import { EveesBindings } from '../bindings';
 import { EveesDiff } from './evees-diff';
@@ -44,20 +44,17 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
   async loadProposal() {
     this.loading = true;
 
-    const eveesRemote = (this.requestAll(
-      EveesBindings.EveesRemote
-    ) as EveesRemote[]).find((remote) => remote.id === this.remoteId);
+    const eveesRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+      (remote) => remote.id === this.remoteId
+    );
 
-    if (eveesRemote === undefined)
-      throw new Error(`remote ${this.remoteId} not found`);
+    if (eveesRemote === undefined) throw new Error(`remote ${this.remoteId} not found`);
     if (eveesRemote.proposals === undefined)
       throw new Error(`proposal of remote ${this.remoteId} undefined`);
     const proposal = await eveesRemote.proposals.getProposal(this.proposalId);
 
     if (proposal === undefined)
-      throw new Error(
-        `proposal ${this.proposalId} not found on remote ${this.remoteId}`
-      );
+      throw new Error(`proposal ${this.proposalId} not found on remote ${this.remoteId}`);
     this.workspace = new EveesWorkspace(this.client);
 
     for (const update of proposal.details.updates) {
@@ -79,8 +76,7 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
     }
 
     return html`
-      <evees-update-diff id="evees-update-diff" ?summary=${this.summary}>
-      </evees-update-diff>
+      <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
     `;
   }
 

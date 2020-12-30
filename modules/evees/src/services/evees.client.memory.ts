@@ -2,7 +2,7 @@ import cloneDeep from 'lodash-es/cloneDeep';
 import { Entity, PatternRecognizer } from '@uprtcl/cortex';
 import { UpdateRequest, NewPerspectiveData } from '../types';
 
-export class EveesClient {
+export class EveesClientOnMemory implements EveesClient {
   private entities: Entity<any>[] = [];
   private newPerspectives: NewPerspectiveData[] = [];
   private updates: UpdateRequest[] = [];
@@ -29,8 +29,7 @@ export class EveesClient {
 
   public async isSingleAuthority(remote: string) {
     const newNot = this.newPerspectives.find(
-      (newPerspective) =>
-        newPerspective.perspective.object.payload.remote !== remote
+      (newPerspective) => newPerspective.perspective.object.payload.remote !== remote
     );
     if (newNot !== undefined) return false;
 
@@ -39,9 +38,7 @@ export class EveesClient {
     );
     const checktoPerspectives = await Promise.all(check);
 
-    const updateNot = checktoPerspectives.find(
-      (_remoteId) => _remoteId !== remote
-    );
+    const updateNot = checktoPerspectives.find((_remoteId) => _remoteId !== remote);
     if (updateNot !== undefined) return false;
 
     return true;
@@ -107,14 +104,9 @@ export class EveesClient {
     });
   }
 
-  public cacheInitPerspective(
-    client: EveesClient,
-    newPerspective: NewPerspectiveData
-  ) {
+  public cacheInitPerspective(client: EveesClient, newPerspective: NewPerspectiveData) {
     const perspectiveId = newPerspective.perspective.id;
-    const headId = newPerspective.details
-      ? newPerspective.details.headId
-      : undefined;
+    const headId = newPerspective.details ? newPerspective.details.headId : undefined;
     const object = newPerspective.perspective.object;
 
     client.cache.writeQuery({
@@ -199,9 +191,7 @@ export class EveesClient {
       const dataId = mutation.data.createEntity.id;
 
       if (dataId !== entity.id) {
-        throw new Error(
-          `created entity id ${dataId} not as expected ${entity.id}`
-        );
+        throw new Error(`created entity id ${dataId} not as expected ${entity.id}`);
       }
     });
 

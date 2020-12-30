@@ -1,24 +1,8 @@
-import {
-  LitElement,
-  property,
-  html,
-  css,
-  query,
-  TemplateResult,
-} from 'lit-element';
+import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import {
-  CortexModule,
-  PatternRecognizer,
-  Entity,
-  Signed,
-} from '@uprtcl/cortex';
-import {
-  DiscoveryModule,
-  EntityCache,
-  loadEntity,
-} from '@uprtcl/multiplatform';
+import { CortexModule, PatternRecognizer, Entity, Signed } from '@uprtcl/cortex';
+import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
 import {
@@ -26,7 +10,6 @@ import {
   Perspective,
   PerspectiveDetails,
   Commit,
-  getAuthority,
   EveesConfig,
 } from '../types';
 import { EveesBindings } from '../bindings';
@@ -35,7 +18,7 @@ import { Evees } from '../services/evees';
 
 import { EveesRemote } from '../services/evees.remote';
 
-import { EveesWorkspace } from '../services/evees.workspace';
+import { EveesWorkspace } from '../services/evees.client.memory';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 
@@ -177,19 +160,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.loading = true;
 
     if (this.entityType === EveesBindings.PerspectiveType) {
-      const headId = await EveesHelpers.getPerspectiveHeadId(
-        this.client,
-        this.uref
-      );
+      const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
 
-      const head =
-        headId !== undefined
-          ? await loadEntity<Commit>(this.client, headId)
-          : undefined;
-      const data = await EveesHelpers.getPerspectiveData(
-        this.client,
-        this.uref
-      );
+      const head = headId !== undefined ? await loadEntity<Commit>(this.client, headId) : undefined;
+      const data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
       const canWrite = await EveesHelpers.canWrite(this.client, this.uref);
 
@@ -222,9 +196,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (this.defaultRemote) await this.defaultRemote.ready();
 
     this.isLoggedOnDefault =
-      this.defaultRemote !== undefined
-        ? await this.defaultRemote.isLogged()
-        : false;
+      this.defaultRemote !== undefined ? await this.defaultRemote.isLogged() : false;
 
     this.loading = false;
     this.logger.log(`evee ${this.uref} loaded`, {
@@ -245,8 +217,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       return;
     }
 
-    if (this.perspectiveData.perspective === undefined)
-      throw new Error('undefined');
+    if (this.perspectiveData.perspective === undefined) throw new Error('undefined');
 
     const config = {
       forceOwner: true,
@@ -258,12 +229,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.pullWorkspace = new EveesWorkspace(this.client, this.recognizer);
 
-    await this.merge.mergePerspectivesExternal(
-      this.uref,
-      fromUref,
-      this.pullWorkspace,
-      config
-    );
+    await this.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullWorkspace, config);
 
     this.logger.info('checkPull()', this.pullWorkspace);
   }
@@ -315,8 +281,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async login() {
-    if (this.defaultRemote === undefined)
-      throw new Error('default remote undefined');
+    if (this.defaultRemote === undefined) throw new Error('default remote undefined');
     this.loggingIn = true;
     await this.defaultRemote.login();
 
@@ -326,26 +291,19 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async logout() {
-    if (this.defaultRemote === undefined)
-      throw new Error('default remote undefined');
+    if (this.defaultRemote === undefined) throw new Error('default remote undefined');
     await this.defaultRemote.logout();
 
     await this.client.resetStore();
     this.load();
   }
 
-  async otherPerspectiveMerge(
-    fromPerspectiveId: string,
-    toPerspectiveId: string
-  ) {
+  async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string) {
     this.merging = true;
     this.logger.info(`merge ${fromPerspectiveId} on ${toPerspectiveId}`);
 
     const workspace = new EveesWorkspace(this.client, this.recognizer);
-    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(
-      this.client,
-      toPerspectiveId
-    );
+    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
 
     const config = {
       forceOwner: true,
@@ -353,14 +311,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       parentId: toPerspectiveId,
     };
 
-    const toHeadId = await EveesHelpers.getPerspectiveHeadId(
-      this.client,
-      toPerspectiveId
-    );
-    const fromHeadId = await EveesHelpers.getPerspectiveHeadId(
-      this.client,
-      fromPerspectiveId
-    );
+    const toHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, toPerspectiveId);
+    const fromHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, fromPerspectiveId);
 
     await this.merge.mergePerspectivesExternal(
       toPerspectiveId,
@@ -419,10 +371,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.dispatchEvent(
         new ProposalCreatedEvent({
           detail: {
-            remote: await EveesHelpers.getPerspectiveRemoteId(
-              this.client,
-              toPerspectiveId
-            ),
+            remote: await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId),
             proposalDetails: {
               newPerspectives: workspace.getNewPerspectives(),
               updates: workspace.getUpdates(),
@@ -459,8 +408,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       await workspace.executeCreate(this.client);
       await workspace.precacheNewPerspectives(this.client);
 
-      if (fromHeadId === undefined)
-        throw new Error(`undefined head for ${fromPerspectiveId}`);
+      if (fromHeadId === undefined) throw new Error(`undefined head for ${fromPerspectiveId}`);
       await this.createMergeProposal(
         fromPerspectiveId,
         toPerspectiveId,
@@ -485,16 +433,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     workspace: EveesWorkspace
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
-    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(
-      this.client,
-      toPerspectiveId
-    );
+    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
 
     const not = await workspace.isSingleAuthority(toRemoteId);
-    if (!not)
-      throw new Error(
-        'cant create merge proposals on multiple authorities yet'
-      );
+    if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
 
     const result = await this.client.mutate({
       mutation: CREATE_PROPOSAL,
@@ -625,17 +567,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     return html`
       <div class="row merge-message">
         <uprtcl-indicator label="To">
-          <evees-perspective-icon
-            perspective-id=${toPerspectiveId}
-          ></evees-perspective-icon>
+          <evees-perspective-icon perspective-id=${toPerspectiveId}></evees-perspective-icon>
         </uprtcl-indicator>
         <div class="arrow">
           <uprtcl-icon-button icon="arrow_back"></uprtcl-icon-button>
         </div>
         <uprtcl-indicator label="From">
-          <evees-perspective-icon
-            perspective-id=${fromPerspectiveId}
-          ></evees-perspective-icon>
+          <evees-perspective-icon perspective-id=${fromPerspectiveId}></evees-perspective-icon>
         </uprtcl-indicator>
       </div>
     `;
@@ -647,11 +585,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   /** overwrite */
   renderIcon() {
-    return html`
-      <evees-perspective-icon
-        perspective-id=${this.uref}
-      ></evees-perspective-icon>
-    `;
+    return html` <evees-perspective-icon perspective-id=${this.uref}></evees-perspective-icon> `;
   }
 
   renderInfo() {
@@ -671,21 +605,17 @@ ${JSON.stringify(this.perspectiveData.perspective, undefined, 2)}</pre
               <div class="prop-name">authority</div>
               <pre class="prop-value">
 ${this.perspectiveData.perspective
-                  ? getAuthority(this.perspectiveData.perspective)
+                  ? `${this.perspectiveData.perspective.remote}:${this.perspectiveData.perspective.path}`
                   : ''}</pre
               >
             `
           : ''}
 
         <div class="prop-name">head</div>
-        <pre class="prop-value">
-${JSON.stringify(this.perspectiveData.head, undefined, 2)}</pre
-        >
+        <pre class="prop-value">${JSON.stringify(this.perspectiveData.head, undefined, 2)}</pre>
 
         <div class="prop-name">data</div>
-        <pre class="prop-value">
-${JSON.stringify(this.perspectiveData.data, undefined, 2)}</pre
-        >
+        <pre class="prop-value">${JSON.stringify(this.perspectiveData.data, undefined, 2)}</pre>
       </div>
     `;
   }

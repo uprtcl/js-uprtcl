@@ -1,7 +1,7 @@
 import { Behaviour } from '@uprtcl/cortex';
 
 import { MergeStrategy } from '../merge/merge-strategy';
-import { EveesWorkspace } from '../services/evees.workspace';
+import { EveesWorkspace } from '../services/evees.client.memory';
 
 export interface Merge<T = any> extends Behaviour<T> {
   merge: (
