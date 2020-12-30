@@ -62,11 +62,10 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
-    const remote = (this.requestAll(
-      EveesBindings.EveesRemote
-    ) as EveesRemote[]).find((r) => r.id === this.remoteId);
-    if (remote === undefined)
-      throw new Error(`remote ${this.remoteId} not found`);
+    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+      (r) => r.id === this.remoteId
+    );
+    if (remote === undefined) throw new Error(`remote ${this.remoteId} not found`);
 
     const proposals = remote.proposals;
     if (proposals === undefined)
@@ -94,19 +93,12 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.proposal = await this.proposals.getProposal(this.proposalId);
 
     const fromPerspective = this.proposal.fromPerspectiveId
-      ? await loadEntity<Signed<Perspective>>(
-          this.client,
-          this.proposal.fromPerspectiveId
-        )
+      ? await loadEntity<Signed<Perspective>>(this.client, this.proposal.fromPerspectiveId)
       : undefined;
 
     /** the author is the creator of the fromPerspective */
-    this.authorId = fromPerspective
-      ? fromPerspective.object.payload.creatorId
-      : undefined;
-    this.authorRemote = fromPerspective
-      ? fromPerspective.object.payload.remote
-      : undefined;
+    this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
+    this.authorRemote = fromPerspective ? fromPerspective.object.payload.remote : undefined;
     this.loadingCreator = false;
 
     await this.checkCanExecute();
@@ -146,9 +138,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
             this.client,
             update.perspectiveId
           );
-          const remote = this.eveesRemotes.find(
-            (remote) => remote.id === remoteId
-          );
+          const remote = this.eveesRemotes.find((remote) => remote.id === remoteId);
           if (remote === undefined) throw new Error('remote undefined');
           return EveesHelpers.canWrite(this.client, update.perspectiveId);
         }
@@ -209,14 +199,16 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
       };
     });
 
-    this.dispatchEvent(
-      new CustomEvent('dialogue-closed', { bubbles: true, composed: true })
-    );
+    this.dispatchEvent(new CustomEvent('dialogue-closed', { bubbles: true, composed: true }));
     this.showDiff = false;
 
     if (value === 'accept') {
       /** run the proposal changes as the logged user */
       await workspace.execute(this.client);
+      if ((this.remote.store as any).flush) {
+        await (this.remote.store as any).flush();
+      }
+
       await this.proposals.deleteProposal(this.proposalId);
 
       this.load();
@@ -282,18 +274,12 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     let renderDefault = true;
     let lense: any = undefined;
-    if (
-      this.remote &&
-      this.remote.proposals &&
-      this.remote.proposals.lense !== undefined
-    ) {
+    if (this.remote && this.remote.proposals && this.remote.proposals.lense !== undefined) {
       renderDefault = false;
       lense = this.remote.proposals.lense as any;
     }
 
-    return renderDefault
-      ? this.renderDefault()
-      : lense().render({ proposalId: this.proposalId });
+    return renderDefault ? this.renderDefault() : lense().render({ proposalId: this.proposalId });
   }
 
   static get styles() {
