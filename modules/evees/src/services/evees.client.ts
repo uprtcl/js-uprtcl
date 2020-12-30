@@ -13,10 +13,9 @@ export interface Delta {
 }
 
 export interface EveesClient {
-  proposals: ProposalsService | undefined;
-  accessControl: AccessControlService | undefined;
+  /** create new perspectives */
+  getPerspective(perspectiveId: string): Promise<{ head: string; delta: Delta }>;
 
-  readonly base: EveesClient;
   /** create new perspectives */
   newPerspectives(newPerspective: NewPerspectiveData[]);
   /** updated existing perspectives (can be newPerspectives too) */
@@ -24,5 +23,12 @@ export interface EveesClient {
   /** store hashed objects */
   put(entities: Entity<any>[]);
   /** sync all the temporary chhanges made on this client on its base client */
-  flush(client: EveesClient);
+  flush();
+
+  /** for performance reasons, we need a place to cache the query "get other perspectives",
+   * without having to ask the remote filter everytime.
+   * But caching a other perspectives of user seems possible and is enough.*/
+  userPerspective(userId: string, ofPerspectiveId: string);
+
+  canUpdate(userId: string, perspectiveId: string);
 }
