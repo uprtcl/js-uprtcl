@@ -15,13 +15,13 @@ export class PolkadotAccountElement extends moduleConnect(LitElement) {
   account!: string;
 
   @property({ type: Boolean, attribute: 'show-name' })
-  showName: boolean = false;
+  showName = false;
 
   @property({ type: String })
-  size: string = '32px';
+  size = '32px';
 
   @internalProperty()
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
   displayName!: string;

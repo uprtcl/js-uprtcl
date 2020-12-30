@@ -172,7 +172,7 @@ export class PolkadotCouncilEveesStorage {
 
     const council = await this.connection.getCouncil(at);
 
-    this.logger.log(`Fetch council data`, { council });
+    this.logger.log('Fetch council data', { council });
 
     await Promise.all(
       council.map(async (member) => {
@@ -194,7 +194,7 @@ export class PolkadotCouncilEveesStorage {
   cacheProposals(data: CouncilData, at: number): Promise<void>[] {
     if (data.proposals === undefined) return [];
 
-    this.logger.log(`caching proposals of `, { data });
+    this.logger.log('caching proposals of ', { data });
 
     return data.proposals.map(async (councilProposal) =>
       this.cacheProposal(councilProposal, at)
@@ -237,13 +237,13 @@ export class PolkadotCouncilEveesStorage {
   cacheVotes(data: CouncilData, at: number, member: string): Promise<void>[] {
     if (data.votes === undefined) return [];
 
-    this.logger.log(`caching votes of`, { data });
+    this.logger.log('caching votes of', { data });
 
     return data.votes.map(async (vote) => {
       const voteId = `${vote.proposalId}-${vote.member}`;
       const myCopy = await this.db.votes.get(voteId);
 
-      this.logger.log(`caching vote of`, { vote, myCopy });
+      this.logger.log('caching vote of', { vote, myCopy });
 
       /* if I have it that's it. This also prevents double casting votes */
       if (myCopy) return;
@@ -261,7 +261,7 @@ export class PolkadotCouncilEveesStorage {
         return;
       }
 
-      this.logger.log(`adding vote to cache`, { vote });
+      this.logger.log('adding vote to cache', { vote });
       const voteLocal = {
         id: voteId,
         proposalId: vote.proposalId,
@@ -334,7 +334,7 @@ export class PolkadotCouncilEveesStorage {
       newCouncilData.proposals.splice(ix, 1, councilProposal);
     }
 
-    this.logger.log(`addProposalToCouncilData`, {
+    this.logger.log('addProposalToCouncilData', {
       myCouncilData,
       newCouncilData,
     });
@@ -360,7 +360,7 @@ export class PolkadotCouncilEveesStorage {
     );
     newCouncilData.votes.push(vote);
 
-    this.logger.log(`addProposalToCouncilData`, {
+    this.logger.log('addProposalToCouncilData', {
       myCouncilData,
       newCouncilData,
     });
@@ -385,13 +385,13 @@ export class PolkadotCouncilEveesStorage {
     const newCouncilData = await this.addProposalToCouncilData(councilProposal);
     const newCouncilDataHash = await this.store.create(newCouncilData);
 
-    this.logger.log(`createProposal`, { newCouncilDataHash, newCouncilData });
+    this.logger.log('createProposal', { newCouncilDataHash, newCouncilData });
     await this.updateCouncilData(newCouncilDataHash);
 
     /** cache this proposal on my localdb */
     const localProposal = await this.initLocalProposal(proposalId);
 
-    this.logger.log(`caching proposal`, { proposalId, localProposal });
+    this.logger.log('caching proposal', { proposalId, localProposal });
     await this.db.proposals.put(localProposal);
 
     return proposalId;
@@ -402,7 +402,7 @@ export class PolkadotCouncilEveesStorage {
       .where('toPerspectiveId')
       .equals(perspectiveId);
     const proposalIds = await proposals.primaryKeys();
-    this.logger.log(`getProposalsToPerspective`, {
+    this.logger.log('getProposalsToPerspective', {
       perspectiveId,
       proposalIds,
     });
@@ -420,7 +420,7 @@ export class PolkadotCouncilEveesStorage {
       .equals(proposalId)
       .toArray();
 
-    this.logger.log(`getProposalStatus`, { proposalId, proposal });
+    this.logger.log('getProposalStatus', { proposalId, proposal });
     const block = (await this.db.meta.get('block')).value;
     return {
       status: proposal.status,
@@ -430,7 +430,7 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async vote(proposalId: string, value: VoteValue) {
-    if (!this.connection.account) throw new Error(`cant vote if not logged in`);
+    if (!this.connection.account) throw new Error('cant vote if not logged in');
 
     const proposal = await this.db.proposals.get(proposalId);
     if (!proposal) throw new Error(`proposal not found ${proposalId}`);
@@ -447,7 +447,7 @@ export class PolkadotCouncilEveesStorage {
     };
     const newCouncilData = await this.addVoteToCouncilData(vote);
     const newCouncilDataHash = await this.store.create(newCouncilData);
-    this.logger.log(`vote`, { vote, newCouncilDataHash, newCouncilData });
+    this.logger.log('vote', { vote, newCouncilDataHash, newCouncilData });
     await this.updateCouncilData(newCouncilDataHash);
 
     /** update the proposal status based  */

@@ -23,7 +23,7 @@ module.exports = config =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-evees-polkadot.ts`,
+      entry: './src/uprtcl-evees-polkadot.ts',
       output: {
         filename: 'bundle.js'
       },

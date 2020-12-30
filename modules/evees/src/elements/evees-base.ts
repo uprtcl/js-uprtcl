@@ -38,16 +38,16 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
   eveesInfoConfig!: EveesInfoConfig;
 
   @property({ type: Boolean })
-  editable: boolean = false;
+  editable = false;
 
   @internalProperty()
-  loading: boolean = true;
+  loading = true;
 
   @internalProperty()
   data: Entity<T> | undefined;
 
   @internalProperty()
-  editableActual: boolean = false;
+  editableActual = false;
 
   protected currentHeadId!: string | undefined;
   protected remote!: EveesRemote;

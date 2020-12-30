@@ -18,22 +18,22 @@ export class EveesInfoPage extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-PAGE');
 
   @property({ type: Boolean, attribute: 'show-perspectives' })
-  showPerspectives: boolean = false;
+  showPerspectives = false;
 
   @property({ type: Boolean, attribute: 'show-proposals' })
-  showProposals: boolean = false;
+  showProposals = false;
 
   @property({ type: Boolean, attribute: 'show-acl' })
-  showAcl: boolean = false;
+  showAcl = false;
 
   @property({ type: Boolean, attribute: 'show-info' })
-  showInfo: boolean = false;
+  showInfo = false;
 
   @property({ attribute: false })
-  showEditName: boolean = false;
+  showEditName = false;
 
   @property({ attribute: true })
-  parentId: string = '';
+  parentId = '';
 
   @query('#draft-textfield')
   draftTextField!: any;

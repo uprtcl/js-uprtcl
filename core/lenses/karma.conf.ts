@@ -23,7 +23,7 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-lenses.ts`,
+      entry: './src/uprtcl-lenses.ts',
       output: {
         filename: 'bundle.js',
       },

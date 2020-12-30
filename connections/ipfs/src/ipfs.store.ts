@@ -71,7 +71,7 @@ export class IpfsStore extends Connection implements CASStore {
     const sorted = sortObject(object);
     const buffer = CBOR.encode(sorted);
     if (ENABLE_LOG) {
-      this.logger.log(`Trying to add object:`, { object, sorted, buffer });
+      this.logger.log('Trying to add object:', { object, sorted, buffer });
     }
 
     let putConfig: PutConfig = {
@@ -86,7 +86,7 @@ export class IpfsStore extends Connection implements CASStore {
     let hashString = result.toString(this.cidConfig.base);
 
     if (ENABLE_LOG) {
-      this.logger.log(`Object stored`, {
+      this.logger.log('Object stored', {
         object,
         sorted,
         buffer,

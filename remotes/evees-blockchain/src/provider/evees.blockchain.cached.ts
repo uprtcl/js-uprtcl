@@ -66,7 +66,7 @@ export class EveesBlockchainCached implements EveesRemote {
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
     const perspectiveId = await this.store.create(secured.object);
-    this.logger.log(`[ETH] persistPerspectiveEntity - added to IPFS`, perspectiveId);
+    this.logger.log('[ETH] persistPerspectiveEntity - added to IPFS', perspectiveId);
 
     if (secured.id && secured.id != perspectiveId) {
       throw new Error(
@@ -85,7 +85,7 @@ export class EveesBlockchainCached implements EveesRemote {
   async updatePerspective(
     perspectiveId: string,
     details: PerspectiveDetails,
-    pin: boolean = false
+    pin = false
   ) {
     if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
 
@@ -227,7 +227,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    for (var newPerspectiveData of newPerspectivesData) {
+    for (let newPerspectiveData of newPerspectivesData) {
       await this.createPerspective(newPerspectiveData);
     }
   }

@@ -7,7 +7,7 @@ import { HttpProvider } from '@uprtcl/http-provider';
 import { PermissionType, UserPermissions } from './types';
 import { EveesHttpCacheDB } from './evees.http.cache.db';
 
-const uprtcl_api: string = 'uprtcl-acl-v1';
+const uprtcl_api = 'uprtcl-acl-v1';
 export class EveesAccessControlHttp implements AccessControlService {
   logger = new Logger('HTTP-EVEES-ACCESS-CONTROL');
 

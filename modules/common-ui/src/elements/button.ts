@@ -8,16 +8,16 @@ export class UprtclButton extends LitElement {
   icon!: string;
 
   @property({ type: Boolean })
-  transition: boolean = false;
+  transition = false;
 
   @property({ type: Boolean })
-  disabled: boolean = false;
+  disabled = false;
 
   @property({ type: Boolean })
-  skinny: boolean = false;
+  skinny = false;
 
   @property({ type: Boolean })
-  raised: boolean = false;
+  raised = false;
 
   @property({ type: String })
   variant?: ButtonVariant = 'normal';

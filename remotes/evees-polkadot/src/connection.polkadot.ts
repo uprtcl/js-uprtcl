@@ -85,7 +85,7 @@ export class PolkadotConnection extends Connection {
   private chain?: string;
   private signer?: Signer;
   public connectionDetails: ConnectionDetails;
-  private useDerivative: boolean = false;
+  private useDerivative = false;
   public identitiesCache: { [account: string]: any } = {};
 
   logger = new Logger('Polkadot-Connection');

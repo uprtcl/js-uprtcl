@@ -6,10 +6,10 @@ import './options-menu';
 
 export class UprtclListItemWithOption extends LitElement {
   @property({ type: String })
-  text: string = '';
+  text = '';
 
   @property({ type: String })
-  selected: string = 'false';
+  selected = 'false';
 
   @property({ type: Object })
   config: MenuConfig = {};

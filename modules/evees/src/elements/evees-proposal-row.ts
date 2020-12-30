@@ -25,10 +25,10 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   remoteId!: string;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
-  loadingCreator: boolean = true;
+  loadingCreator = true;
 
   @property({ attribute: false })
   showDiff: Boolean = false;
@@ -51,8 +51,8 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   remote!: EveesRemote;
   proposals!: ProposalsProvider;
   proposal!: Proposal;
-  executed: boolean = false;
-  canExecute: boolean = false;
+  executed = false;
+  canExecute = false;
 
   protected client!: ApolloClient<any>;
   protected recognizer!: PatternRecognizer;

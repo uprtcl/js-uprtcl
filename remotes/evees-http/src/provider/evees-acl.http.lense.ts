@@ -22,7 +22,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   parentId!: string | null;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
   permissions: BasicAdminInheritedPermissions | undefined;
@@ -33,7 +33,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   client!: ApolloClient<any>;
   remote!: EveesHttp;
 
-  delegatedTitle: string = '';
+  delegatedTitle = '';
 
   userPermissions!: Object[];
 
@@ -113,7 +113,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   getUserList() {
     if (!this.permissions) {
-      throw new Error(`permissions not found`);
+      throw new Error('permissions not found');
     }
 
     // TODO: get correct users
@@ -123,7 +123,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   getUserPermissionList() {
     if (!this.permissions) {
-      throw new Error(`permissions not found`);
+      throw new Error('permissions not found');
     }
 
     const {
@@ -155,7 +155,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   getCorrespondingPermissions(): BasicAdminPermissions {
     if (!this.permissions) {
-      throw new Error(`permissions not found`);
+      throw new Error('permissions not found');
     }
 
     if (this.permissions.delegate) {
@@ -171,11 +171,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   async toggleDelegate() {
     if (!this.permissions) {
-      throw new Error(`permissions not found`);
+      throw new Error('permissions not found');
     }
 
     if (!this.remote.accessControl) {
-      throw new Error(`remote accessControl not found`);
+      throw new Error('remote accessControl not found');
     }
 
     const parentId = this.parentId as string;
@@ -194,11 +194,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   async togglePublicRead() {
     if (!this.permissions) {
-      throw new Error(`permissions not found`);
+      throw new Error('permissions not found');
     }
 
     if (!this.remote.accessControl) {
-      throw new Error(`remote accessControl not found`);
+      throw new Error('remote accessControl not found');
     }
 
     const newPublicRead = !this.permissions.effectivePermissions.publicRead;
@@ -214,11 +214,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   async togglePublicWrite() {
     if (!this.permissions) {
-      throw new Error(`permissions not found`);
+      throw new Error('permissions not found');
     }
 
     if (!this.remote.accessControl) {
-      throw new Error(`remote accessControl not found`);
+      throw new Error('remote accessControl not found');
     }
 
     const newPublicWrite = !this.permissions.effectivePermissions.publicWrite;
@@ -234,11 +234,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   async addRole(e) {
     if (!this.permissions) {
-      throw new Error(`permissions not found`);
+      throw new Error('permissions not found');
     }
 
     if (!this.remote.accessControl) {
-      throw new Error(`remote accessControl not found`);
+      throw new Error('remote accessControl not found');
     }
 
     const selectedUserId = e.detail.key;
@@ -263,11 +263,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   async changeRole(userId, role) {
     if (!this.permissions) {
-      throw new Error(`permissions not found`);
+      throw new Error('permissions not found');
     }
 
     if (!this.remote.accessControl) {
-      throw new Error(`remote accessControl not found`);
+      throw new Error('remote accessControl not found');
     }
 
     const selectedRole = role;
@@ -283,11 +283,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
   async removeRole(userId) {
     if (!this.permissions) {
-      throw new Error(`permissions not found`);
+      throw new Error('permissions not found');
     }
 
     if (!this.remote.accessControl) {
-      throw new Error(`remote accessControl not found`);
+      throw new Error('remote accessControl not found');
     }
 
     await this.remote.accessControl.removePermissions(this.uref, userId);

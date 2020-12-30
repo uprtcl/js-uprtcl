@@ -19,10 +19,10 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
   remoteId!: string;
 
   @property({ type: Boolean })
-  summary: boolean = false;
+  summary = false;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;

@@ -21,7 +21,7 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
   uref!: string;
 
   @property({ attribute: false })
-  loading: boolean = false;
+  loading = false;
 
   @property({ attribute: false })
   owner!: string;

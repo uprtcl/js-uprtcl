@@ -14,7 +14,7 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
   perspectiveId!: string;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   perspective!: Secured<Perspective>;
   remote!: EveesRemote;

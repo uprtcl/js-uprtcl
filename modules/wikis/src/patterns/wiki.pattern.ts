@@ -52,13 +52,13 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
       originalNode.object.title,
-      modifications.map(data => (!!data ? data.object.title : originalNode.object.title))
+      modifications.map(data => (data ? data.object.title : originalNode.object.title))
     );
 
     // TODO: add entity
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
-      modifications.map(data => (!!data ? data.object.pages : originalNode.object.pages)),
+      modifications.map(data => (data ? data.object.pages : originalNode.object.pages)),
       workspace,
       config
     );

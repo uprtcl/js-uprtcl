@@ -7,16 +7,16 @@ export class UprtclIconButton extends LitElement {
   icon!: string;
 
   @property({ type: Boolean })
-  button: boolean = false;
+  button = false;
 
   @property({ type: Boolean })
-  skinny: boolean = false;
+  skinny = false;
 
   @property({ type: Boolean })
-  disabled: boolean = false;
+  disabled = false;
 
   @property({ type: Boolean })
-  loading: boolean = false;
+  loading = false;
 
   /** Seems I cant prevent the click event from being emitted outside of this element  */
 

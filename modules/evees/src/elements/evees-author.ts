@@ -14,13 +14,13 @@ export class EveesAuthor extends moduleConnect(LitElement) {
   remoteId!: string;
 
   @property({ type: Boolean, attribute: 'show-name' })
-  showName: boolean = false;
+  showName = false;
 
   @property({ type: Boolean })
-  short: boolean = false;
+  short = false;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   protected remotes!: EveesRemote[];
   protected remote!: EveesRemote;

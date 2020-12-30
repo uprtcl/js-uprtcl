@@ -20,16 +20,16 @@ export class OrbitDBProfile extends moduleConnect(LitElement) {
   address!: string;
 
   @property({ type: Boolean, attribute: 'show-name' })
-  showName: boolean = false;
+  showName = false;
 
   @property({ type: Boolean })
-  short: boolean = false;
+  short = false;
 
   @property({ type: String })
   color!: string;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
   profile: any = {};

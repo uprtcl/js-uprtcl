@@ -12,7 +12,7 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: Boolean })
-  summary: boolean = false;
+  summary = false;
 
   @property({ attribute: false })
   workspace!: EveesWorkspace;

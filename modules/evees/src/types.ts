@@ -72,7 +72,7 @@ export interface ProposalCreatedDetail {
   proposalDetails: ProposalDetails;
 }
 
-export const PROPOSAL_CREATED_TAG: string = 'evees-proposal';
+export const PROPOSAL_CREATED_TAG = 'evees-proposal';
 
 export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
   constructor(eventInitDict?: CustomEventInit<ProposalCreatedDetail>) {

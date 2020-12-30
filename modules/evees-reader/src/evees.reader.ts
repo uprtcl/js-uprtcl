@@ -15,7 +15,7 @@ export class EveesReader {
     protected recognizer: PatternRecognizer
   ) {}
 
-  async resolve(uref: string, recurse: boolean = false) {
+  async resolve(uref: string, recurse = false) {
     const perspectiveObject = (await this.store.get(uref)) as any | undefined;
     if (!perspectiveObject) throw new Error(`Perspective payload not found ${uref}`);
 

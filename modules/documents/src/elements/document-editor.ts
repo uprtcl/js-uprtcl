@@ -51,13 +51,13 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   uref!: string;
 
   @property({ type: Boolean, attribute: 'read-only' })
-  readOnly: boolean = false;
+  readOnly = false;
 
   @property({ type: Number, attribute: 'root-level' })
-  rootLevel: number = 0;
+  rootLevel = 0;
 
   @property({ type: String })
-  parentId: string = '';
+  parentId = '';
 
   @property({ type: String, attribute: 'default-type' })
   defaultType: string = EveesModule.bindings.PerspectiveType;
@@ -66,19 +66,19 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   eveesInfoConfig: EveesInfoConfig = {};
 
   @property({ attribute: false })
-  docHasChanges: boolean = false;
+  docHasChanges = false;
 
   @property({ attribute: false })
-  persistingAll: boolean = false;
+  persistingAll = false;
 
   @property({ type: Boolean, attribute: false })
-  showCommitMessage: boolean = false;
+  showCommitMessage = false;
 
   @property({ type: String })
   color!: string;
 
   @property({ attribute: false })
-  reloading: boolean = true;
+  reloading = true;
 
   @property({ attribute: false })
   checkedOutPerspectives: {
@@ -126,7 +126,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         changedProperties,
       });
 
-    let reload: boolean = false;
+    let reload = false;
 
     if (changedProperties.has('firstRef')) {
       this.uref = this.firstRef;
@@ -203,7 +203,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       const remote = this.remotes.find((r) => r.id === remoteId);
       if (!remote) throw new Error(`remote not found for ${remoteId}`);
 
-      let canWrite: boolean = false;
+      let canWrite = false;
 
       if (!this.readOnly) {
         const editableRemote =
@@ -473,7 +473,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     await Promise.all(persistChildren);
   }
 
-  async persist(node: DocNode, message: string = '') {
+  async persist(node: DocNode, message = '') {
     if (!node.isPlaceholder && node.data !== undefined && isEqual(node.data.object, node.draft)) {
       /** nothing to persist here */
       return;
@@ -683,7 +683,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     node: DocNode,
     elements: any[] = [],
     index?: number,
-    count: number = 0
+    count = 0
   ): Promise<DocNode[]> {
     if (LOGINFO) this.logger.log('spliceChildren()', { node, elements, index, count });
 

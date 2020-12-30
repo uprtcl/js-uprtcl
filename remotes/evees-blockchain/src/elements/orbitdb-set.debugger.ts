@@ -27,16 +27,16 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
   logger = new Logger('Debug Component');
 
   @property({ type: Boolean, attribute: 'show-contexts' })
-  showDeleteContexts: boolean = false;
+  showDeleteContexts = false;
 
   @internalProperty()
-  reading: boolean = false;
+  reading = false;
 
   @internalProperty()
-  readingEntity: boolean = false;
+  readingEntity = false;
 
   @internalProperty()
-  loading: boolean = true;
+  loading = true;
 
   @internalProperty()
   perspective!: Secured<Perspective>;
@@ -65,7 +65,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
     this.loading = true;
     const remote = this.remotes.find((r) => r.id.includes('fixed'));
     if (!remote) {
-      throw new Error(`remote not found`);
+      throw new Error('remote not found');
     }
     this.remote = remote as EveesBlockchainCached;
     this.loading = false;
@@ -90,7 +90,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
 
     const remote = this.remotes.find((r) => r.id === this.perspective.object.payload.remote);
     if (!remote) {
-      throw new Error(`remote not found`);
+      throw new Error('remote not found');
     }
     const details = await remote.getPerspective(this.perspective.id);
 

@@ -12,7 +12,7 @@ export interface EthereumContractOptions {
   contractAddress?: string;
 }
 
-const MAX_GAS: number = 1000000;
+const MAX_GAS = 1000000;
 
 export class EthereumContract {
   logger = new Logger('EthereumContract');

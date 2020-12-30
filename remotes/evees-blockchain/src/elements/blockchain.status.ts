@@ -22,16 +22,16 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
   newHash!: string;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
   hasChanges!: boolean;
 
   @property({ attribute: false })
-  applyingChanges: boolean = false;
+  applyingChanges = false;
 
   @property({ attribute: false })
-  resetting: boolean = false;
+  resetting = false;
 
   @property({ attribute: false })
   remote!: EveesBlockchainCached;

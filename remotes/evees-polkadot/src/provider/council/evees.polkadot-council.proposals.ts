@@ -13,7 +13,7 @@ import { ProposalConfig, VoteValue } from './proposal.config.types';
 
 export class ProposalsPolkadotCouncil implements ProposalsProvider {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
-  private canProposeCache: boolean = false;
+  private canProposeCache = false;
 
   constructor(
     public connection: PolkadotConnection,

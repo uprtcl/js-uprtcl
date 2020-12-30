@@ -27,7 +27,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   officialOwner: string | undefined = undefined;
 
   @property({ type: Boolean, attribute: 'check-owner' })
-  checkOwner: boolean = false;
+  checkOwner = false;
 
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
@@ -42,7 +42,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   creatorId!: string;
 
   @property({ attribute: false })
-  dropdownShown: boolean = false;
+  dropdownShown = false;
 
   @query('#info-popper')
   infoPopper!: UprtclPopper;
@@ -134,7 +134,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
                 ></evees-info-user-based>
               </div>
             `
-          : ``}
+          : ''}
       </uprtcl-popper>
     `;
   }

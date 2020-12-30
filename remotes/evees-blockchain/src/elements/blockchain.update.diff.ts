@@ -27,10 +27,10 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   rootPerspective!: string;
 
   @property({ type: Boolean })
-  summary: boolean = false;
+  summary = false;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
   nNew!: number;
@@ -75,7 +75,7 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
         // update
         const newHead = newEveesData[perspectiveId].headId;
         if (newHead === undefined) {
-          throw new Error(`Evee head cannot be undefined`);
+          throw new Error('Evee head cannot be undefined');
         }
 
         if (eveesData[perspectiveId].headId !== newHead) {

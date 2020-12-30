@@ -12,7 +12,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
   perspectiveId!: string;
 
   @property({ attribute: false })
-  loadingProposals: boolean = true;
+  loadingProposals = true;
 
   proposalsIds: string[] = [];
   remoteId!: string;

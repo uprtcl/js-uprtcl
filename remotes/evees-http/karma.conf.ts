@@ -23,7 +23,7 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-common-ui.ts`,
+      entry: './src/uprtcl-common-ui.ts',
       output: {
         filename: 'bundle.js',
       },

@@ -2,7 +2,7 @@ import { LitElement, html, css, property } from 'lit-element';
 
 export class CortexLoadingPlaceholder extends LitElement {
   @property({ type: Number })
-  size: number = 28;
+  size = 28;
 
   render() {
     return html`

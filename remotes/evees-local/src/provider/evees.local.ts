@@ -103,7 +103,7 @@ export class EveesLocal implements EveesRemote {
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    for (var newPerspectiveData of newPerspectivesData) {
+    for (let newPerspectiveData of newPerspectivesData) {
       await this.createPerspective(newPerspectiveData);
     }
   }

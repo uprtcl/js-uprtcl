@@ -5,7 +5,7 @@ import { MockElement } from './mock-element';
 import { MockBindings } from './mock-bindings';
 
 export class MockModule extends MicroModule {
-  static id: string = 'mock';
+  static id = 'mock';
 
   static bindings = MockBindings;
 

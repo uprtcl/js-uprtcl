@@ -4,7 +4,7 @@ import { EntityStatus, PinnerCacheDB } from './pinner.cache.db';
 export class PinnerCached {
   logger: Logger = new Logger('Pinner Cached');
   cache: PinnerCacheDB;
-  isFlusshing: boolean = false;
+  isFlusshing = false;
 
   constructor(protected url: string, flushInterval: number) {
     this.cache = new PinnerCacheDB(`pinner-cache-${url}`);
@@ -104,7 +104,7 @@ export class PinnerCached {
       this.logger.log('marked as pinned', nPinned);
     }
     if (n !== nPinned) {
-      throw new Error(`Error marked the pinned objects as pinned`);
+      throw new Error('Error marked the pinned objects as pinned');
     }
 
     this.isFlusshing = false;

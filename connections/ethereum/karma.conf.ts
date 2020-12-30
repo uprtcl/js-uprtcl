@@ -23,7 +23,7 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-ethereum-provider.ts`,
+      entry: './src/uprtcl-ethereum-provider.ts',
       output: {
         filename: 'bundle.js',
       },

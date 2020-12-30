@@ -21,7 +21,7 @@ export class PermissionsFixedLense extends moduleConnect(LitElement) {
   uref!: string;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
   owner!: string;

@@ -23,7 +23,7 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-ipfs-provider.ts`,
+      entry: './src/uprtcl-ipfs-provider.ts',
       output: {
         filename: 'bundle.js',
       },

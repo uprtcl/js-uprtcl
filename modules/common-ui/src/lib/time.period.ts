@@ -8,7 +8,7 @@ export const floatToChar = (x: number, ndec: number): string => {
 };
 
 export const prettyTimePeriod = function (dtsec: number) {
-  var strout = '';
+  let strout = '';
   if (Math.abs(dtsec) < 60) {
     strout = floatToChar(dtsec, 0) + ' sec';
   } else if (Math.abs(dtsec) < 60 * 60) {

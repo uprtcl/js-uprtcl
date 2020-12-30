@@ -23,7 +23,7 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-graphql.ts`,
+      entry: './src/uprtcl-graphql.ts',
       output: {
         filename: 'bundle.js',
       },

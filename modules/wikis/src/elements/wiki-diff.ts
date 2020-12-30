@@ -17,7 +17,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: Boolean })
-  summary: boolean = false;
+  summary = false;
 
   @property({ attribute: false })
   workspace!: EveesWorkspace;
@@ -29,11 +29,11 @@ export class WikiDiff extends moduleConnect(LitElement) {
   oldData!: Entity<Wiki>;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   newPages!: string[];
   deletedPages!: string[];
-  oldTitle: string = '';
+  oldTitle = '';
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', {

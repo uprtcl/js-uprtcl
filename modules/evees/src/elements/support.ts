@@ -36,7 +36,7 @@ export const prettyTime = (timestamp: number): string => {
             value = Math.floor(ago / M2MS);
             return `${value} minute${value > 1 ? 's' : ''} ago`;
           } else {
-            return `a few minutes ago`;
+            return 'a few minutes ago';
           }
         }
       }
@@ -55,7 +55,7 @@ export const prettyAddress = (address: string) => {
   </span>`;
 };
 
-export const DEFAULT_COLOR: string = '#d0dae0';
+export const DEFAULT_COLOR = '#d0dae0';
 
 export const eveeColor = (perspectiveId: string): string => {
   return randomColor({ seed: perspectiveId });

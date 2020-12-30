@@ -39,22 +39,22 @@ export class DocumentTextNodeEditor extends LitElement {
   toAppend!: string;
 
   @property({ type: String })
-  editable: string = 'true';
+  editable = 'true';
 
   @property({ type: String, attribute: 'toggle-action' })
-  toggleAction: string = 'true';
+  toggleAction = 'true';
 
   @property({ type: Object })
   action: any = {};
 
   @property({ type: String, attribute: 'focus-init' })
-  focusInit: string = 'false';
+  focusInit = 'false';
 
   @property({ type: Array })
   canConvertTo: string[] = [];
 
   @property({ type: Number })
-  level: number = 0;
+  level = 0;
 
   @property({ attribute: false })
   selected: Boolean = false;
@@ -370,7 +370,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   isEditable() {
-    if (LOGINFO) this.logger.log(`isEditable()`, { editable: this.editable });
+    if (LOGINFO) this.logger.log('isEditable()', { editable: this.editable });
     const editable =
       this.editable !== undefined ? this.editable === 'true' : false;
     return editable;
@@ -381,7 +381,7 @@ export class DocumentTextNodeEditor extends LitElement {
       this.editor.view.destroy();
       this.editor = {};
       if (LOGINFO)
-        this.logger.log(`initEditor() - Initializing editor`, {
+        this.logger.log('initEditor() - Initializing editor', {
           init: this.init,
         });
     }
@@ -509,7 +509,7 @@ export class DocumentTextNodeEditor extends LitElement {
     const newContent = this.state2Html(newState);
 
     if (LOGINFO)
-      this.logger.log(`dispatchTransaction() - content-changed`, {
+      this.logger.log('dispatchTransaction() - content-changed', {
         content,
         newContent,
       });
@@ -715,7 +715,7 @@ export class DocumentTextNodeEditor extends LitElement {
   parseYoutubeURL(url: string) {
     const getParameterByName = (name, url) => {
       name = name.replace(/[\[\]]/g, '\\$&');
-      var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
         results = regex.exec(url);
       if (!results) return null;
       if (!results[2]) return '';

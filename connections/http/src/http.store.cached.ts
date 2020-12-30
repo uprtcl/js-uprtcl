@@ -64,7 +64,7 @@ export class HttpStoreCached implements CASStore {
       };
     });
 
-    await this.provider.post(`/data`, { datas });
+    await this.provider.post('/data', { datas });
 
     await this.cache.entities.where('stored').equals(0).modify({ stored: 1 });
   }

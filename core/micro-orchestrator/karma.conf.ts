@@ -23,7 +23,7 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-micro-orchestrator.ts`,
+      entry: './src/uprtcl-micro-orchestrator.ts',
       output: {
         filename: 'bundle.js',
       },

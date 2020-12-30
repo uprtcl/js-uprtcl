@@ -12,7 +12,7 @@ export class RemoteOrbitdDbLense extends moduleConnect(LitElement) {
   remoteId!: string;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   client!: ApolloClient<any>;
   remote!: EveesOrbitDB;

@@ -3,22 +3,22 @@ type ButtonVariant = 'normal' | 'long' | 'icon';
 
 export class UprtclButtonLoading extends LitElement {
   @property({ type: Boolean })
-  loading: boolean = false;
+  loading = false;
 
   @property({ type: Boolean })
-  outlined: boolean = false;
+  outlined = false;
 
   @property({ type: Boolean })
-  skinny: boolean = false;
+  skinny = false;
 
   @property({ type: Boolean })
-  transition: boolean = false;
+  transition = false;
 
   @property({ type: Boolean })
-  disabled: boolean = false;
+  disabled = false;
 
   @property({ type: String })
-  icon: string = '';
+  icon = '';
 
   @property({ type: String })
   variant: ButtonVariant = 'normal';

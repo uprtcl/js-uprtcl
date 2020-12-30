@@ -23,7 +23,7 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-cortex.ts`,
+      entry: './src/uprtcl-cortex.ts',
       output: {
         filename: 'bundle.js',
       },

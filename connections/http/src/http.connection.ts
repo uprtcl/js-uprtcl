@@ -148,7 +148,7 @@ export class HttpConnection extends Connection {
   }
 
   public async delete(url: string): Promise<PostResult> {
-    this.logger.log(`[HTTP DELETE]`, url);
+    this.logger.log('[HTTP DELETE]', url);
     return fetch(url, {
       method: 'DELETE',
       headers: {

@@ -24,13 +24,13 @@ export class EveesDiff extends moduleConnect(LitElement) {
   rootPerspective!: string;
 
   @property({ type: Boolean })
-  summary: boolean = false;
+  summary = false;
 
   @property({ attribute: false })
   workspace!: EveesWorkspace;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   updatesDetails: Dictionary<UpdateDetails> = {};
 

@@ -17,10 +17,10 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
   remoteId!: string;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
-  showDiff: boolean = false;
+  showDiff = false;
 
   @property({ attribute: false })
   remoteUI!: RemoteUI;
@@ -29,7 +29,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
   newHash!: string;
 
   @internalProperty()
-  settingCustom: boolean = false;
+  settingCustom = false;
 
   client!: ApolloClient<any>;
   remote!: EveesBlockchainCached;
@@ -160,7 +160,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
               </uprtcl-list>
             </uprtcl-popper>
           `
-        : ``}
+        : ''}
     `;
   }
 

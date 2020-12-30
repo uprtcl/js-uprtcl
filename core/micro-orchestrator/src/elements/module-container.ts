@@ -25,7 +25,7 @@ export class RequestDependencyEvent extends CustomEvent<{
 export class CheckDependencyEvent extends CustomEvent<{
   dependency: interfaces.ServiceIdentifier<any>;
 }> {
-  has: boolean = false;
+  has = false;
 
   constructor(
     eventInitDict?: CustomEventInit<{

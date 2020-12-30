@@ -2,16 +2,16 @@ import { LitElement, html, css, property, query } from 'lit-element';
 
 export class UprtclTextField extends LitElement {
   @property({ type: String })
-  label: string = 'label';
+  label = 'label';
 
   @property({ type: String })
-  value: string = '';
+  value = '';
 
   @property({ type: Boolean })
-  disabled: boolean = false;
+  disabled = false;
 
   @property({ attribute: false })
-  focused: boolean = false;
+  focused = false;
 
   @query('#input-element')
   inputEl!: HTMLInputElement;

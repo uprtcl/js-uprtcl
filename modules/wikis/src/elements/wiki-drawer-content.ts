@@ -32,10 +32,10 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
   selectedPageIx: number | undefined = undefined;
 
   @internalProperty()
-  creatingNewPage: boolean = false;
+  creatingNewPage = false;
 
   @internalProperty()
-  editableActual: boolean = false;
+  editableActual = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -251,7 +251,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
     this.dispatchEvent(new CustomEvent('back', { bubbles: true, composed: true }));
   }
 
-  renderPageList(showOptions: boolean = true) {
+  renderPageList(showOptions = true) {
     if (this.pagesList === undefined)
       return html` <uprtcl-loading class="empty-pages-loader"></uprtcl-loading> `;
 

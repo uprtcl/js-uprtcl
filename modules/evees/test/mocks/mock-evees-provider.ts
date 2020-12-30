@@ -28,13 +28,13 @@ export class MockEveesProvider implements EveesRemote {
     throw new Error('Method not implemented.');
   }
 
-  remote: string = 'local';
+  remote = 'local';
   accessControl = undefined;
   proposals = undefined;
 
   userId = undefined;
 
-  casID: string = 'mock-source';
+  casID = 'mock-source';
   cidConfig: any;
 
   async ready(): Promise<void> {}

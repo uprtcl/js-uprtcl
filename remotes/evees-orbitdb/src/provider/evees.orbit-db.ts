@@ -118,7 +118,7 @@ export class EveesOrbitDB implements EveesRemote {
     const perspectiveId = await this.store.create(secured.object);
     if (ENABLE_LOG) {
       this.logger.log(
-        `[OrbitDB] persistPerspectiveEntity - added to IPFS`,
+        '[OrbitDB] persistPerspectiveEntity - added to IPFS',
         perspectiveId
       );
     }
@@ -136,7 +136,7 @@ export class EveesOrbitDB implements EveesRemote {
     return perspectiveId;
   }
 
-  async getPerspectiveStore(perspectiveId: string, pin: boolean = false) {
+  async getPerspectiveStore(perspectiveId: string, pin = false) {
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
     const signedPerspective = (await this.store.get(perspectiveId)) as Signed<

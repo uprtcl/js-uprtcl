@@ -25,13 +25,13 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   proposalId!: string;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
-  showDetails: boolean = false;
+  showDetails = false;
 
   @property({ attribute: false })
-  voting: boolean = false;
+  voting = false;
 
   client!: ApolloClient<any>;
   remotes!: EveesRemote[];
@@ -53,7 +53,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
 
     this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     const remote = this.remotes.find((remote) => remote.id.includes('council'));
-    if (!remote) throw new Error(`council remote not registered`);
+    if (!remote) throw new Error('council remote not registered');
     this.remote = (remote as unknown) as EveesPolkadotCouncil;
     this.load();
   }

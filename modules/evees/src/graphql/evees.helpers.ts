@@ -319,7 +319,7 @@ export class EveesHelpers {
 }
 
 export class FindAncestor {
-  done: boolean = false;
+  done = false;
 
   constructor(
     protected client: ApolloClient<any>,

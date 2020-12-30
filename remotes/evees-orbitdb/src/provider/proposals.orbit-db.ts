@@ -1,11 +1,11 @@
-import { Logger } from "@uprtcl/micro-orchestrator";
+import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { ProposalsProvider } from "@uprtcl/evees";
-import { ProposalDetails, Proposal, NewProposal } from "@uprtcl/evees";
-import { CASStore } from "@uprtcl/multiplatform";
-import { OrbitDBCustom } from "@uprtcl/orbitdb-provider";
-import { EveesOrbitDBEntities } from "../custom-stores/orbit-db.stores";
-import { Entity } from "@uprtcl/cortex";
+import { ProposalsProvider } from '@uprtcl/evees';
+import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
+import { CASStore } from '@uprtcl/multiplatform';
+import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
+import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
+import { Entity } from '@uprtcl/cortex';
 
 export interface ProposalManifest {
   toPerspectiveId: string;
@@ -20,7 +20,7 @@ const defaultDetails: ProposalDetails = {
 };
 
 export class ProposalsOrbitDB implements ProposalsProvider {
-  logger = new Logger("PROPOSALS-ORBITDB");
+  logger = new Logger('PROPOSALS-ORBITDB');
 
   constructor(protected orbitdb: OrbitDBCustom, protected store: CASStore) {
     if (
@@ -29,7 +29,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
         undefined
     ) {
       throw new Error(
-        "orbitdb custom must include the EveesOrbitDBEntities.Proposal EveesOrbitDBEntities.ProposalsToPerspective stores"
+        'orbitdb custom must include the EveesOrbitDBEntities.Proposal EveesOrbitDBEntities.ProposalsToPerspective stores'
       );
     }
   }
@@ -45,7 +45,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
   async createProposal(proposal: NewProposal): Promise<string> {
     await this.ready();
 
-    this.logger.info("createProposal()", { proposal });
+    this.logger.info('createProposal()', { proposal });
     const proposalManifest: ProposalManifest = {
       fromPerspectiveId: proposal.fromPerspectiveId,
       toPerspectiveId: proposal.toPerspectiveId,
@@ -67,7 +67,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
     await proposalsToPerspeciveStore.add(proposalId);
 
-    this.logger.info("createProposal() - done", {
+    this.logger.info('createProposal() - done', {
       proposalId,
       proposalManifest,
       details: proposal.details,
@@ -84,7 +84,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     return proposalManifest.owners.includes(userId as string);
   }
 
-  async getProposalStore(proposalId: string, pin: boolean = false) {
+  async getProposalStore(proposalId: string, pin = false) {
     const proposalManifest = (await this.store.get(
       proposalId
     )) as ProposalManifest;
@@ -142,20 +142,20 @@ export class ProposalsOrbitDB implements ProposalsProvider {
   private async updateProposalInternal(
     proposalId: string,
     details: ProposalDetails,
-    pin: boolean = false
+    pin = false
   ): Promise<void> {
-    this.logger.log("updateProposalInternal", { proposalId, details });
+    this.logger.log('updateProposalInternal', { proposalId, details });
 
     const proposalStore = await this.getProposalStore(proposalId, pin);
     await proposalStore.add(details);
 
-    this.logger.log("updateProposalInternal - done", { proposalId, details });
+    this.logger.log('updateProposalInternal - done', { proposalId, details });
   }
 
   async getProposal(proposalId: string): Promise<Proposal> {
     await this.ready();
 
-    this.logger.info("getProposal() - pre", { proposalId });
+    this.logger.info('getProposal() - pre', { proposalId });
 
     const proposalManifest = (await this.store.get(
       proposalId
@@ -164,13 +164,13 @@ export class ProposalsOrbitDB implements ProposalsProvider {
 
     const proposal: Proposal = {
       id: proposalId,
-      creatorId: "",
+      creatorId: '',
       toPerspectiveId: proposalManifest.toPerspectiveId,
       fromPerspectiveId: proposalManifest.fromPerspectiveId,
       details: proposalDetails,
     };
 
-    this.logger.info("getProposal() - post", { proposal });
+    this.logger.info('getProposal() - post', { proposal });
 
     return proposal;
   }
@@ -178,7 +178,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
     await this.ready();
 
-    this.logger.info("getProposalsToPerspective() - pre", { perspectiveId });
+    this.logger.info('getProposalsToPerspective() - pre', { perspectiveId });
 
     const proposalsStore = await this.orbitdb.getStore(
       EveesOrbitDBEntities.ProposalsToPerspective,
@@ -187,7 +187,7 @@ export class ProposalsOrbitDB implements ProposalsProvider {
     );
 
     const proposalIds = [...proposalsStore.values()];
-    this.logger.info("getProposalsToPerspective() - post", { proposalIds });
+    this.logger.info('getProposalsToPerspective() - post', { proposalIds });
 
     return proposalIds;
   }

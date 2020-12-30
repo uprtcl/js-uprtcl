@@ -50,7 +50,7 @@ export class HttpEthAuthProvider extends HttpProvider implements Remote {
 
   async isLogged() {
     if (this.userId === undefined) return false;
-    return super.getObject<boolean>(`/user/isAuthorized`);
+    return super.getObject<boolean>('/user/isAuthorized');
   }
 
   async getNonce() {

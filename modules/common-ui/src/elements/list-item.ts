@@ -3,10 +3,10 @@ import { icons } from './icons';
 
 export class UprtclListItem extends LitElement {
   @property({ type: Boolean })
-  selected: boolean = false;
+  selected = false;
 
   @property({ type: Boolean })
-  hasMeta: boolean = false;
+  hasMeta = false;
 
   @property({ type: String })
   icon!: string;

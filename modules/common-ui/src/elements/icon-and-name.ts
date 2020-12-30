@@ -8,7 +8,7 @@ export class UprtclIconAndName extends LitElement {
   iconSource!: string;
 
   @property({ type: Boolean, attribute: 'show-name' })
-  showName: boolean = false;
+  showName = false;
 
   render() {
     return html`

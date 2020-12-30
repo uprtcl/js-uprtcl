@@ -5,19 +5,19 @@ export class UprtclPopper extends LitElement {
   logger = new Logger('UPRTCL-POPPER');
 
   @property({ type: String })
-  icon: string = 'more_vert';
+  icon = 'more_vert';
 
   @property({ type: String })
-  position: string = 'bottom-right';
+  position = 'bottom-right';
 
   @property({ type: Boolean, attribute: 'disable-dropdown' })
-  disableDropdown: boolean = false;
+  disableDropdown = false;
 
   @property({ type: Boolean })
-  skinny: boolean = false;
+  skinny = false;
 
   @property({ attribute: false })
-  showDropdown: boolean = false;
+  showDropdown = false;
 
   @property({ attribute: false })
   popperId!: string;

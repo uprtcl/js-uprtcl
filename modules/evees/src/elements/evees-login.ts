@@ -12,7 +12,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
   logged!: boolean;
@@ -21,7 +21,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   client!: ApolloClient<any>;
 
   @internalProperty()
-  private showAccountSelection: boolean = false;
+  private showAccountSelection = false;
 
   async firstUpdated() {
     this.remotes = this.requestAll(EveesBindings.EveesRemote);
