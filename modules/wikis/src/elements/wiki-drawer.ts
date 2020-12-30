@@ -2,10 +2,7 @@ import { property, html, css, LitElement, query } from 'lit-element';
 import { ApolloClient, gql } from 'apollo-boost';
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(
-      /([A-Z])/g,
-      (matches) => `-${matches[0].toLowerCase()}`
-    );
+    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
@@ -25,11 +22,7 @@ import {
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { WikiDrawerContent } from './wiki-drawer-content';
 import { loadEntity } from '@uprtcl/multiplatform';
-import {
-  CREATE_PROPOSAL,
-  PROPOSAL_CREATED_TAG,
-  EveesInfoConfig,
-} from '@uprtcl/evees';
+import { CREATE_PROPOSAL, PROPOSAL_CREATED_TAG, EveesInfoConfig } from '@uprtcl/evees';
 import { ProposalCreatedEvent } from '@uprtcl/evees/dist/types/types';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
@@ -39,16 +32,16 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   firstRef!: string;
 
   @property({ type: Boolean, attribute: 'show-back' })
-  showBack: boolean = false;
+  showBack = false;
+
+  @property({ attribute: false })
+  uref!: string;
 
   @property({ type: Object })
   eveesInfoConfig!: EveesInfoConfig;
 
   @property({ attribute: false })
-  uref!: string;
-
-  @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
   creatorId!: string;
@@ -78,12 +71,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
     /** the official owner is the creator of the firstRef of the Wiki,
      * the firstRef is comming from the outside e.g. browser url. */
-    const official = await loadEntity<Signed<Perspective>>(
-      this.client,
-      this.firstRef
-    );
-    if (!official)
-      throw new Error(`cant find official perspective ${this.firstRef}`);
+    const official = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
+    if (!official) throw new Error(`cant find official perspective ${this.firstRef}`);
     this.eveesInfoConfig.officialOwner = official.object.payload.creatorId;
 
     await this.load();
@@ -98,26 +87,19 @@ export class WikiDrawer extends moduleConnect(LitElement) {
       this.content.reset();
     }) as EventListener);
 
-    this.addEventListener(CONTENT_UPDATED_TAG, ((
-      event: ContentUpdatedEvent
-    ) => {
+    this.addEventListener(CONTENT_UPDATED_TAG, ((event: ContentUpdatedEvent) => {
       if (this.uref === event.detail.uref) {
         this.content.load();
       }
     }) as EventListener);
 
-    this.addEventListener(PROPOSAL_CREATED_TAG, ((
-      event: ProposalCreatedEvent
-    ) => {
+    this.addEventListener(PROPOSAL_CREATED_TAG, ((event: ProposalCreatedEvent) => {
       this.catchMergeProposal(event);
     }) as EventListener);
   }
 
   async load() {
-    const current = await loadEntity<Signed<Perspective>>(
-      this.client,
-      this.uref
-    );
+    const current = await loadEntity<Signed<Perspective>>(this.client, this.uref);
     if (!current) throw new Error(`cant find current perspective ${this.uref}`);
 
     this.creatorId = current.object.payload.creatorId;
@@ -175,7 +157,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
               @click=${() => this.dispatchEvent(new CustomEvent('back'))}
             ></uprtcl-icon-button>
           `
-        : ``}
+        : ''}
       <evees-info-user-based
         id="evees-info-row"
         uref=${this.uref}
@@ -195,9 +177,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
         icon="cached"
         @click=${() => this.forceReload()}
       ></uprtcl-icon-button>
-      <evees-login-widget
-        @changed=${() => this.loggedIn()}
-      ></evees-login-widget>
+      <evees-login-widget @changed=${() => this.loggedIn()}></evees-login-widget>
     `;
   }
 
@@ -238,9 +218,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           display: flex;
           flex: 1 1 0;
           flex-direction: column;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
-            'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
-            'Segoe UI Symbol';
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
+            Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
           font-size: 16px;
           color: #37352f;
           --mdc-theme-primary: #2196f3;
@@ -252,7 +231,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
           flex: 1 1 0;
           display: flex;
           flex-direction: column;
-
         }
         .app-topbar {
           width: 100%;

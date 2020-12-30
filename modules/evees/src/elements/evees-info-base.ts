@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
 
-import { ApolloClient, gql } from 'apollo-boost';
+import { ApolloClient, FetchPolicy } from 'apollo-boost';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
@@ -17,7 +17,12 @@ import {
   EveesConfig,
 } from '../types';
 import { EveesBindings } from '../bindings';
-import { DELETE_PERSPECTIVE, CREATE_PROPOSAL, FORK_PERSPECTIVE } from '../graphql/queries';
+import {
+  DELETE_PERSPECTIVE,
+  CREATE_PROPOSAL,
+  FORK_PERSPECTIVE,
+  GET_OTHER_PERSPECTIVES,
+} from '../graphql/queries';
 import { EveesHelpers } from '../graphql/evees.helpers';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
@@ -60,7 +65,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   eveeColor!: string;
 
   @property({ type: Boolean, attribute: 'emit-proposals' })
-  emitProposals: boolean = false;
+  emitProposals = false;
 
   @property({ type: String, attribute: false })
   entityType: string | undefined = undefined;
@@ -69,34 +74,34 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   loading: Boolean = false;
 
   @property({ attribute: false })
-  isLogged: boolean = false;
+  isLogged = false;
 
   @property({ attribute: false })
   isLoggedOnDefault;
 
   @property({ attribute: false })
-  forceUpdate: string = 'true';
+  forceUpdate = 'true';
 
   @property({ attribute: false })
-  showUpdatesDialog: boolean = false;
+  showUpdatesDialog = false;
 
   @property({ attribute: false })
-  loggingIn: boolean = false;
+  loggingIn = false;
 
   @property({ attribute: false })
-  creatingNewPerspective: boolean = false;
+  creatingNewPerspective = false;
 
   @property({ attribute: false })
-  proposingUpdate: boolean = false;
+  proposingUpdate = false;
 
   @property({ attribute: false })
-  makingPublic: boolean = false;
+  makingPublic = false;
 
   @property({ attribute: false })
   firstHasChanges!: boolean;
 
   @property({ attribute: false })
-  merging: boolean = false;
+  merging = false;
 
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
@@ -240,32 +245,16 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.logger.info('checkPull()', this.pullWorkspace);
   }
 
-  async getContextPerspectives(perspectiveId?: string): Promise<string[]> {
+  async getOtherPerspectives(perspectiveId?: string, fetchPolicy?: FetchPolicy): Promise<string[]> {
     perspectiveId = perspectiveId || this.uref;
     const result = await this.client.query({
-      query: gql`{
-          entity(uref: "${perspectiveId}") {
-            id
-            ... on Perspective {
-              payload {
-                remote
-                context {
-                  id
-                  perspectives {
-                    id
-                  } 
-                }
-              }
-            }
-          }
-        }`,
+      fetchPolicy,
+      query: GET_OTHER_PERSPECTIVES(perspectiveId),
     });
 
     /** data on other perspectives (proposals are injected on them) */
     const perspectives =
-      result.data.entity.payload.context === null
-        ? []
-        : result.data.entity.payload.context.perspectives;
+      result.data.entity.otherPerspectives === null ? [] : result.data.entity.otherPerspectives;
 
     // remove duplicates
     const map = new Map<string, null>();
@@ -492,6 +481,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if ((this.defaultRemote as any).flush) await (this.defaultRemote as any).flush();
 
     const newPerspectiveId = result.data.forkPerspective.id;
+    await this.getOtherPerspectives(this.uref, 'network-only');
 
     this.dispatchEvent(
       new CustomEvent('new-perspective-created', {

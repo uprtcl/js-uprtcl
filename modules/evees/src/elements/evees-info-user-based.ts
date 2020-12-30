@@ -36,7 +36,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
   eveesInfoConfig!: EveesInfoConfig;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  loading = true;
 
   @property({ attribute: false })
   officialId: string | undefined = undefined;
@@ -63,7 +63,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
   hasPull!: boolean;
 
   @property({ attribute: false })
-  creatingMine: boolean = false;
+  creatingMine = false;
 
   @query('#proposals-popper')
   proposalsPopper!: UprtclPopper;
@@ -76,6 +76,8 @@ export class EveesInfoUserBased extends EveesInfoBase {
 
   @query('#evees-proposals-list')
   eveesProposalsList!: ProposalsList;
+
+  parentContext: string | undefined = '';
 
   async firstUpdated() {
     await super.firstUpdated();
@@ -113,13 +115,13 @@ export class EveesInfoUserBased extends EveesInfoBase {
 
     /** from all the perspectives of this evee we must identify the official perspective and this
      * user perspective in the default remote  */
-    const first = await loadEntity<Signed<Perspective>>(
-      this.client,
-      this.firstRef
-    );
+    const first = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
+
+    this.parentContext = first?.object.payload.context;
+
     if (!first) throw new Error(`first perspective ${this.firstRef}`);
 
-    const perspectiveIds = await this.getContextPerspectives(this.firstRef);
+    const perspectiveIds = await this.getOtherPerspectives(this.firstRef);
     const perspectives = ((await Promise.all(
       perspectiveIds.map((perspectiveId) =>
         loadEntity<Signed<Perspective>>(this.client, perspectiveId)
@@ -132,8 +134,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
     if (!this.officialRemote) throw new Error('official remote not found');
     const officialRemote: EveesRemote = this.officialRemote;
 
-    const sortOnTimestamp = (p1, p2) =>
-      p1.object.payload.timestamp - p2.object.payload.timestamp;
+    const sortOnTimestamp = (p1, p2) => p1.object.payload.timestamp - p2.object.payload.timestamp;
 
     if (this.eveesInfoConfig.checkOwner) {
       const officials = perspectives.filter(
@@ -142,16 +143,15 @@ export class EveesInfoUserBased extends EveesInfoBase {
           p.object.payload.creatorId === this.eveesInfoConfig.officialOwner
       );
       const officialsSorted = officials.sort(sortOnTimestamp).reverse();
-      this.officialId =
-        officialsSorted.length > 0 ? officialsSorted[0].id : undefined;
+      this.officialId = officialsSorted.length > 0 ? officialsSorted[0].id : undefined;
     } else {
       this.officialId = this.firstRef;
     }
 
     const mines = perspectives.filter(
       (p) =>
-        p.object.payload.remote === defaultRemote.id &&
-        p.object.payload.creatorId === defaultRemote.userId
+        p.object.payload.creatorId === defaultRemote.userId &&
+        p.object.payload.context === first.object.payload.context
     );
 
     /** the latest perspective is considered the "mine", other perspectives might exist and are listed under other */
@@ -176,24 +176,19 @@ export class EveesInfoUserBased extends EveesInfoBase {
     /** check pull from official*/
     if (this.isMine && this.officialId !== undefined) {
       this.checkPull(this.officialId).then(() => {
-        this.hasPull =
-          this.pullWorkspace !== undefined && this.pullWorkspace.hasUpdates();
+        this.hasPull = this.pullWorkspace !== undefined && this.pullWorkspace.hasUpdates();
       });
     }
 
     /** get the current perspective author */
-    const nowPerspective = await loadEntity<Signed<Perspective>>(
-      this.client,
-      this.uref
-    );
+    const nowPerspective = await loadEntity<Signed<Perspective>>(this.client, this.uref);
     if (!nowPerspective) throw new Error(`official perspective ${this.uref}`);
 
     this.author = nowPerspective.object.payload.creatorId;
     this.authorRemote = nowPerspective.object.payload.remote;
 
     /** force load of perspectives and proposals lists */
-    if (this.eveesProposalsList && this.eveesProposalsList !== null)
-      this.eveesProposalsList.load();
+    if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
     if (this.perspectivesList) this.perspectivesList.load();
 
     this.loading = false;
@@ -229,8 +224,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
     if (!this.officialId) throw new Error('can only propose to official');
     this.closePoppers();
     await this.otherPerspectiveMerge(this.uref, this.officialId);
-    if (this.eveesProposalsList && this.eveesProposalsList !== null)
-      this.eveesProposalsList.load();
+    if (this.eveesProposalsList && this.eveesProposalsList !== null) this.eveesProposalsList.load();
   }
 
   seeOfficial() {
@@ -320,11 +314,11 @@ export class EveesInfoUserBased extends EveesInfoBase {
         <evees-perspectives-list
           id="evees-perspectives-list"
           perspective-id=${this.uref}
+          parent-context=${this.parentContext}
           .hidePerspectives=${hidePerspectives}
           ?can-propose=${this.isLogged}
           @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}
-          @merge-perspective=${(e) =>
-            this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref)}
+          @merge-perspective=${(e) => this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref)}
         ></evees-perspectives-list>
       </div>
     `;
@@ -343,8 +337,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
       <uprtcl-button
         class="tab-button"
         ?skinny=${!this.isOfficial}
-        @click=${() =>
-          this.officialId !== undefined ? this.seeOfficial() : undefined}
+        @click=${() => (this.officialId !== undefined ? this.seeOfficial() : undefined)}
         ?disabled=${this.officialId === undefined}
         transition
       >
@@ -358,8 +351,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
                 ? 'margin-left-small highlighted'
                 : 'margin-left-small'}
               icon="menu_open"
-              @click=${() =>
-                this.isTheirs || this.isMine ? this.proposeDraft() : undefined}
+              @click=${() => (this.isTheirs || this.isMine ? this.proposeDraft() : undefined)}
               ?disabled=${this.isOfficial || this.officialId === undefined}
               style=${`--background-color: ${
                 this.isTheirs || this.isMine ? this.color() : 'initial'
@@ -369,12 +361,9 @@ export class EveesInfoUserBased extends EveesInfoBase {
             </uprtcl-icon-button>
             <uprtcl-icon-button
               button
-              class=${this.hasPull
-                ? 'margin-left-small highlighted'
-                : 'margin-left-small'}
+              class=${this.hasPull ? 'margin-left-small highlighted' : 'margin-left-small'}
               icon="menu_open_180"
-              @click=${() =>
-                this.isMine && this.hasPull ? this.showPull() : undefined}
+              @click=${() => (this.isMine && this.hasPull ? this.showPull() : undefined)}
               ?disabled=${!this.hasPull}
               style=${`--background-color: ${
                 this.isTheirs || this.isMine ? this.color() : 'initial'
@@ -384,17 +373,14 @@ export class EveesInfoUserBased extends EveesInfoBase {
           `
         : ''}
       ${this.isLoggedOnDefault &&
-      (this.loading ||
-        (this.officialId !== undefined && this.officialId !== this.mineId))
+      (this.loading || (this.officialId !== undefined && this.officialId !== this.mineId))
         ? html`
             <div class="mine-and-settings">
               <uprtcl-button-loading
                 ?skinny=${!this.isMine}
                 @click=${() => this.draftClicked()}
                 class="margin-left-small tab-button"
-                style=${`--background-color: ${
-                  this.isMine ? this.color() : 'initial'
-                }`}
+                style=${`--background-color: ${this.isMine ? this.color() : 'initial'}`}
                 ?loading=${this.creatingMine}
                 transition
               >
@@ -406,9 +392,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
                       <uprtcl-options-menu
                         icon="settings"
                         class="options-menu"
-                        style=${`--background-color: ${
-                          this.isMine ? this.color() : 'initial'
-                        }`}
+                        style=${`--background-color: ${this.isMine ? this.color() : 'initial'}`}
                         @option-click=${(e) => this.optionOnMine(e.detail.key)}
                         .config=${mineConfig}
                       >
@@ -429,9 +413,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
           slot="icon"
           icon="arrow_drop_down"
           ?skinny=${!this.isTheirs}
-          style=${`--background-color: ${
-            this.isTheirs ? this.color() : 'initial'
-          }`}
+          style=${`--background-color: ${this.isTheirs ? this.color() : 'initial'}`}
           class="tab-other"
           transition
           >${this.isTheirs
@@ -460,8 +442,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
               <evees-proposals-list
                 id="evees-proposals-list"
                 perspective-id=${this.officialId}
-                @dialogue-closed=${() =>
-                  (this.proposalsPopper.showDropdown = false)}
+                @dialogue-closed=${() => (this.proposalsPopper.showDropdown = false)}
               ></evees-proposals-list>
             `
           : html`<uprtcl-loading></uprtcl-loading> `}
@@ -473,17 +454,14 @@ export class EveesInfoUserBased extends EveesInfoBase {
     return html`
       <div class="perspectives-permissions">
         ${!this.loading
-          ? this.remote.accessControl
-              .lense()
-              .render({ uref: this.uref, parentId: this.parentId })
+          ? this.remote.accessControl.lense().render({ uref: this.uref, parentId: this.parentId })
           : ''}
       </div>
     `;
   }
 
   render() {
-    if (this.perspectiveData === undefined)
-      return html` <uprtcl-loading></uprtcl-loading> `;
+    if (this.perspectiveData === undefined) return html` <uprtcl-loading></uprtcl-loading> `;
 
     return html`
       <div class="left-buttons">
@@ -497,16 +475,10 @@ export class EveesInfoUserBased extends EveesInfoBase {
                 class="info-popper margin-right"
               >
                 ${this.eveesInfoConfig.showIcon
-                  ? html`
-                      <div class="icon-container">${this.renderIcon()}</div>
-                    `
+                  ? html` <div class="icon-container">${this.renderIcon()}</div> `
                   : ''}
                 ${this.eveesInfoConfig.showAcl
-                  ? html`
-                      <div class="permissions-container">
-                        ${this.renderPermissions()}
-                      </div>
-                    `
+                  ? html` <div class="permissions-container">${this.renderPermissions()}</div> `
                   : ''}
                 ${this.eveesInfoConfig.showDebugInfo ? this.renderInfo() : ''}
               </uprtcl-popper>
@@ -514,11 +486,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
           : ''}
         ${this.eveesInfoConfig.showProposals
           ? html`
-              <uprtcl-popper
-                id="proposals-popper"
-                position="bottom-left"
-                class="proposals-popper"
-              >
+              <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
                 <uprtcl-button
                   slot="icon"
                   class="proposals-button"
@@ -534,9 +502,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
           : ''}
       </div>
       <div class="center-buttons">
-        ${this.eveesInfoConfig.showDraftControl
-          ? this.renderDraftControl()
-          : ''}
+        ${this.eveesInfoConfig.showDraftControl ? this.renderDraftControl() : ''}
       </div>
       ${this.showUpdatesDialog ? this.renderUpdatesDialog() : ''}
     `;

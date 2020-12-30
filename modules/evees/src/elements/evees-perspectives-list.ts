@@ -1,13 +1,15 @@
 import { ApolloClient, gql } from 'apollo-boost';
 import { LitElement, property, html, css } from 'lit-element';
 
+import { CortexModule, HasTitle, PatternRecognizer } from '@uprtcl/cortex';
+
 import { ApolloClientModule } from '@uprtcl/graphql';
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
-import { eveeColor } from './support';
 import { EveesBindings } from './../bindings';
 import { EveesRemote } from './../services/evees.remote';
 import { EveesHelpers } from '../graphql/evees.helpers';
+import { GET_OTHER_PERSPECTIVES } from '../graphql/queries';
 
 interface PerspectiveData {
   id: string;
@@ -15,6 +17,8 @@ interface PerspectiveData {
   remote: string;
   creatorId: string;
   timestamp: number;
+  context: string;
+  title?: string;
 }
 
 export class EveesPerspectivesList extends moduleConnect(LitElement) {
@@ -23,6 +27,9 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
 
+  @property({ type: String, attribute: 'parent-context' })
+  parentContext!: string;
+
   @property({ type: Array })
   hidePerspectives: string[] = [];
 
@@ -30,7 +37,7 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
   canPropose: Boolean = false;
 
   @property({ attribute: false })
-  loadingPerspectives: boolean = true;
+  loadingPerspectives = true;
 
   @property({ attribute: false })
   otherPerspectivesData: PerspectiveData[] = [];
@@ -42,67 +49,81 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
 
   protected client!: ApolloClient<any>;
   protected remotes!: EveesRemote[];
+  protected recognizer!: PatternRecognizer;
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
     this.client = this.request(ApolloClientModule.bindings.Client);
     this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
+    this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.load();
   }
 
   async load() {
     this.loadingPerspectives = true;
     const result = await this.client.query({
-      query: gql`{
-        entity(uref: "${this.perspectiveId}") {
-          id
-          ... on Perspective {
-            payload {
-              remote
-              context {
-                id
-                perspectives {
-                  id
-                  name
-                  payload {
-                    creatorId
-                    timestamp
-                    remote
-                  }
-                } 
-              }
-            }
-          }
-        }
-      }`,
+      query: GET_OTHER_PERSPECTIVES(this.perspectiveId),
     });
 
     /** data on other perspectives (proposals are injected on them) */
     const perspectivesData: PerspectiveData[] =
-      result.data.entity.payload.context === null
+      result.data.entity.otherPerspectives === null
         ? []
         : await Promise.all(
-            result.data.entity.payload.context.perspectives.map(
-              async (perspective): Promise<PerspectiveData> => {
+            result.data.entity.otherPerspectives.map(
+              async (entity): Promise<PerspectiveData> => {
                 /** data on this perspective */
-                const remote = this.remotes.find(
-                  (r) => r.id === perspective.payload.remote
-                );
-                if (!remote)
-                  throw new Error(
-                    `remote not found for ${perspective.payload.remote}`
-                  );
-                this.canWrite = await EveesHelpers.canWrite(
-                  this.client,
-                  this.perspectiveId
-                );
+                const perspective = await this.client.query({
+                  query: gql`{
+                    entity(uref: "${entity.id}") {
+                      id
+                      name
+                      head {
+                        id                      
+                      }
+                      ... on Perspective {
+                        payload {
+                          remote
+                          path
+                          creatorId 
+                          timestamp     
+                          context                    
+                        }
+                      }
+                    }
+                  }`,
+                });
+
+                this.canWrite = await EveesHelpers.canWrite(this.client, this.perspectiveId);
+
+                const {
+                  data: {
+                    entity: {
+                      id,
+                      name,
+                      head,
+                      payload: { creatorId, remote, timestamp, context },
+                    },
+                  },
+                } = perspective;
+
+                const data = await EveesHelpers.getPerspectiveData(this.client, id);
+
+                const title = !data
+                  ? undefined
+                  : this.recognizer
+                      .recognizeBehaviours(data)
+                      .find((b) => (b as HasTitle).title)
+                      .title(data);
                 return {
-                  id: perspective.id,
-                  name: perspective.name,
-                  creatorId: perspective.payload.creatorId,
-                  timestamp: perspective.payload.timestamp,
-                  remote: perspective.payload.remote,
+                  id,
+                  name,
+                  creatorId,
+                  timestamp,
+                  remote,
+                  context,
+                  title,
                 };
               }
             )
@@ -110,9 +131,7 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
 
     // remove duplicates
     const map = new Map<string, PerspectiveData>();
-    perspectivesData.forEach((perspectiveData) =>
-      map.set(perspectiveData.id, perspectiveData)
-    );
+    perspectivesData.forEach((perspectiveData) => map.set(perspectiveData.id, perspectiveData));
     this.perspectivesData = Array.from(map, (key) => key[1]);
 
     this.otherPerspectivesData = this.perspectivesData.filter(
@@ -121,25 +140,9 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
 
     this.loadingPerspectives = false;
 
-    this.logger.info('getOtherPersepectives() - post', {
+    this.logger.info('getOtherPersepectives() - get', {
       persperspectivesData: this.perspectivesData,
     });
-  }
-
-  perspectiveClicked(id: string) {
-    this.dispatchEvent(
-      new CustomEvent('perspective-selected', {
-        bubbles: true,
-        composed: true,
-        detail: {
-          id,
-        },
-      })
-    );
-  }
-
-  perspectiveColor(creatorId: string) {
-    return eveeColor(creatorId);
   }
 
   perspectiveButtonClicked(event: Event, perspectiveData: PerspectiveData) {
@@ -163,22 +166,26 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
     `;
   }
 
-  render() {    
+  render() {
     return this.loadingPerspectives
       ? this.renderLoading()
       : this.otherPerspectivesData.length > 0
       ? html`
           <uprtcl-list activatable>
-            ${this.otherPerspectivesData.map((perspectiveData) =>              
-              html`
-                <evees-perspective-row
-                  perspective-id=${this.perspectiveId}
-                  hasMeta
-                  perspective-data-id=${perspectiveData.id}
-                  creator-id=${perspectiveData.creatorId}
-                  remote-id=${perspectiveData.remote}
-                ></evees-perspective-row>
-              `
+            ${this.otherPerspectivesData.map(
+              (perspectiveData) =>
+                html`
+                  <evees-perspective-row
+                    perspective-id=${this.perspectiveId}
+                    parent-context=${this.parentContext}
+                    hasMeta
+                    other-perspective-id=${perspectiveData.id}
+                    creator-id=${perspectiveData.creatorId}
+                    remote-id=${perspectiveData.remote}
+                    context=${perspectiveData.context}
+                    title=${perspectiveData.title}
+                  ></evees-perspective-row>
+                `
             )}
           </uprtcl-list>
         `

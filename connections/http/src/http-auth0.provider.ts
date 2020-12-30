@@ -119,7 +119,7 @@ export class HttpAuth0Provider extends HttpProvider {
     const shouldParseResult = query.includes('code=') && query.includes('state=');
 
     if (shouldParseResult) {
-      this.parseLoginResult();
+      return this.parseLoginResult();
     } else {
       this.makeLoginRedirect();
     }
