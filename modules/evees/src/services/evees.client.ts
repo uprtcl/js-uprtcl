@@ -1,34 +1,38 @@
 import { Entity } from '@uprtcl/cortex';
-import { UpdateRequest, NewPerspectiveData } from '../types';
+import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../types';
 
-/** A "Delta" is a Set of objects that describe changes made relative to an EveesClient state. It includes
- * a list of new perspectives (mutable references).
- * a list of updates to existing perspectives.
- * a list of entities (hashed objects) that are referenced by the list above.
- */
-export interface Delta {
-  newPerspectives: NewPerspectiveData[];
-  updates: UpdateRequest[];
+/** the perspective data included by a remote as part of a slice */
+export interface PerspectiveSlice {
+  id: string;
+  headId: string;
+  canWrite: boolean;
+}
+
+export interface Slice {
+  perspectives: PerspectiveSlice[];
   entities: Entity<any>[];
 }
 
+export interface PerspectiveGetResult {
+  details: PerspectiveDetails;
+  slice?: Slice;
+}
+
 export interface EveesClient {
-  /** create new perspectives */
-  getPerspective(perspectiveId: string): Promise<{ head: string; delta: Delta }>;
+  /** get a perspective head,
+   * include a Slice that can be used by the client to optimistically fill the cache */
+  getPerspective(perspectiveId: string): Promise<PerspectiveGetResult>;
 
   /** create new perspectives */
-  newPerspectives(newPerspective: NewPerspectiveData[]);
+  createPerspectives(newPerspective: NewPerspectiveData[]);
   /** updated existing perspectives (can be newPerspectives too) */
-  update(update: UpdateRequest[]);
+  updatePerspectives(update: UpdateRequest[]);
   /** store hashed objects */
-  put(entities: Entity<any>[]);
-  /** sync all the temporary chhanges made on this client on its base client */
-  flush();
+  storeEntities(entities: Entity<any>[]);
 
-  /** for performance reasons, we need a place to cache the query "get other perspectives",
-   * without having to ask the remote filter everytime.
-   * But caching a other perspectives of user seems possible and is enough.*/
-  userPerspective(userId: string, ofPerspectiveId: string);
+  /** sync all the temporary changes made on this client with the base layer */
+  flush(): Promise<void>;
 
-  canUpdate(userId: string, perspectiveId: string);
+  /** returns true if the user can update the perspective */
+  canUpdate(userId: string, perspectiveId: string): Promise<boolean>;
 }
