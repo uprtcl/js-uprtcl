@@ -4,7 +4,6 @@ import { Pattern, HasLinks, Entity, Signed } from '@uprtcl/cortex';
 
 import { Commit } from '../types';
 import { extractSignedEntity } from '../utils/signed';
-import { HasRedirect } from '@uprtcl/multiplatform';
 import { EveesBindings } from '../bindings';
 
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];
@@ -20,8 +19,7 @@ export class CommitPattern extends Pattern<Entity<Signed<Commit>>> {
 }
 
 @injectable()
-export class CommitLinked
-  implements HasLinks<Entity<Signed<Commit>>>, HasRedirect<Entity<Signed<Commit>>> {
+export class CommitLinked implements HasLinks<Entity<Signed<Commit>>> {
   links: (commit: Entity<Signed<Commit>>) => Promise<string[]> = async (
     commit: Entity<Signed<Commit>>
   ): Promise<string[]> => [commit.object.payload.dataId, ...commit.object.payload.parentsIds];
@@ -34,8 +32,4 @@ export class CommitLinked
     commit: Entity<Signed<Commit>>,
     newLinks: string[]
   ): Entity<Signed<Commit>> => commit;
-
-  redirect: (commit: Entity<Signed<Commit>>) => Promise<string | undefined> = async (
-    commit: Entity<Signed<Commit>>
-  ) => commit.object.payload.dataId;
 }

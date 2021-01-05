@@ -1,12 +1,7 @@
-import {
-  MicroModule,
-  Dictionary,
-  Constructor,
-} from '@uprtcl/micro-orchestrator';
-import { PatternsModule, Pattern } from '@uprtcl/cortex';
+import { MicroModule, Dictionary } from '@uprtcl/micro-orchestrator';
+import { PatternsModule } from '@uprtcl/cortex';
 
-import { mockSchema } from './mock.schema';
-import { MockPattern, Redirect, Text } from './mock.pattern';
+import { MockPattern, Text } from './mock.pattern';
 import { CASModule } from '../../src/cas.module';
 import { MockSource } from './mock.store';
 
@@ -19,7 +14,7 @@ export class MockModule extends MicroModule {
 
   get submodules() {
     return [
-      new PatternsModule([new MockPattern([Redirect, Text])]),
+      new PatternsModule([new MockPattern([Text])]),
       new CASModule([new MockSource(this.initialObjects)]),
     ];
   }

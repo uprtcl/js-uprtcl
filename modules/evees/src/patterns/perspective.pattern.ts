@@ -1,7 +1,6 @@
 import { injectable, inject } from 'inversify';
 
 import { Pattern, HasLinks, Entity, Signed } from '@uprtcl/cortex';
-import { HasRedirect } from '@uprtcl/multiplatform';
 
 import { Perspective } from '../types';
 import { EveesBindings } from '../bindings';
@@ -20,7 +19,7 @@ export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
 }
 
 @injectable()
-export class PerspectiveLinks implements HasLinks, HasRedirect {
+export class PerspectiveLinks implements HasLinks {
   constructor(
     @inject(EveesClientModule.bindings.Client)
     protected client: EveesClient
@@ -40,27 +39,8 @@ export class PerspectiveLinks implements HasLinks, HasRedirect {
       }`,
     });
 
-    const headId = result.data.entity.head
-      ? result.data.entity.head.id
-      : undefined;
+    const headId = result.data.entity.head ? result.data.entity.head.id : undefined;
 
     return headId ? [headId] : [];
-  };
-
-  redirect = async (perspective: Entity<Signed<Perspective>>) => {
-    const result = await this.client.query({
-      query: gql`{
-        entity(uref: "${perspective.id}") {
-          id
-          ... on Perspective {
-            head {
-              id
-            }
-          }
-        }
-      }`,
-    });
-
-    return result.data.entity.head ? result.data.entity.head.id : undefined;
   };
 }

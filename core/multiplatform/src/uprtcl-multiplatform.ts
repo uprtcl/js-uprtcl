@@ -13,7 +13,6 @@ export { KnownSourcesSource } from './references/known-sources/known-sources.sou
 export { MultiSourceService } from './references/multi-source.service';
 
 /** Behaviours */
-export { HasRedirect } from './behaviours/has-redirect';
 export { ResolveEntity } from './behaviours/resolve-entity';
 
 /** Modules */
