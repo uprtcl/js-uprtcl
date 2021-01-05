@@ -8,7 +8,7 @@ import { EveesInfoBase } from './evees-info-base';
 import { EveesPerspectivesList } from './evees-perspectives-list';
 import { ProposalsList } from './evees-proposals-list';
 import { Perspective } from '../types';
-import { EveesRemote } from '../services/evees.remote';
+import { EveesRemote } from '../services/remote';
 import { DEFAULT_COLOR, eveeColor } from './support';
 import { Secured } from '../utils/cid-hash';
 import { ContentUpdatedEvent } from './events';

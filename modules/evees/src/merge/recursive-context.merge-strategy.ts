@@ -5,7 +5,7 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { HasChildren, Signed } from '@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import { Client } from '../services/evees.client.memory';
+import { Client } from '../services/client.memory';
 import { Perspective } from '../types';
 
 @injectable()

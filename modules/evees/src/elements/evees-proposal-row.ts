@@ -2,15 +2,15 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Perspective, Proposal } from '../types';
-import { EveesRemote } from 'src/services/evees.remote';
+import { EveesRemote } from 'src/services/remote';
 import { EveesBindings } from 'src/bindings';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
-import { Client } from '../services/evees.client.memory';
+import { Client } from '../services/client.memory';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { ContentUpdatedEvent } from './events';
-import { ProposalsProvider } from 'src/services/proposals.provider';
+import { ProposalsProvider } from 'src/services/proposals';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');

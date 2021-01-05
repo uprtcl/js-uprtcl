@@ -29,20 +29,19 @@ export interface EntityGetResult {
 // 'canUpdate': When the logged user canUpdate status over a perspective changes.
 
 export interface Client {
-  searchEngine: SearchEngine;
-  proposals: Proposals;
+  searchEngine?: SearchEngine;
+  proposals?: Proposals;
 
   /** get a perspective head,
-   * include a Slice that can be used by the client to optimistically fill the cache */
+   * include a Slice that can be used by the client to pre-fill the cache */
   getPerspective(perspectiveId: string): Promise<PerspectiveGetResult>;
 
   /** get hashed entities */
   getEntities(hashes: string[]): Promise<EntityGetResult>;
 
-  /** create new perspectives */
-  createPerspectives(newPerspective: NewPerspectiveData[]);
-  /** updated existing perspectives (can be newPerspectives too) */
-  updatePerspectives(update: UpdateRequest[]);
+  /** create/update perspectives */
+  createPerspectives(newPerspective: NewPerspectiveData[], updates: UpdateRequest[]);
+
   /** store hashed objects */
   storeEntities(entities: object[]);
 

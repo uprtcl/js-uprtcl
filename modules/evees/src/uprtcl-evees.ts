@@ -5,17 +5,17 @@ import 'reflect-metadata';
 export { Commit, Perspective, PerspectiveDetails, HasDiffLenses, DiffLens } from './types';
 
 /** Services interfaces */
-export { EveesSource } from './services/evees.source';
+export { EveesSource } from './services/source';
 export { EveesProvider } from './services/evees.provider';
-export { EveesRemote } from './services/evees.remote';
+export { EveesRemote } from './services/remote';
 export { NewPerspectiveData } from './types';
 export { EveesConfig } from './types';
 
 /** Service providers */
-export { EveesHelpers } from './services/evees.helpers';
+export { EveesHelpers } from './services/evees';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
-export { Client } from './services/evees.client';
+export { Client } from './services/client';
 export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 
 /** Merge */
@@ -67,8 +67,8 @@ export {
   ProposalDetails,
   PROPOSAL_CREATED_TAG,
 } from './types';
-export { ProposalsProvider } from './services/proposals.provider';
+export { ProposalsProvider } from './services/proposals';
 
 /** Aceess Control */
-export { AccessControlService } from './services/evees.access-control';
+export { AccessControlService } from './services/access-control';
 export { Remote } from './remote';

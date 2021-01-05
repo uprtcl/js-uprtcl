@@ -1,11 +1,9 @@
 import { Lens } from '@uprtcl/lenses';
 import { Proposal, NewProposal, ProposalDetails } from '../types';
 
-export interface ProposalsProvider {
+export interface Proposals {
   /** Getters */
   getProposal(proposalId: string): Promise<Proposal>;
-
-  getProposalsToPerspective(perspectiveId: string): Promise<string[]>;
 
   /** Modifiers */
   createProposal(proposal: NewProposal): Promise<string>;
@@ -17,7 +15,7 @@ export interface ProposalsProvider {
   /** UI interaction */
   lense?(): Lens;
 
-  canPropose(perspectiveId?: string): Promise<Boolean>;
+  canPropose(perspectiveId?: string, userId?: string): Promise<boolean>;
 
-  canRemove(proposalId: string, userId?: string): Promise<Boolean>;
+  canDelete(proposalId: string, userId?: string): Promise<boolean>;
 }

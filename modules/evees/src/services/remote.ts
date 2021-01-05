@@ -1,7 +1,7 @@
 import { EveesProvider } from './evees.provider';
-import { ProposalsProvider } from './proposals.provider';
+import { ProposalsProvider } from './proposals';
 import { Remote } from '../remote';
-import { AccessControlService } from './evees.access-control';
+import { AccessControlService } from './access-control';
 import { Lens } from '@uprtcl/lenses';
 import { TemplateResult } from 'lit-element';
 import { Perspective } from '../types';

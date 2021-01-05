@@ -2,7 +2,7 @@ import { CASStore } from '@uprtcl/multiplatform';
 
 import { PerspectiveDetails } from '../types';
 
-export interface EveesSource {
+export interface Source {
   store: CASStore;
 
   /**

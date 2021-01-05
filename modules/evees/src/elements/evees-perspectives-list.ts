@@ -4,8 +4,8 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
 import { eveeColor } from './support';
 import { EveesBindings } from './../bindings';
-import { EveesRemote } from './../services/evees.remote';
-import { Client } from '../services/evees.client';
+import { EveesRemote } from '../services/remote';
+import { Client } from '../services/client';
 
 interface PerspectiveData {
   id: string;

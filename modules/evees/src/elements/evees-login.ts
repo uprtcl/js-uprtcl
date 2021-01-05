@@ -2,7 +2,7 @@ import { LitElement, property, internalProperty, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
-import { EveesRemote } from '../services/evees.remote';
+import { EveesRemote } from '../services/remote';
 import { EveesBindings } from '../bindings';
 
 export class EveesLoginWidget extends moduleConnect(LitElement) {

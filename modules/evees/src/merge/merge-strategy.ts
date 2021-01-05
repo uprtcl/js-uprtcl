@@ -1,4 +1,4 @@
-import { Client } from '../services/evees.client.memory';
+import { Client } from '../services/client.memory';
 
 export interface MergeStrategy {
   /**

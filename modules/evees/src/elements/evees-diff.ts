@@ -5,7 +5,7 @@ import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
-import { Client } from '../services/evees.client.memory';
+import { Client } from '../services/client.memory';
 
 const LOGINFO = true;
 

@@ -8,7 +8,7 @@ import { CommonUIModule } from '@uprtcl/common-ui';
 import { PerspectiveLinks, PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
 import { EveesBindings } from './bindings';
-import { EveesRemote } from './services/evees.remote';
+import { EveesRemote } from './services/remote';
 import { EveesPerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 

@@ -3,12 +3,12 @@ import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer, Signed } from '@uprtcl/cortex';
 
 import { UpdateRequest, Commit } from '../types';
-import { CreateCommit, EveesHelpers } from '../services/evees.helpers';
+import { CreateCommit, EveesHelpers } from '../services/evees';
 import { MergeStrategy } from './merge-strategy';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Merge } from '../behaviours/merge';
 import { mergeResult } from './utils';
-import { Client } from '../services/evees.client';
+import { Client } from '../services/client';
 
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(

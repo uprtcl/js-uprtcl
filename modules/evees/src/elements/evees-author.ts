@@ -1,7 +1,7 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { EveesRemote } from '../services/evees.remote.js';
+import { EveesRemote } from '../services/remote.js';
 import { EveesModule } from '../evees.module';
 
 export class EveesAuthor extends moduleConnect(LitElement) {
@@ -57,14 +57,10 @@ export class EveesAuthor extends moduleConnect(LitElement) {
       return '';
     }
     return html`<div class="avatar">
-        ${this.remote.avatar
-          ? this.remote.avatar(this.userId, { showName: this.showName })
-          : ''}
+        ${this.remote.avatar ? this.remote.avatar(this.userId, { showName: this.showName }) : ''}
       </div>
       ${this.showName
-        ? html`<uprtcl-copy-to-clipboard
-            text=${this.userId}
-          ></uprtcl-copy-to-clipboard>`
+        ? html`<uprtcl-copy-to-clipboard text=${this.userId}></uprtcl-copy-to-clipboard>`
         : ''} `;
   }
 

@@ -1,7 +1,7 @@
 import { Entity } from '@uprtcl/cortex';
 
 import { UpdateRequest, NewPerspectiveData } from '../types';
-import { EntityGetResult, Client, PerspectiveGetResult } from './evees.client';
+import { EntityGetResult, Client, PerspectiveGetResult } from './client';
 
 export class ClientOnMemory implements Client {
   private entities = new Map<string, Entity<any>>();

@@ -2,8 +2,8 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
-import { Client } from '../services/evees.client.memory';
-import { EveesRemote } from '../services/evees.remote';
+import { Client } from '../services/client.memory';
+import { EveesRemote } from '../services/remote';
 import { EveesBindings } from '../bindings';
 import { EveesDiff } from './evees-diff';
 
