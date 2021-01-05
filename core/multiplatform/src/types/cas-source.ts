@@ -1,3 +1,5 @@
+import { Entity } from 'src/services/node_modules/@uprtcl/cortex';
+
 import { Ready } from './ready';
 import { CidConfig } from './cid-config';
 
@@ -17,11 +19,10 @@ export interface CASSource extends Ready {
   cidConfig: CidConfig;
 
   /**
-   * Get the object identified by the given hash,
-   * or undefined if it didn't exist in the source
+   * Get the objects identified by the given hashes
    *
    * @param hash the hash identifying the object
    * @returns the object if found, otherwise undefined
    */
-  get(hash: string): Promise<object | undefined>;
+  get(hashes: string[]): Promise<Entity<any>[]>;
 }

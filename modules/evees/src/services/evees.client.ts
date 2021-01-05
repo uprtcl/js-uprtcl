@@ -18,6 +18,11 @@ export interface PerspectiveGetResult {
   slice?: Slice;
 }
 
+// All evees clients must call the .on('') method with in the following cases
+// 'updated': When an perspective head is new.
+// 'logged-status-changed': When the logges status has changed.
+// 'canUpdate': When the logged user canUpdate status over a perspective changes.
+
 export interface EveesClient {
   /** get a perspective head,
    * include a Slice that can be used by the client to optimistically fill the cache */
