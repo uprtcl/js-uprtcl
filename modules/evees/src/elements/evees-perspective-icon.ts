@@ -19,10 +19,10 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
   perspective!: Secured<Perspective>;
   remote!: EveesRemote;
   remotes!: EveesRemote[];
-  client!: EveesClient;
+  client!: Client;
 
   async firstUpdated() {
-    this.client = this.request(EveesClientModule.bindings.Client);
+    this.client = this.request(ClientModule.bindings.Client);
     this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.load();
   }
@@ -35,15 +35,10 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-    const perspective = await loadEntity<Signed<Perspective>>(
-      this.client,
-      this.perspectiveId
-    );
+    const perspective = await loadEntity<Signed<Perspective>>(this.client, this.perspectiveId);
     if (!perspective) throw new Error('perspective undefined');
 
-    const remote = this.remotes.find(
-      (r) => r.id === perspective.object.payload.remote
-    );
+    const remote = this.remotes.find((r) => r.id === perspective.object.payload.remote);
     if (!remote) throw new Error('remote undefined');
 
     this.perspective = perspective;
@@ -63,9 +58,7 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
             this.perspectiveId.length - 10
           )}</span
         >
-        <uprtcl-copy-to-clipboard
-          text=${this.perspectiveId}
-        ></uprtcl-copy-to-clipboard>
+        <uprtcl-copy-to-clipboard text=${this.perspectiveId}></uprtcl-copy-to-clipboard>
       </div>
       ${this.perspective.object.payload.creatorId
         ? html`

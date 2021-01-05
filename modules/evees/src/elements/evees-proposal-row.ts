@@ -6,7 +6,7 @@ import { EveesRemote } from 'src/services/evees.remote';
 import { EveesBindings } from 'src/bindings';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
-import { EveesClient } from '../services/evees.client.memory';
+import { Client } from '../services/evees.client.memory';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { ContentUpdatedEvent } from './events';
@@ -51,12 +51,12 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   executed: boolean = false;
   canExecute: boolean = false;
 
-  protected client!: EveesClient;
+  protected client!: Client;
   protected recognizer!: PatternRecognizer;
   protected eveesRemotes!: EveesRemote[];
 
   async firstUpdated() {
-    this.client = this.request(EveesClientModule.bindings.Client);
+    this.client = this.request(ClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
     const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
@@ -146,7 +146,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   }
 
   async showProposalChanges() {
-    const client = new EveesClient(this.client, this.recognizer);
+    const client = new Client(this.client, this.recognizer);
     for (const update of this.proposal.details.updates) {
       client.update(update);
     }

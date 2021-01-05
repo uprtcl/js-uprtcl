@@ -18,7 +18,7 @@ import { Evees } from '../services/evees.helpers';
 
 import { EveesRemote } from '../services/evees.remote';
 
-import { EveesClient } from '../services/evees.client.memory';
+import { Client } from '../services/evees.client.memory';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 
@@ -102,9 +102,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   eveesDiffInfoMessage!: TemplateResult;
 
   perspectiveData!: PerspectiveData;
-  pullclient: EveesClient | undefined = undefined;
+  pullclient: Client | undefined = undefined;
 
-  protected client!: EveesClient;
+  protected client!: Client;
   protected config!: EveesConfig;
   protected merge!: MergeStrategy;
   protected evees!: Evees;
@@ -120,7 +120,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected defaultRemote: EveesRemote | undefined = undefined;
 
   async firstUpdated() {
-    this.client = this.request(EveesClientModule.bindings.Client);
+    this.client = this.request(ClientModule.bindings.Client);
     this.config = this.request(EveesBindings.Config);
     this.merge = this.request(EveesBindings.MergeStrategy);
     this.evees = this.request(EveesBindings.Evees);
@@ -227,7 +227,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       parentId: this.uref,
     };
 
-    this.pullclient = new EveesClient(this.client, this.recognizer);
+    this.pullclient = new Client(this.client, this.recognizer);
 
     await this.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullclient, config);
 
@@ -302,7 +302,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.merging = true;
     this.logger.info(`merge ${fromPerspectiveId} on ${toPerspectiveId}`);
 
-    const client = new EveesClient(this.client, this.recognizer);
+    const client = new Client(this.client, this.recognizer);
     const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
 
     const config = {
@@ -425,7 +425,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     toPerspectiveId: string,
     fromHeadId: string,
     toHeadId: string | undefined,
-    client: EveesClient
+    client: Client
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
     const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
@@ -530,7 +530,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async updatesDialog(
-    client: EveesClient,
+    client: Client,
     options: MenuConfig,
     message: TemplateResult = html``
   ): Promise<string> {

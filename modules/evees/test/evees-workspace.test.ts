@@ -9,7 +9,7 @@ import { MockEveesProvider } from './mocks/mock-evees-provider';
 import { MockStore } from './mocks/mock-store';
 
 import { EveesModule } from '../src/evees.module';
-import { EveesClient } from '../src/uprtcl-evees';
+import { Client } from '../src/uprtcl-evees';
 
 describe('evees-client', () => {
   let orchestrator: MicroOrchestrator;
@@ -55,7 +55,7 @@ describe('evees-client', () => {
 
     await orchestrator.loadModules([
       new i18nextBaseModule(),
-      new EveesClientModule(),
+      new ClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
@@ -63,12 +63,12 @@ describe('evees-client', () => {
     ]);
   });
   it('evees-client works', async () => {
-    const client: EveesClient = orchestrator.container.get(EveesClientModule.bindings.Client);
+    const client: Client = orchestrator.container.get(ClientModule.bindings.Client);
     const recognizer: PatternRecognizer = orchestrator.container.get(
       CortexModule.bindings.Recognizer
     );
 
-    const client = new EveesClient(client, recognizer);
+    const client = new Client(client, recognizer);
     const result = await client.client.query({
       query: gql`
         {

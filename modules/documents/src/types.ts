@@ -54,10 +54,7 @@ export interface DocNodeEventsHandlers {
 }
 export interface CustomBlock {
   default: any;
-  canConvertTo: Record<
-    string,
-    (node: DocNode, client: EveesClient) => Promise<any>
-  >;
+  canConvertTo: Record<string, (node: DocNode, client: Client) => Promise<any>>;
 }
 
 export type CustomBlocks = Record<string, CustomBlock>;

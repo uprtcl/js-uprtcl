@@ -5,7 +5,7 @@ import { Commit, EveesConfig, Perspective } from '../types';
 import { deriveSecured, signObject } from '../utils/signed';
 import { EveesBindings } from '../bindings';
 import { hashObject, Secured } from '../utils/cid-hash';
-import { EveesClient } from './evees.client';
+import { Client } from './evees.client';
 
 export interface CreateCommit {
   dataId: string;
@@ -26,14 +26,14 @@ export interface CreatePerspective {
 }
 
 export class EveesHelpers {
-  static async getPerspectiveRemoteId(client: EveesClient, perspectiveId: string): Promise<string> {
+  static async getPerspectiveRemoteId(client: Client, perspectiveId: string): Promise<string> {
     const perspective = await client.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     return perspective.object.payload.remote;
   }
 
   static async getPerspectiveDataId(
-    client: EveesClient,
+    client: Client,
     perspectiveId: string
   ): Promise<string | undefined> {
     const result = await client.getPerspective(perspectiveId);
@@ -42,7 +42,7 @@ export class EveesHelpers {
   }
 
   static async getPerspectiveData(
-    client: EveesClient,
+    client: Client,
     perspectiveId: string
   ): Promise<Entity<any> | undefined> {
     const result = await client.getPerspective(perspectiveId);
@@ -50,20 +50,20 @@ export class EveesHelpers {
     return this.getCommitData(client, result.details.headId);
   }
 
-  static async getCommitData(client: EveesClient, commitId: string): Promise<Entity<any>> {
+  static async getCommitData(client: Client, commitId: string): Promise<Entity<any>> {
     const dataId = await this.getCommitDataId(client, commitId);
     const data = await client.getEntity(dataId);
     if (!data) throw new Error('data not found');
     return data;
   }
 
-  static async getCommitDataId(client: EveesClient, commitId: string): Promise<string> {
+  static async getCommitDataId(client: Client, commitId: string): Promise<string> {
     const commit = await client.getEntity(commitId);
     if (!commit) throw new Error('commit not found');
     return commit.object.payload.dataId;
   }
 
-  static async getData(client: EveesClient, recognizer: PatternRecognizer, uref: string) {
+  static async getData(client: Client, recognizer: PatternRecognizer, uref: string) {
     const entity = await client.getEntity(uref);
     if (!entity) return undefined;
 
@@ -82,7 +82,7 @@ export class EveesHelpers {
   }
 
   static async getChildren(
-    client: EveesClient,
+    client: Client,
     recognizer: PatternRecognizer,
     uref: string
   ): Promise<string[]> {
@@ -96,7 +96,7 @@ export class EveesHelpers {
   }
 
   static async getDescendantsRec(
-    client: EveesClient,
+    client: Client,
     recognizer: PatternRecognizer,
     uref: string,
     current: string[]
@@ -113,14 +113,14 @@ export class EveesHelpers {
   }
 
   static async getDescendants(
-    client: EveesClient,
+    client: Client,
     recognizer: PatternRecognizer,
     uref: string
   ): Promise<string[]> {
     return this.getDescendantsRec(client, recognizer, uref, []);
   }
 
-  static async createCommit(client: EveesClient, commit: CreateCommit) {
+  static async createCommit(client: Client, commit: CreateCommit) {
     const message = commit.message !== undefined ? commit.message : '';
     const timestamp = commit.timestamp !== undefined ? commit.timestamp : Date.now();
     const creatorsIds = commit.creatorsIds !== undefined ? commit.creatorsIds : [];
@@ -142,7 +142,7 @@ export class EveesHelpers {
   }
 
   static async isAncestorCommit(
-    client: EveesClient,
+    client: Client,
     perspectiveId: string,
     commitId: string,
     stopAt?: string
@@ -155,7 +155,7 @@ export class EveesHelpers {
 
   static async checkEmit(
     config: EveesConfig,
-    client: EveesClient,
+    client: Client,
     eveesRemotes: EveesRemote[],
     perspectiveId: string
   ): Promise<boolean> {
@@ -240,7 +240,7 @@ export class EveesHelpers {
    */
   public async fork(
     id: string,
-    client: EveesClient,
+    client: Client,
     remote: string,
     parentId?: string
   ): Promise<string> {
@@ -283,7 +283,7 @@ export class EveesHelpers {
 
   static async forkPerspective(
     perspectiveId: string,
-    client: EveesClient,
+    client: Client,
     remote?: string,
     parentId?: string,
     name?: string
@@ -325,7 +325,7 @@ export class EveesHelpers {
 
   static async forkCommit(
     commitId: string,
-    client: EveesClient,
+    client: Client,
     remote: string,
     parentId?: string
   ): Promise<string> {
@@ -356,7 +356,7 @@ export class EveesHelpers {
 
   static async forkEntity(
     entityId: string,
-    client: EveesClient,
+    client: Client,
     remote: string,
     parentId?: string
   ): Promise<string> {
@@ -378,11 +378,7 @@ export class EveesHelpers {
 export class FindAncestor {
   done = false;
 
-  constructor(
-    protected client: EveesClient,
-    protected lookingFor: string,
-    protected stopAt?: string
-  ) {}
+  constructor(protected client: Client, protected lookingFor: string, protected stopAt?: string) {}
 
   async checkIfParent(commitId: string) {
     /* stop searching all paths once one path finds it */

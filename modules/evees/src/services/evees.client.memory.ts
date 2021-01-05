@@ -1,15 +1,15 @@
 import { Entity } from '@uprtcl/cortex';
 
 import { UpdateRequest, NewPerspectiveData } from '../types';
-import { EntityGetResult, EveesClient, PerspectiveGetResult } from './evees.client';
+import { EntityGetResult, Client, PerspectiveGetResult } from './evees.client';
 
-export class EveesClientOnMemory implements EveesClient {
+export class ClientOnMemory implements Client {
   private entities = new Map<string, Entity<any>>();
   private newPerspectives = new Map<string, NewPerspectiveData>();
   private updates = new Map<string, UpdateRequest>();
   private canUpdates = new Map<string, boolean>();
 
-  constructor(protected base: EveesClient, protected store: CASStore) {}
+  constructor(protected base: Client, protected store: CASStore) {}
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
     const newPerspective = this.newPerspectives.get(perspectiveId);

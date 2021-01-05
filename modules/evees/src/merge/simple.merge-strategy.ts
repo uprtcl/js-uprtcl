@@ -8,19 +8,19 @@ import { MergeStrategy } from './merge-strategy';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Merge } from '../behaviours/merge';
 import { mergeResult } from './utils';
-import { EveesClient } from '../services/evees.client';
+import { Client } from '../services/evees.client';
 
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(
     protected recognizer: PatternRecognizer,
-    protected client: EveesClient,
+    protected client: Client,
     protected entityCache: EntityCache
   ) {}
 
   mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    client: EveesClient,
+    client: Client,
     config: any
   ): Promise<string> {
     return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config, client);
@@ -29,7 +29,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    client: EveesClient,
+    client: Client,
     config: any
   ): Promise<string> {
     const promises = [toPerspectiveId, fromPerspectiveId].map(
@@ -80,7 +80,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     toCommitIdOrg: string | undefined,
     fromCommitIdOrg: string,
     remote: string,
-    client: EveesClient,
+    client: Client,
     config: any
   ): Promise<string> {
     const toCommitId = toCommitIdOrg ? await this.findLatestNonFork(toCommitIdOrg) : undefined;
@@ -131,7 +131,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeData<T extends object>(
     originalData: T,
     newDatas: T[],
-    client: EveesClient,
+    client: Client,
     config: any
   ): Promise<T> {
     const merge: Merge | undefined = this.recognizer
@@ -151,7 +151,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
-    client: EveesClient,
+    client: Client,
     config: any
   ): Promise<string[]> {
     const allLinks: Dictionary<boolean> = {};

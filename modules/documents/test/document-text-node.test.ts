@@ -1,10 +1,7 @@
 import { html, fixture, expect } from '@open-wc/testing';
 import { waitUntil } from '@open-wc/testing-helpers';
 
-import {
-  MicroOrchestrator,
-  i18nextBaseModule,
-} from '@uprtcl/micro-orchestrator';
+import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { CortexModule } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
@@ -60,7 +57,7 @@ describe('<cortex-entity>', () => {
 
     await orchestrator.loadModules([
       new i18nextBaseModule(),
-      new EveesClientModule(),
+      new ClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
@@ -73,9 +70,7 @@ describe('<cortex-entity>', () => {
     const el: HTMLElement = await fixture(
       html`
         <module-container
-          ><cortex-entity
-            uref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"
-          ></cortex-entity
+          ><cortex-entity uref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></cortex-entity
         ></module-container>
       `
     );
@@ -85,15 +80,10 @@ describe('<cortex-entity>', () => {
     expect(el).lightDom.to.equal(
       '<cortex-entity uref="Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw"></cortex-entity>'
     );
-    expect(cortexEntity).shadowDom.to.equal(
-      '<uprtcl-loading></uprtcl-loading>'
-    );
+    expect(cortexEntity).shadowDom.to.equal('<uprtcl-loading></uprtcl-loading>');
 
     await waitUntil(
-      () =>
-        !(cortexEntity.shadowRoot as ShadowRoot).querySelector(
-          'uprtcl-loading'
-        ),
+      () => !(cortexEntity.shadowRoot as ShadowRoot).querySelector('uprtcl-loading'),
       'Never stopped loading'
     );
 

@@ -5,7 +5,7 @@ import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
-import { EveesClient } from '../services/evees.client.memory';
+import { Client } from '../services/evees.client.memory';
 
 const LOGINFO = true;
 
@@ -26,7 +26,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
   summary: boolean = false;
 
   @property({ attribute: false })
-  client!: EveesClient;
+  client!: Client;
 
   @property({ attribute: false })
   loading: boolean = true;

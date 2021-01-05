@@ -28,7 +28,10 @@ export interface EntityGetResult {
 // 'logged-status-changed': When the logges status has changed.
 // 'canUpdate': When the logged user canUpdate status over a perspective changes.
 
-export interface EveesClient {
+export interface Client {
+  searchEngine: SearchEngine;
+  proposals: Proposals;
+
   /** get a perspective head,
    * include a Slice that can be used by the client to optimistically fill the cache */
   getPerspective(perspectiveId: string): Promise<PerspectiveGetResult>;

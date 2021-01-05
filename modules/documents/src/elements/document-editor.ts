@@ -83,7 +83,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   } = {};
 
   doc: DocNode | undefined = undefined;
-  client!: EveesClient;
+  client!: Client;
 
   protected remotes!: EveesRemote[];
   protected recognizer!: PatternRecognizer;
@@ -104,7 +104,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.editableRemotesIds = config.editableRemotesIds ? config.editableRemotesIds : [];
 
     if (!this.client) {
-      this.client = this.request(EveesClientModule.bindings.Client);
+      this.client = this.request(ClientModule.bindings.Client);
     }
 
     this.uref = this.firstRef;

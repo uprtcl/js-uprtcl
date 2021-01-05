@@ -15,7 +15,7 @@ export { EveesConfig } from './types';
 export { EveesHelpers } from './services/evees.helpers';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
-export { EveesClient } from './services/evees.client';
+export { Client } from './services/evees.client';
 export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 
 /** Merge */

@@ -5,7 +5,7 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { HasChildren, Signed } from '@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import { EveesClient } from '../services/evees.client.memory';
+import { Client } from '../services/evees.client.memory';
 import { Perspective } from '../types';
 
 @injectable()
@@ -116,7 +116,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    client: EveesClient,
+    client: Client,
     config: any
   ) {
     /** reset internal state */
@@ -129,7 +129,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    client: EveesClient,
+    client: Client,
     config: any
   ): Promise<string> {
     let root = false;
@@ -167,7 +167,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
-    client: EveesClient,
+    client: Client,
     config: any
   ): Promise<string[]> {
     if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');

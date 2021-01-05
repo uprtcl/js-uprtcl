@@ -1,9 +1,9 @@
 import { Entity } from '@uprtcl/cortex';
 
 import { UpdateRequest, NewPerspectiveData } from '../types';
-import { EveesClient, PerspectiveGetResult } from './evees.client';
+import { Client, PerspectiveGetResult } from './evees.client';
 
-export class EveesClientRouter implements EveesClient {
+export class ClientRouter implements Client {
   constructor(protected remotes: EveesRemotes[]) {}
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {

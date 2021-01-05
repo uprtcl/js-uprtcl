@@ -6,7 +6,7 @@ import { prettyTimePeriod } from '@uprtcl/common-ui';
 import {
   EveesBindings,
   EveesRemote,
-  EveesClient,
+  Client,
   NewPerspectiveData,
   Perspective,
   Secured,
@@ -31,13 +31,13 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   @property({ attribute: false })
   voting: boolean = false;
 
-  client!: EveesClient;
+  client!: Client;
   remotes!: EveesRemote[];
   remote!: EveesPolkadotCouncil;
   fromPerspective!: Signed<Perspective>;
 
   recognizer!: PatternRecognizer;
-  client!: EveesClient;
+  client!: Client;
   proposalManifest!: ProposalManifest;
   proposalStatusUI!: {
     summary: ProposalSummary;
@@ -46,7 +46,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   };
 
   async firstUpdated() {
-    this.client = this.request(EveesClientModule.bindings.Client);
+    this.client = this.request(ClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
@@ -75,7 +75,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   }
 
   async loadclient() {
-    this.client = new EveesClient(this.client, this.recognizer);
+    this.client = new Client(this.client, this.recognizer);
     for (const update of this.proposalManifest.updates) {
       if (!update.fromPerspectiveId) {
         const perspective = (await this.remote.store.get(

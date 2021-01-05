@@ -9,7 +9,7 @@ import {
   mergeResult,
   HasDiffLenses,
   DiffLens,
-  EveesClient,
+  Client,
 } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
@@ -114,7 +114,7 @@ export class TextNodeCommon
   merge = (originalNode: Entity<TextNode>) => async (
     modifications: Entity<TextNode>[],
     mergeStrategy: MergeStrategy,
-    client: EveesClient,
+    client: Client,
     config: any
   ): Promise<TextNode> => {
     const resultText = modifications[1].object.text;
@@ -148,7 +148,7 @@ export class TextNodeTitle implements HasTitle, HasDiffLenses {
         name: 'documents:document-diff',
         type: 'diff',
         render: (
-          client: EveesClient,
+          client: Client,
           newEntity: Entity<TextNode>,
           oldEntity: Entity<TextNode>,
           summary: boolean

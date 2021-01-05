@@ -45,18 +45,15 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   @query('#info-popper')
   infoPopper!: UprtclPopper;
 
-  protected client!: EveesClient;
+  protected client!: Client;
 
   async firstUpdated() {
-    this.client = this.request(EveesClientModule.bindings.Client);
+    this.client = this.request(ClientModule.bindings.Client);
     await this.load();
   }
 
   async load() {
-    const current = await loadEntity<Signed<Perspective>>(
-      this.client,
-      this.uref
-    );
+    const current = await loadEntity<Signed<Perspective>>(this.client, this.uref);
     if (!current) throw new Error(`cant find current perspective ${this.uref}`);
 
     this.creatorId = current.object.payload.creatorId;
@@ -127,8 +124,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
                   uref=${this.uref}
                   parent-id=${this.parentId}
                   first-uref=${this.firstRef as string}
-                  @official-id=${(e) =>
-                    this.officialIdReceived(e.detail.perspectiveId)}
+                  @official-id=${(e) => this.officialIdReceived(e.detail.perspectiveId)}
                 ></evees-info-user-based>
               </div>
             `

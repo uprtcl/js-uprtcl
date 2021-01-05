@@ -5,6 +5,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { eveeColor } from './support';
 import { EveesBindings } from './../bindings';
 import { EveesRemote } from './../services/evees.remote';
+import { Client } from '../services/evees.client';
 
 interface PerspectiveData {
   id: string;
@@ -37,50 +38,28 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
 
   perspectivesData: PerspectiveData[] = [];
 
-  protected client!: EveesClient;
+  protected client!: Client;
   protected remotes!: EveesRemote[];
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
-    this.client = this.request(EveesClientModule.bindings.Client);
+    this.client = this.request(EveesBindings.Client);
     this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.load();
   }
 
   async load() {
     this.loadingPerspectives = true;
-    const result = await this.client.query({
-      query: gql`{
-        entity(uref: "${this.perspectiveId}") {
-          id
-          ... on Perspective {
-            payload {
-              remote
-              context {
-                id
-                perspectives {
-                  id
-                  name
-                  payload {
-                    creatorId
-                    timestamp
-                    remote
-                  }
-                } 
-              }
-            }
-          }
-        }
-      }`,
-    });
+    const otherPerspectivesIds = await this.client.searchEngine.otherPerspectives(
+      this.perspectiveId
+    );
 
-    /** data on other perspectives (proposals are injected on them) */
     const perspectivesData: PerspectiveData[] =
       result.data.entity.payload.context === null
         ? []
         : await Promise.all(
-            result.data.entity.payload.context.perspectives.map(
+            otherPerspectivesIds.map(
               async (perspective): Promise<PerspectiveData> => {
                 /** data on this perspective */
                 const remote = this.remotes.find((r) => r.id === perspective.payload.remote);

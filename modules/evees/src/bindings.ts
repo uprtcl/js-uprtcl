@@ -3,7 +3,7 @@ export const EveesBindings = {
   CommitType: 'Commit',
   EveesRemote: 'evees-remote',
   MergeStrategy: 'merge-strategy',
-  Evees: 'evees',
+  Client: 'evees-client',
   Config: 'evees-config',
-  Remote: 'remote'
+  Remote: 'remote',
 };

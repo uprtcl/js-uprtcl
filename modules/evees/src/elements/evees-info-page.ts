@@ -66,7 +66,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
   async saveName() {
     if (!this.shadowRoot) return;
-    const client = this.client as EveesClient;
+    const client = this.client as Client;
     const newName = this.draftTextField.value;
 
     this.showEditName = false;

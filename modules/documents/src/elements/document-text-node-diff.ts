@@ -2,7 +2,7 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Entity } from '@uprtcl/cortex';
-import { EveesClient } from '@uprtcl/evees';
+import { Client } from '@uprtcl/evees';
 
 import { TextNode } from '../types';
 
@@ -15,7 +15,7 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
   summary: boolean = false;
 
   @property({ attribute: false })
-  client!: EveesClient;
+  client!: Client;
 
   @property({ attribute: false })
   newData!: Entity<TextNode>;

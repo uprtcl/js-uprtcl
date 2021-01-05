@@ -7,9 +7,7 @@ import { EveesBlockchainCached } from './evees.blockchain.cached';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ChainConnectionDetails, RemoteUI } from '../types';
 
-export class EveesBlockchainCachedRemoteLense extends moduleConnect(
-  LitElement
-) {
+export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'remote-id' })
   remoteId!: string;
 
@@ -28,7 +26,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
   @internalProperty()
   settingCustom: boolean = false;
 
-  client!: EveesClient;
+  client!: Client;
   remote!: EveesBlockchainCached;
   dialogOptions: MenuConfig = {
     close: {
@@ -41,13 +39,9 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
   connections!: ChainConnectionDetails[];
 
   async firstUpdated() {
-    this.client = this.request(EveesClientModule.bindings.Client);
-    const remotes = this.requestAll(
-      EveesModule.bindings.EveesRemote
-    ) as EveesRemote[];
-    this.remote = remotes.find((r) =>
-      r.id.includes(this.remoteId)
-    ) as EveesBlockchainCached;
+    this.client = this.request(ClientModule.bindings.Client);
+    const remotes = this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[];
+    this.remote = remotes.find((r) => r.id.includes(this.remoteId)) as EveesBlockchainCached;
 
     await this.remote.ready();
 
@@ -123,20 +117,17 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
                 ></uprtcl-button
               >
               <uprtcl-list>
-                ${Object.getOwnPropertyNames(this.connections).map(
-                  (connectionId) => {
-                    const connectionDetails = this.connections[connectionId];
-                    return html`
-                      <uprtcl-list-item
-                        @click=${() => this.chainSelected(connectionId)}
-                        >${connectionDetails.name}
-                        <span class="endpoint"
-                          >(${connectionDetails.endpoint})</span
-                        ></uprtcl-list-item
-                      >
-                    `;
-                  }
-                )}
+                ${Object.getOwnPropertyNames(this.connections).map((connectionId) => {
+                  const connectionDetails = this.connections[connectionId];
+                  return html`
+                    <uprtcl-list-item @click=${() => this.chainSelected(connectionId)}
+                      >${connectionDetails.name}
+                      <span class="endpoint"
+                        >(${connectionDetails.endpoint})</span
+                      ></uprtcl-list-item
+                    >
+                  `;
+                })}
                 ${this.settingCustom
                   ? html`
                       <uprtcl-list-item @click=${() => this.customSelected()}>
@@ -144,8 +135,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
                           value=""
                           label="Enpoint"
                           @cancel=${(e) => this.cancelSettingCustom(e)}
-                          @accept=${(e) =>
-                            this.setCustomEndpoint(e.detail.value)}
+                          @accept=${(e) => this.setCustomEndpoint(e.detail.value)}
                         ></uprtcl-form-string
                       ></uprtcl-list-item>
                     `
@@ -169,8 +159,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
       >
         <div class="dialog-element">
           <div class="chain-row">${this.renderChain()}</div>
-          <evees-blockchain-status remote=${this.remote.id}>
-          </evees-blockchain-status>
+          <evees-blockchain-status remote=${this.remote.id}> </evees-blockchain-status>
         </div>
       </uprtcl-dialog>
     `;
@@ -192,9 +181,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(
                   this.remoteUI.pendingActions > 0 ? 'status-pending' : ''
                 }`}
               >
-                ${this.remoteUI.pendingActions > 0
-                  ? this.remoteUI.pendingActions
-                  : ''}
+                ${this.remoteUI.pendingActions > 0 ? this.remoteUI.pendingActions : ''}
               </div>
             </div>
           `}

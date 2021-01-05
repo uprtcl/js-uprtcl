@@ -9,7 +9,7 @@ import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
 import { Secured, deriveEntity } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
-import { EveesClient } from './evees.client.memory';
+import { Client } from './evees.client.memory';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -23,8 +23,8 @@ export class Evees {
     protected recognizer: PatternRecognizer,
     @multiInject(EveesBindings.EveesRemote)
     protected eveesRemotes: EveesRemote[],
-    @inject(EveesClientModule.bindings.Client)
-    protected client: EveesClient,
+    @inject(ClientModule.bindings.Client)
+    protected client: Client,
     @inject(EveesBindings.Config)
     protected config: EveesConfig
   ) {}
@@ -100,7 +100,7 @@ export class Evees {
    */
   public async fork(
     id: string,
-    client: EveesClient,
+    client: Client,
     remote: string,
     parentId?: string
   ): Promise<string> {
@@ -143,7 +143,7 @@ export class Evees {
 
   public async forkPerspective(
     perspectiveId: string,
-    client: EveesClient,
+    client: Client,
     remote?: string,
     parentId?: string,
     name?: string
@@ -193,7 +193,7 @@ export class Evees {
 
   public async forkCommit(
     commitId: string,
-    client: EveesClient,
+    client: Client,
     remote: string,
     parentId?: string
   ): Promise<string> {
@@ -226,7 +226,7 @@ export class Evees {
 
   public async forkEntity(
     entityId: string,
-    client: EveesClient,
+    client: Client,
     remote: string,
     parentId?: string
   ): Promise<string> {

@@ -21,8 +21,8 @@ export class PerspectivePattern extends Pattern<Entity<Signed<Perspective>>> {
 @injectable()
 export class PerspectiveLinks implements HasLinks {
   constructor(
-    @inject(EveesClientModule.bindings.Client)
-    protected client: EveesClient
+    @inject(ClientModule.bindings.Client)
+    protected client: Client
   ) {}
 
   links = async (perspective: Entity<Signed<Perspective>>) => {

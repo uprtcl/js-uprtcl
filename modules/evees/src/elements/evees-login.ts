@@ -15,23 +15,21 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   logged!: boolean;
 
   remotes!: EveesRemote[];
-  client!: EveesClient;
+  client!: Client;
 
   @internalProperty()
   private showAccountSelection: boolean = false;
 
   async firstUpdated() {
     this.remotes = this.requestAll(EveesBindings.EveesRemote);
-    this.client = this.request(EveesClientModule.bindings.Client);
+    this.client = this.request(ClientModule.bindings.Client);
     this.load();
   }
 
   async load() {
     this.loading = true;
 
-    const loggedList = await Promise.all(
-      this.remotes.map((remote) => remote.isLogged())
-    );
+    const loggedList = await Promise.all(this.remotes.map((remote) => remote.isLogged()));
     this.logged = !loggedList.includes(false);
 
     await Promise.all(this.remotes.map((r) => r.ready()));
@@ -77,15 +75,11 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
     }
 
     if (!this.logged) {
-      return html`
-        <uprtcl-button @click=${() => this.loginAll()}>login</uprtcl-button>
-      `;
+      return html` <uprtcl-button @click=${() => this.loginAll()}>login</uprtcl-button> `;
     }
 
     return html`
-      <uprtcl-button skinny @click=${() => this.logoutAll()}
-        >logout</uprtcl-button
-      >
+      <uprtcl-button skinny @click=${() => this.logoutAll()}>logout</uprtcl-button>
       ${this.remotes.map((remote) => {
         return remote.lense !== undefined
           ? remote.lense().render({ remoteId: remote.id })

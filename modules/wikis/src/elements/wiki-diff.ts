@@ -4,7 +4,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Entity } from '@uprtcl/cortex';
 
 import { Wiki } from '../types';
-import { EveesClient } from '@uprtcl/evees';
+import { Client } from '@uprtcl/evees';
 
 const LOGINFO = true;
 
@@ -20,7 +20,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
   summary: boolean = false;
 
   @property({ attribute: false })
-  client!: EveesClient;
+  client!: Client;
 
   @property({ attribute: false })
   newData!: Entity<Wiki>;

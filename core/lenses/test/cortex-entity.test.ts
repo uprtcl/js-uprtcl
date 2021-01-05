@@ -19,7 +19,7 @@ describe('<cortex-entity>', () => {
     orchestrator = new MicroOrchestrator();
 
     await orchestrator.loadModules([
-      new EveesClientModule(),
+      new ClientModule(),
       new CortexModule(),
       new DiscoveryModule(),
       new LensesModule(),
@@ -46,9 +46,7 @@ describe('<cortex-entity>', () => {
     expect(el).lightDom.to.equal(
       '<cortex-entity id="test" uref="QmRATqNEt2JmTmy4VrmFhYVxNZEPrQEb1gzeBvsokftXqo"></cortex-entity>'
     );
-    expect(cortexEntity).shadowDom.to.equal(
-      '<uprtcl-loading></uprtcl-loading>'
-    );
+    expect(cortexEntity).shadowDom.to.equal('<uprtcl-loading></uprtcl-loading>');
 
     await waitUntil(
       async () =>

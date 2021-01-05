@@ -3,14 +3,7 @@ import { injectable } from 'inversify';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { Pattern, Entity, HasChildren, recognizeEntity, HasTitle } from '@uprtcl/cortex';
-import {
-  MergeStrategy,
-  mergeStrings,
-  Merge,
-  HasDiffLenses,
-  DiffLens,
-  EveesClient,
-} from '@uprtcl/evees';
+import { MergeStrategy, mergeStrings, Merge, HasDiffLenses, DiffLens, Client } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
 import { Wiki } from '../types';
@@ -47,7 +40,7 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
   merge = (originalNode: Entity<Wiki>) => async (
     modifications: (Entity<Wiki> | undefined)[],
     mergeStrategy: MergeStrategy,
-    client: EveesClient,
+    client: Client,
     config
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
@@ -99,7 +92,7 @@ export class WikiCommon implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLen
         name: 'wikis:wiki-diff',
         type: 'diff',
         render: (
-          client: EveesClient,
+          client: Client,
           newEntity: Entity<Wiki>,
           oldEntity: Entity<Wiki>,
           summary: boolean

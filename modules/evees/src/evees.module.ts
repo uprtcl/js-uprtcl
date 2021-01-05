@@ -5,14 +5,9 @@ import { PatternsModule } from '@uprtcl/cortex';
 import { CASModule } from '@uprtcl/multiplatform';
 import { CommonUIModule } from '@uprtcl/common-ui';
 
-import {
-  PerspectiveLinks,
-  PerspectivePattern,
-} from './patterns/perspective.pattern';
+import { PerspectiveLinks, PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
-import { CommitHistory } from './elements/evees-commit-history';
 import { EveesBindings } from './bindings';
-import { Evees } from './services/evees';
 import { EveesRemote } from './services/evees.remote';
 import { EveesPerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
@@ -47,10 +42,7 @@ export class EveesModule extends MicroModule {
 
   static bindings = EveesBindings;
 
-  constructor(
-    protected eveesProviders: Array<EveesRemote>,
-    protected config?: EveesConfig
-  ) {
+  constructor(protected eveesProviders: Array<EveesRemote>, protected config?: EveesConfig) {
     super();
   }
 
@@ -76,16 +68,13 @@ export class EveesModule extends MicroModule {
 
     container.bind(EveesModule.bindings.Config).toConstantValue(this.config);
     container.bind(EveesModule.bindings.Evees).to(Evees);
-    container
-      .bind(EveesModule.bindings.MergeStrategy)
-      .to(RecursiveContextMergeStrategy);
+    container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
 
     for (const remote of this.eveesProviders) {
       container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
       container.bind(EveesModule.bindings.Remote).toConstantValue(remote);
     }
 
-    customElements.define('evees-commit-history', CommitHistory);
     customElements.define('evees-info-popper', EveesInfoPopper);
     customElements.define('evees-info-page', EveesInfoPage);
     customElements.define('evees-info-user-based', EveesInfoUserBased);

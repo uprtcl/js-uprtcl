@@ -2,7 +2,7 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
-import { EveesModule, EveesClient, Perspective, EveesDiff } from '@uprtcl/evees';
+import { EveesModule, Client, Perspective, EveesDiff } from '@uprtcl/evees';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 
@@ -39,14 +39,14 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
-  protected client!: EveesClient;
+  protected client!: Client;
   protected recognizer!: PatternRecognizer;
 
   protected remote!: EveesBlockchainCached;
-  protected client!: EveesClient;
+  protected client!: Client;
 
   async firstUpdated() {
-    this.client = this.request(EveesClientModule.bindings.Client);
+    this.client = this.request(ClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     const remote = (this.requestAll(
@@ -66,7 +66,7 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     const newEveesData = (await this.remote.store.get(this.newHash)) as UserPerspectivesDetails;
 
     /** compare the two evees objects and derive a client */
-    this.client = new EveesClient(this.client, this.recognizer);
+    this.client = new Client(this.client, this.recognizer);
 
     for (const perspectiveId in newEveesData) {
       if (eveesData[perspectiveId] !== undefined) {

@@ -13,12 +13,12 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
   proposalsIds: string[] = [];
   remoteId!: string;
-  client!: EveesClient;
+  client!: Client;
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
-    this.client = this.request(EveesClientModule.bindings.Client);
+    this.client = this.request(ClientModule.bindings.Client);
     this.load();
   }
 
@@ -42,10 +42,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
 
     /** data on other perspectives (proposals are injected on them) */
     this.proposalsIds = result.data.entity.proposals;
-    this.remoteId = await EveesHelpers.getPerspectiveRemoteId(
-      this.client,
-      this.perspectiveId
-    );
+    this.remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.perspectiveId);
 
     this.loadingProposals = false;
     this.logger.info('getProposals()', { proposalsIds: this.proposalsIds });
