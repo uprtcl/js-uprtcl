@@ -5,7 +5,7 @@ import { loadEntity } from '@uprtcl/multiplatform';
 import { HasChildren, Signed } from '@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import { EveesWorkspace } from '../services/evees.client.memory';
+import { EveesClient } from '../services/evees.client.memory';
 import { Perspective } from '../types';
 
 @injectable()
@@ -116,20 +116,20 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    workspace: EveesWorkspace,
+    client: EveesClient,
     config: any
   ) {
     /** reset internal state */
     this.perspectivesByContext = undefined;
     this.allPerspectives = undefined;
 
-    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, workspace, config);
+    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, client, config);
   }
 
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    workspace: EveesWorkspace,
+    client: EveesClient,
     config: any
   ): Promise<string> {
     let root = false;
@@ -140,7 +140,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
     }
 
-    return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, workspace, config);
+    return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, client, config);
   }
 
   private async getPerspectiveContext(perspectiveId: string): Promise<string> {
@@ -167,7 +167,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
-    workspace: EveesWorkspace,
+    client: EveesClient,
     config: any
   ): Promise<string[]> {
     if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
@@ -187,7 +187,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const mergedLinks = await super.mergeLinks(
       originalMergeIds,
       modificationsMergeIds,
-      workspace,
+      client,
       config
     );
 
@@ -212,7 +212,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
             await this.mergePerspectives(
               perspectivesByContext.to as string,
               perspectivesByContext.from as string,
-              workspace,
+              client,
               config
             );
 
@@ -227,7 +227,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
               if (config.forceOwner) {
                 const newPerspectiveId = await this.evees.forkPerspective(
                   perspectivesByContext.from as string,
-                  workspace,
+                  client,
                   config.remote,
                   config.parentId
                 );

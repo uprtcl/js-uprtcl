@@ -9,7 +9,7 @@ import {
   Merge,
   HasDiffLenses,
   DiffLens,
-  EveesWorkspace
+  EveesClient,
 } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';
 
@@ -22,7 +22,7 @@ const logger = new Logger('WIKI-ENTITY');
 
 export class WikiPattern extends Pattern<Wiki> {
   recognize(entity: object): boolean {
-    return recognizeEntity(entity) && propertyOrder.every(p => entity.object.hasOwnProperty(p));
+    return recognizeEntity(entity) && propertyOrder.every((p) => entity.object.hasOwnProperty(p));
   }
 
   type = WikiBindings.WikiType;
@@ -34,8 +34,8 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     ...wiki,
     object: {
       ...wiki.object,
-      pages: childrenHashes
-    }
+      pages: childrenHashes,
+    },
   });
 
   getChildrenLinks: (wiki: Entity<Wiki>) => string[] = (wiki: Entity<Wiki>): string[] =>
@@ -47,25 +47,25 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
   merge = (originalNode: Entity<Wiki>) => async (
     modifications: (Entity<Wiki> | undefined)[],
     mergeStrategy: MergeStrategy,
-    workspace: EveesWorkspace,
+    client: EveesClient,
     config
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
       originalNode.object.title,
-      modifications.map(data => (!!data ? data.object.title : originalNode.object.title))
+      modifications.map((data) => (!!data ? data.object.title : originalNode.object.title))
     );
 
     // TODO: add entity
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
-      modifications.map(data => (!!data ? data.object.pages : originalNode.object.pages)),
-      workspace,
+      modifications.map((data) => (!!data ? data.object.pages : originalNode.object.pages)),
+      client,
       config
     );
 
     return {
       title: mergedTitle,
-      pages: mergedPages
+      pages: mergedPages,
     };
   };
 }
@@ -88,8 +88,8 @@ export class WikiCommon implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLen
             >
             </wiki-drawer>
           `;
-        }
-      }
+        },
+      },
     ];
   };
 
@@ -99,7 +99,7 @@ export class WikiCommon implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLen
         name: 'wikis:wiki-diff',
         type: 'diff',
         render: (
-          workspace: EveesWorkspace,
+          client: EveesClient,
           newEntity: Entity<Wiki>,
           oldEntity: Entity<Wiki>,
           summary: boolean
@@ -107,15 +107,15 @@ export class WikiCommon implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLen
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <wiki-diff
-              .workspace=${workspace}
+              .client=${client}
               .newData=${newEntity}
               .oldData=${oldEntity}
               ?summary=${summary}
             >
             </wiki-diff>
           `;
-        }
-      }
+        },
+      },
     ];
   };
 

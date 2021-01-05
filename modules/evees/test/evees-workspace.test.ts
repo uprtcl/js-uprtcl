@@ -1,9 +1,6 @@
 import { expect } from '@open-wc/testing';
 
-import {
-  MicroOrchestrator,
-  i18nextBaseModule,
-} from '@uprtcl/micro-orchestrator';
+import { MicroOrchestrator, i18nextBaseModule } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
@@ -12,9 +9,9 @@ import { MockEveesProvider } from './mocks/mock-evees-provider';
 import { MockStore } from './mocks/mock-store';
 
 import { EveesModule } from '../src/evees.module';
-import { EveesWorkspace } from '../src/uprtcl-evees';
+import { EveesClient } from '../src/uprtcl-evees';
 
-describe('evees-workspace', () => {
+describe('evees-client', () => {
   let orchestrator: MicroOrchestrator;
   let documentsProvider = new MockStore({
     QmWMjMi7WHGVyup7aQeyeoExRwGd3vSTkSodRh2afVRxiN: {
@@ -65,16 +62,14 @@ describe('evees-workspace', () => {
       new EveesModule([eveesProvider]),
     ]);
   });
-  it('evees-workspace works', async () => {
-    const client: EveesClient = orchestrator.container.get(
-      EveesClientModule.bindings.Client
-    );
+  it('evees-client works', async () => {
+    const client: EveesClient = orchestrator.container.get(EveesClientModule.bindings.Client);
     const recognizer: PatternRecognizer = orchestrator.container.get(
       CortexModule.bindings.Recognizer
     );
 
-    const workspace = new EveesWorkspace(client, recognizer);
-    const result = await workspace.workspace.query({
+    const client = new EveesClient(client, recognizer);
+    const result = await client.client.query({
       query: gql`
         {
           entity(uref: "Qmb9vRaxHW4J6b685FSLR8Fkc3ew2FVEiyU6DfPqHeR6bw") {

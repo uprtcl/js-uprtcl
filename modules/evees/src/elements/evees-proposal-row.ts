@@ -6,7 +6,7 @@ import { EveesRemote } from 'src/services/evees.remote';
 import { EveesBindings } from 'src/bindings';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
-import { EveesWorkspace } from '../services/evees.client.memory';
+import { EveesClient } from '../services/evees.client.memory';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { ContentUpdatedEvent } from './events';
@@ -126,7 +126,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   }
 
   async checkCanExecute() {
-    /* check the update list, if user canWrite on all the target perspectives,
+    /* check the update list, if user canUpdate on all the target perspectives,
     the user can execute the proposal */
     const canExecuteVector = await Promise.all(
       this.proposal.details.updates.map(
@@ -137,7 +137,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
           );
           const remote = this.eveesRemotes.find((remote) => remote.id === remoteId);
           if (remote === undefined) throw new Error('remote undefined');
-          return EveesHelpers.canWrite(this.client, update.perspectiveId);
+          return EveesHelpers.canUpdate(this.client, update.perspectiveId);
         }
       )
     );
@@ -146,17 +146,17 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   }
 
   async showProposalChanges() {
-    const workspace = new EveesWorkspace(this.client, this.recognizer);
+    const client = new EveesClient(this.client, this.recognizer);
     for (const update of this.proposal.details.updates) {
-      workspace.update(update);
+      client.update(update);
     }
 
     for (const newPerspective of this.proposal.details.newPerspectives) {
-      workspace.newPerspective(newPerspective);
+      client.newPerspective(newPerspective);
     }
 
     /* new perspectives are added to the cache to be able to read their head */
-    await workspace.precacheNewPerspectives(this.client);
+    await client.precacheNewPerspectives(this.client);
 
     this.showDiff = true;
     const options: MenuConfig = {};
@@ -186,7 +186,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     await this.updateComplete;
 
-    this.eveesDiffEl.workspace = workspace;
+    this.eveesDiffEl.client = client;
     this.updatesDialogEl.options = options;
 
     const value = await new Promise((resolve) => {
@@ -201,7 +201,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
 
     if (value === 'accept') {
       /** run the proposal changes as the logged user */
-      await workspace.execute(this.client);
+      await client.execute(this.client);
       await this.proposals.deleteProposal(this.proposalId);
 
       this.load();

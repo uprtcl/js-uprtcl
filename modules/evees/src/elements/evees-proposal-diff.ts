@@ -2,7 +2,7 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
-import { EveesWorkspace } from '../services/evees.client.memory';
+import { EveesClient } from '../services/evees.client.memory';
 import { EveesRemote } from '../services/evees.remote';
 import { EveesBindings } from '../bindings';
 import { EveesDiff } from './evees-diff';
@@ -26,7 +26,7 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
   eveesDiffEl!: EveesDiff;
 
   protected client!: EveesClient;
-  protected workspace!: EveesWorkspace;
+  protected client!: EveesClient;
 
   async firstUpdated() {
     this.client = this.request(EveesClientModule.bindings.Client);
@@ -55,19 +55,19 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
 
     if (proposal === undefined)
       throw new Error(`proposal ${this.proposalId} not found on remote ${this.remoteId}`);
-    this.workspace = new EveesWorkspace(this.client);
+    this.client = new EveesClient(this.client);
 
     for (const update of proposal.details.updates) {
-      this.workspace.update(update);
+      this.client.update(update);
     }
     for (const newPerspective of proposal.details.newPerspectives) {
-      this.workspace.newPerspective(newPerspective);
+      this.client.newPerspective(newPerspective);
     }
 
     this.loading = false;
     await this.updateComplete;
 
-    this.eveesDiffEl.workspace = this.workspace;
+    this.eveesDiffEl.client = this.client;
   }
 
   render() {

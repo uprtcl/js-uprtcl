@@ -4,7 +4,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { Entity } from '@uprtcl/cortex';
 
 import { Wiki } from '../types';
-import { EveesWorkspace } from '@uprtcl/evees';
+import { EveesClient } from '@uprtcl/evees';
 
 const LOGINFO = true;
 
@@ -20,7 +20,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
   summary: boolean = false;
 
   @property({ attribute: false })
-  workspace!: EveesWorkspace;
+  client!: EveesClient;
 
   @property({ attribute: false })
   newData!: Entity<Wiki>;
@@ -38,7 +38,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
   async firstUpdated() {
     this.logger.log('firstUpdated()', {
       newData: this.newData,
-      oldData: this.oldData
+      oldData: this.oldData,
     });
 
     this.loadChanges();
@@ -50,11 +50,11 @@ export class WikiDiff extends moduleConnect(LitElement) {
     const oldPages = this.oldData ? this.oldData.object.pages : [];
     this.oldTitle = this.oldData ? this.oldData.object.title : '';
 
-    this.newPages = this.newData.object.pages.filter(page =>
+    this.newPages = this.newData.object.pages.filter((page) =>
       this.oldData ? !oldPages.includes(page) : true
     );
     this.deletedPages = this.oldData
-      ? oldPages.filter(page => !this.newData.object.pages.includes(page))
+      ? oldPages.filter((page) => !this.newData.object.pages.includes(page))
       : [];
 
     this.loading = false;
@@ -63,11 +63,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
   renderPage(page: string, classes: string[]) {
     return html`
       <div class=${['page-row'].concat(classes).join(' ')}>
-        <documents-editor
-          .client=${this.workspace.workspace}
-          uref=${page}
-          read-only
-        ></documents-editor>
+        <documents-editor .client=${this.client.client} uref=${page} read-only></documents-editor>
       </div>
     `;
   }
@@ -82,9 +78,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     const titleChanged = this.newData.object.title !== this.oldTitle;
@@ -94,21 +88,9 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
     if (this.summary) {
       return html`
-        ${titleChanged
-          ? html`
-              <span class="">Title changed, </span>
-            `
-          : ''}
-        ${newPages.length
-          ? html`
-              <span>${newPages.length} new pages added,</span>
-            `
-          : ''}
-        ${deletedPages.length
-          ? html`
-              <span>${deletedPages.length} pages deleted.</span>
-            `
-          : ''}
+        ${titleChanged ? html` <span class="">Title changed, </span> ` : ''}
+        ${newPages.length ? html` <span>${newPages.length} new pages added,</span> ` : ''}
+        ${deletedPages.length ? html` <span>${deletedPages.length} pages deleted.</span> ` : ''}
       `;
     }
 
@@ -126,7 +108,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
         ? html`
             <div class="pages-list">
               <div class="page-list-title">Pages Added</div>
-              ${newPages.map(page => this.renderPage(page, ['green-background']))}
+              ${newPages.map((page) => this.renderPage(page, ['green-background']))}
             </div>
           `
         : ''}
@@ -134,7 +116,7 @@ export class WikiDiff extends moduleConnect(LitElement) {
         ? html`
             <div class="pages-list">
               <div class="page-list-title">Pages Removed</div>
-              ${deletedPages.map(page => this.renderPage(page, ['red-background']))}
+              ${deletedPages.map((page) => this.renderPage(page, ['red-background']))}
             </div>
           `
         : ''}

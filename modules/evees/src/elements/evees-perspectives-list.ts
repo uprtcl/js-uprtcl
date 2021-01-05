@@ -33,7 +33,7 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
   otherPerspectivesData: PerspectiveData[] = [];
 
   @property({ attribute: false })
-  canWrite: Boolean = false;
+  canUpdate: Boolean = false;
 
   perspectivesData: PerspectiveData[] = [];
 
@@ -83,17 +83,9 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
             result.data.entity.payload.context.perspectives.map(
               async (perspective): Promise<PerspectiveData> => {
                 /** data on this perspective */
-                const remote = this.remotes.find(
-                  (r) => r.id === perspective.payload.remote
-                );
-                if (!remote)
-                  throw new Error(
-                    `remote not found for ${perspective.payload.remote}`
-                  );
-                this.canWrite = await EveesHelpers.canWrite(
-                  this.client,
-                  this.perspectiveId
-                );
+                const remote = this.remotes.find((r) => r.id === perspective.payload.remote);
+                if (!remote) throw new Error(`remote not found for ${perspective.payload.remote}`);
+                this.canUpdate = await EveesHelpers.canUpdate(this.client, this.perspectiveId);
                 return {
                   id: perspective.id,
                   name: perspective.name,
@@ -107,9 +99,7 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
 
     // remove duplicates
     const map = new Map<string, PerspectiveData>();
-    perspectivesData.forEach((perspectiveData) =>
-      map.set(perspectiveData.id, perspectiveData)
-    );
+    perspectivesData.forEach((perspectiveData) => map.set(perspectiveData.id, perspectiveData));
     this.perspectivesData = Array.from(map, (key) => key[1]);
 
     this.otherPerspectivesData = this.perspectivesData.filter(

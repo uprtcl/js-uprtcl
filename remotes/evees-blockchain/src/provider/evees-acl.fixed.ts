@@ -13,7 +13,7 @@ export class EveesAccessControlFixed implements AccessControlService {
     return perspective.payload.creatorId;
   }
 
-  async canWrite(uref: string, userId: string) {
+  async canUpdate(uref: string, userId: string) {
     return userId === (await this.getOwner(uref));
   }
 
@@ -22,10 +22,8 @@ export class EveesAccessControlFixed implements AccessControlService {
       name: 'evees-blockchain:access-control',
       type: 'access-control',
       render: (entity: any) => {
-        return html`
-          <evees-permissions-fixed uref=${entity.uref}> </evees-permissions-fixed>
-        `;
-      }
+        return html` <evees-permissions-fixed uref=${entity.uref}> </evees-permissions-fixed> `;
+      },
     };
   }
 }

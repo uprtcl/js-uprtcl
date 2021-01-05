@@ -11,7 +11,7 @@ export interface EveesRemote extends EveesProvider, Remote {
   accessControl: AccessControlService;
   proposals?: ProposalsProvider;
 
-  canWrite(uref: string): Promise<boolean>;
+  canUpdate(uref: string): Promise<boolean>;
   lense?(): Lens;
   icon?(path?: string): TemplateResult;
   avatar?(userId: string, config: any): TemplateResult;

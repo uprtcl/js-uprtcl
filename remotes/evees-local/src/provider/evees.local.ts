@@ -7,7 +7,7 @@ import {
   PerspectiveDetails,
   NewPerspectiveData,
   Secured,
-  EveesHelpers
+  EveesHelpers,
 } from '@uprtcl/evees';
 
 import { CASStoreLocal } from './store.local';
@@ -43,7 +43,7 @@ export class EveesLocal implements EveesRemote {
 
   async ready(): Promise<void> {}
 
-  async canWrite(uref: string) {
+  async canUpdate(uref: string) {
     return true;
   }
 
@@ -53,7 +53,7 @@ export class EveesLocal implements EveesRemote {
     await this.db.perspectives.put({
       id: perspectiveId,
       headId: details.headId,
-      context: current.context
+      context: current.context,
     });
   }
 
@@ -98,7 +98,7 @@ export class EveesLocal implements EveesRemote {
       id: perspectiveId,
       context: secured.object.payload.context,
       headId: details.headId,
-      fromPerspectiveId: secured.object.payload.fromPerspectiveId
+      fromPerspectiveId: secured.object.payload.fromPerspectiveId,
     });
   }
 
@@ -109,16 +109,13 @@ export class EveesLocal implements EveesRemote {
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
-    const perspectives = await this.db.perspectives
-      .where('context')
-      .equals(context)
-      .toArray();
+    const perspectives = await this.db.perspectives.where('context').equals(context).toArray();
 
-    const allPerspectivesIds = perspectives.map(e => e.id);
+    const allPerspectivesIds = perspectives.map((e) => e.id);
 
     this.logger.log('getContextPerspectives', {
       context,
-      allPerspectivesIds
+      allPerspectivesIds,
     });
 
     return allPerspectivesIds;
@@ -127,7 +124,7 @@ export class EveesLocal implements EveesRemote {
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
     const details = await this.db.perspectives.get(perspectiveId);
     return {
-      headId: details ? details.headId : undefined
+      headId: details ? details.headId : undefined,
     };
   }
 

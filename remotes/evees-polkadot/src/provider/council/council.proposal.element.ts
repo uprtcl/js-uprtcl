@@ -6,7 +6,7 @@ import { prettyTimePeriod } from '@uprtcl/common-ui';
 import {
   EveesBindings,
   EveesRemote,
-  EveesWorkspace,
+  EveesClient,
   NewPerspectiveData,
   Perspective,
   Secured,
@@ -37,7 +37,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   fromPerspective!: Signed<Perspective>;
 
   recognizer!: PatternRecognizer;
-  workspace!: EveesWorkspace;
+  client!: EveesClient;
   proposalManifest!: ProposalManifest;
   proposalStatusUI!: {
     summary: ProposalSummary;
@@ -59,15 +59,13 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   async load() {
     this.loading = true;
     await this.loadManifest();
-    await this.loadWorkspace();
+    await this.loadclient();
     await this.loadProposalStatus();
     this.loading = false;
   }
 
   async loadManifest() {
-    const proposalManifest = (await this.remote.store.get(
-      this.proposalId
-    )) as ProposalManifest;
+    const proposalManifest = (await this.remote.store.get(this.proposalId)) as ProposalManifest;
     if (!proposalManifest) throw new Error('Proposal not found');
     this.proposalManifest = proposalManifest;
 
@@ -76,15 +74,14 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     )) as Signed<Perspective>;
   }
 
-  async loadWorkspace() {
-    this.workspace = new EveesWorkspace(this.client, this.recognizer);
+  async loadclient() {
+    this.client = new EveesClient(this.client, this.recognizer);
     for (const update of this.proposalManifest.updates) {
       if (!update.fromPerspectiveId) {
         const perspective = (await this.remote.store.get(
           update.perspectiveId
         )) as Signed<Perspective>;
-        if (!perspective)
-          throw new Error(`Perspective ${update.perspectiveId} not found`);
+        if (!perspective) throw new Error(`Perspective ${update.perspectiveId} not found`);
 
         const secured: Secured<Perspective> = {
           id: update.perspectiveId,
@@ -97,13 +94,13 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           },
           perspective: secured,
         };
-        this.workspace.newPerspective(newPerspective);
+        this.client.newPerspective(newPerspective);
       } else {
-        this.workspace.update(update);
+        this.client.update(update);
       }
     }
     /* new perspectives are added to the cache to be able to read their head */
-    this.workspace.precacheNewPerspectives(this.client);
+    this.client.precacheNewPerspectives(this.client);
   }
 
   async vote(value: VoteValue) {
@@ -114,9 +111,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   }
 
   async loadProposalStatus() {
-    const proposalSummary = await this.remote.proposals.getProposalSummary(
-      this.proposalId
-    );
+    const proposalSummary = await this.remote.proposals.getProposalSummary(this.proposalId);
 
     if (!proposalSummary) throw new Error('Vote status not found');
 
@@ -127,9 +122,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.proposalStatusUI = {
       summary: proposalSummary,
       council,
-      isCouncilMember: this.remote.userId
-        ? council.includes(this.remote.userId)
-        : false,
+      isCouncilMember: this.remote.userId ? council.includes(this.remote.userId) : false,
     };
   }
 
@@ -252,18 +245,14 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
           <div class="row">
             by
             <evees-author
-              user-id=${this.proposalManifest.creatorId
-                ? this.proposalManifest.creatorId
-                : ''}
+              user-id=${this.proposalManifest.creatorId ? this.proposalManifest.creatorId : ''}
               remote-id=${this.fromPerspective.payload.remote}
               show-name
             ></evees-author>
           </div>
-          <evees-update-diff .workspace=${this.workspace}> </evees-update-diff>
+          <evees-update-diff .client=${this.client}> </evees-update-diff>
           <div class="column">
-            ${this.proposalStatusUI.isCouncilMember
-              ? this.renderCouncilMember()
-              : ''}
+            ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
             ${this.renderProposalStatus()}
           </div>
         </div>
@@ -276,9 +265,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
       return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
-    const creatorId = this.proposalManifest.creatorId
-      ? this.proposalManifest.creatorId
-      : '';
+    const creatorId = this.proposalManifest.creatorId ? this.proposalManifest.creatorId : '';
     let icon;
 
     switch (this.proposalStatusUI.summary.status) {

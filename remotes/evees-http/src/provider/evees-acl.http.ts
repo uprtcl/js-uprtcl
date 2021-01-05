@@ -20,9 +20,7 @@ export class EveesAccessControlHttp implements AccessControlService {
   }
 
   async getUserPermissions(hash: string) {
-    return await this.provider.getObject<UserPermissions>(
-      `/permissions/${hash}`
-    );
+    return await this.provider.getObject<UserPermissions>(`/permissions/${hash}`);
   }
 
   async getPermissions(hash: string): Promise<any | undefined> {
@@ -33,28 +31,20 @@ export class EveesAccessControlHttp implements AccessControlService {
     await this.provider.delete(`/permissions/${hash}/single/${userId}`);
   }
 
-  async setPrivatePermissions(
-    hash: string,
-    type: PermissionType,
-    userId: string
-  ) {
+  async setPrivatePermissions(hash: string, type: PermissionType, userId: string) {
     await this.provider.put(`/permissions/${hash}/single`, {
       type,
       userId,
     });
   }
 
-  async setPublicPermissions(
-    hash: string,
-    type: PermissionType,
-    value: Boolean
-  ) {
+  async setPublicPermissions(hash: string, type: PermissionType, value: Boolean) {
     await this.provider.put(`/permissions/${hash}/public`, { type, value });
   }
 
-  async canWrite(uref: string) {
+  async canUpdate(uref: string) {
     const res = await this.getUserPermissions(uref);
-    return res.canWrite;
+    return res.canUpdate;
   }
 
   lense(): Lens {
@@ -63,10 +53,7 @@ export class EveesAccessControlHttp implements AccessControlService {
       type: 'access-control',
       render: (entity: any) => {
         return html`
-          <evees-http-permissions
-            uref=${entity.uref}
-            parentId=${entity.parentId}
-          >
+          <evees-http-permissions uref=${entity.uref} parentId=${entity.parentId}>
           </evees-http-permissions>
         `;
       },

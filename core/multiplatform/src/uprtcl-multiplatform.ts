@@ -7,13 +7,7 @@ export { CASSource } from './types/cas-source';
 export { CASStore } from './types/cas-store';
 export { CidConfig, defaultCidConfig } from './types/cid-config';
 
-export { KnownSourcesService } from './references/known-sources/known-sources.service';
-export { KnownSourcesSource } from './references/known-sources/known-sources.source';
-
-export { MultiSourceService } from './references/multi-source.service';
-
-/** Behaviours */
-export { ResolveEntity } from './behaviours/resolve-entity';
+export { MultiSourceService } from './services/multi-source.service';
 
 /** Modules */
 export { DiscoveryModule } from './discovery.module';
@@ -22,12 +16,3 @@ export { CASModule } from './cas.module';
 /** Connections */
 export { Connection, ConnectionOptions } from './connections/connection';
 export { SocketConnection } from './connections/socket.connection';
-
-/** Utils */
-export { loadEntity } from './utils/entities';
-
-export {
-  linksFromEntity,
-  getUplToDiscover,
-  discoverKnownSources,
-} from './references/known-sources/discovery.utils';

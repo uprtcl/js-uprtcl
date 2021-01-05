@@ -1,14 +1,7 @@
 import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
-import {
-  Pattern,
-  recognizeEntity,
-  HasChildren,
-  Entity,
-  HasTitle,
-  New,
-} from '@uprtcl/cortex';
+import { Pattern, recognizeEntity, HasChildren, Entity, HasTitle, New } from '@uprtcl/cortex';
 import {
   Merge,
   MergeStrategy,
@@ -16,7 +9,7 @@ import {
   mergeResult,
   HasDiffLenses,
   DiffLens,
-  EveesWorkspace,
+  EveesClient,
 } from '@uprtcl/evees';
 import { Lens, HasLenses } from '@uprtcl/lenses';
 
@@ -42,10 +35,7 @@ const typeToTextNode = (textNode: TextNode, type: TextType): TextNode => {
 
 export class TextNodePattern extends Pattern<Entity<TextNode>> {
   recognize(entity: object): boolean {
-    return (
-      recognizeEntity(entity) &&
-      propertyOrder.every((p) => entity.object.hasOwnProperty(p))
-    );
+    return recognizeEntity(entity) && propertyOrder.every((p) => entity.object.hasOwnProperty(p));
   }
 
   type = DocumentsBindings.TextNodeType;
@@ -53,10 +43,7 @@ export class TextNodePattern extends Pattern<Entity<TextNode>> {
 
 @injectable()
 export class TextNodeCommon
-  implements
-    HasLenses<Entity<TextNode>>,
-    HasChildren<Entity<TextNode>>,
-    Merge<Entity<TextNode>> {
+  implements HasLenses<Entity<TextNode>>, HasChildren<Entity<TextNode>>, Merge<Entity<TextNode>> {
   replaceChildrenLinks = (node: Entity<TextNode>) => (
     childrenHashes: string[]
   ): Entity<TextNode> => ({
@@ -78,8 +65,7 @@ export class TextNodeCommon
         type: 'content',
         render: (entity: Entity<any>, context: any) => {
           return html`
-            <documents-text-node .data=${node} uref=${entity.id}>
-            </documents-text-node>
+            <documents-text-node .data=${node} uref=${entity.id}> </documents-text-node>
           `;
         },
       },
@@ -106,23 +92,15 @@ export class TextNodeCommon
               @focus=${events.focus}
               @clicked-outside=${events.blur}
               @content-changed=${(e) =>
-                events.contentChanged(
-                  textToTextNode(node.draft, e.detail.content),
-                  false
-                )}
-              @enter-pressed=${(e) =>
-                events.split(e.detail.content, e.detail.asChild)}
-              @backspace-on-start=${(e) =>
-                events.joinBackward(e.detail.content)}
+                events.contentChanged(textToTextNode(node.draft, e.detail.content), false)}
+              @enter-pressed=${(e) => events.split(e.detail.content, e.detail.asChild)}
+              @backspace-on-start=${(e) => events.joinBackward(e.detail.content)}
               @delete-on-end=${(e) => events.pullDownward()}
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}
               @change-type=${(e) =>
-                events.contentChanged(
-                  typeToTextNode(node.draft, e.detail.type),
-                  e.detail.lift
-                )}
+                events.contentChanged(typeToTextNode(node.draft, e.detail.type), e.detail.lift)}
               @content-appended=${events.appended}
               @convert-to=${(e) => events.convertedTo(e.detail.type)}
             >
@@ -136,7 +114,7 @@ export class TextNodeCommon
   merge = (originalNode: Entity<TextNode>) => async (
     modifications: Entity<TextNode>[],
     mergeStrategy: MergeStrategy,
-    workspace: EveesWorkspace,
+    client: EveesClient,
     config: any
   ): Promise<TextNode> => {
     const resultText = modifications[1].object.text;
@@ -148,7 +126,7 @@ export class TextNodeCommon
     const mergedLinks = await mergeStrategy.mergeLinks(
       originalNode.object.links,
       modifications.map((data) => data.object.links),
-      workspace,
+      client,
       config
     );
 
@@ -170,7 +148,7 @@ export class TextNodeTitle implements HasTitle, HasDiffLenses {
         name: 'documents:document-diff',
         type: 'diff',
         render: (
-          workspace: EveesWorkspace,
+          client: EveesClient,
           newEntity: Entity<TextNode>,
           oldEntity: Entity<TextNode>,
           summary: boolean
@@ -178,7 +156,7 @@ export class TextNodeTitle implements HasTitle, HasDiffLenses {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <documents-text-node-diff
-              .workspace=${workspace}
+              .client=${client}
               .newData=${newEntity}
               .oldData=${oldEntity}
               ?summary=${summary}

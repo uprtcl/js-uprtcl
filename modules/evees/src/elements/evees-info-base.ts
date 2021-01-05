@@ -14,11 +14,11 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { MergeStrategy } from '../merge/merge-strategy';
-import { Evees } from '../services/evees';
+import { Evees } from '../services/evees.helpers';
 
 import { EveesRemote } from '../services/evees.remote';
 
-import { EveesWorkspace } from '../services/evees.client.memory';
+import { EveesClient } from '../services/evees.client.memory';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 
@@ -26,7 +26,7 @@ interface PerspectiveData {
   id?: string;
   perspective?: Perspective;
   details?: PerspectiveDetails;
-  canWrite?: Boolean;
+  canUpdate?: Boolean;
   permissions?: any;
   head?: Entity<Commit>;
   data?: Entity<any>;
@@ -102,7 +102,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   eveesDiffInfoMessage!: TemplateResult;
 
   perspectiveData!: PerspectiveData;
-  pullWorkspace: EveesWorkspace | undefined = undefined;
+  pullclient: EveesClient | undefined = undefined;
 
   protected client!: EveesClient;
   protected config!: EveesConfig;
@@ -165,7 +165,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       const head = headId !== undefined ? await loadEntity<Commit>(this.client, headId) : undefined;
       const data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
 
-      const canWrite = await EveesHelpers.canWrite(this.client, this.uref);
+      const canUpdate = await EveesHelpers.canUpdate(this.client, this.uref);
 
       this.perspectiveData = {
         id: this.uref,
@@ -173,7 +173,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
           headId: headId,
         },
         perspective: (entity.object as Signed<Perspective>).payload,
-        canWrite: canWrite,
+        canUpdate: canUpdate,
         head,
         data,
       };
@@ -208,12 +208,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
   async checkPull(fromUref: string) {
     if (this.entityType !== EveesBindings.PerspectiveType) {
-      this.pullWorkspace = undefined;
+      this.pullclient = undefined;
       return;
     }
 
-    if (this.uref === fromUref || !this.perspectiveData.canWrite) {
-      this.pullWorkspace = undefined;
+    if (this.uref === fromUref || !this.perspectiveData.canUpdate) {
+      this.pullclient = undefined;
       return;
     }
 
@@ -223,15 +223,15 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       forceOwner: true,
       remote: this.perspectiveData.perspective.remote,
       path: this.perspectiveData.perspective.path,
-      canWrite: this.remote.userId,
+      canUpdate: this.remote.userId,
       parentId: this.uref,
     };
 
-    this.pullWorkspace = new EveesWorkspace(this.client, this.recognizer);
+    this.pullclient = new EveesClient(this.client, this.recognizer);
 
-    await this.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullWorkspace, config);
+    await this.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullclient, config);
 
-    this.logger.info('checkPull()', this.pullWorkspace);
+    this.logger.info('checkPull()', this.pullclient);
   }
 
   async getContextPerspectives(perspectiveId?: string): Promise<string[]> {
@@ -302,7 +302,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.merging = true;
     this.logger.info(`merge ${fromPerspectiveId} on ${toPerspectiveId}`);
 
-    const workspace = new EveesWorkspace(this.client, this.recognizer);
+    const client = new EveesClient(this.client, this.recognizer);
     const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
 
     const config = {
@@ -314,14 +314,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     const toHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, toPerspectiveId);
     const fromHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, fromPerspectiveId);
 
-    await this.merge.mergePerspectivesExternal(
-      toPerspectiveId,
-      fromPerspectiveId,
-      workspace,
-      config
-    );
+    await this.merge.mergePerspectivesExternal(toPerspectiveId, fromPerspectiveId, client, config);
 
-    const canWrite = await EveesHelpers.canWrite(this.client, toPerspectiveId);
+    const canUpdate = await EveesHelpers.canUpdate(this.client, toPerspectiveId);
     const toRemote = this.remotes.find((r) => r.id === toRemoteId);
     const canPropose = toRemote
       ? toRemote.proposals
@@ -331,9 +326,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     const options: MenuConfig = {
       apply: {
-        text: canWrite ? 'merge' : 'propose',
+        text: canUpdate ? 'merge' : 'propose',
         icon: 'done',
-        disabled: !canWrite && !canPropose,
+        disabled: !canUpdate && !canPropose,
         skinny: false,
       },
       close: {
@@ -344,7 +339,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     };
 
     const result = await this.updatesDialog(
-      workspace,
+      client,
       options,
       this.renderFromToPerspective(toPerspectiveId, fromPerspectiveId)
     );
@@ -363,18 +358,18 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       toPerspectiveId
     );
 
-    if (!canWrite && (emitBecauseOfTarget || this.emitProposals)) {
+    if (!canUpdate && (emitBecauseOfTarget || this.emitProposals)) {
       /* entities are just cloned, not part of the proposal */
-      await workspace.executeCreate(this.client);
-      await workspace.precacheNewPerspectives(this.client);
+      await client.executeCreate(this.client);
+      await client.precacheNewPerspectives(this.client);
 
       this.dispatchEvent(
         new ProposalCreatedEvent({
           detail: {
             remote: await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId),
             proposalDetails: {
-              newPerspectives: workspace.getNewPerspectives(),
-              updates: workspace.getUpdates(),
+              newPerspectives: client.getNewPerspectives(),
+              updates: client.getUpdates(),
             },
           },
           bubbles: true,
@@ -388,13 +383,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     /* if the merge execution is not delegated, it is done here. A proposal is created
        on the toPerspective remote, or the changes are directly applied.
-       Note that it is assumed that if a user canWrite on toPerspectiveId, he can write 
-       on all the perspectives inside the workspace.updates array. */
-    if (canWrite) {
-      await workspace.execute(this.client);
+       Note that it is assumed that if a user canUpdate on toPerspectiveId, he can write 
+       on all the perspectives inside the client.updates array. */
+    if (canUpdate) {
+      await client.execute(this.client);
       /* inform the world */
 
-      workspace.getUpdates().map((update) => {
+      client.getUpdates().map((update) => {
         this.dispatchEvent(
           new ContentUpdatedEvent({
             detail: { uref: update.perspectiveId },
@@ -405,8 +400,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       });
     } else {
       /** create commits and data */
-      await workspace.executeCreate(this.client);
-      await workspace.precacheNewPerspectives(this.client);
+      await client.executeCreate(this.client);
+      await client.precacheNewPerspectives(this.client);
 
       if (fromHeadId === undefined) throw new Error(`undefined head for ${fromPerspectiveId}`);
       await this.createMergeProposal(
@@ -414,7 +409,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         toPerspectiveId,
         fromHeadId,
         toHeadId,
-        workspace
+        client
       );
     }
 
@@ -430,12 +425,12 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     toPerspectiveId: string,
     fromHeadId: string,
     toHeadId: string | undefined,
-    workspace: EveesWorkspace
+    client: EveesClient
   ): Promise<void> {
     // TODO: handle proposals and updates on multiple authorities.
     const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
 
-    const not = await workspace.isSingleAuthority(toRemoteId);
+    const not = await client.isSingleAuthority(toRemoteId);
     if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
 
     const result = await this.client.mutate({
@@ -445,8 +440,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
         fromPerspectiveId,
         toHeadId,
         fromHeadId,
-        newPerspectives: workspace.getNewPerspectives(),
-        updates: workspace.getUpdates(),
+        newPerspectives: client.getNewPerspectives(),
+        updates: client.getUpdates(),
       },
     });
 
@@ -535,7 +530,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async updatesDialog(
-    workspace: EveesWorkspace,
+    client: EveesClient,
     options: MenuConfig,
     message: TemplateResult = html``
   ): Promise<string> {
@@ -543,7 +538,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.updateComplete;
 
     this.updatesDialogEl.options = options;
-    this.eveesDiffEl.workspace = workspace;
+    this.eveesDiffEl.client = client;
     this.eveesDiffInfoMessage = message;
 
     return new Promise((resolve) => {

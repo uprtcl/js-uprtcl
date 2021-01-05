@@ -9,7 +9,7 @@ import { EveesBindings } from '../bindings';
 import { EveesRemote } from './evees.remote';
 import { Secured, deriveEntity } from '../utils/cid-hash';
 import { deriveSecured } from '../utils/signed';
-import { EveesWorkspace } from './evees.client.memory';
+import { EveesClient } from './evees.client.memory';
 
 /**
  * Main service used to interact with _Prtcl compatible objects and providers
@@ -91,7 +91,7 @@ export class Evees {
   /**
    * receives an entity id and compute the actions that will
    * result on this entity being forked on a target remote
-   * with a target owner (canWrite).
+   * with a target owner (canUpdate).
    *
    * it also makes sure that all entities are clonned
    * on the target remote default store.
@@ -100,19 +100,19 @@ export class Evees {
    */
   public async fork(
     id: string,
-    workspace: EveesWorkspace,
+    client: EveesClient,
     remote: string,
     parentId?: string
   ): Promise<string> {
     const isPerspective = await this.isPattern(id, EveesBindings.PerspectiveType);
     if (isPerspective) {
-      return this.forkPerspective(id, workspace, remote, parentId);
+      return this.forkPerspective(id, client, remote, parentId);
     } else {
       const isCommit = await this.isPattern(id, EveesBindings.CommitType);
       if (isCommit) {
-        return this.forkCommit(id, workspace, remote, parentId);
+        return this.forkCommit(id, client, remote, parentId);
       } else {
-        return this.forkEntity(id, workspace, remote, parentId);
+        return this.forkEntity(id, client, remote, parentId);
       }
     }
   }
@@ -143,7 +143,7 @@ export class Evees {
 
   public async forkPerspective(
     perspectiveId: string,
-    workspace: EveesWorkspace,
+    client: EveesClient,
     remote?: string,
     parentId?: string,
     name?: string
@@ -168,7 +168,7 @@ export class Evees {
     );
 
     /* BUG-FIXED: this is needed so that the getOwner of the snapPerspective function has the parent object. 
-       TODO: How to add the concept of workspaces to the fork process? how to snapPerspectives based on a workspace ? */
+       TODO: How to add the concept of clients to the fork process? how to snapPerspectives based on a client ? */
     await EveesHelpers.createEntity(this.client, eveesRemote.store, perspective.object);
 
     let forkCommitId: string | undefined = undefined;
@@ -176,13 +176,13 @@ export class Evees {
     if (headId !== undefined) {
       forkCommitId = await this.forkCommit(
         headId,
-        workspace,
+        client,
         eveesRemote.id,
         perspective.id // this perspective is set as the parent of the children's new perspectives
       );
     }
 
-    workspace.newPerspective({
+    client.newPerspective({
       perspective,
       details: { headId: forkCommitId, name },
       parentId,
@@ -193,7 +193,7 @@ export class Evees {
 
   public async forkCommit(
     commitId: string,
-    workspace: EveesWorkspace,
+    client: EveesClient,
     remote: string,
     parentId?: string
   ): Promise<string> {
@@ -203,7 +203,7 @@ export class Evees {
     const remoteInstance = this.getRemote(remote);
 
     const dataId = commit.object.payload.dataId;
-    const dataForkId = await this.forkEntity(dataId, workspace, remote, parentId);
+    const dataForkId = await this.forkEntity(dataId, client, remote, parentId);
 
     const eveesRemote = this.getRemote(remote);
 
@@ -219,14 +219,14 @@ export class Evees {
 
     const newHead: Secured<Commit> = await deriveSecured(newCommit, remoteInstance.store.cidConfig);
     newHead.casID = remoteInstance.store.casID;
-    workspace.create(newHead);
+    client.create(newHead);
 
     return newHead.id;
   }
 
   public async forkEntity(
     entityId: string,
-    workspace: EveesWorkspace,
+    client: EveesClient,
     remote: string,
     parentId?: string
   ): Promise<string> {
@@ -235,7 +235,7 @@ export class Evees {
 
     /** createOwnerPreservingEntity of children */
     const getLinksForks = this.getEntityChildren(data).map((link) =>
-      this.fork(link, workspace, remote, parentId)
+      this.fork(link, client, remote, parentId)
     );
     const newLinks = await Promise.all(getLinksForks);
     const tempData = this.replaceEntityChildren(data, newLinks);
@@ -247,7 +247,7 @@ export class Evees {
     const newData = await deriveEntity(tempData.object, remoteInstance.store.cidConfig);
 
     newData.casID = remoteInstance.store.casID;
-    workspace.create(newData);
+    client.create(newData);
 
     return newData.id;
   }

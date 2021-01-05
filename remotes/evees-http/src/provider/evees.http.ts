@@ -54,8 +54,8 @@ export class EveesHttp implements EveesRemote {
     return `http:store:${this.provider.pOptions.host}`;
   }
 
-  canWrite(uref: string): Promise<boolean> {
-    return this.accessControl.canWrite(uref);
+  canUpdate(uref: string): Promise<boolean> {
+    return this.accessControl.canUpdate(uref);
   }
 
   async snapPerspective(
@@ -85,9 +85,7 @@ export class EveesHttp implements EveesRemote {
     });
   }
 
-  async createPerspectiveBatch(
-    newPerspectivesData: NewPerspectiveData[]
-  ): Promise<void> {
+  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
     const promises = newPerspectivesData.map((perspectiveData) =>
       this.createPerspective(perspectiveData)
     );
@@ -148,18 +146,12 @@ export class EveesHttp implements EveesRemote {
       path = url.hostname;
     }
     return html`
-      <uprtcl-icon-and-name
-        name=${path ? path : 'unknown'}
-        show-name
-      ></uprtcl-icon-and-name>
+      <uprtcl-icon-and-name name=${path ? path : 'unknown'} show-name></uprtcl-icon-and-name>
     `;
   }
   avatar(userId: string, config: any = { showName: true }) {
     return html`
-      <uprtcl-icon-and-name
-        ?show-name=${config.showName}
-        name=${userId}
-      ></uprtcl-icon-and-name>
+      <uprtcl-icon-and-name ?show-name=${config.showName} name=${userId}></uprtcl-icon-and-name>
     `;
   }
 }

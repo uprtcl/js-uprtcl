@@ -1,32 +1,13 @@
 import { Entity } from '@uprtcl/cortex';
 
 import { UpdateRequest, NewPerspectiveData } from '../types';
-import { EntityGetResult, EveesClient, PerspectiveGetResult } from './evees.client';
+import { EveesClient, PerspectiveGetResult } from './evees.client';
 
-export class EveesClientOnMemory implements EveesClient {
-  private entities = new Map<string, Entity<any>>();
-  private newPerspectives = new Map<string, NewPerspectiveData>();
-  private updates = new Map<string, UpdateRequest>();
-  private canUpdates = new Map<string, boolean>();
-
-  constructor(protected base: EveesClient, protected store: CASStore) {}
+export class EveesClientRouter implements EveesClient {
+  constructor(protected remotes: EveesRemotes[]) {}
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
-    const newPerspective = this.newPerspectives.get(perspectiveId);
-    if (newPerspective) {
-      return {
-        details: newPerspective.details,
-      };
-    }
-
-    const update = this.updates.get(perspectiveId);
-    if (update) {
-      return {
-        details: { headId: update.newHeadId },
-      };
-    }
-
-    return this.base.getPerspective(perspectiveId);
+    return remote.getPerspective(perspectiveId);
   }
   createPerspectives(newPerspectives: NewPerspectiveData[]) {
     newPerspectives.forEach((newPerspective) => {
@@ -60,13 +41,5 @@ export class EveesClientOnMemory implements EveesClient {
     }
 
     return this.base.canUpdate(userId, perspectiveId);
-  }
-
-  getEntities(hashes: string[]): Promise<EntityGetResult> {
-    return this.store.get(hashes);
-  }
-  getEntity(uref: string): Promise<Entity<any> | undefined> {
-    const { result: entities } = this.store.get([uref]);
-    return entities.length === 1 ? entities[0] : undefined;
   }
 }

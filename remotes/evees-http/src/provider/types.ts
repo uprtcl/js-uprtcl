@@ -8,20 +8,20 @@ export interface BasicAdminPermissions {
   publicWrite: boolean;
   publicRead: boolean;
   canRead: string[];
-  canWrite: string[];
+  canUpdate: string[];
   canAdmin: string[];
 }
 
 export interface BasicAdminInheritedPermissions {
-  delegate: boolean,
-  delegateTo?: string | null,
-  finDelegatedTo?: string | null,
-  customPermissions?: BasicAdminPermissions,
-  effectivePermissions: BasicAdminPermissions,
+  delegate: boolean;
+  delegateTo?: string | null;
+  finDelegatedTo?: string | null;
+  customPermissions?: BasicAdminPermissions;
+  effectivePermissions: BasicAdminPermissions;
 }
 
 export interface UserPermissions {
-  canRead: boolean,
-  canWrite: boolean,
-  canAdmin: boolean
+  canRead: boolean;
+  canUpdate: boolean;
+  canAdmin: boolean;
 }

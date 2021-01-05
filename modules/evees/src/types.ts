@@ -78,12 +78,7 @@ export interface NewPerspectiveData {
 
 export interface DiffLens {
   name: string;
-  render: (
-    workspace: EveesWorkspace,
-    newEntity: any,
-    oldEntity: any,
-    summary: boolean
-  ) => TemplateResult;
+  render: (client: EveesClient, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;
   type?: string;
 }
 

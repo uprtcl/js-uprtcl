@@ -2,12 +2,7 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
-import {
-  EveesModule,
-  EveesWorkspace,
-  Perspective,
-  EveesDiff,
-} from '@uprtcl/evees';
+import { EveesModule, EveesClient, Perspective, EveesDiff } from '@uprtcl/evees';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 
@@ -48,7 +43,7 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
   protected recognizer!: PatternRecognizer;
 
   protected remote!: EveesBlockchainCached;
-  protected workspace!: EveesWorkspace;
+  protected client!: EveesClient;
 
   async firstUpdated() {
     this.client = this.request(EveesClientModule.bindings.Client);
@@ -68,12 +63,10 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     this.loading = true;
 
     const eveesData = await this.remote.getEveesDataFromHead(this.currentHash);
-    const newEveesData = (await this.remote.store.get(
-      this.newHash
-    )) as UserPerspectivesDetails;
+    const newEveesData = (await this.remote.store.get(this.newHash)) as UserPerspectivesDetails;
 
-    /** compare the two evees objects and derive a workspace */
-    this.workspace = new EveesWorkspace(this.client, this.recognizer);
+    /** compare the two evees objects and derive a client */
+    this.client = new EveesClient(this.client, this.recognizer);
 
     for (const perspectiveId in newEveesData) {
       if (eveesData[perspectiveId] !== undefined) {
@@ -90,14 +83,11 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
             oldHeadId: eveesData[perspectiveId].headId,
           };
 
-          this.workspace.update(update);
+          this.client.update(update);
         }
       } else {
         // new
-        const perspective = await loadEntity<Signed<Perspective>>(
-          this.client,
-          perspectiveId
-        );
+        const perspective = await loadEntity<Signed<Perspective>>(this.client, perspectiveId);
         if (perspective === undefined) {
           throw new Error(`perspective ${perspectiveId} not found`);
         }
@@ -107,19 +97,19 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
           },
           perspective,
         };
-        this.workspace.newPerspective(newPerspective);
+        this.client.newPerspective(newPerspective);
       }
     }
 
-    this.nNew = this.workspace.getNewPerspectives().length;
-    this.nUpdated = this.workspace.getUpdates().length;
+    this.nNew = this.client.getNewPerspectives().length;
+    this.nUpdated = this.client.getUpdates().length;
 
     this.loading = false;
     await this.updateComplete;
 
-    /** set the workspace of the evees diff once it is shown */
+    /** set the client of the evees diff once it is shown */
     if (this.eveesDiffEl !== null) {
-      this.eveesDiffEl.workspace = this.workspace;
+      this.eveesDiffEl.client = this.client;
     }
   }
 
@@ -133,15 +123,12 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
         ? html`
             <div class="summary">
               You have
-              <b>created ${this.workspace.getNewPerspectives().length}</b> new
-              objects and
-              <b> updated ${this.workspace.getUpdates().length}</b>
+              <b>created ${this.client.getNewPerspectives().length}</b> new objects and
+              <b> updated ${this.client.getUpdates().length}</b>
             </div>
             <evees-update-diff
               id="evees-update-diff"
-              root-perspective=${this.rootPerspective
-                ? this.rootPerspective
-                : ''}
+              root-perspective=${this.rootPerspective ? this.rootPerspective : ''}
               ?summary=${this.summary}
             >
             </evees-update-diff>

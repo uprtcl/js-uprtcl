@@ -105,7 +105,7 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   async showPullChanges() {
-    if (!this.pullWorkspace) throw new Error('pullWorkspace undefined');
+    if (!this.pullclient) throw new Error('pullclient undefined');
 
     const options: MenuConfig = {
       apply: {
@@ -120,13 +120,13 @@ export class EveesInfoPage extends EveesInfoBase {
       },
     };
 
-    const result = await this.updatesDialog(this.pullWorkspace, options);
+    const result = await this.updatesDialog(this.pullclient, options);
 
     if (result !== 'apply') {
       return;
     }
 
-    await this.pullWorkspace.execute(this.client);
+    await this.pullclient.execute(this.client);
 
     this.checkoutPerspective(this.uref);
   }
@@ -135,9 +135,7 @@ export class EveesInfoPage extends EveesInfoBase {
     return html`
       <div class="perspectives-permissions">
         ${!this.loading
-          ? this.remote.accessControl
-              .lense()
-              .render({ uref: this.uref, parentId: this.parentId })
+          ? this.remote.accessControl.lense().render({ uref: this.uref, parentId: this.parentId })
           : ''}
       </div>
     `;
@@ -176,17 +174,9 @@ export class EveesInfoPage extends EveesInfoBase {
     const actionButton = html`
         ${
           this.isLogged && this.uref !== this.firstRef
-            ? html`
-                <div class="action-button">
-                  ${this.renderMakeProposalButton()}
-                </div>
-              `
+            ? html` <div class="action-button">${this.renderMakeProposalButton()}</div> `
             : this.isLoggedOnDefault
-            ? html`
-                <div class="action-button">
-                  ${this.renderNewPerspectiveButton()}
-                </div>
-              `
+            ? html` <div class="action-button">${this.renderNewPerspectiveButton()}</div> `
             : ''
         }
       </div>
@@ -196,10 +186,9 @@ export class EveesInfoPage extends EveesInfoBase {
       <div class="context-menu">
         <uprtcl-help>
           <span>
-            To update the "Official Version" of this Wiki you need to create a
-            new "Perspective"<br /><br />
-            Once changes have been made to that perspectective, click "Propose
-            Update" to update the "Official" perspective.
+            To update the "Official Version" of this Wiki you need to create a new "Perspective"<br /><br />
+            Once changes have been made to that perspectective, click "Propose Update" to update the
+            "Official" perspective.
           </span>
         </uprtcl-help>
       </div>
@@ -207,11 +196,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
     const pullButton = html`
       <div class="pull-menu">
-        <uprtcl-icon-button
-          @click=${this.showPullChanges}
-          icon="play_for_work"
-          button
-        >
+        <uprtcl-icon-button @click=${this.showPullChanges} icon="play_for_work" button>
         </uprtcl-icon-button>
       </div>
     `;
@@ -223,8 +208,7 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   render() {
-    if (this.perspectiveData === undefined)
-      return html` <uprtcl-loading></uprtcl-loading> `;
+    if (this.perspectiveData === undefined) return html` <uprtcl-loading></uprtcl-loading> `;
 
     return html`
       <div class="container">
@@ -232,9 +216,7 @@ export class EveesInfoPage extends EveesInfoBase {
           ${this.showPerspectives
             ? html`
                 <div class="section">
-                  <div class="section-header perspective-title">
-                    Perspectives
-                  </div>
+                  <div class="section-header perspective-title">Perspectives</div>
 
                   <div class="section-content">
                     ${this.renderPerspectiveActions()}
@@ -244,13 +226,9 @@ export class EveesInfoPage extends EveesInfoBase {
                             <evees-perspectives-list
                               perspective-id=${this.uref}
                               ?can-propose=${this.isLogged}
-                              @perspective-selected=${(e) =>
-                                this.checkoutPerspective(e.detail.id)}
+                              @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}
                               @merge-perspective=${(e) =>
-                                this.otherPerspectiveMerge(
-                                  e.detail.perspectiveId,
-                                  this.uref
-                                )}
+                                this.otherPerspectiveMerge(e.detail.perspectiveId, this.uref)}
                             ></evees-perspectives-list>
                           `
                         : html` <uprtcl-loading></uprtcl-loading> `}
@@ -291,9 +269,7 @@ export class EveesInfoPage extends EveesInfoBase {
             ? html`
                 <div class="section">
                   <div class="section-header">Evee Info</div>
-                  <div class="section-content info-text">
-                    ${this.renderInfo()}
-                  </div>
+                  <div class="section-content info-text">${this.renderInfo()}</div>
                 </div>
               `
             : ''}

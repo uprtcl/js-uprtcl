@@ -12,10 +12,10 @@ export { NewPerspectiveData } from './types';
 export { EveesConfig } from './types';
 
 /** Service providers */
-export { Evees } from './services/evees';
+export { EveesHelpers } from './services/evees.helpers';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
-export { EveesClient } from './services/evees.client.memory';
+export { EveesClient } from './services/evees.client';
 export { EveesDraftsLocal } from './services/providers/local/evees.drafts.local';
 
 /** Merge */
@@ -28,7 +28,6 @@ export { mergeStrings, mergeResult } from './merge/utils';
 export { EveesBindings } from './bindings';
 
 /** Elements */
-export { CommitHistory } from './elements/evees-commit-history';
 export { EveesPerspectivesList } from './elements/evees-perspectives-list';
 export { EveesBaseElement } from './elements/evees-base';
 export { EveesInfoPopper } from './elements/evees-info-popper';

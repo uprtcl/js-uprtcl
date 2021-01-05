@@ -48,14 +48,11 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     if (!this.isConnected) return;
 
     this.client = this.request(EveesClientModule.bindings.Client);
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(
-      this.client,
-      this.uref
-    );
+    const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.uref);
 
-    const remote = (this.requestAll(
-      EveesBindings.EveesRemote
-    ) as EveesRemote[]).find((remote) => remote.id === remoteId);
+    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+      (remote) => remote.id === remoteId
+    );
 
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
@@ -79,9 +76,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     this.permissions = undefined;
     if (userPermissions.canAdmin) {
-      this.permissions = await this.remote.accessControl.getPermissions(
-        this.uref
-      );
+      this.permissions = await this.remote.accessControl.getPermissions(this.uref);
     }
 
     await this.loadDelegatedTitle();
@@ -94,10 +89,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     const delegatedUref = this.permissions.delegateTo;
 
-    const data = await EveesHelpers.getPerspectiveData(
-      this.client,
-      delegatedUref
-    );
+    const data = await EveesHelpers.getPerspectiveData(this.client, delegatedUref);
     const hasTitle: HasTitle = this.recognizer
       .recognizeBehaviours(data)
       .find((b) => (b as HasTitle).title);
@@ -122,11 +114,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
       throw new Error(`permissions not found`);
     }
 
-    const {
-      canAdmin,
-      canWrite,
-      canRead,
-    } = this.permissions.effectivePermissions;
+    const { canAdmin, canUpdate, canRead } = this.permissions.effectivePermissions;
     let userPermissions: any[] = [];
 
     userPermissions = userPermissions.concat(
@@ -136,7 +124,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     );
 
     userPermissions = userPermissions.concat(
-      canWrite.map((write) => ({
+      canUpdate.map((write) => ({
         userId: write,
         permission: PermissionType.Write,
       }))
@@ -268,11 +256,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
 
     const selectedRole = role;
 
-    await this.remote.accessControl.setPrivatePermissions(
-      this.uref,
-      selectedRole,
-      userId
-    );
+    await this.remote.accessControl.setPrivatePermissions(this.uref, selectedRole, userId);
 
     this.loadPermissions();
   }
@@ -330,9 +314,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                       this.changeRole(userPermission.userId, event.detail.key)}
                     .config=${permissionListConfig}
                   >
-                    <span class="user-permission" slot="icon"
-                      >${userPermission.permission}</span
-                    >
+                    <span class="user-permission" slot="icon">${userPermission.permission}</span>
                   </uprtcl-options-menu>
                 `
               : html` <span>${userPermission.permission}</span> `}
@@ -362,15 +344,8 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     });
 
     return html`
-      <uprtcl-options-menu
-        @option-click=${this.addRole}
-        .config=${userListConfig}
-      >
-        <uprtcl-textfield
-          class="user-search"
-          slot="icon"
-          label="Search users"
-        ></uprtcl-textfield>
+      <uprtcl-options-menu @option-click=${this.addRole} .config=${userListConfig}>
+        <uprtcl-textfield class="user-search" slot="icon" label="Search users"></uprtcl-textfield>
       </uprtcl-options-menu>
     `;
   }
@@ -378,9 +353,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
   renderChangeDelegate() {
     if (!this.permissions) return;
     return html`
-      <uprtcl-toggle
-        @toggle-click=${this.toggleDelegate}
-        .active=${this.permissions.delegate}
+      <uprtcl-toggle @toggle-click=${this.toggleDelegate} .active=${this.permissions.delegate}
         >Delegate</uprtcl-toggle
       >
     `;
@@ -399,11 +372,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                   </div>
 
                   ${this.permissions.delegate
-                    ? html`
-                        <p>
-                          Access control delegated to: ${this.delegatedTitle}
-                        </p>
-                      `
+                    ? html` <p>Access control delegated to: ${this.delegatedTitle}</p> `
                     : ''}
 
                   <div class="row flex-center">
@@ -437,9 +406,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
                   </div> -->
 
                   <!-- ${!this.permissions.delegate
-                    ? html`
-                        <div class="row">${this.renderAddUserPermission()}</div>
-                      `
+                    ? html` <div class="row">${this.renderAddUserPermission()}</div> `
                     : ''} -->
                 `
               : ''}

@@ -16,10 +16,7 @@ import {
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
-import {
-  EveesOrbitDBEntities,
-  perspective,
-} from '../custom-stores/orbit-db.stores';
+import { EveesOrbitDBEntities, perspective } from '../custom-stores/orbit-db.stores';
 import { Lens } from '@uprtcl/lenses';
 import { TemplateResult } from 'lit-html';
 
@@ -45,8 +42,7 @@ export class EveesOrbitDB implements EveesRemote {
     private postFix?: string
   ) {
     if (
-      orbitdbcustom.getManifest(EveesOrbitDBEntities.Perspective) ===
-        undefined ||
+      orbitdbcustom.getManifest(EveesOrbitDBEntities.Perspective) === undefined ||
       orbitdbcustom.getManifest(EveesOrbitDBEntities.Context) === undefined
     ) {
       throw new Error(
@@ -69,8 +65,8 @@ export class EveesOrbitDB implements EveesRemote {
     return this.orbitdbcustom.identity.id;
   }
 
-  canWrite(uref: string): Promise<boolean> {
-    return this.accessControl.canWrite(uref, this.userId);
+  canUpdate(uref: string): Promise<boolean> {
+    return this.accessControl.canUpdate(uref, this.userId);
   }
 
   icon(): TemplateResult {
@@ -86,10 +82,7 @@ export class EveesOrbitDB implements EveesRemote {
   }
 
   avatar(userId: string, config: any = { showName: true }) {
-    return html`<orbitdb-profile
-      address=${userId}
-      ?show-name=${config.showName}
-    >
+    return html`<orbitdb-profile address=${userId} ?show-name=${config.showName}>
     </orbitdb-profile> `;
   }
 
@@ -98,11 +91,7 @@ export class EveesOrbitDB implements EveesRemote {
       name: 'evees-orbitb:remote',
       type: 'remote',
       render: (entity: any) => {
-        return html`
-          <evees-orbitdb-remote
-            remote-id=${entity.remoteId}
-          ></evees-orbitdb-remote>
-        `;
+        return html` <evees-orbitdb-remote remote-id=${entity.remoteId}></evees-orbitdb-remote> `;
       },
     };
   }
@@ -117,10 +106,7 @@ export class EveesOrbitDB implements EveesRemote {
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
     const perspectiveId = await this.store.create(secured.object);
     if (ENABLE_LOG) {
-      this.logger.log(
-        `[OrbitDB] persistPerspectiveEntity - added to IPFS`,
-        perspectiveId
-      );
+      this.logger.log(`[OrbitDB] persistPerspectiveEntity - added to IPFS`, perspectiveId);
     }
 
     if (secured.id && secured.id !== perspectiveId) {
@@ -139,9 +125,7 @@ export class EveesOrbitDB implements EveesRemote {
   async getPerspectiveStore(perspectiveId: string, pin: boolean = false) {
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    const signedPerspective = (await this.store.get(perspectiveId)) as Signed<
-      Perspective
-    >;
+    const signedPerspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
 
     if (ENABLE_LOG) {
       this.logger.log('getting', { perspectiveId, signedPerspective });
@@ -151,11 +135,7 @@ export class EveesOrbitDB implements EveesRemote {
       id: perspectiveId,
       object: signedPerspective,
     };
-    return this.orbitdbcustom.getStore(
-      EveesOrbitDBEntities.Perspective,
-      secured,
-      pin
-    );
+    return this.orbitdbcustom.getStore(EveesOrbitDBEntities.Perspective, secured, pin);
   }
 
   async snapPerspective(
@@ -192,11 +172,10 @@ export class EveesOrbitDB implements EveesRemote {
     if (!(await this.isLogged())) throw notLogged();
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
-    // const canWrite = perspectiveData.canWrite;
+    // const canUpdate = perspectiveData.canUpdate;
 
     /** validate */
-    if (!secured.object.payload.remote)
-      throw new Error('remote cannot be empty');
+    if (!secured.object.payload.remote) throw new Error('remote cannot be empty');
 
     /** Store the perspective data in the data layer */
     const perspectiveId = await this.persistPerspectiveEntity(secured);
@@ -214,19 +193,12 @@ export class EveesOrbitDB implements EveesRemote {
     await contextStore.add(perspectiveId);
   }
 
-  async createPerspectiveBatch(
-    newPerspectivesData: NewPerspectiveData[]
-  ): Promise<void> {
+  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
     if (!(await this.isLogged())) throw notLogged();
-    await Promise.all(
-      newPerspectivesData.map(this.createPerspective.bind(this))
-    );
+    await Promise.all(newPerspectivesData.map(this.createPerspective.bind(this)));
   }
 
-  public async updatePerspective(
-    perspectiveId: string,
-    details: PerspectiveDetails
-  ) {
+  public async updatePerspective(perspectiveId: string, details: PerspectiveDetails) {
     return this.updatePerspectiveInternal(perspectiveId, details, false);
   }
 
@@ -242,9 +214,7 @@ export class EveesOrbitDB implements EveesRemote {
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
     if (details.name) throw new Error('details.name is not supported');
 
-    const currentDetails: PerspectiveDetails = await this.getPerspective(
-      perspectiveId
-    );
+    const currentDetails: PerspectiveDetails = await this.getPerspective(perspectiveId);
 
     details = Object.keys(details).reduce(
       (a, c) => (details[c] === undefined ? a : { ...a, [c]: details[c] }),
@@ -256,10 +226,7 @@ export class EveesOrbitDB implements EveesRemote {
     const headChange = currentDetails.headId !== newDetails.headId;
 
     if (headChange) {
-      const perspectiveStore = await this.getPerspectiveStore(
-        perspectiveId,
-        pin
-      );
+      const perspectiveStore = await this.getPerspectiveStore(perspectiveId, pin);
       await perspectiveStore.add(newDetails);
     }
 
@@ -277,12 +244,9 @@ export class EveesOrbitDB implements EveesRemote {
     }
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    const contextStore = await this.orbitdbcustom.getStore(
-      EveesOrbitDBEntities.Context,
-      {
-        context,
-      }
-    );
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context,
+    });
     const perspectiveIds = [...contextStore.values()];
     if (ENABLE_LOG) {
       this.logger.log('getContextPerspectives - done ', {
@@ -308,15 +272,10 @@ export class EveesOrbitDB implements EveesRemote {
     if (!(await this.isLogged())) throw notLogged();
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
-    const signedPerspective = (await this.store.get(perspectiveId)) as Signed<
-      Perspective
-    >;
-    const contextStore = await this.orbitdbcustom.getStore(
-      EveesOrbitDBEntities.Context,
-      {
-        context: signedPerspective.payload.context,
-      }
-    );
+    const signedPerspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context: signedPerspective.payload.context,
+    });
     await contextStore.delete(perspectiveId);
 
     /** drop and unpin */
@@ -324,10 +283,7 @@ export class EveesOrbitDB implements EveesRemote {
       id: perspectiveId,
       object: signedPerspective,
     };
-    await this.orbitdbcustom.dropStore(
-      EveesOrbitDBEntities.Perspective,
-      secured
-    );
+    await this.orbitdbcustom.dropStore(EveesOrbitDBEntities.Perspective, secured);
   }
 
   async isLogged(): Promise<boolean> {

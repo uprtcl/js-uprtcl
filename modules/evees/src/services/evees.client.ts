@@ -5,7 +5,7 @@ import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../types'
 export interface PerspectiveSlice {
   id: string;
   headId: string;
-  canWrite: boolean;
+  canUpdate: boolean;
 }
 
 export interface Slice {
@@ -15,6 +15,11 @@ export interface Slice {
 
 export interface PerspectiveGetResult {
   details: PerspectiveDetails;
+  slice?: Slice;
+}
+
+export interface EntityGetResult {
+  entities: Entity<any>[];
   slice?: Slice;
 }
 
@@ -28,16 +33,22 @@ export interface EveesClient {
    * include a Slice that can be used by the client to optimistically fill the cache */
   getPerspective(perspectiveId: string): Promise<PerspectiveGetResult>;
 
+  /** get hashed entities */
+  getEntities(hashes: string[]): Promise<EntityGetResult>;
+
   /** create new perspectives */
   createPerspectives(newPerspective: NewPerspectiveData[]);
   /** updated existing perspectives (can be newPerspectives too) */
   updatePerspectives(update: UpdateRequest[]);
   /** store hashed objects */
-  storeEntities(entities: Entity<any>[]);
+  storeEntities(entities: object[]);
 
   /** sync all the temporary changes made on this client with the base layer */
   flush(): Promise<void>;
 
   /** returns true if the user can update the perspective */
   canUpdate(userId: string, perspectiveId: string): Promise<boolean>;
+
+  /** an handy endpoint to just get one entity and not have to filter EntityGetResult */
+  getEntity(uref: string): Promise<Entity<any> | undefined>;
 }

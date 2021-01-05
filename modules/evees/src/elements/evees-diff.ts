@@ -5,7 +5,7 @@ import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
-import { EveesWorkspace } from '../services/evees.client.memory';
+import { EveesClient } from '../services/evees.client.memory';
 
 const LOGINFO = true;
 
@@ -26,7 +26,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
   summary: boolean = false;
 
   @property({ attribute: false })
-  workspace!: EveesWorkspace;
+  client!: EveesClient;
 
   @property({ attribute: false })
   loading: boolean = true;
@@ -45,7 +45,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
   async updated(changedProperties) {
     this.logger.log('updated()', changedProperties);
 
-    if (changedProperties.has('workspace')) {
+    if (changedProperties.has('client')) {
       this.loadUpdates();
     }
 
@@ -55,16 +55,16 @@ export class EveesDiff extends moduleConnect(LitElement) {
   }
 
   async loadUpdates() {
-    if (!this.workspace) return;
+    if (!this.client) return;
 
     this.loading = true;
 
-    const getDetails = this.workspace.getUpdates().map(async (update) => {
-      const newData = await EveesHelpers.getCommitData(this.workspace.workspace, update.newHeadId);
+    const getDetails = this.client.getUpdates().map(async (update) => {
+      const newData = await EveesHelpers.getCommitData(this.client.client, update.newHeadId);
 
       const oldData =
         update.oldHeadId !== undefined
-          ? await EveesHelpers.getCommitData(this.workspace.workspace, update.oldHeadId)
+          ? await EveesHelpers.getCommitData(this.client.client, update.oldHeadId)
           : undefined;
 
       const hasDiffLenses = this.recognizer
@@ -85,13 +85,13 @@ export class EveesDiff extends moduleConnect(LitElement) {
     /** if a new perspective with the root id is found,
      *  shown as an update from undefined head */
     if (this.rootPerspective) {
-      const newRoot = this.workspace
+      const newRoot = this.client
         .getNewPerspectives()
         .find((newPerspective) => newPerspective.perspective.id === this.rootPerspective);
       if (newRoot) {
         if (newRoot.details.headId) {
           const newData = await EveesHelpers.getCommitData(
-            this.workspace.workspace,
+            this.client.client,
             newRoot.details.headId
           );
 
@@ -117,7 +117,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
     // TODO: review if old data needs to be
     return html`
       <div class="evee-diff">
-        ${details.diffLense.render(this.workspace, details.newData, details.oldData, this.summary)}
+        ${details.diffLense.render(this.client, details.newData, details.oldData, this.summary)}
       </div>
     `;
   }

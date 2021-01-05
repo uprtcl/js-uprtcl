@@ -1,13 +1,7 @@
 import { property, LitElement, internalProperty } from 'lit-element';
 
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
-import {
-  Entity,
-  CortexModule,
-  PatternRecognizer,
-  Signed,
-  HasChildren,
-} from '@uprtcl/cortex';
+import { Entity, CortexModule, PatternRecognizer, Signed, HasChildren } from '@uprtcl/cortex';
 import { loadEntity } from '@uprtcl/multiplatform';
 import { EveesInfoConfig } from './evees-info-user-based';
 import { EveesRemote } from 'src/services/evees.remote';
@@ -58,9 +52,7 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     const config = this.request(EveesBindings.Config) as EveesConfig;
-    this.editableRemotesIds = config.editableRemotesIds
-      ? config.editableRemotesIds
-      : [];
+    this.editableRemotesIds = config.editableRemotesIds ? config.editableRemotesIds : [];
 
     this.logger.log('firstUpdated()', { uref: this.uref });
 
@@ -74,14 +66,9 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
 
     this.logger.log('load()');
 
-    const perspective = (await loadEntity(this.client, this.uref)) as Entity<
-      Signed<Perspective>
-    >;
+    const perspective = (await loadEntity(this.client, this.uref)) as Entity<Signed<Perspective>>;
 
-    const headId = await EveesHelpers.getPerspectiveHeadId(
-      this.client,
-      this.uref
-    );
+    const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
     this.currentHeadId = headId;
 
     const remoteId = perspective.object.payload.remote;
@@ -89,12 +76,12 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
     if (!remote) throw new Error(`remote ${remoteId} not found`);
     this.remote = remote;
 
-    const canWrite = await EveesHelpers.canWrite(this.client, this.uref);
+    const canUpdate = await EveesHelpers.canUpdate(this.client, this.uref);
 
     this.editableActual =
       this.editableRemotesIds.length > 0
-        ? this.editableRemotesIds.includes(this.remote.id) && canWrite
-        : canWrite;
+        ? this.editableRemotesIds.includes(this.remote.id) && canUpdate
+        : canUpdate;
 
     this.data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
   }
@@ -104,22 +91,13 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
     if (!this.client) throw new Error('client undefined');
 
     const remoteInstance = this.remotes.find((r) => r.id === remote);
-    if (!remoteInstance)
-      throw new Error(`Remote not found for remote ${remote}`);
+    if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
 
-    const dataId = await EveesHelpers.createEntity(
-      this.client,
-      remoteInstance.store,
-      object
-    );
-    const headId = await EveesHelpers.createCommit(
-      this.client,
-      remoteInstance.store,
-      {
-        dataId,
-        parentsIds: [],
-      }
-    );
+    const dataId = await EveesHelpers.createEntity(this.client, remoteInstance.store, object);
+    const headId = await EveesHelpers.createCommit(this.client, remoteInstance.store, {
+      dataId,
+      parentsIds: [],
+    });
     return EveesHelpers.createPerspective(this.client, remoteInstance, {
       headId,
       parentId: this.uref,
@@ -127,19 +105,11 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
   }
 
   async updateContent(newData: T) {
-    const dataId = await EveesHelpers.createEntity(
-      this.client,
-      this.remote.store,
-      newData
-    );
-    const headId = await EveesHelpers.createCommit(
-      this.client,
-      this.remote.store,
-      {
-        dataId,
-        parentsIds: this.currentHeadId ? [this.currentHeadId] : undefined,
-      }
-    );
+    const dataId = await EveesHelpers.createEntity(this.client, this.remote.store, newData);
+    const headId = await EveesHelpers.createCommit(this.client, this.remote.store, {
+      dataId,
+      parentsIds: this.currentHeadId ? [this.currentHeadId] : undefined,
+    });
     await EveesHelpers.updateHead(this.client, this.uref, headId);
 
     this.logger.info('updateContent()', newData);
@@ -148,12 +118,7 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
   }
 
   /** new elements can be a string (uref) or an object (in which case a new Evee is created) */
-  async spliceChildren(
-    object: T,
-    newElements: any[],
-    index: number,
-    count: number
-  ) {
+  async spliceChildren(object: T, newElements: any[], index: number, count: number) {
     const getNewChildren = newElements.map((page) => {
       if (typeof page !== 'string') {
         return this.createEvee(page, this.remote.id);
@@ -184,12 +149,7 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
     };
   }
 
-  async spliceChildrenAndUpdate(
-    object: T,
-    newElements: any[],
-    index: number,
-    count: number
-  ) {
+  async spliceChildrenAndUpdate(object: T, newElements: any[], index: number, count: number) {
     const result = await this.spliceChildren(object, newElements, index, count);
 
     if (!result.entity) throw Error('problem with splice pages');
@@ -200,18 +160,8 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
   async moveChild(fromIndex: number, toIndex: number): Promise<Entity<T>> {
     if (!this.data) throw new Error('wiki not defined');
 
-    const { removed } = await this.spliceChildren(
-      this.data.object,
-      [],
-      fromIndex,
-      1
-    );
-    const result = await this.spliceChildren(
-      this.data.object,
-      removed as string[],
-      toIndex,
-      0
-    );
+    const { removed } = await this.spliceChildren(this.data.object, [], fromIndex, 1);
+    const result = await this.spliceChildren(this.data.object, removed as string[], toIndex, 0);
     return result.entity;
   }
 
