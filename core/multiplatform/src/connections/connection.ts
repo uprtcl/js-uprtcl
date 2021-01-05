@@ -97,11 +97,7 @@ export abstract class Connection implements Ready {
       this.state = ConnectionState.FAILED;
       this.connectionReject();
 
-      this.logger.warn(
-        `Connection failed with cause `,
-        cause,
-        `, not retrying`
-      );
+      this.logger.warn(`Connection failed with cause `, cause, `, not retrying`);
 
       return;
     }
