@@ -3,6 +3,7 @@ import { Behaviour } from '@uprtcl/cortex';
 
 import { EveesRemote } from './services/remote';
 import { Secured } from './utils/cid-hash';
+import { Client, EveesMutation } from './services/client';
 
 export interface Perspective {
   remote: string;
@@ -16,6 +17,7 @@ export interface Perspective {
 
 export interface PerspectiveDetails {
   headId?: string | undefined;
+  canUpdate?: boolean;
 }
 export interface Commit {
   creatorsIds: string[];
@@ -41,25 +43,11 @@ export interface Proposal {
   fromPerspectiveId?: string;
   toHeadId?: string;
   fromHeadId?: string;
-  details: ProposalDetails;
+  mutation: EveesMutation;
 }
-
-export interface ProposalDetails {
-  updates: UpdateRequest[];
-  newPerspectives: NewPerspectiveData[];
-}
-
-export interface NewProposal {
-  fromPerspectiveId: string;
-  toPerspectiveId: string;
-  fromHeadId: string;
-  toHeadId: string;
-  details: ProposalDetails;
-}
-
 export interface ProposalCreatedDetail {
   remote: string;
-  proposalDetails: ProposalDetails;
+  mutation: EveesMutation;
 }
 
 export const PROPOSAL_CREATED_TAG: string = 'evees-proposal';

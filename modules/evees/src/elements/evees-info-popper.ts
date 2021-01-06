@@ -2,12 +2,11 @@ import { html, css, property, LitElement, query } from 'lit-element';
 
 import { UprtclPopper } from '@uprtcl/common-ui';
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
-import { loadEntity } from '@uprtcl/multiplatform';
-import { Signed } from '@uprtcl/cortex';
 
 import { DEFAULT_COLOR, eveeColor } from './support';
-import { Perspective } from '../types';
 import { EveesInfoConfig } from './evees-info-user-based';
+import { EveesBindings } from '../bindings';
+import { Evees } from '../services/evees';
 
 export class EveesInfoPopper extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO-POPPER');
@@ -45,15 +44,15 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   @query('#info-popper')
   infoPopper!: UprtclPopper;
 
-  protected client!: Client;
+  protected evees!: Evees;
 
   async firstUpdated() {
-    this.client = this.request(ClientModule.bindings.Client);
+    this.evees = this.request(EveesBindings.Client);
     await this.load();
   }
 
   async load() {
-    const current = await loadEntity<Signed<Perspective>>(this.client, this.uref);
+    const current = await this.evees.client.getEntity(this.uref);
     if (!current) throw new Error(`cant find current perspective ${this.uref}`);
 
     this.creatorId = current.object.payload.creatorId;

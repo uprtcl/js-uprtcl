@@ -4,6 +4,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesRemote } from '../services/remote';
 import { EveesBindings } from '../bindings';
+import { Evees } from 'src/services/evees';
 
 export class EveesLoginWidget extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
@@ -14,31 +15,30 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   @property({ attribute: false })
   logged!: boolean;
 
-  remotes!: EveesRemote[];
-  client!: Client;
+  evees!: Evees;
 
   @internalProperty()
   private showAccountSelection: boolean = false;
 
   async firstUpdated() {
-    this.remotes = this.requestAll(EveesBindings.EveesRemote);
-    this.client = this.request(ClientModule.bindings.Client);
+    this.evees = this.request(EveesBindings.Evees);
     this.load();
   }
 
   async load() {
     this.loading = true;
 
-    const loggedList = await Promise.all(this.remotes.map((remote) => remote.isLogged()));
+    const loggedList = await Promise.all(this.evees.remotes.map((remote) => remote.isLogged()));
     this.logged = !loggedList.includes(false);
 
-    await Promise.all(this.remotes.map((r) => r.ready()));
+    await Promise.all(this.evees.remotes.map((r) => r.ready()));
 
     this.loading = false;
   }
 
   async reload() {
-    await this.client.resetStore();
+    /** refresh details to include */
+    await this.client.refresh();
     this.dispatchEvent(new CustomEvent('changed'));
     await this.load();
   }

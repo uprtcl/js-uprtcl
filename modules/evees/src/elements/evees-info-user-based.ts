@@ -2,8 +2,6 @@ import { html, css, property, query } from 'lit-element';
 
 import { Logger } from '@uprtcl/micro-orchestrator';
 import { MenuConfig, UprtclPopper } from '@uprtcl/common-ui';
-import { loadEntity } from '@uprtcl/multiplatform';
-import { Signed } from '@uprtcl/cortex';
 import { EveesInfoBase } from './evees-info-base';
 import { EveesPerspectivesList } from './evees-perspectives-list';
 import { ProposalsList } from './evees-proposals-list';
@@ -113,14 +111,12 @@ export class EveesInfoUserBased extends EveesInfoBase {
 
     /** from all the perspectives of this evee we must identify the official perspective and this
      * user perspective in the default remote  */
-    const first = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
+    const first = await this.evees.client.getEntity(this.firstRef);
     if (!first) throw new Error(`first perspective ${this.firstRef}`);
 
     const perspectiveIds = await this.getContextPerspectives(this.firstRef);
     const perspectives = ((await Promise.all(
-      perspectiveIds.map((perspectiveId) =>
-        loadEntity<Signed<Perspective>>(this.client, perspectiveId)
-      )
+      perspectiveIds.map((perspectiveId) => this.evees.client.getEntity(perspectiveId))
     )) as unknown) as Secured<Perspective>[];
 
     if (!this.defaultRemote) throw new Error('default remote not found');
@@ -170,13 +166,18 @@ export class EveesInfoUserBased extends EveesInfoBase {
 
     /** check pull from official*/
     if (this.isMine && this.officialId !== undefined) {
-      this.checkPull(this.officialId).then(() => {
-        this.hasPull = this.pullclient !== undefined && this.pullclient.hasUpdates();
+      this.checkPull(this.officialId).then(async () => {
+        if (this.pullclient !== undefined) {
+          const diff = await this.pullclient.diff();
+          this.hasPull = diff.updates ? diff.updates.length > 0 : false;
+        } else {
+          this.hasPull = false;
+        }
       });
     }
 
     /** get the current perspective author */
-    const nowPerspective = await loadEntity<Signed<Perspective>>(this.client, this.uref);
+    const nowPerspective = await this.evees.client.getEntity(this.uref);
     if (!nowPerspective) throw new Error(`official perspective ${this.uref}`);
 
     this.author = nowPerspective.object.payload.creatorId;
@@ -254,7 +255,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
     if (result !== 'apply') {
       return;
     }
-    await this.pullclient.execute(this.client);
+    await this.pullclient.flush();
 
     this.dispatchEvent(
       new ContentUpdatedEvent({

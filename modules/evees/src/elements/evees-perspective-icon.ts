@@ -2,12 +2,13 @@ import { LitElement, html, css, property, query } from 'lit-element';
 
 import { Signed } from '@uprtcl/cortex';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { loadEntity } from '@uprtcl/multiplatform';
+
 import { EveesBindings } from 'src/bindings';
 
 import { EveesRemote } from '../services/remote';
 import { Perspective } from '../types';
 import { Secured } from '../utils/cid-hash';
+import { Evees } from 'src/services/evees';
 
 export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })
@@ -18,12 +19,10 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
 
   perspective!: Secured<Perspective>;
   remote!: EveesRemote;
-  remotes!: EveesRemote[];
-  client!: Client;
+  evees!: Evees;
 
   async firstUpdated() {
-    this.client = this.request(ClientModule.bindings.Client);
-    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
+    this.evees = this.request(EveesBindings.Evees);
     this.load();
   }
 
@@ -35,10 +34,10 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-    const perspective = await loadEntity<Signed<Perspective>>(this.client, this.perspectiveId);
+    const perspective = await this.evees.client.getEntity(this.perspectiveId);
     if (!perspective) throw new Error('perspective undefined');
 
-    const remote = this.remotes.find((r) => r.id === perspective.object.payload.remote);
+    const remote = this.evees.remotes.find((r) => r.id === perspective.object.payload.remote);
     if (!remote) throw new Error('remote undefined');
 
     this.perspective = perspective;

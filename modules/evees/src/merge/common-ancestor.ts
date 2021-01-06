@@ -1,3 +1,4 @@
+import { Client } from '../services/client';
 import { Commit } from '../types';
 import { Secured } from '../utils/cid-hash';
 
@@ -32,7 +33,7 @@ export class FindMostRecentCommonAncestor {
     const promises = pathToExplore.heads.map(async (commitId) => {
       let commit: Secured<Commit> | undefined = this.allCommits[commitId];
       if (!commit) {
-        commit = await this.getCommit(commitId);
+        commit = await this.client.getEntity(commitId);
 
         if (!commit) throw new Error('Could not get ancestor commit');
 
@@ -52,21 +53,6 @@ export class FindMostRecentCommonAncestor {
 
     pathToExplore.heads = Array.prototype.concat.apply([], nextCommits);
     return pathToExplore;
-  }
-
-  public async getCommit(commitId: string): Promise<Secured<Commit>> {
-    const result = await this.client.query({
-      query: gql`{
-        entity(uref: "${commitId}") {
-          id
-          _context {
-            object
-          }
-        }
-      }`,
-    });
-
-    return { id: commitId, object: result.data.entity._context.object };
   }
 
   public async compute(): Promise<string | undefined> {

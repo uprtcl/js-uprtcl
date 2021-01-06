@@ -1,16 +1,17 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
+import { Signed } from '@uprtcl/cortex';
+
 import { Perspective, Proposal } from '../types';
 import { EveesRemote } from 'src/services/remote';
 import { EveesBindings } from 'src/bindings';
-import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { EveesDiff } from './evees-diff';
-import { Client } from '../services/client.memory';
-import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
-import { loadEntity } from '@uprtcl/multiplatform';
+import { Client } from '../services/client';
 import { ContentUpdatedEvent } from './events';
-import { ProposalsProvider } from 'src/services/proposals';
+import { Proposals } from '../services/proposals';
+import { Evees } from '../services/evees';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -46,31 +47,14 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   eveesDiffEl!: EveesDiff;
 
   remote!: EveesRemote;
-  proposals!: ProposalsProvider;
   proposal!: Proposal;
   executed: boolean = false;
   canExecute: boolean = false;
 
-  protected client!: Client;
-  protected recognizer!: PatternRecognizer;
-  protected eveesRemotes!: EveesRemote[];
+  protected evees!: Evees;
 
   async firstUpdated() {
-    this.client = this.request(ClientModule.bindings.Client);
-    this.recognizer = this.request(CortexModule.bindings.Recognizer);
-    this.eveesRemotes = this.requestAll(EveesBindings.EveesRemote);
-    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-      (r) => r.id === this.remoteId
-    );
-    if (remote === undefined) throw new Error(`remote ${this.remoteId} not found`);
-
-    const proposals = remote.proposals;
-    if (proposals === undefined)
-      throw new Error(`remote ${this.remoteId} proposals provider not found`);
-
-    this.remote = remote;
-    this.proposals = proposals;
-
+    this.evees = this.request(EveesBindings.Evees);
     this.load();
   }
 
@@ -84,13 +68,11 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.loading = true;
     this.loadingCreator = true;
 
-    if (this.remote.proposals === undefined)
-      throw new Error(`remote ${this.remoteId} cant handle proposals`);
-
-    this.proposal = await this.proposals.getProposal(this.proposalId);
+    if (this.evees.client.proposals === undefined) throw new Error(`proposals service not found`);
+    this.proposal = await this.evees.client.proposals.getProposal(this.proposalId);
 
     const fromPerspective = this.proposal.fromPerspectiveId
-      ? await loadEntity<Signed<Perspective>>(this.client, this.proposal.fromPerspectiveId)
+      ? await this.evees.client.getEntity(this.proposal.fromPerspectiveId)
       : undefined;
 
     /** the author is the creator of the fromPerspective */
@@ -112,9 +94,8 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   async checkExecuted() {
     /* a proposal is considered accepted if all the updates are now ancestors of their target */
     const isAncestorVector = await Promise.all(
-      this.proposal.details.updates.map((update) => {
-        return EveesHelpers.isAncestorCommit(
-          this.client,
+      this.proposal.mutation.updates.map((update) => {
+        return this.evees.isAncestorCommit(
           update.perspectiveId,
           update.newHeadId,
           update.oldHeadId

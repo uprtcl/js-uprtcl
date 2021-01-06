@@ -2,6 +2,11 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
+import { EveesBindings } from '../bindings';
+import { Client } from '../services/client';
+import { Evees } from 'src/services/evees';
+import { Remote } from 'src/remote';
+
 export class ProposalsList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
 
@@ -12,37 +17,27 @@ export class ProposalsList extends moduleConnect(LitElement) {
   loadingProposals: boolean = true;
 
   proposalsIds: string[] = [];
-  remoteId!: string;
-  client!: Client;
+  remote!: Remote;
+  evees!: Evees;
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
-    this.client = this.request(ClientModule.bindings.Client);
+    this.evees = this.request(EveesBindings.Client);
     this.load();
   }
 
   async load() {
-    if (!this.isConnected) return;
-    if (!this.client) return;
+    if (!this.evees) return;
+    if (!this.evees.client.searchEngine) throw new Error('searchEngine not registered');
 
     this.loadingProposals = true;
     this.logger.info('loadProposals');
 
-    const result = await this.client.query({
-      query: gql`{
-          entity(uref: "${this.perspectiveId}") {
-            id
-            ... on Perspective {
-              proposals
-            }
-          }
-        }`,
-    });
+    this.proposalsIds = await this.evees.client.searchEngine.proposals(this.perspectiveId);
 
     /** data on other perspectives (proposals are injected on them) */
-    this.proposalsIds = result.data.entity.proposals;
-    this.remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.perspectiveId);
+    this.remote = await this.evees.getPerspectiveRemote(this.perspectiveId);
 
     this.loadingProposals = false;
     this.logger.info('getProposals()', { proposalsIds: this.proposalsIds });
@@ -72,7 +67,7 @@ export class ProposalsList extends moduleConnect(LitElement) {
                         <uprtcl-list-item
                           ><evees-proposal-row
                             proposal-id=${id}
-                            remote-id=${this.remoteId}
+                            remote-id=${this.remote.id}
                           ></evees-proposal-row
                         ></uprtcl-list-item>
                       `

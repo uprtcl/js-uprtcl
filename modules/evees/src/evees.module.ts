@@ -25,6 +25,7 @@ import { EveesPerspectiveRow } from './elements/evees-perspective-row';
 import { EveesProposalRow } from './elements/evees-proposal-row';
 import { EveesInfoUserBased } from './elements/evees-info-user-based';
 import { EveesPerspectiveIcon } from './uprtcl-evees';
+import { Evees } from './services/evees';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -42,7 +43,7 @@ export class EveesModule extends MicroModule {
 
   static bindings = EveesBindings;
 
-  constructor(protected eveesProviders: Array<EveesRemote>, protected config?: EveesConfig) {
+  constructor(protected remotes: Array<EveesRemote>, protected config?: EveesConfig) {
     super();
   }
 
@@ -51,27 +52,26 @@ export class EveesModule extends MicroModule {
      * first remote ad editable by default */
 
     this.config = this.config || {};
-
     this.config.defaultRemote = this.config.defaultRemote
       ? this.config.defaultRemote
-      : this.eveesProviders[0];
+      : this.remotes[0];
 
     this.config.officialRemote = this.config.officialRemote
       ? this.config.officialRemote
-      : this.eveesProviders.length > 1
-      ? this.eveesProviders[1]
-      : this.eveesProviders[0];
+      : this.remotes.length > 1
+      ? this.remotes[1]
+      : this.remotes[0];
 
     this.config.editableRemotesIds = this.config.editableRemotesIds
       ? this.config.editableRemotesIds
-      : [this.eveesProviders[0].id];
+      : [this.remotes[0].id];
 
-    container.bind(EveesModule.bindings.Config).toConstantValue(this.config);
-    container.bind(EveesModule.bindings.Evees).to(Evees);
-    container.bind(EveesModule.bindings.MergeStrategy).to(RecursiveContextMergeStrategy);
+    const router = new ClientRemoteRouter(remotes);
+    const cached = new ClientCached();
+    const merge = new RecursiveContextMergeStrategy(recognizer);
+    const evees = new Evees(cached, recognizer, remotes, merge, this.config);
 
     for (const remote of this.eveesProviders) {
-      container.bind(EveesModule.bindings.EveesRemote).toConstantValue(remote);
       container.bind(EveesModule.bindings.Remote).toConstantValue(remote);
     }
 
@@ -90,14 +90,6 @@ export class EveesModule extends MicroModule {
   }
 
   get submodules() {
-    return [
-      new i18nextModule('evees', { en: en }),
-      new PatternsModule([
-        new CommitPattern([CommitLinked]),
-        new PerspectivePattern([PerspectiveLinks]),
-      ]),
-      new CASModule(this.eveesProviders.map((p) => p.store)),
-      new CommonUIModule(),
-    ];
+    return [new i18nextModule('evees', { en: en }), new CommonUIModule()];
   }
 }

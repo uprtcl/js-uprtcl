@@ -2,7 +2,6 @@ import { LitElement, property, html, css, query, TemplateResult } from 'lit-elem
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Entity, Signed } from '@uprtcl/cortex';
-import { DiscoveryModule, EntityCache, loadEntity } from '@uprtcl/multiplatform';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
 import {
@@ -17,10 +16,10 @@ import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
 import { EveesRemote } from '../services/remote';
-
-import { Client } from '../services/client.memory';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
+import { Client } from 'src/services/client';
+import { ClientOnMemory } from 'src/services/client.memory';
 
 interface PerspectiveData {
   id?: string;
@@ -104,14 +103,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   perspectiveData!: PerspectiveData;
   pullclient: Client | undefined = undefined;
 
-  protected client!: Client;
-  protected config!: EveesConfig;
-  protected merge!: MergeStrategy;
   protected evees!: Evees;
   protected remote!: EveesRemote;
-  protected remotes!: EveesRemote[];
-  protected recognizer!: PatternRecognizer;
-  protected cache!: EntityCache;
 
   /** official remote is used to indentity the special perspective, "the master branch" */
   protected officialRemote: EveesRemote | undefined = undefined;
@@ -120,23 +113,17 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected defaultRemote: EveesRemote | undefined = undefined;
 
   async firstUpdated() {
-    this.client = this.request(ClientModule.bindings.Client);
-    this.config = this.request(EveesBindings.Config);
-    this.merge = this.request(EveesBindings.MergeStrategy);
     this.evees = this.request(EveesBindings.Evees);
-    this.recognizer = this.request(CortexModule.bindings.Recognizer);
-    this.cache = this.request(DiscoveryModule.bindings.EntityCache);
 
-    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
     this.defaultRemote =
       this.defaultRemoteId !== undefined
-        ? this.remotes.find((remote) => remote.id === this.defaultRemoteId)
-        : (this.request(EveesBindings.Config) as EveesConfig).defaultRemote;
+        ? this.evees.remotes.find((remote) => remote.id === this.defaultRemoteId)
+        : this.evees.config.defaultRemote;
 
     this.officialRemote =
       this.officialRemoteId !== undefined
-        ? this.remotes.find((remote) => remote.id === this.officialRemoteId)
-        : (this.request(EveesBindings.Config) as EveesConfig).officialRemote;
+        ? this.evees.remotes.find((remote) => remote.id === this.officialRemoteId)
+        : this.evees.config.officialRemote;
   }
 
   updated(changedProperties) {
@@ -150,30 +137,31 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   async load() {
     this.logger.info('Loading evee perspective', this.uref);
 
-    this.remote = await this.evees.getPerspectiveRemoteById(this.uref);
+    this.remote = await this.evees.getPerspectiveRemote(this.uref);
 
-    const entity = await loadEntity(this.client, this.uref);
+    const entity = await this.evees.client.getEntity(this.uref);
     if (!entity) throw Error(`Entity not found ${this.uref}`);
 
-    this.entityType = this.recognizer.recognizeType(entity);
+    this.entityType = this.evees.recognizer.recognizeType(entity);
 
     this.loading = true;
 
     if (this.entityType === EveesBindings.PerspectiveType) {
-      const headId = await EveesHelpers.getPerspectiveHeadId(this.client, this.uref);
+      const { details } = await this.evees.client.getPerspective(this.uref);
 
-      const head = headId !== undefined ? await loadEntity<Commit>(this.client, headId) : undefined;
-      const data = await EveesHelpers.getPerspectiveData(this.client, this.uref);
-
-      const canUpdate = await EveesHelpers.canUpdate(this.client, this.uref);
+      const head =
+        details.headId !== undefined
+          ? await this.evees.client.getEntity(details.headId)
+          : undefined;
+      const data =
+        head !== undefined
+          ? await this.evees.client.getEntity(head.object.payload.dataId)
+          : undefined;
 
       this.perspectiveData = {
         id: this.uref,
-        details: {
-          headId: headId,
-        },
+        details,
         perspective: (entity.object as Signed<Perspective>).payload,
-        canUpdate: canUpdate,
         head,
         data,
       };
@@ -182,8 +170,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
 
     if (this.entityType === EveesBindings.CommitType) {
-      const head = await loadEntity<Commit>(this.client, this.uref);
-      const data = await EveesHelpers.getCommitData(this.client, this.uref);
+      const head = await this.evees.client.getEntity(this.uref);
+      const data =
+        head !== undefined
+          ? await this.evees.client.getEntity(head.object.payload.dataId)
+          : undefined;
 
       this.perspectiveData = {
         head,
@@ -227,7 +218,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       parentId: this.uref,
     };
 
-    this.pullclient = new Client(this.client, this.recognizer);
+    this.pullclient = new ClientOnMemory(this.evees.client);
 
     await this.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullclient, config);
 
@@ -517,15 +508,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async delete() {
-    if (!this.client) throw new Error('client undefined');
-
-    await this.client.mutate({
-      mutation: DELETE_PERSPECTIVE,
-      variables: {
-        perspectiveId: this.uref,
-      },
-    });
-
+    this.evees.client.update({ deletedPerspectives: [this.uref] });
     this.checkoutPerspective(this.firstRef);
   }
 

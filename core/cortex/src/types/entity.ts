@@ -1,8 +1,7 @@
 export interface Entity<T> {
-  // Hash
   id: string;
   object: T;
-  casID?: string;
+  remotes?: string[];
 }
 
 export function recognizeEntity(object: any): object is Entity<any> {
