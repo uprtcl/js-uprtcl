@@ -509,6 +509,8 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
           flex-grow: 1;
           display: flex;
           flex-direction: column;
+          max-height: 100vh;
+          overflow: scroll;
         }
         .home-container {
           margin: 0 auto;
