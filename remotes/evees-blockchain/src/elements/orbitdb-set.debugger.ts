@@ -84,7 +84,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
       object,
     };
 
-    const otherPerspectives = await this.remote.getContextPerspectives(
+    const otherPerspectives = await this.remote.getOtherPerspectives(
       this.perspective.object.payload.context
     );
 

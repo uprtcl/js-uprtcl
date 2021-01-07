@@ -82,11 +82,7 @@ export class EveesBlockchainCached implements EveesRemote {
   }
 
   // updatePerspectiveDetails?
-  async updatePerspective(
-    perspectiveId: string,
-    details: PerspectiveDetails,
-    pin = false
-  ) {
+  async updatePerspective(perspectiveId: string, details: PerspectiveDetails, pin = false) {
     if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
 
     // action is done on the cache
@@ -232,8 +228,12 @@ export class EveesBlockchainCached implements EveesRemote {
     }
   }
 
-  async getContextPerspectives(context: string): Promise<string[]> {
-    this.logger.log('getContextPerspectives', { context });
+  async getOtherPerspectives(perspectiveId: string): Promise<string[]> {
+    this.logger.log('getOtherPerspectives', { perspectiveId });
+    const perspective: any = await this.store.get(perspectiveId);
+    if (!perspective) throw new Error(`Perspective ${perspectiveId} not found`);
+    const context = perspective.payload.remote;
+
     if (!this.orbitdbcustom) throw new Error('orbit db connection undefined');
 
     const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
