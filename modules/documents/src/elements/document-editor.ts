@@ -1373,6 +1373,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     </div>`;
   }
 
+  renderDocumentEnd() {
+    return html` <div class="doc-endSpace"></div>`;
+  }
+
   render() {
     if (LOGINFO) this.logger.log('render()', { doc: this.doc });
 
@@ -1388,7 +1392,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     return html`
       <div class=${editorClasses.join(' ')}>
-        ${this.renderTopBar()} ${this.renderDocNode(this.doc)} ${this.renderActionBar()}
+        ${this.renderTopBar()} ${this.renderDocNode(this.doc)} ${this.renderDocumentEnd()}
+        ${this.renderActionBar()}
       </div>
       <!-- <div @click=${this.clickAreaClicked} class="click-area"></div> -->
     `;
@@ -1405,10 +1410,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       }
 
       .editor-container {
-        position: relative;
         width: 100%;
         height: 100%;
-        overflow: scroll;
+      }
+
+      .editor-container::-webkit-scrollbar {
+        display: none;
       }
       .padding-bottom {
         padding-bottom: 20vh;
@@ -1442,25 +1449,21 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         border-radius: 4px;
         max-width: 900px;
         margin: auto;
-        max-height: 95%;
-        overflow: scroll;
-        -ms-overflow-style: none; /* IE and Edge */
-        scrollbar-width: none; /* Firefox */
-      }
-      .doc-node-container::-webkit-scrollbar {
-        display: none;
       }
 
       .doc-actionbar {
         position: absolute;
         bottom: 5%;
-        right: 0;
+        right: 5%;
         display: flex;
         align-items: center;
       }
       .doc-actionbar > * {
         margin: 0 0.2rem;
         height: inherit;
+      }
+      .doc-endSpace {
+        /* height: 50vh; */
       }
       .row {
         position: relative;
