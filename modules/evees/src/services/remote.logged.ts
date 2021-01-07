@@ -1,6 +1,6 @@
 import { Ready } from '@uprtcl/multiplatform';
 
-export interface Remote extends Ready {
+export interface RemoteLogged extends Ready {
   /**
    * The id is used to select the JS remote from the listed of available Remotes.
    * A path is used to addreess a given request to that remote.
@@ -16,7 +16,7 @@ export interface Remote extends Ready {
   /* checks if its connected */
   isConnected(): Promise<boolean>;
   /* disconnect */
-  disconnect(): Promise<void>
+  disconnect(): Promise<void>;
 
   /** **checks** if the current userId is correctly logged in the remote */
   isLogged(): Promise<boolean>;

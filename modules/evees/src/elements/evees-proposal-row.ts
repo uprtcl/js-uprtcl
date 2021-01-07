@@ -5,7 +5,7 @@ import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { Signed } from '@uprtcl/cortex';
 
 import { Perspective, Proposal } from '../types';
-import { EveesRemote } from 'src/services/remote';
+import { EveesRemote } from 'src/services/remote.evees';
 import { EveesBindings } from 'src/bindings';
 import { EveesDiff } from './evees-diff';
 import { Client } from '../services/client';

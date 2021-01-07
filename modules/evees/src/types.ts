@@ -1,7 +1,7 @@
 import { TemplateResult } from 'lit-element';
 import { Behaviour } from '@uprtcl/cortex';
 
-import { EveesRemote } from './services/remote';
+import { EveesRemote } from './services/remote.evees';
 import { Secured } from './utils/cid-hash';
 import { Client, EveesMutation } from './services/client';
 

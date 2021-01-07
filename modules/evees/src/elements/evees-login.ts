@@ -2,7 +2,6 @@ import { LitElement, property, internalProperty, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
-import { EveesRemote } from '../services/remote';
 import { EveesBindings } from '../bindings';
 import { Evees } from 'src/services/evees';
 
@@ -38,7 +37,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
   async reload() {
     /** refresh details to include */
-    await this.client.refresh();
+    await this.evees.client.refresh();
     this.dispatchEvent(new CustomEvent('changed'));
     await this.load();
   }

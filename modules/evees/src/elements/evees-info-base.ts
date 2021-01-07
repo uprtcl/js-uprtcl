@@ -15,7 +15,7 @@ import { EveesBindings } from '../bindings';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
-import { EveesRemote } from '../services/remote';
+import { EveesRemote } from '../services/remote.evees';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 import { Client } from 'src/services/client';

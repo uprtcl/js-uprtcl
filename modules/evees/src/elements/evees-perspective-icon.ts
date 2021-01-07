@@ -5,7 +5,7 @@ import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
 import { EveesBindings } from 'src/bindings';
 
-import { EveesRemote } from '../services/remote';
+import { EveesRemote } from '../services/remote.evees';
 import { Perspective } from '../types';
 import { Secured } from '../utils/cid-hash';
 import { Evees } from 'src/services/evees';

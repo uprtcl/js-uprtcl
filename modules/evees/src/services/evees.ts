@@ -1,6 +1,6 @@
 import { Entity, PatternRecognizer, HasChildren } from '@uprtcl/cortex';
 
-import { EveesRemote } from './remote';
+import { EveesRemote } from './remote.evees';
 import { Commit, EveesConfig, Perspective } from '../types';
 import { deriveSecured, signObject } from '../utils/signed';
 import { EveesBindings } from '../bindings';

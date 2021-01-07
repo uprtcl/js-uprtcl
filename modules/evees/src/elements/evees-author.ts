@@ -1,7 +1,7 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { EveesRemote } from '../services/remote.js';
+import { EveesRemote } from '../services/remote.evees.js';
 import { EveesModule } from '../evees.module';
 
 export class EveesAuthor extends moduleConnect(LitElement) {
