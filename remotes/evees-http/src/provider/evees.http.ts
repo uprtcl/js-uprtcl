@@ -5,7 +5,7 @@ import { KnownSourcesHttp, HttpProvider } from '@uprtcl/http-provider';
 import { KnownSourcesService, CASStore } from '@uprtcl/multiplatform';
 
 import {
-  EveesRemote,
+  RemoteEvees,
   PerspectiveDetails,
   NewPerspectiveData,
   Perspective,
@@ -18,7 +18,7 @@ import { ProposalsHttp } from './proposals.http';
 
 const evees_api: string = 'evees-v1';
 
-export class EveesHttp implements EveesRemote {
+export class EveesHttp implements RemoteEvees {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   knownSources: KnownSourcesService;

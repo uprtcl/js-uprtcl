@@ -1,9 +1,10 @@
-import { LitElement, property, internalProperty, html, css } from 'lit-element';
+import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesBindings } from '../bindings';
 import { Evees } from 'src/services/evees';
+import { RemoteWithUI } from 'src/services/remote.with-ui';
 
 export class EveesLoginWidget extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
@@ -15,9 +16,6 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   logged!: boolean;
 
   evees!: Evees;
-
-  @internalProperty()
-  private showAccountSelection: boolean = false;
 
   async firstUpdated() {
     this.evees = this.request(EveesBindings.Evees);
@@ -44,7 +42,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
   async loginAll() {
     await Promise.all(
-      this.remotes.map(async (remote) => {
+      this.evees.remotes.map(async (remote) => {
         const isLogged = await remote.isLogged();
         if (!isLogged) await remote.login();
       })
@@ -54,7 +52,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
   async logoutAll() {
     await Promise.all(
-      this.remotes.map(async (remote) => {
+      this.evees.remotes.map(async (remote) => {
         const isLogged = await remote.isLogged();
         if (isLogged) {
           try {
@@ -79,7 +77,7 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
 
     return html`
       <uprtcl-button skinny @click=${() => this.logoutAll()}>logout</uprtcl-button>
-      ${this.remotes.map((remote) => {
+      ${this.evees.remotes.map((remote: RemoteWithUI) => {
         return remote.lense !== undefined
           ? remote.lense().render({ remoteId: remote.id })
           : html`

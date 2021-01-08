@@ -1,4 +1,4 @@
-import { EveesRemote } from '@uprtcl/evees';
+import { RemoteEvees } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
 import { CidConfig } from '@uprtcl/multiplatform';
 import { OrbitDBCustom, AddressMapping } from '@uprtcl/orbitdb-provider';
@@ -24,7 +24,7 @@ export interface PinnerConfig {
 }
 
 export class EveesEthereumWrapper {
-  remotes!: EveesRemote[];
+  remotes!: RemoteEvees[];
   ipfsStore!: IpfsStore;
   orbitDBCustom!: OrbitDBCustom;
 
@@ -45,11 +45,7 @@ export class EveesEthereumWrapper {
     await this.ipfs.swarm.connect(this.pinnerConfig.peerMultiaddr);
     console.log(`${this.pinnerConfig.peerMultiaddr} connected!`);
 
-    this.ipfsStore = new IpfsStore(
-      this.ipfsCidConfig,
-      this.ipfs,
-      this.pinnerConfig.url
-    );
+    this.ipfsStore = new IpfsStore(this.ipfsCidConfig, this.ipfs, this.pinnerConfig.url);
     await this.ipfsStore.ready();
 
     const ethConnection = new EthereumConnection({

@@ -5,7 +5,7 @@ import { Entity, CortexModule, PatternRecognizer, Signed, HasChildren } from '@u
 import { loadEntity } from '@uprtcl/multiplatform';
 
 import { EveesInfoConfig } from './evees-info-user-based';
-import { EveesRemote } from 'src/services/remote.evees';
+import { RemoteEvees } from 'src/services/remote.evees';
 import { EveesConfig, Perspective } from 'src/types';
 import { EveesBindings } from 'src/bindings';
 import { Client } from '../services/client';
@@ -43,7 +43,7 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
   editableActual: boolean = false;
 
   protected currentHeadId!: string | undefined;
-  protected remote!: EveesRemote;
+  protected remote!: RemoteEvees;
   protected evees!: Evees;
   protected editableRemotesIds!: string[];
 

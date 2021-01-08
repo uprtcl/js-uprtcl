@@ -2,7 +2,7 @@ import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import {
-  EveesRemote,
+  RemoteEvees,
   Perspective,
   PerspectiveDetails,
   NewPerspectiveData,
@@ -16,7 +16,7 @@ import { EveesLocalDB } from './evees.local.db';
 
 const evees_if = 'dexie';
 
-export class EveesLocal implements EveesRemote {
+export class EveesLocal implements RemoteEvees {
   logger: Logger = new Logger('EveesLocal');
 
   accessControl: EveesAccessControlLocal;

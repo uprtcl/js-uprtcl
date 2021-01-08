@@ -1,23 +1,15 @@
+import { Entity, Signed } from '@uprtcl/cortex';
+import { Client } from 'src/services/client';
+import { Commit } from 'src/types';
+
 export const isAncestorOf = (client: Client) => async (
   ancestorId: string,
   commitId: string
 ): Promise<boolean> => {
   if (ancestorId === commitId) return true;
 
-  const result = await client.query({
-    query: gql`{
-      entity(uref: "${commitId}") {
-        id
-        ... on Commit {
-          parentCommits {
-            id
-          }
-        }
-      }
-    }`,
-  });
-
-  const parentsIds = result.data.entity.parentCommits.map((p) => p.id);
+  const commit: Entity<Signed<Commit>> = await client.getEntity(commitId);
+  const parentsIds = commit.object.payload.parentsIds;
 
   if (parentsIds.includes(ancestorId)) {
     return true;

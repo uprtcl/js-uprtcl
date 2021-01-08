@@ -4,11 +4,11 @@ import {
   Secured,
   Commit,
   PerspectiveDetails,
-  EveesRemote,
+  RemoteEvees,
 } from '../../src/uprtcl-evees';
 import { NewPerspectiveData } from '../../src/types';
 
-export class MockEveesProvider implements EveesRemote {
+export class MockEveesProvider implements RemoteEvees {
   constructor(
     public entities: Dictionary<any> = {},
     public details: Dictionary<PerspectiveDetails> = {}
@@ -55,9 +55,7 @@ export class MockEveesProvider implements EveesRemote {
     throw new Error('Method not implemented');
   }
 
-  createPerspectiveBatch(
-    newPerspectivesData: NewPerspectiveData[]
-  ): Promise<void> {
+  createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
     throw new Error('Method not implemented');
   }
 

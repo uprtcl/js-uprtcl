@@ -9,7 +9,7 @@ import {
   Perspective,
   PerspectiveDetails,
   NewPerspectiveData,
-  EveesRemote,
+  RemoteEvees,
   ProposalsProvider,
   EveesHelpers,
 } from '@uprtcl/evees';
@@ -31,7 +31,7 @@ const notLogged = () => new Error('must be logged in to use this method');
 
 const ENABLE_LOG = false;
 
-export class EveesOrbitDB implements EveesRemote {
+export class EveesOrbitDB implements RemoteEvees {
   logger: Logger = new Logger('EveesOrbitDB');
   accessControl: any;
   proposals!: ProposalsProvider;

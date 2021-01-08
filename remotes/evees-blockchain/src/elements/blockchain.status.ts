@@ -38,8 +38,8 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
 
   async firstUpdated() {
     const remote = (this.requestAll(
-      EveesModule.bindings.EveesRemote
-    ) as EveesBlockchainCached[]).find(r => r.id === this.remoteId);
+      EveesModule.bindings.RemoteEvees
+    ) as EveesBlockchainCached[]).find((r) => r.id === this.remoteId);
     if (!remote) {
       throw new Error(`remote ${this.remoteId} not found`);
     }
@@ -74,9 +74,7 @@ export class EveesBlockchainStatus extends moduleConnect(LitElement) {
   render() {
     return html`
       ${this.loading
-        ? html`
-            <uprtcl-loading></uprtcl-loading>
-          `
+        ? html` <uprtcl-loading></uprtcl-loading> `
         : html`
             <div class="column">
               <evees-blockchain-update-diff

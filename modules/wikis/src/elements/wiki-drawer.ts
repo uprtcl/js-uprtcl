@@ -10,7 +10,7 @@ import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { sharedStyles } from '@uprtcl/lenses';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import {
-  EveesRemote,
+  RemoteEvees,
   EveesModule,
   eveeColor,
   DEFAULT_COLOR,
@@ -51,7 +51,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   eveesInfoLocal!: any;
 
   protected client!: Client;
-  protected eveesRemotes!: EveesRemote[];
+  protected eveesRemotes!: RemoteEvees[];
   protected recognizer!: PatternRecognizer;
 
   constructor() {
@@ -60,7 +60,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   async firstUpdated() {
     this.client = this.request(ClientModule.bindings.Client);
-    this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.eveesRemotes = this.requestAll(EveesModule.bindings.RemoteEvees);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     this.logger.log('firstUpdated()', { uref: this.uref });

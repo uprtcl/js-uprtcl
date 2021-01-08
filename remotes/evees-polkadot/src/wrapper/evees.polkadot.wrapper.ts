@@ -11,7 +11,7 @@ import {
   getContextAcl,
 } from '@uprtcl/evees-orbitdb';
 import { EveesBlockchainCached } from '@uprtcl/evees-blockchain';
-import { EveesRemote } from '@uprtcl/evees';
+import { RemoteEvees } from '@uprtcl/evees';
 
 import { PolkadotConnection } from '../connection.polkadot';
 import { PolkadotOrbitDBIdentity } from '../orbitdb/polkadot.orbitdb.identity';
@@ -26,7 +26,7 @@ export interface PinnerConfig {
 }
 
 export class EveesPolkadotWrapper {
-  remotes!: EveesRemote[];
+  remotes!: RemoteEvees[];
   ipfsStore!: IpfsStore;
   orbitDBCustom!: OrbitDBCustom;
   pdkEveesConnection!: EveesPolkadotConnection;
@@ -44,21 +44,14 @@ export class EveesPolkadotWrapper {
 
   async load() {
     const connections = getConnectionDetails();
-    const pkdConnection = new PolkadotConnection(
-      connections.connections,
-      connections.current
-    );
+    const pkdConnection = new PolkadotConnection(connections.connections, connections.current);
     await pkdConnection.ready();
 
     console.log(`${this.pinnerConfig.peerMultiaddr} connecting...`);
     await this.ipfs.swarm.connect(this.pinnerConfig.peerMultiaddr);
     console.log(`${this.pinnerConfig.peerMultiaddr} connected!`);
 
-    this.ipfsStore = new IpfsStore(
-      this.ipfsCidConfig,
-      this.ipfs,
-      this.pinnerConfig.url
-    );
+    this.ipfsStore = new IpfsStore(this.ipfsCidConfig, this.ipfs, this.pinnerConfig.url);
     await this.ipfsStore.ready();
 
     const identity = new PolkadotOrbitDBIdentity(pkdConnection);
@@ -91,11 +84,7 @@ export class EveesPolkadotWrapper {
       quorum: 1.0 / 3.0,
       thresehold: 0.5,
     };
-    const pkdCouncilEvees = new EveesPolkadotCouncil(
-      pkdConnection,
-      this.ipfsStore,
-      councilConfig
-    );
+    const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, this.ipfsStore, councilConfig);
     await pkdEvees.connect();
 
     this.remotes = [pkdEvees, pkdCouncilEvees];

@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule, EveesRemote } from '@uprtcl/evees';
+import { EveesModule, RemoteEvees } from '@uprtcl/evees';
 
 import { EveesOrbitDB } from './evees.orbit-db';
 
@@ -22,7 +22,7 @@ export class RemoteOrbitdDbLense extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-    const remotes = this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[];
+    const remotes = this.requestAll(EveesModule.bindings.RemoteEvees) as RemoteEvees[];
     this.remote = remotes.find((r) => r.id.includes(this.remoteId)) as EveesOrbitDB;
     await this.remote.ready();
 

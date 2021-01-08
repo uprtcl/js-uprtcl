@@ -10,12 +10,13 @@ import {
   PerspectiveDetails,
   Commit,
   EveesConfig,
+  Proposal,
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { MergeStrategy } from '../merge/merge-strategy';
 import { Evees } from '../services/evees';
 
-import { EveesRemote } from '../services/remote.evees';
+import { RemoteEvees } from '../services/remote.evees';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 import { Client } from 'src/services/client';
@@ -104,13 +105,13 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   pullclient: Client | undefined = undefined;
 
   protected evees!: Evees;
-  protected remote!: EveesRemote;
+  protected remote!: RemoteEvees;
 
   /** official remote is used to indentity the special perspective, "the master branch" */
-  protected officialRemote: EveesRemote | undefined = undefined;
+  protected officialRemote: RemoteEvees | undefined = undefined;
 
   /** default remote is used to create new branches */
-  protected defaultRemote: EveesRemote | undefined = undefined;
+  protected defaultRemote: RemoteEvees | undefined = undefined;
 
   async firstUpdated() {
     this.evees = this.request(EveesBindings.Evees);
@@ -220,42 +221,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.pullclient = new ClientOnMemory(this.evees.client);
 
-    await this.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullclient, config);
+    await this.evees.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullclient, config);
 
     this.logger.info('checkPull()', this.pullclient);
-  }
-
-  async getContextPerspectives(perspectiveId?: string): Promise<string[]> {
-    perspectiveId = perspectiveId || this.uref;
-    const result = await this.client.query({
-      query: gql`{
-          entity(uref: "${perspectiveId}") {
-            id
-            ... on Perspective {
-              payload {
-                remote
-                context {
-                  id
-                  perspectives {
-                    id
-                  } 
-                }
-              }
-            }
-          }
-        }`,
-    });
-
-    /** data on other perspectives (proposals are injected on them) */
-    const perspectives =
-      result.data.entity.payload.context === null
-        ? []
-        : result.data.entity.payload.context.perspectives;
-
-    // remove duplicates
-    const map = new Map<string, null>();
-    perspectives.forEach((perspective) => map.set(perspective.id, null));
-    return Array.from(map, (key) => key[0]);
   }
 
   connectedCallback() {
@@ -276,7 +244,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.loggingIn = true;
     await this.defaultRemote.login();
 
-    await this.client.resetStore();
+    await this.evees.client.refresh();
     this.load();
     this.loggingIn = false;
   }
@@ -285,7 +253,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     if (this.defaultRemote === undefined) throw new Error('default remote undefined');
     await this.defaultRemote.logout();
 
-    await this.client.resetStore();
+    await this.evees.client.refresh();
     this.load();
   }
 
@@ -293,22 +261,26 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.merging = true;
     this.logger.info(`merge ${fromPerspectiveId} on ${toPerspectiveId}`);
 
-    const client = new Client(this.client, this.recognizer);
-    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
+    const client = new ClientOnMemory(this.evees.client);
+    const toRemote = await this.evees.getPerspectiveRemote(toPerspectiveId);
 
     const config = {
       forceOwner: true,
-      remote: toRemoteId,
+      remote: toRemote.id,
       parentId: toPerspectiveId,
     };
 
-    const toHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, toPerspectiveId);
-    const fromHeadId = await EveesHelpers.getPerspectiveHeadId(this.client, fromPerspectiveId);
+    const { details: toDetails } = await this.evees.client.getPerspective(toPerspectiveId);
+    const { details: fromDetails } = await this.evees.client.getPerspective(fromPerspectiveId);
 
-    await this.merge.mergePerspectivesExternal(toPerspectiveId, fromPerspectiveId, client, config);
+    await this.evees.merge.mergePerspectivesExternal(
+      toPerspectiveId,
+      fromPerspectiveId,
+      client,
+      config
+    );
 
-    const canUpdate = await EveesHelpers.canUpdate(this.client, toPerspectiveId);
-    const toRemote = this.remotes.find((r) => r.id === toRemoteId);
+    const canUpdate = toDetails.canUpdate !== undefined;
     const canPropose = toRemote
       ? toRemote.proposals
         ? await toRemote.proposals.canPropose(this.remote.userId)
@@ -340,28 +312,24 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       return;
     }
 
-    /* for some remotes the proposal is not created but sent to a parent component who will 
-       take care of executing it */
-    const emitBecauseOfTarget = await EveesHelpers.checkEmit(
-      this.config,
-      this.client,
-      this.remotes,
-      toPerspectiveId
-    );
+    /* its possible to emit the proposal details to be handled in another context. */
+    const emitBecauseOfTarget = await this.evees.checkEmit(toPerspectiveId);
+
+    const proposal: Proposal = {
+      toPerspectiveId,
+      fromPerspectiveId,
+      toHeadId: toDetails.headId,
+      fromHeadId: fromDetails.headId,
+      mutation: await client.diff(),
+    };
 
     if (!canUpdate && (emitBecauseOfTarget || this.emitProposals)) {
-      /* entities are just cloned, not part of the proposal */
-      await client.executeCreate(this.client);
-      await client.precacheNewPerspectives(this.client);
-
+      const remote = await this.evees.getPerspectiveRemote(toPerspectiveId);
       this.dispatchEvent(
         new ProposalCreatedEvent({
           detail: {
-            remote: await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId),
-            proposalDetails: {
-              newPerspectives: client.getNewPerspectives(),
-              updates: client.getUpdates(),
-            },
+            remote: remote.id,
+            proposal,
           },
           bubbles: true,
           composed: true,
@@ -377,31 +345,9 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
        Note that it is assumed that if a user canUpdate on toPerspectiveId, he can write 
        on all the perspectives inside the client.updates array. */
     if (canUpdate) {
-      await client.execute(this.client);
-      /* inform the world */
-
-      client.getUpdates().map((update) => {
-        this.dispatchEvent(
-          new ContentUpdatedEvent({
-            detail: { uref: update.perspectiveId },
-            bubbles: true,
-            composed: true,
-          })
-        );
-      });
     } else {
-      /** create commits and data */
-      await client.executeCreate(this.client);
-      await client.precacheNewPerspectives(this.client);
-
-      if (fromHeadId === undefined) throw new Error(`undefined head for ${fromPerspectiveId}`);
-      await this.createMergeProposal(
-        fromPerspectiveId,
-        toPerspectiveId,
-        fromHeadId,
-        toHeadId,
-        client
-      );
+      if (!toRemote.proposals) throw new Error(`proposals not register for remote ${toRemote.id}`);
+      await toRemote.proposals.createProposal(proposal);
     }
 
     if (this.uref !== toPerspectiveId) {
@@ -411,57 +357,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.merging = false;
   }
 
-  async createMergeProposal(
-    fromPerspectiveId: string,
-    toPerspectiveId: string,
-    fromHeadId: string,
-    toHeadId: string | undefined,
-    client: Client
-  ): Promise<void> {
-    // TODO: handle proposals and updates on multiple authorities.
-    const toRemoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, toPerspectiveId);
-
-    const not = await client.isSingleAuthority(toRemoteId);
-    if (!not) throw new Error('cant create merge proposals on multiple authorities yet');
-
-    const result = await this.client.mutate({
-      mutation: CREATE_PROPOSAL,
-      variables: {
-        toPerspectiveId,
-        fromPerspectiveId,
-        toHeadId,
-        fromHeadId,
-        newPerspectives: client.getNewPerspectives(),
-        updates: client.getUpdates(),
-      },
-    });
-
-    const proposalId = result.data.addProposal.id;
-
-    this.logger.info('created proposal', { proposalId });
-  }
-
-  async deletePerspective(perspectiveId?: string) {
-    const result = await this.client.mutate({
-      mutation: DELETE_PERSPECTIVE,
-      variables: {
-        perspectiveId: perspectiveId || this.uref,
-      },
-    });
-  }
-
   async forkPerspective(perspectiveId?: string) {
     this.creatingNewPerspective = true;
 
-    const result = await this.client.mutate({
-      mutation: FORK_PERSPECTIVE,
-      variables: {
-        perspectiveId: perspectiveId || this.uref,
-        remote: this.defaultRemoteId,
-      },
-    });
-
-    const newPerspectiveId = result.data.forkPerspective.id;
+    const newPerspectiveId = await this.evees.forkPerspective(perspectiveId || this.uref);
 
     this.dispatchEvent(
       new CustomEvent('new-perspective-created', {

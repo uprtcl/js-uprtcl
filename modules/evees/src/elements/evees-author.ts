@@ -1,8 +1,11 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { EveesRemote } from '../services/remote.evees.js';
+import { RemoteEvees } from '../services/remote.evees.js';
 import { EveesModule } from '../evees.module';
+import { EveesBindings } from 'src/bindings.js';
+import { Evees } from 'src/services/evees.js';
+import { RemoteWithUI } from 'src/services/remote.with-ui.js';
 
 export class EveesAuthor extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-AUTHOR');
@@ -22,12 +25,12 @@ export class EveesAuthor extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
-  protected remotes!: EveesRemote[];
-  protected remote!: EveesRemote;
+  protected evees!: Evees;
+  protected remote!: RemoteWithUI;
 
   async firstUpdated() {
     if (!this.isConnected) return;
-    this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.evees = this.request(EveesBindings.Evees);
     this.load();
   }
 
@@ -43,7 +46,7 @@ export class EveesAuthor extends moduleConnect(LitElement) {
     if (!this.remoteId) return;
     if (!this.userId) return;
 
-    const remote = this.remotes.find((r) => r.id === this.remoteId);
+    const remote = this.evees.remotes.find((r) => r.id === this.remoteId);
     if (!remote) {
       throw new Error(`remote ${this.remoteId} not found`);
     }

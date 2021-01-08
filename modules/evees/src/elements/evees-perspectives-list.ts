@@ -4,7 +4,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
 import { eveeColor } from './support';
 import { EveesBindings } from './../bindings';
-import { EveesRemote } from '../services/remote.evees';
+import { RemoteEvees } from '../services/remote.evees';
 import { Client } from '../services/client';
 
 interface PerspectiveData {
@@ -39,13 +39,13 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
   perspectivesData: PerspectiveData[] = [];
 
   protected client!: Client;
-  protected remotes!: EveesRemote[];
+  protected remotes!: RemoteEvees[];
 
   async firstUpdated() {
     if (!this.isConnected) return;
 
     this.client = this.request(EveesBindings.Client);
-    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
+    this.remotes = this.requestAll(EveesBindings.RemoteEvees) as RemoteEvees[];
     this.load();
   }
 

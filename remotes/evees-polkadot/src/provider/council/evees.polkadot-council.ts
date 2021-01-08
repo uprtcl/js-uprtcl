@@ -4,7 +4,7 @@ import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
 import {
-  EveesRemote,
+  RemoteEvees,
   Perspective,
   PerspectiveDetails,
   NewPerspectiveData,
@@ -23,7 +23,7 @@ import { ProposalConfig } from './proposal.config.types';
 
 const evees_if = 'council';
 
-export class EveesPolkadotCouncil implements EveesRemote {
+export class EveesPolkadotCouncil implements RemoteEvees {
   logger: Logger = new Logger('EveesPolkadot');
 
   accessControl: EveesAccessControlFixed;

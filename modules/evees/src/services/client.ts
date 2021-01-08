@@ -1,19 +1,23 @@
 import { Entity } from '@uprtcl/cortex';
 import { Secured } from 'src/utils/cid-hash';
-import { UpdateRequest, NewPerspectiveData, PerspectiveDetails, Perspective } from '../types';
-import { Evees } from './evees';
-import { Proposals } from './proposals';
+import {
+  UpdateRequest,
+  NewPerspectiveData,
+  PerspectiveDetails,
+  Perspective,
+  PartialPerspective,
+  PerspectiveLinks,
+} from '../types';
 import { SearchEngine } from './search.engine';
 
 /** the perspective data included by a remote as part of a slice */
-export interface PerspectiveSlice {
+export interface PerspectiveAndDetails {
   id: string;
-  headId: string;
-  canUpdate: boolean;
+  details: PerspectiveDetails;
 }
 
 export interface Slice {
-  perspectives: PerspectiveSlice[];
+  perspectives: PerspectiveAndDetails[];
   entities: Entity<any>[];
 }
 
@@ -51,7 +55,6 @@ export interface EveesMutationCreate {
 
 export interface Client {
   searchEngine?: SearchEngine;
-  proposals?: Proposals;
 
   /** get a perspective head,
    * include a Slice that can be used by the client to pre-fill the cache */
@@ -64,7 +67,10 @@ export interface Client {
 
   /** a method to get he perpective entity, witht he correct hash,
    * without actually creating it in the remote */
-  snapPerspective(perspective: NewPerspectiveData): Promise<Secured<Perspective>>;
+  snapPerspective(
+    perspective: PartialPerspective,
+    links?: PerspectiveLinks
+  ): Promise<Secured<Perspective>>;
 
   /** force refresh the perspective details and deletes the cached proposals and userPerspectives. */
   refresh(): Promise<void>;
@@ -90,7 +96,7 @@ export interface Client {
   flush(): Promise<void>;
 
   /** returns true if the user can update the perspective */
-  canUpdate(userId: string, perspectiveId: string): Promise<boolean>;
+  canUpdate(perspectiveId: string, userId?: string): Promise<boolean>;
 
   /** a couple of handy endpoints to just get or store one entity and not have to filter EntityGetResult */
   getEntity(uref: string): Promise<Entity<any>>;

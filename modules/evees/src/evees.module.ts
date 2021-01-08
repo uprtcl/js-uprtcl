@@ -8,7 +8,7 @@ import { CommonUIModule } from '@uprtcl/common-ui';
 import { PerspectiveLinks, PerspectivePattern } from './patterns/perspective.pattern';
 import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
 import { EveesBindings } from './bindings';
-import { EveesRemote } from './services/remote.evees';
+import { RemoteEvees } from './services/remote.evees';
 import { EveesPerspectivesList } from './elements/evees-perspectives-list';
 import { EveesInfoPopper } from './elements/evees-info-popper';
 
@@ -43,7 +43,7 @@ export class EveesModule extends MicroModule {
 
   static bindings = EveesBindings;
 
-  constructor(protected remotes: Array<EveesRemote>, protected config?: EveesConfig) {
+  constructor(protected remotes: Array<RemoteEvees>, protected config?: EveesConfig) {
     super();
   }
 

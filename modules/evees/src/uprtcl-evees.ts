@@ -6,7 +6,7 @@ export { Commit, Perspective, PerspectiveDetails, HasDiffLenses, DiffLens } from
 
 /** Services interfaces */
 export { Source } from './services/source';
-export { EveesRemote } from './services/remote.evees';
+export { RemoteEvees } from './services/remote.evees';
 export { NewPerspectiveData } from './types';
 export { EveesConfig } from './types';
 
@@ -61,4 +61,6 @@ export { Proposals } from './services/proposals';
 
 /** Aceess Control */
 export { AccessControl } from './services/access-control';
-export { Remote } from './services/logged.remote';
+export { RemoteLogged } from './services/remote.logged';
+export { RemoteEvees } from './services/remote.evees';
+export { RemoteWithUI } from './services/remote.with-ui';

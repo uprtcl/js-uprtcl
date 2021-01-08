@@ -1,7 +1,7 @@
 import { TemplateResult } from 'lit-element';
 import { Behaviour } from '@uprtcl/cortex';
 
-import { EveesRemote } from './services/remote.evees';
+import { RemoteEvees } from './services/remote.evees';
 import { Secured } from './utils/cid-hash';
 import { Client, EveesMutation } from './services/client';
 
@@ -11,8 +11,17 @@ export interface Perspective {
   creatorId: string;
   context: string;
   timestamp: number;
-  fromPerspectiveId?: string; // optional parameters to hardcode
-  fromHeadId?: string; // forks on the perspective id
+  meta?: any; // optional parameters handle arbitrary metadata
+}
+
+/** Perspective input used to create a new perspective */
+export interface PartialPerspective {
+  remote?: string;
+  path?: string;
+  creatorId?: string;
+  context?: string;
+  timestamp?: number;
+  meta?: any;
 }
 
 export interface PerspectiveDetails {
@@ -36,7 +45,6 @@ export interface UpdateRequest {
 }
 
 export interface Proposal {
-  id: string;
   creatorId?: string;
   timestamp?: number;
   toPerspectiveId: string;
@@ -47,7 +55,7 @@ export interface Proposal {
 }
 export interface ProposalCreatedDetail {
   remote: string;
-  mutation: EveesMutation;
+  proposal: Proposal;
 }
 
 export const PROPOSAL_CREATED_TAG: string = 'evees-proposal';
@@ -58,10 +66,22 @@ export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
   }
 }
 
+export interface PerspectiveLinks {
+  /** the parent is unique and is used to have a sense of the 'true' location of a perspective. */
+  parentId?: string;
+  /** the children can be many and one perspective can be the child of many others. Children are considered
+   * part of the parent, and thus are fetched with the parent, searched with the parent, merged with the parent
+   * and so on */
+  children?: string[];
+  /** links are not children, they represent relations between this perspective and another without consider the
+   * other to be part of this one */
+  linksTo?: string[];
+}
+
 export interface NewPerspectiveData {
   perspective: Secured<Perspective>;
   details: PerspectiveDetails;
-  parentId?: string;
+  links?: PerspectiveLinks;
 }
 
 export interface DiffLens {
@@ -75,8 +95,8 @@ export interface HasDiffLenses<T = any> extends Behaviour<T> {
 }
 
 export interface EveesConfig {
-  defaultRemote?: EveesRemote;
-  officialRemote?: EveesRemote;
+  defaultRemote?: RemoteEvees;
+  officialRemote?: RemoteEvees;
   editableRemotesIds?: string[];
   emitIf?: {
     remote: string;

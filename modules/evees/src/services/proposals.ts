@@ -1,21 +1,18 @@
+import { Entity } from '@uprtcl/cortex';
 import { Lens } from '@uprtcl/lenses';
-import { Proposal, NewProposal, ProposalDetails } from '../types';
 
+import { Proposal } from 'src/types';
 export interface Proposals {
-  /** Getters */
-  getProposal(proposalId: string): Promise<Proposal>;
+  createProposal(newProposal: Proposal);
 
-  /** Modifiers */
-  createProposal(proposal: NewProposal): Promise<string>;
+  getProposal(proposalId: string): Promise<Entity<Proposal>>;
 
-  updateProposal(proposalId: string, details: ProposalDetails): Promise<void>;
-
-  deleteProposal(proposalId: string): Promise<void>;
-
-  /** UI interaction */
-  lense?(): Lens;
+  getProposalsToPerspective(perspectiveId: string): Promise<string[]>;
 
   canPropose(perspectiveId?: string, userId?: string): Promise<boolean>;
 
   canDelete(proposalId: string, userId?: string): Promise<boolean>;
+
+  /** UI interaction */
+  lense?(): Lens;
 }

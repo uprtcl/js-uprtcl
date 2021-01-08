@@ -50,7 +50,7 @@ export class EveesBlockchainUpdateDiff extends moduleConnect(LitElement) {
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
     const remote = (this.requestAll(
-      EveesModule.bindings.EveesRemote
+      EveesModule.bindings.RemoteEvees
     ) as EveesBlockchainCached[]).find((r) => r.id === this.remoteId);
     if (!remote) {
       throw new Error(`remote ${this.remoteId} not found`);

@@ -1,4 +1,4 @@
-import { Commit, EveesRemote, Perspective, Secured } from '@uprtcl/evees';
+import { Commit, RemoteEvees, Perspective, Secured } from '@uprtcl/evees';
 import { CASStore } from '@uprtcl/multiplatform';
 import { Entity } from '@uprtcl/cortex';
 
@@ -9,7 +9,7 @@ export interface EveeData {
 }
 
 export class EveesReader {
-  constructor(protected remotes: EveesRemote[], protected store: CASStore) {}
+  constructor(protected remotes: RemoteEvees[], protected store: CASStore) {}
 
   async resolve(uref: string) {
     const perspectiveObject = (await this.store.get(uref)) as any | undefined;

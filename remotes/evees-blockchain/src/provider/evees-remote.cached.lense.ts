@@ -1,7 +1,7 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesModule, EveesRemote } from '@uprtcl/evees';
+import { EveesModule, RemoteEvees } from '@uprtcl/evees';
 
 import { EveesBlockchainCached } from './evees.blockchain.cached';
 import { MenuConfig } from '@uprtcl/common-ui';
@@ -40,7 +40,7 @@ export class EveesBlockchainCachedRemoteLense extends moduleConnect(LitElement) 
 
   async firstUpdated() {
     this.client = this.request(ClientModule.bindings.Client);
-    const remotes = this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[];
+    const remotes = this.requestAll(EveesModule.bindings.RemoteEvees) as RemoteEvees[];
     this.remote = remotes.find((r) => r.id.includes(this.remoteId)) as EveesBlockchainCached;
 
     await this.remote.ready();

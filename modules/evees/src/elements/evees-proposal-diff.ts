@@ -2,10 +2,10 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
-import { Client } from '../services/client.memory';
-import { EveesRemote } from '../services/remote.evees';
+import { ClientOnMemory } from '../services/client.memory';
 import { EveesBindings } from '../bindings';
 import { EveesDiff } from './evees-diff';
+import { Evees } from 'src/services/evees';
 
 export class EveesProposalDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-DIFF');
@@ -25,11 +25,10 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
-  protected client!: Client;
-  protected client!: Client;
+  protected evees!: Evees;
 
   async firstUpdated() {
-    this.client = this.request(ClientModule.bindings.Client);
+    this.evees = this.request(EveesBindings.Evees);
     this.loadProposal();
   }
 
@@ -44,30 +43,12 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
   async loadProposal() {
     this.loading = true;
 
-    const eveesRemote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
-      (remote) => remote.id === this.remoteId
-    );
-
-    if (eveesRemote === undefined) throw new Error(`remote ${this.remoteId} not found`);
-    if (eveesRemote.proposals === undefined)
-      throw new Error(`proposal of remote ${this.remoteId} undefined`);
-    const proposal = await eveesRemote.proposals.getProposal(this.proposalId);
-
-    if (proposal === undefined)
-      throw new Error(`proposal ${this.proposalId} not found on remote ${this.remoteId}`);
-    this.client = new Client(this.client);
-
-    for (const update of proposal.details.updates) {
-      this.client.update(update);
-    }
-    for (const newPerspective of proposal.details.newPerspectives) {
-      this.client.newPerspective(newPerspective);
-    }
-
+    const proposal = await this.evees.getPerspectiveData(this.proposalId);
+    const client = new ClientOnMemory(this.evees.client, proposal.object.mutation);
     this.loading = false;
     await this.updateComplete;
 
-    this.eveesDiffEl.client = this.client;
+    this.eveesDiffEl.client = client;
   }
 
   render() {

@@ -1,6 +1,13 @@
 import { Entity } from '@uprtcl/cortex';
+import { Secured } from 'src/uprtcl-evees';
 
-import { UpdateRequest, NewPerspectiveData } from '../types';
+import {
+  UpdateRequest,
+  NewPerspectiveData,
+  Perspective,
+  PerspectiveDetails,
+  PartialPerspective,
+} from '../types';
 import { EntityGetResult, Client, PerspectiveGetResult, EveesMutation } from './client';
 import { Proposals } from './proposals';
 import { SearchEngine } from './search.engine';
@@ -10,8 +17,16 @@ export class ClientOnMemory implements Client {
   private newPerspectives = new Map<string, NewPerspectiveData>();
   private updates = new Map<string, UpdateRequest>();
   private canUpdates = new Map<string, boolean>();
+  private userPerspectives = new Map<string, string[]>();
 
-  constructor(protected base: Client) {}
+  private cachedEntities = new Map<string, Entity<any>>();
+  private cachedPerspectives = new Map<string, PerspectiveDetails>();
+
+  constructor(protected base: Client, mutation?: EveesMutation) {
+    if (mutation) {
+      this.update(mutation);
+    }
+  }
 
   searchEngine?: SearchEngine | undefined;
   proposals?: Proposals | undefined;
@@ -31,7 +46,22 @@ export class ClientOnMemory implements Client {
       };
     }
 
-    return this.base.getPerspective(perspectiveId);
+    const result = await this.base.getPerspective(perspectiveId);
+
+    /** cache result and slice */
+    this.cachedPerspectives.set(perspectiveId, result.details);
+
+    if (result.slice) {
+      result.slice.entities.forEach((entity) => {
+        this.cachedEntities.set(entity.id, entity);
+      });
+
+      result.slice.perspectives.forEach((perspectiveAndDetails) => {
+        this.cachedPerspectives.set(perspectiveAndDetails.id, perspectiveAndDetails.details);
+      });
+    }
+
+    return { details: result.details };
   }
   createPerspectives(newPerspectives: NewPerspectiveData[]) {
     newPerspectives.forEach((newPerspective) => {
@@ -101,10 +131,16 @@ export class ClientOnMemory implements Client {
       };
     }
 
+    // ask the base client
     const result = await this.base.getEntities(notFound);
-    return {
-      entities: found.concat(result.entities),
-    };
+    const entities = found.concat(result.entities);
+
+    // cache locally
+    entities.forEach((entity) => {
+      this.cachedEntities.set(entity.id, entity);
+    });
+
+    return { entities };
   }
   async getEntity(uref: string): Promise<Entity<any>> {
     const { entities } = await this.getEntities([uref]);
@@ -121,5 +157,25 @@ export class ClientOnMemory implements Client {
   storeEntity(object: object, remote?: any): Promise<string> {
     const entities = this.storeEntities([object], remote);
     return entities[0].id;
+  }
+
+  /** it gets the logged user perspectives (base layers are user aware) */
+  async getUserPerspectives(perspectiveId: string): Promise<string[]> {
+    let perspectives = this.userPerspectives.get(perspectiveId);
+    if (perspectives === undefined) {
+      perspectives = await this.base.getUserPerspectives(perspectiveId);
+      this.userPerspectives.set(perspectiveId, perspectives);
+    }
+    return perspectives;
+  }
+
+  snapPerspective(perspective: PartialPerspective): Promise<Secured<Perspective>> {
+    return this.base.snapPerspective(perspective);
+  }
+  refresh(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntity(object: object, remote: string): Promise<string> {
+    return this.base.hashEntity(object, remote);
   }
 }

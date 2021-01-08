@@ -1,12 +1,12 @@
-import { Entity, PatternRecognizer, HasChildren } from '@uprtcl/cortex';
+import { Entity, PatternRecognizer, HasChildren, Signed } from '@uprtcl/cortex';
 
-import { EveesRemote } from './remote.evees';
 import { Commit, EveesConfig, Perspective } from '../types';
-import { deriveSecured, signObject } from '../utils/signed';
+import { signObject } from '../utils/signed';
 import { EveesBindings } from '../bindings';
 import { hashObject, Secured } from '../utils/cid-hash';
 import { Client } from './client';
-import { MergeStrategy } from 'src/merge/merge-strategy';
+import { MergeStrategy } from '../merge/merge-strategy';
+import { RemoteEvees } from './remote.evees';
 
 export interface CreateCommit {
   dataId: string;
@@ -30,19 +30,23 @@ export class Evees {
   constructor(
     readonly client: Client,
     readonly recognizer: PatternRecognizer,
-    readonly remotes: EveesRemote[],
+    readonly remotes: RemoteEvees[],
     readonly merge: MergeStrategy,
     readonly config: EveesConfig
   ) {}
 
-  async getPerspectiveRemote(perspectiveId: string, client?: Client): Promise<EveesRemote> {
+  async getRemote(remoteId: string): Promise<RemoteEvees> {
+    const remote = this.remotes.find((r) => r.id === remoteId);
+    if (!remote) throw new Error(`remote ${remoteId} not found`);
+    return remote;
+  }
+
+  async getPerspectiveRemote(perspectiveId: string, client?: Client): Promise<RemoteEvees> {
     client = client || this.client;
     const perspective = await client.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     const remoteId = perspective.object.payload.remote;
-    const remote = this.remotes.find((r) => r.id === remoteId);
-    if (!remote) throw new Error(`remote ${remoteId} not found`);
-    return remote;
+    return this.getRemote(remoteId);
   }
 
   async getPerspectiveDataId(perspectiveId: string, client?: Client): Promise<string | undefined> {
@@ -52,13 +56,11 @@ export class Evees {
     return this.getCommitDataId(result.details.headId, client);
   }
 
-  async getPerspectiveData(
-    perspectiveId: string,
-    client?: Client
-  ): Promise<Entity<any> | undefined> {
+  async getPerspectiveData(perspectiveId: string, client?: Client): Promise<Entity<any>> {
     client = client || this.client;
     const result = await client.getPerspective(perspectiveId);
-    if (result.details.headId === undefined) return undefined;
+    if (result.details.headId === undefined)
+      throw new Error(`Data not found for perspective ${perspectiveId}`);
     return this.getCommitData(result.details.headId, client);
   }
 
@@ -135,21 +137,21 @@ export class Evees {
     return findAncestor.checkIfParent(result.details.headId);
   }
 
-  async checkEmit(config: EveesConfig, perspectiveId: string, client?: Client): Promise<boolean> {
+  async checkEmit(perspectiveId: string, client?: Client): Promise<boolean> {
     client = client || this.client;
-    if (config.emitIf === undefined) return false;
+    if (this.config.emitIf === undefined) return false;
 
     const toRemote = await this.getPerspectiveRemote(perspectiveId, client);
-    if (toRemote.id === config.emitIf.remote) {
+    if (toRemote.id === this.config.emitIf.remote) {
       const owner = await (toRemote.accessControl as any).getOwner(perspectiveId);
-      return owner.toLocaleLowerCase() === config.emitIf.owner.toLocaleLowerCase();
+      return owner === this.config.emitIf.owner;
     }
 
     return false;
   }
 
   async snapDefaultPerspective(
-    remote: EveesRemote,
+    remote: RemoteEvees,
     creatorId?: string,
     context?: string,
     timestamp?: number,
@@ -168,15 +170,15 @@ export class Evees {
     context = context || defaultContext;
 
     const object: Perspective = {
-      creatorId,
+      creatorId: creatorId as string,
       remote: remote.id,
       path: path !== undefined ? path : remote.defaultPath,
       timestamp,
       context,
     };
 
-    if (fromPerspectiveId) object.fromPerspectiveId = fromPerspectiveId;
-    if (fromHeadId) object.fromHeadId = fromHeadId;
+    if (fromPerspectiveId) object.meta.fromPerspectiveId = fromPerspectiveId;
+    if (fromHeadId) object.meta.fromHeadId = fromHeadId;
 
     const hash = await this.client.hashEntity(object, remote.id);
     return {
@@ -186,7 +188,7 @@ export class Evees {
   }
 
   async getHome(
-    remote: EveesRemote,
+    remote: RemoteEvees,
     userId?: string,
     client?: Client
   ): Promise<Entity<Perspective>> {
@@ -272,17 +274,13 @@ export class Evees {
   ): Promise<string> {
     client = client || this.client;
 
-    const refPerspective = await client.getEntity(perspectiveId);
+    const refPerspective: Entity<Signed<Perspective>> = await client.getEntity(perspectiveId);
 
     const { details } = await client.getPerspective(perspectiveId);
 
     const perspective = await client.snapPerspective(
-      parentId,
-      refPerspective.object.payload.context,
-      undefined,
-      undefined,
-      perspectiveId,
-      details.headId
+      { context: refPerspective.object.payload.context },
+      { parentId }
     );
 
     await client.storeEntities([perspective.object]);
@@ -298,13 +296,15 @@ export class Evees {
       );
     }
 
-    client.createPerspectives([
-      {
-        perspective,
-        details: { headId: forkCommitId, name },
-        parentId,
-      },
-    ]);
+    client.update({
+      newPerspectives: [
+        {
+          perspective,
+          details: { headId: forkCommitId },
+          links: { parentId },
+        },
+      ],
+    });
 
     return perspective.id;
   }
@@ -319,12 +319,10 @@ export class Evees {
 
     const commit: Secured<Commit> | undefined = await client.getEntity(commitId);
 
-    const remoteInstance = this.getRemote(remote);
-
     const dataId = commit.object.payload.dataId;
-    const dataForkId = await this.forkEntity(dataId, client, remote, parentId);
+    const dataForkId = await this.forkEntity(dataId, remote, parentId, client);
 
-    const eveesRemote = this.getRemote(remote);
+    const eveesRemote = await this.getRemote(remote);
 
     /** build new head object pointing to new data */
     const newCommit: Commit = {
@@ -336,9 +334,7 @@ export class Evees {
       timestamp: Date.now(),
     };
 
-    const newHead: Secured<Commit> = await client.storeEntities([newCommit]);
-
-    return newHead.id;
+    return client.storeEntity(newCommit, remote);
   }
 
   async forkEntity(
@@ -358,8 +354,7 @@ export class Evees {
     const newLinks = await Promise.all(getLinksForks);
     const tempData = this.replaceEntityChildren(data, newLinks);
 
-    const newData = await client.storeEntities([tempData.object]);
-    return newData.id;
+    return client.storeEntity(tempData.object, remote);
   }
 }
 

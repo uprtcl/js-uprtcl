@@ -1,6 +1,7 @@
 import multihashing from 'multihashing-async';
 import CBOR from 'cbor-js';
 import CID from 'cids';
+
 import { Signed, Entity } from '@uprtcl/cortex';
 import { sortObject } from '@uprtcl/ipfs-provider';
 import { CidConfig, defaultCidConfig } from '@uprtcl/multiplatform';

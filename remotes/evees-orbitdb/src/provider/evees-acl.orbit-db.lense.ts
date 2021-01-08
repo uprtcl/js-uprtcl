@@ -2,7 +2,7 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { Signed, Entity } from '@uprtcl/cortex';
-import { EveesModule, EveesHelpers, EveesRemote, Perspective } from '@uprtcl/evees';
+import { EveesModule, EveesHelpers, RemoteEvees, Perspective } from '@uprtcl/evees';
 import { loadEntity } from '@uprtcl/multiplatform';
 
 import { EveesOrbitDB } from './evees.orbit-db';
@@ -36,7 +36,7 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
     if (remoteId === undefined) throw new Error('remote not found');
 
     if (!this.isConnected) return;
-    this.remote = (this.requestAll(EveesModule.bindings.EveesRemote) as EveesRemote[]).find(
+    this.remote = (this.requestAll(EveesModule.bindings.RemoteEvees) as RemoteEvees[]).find(
       (r) => r.id === remoteId
     ) as EveesOrbitDB;
     await this.remote.ready();

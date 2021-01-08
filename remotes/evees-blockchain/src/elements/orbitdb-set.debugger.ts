@@ -1,16 +1,9 @@
-import {
-  LitElement,
-  html,
-  css,
-  internalProperty,
-  query,
-  property,
-} from 'lit-element';
+import { LitElement, html, css, internalProperty, query, property } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 import { Logger } from '@uprtcl/micro-orchestrator';
 
-import { EveesModule, EveesRemote, Perspective, Secured } from '@uprtcl/evees';
+import { EveesModule, RemoteEvees, Perspective, Secured } from '@uprtcl/evees';
 import { Signed } from '@uprtcl/cortex';
 import { EveesOrbitDBEntities } from '@uprtcl/evees-orbitdb';
 
@@ -60,11 +53,11 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
   @query('#entity-input')
   entityInputEl!: any;
 
-  protected remotes!: EveesRemote[];
+  protected remotes!: RemoteEvees[];
   protected remote!: EveesBlockchainCached;
 
   async firstUpdated() {
-    this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.remotes = this.requestAll(EveesModule.bindings.RemoteEvees);
     this.load();
   }
 
@@ -95,9 +88,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
       this.perspective.object.payload.context
     );
 
-    const remote = this.remotes.find(
-      (r) => r.id === this.perspective.object.payload.remote
-    );
+    const remote = this.remotes.find((r) => r.id === this.perspective.object.payload.remote);
     if (!remote) {
       throw new Error(`remote not found`);
     }
@@ -151,12 +142,9 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
   }
 
   async delete(id: string) {
-    const contextStore = await this.remote.orbitdbcustom.getStore(
-      EveesOrbitDBEntities.Context,
-      {
-        context: this.perspective.object.payload.context,
-      }
-    );
+    const contextStore = await this.remote.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context: this.perspective.object.payload.context,
+    });
 
     this.logger.info(`contextStore.delete(${id})`);
     await contextStore.delete(id);
@@ -167,14 +155,8 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
   debugPerspective() {
     return html`
       <div class="row">
-        <uprtcl-textfield
-          id="perspective-input"
-          label="perspective id"
-        ></uprtcl-textfield>
-        <uprtcl-button-loading
-          @click=${() => this.read()}
-          ?loading=${this.reading}
-        >
+        <uprtcl-textfield id="perspective-input" label="perspective id"></uprtcl-textfield>
+        <uprtcl-button-loading @click=${() => this.read()} ?loading=${this.reading}>
           read
         </uprtcl-button-loading>
       </div>
@@ -205,10 +187,7 @@ export class EveesOrbitDBDebugger extends moduleConnect(LitElement) {
     return html`
       <div class="row">
         <uprtcl-textfield id="entity-input" label="hash"></uprtcl-textfield>
-        <uprtcl-button-loading
-          @click=${() => this.readEntity()}
-          ?loading=${this.readingEntity}
-        >
+        <uprtcl-button-loading @click=${() => this.readEntity()} ?loading=${this.readingEntity}>
           read
         </uprtcl-button-loading>
       </div>

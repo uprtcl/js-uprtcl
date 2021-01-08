@@ -4,7 +4,7 @@ import { UpdateRequest, NewPerspectiveData } from '../types';
 import { Client, PerspectiveGetResult } from './client';
 
 export class ClientRouter implements Client {
-  constructor(protected remotes: EveesRemotes[]) {}
+  constructor(protected remotes: RemoteEveess[]) {}
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
     return remote.getPerspective(perspectiveId);

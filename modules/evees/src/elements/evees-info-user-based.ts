@@ -6,7 +6,7 @@ import { EveesInfoBase } from './evees-info-base';
 import { EveesPerspectivesList } from './evees-perspectives-list';
 import { ProposalsList } from './evees-proposals-list';
 import { Perspective } from '../types';
-import { EveesRemote } from '../services/remote.evees';
+import { RemoteEvees } from '../services/remote.evees';
 import { DEFAULT_COLOR, eveeColor } from './support';
 import { Secured } from '../utils/cid-hash';
 import { ContentUpdatedEvent } from './events';
@@ -120,10 +120,10 @@ export class EveesInfoUserBased extends EveesInfoBase {
     )) as unknown) as Secured<Perspective>[];
 
     if (!this.defaultRemote) throw new Error('default remote not found');
-    const defaultRemote: EveesRemote = this.defaultRemote;
+    const defaultRemote: RemoteEvees = this.defaultRemote;
 
     if (!this.officialRemote) throw new Error('official remote not found');
-    const officialRemote: EveesRemote = this.officialRemote;
+    const officialRemote: RemoteEvees = this.officialRemote;
 
     const sortOnTimestamp = (p1, p2) => p1.object.payload.timestamp - p2.object.payload.timestamp;
 

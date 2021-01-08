@@ -5,7 +5,7 @@ import { prettyTimePeriod } from '@uprtcl/common-ui';
 
 import {
   EveesBindings,
-  EveesRemote,
+  RemoteEvees,
   Client,
   NewPerspectiveData,
   Perspective,
@@ -32,7 +32,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
   voting: boolean = false;
 
   client!: Client;
-  remotes!: EveesRemote[];
+  remotes!: RemoteEvees[];
   remote!: EveesPolkadotCouncil;
   fromPerspective!: Signed<Perspective>;
 
@@ -49,7 +49,7 @@ export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
     this.client = this.request(ClientModule.bindings.Client);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
 
-    this.remotes = this.requestAll(EveesBindings.EveesRemote) as EveesRemote[];
+    this.remotes = this.requestAll(EveesBindings.RemoteEvees) as RemoteEvees[];
     const remote = this.remotes.find((remote) => remote.id.includes('council'));
     if (!remote) throw new Error(`council remote not registered`);
     this.remote = (remote as unknown) as EveesPolkadotCouncil;

@@ -6,6 +6,8 @@ import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
 import { Client } from '../services/client.memory';
+import { Evees } from 'src/services/evees';
+import { EveesBindings } from 'src/bindings';
 
 const LOGINFO = true;
 
@@ -26,18 +28,17 @@ export class EveesDiff extends moduleConnect(LitElement) {
   summary: boolean = false;
 
   @property({ attribute: false })
-  client!: Client;
-
-  @property({ attribute: false })
   loading: boolean = true;
 
   updatesDetails: Dictionary<UpdateDetails> = {};
+  client!: Client;
+  evees!: Evees;
 
   protected recognizer!: PatternRecognizer;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()');
-    this.recognizer = this.request(CortexModule.bindings.Recognizer);
+    this.evees = this.request(EveesBindings.Evees);
 
     this.loadUpdates();
   }
@@ -60,11 +61,11 @@ export class EveesDiff extends moduleConnect(LitElement) {
     this.loading = true;
 
     const getDetails = this.client.getUpdates().map(async (update) => {
-      const newData = await EveesHelpers.getCommitData(this.client.client, update.newHeadId);
+      const newData = await this.evees.getCommitData(update.newHeadId, this.client);
 
       const oldData =
         update.oldHeadId !== undefined
-          ? await EveesHelpers.getCommitData(this.client.client, update.oldHeadId)
+          ? await this.evees.getCommitData(update.oldHeadId, this.client)
           : undefined;
 
       const hasDiffLenses = this.recognizer
@@ -90,10 +91,7 @@ export class EveesDiff extends moduleConnect(LitElement) {
         .find((newPerspective) => newPerspective.perspective.id === this.rootPerspective);
       if (newRoot) {
         if (newRoot.details.headId) {
-          const newData = await EveesHelpers.getCommitData(
-            this.client.client,
-            newRoot.details.headId
-          );
+          const newData = await this.evees.getCommitData(newRoot.details.headId, this.client);
 
           const hasDiffLenses = this.recognizer
             .recognizeBehaviours(newData)

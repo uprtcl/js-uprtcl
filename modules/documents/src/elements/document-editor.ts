@@ -11,7 +11,7 @@ const styleMap = (style) => {
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { HasChildren, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import {
-  EveesRemote,
+  RemoteEvees,
   EveesModule,
   UPDATE_HEAD,
   eveeColor,
@@ -85,7 +85,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   doc: DocNode | undefined = undefined;
   client!: Client;
 
-  protected remotes!: EveesRemote[];
+  protected remotes!: RemoteEvees[];
   protected recognizer!: PatternRecognizer;
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
@@ -93,7 +93,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   draftService = new EveesDraftsLocal();
 
   async firstUpdated() {
-    this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
+    this.remotes = this.requestAll(EveesModule.bindings.RemoteEvees);
     this.recognizer = this.request(CortexModule.bindings.Recognizer);
     try {
       this.customBlocks = this.request(DocumentsBindings.CustomBlocks);

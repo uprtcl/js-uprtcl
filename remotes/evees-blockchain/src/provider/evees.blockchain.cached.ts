@@ -7,7 +7,7 @@ import { EveesOrbitDBEntities } from '@uprtcl/evees-orbitdb';
 import { Signed } from '@uprtcl/cortex';
 
 import {
-  EveesRemote,
+  RemoteEvees,
   Perspective,
   PerspectiveDetails,
   NewPerspectiveData,
@@ -28,7 +28,7 @@ import { UserPerspectivesDetails, RemoteStatus } from '../types';
 
 const evees_if = 'fixed';
 
-export class EveesBlockchainCached implements EveesRemote {
+export class EveesBlockchainCached implements RemoteEvees {
   logger: Logger = new Logger('EveesBlockchain');
 
   accessControl: EveesAccessControlFixed;

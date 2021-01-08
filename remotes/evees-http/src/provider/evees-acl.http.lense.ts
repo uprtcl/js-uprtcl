@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
-import { EveesBindings, EveesHelpers, EveesRemote } from '@uprtcl/evees';
+import { EveesBindings, EveesHelpers, RemoteEvees } from '@uprtcl/evees';
 import { HasTitle, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
 import {
@@ -50,7 +50,7 @@ export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
     this.client = this.request(ClientModule.bindings.Client);
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.uref);
 
-    const remote = (this.requestAll(EveesBindings.EveesRemote) as EveesRemote[]).find(
+    const remote = (this.requestAll(EveesBindings.RemoteEvees) as RemoteEvees[]).find(
       (remote) => remote.id === remoteId
     );
 
