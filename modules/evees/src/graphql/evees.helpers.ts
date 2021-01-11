@@ -47,7 +47,7 @@ export class EveesHelpers {
               }
             }
           }
-        }`
+        }`,
     });
     if (result.data.entity.head === undefined || result.data.entity.head == null) return undefined;
     return result.data.entity.head.id;
@@ -63,7 +63,7 @@ export class EveesHelpers {
               canWrite
             }
           }
-        }`
+        }`,
     });
     if (result.data.entity.canWrite === undefined || result.data.entity.canWrite == null)
       return false;
@@ -138,7 +138,7 @@ export class EveesHelpers {
 
     const hasChildren: HasChildren = recognizer
       .recognizeBehaviours(data)
-      .find(b => (b as HasChildren).getChildrenLinks);
+      .find((b) => (b as HasChildren).getChildrenLinks);
 
     return hasChildren.getChildrenLinks(data);
   }
@@ -174,8 +174,8 @@ export class EveesHelpers {
       mutation: CREATE_ENTITY,
       variables: {
         object: object,
-        casID: store.casID
-      }
+        casID: store.casID,
+      },
     });
 
     return create.data.createEntity.id;
@@ -192,7 +192,7 @@ export class EveesHelpers {
       dataId: commit.dataId,
       message: message,
       timestamp: timestamp,
-      parentsIds: parentsIds
+      parentsIds: parentsIds,
     };
 
     const commitObject = signObject(commitData);
@@ -201,8 +201,8 @@ export class EveesHelpers {
       mutation: CREATE_ENTITY,
       variables: {
         object: commitObject,
-        casID: store.casID
-      }
+        casID: store.casID,
+      },
     });
 
     return create.data.createEntity.id;
@@ -218,8 +218,8 @@ export class EveesHelpers {
       variables: {
         remote: remote.id,
         casID: remote.store.casID,
-        ...perspective
-      }
+        ...perspective,
+      },
     });
 
     return createPerspective.data.createPerspective.id;
@@ -230,11 +230,22 @@ export class EveesHelpers {
       mutation: UPDATE_HEAD,
       variables: {
         perspectiveId,
-        headId
-      }
+        headId,
+      },
     });
 
     return headId;
+  }
+
+  static async updateHeadWithData(
+    client: ApolloClient<any>,
+    store: CASStore,
+    perspectiveId: string,
+    object: any
+  ) {
+    const dataId = await this.createEntity(client, store, object);
+    const headId = await this.createCommit(client, store, { dataId });
+    return this.updateHead(client, perspectiveId, headId);
   }
 
   static async isAncestorCommit(
@@ -258,7 +269,7 @@ export class EveesHelpers {
     if (config.emitIf === undefined) return false;
 
     const remoteId = await EveesHelpers.getPerspectiveRemoteId(client, perspectiveId);
-    const toRemote = eveesRemotes.find(r => r.id === remoteId);
+    const toRemote = eveesRemotes.find((r) => r.id === remoteId);
     if (!toRemote) throw new Error(`remote not found for ${remoteId}`);
 
     if (remoteId === config.emitIf.remote) {
@@ -279,11 +290,11 @@ export class EveesHelpers {
     fromHeadId?: string
   ) {
     creatorId = creatorId ? creatorId : remote.userId ? remote.userId : '';
-    timestamp = timestamp!== undefined ? timestamp : Date.now();
+    timestamp = timestamp !== undefined ? timestamp : Date.now();
 
     const defaultContext = await hashObject({
       creatorId,
-      timestamp
+      timestamp,
     });
 
     context = context || defaultContext;
@@ -293,7 +304,7 @@ export class EveesHelpers {
       remote: remote.id,
       path: path !== undefined ? path : remote.defaultPath,
       timestamp,
-      context
+      context,
     };
 
     if (fromPerspectiveId) object.fromPerspectiveId = fromPerspectiveId;
@@ -311,7 +322,7 @@ export class EveesHelpers {
       path: remote.defaultPath,
       creatorId,
       timestamp: 0,
-      context: `${creatorId}.home`
+      context: `${creatorId}.home`,
     };
 
     return deriveSecured(remoteHome, remote.store.cidConfig);
@@ -353,7 +364,7 @@ export class FindAncestor {
     }
 
     const seeParents = await Promise.all(
-      commit.object.payload.parentsIds.map(parentId => {
+      commit.object.payload.parentsIds.map((parentId) => {
         /* recursively look on parents */
         return this.checkIfParent(parentId);
       })

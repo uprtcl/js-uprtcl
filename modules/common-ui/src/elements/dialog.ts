@@ -26,11 +26,11 @@ export class UprtclDialog extends LitElement {
             <slot></slot>
           </div>
           <div class="buttons-container">
-            ${options.map(option => {
+            ${options.map((option) => {
               const details = this.options[option];
               return html`
                 <uprtcl-button
-                  @click=${e => (details.disabled ? undefined : this.optionClicked(e, option))}
+                  @click=${(e) => (details.disabled ? undefined : this.optionClicked(e, option))}
                   icon=${details.icon as string}
                   ?disabled=${details.disabled !== undefined ? details.disabled : false}
                   ?skinny=${details.skinny !== undefined ? details.skinny : false}
@@ -67,8 +67,8 @@ export class UprtclDialog extends LitElement {
         margin: 0 auto;
         padding: 3vw 3vw;
         background-color: white;
-        border-radius: 4px;
-        box-shadow: 10px 10px 67px 0px rgba(0, 0, 0, 0.75);
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
       }
 
       .slot-container {

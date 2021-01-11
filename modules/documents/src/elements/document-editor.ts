@@ -1,6 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 import { ApolloClient } from 'apollo-boost';
 import isEqual from 'lodash-es/isEqual';
+import TripleDotSvg from '../assets/triple_dots.svg';
 
 import { ApolloClientModule } from '@uprtcl/graphql';
 
@@ -84,6 +85,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   checkedOutPerspectives: {
     [key: string]: { firstUref: string; newUref: string };
   } = {};
+
+  @property({ attribute: false })
+  showShareCard = false;
 
   doc: DocNode | undefined = undefined;
   client!: ApolloClient<any>;
@@ -1331,9 +1335,15 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     return html`
       <div class="doc-topbar">
         <ul>
-          <li>Share</li>
-          <li>Perspectives</li>
-          <li>Another Item</li>
+          <li
+            @click=${() => {
+              this.showShareCard = !this.showShareCard;
+              console.log('Hola');
+            }}
+          >
+            Share
+          </li>
+          <li>${html` <img src=${TripleDotSvg} alt="more options" /> `}</li>
         </ul>
         ${this.showCommitMessage
           ? html`
@@ -1344,6 +1354,11 @@ export class DocumentEditor extends moduleConnect(LitElement) {
               </uprtcl-icon-button>
             `
           : ''}
+        <div class="doc-topbar-actions-cont">
+          <div class="doc-topbar-actions">
+            ${this.showShareCard ? html`<share-card></share-card>` : ``}
+          </div>
+        </div>
       </div>
     `;
   }
@@ -1428,15 +1443,22 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         right: 16px;
         display: flex;
         z-index: 2;
+        width: 100%;
         /* Testing */
         height: 50px;
         flex-direction: row-reverse;
-        padding: 0 1rem;
+        position: sticky;
+      }
+      .doc-topbar ul {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
       }
       .doc-topbar li {
+        cursor: pointer;
         list-style-type: none;
-        margin: auto 0.7rem;
-        display: inline-block;
+        margin: 0 calc(5px + 1vmin);
+        /* display: inline-block; */
       }
 
       .doc-topbar uprtcl-button-loading {
@@ -1444,17 +1466,25 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         margin-right: 6px;
         width: 90px;
       }
+      .doc-topbar-actions-cont {
+        position: absolute;
+        top: 3rem;
+      }
+      .doc-topbar-actions {
+        padding: 0 0.5rem;
+      }
 
       .doc-node-container {
         border-radius: 4px;
         max-width: 900px;
         margin: auto;
+        margin-top: 1rem;
       }
 
       .doc-actionbar {
         position: absolute;
         bottom: 5%;
-        right: 5%;
+        right: calc(1vmin + 0.5rem);
         display: flex;
         align-items: center;
       }

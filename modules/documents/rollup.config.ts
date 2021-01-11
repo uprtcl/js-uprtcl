@@ -3,6 +3,8 @@ import typescript from 'rollup-plugin-typescript2';
 import json from '@rollup/plugin-json';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import image from '@rollup/plugin-image';
+
 const pkg = require('./package.json');
 // import { resolve } from 'path';
 
@@ -26,6 +28,8 @@ export default {
     include: 'src/**',
   },
   plugins: [
+    // Allow images in bundle
+    image(),
     // Allow json resolution
     json(),
     // Compile TypeScript files
