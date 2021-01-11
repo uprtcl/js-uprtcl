@@ -9,7 +9,7 @@ import { RemoteEvees } from 'src/services/remote.evees';
 import { EveesConfig, Perspective } from 'src/types';
 import { EveesBindings } from 'src/bindings';
 import { Client } from '../services/client';
-import { Evees } from '../services/evees';
+import { Evees } from '../services/evees.service';
 
 const entityStub = (object: any): Entity<any> => {
   return {

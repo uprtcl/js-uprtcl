@@ -1,12 +1,8 @@
 import { interfaces } from 'inversify';
 
 import { MicroModule, i18nextModule } from '@uprtcl/micro-orchestrator';
-import { PatternsModule } from '@uprtcl/cortex';
-import { CASModule } from '@uprtcl/multiplatform';
 import { CommonUIModule } from '@uprtcl/common-ui';
 
-import { PerspectiveLinks, PerspectivePattern } from './patterns/perspective.pattern';
-import { CommitPattern, CommitLinked } from './patterns/commit.pattern';
 import { EveesBindings } from './bindings';
 import { RemoteEvees } from './services/remote.evees';
 import { EveesPerspectivesList } from './elements/evees-perspectives-list';
@@ -25,7 +21,11 @@ import { EveesPerspectiveRow } from './elements/evees-perspective-row';
 import { EveesProposalRow } from './elements/evees-proposal-row';
 import { EveesInfoUserBased } from './elements/evees-info-user-based';
 import { EveesPerspectiveIcon } from './uprtcl-evees';
-import { Evees } from './services/evees';
+import { Evees } from './services/evees.service';
+import { ClientLocal } from './services/clients/client.local';
+import { ClientOnMemory } from './services/clients/client.memory';
+import { RemoteRouter } from './services/clients/client.router';
+import { CASStore } from './services/cas/cas-store';
 
 /**
  * Configure a _Prtcl Evees module with the given service providers
@@ -43,7 +43,11 @@ export class EveesModule extends MicroModule {
 
   static bindings = EveesBindings;
 
-  constructor(protected remotes: Array<RemoteEvees>, protected config?: EveesConfig) {
+  constructor(
+    protected remotes: Array<RemoteEvees>,
+    protected store: CASStore,
+    protected config?: EveesConfig
+  ) {
     super();
   }
 
@@ -66,14 +70,13 @@ export class EveesModule extends MicroModule {
       ? this.config.editableRemotesIds
       : [this.remotes[0].id];
 
-    const router = new ClientRemoteRouter(remotes);
-    const cached = new ClientCached();
-    const merge = new RecursiveContextMergeStrategy(recognizer);
-    const evees = new Evees(cached, recognizer, remotes, merge, this.config);
+    const router = new RemoteRouter(this.remotes, this.store);
+    const cached = new ClientLocal(router, this.store);
+    const onMemory = new ClientOnMemory(router, this.store);
+    const merge = new RecursiveContextMergeStrategy();
+    const evees = new Evees(onMemory, recognizer, this.remotes, merge, this.config);
 
-    for (const remote of this.eveesProviders) {
-      container.bind(EveesModule.bindings.Remote).toConstantValue(remote);
-    }
+    container.bind(EveesModule.bindings.Evees).toConstantValue(evees);
 
     customElements.define('evees-info-popper', EveesInfoPopper);
     customElements.define('evees-info-page', EveesInfoPage);

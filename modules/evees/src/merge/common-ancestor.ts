@@ -33,7 +33,7 @@ export class FindMostRecentCommonAncestor {
     const promises = pathToExplore.heads.map(async (commitId) => {
       let commit: Secured<Commit> | undefined = this.allCommits[commitId];
       if (!commit) {
-        commit = await this.client.getEntity(commitId);
+        commit = await this.client.store.getEntity(commitId);
 
         if (!commit) throw new Error('Could not get ancestor commit');
 

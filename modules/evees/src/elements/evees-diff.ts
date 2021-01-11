@@ -5,8 +5,8 @@ import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
-import { Client } from '../services/client.memory';
-import { Evees } from 'src/services/evees';
+import { Client } from '../services/client';
+import { Evees } from 'src/services/evees.service';
 import { EveesBindings } from 'src/bindings';
 
 const LOGINFO = true;
@@ -60,7 +60,9 @@ export class EveesDiff extends moduleConnect(LitElement) {
 
     this.loading = true;
 
-    const getDetails = this.client.getUpdates().map(async (update) => {
+    const mutation = await this.client.diff();
+
+    const getDetails = mutation.updates.map(async (update) => {
       const newData = await this.evees.getCommitData(update.newHeadId, this.client);
 
       const oldData =
@@ -86,9 +88,9 @@ export class EveesDiff extends moduleConnect(LitElement) {
     /** if a new perspective with the root id is found,
      *  shown as an update from undefined head */
     if (this.rootPerspective) {
-      const newRoot = this.client
-        .getNewPerspectives()
-        .find((newPerspective) => newPerspective.perspective.id === this.rootPerspective);
+      const newRoot = mutation.newPerspectives.find(
+        (newPerspective) => newPerspective.perspective.id === this.rootPerspective
+      );
       if (newRoot) {
         if (newRoot.details.headId) {
           const newData = await this.evees.getCommitData(newRoot.details.headId, this.client);

@@ -6,7 +6,7 @@ import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 import { DEFAULT_COLOR, eveeColor } from './support';
 import { EveesInfoConfig } from './evees-info-user-based';
 import { EveesBindings } from '../bindings';
-import { Evees } from '../services/evees';
+import { Evees } from '../services/evees.service';
 
 export class EveesInfoPopper extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-INFO-POPPER');
@@ -52,7 +52,7 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   }
 
   async load() {
-    const current = await this.evees.client.getEntity(this.uref);
+    const current = await this.evees.client.store.getEntity(this.uref);
     if (!current) throw new Error(`cant find current perspective ${this.uref}`);
 
     this.creatorId = current.object.payload.creatorId;

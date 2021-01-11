@@ -2,7 +2,7 @@ import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternRecognizer, Signed } from '@uprtcl/cortex';
 
 import { UpdateRequest, Commit } from '../types';
-import { CreateCommit, Evees } from '../services/evees';
+import { CreateCommit, Evees } from '../services/evees.service';
 import { MergeStrategy } from './merge-strategy';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Merge } from '../behaviours/merge';
@@ -13,15 +13,10 @@ export class SimpleMergeStrategy implements MergeStrategy {
   static async mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    client: Client,
+    evees: Evees,
     config: any
   ): Promise<string> {
-    return SimpleMergeStrategy.mergePerspectives(
-      toPerspectiveId,
-      fromPerspectiveId,
-      config,
-      client
-    );
+    return SimpleMergeStrategy.mergePerspectives(toPerspectiveId, fromPerspectiveId, config, evees);
   }
 
   static async mergePerspectives(
@@ -40,7 +35,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     let newHead: string | undefined;
 
     newHead = fromHeadId
-      ? await SimpleMergeStrategy.mergeCommits(toHeadId, fromHeadId, remote.id, evees, config)
+      ? await SimpleMergeStrategy.mergeCommits(toHeadId, fromHeadId, evees, remote.id, config)
       : toHeadId;
 
     /** prevent an update head to the same head */
@@ -64,7 +59,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   }
 
   static async findLatestNonFork(commitId: string, client: Client) {
-    const commit = await client.getEntity(commitId);
+    const commit = await client.store.getEntity(commitId);
     if (commit === undefined) throw new Error('commit not found');
 
     if (commit.object.payload.forking !== undefined) {
@@ -99,16 +94,16 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const mergedData = await SimpleMergeStrategy.mergeData(ancestorData, newDatas, evees, config);
 
-    const dataHash = await evees.client.hashEntity(mergedData, remote);
+    const dataHash = await evees.client.store.hashEntity(mergedData, remote);
     /** prevent an update head to the same data */
     if (
-      ((!!newDatas[0] && hash === newDatas[0].id) || toCommitId === fromCommitId) &&
+      ((!!newDatas[0] && dataHash === newDatas[0].id) || toCommitId === fromCommitId) &&
       toCommitIdOrg !== undefined
     ) {
       return toCommitIdOrg;
     }
 
-    evees.client.storeEntity(mergedData, remote);
+    evees.client.store.storeEntity(mergedData, remote);
 
     /** some commits might be undefined */
     const parentsIds = commitsIds.filter((commit) => !!commit);
@@ -120,7 +115,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     };
 
     const securedCommit = await evees.createCommit(newCommit);
-    client.storeEntities([securedCommit]);
+    evees.client.store.storeEntity(securedCommit, remote);
 
     return securedCommit.id;
   }

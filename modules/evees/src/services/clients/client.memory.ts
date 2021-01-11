@@ -7,10 +7,11 @@ import {
   Perspective,
   PerspectiveDetails,
   PartialPerspective,
-} from '../types';
-import { EntityGetResult, Client, PerspectiveGetResult, EveesMutation } from './client';
-import { Proposals } from './proposals';
-import { SearchEngine } from './search.engine';
+} from '../../types';
+import { CASStore, EntityGetResult } from '../cas/cas-store';
+import { Client, PerspectiveGetResult, EveesMutation } from '../client';
+import { Proposals } from '../proposals';
+import { SearchEngine } from '../search.engine';
 
 export class ClientOnMemory implements Client {
   private entities = new Map<string, Entity<any>>();
@@ -22,7 +23,7 @@ export class ClientOnMemory implements Client {
   private cachedEntities = new Map<string, Entity<any>>();
   private cachedPerspectives = new Map<string, PerspectiveDetails>();
 
-  constructor(protected base: Client, mutation?: EveesMutation) {
+  constructor(protected base: Client, public store: CASStore, mutation?: EveesMutation) {
     if (mutation) {
       this.update(mutation);
     }
@@ -80,19 +81,13 @@ export class ClientOnMemory implements Client {
     const update = mutation.updates ? this.updatePerspectives(mutation.updates) : Promise.resolve();
     return Promise.all([create, update]);
   }
-  async storeEntities(objects: any[], remote?: string) {
-    const entities = await this.base.hashEntities(objects, remote);
-    entities.forEach((entity) => {
-      this.entities.set(entity.id, entity);
-    });
-    return entities;
-  }
-  async hashEntities(objects: object[], remote?: string): Promise<Entity<any>[]> {
-    return this.base.hashEntities(objects, remote);
+
+  async hashEntities(objects: object[], remote: string): Promise<Entity<any>[]> {
+    return this.store.hashEntities(objects, remote);
   }
 
   async flush(): Promise<void> {
-    await this.base.storeEntities(Array.from(this.entities.values()));
+    await this.store.flush();
     await this.base.update({
       newPerspectives: Array.from(this.newPerspectives.values()),
       updates: Array.from(this.updates.values()),
@@ -132,7 +127,7 @@ export class ClientOnMemory implements Client {
     }
 
     // ask the base client
-    const result = await this.base.getEntities(notFound);
+    const result = await this.store.getEntities(notFound);
     const entities = found.concat(result.entities);
 
     // cache locally
@@ -154,6 +149,15 @@ export class ClientOnMemory implements Client {
       deletedPerspectives: [],
     };
   }
+
+  async storeEntities(objects: any[], remote: string) {
+    const entities = await this.hashEntities(objects, remote);
+    entities.forEach((entity) => {
+      this.entities.set(entity.id, entity);
+    });
+    return entities;
+  }
+
   storeEntity(object: object, remote?: any): Promise<string> {
     const entities = this.storeEntities([object], remote);
     return entities[0].id;
@@ -169,13 +173,7 @@ export class ClientOnMemory implements Client {
     return perspectives;
   }
 
-  snapPerspective(perspective: PartialPerspective): Promise<Secured<Perspective>> {
-    return this.base.snapPerspective(perspective);
-  }
   refresh(): Promise<void> {
     throw new Error('Method not implemented.');
-  }
-  hashEntity(object: object, remote: string): Promise<string> {
-    return this.base.hashEntity(object, remote);
   }
 }

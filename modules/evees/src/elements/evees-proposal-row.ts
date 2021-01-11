@@ -7,9 +7,9 @@ import { Proposal } from '../types';
 import { EveesBindings } from 'src/bindings';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
-import { Evees } from '../services/evees';
+import { Evees } from '../services/evees.service';
 import { Entity } from '@uprtcl/cortex';
-import { ClientOnMemory } from 'src/services/client.memory';
+import { ClientOnMemory } from 'src/services/clients/client.memory';
 import { RemoteWithUI } from 'src/services/remote.with-ui';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
@@ -70,7 +70,7 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
     this.proposal = await this.evees.getPerspectiveData(this.proposalId);
 
     const fromPerspective = this.proposal.object.fromPerspectiveId
-      ? await this.evees.client.getEntity(this.proposal.object.fromPerspectiveId)
+      ? await this.evees.client.store.getEntity(this.proposal.object.fromPerspectiveId)
       : undefined;
 
     this.toRemote = await this.evees.getPerspectiveRemote(this.proposal.object.toPerspectiveId);
@@ -122,7 +122,11 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   }
 
   async showProposalChanges() {
-    const client = new ClientOnMemory(this.evees.client, this.proposal.object.mutation);
+    const client = new ClientOnMemory(
+      this.evees.client,
+      this.evees.client.store,
+      this.proposal.object.mutation
+    );
 
     this.showDiff = true;
     const options: MenuConfig = {};

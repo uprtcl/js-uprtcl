@@ -8,7 +8,7 @@ import { EveesBindings } from 'src/bindings';
 import { RemoteEvees } from '../services/remote.evees';
 import { Perspective } from '../types';
 import { Secured } from '../utils/cid-hash';
-import { Evees } from 'src/services/evees';
+import { Evees } from 'src/services/evees.service';
 
 export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })

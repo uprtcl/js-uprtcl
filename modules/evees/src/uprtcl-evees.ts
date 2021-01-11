@@ -11,7 +11,7 @@ export { NewPerspectiveData } from './types';
 export { EveesConfig } from './types';
 
 /** Service providers */
-export { Evees } from './services/evees';
+export { Evees } from './services/evees.service';
 export { EveesModule } from './evees.module';
 export { EveesContentModule } from './evees-content.module';
 export { Client } from './services/client';

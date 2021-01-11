@@ -111,12 +111,12 @@ export class EveesInfoUserBased extends EveesInfoBase {
 
     /** from all the perspectives of this evee we must identify the official perspective and this
      * user perspective in the default remote  */
-    const first = await this.evees.client.getEntity(this.firstRef);
+    const first = await this.evees.client.store.getEntity(this.firstRef);
     if (!first) throw new Error(`first perspective ${this.firstRef}`);
 
-    const perspectiveIds = await this.getContextPerspectives(this.firstRef);
+    const perspectiveIds = await this.evees.client.getUserPerspectives(this.firstRef);
     const perspectives = ((await Promise.all(
-      perspectiveIds.map((perspectiveId) => this.evees.client.getEntity(perspectiveId))
+      perspectiveIds.map((perspectiveId) => this.evees.client.store.getEntity(perspectiveId))
     )) as unknown) as Secured<Perspective>[];
 
     if (!this.defaultRemote) throw new Error('default remote not found');
@@ -177,7 +177,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
     }
 
     /** get the current perspective author */
-    const nowPerspective = await this.evees.client.getEntity(this.uref);
+    const nowPerspective = await this.evees.client.store.getEntity(this.uref);
     if (!nowPerspective) throw new Error(`official perspective ${this.uref}`);
 
     this.author = nowPerspective.object.payload.creatorId;
@@ -271,7 +271,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
   async optionOnMine(option: string) {
     switch (option) {
       case 'delete':
-        await this.deletePerspective();
+        await this.evees.client.update({ deletedPerspectives: [this.uref] });
         break;
     }
 

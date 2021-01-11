@@ -14,13 +14,13 @@ import {
 } from '../types';
 import { EveesBindings } from '../bindings';
 import { MergeStrategy } from '../merge/merge-strategy';
-import { Evees } from '../services/evees';
+import { Evees } from '../services/evees.service';
 
 import { RemoteEvees } from '../services/remote.evees';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 import { Client } from 'src/services/client';
-import { ClientOnMemory } from 'src/services/client.memory';
+import { ClientOnMemory } from 'src/services/clients/client.memory';
 
 interface PerspectiveData {
   id?: string;
@@ -140,7 +140,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.remote = await this.evees.getPerspectiveRemote(this.uref);
 
-    const entity = await this.evees.client.getEntity(this.uref);
+    const entity = await this.evees.client.store.getEntity(this.uref);
     if (!entity) throw Error(`Entity not found ${this.uref}`);
 
     this.entityType = this.evees.recognizer.recognizeType(entity);
@@ -152,11 +152,11 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
       const head =
         details.headId !== undefined
-          ? await this.evees.client.getEntity(details.headId)
+          ? await this.evees.client.store.getEntity(details.headId)
           : undefined;
       const data =
         head !== undefined
-          ? await this.evees.client.getEntity(head.object.payload.dataId)
+          ? await this.evees.client.store.getEntity(head.object.payload.dataId)
           : undefined;
 
       this.perspectiveData = {
@@ -171,10 +171,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     }
 
     if (this.entityType === EveesBindings.CommitType) {
-      const head = await this.evees.client.getEntity(this.uref);
+      const head = await this.evees.client.store.getEntity(this.uref);
       const data =
         head !== undefined
-          ? await this.evees.client.getEntity(head.object.payload.dataId)
+          ? await this.evees.client.store.getEntity(head.object.payload.dataId)
           : undefined;
 
       this.perspectiveData = {
@@ -219,9 +219,10 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       parentId: this.uref,
     };
 
-    this.pullclient = new ClientOnMemory(this.evees.client);
+    const pullclient = new ClientOnMemory(this.evees.client, this.evees.client.store);
+    const eveesPull = this.evees.clone(pullclient);
 
-    await this.evees.merge.mergePerspectivesExternal(this.uref, fromUref, this.pullclient, config);
+    await this.evees.merge.mergePerspectivesExternal(this.uref, fromUref, eveesPull, config);
 
     this.logger.info('checkPull()', this.pullclient);
   }
@@ -261,7 +262,8 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     this.merging = true;
     this.logger.info(`merge ${fromPerspectiveId} on ${toPerspectiveId}`);
 
-    const client = new ClientOnMemory(this.evees.client);
+    const client = new ClientOnMemory(this.evees.client, this.evees.client.store);
+    const eveesMerge = this.evees.clone(client);
     const toRemote = await this.evees.getPerspectiveRemote(toPerspectiveId);
 
     const config = {
@@ -276,7 +278,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     await this.evees.merge.mergePerspectivesExternal(
       toPerspectiveId,
       fromPerspectiveId,
-      client,
+      eveesMerge,
       config
     );
 
@@ -358,9 +360,14 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async forkPerspective(perspectiveId?: string) {
+    if (!this.defaultRemote) throw new Error('default remote not defined');
+
     this.creatingNewPerspective = true;
 
-    const newPerspectiveId = await this.evees.forkPerspective(perspectiveId || this.uref);
+    const newPerspectiveId = await this.evees.forkPerspective(
+      perspectiveId || this.uref,
+      this.defaultRemote.id
+    );
 
     this.dispatchEvent(
       new CustomEvent('new-perspective-created', {

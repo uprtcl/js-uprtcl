@@ -1,4 +1,4 @@
-import { Perspective } from '../types';
+import { PartialPerspective, Perspective, PerspectiveLinks } from '../types';
 import { Secured } from '../utils/cid-hash';
 import { AccessControl } from './access-control';
 import { Client } from './client';
@@ -9,6 +9,11 @@ import { RemoteLogged } from './remote.logged';
 export interface RemoteEvees extends Client, RemoteLogged {
   accessControl: AccessControl;
   proposals?: Proposals;
+
+  snapPerspective(
+    perspective: PartialPerspective,
+    links?: PerspectiveLinks
+  ): Promise<Secured<Perspective>>;
 
   getHome?(userId?: string): Promise<Secured<Perspective>>;
 }

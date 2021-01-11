@@ -1,5 +1,5 @@
 import { Signed, Entity } from '@uprtcl/cortex';
-import { CidConfig, defaultCidConfig, CASSource } from '@uprtcl/multiplatform';
+import { CidConfig, defaultCidConfig } from '@uprtcl/multiplatform';
 
 import { deriveEntity, Secured } from './cid-hash';
 

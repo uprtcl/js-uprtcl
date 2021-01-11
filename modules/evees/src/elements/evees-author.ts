@@ -4,7 +4,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { RemoteEvees } from '../services/remote.evees.js';
 import { EveesModule } from '../evees.module';
 import { EveesBindings } from 'src/bindings.js';
-import { Evees } from 'src/services/evees.js';
+import { Evees } from 'src/services/evees.service.js';
 import { RemoteWithUI } from 'src/services/remote.with-ui.js';
 
 export class EveesAuthor extends moduleConnect(LitElement) {

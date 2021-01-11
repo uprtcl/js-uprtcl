@@ -35,6 +35,10 @@ export class Evees {
     readonly config: EveesConfig
   ) {}
 
+  clone(client: Client): Evees {
+    return new Evees(client, this.recognizer, this.remotes, this.merge, this.config);
+  }
+
   async getRemote(remoteId: string): Promise<RemoteEvees> {
     const remote = this.remotes.find((r) => r.id === remoteId);
     if (!remote) throw new Error(`remote ${remoteId} not found`);
@@ -43,10 +47,17 @@ export class Evees {
 
   async getPerspectiveRemote(perspectiveId: string, client?: Client): Promise<RemoteEvees> {
     client = client || this.client;
-    const perspective = await client.getEntity(perspectiveId);
+    const perspective = await client.store.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     const remoteId = perspective.object.payload.remote;
     return this.getRemote(remoteId);
+  }
+
+  async getPerspectiveContext(perspectiveId: string, client?: Client): Promise<string> {
+    client = client || this.client;
+    const perspective = await client.store.getEntity(perspectiveId);
+    if (!perspective) throw new Error('perspective not found');
+    return perspective.object.payload.context;
   }
 
   async getPerspectiveDataId(perspectiveId: string, client?: Client): Promise<string | undefined> {
@@ -67,19 +78,19 @@ export class Evees {
   async getCommitData(commitId: string, client?: Client): Promise<Entity<any>> {
     client = client || this.client;
     const dataId = await this.getCommitDataId(commitId, client);
-    const data = await client.getEntity(dataId);
+    const data = await client.store.getEntity(dataId);
     return data;
   }
 
   async getCommitDataId(commitId: string, client?: Client): Promise<string> {
     client = client || this.client;
-    const commit = await client.getEntity(commitId);
+    const commit = await client.store.getEntity(commitId);
     return commit.object.payload.dataId;
   }
 
   async getData(uref: string, client?: Client) {
     client = client || this.client;
-    const entity = await client.getEntity(uref);
+    const entity = await client.store.getEntity(uref);
 
     let entityType: string = this.recognizer.recognizeType(entity);
 
@@ -109,7 +120,11 @@ export class Evees {
     return hasChildren.getChildrenLinks(data);
   }
 
-  async createCommit(commit: CreateCommit, client?: Client): Promise<Secured<Commit>> {
+  async createCommit(
+    commit: CreateCommit,
+    remote: string,
+    client?: Client
+  ): Promise<Secured<Commit>> {
     client = client || this.client;
 
     const message = commit.message !== undefined ? commit.message : '';
@@ -126,8 +141,11 @@ export class Evees {
     };
 
     const commitObject = signObject(commitData);
-    const created = await client.storeEntities([commitObject]);
-    return created[0];
+    const hash = await client.store.storeEntity(commitObject, remote);
+    return {
+      id: hash,
+      object: commitObject,
+    };
   }
 
   async isAncestorCommit(client: Client, perspectiveId: string, commitId: string, stopAt?: string) {
@@ -180,7 +198,7 @@ export class Evees {
     if (fromPerspectiveId) object.meta.fromPerspectiveId = fromPerspectiveId;
     if (fromHeadId) object.meta.fromHeadId = fromHeadId;
 
-    const hash = await this.client.hashEntity(object, remote.id);
+    const hash = await this.client.store.hashEntity(object, remote.id);
     return {
       id: hash,
       object,
@@ -203,7 +221,7 @@ export class Evees {
       context: `${creatorId}.home`,
     };
 
-    const hash = await client.hashEntity(remoteHome, remote.id);
+    const hash = await client.store.hashEntity(remoteHome, remote.id);
     return {
       id: hash,
       object: remoteHome,
@@ -212,7 +230,7 @@ export class Evees {
 
   async isOfPattern(uref: string, pattern: string, client?: Client): Promise<boolean> {
     client = client || this.client;
-    const entity = await client.getEntity(uref);
+    const entity = await client.store.getEntity(uref);
     const type = this.recognizer.recognizeType(entity);
     return type === pattern;
   }
@@ -268,13 +286,13 @@ export class Evees {
 
   async forkPerspective(
     perspectiveId: string,
+    remote: string,
     parentId?: string,
-    name?: string,
     client?: Client
   ): Promise<string> {
     client = client || this.client;
 
-    const refPerspective: Entity<Signed<Perspective>> = await client.getEntity(perspectiveId);
+    const refPerspective: Entity<Signed<Perspective>> = await client.store.getEntity(perspectiveId);
 
     const { details } = await client.getPerspective(perspectiveId);
 
@@ -283,7 +301,7 @@ export class Evees {
       { parentId }
     );
 
-    await client.storeEntities([perspective.object]);
+    await client.store.storeEntity(perspective.object, remote);
 
     let forkCommitId: string | undefined = undefined;
 
@@ -317,7 +335,7 @@ export class Evees {
   ): Promise<string> {
     client = client || this.client;
 
-    const commit: Secured<Commit> | undefined = await client.getEntity(commitId);
+    const commit: Secured<Commit> | undefined = await client.store.getEntity(commitId);
 
     const dataId = commit.object.payload.dataId;
     const dataForkId = await this.forkEntity(dataId, remote, parentId, client);
@@ -334,7 +352,7 @@ export class Evees {
       timestamp: Date.now(),
     };
 
-    return client.storeEntity(newCommit, remote);
+    return client.store.storeEntity(newCommit, remote);
   }
 
   async forkEntity(
@@ -344,7 +362,7 @@ export class Evees {
     client?: Client
   ): Promise<string> {
     client = client || this.client;
-    const data = await client.getEntity(entityId);
+    const data = await client.store.getEntity(entityId);
     if (!data) throw new Error(`data ${entityId} not found`);
 
     /** createOwnerPreservingEntity of children */
@@ -354,7 +372,7 @@ export class Evees {
     const newLinks = await Promise.all(getLinksForks);
     const tempData = this.replaceEntityChildren(data, newLinks);
 
-    return client.storeEntity(tempData.object, remote);
+    return client.store.storeEntity(tempData.object, remote);
   }
 }
 
@@ -381,7 +399,7 @@ export class FindAncestor {
       }
     }
 
-    const commit = await this.client.getEntity(commitId);
+    const commit = await this.client.store.getEntity(commitId);
 
     if (commit.object.payload.parentsIds.length === 0) {
       return false;

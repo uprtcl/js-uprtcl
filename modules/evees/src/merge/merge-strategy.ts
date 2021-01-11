@@ -1,4 +1,4 @@
-import { Client } from '../services/client.memory';
+import { Evees } from 'src/services/evees.service';
 
 export interface MergeStrategy {
   /**
@@ -7,7 +7,7 @@ export interface MergeStrategy {
   mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    client: Client,
+    evees: Evees,
     config: any
   ): Promise<string>;
 
@@ -18,7 +18,7 @@ export interface MergeStrategy {
   mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    client: Client,
+    evees: Evees,
     config: any
   ): Promise<string>;
 
@@ -29,7 +29,7 @@ export interface MergeStrategy {
     toCommitId: string,
     fromCommitId: string,
     dataSource: string,
-    client: Client,
+    evees: Evees,
     config: any
   ): Promise<string>;
 
@@ -40,7 +40,7 @@ export interface MergeStrategy {
   mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
-    client: Client,
+    evees: Evees,
     config: any
   ): Promise<any[]>;
 }

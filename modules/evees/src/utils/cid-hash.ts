@@ -29,6 +29,5 @@ export async function deriveEntity<O extends object>(
   return {
     id: hash,
     object,
-    casID: undefined,
   };
 }
