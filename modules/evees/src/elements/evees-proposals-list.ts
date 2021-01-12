@@ -4,8 +4,8 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 
 import { EveesBindings } from '../bindings';
 import { Client } from '../services/client';
-import { Evees } from 'src/services/evees.service';
-import { Remote } from 'src/services/logged.remote';
+import { Evees } from '../services/evees.service';
+import { Remote } from '../services/logged.remote';
 
 export class ProposalsList extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');

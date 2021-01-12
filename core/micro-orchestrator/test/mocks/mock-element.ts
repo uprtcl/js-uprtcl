@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit-element';
-import { moduleConnect, request } from '../../src/uprtcl-micro-orchestrator';
+import { moduleConnect, request } from '../../../uprtcl-micro-orchestrator';
 import { MockBindings } from './mock-bindings';
 
 export class MockElement extends moduleConnect(LitElement) {

@@ -16,7 +16,7 @@ import { EthereumConnection } from '@uprtcl/ethereum-provider';
 
 import { EthereumOrbitDBIdentity } from '../orbitdb/ethereum.orbtidb.identity';
 import { EveesBlockchainCached } from '@uprtcl/evees-blockchain';
-import { EveesEthereumConnection } from 'src/provider/evees.ethereum.connection';
+import { EveesEthereumConnection } from '../provider/evees.ethereum.connection';
 
 export interface PinnerConfig {
   peerMultiaddr: string;

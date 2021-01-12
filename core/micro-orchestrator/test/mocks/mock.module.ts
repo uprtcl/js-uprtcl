@@ -1,6 +1,6 @@
 import { interfaces } from 'inversify';
 
-import { MicroModule } from '../../src/orchestrator/micro.module';
+import { MicroModule } from '../../../orchestrator/micro.module';
 import { MockElement } from './mock-element';
 import { MockBindings } from './mock-bindings';
 

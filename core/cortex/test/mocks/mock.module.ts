@@ -1,5 +1,5 @@
 import { MicroModule, Dictionary } from '@uprtcl/micro-orchestrator';
-import { PatternsModule } from '../../src/uprtcl-cortex';
+import { PatternsModule } from '../../../uprtcl-cortex';
 
 import { mockSchema } from './mock.schema';
 import { MockPattern, Text } from './mock.pattern';

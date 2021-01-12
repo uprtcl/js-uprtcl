@@ -5,7 +5,7 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { ClientOnMemory } from '../services/clients/client.memory';
 import { EveesBindings } from '../bindings';
 import { EveesDiff } from './evees-diff';
-import { Evees } from 'src/services/evees.service';
+import { Evees } from '../services/evees.service';
 
 export class EveesProposalDiff extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-DIFF');

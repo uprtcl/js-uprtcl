@@ -1,4 +1,4 @@
-import { MicroModule } from '../../src/orchestrator/micro.module';
+import { MicroModule } from '../../../orchestrator/micro.module';
 import { MockModule } from './mock.module';
 import { DependantModule } from './dependant-module';
 

@@ -1,5 +1,3 @@
-import { PartialPerspective, PerspectiveLinks, Perspective } from 'src/types';
-import { Secured } from 'src/uprtcl-evees';
 import { CASStore } from '../cas/cas-store';
 import { Client, EveesMutation, PerspectiveGetResult } from '../client';
 import { RemoteEvees } from '../remote.evees';

@@ -8,8 +8,8 @@ import { LensesModule } from '@uprtcl/lenses';
 import { MockEveesProvider } from './mocks/mock-evees-provider';
 import { MockStore } from './mocks/mock-store';
 
-import { EveesModule } from '../src/evees.module';
-import { Client } from '../src/uprtcl-evees';
+import { EveesModule } from '../../evees.module';
+import { Client } from '../../uprtcl-evees';
 
 describe('evees-client', () => {
   let orchestrator: MicroOrchestrator;

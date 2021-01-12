@@ -1,15 +1,11 @@
 import { property, LitElement, internalProperty } from 'lit-element';
 
-import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
-import { Entity, CortexModule, PatternRecognizer, Signed, HasChildren } from '@uprtcl/cortex';
-import { loadEntity } from '@uprtcl/multiplatform';
+import { Logger } from '@uprtcl/micro-orchestrator';
+import { Entity, HasChildren } from '@uprtcl/cortex';
 
 import { EveesInfoConfig } from './evees-info-user-based';
-import { RemoteEvees } from 'src/services/remote.evees';
-import { EveesConfig, Perspective } from 'src/types';
-import { EveesBindings } from 'src/bindings';
-import { Client } from '../services/client';
-import { Evees } from '../services/evees.service';
+import { RemoteEvees } from '../services/remote.evees';
+import { eveesConnect } from '../container/evees-connect.mixin';
 
 const entityStub = (object: any): Entity<any> => {
   return {
@@ -18,7 +14,7 @@ const entityStub = (object: any): Entity<any> => {
   };
 };
 
-export class EveesBaseElement<T> extends moduleConnect(LitElement) {
+export class EveesBaseElement<T extends object> extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-BASE-ELEMENT');
 
   @property({ type: String })
@@ -44,14 +40,12 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
 
   protected currentHeadId!: string | undefined;
   protected remote!: RemoteEvees;
-  protected evees!: Evees;
   protected editableRemotesIds!: string[];
 
   async firstUpdated() {
-    this.evees = this.request(EveesBindings.Evees);
-
-    const config = this.request(EveesBindings.Config) as EveesConfig;
-    this.editableRemotesIds = config.editableRemotesIds ? config.editableRemotesIds : [];
+    this.editableRemotesIds = this.evees.config.editableRemotesIds
+      ? this.evees.config.editableRemotesIds
+      : [];
 
     this.logger.log('firstUpdated()', { uref: this.uref });
 
@@ -78,27 +72,31 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
   }
 
   async createEvee(object: T, remote: string) {
-    const dataId = await this.evees.client.storeEntity(object, remote);
-    const headId = await this.evees.createCommit(
+    const dataId = await this.evees.client.store.storeEntity(object, remote);
+    const head = await this.evees.createCommit(
       {
-        dataId,
-        parentsIds: [],
+        dataId
       },
       remote
     );
-    return EveesHelpers.createPerspective(this.client, remoteInstance, {
-      headId,
-      parentId: this.uref,
+    return this.evees.newPerspective({ 
+      details: { 
+        headId: head.id
+      },
+      links: { 
+        parentId: this.uref 
+      }
     });
   }
-
+  
   async updateContent(newData: T) {
-    const dataId = await EveesHelpers.createEntity(this.client, this.remote.store, newData);
-    const headId = await EveesHelpers.createCommit(this.client, this.remote.store, {
+    const dataId = await this.evees.createEntity(newData, this.remote.id);
+    const headId = await this.evees.createCommit({
       dataId,
       parentsIds: this.currentHeadId ? [this.currentHeadId] : undefined,
-    });
-    await EveesHelpers.updateHead(this.client, this.uref, headId);
+    }, this.remote.id)};
+
+    await this.client.udpate({updates: [this.uref, headId]});
 
     this.logger.info('updateContent()', newData);
 
@@ -120,7 +118,7 @@ export class EveesBaseElement<T> extends moduleConnect(LitElement) {
     /** get children pattern */
     const data = entityStub(object);
 
-    const childrentPattern: HasChildren = this.recognizer
+    const childrentPattern: HasChildren = this.evees.recognizer
       .recognizeBehaviours(data)
       .find((b) => (b as HasChildren).getChildrenLinks);
 

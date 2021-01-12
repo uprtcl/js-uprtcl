@@ -1,13 +1,10 @@
 import { LitElement, property, html, css, query } from 'lit-element';
+import { eveesConnect } from '../container/evees-connect.mixin.js';
 
 import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { RemoteEvees } from '../services/remote.evees.js';
-import { EveesModule } from '../evees.module';
-import { EveesBindings } from 'src/bindings.js';
-import { Evees } from 'src/services/evees.service.js';
-import { RemoteWithUI } from 'src/services/remote.with-ui.js';
+import { RemoteWithUI } from '../services/remote.with-ui.js';
 
-export class EveesAuthor extends moduleConnect(LitElement) {
+export class EveesAuthor extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-AUTHOR');
 
   @property({ type: String, attribute: 'user-id' })
@@ -25,12 +22,10 @@ export class EveesAuthor extends moduleConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
-  protected evees!: Evees;
   protected remote!: RemoteWithUI;
 
   async firstUpdated() {
     if (!this.isConnected) return;
-    this.evees = this.request(EveesBindings.Evees);
     this.load();
   }
 

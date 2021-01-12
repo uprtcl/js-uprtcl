@@ -2,7 +2,7 @@ import { MicroModule, Dictionary } from '@uprtcl/micro-orchestrator';
 import { PatternsModule } from '@uprtcl/cortex';
 
 import { MockPattern, Text } from './mock.pattern';
-import { CASModule } from '../../src/cas.module';
+import { CASModule } from '../../../cas.module';
 import { MockSource } from './mock.store';
 
 export class MockModule extends MicroModule {

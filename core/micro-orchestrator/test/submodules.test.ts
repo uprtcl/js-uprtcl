@@ -1,5 +1,5 @@
 import { html, fixture, expect } from '@open-wc/testing';
-import { MicroOrchestrator } from '../src/orchestrator/micro-orchestrator';
+import { MicroOrchestrator } from '../../orchestrator/micro-orchestrator';
 import { MockModule } from './mocks/mock.module';
 import { AggregatorModule } from './mocks/aggregator-module';
 

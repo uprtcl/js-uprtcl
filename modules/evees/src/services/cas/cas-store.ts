@@ -1,5 +1,5 @@
 import { Entity } from '@uprtcl/cortex';
-import { Slice } from 'src/services/client';
+import { Slice } from '../services/client';
 import { CidConfig } from './cid-config';
 
 export interface EntityGetResult {

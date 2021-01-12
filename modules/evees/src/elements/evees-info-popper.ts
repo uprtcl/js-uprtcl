@@ -5,7 +5,6 @@ import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
 
 import { DEFAULT_COLOR, eveeColor } from './support';
 import { EveesInfoConfig } from './evees-info-user-based';
-import { EveesBindings } from '../bindings';
 import { Evees } from '../services/evees.service';
 
 export class EveesInfoPopper extends moduleConnect(LitElement) {
@@ -47,7 +46,6 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
   protected evees!: Evees;
 
   async firstUpdated() {
-    this.evees = this.request(EveesBindings.Client);
     await this.load();
   }
 

@@ -1,7 +1,7 @@
 import { Entity } from '@uprtcl/cortex';
 import { Lens } from '@uprtcl/lenses';
 
-import { Proposal } from 'src/types';
+import { Proposal } from '../types';
 export interface Proposals {
   createProposal(newProposal: Proposal);
 

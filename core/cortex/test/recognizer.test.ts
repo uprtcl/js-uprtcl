@@ -1,7 +1,7 @@
 import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 import { expect } from '@open-wc/testing';
 
-import { CortexModule, PatternRecognizer } from '../src/uprtcl-cortex';
+import { CortexModule, PatternRecognizer } from '../../uprtcl-cortex';
 import { MockModule } from './mocks/mock.module';
 
 const object1 = {
@@ -14,10 +14,7 @@ describe('basic pattern recognition', () => {
   beforeEach(async () => {
     orchestrator = new MicroOrchestrator();
 
-    await orchestrator.loadModules([
-      new CortexModule(),
-      new MockModule({ hash1: object1 }),
-    ]);
+    await orchestrator.loadModules([new CortexModule(), new MockModule({ hash1: object1 })]);
   });
 
   it('pattern recognizer recognizes the patterns of an object', async () => {

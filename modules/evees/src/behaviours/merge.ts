@@ -1,6 +1,6 @@
 import { Behaviour } from '@uprtcl/cortex';
 
-import { Evees } from 'src/services/evees.service';
+import { Evees } from '../services/evees.service';
 import { MergeStrategy } from '../merge/merge-strategy';
 
 export interface Merge<T = any> extends Behaviour<T> {

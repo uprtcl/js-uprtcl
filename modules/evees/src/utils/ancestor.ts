@@ -1,6 +1,6 @@
 import { Entity, Signed } from '@uprtcl/cortex';
-import { Client } from 'src/services/client';
-import { Commit } from 'src/types';
+import { Client } from '../services/client';
+import { Commit } from '../types';
 
 export const isAncestorOf = (client: Client) => async (
   ancestorId: string,
@@ -8,7 +8,7 @@ export const isAncestorOf = (client: Client) => async (
 ): Promise<boolean> => {
   if (ancestorId === commitId) return true;
 
-  const commit: Entity<Signed<Commit>> = await client.getEntity(commitId);
+  const commit: Entity<Signed<Commit>> = await client.store.getEntity(commitId);
   const parentsIds = commit.object.payload.parentsIds;
 
   if (parentsIds.includes(ancestorId)) {

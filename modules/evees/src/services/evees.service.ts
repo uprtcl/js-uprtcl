@@ -2,11 +2,13 @@ import { Entity, PatternRecognizer, HasChildren, Signed } from '@uprtcl/cortex';
 
 import { Commit, EveesConfig, Perspective } from '../types';
 import { signObject } from '../utils/signed';
-import { EveesBindings } from '../bindings';
 import { hashObject, Secured } from '../utils/cid-hash';
 import { Client } from './client';
-import { MergeStrategy } from '../merge/merge-strategy';
 import { RemoteEvees } from './remote.evees';
+import { EveesContentModule } from '../evees.content.module';
+import { PerspectiveType } from '../patterns/perspective.pattern';
+import { CommitType } from '../patterns/commit.pattern';
+import { RecursiveContextMergeStrategy } from 'src/merge/recursive-context.merge-strategy';
 
 export interface CreateCommit {
   dataId: string;
@@ -31,12 +33,13 @@ export class Evees {
     readonly client: Client,
     readonly recognizer: PatternRecognizer,
     readonly remotes: RemoteEvees[],
-    readonly merge: MergeStrategy,
-    readonly config: EveesConfig
+    readonly merge: RecursiveContextMergeStrategy,
+    readonly config: EveesConfig,
+    readonly modules?: EveesContentModule[]
   ) {}
 
   clone(client: Client): Evees {
-    return new Evees(client, this.recognizer, this.remotes, this.merge, this.config);
+    return new Evees(client, this.recognizer, this.remotes, this.merge, this.config, this.modules);
   }
 
   async getRemote(remoteId: string): Promise<RemoteEvees> {
@@ -95,10 +98,10 @@ export class Evees {
     let entityType: string = this.recognizer.recognizeType(entity);
 
     switch (entityType) {
-      case EveesBindings.PerspectiveType:
+      case PerspectiveType:
         return this.getPerspectiveData(uref, client);
 
-      case EveesBindings.CommitType:
+      case CommitType:
         return this.getCommitData(uref, client);
 
       default:
@@ -247,11 +250,11 @@ export class Evees {
    */
   async fork(id: string, remote: string, parentId?: string, client?: Client): Promise<string> {
     client = client || this.client;
-    const isPerspective = await this.isOfPattern(id, EveesBindings.PerspectiveType);
+    const isPerspective = await this.isOfPattern(id, PerspectiveType);
     if (isPerspective) {
       return this.forkPerspective(id, remote, parentId, client);
     } else {
-      const isCommit = await this.isOfPattern(id, EveesBindings.CommitType);
+      const isCommit = await this.isOfPattern(id, CommitType);
       if (isCommit) {
         return this.forkCommit(id, remote, parentId, client);
       } else {
@@ -286,22 +289,22 @@ export class Evees {
 
   async forkPerspective(
     perspectiveId: string,
-    remote: string,
+    remoteId: string,
     parentId?: string,
     client?: Client
   ): Promise<string> {
     client = client || this.client;
 
     const refPerspective: Entity<Signed<Perspective>> = await client.store.getEntity(perspectiveId);
-
-    const { details } = await client.getPerspective(perspectiveId);
-
-    const perspective = await client.snapPerspective(
+    const remote = await this.getRemote(remoteId);
+    const perspective = await remote.snapPerspective(
       { context: refPerspective.object.payload.context },
       { parentId }
     );
 
-    await client.store.storeEntity(perspective.object, remote);
+    const { details } = await client.getPerspective(perspectiveId);
+
+    await client.store.storeEntity(perspective.object, remote.id);
 
     let forkCommitId: string | undefined = undefined;
 

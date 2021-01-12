@@ -1,13 +1,6 @@
 import { Entity } from '@uprtcl/cortex';
-import { Secured } from 'src/uprtcl-evees';
 
-import {
-  UpdateRequest,
-  NewPerspectiveData,
-  Perspective,
-  PerspectiveDetails,
-  PartialPerspective,
-} from '../../types';
+import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../../types';
 import { CASStore, EntityGetResult } from '../cas/cas-store';
 import { Client, PerspectiveGetResult, EveesMutation } from '../client';
 import { Proposals } from '../proposals';

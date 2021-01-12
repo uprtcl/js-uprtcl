@@ -3,13 +3,12 @@ import { PatternRecognizer, Signed } from '@uprtcl/cortex';
 
 import { UpdateRequest, Commit } from '../types';
 import { CreateCommit, Evees } from '../services/evees.service';
-import { MergeStrategy } from './merge-strategy';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Merge } from '../behaviours/merge';
 import { mergeResult } from './utils';
 import { Client } from '../services/client';
 
-export class SimpleMergeStrategy implements MergeStrategy {
+export class SimpleMergeStrategy {
   static async mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
@@ -114,7 +113,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       message: `Merging commits ${parentsIds.toString()}`,
     };
 
-    const securedCommit = await evees.createCommit(newCommit);
+    const securedCommit = await evees.createCommit(newCommit, remote);
     evees.client.store.storeEntity(securedCommit, remote);
 
     return securedCommit.id;

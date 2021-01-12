@@ -1,13 +1,12 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect, Logger, Dictionary } from '@uprtcl/micro-orchestrator';
-import { PatternRecognizer, CortexModule } from '@uprtcl/cortex';
+import { Logger, Dictionary } from '@uprtcl/micro-orchestrator';
+import { PatternRecognizer } from '@uprtcl/cortex';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';
 
 import { Client } from '../services/client';
-import { Evees } from 'src/services/evees.service';
-import { EveesBindings } from 'src/bindings';
+import { eveesConnect } from '../container/evees-connect.mixin';
 
 const LOGINFO = true;
 
@@ -18,7 +17,7 @@ interface UpdateDetails {
   diffLense: DiffLens;
 }
 
-export class EveesDiff extends moduleConnect(LitElement) {
+export class EveesDiff extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: String, attribute: 'root-perspective' })
@@ -32,14 +31,11 @@ export class EveesDiff extends moduleConnect(LitElement) {
 
   updatesDetails: Dictionary<UpdateDetails> = {};
   client!: Client;
-  evees!: Evees;
 
   protected recognizer!: PatternRecognizer;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()');
-    this.evees = this.request(EveesBindings.Evees);
-
     this.loadUpdates();
   }
 

@@ -5,8 +5,8 @@ import {
   Commit,
   PerspectiveDetails,
   RemoteEvees,
-} from '../../src/uprtcl-evees';
-import { NewPerspectiveData } from '../../src/types';
+} from '../../../uprtcl-evees';
+import { NewPerspectiveData } from '../../../types';
 
 export class MockEveesProvider implements RemoteEvees {
   constructor(

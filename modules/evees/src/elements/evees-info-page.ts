@@ -35,22 +35,7 @@ export class EveesInfoPage extends EveesInfoBase {
 
   connectedCallback() {
     super.connectedCallback();
-
     this.logger.log('Connected', this.uref);
-
-    this.addEventListener('keydown', (event) => {
-      if (event.keyCode === 27) {
-        // 27 is esc
-        this.showEditName = false;
-      }
-
-      if (event.keyCode === 13) {
-        // 13 is enter
-        if (this.showEditName) {
-          this.saveName();
-        }
-      }
-    });
   }
 
   async disconnectedCallback() {
@@ -62,24 +47,6 @@ export class EveesInfoPage extends EveesInfoBase {
     this.showEditName = true;
     await this.updateComplete;
     this.draftTextField.focus();
-  }
-
-  async saveName() {
-    if (!this.shadowRoot) return;
-    const client = this.client as Client;
-    const newName = this.draftTextField.value;
-
-    this.showEditName = false;
-
-    await client.mutate({
-      mutation: UPDATE_HEAD,
-      variables: {
-        perspectiveId: this.uref,
-        name: newName,
-      },
-    });
-
-    this.load();
   }
 
   optionClicked(e) {
@@ -126,7 +93,7 @@ export class EveesInfoPage extends EveesInfoBase {
       return;
     }
 
-    await this.pullclient.execute(this.client);
+    await this.pullclient.flush();
 
     this.checkoutPerspective(this.uref);
   }

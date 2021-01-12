@@ -6,24 +6,19 @@ export { Commit, Perspective, PerspectiveDetails, HasDiffLenses, DiffLens } from
 
 /** Services interfaces */
 export { Source } from './services/source';
-export { RemoteEvees } from './services/remote.evees';
 export { NewPerspectiveData } from './types';
 export { EveesConfig } from './types';
 
 /** Service providers */
 export { Evees } from './services/evees.service';
-export { EveesModule } from './evees.module';
-export { EveesContentModule } from './evees-content.module';
 export { Client } from './services/client';
 
 /** Merge */
 export { Merge } from './behaviours/merge';
 
-export { MergeStrategy } from './merge/merge-strategy';
 export { SimpleMergeStrategy } from './merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './merge/recursive-context.merge-strategy';
 export { mergeStrings, mergeResult } from './merge/utils';
-export { EveesBindings } from './bindings';
 
 /** Elements */
 export { EveesPerspectivesList } from './elements/evees-perspectives-list';

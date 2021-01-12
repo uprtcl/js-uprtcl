@@ -3,12 +3,13 @@ import { LitElement, html, css, property, query } from 'lit-element';
 import { Signed } from '@uprtcl/cortex';
 import { moduleConnect } from '@uprtcl/micro-orchestrator';
 
-import { EveesBindings } from 'src/bindings';
+import { EveesBindings } from '../bindings';
 
 import { RemoteEvees } from '../services/remote.evees';
 import { Perspective } from '../types';
 import { Secured } from '../utils/cid-hash';
-import { Evees } from 'src/services/evees.service';
+import { Evees } from '../services/evees.service';
+import { RemoteWithUI } from '../services/remote.with-ui';
 
 export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })
@@ -18,7 +19,7 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
   loading: boolean = true;
 
   perspective!: Secured<Perspective>;
-  remote!: RemoteEvees;
+  remote!: RemoteWithUI;
   evees!: Evees;
 
   async firstUpdated() {
@@ -34,7 +35,7 @@ export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
 
   async load() {
     this.loading = true;
-    const perspective = await this.evees.client.getEntity(this.perspectiveId);
+    const perspective = await this.evees.client.store.getEntity(this.perspectiveId);
     if (!perspective) throw new Error('perspective undefined');
 
     const remote = this.evees.remotes.find((r) => r.id === perspective.object.payload.remote);

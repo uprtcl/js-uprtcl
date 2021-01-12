@@ -1,11 +1,9 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-
 import { eveeColor } from './support';
-import { EveesBindings } from './../bindings';
 import { RemoteEvees } from '../services/remote.evees';
 import { Client } from '../services/client';
+import { eveesConnect } from 'src/container/evees-connect.mixin';
 
 interface PerspectiveData {
   id: string;
@@ -15,7 +13,7 @@ interface PerspectiveData {
   timestamp: number;
 }
 
-export class EveesPerspectivesList extends moduleConnect(LitElement) {
+export class EveesPerspectivesList extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
 
   @property({ type: String, attribute: 'perspective-id' })
@@ -38,43 +36,29 @@ export class EveesPerspectivesList extends moduleConnect(LitElement) {
 
   perspectivesData: PerspectiveData[] = [];
 
-  protected client!: Client;
-  protected remotes!: RemoteEvees[];
-
-  async firstUpdated() {
-    if (!this.isConnected) return;
-
-    this.client = this.request(EveesBindings.Client);
-    this.remotes = this.requestAll(EveesBindings.RemoteEvees) as RemoteEvees[];
-    this.load();
-  }
-
   async load() {
     this.loadingPerspectives = true;
-    const otherPerspectivesIds = await this.client.searchEngine.otherPerspectives(
+    const otherPerspectivesIds = await this.getEvees().client.searchEngine.otherPerspectives(
       this.perspectiveId
     );
 
-    const perspectivesData: PerspectiveData[] =
-      result.data.entity.payload.context === null
-        ? []
-        : await Promise.all(
-            otherPerspectivesIds.map(
-              async (perspective): Promise<PerspectiveData> => {
-                /** data on this perspective */
-                const remote = this.remotes.find((r) => r.id === perspective.payload.remote);
-                if (!remote) throw new Error(`remote not found for ${perspective.payload.remote}`);
-                this.canUpdate = await EveesHelpers.canUpdate(this.client, this.perspectiveId);
-                return {
-                  id: perspective.id,
-                  name: perspective.name,
-                  creatorId: perspective.payload.creatorId,
-                  timestamp: perspective.payload.timestamp,
-                  remote: perspective.payload.remote,
-                };
-              }
-            )
-          );
+    const perspectivesData: PerspectiveData[] = await Promise.all(
+      otherPerspectivesIds.map(
+        async (perspective): Promise<PerspectiveData> => {
+          /** data on this perspective */
+          const remote = this.evees.remotes.find((r) => r.id === perspective.payload.remote);
+          if (!remote) throw new Error(`remote not found for ${perspective.payload.remote}`);
+          this.canUpdate = await this.evees.client.getPerspective(this.perspectiveId);
+          return {
+            id: perspective.id,
+            name: perspective.name,
+            creatorId: perspective.payload.creatorId,
+            timestamp: perspective.payload.timestamp,
+            remote: perspective.payload.remote,
+          };
+        }
+      )
+    );
 
     // remove duplicates
     const map = new Map<string, PerspectiveData>();

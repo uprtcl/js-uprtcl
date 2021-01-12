@@ -3,7 +3,7 @@ import { html } from 'lit-element';
 
 import { Pattern, Entity } from '@uprtcl/cortex';
 
-import { HasLenses } from '../../src/behaviours/has-lenses';
+import { HasLenses } from '../../../behaviours/has-lenses';
 
 export class MockPattern extends Pattern<any> {
   recognize(object: any) {

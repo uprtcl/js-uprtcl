@@ -4,13 +4,13 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
 import { Proposal } from '../types';
-import { EveesBindings } from 'src/bindings';
+import { EveesBindings } from '../bindings';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 import { Evees } from '../services/evees.service';
 import { Entity } from '@uprtcl/cortex';
-import { ClientOnMemory } from 'src/services/clients/client.memory';
-import { RemoteWithUI } from 'src/services/remote.with-ui';
+import { ClientOnMemory } from '../services/clients/client.memory';
+import { RemoteWithUI } from '../services/remote.with-ui';
 
 export class EveesProposalRow extends moduleConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');

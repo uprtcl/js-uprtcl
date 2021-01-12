@@ -4,7 +4,8 @@ import CID from 'cids';
 
 import { Signed, Entity } from '@uprtcl/cortex';
 import { sortObject } from '@uprtcl/ipfs-provider';
-import { CidConfig, defaultCidConfig } from '@uprtcl/multiplatform';
+
+import { CidConfig, defaultCidConfig } from 'src/services/cas/cid-config';
 
 export async function hashObject(
   object: object,

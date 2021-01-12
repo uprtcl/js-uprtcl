@@ -1,4 +1,4 @@
-import { Entity } from 'src/services/node_modules/@uprtcl/cortex';
+import { Entity } from '../services/node_modules/@uprtcl/cortex';
 
 import { Ready } from './ready';
 import { CidConfig } from './cid-config';

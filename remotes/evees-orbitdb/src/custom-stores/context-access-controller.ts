@@ -1,5 +1,5 @@
 'use strict';
-import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
+import IPFSAccessController from 'orbit-db-access-controllers/../ipfs-access-controller';
 import { IdentitySource } from '@uprtcl/orbitdb-provider';
 import { checkToPerspectiveCreator } from './validate.mapped.address';
 

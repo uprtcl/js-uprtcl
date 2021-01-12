@@ -5,7 +5,7 @@ import { MicroOrchestrator } from '@uprtcl/micro-orchestrator';
 import { CortexModule } from '@uprtcl/cortex';
 import { DiscoveryModule } from '@uprtcl/multiplatform';
 
-import { LensesModule } from '../src/lenses.module';
+import { LensesModule } from '../../lenses.module';
 import { MockModule } from './mocks/mock.module';
 
 const object1 = {

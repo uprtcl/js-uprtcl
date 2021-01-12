@@ -4,7 +4,7 @@ import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { HasChildren } from '@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import { Evees } from 'src/services/evees.service';
+import { Evees } from '../services/evees.service';
 
 @injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
@@ -117,7 +117,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId, evees);
     }
 
-    return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, evees, config);
+    return SimpleMergeStrategy.mergePerspectives(toPerspectiveId, fromPerspectiveId, evees, config);
   }
 
   private async getPerspectiveContext(perspectiveId: string, evees: Evees): Promise<string> {
@@ -161,7 +161,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       modificationsPromises.map((promises) => Promise.all(promises))
     );
 
-    const mergedLinks = await super.mergeLinks(
+    const mergedLinks = await SimpleMergeStrategy.mergeLinks(
       originalMergeIds,
       modificationsMergeIds,
       evees,

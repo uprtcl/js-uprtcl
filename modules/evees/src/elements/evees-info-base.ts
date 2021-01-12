@@ -4,23 +4,15 @@ import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import { CortexModule, PatternRecognizer, Entity, Signed } from '@uprtcl/cortex';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
-import {
-  ProposalCreatedEvent,
-  Perspective,
-  PerspectiveDetails,
-  Commit,
-  EveesConfig,
-  Proposal,
-} from '../types';
-import { EveesBindings } from '../bindings';
-import { MergeStrategy } from '../merge/merge-strategy';
+import { ProposalCreatedEvent, Perspective, PerspectiveDetails, Commit, Proposal } from '../types';
 import { Evees } from '../services/evees.service';
 
 import { RemoteEvees } from '../services/remote.evees';
 import { EveesDiff } from './evees-diff';
-import { ContentUpdatedEvent } from './events';
-import { Client } from 'src/services/client';
-import { ClientOnMemory } from 'src/services/clients/client.memory';
+import { Client } from '../services/client';
+import { ClientOnMemory } from '../services/clients/client.memory';
+import { PerspectiveType } from 'src/patterns/perspective.pattern';
+import { CommitType } from 'src/patterns/commit.pattern';
 
 interface PerspectiveData {
   id?: string;
@@ -114,8 +106,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   protected defaultRemote: RemoteEvees | undefined = undefined;
 
   async firstUpdated() {
-    this.evees = this.request(EveesBindings.Evees);
-
     this.defaultRemote =
       this.defaultRemoteId !== undefined
         ? this.evees.remotes.find((remote) => remote.id === this.defaultRemoteId)
@@ -147,7 +137,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
 
     this.loading = true;
 
-    if (this.entityType === EveesBindings.PerspectiveType) {
+    if (this.entityType === PerspectiveType) {
       const { details } = await this.evees.client.getPerspective(this.uref);
 
       const head =
@@ -170,7 +160,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
       this.logger.info('load', { perspectiveData: this.perspectiveData });
     }
 
-    if (this.entityType === EveesBindings.CommitType) {
+    if (this.entityType === CommitType) {
       const head = await this.evees.client.store.getEntity(this.uref);
       const data =
         head !== undefined
@@ -199,7 +189,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   }
 
   async checkPull(fromUref: string) {
-    if (this.entityType !== EveesBindings.PerspectiveType) {
+    if (this.entityType !== PerspectiveType) {
       this.pullclient = undefined;
       return;
     }
@@ -476,7 +466,7 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
     return html`
       <div class="perspective-details">
         <div class="prop-name"><h2>${this.entityType}</h2></div>
-        ${this.entityType === EveesBindings.PerspectiveType
+        ${this.entityType === PerspectiveType
           ? html`
               <div class="prop-name">perspective id</div>
               <pre class="prop-value">${this.perspectiveData.id}</pre>

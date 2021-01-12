@@ -7,9 +7,9 @@ import { DiscoveryModule } from '@uprtcl/multiplatform';
 import { LensesModule } from '@uprtcl/lenses';
 import { EveesModule } from '@uprtcl/evees';
 
-import { DocumentsModule } from '../src/documents.module';
+import { DocumentsModule } from '../../documents.module';
 import { MockStore } from './mocks/mock-store';
-import { TextType } from '../src/types';
+import { TextType } from '../../types';
 import { MockEveesProvider } from './mocks/mock-evees-provider';
 
 describe('<cortex-entity>', () => {

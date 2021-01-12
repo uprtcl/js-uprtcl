@@ -1,6 +1,5 @@
 import { Signed, Entity } from '@uprtcl/cortex';
-import { CidConfig, defaultCidConfig } from '@uprtcl/multiplatform';
-
+import { CidConfig, defaultCidConfig } from 'src/services/cas/cid-config';
 import { deriveEntity, Secured } from './cid-hash';
 
 export function signObject<T>(object: T): Signed<T> {
