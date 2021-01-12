@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 // import * as ENS from 'ethereum-ens';
-import { blockies } from './blockies.js';
+import { blockies } from './blockies.js.js';
 
 import { eveesConnect, Logger } from '@uprtcl/evees';
 const styleMap = (style) => {
