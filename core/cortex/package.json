@@ -12,11 +12,6 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/graphql": "^0.1.1",
-    "@uprtcl/micro-orchestrator": "^0.1.1",
-    "graphql": "^14.6.0",
-    "graphql-tag": "^2.10.1",
-    "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
     "reflect-metadata": "^0.1.13"
   },
@@ -26,7 +21,6 @@
     "@rollup/plugin-json": "^4.0.1",
     "@types/lodash-es": "^4.17.3",
     "@types/node": "^10.11.0",
-    "graphql-tools": "^5.0.0",
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^4.4.1",
     "karma-webpack": "^4.0.2",

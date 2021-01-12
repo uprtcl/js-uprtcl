@@ -1,7 +1,6 @@
 import { LitElement, html, css, property, query } from 'lit-element';
 
-import { Signed } from '@uprtcl/cortex';
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { eveesConnect } from '@uprtcl/evees';
 
 import { EveesBindings } from '../bindings';
 
@@ -11,7 +10,7 @@ import { Secured } from '../utils/cid-hash';
 import { Evees } from '../services/evees.service';
 import { RemoteWithUI } from '../services/remote.with-ui';
 
-export class EveesPerspectiveIcon extends moduleConnect(LitElement) {
+export class EveesPerspectiveIcon extends eveesConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
 

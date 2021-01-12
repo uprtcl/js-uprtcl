@@ -1,11 +1,11 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { eveesConnect } from '@uprtcl/evees';
 import { EveesModule, RemoteEvees } from '@uprtcl/evees';
 
 import { EveesOrbitDB } from './evees.orbit-db';
 
-export class RemoteOrbitdDbLense extends moduleConnect(LitElement) {
+export class RemoteOrbitdDbLense extends eveesConnect(LitElement) {
   @property({ type: String, attribute: 'remote-id' })
   remoteId!: string;
 

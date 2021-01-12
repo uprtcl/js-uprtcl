@@ -6,7 +6,7 @@ const styleMap = (style) => {
   }, '');
 };
 
-import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
+import { Logger, eveesConnect } from '@uprtcl/evees';
 import { sharedStyles } from '@uprtcl/lenses';
 import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import {

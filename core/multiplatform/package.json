@@ -13,14 +13,7 @@
   },
   "dependencies": {
     "@uprtcl/cortex": "^0.1.1",
-    "@uprtcl/graphql": "^0.1.1",
-    "@uprtcl/micro-orchestrator": "^0.1.1",
-    "apollo-boost": "^0.4.7",
     "cids": "^1.0.0",
-    "graphql": "^14.6.0",
-    "graphql-tag": "^2.10.1",
-    "graphql-tools": "^5.0.0",
-    "inversify": "^5.0.1",
     "lodash-es": "^4.17.15",
     "reflect-metadata": "^0.1.13"
   },

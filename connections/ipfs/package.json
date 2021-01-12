@@ -13,13 +13,11 @@
   },
   "dependencies": {
     "@uprtcl/cortex": "^0.1.1",
-    "@uprtcl/micro-orchestrator": "^0.1.1",
     "@uprtcl/multiplatform": "^0.1.1",
     "cbor-js": "^0.1.0",
     "cids": "^1.0.0",
     "concat-stream": "^2.0.0",
     "dexie": "^3.0.2",
-    "inversify": "^5.0.1",
     "ipfs": "^0.50.2",
     "multihashing-async": "^0.8.1",
     "reflect-metadata": "^0.1.13"

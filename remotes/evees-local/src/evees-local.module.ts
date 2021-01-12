@@ -1,10 +1,7 @@
-import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
+import { EveesContentModule, Logger } from '@uprtcl/evees';
 
-import { EveesLocalBindings } from './bindings';
-
-export class EveesLocalModule extends MicroModule {
+export class EveesLocalModule extends EveesContentModule {
   static id = 'evees-local-module';
-  static bindings = EveesLocalBindings;
 
   logger = new Logger('EVEES-LOCAL-MODULE');
 

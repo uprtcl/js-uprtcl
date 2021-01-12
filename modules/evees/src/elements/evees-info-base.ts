@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+import { eveesConnect, Logger } from '@uprtcl/evees';
 import { CortexModule, PatternRecognizer, Entity, Signed } from '@uprtcl/cortex';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 

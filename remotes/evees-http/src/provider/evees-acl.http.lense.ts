@@ -1,6 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { eveesConnect } from '@uprtcl/evees';
 import { EveesBindings, EveesHelpers, RemoteEvees } from '@uprtcl/evees';
 import { HasTitle, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
@@ -12,7 +12,7 @@ import {
 } from './types';
 import { EveesHttp } from './evees.http';
 
-export class EveesAccessControlHttpLense extends moduleConnect(LitElement) {
+export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
   @property()
   uref!: string;
 

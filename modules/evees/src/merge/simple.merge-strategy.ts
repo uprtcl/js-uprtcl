@@ -1,7 +1,4 @@
-import { Dictionary } from '@uprtcl/micro-orchestrator';
-import { PatternRecognizer, Signed } from '@uprtcl/cortex';
-
-import { UpdateRequest, Commit } from '../types';
+import { UpdateRequest } from '../types';
 import { CreateCommit, Evees } from '../services/evees.service';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Merge } from '../behaviours/merge';

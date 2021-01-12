@@ -1,7 +1,7 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 import { eveesConnect } from '../container/evees-connect.mixin.js';
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+import { eveesConnect, Logger } from '@uprtcl/evees';
 import { RemoteWithUI } from '../services/remote.with-ui.js';
 
 export class EveesAuthor extends eveesConnect(LitElement) {

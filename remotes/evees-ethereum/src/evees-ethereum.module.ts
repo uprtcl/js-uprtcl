@@ -1,4 +1,4 @@
-import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
+import { EveesContentModule, Logger } from '@uprtcl/evees';
 
 import { EveesEthereumBindings } from './bindings';
 import { ThreeBoxProfile } from './provider/threebox/threebox.profile';

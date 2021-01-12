@@ -15,7 +15,6 @@
     "@tabcat/orbit-db-identity-provider-d": "^1.0.0",
     "@tabcat/orbit-db-set": "^2.0.0",
     "@uprtcl/ipfs-provider": "^0.1.1",
-    "@uprtcl/micro-orchestrator": "^0.1.1",
     "@uprtcl/multiplatform": "^0.1.1",
     "ipfs": "^0.50.2",
     "npm-check-updates": "^10.2.1",

@@ -1,7 +1,7 @@
 import { html, css, property, LitElement, query } from 'lit-element';
 
 import { UprtclPopper } from '@uprtcl/common-ui';
-import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
+import { Logger, eveesConnect } from '@uprtcl/evees';
 
 import { DEFAULT_COLOR, eveeColor } from './support';
 import { EveesInfoConfig } from './evees-info-user-based';

@@ -1,6 +1,4 @@
 import { injectable } from 'inversify';
-
-import { Dictionary } from '@uprtcl/micro-orchestrator';
 import { HasChildren } from '@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';

@@ -8,7 +8,7 @@ const styleMap = (style) => {
   }, '');
 };
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+import { eveesConnect, Logger } from '@uprtcl/evees';
 import { HasChildren, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import {
   RemoteEvees,

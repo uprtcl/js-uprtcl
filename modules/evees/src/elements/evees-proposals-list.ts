@@ -1,6 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+import { eveesConnect, Logger } from '@uprtcl/evees';
 
 import { EveesBindings } from '../bindings';
 import { Client } from '../services/client';

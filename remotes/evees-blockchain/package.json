@@ -16,13 +16,10 @@
     "@uprtcl/cortex": "^0.1.1",
     "@uprtcl/evees": "^0.1.1",
     "@uprtcl/evees-orbitdb": "^0.1.1",
-    "@uprtcl/graphql": "^0.1.1",
     "@uprtcl/ipfs-provider": "^0.1.1",
     "@uprtcl/lenses": "^0.1.1",
-    "@uprtcl/micro-orchestrator": "^0.1.1",
     "@uprtcl/multiplatform": "^0.1.1",
     "@uprtcl/orbitdb-provider": "^0.1.1",
-    "apollo-boost": "^0.4.7",
     "dexie": "^3.0.2",
     "lit-html": "^1.1.2"
   },

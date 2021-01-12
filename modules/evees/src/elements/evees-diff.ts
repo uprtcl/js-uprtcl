@@ -1,6 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { Logger, Dictionary } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { PatternRecognizer } from '@uprtcl/cortex';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../types';

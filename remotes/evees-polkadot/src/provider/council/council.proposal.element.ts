@@ -1,6 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect } from '@uprtcl/micro-orchestrator';
+import { eveesConnect } from '@uprtcl/evees';
 import { prettyTimePeriod } from '@uprtcl/common-ui';
 
 import {
@@ -18,7 +18,7 @@ import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import { ProposalManifest, ProposalSummary, Vote } from './types';
 import { ProposalStatus, VoteValue } from './proposal.config.types';
 
-export class EveesPolkadotCouncilProposal extends moduleConnect(LitElement) {
+export class EveesPolkadotCouncilProposal extends eveesConnect(LitElement) {
   @property({ type: String, attribute: 'proposal-id' })
   proposalId!: string;
 

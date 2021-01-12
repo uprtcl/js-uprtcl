@@ -13,10 +13,8 @@
   },
   "dependencies": {
     "@uprtcl/cortex": "^0.1.1",
-    "@uprtcl/micro-orchestrator": "^0.1.1",
     "@uprtcl/multiplatform": "^0.1.1",
     "ethers": "^5.0.8",
-    "inversify": "^5.0.1",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {

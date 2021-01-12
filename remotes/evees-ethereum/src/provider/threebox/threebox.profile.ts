@@ -3,13 +3,10 @@ import { LitElement, property, html, css, query } from 'lit-element';
 import { blockies } from './blockies.js';
 import * as Box from '3box';
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
+import { eveesConnect, Logger } from '@uprtcl/evees';
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(
-      /([A-Z])/g,
-      (matches) => `-${matches[0].toLowerCase()}`
-    );
+    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
