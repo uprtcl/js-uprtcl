@@ -1,6 +1,6 @@
 import { property, LitElement, internalProperty } from 'lit-element';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { Entity, HasChildren } from '@uprtcl/cortex';
 
 import { EveesInfoConfig } from './evees-info-user-based';

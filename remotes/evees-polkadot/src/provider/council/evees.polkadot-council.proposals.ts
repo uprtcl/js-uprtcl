@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { ProposalsProvider, UpdateRequest } from '@uprtcl/evees';
 import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { CASStore } from '@uprtcl/multiplatform';
@@ -52,7 +52,7 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
             throw new Error('headId cannot be undefiend for newPerspectives');
           return {
             newHeadId: newPerspective.details.headId,
-            perspectiveId: newPerspective.perspective.id
+            perspectiveId: newPerspective.perspective.id,
           };
         }
       )
@@ -66,7 +66,7 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
       updates: updates,
       creatorId: this.connection.account,
       fromHeadId: proposal.fromHeadId,
-      toHeadId: proposal.toHeadId
+      toHeadId: proposal.toHeadId,
     };
 
     const proposalId = await this.councilStore.createProposal(proposalManifest);
@@ -74,7 +74,7 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
     this.logger.info('createProposal() - done', {
       proposalId,
       proposalManifest,
-      details: proposal.details
+      details: proposal.details,
     });
 
     return proposalId;
@@ -102,8 +102,10 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
       fromPerspectiveId: proposalManifest.fromPerspectiveId,
       details: {
         newPerspectives: [],
-        updates: proposalManifest.updates.filter(update => update.fromPerspectiveId !== undefined)
-      }
+        updates: proposalManifest.updates.filter(
+          (update) => update.fromPerspectiveId !== undefined
+        ),
+      },
     };
 
     this.logger.info('getProposal() - post', { proposal });
@@ -129,7 +131,7 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
           <evees-polkadot-council-proposal proposal-id=${entity.proposalId}>
           </evees-polkadot-council-proposal>
         `;
-      }
+      },
     };
   }
 

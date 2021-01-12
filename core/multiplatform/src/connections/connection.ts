@@ -1,6 +1,6 @@
 import merge from 'lodash-es/merge';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 
 import { Ready } from '../types/ready';
 

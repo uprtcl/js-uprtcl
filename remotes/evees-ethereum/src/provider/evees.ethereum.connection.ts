@@ -1,6 +1,6 @@
 import { html, TemplateResult } from 'lit-html';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import {
   EthereumConnection,
   EthereumContractOptions,
@@ -9,10 +9,7 @@ import {
 import { BlockchainConnection } from '@uprtcl/evees-blockchain';
 import { cidToHex32, bytes32ToCid } from '@uprtcl/ipfs-provider';
 
-import {
-  abi as abiRoot,
-  networks as networksRoot,
-} from './contracts-json/UprtclRoot.min.json';
+import { abi as abiRoot, networks as networksRoot } from './contracts-json/UprtclRoot.min.json';
 const UprtclRoot = { abi: abiRoot, networks: networksRoot };
 const ZERO_ADDRESS = '0x' + new Array(40).fill(0).join('');
 const ZERO_HEX_32 = '0x' + new Array(64).fill(0).join('');
@@ -41,21 +38,11 @@ export class EveesEthereumConnection implements BlockchainConnection {
   async getHead(userId: string, block?: number) {
     if (!userId) return undefined;
 
-    const filter = this.uprtclRoot.contractInstance.filters.HeadUpdated(
-      userId,
-      null,
-      null
-    );
-    const events = await this.uprtclRoot.contractInstance.queryFilter(
-      filter,
-      0,
-      block
-    );
+    const filter = this.uprtclRoot.contractInstance.filters.HeadUpdated(userId, null, null);
+    const events = await this.uprtclRoot.contractInstance.queryFilter(filter, 0, block);
 
     if (events.length === 0) return undefined;
-    const last = events
-      .sort((e1, e2) => (e1.blockNumber > e2.blockNumber ? 1 : -1))
-      .pop();
+    const last = events.sort((e1, e2) => (e1.blockNumber > e2.blockNumber ? 1 : -1)).pop();
     if (!last) return undefined;
     if (!last.args) return undefined;
 
@@ -63,14 +50,9 @@ export class EveesEthereumConnection implements BlockchainConnection {
   }
 
   async updateHead(head: string | undefined) {
-    const headCidParts =
-      head !== undefined ? cidToHex32(head) : [ZERO_HEX_32, ZERO_HEX_32];
+    const headCidParts = head !== undefined ? cidToHex32(head) : [ZERO_HEX_32, ZERO_HEX_32];
 
-    return this.uprtclRoot.send(UPDATED_HEAD, [
-      headCidParts[0],
-      headCidParts[1],
-      ZERO_ADDRESS,
-    ]);
+    return this.uprtclRoot.send(UPDATED_HEAD, [headCidParts[0], headCidParts[1], ZERO_ADDRESS]);
   }
 
   get account() {
@@ -90,21 +72,14 @@ export class EveesEthereumConnection implements BlockchainConnection {
         chainName = 'xDAI';
     }
     return html`
-      <div
-        style="display:flex;align-items: center;color: #636668;font-weight:bold"
-      >
-        <div style="height: 28px;width: 28px;margin-right: 6px">
-          ${icons.ethereum}
-        </div>
+      <div style="display:flex;align-items: center;color: #636668;font-weight:bold">
+        <div style="height: 28px;width: 28px;margin-right: 6px">${icons.ethereum}</div>
         ${chainName}
       </div>
     `;
   }
   avatar(userId: string, config: any = { showName: true }) {
-    return html`<threebox-profile
-      address=${userId}
-      ?show-name=${config.showName}
-    >
+    return html`<threebox-profile address=${userId} ?show-name=${config.showName}>
     </threebox-profile> `;
   }
   async getLatestBlock() {

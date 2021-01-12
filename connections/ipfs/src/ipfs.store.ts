@@ -8,7 +8,7 @@ import {
   Connection,
   ConnectionOptions,
 } from '@uprtcl/multiplatform';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 
 import { IpfsConnectionOptions } from './types';
 import { sortObject } from './utils';
@@ -24,10 +24,7 @@ export interface PutConfig {
 const TIMEOUT = 10000;
 const ENABLE_LOG = true;
 
-const promiseWithTimeout = (
-  promise: Promise<any>,
-  timeout: number
-): Promise<any> => {
+const promiseWithTimeout = (promise: Promise<any>, timeout: number): Promise<any> => {
   let timeoutId;
   const timeoutPromise = new Promise((_, reject) => {
     timeoutId = setTimeout(() => {
@@ -101,11 +98,9 @@ export class IpfsStore extends Connection implements CASStore {
           if (ENABLE_LOG) {
             this.logger.log(`pinning`, hashString);
           }
-          fetch(`${this.pinnerUrl}/pin_hash?cid=${hashString}`).then(
-            (response) => {
-              this.pinnedCache.pinned.put({ id: hashString });
-            }
-          );
+          fetch(`${this.pinnerUrl}/pin_hash?cid=${hashString}`).then((response) => {
+            this.pinnedCache.pinned.put({ id: hashString });
+          });
         }
       });
     }

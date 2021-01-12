@@ -1,7 +1,7 @@
 import { html } from 'lit-element';
 
 import { CASStore } from '@uprtcl/multiplatform';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 
 import {
   RemoteEvees,

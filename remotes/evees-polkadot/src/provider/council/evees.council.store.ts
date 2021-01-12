@@ -1,11 +1,8 @@
 import { CASStore } from '@uprtcl/multiplatform';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { Perspective, PerspectiveDetails } from '@uprtcl/evees';
 
-import {
-  PolkadotConnection,
-  TransactionReceipt,
-} from '../../connection.polkadot';
+import { PolkadotConnection, TransactionReceipt } from '../../connection.polkadot';
 import { EveesCouncilDB } from './dexie.council.store';
 
 import {
@@ -17,11 +14,7 @@ import {
   Vote,
 } from './types';
 import { getStatus } from './proposal.logic.quorum';
-import {
-  ProposalConfig,
-  ProposalStatus,
-  VoteValue,
-} from './proposal.config.types';
+import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
 import { Signed } from '@uprtcl/cortex';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
@@ -60,23 +53,13 @@ export class PolkadotCouncilEveesStorage {
   async gossipProposals(head?: string) {
     await this.ready();
 
-    if (!this.connection.account)
-      throw new Error('cant update data if not logged in');
+    if (!this.connection.account) throw new Error('cant update data if not logged in');
 
     // gossip consist on adding all new proposals from other council members to my own councilData object.
-    head =
-      head ||
-      (await this.connection.getMutableHead(
-        this.connection.account,
-        COUNCIL_KEYS
-      ));
-    const myCouncilData = head
-      ? ((await this.store.get(head)) as CouncilData)
-      : {};
+    head = head || (await this.connection.getMutableHead(this.connection.account, COUNCIL_KEYS));
+    const myCouncilData = head ? ((await this.store.get(head)) as CouncilData) : {};
 
-    const councilProposals = myCouncilData.proposals
-      ? myCouncilData.proposals
-      : [];
+    const councilProposals = myCouncilData.proposals ? myCouncilData.proposals : [];
     this.logger.log('gossip proposals');
 
     this.db.proposals.each((localProposal, cursor) => {
@@ -96,11 +79,7 @@ export class PolkadotCouncilEveesStorage {
 
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
     block = block || (await this.db.meta.get('block')).value;
-    const head = await this.connection.getMutableHead(
-      member,
-      COUNCIL_KEYS,
-      block
-    );
+    const head = await this.connection.getMutableHead(member, COUNCIL_KEYS, block);
     if (!head) {
       this.logger.log(`Council Data of ${member} is undefined`);
       return {};
@@ -112,10 +91,7 @@ export class PolkadotCouncilEveesStorage {
   }
 
   /** check the proposal had enough votes at block */
-  async getProposalStatus(
-    proposalId: string,
-    at?: number
-  ): Promise<ProposalStatus> {
+  async getProposalStatus(proposalId: string, at?: number): Promise<ProposalStatus> {
     at = at || (await this.db.meta.get('block')).value;
 
     const manifest = await this.getProposalManifest(proposalId);
@@ -130,10 +106,7 @@ export class PolkadotCouncilEveesStorage {
       throw new Error(`unexpected thresehold ${manifest.config.thresehold}`);
     }
 
-    const votesCastedLocal = await this.db.votes
-      .where('proposalId')
-      .equals(proposalId)
-      .toArray();
+    const votesCastedLocal = await this.db.votes.where('proposalId').equals(proposalId).toArray();
 
     const votesCasted = votesCastedLocal.map(
       (vote): Vote => {
@@ -149,8 +122,7 @@ export class PolkadotCouncilEveesStorage {
     const council = await this.getCouncil(manifest.block);
 
     const nonVoter = council.filter(
-      (member) =>
-        votesCasted.findIndex((casted) => casted.member === member) === -1
+      (member) => votesCasted.findIndex((casted) => casted.member === member) === -1
     );
 
     const emptyVotes = nonVoter.map(
@@ -196,9 +168,7 @@ export class PolkadotCouncilEveesStorage {
 
     this.logger.log(`caching proposals of `, { data });
 
-    return data.proposals.map(async (councilProposal) =>
-      this.cacheProposal(councilProposal, at)
-    );
+    return data.proposals.map(async (councilProposal) => this.cacheProposal(councilProposal, at));
   }
 
   async cacheProposal(councilProposal: CouncilProposal, at): Promise<void> {
@@ -221,9 +191,7 @@ export class PolkadotCouncilEveesStorage {
     if (proposal.status === ProposalStatus.Accepted) {
       await Promise.all(
         proposal.updates.map(async (update) => {
-          const perspective = (await this.store.get(
-            update.perspectiveId
-          )) as Signed<Perspective>;
+          const perspective = (await this.store.get(update.perspectiveId)) as Signed<Perspective>;
           await this.db.perspectives.put({
             id: update.perspectiveId,
             context: perspective.payload.context,
@@ -273,9 +241,7 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getProposalManifest(proposalId: string): Promise<ProposalManifest> {
-    const proposalManifest = (await this.store.get(
-      proposalId
-    )) as ProposalManifest;
+    const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
     if (!proposalManifest) throw new Error(`Proposal ${proposalId} not found`);
     return proposalManifest;
   }
@@ -301,23 +267,16 @@ export class PolkadotCouncilEveesStorage {
 
   async getContextPerspectives(context: string) {
     await this.ready();
-    const perspectives = await this.db.perspectives
-      .where('context')
-      .equals(context)
-      .toArray();
+    const perspectives = await this.db.perspectives.where('context').equals(context).toArray();
 
     this.logger.log(`getting context perspectives ${context}`, perspectives);
 
     return perspectives.map((e) => e.id);
   }
 
-  async addProposalToCouncilData(
-    councilProposal: CouncilProposal,
-    at?: number
-  ) {
+  async addProposalToCouncilData(councilProposal: CouncilProposal, at?: number) {
     at = at || (await this.db.meta.get('block')).value;
-    if (this.connection.account === undefined)
-      throw new Error('user not logged in');
+    if (this.connection.account === undefined) throw new Error('user not logged in');
     const myCouncilData = await this.getCouncilDataOf(this.connection.account);
 
     let newCouncilData = { ...myCouncilData };
@@ -325,9 +284,7 @@ export class PolkadotCouncilEveesStorage {
       newCouncilData.proposals = [];
     }
 
-    const ix = newCouncilData.proposals.findIndex(
-      (p) => p.id === councilProposal.id
-    );
+    const ix = newCouncilData.proposals.findIndex((p) => p.id === councilProposal.id);
     if (ix === -1) {
       newCouncilData.proposals.push(councilProposal);
     } else {
@@ -343,12 +300,8 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async addVoteToCouncilData(vote: Vote, at?: number) {
-    if (this.connection.account === undefined)
-      throw new Error('user not logged in');
-    const myCouncilData = await this.getCouncilDataOf(
-      this.connection.account,
-      at
-    );
+    if (this.connection.account === undefined) throw new Error('user not logged in');
+    const myCouncilData = await this.getCouncilDataOf(this.connection.account, at);
 
     let newCouncilData = { ...myCouncilData };
     if (newCouncilData.votes === undefined) {
@@ -369,14 +322,12 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async createProposal(proposalManifest: ProposalManifest): Promise<string> {
-    if (this.connection.account === undefined)
-      throw new Error('user not logged in');
+    if (this.connection.account === undefined) throw new Error('user not logged in');
     if (!(await this.connection.canSign())) throw new Error('user cant sign');
 
     const proposalId = await this.store.create(proposalManifest);
     const council = await this.connection.getCouncil(proposalManifest.block);
-    if (!council.includes(this.connection.account))
-      throw new Error('user not a council member');
+    if (!council.includes(this.connection.account)) throw new Error('user not a council member');
 
     const councilProposal: CouncilProposal = {
       id: proposalId,
@@ -398,9 +349,7 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getProposalsToPerspective(perspectiveId: string) {
-    const proposals = this.db.proposals
-      .where('toPerspectiveId')
-      .equals(perspectiveId);
+    const proposals = this.db.proposals.where('toPerspectiveId').equals(perspectiveId);
     const proposalIds = await proposals.primaryKeys();
     this.logger.log(`getProposalsToPerspective`, {
       perspectiveId,
@@ -412,13 +361,9 @@ export class PolkadotCouncilEveesStorage {
   async getProposalSummary(proposalId): Promise<ProposalSummary> {
     const proposal = await this.db.proposals.get(proposalId);
     if (!proposal) throw new Error(`Proposal ${proposalId} not found`);
-    if (!proposal.status)
-      throw new Error(`Proposal ${proposalId} status undefined`);
+    if (!proposal.status) throw new Error(`Proposal ${proposalId} status undefined`);
 
-    const votes = await this.db.votes
-      .where('proposalId')
-      .equals(proposalId)
-      .toArray();
+    const votes = await this.db.votes.where('proposalId').equals(proposalId).toArray();
 
     this.logger.log(`getProposalStatus`, { proposalId, proposal });
     const block = (await this.db.meta.get('block')).value;
@@ -436,9 +381,7 @@ export class PolkadotCouncilEveesStorage {
     if (!proposal) throw new Error(`proposal not found ${proposalId}`);
 
     if (proposal.status !== ProposalStatus.Pending)
-      throw new Error(
-        `why are you trying to vote on a closed proposal ${proposalId}?`
-      );
+      throw new Error(`why are you trying to vote on a closed proposal ${proposalId}?`);
 
     const vote: Vote = {
       member: this.connection.account,

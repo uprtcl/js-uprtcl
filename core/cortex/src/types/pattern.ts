@@ -1,5 +1,3 @@
-import { Constructor } from '@uprtcl/micro-orchestrator';
-
 import { Behaviour } from './behaviour';
 
 /**

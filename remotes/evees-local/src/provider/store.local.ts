@@ -3,9 +3,9 @@ import {
   defaultCidConfig,
   CASStore,
   Connection,
-  ConnectionOptions
+  ConnectionOptions,
 } from '@uprtcl/multiplatform';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 
 import { CASStoreLocalDB } from './store.local.db';
 import { hashObject } from '@uprtcl/evees';
@@ -38,7 +38,7 @@ export class CASStoreLocal extends Connection implements CASStore {
     const id = await hashObject(object, this.cidConfig);
     return this.db.entities.put({
       id,
-      object
+      object,
     });
   }
 

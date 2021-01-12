@@ -2,7 +2,7 @@ import { CASStore, CidConfig } from '@uprtcl/multiplatform';
 
 import { HttpProvider } from './http.provider';
 import { HttpConnection } from './http.connection';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 
 const store_api = 'store';
 
@@ -27,7 +27,7 @@ export class HttpStore implements CASStore {
     this.logger.log('Creating Entity', { object, hash });
     const result = await this.provider.post(`/data`, {
       id: hash ? hash : '',
-      object: object
+      object: object,
     });
     return result.elementIds[0];
   }

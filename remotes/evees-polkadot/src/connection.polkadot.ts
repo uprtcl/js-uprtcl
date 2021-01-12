@@ -2,25 +2,14 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Option } from '@polkadot/types';
 import { AddressOrPair, Signer } from '@polkadot/api/types';
 import { stringToHex, bnToBn } from '@polkadot/util';
-import {
-  decodeAddress,
-  encodeAddress,
-  encodeDerivedAddress,
-} from '@polkadot/util-crypto';
-import {
-  web3Accounts,
-  web3Enable,
-  web3FromAddress,
-} from '@polkadot/extension-dapp';
+import { decodeAddress, encodeAddress, encodeDerivedAddress } from '@polkadot/util-crypto';
+import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-dapp';
 import { IdentityInfo, Registration } from '@polkadot/types/interfaces';
 // import { ExtensionStore } from '@polkadot/ui-keyring/stores';
 
 import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { Logger } from '@uprtcl/micro-orchestrator';
-import {
-  ChainConnectionDetails,
-  ConnectionDetails,
-} from '@uprtcl/evees-blockchain';
+import { Logger } from '@uprtcl/evees';
+import { ChainConnectionDetails, ConnectionDetails } from '@uprtcl/evees-blockchain';
 
 const getIdentityInfo = (identity: Option<Registration>) => {
   if (identity && identity.isSome) {
@@ -97,9 +86,7 @@ export class PolkadotConnection extends Connection {
   ) {
     super(options);
     if (connections[connectionName] === undefined) {
-      throw new Error(
-        `connection details for connection id '${connectionName}' not found`
-      );
+      throw new Error(`connection details for connection id '${connectionName}' not found`);
     }
     this.connectionDetails = connections[connectionName];
   }
@@ -128,9 +115,7 @@ export class PolkadotConnection extends Connection {
   public async getAccounts(): Promise<string[]> {
     const allInjected = await web3Enable('uprtcl-wiki');
 
-    this.accounts = (await web3Accounts()).map((a) =>
-      encodeAddress(decodeAddress(a.address), 42)
-    );
+    this.accounts = (await web3Accounts()).map((a) => encodeAddress(decodeAddress(a.address), 42));
     return this.accounts ? this.accounts : [];
   }
 
@@ -166,11 +151,7 @@ export class PolkadotConnection extends Connection {
     return getIdentityInfo(<Option<Registration>>identity);
   }
 
-  public async getMutableHead(
-    userId: string,
-    keys: string[],
-    atBlock?: number
-  ) {
+  public async getMutableHead(userId: string, keys: string[], atBlock?: number) {
     if (atBlock !== undefined) {
       this.logger.warn('cant get idenity at block yet... ups');
     }
@@ -185,8 +166,7 @@ export class PolkadotConnection extends Connection {
     head: string | undefined,
     keys: string[]
   ): Promise<TransactionReceipt> {
-    if (!this.account)
-      throw new Error('cannot update identity if account not defined');
+    if (!this.account) throw new Error('cannot update identity if account not defined');
     // update evees entry
     const cid1 = head !== undefined ? head.substring(0, 32) : '';
     const cid0 = head !== undefined ? head.substring(32, 64) : '';
@@ -196,9 +176,7 @@ export class PolkadotConnection extends Connection {
       : this.account;
     if (!this.api) throw new Error('api undefined');
 
-    this.logger.log(
-      `Using derived account ${derivedAccount} for current address ${this.account}`
-    );
+    this.logger.log(`Using derived account ${derivedAccount} for current address ${this.account}`);
 
     const identityInfo = await this.getIdentityInfo(derivedAccount);
     const additional = identityInfo.additional ? identityInfo.additional : [];
@@ -212,10 +190,7 @@ export class PolkadotConnection extends Connection {
       additional[currentIndexes[0]][1].Raw = cid1;
       additional[currentIndexes[1]][1].Raw = cid0;
     } else {
-      additional.push(
-        [{ Raw: keys[0] }, { Raw: cid1 }],
-        [{ Raw: keys[1] }, { Raw: cid0 }]
-      );
+      additional.push([{ Raw: keys[0] }, { Raw: cid1 }], [{ Raw: keys[1] }, { Raw: cid0 }]);
     }
 
     const newIdentity = {
@@ -224,13 +199,9 @@ export class PolkadotConnection extends Connection {
     };
 
     /** check balance is enough, and if it's not, send the missing balance */
-    const derivedAccountInfo = await this.api.query.system.account(
-      derivedAccount
-    );
+    const derivedAccountInfo = await this.api.query.system.account(derivedAccount);
     const amountToFreeze = this.api.consts.identity.basicDeposit.add(
-      this.api.consts.identity.fieldDeposit.mul(
-        bnToBn(newIdentity.additional.length)
-      )
+      this.api.consts.identity.fieldDeposit.mul(bnToBn(newIdentity.additional.length))
     );
 
     if (derivedAccountInfo.data.reserved.lt(amountToFreeze)) {
@@ -277,9 +248,7 @@ export class PolkadotConnection extends Connection {
     at = at || (await this.getLatestBlock());
     const blockHash = await this.api.rpc.chain.getBlockHash(at);
     const councilAddr = await this.api.query.council.members.at(blockHash);
-    return councilAddr.map((address) =>
-      encodeAddress(decodeAddress(address), 42)
-    );
+    return councilAddr.map((address) => encodeAddress(decodeAddress(address), 42));
   }
 
   public async getLatestBlock(): Promise<number> {

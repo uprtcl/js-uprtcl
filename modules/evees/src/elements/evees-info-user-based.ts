@@ -1,6 +1,6 @@
 import { html, css, property, query } from 'lit-element';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { MenuConfig, UprtclPopper } from '@uprtcl/common-ui';
 import { EveesInfoBase } from './evees-info-base';
 import { EveesPerspectivesList } from './evees-perspectives-list';

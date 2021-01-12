@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { Signed } from '@uprtcl/cortex';
 import { CASStore } from '@uprtcl/multiplatform';
 

@@ -1,7 +1,7 @@
 import { html } from 'lit-element';
 
 import { CASStore, loadEntity } from '@uprtcl/multiplatform';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EveesOrbitDBEntities } from '@uprtcl/evees-orbitdb';
 import { Signed } from '@uprtcl/cortex';

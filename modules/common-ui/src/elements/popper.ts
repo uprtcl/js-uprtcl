@@ -1,4 +1,4 @@
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { LitElement, property, html, css } from 'lit-element';
 
 export class UprtclPopper extends LitElement {
@@ -23,9 +23,7 @@ export class UprtclPopper extends LitElement {
   popperId!: string;
 
   handleDocClick = (event) => {
-    const ix = event
-      .composedPath()
-      .findIndex((el: any) => el.id === this.popperId);
+    const ix = event.composedPath().findIndex((el: any) => el.id === this.popperId);
     if (ix === -1) {
       this.showDropdown = false;
     }

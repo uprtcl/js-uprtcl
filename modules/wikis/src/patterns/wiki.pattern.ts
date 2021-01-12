@@ -1,7 +1,7 @@
 import { html } from 'lit-element';
 import { injectable } from 'inversify';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { Pattern, Entity, HasChildren, recognizeEntity, HasTitle } from '@uprtcl/cortex';
 import { MergeStrategy, mergeStrings, Merge, HasDiffLenses, DiffLens, Client } from '@uprtcl/evees';
 import { HasLenses, Lens } from '@uprtcl/lenses';

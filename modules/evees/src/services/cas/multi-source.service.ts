@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 
 import { Entity } from '@uprtcl/cortex';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 
 import { CASSource } from '../types/cas-source';
 import { KnownSourcesService } from './known-sources.service';

@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { KnownSourcesHttp, HttpProvider } from '@uprtcl/http-provider';
 import { KnownSourcesService, CASStore } from '@uprtcl/multiplatform';
 
