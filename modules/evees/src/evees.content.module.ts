@@ -5,11 +5,11 @@ export interface EveesContentModule {
   readonly id: string;
 
   /** custom configuration of the module */
-  readonly config: any;
+  readonly config?: any;
 
   /** register web-components from the module */
-  registerComponents();
+  registerComponents?();
 
   /** get the JSON Patterns the module understands */
-  getPatterns(): Pattern<any>[];
+  getPatterns?(): Pattern<any>[];
 }

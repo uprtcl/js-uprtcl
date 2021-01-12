@@ -2,7 +2,10 @@ import { PatternRecognizer } from '@uprtcl/cortex';
 import { EveesContentModule } from '../evees.content.module';
 
 export const buildRecognizer = (modules: EveesContentModule[]): PatternRecognizer => {
-  const patterns = modules.map((module) => module.getPatterns());
+  const patterns = Array.prototype.concat(
+    [],
+    modules.map((module) => module.getPatterns())
+  );
   const recognizer = new PatternRecognizer(patterns);
 
   // [

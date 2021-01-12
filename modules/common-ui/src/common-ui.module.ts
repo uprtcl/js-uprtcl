@@ -1,7 +1,6 @@
 import '@github/clipboard-copy-element';
-import { MicroModule, Logger } from '@uprtcl/micro-orchestrator';
+import { EveesContentModule } from '@uprtcl/evees';
 
-import { CommonUIBindings } from './bindings';
 import { UprtclButton } from './elements/button';
 import { UprtclLoading } from './elements/loading';
 import { UprtclList } from './elements/list';
@@ -22,13 +21,10 @@ import { UprtclIndicator } from './elements/indicator';
 import { UprtclCopyToClipboard } from './elements/copy-to-clipboard';
 import { UprtclIconAndName } from './elements/icon-and-name';
 
-export class CommonUIModule extends MicroModule {
+export class CommonUIModule extends EveesContentModule {
   static id = 'common-ui-module';
-  static bindings = CommonUIBindings;
 
-  logger = new Logger('COMMON-UI-MODULE');
-
-  async onLoad() {
+  async registerComponents() {
     customElements.define('uprtcl-button', UprtclButton);
     customElements.define('uprtcl-button-loading', UprtclButtonLoading);
     customElements.define('uprtcl-icon-button', UprtclIconButton);
@@ -48,9 +44,5 @@ export class CommonUIModule extends MicroModule {
     customElements.define('uprtcl-indicator', UprtclIndicator);
     customElements.define('uprtcl-copy-to-clipboard', UprtclCopyToClipboard);
     customElements.define('uprtcl-icon-and-name', UprtclIconAndName);
-  }
-
-  get submodules() {
-    return [];
   }
 }

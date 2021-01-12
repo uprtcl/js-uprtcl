@@ -8,6 +8,7 @@ export { Commit, Perspective, PerspectiveDetails, HasDiffLenses, DiffLens } from
 export { Source } from './services/source';
 export { NewPerspectiveData } from './types';
 export { EveesConfig } from './types';
+export { EveesContentModule } from './evees.content.module';
 
 /** Service providers */
 export { Evees } from './services/evees.service';
