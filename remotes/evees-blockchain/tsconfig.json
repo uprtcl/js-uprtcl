@@ -5,8 +5,7 @@
     "outDir": "dist/lib",
     "baseUrl": "./",
     "paths": {
-      "lit-element": ["node_modules/lit-element"],
-      "graphql": ["node_modules/graphql"]
+      "lit-element": ["node_modules/lit-element"]
     }
   },
   "include": ["src"]

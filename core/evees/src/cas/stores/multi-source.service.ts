@@ -1,12 +1,7 @@
-import { injectable } from 'src/evees/merge/node_modules/inversify';
-
-import { Entity } from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
-import { Logger } from 'src/evees/elements/node_modules/@uprtcl/evees';
-
+import { Logger } from '../logger';
 import { CASSource } from '../types/cas-source';
 import { KnownSourcesService } from './known-sources.service';
 
-@injectable()
 export class MultiSourceService {
   protected logger = new Logger('MultiSourceService');
   protected sourcesMap = new Map<string, CASSource>();

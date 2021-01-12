@@ -5,10 +5,7 @@
     "outDir": "dist/lib",
     "baseUrl": "./",
     "paths": {
-      "lit-element": ["node_modules/lit-element"],
-      "graphql": ["node_modules/graphql"],
-      "apollo-boost": ["node_modules/apollo-boost"],
-      "apollo-client": ["node_modules/apollo-client"]
+      "lit-element": ["node_modules/lit-element"]
     }
   },
   "include": ["src"],
