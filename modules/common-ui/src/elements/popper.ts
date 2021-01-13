@@ -1,9 +1,6 @@
-import { Logger } from '@uprtcl/evees';
 import { LitElement, property, html, css } from 'lit-element';
 
 export class UprtclPopper extends LitElement {
-  logger = new Logger('UPRTCL-POPPER');
-
   @property({ type: String })
   icon: string = 'more_vert';
 

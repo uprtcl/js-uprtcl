@@ -16,7 +16,6 @@ import {
   Commit,
   Proposal,
 } from '../interfaces/types';
-import { Evees } from '../evees.service';
 import { Client } from '../interfaces/client';
 import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteEvees } from '../interfaces/remote.evees';

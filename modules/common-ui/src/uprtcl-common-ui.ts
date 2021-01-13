@@ -1,5 +1,4 @@
-export { CommonUIModule } from './common-ui.module';
-export { CommonUIBindings } from './bindings';
+export { registerComponents } from './register.components';
 
 export { UprtclDialog } from './elements/dialog';
 export { MenuConfig } from './elements/options-menu';
