@@ -1,4 +1,4 @@
-import { LitElement, html } from 'src/evees/elements/node_modules/lit-element';
+import { LitElement, html } from 'lit-element';
 import { Evees } from '../evees/evees.service';
 
 export const REQUEST_EVEES_EVENT_TAG = 'request-evees-service';

@@ -1,6 +1,3 @@
-// Required by inversify
-import 'reflect-metadata';
-
 export { CommonUIModule } from './common-ui.module';
 export { CommonUIBindings } from './bindings';
 

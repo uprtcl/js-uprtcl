@@ -1,6 +1,3 @@
-// Required by inversify
-import 'reflect-metadata';
-
 export { EveesOrbitDB } from './provider/evees.orbit-db';
 export { EveesAccessControlOrbitDB } from './provider/evees-acl.orbit-db';
 export { EveesOrbitDBModule } from './evees-orbitdb.module';
@@ -13,5 +10,5 @@ export {
   perspective as PerspectiveStore,
   context as ContextStore,
   proposal as ProposalStore,
-  proposals as ProposalsToPerspectiveStore
+  proposals as ProposalsToPerspectiveStore,
 } from './custom-stores/orbit-db.stores';

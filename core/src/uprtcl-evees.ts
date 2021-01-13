@@ -1,6 +1,3 @@
-// Required by inversify
-import 'reflect-metadata';
-
 /** Types */
 export {
   Commit,
@@ -11,7 +8,6 @@ export {
 } from './evees/interfaces/types';
 
 /** Services interfaces */
-export { Source } from './services/source';
 export { NewPerspectiveData } from './evees/interfaces/types';
 export { EveesConfig } from './evees/interfaces/types';
 export { EveesContentModule } from './evees/interfaces/evees.content.module';
@@ -59,10 +55,8 @@ export { isAncestorOf } from './evees/merge/ancestor';
 
 /** Proposals */
 export { Proposal, UpdateRequest, PROPOSAL_CREATED_TAG } from './evees/interfaces/types';
-export { Proposals } from './services/proposals';
 
 /** Aceess Control */
 export { AccessControl } from './evees/interfaces/access-control';
 export { RemoteLogged } from './evees/interfaces/remote.logged';
-export { RemoteEvees } from './services/remote.evees';
 export { RemoteWithUI } from './evees/interfaces/remote.with-ui';

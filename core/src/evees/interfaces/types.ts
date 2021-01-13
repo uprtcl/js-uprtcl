@@ -1,8 +1,10 @@
-import { TemplateResult } from 'src/evees/elements/node_modules/lit-element';
+import { TemplateResult } from 'lit-element';
 
-import { RemoteEvees } from './services/remote.evees';
+import { Behaviour } from '../../patterns/interfaces/behaviour';
 import { Secured } from '../../cas/utils/cid-hash';
+
 import { Client, EveesMutation } from './client';
+import { RemoteEvees } from './remote.evees';
 
 export interface Perspective {
   remote: string;

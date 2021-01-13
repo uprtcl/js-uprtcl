@@ -1,5 +1,3 @@
-import { injectable } from 'inversify';
-
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
 import { Logger } from '@uprtcl/evees';
 import { Remote } from '@uprtcl/evees';

@@ -1,10 +1,10 @@
 import { property, LitElement, internalProperty } from 'lit-element';
 
-import { Logger } from '@uprtcl/evees';
+import { Logger } from '../../utils/logger';
+import { Entity } from '../../cas/interfaces/entity';
+import { eveesConnect } from '../../container/evees-connect.mixin';
 
 import { EveesInfoConfig } from './evees-info-user-based';
-import { RemoteEvees } from '../../services/remote.evees';
-import { eveesConnect } from '../../container/evees-connect.mixin';
 
 const entityStub = (object: any): Entity<any> => {
   return {

@@ -1,18 +1,16 @@
-import {
-  Entity,
-  PatternRecognizer,
-  HasChildren,
-  Signed,
-
-import { Commit, EveesConfig, Perspective } from './interfaces/types';
 import { signObject } from '../cas/utils/signed';
 import { hashObject, Secured } from '../cas/utils/cid-hash';
 import { Client } from './interfaces/client';
-import { RemoteEvees } from './remote.evees';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
 import { RecursiveContextMergeStrategy } from 'src/evees/merge/recursive-context.merge-strategy';
+import { EveesConfig, Commit, Perspective } from './interfaces/types';
+import { Entity } from 'src/cas/interfaces/entity';
+import { HasChildren } from 'src/patterns/behaviours/has-links';
+import { Signed } from 'src/patterns/interfaces/signable';
+import { PatternRecognizer } from 'src/patterns/recognizer/pattern-recognizer';
+import { RemoteEvees } from './interfaces/remote.evees';
 
 export interface CreateCommit {
   dataId: string;

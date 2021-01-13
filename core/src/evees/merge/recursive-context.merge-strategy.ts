@@ -1,18 +1,19 @@
-import { injectable } from 'inversify';
-
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import { Evees } from '../evees.service';
+import { HasChildren } from 'src/patterns/behaviours/has-links';
 
-@injectable()
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   perspectivesByContext:
-    | Dictionary<{
-        to: string | undefined;
-        from: string | undefined;
-      }>
+    | Map<
+        string,
+        {
+          to: string | undefined;
+          from: string | undefined;
+        }
+      >
     | undefined = undefined;
 
-  allPerspectives: Dictionary<string> | undefined = undefined;
+  allPerspectives: Map<string, string> | undefined = undefined;
 
   async isPattern(id: string, type: string, evees: Evees): Promise<boolean> {
     const entity = await evees.client.store.getEntity(id);
@@ -109,8 +110,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     let root = false;
     if (!this.perspectivesByContext) {
       root = true;
-      this.perspectivesByContext = {};
-      this.allPerspectives = {};
+      this.perspectivesByContext = new Map();
+      this.allPerspectives = new Map();
       await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId, evees);
     }
 

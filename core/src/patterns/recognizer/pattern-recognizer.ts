@@ -1,5 +1,3 @@
-import { injectable } from 'inversify';
-
 import { Pattern } from '../interfaces/pattern';
 import { Behaviour } from '../interfaces/behaviour';
 import { Entity } from '../interfaces/entity';

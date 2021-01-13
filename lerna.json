@@ -4,20 +4,17 @@
     "connections/orbitdb",
     "connections/ethereum",
     "connections/ipfs",
-    "core/cortex",
-    "core/lenses",
-    "core/multiplatform",
+    "core",
     "modules/common-ui",
-    "modules/evees",
     "modules/evees-reader",
     "modules/wikis",
     "modules/documents",
-    "remotes/evees-local",
-    "remotes/evees-http",
-    "remotes/evees-blockchain",
-    "remotes/evees-ethereum",
-    "remotes/evees-orbitdb",
-    "remotes/evees-polkadot"
+    "remotes/local",
+    "remotes/http",
+    "remotes/blockchain",
+    "remotes/ethereum",
+    "remotes/orbitdb",
+    "remotes/polkadot"
   ],
   "version": "0.1.1"
 }
