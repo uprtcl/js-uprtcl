@@ -1,6 +1,6 @@
 import { Client } from '../interfaces/client';
-import { Commit } from '../../types';
-import { Secured } from '../../utils/cid-hash';
+import { Commit } from '../interfaces/types';
+import { Secured } from '../../cas/utils/cid-hash';
 
 interface Path {
   visited: { [commitId: string]: boolean };

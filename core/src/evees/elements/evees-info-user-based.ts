@@ -5,10 +5,10 @@ import { MenuConfig, UprtclPopper } from '@uprtcl/common-ui';
 import { EveesInfoBase } from './evees-info-base';
 import { EveesPerspectivesList } from './evees-perspectives-list';
 import { ProposalsList } from './evees-proposals-list';
-import { Perspective } from '../../types';
+import { Perspective } from '../interfaces/types';
 import { RemoteEvees } from '../../services/remote.evees';
 import { DEFAULT_COLOR, eveeColor } from './support';
-import { Secured } from '../../utils/cid-hash';
+import { Secured } from '../../cas/utils/cid-hash';
 import { ContentUpdatedEvent } from './events';
 
 export interface EveesInfoConfig {

@@ -7,8 +7,6 @@ const styleMap = (style) => {
 };
 
 import { Logger, eveesConnect } from '@uprtcl/evees';
-import { sharedStyles } from '@uprtcl/lenses';
-import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import {
   RemoteEvees,
   EveesModule,
@@ -19,9 +17,7 @@ import {
   ContentUpdatedEvent,
 } from '@uprtcl/evees';
 import { WikiDrawerContent } from './wiki-drawer-content';
-import { loadEntity } from '@uprtcl/multiplatform';
 import { CREATE_PROPOSAL, PROPOSAL_CREATED_TAG, EveesInfoConfig } from '@uprtcl/evees';
-import { ProposalCreatedEvent } from '@uprtcl/evees/dist/types/types';
 
 export class WikiDrawer extends moduleConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');

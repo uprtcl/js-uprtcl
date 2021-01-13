@@ -1,5 +1,3 @@
-import { Behaviour } from '@uprtcl/cortex';
-
 import { Evees } from '../evees.service';
 import { MergeStrategy } from '../merge/merge-strategy';
 

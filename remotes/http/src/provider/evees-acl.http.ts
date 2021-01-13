@@ -1,9 +1,8 @@
 import { html } from 'lit-element';
 
-import { Logger } from '@uprtcl/evees';
 import { AccessControlService } from '@uprtcl/evees';
-import { Lens } from '@uprtcl/lenses';
 import { HttpProvider } from '@uprtcl/http-provider';
+
 import { PermissionType, UserPermissions } from './types';
 
 const uprtcl_api: string = 'uprtcl-acl-v1';

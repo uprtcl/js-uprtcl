@@ -1,9 +1,8 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { Logger } from '@uprtcl/evees';
-import { PatternRecognizer } from 'src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 
-import { UpdateRequest, HasDiffLenses, DiffLens } from '../../types';
+import { UpdateRequest, HasDiffLenses, DiffLens } from '../interfaces/types';
 
 import { Client } from '../interfaces/client';
 import { eveesConnect } from '../../container/evees-connect.mixin';

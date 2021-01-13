@@ -1,7 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { eveesConnect, Logger } from '@uprtcl/evees';
-import { Entity } from '@uprtcl/cortex';
 
 import { Wiki } from '../types';
 import { Client } from '@uprtcl/evees';

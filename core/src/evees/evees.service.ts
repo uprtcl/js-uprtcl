@@ -3,11 +3,10 @@ import {
   PatternRecognizer,
   HasChildren,
   Signed,
-} from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 
-import { Commit, EveesConfig, Perspective } from '../types';
-import { signObject } from '../utils/signed';
-import { hashObject, Secured } from '../utils/cid-hash';
+import { Commit, EveesConfig, Perspective } from './interfaces/types';
+import { signObject } from '../cas/utils/signed';
+import { hashObject, Secured } from '../cas/utils/cid-hash';
 import { Client } from './interfaces/client';
 import { RemoteEvees } from './remote.evees';
 import { EveesContentModule } from './interfaces/evees.content.module';

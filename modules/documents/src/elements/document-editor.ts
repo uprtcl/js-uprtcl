@@ -9,7 +9,6 @@ const styleMap = (style) => {
 };
 
 import { eveesConnect, Logger } from '@uprtcl/evees';
-import { HasChildren, CortexModule, PatternRecognizer, Entity } from '@uprtcl/cortex';
 import {
   RemoteEvees,
   EveesModule,
@@ -27,7 +26,6 @@ import {
   EveesInfoConfig,
 } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
-import { loadEntity } from '@uprtcl/multiplatform';
 
 import { TextType, DocNode, CustomBlocks } from '../types';
 import { HasDocNodeLenses } from '../patterns/document-patterns';

@@ -1,5 +1,4 @@
 import { injectable } from 'inversify';
-import { HasChildren } from 'src/evees/behaviours/node_modules/@uprtcl/cortex';
 
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import { Evees } from '../evees.service';

@@ -2,12 +2,18 @@
 import 'reflect-metadata';
 
 /** Types */
-export { Commit, Perspective, PerspectiveDetails, HasDiffLenses, DiffLens } from './types';
+export {
+  Commit,
+  Perspective,
+  PerspectiveDetails,
+  HasDiffLenses,
+  DiffLens,
+} from './evees/interfaces/types';
 
 /** Services interfaces */
 export { Source } from './services/source';
-export { NewPerspectiveData } from './types';
-export { EveesConfig } from './types';
+export { NewPerspectiveData } from './evees/interfaces/types';
+export { EveesConfig } from './evees/interfaces/types';
 export { EveesContentModule } from './evees/interfaces/evees.content.module';
 
 /** Service providers */
@@ -15,7 +21,7 @@ export { Evees } from './evees/evees.service';
 export { Client } from './evees/interfaces/client';
 
 /** Merge */
-export { Merge } from './evees/behaviours/merge';
+export { Merge } from './evees/merge/merge.behaviour';
 
 export { SimpleMergeStrategy } from './evees/merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './evees/merge/recursive-context.merge-strategy';
@@ -45,14 +51,14 @@ export { prettyAddress } from './evees/elements/support';
 export { eveeColor, DEFAULT_COLOR } from './evees/elements/support';
 
 /** Patterns */
-export { Secured, hashObject, deriveEntity } from './utils/cid-hash';
-export { extractSignedEntity, deriveSecured, signObject } from './utils/signed';
+export { Secured, hashObject, deriveEntity } from './cas/utils/cid-hash';
+export { extractSignedEntity, deriveSecured, signObject } from './cas/utils/signed';
 
 /** Utils */
-export { isAncestorOf } from './utils/ancestor';
+export { isAncestorOf } from './evees/merge/ancestor';
 
 /** Proposals */
-export { Proposal, UpdateRequest, PROPOSAL_CREATED_TAG } from './types';
+export { Proposal, UpdateRequest, PROPOSAL_CREATED_TAG } from './evees/interfaces/types';
 export { Proposals } from './services/proposals';
 
 /** Aceess Control */

@@ -1,4 +1,3 @@
-import { Entity, Signed } from '@uprtcl/cortex';
 import { Perspective, Secured } from '@uprtcl/evees';
 import { CustomStore } from '@uprtcl/orbitdb-provider';
 
@@ -8,7 +7,7 @@ export enum EveesOrbitDBEntities {
   Perspective = 'PERSPECTIVE',
   Context = 'CONTEXT',
   Proposal = 'PROPOSAL',
-  ProposalsToPerspective = 'PROPOSALS_TO_PERSPECTIVE'
+  ProposalsToPerspective = 'PROPOSALS_TO_PERSPECTIVE',
 }
 
 export const perspective: CustomStore = {
@@ -18,20 +17,20 @@ export const perspective: CustomStore = {
   options: (perspective: Secured<Perspective>) => {
     return {
       accessController: { type: 'ipfs', write: [perspective.object.payload.creatorId] },
-      meta: { timestamp: perspective.object.payload.timestamp }
+      meta: { timestamp: perspective.object.payload.timestamp },
     };
-  }
+  },
 };
 
 export const context: CustomStore = {
   customType: EveesOrbitDBEntities.Context,
   type: 'set',
-  name: entity => `context-store/${entity.context}`,
-  options: entity => {
+  name: (entity) => `context-store/${entity.context}`,
+  options: (entity) => {
     return {
-      accessController: { type: 'context', write: ['*'] }
+      accessController: { type: 'context', write: ['*'] },
     };
-  }
+  },
 };
 
 export const proposal: CustomStore = {
@@ -41,18 +40,18 @@ export const proposal: CustomStore = {
   options: (proposal: Entity<ProposalManifest>) => {
     return {
       accessController: { type: 'ipfs', write: proposal.object.owners },
-      meta: { timestamp: proposal.object.timestamp }
+      meta: { timestamp: proposal.object.timestamp },
     };
-  }
+  },
 };
 
 export const proposals: CustomStore = {
   customType: EveesOrbitDBEntities.ProposalsToPerspective,
   type: 'set',
-  name: entity => `proposals-store/${entity.toPerspectiveId}`,
-  options: entity => {
+  name: (entity) => `proposals-store/${entity.toPerspectiveId}`,
+  options: (entity) => {
     return {
-      accessController: { type: 'proposals', write: ['*'] }
+      accessController: { type: 'proposals', write: ['*'] },
     };
-  }
+  },
 };

@@ -1,9 +1,6 @@
 import { html } from 'lit-element';
 
 import { AccessControlService, Perspective } from '@uprtcl/evees';
-import { Lens } from '@uprtcl/lenses';
-import { CASStore } from '@uprtcl/multiplatform';
-import { Signed } from '@uprtcl/cortex';
 
 export class EveesAccessControlFixed implements AccessControlService {
   constructor(protected store: CASStore) {}

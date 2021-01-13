@@ -1,7 +1,7 @@
-import { UpdateRequest } from '../../types';
+import { UpdateRequest } from '../interfaces/types';
 import { CreateCommit, Evees } from '../evees.service';
 import findMostRecentCommonAncestor from './common-ancestor';
-import { Merge } from '../behaviours/merge';
+import { Merge } from './merge.behaviour';
 import { mergeResult } from './utils';
 import { Client } from '../interfaces/client';
 

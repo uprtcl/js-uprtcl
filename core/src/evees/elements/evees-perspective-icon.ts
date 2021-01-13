@@ -5,8 +5,8 @@ import { eveesConnect } from '@uprtcl/evees';
 import { EveesBindings } from '../bindings';
 
 import { RemoteEvees } from '../../services/remote.evees';
-import { Perspective } from '../../types';
-import { Secured } from '../../utils/cid-hash';
+import { Perspective } from '../interfaces/types';
+import { Secured } from '../../cas/utils/cid-hash';
 import { Evees } from '../evees.service';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 

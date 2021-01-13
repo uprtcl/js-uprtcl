@@ -3,7 +3,6 @@ import { html, css, internalProperty } from 'lit-element';
 import { htmlToText, TextType, TextNode } from '@uprtcl/documents';
 import { Logger } from '@uprtcl/evees';
 import { styles } from '@uprtcl/common-ui';
-import { HasTitle } from '@uprtcl/cortex';
 import {
   EveesBaseElement,
   EveesHelpers,

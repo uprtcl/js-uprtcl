@@ -1,10 +1,6 @@
 import { html } from 'lit-element';
 
-import { CASStore } from '@uprtcl/multiplatform';
-
 import { Perspective, AccessControlService, Secured } from '@uprtcl/evees';
-import { Lens } from '@uprtcl/lenses';
-import { Signed } from '@uprtcl/cortex';
 
 export class EveesAccessControlOrbitDB implements AccessControlService {
   constructor(protected store: CASStore) {}

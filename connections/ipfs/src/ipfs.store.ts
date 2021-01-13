@@ -7,7 +7,7 @@ import {
   CASStore,
   Connection,
   ConnectionOptions,
-} from '@uprtcl/multiplatform';
+} from '@uprtcl/evees';
 import { Logger } from '@uprtcl/evees';
 
 import { IpfsConnectionOptions } from './types';

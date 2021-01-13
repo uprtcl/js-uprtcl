@@ -1,9 +1,5 @@
 import { html } from 'lit-element';
 
-import { Logger } from '@uprtcl/evees';
-import { Signed } from '@uprtcl/cortex';
-import { CASStore } from '@uprtcl/multiplatform';
-
 import {
   Secured,
   Perspective,
@@ -16,8 +12,7 @@ import {
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
-import { EveesOrbitDBEntities, perspective } from '../custom-stores/orbit-db.stores';
-import { Lens } from '@uprtcl/lenses';
+import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
 import { TemplateResult } from 'lit-html';
 
 const evees_if = 'evees-v0';

@@ -13,7 +13,6 @@ import {
 } from '@uprtcl/evees';
 
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
-import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 
 import { ProposalManifest, ProposalSummary, Vote } from './types';
 import { ProposalStatus, VoteValue } from './proposal.config.types';

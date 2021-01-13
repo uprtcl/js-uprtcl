@@ -1,7 +1,6 @@
 import { property, LitElement, internalProperty } from 'lit-element';
 
 import { Logger } from '@uprtcl/evees';
-import { Entity, HasChildren } from 'src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 
 import { EveesInfoConfig } from './evees-info-user-based';
 import { RemoteEvees } from '../../services/remote.evees';

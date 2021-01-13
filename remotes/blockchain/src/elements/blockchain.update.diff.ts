@@ -3,8 +3,6 @@ import { LitElement, property, html, css, query } from 'lit-element';
 import { eveesConnect, Logger } from '@uprtcl/evees';
 
 import { EveesModule, Client, Perspective, EveesDiff } from '@uprtcl/evees';
-import { loadEntity } from '@uprtcl/multiplatform';
-import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 
 import { EveesBlockchainCached } from '../provider/evees.blockchain.cached';
 import { UserPerspectivesDetails } from '../types';

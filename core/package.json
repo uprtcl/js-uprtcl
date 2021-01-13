@@ -1,7 +1,7 @@
 {
   "name": "@uprtcl/evees",
   "version": "0.1.1",
-  "description": "Cortex module that provides generic version control for any content-addressable content to become an Evolving Entity (Evee)",
+  "description": "The core _Prtcl package with all the services you need to handle Evees in a web application.",
   "homepage": "https://uprtcl.io",
   "scripts": {
     "update-uprtcl": "ncu -u \"/^@uprtcl.*$/\"",
@@ -13,10 +13,7 @@
   },
   "dependencies": {
     "@uprtcl/common-ui": "^0.1.1",
-    "@uprtcl/cortex": "^0.1.1",
     "@uprtcl/ipfs-provider": "^0.1.1",
-    "@uprtcl/lenses": "^0.1.1",
-    "@uprtcl/multiplatform": "^0.1.1",
     "cbor-js": "^0.1.0",
     "cids": "^1.0.0",
     "dexie": "^3.0.2",

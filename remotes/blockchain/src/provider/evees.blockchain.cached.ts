@@ -1,10 +1,8 @@
+import { TemplateResult } from 'lit-html';
 import { html } from 'lit-element';
 
-import { CASStore, loadEntity } from '@uprtcl/multiplatform';
-import { Logger } from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EveesOrbitDBEntities } from '@uprtcl/evees-orbitdb';
-import { Signed } from '@uprtcl/cortex';
 
 import {
   RemoteEvees,
@@ -18,12 +16,9 @@ import {
   EveesHelpers,
 } from '@uprtcl/evees';
 
-import { Lens } from '@uprtcl/lenses';
-
 import { EveesCacheDB } from './evees.cache.db';
 import { EveesAccessControlFixed } from './evees-acl.fixed';
 import { BlockchainConnection } from './evees.blockchain.connection';
-import { TemplateResult } from 'lit-html';
 import { UserPerspectivesDetails, RemoteStatus } from '../types';
 
 const evees_if = 'fixed';

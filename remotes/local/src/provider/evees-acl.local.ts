@@ -1,7 +1,7 @@
 import { html } from 'lit-element';
 
 import { AccessControlService } from '@uprtcl/evees';
-import { Lens } from '@uprtcl/lenses';
+
 import { EveesLocalDB } from './evees.local.db';
 
 export class EveesAccessControlLocal implements AccessControlService {

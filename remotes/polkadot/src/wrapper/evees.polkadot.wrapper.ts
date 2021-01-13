@@ -1,5 +1,4 @@
 import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { CidConfig } from '@uprtcl/multiplatform';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import {

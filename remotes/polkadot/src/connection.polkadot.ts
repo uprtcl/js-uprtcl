@@ -7,7 +7,6 @@ import { web3Accounts, web3Enable, web3FromAddress } from '@polkadot/extension-d
 import { IdentityInfo, Registration } from '@polkadot/types/interfaces';
 // import { ExtensionStore } from '@polkadot/ui-keyring/stores';
 
-import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/evees';
 import { ChainConnectionDetails, ConnectionDetails } from '@uprtcl/evees-blockchain';
 

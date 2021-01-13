@@ -1,4 +1,3 @@
-import { Entity, HasChildren } from '@uprtcl/cortex';
 import { HasDocNodeLenses } from './patterns/document-patterns';
 
 export enum TextType {

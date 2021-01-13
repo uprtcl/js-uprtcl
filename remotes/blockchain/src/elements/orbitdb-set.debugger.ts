@@ -4,7 +4,6 @@ import { eveesConnect } from '@uprtcl/evees';
 import { Logger } from '@uprtcl/evees';
 
 import { EveesModule, RemoteEvees, Perspective, Secured } from '@uprtcl/evees';
-import { Signed } from '@uprtcl/cortex';
 import { EveesOrbitDBEntities } from '@uprtcl/evees-orbitdb';
 
 import { EveesBlockchainCached } from '../provider/evees.blockchain.cached';

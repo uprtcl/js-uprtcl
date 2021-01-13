@@ -1,6 +1,5 @@
 import CBOR from 'cbor-js';
 import { AddressMapping, IdentitySource, mappingMsg } from '@uprtcl/orbitdb-provider';
-import { Signed } from '@uprtcl/cortex';
 import { Perspective } from '@uprtcl/evees';
 
 const storeQueue: any = {};
@@ -15,7 +14,7 @@ export const checkToPerspectiveCreator = async (
   const forceBuffer = Uint8Array.from(result.value);
   const { payload: toPerspective } = CBOR.decode(forceBuffer.buffer) as Signed<Perspective>;
 
-  const toPerspIdentitySource = identitySources.find(s => s.sourceId === toPerspective.remote);
+  const toPerspIdentitySource = identitySources.find((s) => s.sourceId === toPerspective.remote);
 
   if (!toPerspIdentitySource) {
     // if not identity source for this remote, creator must be the orbtidb identity
@@ -46,7 +45,7 @@ export const validateMappedAddress = async (
 ) => {
   const mappingEntity = {
     sourceId: remote,
-    key: orbitdbkey
+    key: orbitdbkey,
   };
 
   const address = (
@@ -67,7 +66,7 @@ export const validateMappedAddress = async (
   } else {
     db = storeQueue[address] = orbitdb
       .open(address, { identity: orbitdb.identity })
-      .then(async store => {
+      .then(async (store) => {
         await store.load();
         return store;
       });

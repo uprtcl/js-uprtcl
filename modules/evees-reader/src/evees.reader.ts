@@ -1,6 +1,4 @@
 import { Commit, RemoteEvees, Perspective, Secured } from '@uprtcl/evees';
-import { CASStore } from '@uprtcl/multiplatform';
-import { Entity } from '@uprtcl/cortex';
 
 export interface EveeData {
   perspective: Secured<Perspective>;

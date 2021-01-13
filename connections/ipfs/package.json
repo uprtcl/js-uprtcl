@@ -12,8 +12,6 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.1.1",
-    "@uprtcl/multiplatform": "^0.1.1",
     "cbor-js": "^0.1.0",
     "cids": "^1.0.0",
     "concat-stream": "^2.0.0",

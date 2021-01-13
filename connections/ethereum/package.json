@@ -12,8 +12,7 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.1.1",
-    "@uprtcl/multiplatform": "^0.1.1",
+    "@uprtcl/evees": "^0.1.1",
     "ethers": "^5.0.8",
     "reflect-metadata": "^0.1.13"
   },

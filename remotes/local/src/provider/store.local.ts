@@ -4,7 +4,7 @@ import {
   CASStore,
   Connection,
   ConnectionOptions,
-} from '@uprtcl/multiplatform';
+} from '@uprtcl/evees';
 import { Logger } from '@uprtcl/evees';
 
 import { CASStoreLocalDB } from './store.local.db';

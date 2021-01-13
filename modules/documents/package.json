@@ -13,12 +13,9 @@
   },
   "dependencies": {
     "@uprtcl/common-ui": "^0.1.1",
-    "@uprtcl/cortex": "^0.1.1",
     "@uprtcl/evees": "^0.1.1",
     "@uprtcl/http-provider": "^0.1.1",
     "@uprtcl/ipfs-provider": "^0.1.1",
-    "@uprtcl/lenses": "^0.1.1",
-    "@uprtcl/multiplatform": "^0.1.1",
     "codemirror": "^5.54.0",
     "lit-element": "^2.3.0",
     "lodash-es": "^4.17.15",

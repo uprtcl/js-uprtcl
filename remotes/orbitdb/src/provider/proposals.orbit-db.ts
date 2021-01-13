@@ -2,10 +2,8 @@ import { Logger } from '@uprtcl/evees';
 
 import { ProposalsProvider } from '@uprtcl/evees';
 import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
-import { CASStore } from '@uprtcl/multiplatform';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
-import { Entity } from '@uprtcl/cortex';
 
 export interface ProposalManifest {
   toPerspectiveId: string;

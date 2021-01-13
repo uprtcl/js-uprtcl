@@ -1,12 +1,6 @@
-import { Entity } from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 import { CASStore } from '../../cas/interfaces/cas-store';
-import { Secured } from '../../utils/cid-hash';
-import {
-  UpdateRequest,
-  NewPerspectiveData,
-  PerspectiveDetails,
-  PerspectiveLinks,
-} from '../../types';
+import { Secured } from '../../cas/utils/cid-hash';
+import { UpdateRequest, NewPerspectiveData, PerspectiveDetails, PerspectiveLinks } from './types';
 import { SearchEngine } from './search.engine';
 
 /** the perspective data included by a remote as part of a slice */

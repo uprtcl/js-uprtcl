@@ -1,8 +1,8 @@
 import { injectable } from 'inversify';
 
-import { Pattern } from '../types/pattern';
-import { Behaviour } from '../types/behaviour';
-import { Entity } from '../types/entity';
+import { Pattern } from '../interfaces/pattern';
+import { Behaviour } from '../interfaces/behaviour';
+import { Entity } from '../interfaces/entity';
 
 @injectable()
 export class PatternRecognizer {

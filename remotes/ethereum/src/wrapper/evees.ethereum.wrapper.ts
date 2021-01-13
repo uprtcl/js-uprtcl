@@ -1,6 +1,5 @@
 import { RemoteEvees } from '@uprtcl/evees';
 import { IpfsStore } from '@uprtcl/ipfs-provider';
-import { CidConfig } from '@uprtcl/multiplatform';
 import { OrbitDBCustom, AddressMapping } from '@uprtcl/orbitdb-provider';
 import {
   ProposalsOrbitDB,

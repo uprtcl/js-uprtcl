@@ -1,10 +1,6 @@
 import { html } from 'lit-element';
 
-import { Logger } from '@uprtcl/evees';
 import { ProposalsProvider, UpdateRequest } from '@uprtcl/evees';
-import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
-import { CASStore } from '@uprtcl/multiplatform';
-import { Lens } from '@uprtcl/lenses';
 
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';

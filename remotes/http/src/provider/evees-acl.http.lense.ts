@@ -2,7 +2,6 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { eveesConnect } from '@uprtcl/evees';
 import { EveesBindings, EveesHelpers, RemoteEvees } from '@uprtcl/evees';
-import { HasTitle, CortexModule, PatternRecognizer } from '@uprtcl/cortex';
 
 import {
   BasicAdminInheritedPermissions,

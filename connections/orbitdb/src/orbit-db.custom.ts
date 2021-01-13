@@ -5,7 +5,6 @@ import OrbitDBSet from '@tabcat/orbit-db-set';
 import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 
 import { Logger } from '@uprtcl/evees';
-import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 import { PinnedCacheDB } from '@uprtcl/ipfs-provider';
 
 import { IdentitySource } from './identity.source';

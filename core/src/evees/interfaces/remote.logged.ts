@@ -1,5 +1,3 @@
-import { Ready } from '@uprtcl/multiplatform';
-
 export interface RemoteLogged extends Ready {
   /**
    * The id is used to select the JS remote from the listed of available Remotes.

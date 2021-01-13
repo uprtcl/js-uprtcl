@@ -1,6 +1,4 @@
-import { Entity } from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
-
-import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../../types';
+import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../interfaces/types';
 import { CASStore, EntityGetResult } from '../../cas/interfaces/cas-store';
 import { Client, PerspectiveGetResult, EveesMutation } from '../interfaces/client';
 import { Proposals } from '../proposals';

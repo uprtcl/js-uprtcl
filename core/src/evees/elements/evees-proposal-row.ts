@@ -3,12 +3,11 @@ import { LitElement, property, html, css, query } from 'lit-element';
 import { eveesConnect, Logger } from '@uprtcl/evees';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
-import { Proposal } from '../../types';
+import { Proposal } from '../interfaces/types';
 import { EveesBindings } from '../bindings';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 import { Evees } from '../evees.service';
-import { Entity } from 'src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 

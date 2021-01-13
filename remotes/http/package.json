@@ -12,10 +12,8 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.1.1",
     "@uprtcl/ethereum-provider": "^0.1.1",
     "@uprtcl/http-provider": "^0.1.1",
-    "@uprtcl/lenses": "^0.1.1",
     "@uprtcl/multiplatform": "^0.1.1",
     "lit-html": "^1.1.2"
   },

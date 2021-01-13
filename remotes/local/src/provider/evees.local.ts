@@ -1,4 +1,3 @@
-import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/evees';
 
 import {

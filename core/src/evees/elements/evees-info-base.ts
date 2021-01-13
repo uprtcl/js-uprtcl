@@ -6,7 +6,6 @@ import {
   PatternRecognizer,
   Entity,
   Signed,
-} from 'src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
 import {
@@ -15,7 +14,7 @@ import {
   PerspectiveDetails,
   Commit,
   Proposal,
-} from '../../types';
+} from '../interfaces/types';
 import { Evees } from '../evees.service';
 
 import { RemoteEvees } from '../../services/remote.evees';

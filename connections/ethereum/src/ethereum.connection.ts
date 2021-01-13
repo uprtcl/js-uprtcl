@@ -1,5 +1,4 @@
 import { ethers } from 'ethers';
-import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
 
 export interface EthereumConnectionOptions {
   provider: string | ethers.providers.JsonRpcProvider;
@@ -14,7 +13,7 @@ export class EthereumConnection extends Connection {
 
   constructor(
     protected ethOptions: EthereumConnectionOptions = {
-      provider: 'http://localhost:8545'
+      provider: 'http://localhost:8545',
     },
     options?: ConnectionOptions
   ) {

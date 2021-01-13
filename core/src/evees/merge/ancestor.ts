@@ -1,7 +1,6 @@
 import {
   Entity,
   Signed,
-} from 'src/creator-helpers/node_modules/src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 import { Client } from '../interfaces/client';
 import { Commit } from '../interfaces/types';
 

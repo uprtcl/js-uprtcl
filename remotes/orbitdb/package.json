@@ -12,12 +12,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/cortex": "^0.1.1",
     "@uprtcl/ethereum-provider": "^0.1.1",
     "@uprtcl/evees": "^0.1.1",
     "@uprtcl/ipfs-provider": "^0.1.1",
-    "@uprtcl/lenses": "^0.1.1",
-    "@uprtcl/multiplatform": "^0.1.1",
     "@uprtcl/orbitdb-provider": "^0.1.1",
     "cbor-js": "^0.1.0",
     "ipfs": "^0.50.2",

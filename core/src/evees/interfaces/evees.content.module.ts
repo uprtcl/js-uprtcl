@@ -1,5 +1,3 @@
-import { Pattern } from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
-
 export interface EveesContentModule {
   /** a name to identify the module */
   readonly id: string;

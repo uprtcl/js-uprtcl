@@ -1,4 +1,3 @@
-import { Entity } from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 import { Slice } from '../services/client';
 import { CidConfig } from './cid-config';
 

@@ -1,4 +1,3 @@
-import { CASStore } from '@uprtcl/multiplatform';
 import { Logger } from '@uprtcl/evees';
 import { Perspective, PerspectiveDetails } from '@uprtcl/evees';
 
@@ -15,7 +14,6 @@ import {
 } from './types';
 import { getStatus } from './proposal.logic.quorum';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
-import { Signed } from '@uprtcl/cortex';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 

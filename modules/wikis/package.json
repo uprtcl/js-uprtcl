@@ -13,13 +13,10 @@
   },
   "dependencies": {
     "@uprtcl/common-ui": "^0.1.1",
-    "@uprtcl/cortex": "^0.1.1",
     "@uprtcl/documents": "^0.1.1",
     "@uprtcl/evees": "^0.1.1",
     "@uprtcl/http-provider": "^0.1.1",
     "@uprtcl/ipfs-provider": "^0.1.1",
-    "@uprtcl/lenses": "^0.1.1",
-    "@uprtcl/multiplatform": "^0.1.1",
     "lit-element": "^2.3.0",
     "npm-check-updates": "^10.2.1",
     "redux": "^4.0.4",

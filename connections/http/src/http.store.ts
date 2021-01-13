@@ -1,5 +1,3 @@
-import { CASStore, CidConfig } from '@uprtcl/multiplatform';
-
 import { HttpProvider } from './http.provider';
 import { HttpConnection } from './http.connection';
 import { Logger } from '@uprtcl/evees';
