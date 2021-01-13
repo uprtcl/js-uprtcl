@@ -60,3 +60,5 @@ export { Proposal, UpdateRequest, PROPOSAL_CREATED_TAG } from './evees/interface
 export { AccessControl } from './evees/interfaces/access-control';
 export { RemoteLogged } from './evees/interfaces/remote.logged';
 export { RemoteWithUI } from './evees/interfaces/remote.with-ui';
+
+export { Logger } from './utils/logger';
