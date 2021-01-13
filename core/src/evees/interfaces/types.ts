@@ -1,9 +1,9 @@
 import { TemplateResult } from 'src/evees/elements/node_modules/lit-element';
-import { Behaviour } from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
+import { Behaviour } from 'src/creator-helpers/node_modules/src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 
 import { RemoteEvees } from './services/remote.evees';
-import { Secured } from './utils/cid-hash';
-import { Client, EveesMutation } from './evees/interfaces/client';
+import { Secured } from '../../cas/utils/cid-hash';
+import { Client, EveesMutation } from './client';
 
 export interface Perspective {
   remote: string;

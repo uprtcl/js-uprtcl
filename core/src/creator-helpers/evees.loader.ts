@@ -1,5 +1,5 @@
 import { RemoteEvees } from '../services/remote.evees';
-import { EveesConfig } from '../types';
+import { EveesConfig } from '../evees/interfaces/types';
 import { CASStore } from '../cas/interfaces/cas-store';
 import { EveesContentModule } from '../evees/interfaces/evees.content.module';
 import { buildStore } from './build.store';

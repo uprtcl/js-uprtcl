@@ -1,7 +1,7 @@
 import { PatternRecognizer } from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 
 import { RemoteEvees } from '../services/remote.evees';
-import { EveesConfig } from '../types';
+import { EveesConfig } from '../evees/interfaces/types';
 import { RecursiveContextMergeStrategy } from '../evees/merge/recursive-context.merge-strategy';
 import { Evees } from '../evees/evees.service';
 import { ClientLocal } from '../evees/clients/client.local';

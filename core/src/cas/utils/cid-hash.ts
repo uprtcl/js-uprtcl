@@ -2,10 +2,6 @@ import multihashing from 'multihashing-async';
 import CBOR from 'cbor-js';
 import CID from 'cids';
 
-import {
-  Signed,
-  Entity,
-} from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 import { sortObject } from '@uprtcl/ipfs-provider';
 
 import { CidConfig, defaultCidConfig } from 'src/cas/interfaces/cid-config';

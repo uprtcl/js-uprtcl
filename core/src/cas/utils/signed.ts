@@ -1,7 +1,7 @@
 import {
   Signed,
   Entity,
-} from 'src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
+} from 'src/creator-helpers/node_modules/src/evees/elements/node_modules/src/evees/patterns/node_modules/src/evees/merge/node_modules/src/evees/behaviours/node_modules/@uprtcl/cortex';
 import { CidConfig, defaultCidConfig } from 'src/cas/interfaces/cid-config';
 import { deriveEntity, Secured } from './cid-hash';
 
