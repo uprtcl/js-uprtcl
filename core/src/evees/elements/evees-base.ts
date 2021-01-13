@@ -3,7 +3,9 @@ import { property, LitElement, internalProperty } from 'lit-element';
 import { Logger } from '../../utils/logger';
 import { Entity } from '../../cas/interfaces/entity';
 import { eveesConnect } from '../../container/evees-connect.mixin';
+import { HasChildren } from '../../patterns/behaviours/has-links';
 
+import { RemoteEvees } from '../interfaces/remote.evees';
 import { EveesInfoConfig } from './evees-info-user-based';
 
 const entityStub = (object: any): Entity<any> => {
@@ -70,32 +72,38 @@ export class EveesBaseElement<T extends object> extends eveesConnect(LitElement)
     this.data = await this.evees.getPerspectiveData(this.uref);
   }
 
-  async createEvee(object: T, remote: string) {
-    const dataId = await this.evees.client.store.storeEntity(object, remote);
+  async createEvee(object: T, remoteId: string) {
+    const dataId = await this.evees.client.store.storeEntity(object, remoteId);
     const head = await this.evees.createCommit(
       {
-        dataId
+        dataId,
       },
-      remote
+      remoteId
     );
-    return this.evees.newPerspective({ 
-      details: { 
-        headId: head.id
+    const remote = await this.evees.getRemote(remoteId);
+    const perspective = await remote.snapPerspective({});
+    return this.evees.client.newPerspective({
+      perspective,
+      details: {
+        headId: head.id,
       },
-      links: { 
-        parentId: this.uref 
-      }
+      links: {
+        parentId: this.uref,
+      },
     });
   }
-  
-  async updateContent(newData: T) {
-    const dataId = await this.evees.createEntity(newData, this.remote.id);
-    const headId = await this.evees.createCommit({
-      dataId,
-      parentsIds: this.currentHeadId ? [this.currentHeadId] : undefined,
-    }, this.remote.id)};
 
-    await this.client.udpate({updates: [this.uref, headId]});
+  async updateContent(newData: T) {
+    const dataId = await this.evees.client.store.storeEntity(newData, this.remote.id);
+    const head = await this.evees.createCommit(
+      {
+        dataId,
+        parentsIds: this.currentHeadId ? [this.currentHeadId] : undefined,
+      },
+      this.remote.id
+    );
+
+    await this.evees.client.updatePerspective({ perspectiveId: this.uref, newHeadId: head.id });
 
     this.logger.info('updateContent()', newData);
 

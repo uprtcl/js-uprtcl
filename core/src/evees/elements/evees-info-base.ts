@@ -1,12 +1,13 @@
 import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
 
-import { eveesConnect, Logger } from '@uprtcl/evees';
-import {
-  CortexModule,
-  PatternRecognizer,
-  Entity,
-  Signed,
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
+
+import { PerspectiveType } from '../../evees/patterns/perspective.pattern';
+import { CommitType } from '../../evees/patterns/commit.pattern';
+import { Entity } from '../../cas/interfaces/entity';
+import { eveesConnect } from '../../container/evees-connect.mixin';
+import { Signed } from '../../patterns/interfaces/signable';
+import { Logger } from '../../utils/logger';
 
 import {
   ProposalCreatedEvent,
@@ -16,13 +17,11 @@ import {
   Proposal,
 } from '../interfaces/types';
 import { Evees } from '../evees.service';
-
-import { RemoteEvees } from '../../services/remote.evees';
-import { EveesDiff } from './evees-diff';
 import { Client } from '../interfaces/client';
 import { ClientOnMemory } from '../clients/client.memory';
-import { PerspectiveType } from 'src/evees/patterns/perspective.pattern';
-import { CommitType } from 'src/evees/patterns/commit.pattern';
+import { RemoteEvees } from '../interfaces/remote.evees';
+
+import { EveesDiff } from './evees-diff';
 
 interface PerspectiveData {
   id?: string;
@@ -34,7 +33,7 @@ interface PerspectiveData {
   data?: Entity<any>;
 }
 
-export class EveesInfoBase extends moduleConnect(LitElement) {
+export class EveesInfoBase extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
 
   @property({ type: String, attribute: 'uref' })
@@ -106,7 +105,6 @@ export class EveesInfoBase extends moduleConnect(LitElement) {
   perspectiveData!: PerspectiveData;
   pullclient: Client | undefined = undefined;
 
-  protected evees!: Evees;
   protected remote!: RemoteEvees;
 
   /** official remote is used to indentity the special perspective, "the master branch" */

@@ -1,3 +1,4 @@
+import { Constructor } from '../../container/types';
 import { Behaviour } from './behaviour';
 
 /**

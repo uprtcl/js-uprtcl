@@ -1,10 +1,9 @@
-import {
-  Pattern,
-  Entity,
-  Signed,
+import { Entity } from '../../cas/interfaces/entity';
+import { Pattern } from '../../patterns/interfaces/pattern';
+import { Signed } from '../../patterns/interfaces/signable';
+import { extractSignedEntity } from '../../uprtcl-evees';
 
 import { Perspective } from '../interfaces/types';
-import { extractSignedEntity } from '../../cas/utils/signed';
 
 export const PerspectiveType = 'Uprtcl:Commit';
 export const propertyOrder = ['creatorId', 'path', 'remote', 'timestamp'];

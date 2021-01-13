@@ -1,12 +1,9 @@
-import { LitElement, html, css, property, query } from 'lit-element';
+import { LitElement, html, css, property } from 'lit-element';
 
-import { eveesConnect } from '@uprtcl/evees';
-
-import { EveesBindings } from '../bindings';
-
-import { RemoteEvees } from '../../services/remote.evees';
-import { Perspective } from '../interfaces/types';
+import { eveesConnect } from '../../container/evees-connect.mixin';
 import { Secured } from '../../cas/utils/cid-hash';
+
+import { Perspective } from '../interfaces/types';
 import { Evees } from '../evees.service';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 
@@ -22,7 +19,6 @@ export class EveesPerspectiveIcon extends eveesConnect(LitElement) {
   evees!: Evees;
 
   async firstUpdated() {
-    this.evees = this.request(EveesBindings.Evees);
     this.load();
   }
 

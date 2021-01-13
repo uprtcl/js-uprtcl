@@ -1,9 +1,8 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { eveeColor } from './support';
-import { RemoteEvees } from '../../services/remote.evees';
-import { Client } from '../interfaces/client';
 import { eveesConnect } from 'src/container/evees-connect.mixin';
+import { Logger } from 'src/utils/logger';
 
 interface PerspectiveData {
   id: string;
@@ -38,17 +37,17 @@ export class EveesPerspectivesList extends eveesConnect(LitElement) {
 
   async load() {
     this.loadingPerspectives = true;
-    const otherPerspectivesIds = await this.getEvees().client.searchEngine.otherPerspectives(
+    const otherPerspectivesIds = await this.evees.client.searchEngine.otherPerspectives(
       this.perspectiveId
     );
 
     const perspectivesData: PerspectiveData[] = await Promise.all(
       otherPerspectivesIds.map(
-        async (perspective): Promise<PerspectiveData> => {
+        async (perspectiveId): Promise<PerspectiveData> => {
           /** data on this perspective */
-          const remote = this.evees.remotes.find((r) => r.id === perspective.payload.remote);
-          if (!remote) throw new Error(`remote not found for ${perspective.payload.remote}`);
-          this.canUpdate = await this.evees.client.getPerspective(this.perspectiveId);
+          const perspective = await this.evees.client.store.getEntity(perspectiveId);
+          const remote = this.evees.remotes.find((r) => r.id === perspective.object.payload.remote);
+          if (!remote) throw new Error(`remote not found for ${perspective.object.payload.remote}`);
           return {
             id: perspective.id,
             name: perspective.name,

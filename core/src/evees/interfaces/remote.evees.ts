@@ -1,9 +1,10 @@
-import { PartialPerspective, Perspective, PerspectiveLinks } from '../types';
-import { Secured } from '../utils/cid-hash';
-import { AccessControl } from '../evees/interfaces/access-control';
+import { Secured } from '../../cas/utils/cid-hash';
+
 import { Client } from './client';
+import { AccessControl } from './access-control';
 import { Proposals } from './proposals';
 import { RemoteLogged } from './remote.logged';
+import { PartialPerspective, Perspective, PerspectiveLinks } from './types';
 
 /** A remote is a Client that connects to backend, identified with an id */
 export interface RemoteEvees extends Client, RemoteLogged {

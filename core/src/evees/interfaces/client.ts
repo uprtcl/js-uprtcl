@@ -42,7 +42,7 @@ export interface EveesMutationCreate {
 // 'canUpdate': When the logged user canUpdate status over a perspective changes.
 
 export interface Client {
-  searchEngine?: SearchEngine;
+  searchEngine: SearchEngine;
   store: CASStore;
 
   /** get a perspective head,

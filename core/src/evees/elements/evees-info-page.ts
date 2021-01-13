@@ -1,9 +1,10 @@
 import { html, css, property, query } from 'lit-element';
 
-import { Logger } from '@uprtcl/evees';
+import { MenuConfig } from '@uprtcl/common-ui';
+
+import { Logger } from '../../utils/logger';
 
 import { EveesInfoBase } from './evees-info-base';
-import { MenuConfig } from '@uprtcl/common-ui';
 
 export class EveesInfoPage extends EveesInfoBase {
   logger = new Logger('EVEES-INFO-PAGE');

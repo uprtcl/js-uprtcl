@@ -340,7 +340,7 @@ export class Evees {
   ): Promise<string> {
     client = client || this.client;
 
-    const commit: Secured<Commit> | undefined = await client.store.getEntity(commitId);
+    const commit: Secured<Commit> = await client.store.getEntity(commitId);
 
     const dataId = commit.object.payload.dataId;
     const dataForkId = await this.forkEntity(dataId, remote, parentId, client);

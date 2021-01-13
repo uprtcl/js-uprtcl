@@ -1,8 +1,10 @@
 import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../interfaces/types';
 import { CASStore, EntityGetResult } from '../../cas/interfaces/cas-store';
+import { Entity } from '../../cas/interfaces/entity';
+
 import { Client, PerspectiveGetResult, EveesMutation } from '../interfaces/client';
-import { Proposals } from '../proposals';
 import { SearchEngine } from '../interfaces/search.engine';
+import { Proposals } from '../interfaces/proposals';
 
 export class ClientOnMemory implements Client {
   private entities = new Map<string, Entity<any>>();
@@ -19,8 +21,19 @@ export class ClientOnMemory implements Client {
       this.update(mutation);
     }
   }
+  newPerspective(newPerspective: NewPerspectiveData) {
+    throw new Error('Method not implemented.');
+  }
+  deletePerspective(perspectiveId: string) {
+    throw new Error('Method not implemented.');
+  }
+  updatePerspective(update: UpdateRequest) {
+    throw new Error('Method not implemented.');
+  }
 
-  searchEngine?: SearchEngine | undefined;
+  get searchEngine() {
+    return this.base.searchEngine;
+  }
   proposals?: Proposals | undefined;
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {

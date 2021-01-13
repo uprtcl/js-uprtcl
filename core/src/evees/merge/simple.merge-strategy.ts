@@ -142,7 +142,7 @@ export class SimpleMergeStrategy {
     evees: Evees,
     config: any
   ): Promise<string[]> {
-    const allLinks: Dictionary<boolean> = {};
+    const allLinks: Map<string, boolean> = new Map();
 
     const originalLinksDic = {};
     for (let i = 0; i < originalLinks.length; i++) {
@@ -153,10 +153,10 @@ export class SimpleMergeStrategy {
       };
     }
 
-    const newLinks: Array<Dictionary<{ index: number; link: string }>> = [];
+    const newLinks: Array<Map<string, { index: number; link: string }>> = [];
     for (let i = 0; i < modificationsLinks.length; i++) {
       const newData = modificationsLinks[i];
-      const links: Dictionary<{ index: number; link: string }> = {};
+      const links: Map<string, { index: number; link: string }> = new Map();
       for (let j = 0; j < newData.length; j++) {
         const link = newData[j];
         links[link] = {

@@ -1,14 +1,17 @@
 import { html, css, property, query } from 'lit-element';
 
-import { Logger } from '@uprtcl/evees';
 import { MenuConfig, UprtclPopper } from '@uprtcl/common-ui';
+
+import { Logger } from '../../utils/logger';
+import { Secured } from '../../cas/utils/cid-hash';
+
+import { Perspective } from '../interfaces/types';
+import { RemoteEvees } from '../interfaces/remote.evees';
+
 import { EveesInfoBase } from './evees-info-base';
 import { EveesPerspectivesList } from './evees-perspectives-list';
 import { ProposalsList } from './evees-proposals-list';
-import { Perspective } from '../interfaces/types';
-import { RemoteEvees } from '../../services/remote.evees';
 import { DEFAULT_COLOR, eveeColor } from './support';
-import { Secured } from '../../cas/utils/cid-hash';
 import { ContentUpdatedEvent } from './events';
 
 export interface EveesInfoConfig {

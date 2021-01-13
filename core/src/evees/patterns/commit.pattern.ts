@@ -1,10 +1,9 @@
-import {
-  Pattern,
-  Entity,
-  Signed,
+import { Entity } from '../../cas/interfaces/entity';
+import { Pattern } from '../../patterns/interfaces/pattern';
+import { Signed } from '../../patterns/interfaces/signable';
+import { extractSignedEntity } from '../../cas/utils/signed';
 
 import { Commit } from '../interfaces/types';
-import { extractSignedEntity } from '../../cas/utils/signed';
 
 export const CommitType = 'Uprtcl:Commit';
 export const propertyOrder = ['creatorsIds', 'timestamp', 'message', 'parentsIds', 'dataId'];

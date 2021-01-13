@@ -1,13 +1,16 @@
 import { html, css, property, LitElement, query } from 'lit-element';
 
 import { UprtclPopper } from '@uprtcl/common-ui';
-import { Logger, eveesConnect } from '@uprtcl/evees';
 
-import { DEFAULT_COLOR, eveeColor } from './support';
-import { EveesInfoConfig } from './evees-info-user-based';
+import { eveesConnect } from '../../container/evees-connect.mixin';
+import { Logger } from '../../utils/logger';
+
 import { Evees } from '../evees.service';
 
-export class EveesInfoPopper extends moduleConnect(LitElement) {
+import { EveesInfoConfig } from './evees-info-user-based';
+import { DEFAULT_COLOR, eveeColor } from './support';
+
+export class EveesInfoPopper extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-INFO-POPPER');
 
   @property({ type: String, attribute: 'uref' })
@@ -42,8 +45,6 @@ export class EveesInfoPopper extends moduleConnect(LitElement) {
 
   @query('#info-popper')
   infoPopper!: UprtclPopper;
-
-  protected evees!: Evees;
 
   async firstUpdated() {
     await this.load();

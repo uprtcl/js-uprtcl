@@ -1,13 +1,12 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { eveesConnect, Logger } from '@uprtcl/evees';
+import { eveesConnect } from '../../container/evees-connect.mixin';
+import { Logger } from '../../utils/logger';
 
-import { EveesBindings } from '../bindings';
-import { Client } from '../interfaces/client';
 import { Evees } from '../evees.service';
-import { Remote } from '../services/logged.remote';
+import { RemoteEvees } from '../interfaces/remote.evees';
 
-export class ProposalsList extends moduleConnect(LitElement) {
+export class ProposalsList extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
 
   @property({ type: String, attribute: 'perspective-id' })
@@ -17,13 +16,10 @@ export class ProposalsList extends moduleConnect(LitElement) {
   loadingProposals: boolean = true;
 
   proposalsIds: string[] = [];
-  remote!: Remote;
+  remote!: RemoteEvees;
   evees!: Evees;
 
   async firstUpdated() {
-    if (!this.isConnected) return;
-
-    this.evees = this.request(EveesBindings.Client);
     this.load();
   }
 

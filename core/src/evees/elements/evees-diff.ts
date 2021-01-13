@@ -1,11 +1,11 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { Logger } from '@uprtcl/evees';
+import { Logger } from '../../utils/logger';
+import { eveesConnect } from '../../container/evees-connect.mixin';
+import { PatternRecognizer } from '../../patterns/recognizer/pattern-recognizer';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../interfaces/types';
-
 import { Client } from '../interfaces/client';
-import { eveesConnect } from '../../container/evees-connect.mixin';
 
 const LOGINFO = true;
 
@@ -28,7 +28,7 @@ export class EveesDiff extends eveesConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
-  updatesDetails: Dictionary<UpdateDetails> = {};
+  updatesDetails: Map<string, UpdateDetails> = new Map();
   client!: Client;
 
   protected recognizer!: PatternRecognizer;
