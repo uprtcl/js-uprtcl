@@ -17,8 +17,7 @@
     "concat-stream": "^2.0.0",
     "dexie": "^3.0.2",
     "ipfs": "^0.50.2",
-    "multihashing-async": "^0.8.1",
-    "reflect-metadata": "^0.1.13"
+    "multihashing-async": "^0.8.1"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",

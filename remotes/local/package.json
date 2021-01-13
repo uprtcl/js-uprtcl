@@ -27,7 +27,6 @@
     "karma-webpack": "^4.0.2",
     "npm-check-updates": "^10.2.1",
     "path": "^0.12.7",
-    "reflect-metadata": "^0.1.13",
     "rimraf": "^2.6.2",
     "rollup": "^2.0.5",
     "rollup-plugin-sourcemaps": "^0.5.0",

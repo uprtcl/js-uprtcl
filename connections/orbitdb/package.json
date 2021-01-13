@@ -18,8 +18,7 @@
     "@uprtcl/multiplatform": "^0.1.1",
     "ipfs": "^0.50.2",
     "npm-check-updates": "^10.2.1",
-    "orbit-db": "^0.26.0",
-    "reflect-metadata": "^0.1.13"
+    "orbit-db": "^0.26.0"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
