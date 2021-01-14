@@ -10,7 +10,6 @@ import {
   getContextAcl,
 } from '@uprtcl/evees-orbitdb';
 import { EveesBlockchainCached } from '@uprtcl/evees-blockchain';
-import { RemoteEvees } from '@uprtcl/evees';
 
 import { PolkadotConnection } from '../connection.polkadot';
 import { PolkadotOrbitDBIdentity } from '../orbitdb/polkadot.orbitdb.identity';

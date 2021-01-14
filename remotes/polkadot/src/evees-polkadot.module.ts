@@ -1,5 +1,3 @@
-import { EveesContentModule, Logger } from '@uprtcl/evees';
-
 import { EveesPolkadotBindings } from './bindings';
 import { PolkadotAccountElement } from './provider/account.element';
 import { EveesPolkadotCouncilProposal } from './provider/council/council.proposal.element';

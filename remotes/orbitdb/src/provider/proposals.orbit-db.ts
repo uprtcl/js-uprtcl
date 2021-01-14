@@ -1,7 +1,3 @@
-import { Logger } from '@uprtcl/evees';
-
-import { ProposalsProvider } from '@uprtcl/evees';
-import { ProposalDetails, Proposal, NewProposal } from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
 

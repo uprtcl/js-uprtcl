@@ -2,8 +2,6 @@ import { LitElement, html, css, property, internalProperty } from 'lit-element';
 import { unsafeSVG } from 'lit-html/directives/unsafe-svg';
 import { polkadotIcon } from '@polkadot/ui-shared';
 
-import { Logger, eveesConnect } from '@uprtcl/evees';
-import { EveesModule, RemoteEvees } from '@uprtcl/evees';
 import { EveesBlockchainCached } from '@uprtcl/evees-blockchain';
 
 import { PolkadotConnection } from '../connection.polkadot';

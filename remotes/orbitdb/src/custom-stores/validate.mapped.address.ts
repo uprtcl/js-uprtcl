@@ -1,6 +1,5 @@
 import CBOR from 'cbor-js';
 import { AddressMapping, IdentitySource, mappingMsg } from '@uprtcl/orbitdb-provider';
-import { Perspective } from '@uprtcl/evees';
 
 const storeQueue: any = {};
 

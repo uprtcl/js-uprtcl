@@ -1,4 +1,3 @@
-import { UpdateRequest } from '@uprtcl/evees';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
 
 export interface Vote {

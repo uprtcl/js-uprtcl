@@ -1,5 +1,3 @@
-import { EveesContentModule, Logger } from '@uprtcl/evees';
-
 import { EveesOrbitDBBindings } from './bindings';
 import { PermissionsOrbitdDb } from './provider/evees-acl.orbit-db.lense';
 import { RemoteOrbitdDbLense } from './provider/evees-remote.orbit-db.lense';

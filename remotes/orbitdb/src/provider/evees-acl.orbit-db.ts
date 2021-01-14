@@ -1,7 +1,5 @@
 import { html } from 'lit-element';
 
-import { Perspective, AccessControlService, Secured } from '@uprtcl/evees';
-
 export class EveesAccessControlOrbitDB implements AccessControlService {
   constructor(protected store: CASStore) {}
 

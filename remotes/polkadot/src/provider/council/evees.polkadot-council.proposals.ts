@@ -1,7 +1,5 @@
 import { html } from 'lit-element';
 
-import { ProposalsProvider, UpdateRequest } from '@uprtcl/evees';
-
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
 import { PolkadotConnection } from '../../connection.polkadot';

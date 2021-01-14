@@ -1,7 +1,5 @@
 import { html } from 'lit-element';
 
-import { Logger } from '@uprtcl/evees';
-
 import {
   RemoteEvees,
   Perspective,
@@ -11,7 +9,7 @@ import {
   deriveSecured,
   hashObject,
   EveesHelpers,
-} from '@uprtcl/evees';
+} from '../../evees/dist/types/uprtcl-evees';
 import { EveesAccessControlFixed } from '@uprtcl/evees-blockchain';
 
 import { PolkadotConnection } from '../../connection.polkadot';

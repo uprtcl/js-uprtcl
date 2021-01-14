@@ -1,4 +1,3 @@
-import { Perspective, Secured } from '@uprtcl/evees';
 import { CustomStore } from '@uprtcl/orbitdb-provider';
 
 import { ProposalManifest } from '../provider/proposals.orbit-db';

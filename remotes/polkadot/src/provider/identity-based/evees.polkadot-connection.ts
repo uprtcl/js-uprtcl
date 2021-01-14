@@ -1,7 +1,6 @@
 import { html } from 'lit-element';
 
 import { BlockchainConnection } from '@uprtcl/evees-blockchain';
-import { Logger } from '@uprtcl/evees';
 import { PolkadotConnection } from '../../connection.polkadot';
 import { icons } from '../icons';
 

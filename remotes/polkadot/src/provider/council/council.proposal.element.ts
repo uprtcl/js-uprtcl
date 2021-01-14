@@ -1,6 +1,5 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { eveesConnect } from '@uprtcl/evees';
 import { prettyTimePeriod } from '@uprtcl/common-ui';
 
 import {
@@ -10,7 +9,7 @@ import {
   NewPerspectiveData,
   Perspective,
   Secured,
-} from '@uprtcl/evees';
+} from '../../evees/dist/types/uprtcl-evees';
 
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 

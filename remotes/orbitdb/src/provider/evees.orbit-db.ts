@@ -1,14 +1,5 @@
 import { html } from 'lit-element';
 
-import {
-  Secured,
-  Perspective,
-  PerspectiveDetails,
-  NewPerspectiveData,
-  RemoteEvees,
-  ProposalsProvider,
-  EveesHelpers,
-} from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';

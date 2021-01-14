@@ -1,6 +1,3 @@
-import { Logger } from '@uprtcl/evees';
-import { Perspective, PerspectiveDetails } from '@uprtcl/evees';
-
 import { PolkadotConnection, TransactionReceipt } from '../../connection.polkadot';
 import { EveesCouncilDB } from './dexie.council.store';
 

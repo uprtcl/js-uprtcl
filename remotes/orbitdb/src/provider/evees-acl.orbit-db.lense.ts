@@ -1,8 +1,5 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { Logger, eveesConnect } from '@uprtcl/evees';
-import { EveesModule, EveesHelpers, RemoteEvees, Perspective } from '@uprtcl/evees';
-
 import { EveesOrbitDB } from './evees.orbit-db';
 
 export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
