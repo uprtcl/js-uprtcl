@@ -7,14 +7,14 @@ export {
   DiffLens,
 } from './evees/interfaces/types';
 
-/** Services interfaces */
+/** interfaces */
 export { NewPerspectiveData } from './evees/interfaces/types';
 export { EveesConfig } from './evees/interfaces/types';
 export { EveesContentModule } from './evees/interfaces/evees.content.module';
 
-/** Service providers */
 export { Evees } from './evees/evees.service';
 export { Client } from './evees/interfaces/client';
+export { RemoteEvees } from './evees/interfaces/remote.evees';
 
 /** Merge */
 export { Merge } from './evees/merge/merge.behaviour';
@@ -49,6 +49,8 @@ export { eveeColor, DEFAULT_COLOR } from './evees/elements/support';
 /** Patterns */
 export { Secured, hashObject, deriveEntity } from './cas/utils/cid-hash';
 export { extractSignedEntity, deriveSecured, signObject } from './cas/utils/signed';
+export { PerspectiveType } from './evees/patterns/perspective.pattern';
+export { CommitType } from './evees/patterns/commit.pattern';
 
 /** Utils */
 export { isAncestorOf } from './evees/merge/ancestor';
@@ -62,3 +64,13 @@ export { RemoteLogged } from './evees/interfaces/remote.logged';
 export { RemoteWithUI } from './evees/interfaces/remote.with-ui';
 
 export { Logger } from './utils/logger';
+
+/** CAS */
+export { Entity } from './cas/interfaces/entity';
+
+/** Patterns */
+export { HasChildren } from './patterns/behaviours/has-links';
+export { PatternRecognizer } from './patterns/recognizer/pattern-recognizer';
+
+/** container */
+export { eveesConnect } from './container/evees-connect.mixin';

@@ -58,11 +58,11 @@ export class EveesDiff extends eveesConnect(LitElement) {
     const mutation = await this.client.diff();
 
     const getDetails = mutation.updates.map(async (update) => {
-      const newData = await this.evees.getCommitData(update.newHeadId, this.client);
+      const newData = await this.evees.getCommitData(update.newHeadId);
 
       const oldData =
         update.oldHeadId !== undefined
-          ? await this.evees.getCommitData(update.oldHeadId, this.client)
+          ? await this.evees.getCommitData(update.oldHeadId)
           : undefined;
 
       const hasDiffLenses = this.recognizer
@@ -88,7 +88,7 @@ export class EveesDiff extends eveesConnect(LitElement) {
       );
       if (newRoot) {
         if (newRoot.details.headId) {
-          const newData = await this.evees.getCommitData(newRoot.details.headId, this.client);
+          const newData = await this.evees.getCommitData(newRoot.details.headId);
 
           const hasDiffLenses = this.recognizer
             .recognizeBehaviours(newData)

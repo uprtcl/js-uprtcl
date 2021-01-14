@@ -8,23 +8,27 @@ const styleMap = (style) => {
   }, '');
 };
 
-import { eveesConnect, Logger } from '@uprtcl/evees';
 import {
+  Logger,
+  eveesConnect,
+  Client,
   RemoteEvees,
-  EveesModule,
-  UPDATE_HEAD,
   eveeColor,
   ContentUpdatedEvent,
-  CREATE_ENTITY,
+  PerspectiveType,
   EveesDraftsLocal,
-  EveesHelpers,
   deriveSecured,
   Perspective,
   Secured,
   hashObject,
-  EveesConfig,
   EveesInfoConfig,
+  PatternRecognizer,
+  EveesContentModule,
+  CommitType,
+  Entity,
+  HasChildren,
 } from '@uprtcl/evees';
+
 import { MenuConfig } from '@uprtcl/common-ui';
 
 import { TextType, DocNode, CustomBlocks } from '../types';
@@ -36,7 +40,7 @@ const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
 const PLACEHOLDER_TOKEN = '_PLACEHOLDER_';
 
-export class DocumentEditor extends moduleConnect(LitElement) {
+export class DocumentEditor extends eveesConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
 
   @property({ type: String, attribute: 'uref' })
@@ -55,7 +59,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   parentId: string = '';
 
   @property({ type: String, attribute: 'default-type' })
-  defaultType: string = EveesModule.bindings.PerspectiveType;
+  defaultType: string = PerspectiveType;
 
   @property({ type: Object })
   eveesInfoConfig: EveesInfoConfig = {};
@@ -81,28 +85,23 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   } = {};
 
   doc: DocNode | undefined = undefined;
-  client!: Client;
 
-  protected remotes!: RemoteEvees[];
-  protected recognizer!: PatternRecognizer;
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
+  client: Client = true;
 
   draftService = new EveesDraftsLocal();
 
   async firstUpdated() {
-    this.remotes = this.requestAll(EveesModule.bindings.RemoteEvees);
-    this.recognizer = this.request(CortexModule.bindings.Recognizer);
-    try {
-      this.customBlocks = this.request(DocumentsBindings.CustomBlocks);
-    } catch (e) {
-      this.logger.log('custom blocks not defined');
-    }
-    const config = this.request(EveesModule.bindings.Config) as EveesConfig;
-    this.editableRemotesIds = config.editableRemotesIds ? config.editableRemotesIds : [];
+    const documentsModule = this.evees.modules.get(EveesContentModule.id);
+    this.customBlocks = documentsModule ? documentsModule.config.customBlocks : undefined;
+    this.editableRemotesIds = this.evees.config.editableRemotesIds
+      ? this.evees.config.editableRemotesIds
+      : [];
 
-    if (!this.client) {
-      this.client = this.request(ClientModule.bindings.Client);
+    /** overwrite evees sercive with provided client */
+    if (this.client) {
+      this.evees = this.evees.clone(this.client);
     }
 
     this.uref = this.firstRef;
@@ -147,7 +146,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async loadDoc() {
-    if (!this.client) return;
+    if (!this.evees.client) return;
 
     if (LOGINFO) this.logger.log('loadDoc()', this.uref);
 
@@ -181,10 +180,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async refToNode(uref: string, parent?: DocNode, ix?: number) {
-    const entity = await loadEntity(this.client, uref);
+    const entity = await this.evees.client.store.get(uref);
     if (!entity) throw Error(`Entity not found ${uref}`);
 
-    let entityType = this.recognizer.recognizeType(entity);
+    let entityType = this.evees.recognizer.recognizeType(entity);
 
     let editable = false;
     let remoteId: string | undefined;
@@ -192,42 +191,32 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     let dataId: string | undefined;
     let headId: string | undefined;
 
-    if (entityType === EveesModule.bindings.PerspectiveType) {
-      remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, entity.id);
+    if (entityType === PerspectiveType) {
+      const remote = await this.evees.getPerspectiveRemote(entity.id);
 
-      const remote = this.remotes.find((r) => r.id === remoteId);
-      if (!remote) throw new Error(`remote not found for ${remoteId}`);
-
-      let canUpdate: boolean = false;
+      const { details } = await this.evees.client.getPerspective(uref);
+      headId = details.headId;
 
       if (!this.readOnly) {
         const editableRemote =
           this.editableRemotesIds.length > 0 ? this.editableRemotesIds.includes(remote.id) : true;
         if (editableRemote) {
-          canUpdate = await EveesHelpers.canUpdate(this.client, uref);
+          editable = details.canUpdate;
         }
-      }
-
-      if (!this.readOnly) {
-        editable = canUpdate;
-        headId = await EveesHelpers.getPerspectiveHeadId(this.client, entity.id);
-        dataId =
-          headId !== undefined
-            ? await EveesHelpers.getCommitDataId(this.client, headId)
-            : undefined;
       } else {
         editable = false;
-        dataId = await EveesHelpers.getPerspectiveDataId(this.client, entity.id);
-        context = '';
-        headId = '';
       }
+
+      const head = await this.evees.client.store.getEntity(uref);
+      dataId = head ? head.object.payload.dataId : undefined;
     } else {
-      if (entityType === EveesModule.bindings.CommitType) {
+      if (entityType === CommitType) {
         if (!parent) throw new Error('Commit must have a parent');
 
         editable = parent.editable;
         remoteId = parent.remote;
-        dataId = await EveesHelpers.getCommitDataId(this.client, entity.id);
+        const head = await this.evees.client.store.getEntity(uref);
+        dataId = head ? head.object.payload.dataId : undefined;
         headId = uref;
       } else {
         entityType = 'Data';
@@ -241,18 +230,16 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (!dataId || !entityType) throw Error(`data not loaded for uref ${this.uref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
-    const data: Entity<any> | undefined = await loadEntity(this.client, dataId);
-    if (!data) throw Error('Data undefined');
-
-    const dataType = this.recognizer.recognizeType(data);
+    const data = await this.evees.client.store.getEntity(dataId);
+    const dataType = this.evees.recognizer.recognizeType(data);
     const canConvertTo = this.customBlocks
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];
 
-    const hasChildren: HasChildren = this.recognizer
+    const hasChildren: HasChildren = this.evees.recognizer
       .recognizeBehaviours(data)
       .find((b) => (b as HasChildren).getChildrenLinks);
-    const hasDocNodeLenses: HasDocNodeLenses = this.recognizer
+    const hasDocNodeLenses: HasDocNodeLenses = this.evees.recognizer
       .recognizeBehaviours(data)
       .find((b) => (b as HasDocNodeLenses).docNodeLenses);
 
@@ -407,11 +394,8 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async derivePerspective(node: DocNode): Promise<Secured<Perspective>> {
-    const remoteInstance = this.remotes.find((r) => r.id == node.remote);
-
-    if (!remoteInstance) throw new Error(`Remote not found for remote ${remoteInstance}`);
-
-    const creatorId = remoteInstance.userId ? remoteInstance.userId : '';
+    const remote = await this.evees.getRemote(node.remote as string);
+    const creatorId = remote.userId ? remote.userId : '';
 
     const context = await hashObject({
       creatorId,
@@ -420,26 +404,26 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const perspective: Perspective = {
       creatorId,
-      remote: remoteInstance.id,
-      path: remoteInstance.defaultPath,
+      remote: remote.id,
+      path: remote.defaultPath,
       timestamp: node.timestamp,
       context,
     };
 
-    return deriveSecured<Perspective>(perspective, remoteInstance.store.cidConfig);
+    return remote.snapPerspective(perspective);
   }
 
   /* bottom up traverse the tree to set the uref of all placeholders */
   async preparePersist(node: DocNode, defaultRemote: string, message?: string) {
     switch (this.defaultType) {
-      case EveesModule.bindings.PerspectiveType:
+      case PerspectiveType:
         node.remote = node.remote !== undefined ? node.remote : defaultRemote;
         const secured = await this.derivePerspective(node);
         node.uref = secured.id;
-        node.type = EveesModule.bindings.PerspectiveType;
+        node.type = PerspectiveType;
         break;
 
-      case EveesModule.bindings.CommitType:
+      case CommitType:
         throw new Error('TBD');
       // const secured = await this.deriveCommit(node);
       // node.uref = commitId;
@@ -469,7 +453,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     }
 
     switch (node.type) {
-      case EveesModule.bindings.PerspectiveType:
+      case PerspectiveType:
         if (node.isPlaceholder) {
           const perspectiveId = await this.createEvee(node);
           if (perspectiveId !== node.uref) {
@@ -482,7 +466,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         }
         break;
 
-      case EveesModule.bindings.CommitType:
+      case CommitType:
         const commitParents = this.isPlaceholder(node.uref) ? [] : node.headId ? [node.headId] : [];
 
         if (node.remote === undefined) throw new Error('undefined remote for node');
@@ -498,56 +482,30 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     await this.draftService.removeDraft(node.placeholderRef ? node.placeholderRef : node.uref);
   }
 
-  async createEntity(content: any, remote: string): Promise<string> {
-    const remoteInstance = this.remotes.find((r) => r.id === remote);
-    if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
-    const store = remoteInstance.store;
-
-    const createTextNode = await this.client.mutate({
-      mutation: CREATE_ENTITY,
-      variables: {
-        object: content,
-        casID: store.casID,
-      },
-    });
-
-    return createTextNode.data.createEntity.id;
-  }
-
   async createCommit(
     content: object,
     remote: string,
     parentsIds?: string[],
     message?: string
   ): Promise<string> {
-    const dataId = await this.createEntity(content, remote);
+    const dataId = await this.evees.client.store.createEntity(content, remote);
 
-    const remoteInstance = this.remotes.find((r) => r.id === remote);
-    if (!remoteInstance) throw new Error(`Remote not found for remote ${remote}`);
-
-    return await EveesHelpers.createCommit(this.client, remoteInstance.store, {
-      dataId,
-      parentsIds,
-    });
+    const commit = await this.evees.createCommit(
+      {
+        dataId,
+        parentsIds,
+      },
+      remote
+    );
+    return commit.id;
   }
 
   async updateEvee(node: DocNode, message?: string): Promise<void> {
     if (node.remote === undefined) throw Error(`remote not defined for node ${node.uref}`);
 
-    const commitId = await this.createCommit(
-      node.draft,
-      node.remote,
-      node.headId ? [node.headId] : []
-    );
+    const commitId = await this.createCommit(node.draft, node.remote);
 
-    await this.client.mutate({
-      mutation: UPDATE_HEAD,
-      variables: {
-        perspectiveId: node.uref,
-        headId: commitId,
-        message,
-      },
-    });
+    await this.evees.updatePerspective(node.uref, node.draft);
 
     /** inform the external world if top element */
     if (this.doc && node.uref === this.doc.uref) {

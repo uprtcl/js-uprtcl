@@ -8,14 +8,15 @@ import { TextNodeDiff } from './elements/document-text-node-diff';
 import { CustomBlocks } from './types';
 
 export interface DocumentsModuleConfig {
-  customBlocks: CustomBlocks[];
+  customBlocks?: CustomBlocks;
 }
 
-export class WikisModule extends EveesContentModule {
+export class DocumentsModule extends EveesContentModule {
   static id = 'documents-module';
-  config: DocumentsModuleConfig;
+  config!: DocumentsModuleConfig;
 
   constructor(protected customBlocks?: CustomBlocks) {
+    super();
     this.config.customBlocks = customBlocks;
   }
 

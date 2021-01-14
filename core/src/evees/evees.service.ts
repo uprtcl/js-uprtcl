@@ -37,7 +37,7 @@ export class Evees {
     readonly remotes: RemoteEvees[],
     readonly merge: RecursiveContextMergeStrategy,
     readonly config: EveesConfig,
-    readonly modules?: EveesContentModule[]
+    readonly modules: Map<string, EveesContentModule>
   ) {}
 
   clone(client: Client): Evees {
@@ -50,79 +50,150 @@ export class Evees {
     return remote;
   }
 
-  async getPerspectiveRemote(perspectiveId: string, client?: Client): Promise<RemoteEvees> {
-    client = client || this.client;
-    const perspective = await client.store.getEntity(perspectiveId);
+  async getPerspectiveRemote(perspectiveId: string): Promise<RemoteEvees> {
+    const perspective = await this.client.store.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     const remoteId = perspective.object.payload.remote;
     return this.getRemote(remoteId);
   }
 
-  async getPerspectiveContext(perspectiveId: string, client?: Client): Promise<string> {
-    client = client || this.client;
-    const perspective = await client.store.getEntity(perspectiveId);
+  async getPerspectiveContext(perspectiveId: string): Promise<string> {
+    const perspective = await this.client.store.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     return perspective.object.payload.context;
   }
 
-  async getPerspectiveDataId(perspectiveId: string, client?: Client): Promise<string | undefined> {
-    client = client || this.client;
-    const result = await client.getPerspective(perspectiveId);
-    if (result.details.headId === undefined) return undefined;
-    return this.getCommitDataId(result.details.headId, client);
-  }
-
-  async getPerspectiveData(perspectiveId: string, client?: Client): Promise<Entity<any>> {
-    client = client || this.client;
-    const result = await client.getPerspective(perspectiveId);
+  async getPerspectiveData(perspectiveId: string): Promise<Entity<any>> {
+    const result = await this.client.getPerspective(perspectiveId);
     if (result.details.headId === undefined)
       throw new Error(`Data not found for perspective ${perspectiveId}`);
-    return this.getCommitData(result.details.headId, client);
+    return this.getCommitData(result.details.headId);
   }
 
-  async getCommitData(commitId: string, client?: Client): Promise<Entity<any>> {
-    client = client || this.client;
-    const dataId = await this.getCommitDataId(commitId, client);
-    const data = await client.store.getEntity(dataId);
+  async getCommitData(commitId: string): Promise<Entity<any>> {
+    const dataId = await this.getCommitDataId(commitId);
+    const data = await this.client.store.getEntity(dataId);
     return data;
   }
 
-  async getCommitDataId(commitId: string, client?: Client): Promise<string> {
-    client = client || this.client;
-    const commit = await client.store.getEntity(commitId);
+  async getCommitDataId(commitId: string): Promise<string> {
+    const commit = await this.client.store.getEntity(commitId);
     return commit.object.payload.dataId;
   }
 
-  async getData(uref: string, client?: Client) {
-    client = client || this.client;
-    const entity = await client.store.getEntity(uref);
+  async getData(uref: string) {
+    const entity = await this.client.store.getEntity(uref);
 
     let entityType: string = this.recognizer.recognizeType(entity);
 
     switch (entityType) {
       case PerspectiveType:
-        return this.getPerspectiveData(uref, client);
+        return this.getPerspectiveData(uref);
 
       case CommitType:
-        return this.getCommitData(uref, client);
+        return this.getCommitData(uref);
 
       default:
         return entity;
     }
   }
 
-  async getChildren(
-    recognizer: PatternRecognizer,
-    uref: string,
-    client?: Client
-  ): Promise<string[]> {
-    const data = await this.getData(uref, client);
+  async createEvee(object: any, remoteId: string, parentId?: string) {
+    const dataId = await this.client.store.storeEntity(object, remoteId);
+    const head = await this.createCommit(
+      {
+        dataId,
+      },
+      remoteId
+    );
+    const remote = await this.getRemote(remoteId);
+    const perspective = await remote.snapPerspective({});
+    return this.client.newPerspective({
+      perspective,
+      details: {
+        headId: head.id,
+      },
+      links: {
+        parentId,
+      },
+    });
+  }
+
+  async updatePerspectiveData(perspectiveId: string, newData: any, onHeadId?: string) {
+    const remote = await this.getRemote(perspectiveId);
+    const dataId = await this.client.store.storeEntity(newData, remote.id);
+    if (!onHeadId) {
+      const { details } = await this.client.getPerspective(perspectiveId);
+      onHeadId = details.headId;
+    }
+    const head = await this.createCommit(
+      {
+        dataId,
+        parentsIds: onHeadId ? [onHeadId] : undefined,
+      },
+      remote.id
+    );
+
+    await this.client.updatePerspective({ perspectiveId, newHeadId: head.id });
+  }
+
+  async getChildren(recognizer: PatternRecognizer, uref: string): Promise<string[]> {
+    const data = await this.getData(uref);
 
     const hasChildren: HasChildren = recognizer
       .recognizeBehaviours(data)
       .find((b) => (b as HasChildren).getChildrenLinks);
 
     return hasChildren.getChildrenLinks(data);
+  }
+
+  async spliceChildren(
+    object: any,
+    newElements: any[],
+    index: number,
+    count: number,
+    remoteId?: string
+  ) {
+    const getNewChildren = newElements.map((page) => {
+      if (typeof page !== 'string') {
+        if (!remoteId) throw new Error('remote needed to create the evees');
+        return this.createEvee(page, remoteId);
+      } else {
+        return Promise.resolve(page);
+      }
+    });
+
+    const newChildren = await Promise.all(getNewChildren);
+
+    /** get children pattern */
+    const data = entityStub(object);
+
+    const childrentPattern: HasChildren = this.recognizer
+      .recognizeBehaviours(data)
+      .find((b) => (b as HasChildren).getChildrenLinks);
+
+    /** get array with current children */
+    const children = childrentPattern.getChildrenLinks(data);
+
+    /** updated array with new elements */
+    const removed = children.splice(index, count, ...newChildren);
+    const newEntity = childrentPattern.replaceChildrenLinks(data)(children);
+
+    return {
+      entity: newEntity,
+      removed,
+    };
+  }
+
+  async moveChild(object: any, fromIndex: number, toIndex: number): Promise<Entity<any>> {
+    const { removed } = await this.spliceChildren(object, [], fromIndex, 1);
+    const result = await this.spliceChildren(object, removed as string[], toIndex, 0);
+    return result.entity;
+  }
+
+  async removeChild(object: any, index: number): Promise<Entity<any>> {
+    const result = await this.spliceChildren(object, [], index, 1);
+    return result.entity;
   }
 
   async createCommit(
@@ -164,7 +235,7 @@ export class Evees {
     client = client || this.client;
     if (this.config.emitIf === undefined) return false;
 
-    const toRemote = await this.getPerspectiveRemote(perspectiveId, client);
+    const toRemote = await this.getPerspectiveRemote(perspectiveId);
     if (toRemote.id === this.config.emitIf.remote) {
       const owner = await (toRemote.accessControl as any).getOwner(perspectiveId);
       return owner === this.config.emitIf.owner;
@@ -420,3 +491,10 @@ export class FindAncestor {
     return seeParents.includes(true);
   }
 }
+
+const entityStub = (object: any): Entity<any> => {
+  return {
+    id: '',
+    object,
+  };
+};
