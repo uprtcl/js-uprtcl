@@ -4,7 +4,7 @@
     "connections/orbitdb",
     "connections/ethereum",
     "connections/ipfs",
-    "core",
+    "evees",
     "modules/common-ui",
     "modules/evees-reader",
     "modules/wikis",

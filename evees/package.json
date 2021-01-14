@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@uprtcl/common-ui": "^0.1.1",
-    "@uprtcl/ipfs-provider": "^0.1.1",
     "cbor-js": "^0.1.0",
     "cids": "^1.0.0",
     "dexie": "^3.0.2",
