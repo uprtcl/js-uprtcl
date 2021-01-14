@@ -2,8 +2,8 @@ import { LitElement, property, html, css, query, TemplateResult } from 'lit-elem
 
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
-import { PerspectiveType } from '../../evees/patterns/perspective.pattern';
-import { CommitType } from '../../evees/patterns/commit.pattern';
+import { PerspectiveType } from '../patterns/perspective.pattern';
+import { CommitType } from '../patterns/commit.pattern';
 import { Entity } from '../../cas/interfaces/entity';
 import { eveesConnect } from '../../container/evees-connect.mixin';
 import { Signed } from '../../patterns/interfaces/signable';

@@ -1,4 +1,4 @@
-import { CidConfig, defaultCidConfig } from '../../cas/interfaces/cid-config';
+import { CidConfig, defaultCidConfig } from '../interfaces/cid-config';
 import { Signed } from '../../patterns/interfaces/signable';
 
 import { Entity } from '../interfaces/entity';

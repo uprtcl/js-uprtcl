@@ -1,5 +1,5 @@
 import { Evees } from '../evees.service';
-import { MergeStrategy } from '../merge/merge-strategy';
+import { MergeStrategy } from './merge-strategy';
 
 export interface Merge<T = any> extends Behaviour<T> {
   merge: (
