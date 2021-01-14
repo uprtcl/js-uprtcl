@@ -85,12 +85,6 @@ export interface NewPerspectiveData {
   links?: PerspectiveLinks;
 }
 
-export interface Lens {
-  name: string;
-  render: (entity: any, context?: any) => TemplateResult;
-  type?: string;
-}
-
 export interface DiffLens {
   name: string;
   render: (client: Client, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;

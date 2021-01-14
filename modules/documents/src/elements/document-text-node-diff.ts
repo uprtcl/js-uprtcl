@@ -1,13 +1,13 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { eveesConnect, Logger } from '@uprtcl/evees';
+import { Entity, eveesConnect, Logger } from '@uprtcl/evees';
 import { Client } from '@uprtcl/evees';
 
 import { TextNode } from '../types';
 
 const LOGINFO = true;
 
-export class TextNodeDiff extends moduleConnect(LitElement) {
+export class TextNodeDiff extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: Boolean })

@@ -2,16 +2,17 @@ import { html } from 'lit-element';
 
 import {
   Merge,
-  MergeStrategy,
+  RecursiveContextMergeStrategy,
   mergeResult,
   HasDiffLenses,
+  HasLenses,
   DiffLens,
   Client,
   Pattern,
-  recognizeEntity,
   HasChildren,
   Entity,
   HasTitle,
+  Lens,
 } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
@@ -35,14 +36,13 @@ const typeToTextNode = (textNode: TextNode, type: TextType): TextNode => {
 };
 
 export class TextNodePattern extends Pattern<Entity<TextNode>> {
-  recognize(entity: object): boolean {
-    return recognizeEntity(entity) && propertyOrder.every((p) => entity.object.hasOwnProperty(p));
+  recognize(object: object): boolean {
+    return propertyOrder.every((p) => object.hasOwnProperty(p));
   }
 
   type = DocumentsBindings.TextNodeType;
 }
 
-@injectable()
 export class TextNodeCommon
   implements HasLenses<Entity<TextNode>>, HasChildren<Entity<TextNode>>, Merge<Entity<TextNode>> {
   replaceChildrenLinks = (node: Entity<TextNode>) => (
@@ -114,7 +114,6 @@ export class TextNodeCommon
 
   merge = (originalNode: Entity<TextNode>) => async (
     modifications: Entity<TextNode>[],
-    mergeStrategy: MergeStrategy,
     client: Client,
     config: any
   ): Promise<TextNode> => {
@@ -124,7 +123,7 @@ export class TextNodeCommon
       modifications.map((data) => data.object.type)
     );
 
-    const mergedLinks = await mergeStrategy.mergeLinks(
+    const mergedLinks = await RecursiveContextMergeStrategy.mergeLinks(
       originalNode.object.links,
       modifications.map((data) => data.object.links),
       client,
@@ -139,7 +138,6 @@ export class TextNodeCommon
   };
 }
 
-@injectable()
 export class TextNodeTitle implements HasTitle, HasDiffLenses {
   title = (textNode: Entity<TextNode>) => textNode.object.text;
 

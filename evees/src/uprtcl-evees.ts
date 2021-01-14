@@ -70,7 +70,13 @@ export { Entity } from './cas/interfaces/entity';
 
 /** Patterns */
 export { HasChildren } from './patterns/behaviours/has-links';
+export { HasLenses, Lens } from './patterns/behaviours/has-lenses';
+export { HasTitle } from './patterns/behaviours/has-title';
 export { PatternRecognizer } from './patterns/recognizer/pattern-recognizer';
+export { Pattern } from './patterns/interfaces/pattern';
 
 /** container */
 export { eveesConnect } from './container/evees-connect.mixin';
+
+/** Clients */
+export { EveesDraftsLocal } from './evees/clients/evees.drafts.local';
