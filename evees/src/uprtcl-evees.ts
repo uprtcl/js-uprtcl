@@ -56,9 +56,11 @@ export { CommitType } from './evees/patterns/commit.pattern';
 
 /** Utils */
 export { isAncestorOf } from './evees/merge/ancestor';
+export { Connection, ConnectionOptions } from './utils/connection';
 
 /** Proposals */
 export { Proposal, UpdateRequest } from './evees/interfaces/types';
+export { Proposals } from './evees/interfaces/proposals';
 
 /** Aceess Control */
 export { AccessControl } from './evees/interfaces/access-control';
@@ -69,6 +71,9 @@ export { Logger } from './utils/logger';
 
 /** CAS */
 export { Entity } from './cas/interfaces/entity';
+export { CASStore } from './cas/interfaces/cas-store';
+export { CASRemote } from './cas/interfaces/cas-remote';
+export { CidConfig } from './cas/interfaces/cid-config';
 
 /** Patterns */
 export { HasChildren } from './patterns/behaviours/has-links';

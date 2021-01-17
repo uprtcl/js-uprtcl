@@ -4,7 +4,6 @@ import { Logger } from '@uprtcl/evees';
 
 import { HttpProvider, HttpProviderOptions } from './http.provider';
 
-@injectable()
 export class HttpAuth0Provider extends HttpProvider {
   logger = new Logger('HTTP-AUTH0-Provider');
 
@@ -26,6 +25,7 @@ export class HttpAuth0Provider extends HttpProvider {
         const isAuthorized = await this.isLogged();
         if (isAuthorized) {
           const user = await this.auth0.getUser();
+          if (!user) throw new Error('User undefined');
 
           if (currentUserId !== user.sub) {
             this.logout();
@@ -76,6 +76,8 @@ export class HttpAuth0Provider extends HttpProvider {
 
       if (result.appState && result.appState.targetUrl) {
         const user = await this.auth0.getUser();
+        if (!user) throw new Error('User undefined');
+
         const auth0Claims = await this.auth0.getIdTokenClaims();
 
         super.userId = user.sub;

@@ -1,3 +1,5 @@
+import { Connection, ConnectionOptions } from '@uprtcl/evees';
+
 export interface PostResult {
   result: string;
   message: string;

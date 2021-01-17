@@ -5,7 +5,7 @@ import { Proposal } from './types';
 export interface Proposals {
   createProposal(newProposal: Proposal);
 
-  getProposal(proposalId: string): Promise<Entity<Proposal>>;
+  getProposal(proposalId: string): Promise<Proposal>;
 
   getProposalsToPerspective(perspectiveId: string): Promise<string[]>;
 

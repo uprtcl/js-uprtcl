@@ -14,13 +14,12 @@ import {
 
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
+import { PartialPerspective } from '@uprtcl/evees/dist/types/evees/interfaces/types';
 
 const evees_api: string = 'evees-v1';
 
 export class EveesHttp implements RemoteEvees {
   logger = new Logger('HTTP-EVEES-PROVIDER');
-
-  knownSources: KnownSourcesService;
 
   accessControl: EveesAccessControlHttp;
   proposals: ProposalsHttp;
@@ -28,7 +27,6 @@ export class EveesHttp implements RemoteEvees {
   constructor(protected provider: HttpProvider, public store: CASStore) {
     this.accessControl = new EveesAccessControlHttp(this.provider);
     this.proposals = new ProposalsHttp(this.provider, this);
-    this.knownSources = new KnownSourcesHttp(this.provider);
   }
 
   get id() {
@@ -57,30 +55,15 @@ export class EveesHttp implements RemoteEvees {
     return this.accessControl.canUpdate(uref);
   }
 
-  async snapPerspective(
-    parentId?: string,
-    context?: string,
-    timestamp?: number,
-    path?: string,
-    fromPerspectiveId?: string,
-    fromHeadId?: string
-  ): Promise<Secured<Perspective>> {
-    return EveesHelpers.snapDefaultPerspective(
-      this,
-      undefined,
-      context,
-      timestamp,
-      path,
-      fromPerspectiveId,
-      fromHeadId
-    );
+  async snapPerspective(perspective: PartialPerspective): Promise<Secured<Perspective>> {
+    return EveesHelpers.snapDefaultPerspective(perspective);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     await this.provider.post('/persp', {
       perspective: perspectiveData.perspective,
       details: perspectiveData.details,
-      parentId: perspectiveData.parentId,
+      parentId: perspectiveData.links ? perspectiveData.links.parentId : undefined,
     });
   }
 

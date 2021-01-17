@@ -1,6 +1,5 @@
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { Logger } from '@uprtcl/evees';
-import { Remote } from '@uprtcl/evees';
+import { Logger, RemoteEvees } from '@uprtcl/evees';
 
 import { HttpProvider, HttpProviderOptions } from './http.provider';
 
@@ -8,8 +7,7 @@ export const loginMessage = (nonce: string) => {
   return `Login to Intercreativiy \n\nnonce:${nonce}`;
 };
 
-@injectable()
-export class HttpEthAuthProvider extends HttpProvider implements Remote {
+export class HttpEthAuthProvider extends HttpProvider implements RemoteEvees {
   logger = new Logger('HTTP-ETH-Provider');
 
   account: string | undefined = undefined;

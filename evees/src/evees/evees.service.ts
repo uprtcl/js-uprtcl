@@ -256,10 +256,13 @@ export class Evees {
     creatorId = creatorId ? creatorId : remote.userId ? remote.userId : '';
     timestamp = timestamp !== undefined ? timestamp : Date.now();
 
-    const defaultContext = await hashObject({
-      creatorId,
-      timestamp,
-    });
+    const defaultContext = await this.client.store.hashEntity(
+      {
+        creatorId,
+        timestamp,
+      },
+      remote.id
+    );
 
     context = context || defaultContext;
 

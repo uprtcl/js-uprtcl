@@ -1,10 +1,9 @@
 import { HttpProvider } from './http.provider';
-import { HttpConnection } from './http.connection';
-import { Logger } from '@uprtcl/evees';
+import { Logger, CASRemote, CidConfig } from '@uprtcl/evees';
 
 const store_api = 'store';
 
-export class HttpStore implements CASStore {
+export class HttpStore implements CASRemote {
   logger = new Logger('Http Store');
 
   constructor(protected provider: HttpProvider, public cidConfig: CidConfig) {}

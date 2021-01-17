@@ -1,8 +1,6 @@
 import merge from 'lodash-es/merge';
-
-import { Logger } from '@uprtcl/evees';
-
-import { Ready } from '../types/ready';
+import { Logger } from './logger';
+import { Ready } from './ready';
 
 export interface ConnectionOptions {
   retries?: number;

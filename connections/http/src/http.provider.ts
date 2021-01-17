@@ -1,4 +1,8 @@
-import { Remote } from '@uprtcl/evees';
+import { Perspective, Proposals, RemoteEvees, Secured } from '@uprtcl/evees';
+import {
+  PartialPerspective,
+  PerspectiveLinks,
+} from '@uprtcl/evees/dist/types/evees/interfaces/types';
 
 import { HttpConnection, PostResult } from './http.connection';
 
@@ -7,10 +11,12 @@ export interface HttpProviderOptions {
   apiId: string;
 }
 
-export abstract class HttpProvider extends HttpConnection implements Remote {
+export abstract class HttpProvider extends HttpConnection implements RemoteEvees {
   constructor(public pOptions: HttpProviderOptions) {
     super();
   }
+  accessControl: any;
+  proposals?: Proposals | undefined;
 
   get id(): string {
     return `http:${this.pOptions.apiId}`;
@@ -53,6 +59,13 @@ export abstract class HttpProvider extends HttpConnection implements Remote {
 
   delete(url: string): Promise<PostResult> {
     return super.delete(this.pOptions.host + url);
+  }
+
+  snapPerspective(
+    perspective: PartialPerspective,
+    links?: PerspectiveLinks
+  ): Promise<Secured<Perspective>> {
+    throw new Error('Method not implemented.');
   }
 
   abstract isConnected(): Promise<boolean>;

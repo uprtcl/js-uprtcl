@@ -1,3 +1,4 @@
+import { Connection, ConnectionOptions } from '@uprtcl/evees';
 import { ethers } from 'ethers';
 
 export interface EthereumConnectionOptions {
