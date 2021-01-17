@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { eveesConnect } from '@uprtcl/evees';
-import { EveesBindings, EveesHelpers, RemoteEvees } from '@uprtcl/evees';
+import { eveesConnect, HasTitle } from '@uprtcl/evees';
+import { RemoteEvees } from '@uprtcl/evees';
 
 import {
   BasicAdminInheritedPermissions,
@@ -27,14 +27,10 @@ export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
   @property({ attribute: false })
   currentUser!: string;
 
-  client!: Client;
-  remote!: EveesHttp;
-
   delegatedTitle: string = '';
+  remote!: RemoteEvees;
 
   userPermissions!: Object[];
-
-  protected recognizer!: PatternRecognizer;
 
   // TODO: remove
   userList: string[] = [
@@ -46,18 +42,7 @@ export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
   async firstUpdated() {
     if (!this.isConnected) return;
 
-    this.client = this.request(ClientModule.bindings.Client);
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.uref);
-
-    const remote = (this.requestAll(EveesBindings.RemoteEvees) as RemoteEvees[]).find(
-      (remote) => remote.id === remoteId
-    );
-
-    this.recognizer = this.request(CortexModule.bindings.Recognizer);
-
-    if (!remote) throw new Error(`remote not registered ${remoteId}`);
-
-    this.remote = remote as EveesHttp;
+    this.remote = await this.evees.getRemote(this.uref);
 
     const isLoggedIn = this.remote.isLogged();
 
@@ -88,8 +73,8 @@ export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
 
     const delegatedUref = this.permissions.delegateTo;
 
-    const data = await EveesHelpers.getPerspectiveData(this.client, delegatedUref);
-    const hasTitle: HasTitle = this.recognizer
+    const data = await this.evees.getPerspectiveData(delegatedUref);
+    const hasTitle: HasTitle = this.evees.recognizer
       .recognizeBehaviours(data)
       .find((b) => (b as HasTitle).title);
 
@@ -366,7 +351,7 @@ export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
             ${this.permissions
               ? html`
                   <div class="row title">
-                    <strong>${this.t('access-control:owner')}:</strong>
+                    <strong>Owner:</strong>
                     ${this.renderOwner()}
                   </div>
 

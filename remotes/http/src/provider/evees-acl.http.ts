@@ -1,12 +1,12 @@
 import { html } from 'lit-element';
 
-import { AccessControlService } from '@uprtcl/evees';
+import { AccessControl, Logger, Lens } from '@uprtcl/evees';
 import { HttpProvider } from '@uprtcl/http-provider';
 
 import { PermissionType, UserPermissions } from './types';
 
 const uprtcl_api: string = 'uprtcl-acl-v1';
-export class EveesAccessControlHttp implements AccessControlService {
+export class EveesAccessControlHttp implements AccessControl {
   logger = new Logger('HTTP-EVEES-ACCESS-CONTROL');
 
   constructor(protected provider: HttpProvider) {}

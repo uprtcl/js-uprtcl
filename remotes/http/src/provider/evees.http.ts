@@ -1,20 +1,19 @@
 import { html } from 'lit-html';
 
-import { Logger } from '@uprtcl/evees';
-import { KnownSourcesHttp, HttpProvider } from '@uprtcl/http-provider';
-
+import { HttpProvider } from '@uprtcl/http-provider';
 import {
+  Logger,
   RemoteEvees,
   PerspectiveDetails,
   NewPerspectiveData,
   Perspective,
   Secured,
-  EveesHelpers,
+  CASStore,
+  PartialPerspective,
 } from '@uprtcl/evees';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
-import { PartialPerspective } from '@uprtcl/evees/dist/types/evees/interfaces/types';
 
 const evees_api: string = 'evees-v1';
 
