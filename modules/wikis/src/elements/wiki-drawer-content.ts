@@ -1,14 +1,9 @@
 import { html, css, internalProperty } from 'lit-element';
 
 import { htmlToText, TextType, TextNode } from '@uprtcl/documents';
-import { Logger } from '@uprtcl/evees';
+import { HasTitle, Logger } from '@uprtcl/evees';
 import { styles } from '@uprtcl/common-ui';
-import {
-  EveesBaseElement,
-  EveesHelpers,
-  CONTENT_UPDATED_TAG,
-  ContentUpdatedEvent,
-} from '@uprtcl/evees';
+import { EveesBaseElement, CONTENT_UPDATED_TAG, ContentUpdatedEvent } from '@uprtcl/evees';
 import { MenuConfig } from '@uprtcl/common-ui';
 
 import { Wiki } from '../types';
@@ -84,9 +79,9 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
 
     const pagesListPromises = this.data.object.pages.map(
       async (pageId): Promise<PageData> => {
-        const data = await EveesHelpers.getPerspectiveData(this.client, pageId);
+        const data = await this.evees.getPerspectiveData(pageId);
         if (!data) throw new Error(`data not found for page ${pageId}`);
-        const hasTitle: HasTitle = this.recognizer
+        const hasTitle: HasTitle = this.evees.recognizer
           .recognizeBehaviours(data)
           .find((b) => (b as HasTitle).title);
 
@@ -146,7 +141,8 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
 
     const index = this.data.object.pages.length;
 
-    await this.spliceChildrenAndUpdate(wikiObject, [dragged.uref], index, 0);
+    const newWikiObject = await this.evees.spliceChildren(wikiObject, [dragged.uref], index, 0);
+    await this.evees.updatePerspectiveData(this.uref, newWikiObject);
   }
 
   dragOverEffect(e) {
@@ -161,7 +157,8 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
 
     if (ix === -1) return;
 
-    await this.spliceChildrenAndUpdate(this.data.object, [newId], ix, 1);
+    const newWikiObject = await this.evees.spliceChildren(this.data.object, [newId], ix, 1);
+    await this.evees.updatePerspectiveData(this.uref, newWikiObject);
   }
 
   async newPage(index?: number) {
@@ -182,15 +179,16 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
 
     index = index === undefined ? wikiObject.pages.length : index;
 
-    await this.spliceChildrenAndUpdate(wikiObject, [newPage], index, 0);
+    const newWikiObject = await this.evees.spliceChildren(wikiObject, [newPage], index, 0);
+    await this.evees.updatePerspectiveData(this.uref, newWikiObject);
 
     this.selectPage(index);
     this.creatingNewPage = false;
   }
 
   async movePage(fromIndex: number, toIndex: number) {
-    const entity = await super.moveChild(fromIndex, toIndex);
-    await this.updateContent(entity.object);
+    const entity = await this.evees.moveChild(this.data, fromIndex, toIndex);
+    await this.evees.updatePerspectiveData(this.uref, entity.object);
 
     if (this.selectedPageIx === undefined) return;
 
@@ -206,8 +204,8 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
   }
 
   async removePage(pageIndex: number) {
-    const entity = await super.removeEveeChild(pageIndex);
-    await this.updateContent(entity.object);
+    const entity = await this.evees.removeChild(this.data, pageIndex);
+    await this.evees.updatePerspectiveData(this.uref, entity.object);
 
     if (this.selectedPageIx === undefined) return;
 
@@ -258,7 +256,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
       ${this.pagesList.length === 0
         ? html`
             <div class="empty">
-              <span><i>${this.t('wikis:no-pages-yet')}</i></span>
+              <span><i>No pages</i></span>
             </div>
           `
         : html`
@@ -277,7 +275,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
                 @click=${() => this.newPage()}
                 ?loading=${this.creatingNewPage}
               >
-                ${this.t('wikis:new-page')}
+                New Page
               </uprtcl-button-loading>
             </div>
           `
@@ -375,7 +373,6 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
                 <div class="page-container">
                   <documents-editor
                     id="doc-editor"
-                    .client=${this.client}
                     uref=${this.data.object.pages[this.selectedPageIx] as string}
                     parent-id=${this.uref}
                     color=${this.color}

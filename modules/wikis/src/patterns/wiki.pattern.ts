@@ -2,12 +2,18 @@ import { html } from 'lit-element';
 
 import {
   Logger,
-  MergeStrategy,
   mergeStrings,
   Merge,
   HasDiffLenses,
   DiffLens,
   Client,
+  HasTitle,
+  HasLenses,
+  Entity,
+  HasChildren,
+  Lens,
+  Pattern,
+  RecursiveContextMergeStrategy,
 } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
@@ -18,14 +24,13 @@ const propertyOrder = ['title', 'pages'];
 const logger = new Logger('WIKI-ENTITY');
 
 export class WikiPattern extends Pattern<Wiki> {
-  recognize(entity: object): boolean {
-    return recognizeEntity(entity) && propertyOrder.every((p) => entity.object.hasOwnProperty(p));
+  recognize(entity: any): boolean {
+    return propertyOrder.every((p) => entity.object.hasOwnProperty(p));
   }
 
   type = WikiBindings.WikiType;
 }
 
-@injectable()
 export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>> {
   replaceChildrenLinks = (wiki: Entity<Wiki>) => (childrenHashes: string[]): Entity<Wiki> => ({
     ...wiki,
@@ -43,7 +48,7 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
 
   merge = (originalNode: Entity<Wiki>) => async (
     modifications: (Entity<Wiki> | undefined)[],
-    mergeStrategy: MergeStrategy,
+    mergeStrategy: RecursiveContextMergeStrategy,
     client: Client,
     config
   ): Promise<Wiki> => {
@@ -67,7 +72,6 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
   };
 }
 
-@injectable()
 export class WikiCommon implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
   lenses = (wiki: Entity<Wiki>): Lens[] => {
     return [

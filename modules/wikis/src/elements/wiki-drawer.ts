@@ -9,10 +9,8 @@ const styleMap = (style) => {
 import {
   Logger,
   eveesConnect,
-  RemoteEvees,
   eveeColor,
   DEFAULT_COLOR,
-  Perspective,
   CONTENT_UPDATED_TAG,
   ContentUpdatedEvent,
   ProposalCreatedEvent,
