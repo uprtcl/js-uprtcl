@@ -38,7 +38,9 @@ export {
   UpdateContentArgs,
   ContentUpdatedEvent,
   SpliceChildrenEvent,
+  ProposalCreatedEvent,
   CONTENT_UPDATED_TAG,
+  PROPOSAL_CREATED_TAG,
 } from './evees/elements/events';
 export { EveesDiff } from './evees/elements/evees-diff';
 
@@ -56,7 +58,7 @@ export { CommitType } from './evees/patterns/commit.pattern';
 export { isAncestorOf } from './evees/merge/ancestor';
 
 /** Proposals */
-export { Proposal, UpdateRequest, PROPOSAL_CREATED_TAG } from './evees/interfaces/types';
+export { Proposal, UpdateRequest } from './evees/interfaces/types';
 
 /** Aceess Control */
 export { AccessControl } from './evees/interfaces/access-control';

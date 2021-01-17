@@ -34,7 +34,6 @@ export class ClientOnMemory implements Client {
   get searchEngine() {
     return this.base.searchEngine;
   }
-  proposals?: Proposals | undefined;
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
     const newPerspective = this.newPerspectives.get(perspectiveId);

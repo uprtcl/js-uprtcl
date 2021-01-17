@@ -54,18 +54,6 @@ export interface Proposal {
   fromHeadId?: string;
   mutation: EveesMutation;
 }
-export interface ProposalCreatedDetail {
-  remote: string;
-  proposal: Proposal;
-}
-
-export const PROPOSAL_CREATED_TAG: string = 'evees-proposal';
-
-export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
-  constructor(eventInitDict?: CustomEventInit<ProposalCreatedDetail>) {
-    super(PROPOSAL_CREATED_TAG, eventInitDict);
-  }
-}
 
 export interface PerspectiveLinks {
   /** the parent is unique and is used to have a sense of the 'true' location of a perspective. */

@@ -1,4 +1,7 @@
-import { Proposal } from '../types';
+import { Lens } from '../../patterns/behaviours/has-lenses';
+import { Entity } from '../../cas/interfaces/entity';
+
+import { Proposal } from './types';
 export interface Proposals {
   createProposal(newProposal: Proposal);
 

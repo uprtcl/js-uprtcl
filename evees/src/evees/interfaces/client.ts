@@ -2,6 +2,7 @@ import { CASStore } from '../../cas/interfaces/cas-store';
 import { Secured } from '../../cas/utils/cid-hash';
 import { UpdateRequest, NewPerspectiveData, PerspectiveDetails, PerspectiveLinks } from './types';
 import { SearchEngine } from './search.engine';
+import { Proposals } from './proposals';
 
 /** the perspective data included by a remote as part of a slice */
 export interface PerspectiveAndDetails {
@@ -42,8 +43,9 @@ export interface EveesMutationCreate {
 // 'canUpdate': When the logged user canUpdate status over a perspective changes.
 
 export interface Client {
-  searchEngine: SearchEngine;
   store: CASStore;
+  searchEngine: SearchEngine;
+  proposals?: Proposals;
 
   /** get a perspective head,
    * include a Slice that can be used by the client to pre-fill the cache */

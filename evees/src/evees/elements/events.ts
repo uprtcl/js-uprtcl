@@ -1,3 +1,5 @@
+import { Proposal } from '../interfaces/types';
+
 export type ContentUpdatedArgs = {
   uref: string;
 };
@@ -22,10 +24,22 @@ export type LiftChildrenArgs = {
   toIndex: number;
 };
 
+export interface ProposalCreatedDetail {
+  remote: string;
+  proposal: Proposal;
+}
+
 export const UPDATE_CONTENT_TAG = 'update-content';
 export const SPLICE_CHILDREN_TAG = 'splice-children';
 export const LIFT_CHILDREN_TAG = 'lift-children';
 export const CONTENT_UPDATED_TAG = 'content-updated';
+export const PROPOSAL_CREATED_TAG: string = 'evees-proposal';
+
+export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
+  constructor(eventInitDict?: CustomEventInit<ProposalCreatedDetail>) {
+    super(PROPOSAL_CREATED_TAG, eventInitDict);
+  }
+}
 
 export class UpdateContentEvent extends CustomEvent<UpdateContentArgs> {
   constructor(init: CustomEventInit<UpdateContentArgs>) {
