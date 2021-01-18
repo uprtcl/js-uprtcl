@@ -1,6 +1,7 @@
 import { CASStore } from '../../cas/interfaces/cas-store';
-import { Secured } from '../../cas/utils/cid-hash';
-import { UpdateRequest, NewPerspectiveData, PerspectiveDetails, PerspectiveLinks } from './types';
+import { Entity } from '../../cas/interfaces/entity';
+
+import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from './types';
 import { SearchEngine } from './search.engine';
 import { Proposals } from './proposals';
 
@@ -18,11 +19,6 @@ export interface Slice {
 export interface PerspectiveGetResult {
   details: PerspectiveDetails;
   slice?: Slice;
-}
-
-export interface ObjectOnRemote {
-  object: object;
-  remote: string;
 }
 
 export interface EveesMutation {

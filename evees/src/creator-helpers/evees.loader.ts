@@ -11,7 +11,7 @@ import { CASRemote } from '../cas/interfaces/cas-remote';
 export const eveesLoader = (
   remotes: Array<RemoteEvees>,
   stores: CASRemote[],
-  modules: EveesContentModule[],
+  modules: Map<string, EveesContentModule>,
   config?: EveesConfig
 ): void => {
   const store = buildStore(stores);

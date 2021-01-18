@@ -9,7 +9,9 @@ export const registerComponents = (evees: Evees) => {
   /** register module-specific components */
   if (evees.modules) {
     evees.modules.forEach((module) => {
-      module.registerComponents();
+      if (module.registerComponents) {
+        module.registerComponents();
+      }
     });
   }
 

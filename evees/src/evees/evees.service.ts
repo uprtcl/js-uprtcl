@@ -99,7 +99,11 @@ export class Evees {
   }
 
   async createEvee(object: any, remoteId: string, parentId?: string) {
-    const dataId = await this.client.store.storeEntity(object, remoteId);
+    const dataId = await this.client.store.storeEntity({
+      object,
+      remote: remoteId,
+    });
+
     const head = await this.createCommit(
       {
         dataId,
@@ -121,7 +125,7 @@ export class Evees {
 
   async updatePerspectiveData(perspectiveId: string, newData: any, onHeadId?: string) {
     const remote = await this.getRemote(perspectiveId);
-    const dataId = await this.client.store.storeEntity(newData, remote.id);
+    const dataId = await this.client.store.storeEntity({ object: newData, remote: remote.id });
     if (!onHeadId) {
       const { details } = await this.client.getPerspective(perspectiveId);
       onHeadId = details.headId;
@@ -217,7 +221,7 @@ export class Evees {
     };
 
     const commitObject = signObject(commitData);
-    const hash = await client.store.storeEntity(commitObject, remote);
+    const hash = await client.store.storeEntity({ object: commitObject, remote });
     return {
       id: hash,
       object: commitObject,
@@ -317,7 +321,7 @@ export class Evees {
 
     const { details } = await client.getPerspective(perspectiveId);
 
-    await client.store.storeEntity(perspective.object, remote.id);
+    await client.store.storeEntity({ object: perspective.object, remote: remote.id });
 
     let forkCommitId: string | undefined = undefined;
 
@@ -368,7 +372,7 @@ export class Evees {
       timestamp: Date.now(),
     };
 
-    return client.store.storeEntity(newCommit, remote);
+    return client.store.storeEntity({ object: newCommit, remote });
   }
 
   async forkEntity(
@@ -388,7 +392,7 @@ export class Evees {
     const newLinks = await Promise.all(getLinksForks);
     const tempData = this.replaceEntityChildren(data, newLinks);
 
-    return client.store.storeEntity(tempData.object, remote);
+    return client.store.storeEntity({ object: tempData.object, remote });
   }
 }
 

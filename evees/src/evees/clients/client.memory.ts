@@ -1,6 +1,6 @@
 import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../interfaces/types';
 import { CASStore, EntityGetResult } from '../../cas/interfaces/cas-store';
-import { Entity } from '../../cas/interfaces/entity';
+import { Entity, ObjectOnRemote } from '../../cas/interfaces/entity';
 
 import { Client, PerspectiveGetResult, EveesMutation } from '../interfaces/client';
 import { SearchEngine } from '../interfaces/search.engine';
@@ -85,8 +85,8 @@ export class ClientOnMemory implements Client {
     return Promise.all([create, update]);
   }
 
-  async hashEntities(objects: object[], remote: string): Promise<Entity<any>[]> {
-    return this.store.hashEntities(objects, remote);
+  async hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+    return this.store.hashEntities(objects);
   }
 
   async flush(): Promise<void> {
@@ -153,16 +153,16 @@ export class ClientOnMemory implements Client {
     };
   }
 
-  async storeEntities(objects: any[], remote: string) {
-    const entities = await this.hashEntities(objects, remote);
+  async storeEntities(objects: ObjectOnRemote[]) {
+    const entities = await this.hashEntities(objects);
     entities.forEach((entity) => {
       this.entities.set(entity.id, entity);
     });
     return entities;
   }
 
-  storeEntity(object: object, remote?: any): Promise<string> {
-    const entities = this.storeEntities([object], remote);
+  storeEntity(object: ObjectOnRemote): Promise<string> {
+    const entities = this.storeEntities([object]);
     return entities[0].id;
   }
 

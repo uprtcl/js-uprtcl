@@ -90,7 +90,7 @@ export class SimpleMergeStrategy {
 
     const mergedData = await SimpleMergeStrategy.mergeData(ancestorData, newDatas, evees, config);
 
-    const dataHash = await evees.client.store.hashEntity(mergedData, remote);
+    const dataHash = await evees.client.store.hashEntity({ object: mergedData, remote });
     /** prevent an update head to the same data */
     if (
       ((!!newDatas[0] && dataHash === newDatas[0].id) || toCommitId === fromCommitId) &&
@@ -99,7 +99,7 @@ export class SimpleMergeStrategy {
       return toCommitIdOrg;
     }
 
-    evees.client.store.storeEntity(mergedData, remote);
+    evees.client.store.storeEntity({ object: mergedData, remote });
 
     /** some commits might be undefined */
     const parentsIds = commitsIds.filter((commit) => !!commit);
@@ -111,7 +111,7 @@ export class SimpleMergeStrategy {
     };
 
     const securedCommit = await evees.createCommit(newCommit, remote);
-    evees.client.store.storeEntity(securedCommit, remote);
+    evees.client.store.storeEntity({ object: securedCommit, remote });
 
     return securedCommit.id;
   }

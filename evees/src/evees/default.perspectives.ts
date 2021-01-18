@@ -14,13 +14,13 @@ export const snapDefaultPerspective = async (
   const timestamp = perspective.timestamp !== undefined ? perspective.timestamp : Date.now();
   const path = perspective.path !== undefined ? perspective.path : remote.defaultPath;
 
-  const defaultContext = await remote.store.hashEntity(
-    {
+  const defaultContext = await remote.store.hashEntity({
+    object: {
       creatorId,
       timestamp,
     },
-    remote.id
-  );
+    remote: remote.id,
+  });
 
   const context = perspective.context !== undefined ? perspective.context : defaultContext;
   const meta = perspective.meta;
@@ -34,7 +34,7 @@ export const snapDefaultPerspective = async (
     meta,
   };
 
-  const hash = await remote.store.hashEntity(object, remote.id);
+  const hash = await remote.store.hashEntity({ object, remote: remote.id });
   return {
     id: hash,
     object,
@@ -54,7 +54,7 @@ export const getHome = async (
     context: `${creatorId}.home`,
   };
 
-  const hash = await remote.store.hashEntity(remoteHome, remote.id);
+  const hash = await remote.store.hashEntity({ object: remoteHome, remote: remote.id });
   return {
     id: hash,
     object: remoteHome,

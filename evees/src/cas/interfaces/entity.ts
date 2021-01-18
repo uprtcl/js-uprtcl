@@ -3,3 +3,8 @@ export interface Entity<T> {
   object: T;
   remotes?: string[];
 }
+
+export interface ObjectOnRemote {
+  object: object;
+  remote: string;
+}

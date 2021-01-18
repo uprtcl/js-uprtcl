@@ -50,10 +50,10 @@ export class EveesPerspectivesList extends eveesConnect(LitElement) {
           if (!remote) throw new Error(`remote not found for ${perspective.object.payload.remote}`);
           return {
             id: perspective.id,
-            name: perspective.name,
-            creatorId: perspective.payload.creatorId,
-            timestamp: perspective.payload.timestamp,
-            remote: perspective.payload.remote,
+            name: perspective.object.name,
+            creatorId: perspective.object.payload.creatorId,
+            timestamp: perspective.object.payload.timestamp,
+            remote: perspective.object.payload.remote,
           };
         }
       )
