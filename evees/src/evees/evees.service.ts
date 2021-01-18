@@ -244,69 +244,6 @@ export class Evees {
     return false;
   }
 
-  async snapDefaultPerspective(
-    remote: RemoteEvees,
-    creatorId?: string,
-    context?: string,
-    timestamp?: number,
-    path?: string,
-    fromPerspectiveId?: string,
-    fromHeadId?: string
-  ) {
-    creatorId = creatorId ? creatorId : remote.userId ? remote.userId : '';
-    timestamp = timestamp !== undefined ? timestamp : Date.now();
-
-    const defaultContext = await this.client.store.hashEntity(
-      {
-        creatorId,
-        timestamp,
-      },
-      remote.id
-    );
-
-    context = context || defaultContext;
-
-    const object: Perspective = {
-      creatorId: creatorId as string,
-      remote: remote.id,
-      path: path !== undefined ? path : remote.defaultPath,
-      timestamp,
-      context,
-    };
-
-    if (fromPerspectiveId) object.meta.fromPerspectiveId = fromPerspectiveId;
-    if (fromHeadId) object.meta.fromHeadId = fromHeadId;
-
-    const hash = await this.client.store.hashEntity(object, remote.id);
-    return {
-      id: hash,
-      object,
-    };
-  }
-
-  async getHome(
-    remote: RemoteEvees,
-    userId?: string,
-    client?: Client
-  ): Promise<Entity<Perspective>> {
-    client = client || this.client;
-
-    const creatorId = userId === undefined ? 'root' : userId;
-    const remoteHome: Perspective = {
-      remote: remote.id,
-      path: remote.defaultPath,
-      creatorId,
-      timestamp: 0,
-      context: `${creatorId}.home`,
-    };
-
-    const hash = await client.store.hashEntity(remoteHome, remote.id);
-    return {
-      id: hash,
-      object: remoteHome,
-    };
-  }
-
   async isOfPattern(uref: string, pattern: string, client?: Client): Promise<boolean> {
     client = client || this.client;
     const entity = await client.store.getEntity(uref);

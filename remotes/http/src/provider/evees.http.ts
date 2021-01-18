@@ -10,6 +10,8 @@ import {
   Secured,
   CASStore,
   PartialPerspective,
+  snapDefaultPerspective,
+  getHome,
 } from '@uprtcl/evees';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
@@ -39,7 +41,7 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async getHome(userId?: string) {
-    return EveesHelpers.getHome(this, userId);
+    return getHome(this, userId);
   }
 
   ready() {
@@ -55,7 +57,7 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async snapPerspective(perspective: PartialPerspective): Promise<Secured<Perspective>> {
-    return EveesHelpers.snapDefaultPerspective(perspective);
+    return snapDefaultPerspective(this, perspective);
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {

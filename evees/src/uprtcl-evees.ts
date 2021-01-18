@@ -5,6 +5,7 @@ export {
   PerspectiveDetails,
   HasDiffLenses,
   DiffLens,
+  PartialPerspective,
 } from './evees/interfaces/types';
 
 /** interfaces */
@@ -15,6 +16,9 @@ export { EveesContentModule } from './evees/interfaces/evees.content.module';
 export { Evees } from './evees/evees.service';
 export { Client } from './evees/interfaces/client';
 export { RemoteEvees } from './evees/interfaces/remote.evees';
+
+/** Default Perspectives */
+export { getHome, snapDefaultPerspective } from './evees/default.perspectives';
 
 /** Merge */
 export { Merge } from './evees/merge/merge.behaviour';
@@ -48,12 +52,6 @@ export { EveesDiff } from './evees/elements/evees-diff';
 export { prettyAddress } from './evees/elements/support';
 export { eveeColor, DEFAULT_COLOR } from './evees/elements/support';
 
-/** Patterns */
-export { Secured, hashObject, deriveEntity } from './cas/utils/cid-hash';
-export { extractSignedEntity, deriveSecured, signObject } from './cas/utils/signed';
-export { PerspectiveType } from './evees/patterns/perspective.pattern';
-export { CommitType } from './evees/patterns/commit.pattern';
-
 /** Utils */
 export { isAncestorOf } from './evees/merge/ancestor';
 export { Connection, ConnectionOptions } from './utils/connection';
@@ -70,6 +68,8 @@ export { RemoteWithUI } from './evees/interfaces/remote.with-ui';
 export { Logger } from './utils/logger';
 
 /** CAS */
+export { Secured, hashObject, deriveEntity } from './cas/utils/cid-hash';
+export { extractSignedEntity, deriveSecured, signObject } from './cas/utils/signed';
 export { Entity } from './cas/interfaces/entity';
 export { CASStore } from './cas/interfaces/cas-store';
 export { CASRemote } from './cas/interfaces/cas-remote';
@@ -81,6 +81,8 @@ export { HasLenses, Lens } from './patterns/behaviours/has-lenses';
 export { HasTitle } from './patterns/behaviours/has-title';
 export { PatternRecognizer } from './patterns/recognizer/pattern-recognizer';
 export { Pattern } from './patterns/interfaces/pattern';
+export { PerspectiveType } from './evees/patterns/perspective.pattern';
+export { CommitType } from './evees/patterns/commit.pattern';
 
 /** container */
 export { eveesConnect } from './container/evees-connect.mixin';
