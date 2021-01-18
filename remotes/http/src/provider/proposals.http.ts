@@ -26,17 +26,6 @@ export class ProposalsHttp implements Proposals {
 
   async getProposal(proposalId: string): Promise<Proposal> {
     const proposal = await this.provider.getObject<Proposal>(`/proposal/${proposalId}`);
-    /** inject the casID of the remote store */
-    proposal.mutation.newPerspectives = proposal.mutation.newPerspectives.map((newPerspective) => {
-      return {
-        ...newPerspective,
-        perspective: {
-          ...newPerspective.perspective,
-          casID: this.evees.store.casID,
-        },
-      };
-    });
-
     return proposal;
   }
 

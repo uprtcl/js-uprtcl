@@ -16,6 +16,6 @@ export const eveesLoader = (
 ): void => {
   const store = buildStore(stores);
   const recognizer = buildRecognizer(modules);
-  const evees = buildEvees(remotes, store, recognizer, config, modules);
+  const evees = buildEvees(remotes, store, recognizer, modules, config);
   registerComponents(evees);
 };

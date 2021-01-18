@@ -44,7 +44,13 @@ export class Evees {
     return new Evees(client, this.recognizer, this.remotes, this.merge, this.config, this.modules);
   }
 
-  async getRemote(remoteId: string): Promise<RemoteEvees> {
+  findRemote(query: string): RemoteEvees {
+    const remote = this.remotes.find((r) => r.id.startsWith(query));
+    if (!remote) throw new Error(`remote starting with ${query} not found`);
+    return remote;
+  }
+
+  getRemote(remoteId: string): RemoteEvees {
     const remote = this.remotes.find((r) => r.id === remoteId);
     if (!remote) throw new Error(`remote ${remoteId} not found`);
     return remote;

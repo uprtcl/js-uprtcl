@@ -12,10 +12,17 @@ import {
   PartialPerspective,
   snapDefaultPerspective,
   getHome,
+  UpdateRequest,
 } from '@uprtcl/evees';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
+import {
+  EveesMutation,
+  EveesMutationCreate,
+  PerspectiveGetResult,
+} from '@uprtcl/evees/dist/types/evees/interfaces/client';
+import { SearchEngine } from '@uprtcl/evees/dist/types/evees/interfaces/search.engine';
 
 const evees_api: string = 'evees-v1';
 
@@ -28,6 +35,26 @@ export class EveesHttp implements RemoteEvees {
   constructor(protected provider: HttpProvider, public store: CASStore) {
     this.accessControl = new EveesAccessControlHttp(this.provider);
     this.proposals = new ProposalsHttp(this.provider, this);
+  }
+  searchEngine!: SearchEngine;
+
+  update(mutation: EveesMutationCreate) {
+    throw new Error('Method not implemented.');
+  }
+  newPerspective(newPerspective: NewPerspectiveData) {
+    throw new Error('Method not implemented.');
+  }
+  diff(): Promise<EveesMutation> {
+    throw new Error('Method not implemented.');
+  }
+  flush(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  refresh(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getUserPerspectives(perspectiveId: string): Promise<string[]> {
+    throw new Error('Method not implemented.');
   }
 
   get id() {
@@ -75,18 +102,15 @@ export class EveesHttp implements RemoteEvees {
     await Promise.all(promises);
   }
 
-  async updatePerspective(
-    perspectiveId: string,
-    details: Partial<PerspectiveDetails>
-  ): Promise<void> {
-    await this.provider.put(`/persp/${perspectiveId}/details`, details);
+  async updatePerspective(update: UpdateRequest): Promise<void> {
+    await this.provider.put(`/persp/${update.perspectiveId}/details`, { headId: update.newHeadId });
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
     return this.provider.getWithPut<any[]>(`/persp`, { context: context });
   }
 
-  async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
+  async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
     let responseObj: any = {};
     try {
       responseObj = await this.provider.getObject<PerspectiveDetails>(
@@ -98,7 +122,7 @@ export class EveesHttp implements RemoteEvees {
       };
     }
 
-    return responseObj;
+    return { details: responseObj };
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
