@@ -3,7 +3,6 @@ import { html } from 'lit-element';
 import {
   Logger,
   mergeStrings,
-  Merge,
   HasDiffLenses,
   DiffLens,
   Client,
@@ -14,6 +13,7 @@ import {
   Lens,
   Pattern,
   RecursiveContextMergeStrategy,
+  Evees,
 } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
@@ -31,7 +31,7 @@ export class WikiPattern extends Pattern<Wiki> {
   type = WikiBindings.WikiType;
 }
 
-export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>> {
+export class WikiLinks implements HasChildren<Entity<Wiki>> {
   replaceChildrenLinks = (wiki: Entity<Wiki>) => (childrenHashes: string[]): Entity<Wiki> => ({
     ...wiki,
     object: {
@@ -49,7 +49,7 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
   merge = (originalNode: Entity<Wiki>) => async (
     modifications: (Entity<Wiki> | undefined)[],
     mergeStrategy: RecursiveContextMergeStrategy,
-    client: Client,
+    evees: Evees,
     config
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
@@ -61,7 +61,7 @@ export class WikiLinks implements HasChildren<Entity<Wiki>>, Merge<Entity<Wiki>>
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.object.pages,
       modifications.map((data) => (!!data ? data.object.pages : originalNode.object.pages)),
-      client,
+      evees,
       config
     );
 

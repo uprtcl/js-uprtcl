@@ -6,7 +6,7 @@ import { WikiCommon, WikiLinks, WikiPattern } from './patterns/wiki.pattern';
 import { WikiDiff } from './elements/wiki-diff';
 import { WikiDrawerContent } from './elements/wiki-drawer-content';
 
-export class WikisModule extends EveesContentModule {
+export class WikisModule implements EveesContentModule {
   static id = 'wikis-module';
 
   async registerComponentes() {

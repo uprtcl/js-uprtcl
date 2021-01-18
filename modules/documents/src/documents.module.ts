@@ -11,12 +11,11 @@ export interface DocumentsModuleConfig {
   customBlocks?: CustomBlocks;
 }
 
-export class DocumentsModule extends EveesContentModule {
+export class DocumentsModule implements EveesContentModule {
   static id = 'documents-module';
   config!: DocumentsModuleConfig;
 
   constructor(protected customBlocks?: CustomBlocks) {
-    super();
     this.config.customBlocks = customBlocks;
   }
 

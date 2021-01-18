@@ -1,7 +1,6 @@
 import { html } from 'lit-element';
 
 import {
-  Merge,
   RecursiveContextMergeStrategy,
   mergeResult,
   HasDiffLenses,
@@ -44,8 +43,7 @@ export class TextNodePattern extends Pattern<Entity<TextNode>> {
   type = DocumentsBindings.TextNodeType;
 }
 
-export class TextNodeCommon
-  implements HasLenses<Entity<TextNode>>, HasChildren<Entity<TextNode>>, Merge<Entity<TextNode>> {
+export class TextNodeCommon implements HasLenses<Entity<TextNode>>, HasChildren<Entity<TextNode>> {
   replaceChildrenLinks = (node: Entity<TextNode>) => (
     childrenHashes: string[]
   ): Entity<TextNode> => ({

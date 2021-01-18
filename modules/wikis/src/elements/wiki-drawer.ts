@@ -92,7 +92,6 @@ export class WikiDrawer extends eveesConnect(LitElement) {
   async forceReload() {
     this.loading = true;
     await this.updateComplete;
-    await this.evees.client.resetStore();
     this.load();
     this.loading = false;
   }
@@ -105,15 +104,7 @@ export class WikiDrawer extends eveesConnect(LitElement) {
 
   async catchMergeProposal(e: ProposalCreatedEvent) {
     if (!this.evees.client.proposals) throw new Error('Proposals service not registered');
-
-    const toPerspectiveId = this.firstRef;
-    const toPerspective = await this.evees.client.store.getEntity(toPerspectiveId);
-
-    this.evees.client.proposals.createProposal({
-      remote: toPerspective.object.payload.remote,
-      proposal: e.detail.proposal,
-    });
-
+    this.evees.client.proposals.createProposal(e.detail.proposal);
     this.eveesInfoLocal.load();
   }
 

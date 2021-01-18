@@ -20,7 +20,6 @@ import {
   Secured,
   hashObject,
   EveesInfoConfig,
-  EveesContentModule,
   CommitType,
   HasChildren,
 } from '@uprtcl/evees';
@@ -31,6 +30,7 @@ import { TextType, DocNode, CustomBlocks } from '../types';
 import { HasDocNodeLenses } from '../patterns/document-patterns';
 import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
+import { DocumentsModule } from '../documents.module';
 
 const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
@@ -89,7 +89,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
   draftService = new EveesDraftsLocal();
 
   async firstUpdated() {
-    const documentsModule = this.evees.modules.get(EveesContentModule.id);
+    const documentsModule = this.evees.modules.get(DocumentsModule.id);
     this.customBlocks = documentsModule ? documentsModule.config.customBlocks : undefined;
     this.editableRemotesIds = this.evees.config.editableRemotesIds
       ? this.evees.config.editableRemotesIds

@@ -21,8 +21,6 @@ export { RemoteEvees } from './evees/interfaces/remote.evees';
 export { getHome, snapDefaultPerspective } from './evees/default.perspectives';
 
 /** Merge */
-export { Merge } from './evees/merge/merge.behaviour';
-
 export { SimpleMergeStrategy } from './evees/merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './evees/merge/recursive-context.merge-strategy';
 export { mergeStrings, mergeResult } from './evees/merge/utils';

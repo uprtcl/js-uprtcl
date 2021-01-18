@@ -61,7 +61,7 @@ export class WikiDiff extends eveesConnect(LitElement) {
   renderPage(page: string, classes: string[]) {
     return html`
       <div class=${['page-row'].concat(classes).join(' ')}>
-        <documents-editor .client=${this.client.client} uref=${page} read-only></documents-editor>
+        <documents-editor .client=${this.client} uref=${page} read-only></documents-editor>
       </div>
     `;
   }
