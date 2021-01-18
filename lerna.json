@@ -1,20 +1,13 @@
 {
   "packages": [
     "connections/http",
-    "connections/orbitdb",
     "connections/ethereum",
     "connections/ipfs",
     "evees",
     "modules/common-ui",
-    "modules/evees-reader",
     "modules/wikis",
     "modules/documents",
-    "remotes/local",
-    "remotes/http",
-    "remotes/blockchain",
-    "remotes/ethereum",
-    "remotes/orbitdb",
-    "remotes/polkadot"
+    "remotes/http"
   ],
   "version": "0.1.1"
 }

@@ -68,7 +68,7 @@ export { RemoteWithUI } from './evees/interfaces/remote.with-ui';
 export { Logger } from './utils/logger';
 
 /** CAS */
-export { Secured, hashObject, deriveEntity } from './cas/utils/cid-hash';
+export { Secured, hashObject, deriveEntity, sortObject } from './cas/utils/cid-hash';
 export { extractSignedEntity, deriveSecured, signObject } from './cas/utils/signed';
 export { Entity } from './cas/interfaces/entity';
 export { CASStore } from './cas/interfaces/cas-store';
