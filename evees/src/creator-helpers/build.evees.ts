@@ -14,8 +14,8 @@ export const buildEvees = (
   remotes: Array<RemoteEvees>,
   store: CASStore,
   recognizer: PatternRecognizer,
-  config?: EveesConfig,
-  modules?: Map<string, EveesContentModule>
+  modules: Map<string, EveesContentModule>,
+  config?: EveesConfig
 ): Evees => {
   config = config || {};
   config.defaultRemote = config.defaultRemote ? config.defaultRemote : remotes[0];

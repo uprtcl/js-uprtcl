@@ -84,7 +84,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
 
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
-  client: Client = true;
+  client!: Client;
 
   draftService = new EveesDraftsLocal();
 
@@ -176,8 +176,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
   }
 
   async refToNode(uref: string, parent?: DocNode, ix?: number) {
-    const entity = await this.evees.client.store.get(uref);
-    if (!entity) throw Error(`Entity not found ${uref}`);
+    const entity = await this.evees.client.store.getEntity(uref);
 
     let entityType = this.evees.recognizer.recognizeType(entity);
 
@@ -197,7 +196,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
         const editableRemote =
           this.editableRemotesIds.length > 0 ? this.editableRemotesIds.includes(remote.id) : true;
         if (editableRemote) {
-          editable = details.canUpdate;
+          editable = details.canUpdate !== undefined ? details.canUpdate : false;
         }
       } else {
         editable = false;
@@ -489,7 +488,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
     parentsIds?: string[],
     message?: string
   ): Promise<string> {
-    const dataId = await this.evees.client.store.createEntity(content, remote);
+    const dataId = await this.evees.client.store.storeEntity({ object: content, remote });
 
     const commit = await this.evees.createCommit(
       {

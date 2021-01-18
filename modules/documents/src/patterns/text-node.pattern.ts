@@ -13,6 +13,7 @@ import {
   Entity,
   HasTitle,
   Lens,
+  Evees,
 } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
@@ -114,7 +115,7 @@ export class TextNodeCommon
 
   merge = (originalNode: Entity<TextNode>) => async (
     modifications: Entity<TextNode>[],
-    client: Client,
+    evees: Evees,
     config: any
   ): Promise<TextNode> => {
     const resultText = modifications[1].object.text;
@@ -126,7 +127,7 @@ export class TextNodeCommon
     const mergedLinks = await RecursiveContextMergeStrategy.mergeLinks(
       originalNode.object.links,
       modifications.map((data) => data.object.links),
-      client,
+      evees,
       config
     );
 
