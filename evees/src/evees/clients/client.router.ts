@@ -1,16 +1,30 @@
 import { CASStore } from '../../cas/interfaces/cas-store';
 import { Client, EveesMutation, PerspectiveGetResult } from '../interfaces/client';
-import { RemoteEvees } from '../remote.evees';
+import { Proposals } from '../interfaces/proposals';
+import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
+import { NewPerspectiveData, UpdateRequest } from '../interfaces/types';
 
 export class RemoteRouter implements Client {
   constructor(protected remotes: RemoteEvees[], public store: CASStore) {}
-  searchEngine?: SearchEngine | undefined;
+  proposals?: Proposals | undefined;
+
+  searchEngine!: SearchEngine;
 
   getRemote(remoteId: string): RemoteEvees {
     const remote = this.remotes.find((r) => r.id === remoteId);
     if (!remote) throw new Error(`Remote not found for ${remoteId}`);
     return remote;
+  }
+
+  newPerspective(newPerspective: NewPerspectiveData) {
+    throw new Error('Method not implemented.');
+  }
+  deletePerspective(perspectiveId: string) {
+    throw new Error('Method not implemented.');
+  }
+  updatePerspective(update: UpdateRequest) {
+    throw new Error('Method not implemented.');
   }
 
   async getPerspectiveRemote(perspectiveId: string): Promise<RemoteEvees> {

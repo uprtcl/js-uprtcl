@@ -1,12 +1,12 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { eveesConnect, Logger } from '@uprtcl/evees';
+import { Logger } from '../../utils/logger';
+import { eveesConnect } from '../../container/evees-connect.mixin';
 
-import { EveesBindings } from '../bindings';
 import { Evees } from '../evees.service';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 
-export class EveesLoginWidget extends moduleConnect(LitElement) {
+export class EveesLoginWidget extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
 
   @property({ attribute: false })
@@ -18,7 +18,6 @@ export class EveesLoginWidget extends moduleConnect(LitElement) {
   evees!: Evees;
 
   async firstUpdated() {
-    this.evees = this.request(EveesBindings.Evees);
     this.load();
   }
 

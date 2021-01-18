@@ -1,17 +1,19 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-import { eveesConnect, Logger } from '@uprtcl/evees';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
+import { Entity } from '../../cas/interfaces/entity';
+import { eveesConnect } from '../../container/evees-connect.mixin';
+import { Logger } from '../../utils/logger';
+
 import { Proposal } from '../interfaces/types';
-import { EveesBindings } from '../bindings';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 import { Evees } from '../evees.service';
 import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 
-export class EveesProposalRow extends moduleConnect(LitElement) {
+export class EveesProposalRow extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
 
   @property({ type: String, attribute: 'proposal-id' })
@@ -48,11 +50,9 @@ export class EveesProposalRow extends moduleConnect(LitElement) {
   executed: boolean = false;
   canExecute: boolean = false;
 
-  protected evees!: Evees;
   protected toRemote!: RemoteWithUI;
 
   async firstUpdated() {
-    this.evees = this.request(EveesBindings.Evees);
     this.load();
   }
 

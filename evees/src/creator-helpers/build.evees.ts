@@ -1,4 +1,6 @@
-import { RemoteEvees } from '../services/remote.evees';
+import { RemoteEvees } from '../evees/interfaces/remote.evees';
+import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
+
 import { EveesConfig } from '../evees/interfaces/types';
 import { RecursiveContextMergeStrategy } from '../evees/merge/recursive-context.merge-strategy';
 import { Evees } from '../evees/evees.service';

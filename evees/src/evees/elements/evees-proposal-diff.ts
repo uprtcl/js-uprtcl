@@ -1,13 +1,12 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-import { eveesConnect, Logger } from '@uprtcl/evees';
-
+import { eveesConnect } from '../../container/evees-connect.mixin';
+import { Logger } from '../../utils/logger';
 import { ClientOnMemory } from '../clients/client.memory';
-import { EveesBindings } from '../bindings';
-import { EveesDiff } from './evees-diff';
-import { Evees } from '../evees.service';
 
-export class EveesProposalDiff extends moduleConnect(LitElement) {
+import { EveesDiff } from './evees-diff';
+
+export class EveesProposalDiff extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-DIFF');
 
   @property({ type: String, attribute: 'proposal-id' })
@@ -25,10 +24,7 @@ export class EveesProposalDiff extends moduleConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
-  protected evees!: Evees;
-
   async firstUpdated() {
-    this.evees = this.request(EveesBindings.Evees);
     this.loadProposal();
   }
 

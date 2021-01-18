@@ -4,12 +4,8 @@ import { Pattern } from '../interfaces/pattern';
 import { Behaviour } from '../interfaces/behaviour';
 
 export class PatternRecognizer {
-  patterns!: Pattern<any>[];
+  constructor(readonly patterns: Pattern<any>[]) {}
 
-  /**
-   * Recognizes which registered patterns match the given object
-   * @param object
-   */
   public recognize<T>(object: T): Pattern<T>[] {
     if (!object) {
       throw new Error('The given object was not defined');

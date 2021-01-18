@@ -1,9 +1,10 @@
+import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { EveesContentModule } from '../evees/interfaces/evees.content.module';
 
 export const buildRecognizer = (modules: EveesContentModule[]): PatternRecognizer => {
   const patterns = Array.prototype.concat(
     [],
-    modules.map((module) => module.getPatterns())
+    modules.map((module) => (module.getPatterns ? module.getPatterns() : []))
   );
   const recognizer = new PatternRecognizer(patterns);
 

@@ -14,5 +14,5 @@ export const registerComponents = (evees: Evees) => {
   }
 
   /** register module container */
-  customElements.define('module-container', EveesContainer(evees));
+  customElements.define('evees-container', EveesContainer(evees));
 };

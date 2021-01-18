@@ -1,4 +1,7 @@
+import { ObjectOnRemote } from '../../evees/interfaces/client';
+
 import { CASStore, EntityGetResult } from '../interfaces/cas-store';
+import { Entity } from '../interfaces/entity';
 
 export class CASOnMemory implements CASStore {
   private entities = new Map<string, Entity<any>>();
@@ -10,8 +13,8 @@ export class CASOnMemory implements CASStore {
     }
   }
 
-  async hashEntities(objects: object[], remote?: string): Promise<Entity<any>[]> {
-    return this.base.hashEntities(objects, remote);
+  async hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+    return this.base.hashEntities(objects);
   }
 
   async flush(): Promise<void> {
@@ -50,12 +53,12 @@ export class CASOnMemory implements CASStore {
     return { entities };
   }
 
-  storeEntities(objects: object[], remote: string): Promise<Entity<any>[]> {
+  storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
     throw new Error('Method not implemented.');
   }
 
-  storeEntity(object: object, remote: any): Promise<string> {
-    const entities = this.storeEntities([object], remote);
+  storeEntity(object: ObjectOnRemote): Promise<string> {
+    const entities = this.storeEntities([object]);
     return entities[0].id;
   }
 

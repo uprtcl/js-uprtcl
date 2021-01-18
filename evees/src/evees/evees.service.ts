@@ -37,7 +37,7 @@ export class Evees {
     readonly remotes: RemoteEvees[],
     readonly merge: RecursiveContextMergeStrategy,
     readonly config: EveesConfig,
-    readonly modules: Map<string, EveesContentModule>
+    readonly modules?: Map<string, EveesContentModule>
   ) {}
 
   clone(client: Client): Evees {
