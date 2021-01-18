@@ -1,7 +1,15 @@
-import { Perspective, Proposals, RemoteEvees, Secured } from '@uprtcl/evees';
+import { CASStore, Perspective, Proposals, RemoteEvees, Secured } from '@uprtcl/evees';
 import {
+  PerspectiveGetResult,
+  EveesMutationCreate,
+  EveesMutation,
+} from '@uprtcl/evees/dist/types/evees/interfaces/client';
+import { SearchEngine } from '@uprtcl/evees/dist/types/evees/interfaces/search.engine';
+import {
+  NewPerspectiveData,
   PartialPerspective,
   PerspectiveLinks,
+  UpdateRequest,
 } from '@uprtcl/evees/dist/types/evees/interfaces/types';
 
 import { HttpConnection, PostResult } from './http.connection';
@@ -14,6 +22,38 @@ export interface HttpProviderOptions {
 export abstract class HttpProvider extends HttpConnection implements RemoteEvees {
   constructor(public pOptions: HttpProviderOptions) {
     super();
+  }
+  store!: CASStore;
+  searchEngine!: SearchEngine;
+  getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
+    throw new Error('Method not implemented.');
+  }
+  update(mutation: EveesMutationCreate) {
+    throw new Error('Method not implemented.');
+  }
+  newPerspective(newPerspective: NewPerspectiveData) {
+    throw new Error('Method not implemented.');
+  }
+  deletePerspective(perspectiveId: string) {
+    throw new Error('Method not implemented.');
+  }
+  updatePerspective(update: UpdateRequest) {
+    throw new Error('Method not implemented.');
+  }
+  diff(): Promise<EveesMutation> {
+    throw new Error('Method not implemented.');
+  }
+  flush(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  refresh(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getUserPerspectives(perspectiveId: string): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
+  canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
+    throw new Error('Method not implemented.');
   }
   accessControl: any;
   proposals?: Proposals | undefined;

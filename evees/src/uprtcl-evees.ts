@@ -55,6 +55,7 @@ export { eveeColor, DEFAULT_COLOR } from './evees/elements/support';
 /** Utils */
 export { isAncestorOf } from './evees/merge/ancestor';
 export { Connection, ConnectionOptions } from './utils/connection';
+export { Ready } from './utils/ready';
 
 /** Proposals */
 export { Proposal, UpdateRequest } from './evees/interfaces/types';
@@ -70,8 +71,8 @@ export { Logger } from './utils/logger';
 /** CAS */
 export { Secured, hashObject, deriveEntity, sortObject } from './cas/utils/cid-hash';
 export { extractSignedEntity, deriveSecured, signObject } from './cas/utils/signed';
-export { Entity } from './cas/interfaces/entity';
-export { CASStore } from './cas/interfaces/cas-store';
+export { Entity, ObjectOnRemote } from './cas/interfaces/entity';
+export { CASStore, EntityGetResult } from './cas/interfaces/cas-store';
 export { CASRemote } from './cas/interfaces/cas-remote';
 export { CidConfig } from './cas/interfaces/cid-config';
 

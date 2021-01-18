@@ -1,5 +1,13 @@
 import { HttpProvider } from './http.provider';
-import { Logger, CASRemote, CidConfig } from '@uprtcl/evees';
+import {
+  Logger,
+  CASRemote,
+  CidConfig,
+  Entity,
+  Ready,
+  ObjectOnRemote,
+  EntityGetResult,
+} from '@uprtcl/evees';
 
 const store_api = 'store';
 
@@ -7,6 +15,27 @@ export class HttpStore implements CASRemote {
   logger = new Logger('Http Store');
 
   constructor(protected provider: HttpProvider, public cidConfig: CidConfig) {}
+  storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  getEntities(hashes: string[]): Promise<EntityGetResult> {
+    throw new Error('Method not implemented.');
+  }
+  flush(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getEntity(uref: string): Promise<Entity<any>> {
+    throw new Error('Method not implemented.');
+  }
+  storeEntity(object: ObjectOnRemote): Promise<string> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntity(object: ObjectOnRemote): Promise<string> {
+    throw new Error('Method not implemented.');
+  }
 
   get casID() {
     return `http:${store_api}:${this.provider.pOptions.host}`;
