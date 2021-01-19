@@ -1,5 +1,10 @@
 import { CASStore } from '../../cas/interfaces/cas-store';
-import { Client, EveesMutation, PerspectiveGetResult } from '../interfaces/client';
+import {
+  Client,
+  EveesMutation,
+  EveesMutationCreate,
+  PerspectiveGetResult,
+} from '../interfaces/client';
 import { Proposals } from '../interfaces/proposals';
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
@@ -50,50 +55,56 @@ export class RemoteRouter implements Client {
     return remote.canUpdate(perspectiveId, userId);
   }
 
-  async update(mutation: EveesMutation) {
+  async update(mutation: EveesMutationCreate) {
     const mutationPerRemote = new Map<string, EveesMutation>();
 
-    const fillDeleted = mutation.deletedPerspectives.map(async (deletedPerspective) => {
-      const remote = await this.getPerspectiveRemote(deletedPerspective);
-      let mutation = mutationPerRemote.get(remote.id);
-      if (!mutation) {
-        mutation = {
-          deletedPerspectives: [],
-          newPerspectives: [],
-          updates: [],
-        };
-        mutationPerRemote.set(remote.id, mutation);
-      }
-      mutation.deletedPerspectives.push(deletedPerspective);
-    });
+    const fillDeleted = mutation.deletedPerspectives
+      ? mutation.deletedPerspectives.map(async (deletedPerspective) => {
+          const remote = await this.getPerspectiveRemote(deletedPerspective);
+          let mutation = mutationPerRemote.get(remote.id);
+          if (!mutation) {
+            mutation = {
+              deletedPerspectives: [],
+              newPerspectives: [],
+              updates: [],
+            };
+            mutationPerRemote.set(remote.id, mutation);
+          }
+          mutation.deletedPerspectives.push(deletedPerspective);
+        })
+      : Promise.resolve([]);
 
-    const fillNew = mutation.newPerspectives.map(async (newPerspective) => {
-      const remote = await this.getPerspectiveRemote(newPerspective.perspective.id);
-      let mutation = mutationPerRemote.get(remote.id);
-      if (!mutation) {
-        mutation = {
-          deletedPerspectives: [],
-          newPerspectives: [],
-          updates: [],
-        };
-        mutationPerRemote.set(remote.id, mutation);
-      }
-      mutation.newPerspectives.push(newPerspective);
-    });
+    const fillNew = mutation.newPerspectives
+      ? mutation.newPerspectives.map(async (newPerspective) => {
+          const remote = await this.getPerspectiveRemote(newPerspective.perspective.id);
+          let mutation = mutationPerRemote.get(remote.id);
+          if (!mutation) {
+            mutation = {
+              deletedPerspectives: [],
+              newPerspectives: [],
+              updates: [],
+            };
+            mutationPerRemote.set(remote.id, mutation);
+          }
+          mutation.newPerspectives.push(newPerspective);
+        })
+      : Promise.resolve([]);
 
-    const fillUpdated = mutation.updates.map(async (update) => {
-      const remote = await this.getPerspectiveRemote(update.perspectiveId);
-      let mutation = mutationPerRemote.get(remote.id);
-      if (!mutation) {
-        mutation = {
-          deletedPerspectives: [],
-          newPerspectives: [],
-          updates: [],
-        };
-        mutationPerRemote.set(remote.id, mutation);
-      }
-      mutation.updates.push(update);
-    });
+    const fillUpdated = mutation.updates
+      ? mutation.updates.map(async (update) => {
+          const remote = await this.getPerspectiveRemote(update.perspectiveId);
+          let mutation = mutationPerRemote.get(remote.id);
+          if (!mutation) {
+            mutation = {
+              deletedPerspectives: [],
+              newPerspectives: [],
+              updates: [],
+            };
+            mutationPerRemote.set(remote.id, mutation);
+          }
+          mutation.updates.push(update);
+        })
+      : Promise.resolve([]);
 
     await Promise.all([fillDeleted, fillNew, fillUpdated]);
 

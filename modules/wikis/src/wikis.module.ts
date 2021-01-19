@@ -9,7 +9,7 @@ import { WikiDrawerContent } from './elements/wiki-drawer-content';
 export class WikisModule implements EveesContentModule {
   static id = 'wikis-module';
 
-  async registerComponentes() {
+  async registerComponents() {
     customElements.define('wiki-drawer', WikiDrawer);
     customElements.define('wiki-drawer-content', WikiDrawerContent);
     customElements.define('wiki-diff', WikiDiff);

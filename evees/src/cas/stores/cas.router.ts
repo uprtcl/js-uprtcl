@@ -19,23 +19,44 @@ export class CASRouter implements CASStore {
     };
   }
 
-  flush(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async flush(): Promise<void> {}
+  async getEntity(uref: string): Promise<Entity<any>> {
+    const { entities } = await this.getEntities([uref]);
+    return entities[0];
   }
-  getEntity(uref: string): Promise<Entity<any>> {
-    throw new Error('Method not implemented.');
-  }
+
   storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
+    return Promise.all(
+      objects.map(async (o) => {
+        const hash = await this.storeEntity(o);
+        return { id: hash, object: o };
+      })
+    );
   }
   hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
+    return Promise.all(
+      objects.map(async (o) => {
+        const hash = await this.hashEntity(o);
+        return { id: hash, object: o };
+      })
+    );
   }
+
   storeEntity(object: ObjectOnRemote): Promise<string> {
-    throw new Error('Method not implemented.');
+    return this.storeOnSource(object);
   }
   hashEntity(object: ObjectOnRemote): Promise<string> {
-    throw new Error('Method not implemented.');
+    return this.hashOnSource(object);
+  }
+
+  public async storeOnSource(object: ObjectOnRemote) {
+    const source = this.getSource(object.remote);
+    return source.storeEntity(object);
+  }
+
+  public async hashOnSource(object: ObjectOnRemote) {
+    const source = this.getSource(object.remote);
+    return source.hashEntity(object);
   }
 
   public async ready(): Promise<void> {
@@ -50,8 +71,10 @@ export class CASRouter implements CASStore {
     return Array.from(this.sourcesMap.values());
   }
 
-  public getSource(casID: string): CASRemote | undefined {
-    return this.sourcesMap.get(casID);
+  public getSource(casID: string): CASRemote {
+    const source = this.sourcesMap.get(casID);
+    if (!source) throw new Error(`Source not found for casID ${casID}`);
+    return source;
   }
 
   public async getFromSource(hashes: string[], casID: string): Promise<EntityGetResult> {

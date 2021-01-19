@@ -37,25 +37,6 @@ export class EveesHttp implements RemoteEvees {
   }
   searchEngine!: SearchEngine;
 
-  update(mutation: EveesMutationCreate) {
-    throw new Error('Method not implemented.');
-  }
-  newPerspective(newPerspective: NewPerspectiveData) {
-    throw new Error('Method not implemented.');
-  }
-  diff(): Promise<EveesMutation> {
-    throw new Error('Method not implemented.');
-  }
-  flush(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  refresh(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  getUserPerspectives(perspectiveId: string): Promise<string[]> {
-    throw new Error('Method not implemented.');
-  }
-
   get id() {
     return `http:${evees_api}`;
   }
@@ -82,7 +63,31 @@ export class EveesHttp implements RemoteEvees {
     return snapDefaultPerspective(this, perspective);
   }
 
-  async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+  async update(mutation: EveesMutationCreate) {
+    if (mutation.newPerspectives) {
+      await Promise.all(mutation.newPerspectives.map((newPer) => this.newPerspective(newPer)));
+    }
+
+    if (mutation.deletedPerspectives) {
+      await Promise.all(
+        mutation.deletedPerspectives.map((delPer) => this.deletePerspective(delPer))
+      );
+    }
+
+    if (mutation.updates) {
+      await Promise.all(mutation.updates.map((update) => this.updatePerspective(update)));
+    }
+  }
+  diff(): Promise<EveesMutation> {
+    throw new Error('Method not implemented.');
+  }
+  async flush(): Promise<void> {}
+  async refresh(): Promise<void> {}
+  async getUserPerspectives(perspectiveId: string): Promise<string[]> {
+    return [];
+  }
+
+  async newPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     await this.connection.post('/persp', {
       perspective: perspectiveData.perspective,
       details: perspectiveData.details,
@@ -92,7 +97,7 @@ export class EveesHttp implements RemoteEvees {
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
     const promises = newPerspectivesData.map((perspectiveData) =>
-      this.createPerspective(perspectiveData)
+      this.newPerspective(perspectiveData)
     );
     await Promise.all(promises);
   }

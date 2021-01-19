@@ -19,7 +19,7 @@ export class DocumentsModule implements EveesContentModule {
     this.config = { customBlocks };
   }
 
-  async registerComponentes() {
+  async registerComponents() {
     customElements.define('documents-text-node-editor', DocumentTextNodeEditor);
     customElements.define('documents-editor', DocumentEditor);
     customElements.define('documents-text-node-diff', TextNodeDiff);

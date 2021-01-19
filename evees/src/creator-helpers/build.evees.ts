@@ -31,8 +31,8 @@ export const buildEvees = (
     : [remotes[0].id];
 
   const router = new RemoteRouter(remotes, store);
-  const cached = new ClientLocal(router, store);
-  const onMemory = new ClientOnMemory(cached, store);
+  // const cached = new ClientLocal(router, store);
+  const onMemory = new ClientOnMemory(router, store);
   const merge = new RecursiveContextMergeStrategy();
 
   return new Evees(onMemory, recognizer, remotes, merge, config, modules);

@@ -96,6 +96,7 @@ export class ClientOnMemory implements Client {
   }
 
   async flush(): Promise<void> {
+    debugger;
     await this.store.flush();
     await this.base.update({
       newPerspectives: Array.from(this.newPerspectives.values()),
