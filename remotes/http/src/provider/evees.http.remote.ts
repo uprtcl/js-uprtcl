@@ -1,6 +1,5 @@
 import { html } from 'lit-html';
 
-import { HttpProvider } from '@uprtcl/http-provider';
 import {
   Logger,
   RemoteEvees,
@@ -13,16 +12,16 @@ import {
   snapDefaultPerspective,
   getHome,
   UpdateRequest,
+  EveesMutation,
+  SearchEngine,
+  EveesMutationCreate,
+  PerspectiveGetResult,
 } from '@uprtcl/evees';
+
+import { HttpConnectionLogged } from '@uprtcl/http-provider';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
-import {
-  EveesMutation,
-  EveesMutationCreate,
-  PerspectiveGetResult,
-} from '@uprtcl/evees/dist/types/evees/interfaces/client';
-import { SearchEngine } from '@uprtcl/evees/dist/types/evees/interfaces/search.engine';
 
 const evees_api: string = 'evees-v1';
 
@@ -32,9 +31,9 @@ export class EveesHttp implements RemoteEvees {
   accessControl: EveesAccessControlHttp;
   proposals: ProposalsHttp;
 
-  constructor(protected provider: HttpProvider, public store: CASStore) {
-    this.accessControl = new EveesAccessControlHttp(this.provider);
-    this.proposals = new ProposalsHttp(this.provider, this);
+  constructor(protected connection: HttpConnectionLogged, public store: CASStore) {
+    this.accessControl = new EveesAccessControlHttp(this.connection);
+    this.proposals = new ProposalsHttp(this.connection);
   }
   searchEngine!: SearchEngine;
 
@@ -58,13 +57,13 @@ export class EveesHttp implements RemoteEvees {
   }
 
   get id() {
-    return this.provider.id;
+    return `http:${evees_api}`;
   }
   get defaultPath() {
-    return this.provider.defaultPath;
+    return this.connection.host;
   }
   get userId() {
-    return this.provider.userId;
+    return this.connection.userId;
   }
 
   async getHome(userId?: string) {
@@ -73,10 +72,6 @@ export class EveesHttp implements RemoteEvees {
 
   ready() {
     return Promise.resolve();
-  }
-
-  get casID() {
-    return `http:store:${this.provider.pOptions.host}`;
   }
 
   canUpdate(uref: string): Promise<boolean> {
@@ -88,7 +83,7 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
-    await this.provider.post('/persp', {
+    await this.connection.post('/persp', {
       perspective: perspectiveData.perspective,
       details: perspectiveData.details,
       parentId: perspectiveData.links ? perspectiveData.links.parentId : undefined,
@@ -103,17 +98,19 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async updatePerspective(update: UpdateRequest): Promise<void> {
-    await this.provider.put(`/persp/${update.perspectiveId}/details`, { headId: update.newHeadId });
+    await this.connection.put(`/persp/${update.perspectiveId}/details`, {
+      headId: update.newHeadId,
+    });
   }
 
   async getContextPerspectives(context: string): Promise<string[]> {
-    return this.provider.getWithPut<any[]>(`/persp`, { context: context });
+    return this.connection.getWithPut<any[]>(`/persp`, { context: context });
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
     let responseObj: any = {};
     try {
-      responseObj = await this.provider.getObject<PerspectiveDetails>(
+      responseObj = await this.connection.get<PerspectiveDetails>(
         `/persp/${perspectiveId}/details`
       );
     } catch (e) {
@@ -126,26 +123,26 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {
-    await this.provider.delete(`/persp/${perspectiveId}`);
+    await this.connection.delete(`/persp/${perspectiveId}`);
   }
 
   connect() {
-    return this.provider.connect();
+    return this.connection.connect();
   }
   isConnected() {
-    return this.provider.isConnected();
+    return this.connection.isConnected();
   }
   disconnect() {
-    return this.provider.disconnect();
+    return this.connection.disconnect();
   }
   isLogged() {
-    return this.provider.isLogged();
+    return this.connection.isLogged();
   }
   login() {
-    return this.provider.login();
+    return this.connection.login();
   }
   logout() {
-    return this.provider.logout();
+    return this.connection.logout();
   }
   icon(path?: string) {
     if (path) {

@@ -1,11 +1,8 @@
 import { Proposal, Proposals } from '@uprtcl/evees';
-import { HttpProvider } from '@uprtcl/http-provider';
+import { HttpConnectionLogged } from '@uprtcl/http-provider';
 
-import { EveesHttp } from './evees.http';
-
-const uprtcl_api: string = 'uprtcl-ac-v1';
 export class ProposalsHttp implements Proposals {
-  constructor(protected provider: HttpProvider, protected evees: EveesHttp) {}
+  constructor(protected connection: HttpConnectionLogged) {}
 
   async canPropose() {
     return true;
@@ -20,17 +17,17 @@ export class ProposalsHttp implements Proposals {
   }
 
   async createProposal(proposal: Proposal): Promise<string> {
-    const result = await this.provider.post(`/proposal`, proposal);
+    const result = await this.connection.post(`/proposal`, proposal);
     return result.elementIds[0];
   }
 
   async getProposal(proposalId: string): Promise<Proposal> {
-    const proposal = await this.provider.getObject<Proposal>(`/proposal/${proposalId}`);
+    const proposal = await this.connection.get<Proposal>(`/proposal/${proposalId}`);
     return proposal;
   }
 
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
-    return this.provider.getObject<string[]>(`/persp/${perspectiveId}/proposals`);
+    return this.connection.get<string[]>(`/persp/${perspectiveId}/proposals`);
   }
 
   updateProposal(proposalId: string, details: Proposal): Promise<void> {

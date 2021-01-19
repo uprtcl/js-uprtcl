@@ -1,5 +1,5 @@
-import { ObjectOnRemote, Slice } from '../../evees/interfaces/client';
-import { Entity } from './entity';
+import { Slice } from '../../evees/interfaces/client';
+import { Entity, ObjectOnRemote } from './entity';
 
 export interface EntityGetResult {
   entities: Entity<any>[];

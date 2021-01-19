@@ -12,6 +12,19 @@ export class CASRouter implements CASStore {
     sources.forEach((source) => this.sourcesMap.set(source.casID, source));
   }
 
+  async getEntities(hashes: string[]): Promise<EntityGetResult> {
+    const entities = await this.tryGetFromSources(hashes);
+    return {
+      entities,
+    };
+  }
+
+  flush(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getEntity(uref: string): Promise<Entity<any>> {
+    throw new Error('Method not implemented.');
+  }
   storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
     throw new Error('Method not implemented.');
   }
@@ -22,19 +35,6 @@ export class CASRouter implements CASStore {
     throw new Error('Method not implemented.');
   }
   hashEntity(object: ObjectOnRemote): Promise<string> {
-    throw new Error('Method not implemented.');
-  }
-
-  async getEntities(hashes: string[]): Promise<EntityGetResult> {
-    const entities = await this.tryGetFromSources(hashes);
-    return {
-      entities,
-    };
-  }
-  flush(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  getEntity(uref: string): Promise<Entity<any>> {
     throw new Error('Method not implemented.');
   }
 
@@ -64,31 +64,29 @@ export class CASRouter implements CASStore {
    *  - return all found objects when all objects found, or when all objects have been requested to all sources */
   private async tryGetFromSources(hashes: string[]): Promise<Entity<any>[]> {
     const requestedOn: string[] = [];
-    const allObjects: Entity<any>[] = [];
+    const allObjects: Map<string, Entity<any>> = new Map();
 
     return new Promise((resolve) => {
       this.sources.map(async (source) => {
         try {
-          const { entities: objects } = await this.getFromSource(hashes, source.casID);
+          const { entities } = await this.getFromSource(hashes, source.casID);
           requestedOn.push(source.casID);
 
           // append to all found objects (prevent duplicates)
-          allObjects.push(
-            ...objects.filter((o) => allObjects.findIndex((all) => all.id === o.id) === -1)
-          );
+          entities.map((e) => allObjects.set(e.id, e));
 
           // if found as many objects as hashes requested, resove (dont wait for other sources to return)
-          if (allObjects.length === hashes.length) {
-            resolve(allObjects);
+          if (entities.length === hashes.length) {
+            resolve(Array.from(allObjects.values()));
           }
         } catch (e) {
           // a failure to get objects from a source is consider as objects not present
           requestedOn.push(source.casID);
         }
 
-        // resolve once all soruces have been requested
+        // resolve once all sources have been requested
         if (requestedOn.length === this.sources.length) {
-          resolve(allObjects);
+          resolve(Array.from(allObjects.values()));
         }
       });
     });

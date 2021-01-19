@@ -1,7 +1,7 @@
 import { html } from 'lit-element';
 
 import { AccessControl, Logger, Lens } from '@uprtcl/evees';
-import { HttpProvider } from '@uprtcl/http-provider';
+import { HttpConnectionLogged } from '@uprtcl/http-provider';
 
 import { PermissionType, UserPermissions } from './types';
 
@@ -9,36 +9,36 @@ const uprtcl_api: string = 'uprtcl-acl-v1';
 export class EveesAccessControlHttp implements AccessControl {
   logger = new Logger('HTTP-EVEES-ACCESS-CONTROL');
 
-  constructor(protected provider: HttpProvider) {}
+  constructor(protected connection: HttpConnectionLogged) {}
 
   async toggleDelegate(hash: string, delegate: boolean, delegateTo: string) {
-    await this.provider.put(
+    await this.connection.put(
       `/permissions/${hash}/delegate?delegate=${delegate}&delegateTo=${delegateTo}`,
       {}
     );
   }
 
   async getUserPermissions(hash: string) {
-    return await this.provider.getObject<UserPermissions>(`/permissions/${hash}`);
+    return await this.connection.get<UserPermissions>(`/permissions/${hash}`);
   }
 
   async getPermissions(hash: string): Promise<any | undefined> {
-    return this.provider.getObject(`/permissions/${hash}/details`);
+    return this.connection.get(`/permissions/${hash}/details`);
   }
 
   async removePermissions(hash: string, userId: string) {
-    await this.provider.delete(`/permissions/${hash}/single/${userId}`);
+    await this.connection.delete(`/permissions/${hash}/single/${userId}`);
   }
 
   async setPrivatePermissions(hash: string, type: PermissionType, userId: string) {
-    await this.provider.put(`/permissions/${hash}/single`, {
+    await this.connection.put(`/permissions/${hash}/single`, {
       type,
       userId,
     });
   }
 
   async setPublicPermissions(hash: string, type: PermissionType, value: Boolean) {
-    await this.provider.put(`/permissions/${hash}/public`, { type, value });
+    await this.connection.put(`/permissions/${hash}/public`, { type, value });
   }
 
   async canUpdate(uref: string) {

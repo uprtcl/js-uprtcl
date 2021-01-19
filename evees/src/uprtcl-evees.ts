@@ -14,8 +14,14 @@ export { EveesConfig } from './evees/interfaces/types';
 export { EveesContentModule } from './evees/interfaces/evees.content.module';
 
 export { Evees } from './evees/evees.service';
-export { Client } from './evees/interfaces/client';
 export { RemoteEvees } from './evees/interfaces/remote.evees';
+export { SearchEngine } from './evees/interfaces/search.engine';
+export {
+  Client,
+  EveesMutationCreate,
+  EveesMutation,
+  PerspectiveGetResult,
+} from './evees/interfaces/client';
 
 /** Default Perspectives */
 export { getHome, snapDefaultPerspective } from './evees/default.perspectives';
@@ -54,6 +60,7 @@ export { eveeColor, DEFAULT_COLOR } from './evees/elements/support';
 export { isAncestorOf } from './evees/merge/ancestor';
 export { Connection, ConnectionOptions } from './utils/connection';
 export { Ready } from './utils/ready';
+export { ConnectionLogged } from './utils/connection.logged';
 
 /** Proposals */
 export { Proposal, UpdateRequest } from './evees/interfaces/types';

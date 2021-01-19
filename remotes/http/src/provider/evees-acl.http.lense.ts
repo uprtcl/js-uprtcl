@@ -9,7 +9,6 @@ import {
   PermissionType,
   UserPermissions,
 } from './types';
-import { EveesHttp } from './evees.http';
 
 export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
   @property()

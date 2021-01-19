@@ -1,18 +1,18 @@
 import { Auth0Client, Auth0ClientOptions } from '@auth0/auth0-spa-js';
 
 import { Logger } from '@uprtcl/evees';
+import { HttpConnection } from './http.connection';
+import { HttpConnectionLogged } from './connection.logged';
 
-import { HttpProvider, HttpProviderOptions } from './http.provider';
-
-export class HttpAuth0Provider extends HttpProvider {
-  logger = new Logger('HTTP-AUTH0-Provider');
+export class HttpAuth0Connection extends HttpConnection implements HttpConnectionLogged {
+  logger = new Logger('HTTP-AUTH0-Connection');
 
   account: string | undefined = undefined;
 
   auth0: Auth0Client;
 
-  constructor(public pOptions: HttpProviderOptions, auth0Config: Auth0ClientOptions) {
-    super(pOptions);
+  constructor(host: string, auth0Config: Auth0ClientOptions) {
+    super(host);
 
     this.auth0 = new Auth0Client(auth0Config);
   }

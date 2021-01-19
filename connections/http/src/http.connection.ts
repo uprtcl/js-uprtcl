@@ -6,17 +6,25 @@ export interface PostResult {
   elementIds: string[];
 }
 
+export interface GetResult<T> {
+  result: string;
+  message: string;
+  data: T;
+}
+
 /** TODO: two modules that instanciate two http connections will conflict */
 
 /**
  * Wrapper over the fetch API
  */
+
 export class HttpConnection extends Connection {
   /** used to keep the token in memory in case tokenId is undefined */
   private tokenMem: string | undefined = undefined;
   private userIdMem: string | undefined = undefined;
 
   constructor(
+    readonly host: string,
     options?: ConnectionOptions,
     protected tokenStorageId: string | null = 'HTTP_AUTH_TOKEN',
     protected userStorageId: string | null = 'HTTP_USER_ID'
@@ -100,11 +108,14 @@ export class HttpConnection extends Connection {
         if (!response.ok) {
           throw new Error(response.statusText);
         }
-        return response.json() as Promise<{ data: T }>;
+        return response.json() as Promise<GetResult<T>>;
       })
-      .then((data) => {
-        this.logger.log('[HTTP GET RESULT] ', url, data);
-        return data.data;
+      .then((getResult) => {
+        // this.logger.log('[HTTP GET RESULT] ', url, getResult);
+        if (getResult.result === 'error') {
+          throw new Error(`Error fetching url: ${url}`);
+        }
+        return getResult.data;
       });
   }
 

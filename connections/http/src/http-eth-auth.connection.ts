@@ -1,60 +1,24 @@
 import { EthereumConnection } from '@uprtcl/ethereum-provider';
-import { CASStore, Logger, NewPerspectiveData, RemoteEvees, UpdateRequest } from '@uprtcl/evees';
-import {
-  PerspectiveGetResult,
-  EveesMutationCreate,
-  EveesMutation,
-} from '@uprtcl/evees/dist/types/evees/interfaces/client';
+import { CASStore, Logger } from '@uprtcl/evees';
 import { SearchEngine } from '@uprtcl/evees/dist/types/evees/interfaces/search.engine';
-
-import { HttpProvider, HttpProviderOptions } from './http.provider';
+import { HttpConnectionLogged } from './connection.logged';
+import { HttpConnection } from './http.connection';
 
 export const loginMessage = (nonce: string) => {
   return `Login to Intercreativiy \n\nnonce:${nonce}`;
 };
 
-export class HttpEthAuthProvider extends HttpProvider implements RemoteEvees {
-  logger = new Logger('HTTP-ETH-Provider');
+export class HttpEthAuthConnection extends HttpConnection implements HttpConnectionLogged {
+  logger = new Logger('HTTP-ETH-Connection');
 
   account: string | undefined = undefined;
 
-  constructor(public pOptions: HttpProviderOptions, protected ethConnection: EthereumConnection) {
-    super(pOptions);
+  constructor(public host, protected ethConnection: EthereumConnection) {
+    super(host);
   }
 
   store!: CASStore;
   searchEngine!: SearchEngine;
-
-  getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
-    throw new Error('Method not implemented.');
-  }
-  update(mutation: EveesMutationCreate) {
-    throw new Error('Method not implemented.');
-  }
-  newPerspective(newPerspective: NewPerspectiveData) {
-    throw new Error('Method not implemented.');
-  }
-  deletePerspective(perspectiveId: string) {
-    throw new Error('Method not implemented.');
-  }
-  updatePerspective(update: UpdateRequest) {
-    throw new Error('Method not implemented.');
-  }
-  diff(): Promise<EveesMutation> {
-    throw new Error('Method not implemented.');
-  }
-  flush(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  refresh(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  getUserPerspectives(perspectiveId: string): Promise<string[]> {
-    throw new Error('Method not implemented.');
-  }
-  canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
-  }
 
   async connect() {
     await this.ethConnection.ready();
@@ -86,12 +50,12 @@ export class HttpEthAuthProvider extends HttpProvider implements RemoteEvees {
 
   async isLogged() {
     if (this.userId === undefined) return false;
-    return super.getObject<boolean>(`/user/isAuthorized`);
+    return super.get<boolean>(`/user/isAuthorized`);
   }
 
   async getNonce() {
     if (this.account === undefined) throw Error('account undefined');
-    return super.getObject<string>(`/user/${this.account}/nonce`);
+    return super.get<string>(`/user/${this.account}/nonce`);
   }
 
   async authorize(signature: string) {
