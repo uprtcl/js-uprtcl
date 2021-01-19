@@ -8,6 +8,8 @@ import {
   ConnectionOptions,
   sortObject,
   Logger,
+  Entity,
+  EntityGetResult,
 } from '@uprtcl/evees';
 
 import { IpfsConnectionOptions } from './types';
@@ -54,6 +56,28 @@ export class IpfsStore extends Connection implements CASStore {
   ) {
     super(connectionOptions);
     this.pinnedCache = new PinnedCacheDB(`pinned-at-${this.pinnerUrl}`);
+  }
+
+  storeEntities(objects: any[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntities(objects: any[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  getEntities(hashes: string[]): Promise<EntityGetResult> {
+    throw new Error('Method not implemented.');
+  }
+  flush(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getEntity(uref: string): Promise<Entity<any>> {
+    throw new Error('Method not implemented.');
+  }
+  storeEntity(object: any): Promise<string> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntity(object: any): Promise<string> {
+    throw new Error('Method not implemented.');
   }
 
   /**

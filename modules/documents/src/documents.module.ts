@@ -13,10 +13,10 @@ export interface DocumentsModuleConfig {
 
 export class DocumentsModule implements EveesContentModule {
   static id = 'documents-module';
-  config!: DocumentsModuleConfig;
+  config: DocumentsModuleConfig;
 
   constructor(protected customBlocks?: CustomBlocks) {
-    this.config.customBlocks = customBlocks;
+    this.config = { customBlocks };
   }
 
   async registerComponentes() {
