@@ -17,7 +17,6 @@ import {
 } from '@uprtcl/evees';
 import { WikiDrawerContent } from './wiki-drawer-content';
 import { PROPOSAL_CREATED_TAG, EveesInfoConfig } from '@uprtcl/evees';
-
 export class WikiDrawer extends eveesConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
 
@@ -55,6 +54,20 @@ export class WikiDrawer extends eveesConnect(LitElement) {
 
     /** the official owner is the creator of the firstRef of the Wiki,
      * the firstRef is comming from the outside e.g. browser url. */
+    const userhome = await this.evees.getPerspectiveData(getHome(), 2);
+    {
+      text: ''
+      links: ['zba123']
+    }
+
+    this.evees.client.on('perspective-updated', (uref) => {
+      if (uref === this.uref) {
+        ... react
+      }
+    })
+
+    const private = await this.evees.getPerspectiveData(linkedThoughts, 1);
+
     const official = await this.evees.client.store.getEntity(this.firstRef);
     if (!official) throw new Error(`cant find official perspective ${this.firstRef}`);
     this.eveesInfoConfig.officialOwner = official.object.payload.creatorId;

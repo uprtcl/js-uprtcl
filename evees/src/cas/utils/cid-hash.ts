@@ -2,8 +2,8 @@ import multihashing from 'multihashing-async';
 import CBOR from 'cbor-js';
 import CID from 'cids';
 
-import { CidConfig, defaultCidConfig } from 'src/cas/interfaces/cid-config';
-import { Signed } from 'src/patterns/interfaces/signable';
+import { CidConfig, defaultCidConfig } from '../../cas/interfaces/cid-config';
+import { Signed } from '../../patterns/interfaces/signable';
 import { Entity } from '../interfaces/entity';
 
 export function sortObject(object: object): object {

@@ -2,9 +2,12 @@ import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../interf
 import { CASStore, EntityGetResult } from '../../cas/interfaces/cas-store';
 import { Entity, ObjectOnRemote } from '../../cas/interfaces/entity';
 
-import { Client, PerspectiveGetResult, EveesMutation } from '../interfaces/client';
-import { SearchEngine } from '../interfaces/search.engine';
-import { Proposals } from '../interfaces/proposals';
+import {
+  Client,
+  PerspectiveGetResult,
+  EveesMutation,
+  EveesMutationCreate,
+} from '../interfaces/client';
 
 export class ClientOnMemory implements Client {
   private entities = new Map<string, Entity<any>>();
@@ -20,15 +23,6 @@ export class ClientOnMemory implements Client {
     if (mutation) {
       this.update(mutation);
     }
-  }
-  newPerspective(newPerspective: NewPerspectiveData) {
-    throw new Error('Method not implemented.');
-  }
-  deletePerspective(perspectiveId: string) {
-    throw new Error('Method not implemented.');
-  }
-  updatePerspective(update: UpdateRequest) {
-    throw new Error('Method not implemented.');
   }
 
   get searchEngine() {
@@ -72,17 +66,29 @@ export class ClientOnMemory implements Client {
       this.newPerspectives.set(newPerspective.perspective.id, newPerspective);
     });
   }
+
   updatePerspectives(updates: UpdateRequest[]) {
     updates.forEach((update) => {
       this.updates.set(update.perspectiveId, update);
     });
   }
-  async update(mutation: EveesMutation) {
+
+  async update(mutation: EveesMutationCreate) {
     const create = mutation.newPerspectives
       ? this.createPerspectives(mutation.newPerspectives)
       : Promise.resolve();
     const update = mutation.updates ? this.updatePerspectives(mutation.updates) : Promise.resolve();
     return Promise.all([create, update]);
+  }
+
+  newPerspective(newPerspective: NewPerspectiveData) {
+    return this.update({ newPerspectives: [newPerspective] });
+  }
+  async deletePerspective(perspectiveId: string) {
+    await this.update({ deletedPerspectives: [perspectiveId] });
+  }
+  updatePerspective(update: UpdateRequest) {
+    return this.update({ updates: [update] });
   }
 
   async hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {

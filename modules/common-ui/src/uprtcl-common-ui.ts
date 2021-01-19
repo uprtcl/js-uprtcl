@@ -1,4 +1,4 @@
-export { registerComponents } from './register.components';
+export { registerComponents as registerCommonUI } from './register.components';
 
 export { UprtclDialog } from './elements/dialog';
 export { MenuConfig } from './elements/options-menu';

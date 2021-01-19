@@ -1,8 +1,12 @@
+import { registerCommonUI } from '@uprtcl/common-ui';
 import { EveesContainer } from '../container/evees-container';
 import { Evees } from '../evees/evees.service';
 import { registerEveesElements } from './evees.elements';
 
 export const registerComponents = (evees: Evees) => {
+  /** register common ui */
+  registerCommonUI();
+
   /** register evees components */
   registerEveesElements();
 
