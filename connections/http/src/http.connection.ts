@@ -100,7 +100,7 @@ export class HttpConnection extends Connection {
   public async get<T>(url: string): Promise<T> {
     this.logger.log('[HTTP GET]: ', url);
 
-    return fetch(url, {
+    return fetch(this.host + url, {
       method: 'GET',
       headers: this.headers,
     })
@@ -122,7 +122,7 @@ export class HttpConnection extends Connection {
   public async getWithPut<T>(url: string, body: any): Promise<T> {
     this.logger.log('PUT: ', url);
 
-    return fetch(url, {
+    return fetch(this.host + url, {
       method: 'PUT',
       headers: this.headers,
       body: JSON.stringify(body),
@@ -158,7 +158,7 @@ export class HttpConnection extends Connection {
   }
 
   public async delete(url: string): Promise<PostResult> {
-    this.logger.log(`[HTTP DELETE]`, url);
+    this.logger.log(`[HTTP DELETE]`, this.host + url);
     return fetch(url, {
       method: 'DELETE',
       headers: {
@@ -183,7 +183,7 @@ export class HttpConnection extends Connection {
    */
   public async putOrPost(url: string, body: any, method: string): Promise<PostResult> {
     this.logger.log(`[HTTP ${method}]`, url, body);
-    return fetch(url, {
+    return fetch(this.host + url, {
       method: method,
       headers: {
         ...this.headers,

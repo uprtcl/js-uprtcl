@@ -16,6 +16,7 @@ import {
   SearchEngine,
   EveesMutationCreate,
   PerspectiveGetResult,
+  CASRemote,
 } from '@uprtcl/evees';
 
 import { HttpConnectionLogged } from '@uprtcl/http-provider';
@@ -30,12 +31,13 @@ export class EveesHttp implements RemoteEvees {
 
   accessControl: EveesAccessControlHttp;
   proposals: ProposalsHttp;
+  store!: CASStore;
+  searchEngine!: SearchEngine;
 
-  constructor(protected connection: HttpConnectionLogged, public store: CASStore) {
+  constructor(protected connection: HttpConnectionLogged, public storeRemote: CASRemote) {
     this.accessControl = new EveesAccessControlHttp(this.connection);
     this.proposals = new ProposalsHttp(this.connection);
   }
-  searchEngine!: SearchEngine;
 
   get id() {
     return `http:${evees_api}`;
@@ -45,6 +47,10 @@ export class EveesHttp implements RemoteEvees {
   }
   get userId() {
     return this.connection.userId;
+  }
+
+  setStore(store: CASStore) {
+    this.store = store;
   }
 
   async getHome(userId?: string) {

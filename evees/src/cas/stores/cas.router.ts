@@ -5,12 +5,11 @@ import { Entity, ObjectOnRemote } from '../interfaces/entity';
 
 export class CASRouter implements CASStore {
   protected logger = new Logger('CASRouter');
-  protected sourcesMap = new Map<string, CASRemote>();
 
-  constructor(protected sources: Array<CASRemote>) {
-    // Build the sources dictionary from the resulting names
-    sources.forEach((source) => this.sourcesMap.set(source.casID, source));
-  }
+  constructor(
+    protected sources: Map<string, CASRemote>,
+    protected remoteToSourcesMap: Map<string, string>
+  ) {}
 
   async getEntities(hashes: string[]): Promise<EntityGetResult> {
     const entities = await this.tryGetFromSources(hashes);
@@ -60,19 +59,21 @@ export class CASRouter implements CASStore {
   }
 
   public async ready(): Promise<void> {
-    await Promise.all(Array.from(this.sourcesMap.values()).map((source) => source.ready()));
+    await Promise.all(Array.from(this.sources.values()).map((source) => source.ready()));
   }
 
   public getAllCASIds(): string[] {
-    return Array.from(this.sourcesMap.keys());
+    return Array.from(this.sources.keys());
   }
 
   public getAllCASSources(): CASRemote[] {
-    return Array.from(this.sourcesMap.values());
+    return Array.from(this.sources.values());
   }
 
-  public getSource(casID: string): CASRemote {
-    const source = this.sourcesMap.get(casID);
+  public getSource(remoteId: string): CASRemote {
+    const casID = this.remoteToSourcesMap.get(remoteId);
+    if (!casID) throw new Error(`Not CASId registered for remote ${remoteId}`);
+    const source = this.sources.get(casID);
     if (!source) throw new Error(`Source not found for casID ${casID}`);
     return source;
   }
@@ -90,10 +91,10 @@ export class CASRouter implements CASStore {
     const allObjects: Map<string, Entity<any>> = new Map();
 
     return new Promise((resolve) => {
-      this.sources.map(async (source) => {
+      Array.from(this.sources.keys()).map(async (casID) => {
         try {
-          const { entities } = await this.getFromSource(hashes, source.casID);
-          requestedOn.push(source.casID);
+          const { entities } = await this.getFromSource(hashes, casID);
+          requestedOn.push(casID);
 
           // append to all found objects (prevent duplicates)
           entities.map((e) => allObjects.set(e.id, e));
@@ -104,11 +105,11 @@ export class CASRouter implements CASStore {
           }
         } catch (e) {
           // a failure to get objects from a source is consider as objects not present
-          requestedOn.push(source.casID);
+          requestedOn.push(casID);
         }
 
         // resolve once all sources have been requested
-        if (requestedOn.length === this.sources.length) {
+        if (requestedOn.length === this.sources.size) {
           resolve(Array.from(allObjects.values()));
         }
       });

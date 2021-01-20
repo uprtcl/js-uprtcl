@@ -10,11 +10,24 @@ import { CASRemote } from '../cas/interfaces/cas-remote';
 /** a top level wrapper that registers everything */
 export const eveesLoader = (
   remotes: Array<RemoteEvees>,
-  stores: CASRemote[],
   modules: Map<string, EveesContentModule>,
   config?: EveesConfig
 ): void => {
-  const store = buildStore(stores);
+  /** extract the stores and map remotes to stores */
+  const remoteToSourcesMap = new Map<string, string>();
+  const stores = new Map<string, CASRemote>();
+  remotes.forEach((remote) => {
+    stores.set(remote.storeRemote.casID, remote.storeRemote);
+    remoteToSourcesMap.set(remote.id, remote.storeRemote.casID);
+  });
+
+  const store = buildStore(stores, remoteToSourcesMap);
+
+  /** set the cached store of the remotes */
+  remotes.forEach((remote) => {
+    remote.setStore(store);
+  });
+
   const recognizer = buildRecognizer(modules);
   const evees = buildEvees(remotes, store, recognizer, modules, config);
   registerComponents(evees);

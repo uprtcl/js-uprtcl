@@ -80,7 +80,7 @@ export class HttpStore implements CASRemote {
   }
 
   async storeEntity(object: ObjectOnRemote): Promise<string> {
-    const entities = this.storeEntities([object]);
+    const entities = await this.storeEntities([object]);
     return entities[0].id;
   }
 
