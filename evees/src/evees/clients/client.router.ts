@@ -9,12 +9,15 @@ import { Proposals } from '../interfaces/proposals';
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
 import { NewPerspectiveData, UpdateRequest } from '../interfaces/types';
+import { SearchEngineRouter } from './search.router';
 
 export class RemoteRouter implements Client {
-  constructor(protected remotes: RemoteEvees[], public store: CASStore) {}
   proposals?: Proposals | undefined;
-
   searchEngine!: SearchEngine;
+
+  constructor(protected remotes: RemoteEvees[], public store: CASStore) {
+    this.searchEngine = new SearchEngineRouter(remotes);
+  }
 
   getRemote(remoteId: string): RemoteEvees {
     const remote = this.remotes.find((r) => r.id === remoteId);

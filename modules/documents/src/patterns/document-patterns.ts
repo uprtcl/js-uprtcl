@@ -9,5 +9,5 @@ export interface DocNodeLens {
 }
 
 export interface HasDocNodeLenses {
-  docNodeLenses: (node?: Entity<TextNode>) => DocNodeLens[];
+  docNodeLenses: (node?: TextNode) => DocNodeLens[];
 }

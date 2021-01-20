@@ -1,4 +1,4 @@
-import { RemoteEvees } from '../remote.evees';
+import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
 
 export class SearchEngineRouter implements SearchEngine {
@@ -16,8 +16,13 @@ export class SearchEngineRouter implements SearchEngine {
   locate(uref: string[]): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
-  proposals(perspectiveId: string): Promise<string[]> {
-    throw new Error('Method not implemented.');
+  async proposals(perspectiveId: string): Promise<string[]> {
+    const all = await Promise.all(
+      this.remotes.map((remote) => {
+        return remote.proposals ? remote.proposals.getProposalsToPerspective(perspectiveId) : [];
+      })
+    );
+    return Array.prototype.concat.apply([], all);
   }
 
   explore() {}

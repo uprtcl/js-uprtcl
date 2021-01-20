@@ -9,7 +9,6 @@ import {
   Client,
   Pattern,
   HasChildren,
-  Entity,
   HasTitle,
   Lens,
   Evees,
@@ -35,35 +34,30 @@ const typeToTextNode = (textNode: TextNode, type: TextType): TextNode => {
   };
 };
 
-export class TextNodePattern extends Pattern<Entity<TextNode>> {
-  recognize(object: object): boolean {
+export class TextNodePattern extends Pattern<TextNode> {
+  recognize(object: any): boolean {
     return propertyOrder.every((p) => object.hasOwnProperty(p));
   }
 
   type = DocumentsBindings.TextNodeType;
 }
 
-export class TextNodeCommon implements HasLenses<Entity<TextNode>>, HasChildren<Entity<TextNode>> {
-  replaceChildrenLinks = (node: Entity<TextNode>) => (
-    childrenHashes: string[]
-  ): Entity<TextNode> => ({
-    id: '',
-    object: {
-      ...node.object,
-      links: childrenHashes,
-    },
+export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode> {
+  replaceChildrenLinks = (node: TextNode) => (childrenHashes: string[]): TextNode => ({
+    ...node,
+    links: childrenHashes,
   });
 
-  getChildrenLinks = (node: Entity<TextNode>): string[] => node.object.links;
+  getChildrenLinks = (node: TextNode): string[] => node.links;
 
-  links = async (node: Entity<TextNode>) => this.getChildrenLinks(node);
+  links = async (node: TextNode) => this.getChildrenLinks(node);
 
-  lenses = (node: Entity<TextNode>): Lens[] => {
+  lenses = (node: TextNode): Lens[] => {
     return [
       {
         name: 'documents:document',
         type: 'content',
-        render: (entity: Entity<any>, context: any) => {
+        render: (entity: any, context: any) => {
           return html`
             <documents-text-node .data=${node} uref=${entity.id}> </documents-text-node>
           `;
@@ -111,20 +105,20 @@ export class TextNodeCommon implements HasLenses<Entity<TextNode>>, HasChildren<
     ];
   };
 
-  merge = (originalNode: Entity<TextNode>) => async (
-    modifications: Entity<TextNode>[],
+  merge = (originalNode: TextNode) => async (
+    modifications: TextNode[],
     evees: Evees,
     config: any
   ): Promise<TextNode> => {
-    const resultText = modifications[1].object.text;
+    const resultText = modifications[1].text;
     const resultType = mergeResult(
-      originalNode.object.type,
-      modifications.map((data) => data.object.type)
+      originalNode.type,
+      modifications.map((data) => data.type)
     );
 
     const mergedLinks = await RecursiveContextMergeStrategy.mergeLinks(
-      originalNode.object.links,
-      modifications.map((data) => data.object.links),
+      originalNode.links,
+      modifications.map((data) => data.links),
       evees,
       config
     );
@@ -138,19 +132,14 @@ export class TextNodeCommon implements HasLenses<Entity<TextNode>>, HasChildren<
 }
 
 export class TextNodeTitle implements HasTitle, HasDiffLenses {
-  title = (textNode: Entity<TextNode>) => textNode.object.text;
+  title = (textNode: TextNode) => textNode.text;
 
   diffLenses = (node?: TextNode): DiffLens[] => {
     return [
       {
         name: 'documents:document-diff',
         type: 'diff',
-        render: (
-          client: Client,
-          newEntity: Entity<TextNode>,
-          oldEntity: Entity<TextNode>,
-          summary: boolean
-        ) => {
+        render: (client: Client, newEntity: TextNode, oldEntity: TextNode, summary: boolean) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <documents-text-node-diff

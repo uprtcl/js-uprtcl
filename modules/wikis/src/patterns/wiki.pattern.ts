@@ -8,7 +8,6 @@ import {
   Client,
   HasTitle,
   HasLenses,
-  Entity,
   HasChildren,
   Lens,
   Pattern,
@@ -31,36 +30,31 @@ export class WikiPattern extends Pattern<Wiki> {
   type = WikiBindings.WikiType;
 }
 
-export class WikiLinks implements HasChildren<Entity<Wiki>> {
-  replaceChildrenLinks = (wiki: Entity<Wiki>) => (childrenHashes: string[]): Entity<Wiki> => ({
+export class WikiLinks implements HasChildren<Wiki> {
+  replaceChildrenLinks = (wiki: Wiki) => (childrenHashes: string[]): Wiki => ({
     ...wiki,
-    object: {
-      ...wiki.object,
-      pages: childrenHashes,
-    },
+    pages: childrenHashes,
   });
 
-  getChildrenLinks: (wiki: Entity<Wiki>) => string[] = (wiki: Entity<Wiki>): string[] =>
-    wiki.object.pages;
+  getChildrenLinks: (wiki: Wiki) => string[] = (wiki: Wiki): string[] => wiki.pages;
 
-  links: (wiki: Entity<Wiki>) => Promise<string[]> = async (wiki: Entity<Wiki>) =>
-    this.getChildrenLinks(wiki);
+  links: (wiki: Wiki) => Promise<string[]> = async (wiki: Wiki) => this.getChildrenLinks(wiki);
 
-  merge = (originalNode: Entity<Wiki>) => async (
-    modifications: (Entity<Wiki> | undefined)[],
+  merge = (originalNode: Wiki) => async (
+    modifications: (Wiki | undefined)[],
     mergeStrategy: RecursiveContextMergeStrategy,
     evees: Evees,
     config
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
-      originalNode.object.title,
-      modifications.map((data) => (!!data ? data.object.title : originalNode.object.title))
+      originalNode.title,
+      modifications.map((data) => (!!data ? data.title : originalNode.title))
     );
 
     // TODO: add entity
     const mergedPages = await mergeStrategy.mergeLinks(
-      originalNode.object.pages,
-      modifications.map((data) => (!!data ? data.object.pages : originalNode.object.pages)),
+      originalNode.pages,
+      modifications.map((data) => (!!data ? data.pages : originalNode.pages)),
       evees,
       config
     );
@@ -72,13 +66,13 @@ export class WikiLinks implements HasChildren<Entity<Wiki>> {
   };
 }
 
-export class WikiCommon implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLenses<Entity<Wiki>> {
-  lenses = (wiki: Entity<Wiki>): Lens[] => {
+export class WikiCommon implements HasTitle, HasLenses<Wiki>, HasDiffLenses<Wiki> {
+  lenses = (wiki: Wiki): Lens[] => {
     return [
       {
         name: 'Wiki',
         type: 'content',
-        render: (entity: Entity<any>, context: any) => {
+        render: (entity: any, context: any) => {
           logger.info('lenses() - Wiki', { wiki, context });
           return html`
             <wiki-drawer
@@ -99,12 +93,7 @@ export class WikiCommon implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLen
       {
         name: 'wikis:wiki-diff',
         type: 'diff',
-        render: (
-          client: Client,
-          newEntity: Entity<Wiki>,
-          oldEntity: Entity<Wiki>,
-          summary: boolean
-        ) => {
+        render: (client: Client, newEntity: Wiki, oldEntity: Wiki, summary: boolean) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <wiki-diff
@@ -120,5 +109,5 @@ export class WikiCommon implements HasTitle, HasLenses<Entity<Wiki>>, HasDiffLen
     ];
   };
 
-  title = (wiki: Entity<Wiki>) => wiki.object.title;
+  title = (wiki: Wiki) => wiki.title;
 }

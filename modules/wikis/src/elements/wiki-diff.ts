@@ -1,6 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { Entity, eveesConnect, Logger, Client } from '@uprtcl/evees';
+import { eveesConnect, Logger, Client } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
 
@@ -21,10 +21,10 @@ export class WikiDiff extends eveesConnect(LitElement) {
   client!: Client;
 
   @property({ attribute: false })
-  newData!: Entity<Wiki>;
+  newData!: Wiki;
 
   @property({ attribute: false })
-  oldData!: Entity<Wiki>;
+  oldData!: Wiki;
 
   @property({ attribute: false })
   loading: boolean = true;
@@ -45,14 +45,14 @@ export class WikiDiff extends eveesConnect(LitElement) {
   async loadChanges() {
     this.loading = true;
 
-    const oldPages = this.oldData ? this.oldData.object.pages : [];
-    this.oldTitle = this.oldData ? this.oldData.object.title : '';
+    const oldPages = this.oldData ? this.oldData.pages : [];
+    this.oldTitle = this.oldData ? this.oldData.title : '';
 
-    this.newPages = this.newData.object.pages.filter((page) =>
+    this.newPages = this.newData.pages.filter((page) =>
       this.oldData ? !oldPages.includes(page) : true
     );
     this.deletedPages = this.oldData
-      ? oldPages.filter((page) => !this.newData.object.pages.includes(page))
+      ? oldPages.filter((page) => !this.newData.pages.includes(page))
       : [];
 
     this.loading = false;
@@ -79,7 +79,7 @@ export class WikiDiff extends eveesConnect(LitElement) {
       return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
-    const titleChanged = this.newData.object.title !== this.oldTitle;
+    const titleChanged = this.newData.title !== this.oldTitle;
 
     const newPages = this.newPages !== undefined ? this.newPages : [];
     const deletedPages = this.deletedPages !== undefined ? this.deletedPages : [];
@@ -97,7 +97,7 @@ export class WikiDiff extends eveesConnect(LitElement) {
         ? html`
             <div class="pages-list">
               <div class="page-list-title">New Title</div>
-              ${this.renderTitleChange(this.newData.object.title, ['green-background'])}
+              ${this.renderTitleChange(this.newData.title, ['green-background'])}
               ${this.renderTitleChange(this.oldTitle, ['red-background'])}
             </div>
           `

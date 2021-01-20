@@ -16,6 +16,6 @@ export class WikisModule implements EveesContentModule {
   }
 
   getPatterns() {
-    return [new WikiPattern([WikiCommon, WikiLinks])];
+    return [new WikiPattern([new WikiCommon(), new WikiLinks()])];
   }
 }

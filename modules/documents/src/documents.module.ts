@@ -26,6 +26,6 @@ export class DocumentsModule implements EveesContentModule {
   }
 
   getPatterns() {
-    return [new TextNodePattern([TextNodeCommon, TextNodeTitle])];
+    return [new TextNodePattern([new TextNodeCommon(), new TextNodeTitle()])];
   }
 }

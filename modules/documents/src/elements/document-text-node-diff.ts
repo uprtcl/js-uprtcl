@@ -17,10 +17,10 @@ export class TextNodeDiff extends eveesConnect(LitElement) {
   client!: Client;
 
   @property({ attribute: false })
-  newData!: Entity<TextNode>;
+  newData!: TextNode;
 
   @property({ attribute: false })
-  oldData!: Entity<TextNode>;
+  oldData!: TextNode;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', {

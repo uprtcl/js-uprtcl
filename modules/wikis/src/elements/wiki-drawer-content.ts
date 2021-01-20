@@ -81,11 +81,8 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
       async (pageId): Promise<PageData> => {
         const data = await this.evees.getPerspectiveData(pageId);
         if (!data) throw new Error(`data not found for page ${pageId}`);
-        const hasTitle: HasTitle = this.evees.recognizer
-          .recognizeBehaviours(data)
-          .find((b) => (b as HasTitle).title);
 
-        const title = hasTitle.title(data);
+        const title = this.evees.behavior(data.object, 'title');
 
         return {
           id: pageId,

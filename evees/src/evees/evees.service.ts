@@ -105,6 +105,12 @@ export class Evees {
     }
   }
 
+  behavior(object: object, behaviorName: string) {
+    const behaviors = this.recognizer.recognizeBehaviours(object);
+    const behavior = behaviors.find((b) => b[behaviorName]);
+    return behavior[behaviorName](object);
+  }
+
   async createEvee(object: any, remoteId: string, parentId?: string) {
     const dataId = await this.client.store.storeEntity({
       object,
