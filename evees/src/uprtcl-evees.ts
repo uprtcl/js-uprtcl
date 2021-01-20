@@ -75,7 +75,7 @@ export { Logger } from './utils/logger';
 
 /** CAS */
 export { Secured, hashObject, deriveEntity, sortObject } from './cas/utils/cid-hash';
-export { extractSignedEntity, deriveSecured, signObject } from './cas/utils/signed';
+export { deriveSecured, signObject } from './cas/utils/signed';
 export { Entity, ObjectOnRemote } from './cas/interfaces/entity';
 export { CASStore, EntityGetResult } from './cas/interfaces/cas-store';
 export { CASRemote } from './cas/interfaces/cas-remote';

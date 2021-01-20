@@ -49,13 +49,13 @@ export class PatternRecognizer {
    * @throws error if no pattern recognized the given entity
    * @throws error if two patterns with different types recognized the given entity
    */
-  public recognizeType<T>(entity: Entity<T>): string {
-    const patterns: Pattern<Entity<T>>[] = this.recognize(entity);
+  public recognizeType<T>(object: T): string {
+    const patterns: Pattern<T>[] = this.recognize(object);
 
     const types: string[] = patterns.map((p) => p.type).filter((t) => !!t) as string[];
 
     if (types.length === 0) {
-      throw new Error(`No entity found to recognize object ${JSON.stringify(entity)}`);
+      throw new Error(`No entity found to recognize object ${JSON.stringify(object)}`);
     }
 
     const abmiguousError = types.length > 1 && !types.every((t) => types[0]);

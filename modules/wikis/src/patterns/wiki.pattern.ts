@@ -24,8 +24,8 @@ const propertyOrder = ['title', 'pages'];
 const logger = new Logger('WIKI-ENTITY');
 
 export class WikiPattern extends Pattern<Wiki> {
-  recognize(entity: any): boolean {
-    return propertyOrder.every((p) => entity.object.hasOwnProperty(p));
+  recognize(object: any): boolean {
+    return propertyOrder.every((p) => object.hasOwnProperty(p));
   }
 
   type = WikiBindings.WikiType;

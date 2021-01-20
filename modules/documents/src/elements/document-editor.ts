@@ -178,7 +178,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
   async refToNode(uref: string, parent?: DocNode, ix?: number) {
     const entity = await this.evees.client.store.getEntity(uref);
 
-    let entityType = this.evees.recognizer.recognizeType(entity);
+    let entityType = this.evees.recognizer.recognizeType(entity.object);
 
     let editable = false;
     let remoteId: string | undefined;
@@ -226,7 +226,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
     const data = await this.evees.client.store.getEntity(dataId);
-    const dataType = this.evees.recognizer.recognizeType(data);
+    const dataType = this.evees.recognizer.recognizeType(data.object);
     const canConvertTo = this.customBlocks
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];
@@ -520,21 +520,19 @@ export class DocumentEditor extends eveesConnect(LitElement) {
   }
 
   draftToPlaceholder(draft: any, parent?: DocNode, ix?: number): DocNode {
-    const draftForReco = { id: '', object: draft };
     const hasChildren = this.evees.recognizer
-      .recognizeBehaviours(draftForReco)
+      .recognizeBehaviours(draft)
       .find((b) => (b as HasChildren).getChildrenLinks);
 
     const hasDocNodeLenses = this.evees.recognizer
-      .recognizeBehaviours(draftForReco)
+      .recognizeBehaviours(draft)
       .find((b) => (b as HasDocNodeLenses).docNodeLenses);
 
-    if (!hasChildren)
-      throw new Error(`hasChildren not found for object ${JSON.stringify(draftForReco)}`);
+    if (!hasChildren) throw new Error(`hasChildren not found for object ${JSON.stringify(draft)}`);
     if (!hasDocNodeLenses)
-      throw new Error(`hasDocNodeLenses not found for object ${JSON.stringify(draftForReco)}`);
+      throw new Error(`hasDocNodeLenses not found for object ${JSON.stringify(draft)}`);
 
-    const dataType = this.evees.recognizer.recognizeType(draftForReco);
+    const dataType = this.evees.recognizer.recognizeType(draft);
     const canConvertTo = this.customBlocks
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];

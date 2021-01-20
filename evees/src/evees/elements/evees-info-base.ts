@@ -135,7 +135,7 @@ export class EveesInfoBase extends eveesConnect(LitElement) {
     const entity = await this.evees.client.store.getEntity(this.uref);
     if (!entity) throw Error(`Entity not found ${this.uref}`);
 
-    this.entityType = this.evees.recognizer.recognizeType(entity);
+    this.entityType = this.evees.recognizer.recognizeType(entity.object);
 
     this.loading = true;
 

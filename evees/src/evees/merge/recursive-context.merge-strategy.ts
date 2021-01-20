@@ -18,7 +18,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async isPattern(id: string, type: string, evees: Evees): Promise<boolean> {
     const entity = await evees.client.store.getEntity(id);
     if (entity === undefined) throw new Error('entity not found');
-    const recongnizedType = evees.recognizer.recognizeType(entity);
+    const recongnizedType = evees.recognizer.recognizeType(entity.object);
     return type === recongnizedType;
   }
 

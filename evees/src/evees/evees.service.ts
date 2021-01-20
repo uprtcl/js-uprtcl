@@ -91,7 +91,7 @@ export class Evees {
   async getData(uref: string) {
     const entity = await this.client.store.getEntity(uref);
 
-    let entityType: string = this.recognizer.recognizeType(entity);
+    let entityType: string = this.recognizer.recognizeType(entity.object);
 
     switch (entityType) {
       case PerspectiveType:
@@ -258,7 +258,7 @@ export class Evees {
   async isOfPattern(uref: string, pattern: string, client?: Client): Promise<boolean> {
     client = client || this.client;
     const entity = await client.store.getEntity(uref);
-    const type = this.recognizer.recognizeType(entity);
+    const type = this.recognizer.recognizeType(entity.object);
     return type === pattern;
   }
 
