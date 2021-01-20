@@ -42,8 +42,12 @@ export class HttpStore implements CASRemote {
   async create(object: object, hash?: string): Promise<Entity<any>> {
     this.logger.log('Creating Entity', { object, hash });
     const result = await this.connection.post(`/data`, {
-      id: hash ? hash : '',
-      object: object,
+      datas: [
+        {
+          id: hash ? hash : '',
+          object: object,
+        },
+      ],
     });
     return {
       id: result.elementIds[0],
