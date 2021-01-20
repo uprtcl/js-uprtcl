@@ -48,13 +48,19 @@ export class CASRouter implements CASStore {
     return this.hashOnSource(object);
   }
 
+  getRemoteSource(remoteId: string) {
+    const casID = this.remoteToSourcesMap.get(remoteId);
+    if (!casID) throw new Error(`Not CASId registered for remote ${remoteId}`);
+    return this.getSource(casID);
+  }
+
   public async storeOnSource(object: ObjectOnRemote) {
-    const source = this.getSource(object.remote);
+    const source = this.getRemoteSource(object.remote);
     return source.storeEntity(object);
   }
 
   public async hashOnSource(object: ObjectOnRemote) {
-    const source = this.getSource(object.remote);
+    const source = this.getRemoteSource(object.remote);
     return source.hashEntity(object);
   }
 
@@ -70,9 +76,7 @@ export class CASRouter implements CASStore {
     return Array.from(this.sources.values());
   }
 
-  public getSource(remoteId: string): CASRemote {
-    const casID = this.remoteToSourcesMap.get(remoteId);
-    if (!casID) throw new Error(`Not CASId registered for remote ${remoteId}`);
+  public getSource(casID: string): CASRemote {
     const source = this.sources.get(casID);
     if (!source) throw new Error(`Source not found for casID ${casID}`);
     return source;

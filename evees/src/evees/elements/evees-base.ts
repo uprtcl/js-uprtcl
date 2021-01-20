@@ -6,6 +6,7 @@ import { eveesConnect } from '../../container/evees-connect.mixin';
 
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { EveesInfoConfig } from './evees-info-user-based';
+import { runInThisContext } from 'vm';
 
 export class EveesBaseElement<T extends object> extends eveesConnect(LitElement) {
   logger = new Logger('EVEES-BASE-ELEMENT');
@@ -38,6 +39,8 @@ export class EveesBaseElement<T extends object> extends eveesConnect(LitElement)
     this.editableRemotesIds = this.evees.config.editableRemotesIds
       ? this.evees.config.editableRemotesIds
       : [];
+
+    this.remote = await this.evees.getPerspectiveRemote(this.uref);
 
     this.loading = true;
     await this.load();
