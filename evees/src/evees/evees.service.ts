@@ -11,6 +11,7 @@ import { HasChildren } from 'src/patterns/behaviours/has-links';
 import { Signed } from 'src/patterns/interfaces/signable';
 import { PatternRecognizer } from 'src/patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
+import { getHome } from './default.perspectives';
 
 export interface CreateCommit {
   dataId: string;
@@ -399,6 +400,16 @@ export class Evees {
     const tempData = this.replaceEntityChildren(data, newLinks);
 
     return client.store.storeEntity({ object: tempData.object, remote });
+  }
+
+  async getHome(remoteId: string) {
+    const remote = this.getRemote(remoteId);
+    /** build the default home perspective  */
+    const home = await getHome(remote, remote.userId);
+    /** make sure the homePerspective entity is stored on the store */
+    await this.client.store.storeEntity({ object: home.object, remote: remote.id });
+
+    return home;
   }
 }
 

@@ -1,11 +1,13 @@
 import { Entity } from 'src/cas/interfaces/entity';
+import { Secured } from 'src/cas/utils/cid-hash';
+import { Signed } from 'src/patterns/interfaces/signable';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { PartialPerspective, Perspective } from './interfaces/types';
 
 export const snapDefaultPerspective = async (
   remote: RemoteEvees,
   perspective: PartialPerspective
-): Promise<Entity<Perspective>> => {
+): Promise<Secured<Perspective>> => {
   const creatorId = perspective.creatorId
     ? perspective.creatorId
     : remote.userId
@@ -34,17 +36,25 @@ export const snapDefaultPerspective = async (
     meta,
   };
 
-  const hash = await remote.store.hashEntity({ object, remote: remote.id });
+  const secured = {
+    payload: object,
+    proof: {
+      signature: '',
+      type: '',
+    },
+  };
+
+  const hash = await remote.store.hashEntity({ object: secured, remote: remote.id });
   return {
     id: hash,
-    object,
+    object: secured,
   };
 };
 
 export const getHome = async (
   remote: RemoteEvees,
   userId?: string
-): Promise<Entity<Perspective>> => {
+): Promise<Secured<Perspective>> => {
   const creatorId = userId === undefined ? 'root' : userId;
   const remoteHome: Perspective = {
     remote: remote.id,
@@ -54,9 +64,17 @@ export const getHome = async (
     context: `${creatorId}.home`,
   };
 
-  const hash = await remote.store.hashEntity({ object: remoteHome, remote: remote.id });
+  const secured = {
+    payload: remoteHome,
+    proof: {
+      signature: '',
+      type: '',
+    },
+  };
+
+  const hash = await remote.store.hashEntity({ object: secured, remote: remote.id });
   return {
     id: hash,
-    object: remoteHome,
+    object: secured,
   };
 };

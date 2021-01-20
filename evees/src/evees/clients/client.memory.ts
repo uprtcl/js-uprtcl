@@ -10,7 +10,6 @@ import {
 } from '../interfaces/client';
 
 export class ClientOnMemory implements Client {
-  private entities = new Map<string, Entity<any>>();
   private newPerspectives = new Map<string, NewPerspectiveData>();
   private updates = new Map<string, UpdateRequest>();
   private canUpdates = new Map<string, boolean>();
@@ -61,7 +60,8 @@ export class ClientOnMemory implements Client {
 
     return { details: result.details };
   }
-  createPerspectives(newPerspectives: NewPerspectiveData[]) {
+  async createPerspectives(newPerspectives: NewPerspectiveData[]) {
+    /** store perspective details */
     newPerspectives.forEach((newPerspective) => {
       this.newPerspectives.set(newPerspective.perspective.id, newPerspective);
     });
@@ -103,7 +103,6 @@ export class ClientOnMemory implements Client {
       updates: Array.from(this.updates.values()),
     });
 
-    this.entities.clear();
     this.newPerspectives.clear();
     this.updates.clear();
   }
@@ -117,60 +116,12 @@ export class ClientOnMemory implements Client {
     return this.base.canUpdate(userId, perspectiveId);
   }
 
-  async getEntities(hashes: string[]): Promise<EntityGetResult> {
-    const found: Entity<any>[] = [];
-    const notFound: string[] = [];
-
-    hashes.forEach((hash) => {
-      const entity = this.entities.get(hash);
-      if (entity) {
-        found.push(entity);
-      } else {
-        notFound.push(hash);
-      }
-    });
-
-    if (notFound.length === 0) {
-      return {
-        entities: found,
-      };
-    }
-
-    // ask the base client
-    const result = await this.store.getEntities(notFound);
-    const entities = found.concat(result.entities);
-
-    // cache locally
-    entities.forEach((entity) => {
-      this.cachedEntities.set(entity.id, entity);
-    });
-
-    return { entities };
-  }
-  async getEntity(uref: string): Promise<Entity<any>> {
-    const { entities } = await this.getEntities([uref]);
-    return entities[0];
-  }
-
   async diff(): Promise<EveesMutation> {
     return {
       newPerspectives: Array.from(this.newPerspectives.values()),
       updates: Array.from(this.updates.values()),
       deletedPerspectives: [],
     };
-  }
-
-  async storeEntities(objects: ObjectOnRemote[]) {
-    const entities = await this.hashEntities(objects);
-    entities.forEach((entity) => {
-      this.entities.set(entity.id, entity);
-    });
-    return entities;
-  }
-
-  storeEntity(object: ObjectOnRemote): Promise<string> {
-    const entities = this.storeEntities([object]);
-    return entities[0].id;
   }
 
   /** it gets the logged user perspectives (base layers are user aware) */

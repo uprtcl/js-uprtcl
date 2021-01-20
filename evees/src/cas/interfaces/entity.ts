@@ -1,10 +1,14 @@
 export interface Entity<T> {
   id: string;
   object: T;
-  remotes?: string[];
 }
 
 export interface ObjectOnRemote {
   object: object;
+  remote: string;
+}
+
+export interface EntityOnRemote {
+  entity: Entity<any>;
   remote: string;
 }
