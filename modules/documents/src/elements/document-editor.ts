@@ -188,9 +188,9 @@ export class DocumentEditor extends eveesConnect(LitElement) {
 
     if (entityType === PerspectiveType) {
       const remote = await this.evees.getPerspectiveRemote(entity.id);
-
       const { details } = await this.evees.client.getPerspective(uref);
       headId = details.headId;
+      remoteId = remote.id;
 
       if (!this.readOnly) {
         const editableRemote =
@@ -344,7 +344,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
     if (!this.doc) return;
     this.persistingAll = true;
 
-    if (this.doc.remote === undefined) throw Error('top element must have an remote');
+    if (this.doc.remote === undefined) throw Error('top element must have a remote');
 
     await this.preparePersistRec(this.doc, this.doc.remote, message);
     await this.persistRec(this.doc);
@@ -365,7 +365,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
     /** set the children with the children refs (which were created above) */
     const { object } = this.evees.behavior(
       node.draft,
-      'getChildrenLinks'
+      'replaceChildrenLinks'
     )(node.childrenNodes.map((node) => node.uref));
 
     /** update draft (not on local storage) */
@@ -508,18 +508,6 @@ export class DocumentEditor extends eveesConnect(LitElement) {
   }
 
   draftToPlaceholder(draft: any, parent?: DocNode, ix?: number): DocNode {
-    const hasChildren = this.evees.recognizer
-      .recognizeBehaviours(draft)
-      .find((b) => (b as HasChildren).getChildrenLinks);
-
-    const hasDocNodeLenses = this.evees.recognizer
-      .recognizeBehaviours(draft)
-      .find((b) => (b as HasDocNodeLenses).docNodeLenses);
-
-    if (!hasChildren) throw new Error(`hasChildren not found for object ${JSON.stringify(draft)}`);
-    if (!hasDocNodeLenses)
-      throw new Error(`hasDocNodeLenses not found for object ${JSON.stringify(draft)}`);
-
     const dataType = this.evees.recognizer.recognizeType(draft);
     const canConvertTo = this.customBlocks
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
@@ -633,8 +621,8 @@ export class DocumentEditor extends eveesConnect(LitElement) {
       child.level = node.level + 1;
     });
 
-    const { object } = this.evees.behavior(node.draft, 'replaceChildrenLinks')(newChildren);
-    this.setNodeDraft(node, object);
+    const newDraft = this.evees.behavior(node.draft, 'replaceChildrenLinks')(newChildren);
+    this.setNodeDraft(node, newDraft);
 
     return removed;
   }
@@ -1200,6 +1188,10 @@ export class DocumentEditor extends eveesConnect(LitElement) {
       `;
     }
 
+    const renderHere = node.draft
+      ? this.evees.behavior(node.draft, 'docNodeLenses').length > 0
+      : false;
+
     return html`
       <div
         style=${styleMap({
@@ -1207,9 +1199,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
         })}
         class="doc-node-container"
       >
-        ${this.evees.behavior(node.draft, 'docNodeLenses').length > 0
-          ? this.renderHere(node)
-          : this.renderWithCortex(node)}
+        ${renderHere ? this.renderHere(node) : this.renderWithCortex(node)}
       </div>
     `;
   }

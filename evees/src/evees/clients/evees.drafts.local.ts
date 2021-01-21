@@ -13,7 +13,6 @@ export class EveesDraftsLocal implements EveesDrafts {
   }
 
   async setDraft(objectId: string, draft: any): Promise<void> {
-    delete draft['id'];
     await this.eveesDB.drafts.put(draft, objectId);
   }
 }

@@ -108,6 +108,9 @@ export class Evees {
   behavior(object: object, behaviorName: string) {
     const behaviors = this.recognizer.recognizeBehaviours(object);
     const behavior = behaviors.find((b) => b[behaviorName]);
+    if (!behavior) throw new Error(`No behaviors found for object ${JSON.stringify(object)}`);
+    if (!behavior[behaviorName])
+      throw new Error(`Behavior ${behaviorName} not found for object ${JSON.stringify(object)}`);
     return behavior[behaviorName](object);
   }
 
@@ -155,14 +158,9 @@ export class Evees {
     await this.client.updatePerspective({ perspectiveId, newHeadId: head.id });
   }
 
-  async getChildren(recognizer: PatternRecognizer, uref: string): Promise<string[]> {
+  async getPerspectiveChildren(uref: string): Promise<string[]> {
     const data = await this.getData(uref);
-
-    const hasChildren: HasChildren = recognizer
-      .recognizeBehaviours(data)
-      .find((b) => (b as HasChildren).getChildrenLinks);
-
-    return hasChildren.getChildrenLinks(data);
+    return this.behavior(data.object, 'getChildrenLinks');
   }
 
   async spliceChildren(
