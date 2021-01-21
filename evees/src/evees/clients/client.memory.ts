@@ -60,34 +60,34 @@ export class ClientOnMemory implements Client {
 
     return { details: result.details };
   }
-  async createPerspectives(newPerspectives: NewPerspectiveData[]) {
+  async createPerspectives(newPerspectives: NewPerspectiveData[]): Promise<void> {
     /** store perspective details */
     newPerspectives.forEach((newPerspective) => {
       this.newPerspectives.set(newPerspective.perspective.id, newPerspective);
     });
   }
 
-  updatePerspectives(updates: UpdateRequest[]) {
+  async updatePerspectives(updates: UpdateRequest[]): Promise<void> {
     updates.forEach((update) => {
       this.updates.set(update.perspectiveId, update);
     });
   }
 
-  async update(mutation: EveesMutationCreate) {
+  async update(mutation: EveesMutationCreate): Promise<void> {
     const create = mutation.newPerspectives
       ? this.createPerspectives(mutation.newPerspectives)
       : Promise.resolve();
     const update = mutation.updates ? this.updatePerspectives(mutation.updates) : Promise.resolve();
-    return Promise.all([create, update]);
+    await Promise.all([create, update]);
   }
 
-  newPerspective(newPerspective: NewPerspectiveData) {
+  newPerspective(newPerspective: NewPerspectiveData): Promise<void> {
     return this.update({ newPerspectives: [newPerspective] });
   }
-  async deletePerspective(perspectiveId: string) {
+  async deletePerspective(perspectiveId: string): Promise<void> {
     await this.update({ deletedPerspectives: [perspectiveId] });
   }
-  updatePerspective(update: UpdateRequest) {
+  updatePerspective(update: UpdateRequest): Promise<void> {
     return this.update({ updates: [update] });
   }
 

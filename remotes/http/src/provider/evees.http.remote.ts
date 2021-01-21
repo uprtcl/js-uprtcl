@@ -95,9 +95,13 @@ export class EveesHttp implements RemoteEvees {
 
   async newPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
     await this.connection.post('/persp', {
-      perspective: perspectiveData.perspective,
-      details: perspectiveData.details,
-      parentId: perspectiveData.links ? perspectiveData.links.parentId : undefined,
+      perspectives: [
+        {
+          perspective: perspectiveData.perspective,
+          details: perspectiveData.details,
+          parentId: perspectiveData.links ? perspectiveData.links.parentId : undefined,
+        },
+      ],
     });
   }
 
@@ -127,6 +131,7 @@ export class EveesHttp implements RemoteEvees {
     } catch (e) {
       responseObj = {
         headId: undefined,
+        canUpdate: false,
       };
     }
 

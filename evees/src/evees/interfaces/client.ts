@@ -51,9 +51,9 @@ export interface Client {
   update(mutation: EveesMutationCreate);
 
   /** convenient methods to edit a single perspective at a time */
-  newPerspective(newPerspective: NewPerspectiveData);
-  deletePerspective(perspectiveId: string);
-  updatePerspective(update: UpdateRequest);
+  newPerspective(newPerspective: NewPerspectiveData): Promise<void>;
+  deletePerspective(perspectiveId: string): Promise<void>;
+  updatePerspective(update: UpdateRequest): Promise<void>;
 
   /** get all the changes relative to the underlying client(s) */
   diff(): Promise<EveesMutation>;

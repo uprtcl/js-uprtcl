@@ -29,7 +29,7 @@ export class EveesBaseElement<T extends object> extends eveesConnect(LitElement)
   @internalProperty()
   data: Entity<T> | undefined;
 
-  @internalProperty()
+  @property()
   editableActual: boolean = false;
 
   protected remote!: RemoteEvees;
@@ -58,6 +58,10 @@ export class EveesBaseElement<T extends object> extends eveesConnect(LitElement)
         ? this.editableRemotesIds.includes(this.remote.id) && canUpdate
         : canUpdate;
 
-    this.data = await this.evees.getPerspectiveData(this.uref);
+    try {
+      this.data = await this.evees.getPerspectiveData(this.uref);
+    } catch (e) {
+      this.data = undefined;
+    }
   }
 }

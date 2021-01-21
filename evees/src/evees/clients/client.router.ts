@@ -25,13 +25,13 @@ export class RemoteRouter implements Client {
     return remote;
   }
 
-  newPerspective(newPerspective: NewPerspectiveData) {
+  async newPerspective(newPerspective: NewPerspectiveData) {
     throw new Error('Method not implemented.');
   }
-  deletePerspective(perspectiveId: string) {
+  async deletePerspective(perspectiveId: string) {
     throw new Error('Method not implemented.');
   }
-  updatePerspective(update: UpdateRequest) {
+  async updatePerspective(update: UpdateRequest) {
     throw new Error('Method not implemented.');
   }
 
@@ -62,51 +62,63 @@ export class RemoteRouter implements Client {
     const mutationPerRemote = new Map<string, EveesMutation>();
 
     const fillDeleted = mutation.deletedPerspectives
-      ? mutation.deletedPerspectives.map(async (deletedPerspective) => {
-          const remote = await this.getPerspectiveRemote(deletedPerspective);
-          let mutation = mutationPerRemote.get(remote.id);
-          if (!mutation) {
-            mutation = {
-              deletedPerspectives: [],
-              newPerspectives: [],
-              updates: [],
-            };
-            mutationPerRemote.set(remote.id, mutation);
-          }
-          mutation.deletedPerspectives.push(deletedPerspective);
-        })
+      ? Promise.all(
+          mutation.deletedPerspectives.map(
+            async (deletedPerspective): Promise<void> => {
+              const remote = await this.getPerspectiveRemote(deletedPerspective);
+              let mutation = mutationPerRemote.get(remote.id);
+              if (!mutation) {
+                mutation = {
+                  deletedPerspectives: [],
+                  newPerspectives: [],
+                  updates: [],
+                };
+                mutationPerRemote.set(remote.id, mutation);
+              }
+              mutation.deletedPerspectives.push(deletedPerspective);
+            }
+          )
+        )
       : Promise.resolve([]);
 
     const fillNew = mutation.newPerspectives
-      ? mutation.newPerspectives.map(async (newPerspective) => {
-          const remote = await this.getPerspectiveRemote(newPerspective.perspective.id);
-          let mutation = mutationPerRemote.get(remote.id);
-          if (!mutation) {
-            mutation = {
-              deletedPerspectives: [],
-              newPerspectives: [],
-              updates: [],
-            };
-            mutationPerRemote.set(remote.id, mutation);
-          }
-          mutation.newPerspectives.push(newPerspective);
-        })
+      ? Promise.all(
+          mutation.newPerspectives.map(
+            async (newPerspective): Promise<void> => {
+              const remote = await this.getPerspectiveRemote(newPerspective.perspective.id);
+              let mutation = mutationPerRemote.get(remote.id);
+              if (!mutation) {
+                mutation = {
+                  deletedPerspectives: [],
+                  newPerspectives: [],
+                  updates: [],
+                };
+                mutationPerRemote.set(remote.id, mutation);
+              }
+              mutation.newPerspectives.push(newPerspective);
+            }
+          )
+        )
       : Promise.resolve([]);
 
     const fillUpdated = mutation.updates
-      ? mutation.updates.map(async (update) => {
-          const remote = await this.getPerspectiveRemote(update.perspectiveId);
-          let mutation = mutationPerRemote.get(remote.id);
-          if (!mutation) {
-            mutation = {
-              deletedPerspectives: [],
-              newPerspectives: [],
-              updates: [],
-            };
-            mutationPerRemote.set(remote.id, mutation);
-          }
-          mutation.updates.push(update);
-        })
+      ? Promise.all(
+          mutation.updates.map(
+            async (update): Promise<void> => {
+              const remote = await this.getPerspectiveRemote(update.perspectiveId);
+              let mutation = mutationPerRemote.get(remote.id);
+              if (!mutation) {
+                mutation = {
+                  deletedPerspectives: [],
+                  newPerspectives: [],
+                  updates: [],
+                };
+                mutationPerRemote.set(remote.id, mutation);
+              }
+              mutation.updates.push(update);
+            }
+          )
+        )
       : Promise.resolve([]);
 
     await Promise.all([fillDeleted, fillNew, fillUpdated]);
