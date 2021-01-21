@@ -1,6 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { Entity, eveesConnect, Logger } from '@uprtcl/evees';
+import { eveesConnect, Logger } from '@uprtcl/evees';
 import { Client } from '@uprtcl/evees';
 
 import { TextNode } from '../types';
@@ -37,18 +37,10 @@ export class TextNodeDiff extends eveesConnect(LitElement) {
     return html`
       <div class="page-edited-title">Updated</div>
       <div class="document-container old-page">
-        <documents-editor
-          .client=${this.client}
-          uref=${this.oldData.id}
-          read-only
-        ></documents-editor>
+        <documents-editor .client=${this.client} uref="" read-only></documents-editor>
       </div>
       <div class="document-container new-page">
-        <documents-editor
-          .client=${this.client}
-          uref=${this.newData.id}
-          read-only
-        ></documents-editor>
+        <documents-editor .client=${this.client} uref="" read-only></documents-editor>
       </div>
     `;
   }

@@ -35,23 +35,8 @@ export class HttpStore implements CASRemote {
     return this.connection.get<Entity<any>>(`/get/${hash}`);
   }
 
-  async create(object: object, hash?: string): Promise<Entity<any>> {
-    this.logger.log('Creating Entity', { object, hash });
-    const result = await this.connection.post(`/data`, {
-      datas: [
-        {
-          id: hash ? hash : '',
-          object: object,
-        },
-      ],
-    });
-    return {
-      id: result.elementIds[0],
-      object,
-    };
-  }
-
   async hash(object: object) {
+    /** optimistically hash based on the CidConfig without asking the server */
     const id = await hashObject(object, httpCidConfig);
     return {
       id,
@@ -59,8 +44,20 @@ export class HttpStore implements CASRemote {
     };
   }
 
-  storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
-    return Promise.all(objects.map((object) => this.create(object.object)));
+  async storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+    throw new Error('Use storeObjects on CASRemotes');
+  }
+
+  async storeObjects(objects: object[]): Promise<Entity<any>[]> {
+    const result: any = await this.connection.post(`/data`, {
+      datas: objects.map((object) => {
+        return {
+          id: '',
+          object,
+        };
+      }),
+    });
+    return result.entities;
   }
 
   hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {

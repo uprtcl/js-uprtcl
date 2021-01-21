@@ -18,20 +18,38 @@ export class CASRouter implements CASStore {
     };
   }
 
-  async flush(): Promise<void> {}
+  async flush(): Promise<void> {
+    throw new Error('Router dont cache');
+  }
+
   async getEntity(uref: string): Promise<Entity<any>> {
     const { entities } = await this.getEntities([uref]);
     return entities[0];
   }
 
-  storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
-    return Promise.all(
-      objects.map(async (o) => {
-        const hash = await this.storeEntity(o);
-        return { id: hash, object: o };
+  async storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+    const objectsPerSource = new Map<string, object[]>();
+
+    objects.forEach((objectOnRemote) => {
+      const remote = objectOnRemote.remote;
+      let current = objectsPerSource.get(remote);
+      if (!current) {
+        current = [];
+      }
+      current.push(objectOnRemote.object);
+      objectsPerSource.set(remote, current);
+    });
+
+    const entitiesPerRemote = await Promise.all(
+      Array.from(objectsPerSource.entries()).map(async ([remote, objects]) => {
+        const store = this.getRemoteSource(remote);
+        return store.storeObjects(objects);
       })
     );
+
+    return Array.prototype.concat([], entitiesPerRemote);
   }
+
   hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
     return Promise.all(
       objects.map(async (o) => {
@@ -41,9 +59,11 @@ export class CASRouter implements CASStore {
     );
   }
 
-  storeEntity(object: ObjectOnRemote): Promise<string> {
-    return this.storeOnSource(object);
+  async storeEntity(object: ObjectOnRemote): Promise<string> {
+    const entities = await this.storeEntities([object]);
+    return entities[0].id;
   }
+
   hashEntity(object: ObjectOnRemote): Promise<string> {
     return this.hashOnSource(object);
   }
@@ -52,11 +72,6 @@ export class CASRouter implements CASStore {
     const casID = this.remoteToSourcesMap.get(remoteId);
     if (!casID) throw new Error(`Not CASId registered for remote ${remoteId}`);
     return this.getSource(casID);
-  }
-
-  public async storeOnSource(object: ObjectOnRemote) {
-    const source = this.getRemoteSource(object.remote);
-    return source.storeEntity(object);
   }
 
   public async hashOnSource(object: ObjectOnRemote) {

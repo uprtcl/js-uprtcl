@@ -4,12 +4,12 @@ import { Client } from './interfaces/client';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
-import { RecursiveContextMergeStrategy } from 'src/evees/merge/recursive-context.merge-strategy';
+import { RecursiveContextMergeStrategy } from '../evees/merge/recursive-context.merge-strategy';
 import { EveesConfig, Commit, Perspective } from './interfaces/types';
-import { Entity } from 'src/cas/interfaces/entity';
-import { HasChildren } from 'src/patterns/behaviours/has-links';
-import { Signed } from 'src/patterns/interfaces/signable';
-import { PatternRecognizer } from 'src/patterns/recognizer/pattern-recognizer';
+import { Entity } from '../cas/interfaces/entity';
+import { HasChildren } from '../patterns/behaviours/has-links';
+import { Signed } from '../patterns/interfaces/signable';
+import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { getHome } from './default.perspectives';
 
@@ -193,10 +193,10 @@ export class Evees {
 
     /** updated array with new elements */
     const removed = children.splice(index, count, ...newChildren);
-    const newEntity = childrentPattern.replaceChildrenLinks(object)(children);
+    const newObject = childrentPattern.replaceChildrenLinks(object)(children);
 
     return {
-      entity: newEntity,
+      object: newObject,
       removed,
     };
   }
@@ -204,12 +204,12 @@ export class Evees {
   async moveChild(object: any, fromIndex: number, toIndex: number): Promise<Entity<any>> {
     const { removed } = await this.spliceChildren(object, [], fromIndex, 1);
     const result = await this.spliceChildren(object, removed as string[], toIndex, 0);
-    return result.entity;
+    return result.object;
   }
 
   async removeChild(object: any, index: number): Promise<Entity<any>> {
     const result = await this.spliceChildren(object, [], index, 1);
-    return result.entity;
+    return result.object;
   }
 
   async createCommit(

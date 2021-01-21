@@ -1,6 +1,6 @@
+import { HasChildren } from '../../patterns/behaviours/has-links';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import { Evees } from '../evees.service';
-import { HasChildren } from 'src/patterns/behaviours/has-links';
 
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   perspectivesByContext:

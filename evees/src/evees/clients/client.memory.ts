@@ -62,9 +62,15 @@ export class ClientOnMemory implements Client {
   }
   async createPerspectives(newPerspectives: NewPerspectiveData[]): Promise<void> {
     /** store perspective details */
-    newPerspectives.forEach((newPerspective) => {
-      this.newPerspectives.set(newPerspective.perspective.id, newPerspective);
-    });
+    await Promise.all(
+      newPerspectives.map(async (newPerspective) => {
+        await this.store.storeEntity({
+          object: newPerspective.perspective.object,
+          remote: newPerspective.perspective.object.payload.remote,
+        });
+        this.newPerspectives.set(newPerspective.perspective.id, newPerspective);
+      })
+    );
   }
 
   async updatePerspectives(updates: UpdateRequest[]): Promise<void> {

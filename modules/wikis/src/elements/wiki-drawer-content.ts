@@ -176,8 +176,14 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
 
     index = index === undefined ? wikiObject.pages.length : index;
 
-    const newWikiObject = await this.evees.spliceChildren(wikiObject, [newPage], index, 0);
+    const { object: newWikiObject } = await this.evees.spliceChildren(
+      wikiObject,
+      [newPage],
+      index,
+      0
+    );
     await this.evees.updatePerspectiveData(this.uref, newWikiObject);
+    await this.evees.client.flush();
 
     this.selectPage(index);
     this.creatingNewPage = false;

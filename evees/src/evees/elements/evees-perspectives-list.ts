@@ -1,8 +1,8 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { eveeColor } from './support';
-import { eveesConnect } from 'src/container/evees-connect.mixin';
-import { Logger } from 'src/utils/logger';
+import { eveesConnect } from '../../container/evees-connect.mixin';
+import { Logger } from '../../utils/logger';
 
 interface PerspectiveData {
   id: string;

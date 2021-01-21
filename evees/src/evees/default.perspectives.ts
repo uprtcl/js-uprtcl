@@ -1,6 +1,4 @@
-import { Entity } from 'src/cas/interfaces/entity';
-import { Secured } from 'src/cas/utils/cid-hash';
-import { Signed } from 'src/patterns/interfaces/signable';
+import { Secured } from '../cas/utils/cid-hash';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { PartialPerspective, Perspective } from './interfaces/types';
 
@@ -25,7 +23,6 @@ export const snapDefaultPerspective = async (
   });
 
   const context = perspective.context !== undefined ? perspective.context : defaultContext;
-  const meta = perspective.meta;
 
   const object: Perspective = {
     creatorId: creatorId,
@@ -33,8 +30,11 @@ export const snapDefaultPerspective = async (
     path,
     timestamp,
     context,
-    meta,
   };
+
+  if (perspective.meta) {
+    object.meta = perspective.meta;
+  }
 
   const secured = {
     payload: object,

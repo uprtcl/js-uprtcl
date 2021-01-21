@@ -113,8 +113,15 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async updatePerspective(update: UpdateRequest): Promise<void> {
-    await this.connection.put(`/persp/${update.perspectiveId}/details`, {
-      headId: update.newHeadId,
+    await this.connection.put(`/persp/details`, {
+      details: [
+        {
+          id: update.perspectiveId,
+          details: {
+            headId: update.newHeadId,
+          },
+        },
+      ],
     });
   }
 
