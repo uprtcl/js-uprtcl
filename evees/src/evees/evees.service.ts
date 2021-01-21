@@ -1,5 +1,5 @@
 import { signObject } from '../cas/utils/signed';
-import { hashObject, Secured } from '../cas/utils/cid-hash';
+import { Secured } from '../cas/utils/cid-hash';
 import { Client } from './interfaces/client';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
@@ -111,7 +111,7 @@ export class Evees {
     return behavior[behaviorName](object);
   }
 
-  async createEvee(object: any, remoteId: string, parentId?: string) {
+  async createEvee(object: any, remoteId: string, parentId?: string): Promise<string> {
     const dataId = await this.client.store.storeEntity({
       object,
       remote: remoteId,
@@ -125,7 +125,7 @@ export class Evees {
     );
     const remote = await this.getRemote(remoteId);
     const perspective = await remote.snapPerspective({});
-    return this.client.newPerspective({
+    await this.client.newPerspective({
       perspective,
       details: {
         headId: head.id,
@@ -134,10 +134,11 @@ export class Evees {
         parentId,
       },
     });
+    return perspective.id;
   }
 
   async updatePerspectiveData(perspectiveId: string, newData: any, onHeadId?: string) {
-    const remote = await this.getRemote(perspectiveId);
+    const remote = await this.getPerspectiveRemote(perspectiveId);
     const dataId = await this.client.store.storeEntity({ object: newData, remote: remote.id });
     if (!onHeadId) {
       const { details } = await this.client.getPerspective(perspectiveId);
@@ -173,7 +174,7 @@ export class Evees {
   ) {
     const getNewChildren = newElements.map((page) => {
       if (typeof page !== 'string') {
-        if (!remoteId) throw new Error('remote needed to create the evees');
+        remoteId = remoteId || this.remotes[0].id;
         return this.createEvee(page, remoteId);
       } else {
         return Promise.resolve(page);
@@ -183,18 +184,16 @@ export class Evees {
     const newChildren = await Promise.all(getNewChildren);
 
     /** get children pattern */
-    const data = entityStub(object);
-
     const childrentPattern: HasChildren = this.recognizer
-      .recognizeBehaviours(data)
+      .recognizeBehaviours(object)
       .find((b) => (b as HasChildren).getChildrenLinks);
 
     /** get array with current children */
-    const children = childrentPattern.getChildrenLinks(data);
+    const children = childrentPattern.getChildrenLinks(object);
 
     /** updated array with new elements */
     const removed = children.splice(index, count, ...newChildren);
-    const newEntity = childrentPattern.replaceChildrenLinks(data)(children);
+    const newEntity = childrentPattern.replaceChildrenLinks(object)(children);
 
     return {
       entity: newEntity,
@@ -458,10 +457,3 @@ export class FindAncestor {
     return seeParents.includes(true);
   }
 }
-
-const entityStub = (object: any): Entity<any> => {
-  return {
-    id: '',
-    object,
-  };
-};
