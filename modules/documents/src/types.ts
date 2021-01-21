@@ -32,8 +32,6 @@ export interface DocNode {
   parent?: DocNode;
   ix?: number; // ix on parent
   focused: boolean;
-  hasDocNodeLenses: HasDocNodeLenses;
-  hasChildren: HasChildren;
   canConvertTo: string[];
   draggingOver?: boolean;
   draggingOverTimeout?: any;

@@ -156,7 +156,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
 
     const node = await this.loadNode(uref, parent, ix);
 
-    const loadChildren = node.hasChildren.getChildrenLinks({ id: '', object: node.draft }).map(
+    const loadChildren = this.evees.behavior(node.draft, 'getChildrenLinks').map(
       async (child, ix): Promise<DocNode> => {
         return child !== undefined && child !== ''
           ? await this.loadNodeRec(child, ix, node)
@@ -202,7 +202,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
         editable = false;
       }
 
-      const head = await this.evees.client.store.getEntity(uref);
+      const head = headId ? await this.evees.client.store.getEntity(headId) : undefined;
       dataId = head ? head.object.payload.dataId : undefined;
     } else {
       if (entityType === CommitType) {
@@ -231,16 +231,6 @@ export class DocumentEditor extends eveesConnect(LitElement) {
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];
 
-    const hasChildren: HasChildren = this.evees.recognizer
-      .recognizeBehaviours(data)
-      .find((b) => (b as HasChildren).getChildrenLinks);
-    const hasDocNodeLenses: HasDocNodeLenses = this.evees.recognizer
-      .recognizeBehaviours(data)
-      .find((b) => (b as HasDocNodeLenses).docNodeLenses);
-
-    if (!hasChildren) throw Error('hasChildren undefined');
-    if (!hasDocNodeLenses) throw Error('hasDocNodeLenses undefined');
-
     /** disable editable */
     if (this.readOnly) {
       editable = false;
@@ -257,7 +247,6 @@ export class DocumentEditor extends eveesConnect(LitElement) {
       isPlaceholder: false,
       type: entityType,
       ix,
-      hasChildren,
       childrenNodes: [],
       data,
       draft: data ? data.object : undefined,
@@ -265,7 +254,6 @@ export class DocumentEditor extends eveesConnect(LitElement) {
       coord,
       level,
       headId,
-      hasDocNodeLenses,
       editable,
       remote: remoteId,
       context,
@@ -375,10 +363,10 @@ export class DocumentEditor extends eveesConnect(LitElement) {
     await Promise.all(prepareChildren);
 
     /** set the children with the children refs (which were created above) */
-    const { object } = node.hasChildren.replaceChildrenLinks({
-      id: '',
-      object: node.draft,
-    })(node.childrenNodes.map((node) => node.uref));
+    const { object } = this.evees.behavior(
+      node.draft,
+      'getChildrenLinks'
+    )(node.childrenNodes.map((node) => node.uref));
 
     /** update draft (not on local storage) */
     node.draft = object;
@@ -557,8 +545,6 @@ export class DocumentEditor extends eveesConnect(LitElement) {
       coord,
       level,
       childrenNodes: [],
-      hasChildren,
-      hasDocNodeLenses,
       editable: true,
       focused: false,
       timestamp: Date.now(),
@@ -612,10 +598,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
   ): Promise<DocNode[]> {
     if (LOGINFO) this.logger.log('spliceChildren()', { node, elements, index, count });
 
-    const currentChildren = node.hasChildren.getChildrenLinks({
-      id: '',
-      object: node.draft,
-    });
+    const currentChildren: string[] = this.evees.behavior(node.draft, 'getChildrenLinks');
     index = index !== undefined ? index : currentChildren.length;
 
     /** create objects if elements is not an id */
@@ -650,10 +633,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
       child.level = node.level + 1;
     });
 
-    const { object } = node.hasChildren.replaceChildrenLinks({
-      id: '',
-      object: node.draft,
-    })(newChildren);
+    const { object } = this.evees.behavior(node.draft, 'replaceChildrenLinks')(newChildren);
     this.setNodeDraft(node, object);
 
     return removed;
@@ -902,7 +882,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
     /** update all the node properties */
     node = this.draftToPlaceholder(newObject, node.parent, node.ix);
 
-    const loadChildren = node.hasChildren.getChildrenLinks({ id: '', object: node.draft }).map(
+    const loadChildren = this.evees.behavior(node.draft, 'getChildrenLinks').map(
       async (child, ix): Promise<DocNode> => {
         return child !== undefined && child !== ''
           ? await this.loadNodeRec(child, ix, node)
@@ -1118,7 +1098,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
     if (LOGINFO) this.logger.log('renderTopRow()', { node });
     /** the uref to which the parent is pointing at */
 
-    const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
+    const nodeLense = this.evees.behavior(node.draft, 'docNodeLenses')[0];
     const hasIcon = this.hasChanges(node);
     const icon = node.uref === '' ? icons.add_box : icons.edit;
 
@@ -1227,7 +1207,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
         })}
         class="doc-node-container"
       >
-        ${node.hasDocNodeLenses.docNodeLenses().length > 0
+        ${this.evees.behavior(node.draft, 'docNodeLenses').length > 0
           ? this.renderHere(node)
           : this.renderWithCortex(node)}
       </div>
