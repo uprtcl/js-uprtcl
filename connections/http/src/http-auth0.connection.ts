@@ -1,7 +1,7 @@
 import { Auth0Client, Auth0ClientOptions } from '@auth0/auth0-spa-js';
 
 import { Logger } from '@uprtcl/evees';
-import { HttpConnection } from './http.connection';
+import { GetResult, HttpConnection } from './http.connection';
 import { HttpConnectionLogged } from './connection.logged';
 
 export class HttpAuth0Connection extends HttpConnection implements HttpConnectionLogged {
@@ -54,7 +54,7 @@ export class HttpAuth0Connection extends HttpConnection implements HttpConnectio
 
   async isLogged() {
     if (super.userId === undefined) return false;
-    return this.auth0.isAuthenticated();
+    return this.get<any>('/user/isAuthorized');
   }
 
   async logout(): Promise<void> {
@@ -116,9 +116,9 @@ export class HttpAuth0Connection extends HttpConnection implements HttpConnectio
     const shouldParseResult = query.includes('code=') && query.includes('state=');
 
     if (shouldParseResult) {
-      this.parseLoginResult();
+      await this.parseLoginResult();
     } else {
-      this.makeLoginRedirect();
+      await this.makeLoginRedirect();
     }
   }
 
