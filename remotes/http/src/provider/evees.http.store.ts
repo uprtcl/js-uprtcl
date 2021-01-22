@@ -44,6 +44,10 @@ export class HttpStore implements CASRemote {
     };
   }
 
+  cacheEntities(entities: Entity<any>[]): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   async storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
     throw new Error('Use storeObjects on CASRemotes');
   }

@@ -15,7 +15,6 @@ export class ClientOnMemory implements Client {
   private canUpdates = new Map<string, boolean>();
   private userPerspectives = new Map<string, string[]>();
 
-  private cachedEntities = new Map<string, Entity<any>>();
   private cachedPerspectives = new Map<string, PerspectiveDetails>();
 
   constructor(protected base: Client, public store: CASStore, mutation?: EveesMutation) {
@@ -29,6 +28,11 @@ export class ClientOnMemory implements Client {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
+    const cachedPerspective = this.cachedPerspectives.get(perspectiveId);
+    if (cachedPerspective) {
+      return { details: cachedPerspective };
+    }
+
     const newPerspective = this.newPerspectives.get(perspectiveId);
     if (newPerspective) {
       return {
@@ -49,9 +53,8 @@ export class ClientOnMemory implements Client {
     this.cachedPerspectives.set(perspectiveId, result.details);
 
     if (result.slice) {
-      result.slice.entities.forEach((entity) => {
-        this.cachedEntities.set(entity.id, entity);
-      });
+      /** entities are sent to the store to be cached there */
+      await this.store.cacheEntities(result.slice.entities);
 
       result.slice.perspectives.forEach((perspectiveAndDetails) => {
         this.cachedPerspectives.set(perspectiveAndDetails.id, perspectiveAndDetails.details);
@@ -76,6 +79,13 @@ export class ClientOnMemory implements Client {
   async updatePerspectives(updates: UpdateRequest[]): Promise<void> {
     updates.forEach((update) => {
       this.updates.set(update.perspectiveId, update);
+      const cachedDetails = this.cachedPerspectives.get(update.perspectiveId);
+      if (cachedDetails) {
+        this.cachedPerspectives.set(update.perspectiveId, {
+          ...cachedDetails,
+          headId: update.newHeadId,
+        });
+      }
     });
   }
 

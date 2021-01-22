@@ -9,6 +9,9 @@ export interface EntityGetResult {
 /**
  */
 export interface CASStore {
+  /** an external entry point to cached entities */
+  cacheEntities(entities: Entity<any>[]): Promise<void>;
+
   /** store hashed objects
    * must include the remote in which the entities should be ultimately stored */
   storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]>;

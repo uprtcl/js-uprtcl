@@ -11,6 +11,10 @@ export class CASRouter implements CASStore {
     protected remoteToSourcesMap: Map<string, string>
   ) {}
 
+  cacheEntities(entities: Entity<any>[]): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   async getEntities(hashes: string[]): Promise<EntityGetResult> {
     const entities = await this.tryGetFromSources(hashes);
     return {

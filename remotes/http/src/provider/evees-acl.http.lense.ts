@@ -9,6 +9,7 @@ import {
   PermissionType,
   UserPermissions,
 } from './types';
+import { EveesHttp } from './evees.http.remote';
 
 export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
   @property()
@@ -27,7 +28,7 @@ export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
   currentUser!: string;
 
   delegatedTitle: string = '';
-  remote!: RemoteEvees;
+  remote!: EveesHttp;
 
   userPermissions!: Object[];
 
@@ -41,7 +42,7 @@ export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
   async firstUpdated() {
     if (!this.isConnected) return;
 
-    this.remote = await this.evees.getRemote(this.uref);
+    this.remote = (await this.evees.getRemote(this.uref)) as EveesHttp;
 
     const isLoggedIn = this.remote.isLogged();
 

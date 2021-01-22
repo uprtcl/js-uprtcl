@@ -13,6 +13,10 @@ export class CASOnMemory implements CASStore {
    */
   constructor(protected base: CASStore) {}
 
+  async cacheEntities(entities: Entity<any>[]): Promise<void> {
+    entities.forEach((entity) => this.cachedEntities.set(entity.id, entity));
+  }
+
   async hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
     return this.base.hashEntities(objects);
   }

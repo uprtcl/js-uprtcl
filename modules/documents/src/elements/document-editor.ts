@@ -349,6 +349,8 @@ export class DocumentEditor extends eveesConnect(LitElement) {
     await this.preparePersistRec(this.doc, this.doc.remote, message);
     await this.persistRec(this.doc);
 
+    await this.evees.client.flush();
+
     /** reload doc from backend */
     await this.loadDoc();
     this.requestUpdate();
