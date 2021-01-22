@@ -3,7 +3,7 @@ import { styles } from './styles.css';
 
 export class UprtclCopyToClipboard extends LitElement {
   @property({ type: String })
-  icon: string = 'content_copy';
+  icon = 'content_copy';
 
   @property({ type: String })
   text!: string;

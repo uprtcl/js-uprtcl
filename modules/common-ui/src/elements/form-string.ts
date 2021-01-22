@@ -2,19 +2,19 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 export class UprtclFormString extends LitElement {
   @property({ type: String, attribute: 'value' })
-  fieldValue: string = '';
+  fieldValue = '';
 
   @property({ type: String, attribute: 'label' })
-  fieldLabel: string = 'value';
+  fieldLabel = 'value';
 
   @property({ type: String, attribute: 'cancel-icon' })
-  cancelIcon: string = 'clear';
+  cancelIcon = 'clear';
 
   @property({ type: String, attribute: 'accept-icon' })
-  acceptIcon: string = 'done';
+  acceptIcon = 'done';
 
   @property({ type: Boolean })
-  loading: boolean = false;
+  loading = false;
 
   @query('#text-input')
   newTitleEl!: any;
@@ -98,7 +98,7 @@ export class UprtclFormString extends LitElement {
         align-items: center;
       }
       .actions uprtcl-button {
-        width: 180px;
+        /* width: 180px; */
       }
     `;
   }

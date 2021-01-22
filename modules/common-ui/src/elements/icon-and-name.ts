@@ -8,19 +8,19 @@ export class UprtclIconAndName extends LitElement {
   iconSource!: string;
 
   @property({ type: Boolean, attribute: 'show-name' })
-  showName: boolean = false;
+  showName = false;
 
   render() {
     return html`
       <div class="icon-container">
         <slot>
           ${this.iconSource
-            ? html`<img src=${this.iconSource} />`
+            ? html`<img class="avatar-image" src=${this.iconSource} />`
             : html`<div class="icon-placeholder"></div>`}
         </slot>
       </div>
       ${this.showName
-        ? html`<div class="name-container">${this.name}</div>`
+        ? html`<div class="name-container">${this.name ? this.name : 'Smute'}</div>`
         : ''}
     `;
   }
@@ -33,11 +33,12 @@ export class UprtclIconAndName extends LitElement {
           align-items: center;
         }
         .icon-container {
-          height: 28px;
-          flex: 0 0 28px;
-          margin-right: 6px;
-          border-radius: 14px;
+          margin: 5px;
           overflow: hidden;
+          width: 40px;
+          height: 40px;
+          border-radius: var(--border-radius-complete);
+
         }
         .icon-placeholder {
           background-color: #cccccc;

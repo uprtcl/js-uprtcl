@@ -2,10 +2,10 @@ import { LitElement, html, css, property, query } from 'lit-element';
 
 export class UprtclIndicator extends LitElement {
   @property({ type: String })
-  label: string = '';
+  label = '';
 
   @property({ type: String })
-  value: string = '';
+  value = '';
 
   render() {
     return html`

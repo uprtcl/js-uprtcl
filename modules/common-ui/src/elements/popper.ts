@@ -2,19 +2,19 @@ import { LitElement, property, html, css } from 'lit-element';
 
 export class UprtclPopper extends LitElement {
   @property({ type: String })
-  icon: string = 'more_vert';
+  icon = 'more_vert';
 
   @property({ type: String })
-  position: string = 'bottom-right';
+  position = 'bottom-right';
 
   @property({ type: Boolean, attribute: 'disable-dropdown' })
-  disableDropdown: boolean = false;
+  disableDropdown = false;
 
   @property({ type: Boolean })
-  skinny: boolean = false;
+  skinny = false;
 
   @property({ attribute: false })
-  showDropdown: boolean = false;
+  showDropdown = false;
 
   @property({ attribute: false })
   popperId!: string;
@@ -59,6 +59,8 @@ export class UprtclPopper extends LitElement {
     const positions = {
       'bottom-left': 'info-box-bottom-left',
       'bottom-right': 'info-box-bottom-right',
+      'top-right': 'info-box-top-right',
+      'top-left': 'info-box-top-left',
       right: 'info-box-right',
     };
     let classes = [positions[this.position]];
@@ -106,6 +108,14 @@ export class UprtclPopper extends LitElement {
       .info-box-bottom-right {
         right: 0px;
         top: calc(100% + 5px);
+      }
+      .info-box-top-right {
+        right: 0;
+        bottom: calc(100% + 5px);
+      }
+      .info-box-top-left {
+        left: 0;
+        bottom: calc(100% + 5px);
       }
       .info-box-bottom-left {
         left: 0px;

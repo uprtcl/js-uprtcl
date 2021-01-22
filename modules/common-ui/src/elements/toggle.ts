@@ -7,10 +7,10 @@ export class UprtclToggle extends LitElement {
   icon!: string;
 
   @property({ type: Boolean })
-  disabled: boolean = false;
+  disabled = false;
 
   @property({ type: Boolean })
-  active: boolean = false;
+  active = false;
 
   handleToggleClick() {
     if(!this.disabled) {

@@ -17,10 +17,10 @@ export class UprtclOptionsMenu extends LitElement {
   config: MenuConfig = {};
 
   @property({ type: String })
-  icon: string = 'more_vert';
+  icon = 'more_vert';
 
   @property({ type: Boolean })
-  skinny: boolean = false;
+  skinny = false;
 
   @query('#popper')
   popper!: UprtclPopper;
