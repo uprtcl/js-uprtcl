@@ -363,7 +363,7 @@ export class DocumentEditor extends eveesConnect(LitElement) {
     await Promise.all(prepareChildren);
 
     /** set the children with the children refs (which were created above) */
-    const { object } = this.evees.behavior(
+    const object = this.evees.behavior(
       node.draft,
       'replaceChildrenLinks'
     )(node.childrenNodes.map((node) => node.uref));
