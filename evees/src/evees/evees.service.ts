@@ -5,7 +5,13 @@ import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
 import { RecursiveContextMergeStrategy } from '../evees/merge/recursive-context.merge-strategy';
-import { EveesConfig, Commit, Perspective, PartialPerspective } from './interfaces/types';
+import {
+  EveesConfig,
+  Commit,
+  Perspective,
+  PartialPerspective,
+  CreateEvee,
+} from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
 import { HasChildren } from '../patterns/behaviours/has-links';
 import { Signed } from '../patterns/interfaces/signable';
@@ -70,16 +76,16 @@ export class Evees {
     return perspective.object.payload.context;
   }
 
-  async getPerspectiveData(perspectiveId: string): Promise<Entity<any>> {
+  async getPerspectiveData<T = any>(perspectiveId: string): Promise<Entity<any>> {
     const result = await this.client.getPerspective(perspectiveId);
     if (result.details.headId === undefined)
       throw new Error(`Data not found for perspective ${perspectiveId}`);
-    return this.getCommitData(result.details.headId);
+    return this.getCommitData<T>(result.details.headId);
   }
 
-  async getCommitData(commitId: string): Promise<Entity<any>> {
+  async getCommitData<T = any>(commitId: string): Promise<Entity<any>> {
     const dataId = await this.getCommitDataId(commitId);
-    const data = await this.client.store.getEntity(dataId);
+    const data = await this.client.store.getEntity<T>(dataId);
     return data;
   }
 
@@ -113,31 +119,43 @@ export class Evees {
       throw new Error(`Behavior ${behaviorName} not found for object ${JSON.stringify(object)}`);
     return behavior[behaviorName](object);
   }
+  /**
+   * Creates Evee
+   *
+   * @ {object} remoteId - Remote ID
+   * @ {any} object - Unhashed data, a commit and a data entities will be created
+   * @ {PartialPerspective} - Optional perspective details
+   * @ {string} parentId - ID of the parent object
+   */
+  async createEvee(input: CreateEvee): Promise<string> {
+    let { remoteId } = input;
+    const { object, partialPerspective, parentId } = input;
+    remoteId = remoteId || this.remotes[0].id;
+    let headId;
 
-  async createEvee(
-    object: any,
-    remoteId: string,
-    parentId?: string,
-    partialPerspective?: PartialPerspective
-  ): Promise<string> {
-    const dataId = await this.client.store.storeEntity({
-      object,
-      remote: remoteId,
-    });
+    if (object) {
+      const dataId = await this.client.store.storeEntity({
+        object,
+        remote: remoteId,
+      });
 
-    const head = await this.createCommit(
-      {
-        dataId,
-      },
-      remoteId
-    );
+      const head = await this.createCommit(
+        {
+          dataId,
+        },
+        remoteId
+      );
+
+      headId = head.id;
+    }
+
     const remote = await this.getRemote(remoteId);
     const perspective = await remote.snapPerspective(partialPerspective ? partialPerspective : {});
 
     await this.client.newPerspective({
       perspective,
       details: {
-        headId: head.id,
+        headId,
       },
       links: {
         parentId,
@@ -146,9 +164,9 @@ export class Evees {
     return perspective.id;
   }
 
-  async updatePerspectiveData(perspectiveId: string, newData: any, onHeadId?: string) {
+  async updatePerspectiveData(perspectiveId: string, object: any, onHeadId?: string) {
     const remote = await this.getPerspectiveRemote(perspectiveId);
-    const dataId = await this.client.store.storeEntity({ object: newData, remote: remote.id });
+    const dataId = await this.client.store.storeEntity({ object, remote: remote.id });
     if (!onHeadId) {
       const { details } = await this.client.getPerspective(perspectiveId);
       onHeadId = details.headId;
@@ -179,7 +197,7 @@ export class Evees {
     const getNewChildren = newElements.map((page) => {
       if (typeof page !== 'string') {
         remoteId = remoteId || this.remotes[0].id;
-        return this.createEvee(page, remoteId);
+        return this.createEvee({ object: page, remoteId });
       } else {
         return Promise.resolve(page);
       }

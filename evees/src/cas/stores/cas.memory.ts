@@ -107,9 +107,9 @@ export class CASOnMemory implements CASStore {
     return hash;
   }
 
-  async getEntity(uref: string): Promise<Entity<any>> {
+  async getEntity<T = any>(uref: string): Promise<Entity<any>> {
     const { entities } = await this.getEntities([uref]);
-    return entities[0];
+    return entities[0] as Entity<T>;
   }
 
   hashEntity(object: ObjectOnRemote): Promise<string> {

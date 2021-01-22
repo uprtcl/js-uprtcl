@@ -6,6 +6,7 @@ export {
   HasDiffLenses,
   DiffLens,
   PartialPerspective,
+  CreateEvee,
 } from './evees/interfaces/types';
 
 /** interfaces */

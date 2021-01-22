@@ -34,7 +34,7 @@ export class EveesHttp implements RemoteEvees {
   store!: CASStore;
   searchEngine!: SearchEngine;
 
-  constructor(protected connection: HttpConnectionLogged, public storeRemote: CASRemote) {
+  constructor(public connection: HttpConnectionLogged, public storeRemote: CASRemote) {
     this.accessControl = new EveesAccessControlHttp(this.connection);
     this.proposals = new ProposalsHttp(this.connection);
   }
@@ -71,7 +71,7 @@ export class EveesHttp implements RemoteEvees {
 
   async update(mutation: EveesMutationCreate) {
     if (mutation.newPerspectives) {
-      await Promise.all(mutation.newPerspectives.map((newPer) => this.newPerspective(newPer)));
+      await this.newPerspectives(mutation.newPerspectives);
     }
 
     if (mutation.deletedPerspectives) {
@@ -93,16 +93,20 @@ export class EveesHttp implements RemoteEvees {
     return [];
   }
 
-  async newPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+  async newPerspectives(perspectivesData: NewPerspectiveData[]) {
     await this.connection.post('/persp', {
-      perspectives: [
-        {
+      perspectives: perspectivesData.map((perspectiveData) => {
+        return {
           perspective: perspectiveData.perspective,
           details: perspectiveData.details,
           parentId: perspectiveData.links ? perspectiveData.links.parentId : undefined,
-        },
-      ],
+        };
+      }),
     });
+  }
+
+  async newPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+    this.newPerspectives([perspectiveData]);
   }
 
   async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {

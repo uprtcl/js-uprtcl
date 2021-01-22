@@ -25,6 +25,13 @@ export interface PartialPerspective {
   meta?: any;
 }
 
+export interface CreateEvee {
+  remoteId?: string;
+  object?: any;
+  partialPerspective?: PartialPerspective;
+  parentId?: string;
+}
+
 export interface PerspectiveDetails {
   headId?: string | undefined;
   canUpdate?: boolean;

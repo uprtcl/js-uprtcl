@@ -92,7 +92,7 @@ export class HttpAuth0Connection extends HttpConnection implements HttpConnectio
     }
   }
 
-  async makeLoginRedirect() {
+  async login() {
     try {
       const isAuthenticated = await this.isLogged();
 
@@ -111,14 +111,12 @@ export class HttpAuth0Connection extends HttpConnection implements HttpConnectio
     }
   }
 
-  async login(): Promise<void> {
+  async checkLoginCallback(): Promise<void> {
     const query = window.location.search;
     const shouldParseResult = query.includes('code=') && query.includes('state=');
 
     if (shouldParseResult) {
-      await this.parseLoginResult();
-    } else {
-      await this.makeLoginRedirect();
+      return this.parseLoginResult();
     }
   }
 

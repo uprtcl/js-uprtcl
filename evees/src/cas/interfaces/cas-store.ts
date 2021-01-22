@@ -28,7 +28,7 @@ export interface CASStore {
   flush(): Promise<void>;
 
   /** a couple of handy endpoints to just get or store one entity and not have to filter EntityGetResult */
-  getEntity(uref: string): Promise<Entity<any>>;
+  getEntity<T = any>(uref: string): Promise<Entity<T>>;
   storeEntity(object: ObjectOnRemote): Promise<string>;
   hashEntity(object: ObjectOnRemote): Promise<string>;
 }
