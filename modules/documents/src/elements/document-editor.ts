@@ -441,10 +441,12 @@ export class DocumentEditor extends eveesConnect(LitElement) {
       case PerspectiveType:
         if (node.isPlaceholder) {
           if (!node.remote) throw new Error('remote not defined for node');
+          const perspective = await this.derivePerspective(node);
           const perspectiveId = await this.evees.createEvee(
             node.draft,
             node.remote,
-            node.parent ? node.parent.uref : undefined
+            node.parent ? node.parent.uref : undefined,
+            perspective.object.payload
           );
           if (perspectiveId !== node.uref) {
             throw new Error(

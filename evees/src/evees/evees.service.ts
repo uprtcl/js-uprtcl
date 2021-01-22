@@ -5,7 +5,7 @@ import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
 import { RecursiveContextMergeStrategy } from '../evees/merge/recursive-context.merge-strategy';
-import { EveesConfig, Commit, Perspective } from './interfaces/types';
+import { EveesConfig, Commit, Perspective, PartialPerspective } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
 import { HasChildren } from '../patterns/behaviours/has-links';
 import { Signed } from '../patterns/interfaces/signable';
@@ -114,7 +114,12 @@ export class Evees {
     return behavior[behaviorName](object);
   }
 
-  async createEvee(object: any, remoteId: string, parentId?: string): Promise<string> {
+  async createEvee(
+    object: any,
+    remoteId: string,
+    parentId?: string,
+    partialPerspective?: PartialPerspective
+  ): Promise<string> {
     const dataId = await this.client.store.storeEntity({
       object,
       remote: remoteId,
@@ -127,7 +132,8 @@ export class Evees {
       remoteId
     );
     const remote = await this.getRemote(remoteId);
-    const perspective = await remote.snapPerspective({});
+    const perspective = await remote.snapPerspective(partialPerspective ? partialPerspective : {});
+
     await this.client.newPerspective({
       perspective,
       details: {
