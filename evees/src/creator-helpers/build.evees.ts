@@ -4,7 +4,6 @@ import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { EveesConfig } from '../evees/interfaces/types';
 import { RecursiveContextMergeStrategy } from '../evees/merge/recursive-context.merge-strategy';
 import { Evees } from '../evees/evees.service';
-import { ClientLocal } from '../evees/clients/client.local';
 import { ClientOnMemory } from '../evees/clients/client.memory';
 import { RemoteRouter } from '../evees/clients/client.router';
 import { CASStore } from '../cas/interfaces/cas-store';

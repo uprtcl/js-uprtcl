@@ -79,6 +79,8 @@ export class ClientOnMemory implements Client {
   async updatePerspectives(updates: UpdateRequest[]): Promise<void> {
     updates.forEach((update) => {
       this.updates.set(update.perspectiveId, update);
+
+      /** if perspective head was cached, optimistically update it */
       const cachedDetails = this.cachedPerspectives.get(update.perspectiveId);
       if (cachedDetails) {
         this.cachedPerspectives.set(update.perspectiveId, {

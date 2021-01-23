@@ -232,7 +232,12 @@ export class Evees {
 
     const parentData = await this.getPerspectiveData(parentId);
 
-    const newParentObject = await this.spliceChildren(parentData.object, [childId], index, 0);
+    const { object: newParentObject } = await this.spliceChildren(
+      parentData.object,
+      [childId],
+      index,
+      0
+    );
     await this.updatePerspectiveData(parentId, newParentObject);
 
     return childId;
