@@ -149,7 +149,8 @@ export class Evees {
       headId = head.id;
     }
 
-    const remote = await this.getRemote(remoteId);
+    const remote = this.getRemote(remoteId);
+
     const perspective = await remote.snapPerspective(partialPerspective ? partialPerspective : {});
 
     await this.client.newPerspective({
@@ -221,6 +222,20 @@ export class Evees {
       object: newObject,
       removed,
     };
+  }
+
+  async addChild(childObject: object, parentId: string, index: number = 0) {
+    const childId = await this.createEvee({
+      object: childObject,
+      parentId: parentId,
+    });
+
+    const parentData = await this.getPerspectiveData(parentId);
+
+    const newParentObject = await this.spliceChildren(parentData.object, [childId], index, 0);
+    await this.updatePerspectiveData(parentId, newParentObject);
+
+    return childId;
   }
 
   async moveChild(object: any, fromIndex: number, toIndex: number): Promise<Entity<any>> {

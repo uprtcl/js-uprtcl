@@ -15,8 +15,10 @@ import {
 } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
-import { DocNodeLens } from './document-patterns';
 import { DocumentsBindings } from '../bindings';
+import { htmlToText } from '../support/documents.support';
+
+import { DocNodeLens } from './document-patterns';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -132,7 +134,9 @@ export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode
 }
 
 export class TextNodeTitle implements HasTitle, HasDiffLenses {
-  title = (textNode: TextNode) => textNode.text;
+  title = (textNode: TextNode) => {
+    return htmlToText(textNode.text);
+  };
 
   diffLenses = (node?: TextNode): DiffLens[] => {
     return [
