@@ -2,7 +2,6 @@
   "packages": [
     "connections/http",
     "connections/ethereum",
-    "connections/ipfs",
     "evees",
     "modules/common-ui",
     "modules/wikis",
