@@ -4,6 +4,11 @@ import { Entity } from '../../cas/interfaces/entity';
 import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from './types';
 import { SearchEngine } from './search.engine';
 import { Proposals } from './proposals';
+import { EventEmitter } from 'events';
+
+export enum ClientEvents {
+  updated = 'updated',
+}
 
 /** the perspective data included by a remote as part of a slice */
 export interface PerspectiveAndDetails {
@@ -39,9 +44,10 @@ export interface EveesMutationCreate {
 // 'canUpdate': When the logged user canUpdate status over a perspective changes.
 
 export interface Client {
-  store: CASStore;
-  searchEngine: SearchEngine;
-  proposals?: Proposals;
+  readonly store: CASStore;
+  readonly searchEngine: SearchEngine;
+  readonly events?: EventEmitter;
+  readonly proposals?: Proposals;
 
   /** get a perspective head,
    * include a Slice that can be used by the client to pre-fill the cache */

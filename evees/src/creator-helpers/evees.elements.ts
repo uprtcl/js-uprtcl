@@ -10,7 +10,7 @@ import { EveesLoginWidget } from '../evees/elements/evees-login';
 import { EveesPerspectiveRow } from '../evees/elements/evees-perspective-row';
 import { EveesProposalRow } from '../evees/elements/evees-proposal-row';
 import { EveesInfoUserBased } from '../evees/elements/evees-info-user-based';
-import { EveesPerspectiveIcon } from '../uprtcl-evees';
+import { EveesPerspectiveIcon } from '../evees/elements/evees-perspective-icon';
 
 export const registerEveesElements = (): void => {
   customElements.define('evees-info-popper', EveesInfoPopper);

@@ -23,6 +23,7 @@ export {
   EveesMutationCreate,
   EveesMutation,
   PerspectiveGetResult,
+  ClientEvents,
 } from './evees/interfaces/client';
 
 /** Default Perspectives */
