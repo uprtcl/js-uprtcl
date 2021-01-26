@@ -1,5 +1,7 @@
+import { EventEmitter } from 'events';
+
 import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../interfaces/types';
-import { CASStore, EntityGetResult } from '../../cas/interfaces/cas-store';
+import { CASStore } from '../../cas/interfaces/cas-store';
 import { Entity, ObjectOnRemote } from '../../cas/interfaces/entity';
 
 import {
@@ -7,6 +9,7 @@ import {
   PerspectiveGetResult,
   EveesMutation,
   EveesMutationCreate,
+  ClientEvents,
 } from '../interfaces/client';
 
 export class ClientOnMemory implements Client {
@@ -17,7 +20,11 @@ export class ClientOnMemory implements Client {
 
   private cachedPerspectives = new Map<string, PerspectiveDetails>();
 
+  readonly events: EventEmitter;
+
   constructor(protected base: Client, public store: CASStore, mutation?: EveesMutation) {
+    this.events = new EventEmitter();
+
     if (mutation) {
       this.update(mutation);
     }
@@ -89,6 +96,11 @@ export class ClientOnMemory implements Client {
         });
       }
     });
+
+    this.events.emit(
+      ClientEvents.updated,
+      updates.map((u) => u.perspectiveId)
+    );
   }
 
   async update(mutation: EveesMutationCreate): Promise<void> {
