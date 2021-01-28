@@ -60,21 +60,21 @@ export class UprtclDialog extends LitElement {
         flex-direction: column;
         justify-content: center;
       }
-
       .modal-content {
-        width: 90vw;
-        max-width: 900px;
+        position:relative;
+        width: 50vw;
+        max-width: 800px;
+        min-width:420px;
         margin: 0 auto;
-        padding: 3vw 3vw;
+        padding: 1rem;
         background-color: white;
-        border-radius: 4px;
-        box-shadow: 10px 10px 67px 0px rgba(0, 0, 0, 0.75);
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
       }
-
       .slot-container {
         margin-bottom: 3vw;
         max-height: calc(100vh - 200px);
-        min-height: 50vh;
+        min-height: 200px;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
