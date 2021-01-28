@@ -76,7 +76,7 @@ export class Evees {
     return perspective.object.payload.context;
   }
 
-  async getPerspectiveData<T = any>(perspectiveId: string, data?: object): Promise<Entity<any>> {
+  async getPerspectiveData<T = any>(perspectiveId: string): Promise<Entity<any>> {
     const result = await this.client.getPerspective(perspectiveId);
     if (result.details.headId === undefined)
       throw new Error(`Data not found for perspective ${perspectiveId}`);
@@ -186,36 +186,6 @@ export class Evees {
   async getPerspectiveChildren(uref: string): Promise<string[]> {
     const data = await this.getPerspectiveData(uref);
     return this.behavior(data.object, 'getChildrenLinks');
-  }
-
-  /** get the i-th child of a perspective. If the child does not exist,
-   * create it using the child input object */
-  async getChild<P extends object, C extends object>(
-    parentId: string,
-    index: number
-  ): Promise<Secured<Perspective>> {
-    let parentData: Entity<P> | undefined = undefined;
-    // check if the parent has data set
-    try {
-      parentData = await this.getPerspectiveData<P>(parentId);
-    } catch (e) {
-      /** its ok, if the data does not exists, we will create it now */
-    }
-
-    let childId: string;
-
-    let currentChildren = [];
-    if (parentData) {
-      currentChildren = this.behavior(parentData.object, 'getChilrenLinks');
-    }
-
-    if (index <= currentChildren.length - 1) {
-      childId = currentChildren[index];
-    } else {
-      childId = await this.addNewChild(child, parentId, index);
-    }
-
-    return this.client.store.getEntity<Signed<Perspective>>(childId);
   }
 
   async spliceChildren(

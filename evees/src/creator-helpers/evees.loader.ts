@@ -6,13 +6,14 @@ import { buildRecognizer } from './build.recognizer';
 import { registerComponents } from './register.components';
 import { buildEvees } from './build.evees';
 import { CASRemote } from '../cas/interfaces/cas-remote';
+import { Evees } from '../evees/evees.service';
 
 /** a top level wrapper that registers everything */
-export const eveesLoader = (
+export const eveesConstructorHelper = (
   remotes: Array<RemoteEvees>,
   modules: Map<string, EveesContentModule>,
   config?: EveesConfig
-): void => {
+): Evees => {
   /** extract the stores and map remotes to stores */
   const remoteToSourcesMap = new Map<string, string>();
   const stores = new Map<string, CASRemote>();
@@ -31,4 +32,6 @@ export const eveesLoader = (
   const recognizer = buildRecognizer(modules);
   const evees = buildEvees(remotes, store, recognizer, modules, config);
   registerComponents(evees);
+
+  return evees;
 };

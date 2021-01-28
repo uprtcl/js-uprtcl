@@ -18,7 +18,4 @@ export const registerComponents = (evees: Evees) => {
       }
     });
   }
-
-  /** register module container */
-  customElements.define('evees-container', EveesContainer(evees));
 };

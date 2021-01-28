@@ -96,7 +96,8 @@ export { CommitType } from './evees/patterns/commit.pattern';
 
 /** container */
 export { eveesConnect } from './container/evees-connect.mixin';
-export { eveesLoader } from './creator-helpers/evees.loader';
+export { eveesConstructorHelper } from './creator-helpers/evees.loader';
+export { registerEveesContainer } from './creator-helpers/register.evees.container';
 
 /** Clients */
 export { EveesDraftsLocal } from './evees/clients/evees.drafts.local';
