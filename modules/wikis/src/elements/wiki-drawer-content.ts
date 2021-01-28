@@ -353,7 +353,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
   }
 
   renderHome() {
-    return html`<div class="home-title" style=${`color: ${this.color}`}>Now seeing</div>
+    return html`<div class="home-title" style=${`color: ${'black'}`}>Now seeing</div>
       <uprtcl-card>
         <evees-perspective-icon perspective-id=${this.uref}></evees-perspective-icon>
       </uprtcl-card>`;
@@ -378,8 +378,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
                     id="doc-editor"
                     uref=${this.data.object.pages[this.selectedPageIx] as string}
                     parent-id=${this.uref}
-                    color=${this.color}
-                    .eveesInfoConfig=${this.eveesInfoConfig}
+                    color=${'black'}
                   >
                   </documents-editor>
                 </div>
