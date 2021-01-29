@@ -61,7 +61,7 @@ export const getHome = async (
     path: remote.defaultPath,
     creatorId,
     timestamp: 0,
-    context: `${creatorId}.homeXX9`,
+    context: `${creatorId}.home`,
   };
 
   const secured = {
