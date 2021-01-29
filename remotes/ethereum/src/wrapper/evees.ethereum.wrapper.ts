@@ -79,11 +79,11 @@ export class EveesEthereumWrapper {
 
     const proposals = new ProposalsOrbitDB(this.orbitDBCustom, this.ipfsStore);
 
-    const ethEveesConnection = new EveesEthereumConnection(ethConnection);
-    await ethEveesConnection.ready();
+    const ethservicesConnection = new EveesEthereumConnection(ethConnection);
+    await ethservicesConnection.ready();
 
     const ethEvees = new EveesBlockchainCached(
-      ethEveesConnection,
+      ethservicesConnection,
       this.orbitDBCustom,
       this.ipfsStore,
       proposals

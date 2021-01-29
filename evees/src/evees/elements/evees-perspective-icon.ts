@@ -1,13 +1,13 @@
 import { LitElement, html, css, property } from 'lit-element';
 
-import { eveesConnect } from '../../container/evees-connect.mixin';
 import { Secured } from '../../cas/utils/cid-hash';
+import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { Perspective } from '../interfaces/types';
 import { Evees } from '../evees.service';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 
-export class EveesPerspectiveIcon extends eveesConnect(LitElement) {
+export class EveesPerspectiveIcon extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
 

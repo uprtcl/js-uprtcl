@@ -1,7 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { eveesConnect, HasTitle } from '@uprtcl/evees';
-import { RemoteEvees } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees';
 
 import {
   BasicAdminInheritedPermissions,
@@ -11,7 +10,7 @@ import {
 } from './types';
 import { EveesHttp } from './evees.http.remote';
 
-export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
+export class EveesAccessControlHttpLense extends servicesConnect(LitElement) {
   @property()
   uref!: string;
 
@@ -74,11 +73,7 @@ export class EveesAccessControlHttpLense extends eveesConnect(LitElement) {
     const delegatedUref = this.permissions.delegateTo;
 
     const data = await this.evees.getPerspectiveData(delegatedUref);
-    const hasTitle: HasTitle = this.evees.recognizer
-      .recognizeBehaviours(data)
-      .find((b) => (b as HasTitle).title);
-
-    const title = hasTitle.title(data);
+    const title = this.evees.behavior(data.object, 'title');
 
     this.delegatedTitle = title;
   }

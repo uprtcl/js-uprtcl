@@ -1,12 +1,12 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { eveesConnect } from '../../container/evees-connect.mixin';
+import { servicesConnect } from '../../container/multi-connect.mixin';
 import { Logger } from '../../utils/logger';
 
 import { Evees } from '../evees.service';
 import { RemoteEvees } from '../interfaces/remote.evees';
 
-export class ProposalsList extends eveesConnect(LitElement) {
+export class ProposalsList extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
 
   @property({ type: String, attribute: 'perspective-id' })

@@ -22,7 +22,6 @@ export class AppElements {
   }
 
   async check(): Promise<void> {
-    debugger;
     if (!this.remote.getHome) throw new Error(`Remote don't have a home default`);
 
     /** home space perspective is deterministic */
@@ -81,16 +80,24 @@ export class AppElements {
     }
   }
 
-  async initPerspectiveDataRec(element: AppElement) {
+  async initPerspectiveDataRec(element: AppElement, parentId?: string) {
     const data = element.getInitData(element.children);
 
     if (!element.perspective)
       throw new Error(`perspective not found for element ${JSON.stringify(element)}`);
 
-    await this.evees.updatePerspectiveData(element.perspective.id, data);
+    const perspective = element.perspective;
+
+    await this.evees.createEvee({
+      object: data,
+      partialPerspective: perspective.object.payload,
+      parentId,
+    });
 
     if (element.children) {
-      await Promise.all(element.children.map((child) => this.initPerspectiveDataRec(child)));
+      await Promise.all(
+        element.children.map((child) => this.initPerspectiveDataRec(child, perspective.id))
+      );
     }
   }
 
@@ -129,12 +136,15 @@ export class AppElements {
   async initTree(element: AppElement) {
     // Create perspectives from top to bottom
     if (element.children) {
-      // snap all perspectives
+      // snap all perspectives (compute their ids)
       await Promise.all(element.children.map((child) => this.createSnapElementRec(child)));
 
-      // set perspective data
-      await this.initPerspectiveDataRec(element);
+      if (!element.perspective) throw new Error('Element perspective not defined');
+      const elementId = element.perspective.id;
     }
+
+    // set perspectives data
+    await this.initPerspectiveDataRec(element);
 
     await this.evees.client.flush();
   }

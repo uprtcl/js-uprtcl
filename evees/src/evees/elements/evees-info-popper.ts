@@ -2,15 +2,13 @@ import { html, css, property, LitElement, query } from 'lit-element';
 
 import { UprtclPopper } from '@uprtcl/common-ui';
 
-import { eveesConnect } from '../../container/evees-connect.mixin';
 import { Logger } from '../../utils/logger';
-
-import { Evees } from '../evees.service';
+import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { EveesInfoConfig } from './evees-info-user-based';
 import { DEFAULT_COLOR, eveeColor } from './support';
 
-export class EveesInfoPopper extends eveesConnect(LitElement) {
+export class EveesInfoPopper extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-INFO-POPPER');
 
   @property({ type: String, attribute: 'uref' })

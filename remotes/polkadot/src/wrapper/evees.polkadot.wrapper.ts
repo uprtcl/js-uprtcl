@@ -27,7 +27,7 @@ export class EveesPolkadotWrapper {
   remotes!: RemoteEvees[];
   ipfsStore!: IpfsStore;
   orbitDBCustom!: OrbitDBCustom;
-  pdkEveesConnection!: EveesPolkadotConnection;
+  pdkservicesConnection!: EveesPolkadotConnection;
 
   constructor(
     protected ipfs: any,
@@ -66,11 +66,11 @@ export class EveesPolkadotWrapper {
 
     const proposals = new ProposalsOrbitDB(this.orbitDBCustom, this.ipfsStore);
 
-    this.pdkEveesConnection = new EveesPolkadotConnection(pkdConnection);
-    await this.pdkEveesConnection.ready();
+    this.pdkservicesConnection = new EveesPolkadotConnection(pkdConnection);
+    await this.pdkservicesConnection.ready();
 
     const pkdEvees = new EveesBlockchainCached(
-      this.pdkEveesConnection,
+      this.pdkservicesConnection,
       this.orbitDBCustom,
       this.ipfsStore,
       proposals

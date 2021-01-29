@@ -1,8 +1,8 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { Logger } from '../../utils/logger';
-import { eveesConnect } from '../../container/evees-connect.mixin';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern-recognizer';
+import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { UpdateRequest, HasDiffLenses, DiffLens } from '../interfaces/types';
 import { Client } from '../interfaces/client';
@@ -16,7 +16,7 @@ interface UpdateDetails {
   diffLense: DiffLens;
 }
 
-export class EveesDiff extends eveesConnect(LitElement) {
+export class EveesDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: String, attribute: 'root-perspective' })

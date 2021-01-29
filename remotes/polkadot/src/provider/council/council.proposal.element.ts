@@ -16,7 +16,7 @@ import { EveesPolkadotCouncil } from './evees.polkadot-council';
 import { ProposalManifest, ProposalSummary, Vote } from './types';
 import { ProposalStatus, VoteValue } from './proposal.config.types';
 
-export class EveesPolkadotCouncilProposal extends eveesConnect(LitElement) {
+export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'proposal-id' })
   proposalId!: string;
 

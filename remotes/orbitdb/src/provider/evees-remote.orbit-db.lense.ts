@@ -2,7 +2,7 @@ import { LitElement, property, html, css } from 'lit-element';
 
 import { EveesOrbitDB } from './evees.orbit-db';
 
-export class RemoteOrbitdDbLense extends eveesConnect(LitElement) {
+export class RemoteOrbitdDbLense extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'remote-id' })
   remoteId!: string;
 

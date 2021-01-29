@@ -1,6 +1,5 @@
+import { Client, Logger, servicesConnect } from '@uprtcl/evees';
 import { LitElement, property, html, css } from 'lit-element';
-
-import { eveesConnect, Logger, Client } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
 
@@ -11,7 +10,7 @@ interface PageDetails {
   title: string;
 }
 
-export class WikiDiff extends eveesConnect(LitElement) {
+export class WikiDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: Boolean })

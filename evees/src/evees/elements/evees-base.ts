@@ -3,14 +3,16 @@ import { property, LitElement, internalProperty } from 'lit-element';
 import { Logger } from '../../utils/logger';
 import { Entity } from '../../cas/interfaces/entity';
 import { Secured } from '../../cas/utils/cid-hash';
-import { eveesConnect } from '../../container/evees-connect.mixin';
 import { Signed } from '../../patterns/interfaces/signable';
+import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { ClientEvents } from '../interfaces/client';
 import { Commit, Perspective } from '../interfaces/types';
 
-export abstract class EveesBaseElement<T extends object = object> extends eveesConnect(LitElement) {
+export abstract class EveesBaseElement<T extends object = object> extends servicesConnect(
+  LitElement
+) {
   logger = new Logger('EVEES-BASE-ELEMENT');
 
   @property({ type: String })

@@ -1,8 +1,9 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { eveeColor } from './support';
-import { eveesConnect } from '../../container/evees-connect.mixin';
 import { Logger } from '../../utils/logger';
+import { servicesConnect } from '../../container/multi-connect.mixin';
+
+import { eveeColor } from './support';
 
 interface PerspectiveData {
   id: string;
@@ -12,7 +13,7 @@ interface PerspectiveData {
   timestamp: number;
 }
 
-export class EveesPerspectivesList extends eveesConnect(LitElement) {
+export class EveesPerspectivesList extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
 
   @property({ type: String, attribute: 'perspective-id' })

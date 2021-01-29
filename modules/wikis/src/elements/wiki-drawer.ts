@@ -8,7 +8,7 @@ const styleMap = (style) => {
 
 import {
   Logger,
-  eveesConnect,
+  servicesConnect,
   eveeColor,
   DEFAULT_COLOR,
   CONTENT_UPDATED_TAG,
@@ -17,7 +17,8 @@ import {
 } from '@uprtcl/evees';
 import { WikiDrawerContent } from './wiki-drawer-content';
 import { PROPOSAL_CREATED_TAG, EveesInfoConfig } from '@uprtcl/evees';
-export class WikiDrawer extends eveesConnect(LitElement) {
+
+export class WikiDrawer extends servicesConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
 
   @property({ type: String, attribute: 'uref' })

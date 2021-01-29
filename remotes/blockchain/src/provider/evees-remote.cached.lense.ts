@@ -1,13 +1,12 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
-import { eveesConnect } from '@uprtcl/evees';
 import { EveesModule, RemoteEvees } from '@uprtcl/evees';
 
 import { EveesBlockchainCached } from './evees.blockchain.cached';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ChainConnectionDetails, RemoteUI } from '../types';
 
-export class EveesBlockchainCachedRemoteLense extends eveesConnect(LitElement) {
+export class EveesBlockchainCachedRemoteLense extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'remote-id' })
   remoteId!: string;
 

@@ -5,9 +5,9 @@ import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 import { PerspectiveType } from '../patterns/perspective.pattern';
 import { CommitType } from '../patterns/commit.pattern';
 import { Entity } from '../../cas/interfaces/entity';
-import { eveesConnect } from '../../container/evees-connect.mixin';
 import { Signed } from '../../patterns/interfaces/signable';
 import { Logger } from '../../utils/logger';
+import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { Perspective, PerspectiveDetails, Commit, Proposal } from '../interfaces/types';
 import { Client } from '../interfaces/client';
@@ -27,7 +27,7 @@ interface PerspectiveData {
   data?: Entity<any>;
 }
 
-export class EveesInfoBase extends eveesConnect(LitElement) {
+export class EveesInfoBase extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
 
   @property({ type: String, attribute: 'uref' })

@@ -1,6 +1,5 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { eveesConnect, Logger } from '@uprtcl/evees';
 import { EveesModule } from '@uprtcl/evees';
 
 import { EveesBlockchainCached } from '../provider/evees.blockchain.cached';

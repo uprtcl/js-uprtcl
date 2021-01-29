@@ -1,12 +1,12 @@
 import { LitElement, property, html, css } from 'lit-element';
+import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { Logger } from '../../utils/logger';
-import { eveesConnect } from '../../container/evees-connect.mixin';
 
 import { Evees } from '../evees.service';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 
-export class EveesLoginWidget extends eveesConnect(LitElement) {
+export class EveesLoginWidget extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
 
   @property({ attribute: false })

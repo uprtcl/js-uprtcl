@@ -3,17 +3,16 @@ import { LitElement, property, html, css, query } from 'lit-element';
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
 import { Entity } from '../../cas/interfaces/entity';
-import { eveesConnect } from '../../container/evees-connect.mixin';
 import { Logger } from '../../utils/logger';
+import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { Proposal } from '../interfaces/types';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
-import { Evees } from '../evees.service';
 import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 
-export class EveesProposalRow extends eveesConnect(LitElement) {
+export class EveesProposalRow extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
 
   @property({ type: String, attribute: 'proposal-id' })

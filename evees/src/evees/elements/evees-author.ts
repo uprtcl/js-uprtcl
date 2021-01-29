@@ -1,10 +1,11 @@
 import { LitElement, property, html, css } from 'lit-element';
+
+import { servicesConnect } from '../../container/multi-connect.mixin.js';
 import { Logger } from '../../utils/logger.js';
-import { eveesConnect } from '../../container/evees-connect.mixin.js';
 
 import { RemoteWithUI } from '../interfaces/remote.with-ui.js';
 
-export class EveesAuthor extends eveesConnect(LitElement) {
+export class EveesAuthor extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-AUTHOR');
 
   @property({ type: String, attribute: 'user-id' })

@@ -10,7 +10,7 @@ const styleMap = (style) => {
 
 import {
   Logger,
-  eveesConnect,
+  servicesConnect,
   Client,
   eveeColor,
   ContentUpdatedEvent,
@@ -36,7 +36,7 @@ const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
 const PLACEHOLDER_TOKEN = '_PLACEHOLDER_';
 
-export class DocumentEditor extends eveesConnect(LitElement) {
+export class DocumentEditor extends servicesConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
 
   @property({ type: String, attribute: 'uref' })
