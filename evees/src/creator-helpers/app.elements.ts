@@ -1,6 +1,6 @@
-import { Secured } from 'src/cas/utils/cid-hash';
-import { Evees } from 'src/evees/evees.service';
-import { RemoteEvees } from 'src/evees/interfaces/remote.evees';
+import { Secured } from '../cas/utils/cid-hash';
+import { Evees } from '../evees/evees.service';
+import { RemoteEvees } from '../evees/interfaces/remote.evees';
 import { Perspective } from '../evees/interfaces/types';
 
 /** a services that builds tree of perspectives that is apended to
@@ -8,7 +8,7 @@ import { Perspective } from '../evees/interfaces/types';
  * tree of perspectives and offers methods to navigate it */
 export interface AppElement {
   path: string;
-  getInitData?: (children?: AppElement[]) => any;
+  getInitData: (children?: AppElement[]) => any;
   perspective?: Secured<Perspective>;
   children?: AppElement[];
 }
@@ -21,6 +21,7 @@ export class AppElements {
   }
 
   async check(): Promise<void> {
+    debugger;
     if (!this.remote.getHome) throw new Error(`Remote don't have a home default`);
 
     /** home space perspective is deterministic */
@@ -36,12 +37,12 @@ export class AppElements {
     let thisElement = this.home;
 
     let childElements = thisElement.children;
-    const pathSections = path.split('/');
+    const nextPath = path.split('/').slice(1);
 
-    while (pathSections.length > 0) {
+    while (nextPath.length > 0 && nextPath[0] !== '') {
       if (!childElements)
         throw new Error(`AppElement ${JSON.stringify(thisElement)} don't have children`);
-      const thisPath = pathSections.pop();
+      const thisPath = nextPath.shift();
       const childFound = childElements.find((e) => {
         const path = e.path.split('/')[1];
         return path === thisPath;
@@ -67,29 +68,40 @@ export class AppElements {
 
   async createSnapElementRec(element: AppElement) {
     element.perspective = await this.remote.snapPerspective({});
+
+    /** make sure the perspective is in the store to be resolved */
+    await this.evees.client.store.storeEntity({
+      object: element.perspective.object,
+      remote: element.perspective.object.payload.remote,
+    });
+
     if (element.children) {
       await Promise.all(element.children.map((child) => this.createSnapElementRec(child)));
     }
   }
 
   async initPerspectiveDataRec(element: AppElement) {
-    if (!element.getInitData)
-      throw new Error(`getInitData not found for element ${JSON.stringify(element)}`);
-
     const data = element.getInitData(element.children);
 
     if (!element.perspective)
       throw new Error(`perspective not found for element ${JSON.stringify(element)}`);
 
-    this.evees.updatePerspectiveData(element.perspective.id, data);
+    await this.evees.updatePerspectiveData(element.perspective.id, data);
 
-    if (this.home.children) {
-      await Promise.all(this.home.children.map((child) => this.initPerspectiveDataRec(child)));
+    if (element.children) {
+      await Promise.all(element.children.map((child) => this.initPerspectiveDataRec(child)));
     }
   }
 
   // make sure a perspective exist, or creates it
   async checkOrCreatePerspective(perspective: Secured<Perspective>) {
+    /** make sure the perspective is in the store to be resolved */
+    await this.evees.client.store.storeEntity({
+      object: perspective.object,
+      remote: perspective.object.payload.remote,
+    });
+
+    /** get the perspective data */
     const { details } = await this.evees.client.getPerspective(perspective.id);
 
     /** canUpdate is used as the flag to detect if the home space exists */
@@ -105,9 +117,11 @@ export class AppElements {
     if (!element.perspective)
       throw new Error(`perspective not found for element ${JSON.stringify(element)}`);
 
-    const data = await this.evees.getPerspectiveData(element.perspective.id);
+    const data = await this.evees.tryGetPerspectiveData(element.perspective.id);
     if (!data) {
       await this.initTree(element);
+    } else {
+      // await this.readTree(element);
     }
   }
 
@@ -118,7 +132,7 @@ export class AppElements {
       await Promise.all(element.children.map((child) => this.createSnapElementRec(child)));
 
       // set perspective data
-      await this.initPerspectiveDataRec(this.home);
+      await this.initPerspectiveDataRec(element);
     }
 
     await this.evees.client.flush();

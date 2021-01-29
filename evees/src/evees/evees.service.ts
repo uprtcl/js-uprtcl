@@ -87,6 +87,11 @@ export class Evees {
     return this.getCommitData<T>(result.details.headId);
   }
 
+  async tryGetPerspectiveData<T = any>(perspectiveId: string): Promise<Entity<any> | undefined> {
+    const result = await this.client.getPerspective(perspectiveId);
+    return result.details.headId ? this.getCommitData<T>(result.details.headId) : undefined;
+  }
+
   async getCommitData<T = any>(commitId: string): Promise<Entity<any>> {
     const dataId = await this.getCommitDataId(commitId);
     const data = await this.client.store.getEntity<T>(dataId);

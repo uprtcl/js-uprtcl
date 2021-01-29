@@ -8,6 +8,7 @@ import { ClientOnMemory } from '../evees/clients/client.memory';
 import { RemoteRouter } from '../evees/clients/client.router';
 import { CASStore } from '../cas/interfaces/cas-store';
 import { EveesContentModule } from '../evees/interfaces/evees.content.module';
+import { Pattern } from '../patterns/interfaces/pattern';
 
 export const buildEvees = (
   remotes: Array<RemoteEvees>,
