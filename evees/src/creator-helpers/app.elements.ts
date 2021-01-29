@@ -56,6 +56,15 @@ export class AppElements {
     return thisElement;
   }
 
+  async get(path): Promise<Secured<Perspective>> {
+    const element = await this.getElement(path);
+
+    if (!element) throw new Error(`element not found at path ${path}`);
+    if (!element.perspective) throw new Error(`perspective not found at path ${path}`);
+
+    return element.perspective;
+  }
+
   async createSnapElementRec(element: AppElement) {
     element.perspective = await this.remote.snapPerspective({});
     if (element.children) {
