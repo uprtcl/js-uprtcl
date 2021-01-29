@@ -3,6 +3,8 @@ import { Evees } from '../evees/evees.service';
 
 export const REQUEST_EVEES_EVENT_TAG = 'request-evees-service';
 
+/** An web component that holds the evees service and serves it to children
+ * components though a DOM event */
 export class RequestEveesEvent extends CustomEvent<{}> {
   evees!: Evees;
 

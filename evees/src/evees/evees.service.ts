@@ -57,10 +57,14 @@ export class Evees {
     return remote;
   }
 
-  getRemote(remoteId: string): RemoteEvees {
-    const remote = this.remotes.find((r) => r.id === remoteId);
-    if (!remote) throw new Error(`remote ${remoteId} not found`);
-    return remote;
+  getRemote(remoteId?: string): RemoteEvees {
+    if (remoteId) {
+      const remote = this.remotes.find((r) => r.id === remoteId);
+      if (!remote) throw new Error(`remote ${remoteId} not found`);
+      return remote;
+    } else {
+      return this.remotes[0];
+    }
   }
 
   async getPerspectiveRemote(perspectiveId: string): Promise<RemoteEvees> {

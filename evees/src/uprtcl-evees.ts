@@ -98,6 +98,10 @@ export { CommitType } from './evees/patterns/commit.pattern';
 export { eveesConnect } from './container/evees-connect.mixin';
 export { eveesConstructorHelper } from './creator-helpers/evees.loader';
 export { registerEveesContainer } from './creator-helpers/register.evees.container';
+export { MultiContainer } from './container/multi.container';
+export { servicesConnect } from './container/multi-connect.mixin';
+
+export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Clients */
 export { EveesDraftsLocal } from './evees/clients/evees.drafts.local';

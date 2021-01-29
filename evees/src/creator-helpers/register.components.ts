@@ -1,5 +1,4 @@
 import { registerCommonUI } from '@uprtcl/common-ui';
-import { EveesContainer } from '../container/evees-container';
 import { Evees } from '../evees/evees.service';
 import { registerEveesElements } from './evees.elements';
 
