@@ -12,7 +12,9 @@ export const buildRecognizer = (
   const patterns = Array.prototype.concat(
     eveesPatterns,
     addPatterns,
-    Array.from(modules.values()).map((module) => (module.getPatterns ? module.getPatterns() : []))
+    ...Array.from(modules.values()).map((module) =>
+      module.getPatterns ? module.getPatterns() : []
+    )
   );
   const recognizer = new PatternRecognizer(Array.prototype.concat([], ...patterns));
 

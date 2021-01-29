@@ -1,3 +1,4 @@
+import { Signed } from 'src/patterns/interfaces/signable';
 import { Secured } from '../cas/utils/cid-hash';
 import { Evees } from '../evees/evees.service';
 import { RemoteEvees } from '../evees/interfaces/remote.evees';
@@ -121,7 +122,7 @@ export class AppElements {
     if (!data) {
       await this.initTree(element);
     } else {
-      // await this.readTree(element);
+      await this.readTree(element);
     }
   }
 
@@ -136,5 +137,31 @@ export class AppElements {
     }
 
     await this.evees.client.flush();
+  }
+
+  async readTree(element: AppElement) {
+    /** gets the element data from its perspective,
+     * then visits it's children recursively filling the
+     * tree perspective properties*/
+
+    if (!element.perspective)
+      throw new Error(`Element ${JSON.stringify(element)} doest not have the perspective set`);
+
+    const data = await this.evees.getPerspectiveData(element.perspective.id);
+
+    const dataChildren = this.evees.behavior(data.object, 'getChildrenLinks');
+    await Promise.all(
+      dataChildren.map(async (childId, ix) => {
+        const perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(childId);
+        if (!element.children) throw new Error(`element does not have children`);
+
+        /** set the perspective of the child */
+        const child = element.children[ix];
+        child.perspective = perspective;
+
+        /** recursively call the readTree */
+        this.readTree(child);
+      })
+    );
   }
 }
