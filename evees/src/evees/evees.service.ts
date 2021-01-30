@@ -80,7 +80,7 @@ export class Evees {
     return perspective.object.payload.context;
   }
 
-  async getPerspectiveData<T = any>(perspectiveId: string): Promise<Entity<any>> {
+  async getPerspectiveData<T = any>(perspectiveId: string): Promise<Entity<T>> {
     const result = await this.client.getPerspective(perspectiveId);
     if (result.details.headId === undefined)
       throw new Error(`Data not found for perspective ${perspectiveId}`);
