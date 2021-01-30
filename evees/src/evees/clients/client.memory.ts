@@ -92,7 +92,7 @@ export class ClientOnMemory implements Client {
       if (cachedDetails) {
         this.cachedPerspectives.set(update.perspectiveId, {
           ...cachedDetails,
-          headId: update.newHeadId,
+          headId: update.newHeadId ? update.newHeadId : cachedDetails.headId,
         });
       }
     });

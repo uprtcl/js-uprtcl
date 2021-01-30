@@ -49,7 +49,8 @@ export interface UpdateRequest {
   fromPerspectiveId?: string;
   oldHeadId?: string;
   perspectiveId: string;
-  newHeadId: string;
+  newHeadId?: string;
+  guardianId?: string;
 }
 
 export interface Proposal {
@@ -63,7 +64,7 @@ export interface Proposal {
 }
 
 export interface PerspectiveLinks {
-  /** the parent is unique and is used to have a sense of the 'true' location of a perspective. */
+  // TODO!!! remove this and use guardianId as in the update flow.
   parentId?: string;
   /** the children can be many and one perspective can be the child of many others. Children are considered
    * part of the parent, and thus are fetched with the parent, searched with the parent, merged with the parent

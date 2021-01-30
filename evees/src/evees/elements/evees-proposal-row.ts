@@ -92,14 +92,16 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   async checkExecuted() {
     /* a proposal is considered accepted if all the updates are now ancestors of their target */
     const isAncestorVector = await Promise.all(
-      this.proposal.object.mutation.updates.map((update) => {
-        return this.evees.isAncestorCommit(
-          this.evees.client,
-          update.perspectiveId,
-          update.newHeadId,
-          update.oldHeadId
-        );
-      })
+      this.proposal.object.mutation.updates
+        .filter((u) => !!u.newHeadId)
+        .map((update) => {
+          return this.evees.isAncestorCommit(
+            this.evees.client,
+            update.perspectiveId,
+            update.newHeadId as string,
+            update.oldHeadId
+          );
+        })
     );
 
     this.executed = !isAncestorVector.includes(false);

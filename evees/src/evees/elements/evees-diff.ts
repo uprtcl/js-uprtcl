@@ -57,26 +57,30 @@ export class EveesDiff extends servicesConnect(LitElement) {
 
     const mutation = await this.client.diff();
 
-    const getDetails = mutation.updates.map(async (update) => {
-      const newData = await this.evees.getCommitData(update.newHeadId);
+    const getDetails = mutation.updates
+      .filter((u) => !!u.newHeadId)
+      .map(async (update) => {
+        if (!update.newHeadId) throw new Error('newHead undefined');
 
-      const oldData =
-        update.oldHeadId !== undefined
-          ? await this.evees.getCommitData(update.oldHeadId)
-          : undefined;
+        const newData = await this.evees.getCommitData(update.newHeadId);
 
-      const hasDiffLenses = this.recognizer
-        .recognizeBehaviours(newData)
-        .find((b) => (b as HasDiffLenses<any>).diffLenses);
-      if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
+        const oldData =
+          update.oldHeadId !== undefined
+            ? await this.evees.getCommitData(update.oldHeadId)
+            : undefined;
 
-      this.updatesDetails[update.perspectiveId] = {
-        diffLense: hasDiffLenses.diffLenses()[0],
-        update,
-        oldData,
-        newData,
-      };
-    });
+        const hasDiffLenses = this.recognizer
+          .recognizeBehaviours(newData)
+          .find((b) => (b as HasDiffLenses<any>).diffLenses);
+        if (!hasDiffLenses) throw Error('hasDiffLenses undefined');
+
+        this.updatesDetails[update.perspectiveId] = {
+          diffLense: hasDiffLenses.diffLenses()[0],
+          update,
+          oldData,
+          newData,
+        };
+      });
 
     await Promise.all(getDetails);
 

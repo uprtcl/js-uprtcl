@@ -62,6 +62,9 @@ export abstract class EveesBaseElement<T extends object = object> extends servic
   }
 
   async load() {
+    this.data = undefined;
+    this.head = undefined;
+
     if (this.uref === undefined) return;
 
     this.perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(this.uref);

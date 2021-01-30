@@ -174,7 +174,12 @@ export class Evees {
     return perspective.id;
   }
 
-  async updatePerspectiveData(perspectiveId: string, object: any, onHeadId?: string) {
+  async updatePerspectiveData(
+    perspectiveId: string,
+    object: any,
+    onHeadId?: string,
+    guardianId?: string
+  ) {
     const remote = await this.getPerspectiveRemote(perspectiveId);
     const dataId = await this.client.store.storeEntity({ object, remote: remote.id });
     if (!onHeadId) {
@@ -189,7 +194,11 @@ export class Evees {
       remote.id
     );
 
-    await this.client.updatePerspective({ perspectiveId, newHeadId: head.id });
+    await this.client.updatePerspective({
+      perspectiveId,
+      newHeadId: head.id,
+      guardianId,
+    });
   }
 
   async getPerspectiveChildren(uref: string): Promise<string[]> {
@@ -236,7 +245,12 @@ export class Evees {
    * Links existing perspective to another parent perspective as a child.
    *
    */
-  async addExistingChild(childId: string, parentId: string, index: number = 0): Promise<void> {
+  async addExistingChild(
+    childId: string,
+    parentId: string,
+    index: number = 0,
+    setGuardian: boolean = true
+  ): Promise<void> {
     const parentData = await this.getPerspectiveData(parentId);
 
     const { object: newParentObject } = await this.spliceChildren(
@@ -245,7 +259,11 @@ export class Evees {
       index,
       0
     );
-    await this.updatePerspectiveData(parentId, newParentObject);
+    await this.updatePerspectiveData(parentId, newParentObject, undefined);
+
+    if (setGuardian) {
+      await this.client.updatePerspective({ perspectiveId: childId, guardianId: parentId });
+    }
   }
 
   /**
@@ -261,15 +279,41 @@ export class Evees {
     return childId;
   }
 
-  async moveChild(object: any, fromIndex: number, toIndex: number): Promise<Entity<any>> {
-    const { removed } = await this.spliceChildren(object, [], fromIndex, 1);
-    const result = await this.spliceChildren(object, removed as string[], toIndex, 0);
-    return result.object;
+  /** moves a child from a perspective into another,
+   * optionally
+   * - will retain the child in the fromPerspective
+   * - will keep the guardian in as the original.
+   */
+  async moveChild(
+    childIndex: number,
+    fromId: string,
+    toId: string,
+    toIndex?: number,
+    keepInFrom: boolean = false,
+    keepGuardian?: boolean
+  ): Promise<void> {
+    let childId;
+    if (!keepInFrom) {
+      childId = await this.removeChild(fromId, childIndex);
+    } else {
+      childId = await this.getChildId(fromId, childIndex);
+    }
+    keepGuardian = keepGuardian !== undefined ? keepGuardian : keepInFrom;
+    await this.addExistingChild(childId, toId, toIndex, !keepGuardian);
   }
 
-  async removeChild(object: any, index: number): Promise<Entity<any>> {
-    const result = await this.spliceChildren(object, [], index, 1);
-    return result.object;
+  /** get the current data of a perspective, removes the i-th child, and updates the data */
+  async removeChild(perspectiveId: string, index: number): Promise<string> {
+    const data = await this.getPerspectiveData(perspectiveId);
+    const spliceResult = await this.spliceChildren(data.object, [], index, 1);
+    await this.updatePerspectiveData(perspectiveId, spliceResult.object);
+    return spliceResult.removed[0];
+  }
+
+  async getChildId(perspectiveId: string, ix: number) {
+    const data = await this.getPerspectiveData(perspectiveId);
+    const children = this.behavior(data.object, 'getChildrenLinks');
+    return children[ix];
   }
 
   async createCommit(

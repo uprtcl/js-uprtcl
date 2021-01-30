@@ -123,6 +123,7 @@ export class EveesHttp implements RemoteEvees {
           id: update.perspectiveId,
           details: {
             headId: update.newHeadId,
+            guardianId: update.guardianId,
           },
         },
       ],

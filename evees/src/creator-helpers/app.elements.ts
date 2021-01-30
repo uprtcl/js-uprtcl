@@ -159,6 +159,11 @@ export class AppElements {
 
     const data = await this.evees.getPerspectiveData(element.perspective.id);
 
+    /** if the scheleton does not have childrent, then stope reading the tree here */
+    if (!element.children) {
+      return;
+    }
+
     const dataChildren = this.evees.behavior(data.object, 'getChildrenLinks');
     await Promise.all(
       dataChildren.map(async (childId, ix) => {
