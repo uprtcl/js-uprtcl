@@ -316,6 +316,19 @@ export class Evees {
     return children[ix];
   }
 
+  async getChildIndex(perspectiveId: string, childId: string): Promise<number> {
+    const data = await this.getPerspectiveData(perspectiveId);
+    const allChildren = this.behavior(data.object, 'getChildrenLinks') as string[];
+    const children = allChildren.filter((id) => id === childId);
+    if (children.length === 0) {
+      return -1;
+    } else if (children.length > 1) {
+      throw new Error(`More than one child with id ${childId} found in ${perspectiveId}`);
+    } else {
+      return children.findIndex((id) => id === childId);
+    }
+  }
+
   async createCommit(
     commit: CreateCommit,
     remote: string,
