@@ -33,8 +33,9 @@ export interface CreateEvee {
 }
 
 export interface PerspectiveDetails {
-  headId?: string | undefined;
+  headId?: string;
   canUpdate?: boolean;
+  guardianId?: string;
 }
 export interface Commit {
   creatorsIds: string[];

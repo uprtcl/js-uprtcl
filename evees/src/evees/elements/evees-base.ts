@@ -18,20 +18,18 @@ export abstract class EveesBaseElement<T extends object = object> extends servic
   @property({ type: String })
   uref!: string;
 
+  @property({ type: String, attribute: 'ui-parent' })
+  uiParentId!: string;
+
   @internalProperty()
   loading: boolean = true;
 
-  @internalProperty()
-  data: Entity<T> | undefined;
-
-  @internalProperty()
   canUpdate!: boolean;
+  guardianId!: string | undefined;
 
-  @internalProperty()
-  head: Secured<Commit> | undefined;
-
-  @internalProperty()
   perspective: Secured<Perspective> | undefined;
+  head: Secured<Commit> | undefined;
+  data: Entity<T> | undefined;
 
   protected remote!: RemoteEvees;
 
@@ -64,12 +62,14 @@ export abstract class EveesBaseElement<T extends object = object> extends servic
   async load() {
     this.data = undefined;
     this.head = undefined;
+    this.guardianId = undefined;
 
     if (this.uref === undefined) return;
 
     this.perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(this.uref);
     const { details } = await this.evees.client.getPerspective(this.uref);
     this.canUpdate = details.canUpdate !== undefined ? details.canUpdate : false;
+    this.guardianId = details.guardianId;
 
     if (details.headId) {
       this.head = await this.evees.client.store.getEntity<Signed<Commit>>(details.headId);
