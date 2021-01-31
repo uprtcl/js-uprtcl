@@ -159,23 +159,23 @@ export class AppElements {
 
     const data = await this.evees.getPerspectiveData(element.perspective.id);
 
-    /** if the scheleton does not have childrent, then stope reading the tree here */
+    /** if the scheleton does not have children, then stop reading the tree here */
     if (!element.children) {
       return;
     }
 
+    /** a one to one mapping from data children to element children is assumed */
     const dataChildren = this.evees.behavior(data.object, 'getChildrenLinks');
     await Promise.all(
-      dataChildren.map(async (childId, ix) => {
+      element.children.map(async (child, ix) => {
+        const childId = dataChildren[ix];
         const perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(childId);
-        if (!element.children) throw new Error(`element does not have children`);
 
         /** set the perspective of the child */
-        const child = element.children[ix];
         child.perspective = perspective;
 
         /** recursively call the readTree */
-        this.readTree(child);
+        await this.readTree(child);
       })
     );
   }
