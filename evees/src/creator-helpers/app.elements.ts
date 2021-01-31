@@ -10,6 +10,7 @@ import { Perspective } from '../evees/interfaces/types';
 export interface AppElement {
   path: string;
   getInitData: (children?: AppElement[]) => any;
+  optional?: boolean;
   perspective?: Secured<Perspective>;
   children?: AppElement[];
 }
@@ -171,6 +172,13 @@ export class AppElements {
         const childId = dataChildren[ix];
         const perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(childId);
 
+        if (!perspective) {
+          /** if perspective does not exist maybe the user removed part of the scheleton */
+          if (child.optional !== true) {
+            throw new Error(`Perspective not found for expected element ${child}`);
+          }
+          return;
+        }
         /** set the perspective of the child */
         child.perspective = perspective;
 
