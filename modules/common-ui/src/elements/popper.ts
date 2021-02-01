@@ -37,6 +37,11 @@ export class UprtclPopper extends LitElement {
   }
 
   showDropDownClicked(e) {
+    // On event bubbling stops event propogation
+    if (e.bubbles) {
+      // Stops event upward propogation
+      e.stopPropagation();
+    }
     if (!this.disableDropdown) {
       this.showDropdown = !this.showDropdown;
     }
