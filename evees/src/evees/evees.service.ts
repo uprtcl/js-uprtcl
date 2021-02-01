@@ -414,33 +414,9 @@ export class Evees {
     }
   }
 
-  getEntityChildren(entity: object) {
-    let hasChildren: HasChildren | undefined = this.recognizer
-      .recognizeBehaviours(entity)
-      .find((prop) => !!(prop as HasChildren).getChildrenLinks);
-
-    if (!hasChildren) {
-      return [];
-    } else {
-      return hasChildren.getChildrenLinks(entity);
-    }
-  }
-
-  replaceEntityChildren(entity: object, newLinks: string[]) {
-    let hasChildren: HasChildren | undefined = this.recognizer
-      .recognizeBehaviours(entity)
-      .find((prop) => !!(prop as HasChildren).getChildrenLinks);
-
-    if (!hasChildren) {
-      throw new Error(`entity dont hasChildren ${JSON.stringify(entity)}`);
-    } else {
-      return hasChildren.replaceChildrenLinks(entity)(newLinks);
-    }
-  }
-
   async forkPerspective(
     perspectiveId: string,
-    remoteId: string,
+    remoteId?: string,
     parentId?: string,
     client?: Client
   ): Promise<string> {
@@ -505,8 +481,9 @@ export class Evees {
       parentsIds: [],
       timestamp: Date.now(),
     };
+    const signedCommit = signObject(newCommit);
 
-    return client.store.storeEntity({ object: newCommit, remote });
+    return client.store.storeEntity({ object: signedCommit, remote });
   }
 
   async forkEntity(
@@ -520,13 +497,14 @@ export class Evees {
     if (!data) throw new Error(`data ${entityId} not found`);
 
     /** createOwnerPreservingEntity of children */
-    const getLinksForks = this.getEntityChildren(data).map((link) =>
+
+    const getLinksForks = this.behavior(data.object, 'getChildrenLinks').map((link) =>
       this.fork(link, remote, parentId, client)
     );
     const newLinks = await Promise.all(getLinksForks);
-    const tempData = this.replaceEntityChildren(data, newLinks);
+    const newObject = this.behavior(data.object, 'replaceChildrenLinks')(newLinks);
 
-    return client.store.storeEntity({ object: tempData.object, remote });
+    return client.store.storeEntity({ object: newObject, remote });
   }
 
   async getHome(remoteId: string) {
