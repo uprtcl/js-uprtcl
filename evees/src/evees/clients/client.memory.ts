@@ -50,7 +50,7 @@ export class ClientOnMemory implements Client {
     const update = this.updates.get(perspectiveId);
     if (update) {
       return {
-        details: { headId: update.newHeadId },
+        details: { headId: update.newHeadId, guardianId: update.guardianId },
       };
     }
 

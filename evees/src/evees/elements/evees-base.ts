@@ -10,9 +10,7 @@ import { RemoteEvees } from '../interfaces/remote.evees';
 import { ClientEvents } from '../interfaces/client';
 import { Commit, Perspective } from '../interfaces/types';
 
-export abstract class EveesBaseElement<T extends object = object> extends servicesConnect(
-  LitElement
-) {
+export class EveesBaseElement<T extends object = object> extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-BASE-ELEMENT');
 
   @property({ type: String })

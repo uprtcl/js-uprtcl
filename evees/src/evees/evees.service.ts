@@ -242,8 +242,8 @@ export class Evees {
     };
   }
   /**
-   * Links existing perspective to another parent perspective as a child.
-   *
+   * Add an existing perspective as a child of another and, optionally, set the new parent
+   * as the guardian
    */
   async addExistingChild(
     childId: string,
@@ -267,12 +267,11 @@ export class Evees {
   }
 
   /**
-   * Ass
+   * Creates an evee and add it as a child.
    */
   async addNewChild(childObject: object, parentId: string, index: number = 0): Promise<string> {
     const childId = await this.createEvee({
       object: childObject,
-      parentId: parentId,
     });
 
     await this.addExistingChild(childId, parentId, index);
@@ -285,19 +284,25 @@ export class Evees {
    * - will keep the guardian in as the original.
    */
   async moveChild(
-    childIndex: number,
+    childIdOrIndex: number | string,
     fromId: string,
     toId: string,
     toIndex?: number,
     keepInFrom: boolean = false,
     keepGuardian?: boolean
   ): Promise<void> {
+    let childIndex;
+    if (typeof childIdOrIndex === 'string') {
+      childIndex = await this.getChildIndex(fromId, childIdOrIndex);
+    }
+
     let childId;
     if (!keepInFrom) {
       childId = await this.removeChild(fromId, childIndex);
     } else {
       childId = await this.getChildId(fromId, childIndex);
     }
+
     keepGuardian = keepGuardian !== undefined ? keepGuardian : keepInFrom;
     await this.addExistingChild(childId, toId, toIndex, !keepGuardian);
   }
