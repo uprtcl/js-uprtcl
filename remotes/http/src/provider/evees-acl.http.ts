@@ -11,7 +11,7 @@ export class EveesAccessControlHttp implements AccessControl {
 
   constructor(protected connection: HttpConnectionLogged) {}
 
-  async toggleDelegate(hash: string, delegate: boolean, delegateTo: string) {
+  async toggleDelegate(hash: string, delegate: boolean, delegateTo?: string) {
     await this.connection.put(
       `/permissions/${hash}/delegate?delegate=${delegate}&delegateTo=${delegateTo}`,
       {}
