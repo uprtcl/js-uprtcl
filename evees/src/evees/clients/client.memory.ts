@@ -1,3 +1,4 @@
+import lodash from 'lodash-es';
 import { EventEmitter } from 'events';
 
 import { Update, NewPerspective, PerspectiveDetails } from '../interfaces/types';
@@ -46,7 +47,7 @@ export class ClientOnMemory implements Client {
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
     const cachedPerspective = this.cachedPerspectives.get(perspectiveId);
     if (cachedPerspective) {
-      return { details: cachedPerspective };
+      return { details: lodash.cloneDeep(cachedPerspective) };
     }
 
     const result = await this.base.getPerspective(perspectiveId);

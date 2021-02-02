@@ -132,8 +132,26 @@ export class Evees {
     return behavior[behaviorName](object);
   }
 
+  /** a helper to add the old details on un update to have a set of added and removed
+   * children consiste */
+  async checkOldDetails(update: Update): Promise<Update> {
+    if (update.oldDetails) {
+      return update;
+    }
+
+    // the old details are the current details.
+    const { details } = await this.client.getPerspective(update.perspectiveId);
+
+    update.oldDetails = details;
+    return update;
+  }
+
   /** A helper methods that processes an update and appends the links */
-  async appendLinksToUpdate(update: Update, patternName: string = 'children'): Promise<Update> {
+  async checkLinks(update: Update, patternName: string = 'children'): Promise<Update> {
+    if (update.linkChanges) {
+      return update;
+    }
+
     const hasData = update.details.headId;
 
     if (hasData) {
@@ -176,21 +194,20 @@ export class Evees {
     return update;
   }
 
+  async prepareUpdate(update: Update) {
+    return update;
+  }
+
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async newPerspective(newPerspective: NewPerspective) {
-    const hasLinks = newPerspective.update.linkChanges;
-    if (!hasLinks) {
-      newPerspective.update = await this.appendLinksToUpdate(newPerspective.update);
-    }
+    newPerspective.update = await this.checkLinks(newPerspective.update);
     return this.client.newPerspective(newPerspective);
   }
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async updatePerspective(update: Update) {
-    const hasLinks = update.linkChanges;
-    if (!hasLinks) {
-      update = await this.appendLinksToUpdate(update);
-    }
+    update = await this.checkOldDetails(update);
+    update = await this.checkLinks(update);
     return this.client.updatePerspective(update);
   }
 

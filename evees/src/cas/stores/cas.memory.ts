@@ -1,3 +1,5 @@
+import lodash from 'lodash-es';
+
 import { CASStore, EntityGetResult } from '../interfaces/cas-store';
 import { Entity, EntityOnRemote, ObjectOnRemote } from '../interfaces/entity';
 
@@ -51,12 +53,12 @@ export class CASOnMemory implements CASStore {
     hashes.forEach((hash) => {
       const entityCached = this.cachedEntities.get(hash);
       if (entityCached) {
-        found.push(entityCached);
+        found.push(lodash.cloneDeep(entityCached));
       } else {
         /** Check the new entities buffer */
         const entityNew = this.newEntities.get(hash);
         if (entityNew) {
-          found.push(entityNew.entity);
+          found.push(lodash.cloneDeep(entityNew.entity));
         } else {
           notFound.push(hash);
         }
