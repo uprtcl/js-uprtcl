@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/documents",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Cortex module implementing texts and folders",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -12,9 +12,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.1.1",
-    "@uprtcl/evees": "^0.1.1",
-    "@uprtcl/http-provider": "^0.1.1",
+    "@uprtcl/common-ui": "^0.2.0",
+    "@uprtcl/evees": "^0.2.0",
+    "@uprtcl/http-provider": "^0.2.0",
     "@uprtcl/ipfs-provider": "^0.1.1",
     "codemirror": "^5.54.0",
     "lit-element": "^2.3.0",
