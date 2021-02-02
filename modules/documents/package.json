@@ -15,7 +15,6 @@
     "@uprtcl/common-ui": "^0.2.0",
     "@uprtcl/evees": "^0.2.0",
     "@uprtcl/http-provider": "^0.2.0",
-    "@uprtcl/ipfs-provider": "^0.1.1",
     "codemirror": "^5.54.0",
     "lit-element": "^2.3.0",
     "lodash-es": "^4.17.15",
