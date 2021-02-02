@@ -127,9 +127,13 @@ export class ClientOnMemory implements Client {
 
   async flush(): Promise<void> {
     await this.store.flush();
+
+    const newPerspectives = Array.from(this.newPerspectives.values());
+    const updates = Array.prototype.concat.apply([], Array.from(this.updates.values()));
+
     await this.base.update({
-      newPerspectives: Array.from(this.newPerspectives.values()),
-      updates: Array.prototype.concat([], [...Array.from(this.updates.values())]),
+      newPerspectives,
+      updates,
     });
 
     this.newPerspectives.clear();

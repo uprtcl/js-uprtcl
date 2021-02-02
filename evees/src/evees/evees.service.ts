@@ -165,9 +165,11 @@ export class Evees {
       });
 
       /** set the details */
-      (update.linkChanges as LinkChanges).children = {
-        added: addedChildren,
-        removed: removedChildren,
+      update.linkChanges = {
+        [patternName]: {
+          added: addedChildren,
+          removed: removedChildren,
+        },
       };
     }
 

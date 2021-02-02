@@ -54,11 +54,11 @@ export interface Update {
  * for recurse-by-default operations */
 
 export interface LinkChanges {
-  children: {
+  children?: {
     added: string[];
     removed: string[];
   };
-  linksTo: {
+  linksTo?: {
     added: string[];
     removed: string[];
   };
