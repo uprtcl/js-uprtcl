@@ -261,7 +261,7 @@ export class Evees {
       remote.id
     );
 
-    await this.client.updatePerspective({
+    await this.updatePerspective({
       perspectiveId,
       details: {
         headId: head.id,
@@ -331,7 +331,7 @@ export class Evees {
     await this.updatePerspectiveData(parentId, newParentObject, undefined);
 
     if (setGuardian) {
-      await this.client.updatePerspective({
+      await this.updatePerspective({
         perspectiveId: childId,
         details: { guardianId: parentId },
       });
