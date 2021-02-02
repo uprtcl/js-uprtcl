@@ -496,7 +496,7 @@ export class Evees {
     const remote = await this.getRemote(remoteId);
     const perspective = await remote.snapPerspective(
       { context: refPerspective.object.payload.context },
-      { guardianId }
+      guardianId
     );
 
     const { details } = await client.getPerspective(perspectiveId);
