@@ -1,6 +1,4 @@
-import { Commit, EveesRemote, Perspective, Secured } from '@uprtcl/evees';
-import { CASStore } from '@uprtcl/multiplatform';
-import { Entity, PatternRecognizer, HasChildren } from '@uprtcl/cortex';
+import { Commit, RemoteEvees, Perspective, Secured } from '@uprtcl/evees';
 
 export interface EveeData {
   perspective: Secured<Perspective>;
@@ -9,11 +7,7 @@ export interface EveeData {
 }
 
 export class EveesReader {
-  constructor(
-    protected remotes: EveesRemote[],
-    protected store: CASStore,
-    protected recognizer: PatternRecognizer
-  ) {}
+  constructor(protected remotes: RemoteEvees[], protected store: CASStore) {}
 
   async resolve(uref: string, recurse = false) {
     const perspectiveObject = (await this.store.get(uref)) as any | undefined;
@@ -24,28 +18,18 @@ export class EveesReader {
     const details = await remote.getPerspective(uref);
     const commitObject =
       details && details.headId ? ((await this.store.get(details.headId)) as any) : undefined;
-    const dataId = commitObject.payload.dataId;
     const data =
-      commitObject && commitObject.payload.dataId ? await this.store.get(dataId) : undefined;
+      commitObject && commitObject.payload.dataId
+        ? await this.store.get(commitObject.payload.dataId)
+        : undefined;
 
-    let dataCleaned = data;
-
-    if (recurse) {
-      /** git children from pattern */
-      const dataEntity = { id: dataId, object: data };
-      const hasChildren: HasChildren = this.recognizer
-        .recognizeBehaviours(dataEntity)
-        .find((b) => (b as HasChildren).getChildrenLinks);
-
-      const children = hasChildren.getChildrenLinks(dataEntity);
-      const childrenData = await Promise.all(children.map((child) => this.resolve(child)));
-
-      const dataEntityWithChildren = hasChildren.replaceChildrenLinks(dataEntity)(
-        childrenData as any
-      );
-      dataCleaned = dataEntityWithChildren.object;
-    }
-
-    return dataCleaned;
+    return {
+      perspective: {
+        id: uref,
+        object: perspectiveObject,
+      },
+      commit: commitObject ? { id: details.headId, object: commitObject } : undefined,
+      data: data ? { id: commitObject.payload.dataId, object: data } : undefined,
+    };
   }
 }

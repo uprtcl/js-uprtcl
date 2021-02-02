@@ -1,0 +1,76 @@
+{
+  "name": "@uprtcl/evees",
+  "version": "0.1.1",
+  "description": "The core _Prtcl package with all the services you need to handle Evees in a web application.",
+  "homepage": "https://uprtcl.io",
+  "scripts": {
+    "update-uprtcl": "ncu -u \"/^@uprtcl.*$/\"",
+    "clean": "rimraf dist",
+    "dev": "rollup -w -c rollup.config.ts",
+    "build": "npm run clean && rollup -c rollup.config.ts",
+    "test": "karma start --coverage",
+    "test:watch": "karma start --auto-watch=true --single-run=false"
+  },
+  "dependencies": {
+    "@uprtcl/common-ui": "^0.1.1",
+    "cbor-js": "^0.1.0",
+    "cids": "^1.0.0",
+    "dexie": "^3.0.2",
+    "diff-match-patch-ts": "^0.2.0",
+    "ethers": "^5.0.9",
+    "events": "^3.2.0",
+    "lit-element": "^2.3.0",
+    "lodash-es": "^4.17.15",
+    "multihashing-async": "^0.8.0",
+    "randomcolor": "^0.5.4"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^2.5.6",
+    "@rollup/plugin-json": "^4.0.1",
+    "@types/lodash-es": "^4.17.3",
+    "@types/node": "^10.11.0",
+    "karma": "^4.4.1",
+    "npm-check-updates": "^10.2.1",
+    "rimraf": "^2.6.2",
+    "rollup": "^2.0.5",
+    "rollup-plugin-sourcemaps": "^0.5.0",
+    "rollup-plugin-typescript2": "^0.25.3",
+    "temp-dir": "^2.0.0",
+    "typescript": "^3.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uprtcl/js-uprtcl/"
+  },
+  "contributors": [
+    {
+      "name": "Guillem Cordoba",
+      "email": "guillem.cordoba@gmail.com",
+      "url": "https://github.com/guillemcordoba"
+    },
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@collectiveone.org",
+      "url": "https://github.com/pepoospina"
+    }
+  ],
+  "keywords": [
+    "_Prtcl",
+    "git",
+    "perspectives",
+    "comBOOS-FLs",
+    "proposal"
+  ],
+  "license": "BOOS-FL",
+  "main": "dist/uprtcl-evees.umd.js",
+  "module": "dist/uprtcl-evees.es5.js",
+  "typings": "dist/types/uprtcl-evees.d.ts",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "gitHead": "3414d6cc2d56ad396d8d26ca57aa57e970a156c7"
+}

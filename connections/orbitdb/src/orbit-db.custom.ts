@@ -2,14 +2,10 @@ import OrbitDB from 'orbit-db';
 import IPFS from 'ipfs';
 
 import OrbitDBSet from '@tabcat/orbit-db-set';
-import {
-  IdentityProvider,
-  Keystore,
-} from '@tabcat/orbit-db-identity-provider-d';
+import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
-import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { PinnerCached } from '@uprtcl/ipfs-provider';
+import { Logger } from '@uprtcl/evees';
+import { PinnedCacheDB } from '@uprtcl/ipfs-provider';
 
 import { IdentitySource } from './identity.source';
 import { CustomStore } from './types';
@@ -39,6 +35,7 @@ const ENABLE_LOG = false;
 
 export class OrbitDBCustom extends Connection {
   public instance: any;
+  pinnedCache: PinnedCacheDB;
   private storeQueue = {};
   public identity: null | any = null;
   readonly status: Status = {
@@ -53,7 +50,7 @@ export class OrbitDBCustom extends Connection {
     protected storeManifests: CustomStore[],
     protected acls: any[],
     protected identitySource: IdentitySource,
-    public pinner?: PinnerCached,
+    protected pinnerUrl?: string,
     protected pinnerMultiaddr?: string,
     public ipfs?: any,
     options?: ConnectionOptions
@@ -66,6 +63,8 @@ export class OrbitDBCustom extends Connection {
         OrbitDB.AccessControllers.addAccessController({ AccessController });
       }
     });
+
+    this.pinnedCache = new PinnedCacheDB(`pinned-at-${this.pinnerUrl}`);
   }
 
   /**
@@ -110,13 +109,8 @@ export class OrbitDBCustom extends Connection {
     );
 
     if (!signedAccountEntry) {
-      const signature = await this.identitySource.signText(
-        mappingMsg(identity.id)
-      );
-      this.logger.log(
-        `Address mapping added to store ${mappingStore.address}`,
-        signature
-      );
+      const signature = await this.identitySource.signText(mappingMsg(identity.id));
+      this.logger.log(`Address mapping added to store ${mappingStore.address}`, signature);
       await mappingStore.add(signature);
     }
 
@@ -152,8 +146,7 @@ export class OrbitDBCustom extends Connection {
 
   public async storeAddress(type: string, entity: any): Promise<string> {
     const storeManifest = this.getManifest(type);
-    if (storeManifest === undefined)
-      throw new Error(`store if type ${type} not found`);
+    if (storeManifest === undefined) throw new Error(`store if type ${type} not found`);
 
     return this.instance.determineAddress(
       storeManifest.name(entity),
@@ -162,14 +155,20 @@ export class OrbitDBCustom extends Connection {
     );
   }
 
+  public async isPinned(address: string) {
+    const result = await fetch(`${this.pinnerUrl}/includes?address=${address}`, {
+      method: 'GET',
+    });
+
+    const { includes } = await result.json();
+    return includes;
+  }
+
   private async openStore(address: string | any): Promise<any> {
     // this.logger.log(`${address} -- Openning store`);
     let db;
 
-    const hadDB = await this.instance._haveLocalData(
-      this.instance.cache,
-      address
-    );
+    const hadDB = await this.instance._haveLocalData(this.instance.cache, address);
 
     if (this.instance.stores[address]) {
       // this.logger.log(`${address} -- Store loaded. HadDB: ${hadDB}`);
@@ -179,9 +178,7 @@ export class OrbitDBCustom extends Connection {
       db = this.storeQueue[address];
     } else {
       if (ENABLE_LOG) {
-        this.logger.log(
-          `${address} -- Store init - first time. HadDB: ${hadDB}`
-        );
+        this.logger.log(`${address} -- Store init - first time. HadDB: ${hadDB}`);
       }
       db = this.storeQueue[address] = this.instance
         .open(address, { identity: this.identity })
@@ -200,14 +197,11 @@ export class OrbitDBCustom extends Connection {
     }
 
     if (!hadDB) {
-      // wait for replication the first time I read this DB.
-      if (this.pinner && (await this.pinner.isPinned(db.address))) {
+      if (await this.isPinned(db.address)) {
         if (ENABLE_LOG) {
-          this.logger.log(
-            `${db.address} -- Awaiting replication. HadDB: ${hadDB}`
-          );
+          this.logger.log(`${db.address} -- Awaiting replication. HadDB: ${hadDB}`);
         }
-        await new Promise<void>((resolve) => {
+        await new Promise((resolve) => {
           db.events.on('replicated', async (r) => {
             this.logger.log(`${r} -- Replicated`);
             resolve();
@@ -221,17 +215,43 @@ export class OrbitDBCustom extends Connection {
     return db;
   }
 
-  public async getStore(
-    type: string,
-    entity?: any,
-    pin = false
-  ): Promise<any> {
+  public async getStore(type: string, entity?: any, pin: boolean = false): Promise<any> {
     const address = await this.storeAddress(type, entity);
     const store = this.openStore(address);
     if (pin) {
       this.pin(address);
     }
     return store;
+  }
+
+  public async getAll(address: string) {
+    if (this.pinnerUrl) {
+      const addr = address.toString();
+
+      if (ENABLE_LOG) {
+        this.logger.log(`getting from`, addr);
+      }
+      const result = await fetch(`${this.pinnerUrl}/getAll?address=${addr}`, {
+        method: 'GET',
+      });
+
+      return result.json();
+    }
+  }
+
+  public async getEntity(hash: string) {
+    if (this.pinnerUrl) {
+      const addr = hash.toString();
+
+      if (ENABLE_LOG) {
+        this.logger.log(`getting from`, addr);
+      }
+      const result = await fetch(`${this.pinnerUrl}/getEntity?cid=${addr}`, {
+        method: 'GET',
+      });
+
+      return result.json();
+    }
   }
 
   public async dropStore(type: string, entity?: any): Promise<any> {
@@ -242,7 +262,20 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async pin(address: string) {
-    if (this.pinner) this.pinner.pin(address.toString());
+    if (this.pinnerUrl) {
+      const addr = address.toString();
+      const pinned = await this.pinnedCache.pinned.get(addr);
+      if (!pinned) {
+        if (ENABLE_LOG) {
+          this.logger.log(`pinning`, addr);
+        }
+        fetch(`${this.pinnerUrl}/pin?address=${addr}`, {
+          method: 'GET',
+        }).then((response) => {
+          this.pinnedCache.pinned.put({ id: addr });
+        });
+      }
+    }
   }
 
   public async unpin(address: string) {

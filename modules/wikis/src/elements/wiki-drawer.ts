@@ -1,5 +1,4 @@
 import { property, html, css, LitElement, query } from 'lit-element';
-import { ApolloClient, gql } from 'apollo-boost';
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
     propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
@@ -7,25 +6,19 @@ const styleMap = (style) => {
   }, '');
 };
 
-import { Logger, moduleConnect } from '@uprtcl/micro-orchestrator';
-import { sharedStyles } from '@uprtcl/lenses';
-import { CortexModule, PatternRecognizer, Signed } from '@uprtcl/cortex';
 import {
-  EveesRemote,
-  EveesModule,
+  Logger,
+  servicesConnect,
   eveeColor,
   DEFAULT_COLOR,
-  Perspective,
   CONTENT_UPDATED_TAG,
   ContentUpdatedEvent,
+  ProposalCreatedEvent,
 } from '@uprtcl/evees';
-import { ApolloClientModule } from '@uprtcl/graphql';
 import { WikiDrawerContent } from './wiki-drawer-content';
-import { loadEntity } from '@uprtcl/multiplatform';
-import { CREATE_PROPOSAL, PROPOSAL_CREATED_TAG, EveesInfoConfig } from '@uprtcl/evees';
-import { ProposalCreatedEvent } from '@uprtcl/evees/dist/types/types';
+import { PROPOSAL_CREATED_TAG, EveesInfoConfig } from '@uprtcl/evees';
 
-export class WikiDrawer extends moduleConnect(LitElement) {
+export class WikiDrawer extends servicesConnect(LitElement) {
   logger = new Logger('WIKI-DRAWER');
 
   @property({ type: String, attribute: 'uref' })
@@ -52,26 +45,17 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   @query('#evees-info-row')
   eveesInfoLocal!: any;
 
-  protected client!: ApolloClient<any>;
-  protected eveesRemotes!: EveesRemote[];
-  protected recognizer!: PatternRecognizer;
-
   constructor() {
     super();
   }
 
   async firstUpdated() {
-    this.client = this.request(ApolloClientModule.bindings.Client);
-    this.eveesRemotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    this.recognizer = this.request(CortexModule.bindings.Recognizer);
-
     this.logger.log('firstUpdated()', { uref: this.uref });
-
     this.uref = this.firstRef;
 
     /** the official owner is the creator of the firstRef of the Wiki,
      * the firstRef is comming from the outside e.g. browser url. */
-    const official = await loadEntity<Signed<Perspective>>(this.client, this.firstRef);
+    const official = await this.evees.client.store.getEntity(this.firstRef);
     if (!official) throw new Error(`cant find official perspective ${this.firstRef}`);
     this.eveesInfoConfig.officialOwner = official.object.payload.creatorId;
 
@@ -99,7 +83,7 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async load() {
-    const current = await loadEntity<Signed<Perspective>>(this.client, this.uref);
+    const current = await this.evees.client.store.getEntity(this.uref);
     if (!current) throw new Error(`cant find current perspective ${this.uref}`);
 
     this.creatorId = current.object.payload.creatorId;
@@ -108,7 +92,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   async forceReload() {
     this.loading = true;
     await this.updateComplete;
-    await this.client.resetStore();
     this.load();
     this.loading = false;
   }
@@ -120,15 +103,8 @@ export class WikiDrawer extends moduleConnect(LitElement) {
   }
 
   async catchMergeProposal(e: ProposalCreatedEvent) {
-    await this.client.mutate({
-      mutation: CREATE_PROPOSAL,
-      variables: {
-        toPerspectiveId: this.firstRef,
-        fromPerspectiveId: this.uref,
-        newPerspectives: e.detail.proposalDetails.newPerspectives,
-        updates: e.detail.proposalDetails.updates,
-      },
-    });
+    if (!this.evees.client.proposals) throw new Error('Proposals service not registered');
+    this.evees.client.proposals.createProposal(e.detail.proposal);
     this.eveesInfoLocal.load();
   }
 
@@ -212,7 +188,6 @@ export class WikiDrawer extends moduleConnect(LitElement) {
 
   static get styles() {
     return [
-      sharedStyles,
       css`
         :host {
           display: flex;

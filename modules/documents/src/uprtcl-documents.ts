@@ -1,6 +1,3 @@
-// Required by inversify
-import 'reflect-metadata';
-
 export {
   TextNode,
   TextType,
@@ -14,11 +11,7 @@ export { DocumentsBindings } from './bindings';
 export { htmlToText } from './support/documents.support';
 
 // Patterns
-export {
-  TextNodePattern,
-  TextNodeCommon,
-  TextNodeTitle,
-} from './patterns/text-node.pattern';
+export { TextNodePattern, TextNodeCommon, TextNodeTitle } from './patterns/text-node.pattern';
 
 export { DocNodeLens } from './patterns/document-patterns';
 

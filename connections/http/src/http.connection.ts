@@ -1,5 +1,4 @@
-import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Connection, ConnectionOptions } from '@uprtcl/evees';
 
 export interface PostResult {
   result: string;
@@ -7,17 +6,25 @@ export interface PostResult {
   elementIds: string[];
 }
 
+export interface GetResult<T> {
+  result: string;
+  message: string;
+  data: T;
+}
+
 /** TODO: two modules that instanciate two http connections will conflict */
 
 /**
  * Wrapper over the fetch API
  */
+
 export class HttpConnection extends Connection {
   /** used to keep the token in memory in case tokenId is undefined */
   private tokenMem: string | undefined = undefined;
   private userIdMem: string | undefined = undefined;
 
   constructor(
+    readonly host: string,
     options?: ConnectionOptions,
     protected tokenStorageId: string | null = 'HTTP_AUTH_TOKEN',
     protected userStorageId: string | null = 'HTTP_USER_ID'
@@ -93,7 +100,7 @@ export class HttpConnection extends Connection {
   public async get<T>(url: string): Promise<T> {
     this.logger.log('[HTTP GET]: ', url);
 
-    return fetch(url, {
+    return fetch(this.host + url, {
       method: 'GET',
       headers: this.headers,
     })
@@ -101,18 +108,21 @@ export class HttpConnection extends Connection {
         if (!response.ok) {
           throw new Error(response.statusText);
         }
-        return response.json() as Promise<{ data: T }>;
+        return response.json() as Promise<GetResult<T>>;
       })
-      .then((data) => {
-        this.logger.log('[HTTP GET RESULT] ', url, data);
-        return data.data;
+      .then((getResult) => {
+        // this.logger.log('[HTTP GET RESULT] ', url, getResult);
+        if (getResult.result === 'error') {
+          throw new Error(`Error fetching url: ${url}`);
+        }
+        return getResult.data;
       });
   }
 
   public async getWithPut<T>(url: string, body: any): Promise<T> {
     this.logger.log('PUT: ', url);
 
-    return fetch(url, {
+    return fetch(this.host + url, {
       method: 'PUT',
       headers: this.headers,
       body: JSON.stringify(body),
@@ -148,7 +158,7 @@ export class HttpConnection extends Connection {
   }
 
   public async delete(url: string): Promise<PostResult> {
-    this.logger.log('[HTTP DELETE]', url);
+    this.logger.log(`[HTTP DELETE]`, this.host + url);
     return fetch(url, {
       method: 'DELETE',
       headers: {
@@ -173,7 +183,7 @@ export class HttpConnection extends Connection {
    */
   public async putOrPost(url: string, body: any, method: string): Promise<PostResult> {
     this.logger.log(`[HTTP ${method}]`, url, body);
-    return fetch(url, {
+    return fetch(this.host + url, {
       method: method,
       headers: {
         ...this.headers,

@@ -1,57 +1,45 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Entity } from '@uprtcl/cortex';
-import { EveesWorkspace } from '@uprtcl/evees';
+import { Client, Logger, servicesConnect } from '@uprtcl/evees';
 
 import { TextNode } from '../types';
 
 const LOGINFO = true;
 
-export class TextNodeDiff extends moduleConnect(LitElement) {
+export class TextNodeDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: Boolean })
   summary = false;
 
   @property({ attribute: false })
-  workspace!: EveesWorkspace;
+  client!: Client;
 
   @property({ attribute: false })
-  newData!: Entity<TextNode>;
+  newData!: TextNode;
 
   @property({ attribute: false })
-  oldData!: Entity<TextNode>;
+  oldData!: TextNode;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', {
       newData: this.newData,
-      oldData: this.oldData
+      oldData: this.oldData,
     });
   }
 
   render() {
     if (this.newData === undefined || this.oldData === undefined) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     return html`
       <div class="page-edited-title">Updated</div>
       <div class="document-container old-page">
-        <documents-editor
-          .client=${this.workspace.workspace}
-          uref=${this.oldData.id}
-          read-only
-        ></documents-editor>
+        <documents-editor .client=${this.client} uref="" read-only></documents-editor>
       </div>
       <div class="document-container new-page">
-        <documents-editor
-          .client=${this.workspace.workspace}
-          uref=${this.newData.id}
-          read-only
-        ></documents-editor>
+        <documents-editor .client=${this.client} uref="" read-only></documents-editor>
       </div>
     `;
   }

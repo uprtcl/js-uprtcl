@@ -1,6 +1,6 @@
 import { ethers, ContractInterface, Overrides } from 'ethers';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 
 import { EthereumConnection } from './ethereum.connection';
 
@@ -18,10 +18,7 @@ export class EthereumContract {
   logger = new Logger('EthereumContract');
   contractAddress!: string;
 
-  constructor(
-    protected options: EthereumContractOptions,
-    public connection: EthereumConnection
-  ) {}
+  constructor(protected options: EthereumContractOptions, public connection: EthereumConnection) {}
 
   get userId() {
     return this.connection.getCurrentAccount();

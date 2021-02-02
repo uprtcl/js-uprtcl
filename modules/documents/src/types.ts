@@ -1,6 +1,4 @@
-import { Entity, HasChildren } from '@uprtcl/cortex';
-import { EveesHelpers } from '@uprtcl/evees';
-import { ApolloClient } from 'apollo-boost';
+import { Client, Entity, HasChildren } from '@uprtcl/evees';
 import { HasDocNodeLenses } from './patterns/document-patterns';
 
 export enum TextType {
@@ -34,8 +32,6 @@ export interface DocNode {
   parent?: DocNode;
   ix?: number; // ix on parent
   focused: boolean;
-  hasDocNodeLenses: HasDocNodeLenses;
-  hasChildren: HasChildren;
   canConvertTo: string[];
   draggingOver?: boolean;
   draggingOverTimeout?: any;
@@ -56,10 +52,7 @@ export interface DocNodeEventsHandlers {
 }
 export interface CustomBlock {
   default: any;
-  canConvertTo: Record<
-    string,
-    (node: DocNode, client: ApolloClient<any>) => Promise<any>
-  >;
+  canConvertTo: Record<string, (node: DocNode, client: Client) => Promise<any>>;
 }
 
-export type CustomBlocks = Record<string, CustomBlock>;
+export type CustomBlocks = Map<string, CustomBlock>;

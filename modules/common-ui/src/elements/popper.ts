@@ -1,9 +1,6 @@
-import { Logger } from '@uprtcl/micro-orchestrator';
 import { LitElement, property, html, css } from 'lit-element';
 
 export class UprtclPopper extends LitElement {
-  logger = new Logger('UPRTCL-POPPER');
-
   @property({ type: String })
   icon = 'more_vert';
 
@@ -40,6 +37,11 @@ export class UprtclPopper extends LitElement {
   }
 
   showDropDownClicked(e) {
+    // On event bubbling stops event propogation
+    if (e.bubbles) {
+      // Stops event upward propogation
+      e.stopPropagation();
+    }
     if (!this.disableDropdown) {
       this.showDropdown = !this.showDropdown;
     }

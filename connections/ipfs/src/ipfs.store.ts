@@ -3,16 +3,17 @@ import IPFS from 'ipfs';
 
 import {
   CidConfig,
-  defaultCidConfig,
   CASStore,
   Connection,
   ConnectionOptions,
-} from '@uprtcl/multiplatform';
-import { Logger } from '@uprtcl/micro-orchestrator';
+  sortObject,
+  Logger,
+  Entity,
+  EntityGetResult,
+} from '@uprtcl/evees';
 
 import { IpfsConnectionOptions } from './types';
-import { sortObject } from './utils';
-import { PinnerCached } from './pinner';
+import { PinnedCacheDB } from './pinner.cache';
 
 export interface PutConfig {
   format: string;
@@ -21,13 +22,17 @@ export interface PutConfig {
   pin?: boolean;
 }
 
+export const defaultCidConfig: CidConfig = {
+  version: 1,
+  type: 'sha2-256',
+  codec: 'raw',
+  base: 'base58btc',
+};
+
 const TIMEOUT = 10000;
 const ENABLE_LOG = true;
 
-const promiseWithTimeout = (
-  promise: Promise<any>,
-  timeout: number
-): Promise<any> => {
+const promiseWithTimeout = (promise: Promise<any>, timeout: number): Promise<any> => {
   let timeoutId;
   const timeoutPromise = new Promise((_, reject) => {
     timeoutId = setTimeout(() => {
@@ -39,16 +44,40 @@ const promiseWithTimeout = (
 
 export class IpfsStore extends Connection implements CASStore {
   logger = new Logger('IpfsStore');
+  pinnedCache: PinnedCacheDB;
 
   casID = 'ipfs';
 
   constructor(
     public cidConfig: CidConfig = defaultCidConfig,
     protected client?: any,
-    protected pinner?: PinnerCached,
+    protected pinnerUrl?: string,
     connectionOptions: ConnectionOptions = {}
   ) {
     super(connectionOptions);
+    this.pinnedCache = new PinnedCacheDB(`pinned-at-${this.pinnerUrl}`);
+  }
+
+  storeEntities(objects: any[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntities(objects: any[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  getEntities(hashes: string[]): Promise<EntityGetResult> {
+    throw new Error('Method not implemented.');
+  }
+  flush(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getEntity(uref: string): Promise<Entity<any>> {
+    throw new Error('Method not implemented.');
+  }
+  storeEntity(object: any): Promise<string> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntity(object: any): Promise<string> {
+    throw new Error('Method not implemented.');
   }
 
   /**
@@ -93,9 +122,18 @@ export class IpfsStore extends Connection implements CASStore {
         hashString,
       });
     }
-
-    if (this.pinner) this.pinner.pin(hashString);
-
+    if (this.pinnerUrl) {
+      this.pinnedCache.pinned.get(hashString).then((pinned) => {
+        if (!pinned) {
+          if (ENABLE_LOG) {
+            this.logger.log(`pinning`, hashString);
+          }
+          fetch(`${this.pinnerUrl}/pin_hash?cid=${hashString}`).then((response) => {
+            this.pinnedCache.pinned.put({ id: hashString });
+          });
+        }
+      });
+    }
     return hashString;
   }
 
