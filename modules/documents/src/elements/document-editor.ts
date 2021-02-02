@@ -445,7 +445,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
           const perspectiveId = await this.evees.createEvee({
             object: node.draft,
             remoteId: node.remote,
-            parentId: node.parent ? node.parent.uref : undefined,
+            guardianId: node.parent ? node.parent.uref : undefined,
             partialPerspective: perspective.object.payload,
           });
           if (perspectiveId !== node.uref) {
