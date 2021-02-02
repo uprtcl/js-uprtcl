@@ -4,7 +4,6 @@
     "connections/ethereum",
     "evees",
     "modules/common-ui",
-    "modules/wikis",
     "modules/documents",
     "remotes/http"
   ],
