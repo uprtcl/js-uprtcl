@@ -81,7 +81,7 @@ export class AppElements {
     }
   }
 
-  async initPerspectiveDataRec(element: AppElement, parentId?: string) {
+  async initPerspectiveDataRec(element: AppElement, guardianId?: string) {
     const data = element.getInitData(element.children);
 
     if (!element.perspective)
@@ -92,7 +92,7 @@ export class AppElements {
     await this.evees.createEvee({
       object: data,
       partialPerspective: perspective.object.payload,
-      parentId,
+      guardianId,
     });
 
     if (element.children) {
@@ -166,7 +166,7 @@ export class AppElements {
     }
 
     /** a one to one mapping from data children to element children is assumed */
-    const dataChildren = this.evees.behavior(data.object, 'getChildrenLinks');
+    const dataChildren = this.evees.behavior(data.object, 'children');
     await Promise.all(
       element.children.map(async (child, ix) => {
         const childId = dataChildren[ix];

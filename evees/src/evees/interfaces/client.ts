@@ -1,10 +1,10 @@
 import { CASStore } from '../../cas/interfaces/cas-store';
 import { Entity } from '../../cas/interfaces/entity';
 
-import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from './types';
+import { Update, NewPerspective, PerspectiveDetails } from './types';
 import { SearchEngine } from './search.engine';
-import { Proposals } from './proposals';
 import { EventEmitter } from 'events';
+import { Proposals } from '../proposals/proposals';
 
 export enum ClientEvents {
   updated = 'updated',
@@ -27,14 +27,14 @@ export interface PerspectiveGetResult {
 }
 
 export interface EveesMutation {
-  newPerspectives: NewPerspectiveData[];
-  updates: UpdateRequest[];
+  newPerspectives: NewPerspective[];
+  updates: Update[];
   deletedPerspectives: string[];
 }
 
 export interface EveesMutationCreate {
-  newPerspectives?: NewPerspectiveData[];
-  updates?: UpdateRequest[];
+  newPerspectives?: NewPerspective[];
+  updates?: Update[];
   deletedPerspectives?: string[];
 }
 
@@ -57,9 +57,9 @@ export interface Client {
   update(mutation: EveesMutationCreate);
 
   /** convenient methods to edit a single perspective at a time */
-  newPerspective(newPerspective: NewPerspectiveData): Promise<void>;
+  newPerspective(newPerspective: NewPerspective): Promise<void>;
   deletePerspective(perspectiveId: string): Promise<void>;
-  updatePerspective(update: UpdateRequest): Promise<void>;
+  updatePerspective(update: Update): Promise<void>;
 
   /** get all the changes relative to the underlying client(s) */
   diff(): Promise<EveesMutation>;

@@ -31,14 +31,14 @@ export class WikiPattern extends Pattern<Wiki> {
 }
 
 export class WikiLinks implements HasChildren<Wiki> {
-  replaceChildrenLinks = (wiki: Wiki) => (childrenHashes: string[]): Wiki => ({
+  replaceChildren = (wiki: Wiki) => (childrenHashes: string[]): Wiki => ({
     ...wiki,
     pages: childrenHashes,
   });
 
-  getChildrenLinks: (wiki: Wiki) => string[] = (wiki: Wiki): string[] => wiki.pages;
+  children: (wiki: Wiki) => string[] = (wiki: Wiki): string[] => wiki.pages;
 
-  links: (wiki: Wiki) => Promise<string[]> = async (wiki: Wiki) => this.getChildrenLinks(wiki);
+  links: (wiki: Wiki) => Promise<string[]> = async (wiki: Wiki) => this.children(wiki);
 
   merge = (originalNode: Wiki) => async (
     modifications: (Wiki | undefined)[],

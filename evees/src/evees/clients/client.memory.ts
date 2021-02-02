@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { UpdateRequest, NewPerspectiveData, PerspectiveDetails } from '../interfaces/types';
+import { Update, NewPerspective, PerspectiveDetails } from '../interfaces/types';
 import { CASStore } from '../../cas/interfaces/cas-store';
 import { Entity, ObjectOnRemote } from '../../cas/interfaces/entity';
 
@@ -13,13 +13,22 @@ import {
 } from '../interfaces/client';
 
 export class ClientOnMemory implements Client {
-  private newPerspectives = new Map<string, NewPerspectiveData>();
-  private updates = new Map<string, UpdateRequest>();
+  /** a map with the new perspectives to be created */
+  private newPerspectives = new Map<string, NewPerspective>();
+
+  /** a map with the updates for each perspective. There might be more than on update ordered as they arrive */
+  private updates = new Map<string, Update[]>();
+
+  /** TDB */
   private canUpdates = new Map<string, boolean>();
   private userPerspectives = new Map<string, string[]>();
 
+  /** A map from perspective id to head id, it holds the latest head of a perspective
+   * known to this client, it might have come from the remote, or because the client knows
+   * of an update to it */
   private cachedPerspectives = new Map<string, PerspectiveDetails>();
 
+  /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
 
   constructor(protected base: Client, public store: CASStore, mutation?: EveesMutation) {
@@ -40,20 +49,6 @@ export class ClientOnMemory implements Client {
       return { details: cachedPerspective };
     }
 
-    const newPerspective = this.newPerspectives.get(perspectiveId);
-    if (newPerspective) {
-      return {
-        details: newPerspective.details,
-      };
-    }
-
-    const update = this.updates.get(perspectiveId);
-    if (update) {
-      return {
-        details: { headId: update.newHeadId, guardianId: update.guardianId },
-      };
-    }
-
     const result = await this.base.getPerspective(perspectiveId);
 
     /** cache result and slice */
@@ -70,7 +65,7 @@ export class ClientOnMemory implements Client {
 
     return { details: result.details };
   }
-  async createPerspectives(newPerspectives: NewPerspectiveData[]): Promise<void> {
+  async createPerspectives(newPerspectives: NewPerspective[]): Promise<void> {
     /** store perspective details */
     await Promise.all(
       newPerspectives.map(async (newPerspective) => {
@@ -79,21 +74,26 @@ export class ClientOnMemory implements Client {
           remote: newPerspective.perspective.object.payload.remote,
         });
         this.newPerspectives.set(newPerspective.perspective.id, newPerspective);
+        /** set the current known details of that perspective */
+        this.cachedPerspectives.set(newPerspective.perspective.id, newPerspective.update.details);
       })
     );
   }
 
-  async updatePerspectives(updates: UpdateRequest[]): Promise<void> {
+  async updatePerspectives(updates: Update[]): Promise<void> {
     updates.forEach((update) => {
-      this.updates.set(update.perspectiveId, update);
+      const current = this.updates.get(update.perspectiveId) || [];
+      this.updates.set(update.perspectiveId, current.concat([update]));
 
-      /** if perspective head was cached, optimistically update it */
-      const cachedDetails = this.cachedPerspectives.get(update.perspectiveId);
-      if (cachedDetails) {
-        this.cachedPerspectives.set(update.perspectiveId, {
-          ...cachedDetails,
-          headId: update.newHeadId ? update.newHeadId : cachedDetails.headId,
-        });
+      /** update the cache with the new head (keep previous values if update does not
+       * specify them) */
+
+      const cachedDetails = this.cachedPerspectives.get(update.perspectiveId) || {};
+      if (update.details.headId) {
+        cachedDetails.headId = update.details.headId;
+      }
+      if (update.details.guardianId) {
+        cachedDetails.guardianId = update.details.guardianId;
       }
     });
 
@@ -111,13 +111,13 @@ export class ClientOnMemory implements Client {
     await Promise.all([create, update]);
   }
 
-  newPerspective(newPerspective: NewPerspectiveData): Promise<void> {
+  newPerspective(newPerspective: NewPerspective): Promise<void> {
     return this.update({ newPerspectives: [newPerspective] });
   }
   async deletePerspective(perspectiveId: string): Promise<void> {
     await this.update({ deletedPerspectives: [perspectiveId] });
   }
-  updatePerspective(update: UpdateRequest): Promise<void> {
+  updatePerspective(update: Update): Promise<void> {
     return this.update({ updates: [update] });
   }
 
@@ -129,7 +129,7 @@ export class ClientOnMemory implements Client {
     await this.store.flush();
     await this.base.update({
       newPerspectives: Array.from(this.newPerspectives.values()),
-      updates: Array.from(this.updates.values()),
+      updates: Array.prototype.concat([], [...Array.from(this.updates.values())]),
     });
 
     this.newPerspectives.clear();
@@ -145,10 +145,11 @@ export class ClientOnMemory implements Client {
     return this.base.canUpdate(userId, perspectiveId);
   }
 
+  /** a mutation with all the changes made relative to the base client */
   async diff(): Promise<EveesMutation> {
     return {
       newPerspectives: Array.from(this.newPerspectives.values()),
-      updates: Array.from(this.updates.values()),
+      updates: Array.prototype.concat([], [...Array.from(this.updates.values())]),
       deletedPerspectives: [],
     };
   }

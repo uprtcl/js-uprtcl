@@ -5,7 +5,7 @@ export interface HasLinks<T = any> extends Behaviour<T> {
 }
 
 export interface HasChildren<T = any> extends HasLinks<T> {
-  getChildrenLinks: (pattern: T) => string[];
+  children: (pattern: T) => string[];
 
-  replaceChildrenLinks: (pattern: T) => (links: string[]) => any;
+  replaceChildren: (pattern: T) => (links: string[]) => any;
 }

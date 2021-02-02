@@ -4,7 +4,7 @@ import {
   RemoteEvees,
   Perspective,
   PerspectiveDetails,
-  NewPerspectiveData,
+  NewPerspective,
   Secured,
   EveesHelpers,
 } from '@uprtcl/evees';
@@ -76,7 +76,7 @@ export class EveesLocal implements RemoteEvees {
     );
   }
 
-  async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+  async createPerspective(perspectiveData: NewPerspective): Promise<void> {
     const secured = perspectiveData.perspective;
     const details = perspectiveData.details;
 
@@ -101,9 +101,9 @@ export class EveesLocal implements RemoteEvees {
     });
   }
 
-  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    for (let newPerspectiveData of newPerspectivesData) {
-      await this.createPerspective(newPerspectiveData);
+  async createPerspectiveBatch(newPerspectivesData: NewPerspective[]): Promise<void> {
+    for (let NewPerspective of newPerspectivesData) {
+      await this.createPerspective(NewPerspective);
     }
   }
 

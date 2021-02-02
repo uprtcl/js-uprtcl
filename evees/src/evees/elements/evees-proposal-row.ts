@@ -6,11 +6,11 @@ import { Entity } from '../../cas/interfaces/entity';
 import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { Proposal } from '../interfaces/types';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
+import { Proposal } from '../proposals/types';
 
 export class EveesProposalRow extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');

@@ -41,7 +41,7 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
 
     const updates = proposal.details.newPerspectives
       .map(
-        (newPerspective): UpdateRequest => {
+        (newPerspective): Update => {
           if (newPerspective.details.headId === undefined)
             throw new Error('headId cannot be undefiend for newPerspectives');
           return {

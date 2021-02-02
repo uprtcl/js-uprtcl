@@ -9,13 +9,14 @@ import { Signed } from '../../patterns/interfaces/signable';
 import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { Perspective, PerspectiveDetails, Commit, Proposal } from '../interfaces/types';
+import { Perspective, PerspectiveDetails, Commit } from '../interfaces/types';
 import { Client } from '../interfaces/client';
 import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteEvees } from '../interfaces/remote.evees';
 
 import { EveesDiff } from './evees-diff';
 import { ProposalCreatedEvent } from './events';
+import { Proposal } from '../proposals/types';
 
 interface PerspectiveData {
   id?: string;

@@ -4,13 +4,13 @@ import { Logger } from '../../utils/logger';
 import { PatternRecognizer } from '../../patterns/recognizer/pattern-recognizer';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { UpdateRequest, HasDiffLenses, DiffLens } from '../interfaces/types';
+import { Update, HasDiffLenses, DiffLens } from '../interfaces/types';
 import { Client } from '../interfaces/client';
 
 const LOGINFO = true;
 
 interface UpdateDetails {
-  update?: UpdateRequest;
+  update?: Update;
   newData: any;
   oldData: any;
   diffLense: DiffLens;
@@ -58,15 +58,15 @@ export class EveesDiff extends servicesConnect(LitElement) {
     const mutation = await this.client.diff();
 
     const getDetails = mutation.updates
-      .filter((u) => !!u.newHeadId)
+      .filter((u) => !!u.details.headId)
       .map(async (update) => {
-        if (!update.newHeadId) throw new Error('newHead undefined');
+        if (!update.details.headId) throw new Error('newHead undefined');
 
-        const newData = await this.evees.getCommitData(update.newHeadId);
+        const newData = await this.evees.getCommitData(update.details.headId);
 
         const oldData =
-          update.oldHeadId !== undefined
-            ? await this.evees.getCommitData(update.oldHeadId)
+          update.oldDetails && update.oldDetails.headId !== undefined
+            ? await this.evees.getCommitData(update.oldDetails.headId)
             : undefined;
 
         const hasDiffLenses = this.recognizer
@@ -91,8 +91,8 @@ export class EveesDiff extends servicesConnect(LitElement) {
         (newPerspective) => newPerspective.perspective.id === this.rootPerspective
       );
       if (newRoot) {
-        if (newRoot.details.headId) {
-          const newData = await this.evees.getCommitData(newRoot.details.headId);
+        if (newRoot.update.details.headId) {
+          const newData = await this.evees.getCommitData(newRoot.update.details.headId);
 
           const hasDiffLenses = this.recognizer
             .recognizeBehaviours(newData)
