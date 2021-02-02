@@ -1,4 +1,4 @@
-import { Proposal } from '../interfaces/types';
+import { Proposal } from '../proposals/types';
 
 export type ContentUpdatedArgs = {
   uref: string;

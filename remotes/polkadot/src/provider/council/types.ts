@@ -17,7 +17,7 @@ export interface ProposalManifest {
   creatorId?: string;
   toHeadId?: string;
   fromHeadId?: string;
-  updates: UpdateRequest[];
+  updates: Update[];
   block: number;
   config: ProposalConfig;
 }
@@ -38,7 +38,7 @@ export interface CouncilProposal {
 export interface LocalProposal {
   id: string;
   toPerspectiveId: string;
-  updates: UpdateRequest[]; // not indexed
+  updates: Update[]; // not indexed
   status: ProposalStatus; // not indexed
   endBlock: number; // not indexed, for sorting
 }

@@ -45,14 +45,14 @@ export class TextNodePattern extends Pattern<TextNode> {
 }
 
 export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode> {
-  replaceChildrenLinks = (node: TextNode) => (childrenHashes: string[]): TextNode => ({
+  replaceChildren = (node: TextNode) => (childrenHashes: string[]): TextNode => ({
     ...node,
     links: childrenHashes,
   });
 
-  getChildrenLinks = (node: TextNode): string[] => node.links;
+  children = (node: TextNode): string[] => node.links;
 
-  links = async (node: TextNode) => this.getChildrenLinks(node);
+  links = async (node: TextNode) => this.children(node);
 
   lenses = (node: TextNode): Lens[] => {
     return [

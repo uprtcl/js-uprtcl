@@ -4,14 +4,14 @@ import {
   Logger,
   RemoteEvees,
   PerspectiveDetails,
-  NewPerspectiveData,
+  NewPerspective,
   Perspective,
   Secured,
   CASStore,
   PartialPerspective,
   snapDefaultPerspective,
   getHome,
-  UpdateRequest,
+  Update,
   EveesMutation,
   SearchEngine,
   EveesMutationCreate,
@@ -93,40 +93,31 @@ export class EveesHttp implements RemoteEvees {
     return [];
   }
 
-  async newPerspectives(perspectivesData: NewPerspectiveData[]) {
+  async newPerspectives(perspectivesData: NewPerspective[]) {
     await this.connection.post('/persp', {
       perspectives: perspectivesData.map((perspectiveData) => {
         return {
           perspective: perspectiveData.perspective,
-          details: perspectiveData.details,
-          parentId: perspectiveData.links ? perspectiveData.links.parentId : undefined,
+          update: perspectiveData.update,
         };
       }),
     });
   }
 
-  async newPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+  async newPerspective(perspectiveData: NewPerspective): Promise<void> {
     this.newPerspectives([perspectiveData]);
   }
 
-  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+  async createPerspectiveBatch(newPerspectivesData: NewPerspective[]): Promise<void> {
     const promises = newPerspectivesData.map((perspectiveData) =>
       this.newPerspective(perspectiveData)
     );
     await Promise.all(promises);
   }
 
-  async updatePerspective(update: UpdateRequest): Promise<void> {
-    await this.connection.put(`/persp/details`, {
-      details: [
-        {
-          id: update.perspectiveId,
-          details: {
-            headId: update.newHeadId,
-            guardianId: update.guardianId,
-          },
-        },
-      ],
+  async updatePerspective(update: Update): Promise<void> {
+    await this.connection.put(`/persp/update`, {
+      updates: [update],
     });
   }
 

@@ -5,10 +5,10 @@ import {
   EveesMutationCreate,
   PerspectiveGetResult,
 } from '../interfaces/client';
-import { Proposals } from '../interfaces/proposals';
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
-import { NewPerspectiveData, UpdateRequest } from '../interfaces/types';
+import { NewPerspective, Update } from '../interfaces/types';
+import { Proposals } from '../proposals/proposals';
 import { SearchEngineRouter } from './search.router';
 
 export class RemoteRouter implements Client {
@@ -25,13 +25,13 @@ export class RemoteRouter implements Client {
     return remote;
   }
 
-  async newPerspective(newPerspective: NewPerspectiveData) {
+  async newPerspective(newPerspective: NewPerspective) {
     throw new Error('Method not implemented.');
   }
   async deletePerspective(perspectiveId: string) {
     throw new Error('Method not implemented.');
   }
-  async updatePerspective(update: UpdateRequest) {
+  async updatePerspective(update: Update) {
     throw new Error('Method not implemented.');
   }
 

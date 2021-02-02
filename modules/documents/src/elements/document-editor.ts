@@ -156,7 +156,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const node = await this.loadNode(uref, parent, ix);
 
-    const loadChildren = this.evees.behavior(node.draft, 'getChildrenLinks').map(
+    const loadChildren = this.evees.behavior(node.draft, 'children').map(
       async (child, ix): Promise<DocNode> => {
         return child !== undefined && child !== ''
           ? await this.loadNodeRec(child, ix, node)
@@ -367,7 +367,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     /** set the children with the children refs (which were created above) */
     const object = this.evees.behavior(
       node.draft,
-      'replaceChildrenLinks'
+      'replaceChildren'
     )(node.childrenNodes.map((node) => node.uref));
 
     /** update draft (not on local storage) */
@@ -445,7 +445,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
           const perspectiveId = await this.evees.createEvee({
             object: node.draft,
             remoteId: node.remote,
-            parentId: node.parent ? node.parent.uref : undefined,
+            guardianId: node.parent ? node.parent.uref : undefined,
             partialPerspective: perspective.object.payload,
           });
           if (perspectiveId !== node.uref) {
@@ -590,7 +590,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   ): Promise<DocNode[]> {
     if (LOGINFO) this.logger.log('spliceChildren()', { node, elements, index, count });
 
-    const currentChildren: string[] = this.evees.behavior(node.draft, 'getChildrenLinks');
+    const currentChildren: string[] = this.evees.behavior(node.draft, 'children');
     index = index !== undefined ? index : currentChildren.length;
 
     /** create objects if elements is not an id */
@@ -625,7 +625,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       child.level = node.level + 1;
     });
 
-    const newDraft = this.evees.behavior(node.draft, 'replaceChildrenLinks')(newChildren);
+    const newDraft = this.evees.behavior(node.draft, 'replaceChildren')(newChildren);
     this.setNodeDraft(node, newDraft);
 
     return removed;
@@ -874,7 +874,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     /** update all the node properties */
     node = this.draftToPlaceholder(newObject, node.parent, node.ix);
 
-    const loadChildren = this.evees.behavior(node.draft, 'getChildrenLinks').map(
+    const loadChildren = this.evees.behavior(node.draft, 'children').map(
       async (child, ix): Promise<DocNode> => {
         return child !== undefined && child !== ''
           ? await this.loadNodeRec(child, ix, node)

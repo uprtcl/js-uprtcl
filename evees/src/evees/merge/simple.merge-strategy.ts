@@ -1,4 +1,4 @@
-import { UpdateRequest } from '../interfaces/types';
+import { Update } from '../interfaces/types';
 import { CreateCommit, Evees } from '../evees.service';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Merge } from './merge.behaviour';
@@ -43,11 +43,11 @@ export class SimpleMergeStrategy {
       throw new Error('New head is undefined');
     }
 
-    const request: UpdateRequest = {
+    const request: Update = {
       fromPerspectiveId,
       perspectiveId: toPerspectiveId,
-      oldHeadId: toHeadId,
-      newHeadId: newHead,
+      oldDetails: { headId: toHeadId },
+      details: { headId: newHead },
     };
 
     evees.client.update({ updates: [request] });

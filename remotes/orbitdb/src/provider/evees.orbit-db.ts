@@ -150,7 +150,7 @@ export class EveesOrbitDB implements RemoteEvees {
     return perspective;
   }
 
-  async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+  async createPerspective(perspectiveData: NewPerspective): Promise<void> {
     if (ENABLE_LOG) {
       this.logger.log('createPerspective', perspectiveData);
     }
@@ -179,7 +179,7 @@ export class EveesOrbitDB implements RemoteEvees {
     await contextStore.add(perspectiveId);
   }
 
-  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+  async createPerspectiveBatch(newPerspectivesData: NewPerspective[]): Promise<void> {
     if (!(await this.isLogged())) throw notLogged();
     await Promise.all(newPerspectivesData.map(this.createPerspective.bind(this)));
   }

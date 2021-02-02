@@ -8,7 +8,7 @@ import {
   RemoteEvees,
   Perspective,
   PerspectiveDetails,
-  NewPerspectiveData,
+  NewPerspective,
   Secured,
   ProposalsProvider,
   hashObject,
@@ -140,7 +140,7 @@ export class EveesBlockchainCached implements RemoteEvees {
     return perspective;
   }
 
-  async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+  async createPerspective(perspectiveData: NewPerspective): Promise<void> {
     if (!this.cache) throw new Error('cache not initialized, probably the user was not logged in');
 
     const secured = perspectiveData.perspective;
@@ -221,9 +221,9 @@ export class EveesBlockchainCached implements RemoteEvees {
     await this.cache.meta.put({ entry: 'eveesData', value: eveesData });
   }
 
-  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
-    for (var newPerspectiveData of newPerspectivesData) {
-      await this.createPerspective(newPerspectiveData);
+  async createPerspectiveBatch(newPerspectivesData: NewPerspective[]): Promise<void> {
+    for (var NewPerspective of newPerspectivesData) {
+      await this.createPerspective(NewPerspective);
     }
   }
 

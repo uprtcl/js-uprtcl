@@ -11,6 +11,9 @@ import {
   Perspective,
   PartialPerspective,
   CreateEvee,
+  NewPerspective,
+  LinkChanges,
+  Update,
 } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
 import { HasChildren } from '../patterns/behaviours/has-links';
@@ -128,6 +131,69 @@ export class Evees {
       throw new Error(`Behavior ${behaviorName} not found for object ${JSON.stringify(object)}`);
     return behavior[behaviorName](object);
   }
+
+  /** A helper methods that processes an update and appends the links */
+  async appendLinksToUpdate(update: Update, patternName: string = 'children'): Promise<Update> {
+    const hasData = update.details.headId;
+
+    if (hasData) {
+      const data = await this.getCommitData(update.details.headId as string);
+      const children = this.behavior(data.object, patternName);
+      let oldChildren: string[] = [];
+
+      if (update.oldDetails) {
+        const oldData = await this.getCommitData(update.oldDetails.headId as string);
+        oldChildren = this.behavior(oldData.object, patternName);
+      }
+
+      let addedChildren: string[] = [];
+      let removedChildren: string[] = [];
+
+      // identify added and removed children
+      const difference = oldChildren
+        .filter((oldChild: string) => !children.includes(oldChild))
+        .concat(children.filter((newChild: string) => !oldChildren.includes(newChild)));
+
+      difference.map((child) => {
+        if (oldChildren.includes(child)) {
+          removedChildren.push(child);
+        }
+
+        if (children.includes(child)) {
+          addedChildren.push(child);
+        }
+      });
+
+      /** set the details */
+      update.linkChanges = {
+        [patternName]: {
+          added: addedChildren,
+          removed: removedChildren,
+        },
+      };
+    }
+
+    return update;
+  }
+
+  /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
+  async newPerspective(newPerspective: NewPerspective) {
+    const hasLinks = newPerspective.update.linkChanges;
+    if (!hasLinks) {
+      newPerspective.update = await this.appendLinksToUpdate(newPerspective.update);
+    }
+    return this.client.newPerspective(newPerspective);
+  }
+
+  /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
+  async updatePerspective(update: Update) {
+    const hasLinks = update.linkChanges;
+    if (!hasLinks) {
+      update = await this.appendLinksToUpdate(update);
+    }
+    return this.client.updatePerspective(update);
+  }
+
   /**
    * Creates Evee
    *
@@ -138,7 +204,7 @@ export class Evees {
    */
   async createEvee(input: CreateEvee): Promise<string> {
     let { remoteId } = input;
-    const { object, partialPerspective, parentId } = input;
+    const { object, partialPerspective, guardianId } = input;
     remoteId = remoteId || this.remotes[0].id;
     let headId;
 
@@ -162,13 +228,14 @@ export class Evees {
 
     const perspective = await remote.snapPerspective(partialPerspective ? partialPerspective : {});
 
-    await this.client.newPerspective({
+    await this.newPerspective({
       perspective,
-      details: {
-        headId,
-      },
-      links: {
-        parentId,
+      update: {
+        perspectiveId: perspective.id,
+        details: {
+          headId,
+          guardianId,
+        },
       },
     });
     return perspective.id;
@@ -196,14 +263,16 @@ export class Evees {
 
     await this.client.updatePerspective({
       perspectiveId,
-      newHeadId: head.id,
-      guardianId,
+      details: {
+        headId: head.id,
+        guardianId,
+      },
     });
   }
 
   async getPerspectiveChildren(uref: string): Promise<string[]> {
     const data = await this.getPerspectiveData(uref);
-    return this.behavior(data.object, 'getChildrenLinks');
+    return this.behavior(data.object, 'children');
   }
 
   async spliceChildren(
@@ -227,14 +296,14 @@ export class Evees {
     /** get children pattern */
     const childrentPattern: HasChildren = this.recognizer
       .recognizeBehaviours(object)
-      .find((b) => (b as HasChildren).getChildrenLinks);
+      .find((b) => (b as HasChildren).children);
 
     /** get array with current children */
-    const children = childrentPattern.getChildrenLinks(object);
+    const children = childrentPattern.children(object);
 
     /** updated array with new elements */
     const removed = children.splice(index, count, ...newChildren);
-    const newObject = childrentPattern.replaceChildrenLinks(object)(children);
+    const newObject = childrentPattern.replaceChildren(object)(children);
 
     return {
       object: newObject,
@@ -262,7 +331,10 @@ export class Evees {
     await this.updatePerspectiveData(parentId, newParentObject, undefined);
 
     if (setGuardian) {
-      await this.client.updatePerspective({ perspectiveId: childId, guardianId: parentId });
+      await this.client.updatePerspective({
+        perspectiveId: childId,
+        details: { guardianId: parentId },
+      });
     }
   }
 
@@ -317,13 +389,13 @@ export class Evees {
 
   async getChildId(perspectiveId: string, ix: number) {
     const data = await this.getPerspectiveData(perspectiveId);
-    const children = this.behavior(data.object, 'getChildrenLinks');
+    const children = this.behavior(data.object, 'children');
     return children[ix];
   }
 
   async getChildIndex(perspectiveId: string, childId: string): Promise<number> {
     const data = await this.getPerspectiveData(perspectiveId);
-    const allChildren = this.behavior(data.object, 'getChildrenLinks') as string[];
+    const allChildren = this.behavior(data.object, 'children') as string[];
     const children = allChildren.filter((id) => id === childId);
     if (children.length === 0) {
       return -1;
@@ -417,7 +489,7 @@ export class Evees {
   async forkPerspective(
     perspectiveId: string,
     remoteId?: string,
-    parentId?: string,
+    guardianId?: string,
     client?: Client
   ): Promise<string> {
     client = client || this.client;
@@ -426,7 +498,7 @@ export class Evees {
     const remote = await this.getRemote(remoteId);
     const perspective = await remote.snapPerspective(
       { context: refPerspective.object.payload.context },
-      { parentId }
+      guardianId
     );
 
     const { details } = await client.getPerspective(perspectiveId);
@@ -444,14 +516,9 @@ export class Evees {
       );
     }
 
-    client.update({
-      newPerspectives: [
-        {
-          perspective,
-          details: { headId: forkCommitId },
-          links: { parentId },
-        },
-      ],
+    client.newPerspective({
+      perspective,
+      update: { perspectiveId: perspective.id, details: { headId: forkCommitId, guardianId } },
     });
 
     return perspective.id;
@@ -498,11 +565,11 @@ export class Evees {
 
     /** createOwnerPreservingEntity of children */
 
-    const getLinksForks = this.behavior(data.object, 'getChildrenLinks').map((link) =>
+    const getLinksForks = this.behavior(data.object, 'children').map((link) =>
       this.fork(link, remote, parentId, client)
     );
     const newLinks = await Promise.all(getLinksForks);
-    const newObject = this.behavior(data.object, 'replaceChildrenLinks')(newLinks);
+    const newObject = this.behavior(data.object, 'replaceChildren')(newLinks);
 
     return client.store.storeEntity({ object: newObject, remote });
   }

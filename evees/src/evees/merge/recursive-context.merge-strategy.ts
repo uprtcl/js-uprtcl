@@ -57,10 +57,10 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const hasChildren: HasChildren | undefined = evees.recognizer
       .recognizeBehaviours(data)
-      .find((prop) => !!(prop as HasChildren).getChildrenLinks);
+      .find((prop) => !!(prop as HasChildren).children);
 
     if (hasChildren) {
-      const links = hasChildren.getChildrenLinks(data);
+      const links = hasChildren.children(data);
 
       const promises = links.map(async (link) => {
         const isPerspective = await this.isPattern(link, 'Perspective', evees);

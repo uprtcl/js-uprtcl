@@ -6,7 +6,7 @@ import {
   EveesBindings,
   RemoteEvees,
   Client,
-  NewPerspectiveData,
+  NewPerspective,
   Perspective,
   Secured,
 } from '../../evees/dist/types/uprtcl-evees';
@@ -86,7 +86,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
           object: perspective,
           casID: this.remote.store.casID,
         };
-        const newPerspective: NewPerspectiveData = {
+        const newPerspective: NewPerspective = {
           details: {
             headId: update.newHeadId,
           },

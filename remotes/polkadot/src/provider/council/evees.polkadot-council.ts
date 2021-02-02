@@ -4,7 +4,7 @@ import {
   RemoteEvees,
   Perspective,
   PerspectiveDetails,
-  NewPerspectiveData,
+  NewPerspective,
   Secured,
   deriveSecured,
   hashObject,
@@ -139,11 +139,11 @@ export class EveesPolkadotCouncil implements RemoteEvees {
     return perspective;
   }
 
-  async createPerspective(perspectiveData: NewPerspectiveData): Promise<void> {
+  async createPerspective(perspectiveData: NewPerspective): Promise<void> {
     throw new Error('cant create perspective directly. Need to create a proposal.');
   }
 
-  async createPerspectiveBatch(newPerspectivesData: NewPerspectiveData[]): Promise<void> {
+  async createPerspectiveBatch(newPerspectivesData: NewPerspective[]): Promise<void> {
     throw new Error('cant create perspective directly. Need to create a proposal.');
   }
 

@@ -6,11 +6,11 @@ import { Entity } from '../../cas/interfaces/entity';
 import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { Proposal } from '../interfaces/types';
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
+import { Proposal } from '../proposals/types';
 
 export class EveesProposalRow extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -93,13 +93,13 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     /* a proposal is considered accepted if all the updates are now ancestors of their target */
     const isAncestorVector = await Promise.all(
       this.proposal.object.mutation.updates
-        .filter((u) => !!u.newHeadId)
+        .filter((u) => !!u.details.headId)
         .map((update) => {
           return this.evees.isAncestorCommit(
             this.evees.client,
             update.perspectiveId,
-            update.newHeadId as string,
-            update.oldHeadId
+            update.details.headId as string,
+            update.oldDetails?.headId
           );
         })
     );

@@ -1,6 +1,6 @@
 import { Dictionary } from '@uprtcl/micro-orchestrator';
 import {
-  NewPerspectiveData,
+  NewPerspective,
   Perspective,
   Secured,
   Commit,
@@ -51,13 +51,11 @@ export class MockEveesProvider implements EveesRemote {
     return this.details[perspectiveId];
   }
 
-  createPerspective(newPerspectiveData: NewPerspectiveData): Promise<void> {
+  createPerspective(NewPerspective: NewPerspective): Promise<void> {
     throw new Error('Method not implemented');
   }
 
-  createPerspectivesBatch(
-    newPerspectivesData: NewPerspectiveData[]
-  ): Promise<void> {
+  createPerspectivesBatch(newPerspectivesData: NewPerspective[]): Promise<void> {
     throw new Error('Method not implemented');
   }
 
@@ -65,10 +63,7 @@ export class MockEveesProvider implements EveesRemote {
     throw new Error('Method not implemented.');
   }
 
-  updatePerspective(
-    perspectiveId: string,
-    details: Partial<PerspectiveDetails>
-  ): Promise<void> {
+  updatePerspective(perspectiveId: string, details: Partial<PerspectiveDetails>): Promise<void> {
     throw new Error('Method not implemented');
   }
 }

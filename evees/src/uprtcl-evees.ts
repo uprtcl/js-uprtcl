@@ -3,15 +3,16 @@ export {
   Commit,
   Perspective,
   PerspectiveDetails,
+  Update,
   HasDiffLenses,
   DiffLens,
   PartialPerspective,
   CreateEvee,
-  PerspectiveLinks,
+  LinkChanges,
 } from './evees/interfaces/types';
 
 /** interfaces */
-export { NewPerspectiveData } from './evees/interfaces/types';
+export { NewPerspective } from './evees/interfaces/types';
 export { EveesConfig } from './evees/interfaces/types';
 export { EveesContentModule } from './evees/interfaces/evees.content.module';
 
@@ -66,8 +67,8 @@ export { Ready } from './utils/ready';
 export { ConnectionLogged } from './utils/connection.logged';
 
 /** Proposals */
-export { Proposal, UpdateRequest } from './evees/interfaces/types';
-export { Proposals } from './evees/interfaces/proposals';
+export { Proposal } from './evees/proposals/types';
+export { Proposals } from './evees/proposals/proposals';
 
 /** Aceess Control */
 export { AccessControl } from './evees/interfaces/access-control';
