@@ -1,4 +1,4 @@
-import { Slice } from '../../evees/interfaces/client';
+import { Slice } from '../../evees/interfaces/types';
 import { Entity, ObjectOnRemote } from './entity';
 
 export interface EntityGetResult {

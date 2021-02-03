@@ -2,6 +2,7 @@ import { TemplateResult } from 'lit-element';
 
 import { Behaviour } from '../../patterns/interfaces/behaviour';
 import { Secured } from '../../cas/utils/cid-hash';
+import { Entity } from '../../cas/interfaces/entity';
 
 import { Client } from './client';
 import { RemoteEvees } from './remote.evees';
@@ -87,6 +88,38 @@ export interface CreateEvee {
   object?: any;
   partialPerspective?: PartialPerspective;
   guardianId?: string;
+}
+
+export interface GetPerspectiveOptions {
+  levels?: number;
+  entities?: boolean;
+}
+
+export interface PerspectiveAndDetails {
+  id: string;
+  details: PerspectiveDetails;
+}
+
+export interface Slice {
+  perspectives: PerspectiveAndDetails[];
+  entities: Entity<any>[];
+}
+
+export interface PerspectiveGetResult {
+  details: PerspectiveDetails;
+  slice?: Slice;
+}
+
+export interface EveesMutation {
+  newPerspectives: NewPerspective[];
+  updates: Update[];
+  deletedPerspectives: string[];
+}
+
+export interface EveesMutationCreate {
+  newPerspectives?: NewPerspective[];
+  updates?: Update[];
+  deletedPerspectives?: string[];
 }
 
 export interface DiffLens {

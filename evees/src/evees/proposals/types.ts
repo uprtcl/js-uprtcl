@@ -1,5 +1,4 @@
-import { EveesMutation } from '../interfaces/client';
-
+import { EveesMutation } from '../interfaces/types';
 export interface Proposal {
   creatorId?: string;
   timestamp?: number;
