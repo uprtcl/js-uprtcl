@@ -9,23 +9,22 @@ export {
   PartialPerspective,
   CreateEvee,
   LinkChanges,
+  EveesMutationCreate,
+  EveesMutation,
+  GetPerspectiveOptions,
+  PerspectiveGetResult,
+  NewPerspective,
+  EveesConfig,
+  Slice,
 } from './evees/interfaces/types';
 
 /** interfaces */
-export { NewPerspective } from './evees/interfaces/types';
-export { EveesConfig } from './evees/interfaces/types';
 export { EveesContentModule } from './evees/interfaces/evees.content.module';
 
 export { Evees } from './evees/evees.service';
 export { RemoteEvees } from './evees/interfaces/remote.evees';
 export { SearchEngine } from './evees/interfaces/search.engine';
-export {
-  Client,
-  EveesMutationCreate,
-  EveesMutation,
-  PerspectiveGetResult,
-  ClientEvents,
-} from './evees/interfaces/client';
+export { Client, ClientEvents } from './evees/interfaces/client';
 
 /** Default Perspectives */
 export { getHome, snapDefaultPerspective } from './evees/default.perspectives';

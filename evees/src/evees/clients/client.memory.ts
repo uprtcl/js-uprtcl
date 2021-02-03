@@ -1,17 +1,19 @@
 import lodash from 'lodash-es';
 import { EventEmitter } from 'events';
 
-import { Update, NewPerspective, PerspectiveDetails } from '../interfaces/types';
-import { CASStore } from '../../cas/interfaces/cas-store';
-import { Entity, ObjectOnRemote } from '../../cas/interfaces/entity';
-
 import {
-  Client,
+  Update,
+  NewPerspective,
+  PerspectiveDetails,
+  GetPerspectiveOptions,
   PerspectiveGetResult,
   EveesMutation,
   EveesMutationCreate,
-  ClientEvents,
-} from '../interfaces/client';
+} from '../interfaces/types';
+import { CASStore } from '../../cas/interfaces/cas-store';
+import { Entity, ObjectOnRemote } from '../../cas/interfaces/entity';
+
+import { Client, ClientEvents } from '../interfaces/client';
 
 export class ClientOnMemory implements Client {
   /** a map with the new perspectives to be created */
@@ -44,13 +46,16 @@ export class ClientOnMemory implements Client {
     return this.base.searchEngine;
   }
 
-  async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
+  async getPerspective(
+    perspectiveId: string,
+    options: GetPerspectiveOptions
+  ): Promise<PerspectiveGetResult> {
     const cachedPerspective = this.cachedPerspectives.get(perspectiveId);
     if (cachedPerspective) {
       return { details: lodash.cloneDeep(cachedPerspective) };
     }
 
-    const result = await this.base.getPerspective(perspectiveId);
+    const result = await this.base.getPerspective(perspectiveId, options);
 
     /** cache result and slice */
     this.cachedPerspectives.set(perspectiveId, result.details);

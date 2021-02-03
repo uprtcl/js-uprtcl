@@ -1,13 +1,15 @@
 import { CASStore } from '../../cas/interfaces/cas-store';
+import { Client } from '../interfaces/client';
+import { RemoteEvees } from '../interfaces/remote.evees';
+import { SearchEngine } from '../interfaces/search.engine';
 import {
-  Client,
+  GetPerspectiveOptions,
+  NewPerspective,
+  Update,
   EveesMutation,
   EveesMutationCreate,
   PerspectiveGetResult,
-} from '../interfaces/client';
-import { RemoteEvees } from '../interfaces/remote.evees';
-import { SearchEngine } from '../interfaces/search.engine';
-import { NewPerspective, Update } from '../interfaces/types';
+} from '../interfaces/types';
 import { Proposals } from '../proposals/proposals';
 import { SearchEngineRouter } from './search.router';
 
@@ -40,9 +42,12 @@ export class RemoteRouter implements Client {
     return this.getRemote(perspective.object.payload.remote);
   }
 
-  async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
+  async getPerspective(
+    perspectiveId: string,
+    options: GetPerspectiveOptions
+  ): Promise<PerspectiveGetResult> {
     const remote = await this.getPerspectiveRemote(perspectiveId);
-    return remote.getPerspective(perspectiveId);
+    return remote.getPerspective(perspectiveId, options);
   }
 
   async diff(): Promise<EveesMutation> {

@@ -3,7 +3,7 @@ import { html } from 'lit-html';
 import {
   Logger,
   RemoteEvees,
-  PerspectiveDetails,
+  GetPerspectiveOptions,
   NewPerspective,
   Perspective,
   Secured,
@@ -125,20 +125,31 @@ export class EveesHttp implements RemoteEvees {
     return this.connection.getWithPut<any[]>(`/persp`, { context: context });
   }
 
-  async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
-    let responseObj: any = {};
-    try {
-      responseObj = await this.connection.get<PerspectiveDetails>(
-        `/persp/${perspectiveId}/details`
-      );
-    } catch (e) {
-      responseObj = {
-        headId: undefined,
-        canUpdate: false,
-      };
+  async getPerspective(
+    perspectiveId: string,
+    options: GetPerspectiveOptions = {
+      levels: 0,
+      entities: true,
+    }
+  ): Promise<PerspectiveGetResult> {
+    let result: PerspectiveGetResult = {
+      details: {},
+    };
+
+    if (options.levels !== 0 && options.levels !== -1) {
+      throw new Error(`Levels can only be 0 (shallow get) or -1, fully recusive`);
     }
 
-    return { details: responseObj };
+    try {
+      result = await this.connection.getWithPut<PerspectiveGetResult>(
+        `/persp/${perspectiveId}`,
+        options
+      );
+    } catch (e) {
+      this.logger.warn(`Error fetching perspective ${perspectiveId}`, e);
+    }
+
+    return result;
   }
 
   async deletePerspective(perspectiveId: string): Promise<void> {

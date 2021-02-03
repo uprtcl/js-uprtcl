@@ -1,41 +1,19 @@
 import { CASStore } from '../../cas/interfaces/cas-store';
-import { Entity } from '../../cas/interfaces/entity';
 
-import { Update, NewPerspective, PerspectiveDetails } from './types';
+import {
+  Update,
+  NewPerspective,
+  EveesMutation,
+  EveesMutationCreate,
+  PerspectiveGetResult,
+  GetPerspectiveOptions,
+} from './types';
 import { SearchEngine } from './search.engine';
 import { EventEmitter } from 'events';
 import { Proposals } from '../proposals/proposals';
 
 export enum ClientEvents {
   updated = 'updated',
-}
-
-/** the perspective data included by a remote as part of a slice */
-export interface PerspectiveAndDetails {
-  id: string;
-  details: PerspectiveDetails;
-}
-
-export interface Slice {
-  perspectives: PerspectiveAndDetails[];
-  entities: Entity<any>[];
-}
-
-export interface PerspectiveGetResult {
-  details: PerspectiveDetails;
-  slice?: Slice;
-}
-
-export interface EveesMutation {
-  newPerspectives: NewPerspective[];
-  updates: Update[];
-  deletedPerspectives: string[];
-}
-
-export interface EveesMutationCreate {
-  newPerspectives?: NewPerspective[];
-  updates?: Update[];
-  deletedPerspectives?: string[];
 }
 
 // All evees clients must call the .on('') method with in the following cases
@@ -51,7 +29,10 @@ export interface Client {
 
   /** get a perspective head,
    * include a Slice that can be used by the client to pre-fill the cache */
-  getPerspective(perspectiveId: string): Promise<PerspectiveGetResult>;
+  getPerspective(
+    perspectiveId: string,
+    options?: GetPerspectiveOptions
+  ): Promise<PerspectiveGetResult>;
 
   /** create/update perspectives and entities in batch */
   update(mutation: EveesMutationCreate);
