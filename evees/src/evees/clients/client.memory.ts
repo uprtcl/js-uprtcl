@@ -75,8 +75,11 @@ export class ClientOnMemory implements Client {
           remote: newPerspective.perspective.object.payload.remote,
         });
         this.newPerspectives.set(newPerspective.perspective.id, newPerspective);
-        /** set the current known details of that perspective */
-        this.cachedPerspectives.set(newPerspective.perspective.id, newPerspective.update.details);
+        /** set the current known details of that perspective, can update is set to true */
+        this.cachedPerspectives.set(newPerspective.perspective.id, {
+          ...newPerspective.update.details,
+          canUpdate: true,
+        });
       })
     );
   }
