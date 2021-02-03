@@ -188,7 +188,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     if (entityType === PerspectiveType) {
       const remote = await this.evees.getPerspectiveRemote(entity.id);
-      const { details } = await this.evees.client.getPerspective(uref);
+      const { details } = await this.evees.client.getPerspective(uref, { levels: -1 });
       headId = details.headId;
       remoteId = remote.id;
 

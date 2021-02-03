@@ -136,6 +136,10 @@ export class EveesHttp implements RemoteEvees {
       details: {},
     };
 
+    /** add default values for case where options is partially provided */
+    options.entities = options.entities === undefined ? true : options.entities;
+    options.levels = options.levels === undefined ? 0 : options.levels;
+
     if (options.levels !== 0 && options.levels !== -1) {
       throw new Error(`Levels can only be 0 (shallow get) or -1, fully recusive`);
     }
