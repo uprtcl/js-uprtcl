@@ -23,8 +23,9 @@ import { HttpConnectionLogged } from '@uprtcl/http-provider';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
+import { EveesHttpSearchEngine } from './evees.search-engine.http';
 
-const evees_api: string = 'evees-v1';
+const evees_api = 'evees-v1';
 
 export class EveesHttp implements RemoteEvees {
   logger = new Logger('HTTP-EVEES-PROVIDER');
@@ -37,6 +38,7 @@ export class EveesHttp implements RemoteEvees {
   constructor(public connection: HttpConnectionLogged, public storeRemote: CASRemote) {
     this.accessControl = new EveesAccessControlHttp(this.connection);
     this.proposals = new ProposalsHttp(this.connection);
+    this.searchEngine = new EveesHttpSearchEngine(this.connection);
   }
 
   get id() {
@@ -116,13 +118,9 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async updatePerspective(update: Update): Promise<void> {
-    await this.connection.put(`/persp/update`, {
+    await this.connection.put('/persp/update', {
       updates: [update],
     });
-  }
-
-  async getContextPerspectives(context: string): Promise<string[]> {
-    return this.connection.getWithPut<any[]>(`/persp`, { context: context });
   }
 
   async getPerspective(
@@ -141,7 +139,7 @@ export class EveesHttp implements RemoteEvees {
     options.levels = options.levels === undefined ? 0 : options.levels;
 
     if (options.levels !== 0 && options.levels !== -1) {
-      throw new Error(`Levels can only be 0 (shallow get) or -1, fully recusive`);
+      throw new Error('Levels can only be 0 (shallow get) or -1, fully recusive');
     }
 
     try {

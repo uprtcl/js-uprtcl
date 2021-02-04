@@ -9,10 +9,8 @@ import {
   EveesConfig,
   Commit,
   Perspective,
-  PartialPerspective,
   CreateEvee,
   NewPerspective,
-  LinkChanges,
   Update,
 } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
@@ -147,7 +145,7 @@ export class Evees {
   }
 
   /** A helper methods that processes an update and appends the links */
-  async checkLinks(update: Update, patternName: string = 'children'): Promise<Update> {
+  async checkLinks(update: Update, patternName = 'children'): Promise<Update> {
     if (update.linkChanges) {
       return update;
     }
@@ -334,8 +332,8 @@ export class Evees {
   async addExistingChild(
     childId: string,
     parentId: string,
-    index: number = 0,
-    setGuardian: boolean = true
+    index = 0,
+    setGuardian = true
   ): Promise<void> {
     const parentData = await this.getPerspectiveData(parentId);
 
@@ -358,7 +356,7 @@ export class Evees {
   /**
    * Creates an evee and add it as a child.
    */
-  async addNewChild(childObject: object, parentId: string, index: number = 0): Promise<string> {
+  async addNewChild(childObject: object, parentId: string, index = 0): Promise<string> {
     const childId = await this.createEvee({
       object: childObject,
     });
@@ -377,7 +375,7 @@ export class Evees {
     fromId: string,
     toId: string,
     toIndex?: number,
-    keepInFrom: boolean = false,
+    keepInFrom = false,
     keepGuardian?: boolean
   ): Promise<void> {
     let childIndex;
