@@ -122,6 +122,19 @@ export interface EveesMutationCreate {
   deletedPerspectives?: string[];
 }
 
+export interface Join {
+  type: 'AND' | 'OR' | 'XOR';
+  negation: boolean;
+  id: string;
+}
+
+export interface SearchOptions {
+  under: Join[],
+  linksTo: Join[],
+  query: string,
+  orderBy: string
+}
+
 export interface DiffLens {
   name: string;
   render: (client: Client, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;

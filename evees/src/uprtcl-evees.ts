@@ -16,6 +16,7 @@ export {
   NewPerspective,
   EveesConfig,
   Slice,
+  SearchOptions
 } from './evees/interfaces/types';
 
 /** interfaces */

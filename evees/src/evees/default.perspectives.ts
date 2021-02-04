@@ -56,14 +56,14 @@ export const getHome = async (
   userId?: string
 ): Promise<Secured<Perspective>> => {
   const creatorId = userId === undefined ? remote.userId : userId;
-  if (!creatorId) throw new Error(`creator cannot be undefined`);
+  if (!creatorId) throw new Error('creator cannot be undefined');
 
   const remoteHome: Perspective = {
     remote: remote.id,
     path: remote.defaultPath,
     creatorId,
     timestamp: 0,
-    context: `${creatorId}.home`,
+    context: `${creatorId}.home5`,
   };
 
   const secured = {
