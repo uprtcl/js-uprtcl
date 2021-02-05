@@ -10,6 +10,9 @@ export { DocumentsBindings } from './bindings';
 
 export { htmlToText } from './support/documents.support';
 
+// Elements
+export { DocumentEditor } from './elements/document-editor';
+
 // Patterns
 export { TextNodePattern, TextNodeCommon, TextNodeTitle } from './patterns/text-node.pattern';
 

@@ -200,9 +200,10 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
               /** otherwise, if merge config.forceOwner and this perspective is only present in the
                * "from", a fork will be created using parentId as the source for permissions*/
               if (config.forceOwner) {
+                const toRemote = await evees.getPerspectiveRemote(perspectivesByContext.to);
                 const newPerspectiveId = await evees.forkPerspective(
                   perspectivesByContext.from as string,
-                  config.remote,
+                  toRemote.id,
                   config.parentId,
                   evees.client
                 );

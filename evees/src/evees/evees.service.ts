@@ -12,6 +12,7 @@ import {
   CreateEvee,
   NewPerspective,
   Update,
+  ForkDetails,
 } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
 import { HasChildren } from '../patterns/behaviours/has-links';
@@ -19,6 +20,7 @@ import { Signed } from '../patterns/interfaces/signable';
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { getHome } from './default.perspectives';
+import { ClientOnMemory } from './clients/client.memory';
 
 export interface CreateCommit {
   dataId: string;
@@ -48,7 +50,10 @@ export class Evees {
     readonly modules: Map<string, EveesContentModule>
   ) {}
 
-  clone(client: Client): Evees {
+  /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
+   * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
+  clone(client?: Client): Evees {
+    client = client || new ClientOnMemory(this.client, this.client.store);
     return new Evees(client, this.recognizer, this.remotes, this.merge, this.config, this.modules);
   }
 
@@ -511,12 +516,18 @@ export class Evees {
 
     const refPerspective: Entity<Signed<Perspective>> = await client.store.getEntity(perspectiveId);
     const remote = await this.getRemote(remoteId);
-    const perspective = await remote.snapPerspective(
-      { context: refPerspective.object.payload.context },
-      guardianId
-    );
 
     const { details } = await client.getPerspective(perspectiveId);
+
+    const forking: ForkDetails = {
+      perspectiveId: refPerspective.id,
+      headId: details.headId,
+    };
+
+    const perspective = await remote.snapPerspective(
+      { context: refPerspective.object.payload.context, meta: { forking } },
+      guardianId
+    );
 
     await client.store.storeEntity({ object: perspective.object, remote: remote.id });
 

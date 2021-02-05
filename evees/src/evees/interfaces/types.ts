@@ -82,6 +82,12 @@ export interface PartialPerspective {
   meta?: any;
 }
 
+/** Optional entry to be stored under meta.forking */
+export interface ForkDetails {
+  perspectiveId: string;
+  headId?: string;
+}
+
 /** Helper interface with info typically needed by high level user interfaces to create a new perspective */
 export interface CreateEvee {
   remoteId?: string;
@@ -129,10 +135,10 @@ export interface Join {
 }
 
 export interface SearchOptions {
-  under: Join[],
-  linksTo: Join[],
-  query: string,
-  orderBy: string
+  under: Join[];
+  linksTo: Join[];
+  query: string;
+  orderBy: string;
 }
 
 export interface DiffLens {
