@@ -5,7 +5,7 @@ import { Logger } from '../../utils/logger';
 
 import { Evees } from '../evees.service';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
-
+import { icons } from '../icon';
 export class EveesLoginWidget extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
 
@@ -75,8 +75,10 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
     }
 
     return html`
-      <uprtcl-button skinny @click=${() => this.logoutAll()}>logout</uprtcl-button>
-      ${this.evees.remotes.map((remote: RemoteWithUI) => {
+      <uprtcl-button title="Logout" skinny @click=${() => this.logoutAll()}
+        >${icons.logout}</uprtcl-button
+      >
+      <!-- ${this.evees.remotes.map((remote: RemoteWithUI) => {
         return remote.lense !== undefined
           ? remote.lense().render({ remoteId: remote.id })
           : html`
@@ -85,7 +87,7 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
                 remote-id=${remote.id}
               ></evees-author>
             `;
-      })}
+      })} -->
     `;
   }
 
