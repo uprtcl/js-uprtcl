@@ -1,5 +1,4 @@
-import { SearchEngine } from '@uprtcl/evees';
-import { SearchOptions } from '@uprtcl/evees';
+import { SearchEngine, SearchOptions, ParentAndChild } from '@uprtcl/evees';
 import { HttpConnectionLogged } from '@uprtcl/http-provider';
 
 export class EveesHttpSearchEngine implements SearchEngine {
@@ -8,8 +7,8 @@ export class EveesHttpSearchEngine implements SearchEngine {
   explore(options: SearchOptions) {
     throw new Error('Method not implemented.');
   }
-  async locate(perspectiveId: string, forks = false): Promise<string[]> {
-    return this.connection.getWithPut<string[]>('/locate', {
+  async locate(perspectiveId: string, forks = false): Promise<ParentAndChild[]> {
+    return this.connection.getWithPut<ParentAndChild[]>('/locate', {
       elementId: perspectiveId,
       forks,
     });

@@ -1,6 +1,6 @@
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
-import { SearchOptions } from '../interfaces/types';
+import { ParentAndChild, SearchOptions } from '../interfaces/types';
 
 export class SearchEngineRouter implements SearchEngine {
   constructor(protected remotes: RemoteEvees[]) {}
@@ -13,7 +13,7 @@ export class SearchEngineRouter implements SearchEngine {
     );
     return Array.prototype.concat.apply([], all);
   }
-  async locate(perspectiveId: string, forks: boolean): Promise<string[]> {
+  async locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
     const all = await Promise.all(
       this.remotes.map((remote) => {
         return remote.searchEngine ? remote.searchEngine.locate(perspectiveId, forks) : [];

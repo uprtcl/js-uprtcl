@@ -17,6 +17,7 @@ export {
   EveesConfig,
   Slice,
   SearchOptions,
+  ParentAndChild,
 } from './evees/interfaces/types';
 
 /** interfaces */

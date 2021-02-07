@@ -141,6 +141,11 @@ export interface SearchOptions {
   orderBy: string;
 }
 
+export interface ParentAndChild {
+  parentId: string;
+  childId: string;
+}
+
 export interface DiffLens {
   name: string;
   render: (client: Client, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;
