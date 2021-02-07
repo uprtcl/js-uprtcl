@@ -1228,7 +1228,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       },
     };
     return html`
-      <div class="doc-topbar">
+      <!-- <div class="doc-topbar">
         ${this.docHasChanges && !this.showCommitMessage
           ? html`
               <uprtcl-button-loading
@@ -1248,7 +1248,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
                 </span>
               </uprtcl-help>
             `
-          : ''}
+          : ''} -->
         ${this.showCommitMessage
           ? html`
               <uprtcl-textfield id="COMMIT_MESSAGE" label="Message"> </uprtcl-textfield>
@@ -1270,7 +1270,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
             ?loading=${this.persistingAll}
             variant="long"
           >
-            Publish
+            Push Changes
           </uprtcl-button-loading> `
         : html` <uprtcl-button-loading variant="long" ?disabled=${true}
             >Published</uprtcl-button-loading

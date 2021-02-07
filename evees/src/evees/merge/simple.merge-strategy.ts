@@ -1,5 +1,8 @@
 import { Update } from '../interfaces/types';
 import { CreateCommit, Evees } from '../evees.service';
+
+import { Entity } from '../../cas/interfaces/entity';
+
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Merge } from './merge.behaviour';
 import { mergeResult } from './utils';
@@ -117,23 +120,25 @@ export class SimpleMergeStrategy {
   }
 
   static async mergeData<T extends object>(
-    originalData: T,
-    newDatas: T[],
+    originalData: Entity<T>,
+    newDatas: Entity<T>[],
     evees: Evees,
     config: any
   ): Promise<T> {
-    const merge: Merge | undefined = evees.recognizer
-      .recognizeBehaviours(originalData)
-      .find((prop) => !!(prop as Merge).merge);
+    const merge = evees.behavior(originalData.object, 'merge');
 
     if (!merge)
       throw new Error(
         `Cannot merge data ${JSON.stringify(
-          originalData
+          originalData.object
         )} that does not implement the Mergeable behaviour`
       );
 
-    return merge.merge(originalData)(newDatas, this, evees, config);
+    return merge(
+      newDatas.map((d) => d.object),
+      evees,
+      config
+    );
   }
 
   static async mergeLinks(

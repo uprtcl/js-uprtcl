@@ -82,6 +82,12 @@ export interface PartialPerspective {
   meta?: any;
 }
 
+/** Optional entry to be stored under meta.forking */
+export interface ForkDetails {
+  perspectiveId: string;
+  headId?: string;
+}
+
 /** Helper interface with info typically needed by high level user interfaces to create a new perspective */
 export interface CreateEvee {
   remoteId?: string;
@@ -120,6 +126,24 @@ export interface EveesMutationCreate {
   newPerspectives?: NewPerspective[];
   updates?: Update[];
   deletedPerspectives?: string[];
+}
+
+export interface Join {
+  type: 'AND' | 'OR' | 'XOR';
+  negation: boolean;
+  id: string;
+}
+
+export interface SearchOptions {
+  under: Join[];
+  linksTo: Join[];
+  query: string;
+  orderBy: string;
+}
+
+export interface ParentAndChild {
+  parentId: string;
+  childId: string;
 }
 
 export interface DiffLens {

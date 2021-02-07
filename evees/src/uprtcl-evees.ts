@@ -16,6 +16,8 @@ export {
   NewPerspective,
   EveesConfig,
   Slice,
+  SearchOptions,
+  ParentAndChild,
 } from './evees/interfaces/types';
 
 /** interfaces */
@@ -103,3 +105,4 @@ export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Clients */
 export { EveesDraftsLocal } from './evees/clients/evees.drafts.local';
+export { ClientOnMemory } from './evees/clients/client.memory';

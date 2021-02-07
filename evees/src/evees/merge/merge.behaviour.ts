@@ -1,12 +1,12 @@
+import { Behaviour } from '../../patterns/interfaces/behaviour';
 import { Evees } from '../evees.service';
-import { MergeStrategy } from './merge-strategy';
 
 export interface Merge<T = any> extends Behaviour<T> {
   merge: (
     ancestor: T
   ) => (
     modifications: any[],
-    strategy: MergeStrategy,
+    strategy: any,
     evees: Evees,
     config: any,
     parentId?: string

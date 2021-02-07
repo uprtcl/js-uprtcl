@@ -26,7 +26,7 @@ export class EveesPerspectivesList extends servicesConnect(LitElement) {
   canPropose: Boolean = false;
 
   @property({ attribute: false })
-  loadingPerspectives: boolean = true;
+  loadingPerspectives = true;
 
   @property({ attribute: false })
   otherPerspectivesData: PerspectiveData[] = [];
@@ -38,9 +38,7 @@ export class EveesPerspectivesList extends servicesConnect(LitElement) {
 
   async load() {
     this.loadingPerspectives = true;
-    const otherPerspectivesIds = await this.evees.client.searchEngine.otherPerspectives(
-      this.perspectiveId
-    );
+    const otherPerspectivesIds = await this.evees.client.searchEngine.forks(this.perspectiveId);
 
     const perspectivesData: PerspectiveData[] = await Promise.all(
       otherPerspectivesIds.map(

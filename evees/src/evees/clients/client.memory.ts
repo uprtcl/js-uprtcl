@@ -164,6 +164,8 @@ export class ClientOnMemory implements Client {
       updates,
     });
 
+    await this.base.flush();
+
     this.newPerspectives.clear();
     this.updates.clear();
   }
