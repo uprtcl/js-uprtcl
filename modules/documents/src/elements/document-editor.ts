@@ -1270,7 +1270,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
             ?loading=${this.persistingAll}
             variant="long"
           >
-            Publish
+            Push Changes
           </uprtcl-button-loading> `
         : html` <uprtcl-button-loading variant="long" ?disabled=${true}
             >Published</uprtcl-button-loading
