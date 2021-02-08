@@ -51,7 +51,7 @@ export class HttpAuth0Token implements HttpAuthentication {
 
       if (!user.sub) throw new Error('user id undefined');
 
-      return { userId: user.sub, jwt: 'Bearer ' + auth0Claims.__raw };
+      return { userId: user.sub, jwt: auth0Claims.__raw };
     }
 
     throw new Error('Error parsing redirect');

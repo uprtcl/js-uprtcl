@@ -7,6 +7,7 @@ export class HttpAuth0Connection extends HttpAuthenticatedConnection {
     super(host, new HttpAuth0Token(auth0Config), 'AUTH0_AUTH_TOKEN', 'AUTH0_USER_ID');
   }
 
+  /** overide to check for auth0 callback and login from there */
   async isLogged() {
     if (!this.authentication) return false;
 
