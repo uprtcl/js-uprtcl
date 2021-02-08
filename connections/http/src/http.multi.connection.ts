@@ -1,5 +1,5 @@
 import { ConnectionLogged } from '@uprtcl/evees';
-import { HttpAuthenticatedConnection } from './http.auth.connection';
+import { HttpAuthenticatedConnection } from './http.auth.connection.if';
 import { HttpConnection, PostResult } from './http.connection';
 
 export class HttpMultiConnection implements HttpConnection, ConnectionLogged {

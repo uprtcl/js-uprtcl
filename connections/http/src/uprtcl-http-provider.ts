@@ -1,6 +1,7 @@
 // Http
 export { HttpConnection } from './http.connection';
-export { HttpAuthenticatedConnection } from './http.auth.connection';
+export { HttpAuthenticatedConnectionImp } from './http.auth.connection.imp';
+export { HttpAuthenticatedConnection } from './http.auth.connection.if';
 export { HttpMultiConnection } from './http.multi.connection';
 
 export { HttpEthToken } from './auth/http-eth-auth.token';

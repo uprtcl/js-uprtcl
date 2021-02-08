@@ -19,7 +19,7 @@ import {
   CASRemote,
 } from '@uprtcl/evees';
 
-import { HttpConnection } from '@uprtcl/http-provider';
+import { HttpAuthenticatedConnection } from '@uprtcl/http-provider';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
@@ -35,7 +35,7 @@ export class EveesHttp implements RemoteEvees {
   store!: CASStore;
   searchEngine!: SearchEngine;
 
-  constructor(public connection: HttpConnection, public storeRemote: CASRemote) {
+  constructor(public connection: HttpAuthenticatedConnection, public storeRemote: CASRemote) {
     this.accessControl = new EveesAccessControlHttp(this.connection);
     this.proposals = new ProposalsHttp(this.connection);
     this.searchEngine = new EveesHttpSearchEngine(this.connection);

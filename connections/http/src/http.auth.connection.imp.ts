@@ -1,11 +1,12 @@
-import { ConnectionLogged, Logger } from '@uprtcl/evees';
+import { Logger } from '@uprtcl/evees';
 import { HttpAuthentication } from './auth/http.authentication';
 import { AuthTokenStorage } from './auth/http.token.store';
-import { GetResult, HttpConnection, PostResult } from './http.connection';
+import { HttpAuthenticatedConnection } from './http.auth.connection.if';
+import { GetResult, PostResult } from './http.connection';
 
 /** Exposes wrappers to FETCH methods, and injects the header authentication
  * credentials (provided by HttpAuthentication service) */
-export class HttpAuthenticatedConnection implements HttpConnection, ConnectionLogged {
+export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnection {
   logger = new Logger('HTTP CONNECTION');
 
   tokenStore!: AuthTokenStorage;
