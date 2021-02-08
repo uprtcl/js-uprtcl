@@ -1,9 +1,11 @@
+import { ConnectionLogged } from '@uprtcl/evees';
+import { HttpAuthenticatedConnection } from './http.auth.connection';
 import { HttpConnection, PostResult } from './http.connection';
 
-export class HttpMultiConnection implements HttpConnection {
+export class HttpMultiConnection implements HttpConnection, ConnectionLogged {
   constructor(
     readonly host: string,
-    private connections: Map<string, HttpConnection>,
+    private connections: Map<string, HttpAuthenticatedConnection>,
     private selected?: string
   ) {}
 
@@ -11,7 +13,7 @@ export class HttpMultiConnection implements HttpConnection {
     this.selected = selected;
   }
 
-  connection(): HttpConnection {
+  connection(): HttpAuthenticatedConnection {
     if (this.selected) {
       const connection = this.connections.get(this.selected);
       if (!connection) throw new Error(`connection ${this.selected} not found.`);
@@ -20,22 +22,45 @@ export class HttpMultiConnection implements HttpConnection {
     throw new Error('Connection not selected');
   }
 
-  public get<T>(url: string): Promise<T> {
+  get userId() {
+    return this.connection().userId;
+  }
+
+  connect(): Promise<void> {
+    return this.connection().connect();
+  }
+  isConnected(): Promise<boolean> {
+    return this.connection().isConnected();
+  }
+  disconnect(): Promise<void> {
+    return this.connection().disconnect();
+  }
+  isLogged(): Promise<boolean> {
+    return this.connection().isLogged();
+  }
+  login(): Promise<void> {
+    return this.connection().login();
+  }
+  logout(): Promise<void> {
+    return this.connection().logout();
+  }
+
+  get<T>(url: string): Promise<T> {
     return this.connection().get<T>(url);
   }
-  public getWithPut<T>(url: string, body: any): Promise<T> {
+  getWithPut<T>(url: string, body: any): Promise<T> {
     return this.connection().getWithPut<T>(url, body);
   }
-  public put(url: string, body: any): Promise<PostResult> {
+  put(url: string, body: any): Promise<PostResult> {
     return this.connection().put(url, body);
   }
-  public post(url: string, body: any): Promise<PostResult> {
+  post(url: string, body: any): Promise<PostResult> {
     return this.connection().post(url, body);
   }
-  public delete(url: string): Promise<PostResult> {
+  delete(url: string): Promise<PostResult> {
     return this.connection().delete(url);
   }
-  public putOrPost(url: string, body: any, method: string): Promise<PostResult> {
+  putOrPost(url: string, body: any, method: string): Promise<PostResult> {
     return this.connection().putOrPost(url, body, method);
   }
 }
