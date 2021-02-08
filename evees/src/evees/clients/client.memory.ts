@@ -198,7 +198,5 @@ export class ClientOnMemory implements Client {
     return perspectives;
   }
 
-  refresh(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
+  async refresh(): Promise<void> {}
 }

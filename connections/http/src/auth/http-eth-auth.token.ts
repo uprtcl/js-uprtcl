@@ -18,12 +18,13 @@ export class HttpEthToken implements HttpAuthentication {
   }
 
   async obtainToken(): Promise<JwtToken> {
+    await window['ethereum'].enable();
     const provider = new ethers.providers.Web3Provider(window['ethereum']);
-    const signer = provider.getSigner();
-    const userId = await signer.getAddress();
 
-    const response = await this.connection.get<string>(`/user/${userId}/nonce`);
-    const nonce = (response as any).data;
+    const signer = provider.getSigner();
+    const userId = (await signer.getAddress()).toLocaleLowerCase();
+
+    const nonce = await this.connection.get<string>(`/user/${userId}/nonce`);
 
     const signature = await signer.signMessage(loginMessage(nonce));
     const result = await this.connection.getWithPut<{ jwt: string }>(`/user/${userId}/authorize`, {
@@ -32,7 +33,7 @@ export class HttpEthToken implements HttpAuthentication {
 
     return {
       userId,
-      jwt: (result as any).data.jwt,
+      jwt: result.jwt,
     };
   }
 }

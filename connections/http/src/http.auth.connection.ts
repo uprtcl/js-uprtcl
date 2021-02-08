@@ -55,7 +55,7 @@ export class HttpAuthenticatedConnection implements HttpConnection, ConnectionLo
       'Content-Type': 'application/json',
     };
 
-    if (this.tokenStore.authToken) {
+    if (this.tokenStore && this.tokenStore.authToken) {
       headers['Authorization'] = this.tokenStore.authToken;
     }
 
