@@ -1,8 +1,8 @@
 import { Proposal, Proposals } from '@uprtcl/evees';
-import { HttpConnectionLogged } from '@uprtcl/http-provider';
+import { HttpConnection } from '@uprtcl/http-provider';
 
 export class ProposalsHttp implements Proposals {
-  constructor(protected connection: HttpConnectionLogged) {}
+  constructor(protected connection: HttpConnection) {}
 
   async canPropose() {
     return true;
@@ -17,7 +17,7 @@ export class ProposalsHttp implements Proposals {
   }
 
   async createProposal(proposal: Proposal): Promise<string> {
-    const result = await this.connection.post(`/proposal`, proposal);
+    const result = await this.connection.post('/proposal', proposal);
     return result.elementIds[0];
   }
 
