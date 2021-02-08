@@ -12,7 +12,7 @@ export class HttpAuthenticatedConnection implements HttpConnection, ConnectionLo
 
   constructor(
     readonly host: string,
-    private authentication?: HttpAuthentication,
+    protected authentication?: HttpAuthentication,
     tokenStorageId?: string,
     userStorageId?: string
   ) {
@@ -29,8 +29,11 @@ export class HttpAuthenticatedConnection implements HttpConnection, ConnectionLo
     if (!this.authentication) throw new Error('Authentication service not defined');
 
     const token = await this.authentication.obtainToken();
-    this.tokenStore.authToken = 'Bearer ' + token.jwt;
-    this.tokenStore.userId = token.userId;
+
+    if (token.jwt && token.userId) {
+      this.tokenStore.authToken = 'Bearer ' + token.jwt;
+      this.tokenStore.userId = token.userId;
+    }
   }
   async connect(): Promise<void> {}
 
