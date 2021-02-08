@@ -6,11 +6,11 @@ export const loginMessage = (nonce: string) => {
   return `Login to Intercreativity \n\nnonce:${nonce}`;
 };
 
-export class HttpEthAuthConnection implements HttpAuthentication {
+export class HttpAuth0Token implements HttpAuthentication {
   store: AuthTokenStorage;
   auth0: Auth0Client;
 
-  constructor(public host, auth0Config: Auth0ClientOptions) {
+  constructor(auth0Config: Auth0ClientOptions) {
     this.store = new AuthTokenStorage('ETH_AUTH_TOKEN', 'ETH_USER_ID');
     this.auth0 = new Auth0Client(auth0Config);
   }

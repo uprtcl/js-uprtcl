@@ -1,22 +1,32 @@
 import { Logger } from '@uprtcl/evees';
 import { HttpAuthentication } from './auth/http.authentication';
 import { AuthTokenStorage } from './auth/http.token.store';
-import { HttpConnection } from './http.connection';
+import { GetResult, HttpConnection, PostResult } from './http.connection';
 
 /** Exposes wrappers to FETCH methods, and injects the header authentication
  * credentials (provided by HttpAuthentication service) */
 export class HttpAuthenticatedConnection implements HttpConnection {
   logger = new Logger('HTTP CONNECTION');
 
-  tokenStore: AuthTokenStorage;
+  tokenStore!: AuthTokenStorage;
 
   constructor(
     readonly host: string,
-    private authentication: HttpAuthentication,
-    tokenStorageId: string,
-    userStorageId: string
+    private authentication?: HttpAuthentication,
+    tokenStorageId?: string,
+    userStorageId?: string
   ) {
-    this.tokenStore = new AuthTokenStorage(tokenStorageId, userStorageId);
+    if (tokenStorageId && userStorageId) {
+      this.tokenStore = new AuthTokenStorage(tokenStorageId, userStorageId);
+    }
+  }
+
+  async login() {
+    if (!this.authentication) throw new Error('Authentication service not defined');
+
+    const token = await this.authentication.obtainToken();
+    this.tokenStore.authToken = 'Bearer ' + token.jwt;
+    this.tokenStore.userId = token.userId;
   }
 
   get headers(): HeadersInit {
