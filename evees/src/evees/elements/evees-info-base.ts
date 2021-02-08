@@ -17,6 +17,7 @@ import { RemoteEvees } from '../interfaces/remote.evees';
 import { EveesDiff } from './evees-diff';
 import { ProposalCreatedEvent } from './events';
 import { Proposal } from '../proposals/types';
+import { RecursiveContextMergeStrategy } from '../merge/recursive-context.merge-strategy';
 
 interface PerspectiveData {
   id?: string;
@@ -50,7 +51,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   eveeColor!: string;
 
   @property({ type: Boolean, attribute: 'emit-proposals' })
-  emitProposals: boolean = false;
+  emitProposals = false;
 
   @property({ type: String, attribute: false })
   entityType: string | undefined = undefined;
@@ -59,34 +60,34 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   loading: Boolean = false;
 
   @property({ attribute: false })
-  isLogged: boolean = false;
+  isLogged = false;
 
   @property({ attribute: false })
   isLoggedOnDefault;
 
   @property({ attribute: false })
-  forceUpdate: string = 'true';
+  forceUpdate = 'true';
 
   @property({ attribute: false })
-  showUpdatesDialog: boolean = false;
+  showUpdatesDialog = false;
 
   @property({ attribute: false })
-  loggingIn: boolean = false;
+  loggingIn = false;
 
   @property({ attribute: false })
-  creatingNewPerspective: boolean = false;
+  creatingNewPerspective = false;
 
   @property({ attribute: false })
-  proposingUpdate: boolean = false;
+  proposingUpdate = false;
 
   @property({ attribute: false })
-  makingPublic: boolean = false;
+  makingPublic = false;
 
   @property({ attribute: false })
   firstHasChanges!: boolean;
 
   @property({ attribute: false })
-  merging: boolean = false;
+  merging = false;
 
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
@@ -212,10 +213,12 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
       parentId: this.uref,
     };
 
-    const pullclient = new ClientOnMemory(this.evees.client, this.evees.client.store);
-    const eveesPull = this.evees.clone(pullclient);
+    const eveesPull = this.evees.clone();
+    const merger = new RecursiveContextMergeStrategy(eveesPull);
 
-    await this.evees.merge.mergePerspectivesExternal(this.uref, fromUref, eveesPull, config);
+    await merger.mergePerspectivesExternal(this.uref, fromUref, {
+      forceOwner: true,
+    });
 
     this.logger.info('checkPull()', this.pullclient);
   }
@@ -255,25 +258,18 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     this.merging = true;
     this.logger.info(`merge ${fromPerspectiveId} on ${toPerspectiveId}`);
 
-    const client = new ClientOnMemory(this.evees.client, this.evees.client.store);
-    const eveesMerge = this.evees.clone(client);
     const toRemote = await this.evees.getPerspectiveRemote(toPerspectiveId);
 
     const config = {
       forceOwner: true,
-      remote: toRemote.id,
-      parentId: toPerspectiveId,
     };
 
     const { details: toDetails } = await this.evees.client.getPerspective(toPerspectiveId);
     const { details: fromDetails } = await this.evees.client.getPerspective(fromPerspectiveId);
 
-    await this.evees.merge.mergePerspectivesExternal(
-      toPerspectiveId,
-      fromPerspectiveId,
-      eveesMerge,
-      config
-    );
+    const eveesMerge = this.evees.clone();
+    const merger = new RecursiveContextMergeStrategy(eveesMerge);
+    await merger.mergePerspectivesExternal(toPerspectiveId, fromPerspectiveId, config);
 
     const canUpdate = toDetails.canUpdate !== undefined;
     const canPropose = toRemote
@@ -297,7 +293,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     };
 
     const result = await this.updatesDialog(
-      client,
+      eveesMerge.client,
       options,
       this.renderFromToPerspective(toPerspectiveId, fromPerspectiveId)
     );
@@ -315,7 +311,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
       fromPerspectiveId,
       toHeadId: toDetails.headId,
       fromHeadId: fromDetails.headId,
-      mutation: await client.diff(),
+      mutation: await eveesMerge.client.diff(),
     };
 
     if (!canUpdate && (emitBecauseOfTarget || this.emitProposals)) {

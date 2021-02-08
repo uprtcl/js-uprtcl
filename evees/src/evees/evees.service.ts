@@ -4,7 +4,6 @@ import { Client } from './interfaces/client';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
-import { RecursiveContextMergeStrategy } from '../evees/merge/recursive-context.merge-strategy';
 import {
   EveesConfig,
   Commit,
@@ -45,7 +44,6 @@ export class Evees {
     readonly client: Client,
     readonly recognizer: PatternRecognizer,
     readonly remotes: RemoteEvees[],
-    readonly merge: RecursiveContextMergeStrategy,
     readonly config: EveesConfig,
     readonly modules: Map<string, EveesContentModule>
   ) {}
@@ -54,7 +52,7 @@ export class Evees {
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
   clone(client?: Client): Evees {
     client = client || new ClientOnMemory(this.client, this.client.store);
-    return new Evees(client, this.recognizer, this.remotes, this.merge, this.config, this.modules);
+    return new Evees(client, this.recognizer, this.remotes, this.config, this.modules);
   }
 
   findRemote(query: string): RemoteEvees {

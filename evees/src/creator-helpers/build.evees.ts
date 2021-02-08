@@ -2,7 +2,6 @@ import { RemoteEvees } from '../evees/interfaces/remote.evees';
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 
 import { EveesConfig } from '../evees/interfaces/types';
-import { RecursiveContextMergeStrategy } from '../evees/merge/recursive-context.merge-strategy';
 import { Evees } from '../evees/evees.service';
 import { ClientOnMemory } from '../evees/clients/client.memory';
 import { RemoteRouter } from '../evees/clients/client.router';
@@ -33,7 +32,6 @@ export const buildEvees = (
   const router = new RemoteRouter(remotes, store);
   // const cached = new ClientLocal(router, store);
   const onMemory = new ClientOnMemory(router, store);
-  const merge = new RecursiveContextMergeStrategy();
 
-  return new Evees(onMemory, recognizer, remotes, merge, config, modules);
+  return new Evees(onMemory, recognizer, remotes, config, modules);
 };

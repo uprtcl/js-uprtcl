@@ -19,6 +19,7 @@ import { DocumentsBindings } from '../bindings';
 import { htmlToText } from '../support/documents.support';
 
 import { DocNodeLens } from './document-patterns';
+import { MergeStrategy } from '@uprtcl/evees/dist/types/evees/merge/merge-strategy';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -109,7 +110,7 @@ export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode
 
   merge = (originalNode: TextNode) => async (
     modifications: TextNode[],
-    evees: Evees,
+    merger: MergeStrategy,
     config: any
   ): Promise<TextNode> => {
     const resultText = modifications[1].text;
@@ -118,10 +119,9 @@ export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode
       modifications.map((data) => data.type)
     );
 
-    const mergedLinks = await RecursiveContextMergeStrategy.mergeLinks(
+    const mergedLinks = await merger.mergeLinks(
       originalNode.links,
       modifications.map((data) => data.links),
-      evees,
       config
     );
 
