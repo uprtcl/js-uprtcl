@@ -1,19 +1,11 @@
-import { HasChildren } from '../../patterns/behaviours/has-links';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
-import { Evees } from '../evees.service';
 
+export interface FromTo {
+  to?: string;
+  from?: string;
+}
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
-  perspectivesByContext:
-    | Map<
-        string,
-        {
-          to: string | undefined;
-          from: string | undefined;
-        }
-      >
-    | undefined = undefined;
-
-  allPerspectives: Map<string, string> | undefined = undefined;
+  perspectivesByContext: Map<string, FromTo> = new Map();
 
   async isPattern(id: string, type: string): Promise<boolean> {
     const entity = await this.evees.client.store.getEntity(id);
@@ -24,22 +16,17 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
   setPerspective(perspectiveId: string, context: string, to: boolean): void {
     if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
-    if (!this.allPerspectives) throw new Error('allPerspectives undefined');
 
-    if (!this.perspectivesByContext[context]) {
-      this.perspectivesByContext[context] = {
-        to: undefined,
-        from: undefined,
-      };
-    }
+    const currentFromTo = this.perspectivesByContext.get(context) as FromTo;
+    const newFromTo: FromTo = currentFromTo || {};
 
     if (to) {
-      this.perspectivesByContext[context].to = perspectiveId;
+      newFromTo.to = perspectiveId;
     } else {
-      this.perspectivesByContext[context].from = perspectiveId;
+      newFromTo.from = perspectiveId;
     }
 
-    this.allPerspectives[perspectiveId] = context;
+    this.perspectivesByContext.set(context, newFromTo);
   }
 
   async readPerspective(perspectiveId: string, to: boolean): Promise<void> {
@@ -79,9 +66,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
   async mergePerspectivesExternal(toPerspectiveId: string, fromPerspectiveId: string, config: any) {
     /** reset internal state */
-    this.perspectivesByContext = undefined;
-    this.allPerspectives = undefined;
-
+    this.perspectivesByContext = new Map();
+    await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
     return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
   }
 
@@ -90,33 +76,13 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     fromPerspectiveId: string,
     config: any
   ): Promise<string> {
-    let root = false;
-    if (!this.perspectivesByContext) {
-      root = true;
-      this.perspectivesByContext = new Map();
-      this.allPerspectives = new Map();
-      await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
-    }
-
     return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
-  }
-
-  private async getPerspectiveContext(perspectiveId: string): Promise<string> {
-    if (!this.allPerspectives) throw new Error('allPerspectives undefined');
-
-    if (this.allPerspectives[perspectiveId]) {
-      return this.allPerspectives[perspectiveId];
-    } else {
-      const secured = await this.evees.client.store.getEntity(perspectiveId);
-      if (!secured) throw new Error(`perspective ${perspectiveId} not found`);
-      return secured.object.payload.context;
-    }
   }
 
   async getLinkMergeId(link: string) {
     const isPerspective = await this.isPattern(link, 'Perspective');
     if (isPerspective) {
-      return this.getPerspectiveContext(link);
+      return this.evees.getPerspectiveContext(link);
     } else {
       return Promise.resolve(link);
     }
@@ -147,7 +113,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const mergeLinks = mergedLinks.map(
       async (link): Promise<string> => {
-        const perspectivesByContext = dictionary[link];
+        const perspectivesByContext = dictionary.get(link);
 
         if (perspectivesByContext) {
           const needsSubperspectiveMerge = perspectivesByContext.to && perspectivesByContext.from;
@@ -176,6 +142,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
               /** otherwise, if merge config.forceOwner and this perspective is only present in the
                * "from", a fork will be created using parentId as the source for permissions*/
               if (config.forceOwner) {
+                if (!perspectivesByContext.to) throw new Error('Perspective to not defined');
                 const toRemote = await this.evees.getPerspectiveRemote(perspectivesByContext.to);
                 const newPerspectiveId = await this.evees.forkPerspective(
                   perspectivesByContext.from as string,
