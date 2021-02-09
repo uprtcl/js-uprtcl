@@ -1,8 +1,8 @@
 import { SearchEngine, SearchOptions, ParentAndChild } from '@uprtcl/evees';
-import { HttpConnectionLogged } from '@uprtcl/http-provider';
+import { HttpConnection } from '@uprtcl/http-provider';
 
 export class EveesHttpSearchEngine implements SearchEngine {
-  constructor(protected connection: HttpConnectionLogged) {}
+  constructor(protected connection: HttpConnection) {}
 
   explore(options: SearchOptions) {
     throw new Error('Method not implemented.');

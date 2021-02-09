@@ -55,7 +55,9 @@ export class CASOnMemory implements CASStore {
       if (entityCached) {
         found.push(lodash.cloneDeep(entityCached));
       } else {
-        /** Check the new entities buffer */
+        /** Check the new entities buffer
+         * TODO: better to add th new entities to the cachedEntities already, and only check that map.
+         */
         const entityNew = this.newEntities.get(hash);
         if (entityNew) {
           found.push(lodash.cloneDeep(entityNew.entity));

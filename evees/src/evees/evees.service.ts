@@ -4,7 +4,6 @@ import { Client } from './interfaces/client';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
-import { RecursiveContextMergeStrategy } from '../evees/merge/recursive-context.merge-strategy';
 import {
   EveesConfig,
   Commit,
@@ -45,7 +44,6 @@ export class Evees {
     readonly client: Client,
     readonly recognizer: PatternRecognizer,
     readonly remotes: RemoteEvees[],
-    readonly merge: RecursiveContextMergeStrategy,
     readonly config: EveesConfig,
     readonly modules: Map<string, EveesContentModule>
   ) {}
@@ -54,7 +52,7 @@ export class Evees {
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
   clone(client?: Client): Evees {
     client = client || new ClientOnMemory(this.client, this.client.store);
-    return new Evees(client, this.recognizer, this.remotes, this.merge, this.config, this.modules);
+    return new Evees(client, this.recognizer, this.remotes, this.config, this.modules);
   }
 
   findRemote(query: string): RemoteEvees {
@@ -426,13 +424,7 @@ export class Evees {
     }
   }
 
-  async createCommit(
-    commit: CreateCommit,
-    remote: string,
-    client?: Client
-  ): Promise<Secured<Commit>> {
-    client = client || this.client;
-
+  async createCommit(commit: CreateCommit, remote: string): Promise<Secured<Commit>> {
     const message = commit.message !== undefined ? commit.message : '';
     const timestamp = commit.timestamp !== undefined ? commit.timestamp : Date.now();
     const creatorsIds = commit.creatorsIds !== undefined ? commit.creatorsIds : [];
@@ -447,22 +439,21 @@ export class Evees {
     };
 
     const commitObject = signObject(commitData);
-    const hash = await client.store.storeEntity({ object: commitObject, remote });
+    const hash = await this.client.store.storeEntity({ object: commitObject, remote });
     return {
       id: hash,
       object: commitObject,
     };
   }
 
-  async isAncestorCommit(client: Client, perspectiveId: string, commitId: string, stopAt?: string) {
-    const result = await client.getPerspective(perspectiveId);
+  async isAncestorCommit(perspectiveId: string, commitId: string, stopAt?: string) {
+    const result = await this.client.getPerspective(perspectiveId);
     if (result.details.headId === undefined) return false;
-    const findAncestor = new FindAncestor(client, commitId, stopAt);
+    const findAncestor = new FindAncestor(this.client, commitId, stopAt);
     return findAncestor.checkIfParent(result.details.headId);
   }
 
-  async checkEmit(perspectiveId: string, client?: Client): Promise<boolean> {
-    client = client || this.client;
+  async checkEmit(perspectiveId: string): Promise<boolean> {
     if (this.config.emitIf === undefined) return false;
 
     const toRemote = await this.getPerspectiveRemote(perspectiveId);
@@ -474,9 +465,8 @@ export class Evees {
     return false;
   }
 
-  async isOfPattern(uref: string, pattern: string, client?: Client): Promise<boolean> {
-    client = client || this.client;
-    const entity = await client.store.getEntity(uref);
+  async isOfPattern(uref: string, pattern: string): Promise<boolean> {
+    const entity = await this.client.store.getEntity(uref);
     const type = this.recognizer.recognizeType(entity.object);
     return type === pattern;
   }
@@ -491,17 +481,16 @@ export class Evees {
    *
    * recursively fork entity children
    */
-  async fork(id: string, remote: string, parentId?: string, client?: Client): Promise<string> {
-    client = client || this.client;
+  async fork(id: string, remote: string, parentId?: string): Promise<string> {
     const isPerspective = await this.isOfPattern(id, PerspectiveType);
     if (isPerspective) {
-      return this.forkPerspective(id, remote, parentId, client);
+      return this.forkPerspective(id, remote, parentId);
     } else {
       const isCommit = await this.isOfPattern(id, CommitType);
       if (isCommit) {
-        return this.forkCommit(id, remote, parentId, client);
+        return this.forkCommit(id, remote, parentId);
       } else {
-        return this.forkEntity(id, remote, parentId, client);
+        return this.forkEntity(id, remote, parentId);
       }
     }
   }
@@ -509,15 +498,14 @@ export class Evees {
   async forkPerspective(
     perspectiveId: string,
     remoteId?: string,
-    guardianId?: string,
-    client?: Client
+    guardianId?: string
   ): Promise<string> {
-    client = client || this.client;
-
-    const refPerspective: Entity<Signed<Perspective>> = await client.store.getEntity(perspectiveId);
+    const refPerspective: Entity<Signed<Perspective>> = await this.client.store.getEntity(
+      perspectiveId
+    );
     const remote = await this.getRemote(remoteId);
 
-    const { details } = await client.getPerspective(perspectiveId);
+    const { details } = await this.client.getPerspective(perspectiveId);
 
     const forking: ForkDetails = {
       perspectiveId: refPerspective.id,
@@ -529,7 +517,7 @@ export class Evees {
       guardianId
     );
 
-    await client.store.storeEntity({ object: perspective.object, remote: remote.id });
+    await this.client.store.storeEntity({ object: perspective.object, remote: remote.id });
 
     let forkCommitId: string | undefined = undefined;
 
@@ -537,12 +525,11 @@ export class Evees {
       forkCommitId = await this.forkCommit(
         details.headId,
         perspective.object.payload.remote,
-        perspective.id, // this perspective is set as the parent of the children's new perspectives
-        client
+        perspective.id // this perspective is set as the parent of the children's new perspectives
       );
     }
 
-    client.newPerspective({
+    await this.newPerspective({
       perspective,
       update: { perspectiveId: perspective.id, details: { headId: forkCommitId, guardianId } },
     });
@@ -550,18 +537,11 @@ export class Evees {
     return perspective.id;
   }
 
-  async forkCommit(
-    commitId: string,
-    remote: string,
-    parentId?: string,
-    client?: Client
-  ): Promise<string> {
-    client = client || this.client;
-
-    const commit: Secured<Commit> = await client.store.getEntity(commitId);
+  async forkCommit(commitId: string, remote: string, parentId?: string): Promise<string> {
+    const commit: Secured<Commit> = await this.client.store.getEntity(commitId);
 
     const dataId = commit.object.payload.dataId;
-    const dataForkId = await this.forkEntity(dataId, remote, parentId, client);
+    const dataForkId = await this.forkEntity(dataId, remote, parentId);
 
     const eveesRemote = await this.getRemote(remote);
 
@@ -576,28 +556,22 @@ export class Evees {
     };
     const signedCommit = signObject(newCommit);
 
-    return client.store.storeEntity({ object: signedCommit, remote });
+    return this.client.store.storeEntity({ object: signedCommit, remote });
   }
 
-  async forkEntity(
-    entityId: string,
-    remote: string,
-    parentId?: string,
-    client?: Client
-  ): Promise<string> {
-    client = client || this.client;
-    const data = await client.store.getEntity(entityId);
+  async forkEntity(entityId: string, remote: string, parentId?: string): Promise<string> {
+    const data = await this.client.store.getEntity(entityId);
     if (!data) throw new Error(`data ${entityId} not found`);
 
     /** createOwnerPreservingEntity of children */
 
     const getLinksForks = this.behavior(data.object, 'children').map((link) =>
-      this.fork(link, remote, parentId, client)
+      this.fork(link, remote, parentId)
     );
     const newLinks = await Promise.all(getLinksForks);
     const newObject = this.behavior(data.object, 'replaceChildren')(newLinks);
 
-    return client.store.storeEntity({ object: newObject, remote });
+    return this.client.store.storeEntity({ object: newObject, remote });
   }
 
   async getHome(remoteId: string) {
