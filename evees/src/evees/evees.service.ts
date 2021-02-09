@@ -362,6 +362,7 @@ export class Evees {
   async addNewChild(childObject: object, parentId: string, index = 0): Promise<string> {
     const childId = await this.createEvee({
       object: childObject,
+      guardianId: parentId,
     });
 
     await this.addExistingChild(childId, parentId, index);
