@@ -431,7 +431,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     await Promise.all(persistChildren);
   }
 
-  async persist(node: DocNode, message: string = '') {
+  async persist(node: DocNode, message = '') {
     if (!node.isPlaceholder && node.data !== undefined && isEqual(node.data.object, node.draft)) {
       /** nothing to persist here */
       return;
@@ -1126,10 +1126,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         @dragover=${(e) => this.draggingOver(e, node)}
         @drop=${(e) => this.handleDrop(e, node)}
       >
-        ${!this.readOnly
-          ? html`<div class="evee-info" style=${`padding-top:${paddingTop}`}>
-              ${!node.isPlaceholder && this.eveesInfoConfig.showInfo
-                ? html`
+        ${!this.readOnly && !node.isPlaceholder && this.eveesInfoConfig.showInfo
+          ? html`
+                <div class="evee-info" style=${`padding-top:${paddingTop}`}></div>
                     <evees-info-popper
                       parent-id=${node.parent ? node.parent.uref : this.parentId}
                       uref=${uref}
@@ -1137,11 +1136,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
                       evee-color=${this.getColor()}
                       @checkout-perspective=${(e) => this.handleNodePerspectiveCheckout(e, node)}
                       .eveesInfoConfig=${this.eveesInfoConfig}
-                    ></evees-info-popper>
+                    ></evees-info-popper></div>
                   `
-                : html` <div class="empty-evees-info"></div> `}
-            </div>`
-          : ''}
+          : html` <div class="empty-evees-info"></div> `}
         <div class="node-content">
           ${nodeLense.render(node, {
             focus: () => this.focused(node),
@@ -1229,35 +1226,39 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     };
     return html`
       <!-- <div class="doc-topbar">
-        ${this.docHasChanges && !this.showCommitMessage
-          ? html`
-              <uprtcl-button-loading
-                icon="unarchive"
-                @click=${() => this.persistAll()}
-                ?loading=${this.persistingAll}
-              >
-                push
-              </uprtcl-button-loading>
-              <uprtcl-help>
-                <span>
-                  Your current changes are safely stored on this device and won't be lost.<br /><br />
-                  "Push" them if<br /><br />
-                  <li>You are about to propose a merge.</li>
-                  <br />
-                  <li>This draft is public and you want them to be visible to others.</li>
-                </span>
-              </uprtcl-help>
-            `
-          : ''} -->
-        ${this.showCommitMessage
-          ? html`
-              <uprtcl-textfield id="COMMIT_MESSAGE" label="Message"> </uprtcl-textfield>
-              <uprtcl-icon-button icon="clear" @click=${this.cancelCommitClicked} button>
-              </uprtcl-icon-button>
-              <uprtcl-icon-button icon="done" @click=${this.acceptCommitClicked} button>
-              </uprtcl-icon-button>
-            `
-          : ''}
+        ${
+          this.docHasChanges && !this.showCommitMessage
+            ? html`
+                <uprtcl-button-loading
+                  icon="unarchive"
+                  @click=${() => this.persistAll()}
+                  ?loading=${this.persistingAll}
+                >
+                  push
+                </uprtcl-button-loading>
+                <uprtcl-help>
+                  <span>
+                    Your current changes are safely stored on this device and won't be lost.<br /><br />
+                    "Push" them if<br /><br />
+                    <li>You are about to propose a merge.</li>
+                    <br />
+                    <li>This draft is public and you want them to be visible to others.</li>
+                  </span>
+                </uprtcl-help>
+              `
+            : ''
+        } -->
+        ${
+          this.showCommitMessage
+            ? html`
+                <uprtcl-textfield id="COMMIT_MESSAGE" label="Message"> </uprtcl-textfield>
+                <uprtcl-icon-button icon="clear" @click=${this.cancelCommitClicked} button>
+                </uprtcl-icon-button>
+                <uprtcl-icon-button icon="done" @click=${this.acceptCommitClicked} button>
+                </uprtcl-icon-button>
+              `
+            : ''
+        }
       </div>
     `;
   }
@@ -1307,7 +1308,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     return html`
       <div class=${editorClasses.join(' ')}>
         ${this.renderTopBar()} ${this.renderDocNode(this.doc)} ${this.renderDocumentEnd()}
-        ${this.renderActionBar()}
+        ${!this.readOnly ? this.renderActionBar() : ''}
       </div>
       <!-- <div @click=${this.clickAreaClicked} class="click-area"></div> -->
     `;
