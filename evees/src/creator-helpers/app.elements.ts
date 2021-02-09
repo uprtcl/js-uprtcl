@@ -67,8 +67,8 @@ export class AppElements {
     return element.perspective;
   }
 
-  async createSnapElementRec(element: AppElement) {
-    element.perspective = await this.remote.snapPerspective({});
+  async createSnapElementRec(element: AppElement, level: number = 0, biasTime: number = 0) {
+    element.perspective = await this.remote.snapPerspective({ timestamp: Date.now() + level*10000 + biasTime });
 
     /** make sure the perspective is in the store to be resolved */
     await this.evees.client.store.storeEntity({
@@ -77,7 +77,7 @@ export class AppElements {
     });
 
     if (element.children) {
-      await Promise.all(element.children.map((child) => this.createSnapElementRec(child)));
+      await Promise.all(element.children.map((child, ix) => this.createSnapElementRec(child, level + ix)));
     }
   }
 
