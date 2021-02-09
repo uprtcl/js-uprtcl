@@ -1,3 +1,4 @@
+import { PerspectiveType } from '../patterns/perspective.pattern';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 
 export interface FromTo {
@@ -44,7 +45,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const children = this.evees.behavior(data.object, 'children');
 
     const promises = children.map(async (child) => {
-      const isPerspective = await this.isPattern(child, 'Perspective');
+      const isPerspective = await this.isPattern(child, PerspectiveType);
       if (isPerspective) {
         this.readPerspective(child, to);
       } else {
@@ -80,7 +81,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   async getLinkMergeId(link: string) {
-    const isPerspective = await this.isPattern(link, 'Perspective');
+    const isPerspective = await this.isPattern(link, PerspectiveType);
     if (isPerspective) {
       return this.evees.getPerspectiveContext(link);
     } else {
@@ -116,7 +117,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
         const perspectivesByContext = dictionary.get(link);
 
         if (perspectivesByContext) {
-          const needsSubperspectiveMerge = perspectivesByContext.to && perspectivesByContext.from;
+          const needsSubperspectiveMerge =
+            perspectivesByContext.to !== undefined && perspectivesByContext.from !== undefined;
 
           if (needsSubperspectiveMerge) {
             /** Two perspectives of the same context are merged, keeping the "to" perspecive id,
@@ -142,11 +144,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
               /** otherwise, if merge config.forceOwner and this perspective is only present in the
                * "from", a fork will be created using parentId as the source for permissions*/
               if (config.forceOwner) {
-                if (!perspectivesByContext.to) throw new Error('Perspective to not defined');
-                const toRemote = await this.evees.getPerspectiveRemote(perspectivesByContext.to);
                 const newPerspectiveId = await this.evees.forkPerspective(
                   perspectivesByContext.from as string,
-                  toRemote.id,
+                  config.remote,
                   config.parentId
                 );
                 return newPerspectiveId;
