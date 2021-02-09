@@ -7,7 +7,7 @@ import {
   EntityGetResult,
   hashObject,
 } from '@uprtcl/evees';
-import { HttpConnectionLogged } from '@uprtcl/http-provider';
+import { HttpConnection } from '@uprtcl/http-provider';
 
 const store_api = 'store';
 
@@ -21,7 +21,7 @@ const httpCidConfig: CidConfig = {
 export class HttpStore implements CASRemote {
   logger = new Logger('Http Store');
 
-  constructor(protected connection: HttpConnectionLogged, public cidConfig: CidConfig) {}
+  constructor(protected connection: HttpConnection, public cidConfig: CidConfig) {}
 
   get casID() {
     return `http:${store_api}:${this.connection.host}`;
@@ -53,7 +53,7 @@ export class HttpStore implements CASRemote {
   }
 
   async storeObjects(objects: object[]): Promise<Entity<any>[]> {
-    const result: any = await this.connection.post(`/data`, {
+    const result: any = await this.connection.post('/data', {
       datas: objects.map((object) => {
         return {
           id: '',

@@ -4,37 +4,37 @@ import { CreateCommit, Evees } from '../evees.service';
 import { Entity } from '../../cas/interfaces/entity';
 
 import findMostRecentCommonAncestor from './common-ancestor';
-import { Merge } from './merge.behaviour';
 import { mergeResult } from './utils';
 import { Client } from '../interfaces/client';
+import { MergeStrategy } from './merge-strategy';
 
-export class SimpleMergeStrategy {
-  static async mergePerspectivesExternal(
+export class SimpleMergeStrategy implements MergeStrategy {
+  constructor(protected evees: Evees) {}
+
+  async mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    evees: Evees,
     config: any
   ): Promise<string> {
-    return SimpleMergeStrategy.mergePerspectives(toPerspectiveId, fromPerspectiveId, config, evees);
+    return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
   }
 
-  static async mergePerspectives(
+  async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    evees: Evees,
     config: any
   ): Promise<string> {
     const promises = [toPerspectiveId, fromPerspectiveId].map(
-      async (id) => (await evees.client.getPerspective(id)).details.headId
+      async (id) => (await this.evees.client.getPerspective(id)).details.headId
     );
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
-    const remote = await evees.getPerspectiveRemote(toPerspectiveId);
+    const toRemote = await this.evees.getPerspectiveRemote(toPerspectiveId);
 
     let newHead: string | undefined;
 
     newHead = fromHeadId
-      ? await SimpleMergeStrategy.mergeCommits(toHeadId, fromHeadId, evees, remote.id, config)
+      ? await this.mergeCommits(toHeadId, fromHeadId, toRemote.id, config)
       : toHeadId;
 
     /** prevent an update head to the same head */
@@ -53,11 +53,11 @@ export class SimpleMergeStrategy {
       details: { headId: newHead },
     };
 
-    evees.client.update({ updates: [request] });
+    this.evees.client.update({ updates: [request] });
     return toPerspectiveId;
   }
 
-  static async findLatestNonFork(commitId: string, client: Client) {
+  async findLatestNonFork(commitId: string, client: Client) {
     const commit = await client.store.getEntity(commitId);
     if (commit === undefined) throw new Error('commit not found');
 
@@ -68,32 +68,31 @@ export class SimpleMergeStrategy {
     }
   }
 
-  static async mergeCommits(
+  async mergeCommits(
     toCommitIdOrg: string | undefined,
     fromCommitIdOrg: string,
-    evees: Evees,
     remote: string,
     config: any
   ): Promise<string> {
     const toCommitId = toCommitIdOrg
-      ? await this.findLatestNonFork(toCommitIdOrg, evees.client)
+      ? await this.findLatestNonFork(toCommitIdOrg, this.evees.client)
       : undefined;
-    const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg, evees.client);
+    const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg, this.evees.client);
 
     const commitsIds = [toCommitId, fromCommitId];
     const ancestorId = toCommitId
-      ? await findMostRecentCommonAncestor(evees.client)(commitsIds)
+      ? await findMostRecentCommonAncestor(this.evees.client)(commitsIds)
       : fromCommitId;
 
-    const datasPromises = commitsIds.map(async (commitId) => evees.getCommitData(commitId));
+    const datasPromises = commitsIds.map(async (commitId) => this.evees.getCommitData(commitId));
     const newDatas = await Promise.all(datasPromises);
 
     const ancestorData: any =
-      ancestorId !== undefined ? await evees.getCommitData(ancestorId) : newDatas[0];
+      ancestorId !== undefined ? await this.evees.getCommitData(ancestorId) : newDatas[0];
 
-    const mergedData = await SimpleMergeStrategy.mergeData(ancestorData, newDatas, evees, config);
+    const mergedData = await this.mergeData(ancestorData, newDatas, config);
 
-    const dataHash = await evees.client.store.hashEntity({ object: mergedData, remote });
+    const dataHash = await this.evees.client.store.hashEntity({ object: mergedData, remote });
     /** prevent an update head to the same data */
     if (
       ((!!newDatas[0] && dataHash === newDatas[0].id) || toCommitId === fromCommitId) &&
@@ -102,7 +101,7 @@ export class SimpleMergeStrategy {
       return toCommitIdOrg;
     }
 
-    evees.client.store.storeEntity({ object: mergedData, remote });
+    this.evees.client.store.storeEntity({ object: mergedData, remote });
 
     /** some commits might be undefined */
     const parentsIds = commitsIds.filter((commit) => !!commit);
@@ -113,19 +112,18 @@ export class SimpleMergeStrategy {
       message: `Merging commits ${parentsIds.toString()}`,
     };
 
-    const securedCommit = await evees.createCommit(newCommit, remote);
-    evees.client.store.storeEntity({ object: securedCommit, remote });
+    const securedCommit = await this.evees.createCommit(newCommit, remote);
+    this.evees.client.store.storeEntity({ object: securedCommit, remote });
 
     return securedCommit.id;
   }
 
-  static async mergeData<T extends object>(
+  async mergeData<T extends object>(
     originalData: Entity<T>,
     newDatas: Entity<T>[],
-    evees: Evees,
     config: any
   ): Promise<T> {
-    const merge = evees.behavior(originalData.object, 'merge');
+    const merge = this.evees.behavior(originalData.object, 'merge');
 
     if (!merge)
       throw new Error(
@@ -136,15 +134,14 @@ export class SimpleMergeStrategy {
 
     return merge(
       newDatas.map((d) => d.object),
-      evees,
+      this,
       config
     );
   }
 
-  static async mergeLinks(
+  async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
-    evees: Evees,
     config: any
   ): Promise<string[]> {
     const allLinks: Map<string, boolean> = new Map();

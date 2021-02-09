@@ -1,15 +1,15 @@
 import { html } from 'lit-element';
 
 import { AccessControl, Logger, Lens } from '@uprtcl/evees';
-import { HttpConnectionLogged } from '@uprtcl/http-provider';
+import { HttpConnection } from '@uprtcl/http-provider';
 
 import { PermissionType, UserPermissions } from './types';
 
-const uprtcl_api: string = 'uprtcl-acl-v1';
+const uprtcl_api = 'uprtcl-acl-v1';
 export class EveesAccessControlHttp implements AccessControl {
   logger = new Logger('HTTP-EVEES-ACCESS-CONTROL');
 
-  constructor(protected connection: HttpConnectionLogged) {}
+  constructor(protected connection: HttpConnection) {}
 
   async toggleDelegate(hash: string, delegate: boolean, delegateTo?: string) {
     await this.connection.put(

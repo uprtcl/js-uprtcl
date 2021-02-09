@@ -46,8 +46,8 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   eveesDiffEl!: EveesDiff;
 
   proposal!: Entity<Proposal>;
-  executed: boolean = false;
-  canExecute: boolean = false;
+  executed = false;
+  canExecute = false;
 
   protected toRemote!: RemoteWithUI;
 
@@ -96,7 +96,6 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
         .filter((u) => !!u.details.headId)
         .map((update) => {
           return this.evees.isAncestorCommit(
-            this.evees.client,
             update.perspectiveId,
             update.details.headId as string,
             update.oldDetails?.headId
