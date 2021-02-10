@@ -2,8 +2,14 @@ import { html } from 'lit-element';
 
 import { AccessControl, CASStore, Lens, Perspective, Signed } from '@uprtcl/evees';
 
-export class EveesAccessControlFixed implements AccessControl {
-  constructor(protected store: CASStore) {}
+export class EveesAccessControlFixedOwner implements AccessControl {
+  store!: CASStore;
+
+  constructor() {}
+
+  setStore(store: CASStore) {
+    this.store = store;
+  }
 
   async getOwner(perspectiveId: string) {
     const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
