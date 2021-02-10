@@ -96,7 +96,7 @@ export class PolkadotCouncilEveesStorage {
 
     const councilData = await this.store.getEntity(head);
     this.logger.log(`Council Data of ${member}`, councilData);
-    return councilData ? councilData : {};
+    return councilData ? councilData.object : {};
   }
 
   /** check the proposal had enough votes at block */

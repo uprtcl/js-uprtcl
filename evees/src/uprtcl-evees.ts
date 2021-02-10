@@ -70,6 +70,7 @@ export { ConnectionLogged } from './utils/connection.logged';
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
 export { Proposals } from './evees/proposals/proposals';
+export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 
 /** Aceess Control */
 export { AccessControl } from './evees/interfaces/access-control';

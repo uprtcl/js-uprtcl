@@ -12,6 +12,7 @@ import {
   NewPerspective,
   Update,
   ForkDetails,
+  PerspectiveDetails,
 } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
 import { HasChildren } from '../patterns/behaviours/has-links';
@@ -55,10 +56,10 @@ export class Evees {
     return new Evees(client, this.recognizer, this.remotes, this.config, this.modules);
   }
 
-  findRemote(query: string): RemoteEvees {
+  findRemote<T extends RemoteEvees>(query: string): T {
     const remote = this.remotes.find((r) => r.id.startsWith(query));
     if (!remote) throw new Error(`remote starting with ${query} not found`);
-    return remote;
+    return remote as T;
   }
 
   getRemote<T extends RemoteEvees>(remoteId?: string): T {
@@ -259,6 +260,26 @@ export class Evees {
     return perspective.id;
   }
 
+  /** A method to get the data of a perspective, and if the perspective has no data, create that data and
+   * update the perspective */
+  async getOrCreatePerspectiveData(
+    perspectiveId: string,
+    object: object = {},
+    guardianId?: string
+  ): Promise<Entity<any>> {
+    const data = await this.getPerspectiveData<{ proposals: string[] }>(perspectiveId);
+    if (!data) {
+      // initializes the home space with an empty object {}
+      const perspective = await this.client.store.getEntity<Signed<Perspective>>(perspectiveId);
+      await this.createEvee({
+        partialPerspective: perspective.object.payload,
+        object,
+        guardianId,
+      });
+    }
+    return this.getPerspectiveData(perspectiveId);
+  }
+
   async updatePerspectiveData(
     perspectiveId: string,
     object: any,
@@ -359,7 +380,7 @@ export class Evees {
   /**
    * Creates an evee and add it as a child.
    */
-  async addNewChild(childObject: object, parentId: string, index = 0): Promise<string> {
+  async addNewChild(parentId: string, childObject: object, index = 0): Promise<string> {
     const childId = await this.createEvee({
       object: childObject,
       guardianId: parentId,
@@ -575,13 +596,10 @@ export class Evees {
     return this.client.store.storeEntity({ object: newObject, remote });
   }
 
-  async getHome(remoteId: string) {
+  async getHome(remoteId?: string, userId?: string): Promise<Secured<Perspective>> {
     const remote = this.getRemote(remoteId);
-    /** build the default home perspective  */
-    const home = await getHome(remote, remote.userId);
-    /** make sure the homePerspective entity is stored on the store */
+    const home = await getHome(remote, userId ? userId : remote.userId);
     await this.client.store.storeEntity({ object: home.object, remote: remote.id });
-
     return home;
   }
 }

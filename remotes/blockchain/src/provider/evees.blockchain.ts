@@ -33,12 +33,12 @@ export class EveesBlockchain implements RemoteEvees {
 
   accessControl: EveesAccessControlFixedOwner;
   store!: CASStore;
+  proposals!: Proposals;
 
   constructor(
     public connection: BlockchainConnection,
-    public searchEngine: SearchEngine,
-    public storeRemote: CASRemote,
-    public proposals: Proposals
+    readonly searchEngine: SearchEngine,
+    public casID: string
   ) {
     this.accessControl = new EveesAccessControlFixedOwner();
   }

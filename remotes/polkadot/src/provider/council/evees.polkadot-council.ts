@@ -41,11 +41,11 @@ export class EveesPolkadotCouncil implements RemoteEvees {
 
   constructor(
     readonly connection: PolkadotConnection,
-    readonly casId: string,
+    readonly casID: string,
     readonly config: ProposalConfig
   ) {
     this.accessControl = new EveesAccessControlFixedOwner();
-    this.councilStorage = new PolkadotCouncilEveesStorage(connection, config, this.casId);
+    this.councilStorage = new PolkadotCouncilEveesStorage(connection, config, this.casID);
     this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, config);
   }
 

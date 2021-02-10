@@ -25,6 +25,4 @@ export interface RemoteEvees extends Client, RemoteLogged {
     perspective: PartialPerspective,
     guardianId?: string
   ): Promise<Secured<Perspective>>;
-
-  getHome?(userId?: string): Promise<Secured<Perspective>>;
 }

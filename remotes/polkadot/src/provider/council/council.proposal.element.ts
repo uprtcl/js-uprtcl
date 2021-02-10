@@ -1,19 +1,11 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { prettyTimePeriod } from '@uprtcl/common-ui';
-
-import {
-  EveesBindings,
-  RemoteEvees,
-  Client,
-  NewPerspective,
-  Perspective,
-  Secured,
-} from '../../evees/dist/types/uprtcl-evees';
+import { Perspective, Secured, servicesConnect, Signed } from '@uprtcl/evees';
 
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 
-import { ProposalManifest, ProposalSummary, Vote } from './types';
+import { ProposalManifest, ProposalSummary } from './types';
 import { ProposalStatus, VoteValue } from './proposal.config.types';
 
 export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
@@ -29,13 +21,9 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   @property({ attribute: false })
   voting = false;
 
-  client!: Client;
-  remotes!: RemoteEvees[];
   remote!: EveesPolkadotCouncil;
-  fromPerspective!: Signed<Perspective>;
+  fromPerspective!: Secured<Perspective>;
 
-  recognizer!: PatternRecognizer;
-  client!: Client;
   proposalManifest!: ProposalManifest;
   proposalStatusUI!: {
     summary: ProposalSummary;
@@ -44,61 +32,25 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   };
 
   async firstUpdated() {
-    this.client = this.request(ClientModule.bindings.Client);
-    this.recognizer = this.request(CortexModule.bindings.Recognizer);
-
-    this.remotes = this.requestAll(EveesBindings.RemoteEvees) as RemoteEvees[];
-    const remote = this.remotes.find((remote) => remote.id.includes('council'));
-    if (!remote) throw new Error('council remote not registered');
-    this.remote = (remote as unknown) as EveesPolkadotCouncil;
+    this.remote = this.evees.findRemote<EveesPolkadotCouncil>('council');
     this.load();
   }
 
   async load() {
     this.loading = true;
     await this.loadManifest();
-    await this.loadclient();
     await this.loadProposalStatus();
     this.loading = false;
   }
 
   async loadManifest() {
-    const proposalManifest = (await this.remote.store.get(this.proposalId)) as ProposalManifest;
+    const { object: proposalManifest } = await this.evees.client.store.getEntity<ProposalManifest>(this.proposalId));
     if (!proposalManifest) throw new Error('Proposal not found');
     this.proposalManifest = proposalManifest;
 
-    this.fromPerspective = (await this.remote.store.get(
-      this.proposalManifest.fromPerspectiveId
-    )) as Signed<Perspective>;
-  }
-
-  async loadclient() {
-    this.client = new Client(this.client, this.recognizer);
-    for (const update of this.proposalManifest.updates) {
-      if (!update.fromPerspectiveId) {
-        const perspective = (await this.remote.store.get(
-          update.perspectiveId
-        )) as Signed<Perspective>;
-        if (!perspective) throw new Error(`Perspective ${update.perspectiveId} not found`);
-
-        const secured: Secured<Perspective> = {
-          id: update.perspectiveId,
-          object: perspective,
-          casID: this.remote.store.casID,
-        };
-        const newPerspective: NewPerspective = {
-          details: {
-            headId: update.newHeadId,
-          },
-          perspective: secured,
-        };
-        this.client.newPerspective(newPerspective);
-      } else {
-        this.client.update(update);
-      }
-    }
-    /* new perspectives are added to the cache to be able to read their head */
-    this.client.precacheNewPerspectives(this.client);
+    this.fromPerspective = await this.evees.client.store.getEntity<Signed<Perspective>>(
+      this.proposalManifest.fromPerspectiveId as string
+    );
   }
 
   async vote(value: VoteValue) {
@@ -244,7 +196,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
             by
             <evees-author
               user-id=${this.proposalManifest.creatorId ? this.proposalManifest.creatorId : ''}
-              remote-id=${this.fromPerspective.payload.remote}
+              remote-id=${this.fromPerspective.object.payload.remote}
               show-name
             ></evees-author>
           </div>

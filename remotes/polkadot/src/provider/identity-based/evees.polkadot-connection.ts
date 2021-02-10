@@ -3,6 +3,7 @@ import { html } from 'lit-element';
 import { BlockchainConnection } from '@uprtcl/evees-blockchain';
 import { PolkadotConnection } from '../../connection.polkadot';
 import { icons } from '../icons';
+import { Logger } from '@uprtcl/evees';
 
 const EVEES_KEYS = ['evees-cid1', 'evees-cid0'];
 
@@ -11,9 +12,7 @@ export class EveesPolkadotConnection implements BlockchainConnection {
 
   constructor(public connection: PolkadotConnection) {}
 
-  async ready() {
-    await Promise.all([this.connection.ready()]);
-  }
+  async ready() {}
 
   async updateHead(head: string | undefined) {
     await this.connection.updateMutableHead(head, EVEES_KEYS);
