@@ -65,8 +65,5 @@
   "sideEffects": false,
   "engines": {
     "node": ">=12 <13"
-  },
-  "dependencies": {
-    "abstract-leveldown": "^6.3.0"
   }
 }
