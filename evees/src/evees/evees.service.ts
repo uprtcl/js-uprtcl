@@ -61,21 +61,21 @@ export class Evees {
     return remote;
   }
 
-  getRemote(remoteId?: string): RemoteEvees {
+  getRemote<T extends RemoteEvees>(remoteId?: string): T {
     if (remoteId) {
       const remote = this.remotes.find((r) => r.id === remoteId);
       if (!remote) throw new Error(`remote ${remoteId} not found`);
-      return remote;
+      return remote as T;
     } else {
-      return this.remotes[0];
+      return this.remotes[0] as T;
     }
   }
 
-  async getPerspectiveRemote(perspectiveId: string): Promise<RemoteEvees> {
+  async getPerspectiveRemote<T extends RemoteEvees>(perspectiveId: string): Promise<T> {
     const perspective = await this.client.store.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     const remoteId = perspective.object.payload.remote;
-    return this.getRemote(remoteId);
+    return this.getRemote<T>(remoteId);
   }
 
   async getPerspectiveContext(perspectiveId: string): Promise<string> {

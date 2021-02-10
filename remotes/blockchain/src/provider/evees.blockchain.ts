@@ -28,7 +28,7 @@ const evees_if = 'fixed-owner';
 /** An abstraction of a service that stores evees heads on a blockchain under a
  * single evolving object of type UserPerspectivesDetails that contains all the
  * perspectiveIds and their heads */
-export class EveesBlockchainCached implements RemoteEvees {
+export class EveesBlockchain implements RemoteEvees {
   logger: Logger = new Logger('EveesBlockchain');
 
   accessControl: EveesAccessControlFixedOwner;
