@@ -1,24 +1,31 @@
-import { html } from 'lit-element';
+import { CASStore, Logger, NewPerspective, Proposal, Proposals } from '@uprtcl/evees';
 
+import { PolkadotConnection } from '../../connection.polkadot';
+
+import { ProposalConfig, VoteValue } from './proposal.config.types';
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
-import { PolkadotConnection } from '../../connection.polkadot';
-import { ProposalConfig, VoteValue } from './proposal.config.types';
 
-export class ProposalsPolkadotCouncil implements ProposalsProvider {
+export class ProposalsPolkadotCouncil implements Proposals {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
+
+  public store!: CASStore;
+
   private canProposeCache = false;
 
   constructor(
     public connection: PolkadotConnection,
     public councilStore: PolkadotCouncilEveesStorage,
-    public store: CASStore,
     public config: ProposalConfig
   ) {}
 
   async ready(): Promise<void> {
     await this.init();
     await this.councilStore.ready();
+  }
+
+  setStore(store: CASStore) {
+    this.store = store;
   }
 
   async init() {
@@ -31,36 +38,23 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
     return this.canProposeCache;
   }
 
-  async canRemove(proposalId: string, userId?: string) {
+  async canDelete(proposalId: string, userId?: string): Promise<boolean> {
     return false;
   }
 
-  async createProposal(proposal: NewProposal): Promise<string> {
+  async createProposal(proposal: Proposal): Promise<string> {
     await this.ready();
     this.logger.info('createProposal()', { proposal });
-
-    const updates = proposal.details.newPerspectives
-      .map(
-        (newPerspective): Update => {
-          if (newPerspective.details.headId === undefined)
-            throw new Error('headId cannot be undefiend for newPerspectives');
-          return {
-            newHeadId: newPerspective.details.headId,
-            perspectiveId: newPerspective.perspective.id,
-          };
-        }
-      )
-      .concat(proposal.details.updates);
 
     const proposalManifest: ProposalManifest = {
       fromPerspectiveId: proposal.fromPerspectiveId,
       toPerspectiveId: proposal.toPerspectiveId,
-      block: await this.connection.getLatestBlock(),
-      config: this.config,
-      updates: updates,
       creatorId: this.connection.account,
       fromHeadId: proposal.fromHeadId,
       toHeadId: proposal.toHeadId,
+      mutation: proposal.mutation,
+      block: await this.connection.getLatestBlock(),
+      config: this.config,
     };
 
     const proposalId = await this.councilStore.createProposal(proposalManifest);
@@ -68,7 +62,6 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
     this.logger.info('createProposal() - done', {
       proposalId,
       proposalManifest,
-      details: proposal.details,
     });
 
     return proposalId;
@@ -83,7 +76,7 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
 
     this.logger.info('getProposal() - pre', { proposalId });
 
-    const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
+    const { object: proposalManifest } = await this.store.getEntity<ProposalManifest>(proposalId);
 
     // const newPerspectives = proposalManifest.updates.filter(update => update.fromPerspectiveId === undefined).map(update => {
     //   perspect
@@ -114,19 +107,6 @@ export class ProposalsPolkadotCouncil implements ProposalsProvider {
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
     await this.ready();
     return this.councilStore.getProposalsToPerspective(perspectiveId);
-  }
-
-  lense(): Lens {
-    return {
-      name: 'evees-polkadot:proposal',
-      type: 'proposal',
-      render: (entity: any) => {
-        return html`
-          <evees-polkadot-council-proposal proposal-id=${entity.proposalId}>
-          </evees-polkadot-council-proposal>
-        `;
-      },
-    };
   }
 
   async getProposalSummary(proposalId: string) {

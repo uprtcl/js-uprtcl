@@ -3,12 +3,14 @@ export interface Entity<T> {
   object: T;
 }
 
-export interface ObjectOnRemote {
+export interface ObjectOn {
   object: object;
-  remote: string;
+  remote?: string;
+  casId?: string;
 }
 
-export interface EntityOnRemote {
+export interface EntityOn {
   entity: Entity<any>;
-  remote: string;
+  remote?: string;
+  casId?: string;
 }

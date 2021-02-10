@@ -11,7 +11,7 @@ import {
   EveesMutationCreate,
 } from '../interfaces/types';
 import { CASStore } from '../../cas/interfaces/cas-store';
-import { Entity, ObjectOnRemote } from '../../cas/interfaces/entity';
+import { Entity, ObjectOn } from '../../cas/interfaces/entity';
 
 import { Client, ClientEvents } from '../interfaces/client';
 
@@ -149,7 +149,7 @@ export class ClientOnMemory implements Client {
     return this.update({ updates: [update] });
   }
 
-  async hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+  async hashEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
     return this.store.hashEntities(objects);
   }
 

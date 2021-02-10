@@ -8,7 +8,8 @@
     "modules/common-ui",
     "modules/documents",
     "remotes/http",
-    "remotes/blockchain"
+    "remotes/blockchain",
+    "remotes/polkadot"
   ],
   "version": "independent"
 }

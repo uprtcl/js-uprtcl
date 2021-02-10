@@ -1,3 +1,4 @@
+import { EveesMutation, Update } from '@uprtcl/evees';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
 
 export interface Vote {
@@ -13,11 +14,11 @@ export interface CouncilData {
 
 export interface ProposalManifest {
   toPerspectiveId: string;
-  fromPerspectiveId: string;
+  fromPerspectiveId?: string;
   creatorId?: string;
   toHeadId?: string;
   fromHeadId?: string;
-  updates: Update[];
+  mutation: EveesMutation;
   block: number;
   config: ProposalConfig;
 }

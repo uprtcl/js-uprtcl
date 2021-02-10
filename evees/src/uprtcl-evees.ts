@@ -82,7 +82,7 @@ export { Logger } from './utils/logger';
 export { Secured, hashObject, deriveEntity, sortObject } from './cas/utils/cid-hash';
 export { deriveSecured, signObject } from './cas/utils/signed';
 export { Signed } from './patterns/interfaces/signable';
-export { Entity, ObjectOnRemote } from './cas/interfaces/entity';
+export { Entity, ObjectOn } from './cas/interfaces/entity';
 export { CASStore, EntityGetResult } from './cas/interfaces/cas-store';
 export { CASRemote } from './cas/interfaces/cas-remote';
 export { CidConfig } from './cas/interfaces/cid-config';
@@ -98,7 +98,7 @@ export { CommitType } from './evees/patterns/commit.pattern';
 
 /** container */
 export { servicesConnect } from './container/multi-connect.mixin';
-export { eveesConstructorHelper } from './creator-helpers/evees.loader';
+export { eveesConstructorHelper } from './creator-helpers/evees.constructor.helper';
 export { MultiContainer } from './container/multi.container';
 
 export { AppElement, AppElements } from './creator-helpers/app.elements';

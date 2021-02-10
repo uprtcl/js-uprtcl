@@ -11,28 +11,34 @@ import {
 } from './types';
 import { getStatus } from './proposal.logic.quorum';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
+import { CASStore, Logger, Perspective, PerspectiveDetails, Signed } from '@uprtcl/evees';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 
 /* a store that keeps track of the council common state regarding the council proposals */
 export class PolkadotCouncilEveesStorage {
   logger: Logger = new Logger('PolkadotCouncilEveesStorage');
+
+  store!: CASStore;
   protected db!: EveesCouncilDB;
 
   constructor(
     protected connection: PolkadotConnection,
-    public store: CASStore,
-    public config: ProposalConfig
+    public config: ProposalConfig,
+    protected casId: string
   ) {}
 
   async ready(): Promise<void> {
-    await this.connection.ready();
     const localStoreName = `${this.connection.getNetworkId()}-evees-council`;
     if (!localStoreName) {
       throw new Error('networkId undefined');
     }
     this.db = new EveesCouncilDB(localStoreName);
     await this.fetchCouncilDatas();
+  }
+
+  setStore(store: CASStore) {
+    this.store = store;
   }
 
   /* council at is a constant function, can be cached */
@@ -52,7 +58,15 @@ export class PolkadotCouncilEveesStorage {
 
     // gossip consist on adding all new proposals from other council members to my own councilData object.
     head = head || (await this.connection.getMutableHead(this.connection.account, COUNCIL_KEYS));
-    const myCouncilData = head ? ((await this.store.get(head)) as CouncilData) : {};
+    let myCouncilData: CouncilData = {};
+    if (head) {
+      try {
+        const data = await this.store.getEntity<CouncilData>(head);
+        myCouncilData = data.object;
+      } catch (e) {
+        // its ok
+      }
+    }
 
     const councilProposals = myCouncilData.proposals ? myCouncilData.proposals : [];
     this.logger.log('gossip proposals');
@@ -69,7 +83,7 @@ export class PolkadotCouncilEveesStorage {
 
     myCouncilData.proposals = [...councilProposals];
     this.logger.log('CouncilData Updated to', myCouncilData);
-    return this.store.create(myCouncilData);
+    return this.store.storeEntity({ object: myCouncilData, casId: this.casId });
   }
 
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
@@ -80,7 +94,7 @@ export class PolkadotCouncilEveesStorage {
       return {};
     }
 
-    const councilData = await this.store.get(head);
+    const councilData = await this.store.getEntity(head);
     this.logger.log(`Council Data of ${member}`, councilData);
     return councilData ? councilData : {};
   }
@@ -186,7 +200,7 @@ export class PolkadotCouncilEveesStorage {
     if (proposal.status === ProposalStatus.Accepted) {
       await Promise.all(
         proposal.updates.map(async (update) => {
-          const perspective = (await this.store.get(update.perspectiveId)) as Signed<Perspective>;
+          const perspective = await this.store.getEntity<Signed<Perspective>>(update.perspectiveId);
           await this.db.perspectives.put({
             id: update.perspectiveId,
             context: perspective.payload.context,
@@ -320,7 +334,10 @@ export class PolkadotCouncilEveesStorage {
     if (this.connection.account === undefined) throw new Error('user not logged in');
     if (!(await this.connection.canSign())) throw new Error('user cant sign');
 
-    const proposalId = await this.store.create(proposalManifest);
+    const proposalId = await this.store.storeEntity({
+      object: proposalManifest,
+      casId: this.casId,
+    });
     const council = await this.connection.getCouncil(proposalManifest.block);
     if (!council.includes(this.connection.account)) throw new Error('user not a council member');
 
