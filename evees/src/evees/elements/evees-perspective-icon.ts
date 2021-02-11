@@ -119,6 +119,9 @@ export class EveesPerspectiveIcon extends servicesConnect(LitElement) {
           overflow: hidden;
           white-space: nowrap;
         }
+        .remote-icon {
+          width: 100%;
+        }
         evees-author {
           height: 32px;
           width: 100%;
