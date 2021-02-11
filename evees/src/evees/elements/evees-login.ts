@@ -5,7 +5,7 @@ import { Logger } from '../../utils/logger';
 
 import { Evees } from '../evees.service';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
-import { icons } from '../icon';
+
 export class EveesLoginWidget extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-LOGIN');
 
@@ -75,19 +75,40 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
     }
 
     return html`
-      <uprtcl-button title="Logout" skinny @click=${() => this.logoutAll()}
-        >${icons.logout}</uprtcl-button
-      >
-      <!-- ${this.evees.remotes.map((remote: RemoteWithUI) => {
+      <!-- <uprtcl-icon-button
+        icon="logout"
+        skinny
+        button
+        @click=${() => this.logoutAll()}
+      ></uprtcl-icon-button> -->
+      ${this.evees.remotes.map((remote: RemoteWithUI) => {
         return remote.lense !== undefined
           ? remote.lense().render({ remoteId: remote.id })
           : html`
-              <evees-author
-                user-id=${remote.userId as string}
-                remote-id=${remote.id}
-              ></evees-author>
+              <uprtcl-popper position="bottom-left">
+                <evees-author
+                  slot="icon"
+                  class="pointer"
+                  user-id=${remote.userId as string}
+                  remote-id=${remote.id}
+                  show-name
+                ></evees-author
+                ><uprtcl-card class="profile-card"
+                  ><evees-author
+                    user-id=${remote.userId as string}
+                    remote-id=${remote.id}
+                    show-name
+                  ></evees-author>
+                  <hr />
+                  <uprtcl-list
+                    ><uprtcl-list-item @click=${() => this.logoutAll()}
+                      >Log out</uprtcl-list-item
+                    ></uprtcl-list
+                  >
+                </uprtcl-card>
+              </uprtcl-popper>
             `;
-      })} -->
+      })}
     `;
   }
 
@@ -102,12 +123,22 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
         text-align: center;
       }
 
+      uprtcl-popper {
+        width: 100%;
+      }
+
       uprtcl-button {
         margin-right: 10px;
       }
 
-      evees-author {
-        width: 28px;
+      .pointer {
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .profile-card {
+        padding: 1rem;
+        width: 260px;
       }
     `;
   }

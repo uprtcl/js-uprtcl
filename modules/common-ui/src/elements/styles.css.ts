@@ -58,7 +58,6 @@ export const styles = css`
     color: #2196f3;
   }
   .button-skinny svg {
-    fill: #2196f3;
   }
   .button-skinny:hover {
     color: #50b0ff;
@@ -66,7 +65,6 @@ export const styles = css`
   }
   .button-skinny-secondary {
     background-color: transparent;
-    color: #5e5e5e;
   }
   .button-skinny-secondary svg {
     fill: #5f5e5e9b;
