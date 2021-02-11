@@ -13,6 +13,9 @@ export class UprtclIconButton extends LitElement {
   skinny = false;
 
   @property({ type: Boolean })
+  secondary = false;
+
+  @property({ type: Boolean })
   disabled = false;
 
   @property({ type: Boolean })
@@ -22,22 +25,23 @@ export class UprtclIconButton extends LitElement {
 
   render() {
     const classes = ['icon-button-layout'];
+    const secondary = this.secondary ? '-secondary' : '';
 
     if (this.disabled) {
       classes.push('button-disabled');
     } else {
       if (this.button) {
         if (this.skinny) {
-          classes.push('button-skinny');
+          classes.push(`button-skinny${secondary}`);
         } else {
-          classes.push('button-filled-secondary');
+          classes.push(`button-filled${secondary}`);
         }
         classes.push('cursor');
       } else {
         if (this.skinny) {
-          classes.push('button-skinny');
+          classes.push(`button-skinny${secondary}`);
         } else {
-          classes.push('button-filled-secondary-no-hover');
+          classes.push(`button-filled${secondary}-no-hover`);
         }
       }
     }
@@ -45,6 +49,7 @@ export class UprtclIconButton extends LitElement {
     return html`
       <div class=${classes.join(' ')}>
         ${this.loading ? icons.loading : icons[this.icon]}
+        <slot></slot>
       </div>
     `;
   }
@@ -65,7 +70,7 @@ export class UprtclIconButton extends LitElement {
           justify-content: center;
           align-items: center;
         }
-      `
+      `,
     ];
   }
 }

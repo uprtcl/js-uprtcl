@@ -21,7 +21,6 @@ export const styles = css`
   }
   .button-filled {
     background-color: var(--primary, #2f80ed);
-
     color: #ffffff;
   }
   .button-filled svg {
@@ -59,11 +58,20 @@ export const styles = css`
     color: #2196f3;
   }
   .button-skinny svg {
-    fill: #2196f3;
   }
   .button-skinny:hover {
     color: #50b0ff;
     background-color: #eef7ff;
+  }
+  .button-skinny-secondary {
+    background-color: transparent;
+  }
+  .button-skinny-secondary svg {
+    fill: #5f5e5e9b;
+  }
+  .button-skinny-secondary:hover {
+    color: #3e474e;
+    background-color: #ebebeb;
   }
   .cursor {
     cursor: pointer;

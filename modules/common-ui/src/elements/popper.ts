@@ -13,6 +13,9 @@ export class UprtclPopper extends LitElement {
   @property({ type: Boolean })
   skinny = false;
 
+  @property({ type: Boolean })
+  secondary = false;
+
   @property({ attribute: false })
   showDropdown = false;
 
@@ -79,6 +82,7 @@ export class UprtclPopper extends LitElement {
             <uprtcl-icon-button
               button
               ?skinny=${this.skinny}
+              ?secondary=${this.secondary}
               icon=${this.icon}
             ></uprtcl-icon-button>
           </slot>
