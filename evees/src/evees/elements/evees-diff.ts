@@ -29,7 +29,9 @@ export class EveesDiff extends servicesConnect(LitElement) {
   loading: boolean = true;
 
   updatesDetails: Map<string, UpdateDetails> = new Map();
-  client!: Client;
+
+  /** the evees service can be set from a parent component*/
+  localEvees!: Evees;
 
   protected recognizer!: PatternRecognizer;
 
@@ -51,11 +53,13 @@ export class EveesDiff extends servicesConnect(LitElement) {
   }
 
   async loadUpdates() {
-    if (!this.client) return;
+    if (!this.localEvees) {
+      this.localEvees = this.evees;
+    }
 
     this.loading = true;
 
-    const mutation = await this.client.diff();
+    const mutation = await this.evees.client.diff();
 
     const getDetails = mutation.updates
       .filter((u) => !!u.details.headId)
@@ -116,7 +120,7 @@ export class EveesDiff extends servicesConnect(LitElement) {
     // TODO: review if old data needs to be
     return html`
       <div class="evee-diff">
-        ${details.diffLense.render(this.client, details.newData, details.oldData, this.summary)}
+        ${details.diffLense.render(this.evees, details.newData, details.oldData, this.summary)}
       </div>
     `;
   }

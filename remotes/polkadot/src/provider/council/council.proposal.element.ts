@@ -235,7 +235,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
         <div class="proposal-name">
           <evees-author
             user-id=${creatorId}
-            remote-id=${this.fromPerspective.payload.remote}
+            remote-id=${this.fromPerspective.object.payload.remote}
             show-name
           ></evees-author>
         </div>
