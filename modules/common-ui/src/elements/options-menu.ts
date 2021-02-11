@@ -22,6 +22,9 @@ export class UprtclOptionsMenu extends LitElement {
   @property({ type: Boolean })
   skinny = false;
 
+  @property({ type: Boolean })
+  secondary = false;
+
   @query('#popper')
   popper!: UprtclPopper;
 
@@ -49,6 +52,7 @@ export class UprtclOptionsMenu extends LitElement {
             icon=${this.icon}
             button
             ?skinny=${this.skinny}
+            ?secondary=${this.secondary}
           ></uprtcl-icon-button
         ></slot>
         <uprtcl-list>

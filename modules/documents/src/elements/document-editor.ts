@@ -1264,25 +1264,21 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   renderActionBar() {
+    const hasChanges = this.docHasChanges && !this.showCommitMessage;
     return html` <div class="doc-actionbar">
-      ${this.docHasChanges && !this.showCommitMessage
-        ? html`<uprtcl-button-loading
-            @click=${() => this.persistAll()}
-            ?loading=${this.persistingAll}
-            variant="long"
-          >
-            Push Changes
-          </uprtcl-button-loading> `
-        : html` <uprtcl-button-loading variant="long" ?disabled=${true}
-            >Published</uprtcl-button-loading
-          >`}
+      <uprtcl-button-loading
+        class="publish-button"
+        @click=${() => (hasChanges ? this.persistAll() : '')}
+        ?loading=${this.persistingAll}
+        ?disabled=${!hasChanges}
+        variant="large"
+      >
+        ${hasChanges ? 'Push Changes' : 'Pushed'}
+      </uprtcl-button-loading>
       <uprtcl-help>
         <span>
           Your current changes are safely stored on this device and won't be lost.<br /><br />
-          "Push" them if<br /><br />
-          <li>You are about to propose a merge.</li>
-          <br />
-          <li>This draft is public and you want them to be visible to others.</li>
+          "Push" them if to you are about to share this page.
         </span>
       </uprtcl-help>
     </div>`;
@@ -1379,6 +1375,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       }
       .doc-endSpace {
         /* height: 50vh; */
+      }
+      .publish-button {
+        width: 190px;
       }
       .row {
         position: relative;
