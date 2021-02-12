@@ -67,10 +67,6 @@ export class ProposalsPolkadotCouncil implements Proposals {
     return proposalId;
   }
 
-  async updateProposal(proposalId: string, details: ProposalDetails): Promise<void> {
-    throw new Error('method not valid');
-  }
-
   async getProposal(proposalId: string): Promise<Proposal> {
     await this.ready();
 
@@ -83,16 +79,10 @@ export class ProposalsPolkadotCouncil implements Proposals {
     // })
 
     const proposal: Proposal = {
-      id: proposalId,
       creatorId: '',
       toPerspectiveId: proposalManifest.toPerspectiveId,
       fromPerspectiveId: proposalManifest.fromPerspectiveId,
-      details: {
-        newPerspectives: [],
-        updates: proposalManifest.updates.filter(
-          (update) => update.fromPerspectiveId !== undefined
-        ),
-      },
+      mutation: proposalManifest.mutation,
     };
 
     this.logger.info('getProposal() - post', { proposal });

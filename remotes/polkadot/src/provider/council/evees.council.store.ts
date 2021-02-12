@@ -25,7 +25,7 @@ export class PolkadotCouncilEveesStorage {
   constructor(
     protected connection: PolkadotConnection,
     public config: ProposalConfig,
-    protected casId: string
+    protected casID: string
   ) {}
 
   async ready(): Promise<void> {
@@ -83,7 +83,7 @@ export class PolkadotCouncilEveesStorage {
 
     myCouncilData.proposals = [...councilProposals];
     this.logger.log('CouncilData Updated to', myCouncilData);
-    return this.store.storeEntity({ object: myCouncilData, casId: this.casId });
+    return this.store.storeEntity({ object: myCouncilData, casID: this.casID });
   }
 
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
@@ -340,7 +340,7 @@ export class PolkadotCouncilEveesStorage {
 
     const proposalId = await this.store.storeEntity({
       object: proposalManifest,
-      casId: this.casId,
+      casID: this.casID,
     });
     const council = await this.connection.getCouncil(proposalManifest.block);
     if (!council.includes(this.connection.account)) throw new Error('user not a council member');
@@ -352,7 +352,7 @@ export class PolkadotCouncilEveesStorage {
     const newCouncilData = await this.addProposalToCouncilData(councilProposal);
     const newCouncilDataHash = await this.store.storeEntity({
       object: newCouncilData,
-      casId: this.casId,
+      casID: this.casID,
     });
 
     this.logger.log('createProposal', { newCouncilDataHash, newCouncilData });
@@ -410,7 +410,7 @@ export class PolkadotCouncilEveesStorage {
     const newCouncilData = await this.addVoteToCouncilData(vote);
     const newCouncilDataHash = await this.store.storeEntity({
       object: newCouncilData,
-      casId: this.casId,
+      casID: this.casID,
     });
     this.logger.log('vote', { vote, newCouncilDataHash, newCouncilData });
     await this.updateCouncilData(newCouncilDataHash);

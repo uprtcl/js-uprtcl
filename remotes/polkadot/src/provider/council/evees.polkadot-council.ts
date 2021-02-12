@@ -1,21 +1,14 @@
-import { html } from 'lit-element';
-
 import {
   RemoteEvees,
   Perspective,
-  PerspectiveDetails,
   NewPerspective,
   Secured,
-  deriveSecured,
-  hashObject,
   Logger,
-  CASRemote,
   CASStore,
   PartialPerspective,
   snapDefaultPerspective,
   EveesMutation,
   EveesMutationCreate,
-  GetPerspectiveOptions,
   PerspectiveGetResult,
   SearchEngine,
   Update,
@@ -25,7 +18,6 @@ import { EveesAccessControlFixedOwner } from '@uprtcl/evees-blockchain';
 import { PolkadotConnection } from '../../connection.polkadot';
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalsPolkadotCouncil } from './evees.polkadot-council.proposals';
-import { icons } from '../icons';
 import { ProposalConfig } from './proposal.config.types';
 
 const evees_if = 'council';
@@ -34,8 +26,8 @@ export class EveesPolkadotCouncil implements RemoteEvees {
   logger: Logger = new Logger('EveesPolkadot');
 
   accessControl: EveesAccessControlFixedOwner;
-  proposals: ProposalsPolkadotCouncil;
   store!: CASStore;
+  proposals: ProposalsPolkadotCouncil;
   councilStorage: PolkadotCouncilEveesStorage;
 
   constructor(
