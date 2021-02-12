@@ -30,7 +30,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
     council: string[];
     isCouncilMember: boolean;
   };
-  eveesWorkspace: Evees;
+  eveesWorkspace!: Evees;
 
   async firstUpdated() {
     this.remote = this.evees.findRemote<EveesPolkadotCouncil>('council');

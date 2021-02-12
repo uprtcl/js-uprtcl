@@ -77,8 +77,8 @@ export class CASRouter implements CASStore {
   }
 
   getObjectCasID(objectOn: ObjectOn) {
-    let casID = objectOn.casId
-      ? objectOn.casId
+    let casID = objectOn.casID
+      ? objectOn.casID
       : this.remoteToSourcesMap.get(objectOn.remote as string);
     if (!casID) {
       casID = Array.from(this.storesMap.values())[0].casID;

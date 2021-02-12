@@ -9,6 +9,7 @@
     "modules/documents",
     "remotes/http",
     "remotes/blockchain",
+    "remotes/orbitdb",
     "remotes/polkadot"
   ],
   "version": "independent"
