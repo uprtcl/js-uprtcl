@@ -18,6 +18,7 @@ import { EveesDiff } from './evees-diff';
 import { ProposalCreatedEvent } from './events';
 import { Proposal } from '../proposals/types';
 import { RecursiveContextMergeStrategy } from '../merge/recursive-context.merge-strategy';
+import { Evees } from '../evees.service';
 
 interface PerspectiveData {
   id?: string;
@@ -99,7 +100,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   eveesDiffInfoMessage!: TemplateResult;
 
   perspectiveData!: PerspectiveData;
-  pullclient: Client | undefined = undefined;
+  eveesPull: Evees | undefined = undefined;
 
   protected remote!: RemoteEvees;
 
@@ -194,12 +195,12 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
 
   async checkPull(fromUref: string) {
     if (this.entityType !== PerspectiveType) {
-      this.pullclient = undefined;
+      this.eveesPull = undefined;
       return;
     }
 
     if (this.uref === fromUref || !this.perspectiveData.canUpdate) {
-      this.pullclient = undefined;
+      this.eveesPull = undefined;
       return;
     }
 
@@ -213,14 +214,14 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
       parentId: this.uref,
     };
 
-    const eveesPull = this.evees.clone();
-    const merger = new RecursiveContextMergeStrategy(eveesPull);
+    this.eveesPull = this.evees.clone();
+    const merger = new RecursiveContextMergeStrategy(this.eveesPull);
 
     await merger.mergePerspectivesExternal(this.uref, fromUref, {
       forceOwner: true,
     });
 
-    this.logger.info('checkPull()', this.pullclient);
+    this.logger.info('checkPull()', this.eveesPull);
   }
 
   connectedCallback() {
@@ -293,7 +294,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     };
 
     const result = await this.updatesDialog(
-      eveesMerge.client,
+      eveesMerge,
       options,
       this.renderFromToPerspective(toPerspectiveId, fromPerspectiveId)
     );
@@ -408,7 +409,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   }
 
   async updatesDialog(
-    client: Client,
+    localEvees: Evees,
     options: MenuConfig,
     message: TemplateResult = html``
   ): Promise<string> {
@@ -416,7 +417,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     await this.updateComplete;
 
     this.updatesDialogEl.options = options;
-    this.eveesDiffEl.client = client;
+    this.eveesDiffEl.localEvees = localEvees;
     this.eveesDiffInfoMessage = message;
 
     return new Promise((resolve) => {

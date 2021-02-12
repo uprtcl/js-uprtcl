@@ -41,7 +41,11 @@ export class EveesPolkadotWrapper {
     this.pkdEveesConnection = new EveesPolkadotConnection(pkdConnection);
     await this.pkdEveesConnection.ready();
 
-    const pkdEvees = new EveesBlockchain(this.pkdEveesConnection, this.ipfsStore.casID);
+    const pkdEvees = new EveesBlockchain(
+      this.pkdEveesConnection,
+      searchEngine,
+      this.ipfsStore.casID
+    );
 
     const councilConfig = {
       // duration: Math.round((5.0 * 60.0 * 60.0 * 24.0) / 5.0),
@@ -49,7 +53,12 @@ export class EveesPolkadotWrapper {
       quorum: 1.0 / 3.0,
       thresehold: 0.5,
     };
-    const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, this.ipfsStore, councilConfig);
+    const pkdCouncilEvees = new EveesPolkadotCouncil(
+      pkdConnection,
+      searchEngine,
+      this.ipfsStore.casID,
+      councilConfig
+    );
     await pkdEvees.connect();
 
     this.remotes = [pkdEvees, pkdCouncilEvees];

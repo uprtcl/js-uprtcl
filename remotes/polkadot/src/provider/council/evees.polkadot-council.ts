@@ -37,10 +37,10 @@ export class EveesPolkadotCouncil implements RemoteEvees {
   proposals: ProposalsPolkadotCouncil;
   store!: CASStore;
   councilStorage: PolkadotCouncilEveesStorage;
-  searchEngine!: SearchEngine;
 
   constructor(
     readonly connection: PolkadotConnection,
+    readonly searchEngine: SearchEngine,
     readonly casID: string,
     readonly config: ProposalConfig
   ) {

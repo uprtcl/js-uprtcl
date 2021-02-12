@@ -11,7 +11,7 @@ import {
 } from './types';
 import { getStatus } from './proposal.logic.quorum';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
-import { CASStore, Logger, Perspective, PerspectiveDetails, Signed } from '@uprtcl/evees';
+import { CASStore, Logger, Perspective, PerspectiveDetails, Signed, Update } from '@uprtcl/evees';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 
@@ -198,13 +198,17 @@ export class PolkadotCouncilEveesStorage {
 
     /** accepted proposals are converted into valid perspectives */
     if (proposal.status === ProposalStatus.Accepted) {
+      const updates = proposal.mutation.newPerspectives
+        .map((np) => np.update)
+        .concat(proposal.mutation.updates);
+
       await Promise.all(
-        proposal.updates.map(async (update) => {
+        updates.map(async (update: Update) => {
           const perspective = await this.store.getEntity<Signed<Perspective>>(update.perspectiveId);
           await this.db.perspectives.put({
             id: update.perspectiveId,
-            context: perspective.payload.context,
-            headId: update.newHeadId,
+            context: perspective.object.payload.context,
+            headId: update.details.headId,
           });
         })
       );
@@ -250,7 +254,7 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getProposalManifest(proposalId: string): Promise<ProposalManifest> {
-    const proposalManifest = (await this.store.get(proposalId)) as ProposalManifest;
+    const { object: proposalManifest } = await this.store.getEntity<ProposalManifest>(proposalId);
     if (!proposalManifest) throw new Error(`Proposal ${proposalId} not found`);
     return proposalManifest;
   }
@@ -260,7 +264,7 @@ export class PolkadotCouncilEveesStorage {
     return {
       id: proposalId,
       toPerspectiveId: proposalManifest.toPerspectiveId,
-      updates: proposalManifest.updates,
+      mutation: proposalManifest.mutation,
       status: ProposalStatus.Pending,
       endBlock: proposalManifest.block + proposalManifest.config.duration,
     };
@@ -346,7 +350,10 @@ export class PolkadotCouncilEveesStorage {
     };
 
     const newCouncilData = await this.addProposalToCouncilData(councilProposal);
-    const newCouncilDataHash = await this.store.create(newCouncilData);
+    const newCouncilDataHash = await this.store.storeEntity({
+      object: newCouncilData,
+      casId: this.casId,
+    });
 
     this.logger.log('createProposal', { newCouncilDataHash, newCouncilData });
     await this.updateCouncilData(newCouncilDataHash);
@@ -401,7 +408,10 @@ export class PolkadotCouncilEveesStorage {
       value,
     };
     const newCouncilData = await this.addVoteToCouncilData(vote);
-    const newCouncilDataHash = await this.store.create(newCouncilData);
+    const newCouncilDataHash = await this.store.storeEntity({
+      object: newCouncilData,
+      casId: this.casId,
+    });
     this.logger.log('vote', { vote, newCouncilDataHash, newCouncilData });
     await this.updateCouncilData(newCouncilDataHash);
 

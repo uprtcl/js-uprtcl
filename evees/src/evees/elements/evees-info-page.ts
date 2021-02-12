@@ -73,7 +73,7 @@ export class EveesInfoPage extends EveesInfoBase {
   }
 
   async showPullChanges() {
-    if (!this.pullclient) throw new Error('pullclient undefined');
+    if (!this.eveesPull) throw new Error('pullclient undefined');
 
     const options: MenuConfig = {
       apply: {
@@ -88,13 +88,13 @@ export class EveesInfoPage extends EveesInfoBase {
       },
     };
 
-    const result = await this.updatesDialog(this.pullclient, options);
+    const result = await this.updatesDialog(this.eveesPull, options);
 
     if (result !== 'apply') {
       return;
     }
 
-    await this.pullclient.flush();
+    await this.eveesPull.client.flush();
 
     this.checkoutPerspective(this.uref);
   }

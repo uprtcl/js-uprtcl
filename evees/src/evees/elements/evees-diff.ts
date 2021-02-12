@@ -6,6 +6,7 @@ import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { Update, HasDiffLenses, DiffLens } from '../interfaces/types';
 import { Client } from '../interfaces/client';
+import { Evees } from '../evees.service';
 
 const LOGINFO = true;
 

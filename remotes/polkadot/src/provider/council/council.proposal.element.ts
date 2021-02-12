@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { prettyTimePeriod } from '@uprtcl/common-ui';
-import { Perspective, Secured, servicesConnect, Signed } from '@uprtcl/evees';
+import { Evees, Perspective, Secured, servicesConnect, Signed } from '@uprtcl/evees';
 
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 
@@ -30,6 +30,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
     council: string[];
     isCouncilMember: boolean;
   };
+  eveesWorkspace: Evees;
 
   async firstUpdated() {
     this.remote = this.evees.findRemote<EveesPolkadotCouncil>('council');
@@ -44,13 +45,19 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   }
 
   async loadManifest() {
-    const { object: proposalManifest } = await this.evees.client.store.getEntity<ProposalManifest>(this.proposalId));
+    const { object: proposalManifest } = await this.evees.client.store.getEntity<ProposalManifest>(
+      this.proposalId
+    );
     if (!proposalManifest) throw new Error('Proposal not found');
     this.proposalManifest = proposalManifest;
 
     this.fromPerspective = await this.evees.client.store.getEntity<Signed<Perspective>>(
       this.proposalManifest.fromPerspectiveId as string
     );
+
+    this.eveesWorkspace = this.evees.clone();
+    // apply the changes on a new Evees client
+    this.eveesWorkspace.client.update(this.proposalManifest.mutation);
   }
 
   async vote(value: VoteValue) {
@@ -200,7 +207,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
               show-name
             ></evees-author>
           </div>
-          <evees-update-diff .client=${this.client}> </evees-update-diff>
+          <evees-update-diff .localEvees=${this.eveesWorkspace}> </evees-update-diff>
           <div class="column">
             ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
             ${this.renderProposalStatus()}
