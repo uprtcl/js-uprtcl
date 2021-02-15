@@ -18,6 +18,13 @@ export class HttpAuth0Connection extends HttpAuthenticatedConnectionImp {
       if (token.jwt && token.userId) {
         this.tokenStore.authToken = 'Bearer ' + token.jwt;
         this.tokenStore.userId = token.userId;
+
+        const isValid = await this.get('/user/isAuthorized');
+
+        if (!isValid) {
+          await this.logout();
+          return false;
+        }
         return true;
       } else {
         throw new Error('Token details not retrieved');
