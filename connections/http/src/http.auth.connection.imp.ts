@@ -34,6 +34,12 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
     if (token.jwt && token.userId) {
       this.tokenStore.authToken = 'Bearer ' + token.jwt;
       this.tokenStore.userId = token.userId;
+
+      const isValid = await this.get('/user/isAuthorized');
+
+      if (!isValid) {
+        this.logout();
+      }
     }
   }
   async connect(): Promise<void> {}
