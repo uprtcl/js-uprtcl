@@ -1,5 +1,7 @@
 # \_Prtcl
 
+# A large refactoring of the project is undergoing and most packages are now obsolete. Plase bear with us until we update the documentation. Thanks!
+
 This repo contains a set of tools and libraries to help develop \_Prtcl compatible web-applications.
 
 \_Prtcl web-applications are content management applications that work with Evees (GIT-like entities) and are built aroud reusable content rendering and manipulation modules.
