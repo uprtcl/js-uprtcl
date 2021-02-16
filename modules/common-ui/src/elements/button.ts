@@ -22,10 +22,14 @@ export class UprtclButton extends LitElement {
   @property({ type: String })
   variant?: ButtonVariant = 'normal';
 
+  @property({ type: Boolean })
+  secondary = false;
+
   /** Seems I cant prevent the click event from being emitted outside of this element  */
 
   render() {
     let classes = ['button-layout', 'button-text'];
+    const secondary = this.secondary ? '-secondary' : '';
 
     if (this.disabled) {
       classes.push('button-disabled');
@@ -33,9 +37,9 @@ export class UprtclButton extends LitElement {
       classes.push('cursor');
 
       if (this.skinny) {
-        classes.push('button-skinny');
+        classes.push(`button-skinny${secondary}`);
       } else {
-        classes.push('button-filled');
+        classes.push(`button-filled${secondary}`);
       }
 
       if (this.raised) {
@@ -47,13 +51,7 @@ export class UprtclButton extends LitElement {
       }
     }
 
-    if (this.variant === 'normal') {
-      classes.push('variant-normal');
-    } else if (this.variant === 'long') {
-      classes.push('variant-long');
-    } else if (this.variant === 'icon') {
-      classes.push('variant-icon');
-    }
+    classes.push(`variant-${this.variant}`);
 
     return html`
       <div class=${classes.join(' ')}>
@@ -78,6 +76,10 @@ export class UprtclButton extends LitElement {
           flex-direction: row;
           justify-content: var(--justify-content, center);
           line-height: 24px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 0rem 1.5rem;
         }
         .icon-container {
           height: 100%;
@@ -87,14 +89,14 @@ export class UprtclButton extends LitElement {
           margin-right: 10px;
         }
         .variant-normal {
-          padding: 0.6rem 1.5rem;
+          height: 40px;
         }
-        .variant-long {
-          padding: 1rem 4rem;
+        .variant-large {
+          height: 50px;
           font-weight: 700;
         }
-        .variant-icon {
-          padding: 0;
+        .variant-thin {
+          height: 30px;
         }
       `,
     ];

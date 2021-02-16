@@ -19,9 +19,8 @@ export class UprtclIconAndName extends LitElement {
             : html`<div class="icon-placeholder"></div>`}
         </slot>
       </div>
-      ${this.showName
-        ? html`<div class="name-container">${this.name ? this.name : 'Smute'}</div>`
-        : ''}
+      ${this.showName ? html`<div class="name-container">${this.name ? this.name : ''}</div>` : ''}
+      <div class="overlay"></div>
     `;
   }
 
@@ -31,6 +30,7 @@ export class UprtclIconAndName extends LitElement {
         :host {
           display: flex;
           align-items: center;
+          position: relative;
         }
         .icon-container {
           margin: 5px;
@@ -38,7 +38,7 @@ export class UprtclIconAndName extends LitElement {
           width: 40px;
           height: 40px;
           border-radius: var(--border-radius-complete);
-
+          flex: 0 0 auto;
         }
         .icon-placeholder {
           background-color: #cccccc;
@@ -48,6 +48,22 @@ export class UprtclIconAndName extends LitElement {
           color: #636668;
           font-weight: bold;
           white-space: nowrap;
+        }
+        .overlay {
+          height: 100%;
+          width: 100%;
+          position: absolute;
+          top: 0px;
+          left: 0px;
+          pointer-events: none;
+          background-image: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 1)
+          );
         }
       `,
     ];

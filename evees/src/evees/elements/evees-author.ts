@@ -17,6 +17,9 @@ export class EveesAuthor extends servicesConnect(LitElement) {
   @property({ type: Boolean, attribute: 'show-name' })
   showName = false;
 
+  @property({ type: Boolean, attribute: 'show-copy' })
+  showCopy = false;
+
   @property({ type: Boolean })
   short = false;
 
@@ -58,7 +61,7 @@ export class EveesAuthor extends servicesConnect(LitElement) {
     return html`<div class="avatar">
         ${this.remote.avatar ? this.remote.avatar(this.userId, { showName: this.showName }) : ''}
       </div>
-      ${this.showName
+      ${this.showCopy
         ? html`<uprtcl-copy-to-clipboard text=${this.userId}></uprtcl-copy-to-clipboard>`
         : ''} `;
   }
