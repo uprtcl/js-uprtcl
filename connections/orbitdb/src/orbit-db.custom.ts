@@ -4,7 +4,7 @@ import IPFS from 'ipfs';
 import OrbitDBSet from '@tabcat/orbit-db-set';
 import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 
-import { Logger } from '@uprtcl/evees';
+import { Connection, ConnectionOptions, Logger } from '@uprtcl/evees';
 import { PinnedCacheDB } from '@uprtcl/ipfs-provider';
 
 import { IdentitySource } from './identity.source';
@@ -201,7 +201,7 @@ export class OrbitDBCustom extends Connection {
         if (ENABLE_LOG) {
           this.logger.log(`${db.address} -- Awaiting replication. HadDB: ${hadDB}`);
         }
-        await new Promise((resolve) => {
+        await new Promise<void>((resolve) => {
           db.events.on('replicated', async (r) => {
             this.logger.log(`${r} -- Replicated`);
             resolve();
@@ -215,7 +215,7 @@ export class OrbitDBCustom extends Connection {
     return db;
   }
 
-  public async getStore(type: string, entity?: any, pin: boolean = false): Promise<any> {
+  public async getStore(type: string, entity?: any, pin = false): Promise<any> {
     const address = await this.storeAddress(type, entity);
     const store = this.openStore(address);
     if (pin) {
@@ -229,7 +229,7 @@ export class OrbitDBCustom extends Connection {
       const addr = address.toString();
 
       if (ENABLE_LOG) {
-        this.logger.log(`getting from`, addr);
+        this.logger.log('getting from', addr);
       }
       const result = await fetch(`${this.pinnerUrl}/getAll?address=${addr}`, {
         method: 'GET',
@@ -244,7 +244,7 @@ export class OrbitDBCustom extends Connection {
       const addr = hash.toString();
 
       if (ENABLE_LOG) {
-        this.logger.log(`getting from`, addr);
+        this.logger.log('getting from', addr);
       }
       const result = await fetch(`${this.pinnerUrl}/getEntity?cid=${addr}`, {
         method: 'GET',
@@ -267,7 +267,7 @@ export class OrbitDBCustom extends Connection {
       const pinned = await this.pinnedCache.pinned.get(addr);
       if (!pinned) {
         if (ENABLE_LOG) {
-          this.logger.log(`pinning`, addr);
+          this.logger.log('pinning', addr);
         }
         fetch(`${this.pinnerUrl}/pin?address=${addr}`, {
           method: 'GET',

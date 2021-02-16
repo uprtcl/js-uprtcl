@@ -9,6 +9,6 @@ export interface CASRemote extends CASStore, Ready {
   cidConfig: CidConfig;
 
   /** A non-remote-addressed store interface. It recieves plain objects
-   * instead of ObjectOnRemote */
+   * instead of ObjectOn */
   storeObjects(objects: object[]): Promise<Entity<any>[]>;
 }

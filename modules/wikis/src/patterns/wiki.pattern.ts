@@ -55,7 +55,6 @@ export class WikiLinks implements HasChildren<Wiki> {
     const mergedPages = await mergeStrategy.mergeLinks(
       originalNode.pages,
       modifications.map((data) => (!!data ? data.pages : originalNode.pages)),
-      evees,
       config
     );
 
@@ -93,11 +92,11 @@ export class WikiCommon implements HasTitle, HasLenses<Wiki>, HasDiffLenses<Wiki
       {
         name: 'wikis:wiki-diff',
         type: 'diff',
-        render: (client: Client, newEntity: Wiki, oldEntity: Wiki, summary: boolean) => {
+        render: (evees: Evees, newEntity: Wiki, oldEntity: Wiki, summary: boolean) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <wiki-diff
-              .client=${client}
+              .evees=${Evees}
               .newData=${newEntity}
               .oldData=${oldEntity}
               ?summary=${summary}

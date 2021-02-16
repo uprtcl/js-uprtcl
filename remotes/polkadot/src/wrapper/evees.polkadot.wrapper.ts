@@ -1,20 +1,13 @@
 import { IpfsStore } from '@uprtcl/ipfs-provider';
+import { EveesBlockchain } from '@uprtcl/evees-blockchain';
+import { CidConfig, RemoteEvees } from '@uprtcl/evees';
+import { EveesOrbitDBSearchEngine, PerspectiveStore, getContextAcl } from '@uprtcl/evees-orbitdb';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
-import {
-  ProposalsOrbitDB,
-  ProposalStore,
-  ProposalsToPerspectiveStore,
-  ContextStore,
-  getProposalsAcl,
-  getContextAcl,
-} from '@uprtcl/evees-orbitdb';
-import { EveesBlockchainCached } from '@uprtcl/evees-blockchain';
-
 import { PolkadotConnection } from '../connection.polkadot';
-import { PolkadotOrbitDBIdentity } from '../orbitdb/polkadot.orbitdb.identity';
 import { EveesPolkadotConnection } from '../provider/identity-based/evees.polkadot-connection';
 import { EveesPolkadotCouncil } from '../provider/council/evees.polkadot-council';
+import { PolkadotOrbitDBIdentity } from '../orbitdb.id/polkadot.orbitdb.identity';
 
 import { getConnectionDetails } from './connections';
 
@@ -26,8 +19,7 @@ export interface PinnerConfig {
 export class EveesPolkadotWrapper {
   remotes!: RemoteEvees[];
   ipfsStore!: IpfsStore;
-  orbitDBCustom!: OrbitDBCustom;
-  pdkservicesConnection!: EveesPolkadotConnection;
+  pkdEveesConnection!: EveesPolkadotConnection;
 
   constructor(
     protected ipfs: any,
@@ -45,35 +37,28 @@ export class EveesPolkadotWrapper {
     const pkdConnection = new PolkadotConnection(connections.connections, connections.current);
     await pkdConnection.ready();
 
-    console.log(`${this.pinnerConfig.peerMultiaddr} connecting...`);
-    await this.ipfs.swarm.connect(this.pinnerConfig.peerMultiaddr);
-    console.log(`${this.pinnerConfig.peerMultiaddr} connected!`);
-
     this.ipfsStore = new IpfsStore(this.ipfsCidConfig, this.ipfs, this.pinnerConfig.url);
     await this.ipfsStore.ready();
 
+    this.pkdEveesConnection = new EveesPolkadotConnection(pkdConnection);
+    await this.pkdEveesConnection.ready();
+
     const identity = new PolkadotOrbitDBIdentity(pkdConnection);
 
-    this.orbitDBCustom = new OrbitDBCustom(
-      [ContextStore, ProposalStore, ProposalsToPerspectiveStore],
-      [getContextAcl([identity]), getProposalsAcl([identity])],
+    const orbitDBCustom = new OrbitDBCustom(
+      [PerspectiveStore],
+      [getContextAcl([identity])],
       identity,
-      pinner,
+      this.pinnerConfig.url,
       this.pinnerConfig.peerMultiaddr,
       this.ipfs
     );
-    await this.orbitDBCustom.ready();
 
-    const proposals = new ProposalsOrbitDB(this.orbitDBCustom, this.ipfsStore);
-
-    this.pdkservicesConnection = new EveesPolkadotConnection(pkdConnection);
-    await this.pdkservicesConnection.ready();
-
-    const pkdEvees = new EveesBlockchainCached(
-      this.pdkservicesConnection,
-      this.orbitDBCustom,
-      this.ipfsStore,
-      proposals
+    const searchEngine = new EveesOrbitDBSearchEngine(orbitDBCustom, this.ipfsStore);
+    const pkdEvees = new EveesBlockchain(
+      this.pkdEveesConnection,
+      searchEngine,
+      this.ipfsStore.casID
     );
 
     const councilConfig = {
@@ -82,7 +67,12 @@ export class EveesPolkadotWrapper {
       quorum: 1.0 / 3.0,
       thresehold: 0.5,
     };
-    const pkdCouncilEvees = new EveesPolkadotCouncil(pkdConnection, this.ipfsStore, councilConfig);
+    const pkdCouncilEvees = new EveesPolkadotCouncil(
+      pkdConnection,
+      searchEngine,
+      this.ipfsStore.casID,
+      councilConfig
+    );
     await pkdEvees.connect();
 
     this.remotes = [pkdEvees, pkdCouncilEvees];

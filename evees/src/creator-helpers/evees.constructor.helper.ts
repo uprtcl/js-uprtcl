@@ -11,17 +11,16 @@ import { registerComponents } from './register.components';
 
 /** a top level wrapper that registers everything */
 export const eveesConstructorHelper = (
-  remotes: Array<RemoteEvees>,
+  remotes: RemoteEvees[],
+  stores: CASRemote[],
   modules: Map<string, EveesContentModule>,
   patterns?: Pattern<any>[],
   config?: EveesConfig
 ): Evees => {
   /** extract the stores and map remotes to stores */
   const remoteToSourcesMap = new Map<string, string>();
-  const stores = new Map<string, CASRemote>();
   remotes.forEach((remote) => {
-    stores.set(remote.storeRemote.casID, remote.storeRemote);
-    remoteToSourcesMap.set(remote.id, remote.storeRemote.casID);
+    remoteToSourcesMap.set(remote.id, remote.casID);
   });
 
   const store = buildStore(stores, remoteToSourcesMap);
