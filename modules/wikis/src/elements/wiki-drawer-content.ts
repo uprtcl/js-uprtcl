@@ -190,8 +190,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
   }
 
   async movePage(fromIndex: number, toIndex: number) {
-    const entity = await this.evees.moveChild(this.data, fromIndex, toIndex);
-    await this.evees.updatePerspectiveData(this.uref, entity.object);
+    const entity = await this.evees.moveChild(this.uref, fromIndex, toIndex);
 
     if (this.selectedPageIx === undefined) return;
 
@@ -207,8 +206,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
   }
 
   async removePage(pageIndex: number) {
-    const entity = await this.evees.removeChild(this.data, pageIndex);
-    await this.evees.updatePerspectiveData(this.uref, entity.object);
+    const entity = await this.evees.removeChild(this.uref, pageIndex);
 
     if (this.selectedPageIx === undefined) return;
 
@@ -264,7 +262,7 @@ export class WikiDrawerContent extends EveesBaseElement<Wiki> {
                 @click=${() => this.newPage()}
                 ?loading=${this.creatingNewPage}
               >
-                ${this.t('wikis:new-page')}
+                new page
               </uprtcl-button-loading>
             </div>
           `

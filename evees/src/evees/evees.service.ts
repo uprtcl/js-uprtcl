@@ -395,9 +395,9 @@ export class Evees {
    * - will retain the child in the fromPerspective
    * - will keep the guardian in as the original.
    */
-  async moveChild(
-    childIdOrIndex: number | string,
+  async movePerspective(
     fromId: string,
+    childIdOrIndex: number | string,
     toId: string,
     toIndex?: number,
     keepInFrom = false,
@@ -417,6 +417,16 @@ export class Evees {
 
     keepGuardian = keepGuardian !== undefined ? keepGuardian : keepInFrom;
     await this.addExistingChild(childId, toId, toIndex, !keepGuardian);
+  }
+
+  async moveChild(perspectiveId: string, fromIndex: number, toIndex: number) {
+    const data = await this.getPerspectiveData(perspectiveId);
+
+    const { removed } = await this.spliceChildren(data.object, [], fromIndex, 1);
+    const result = await this.spliceChildren(data.object, removed as string[], toIndex, 0);
+
+    await this.updatePerspectiveData(perspectiveId, result.object);
+    return result.removed[0];
   }
 
   /** get the current data of a perspective, removes the i-th child, and updates the data */
