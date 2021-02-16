@@ -98,7 +98,7 @@ export { CommitType } from './evees/patterns/commit.pattern';
 
 /** container */
 export { servicesConnect } from './container/multi-connect.mixin';
-export { eveesConstructorHelper } from './creator-helpers/evees.loader';
+export { eveesConstructorHelper } from './creator-helpers/evees.constructor.helper';
 export { MultiContainer } from './container/multi.container';
 
 export { AppElement, AppElements } from './creator-helpers/app.elements';
