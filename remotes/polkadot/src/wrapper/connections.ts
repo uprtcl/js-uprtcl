@@ -1,5 +1,7 @@
 import { ChainConnectionDetails } from '@uprtcl/evees-blockchain';
 
+export const POLKADOT_CONNECTION_NAME = 'POLKADOT-CONNECTION-NAME';
+
 const chainConnectionDetails: ChainConnectionDetails = {
   'kusama-parity': {
     name: 'Kusama',
@@ -21,14 +23,16 @@ const chainConnectionDetails: ChainConnectionDetails = {
   },
 };
 
+export function setConnectionId(id: string = 'local-dev') {
+  localStorage.setItem(POLKADOT_CONNECTION_NAME, id);
+}
+
 export function getConnectionDetails() {
-  let connectionId = localStorage.getItem('POLKADOT-CONNECTION-NAME');
+  let connectionId = localStorage.getItem(POLKADOT_CONNECTION_NAME);
 
   if (connectionId) {
     if (connectionId === 'CUSTOM') {
-      const customEndpoint = localStorage.getItem(
-        'POLKADOT-CONNECTION-ENDPOINT'
-      );
+      const customEndpoint = localStorage.getItem('POLKADOT-CONNECTION-ENDPOINT');
       chainConnectionDetails['CUSTOM'] = {
         name: 'Custom',
         image: '',
@@ -37,8 +41,8 @@ export function getConnectionDetails() {
       };
     }
   } else {
-    connectionId = 'kusama-parity';
-    localStorage.setItem('POLKADOT-CONNECTION-NAME', connectionId);
+    connectionId = 'local-host';
+    setConnectionId(connectionId);
   }
   return {
     connections: chainConnectionDetails,
