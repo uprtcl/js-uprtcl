@@ -17,9 +17,9 @@ export interface PinnerConfig {
 }
 
 export class EveesPolkadotWrapper {
-  remotes!: RemoteEvees[];
-  ipfsStore!: IpfsStore;
-  pkdEveesConnection!: EveesPolkadotConnection;
+  public remotes!: RemoteEvees[];
+  public ipfsStore!: IpfsStore;
+  public pkdEveesConnection!: EveesPolkadotConnection;
 
   constructor(
     protected ipfs: any,
