@@ -172,8 +172,8 @@ export class EveesInfoUserBased extends EveesInfoBase {
     /** check pull from official*/
     if (this.isMine && this.officialId !== undefined) {
       this.checkPull(this.officialId).then(async () => {
-        if (this.pullclient !== undefined) {
-          const diff = await this.pullclient.diff();
+        if (this.eveesPull !== undefined) {
+          const diff = await this.eveesPull.client.diff();
           this.hasPull = diff.updates ? diff.updates.length > 0 : false;
         } else {
           this.hasPull = false;
@@ -236,7 +236,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
   async showPull() {
     this.logger.log('show pull');
 
-    if (!this.pullclient) throw new Error('pullclient undefined');
+    if (!this.eveesPull) throw new Error('pullclient undefined');
 
     const options: MenuConfig = {
       apply: {
@@ -252,7 +252,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
     };
 
     const result = await this.updatesDialog(
-      this.pullclient,
+      this.eveesPull,
       options,
       this.renderFromToPerspective(this.uref, this.officialId as string)
     );
@@ -260,7 +260,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
     if (result !== 'apply') {
       return;
     }
-    await this.pullclient.flush();
+    await this.eveesPull.client.flush();
 
     this.dispatchEvent(
       new ContentUpdatedEvent({
@@ -315,7 +315,7 @@ export class EveesInfoUserBased extends EveesInfoBase {
         <evees-perspectives-list
           id="evees-perspectives-list"
           perspective-id=${this.uref}
-          parent-context=${this.parentContext}
+          parent-context=${this.parentContext as string}
           .hidePerspectives=${hidePerspectives}
           ?can-propose=${this.isLogged}
           @perspective-selected=${(e) => this.checkoutPerspective(e.detail.id)}

@@ -121,11 +121,8 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   }
 
   async showProposalChanges() {
-    const client = new ClientOnMemory(
-      this.evees.client,
-      this.evees.client.store,
-      this.proposal.object.mutation
-    );
+    const localEvees = this.evees.clone();
+    await localEvees.client.update(this.proposal.object.mutation);
 
     this.showDiff = true;
     const options: MenuConfig = {};
@@ -155,7 +152,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     await this.updateComplete;
 
-    this.eveesDiffEl.client = client;
+    this.eveesDiffEl.localEvees = localEvees;
     this.updatesDialogEl.options = options;
 
     const value = await new Promise((resolve) => {
@@ -170,7 +167,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     if (value === 'accept') {
       /** run the proposal changes as the logged user */
-      await client.flush();
+      await localEvees.client.flush();
       await this.evees.client.update({ deletedPerspectives: [this.proposalId] });
 
       this.load();

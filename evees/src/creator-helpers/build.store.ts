@@ -4,7 +4,7 @@ import { CASRemote } from '../cas/interfaces/cas-remote';
 import { CASRouter } from '../cas/stores/cas.router';
 
 export const buildStore = (
-  stores: Map<string, CASRemote>,
+  stores: CASRemote[],
   remoteToSourcesMap: Map<string, string>
 ): CASStore => {
   const router = new CASRouter(stores, remoteToSourcesMap);

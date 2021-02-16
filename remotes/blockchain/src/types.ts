@@ -1,7 +1,7 @@
+import { PerspectiveDetails } from '@uprtcl/evees';
+
 export interface UserPerspectivesDetails {
-  [perspectiveId: string]: {
-    headId?: string;
-  };
+  [perspectiveId: string]: PerspectiveDetails;
 }
 
 export interface RemoteStatus {

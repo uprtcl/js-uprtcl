@@ -1,13 +1,13 @@
 import lodash from 'lodash-es';
 
 import { CASStore, EntityGetResult } from '../interfaces/cas-store';
-import { Entity, EntityOnRemote, ObjectOnRemote } from '../interfaces/entity';
+import { Entity, EntityOn, ObjectOn } from '../interfaces/entity';
 
 /** The CASOnMemory caches the created and read entities on memory.
  * When the flush() function is called, it stores all the cached created
  * entities on the base CASStore */
 export class CASOnMemory implements CASStore {
-  private newEntities = new Map<string, EntityOnRemote>();
+  private newEntities = new Map<string, EntityOn>();
   private cachedEntities = new Map<string, Entity<any>>();
 
   /** The base CASStore can be a better persisted CASStore in IndexedDB or the CAS router which will
@@ -19,7 +19,7 @@ export class CASOnMemory implements CASStore {
     entities.forEach((entity) => this.cachedEntities.set(entity.id, entity));
   }
 
-  async hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+  async hashEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
     return this.base.hashEntities(objects);
   }
 
@@ -86,7 +86,7 @@ export class CASOnMemory implements CASStore {
     return { entities };
   }
 
-  storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+  storeEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
     return Promise.all(
       objects.map(async (o) => {
         const hash = await this.storeEntity(o);
@@ -99,7 +99,7 @@ export class CASOnMemory implements CASStore {
     );
   }
 
-  async storeEntity(object: ObjectOnRemote): Promise<string> {
+  async storeEntity(object: ObjectOn): Promise<string> {
     /** Hash using the base layer */
     const hash = await this.base.hashEntity(object);
     /** Store in the new entities buffer */
@@ -116,7 +116,7 @@ export class CASOnMemory implements CASStore {
     return entities[0] as Entity<T>;
   }
 
-  hashEntity(object: ObjectOnRemote): Promise<string> {
+  hashEntity(object: ObjectOn): Promise<string> {
     return this.base.hashEntity(object);
   }
 }

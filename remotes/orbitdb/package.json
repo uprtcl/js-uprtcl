@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-orbitdb",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "EveesRemote implemented on the Ethereum Blockchain",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -12,10 +12,10 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/ethereum-provider": "^0.1.1",
-    "@uprtcl/evees": "^0.1.1",
-    "@uprtcl/ipfs-provider": "^0.1.1",
-    "@uprtcl/orbitdb-provider": "^0.1.1",
+    "@uprtcl/ethereum-provider": "^0.2.0",
+    "@uprtcl/evees": "^0.2.0",
+    "@uprtcl/ipfs-provider": "^0.2.0",
+    "@uprtcl/orbitdb-provider": "^0.2.0",
     "cbor-js": "^0.1.0",
     "ipfs": "^0.50.2",
     "lit-html": "^1.1.2",

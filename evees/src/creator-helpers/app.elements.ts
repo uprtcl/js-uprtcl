@@ -23,10 +23,8 @@ export class AppElements {
   }
 
   async check(): Promise<void> {
-    if (!this.remote.getHome) throw new Error(`Remote don't have a home default`);
-
     /** home space perspective is deterministic */
-    this.home.perspective = await this.remote.getHome();
+    this.home.perspective = await this.evees.getHome(this.remote.id);
     await this.checkOrCreatePerspective(this.home.perspective);
 
     /** all other objects are obtained relative to the home perspective */
@@ -68,7 +66,9 @@ export class AppElements {
   }
 
   async createSnapElementRec(element: AppElement, level: number = 0, biasTime: number = 0) {
-    element.perspective = await this.remote.snapPerspective({ timestamp: Date.now() + level*10000 + biasTime });
+    element.perspective = await this.remote.snapPerspective({
+      timestamp: Date.now() + level * 10000 + biasTime,
+    });
 
     /** make sure the perspective is in the store to be resolved */
     await this.evees.client.store.storeEntity({
@@ -77,7 +77,9 @@ export class AppElements {
     });
 
     if (element.children) {
-      await Promise.all(element.children.map((child, ix) => this.createSnapElementRec(child, level + ix)));
+      await Promise.all(
+        element.children.map((child, ix) => this.createSnapElementRec(child, level + ix))
+      );
     }
   }
 

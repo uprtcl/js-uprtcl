@@ -35,7 +35,7 @@ export class EveesHttp implements RemoteEvees {
   store!: CASStore;
   searchEngine!: SearchEngine;
 
-  constructor(public connection: HttpAuthenticatedConnection, public storeRemote: CASRemote) {
+  constructor(public connection: HttpAuthenticatedConnection, public casID: string) {
     this.accessControl = new EveesAccessControlHttp(this.connection);
     this.proposals = new ProposalsHttp(this.connection);
     this.searchEngine = new EveesHttpSearchEngine(this.connection);
