@@ -22,7 +22,6 @@ import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
 import { EveesAccessControlOrbitDB } from './evees-acl.orbit-db';
 import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
-import { TemplateResult } from 'lit-html';
 
 const evees_if = 'evees-v0';
 // const timeout = 200;
