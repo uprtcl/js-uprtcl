@@ -31,7 +31,12 @@ export class WikiDrawer extends servicesConnect(LitElement) {
   uref!: string;
 
   @property({ type: Object })
-  eveesInfoConfig!: EveesInfoConfig;
+  eveesInfoConfig: EveesInfoConfig = {
+    checkOwner: true,
+    showDebugInfo: false,
+    showInfo: true,
+    showIcon: true,
+  };
 
   @property({ attribute: false })
   loading = true;
@@ -206,7 +211,6 @@ export class WikiDrawer extends servicesConnect(LitElement) {
           flex: 1 1 0;
           display: flex;
           flex-direction: column;
-
         }
         .app-topbar {
           width: 100%;

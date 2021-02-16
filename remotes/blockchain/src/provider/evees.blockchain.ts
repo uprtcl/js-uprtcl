@@ -121,7 +121,7 @@ export class EveesBlockchain implements RemoteEvees {
     const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
     /** if nothing found on the cache, then read it from the blockchain */
     const userPerspectives = await this.getEveesDataOf(perspective.object.payload.creatorId);
-    const details = userPerspectives[perspective.id];
+    const details = userPerspectives[perspective.id] ? userPerspectives[perspective.id] : {};
     return { details };
   }
 

@@ -10,8 +10,6 @@ import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { Perspective, PerspectiveDetails, Commit } from '../interfaces/types';
-import { Client } from '../interfaces/client';
-import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteEvees } from '../interfaces/remote.evees';
 
 import { EveesDiff } from './evees-diff';
