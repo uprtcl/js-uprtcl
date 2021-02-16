@@ -208,7 +208,8 @@ export class Evees {
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async updatePerspective(update: Update) {
     update = await this.checkOldDetails(update);
-    update = await this.checkLinks(update);
+    update = await this.checkLinks(update, 'children');
+    update = await this.checkLinks(update, 'linksTo');
     return this.client.updatePerspective(update);
   }
 
