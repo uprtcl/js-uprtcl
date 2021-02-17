@@ -20,7 +20,7 @@ import { Signed } from '../patterns/interfaces/signable';
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { getHome } from './default.perspectives';
-import { ClientOnMemory } from './clients/client.memory';
+import { ClientOnMemory } from './clients/memory/client.memory';
 
 export interface CreateCommit {
   dataId: string;

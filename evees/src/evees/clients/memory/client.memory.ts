@@ -9,11 +9,11 @@ import {
   PerspectiveGetResult,
   EveesMutation,
   EveesMutationCreate,
-} from '../interfaces/types';
-import { CASStore } from '../../cas/interfaces/cas-store';
-import { Entity, ObjectOn } from '../../cas/interfaces/entity';
+} from '../../interfaces/types';
+import { CASStore } from '../../../cas/interfaces/cas-store';
+import { Entity, ObjectOn } from '../../../cas/interfaces/entity';
 
-import { Client, ClientEvents } from '../interfaces/client';
+import { Client, ClientEvents } from '../../interfaces/client';
 
 interface CachedDetails {
   details: PerspectiveDetails;
@@ -27,7 +27,7 @@ export class ClientOnMemory implements Client {
   /** a map with the updates for each perspective. There might be more than on update ordered as they arrive */
   private updates = new Map<string, Update[]>();
 
-  /** TDB */
+  /** TBD */
   private canUpdates = new Map<string, boolean>();
   private userPerspectives = new Map<string, string[]>();
 
@@ -193,9 +193,9 @@ export class ClientOnMemory implements Client {
     let perspectives = this.userPerspectives.get(perspectiveId);
     if (perspectives === undefined) {
       perspectives = await this.base.getUserPerspectives(perspectiveId);
-      this.userPerspectives.set(perspectiveId, perspectives);
+      this.userPerspectives.set(perspectiveId, perspectives as string[]);
     }
-    return perspectives;
+    return perspectives ? perspectives : [];
   }
 
   async refresh(): Promise<void> {}

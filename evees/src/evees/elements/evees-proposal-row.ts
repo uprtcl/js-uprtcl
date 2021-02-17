@@ -8,7 +8,6 @@ import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
-import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 import { Proposal } from '../proposals/types';
 

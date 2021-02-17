@@ -103,7 +103,9 @@ export class EveesInfoPage extends EveesInfoBase {
     return html`
       <div class="perspectives-permissions">
         ${!this.loading
-          ? this.remote.accessControl.lense().render({ uref: this.uref, parentId: this.parentId })
+          ? this.remote.accessControl.lense
+            ? this.remote.accessControl.lense().render({ uref: this.uref, parentId: this.parentId })
+            : ''
           : ''}
       </div>
     `;

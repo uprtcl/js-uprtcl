@@ -2,7 +2,6 @@ import { LitElement, property, html, css, query } from 'lit-element';
 import { servicesConnect } from 'src/container/multi-connect.mixin';
 
 import { Logger } from '../../utils/logger';
-import { ClientOnMemory } from '../clients/client.memory';
 
 import { EveesDiff } from './evees-diff';
 
