@@ -1,11 +1,7 @@
+import { Client, Evees, Logger, servicesConnect } from '@uprtcl/evees';
 import { LitElement, property, html, css } from 'lit-element';
-import { gql, ApolloClient } from 'apollo-boost';
-
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Entity } from '@uprtcl/cortex';
 
 import { Wiki } from '../types';
-import { EveesWorkspace } from '@uprtcl/evees';
 
 const LOGINFO = true;
 
@@ -14,23 +10,27 @@ interface PageDetails {
   title: string;
 }
 
-export class WikiDiff extends moduleConnect(LitElement) {
+export class WikiDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
-  @property({ attribute: false })
-  workspace!: EveesWorkspace;
+  @property({ type: Boolean })
+  summary = false;
 
   @property({ attribute: false })
-  newData!: Entity<Wiki>;
+  localEvees!: Evees;
 
   @property({ attribute: false })
-  oldData!: Entity<Wiki>;
+  newData!: Wiki;
 
   @property({ attribute: false })
-  loading: boolean = true;
+  oldData!: Wiki;
+
+  @property({ attribute: false })
+  loading = true;
 
   newPages!: string[];
   deletedPages!: string[];
+  oldTitle = '';
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', {
@@ -44,12 +44,15 @@ export class WikiDiff extends moduleConnect(LitElement) {
   async loadChanges() {
     this.loading = true;
 
-    this.newPages = this.newData.object.pages.filter(
-      (page) => !this.oldData.object.pages.includes(page)
+    const oldPages = this.oldData ? this.oldData.pages : [];
+    this.oldTitle = this.oldData ? this.oldData.title : '';
+
+    this.newPages = this.newData.pages.filter((page) =>
+      this.oldData ? !oldPages.includes(page) : true
     );
-    this.deletedPages = this.oldData.object.pages.filter(
-      (page) => !this.newData.object.pages.includes(page)
-    );
+    this.deletedPages = this.oldData
+      ? oldPages.filter((page) => !this.newData.pages.includes(page))
+      : [];
 
     this.loading = false;
   }
@@ -58,9 +61,9 @@ export class WikiDiff extends moduleConnect(LitElement) {
     return html`
       <div class=${['page-row'].concat(classes).join(' ')}>
         <documents-editor
-          .client=${this.workspace.workspace}
+          .client=${this.localEvees.client}
           uref=${page}
-          editable="false"
+          read-only
         ></documents-editor>
       </div>
     `;
@@ -76,39 +79,47 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
-    const titleChanged =
-      this.newData.object.title !== this.oldData.object.title;
+    const titleChanged = this.newData.title !== this.oldTitle;
 
     const newPages = this.newPages !== undefined ? this.newPages : [];
-    const deletedPages =
-      this.deletedPages !== undefined ? this.deletedPages : [];
+    const deletedPages = this.deletedPages !== undefined ? this.deletedPages : [];
+
+    if (this.summary) {
+      return html`
+        ${titleChanged ? html` <span class="">Title changed, </span> ` : ''}
+        ${newPages.length ? html` <span>${newPages.length} new pages added,</span> ` : ''}
+        ${deletedPages.length ? html` <span>${deletedPages.length} pages deleted.</span> ` : ''}
+      `;
+    }
 
     return html`
       ${titleChanged
-        ? html`<div class="pages-list">
-            <div class="page-list-title">New Title</div>
-            ${this.renderTitleChange(this.newData.object.title, ['page-added'])}
-            ${this.renderTitleChange(this.oldData.object.title, [
-              'page-removed',
-            ])}
-          </div>`
+        ? html`
+            <div class="pages-list">
+              <div class="page-list-title">New Title</div>
+              ${this.renderTitleChange(this.newData.title, ['green-background'])}
+              ${this.renderTitleChange(this.oldTitle, ['red-background'])}
+            </div>
+          `
         : ''}
       ${newPages.length > 0
-        ? html` <div class="pages-list">
-            <div class="page-list-title">Pages Added</div>
-            ${newPages.map((page) => this.renderPage(page, ['page-added']))}
-          </div>`
+        ? html`
+            <div class="pages-list">
+              <div class="page-list-title">Pages Added</div>
+              ${newPages.map((page) => this.renderPage(page, ['green-background']))}
+            </div>
+          `
         : ''}
       ${deletedPages.length > 0
-        ? html` <div class="pages-list">
-            <div class="page-list-title">Pages Removed</div>
-            ${deletedPages.map((page) =>
-              this.renderPage(page, ['page-removed'])
-            )}
-          </div>`
+        ? html`
+            <div class="pages-list">
+              <div class="page-list-title">Pages Removed</div>
+              ${deletedPages.map((page) => this.renderPage(page, ['red-background']))}
+            </div>
+          `
         : ''}
     `;
   }
@@ -128,10 +139,10 @@ export class WikiDiff extends moduleConnect(LitElement) {
         border-radius: 3px;
         margin-bottom: 16px;
       }
-      .page-added {
+      .green-background {
         background-color: #abdaab;
       }
-      .page-removed {
+      .red-background {
         background-color: #dab6ab;
       }
     `;

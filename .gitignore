@@ -9,3 +9,8 @@ dist
 compiled
 .awcache
 .rpt2_cache
+lerna.json
+
+# cache
+.eslintcache
+

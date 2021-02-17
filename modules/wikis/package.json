@@ -1,9 +1,10 @@
 {
   "name": "@uprtcl/wikis",
-  "version": "0.0.7-alpha.41",
+  "version": "0.2.0",
   "description": "Cortex module implementing texts and folders",
   "homepage": "https://uprtcl.io",
   "scripts": {
+    "update-uprtcl": "ncu -u \"/^@uprtcl.*$/\"",
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.ts",
     "build": "npm run clean && rollup -c rollup.config.ts",
@@ -11,40 +12,18 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@authentic/mwc-card": "^0.9.0",
-    "@material/mwc-button": "^0.14.1",
-    "@material/mwc-checkbox": "^0.14.1",
-    "@material/mwc-drawer": "^0.14.1",
-    "@material/mwc-fab": "^0.14.1",
-    "@material/mwc-list": "^0.14.1",
-    "@material/mwc-radio": "^0.14.1",
-    "@material/mwc-ripple": "^0.14.1",
-    "@material/mwc-switch": "^0.14.1",
-    "@material/mwc-textfield": "^0.14.1",
-    "@material/mwc-top-app-bar": "^0.14.1",
-    "@uprtcl/cortex": "^0.0.7-alpha.41",
-    "@uprtcl/documents": "^0.0.7-alpha.41",
-    "@uprtcl/evees": "^0.0.7-alpha.41",
-    "@uprtcl/graphql": "^0.0.7-alpha.41",
-    "@uprtcl/holochain-provider": "^0.0.7-alpha.41",
-    "@uprtcl/http-provider": "^0.0.7-alpha.41",
-    "@uprtcl/ipfs-provider": "^0.0.7-alpha.41",
-    "@uprtcl/lenses": "^0.0.7-alpha.41",
-    "@uprtcl/micro-orchestrator": "^0.0.7-alpha.41",
-    "@uprtcl/multiplatform": "^0.0.7-alpha.41",
-    "apollo-boost": "^0.4.7",
-    "graphql-tag": "^2.10.1",
-    "inversify": "^5.0.1",
+    "@uprtcl/common-ui": "^0.2.0",
+    "@uprtcl/documents": "^0.2.0",
+    "@uprtcl/evees": "^0.2.0",
     "lit-element": "^2.3.0",
-    "redux": "^4.0.4",
-    "reflect-metadata": "^0.1.13"
+    "npm-check-updates": "^10.2.1",
+    "redux": "^4.0.4"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
     "@open-wc/testing-karma": "^3.0.0",
     "@rollup/plugin-json": "^4.0.1",
     "@types/node": "^10.11.0",
-    "graphql": "^14.6.0",
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^4.4.1",
     "karma-webpack": "^4.0.2",
@@ -69,7 +48,7 @@
       "url": "https://github.com/pepoospina"
     }
   ],
-  "license": "MIT",
+  "license": "BOOS-FL",
   "main": "dist/uprtcl-wikis.umd.js",
   "module": "dist/uprtcl-wikis.es5.js",
   "typings": "dist/types/uprtcl-wikis.d.ts",
@@ -81,5 +60,5 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "gitHead": "b5d916b6aa57b009dd84f237f9d47192d9e4eef3"
+  "gitHead": "3414d6cc2d56ad396d8d26ca57aa57e970a156c7"
 }

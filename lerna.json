@@ -1,9 +1,11 @@
 {
   "packages": [
-    "demos/*",
-    "modules/*",
-    "packages/*",
-    "providers/*"
+    "connections/http",
+    "connections/ethereum",
+    "evees",
+    "modules/common-ui",
+    "modules/documents",
+    "remotes/http"
   ],
-  "version": "0.0.7-alpha.41"
+  "version": "independent"
 }

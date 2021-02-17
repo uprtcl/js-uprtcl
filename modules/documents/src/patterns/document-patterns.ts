@@ -1,7 +1,6 @@
 import { TemplateResult } from 'lit-element';
 
 import { DocNodeEventsHandlers, DocNode, TextNode } from '../types';
-import { Entity } from '@uprtcl/cortex';
 
 export interface DocNodeLens {
   name: string;
@@ -10,5 +9,5 @@ export interface DocNodeLens {
 }
 
 export interface HasDocNodeLenses {
-  docNodeLenses: (node?: Entity<TextNode>) => DocNodeLens[];
+  docNodeLenses: (node?: TextNode) => DocNodeLens[];
 }

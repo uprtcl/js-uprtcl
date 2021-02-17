@@ -1,4 +1,4 @@
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { css, html, LitElement, property } from 'lit-element';
 import { toggleMark } from 'prosemirror-commands';
 import { DOMParser, DOMSerializer } from 'prosemirror-model';
@@ -23,7 +23,7 @@ const LOGINFO = false;
 enum ActiveSubMenu {
   LINK = 'link',
   IMAGE = 'image',
-  VIDEO = 'video'
+  VIDEO = 'video',
 }
 
 export class DocumentTextNodeEditor extends LitElement {
@@ -39,37 +39,43 @@ export class DocumentTextNodeEditor extends LitElement {
   toAppend!: string;
 
   @property({ type: String })
-  editable: string = 'true';
+  editable = 'true';
 
   @property({ type: String, attribute: 'toggle-action' })
-  toggleAction: string = 'true';
+  toggleAction = 'true';
 
   @property({ type: Object })
   action: any = {};
 
   @property({ type: String, attribute: 'focus-init' })
-  focusInit: string = 'false';
+  focusInit = 'false';
+
+  @property({ type: Array })
+  canConvertTo: string[] = [];
 
   @property({ type: Number })
-  level: number = 0;
+  level = 0;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   selected: Boolean = false;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   empty: Boolean = false;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   showMenu: Boolean = false;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   showUrlMenu: Boolean = false;
 
-  @property({ type: Boolean, attribute: false })
+  @property({ attribute: false })
   showDimMenu: Boolean = false;
 
-  @property({ type: ActiveSubMenu, attribute: false })
+  @property({ attribute: false })
   activeSubMenu!: ActiveSubMenu | null;
+
+  @property({ attribute: false })
+  editorId!: string;
 
   editor: any = {};
   preventHide: Boolean = false;
@@ -77,13 +83,21 @@ export class DocumentTextNodeEditor extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-
-    this.addEventListener('blur', () => {
-      setTimeout(() => {
-        this.selected = false;
-      }, 200);
-    });
+    this.editorId = `document-editor-${Math.floor(Math.random() * 1000000)}`;
+    document.addEventListener('click', this.handleEditorClick);
   }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('click', this.handleEditorClick);
+  }
+
+  handleEditorClick = (event) => {
+    const ix = event.composedPath().findIndex((el: any) => el.id === this.editorId);
+    if (ix === -1) {
+      this.dispatchEvent(new CustomEvent('clicked-outside'));
+    }
+  };
 
   firstUpdated() {
     this.initEditor();
@@ -100,7 +114,6 @@ export class DocumentTextNodeEditor extends LitElement {
 
     if (changedProperties.has('focusInit')) {
       if (this.focusInit === 'true') {
-        this.setShowMenu(true);
         this.editor.view.focus();
       } else {
         this.setShowMenu(false);
@@ -137,16 +150,6 @@ export class DocumentTextNodeEditor extends LitElement {
         input.focus();
       }
     }
-
-    // if (changedProperties.has('selected')) {
-    //   if (!this.selected) {
-    //     if (!this.preventHide) {
-    //       this.setShowMenu(false);
-    //     }
-    //   } else {
-    //     this.setShowMenu(true);
-    //   }
-    // }
   }
 
   runAction(action: any) {
@@ -219,8 +222,8 @@ export class DocumentTextNodeEditor extends LitElement {
       new CustomEvent('enter-pressed', {
         detail: {
           content,
-          asChild
-        }
+          asChild,
+        },
       })
     );
   }
@@ -275,8 +278,8 @@ export class DocumentTextNodeEditor extends LitElement {
             bubbles: true,
             composed: true,
             detail: {
-              content
-            }
+              content,
+            },
           })
         );
       }
@@ -358,8 +361,8 @@ export class DocumentTextNodeEditor extends LitElement {
       this.editor.view.destroy();
       this.editor = {};
       if (LOGINFO)
-        this.logger.log(`initEditor() - Initializing editor`, {
-          init: this.init
+        this.logger.log('initEditor() - Initializing editor', {
+          init: this.init,
         });
     }
 
@@ -378,7 +381,7 @@ export class DocumentTextNodeEditor extends LitElement {
     const state = EditorState.create({
       schema: schema,
       doc: doc,
-      plugins: []
+      plugins: [],
     });
 
     if (this.shadowRoot == null) return;
@@ -387,33 +390,43 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.view = new EditorView(container as Node, {
       state: state,
       editable: () => this.isEditable(),
-      dispatchTransaction: transaction => this.dispatchTransaction(transaction),
+      dispatchTransaction: (transaction) => this.dispatchTransaction(transaction),
       handleDOMEvents: {
         focus: () =>
           this.dispatchEvent(
             new CustomEvent('focus-changed', {
               bubbles: true,
               composed: true,
-              detail: { value: true }
+              detail: { value: true },
             })
           ),
-        blur: () =>
+        blur: () => {
           this.dispatchEvent(
             new CustomEvent('focus-changed', {
               bubbles: true,
               composed: true,
-              detail: { value: false }
+              detail: { value: false },
             })
-          ),
+          );
+          return true;
+        },
         keydown: (view, event) => {
           this.keydown(view, event);
           return true;
-        }
+        },
+        dblclick: (view, event) => {
+          this.setShowMenu(true);
+          return true;
+        },
+        drop: (view, event) => {
+          event.preventDefault();
+          return false;
+        },
       },
       nodeViews: {
         code_block: (node, view, getPos) =>
-          new CodeBlockView(node, view, getPos, () => this.enterPressedEvent('', false))
-      }
+          new CodeBlockView(node, view, getPos, () => this.enterPressedEvent('', false)),
+      },
     });
 
     if (this.focusInit === 'true') {
@@ -447,6 +460,7 @@ export class DocumentTextNodeEditor extends LitElement {
   dispatchTransaction(transaction: any) {
     if (!transaction.curSelection.empty) {
       this.selected = true;
+      this.setShowMenu(true);
     } else {
       this.selected = false;
     }
@@ -462,7 +476,7 @@ export class DocumentTextNodeEditor extends LitElement {
         selected: this.selected,
         newState,
         contentChanged,
-        transaction
+        transaction,
       });
 
     if (!contentChanged) return;
@@ -472,9 +486,9 @@ export class DocumentTextNodeEditor extends LitElement {
     const newContent = this.state2Html(newState);
 
     if (LOGINFO)
-      this.logger.log(`dispatchTransaction() - content-changed`, {
+      this.logger.log('dispatchTransaction() - content-changed', {
         content,
-        newContent
+        newContent,
       });
 
     /** local copy of the html (withot the external tag) represeting the current state */
@@ -483,8 +497,8 @@ export class DocumentTextNodeEditor extends LitElement {
     this.dispatchEvent(
       new CustomEvent('content-changed', {
         detail: {
-          content: newContent
-        }
+          content: newContent,
+        },
       })
     );
   }
@@ -504,7 +518,7 @@ export class DocumentTextNodeEditor extends LitElement {
   changeType(type: TextType, lift: boolean) {
     this.dispatchEvent(
       new CustomEvent('change-type', {
-        detail: { type, lift }
+        detail: { type, lift },
       })
     );
   }
@@ -545,7 +559,7 @@ export class DocumentTextNodeEditor extends LitElement {
       if (!menu) return;
 
       /** listen events */
-      menu.addEventListener('keydown', event => {
+      menu.addEventListener('keydown', (event) => {
         if (event.keyCode === 27) {
           // 27 is esc
           event.stopPropagation();
@@ -624,8 +638,12 @@ export class DocumentTextNodeEditor extends LitElement {
 
     return {
       link: (this.shadowRoot.getElementById('URL_INPUT') as HTMLInputElement).value,
-      width: this.shadowRoot.getElementById('DIM_WIDTH') ? (this.shadowRoot.getElementById('DIM_WIDTH') as HTMLInputElement).value : '',
-      height: this.shadowRoot.getElementById('DIM_HEIGHT') ? (this.shadowRoot.getElementById('DIM_HEIGHT') as HTMLInputElement).value : ''
+      width: this.shadowRoot.getElementById('DIM_WIDTH')
+        ? (this.shadowRoot.getElementById('DIM_WIDTH') as HTMLInputElement).value
+        : '',
+      height: this.shadowRoot.getElementById('DIM_HEIGHT')
+        ? (this.shadowRoot.getElementById('DIM_HEIGHT') as HTMLInputElement).value
+        : '',
     };
   }
 
@@ -645,7 +663,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
   alignNodeToCenter() {
     setBlockType(this.editor.view.state.schema.nodes.paragraph, {
-      style: 'text-align:center'
+      style: 'text-align:center',
     })(this.editor.view.state, this.editor.view.dispatch);
   }
 
@@ -658,7 +676,7 @@ export class DocumentTextNodeEditor extends LitElement {
         src: link,
         style: `${width !== '' ? `width:${width}px` : ''};${
           height !== '' ? `height:${height}px` : ''
-          };max-width: 100%;margin: 0 auto;border-radius: 5px;`
+        };max-width: 100%;margin: 0 auto;border-radius: 5px;`,
       });
       this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(imgNode, false));
       this.alignNodeToCenter();
@@ -669,7 +687,7 @@ export class DocumentTextNodeEditor extends LitElement {
   parseYoutubeURL(url: string) {
     const getParameterByName = (name, url) => {
       name = name.replace(/[\[\]]/g, '\\$&');
-      var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
         results = regex.exec(url);
       if (!results) return null;
       if (!results[2]) return '';
@@ -704,7 +722,7 @@ export class DocumentTextNodeEditor extends LitElement {
         src: this.parseYoutubeURL(link),
         style: `width:${
           width !== '' ? width + 'px' : '100%'
-          };height:52vw;border:0px;max-width:100%;max-height:470px;`
+        };height:52vw;border:0px;max-width:100%;max-height:470px;`,
       });
 
       this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(iframeNode, false));
@@ -716,6 +734,20 @@ export class DocumentTextNodeEditor extends LitElement {
     this.preventHide = false;
     toggleMark(markType)(this.editor.view.state, this.editor.view.dispatch);
     this.resetSubMenu();
+  }
+
+  convertTo(type: string, event: Event) {
+    event.stopImmediatePropagation();
+    this.setShowMenu(false);
+    this.dispatchEvent(
+      new CustomEvent('convert-to', {
+        detail: {
+          type,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   editorFocused() {
@@ -748,19 +780,15 @@ export class DocumentTextNodeEditor extends LitElement {
           <input
             @keydown=${this.urlKeydown}
             placeholder="${this.activeSubMenu !== ActiveSubMenu.LINK
-        ? this.activeSubMenu + ' '
-        : ''}url"
+              ? this.activeSubMenu + ' '
+              : ''}url"
             id="URL_INPUT"
           />
           ${this.showDimMenu ? this.renderDimensionsMenu() : ''}
         </div>
         <div class="inp-actions">
-          <button @click=${this.subMenuCancel} class="btn btn-small">
-            ${icons.cross}
-          </button>
-          <button @click=${this.subMenuConfirm} class="btn btn-small">
-            ${icons.check}
-          </button>
+          <button @click=${this.subMenuCancel} class="btn btn-small">${icons.cross}</button>
+          <button @click=${this.subMenuConfirm} class="btn btn-small">${icons.check}</button>
         </div>
       </div>
     `;
@@ -785,12 +813,12 @@ export class DocumentTextNodeEditor extends LitElement {
     return this.level > 1
       ? html`
           ${this.level > 2
-          ? html`
+            ? html`
                 <button class="btn btn-text" @click=${() => this.reduceHeading()}>
                   <span>h${this.level - 1}</span>
                 </button>
               `
-          : ''}
+            : ''}
           <button class="btn btn-text" @click=${this.toParagraph}>
             <span>text</span>
           </button>
@@ -855,6 +883,18 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.view.dispatch(this.editor.view.state.tr.setBlockType(0, end, newType));
   }
 
+  renderConvertMenu() {
+    return html`<uprtcl-popper position="bottom-left">
+      <button slot="icon" class="btn">TextNode</button>
+      <uprtcl-list>
+        ${this.canConvertTo.map(
+          (to) =>
+            html`<uprtcl-list-item @click=${(e) => this.convertTo(to, e)}>${to}</uprtcl-list-item>`
+        )}
+      </uprtcl-list>
+    </uprtcl-popper>`;
+  }
+
   renderMenu() {
     const embedSubMenu = html`
       <button
@@ -872,16 +912,16 @@ export class DocumentTextNodeEditor extends LitElement {
       </button>
     `;
     const codeSubMenu = html`
-      <button class="btn btn-square btn-small" @click=${this.toggleCode}>
-        ${icons.code}
-      </button>
+      <button class="btn btn-square btn-small" @click=${this.toggleCode}>${icons.code}</button>
     `;
+
     const type = this.getBlockType();
     return html`
       <div class="top-menu" id="TOP_MENU">
         <!-- icons from https://material.io/resources/icons/?icon=format_bold&style=round  -->
 
         <div class="menus">
+          ${this.renderConvertMenu()}
           <!-- current level -->
           <button class="btn-text btn-current">
             <span>${type}</span>
@@ -908,8 +948,10 @@ export class DocumentTextNodeEditor extends LitElement {
   render() {
     if (LOGINFO) this.logger.log('render()', { this: this });
     return html`
-      ${this.showMenu ? this.renderMenu() : ''}
-      <div id="editor-content" class="editor-content"></div>
+      <div id=${this.editorId}>
+        ${this.showMenu ? this.renderMenu() : ''}
+        <div id="editor-content" class="editor-content"></div>
+      </div>
     `;
   }
 
@@ -944,7 +986,6 @@ export class DocumentTextNodeEditor extends LitElement {
           background-color: #28282a60;
           display: flex;
           flex-direction: column;
-          overflow: hidden;
           max-width: calc(100vw - 50px);
         }
 
@@ -1073,7 +1114,7 @@ export class DocumentTextNodeEditor extends LitElement {
             max-height: 300px;
           }
         }
-      `
+      `,
     ];
   }
 }

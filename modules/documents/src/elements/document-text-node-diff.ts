@@ -1,24 +1,25 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Entity } from '@uprtcl/cortex';
+import { Client, Logger, servicesConnect } from '@uprtcl/evees';
 
 import { TextNode } from '../types';
-import { EveesWorkspace } from '@uprtcl/evees';
 
 const LOGINFO = true;
 
-export class TextNodeDiff extends moduleConnect(LitElement) {
+export class TextNodeDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
-  @property({ attribute: false })
-  workspace!: EveesWorkspace;
+  @property({ type: Boolean })
+  summary = false;
 
   @property({ attribute: false })
-  newData!: Entity<TextNode>;
+  client!: Client;
 
   @property({ attribute: false })
-  oldData!: Entity<TextNode>;
+  newData!: TextNode;
+
+  @property({ attribute: false })
+  oldData!: TextNode;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', {
@@ -29,24 +30,16 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.newData === undefined || this.oldData === undefined) {
-      return html` <cortex-loading-placeholder></cortex-loading-placeholder> `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
     return html`
-      <div class="page-edited-title">Page Updated</div>
+      <div class="page-edited-title">Updated</div>
       <div class="document-container old-page">
-        <documents-editor
-          .client=${this.workspace.workspace}
-          uref=${this.oldData.id}
-          editable="false"
-        ></documents-editor>
+        <documents-editor .client=${this.client} uref="" read-only></documents-editor>
       </div>
       <div class="document-container new-page">
-        <documents-editor
-          .client=${this.workspace.workspace}
-          uref=${this.newData.id}
-          editable="false"
-        ></documents-editor>
+        <documents-editor .client=${this.client} uref="" read-only></documents-editor>
       </div>
     `;
   }
