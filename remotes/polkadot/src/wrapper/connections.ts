@@ -1,21 +1,25 @@
 import { ChainConnectionDetails } from '@uprtcl/evees-blockchain';
 
 export const POLKADOT_CONNECTION_NAME = 'POLKADOT-CONNECTION-NAME';
+export const KUSAMA_PARITY_CONNECTION = 'kusama-parity';
+export const KUSAMA_WEB3_CONNECTION = 'kusama-web3';
+export const KUSAMA_LOCAL_DEV = 'local-dev';
+export const KUSAMA_CUSTOM = 'custom';
 
 const chainConnectionDetails: ChainConnectionDetails = {
-  'kusama-parity': {
+  [KUSAMA_PARITY_CONNECTION]: {
     name: 'Kusama',
     image: '',
     hostName: 'Parity',
     endpoint: 'wss://kusama-rpc.polkadot.io',
   },
-  'kusama-web3': {
+  [KUSAMA_WEB3_CONNECTION]: {
     name: 'Kusama',
     image: '',
     hostName: 'Web3 Foundation',
     endpoint: 'wss://cc3-5.kusama.network',
   },
-  'local-dev': {
+  [KUSAMA_LOCAL_DEV]: {
     name: 'Local',
     image: '',
     hostName: 'Local',
@@ -31,9 +35,9 @@ export function getConnectionDetails() {
   let connectionId = localStorage.getItem(POLKADOT_CONNECTION_NAME);
 
   if (connectionId) {
-    if (connectionId === 'CUSTOM') {
+    if (connectionId === KUSAMA_CUSTOM) {
       const customEndpoint = localStorage.getItem('POLKADOT-CONNECTION-ENDPOINT');
-      chainConnectionDetails['CUSTOM'] = {
+      chainConnectionDetails[KUSAMA_CUSTOM] = {
         name: 'Custom',
         image: '',
         hostName: '-',
@@ -41,7 +45,7 @@ export function getConnectionDetails() {
       };
     }
   } else {
-    connectionId = 'local-host';
+    connectionId = KUSAMA_LOCAL_DEV;
     setConnectionId(connectionId);
   }
   return {
