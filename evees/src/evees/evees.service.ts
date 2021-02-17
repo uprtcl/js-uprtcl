@@ -12,7 +12,6 @@ import {
   NewPerspective,
   Update,
   ForkDetails,
-  PerspectiveDetails,
 } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
 import { HasChildren } from '../patterns/behaviours/has-links';
@@ -57,7 +56,7 @@ export class Evees {
   }
 
   findRemote<T extends RemoteEvees>(query: string): T {
-    const remote = this.remotes.find((r) => r.id.startsWith(query));
+    const remote = this.remotes.find((r) => r.id.includes(query));
     if (!remote) throw new Error(`remote starting with ${query} not found`);
     return remote as T;
   }

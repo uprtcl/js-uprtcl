@@ -55,8 +55,7 @@ export const getHome = async (
   remote: RemoteEvees,
   userId?: string
 ): Promise<Secured<Perspective>> => {
-  const creatorId = userId === undefined ? remote.userId : userId;
-  if (!creatorId) throw new Error('creator cannot be undefined');
+  const creatorId = userId === undefined ? (remote.userId ? remote.userId : '') : userId;
 
   const remoteHome: Perspective = {
     remote: remote.id,
