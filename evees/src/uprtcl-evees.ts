@@ -108,3 +108,5 @@ export { AppElement, AppElements } from './creator-helpers/app.elements';
 export { EveesDraftsLocal } from './evees/clients/drafts.temp/evees.drafts.local';
 export { ClientOnMemory } from './evees/clients/memory/client.memory';
 export { RemoteEveesLocal } from './evees/clients/local/remote.local';
+export { CASOnMemory } from './cas/stores/cas.memory';
+export { CASLocal } from './cas/stores/cas.local';
