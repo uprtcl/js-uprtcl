@@ -1,8 +1,7 @@
 'use strict';
 import { IdentitySource } from '@uprtcl/orbitdb-provider';
 import CBOR from 'cbor-js';
-import IPFSAccessController from 'ipfs-access-controller';
-import { ProposalManifest } from '../provider/proposals.orbit-db';
+import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
 import { checkToPerspectiveCreator } from './validate.mapped.address';
 
 const type = 'proposals';

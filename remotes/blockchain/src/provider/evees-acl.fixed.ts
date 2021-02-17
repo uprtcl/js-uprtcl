@@ -1,13 +1,19 @@
 import { html } from 'lit-element';
 
-import { AccessControlService, Perspective } from '@uprtcl/evees';
+import { AccessControl, CASStore, Lens, Perspective, Signed } from '@uprtcl/evees';
 
-export class EveesAccessControlFixed implements AccessControlService {
-  constructor(protected store: CASStore) {}
+export class EveesAccessControlFixedOwner implements AccessControl {
+  store!: CASStore;
+
+  constructor() {}
+
+  setStore(store: CASStore) {
+    this.store = store;
+  }
 
   async getOwner(perspectiveId: string) {
-    const perspective = (await this.store.get(perspectiveId)) as Signed<Perspective>;
-    return perspective.payload.creatorId;
+    const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
+    return perspective.object.payload.creatorId;
   }
 
   async canUpdate(uref: string, userId: string) {

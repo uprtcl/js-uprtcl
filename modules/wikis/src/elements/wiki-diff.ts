@@ -1,4 +1,4 @@
-import { Client, Logger, servicesConnect } from '@uprtcl/evees';
+import { Client, Evees, Logger, servicesConnect } from '@uprtcl/evees';
 import { LitElement, property, html, css } from 'lit-element';
 
 import { Wiki } from '../types';
@@ -17,7 +17,7 @@ export class WikiDiff extends servicesConnect(LitElement) {
   summary = false;
 
   @property({ attribute: false })
-  client!: Client;
+  localEvees!: Evees;
 
   @property({ attribute: false })
   newData!: Wiki;
@@ -60,7 +60,11 @@ export class WikiDiff extends servicesConnect(LitElement) {
   renderPage(page: string, classes: string[]) {
     return html`
       <div class=${['page-row'].concat(classes).join(' ')}>
-        <documents-editor .client=${this.client} uref=${page} read-only></documents-editor>
+        <documents-editor
+          .client=${this.localEvees.client}
+          uref=${page}
+          read-only
+        ></documents-editor>
       </div>
     `;
   }

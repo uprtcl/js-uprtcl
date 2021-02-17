@@ -1,7 +1,6 @@
 import { html } from 'lit-element';
 
 import {
-  RecursiveContextMergeStrategy,
   mergeResult,
   HasDiffLenses,
   HasLenses,
@@ -143,11 +142,11 @@ export class TextNodeTitle implements HasTitle, HasDiffLenses {
       {
         name: 'documents:document-diff',
         type: 'diff',
-        render: (client: Client, newEntity: TextNode, oldEntity: TextNode, summary: boolean) => {
+        render: (evees: Evees, newEntity: TextNode, oldEntity: TextNode, summary: boolean) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <documents-text-node-diff
-              .client=${client}
+              .evees=${evees}
               .newData=${newEntity}
               .oldData=${oldEntity}
               ?summary=${summary}

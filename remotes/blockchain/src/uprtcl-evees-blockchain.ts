@@ -1,6 +1,5 @@
-export { EveesAccessControlFixed } from './provider/evees-acl.fixed';
-export { EveesBlockchainModule } from './evees-blockchain.module';
+export { EveesAccessControlFixedOwner } from './provider/evees-acl.fixed';
+export { registerComponents } from './register.components';
 export { BlockchainConnection } from './provider/evees.blockchain.connection';
-export { EveesBlockchainCached } from './provider/evees.blockchain.cached';
-export { EveesOrbitDBDebugger } from './elements/orbitdb-set.debugger';
+export { EveesBlockchain } from './provider/evees.blockchain';
 export { ChainConnectionDetails, ConnectionDetails } from './types';

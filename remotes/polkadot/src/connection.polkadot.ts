@@ -8,6 +8,7 @@ import { IdentityInfo, Registration } from '@polkadot/types/interfaces';
 // import { ExtensionStore } from '@polkadot/ui-keyring/stores';
 
 import { ChainConnectionDetails, ConnectionDetails } from '@uprtcl/evees-blockchain';
+import { Connection, ConnectionOptions, Logger } from '@uprtcl/evees';
 
 const getIdentityInfo = (identity: Option<Registration>) => {
   if (identity && identity.isSome) {

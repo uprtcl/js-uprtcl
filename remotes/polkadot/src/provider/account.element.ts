@@ -2,11 +2,12 @@ import { LitElement, html, css, property, internalProperty } from 'lit-element';
 import { unsafeSVG } from 'lit-html/directives/unsafe-svg';
 import { polkadotIcon } from '@polkadot/ui-shared';
 
-import { EveesBlockchainCached } from '@uprtcl/evees-blockchain';
+import { EveesBlockchain } from '@uprtcl/evees-blockchain';
 
 import { PolkadotConnection } from '../connection.polkadot';
+import { Logger, servicesConnect } from '@uprtcl/evees';
 
-export class PolkadotAccountElement extends moduleConnect(LitElement) {
+export class PolkadotAccountElement extends servicesConnect(LitElement) {
   logger = new Logger('POLKADOT-ACCOUNT-ELEMENT');
 
   @property({ type: String })
@@ -28,8 +29,7 @@ export class PolkadotAccountElement extends moduleConnect(LitElement) {
   identity!: any;
 
   async firstUpdated() {
-    const remotes = this.requestAll(EveesModule.bindings.RemoteEvees) as RemoteEvees[];
-    const polkadotRemote = remotes.find((r) => r.id.includes('polkadot')) as EveesBlockchainCached;
+    const polkadotRemote = this.evees.findRemote<EveesBlockchain>('polkadot');
 
     this.connection = polkadotRemote.connection.connection;
 

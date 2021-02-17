@@ -6,6 +6,7 @@ import { Entity } from '../../cas/interfaces/entity';
 
 import { Client } from './client';
 import { RemoteEvees } from './remote.evees';
+import { Evees } from '../evees.service';
 
 /** Core perspective format. A perspective is like a URL, it includes the coordinates to reach a current head.
  * The hash of the perspective is the perspective id. */
@@ -148,7 +149,7 @@ export interface ParentAndChild {
 
 export interface DiffLens {
   name: string;
-  render: (client: Client, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;
+  render: (evees: Evees, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;
   type?: string;
 }
 

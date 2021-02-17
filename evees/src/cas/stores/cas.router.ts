@@ -1,15 +1,19 @@
 import { Logger } from '../../utils/logger';
 import { CASRemote } from '../interfaces/cas-remote';
 import { CASStore, EntityGetResult } from '../interfaces/cas-store';
-import { Entity, ObjectOnRemote } from '../interfaces/entity';
+import { Entity, ObjectOn } from '../interfaces/entity';
 
 export class CASRouter implements CASStore {
   protected logger = new Logger('CASRouter');
 
-  constructor(
-    protected sources: Map<string, CASRemote>,
-    protected remoteToSourcesMap: Map<string, string>
-  ) {}
+  storesMap: Map<string, CASRemote>;
+
+  constructor(stores: CASRemote[], protected remoteToSourcesMap: Map<string, string>) {
+    this.storesMap = new Map();
+    stores.forEach((store) => {
+      this.storesMap.set(store.casID, store);
+    });
+  }
 
   cacheEntities(entities: Entity<any>[]): Promise<void> {
     throw new Error('Method not implemented.');
@@ -31,22 +35,22 @@ export class CASRouter implements CASStore {
     return entities[0];
   }
 
-  async storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
-    const objectsPerSource = new Map<string, object[]>();
+  async storeEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
+    const objectsPerStore = new Map<string, object[]>();
 
-    objects.forEach((objectOnRemote) => {
-      const remote = objectOnRemote.remote;
-      let current = objectsPerSource.get(remote);
+    objects.forEach((objectOn) => {
+      const casID = this.getObjectCasID(objectOn);
+      let current = objectsPerStore.get(casID);
       if (!current) {
         current = [];
       }
-      current.push(objectOnRemote.object);
-      objectsPerSource.set(remote, current);
+      current.push(objectOn.object);
+      objectsPerStore.set(casID, current);
     });
 
     const entitiesPerRemote = await Promise.all(
-      Array.from(objectsPerSource.entries()).map(async ([remote, objects]) => {
-        const store = this.getRemoteSource(remote);
+      Array.from(objectsPerStore.entries()).map(async ([casId, objects]) => {
+        const store = this.getStore(casId);
         return store.storeObjects(objects);
       })
     );
@@ -54,7 +58,7 @@ export class CASRouter implements CASStore {
     return Array.prototype.concat([], entitiesPerRemote);
   }
 
-  hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+  hashEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
     return Promise.all(
       objects.map(async (o) => {
         const hash = await this.hashEntity(o);
@@ -63,40 +67,54 @@ export class CASRouter implements CASStore {
     );
   }
 
-  async storeEntity(object: ObjectOnRemote): Promise<string> {
+  async storeEntity(object: ObjectOn): Promise<string> {
     const entities = await this.storeEntities([object]);
     return entities[0].id;
   }
 
-  hashEntity(object: ObjectOnRemote): Promise<string> {
+  hashEntity(object: ObjectOn): Promise<string> {
     return this.hashOnSource(object);
   }
 
-  getRemoteSource(remoteId: string) {
-    const casID = this.remoteToSourcesMap.get(remoteId);
-    if (!casID) throw new Error(`Not CASId registered for remote ${remoteId}`);
-    return this.getSource(casID);
+  getObjectCasID(objectOn: ObjectOn) {
+    let casID = objectOn.casID
+      ? objectOn.casID
+      : this.remoteToSourcesMap.get(objectOn.remote as string);
+    if (!casID) {
+      casID = Array.from(this.storesMap.values())[0].casID;
+    }
+    return casID;
   }
 
-  public async hashOnSource(object: ObjectOnRemote) {
-    const source = this.getRemoteSource(object.remote);
-    return source.hashEntity(object);
+  getObjectStore(object: ObjectOn): CASRemote {
+    return this.getStore(this.getObjectCasID(object));
+  }
+
+  getStore(casID: string): CASRemote {
+    const store = this.storesMap.get(casID);
+    if (!store) throw new Error('Store not found');
+    return store;
+  }
+
+  public async hashOnSource(object: ObjectOn) {
+    const store = this.getObjectStore(object);
+    return store.hashEntity(object);
   }
 
   public async ready(): Promise<void> {
-    await Promise.all(Array.from(this.sources.values()).map((source) => source.ready()));
+    await Promise.all(Array.from(this.storesMap.values()).map((source) => source.ready()));
   }
 
   public getAllCASIds(): string[] {
-    return Array.from(this.sources.keys());
+    return Array.from(this.storesMap.keys());
   }
 
   public getAllCASSources(): CASRemote[] {
-    return Array.from(this.sources.values());
+    return Array.from(this.storesMap.values());
   }
 
   public getSource(casID: string): CASRemote {
-    const source = this.sources.get(casID);
+    const source = this.storesMap.get(casID);
     if (!source) throw new Error(`Source not found for casID ${casID}`);
     return source;
   }
@@ -114,7 +132,7 @@ export class CASRouter implements CASStore {
     const allObjects: Map<string, Entity<any>> = new Map();
 
     return new Promise((resolve) => {
-      Array.from(this.sources.keys()).map(async (casID) => {
+      Array.from(this.storesMap.keys()).map(async (casID) => {
         try {
           const { entities } = await this.getFromSource(hashes, casID);
           requestedOn.push(casID);
@@ -132,7 +150,7 @@ export class CASRouter implements CASStore {
         }
 
         // resolve once all sources have been requested
-        if (requestedOn.length === this.sources.size) {
+        if (requestedOn.length === this.storesMap.size) {
           resolve(Array.from(allObjects.values()));
         }
       });

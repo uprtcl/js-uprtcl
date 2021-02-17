@@ -1,7 +1,6 @@
 'use strict';
-import IPFSAccessController from 'ipfs-access-controller';
+import IPFSAccessController from 'orbit-db-access-controllers/src/ipfs-access-controller';
 import { IdentitySource } from '@uprtcl/orbitdb-provider';
-import { checkToPerspectiveCreator } from './validate.mapped.address';
 
 const type = 'context';
 
@@ -26,7 +25,9 @@ export function getContextAcl(identitySources: IdentitySource[]) {
       try {
         return identityProvider.verifyIdentity(entry.identity);
 
-        /** This works fine for external accounts on the identityProvider, but for internal
+        /** We could add protection to let only a perspective creator add it to the set.
+         *
+         * This works fine for external accounts on the identityProvider, but for internal
          * accounts who can't sign, it does not work. It seems possible to use the signaling
          * contract to let contracts "sign/approve" entries, but this will require some time.
          */

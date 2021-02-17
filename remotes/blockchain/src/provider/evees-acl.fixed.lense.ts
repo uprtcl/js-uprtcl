@@ -1,10 +1,10 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { EveesModule, EveesHelpers, RemoteEvees, Perspective } from '@uprtcl/evees';
+import { Perspective, servicesConnect, Logger, Signed } from '@uprtcl/evees';
 
-import { EveesBlockchainCached } from './evees.blockchain.cached';
+import { EveesBlockchain } from './evees.blockchain';
 
-export class PermissionsFixedLense extends moduleConnect(LitElement) {
+export class PermissionsFixedLense extends servicesConnect(LitElement) {
   logger = new Logger('BLOCKCHAIN-PERMISSIONS-FIXED');
 
   @property({ type: String })
@@ -19,25 +19,15 @@ export class PermissionsFixedLense extends moduleConnect(LitElement) {
   @property({ attribute: false })
   canUpdate!: boolean;
 
-  client!: Client;
-  remote!: EveesBlockchainCached;
+  remote!: EveesBlockchain;
 
   async firstUpdated() {
-    this.client = this.request(ClientModule.bindings.Client);
     this.load();
   }
 
   async load() {
-    if (!this.isConnected) return;
-
     this.loading = true;
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.uref);
-    if (remoteId === undefined) throw new Error('remote not found');
-
-    if (!this.isConnected) return;
-    this.remote = (this.requestAll(EveesModule.bindings.RemoteEvees) as RemoteEvees[]).find(
-      (r) => r.id === remoteId
-    ) as EveesBlockchainCached;
+    this.remote = await this.evees.getPerspectiveRemote<EveesBlockchain>(this.uref);
     await this.remote.ready();
 
     this.owner = await this.getOwner(this.uref);
@@ -47,9 +37,9 @@ export class PermissionsFixedLense extends moduleConnect(LitElement) {
   }
 
   async getOwner(perspectiveId: string): Promise<string> {
-    const singedPerspective = (await loadEntity(this.client, perspectiveId)) as Entity<
-      Signed<Perspective>
-    >;
+    const singedPerspective = await this.evees.client.store.getEntity<Signed<Perspective>>(
+      perspectiveId
+    );
     return singedPerspective.object.payload.creatorId;
   }
 
@@ -66,7 +56,7 @@ export class PermissionsFixedLense extends moduleConnect(LitElement) {
           ? html` <uprtcl-loading></uprtcl-loading> `
           : html`
               <div class="row title">
-                <strong>${this.t('access-control:owner')}:</strong>
+                <strong>Owner:</strong>
                 ${this.renderOwner()} ${this.canUpdate ? html` <b>(you)</b> ` : ''}
               </div>
             `

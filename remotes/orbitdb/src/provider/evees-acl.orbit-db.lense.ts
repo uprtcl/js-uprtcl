@@ -1,8 +1,9 @@
+import { Client, Logger, Perspective, servicesConnect, Signed } from '@uprtcl/evees';
 import { LitElement, property, html, css } from 'lit-element';
 
 import { EveesOrbitDB } from './evees.orbit-db';
 
-export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
+export class PermissionsOrbitdDb extends servicesConnect(LitElement) {
   logger = new Logger('PermissionsOrbitdDb');
 
   @property({ type: String })
@@ -17,35 +18,25 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
   @property({ attribute: false })
   canUpdate!: boolean;
 
-  client!: Client;
   remote!: EveesOrbitDB;
 
   async firstUpdated() {
-    this.client = this.request(ClientModule.bindings.Client);
     this.load();
   }
 
   async load() {
     this.loading = true;
-    const remoteId = await EveesHelpers.getPerspectiveRemoteId(this.client, this.uref);
-    if (remoteId === undefined) throw new Error('remote not found');
-
-    if (!this.isConnected) return;
-    this.remote = (this.requestAll(EveesModule.bindings.RemoteEvees) as RemoteEvees[]).find(
-      (r) => r.id === remoteId
-    ) as EveesOrbitDB;
+    this.remote = this.evees.getPerspectiveRemote<EveesOrbitDB>('orbitdb');
     await this.remote.ready();
 
     this.owner = await this.getOwner(this.uref);
-    this.canUpdate = await EveesHelpers.canUpdate(this.client, this.uref);
-
     this.loading = false;
   }
 
   async getOwner(perspectiveId: string): Promise<string> {
-    const singedPerspective = (await loadEntity(this.client, perspectiveId)) as Entity<
-      Signed<Perspective>
-    >;
+    const singedPerspective = await this.evees.client.store.getEntity<Signed<Perspective>>(
+      perspectiveId
+    );
     return singedPerspective.object.payload.creatorId;
   }
 
@@ -62,7 +53,7 @@ export class PermissionsOrbitdDb extends moduleConnect(LitElement) {
           ? html` <uprtcl-loading></uprtcl-loading> `
           : html`
               <div class="row title">
-                <strong>${this.t('access-control:owner')}:</strong>
+                <strong>Owner:</strong>
                 ${this.renderOwner()} ${this.canUpdate ? html` <b>(you)</b> ` : ''}
               </div>
             `

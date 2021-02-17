@@ -1,8 +1,8 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
-import { EveesModule, RemoteEvees } from '@uprtcl/evees';
+import { RemoteEvees, servicesConnect } from '@uprtcl/evees';
 
-import { EveesBlockchainCached } from './evees.blockchain.cached';
+import { EveesBlockchain } from './evees.blockchain';
 import { MenuConfig } from '@uprtcl/common-ui';
 import { ChainConnectionDetails, RemoteUI } from '../types';
 
@@ -25,8 +25,7 @@ export class EveesBlockchainCachedRemoteLense extends servicesConnect(LitElement
   @internalProperty()
   settingCustom = false;
 
-  client!: Client;
-  remote!: EveesBlockchainCached;
+  remote!: EveesBlockchain;
   dialogOptions: MenuConfig = {
     close: {
       text: 'close',
@@ -38,9 +37,7 @@ export class EveesBlockchainCachedRemoteLense extends servicesConnect(LitElement
   connections!: ChainConnectionDetails[];
 
   async firstUpdated() {
-    this.client = this.request(ClientModule.bindings.Client);
-    const remotes = this.requestAll(EveesModule.bindings.RemoteEvees) as RemoteEvees[];
-    this.remote = remotes.find((r) => r.id.includes(this.remoteId)) as EveesBlockchainCached;
+    this.remote = this.evees.getRemote<EveesBlockchain>(this.remoteId);
 
     await this.remote.ready();
 
@@ -54,7 +51,7 @@ export class EveesBlockchainCachedRemoteLense extends servicesConnect(LitElement
   }
 
   async refresh() {
-    const status = await this.remote.getStatus();
+    const status = { pendingActions: 0 };
     this.remoteUI = {
       pendingActions: status.pendingActions,
     };
