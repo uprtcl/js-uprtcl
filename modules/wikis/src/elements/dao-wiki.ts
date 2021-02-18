@@ -22,7 +22,7 @@ export class DaoWiki extends servicesConnect(LitElement) {
     return html`
       <div class="app-content-with-nav">
         <div class="app-navbar">
-          <evees-children-list uref=${this.uref}></evees-children-list>
+          <editable-page-list uref=${this.uref}></editable-page-list>
         </div>
 
         <div class="app-content">

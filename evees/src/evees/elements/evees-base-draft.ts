@@ -1,41 +1,12 @@
-import { html, css, property, query, LitElement, internalProperty } from 'lit-element';
-
-import { MenuConfig, UprtclPopper } from '@uprtcl/common-ui';
+import { property, internalProperty } from 'lit-element';
 
 import { Logger } from '../../utils/logger';
-import { Secured } from '../../cas/utils/cid-hash';
-
-import { Perspective } from '../interfaces/types';
 import { RemoteEvees } from '../interfaces/remote.evees';
-
-import { EveesInfoBase } from './evees-info-base';
-import { EveesPerspectivesList } from './evees-perspectives-list';
-import { ProposalsList } from './evees-proposals-list';
-import { DEFAULT_COLOR, eveeColor } from './support';
-import { ContentUpdatedEvent } from './events';
-import { servicesConnect } from 'src/container/multi-connect.mixin';
 import { EveesBaseElement } from './evees-base';
-import { RecursiveContextMergeStrategy } from '../merge/recursive-context.merge-strategy';
-
-export interface EveesInfoConfig {
-  showProposals?: boolean;
-  showDraftControl?: boolean;
-  showMyDraft?: boolean;
-  showInfo?: boolean;
-  showIcon?: boolean;
-  showAcl?: boolean;
-  showDebugInfo?: boolean;
-  officialOwner?: string;
-  checkOwner?: boolean;
-  isDraggable?: boolean;
-}
 
 /** A base component for evees with one official perspective and one draft per user */
 export class EveesBaseDraft<T extends object> extends EveesBaseElement<T> {
   logger = new Logger('EVEES-INFO-Draft');
-
-  @property({ type: String, attribute: 'remote' })
-  defaultRemoteId!: string;
 
   @internalProperty()
   loading = true;
@@ -44,9 +15,10 @@ export class EveesBaseDraft<T extends object> extends EveesBaseElement<T> {
   protected mineId: string | undefined = undefined;
   protected defaultRemote!: RemoteEvees;
 
-  async firstUpdate() {
+  async firstUpdated() {
     this.firstRef = this.uref;
-    this.defaultRemote = this.evees.getRemote(this.defaultRemoteId);
+    this.defaultRemote =
+      this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
     super.firstUpdated();
   }
 
