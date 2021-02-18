@@ -6,7 +6,7 @@ import { Entity } from '../../cas/interfaces/entity';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { mergeResult } from './utils';
 import { Client } from '../interfaces/client';
-import { MergeStrategy } from './merge-strategy';
+import { MergeConfig, MergeStrategy } from './merge-strategy';
 
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(protected evees: Evees) {}
@@ -14,7 +14,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config: any
+    config: MergeConfig
   ): Promise<string> {
     return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
   }
@@ -22,7 +22,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config: any
+    config: MergeConfig
   ): Promise<string> {
     const promises = [toPerspectiveId, fromPerspectiveId].map(
       async (id) => (await this.evees.client.getPerspective(id)).details.headId
@@ -72,7 +72,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     toCommitIdOrg: string | undefined,
     fromCommitIdOrg: string,
     remote: string,
-    config: any
+    config: MergeConfig
   ): Promise<string> {
     const toCommitId = toCommitIdOrg
       ? await this.findLatestNonFork(toCommitIdOrg, this.evees.client)
@@ -121,7 +121,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeData<T extends object>(
     originalData: Entity<T>,
     newDatas: Entity<T>[],
-    config: any
+    config: MergeConfig
   ): Promise<T> {
     const merge = this.evees.behavior(originalData.object, 'merge');
 
@@ -142,7 +142,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
   async mergeLinks(
     originalLinks: string[],
     modificationsLinks: string[][],
-    config: any
+    config: MergeConfig
   ): Promise<string[]> {
     const allLinks: Map<string, boolean> = new Map();
 

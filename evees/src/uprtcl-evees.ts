@@ -39,10 +39,9 @@ export { mergeStrings, mergeResult } from './evees/merge/utils';
 /** Elements */
 export { EveesPerspectivesList } from './evees/elements/evees-perspectives-list';
 export { EveesBaseElement } from './evees/elements/evees-base';
+export { EveesBaseDraft } from './evees/elements/evees-base-draft';
 export { EveesInfoPopper } from './evees/elements/evees-info-popper';
-export { EveesInfoPage } from './evees/elements/evees-info-page';
 export { EveesInfoBase } from './evees/elements/evees-info-base';
-export { EveesInfoUserBased, EveesInfoConfig } from './evees/elements/evees-info-user-based';
 export { ProposalsList } from './evees/elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './evees/elements/evees-perspective-icon';
 
@@ -87,6 +86,9 @@ export { Entity, ObjectOn } from './cas/interfaces/entity';
 export { CASStore, EntityGetResult } from './cas/interfaces/cas-store';
 export { CASRemote } from './cas/interfaces/cas-remote';
 export { CidConfig } from './cas/interfaces/cid-config';
+
+/* merge */
+export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
 
 /** Patterns */
 export { HasChildren } from './patterns/behaviours/has-links';

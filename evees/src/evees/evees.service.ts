@@ -529,7 +529,8 @@ export class Evees {
   async forkPerspective(
     perspectiveId: string,
     remoteId?: string,
-    guardianId?: string
+    guardianId?: string,
+    recurse: boolean = true
   ): Promise<string> {
     const refPerspective: Entity<Signed<Perspective>> = await this.client.store.getEntity(
       perspectiveId
@@ -556,7 +557,8 @@ export class Evees {
       forkCommitId = await this.forkCommit(
         details.headId,
         perspective.object.payload.remote,
-        perspective.id // this perspective is set as the parent of the children's new perspectives
+        perspective.id, // this perspective is set as the parent of the children's new perspectives
+        recurse
       );
     }
 
@@ -568,11 +570,16 @@ export class Evees {
     return perspective.id;
   }
 
-  async forkCommit(commitId: string, remote: string, parentId?: string): Promise<string> {
+  async forkCommit(
+    commitId: string,
+    remote: string,
+    parentId?: string,
+    recurse: boolean = true
+  ): Promise<string> {
     const commit: Secured<Commit> = await this.client.store.getEntity(commitId);
 
     const dataId = commit.object.payload.dataId;
-    const dataForkId = await this.forkEntity(dataId, remote, parentId);
+    const dataForkId = await this.forkEntity(dataId, remote, parentId, recurse);
 
     const eveesRemote = await this.getRemote(remote);
 
@@ -590,19 +597,27 @@ export class Evees {
     return this.client.store.storeEntity({ object: signedCommit, remote });
   }
 
-  async forkEntity(entityId: string, remote: string, parentId?: string): Promise<string> {
-    const data = await this.client.store.getEntity(entityId);
-    if (!data) throw new Error(`data ${entityId} not found`);
+  async forkEntity(
+    entityId: string,
+    remote: string,
+    parentId?: string,
+    recurse: boolean = true
+  ): Promise<string> {
+    if (recurse) {
+      const data = await this.client.store.getEntity(entityId);
+      if (!data) throw new Error(`data ${entityId} not found`);
 
-    /** createOwnerPreservingEntity of children */
+      /** createOwnerPreservingEntity of children */
+      const children = this.behavior(data.object, 'children');
 
-    const getLinksForks = this.behavior(data.object, 'children').map((link) =>
-      this.fork(link, remote, parentId)
-    );
-    const newLinks = await Promise.all(getLinksForks);
-    const newObject = this.behavior(data.object, 'replaceChildren')(newLinks);
+      const getChildrenForks = children.map((link) => this.fork(link, remote, parentId));
+      const newChildren = await Promise.all(getChildrenForks);
+      const newObject = this.behavior(data.object, 'replaceChildren')(newChildren);
 
-    return this.client.store.storeEntity({ object: newObject, remote });
+      return this.client.store.storeEntity({ object: newObject, remote });
+    } else {
+      return entityId;
+    }
   }
 
   async getHome(remoteId?: string, userId?: string): Promise<Secured<Perspective>> {

@@ -5,7 +5,7 @@ import {
   mergeStrings,
   HasDiffLenses,
   DiffLens,
-  Client,
+  MergeConfig,
   HasTitle,
   HasLenses,
   HasChildren,
@@ -43,8 +43,7 @@ export class WikiLinks implements HasChildren<Wiki> {
   merge = (originalNode: Wiki) => async (
     modifications: (Wiki | undefined)[],
     mergeStrategy: RecursiveContextMergeStrategy,
-    evees: Evees,
-    config
+    config: MergeConfig
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
       originalNode.title,
@@ -96,7 +95,7 @@ export class WikiCommon implements HasTitle, HasLenses<Wiki>, HasDiffLenses<Wiki
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <wiki-diff
-              .evees=${Evees}
+              .localEvees=${evees}
               .newData=${newEntity}
               .oldData=${oldEntity}
               ?summary=${summary}

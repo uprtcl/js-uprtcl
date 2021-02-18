@@ -135,11 +135,20 @@ export interface Join {
   id: string;
 }
 
+export interface EveesOptions {
+  creatorId?: string;
+  createdBefore?: number;
+  createdAfter?: number;
+  updatedBefore?: number;
+  updatedAfter?: number;
+}
+
 export interface SearchOptions {
   under: Join[];
   linksTo: Join[];
   query: string;
   orderBy: string;
+  evees: EveesOptions;
 }
 
 export interface ParentAndChild {

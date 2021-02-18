@@ -5,7 +5,7 @@ import { UprtclPopper } from '@uprtcl/common-ui';
 import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { EveesInfoConfig } from './evees-info-user-based';
+import { EveesInfoConfig } from './evees-bas-drafts';
 import { DEFAULT_COLOR, eveeColor } from './support';
 
 export class EveesInfoPopper extends servicesConnect(LitElement) {

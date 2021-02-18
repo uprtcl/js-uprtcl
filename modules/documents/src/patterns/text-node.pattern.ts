@@ -5,7 +5,7 @@ import {
   HasDiffLenses,
   HasLenses,
   DiffLens,
-  Client,
+  MergeConfig,
   Pattern,
   HasChildren,
   HasTitle,
@@ -110,7 +110,7 @@ export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode
   merge = (originalNode: TextNode) => async (
     modifications: TextNode[],
     merger: MergeStrategy,
-    config: any
+    config: MergeConfig
   ): Promise<TextNode> => {
     const resultText = modifications[1].text;
     const resultType = mergeResult(

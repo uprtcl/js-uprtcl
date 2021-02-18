@@ -92,9 +92,7 @@ export class RemoteEveesLocal implements RemoteEvees {
   async canUpdate(perspectiveId: string, userId?: string) {
     return true;
   }
-  ready(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
+  async ready(): Promise<void> {}
   async connect(): Promise<void> {}
   async isConnected() {
     return true;

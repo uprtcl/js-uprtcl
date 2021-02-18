@@ -17,9 +17,6 @@ export class WikiDiff extends servicesConnect(LitElement) {
   summary = false;
 
   @property({ attribute: false })
-  localEvees!: Evees;
-
-  @property({ attribute: false })
   newData!: Wiki;
 
   @property({ attribute: false })
@@ -27,6 +24,8 @@ export class WikiDiff extends servicesConnect(LitElement) {
 
   @property({ attribute: false })
   loading = true;
+
+  localEvees!: Evees;
 
   newPages!: string[];
   deletedPages!: string[];

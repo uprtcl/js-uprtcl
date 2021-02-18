@@ -1,17 +1,14 @@
 import { EveesContentModule } from '@uprtcl/evees';
 
-import { WikiDrawer } from './elements/wiki-drawer';
 import { WikiCommon, WikiLinks, WikiPattern } from './patterns/wiki.pattern';
-
 import { WikiDiff } from './elements/wiki-diff';
-import { WikiDrawerContent } from './elements/wiki-drawer-content';
+import { DaoWiki } from './elements/dao-wiki';
 
 export class WikisModule implements EveesContentModule {
   static id = 'wikis-module';
 
   async registerComponents() {
-    customElements.define('wiki-drawer', WikiDrawer);
-    customElements.define('wiki-drawer-content', WikiDrawerContent);
+    customElements.define('dao-wiki', DaoWiki);
     customElements.define('wiki-diff', WikiDiff);
   }
 
