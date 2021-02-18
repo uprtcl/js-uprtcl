@@ -1,6 +1,6 @@
 import { html, css, LitElement, property, internalProperty } from 'lit-element';
 
-import { Logger, servicesConnect } from '@uprtcl/evees';
+import { Logger, RecursiveContextMergeStrategy, servicesConnect } from '@uprtcl/evees';
 import { styles } from '@uprtcl/common-ui';
 
 export class DaoWiki extends servicesConnect(LitElement) {
@@ -12,12 +12,30 @@ export class DaoWiki extends servicesConnect(LitElement) {
   @internalProperty()
   selectedPageId!: string;
 
+  @internalProperty()
+  hasChanges = false;
+
+  firstUpdated() {
+    this.checkChanges();
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener<any>('select-page', (e: CustomEvent) => {
       e.stopPropagation();
       this.selectedPageId = e.detail.uref;
     });
+  }
+
+  async checkChanges() {
+    const forks = await this.evees.client.searchEngine.forks(this.uref);
+    if (forks.length > 0) {
+      const mergeEvees = this.evees.clone();
+      const merger = new RecursiveContextMergeStrategy(mergeEvees);
+      await merger.mergePerspectivesExternal(this.uref, forks[0], { forceOwner: true });
+      const diff = await mergeEvees.client.diff();
+      this.hasChanges = diff.updates.length > 0;
+    }
   }
 
   renderHome() {
@@ -28,12 +46,15 @@ export class DaoWiki extends servicesConnect(LitElement) {
     this.logger.log('rendering wiki after loading');
 
     return html`
-      <div class="app-content-with-nav">
-        <div class="app-navbar">
+      <div class="top-bar">
+        ${this.hasChanges ? html`<uprtcl-button>propose changes</uprtcl-button>` : ''}
+      </div>
+      <div class="wiki-content-with-nav">
+        <div class="wiki-navbar">
           <editable-page-list uref=${this.uref}></editable-page-list>
         </div>
 
-        <div class="app-content">
+        <div class="wiki-content">
           ${this.selectedPageId !== undefined
             ? html`
                 <div class="page-container">
@@ -58,17 +79,25 @@ export class DaoWiki extends servicesConnect(LitElement) {
       css`
         :host {
           display: flex;
-          flex: 1 1 0;
+          flex: 1 1 auto;
           flex-direction: column;
         }
-        .app-content-with-nav {
-          flex: 1 1 0;
+        .top-bar {
+          flex: 0 0 auto;
+          height: 70px;
+          box-shadow: 1px 0px 10px rgba(0, 0, 0, 0.1);
+          display: flex;
+          align-items: center;
+          padding: 0rem 2rem;
+        }
+        .wiki-content-with-nav {
+          flex: 1 1 auto;
           display: flex;
           flex-direction: row;
           position: relative;
           overflow: hidden;
         }
-        .app-navbar {
+        .wiki-navbar {
           width: 260px;
           flex-shrink: 0;
           background: var(--white);
@@ -76,7 +105,7 @@ export class DaoWiki extends servicesConnect(LitElement) {
           z-index: 1;
           height: 100%;
         }
-        .app-content {
+        .wiki-content {
           background: var(--background-color);
           flex-grow: 1;
           display: flex;

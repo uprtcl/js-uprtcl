@@ -96,10 +96,25 @@ export class Evees {
     return result.details.headId ? this.getCommitData<T>(result.details.headId) : undefined;
   }
 
+  async tryGetCommitData<T = any>(commitId: string | undefined): Promise<Entity<any> | undefined> {
+    if (commitId === undefined) return commitId;
+    const dataId = await this.tryGetCommitDataId(commitId);
+    if (!dataId) return undefined;
+
+    const data = await this.client.store.getEntity<T>(dataId);
+    return data;
+  }
+
   async getCommitData<T = any>(commitId: string): Promise<Entity<any>> {
     const dataId = await this.getCommitDataId(commitId);
     const data = await this.client.store.getEntity<T>(dataId);
     return data;
+  }
+
+  async tryGetCommitDataId(commitId: string | undefined): Promise<string | undefined> {
+    if (commitId === undefined) return commitId;
+    const commit = await this.client.store.getEntity(commitId);
+    return commit ? commit.object.payload.dataId : undefined;
   }
 
   async getCommitDataId(commitId: string): Promise<string> {

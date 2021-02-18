@@ -84,13 +84,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
       ? await findMostRecentCommonAncestor(this.evees.client)(commitsIds)
       : fromCommitId;
 
-    const datasPromises = commitsIds.map(async (commitId) => this.evees.getCommitData(commitId));
+    const datasPromises = commitsIds.map(async (commitId) => this.evees.tryGetCommitData(commitId));
     const newDatas = await Promise.all(datasPromises);
+    const newDatasDefined = newDatas.filter((d) => d !== undefined) as Entity<any>[];
 
     const ancestorData: any =
       ancestorId !== undefined ? await this.evees.getCommitData(ancestorId) : newDatas[0];
 
-    const mergedData = await this.mergeData(ancestorData, newDatas, config);
+    const mergedData = await this.mergeData(ancestorData, newDatasDefined, config);
 
     const dataHash = await this.evees.client.store.hashEntity({ object: mergedData, remote });
     /** prevent an update head to the same data */

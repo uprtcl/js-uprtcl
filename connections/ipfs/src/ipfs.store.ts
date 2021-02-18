@@ -161,7 +161,7 @@ export class IpfsStore extends Connection implements CASRemote {
   async flush(): Promise<void> {}
 
   async getEntity(hash: string): Promise<Entity<any>> {
-    const entities = await this.getEntities([hash]);
+    const { entities } = await this.getEntities([hash]);
     return entities[0];
   }
   async storeEntity(object: any): Promise<string> {

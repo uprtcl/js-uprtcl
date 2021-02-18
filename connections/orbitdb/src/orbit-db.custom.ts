@@ -146,7 +146,7 @@ export class OrbitDBCustom extends Connection {
 
   public async storeAddress(type: string, entity: any): Promise<string> {
     const storeManifest = this.getManifest(type);
-    if (storeManifest === undefined) throw new Error(`store if type ${type} not found`);
+    if (storeManifest === undefined) throw new Error(`store of type ${type} not found`);
 
     return this.instance.determineAddress(
       storeManifest.name(entity),
