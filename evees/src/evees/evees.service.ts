@@ -160,8 +160,8 @@ export class Evees {
       const children = this.behavior(data.object, patternName);
       let oldChildren: string[] = [];
 
-      if (update.oldDetails) {
-        const oldData = await this.getCommitData(update.oldDetails.headId as string);
+      if (update.oldDetails && update.oldDetails.headId) {
+        const oldData = await this.getCommitData(update.oldDetails.headId);
         oldChildren = this.behavior(oldData.object, patternName);
       }
 
@@ -223,7 +223,18 @@ export class Evees {
   async createEvee(input: CreateEvee): Promise<string> {
     let { remoteId } = input;
     const { object, partialPerspective, guardianId } = input;
-    remoteId = remoteId || this.remotes[0].id;
+
+    if (!remoteId) {
+      if (!guardianId) {
+        // default remote
+        remoteId = this.remotes[0].id;
+      } else {
+        // set the same remote as guardianId
+        const guardianRemote = await this.getPerspectiveRemote(guardianId);
+        remoteId = guardianRemote.id;
+      }
+    }
+
     let headId;
 
     if (object) {

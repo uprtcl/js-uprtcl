@@ -42,7 +42,7 @@ export class RemoteEveesLocal implements RemoteEvees {
   }
 
   constructor(readonly casID: string) {
-    this.searchEngine = new LocalSearchEngine();
+    this.searchEngine = new LocalSearchEngine(this);
     this.db = new EveesDB();
   }
 
@@ -59,23 +59,44 @@ export class RemoteEveesLocal implements RemoteEvees {
     perspectiveId: string,
     options?: GetPerspectiveOptions
   ): Promise<PerspectiveGetResult> {
-    const details = await this.db.perspectives.get(perspectiveId);
-    return { details: details ? details : {} };
+    const perspectiveLocal = await this.db.perspectives.get(perspectiveId);
+    return { details: perspectiveLocal ? perspectiveLocal.details : {} };
   }
-  async update(mutation: EveesMutationCreate) {}
+  async update(mutation: EveesMutationCreate) {
+    const create = mutation.newPerspectives
+      ? Promise.all(
+          mutation.newPerspectives.map((newPerspective) => this.newPerspective(newPerspective))
+        )
+      : Promise.resolve([]);
+    const update = mutation.updates
+      ? Promise.all(mutation.updates.map((update) => this.updatePerspective(update)))
+      : Promise.resolve([]);
+
+    await Promise.all([create, update]);
+  }
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
-    await this.db.perspectives.put(newPerspective.update.details, newPerspective.perspective.id);
+    await this.db.perspectives.put({
+      id: newPerspective.perspective.id,
+      context: newPerspective.perspective.object.payload.context,
+      details: newPerspective.update.details,
+    });
   }
   async deletePerspective(perspectiveId: string): Promise<void> {
     await this.db.perspectives.delete(perspectiveId);
   }
   async updatePerspective(update: Update): Promise<void> {
-    const currentDetails = await this.db.perspectives.get(update.perspectiveId);
+    const currentLocal = await this.db.perspectives.get(update.perspectiveId);
+    if (!currentLocal) throw new Error(`Perspective not found locally ${update.perspectiveId}`);
+    const currentDetails = currentLocal.details;
     const details: PerspectiveDetails = {
       ...currentDetails,
       ...update.details,
     };
-    await this.db.perspectives.put(details, update.perspectiveId);
+    await this.db.perspectives.put({
+      id: update.perspectiveId,
+      context: currentLocal.context,
+      details: details,
+    });
   }
   diff(): Promise<EveesMutation> {
     throw new Error('Method not implemented.');

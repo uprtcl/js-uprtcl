@@ -1,9 +1,9 @@
 import lodash from 'lodash-es';
 import { CASRemote } from '../interfaces/cas-remote';
 
-import { CASStore, EntityGetResult } from '../interfaces/cas-store';
+import { EntityGetResult } from '../interfaces/cas-store';
 import { CidConfig } from '../interfaces/cid-config';
-import { Entity, EntityOn, ObjectOn } from '../interfaces/entity';
+import { Entity, ObjectOn } from '../interfaces/entity';
 import { hashObject } from '../utils/cid-hash';
 import { EntitiesDB } from './cas.local.db';
 
@@ -33,7 +33,7 @@ export class CASLocal implements CASRemote {
 
   async storeObject(object: object): Promise<Entity<any>> {
     const entity = await this.hashObject(object);
-    this.db.entities.put(entity.object, entity.id);
+    this.db.entities.put(entity);
     return entity;
   }
   async storeObjects(objects: object[]): Promise<Entity<any>[]> {
@@ -53,9 +53,10 @@ export class CASLocal implements CASRemote {
     return { entities };
   }
   async flush(): Promise<void> {}
-  async getEntity<T = any>(uref: string): Promise<Entity<any>> {
-    const { entities } = await this.getEntities([uref]);
-    return entities[0] as Entity<T>;
+  async getEntity<T = any>(hash: string): Promise<Entity<T>> {
+    const entity = await this.db.entities.get(hash);
+    if (!entity) throw new Error('Entity not found');
+    return entity;
   }
   async storeEntity(object: any): Promise<string> {
     const entities = await this.storeEntities([object]);

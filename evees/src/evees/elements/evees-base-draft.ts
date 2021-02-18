@@ -9,7 +9,7 @@ export class EveesBaseDraft<T extends object> extends EveesBaseElement<T> {
   logger = new Logger('EVEES-INFO-Draft');
 
   @internalProperty()
-  loading = true;
+  isDraft = false;
 
   protected firstRef!: string;
   protected mineId: string | undefined = undefined;
@@ -30,30 +30,34 @@ export class EveesBaseDraft<T extends object> extends EveesBaseElement<T> {
     this.mineId = drafts.length > 0 ? drafts[0] : undefined;
   }
 
-  checkoutDraft() {
+  async checkoutDraft(recurse: boolean = true) {
     if (this.mineId) {
-      this.seeDraft();
+      return this.seeDraft();
     } else {
-      this.createDraft();
+      return this.createDraft(recurse);
     }
   }
 
-  async createDraft(recurse: boolean = true) {
+  async createDraft(recurse: boolean = true): Promise<void> {
     this.mineId = await this.evees.forkPerspective(
       this.firstRef,
       this.defaultRemote.id,
       undefined,
       recurse
     );
-    this.seeDraft();
+    return this.seeDraft();
   }
 
-  seeDraft() {
+  async seeDraft(): Promise<void> {
     if (!this.mineId) throw new Error(`mineId not defined`);
     this.uref = this.mineId;
+    this.isDraft = true;
+    return super.load();
   }
 
-  seeOfficial() {
+  async seeOfficial(): Promise<void> {
     this.uref = this.firstRef;
+    this.isDraft = false;
+    return super.load();
   }
 }
