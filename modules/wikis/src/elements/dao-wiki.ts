@@ -12,6 +12,14 @@ export class DaoWiki extends servicesConnect(LitElement) {
   @internalProperty()
   selectedPageId!: string;
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener<any>('select-page', (e: CustomEvent) => {
+      e.stopPropagation();
+      this.selectedPageId = e.detail.uref;
+    });
+  }
+
   renderHome() {
     return html`<h1>Home</h1>`;
   }

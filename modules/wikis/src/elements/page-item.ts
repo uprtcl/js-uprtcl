@@ -16,13 +16,21 @@ export class PageItemElement extends EveesBaseElement<TextNode> {
   }
 
   selectPage() {
-    this.dispatchEvent(new CustomEvent('remove', { bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent('select-page', { bubbles: true, composed: true, detail: { uref: this.uref } })
+    );
   }
 
   async optionOnPage(e) {
     switch (e.detail.key) {
       case 'remove':
-        this.dispatchEvent(new CustomEvent('remove', { bubbles: true, composed: true }));
+        this.dispatchEvent(
+          new CustomEvent('remove-page', {
+            bubbles: true,
+            composed: true,
+            detail: { uref: this.uref },
+          })
+        );
         break;
     }
   }
@@ -65,6 +73,9 @@ export class PageItemElement extends EveesBaseElement<TextNode> {
     return [
       styles,
       css`
+        :host {
+          cursor: pointer;
+        }
         .page-item-row {
           display: flex;
           flex-direction: row;

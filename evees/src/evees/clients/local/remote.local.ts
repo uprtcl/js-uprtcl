@@ -60,7 +60,9 @@ export class RemoteEveesLocal implements RemoteEvees {
     options?: GetPerspectiveOptions
   ): Promise<PerspectiveGetResult> {
     const perspectiveLocal = await this.db.perspectives.get(perspectiveId);
-    return { details: perspectiveLocal ? perspectiveLocal.details : {} };
+    const details = perspectiveLocal ? perspectiveLocal.details : {};
+    details.canUpdate = true;
+    return { details };
   }
   async update(mutation: EveesMutationCreate) {
     const create = mutation.newPerspectives
